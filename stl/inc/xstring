@@ -4317,7 +4317,7 @@ public:
     }
 #endif // _HAS_CXX20
 
-    _NODISCARD _CONSTEXPR20 bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {
         return _Mypair._Myval2._Mysize == 0;
     }
 

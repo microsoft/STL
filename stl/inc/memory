@@ -2693,7 +2693,7 @@ private:
 #endif // _HAS_CXX20
 
 template <class _Ty, class... _Types>
-_NODISCARD
+_NODISCARD_SMART_PTR_ALLOC
 #if _HAS_CXX20
     enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
 #else // _HAS_CXX20
@@ -2736,18 +2736,18 @@ _NODISCARD shared_ptr<_Ty> _Make_shared_unbounded_array(const size_t _Count, con
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const size_t _Count) {
+_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const size_t _Count) {
     return _Make_shared_unbounded_array<_Ty>(_Count);
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
+_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
     const size_t _Count, const remove_extent_t<_Ty>& _Val) {
     return _Make_shared_unbounded_array<_Ty>(_Count, _Val);
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() {
+_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() {
     // make a shared_ptr to a bounded array
     const auto _Rx = new _Ref_count_bounded_array<_Ty>();
     shared_ptr<_Ty> _Ret;
@@ -2756,7 +2756,8 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() {
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const remove_extent_t<_Ty>& _Val) {
+_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
+    const remove_extent_t<_Ty>& _Val) {
     // make a shared_ptr to a bounded array
     const auto _Rx = new _Ref_count_bounded_array<_Ty>(_Val);
     shared_ptr<_Ty> _Ret;
@@ -2765,7 +2766,7 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(con
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite() {
+_NODISCARD_SMART_PTR_ALLOC enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite() {
     shared_ptr<_Ty> _Ret;
     if constexpr (is_array_v<_Ty>) {
         // make a shared_ptr to a bounded array
@@ -2780,13 +2781,14 @@ _NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite(const size_t _Count) {
+_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite(
+    const size_t _Count) {
     return _Make_shared_unbounded_array<_Ty>(_Count, _For_overwrite_tag{});
 }
 #endif // _HAS_CXX20
 
 template <class _Ty, class _Alloc, class... _Types>
-_NODISCARD
+_NODISCARD_SMART_PTR_ALLOC
 #if _HAS_CXX20
     enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
 #else // _HAS_CXX20
@@ -2847,19 +2849,19 @@ _NODISCARD shared_ptr<_Ty> _Allocate_shared_unbounded_array(
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
+_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const size_t _Count) {
     return _Allocate_shared_unbounded_array<_Ty>(_Al, _Count);
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
+_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const size_t _Count, const remove_extent_t<_Ty>& _Val) {
     return _Allocate_shared_unbounded_array<_Ty>(_Al, _Count, _Val);
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(const _Alloc& _Al) {
+_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(const _Alloc& _Al) {
     // make a shared_ptr to a bounded array
     using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
@@ -2874,7 +2876,7 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
+_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const remove_extent_t<_Ty>& _Val) {
     // make a shared_ptr to a bounded array
     using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
@@ -2890,7 +2892,8 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(const _Alloc& _Al) {
+_NODISCARD_SMART_PTR_ALLOC enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(
+    const _Alloc& _Al) {
     shared_ptr<_Ty> _Ret;
     if constexpr (is_array_v<_Ty>) {
         // make a shared_ptr to a bounded array
@@ -2918,7 +2921,7 @@ _NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_sha
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(
+_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(
     const _Alloc& _Al, const size_t _Count) {
     return _Allocate_shared_unbounded_array<_Ty>(_Al, _Count, _For_overwrite_tag{});
 }
@@ -3425,12 +3428,12 @@ private:
 
 
 template <class _Ty, class... _Types, enable_if_t<!is_array_v<_Ty>, int> = 0>
-_NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique(_Types&&... _Args) { // make a unique_ptr
+_NODISCARD_SMART_PTR_ALLOC _CONSTEXPR23 unique_ptr<_Ty> make_unique(_Types&&... _Args) { // make a unique_ptr
     return unique_ptr<_Ty>(new _Ty(_STD forward<_Types>(_Args)...));
 }
 
 template <class _Ty, enable_if_t<is_array_v<_Ty> && extent_v<_Ty> == 0, int> = 0>
-_NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique(const size_t _Size) { // make a unique_ptr
+_NODISCARD_SMART_PTR_ALLOC _CONSTEXPR23 unique_ptr<_Ty> make_unique(const size_t _Size) { // make a unique_ptr
     using _Elem = remove_extent_t<_Ty>;
     return unique_ptr<_Ty>(new _Elem[_Size]());
 }
@@ -3440,13 +3443,13 @@ void make_unique(_Types&&...) = delete;
 
 #if _HAS_CXX20
 template <class _Ty, enable_if_t<!is_array_v<_Ty>, int> = 0>
-_NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique_for_overwrite() {
+_NODISCARD_SMART_PTR_ALLOC _CONSTEXPR23 unique_ptr<_Ty> make_unique_for_overwrite() {
     // make a unique_ptr with default initialization
     return unique_ptr<_Ty>(new _Ty);
 }
 
 template <class _Ty, enable_if_t<is_unbounded_array_v<_Ty>, int> = 0>
-_NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique_for_overwrite(const size_t _Size) {
+_NODISCARD_SMART_PTR_ALLOC _CONSTEXPR23 unique_ptr<_Ty> make_unique_for_overwrite(const size_t _Size) {
     // make a unique_ptr with default initialization
     using _Elem = remove_extent_t<_Ty>;
     return unique_ptr<_Ty>(new _Elem[_Size]);
@@ -3704,7 +3707,7 @@ struct hash<shared_ptr<_Ty>> {
 
 #if _HAS_CXX20
 template <size_t _Nx, class _Ty>
-_NODISCARD constexpr _Ty* assume_aligned(_Ty* const _Ptr) noexcept /* strengthened */ {
+_NODISCARD_ASSUME_ALIGNED constexpr _Ty* assume_aligned(_Ty* const _Ptr) noexcept /* strengthened */ {
     if (_STD is_constant_evaluated()) {
         return _Ptr;
     } else {

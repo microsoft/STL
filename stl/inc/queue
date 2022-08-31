@@ -87,7 +87,7 @@ public:
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
-    _NODISCARD bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
+    _NODISCARD_EMPTY_ADAPTOR_MEMBER bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
         return c.empty();
     }
 
@@ -353,7 +353,7 @@ public:
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
-    _NODISCARD bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
+    _NODISCARD_EMPTY_ADAPTOR_MEMBER bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
         return c.empty();
     }
 
