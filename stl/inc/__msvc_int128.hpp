@@ -534,7 +534,7 @@ struct
             __v[2] |= _Den._Word[0] >> (64 - __d);
         }
 
-        uint32_t __q[2];
+        uint32_t __q[2] _ZERO_OR_NO_INIT;
         if (_Three_word_den) {
             // 4-digit by 3-digit base 2^32 division
             _Knuth_4_3_1_D(__u, 5, __v, 3, __q);
@@ -669,7 +669,7 @@ struct
             __v[2] |= _Den._Word[0] >> (64 - __d);
         }
 
-        uint32_t __q[2];
+        uint32_t __q[2] _ZERO_OR_NO_INIT;
         if (_Three_word_den) {
             // 4-digit by 3-digit base 2^32 division
             _Knuth_4_3_1_D(__u, 5, __v, 3, __q);
