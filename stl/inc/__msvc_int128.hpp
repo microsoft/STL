@@ -39,17 +39,18 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-#if defined(_M_X64) && !defined(_M_ARM64EC)
+#if defined(_M_X64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
+    && !defined(__INTEL_COMPILER)
 #define _STL_128_INTRINSICS 1
 #ifdef __clang__ // clang doesn't have _udiv128 / _div128
 #define _STL_128_DIV_INTRINSICS 0
 #else // ^^^ Clang / other vvv
 #define _STL_128_DIV_INTRINSICS 1
 #endif // ^^^ detect _udiv128 / _div128 ^^^
-#else // ^^^ x64 / other vvv
+#else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _STL_128_INTRINSICS     0
 #define _STL_128_DIV_INTRINSICS 0
-#endif // defined(_M_X64) && !defined(_M_ARM64EC)
+#endif // ^^^ intrinsics unavailable ^^^
 
 struct
 #ifndef _M_ARM
