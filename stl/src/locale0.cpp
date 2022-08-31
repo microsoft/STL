@@ -5,7 +5,6 @@
 
 #include <crtdbg.h>
 #include <internal_shared.h>
-#include <synchapi.h>
 #include <xfacet>
 
 // This must be as small as possible, because its contents are
@@ -122,8 +121,7 @@ _MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL std::locale::_Setgloballocale(void* p
 
 __PURE_APPDOMAIN_GLOBAL static locale classic_locale(_Noinit); // "C" locale object, uninitialized
 
-__PURE_APPDOMAIN_GLOBAL alignas(
-    sizeof(locale::_Locimp*)) locale::_Locimp* locale::_Locimp::_Clocptr = nullptr; // pointer to classic_locale
+__PURE_APPDOMAIN_GLOBAL locale::_Locimp* locale::_Locimp::_Clocptr = nullptr; // pointer to classic_locale
 
 __PURE_APPDOMAIN_GLOBAL int locale::id::_Id_cnt = 0; // unique id counter for facets
 
@@ -137,9 +135,32 @@ __PURE_APPDOMAIN_GLOBAL locale::id ctype<unsigned short>::id(0);
 
 __PURE_APPDOMAIN_GLOBAL locale::id codecvt<unsigned short, char, mbstate_t>::id(0);
 
+#define _Compiler_barrier() _STL_DISABLE_DEPRECATED_WARNING _ReadWriteBarrier() _STL_RESTORE_DEPRECATED_WARNING
+
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#define _Memory_barrier()             __dmb(0xB) // inner shared data memory barrier
+#define _Compiler_or_memory_barrier() _Memory_barrier()
+#elif defined(_M_IX86) || defined(_M_X64)
+// x86/x64 hardware only emits memory barriers inside _Interlocked intrinsics
+#define _Compiler_or_memory_barrier() _Compiler_barrier()
+#else // ^^^ x86/x64 / unsupported hardware vvv
+#error Unsupported hardware
+#endif // hardware
+
 _MRTIMP2_PURE const locale& __CLRCALL_PURE_OR_CDECL locale::classic() { // get reference to "C" locale
-    const auto ptr = reinterpret_cast<locale::_Locimp*>(InterlockedCompareExchangePointerAcquire(
-        reinterpret_cast<volatile PVOID*>(&locale::_Locimp::_Clocptr), nullptr, nullptr));
+    const auto mem = reinterpret_cast<const intptr_t*>(&locale::_Locimp::_Clocptr);
+    intptr_t as_bytes;
+#ifdef _WIN64
+#ifdef _M_ARM
+    as_bytes = __ldrexd(_Mem);
+#else
+    as_bytes = __iso_volatile_load64(mem);
+#endif
+#else // ^^^ _WIN64 / !_WIN64 vvv
+    as_bytes = __iso_volatile_load32(mem);
+#endif // ^^^ !_WIN64 ^^^
+    _Compiler_or_memory_barrier();
+    const auto ptr = reinterpret_cast<locale::_Locimp*>(as_bytes);
     if (ptr == nullptr) {
         _Init();
     }
@@ -167,7 +188,14 @@ _MRTIMP2_PURE locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Init(bool _Do_in
         // set classic to match
         ptr->_Incref();
         ::new (&classic_locale) locale(ptr);
-        InterlockedExchangePointer(reinterpret_cast<volatile PVOID*>(&_Locimp::_Clocptr), ptr);
+        const auto mem      = reinterpret_cast<volatile intptr_t*>(&locale::_Locimp::_Clocptr);
+        const auto as_bytes = reinterpret_cast<intptr_t>(ptr);
+        _Compiler_or_memory_barrier();
+#ifdef _WIN64
+        __iso_volatile_store64(mem, as_bytes);
+#else
+        __iso_volatile_store32(mem, as_bytes);
+#endif
     }
 
     if (_Do_incref) {
