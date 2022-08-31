@@ -9,6 +9,11 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#ifdef _ENFORCE_ONLY_CORE_HEADERS
+_EMIT_STL_ERROR(
+    STL1005, "Tried to include a non-core C++ Standard Library header file with _ENFORCE_ONLY_CORE_HEADERS defined.");
+#endif // _ENFORCE_ONLY_CORE_HEADERS
+
 #include <crtdbg.h>
 #include <crtdefs.h>
 
