@@ -1482,60 +1482,58 @@ inline namespace literals {
             }
 
             template <unsigned int _Base, char... _Chars>
-            _NODISCARD _CONSTEVAL _U128_parse_result _Parse_u128_impl() noexcept {
-                if constexpr (sizeof...(_Chars) == 0) {
-                    return {_U128_parse_status::_Valid, 0};
-                } else {
-                    constexpr char _Char_seq[]{_Chars...};
-                    constexpr auto _U128_max = (numeric_limits<_Unsigned128>::max)();
+            struct _Parse_u128_impl {
+                _NODISCARD static _CONSTEVAL _U128_parse_result _Parse() noexcept {
+                    if constexpr (sizeof...(_Chars) == 0) {
+                        return {_U128_parse_status::_Valid, 0};
+                    } else {
+                        constexpr char _Char_seq[]{_Chars...};
+                        constexpr auto _U128_max = (numeric_limits<_Unsigned128>::max)();
 
-                    _Unsigned128 _Val{};
-                    for (const char _Ch : _Char_seq) {
-                        if (_Ch == '\'') {
-                            continue;
+                        _Unsigned128 _Val{};
+                        for (const char _Ch : _Char_seq) {
+                            if (_Ch == '\'') {
+                                continue;
+                            }
+
+                            const unsigned int _Digit = _Char_to_digit(_Ch);
+                            if (_Digit == static_cast<unsigned int>(-1)) {
+                                return {_U128_parse_status::_Invalid, _Unsigned128{}};
+                            }
+
+                            if (_Val > _U128_max / _Base || _Base * _Val > _U128_max - _Digit) {
+                                return {_U128_parse_status::_Overflow, _Unsigned128{}};
+                            }
+
+                            _Val = _Base * _Val + _Digit;
                         }
-
-                        const unsigned int _Digit = _Char_to_digit(_Ch);
-                        if (_Digit == static_cast<unsigned int>(-1)) {
-                            return {_U128_parse_status::_Invalid, _Unsigned128{}};
-                        }
-
-                        if (_Val > _U128_max / _Base || _Base * _Val > _U128_max - _Digit) {
-                            return {_U128_parse_status::_Overflow, _Unsigned128{}};
-                        }
-
-                        _Val = _Base * _Val + _Digit;
+                        return {_U128_parse_status::_Valid, _Val};
                     }
-                    return {_U128_parse_status::_Valid, _Val};
                 }
-            }
+            };
 
             template <char... _Chars>
-            _INLINE_VAR constexpr _U128_parse_result _Parsed_u128 = _Parse_u128_impl<10, _Chars...>();
+            struct _Parse_u128 : _Parse_u128_impl<10, _Chars...> {};
 
             template <char... _Chars>
-            _INLINE_VAR constexpr _U128_parse_result
-                _Parsed_u128<'0', 'X', _Chars...> = _Parse_u128_impl<16, _Chars...>();
+            struct _Parse_u128<'0', 'X', _Chars...> : _Parse_u128_impl<16, _Chars...> {};
 
             template <char... _Chars>
-            _INLINE_VAR constexpr _U128_parse_result
-                _Parsed_u128<'0', 'x', _Chars...> = _Parse_u128_impl<16, _Chars...>();
+            struct _Parse_u128<'0', 'x', _Chars...> : _Parse_u128_impl<16, _Chars...> {};
 
             template <char... _Chars>
-            _INLINE_VAR constexpr _U128_parse_result
-                _Parsed_u128<'0', 'B', _Chars...> = _Parse_u128_impl<2, _Chars...>();
+            struct _Parse_u128<'0', 'B', _Chars...> : _Parse_u128_impl<2, _Chars...> {};
 
             template <char... _Chars>
-            _INLINE_VAR constexpr _U128_parse_result
-                _Parsed_u128<'0', 'b', _Chars...> = _Parse_u128_impl<2, _Chars...>();
+            struct _Parse_u128<'0', 'b', _Chars...> : _Parse_u128_impl<2, _Chars...> {};
 
             template <char... _Chars>
-            _INLINE_VAR constexpr _U128_parse_result _Parsed_u128<'0', _Chars...> = _Parse_u128_impl<8, _Chars...>();
+            struct _Parse_u128<'0', _Chars...> : _Parse_u128_impl<8, _Chars...> {};
         } // namespace _Int128_detail
 
         template <char... _Chars>
         _NODISCARD _CONSTEVAL _Unsigned128 operator"" __u128() noexcept {
-            constexpr const auto& _Parsed_result = _Int128_detail::_Parsed_u128<_Chars...>;
+            constexpr auto _Parsed_result = _Int128_detail::_Parse_u128<_Chars...>::_Parse();
             static_assert(_Parsed_result._Status_code != _Int128_detail::_U128_parse_status::_Invalid,
                 "Invalid characters in the integer literal");
             static_assert(_Parsed_result._Status_code != _Int128_detail::_U128_parse_status::_Overflow,
@@ -1545,7 +1543,7 @@ inline namespace literals {
 
         template <char... _Chars>
         _NODISCARD _CONSTEVAL _Signed128 operator"" __i128() noexcept {
-            constexpr const auto& _Parsed_result = _Int128_detail::_Parsed_u128<_Chars...>;
+            constexpr auto _Parsed_result = _Int128_detail::_Parse_u128<_Chars...>::_Parse();
             static_assert(_Parsed_result._Status_code != _Int128_detail::_U128_parse_status::_Invalid,
                 "Invalid characters in the integer literal");
             static_assert(_Parsed_result._Status_code != _Int128_detail::_U128_parse_status::_Overflow
