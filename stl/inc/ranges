@@ -6843,7 +6843,7 @@ namespace ranges {
     template <class _CallbackType>
     constexpr auto _Tuple_for_each_closure(_CallbackType& _Callback) noexcept {
         return [&_Callback]<class... _ViewTupleTypes>(_ViewTupleTypes&&... _View_tuples) {
-            ((void) (_STD invoke(_Callback, _STD forward<_ViewTupleTypes>(_View_tuples)), ...));
+            ((void) (_STD invoke(_Callback, _STD forward<_ViewTupleTypes>(_View_tuples))), ...);
         };
     }
 
@@ -6889,25 +6889,16 @@ namespace ranges {
         class _Iterator;
 
         template <bool _IsConst>
-        struct _Iterator_category_base {};
+        struct _Category_base {};
 
         template <bool _IsConst>
             requires _All_forward<_IsConst, _ViewTypes...>
-        struct _Iterator_category_base<_IsConst> {
+        struct _Category_base<_IsConst> {
             using iterator_category = input_iterator_tag;
         };
 
         template <bool _IsConst>
-        class _Iterator : public _Iterator_category_base<_IsConst> {
-        public:
-            using iterator_concept = conditional_t<_All_random_access<_IsConst, _ViewTypes...>,
-                random_access_iterator_tag,
-                conditional_t<_All_bidirectional<_IsConst, _ViewTypes...>, bidirectional_iterator_tag,
-                    conditional_t<_All_forward<_IsConst, _ViewTypes...>, forward_iterator_tag, input_iterator_tag>>>;
-
-            using value_type      = tuple<range_value_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
-            using difference_type = common_type_t<range_difference_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
-
+        class _Iterator : public _Category_base<_IsConst> {
         private:
             using _Iterator_tuple_type = tuple<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
             /* [[no_unique_address]] */ _Iterator_tuple_type _Current;
@@ -6915,7 +6906,7 @@ namespace ranges {
             friend zip_view;
 
             constexpr explicit _Iterator(_Iterator_tuple_type _Current) noexcept(
-                is_nothrow_move_constructible_v<_Iterator_tuple_type>)
+                is_nothrow_move_constructible_v<_Iterator_tuple_type>) // strengthened
                 : _Current(_STD move(_Current)) {}
 
             static constexpr bool _Is_dereference_nothrow =
@@ -6991,10 +6982,18 @@ namespace ranges {
             }();
 
         public:
-            _Iterator() noexcept(is_nothrow_default_constructible_v<_Iterator_tuple_type>) = default;
+            using iterator_concept = conditional_t<_All_random_access<_IsConst, _ViewTypes...>,
+                random_access_iterator_tag,
+                conditional_t<_All_bidirectional<_IsConst, _ViewTypes...>, bidirectional_iterator_tag,
+                    conditional_t<_All_forward<_IsConst, _ViewTypes...>, forward_iterator_tag, input_iterator_tag>>>;
+
+            using value_type      = tuple<range_value_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
+            using difference_type = common_type_t<range_difference_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
+
+            _Iterator() = default;
 
             constexpr _Iterator(_Iterator<!_IsConst> _Rhs) noexcept((
-                is_nothrow_move_constructible_v<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...)) // strengthened
+                is_nothrow_convertible_v<iterator_t<_ViewTypes>, iterator_t<_Maybe_const<!_IsConst, _ViewTypes>>> && ...)) // strengthened
                 requires(
                     _IsConst
                     && (convertible_to<iterator_t<_ViewTypes>, iterator_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...))
@@ -7157,9 +7156,17 @@ namespace ranges {
             using _Iterator_type = typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>;
 
             template <bool _IteratorConst>
+            _NODISCARD static inline constexpr const auto& _Get_iterator_tuple(
+                const _Iterator_type<_IteratorConst>& _Itr) noexcept {
+                // TODO: This function shouldn't be necessary, but the MSVC throws a false
+                // C2248 error when doing _Lhs._Current directly within the definition of
+                // _Sentinel::operator==().
+                return _Itr._Current;
+            }
+
+            template <bool _IteratorConst>
             static constexpr bool _Iterator_sentinel_equality_noexcept = noexcept(
-                _Zip_evaluate_iterator_sentinel_equality(
-                    _Sentinel::_Get_iterator_tuple(_STD declval<const _Iterator_type<_IteratorConst>&>()),
+                _Zip_evaluate_iterator_sentinel_equality(_STD declval<const _Iterator_type<_IteratorConst>&>()._Current,
                     _STD declval<_Sentinel_tuple_type>()));
 
         public:
@@ -7188,11 +7195,10 @@ namespace ranges {
                 operator-(const _Iterator_type<_IteratorConst>& _Lhs, const _Sentinel& _Rhs) noexcept(
                     noexcept(_Zip_get_smallest_iterator_sentinel_distance<
                         common_type_t<range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>>(
-                        _Get_iterator_tuple(_Lhs), _Rhs._End))) /* strengthened */
+                        _Lhs._Current, _Rhs._End))) /* strengthened */
             {
                 using _Difference_type = common_type_t<range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>;
-                return _Zip_get_smallest_iterator_sentinel_distance<_Difference_type>(
-                    _Get_iterator_tuple(_Lhs), _Rhs._End);
+                return _Zip_get_smallest_iterator_sentinel_distance<_Difference_type>(_Lhs._Current, _Rhs._End);
             }
 
             template <bool _IteratorConst>
@@ -7203,12 +7209,6 @@ namespace ranges {
                 const _Iterator_type<_IteratorConst>& _Rhs) noexcept(noexcept(-(_Rhs - _Lhs))) /* strengthened */ {
                 return -(_Rhs - _Lhs);
             }
-
-        private:
-            template <bool _IteratorConst>
-            _NODISCARD static constexpr const auto& _Get_iterator_tuple(const _Iterator_type<_IteratorConst>& _Itr) {
-                return zip_view<_ViewTypes...>::_Get_iterator_tuple(_Itr);
-            }
         };
 
         template <bool _IsConst>
@@ -7216,9 +7216,9 @@ namespace ranges {
             if constexpr (!_Zip_is_common<_ViewTypes...>) {
                 return noexcept(_Sentinel<_IsConst>{_Tuple_transform(_RANGES end, _Views)});
             } else if constexpr ((random_access_range<_ViewTypes> && ...)) {
-                return noexcept(_RANGES next(_STD declval<_Maybe_const<_IsConst, zip_view<_ViewTypes...>>>().begin(),
-                    iter_difference_t<_Iterator<_IsConst>>{
-                        _STD declval<_Maybe_const<_IsConst, zip_view<_ViewTypes...>>>()._Get_signed_size()}));
+                // Operations on iter_difference_t values must be noexcept, so we only
+                // need to check the noexcept of begin().
+                return noexcept(_STD declval<_Maybe_const<_IsConst, zip_view<_ViewTypes...>>>().begin());
             } else {
                 return noexcept(_Iterator<_IsConst>{_Tuple_transform(_RANGES end, _Views)});
             }
@@ -7248,7 +7248,7 @@ namespace ranges {
             if constexpr (!_Zip_is_common<_ViewTypes...>) {
                 return _Sentinel<false>{_Tuple_transform(_RANGES end, _Views)};
             } else if constexpr ((random_access_range<_ViewTypes> && ...)) {
-                return begin() + iter_difference_t<_Iterator<false>>{_Get_signed_size()};
+                return begin() + static_cast<iter_difference_t<_Iterator<false>>>(size());
             } else {
                 return _Iterator<false>{_Tuple_transform(_RANGES end, _Views)};
             }
@@ -7259,64 +7259,30 @@ namespace ranges {
             if constexpr (!_Zip_is_common<const _ViewTypes...>) {
                 return _Sentinel<true>{_Tuple_transform(_RANGES end, _Views)};
             } else if constexpr ((random_access_range<const _ViewTypes> && ...)) {
-                return begin() + iter_difference_t<_Iterator<true>>{_Get_signed_size()};
+                return begin() + static_cast<iter_difference_t<_Iterator<true>>>(size());
             } else {
                 return _Iterator<true>{_Tuple_transform(_RANGES end, _Views)};
             }
         }
 
-        _NODISCARD constexpr auto size() noexcept(noexcept(_Tuple_for_each(_RANGES size, _Views))) // strengthened
+        _NODISCARD constexpr auto size() noexcept(
+            noexcept(_STD apply(_Size_closure(), _Tuple_transform(_RANGES size, _Views)))) // strengthened
             requires(sized_range<_ViewTypes>&&...) {
-            using _Common_size_type          = common_type_t<range_size_t<_ViewTypes>...>;
-            using _Common_unsigned_size_type = _Make_unsigned_like_t<_Common_size_type>;
-
-            auto _Smallest_view_size_value = (numeric_limits<_Common_unsigned_size_type>::max)();
-
-            _Tuple_for_each(
-                [&_Smallest_view_size_value]<class _View>(_View& _Curr_view) {
-                    const auto _Curr_view_size_value =
-                        static_cast<_Common_unsigned_size_type>(_RANGES size(_Curr_view));
-
-                    if (_Curr_view_size_value < _Smallest_view_size_value)
-                        _Smallest_view_size_value = _Curr_view_size_value;
-                },
-                _Views);
-
-            return _Smallest_view_size_value;
+            return _STD apply(_Size_closure(), _Tuple_transform(_RANGES size, _Views));
         }
 
-        _NODISCARD constexpr auto size() const noexcept(noexcept(_Tuple_for_each(_RANGES size, _Views))) // strengthened
+        _NODISCARD constexpr auto size() const
+            noexcept(noexcept(_STD apply(_Size_closure(), _Tuple_transform(_RANGES size, _Views)))) // strengthened
             requires(sized_range<const _ViewTypes>&&...) {
-            using _Common_size_type          = common_type_t<range_size_t<_ViewTypes>...>;
-            using _Common_unsigned_size_type = _Make_unsigned_like_t<_Common_size_type>;
-
-            auto _Smallest_view_size_value = (numeric_limits<_Common_unsigned_size_type>::max)();
-
-            _Tuple_for_each(
-                [&_Smallest_view_size_value]<class _View>(const _View& _Curr_view) {
-                    const auto _Curr_view_size_value =
-                        static_cast<_Common_unsigned_size_type>(_RANGES size(_Curr_view));
-
-                    if (_Curr_view_size_value < _Smallest_view_size_value)
-                        _Smallest_view_size_value = _Curr_view_size_value;
-                },
-                _Views);
-
-            return _Smallest_view_size_value;
+            return _STD apply(_Size_closure(), _Tuple_transform(_RANGES size, _Views));
         }
 
     private:
-        _NODISCARD constexpr auto _Get_signed_size() noexcept(noexcept(size())) {
-            return static_cast<_Make_signed_like_t<decltype(size())>>(size());
-        }
-
-        _NODISCARD constexpr auto _Get_signed_size() const noexcept(noexcept(size())) {
-            return static_cast<_Make_signed_like_t<decltype(size())>>(size());
-        }
-
-        template <bool _IteratorConst>
-        _NODISCARD static constexpr const auto& _Get_iterator_tuple(const _Iterator<_IteratorConst>& _Itr) noexcept {
-            return _Itr._Current;
+        _NODISCARD static constexpr auto _Size_closure() noexcept {
+            return [](auto... _Sizes) {
+                using _Common_unsigned_type = _Make_unsigned_like_t<common_type_t<decltype(_Sizes)...>>;
+                return _RANGES min({static_cast<_Common_unsigned_type>(_Sizes)...});
+            };
         }
     };
 
