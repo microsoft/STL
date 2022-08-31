@@ -74,7 +74,7 @@ public:
     static constexpr _Openmode _Noreplace = static_cast<_Openmode>(0x80);
     static constexpr _Openmode binary     = static_cast<_Openmode>(0x20);
 #ifdef __cpp_lib_ios_noreplace
-    static constexpr _Openmode noreplace  = _Noreplace;
+    static constexpr _Openmode noreplace = _Noreplace;
 #endif
 
     enum _Seekdir { // constants for file positioning options
