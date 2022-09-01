@@ -195,6 +195,10 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
 #endif // x86/x64
 #endif // hardware
 
+#pragma warning(push)
+#pragma warning(disable : 6001) // "Using uninitialized memory '_Guard'"
+#pragma warning(disable : 28113) // "Accessing a local variable _Guard via an Interlocked function: This is an unusual
+                                 // usage which could be reconsidered."
 extern "C" inline void _Atomic_thread_fence(const unsigned int _Order) noexcept {
     if (_Order == _Atomic_memory_order_relaxed) {
         return;
@@ -208,9 +212,6 @@ extern "C" inline void _Atomic_thread_fence(const unsigned int _Order) noexcept 
         // _mm_mfence could have been used, but it is not supported on older x86 CPUs and is slower on some recent CPUs.
         // The memory fence provided by interlocked operations has some exceptions, but this is fine:
         // std::atomic_thread_fence works with respect to other atomics only; it may not be a full fence for all ops.
-#pragma warning(suppress : 6001) // "Using uninitialized memory '_Guard'"
-#pragma warning(suppress : 28113) // "Accessing a local variable _Guard via an Interlocked function: This is an unusual
-                                  // usage which could be reconsidered."
         (void) _InterlockedIncrement(&_Guard);
         _Compiler_barrier();
     }
@@ -220,6 +221,8 @@ extern "C" inline void _Atomic_thread_fence(const unsigned int _Order) noexcept 
 #error Unsupported hardware
 #endif // unsupported hardware
 }
+#pragma warning(pop)
+
 // End of code shared with vcruntime
 
 _EXTERN_C
