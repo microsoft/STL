@@ -30,15 +30,6 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 template <class...>
-struct _All_same : true_type {};
-template <class _First, class... _Rest>
-struct _All_same<_First, _Rest...> : bool_constant<conjunction_v<is_same<_First, _Rest>...>> {}; // variadic is_same
-
-template <class _To, class... _From>
-using _Convertible_from_all =
-    bool_constant<conjunction_v<_Invoke_convertible<_From, _To>...>>; // variadic _Invoke_convertible
-
-template <class...>
 struct _Meta_list; // a sequence of types (not defined)
 struct _Meta_nil {};
 
@@ -1486,27 +1477,6 @@ struct _Variant_single_visit_result<_Callable, index_sequence<_Idxs...>, _Varian
         _Variant_raw_get<_Idxs == 0 ? 0 : _Idxs - 1>(_STD declval<_Variants>()._Storage())...));
 };
 
-template <class _Callable, class _ListOfIndexVectors, class... _Variants>
-struct _Variant_all_visit_results_same; // undefined
-
-template <class _Callable, class... _IndexVectors, class... _Variants>
-struct _Variant_all_visit_results_same<_Callable, _Meta_list<_IndexVectors...>, _Variants...>
-    : _All_same<typename _Variant_single_visit_result<_Callable, _IndexVectors,
-          _Variants...>::type...>::type { // true_type iff invocation of _Callable on the elements of _Variants with all
-                                          // sequences of indices in _IndexVectors has the same type and value category.
-};
-
-template <class _To, class _Callable, class _ListOfIndexVectors, class... _Variants>
-struct _Variant_all_visit_results_implicitly_convertible; // undefined
-
-template <class _To, class _Callable, class... _IndexVectors, class... _Variants>
-struct _Variant_all_visit_results_implicitly_convertible<_To, _Callable, _Meta_list<_IndexVectors...>, _Variants...>
-    : _Convertible_from_all<_To,
-          typename _Variant_single_visit_result<_Callable, _IndexVectors, _Variants...>::type...>::type {
-    // true_type if invocation of _Callable on the elements of _Variants with all sequences of indices in _IndexVectors
-    // is implicitly convertible to _To.
-};
-
 template <int _Strategy>
 struct _Visit_strategy;
 
@@ -1618,6 +1588,33 @@ constexpr _Ret _Visit_impl(_Callable&& _Obj, _Variants&&... _Args) {
         static_cast<_As_variant<_Variants>&&>(_Args)...);
 }
 
+template <class _Expected, class _Callable, class _ArgList, class... _Variants>
+inline constexpr bool _Variant_all_visit_results_same = false;
+
+template <class _Expected, class _Callable, class... _Args>
+inline constexpr bool _Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args...>> =
+    is_same_v<decltype(_STD declval<_Callable>()(_STD declval<_Args>()...)), _Expected>;
+
+template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
+inline constexpr bool
+    _Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args...>, variant<_Types...>&, _Rest...> =
+        (_Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args..., _Types&>, _Rest...> && ...);
+
+template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
+inline constexpr bool
+    _Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args...>, const variant<_Types...>&, _Rest...> =
+        (_Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args..., const _Types&>, _Rest...> && ...);
+
+template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
+inline constexpr bool
+    _Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args...>, variant<_Types...>&&, _Rest...> =
+        (_Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args..., _Types>, _Rest...> && ...);
+
+template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
+inline constexpr bool
+    _Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args...>, const variant<_Types...>&&, _Rest...> =
+        (_Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args..., const _Types>, _Rest...> && ...);
+
 template <class _Callable, class... _Variants, class = void_t<_As_variant<_Variants>...>>
 constexpr _Variant_visit_result_t<_Callable, _As_variant<_Variants>...> visit(_Callable&& _Obj, _Variants&&... _Args) {
     // Invoke _Obj with the contained values of _Args...
@@ -1627,7 +1624,7 @@ constexpr _Variant_visit_result_t<_Callable, _As_variant<_Variants>...> visit(_C
     using _ListOfIndexVectors =
         _Meta_transform<_Meta_quote<_Meta_as_integer_sequence>, _Meta_cartesian_product<_ListOfIndexLists>>;
     using _Ret = _Variant_visit_result_t<_Callable, _As_variant<_Variants>...>;
-    static_assert(_Variant_all_visit_results_same<_Callable, _ListOfIndexVectors, _As_variant<_Variants>...>::value,
+    static_assert(_Variant_all_visit_results_same<_Ret, _Callable, _Meta_list<>, _As_variant<_Variants>...>,
         "visit() requires the result of all potential invocations to have the same type and value category "
         "(N4835 [variant.visit]/2).");
 
@@ -1636,6 +1633,33 @@ constexpr _Variant_visit_result_t<_Callable, _As_variant<_Variants>...> visit(_C
 }
 
 #if _HAS_CXX20
+template <class _Expected, class _Callable, class _ArgList, class... _Variants>
+inline constexpr bool _Variant_all_visit_results_convertible = false;
+
+template <class _Expected, class _Callable, class... _Args>
+inline constexpr bool _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>> =
+    _Invoke_convertible<decltype(_STD declval<_Callable>()(_STD declval<_Args>()...)), _Expected>::value;
+
+template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
+inline constexpr bool
+    _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>, variant<_Types...>&, _Rest...> =
+        (_Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args..., _Types&>, _Rest...> && ...);
+
+template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
+inline constexpr bool _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>,
+    const variant<_Types...>&, _Rest...> = (_Variant_all_visit_results_convertible<_Expected, _Callable,
+                                                _Meta_list<_Args..., const _Types&>, _Rest...> && ...);
+
+template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
+inline constexpr bool
+    _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>, variant<_Types...>&&, _Rest...> =
+        (_Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args..., _Types>, _Rest...> && ...);
+
+template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
+inline constexpr bool _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>,
+    const variant<_Types...>&&, _Rest...> =
+    (_Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args..., const _Types>, _Rest...> && ...);
+
 template <class _Ret, class _Callable, class... _Variants, class = void_t<_As_variant<_Variants>...>>
 constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
     constexpr auto _Size = _Variant_total_states<_Remove_cvref_t<_As_variant<_Variants>>...>;
@@ -1644,8 +1668,7 @@ constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
     using _ListOfIndexVectors =
         _Meta_transform<_Meta_quote<_Meta_as_integer_sequence>, _Meta_cartesian_product<_ListOfIndexLists>>;
     if constexpr (!is_void_v<_Ret>) {
-        static_assert(_Variant_all_visit_results_implicitly_convertible<_Ret, _Callable, _ListOfIndexVectors,
-                          _As_variant<_Variants>...>::value,
+        static_assert(_Variant_all_visit_results_convertible<_Ret, _Callable, _Meta_list<>, _As_variant<_Variants>...>,
             "visit<R>() requires the result of all potential invocations to be implicitly convertible to R "
             "(N4835 [variant.visit]/2).");
     }
