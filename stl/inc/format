@@ -1830,6 +1830,8 @@ private:
     _Format_arg_index _Index_array[_Num_args];
     unsigned char _Storage[_Storage_length];
 
+#pragma warning(push)
+#pragma warning(disable : 6386) // Buffer overrun while writing to '%s' ...
     template <class _Ty>
     void _Store_impl(
         const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, const type_identity_t<_Ty>& _Val) noexcept {
@@ -1841,10 +1843,10 @@ private:
         _Index_array[_Arg_index]._Type(_Arg_type);
         if (_Arg_index + 1 < _Num_args) {
             // Set the starting index of the next arg, as that is dynamic, must be called with increasing index
-#pragma warning(suppress : 6386) // Buffer overrun while writing to '%s' ...
             _Index_array[_Arg_index + 1] = _Format_arg_index{_Store_index + sizeof(_Ty)};
         }
     }
+#pragma warning(pop)
 
     template <class _Ty>
     void _Store(const size_t _Arg_index, _Ty&& _Val) noexcept {
