@@ -133,7 +133,7 @@ namespace _Float_multi_prec {
     // multiplication
 
     // round to 26 significant bits, ties toward zero
-    _NODISCARD _CONSTEXPR_BIT_CAST double _High_half(const double _Val) noexcept {
+    _NODISCARD constexpr double _High_half(const double _Val) noexcept {
         const auto _Bits           = _Bit_cast<unsigned long long>(_Val);
         const auto _High_half_bits = (_Bits + 0x3ff'ffffULL) & 0xffff'ffff'f800'0000ULL;
         return _Bit_cast<double>(_High_half_bits);
@@ -144,7 +144,7 @@ namespace _Float_multi_prec {
     // 1) _Prod0 is _Xval^2 faithfully rounded
     // 2) no internal overflow or underflow occurs
     // violation of condition 1 could lead to relative error on the order of epsilon
-    _NODISCARD _CONSTEXPR_BIT_CAST double _Sqr_error_fallback(const double _Xval, const double _Prod0) noexcept {
+    _NODISCARD constexpr double _Sqr_error_fallback(const double _Xval, const double _Prod0) noexcept {
         const double _Xhigh = _High_half(_Xval);
         const double _Xlow  = _Xval - _Xhigh;
         return ((_Xhigh * _Xhigh - _Prod0) + 2.0 * _Xhigh * _Xlow) + _Xlow * _Xlow;

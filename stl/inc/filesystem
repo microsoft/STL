@@ -19,7 +19,6 @@ _EMIT_STL_WARNING(STL4038, "The contents of <filesystem> are available only with
 #include <list>
 #include <locale>
 #include <memory>
-#include <string_view>
 #include <system_error>
 #include <utility>
 #include <vector>
@@ -39,29 +38,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 namespace filesystem {
-    // We would really love to use the proper way of building error_code by specializing
-    // is_error_code_enum and make_error_code for __std_win_error, but because:
-    //   1. We would like to keep the definition of __std_win_error in xfilesystem_abi.h
-    //   2. and xfilesystem_abi.h cannot include <system_error>
-    //   3. and specialization of is_error_code_enum and overload of make_error_code
-    //      need to be kept together with the enum (see limerick in N4810 [temp.expl.spec]/7)
-    // we resort to using this _Make_ec helper.
-    _NODISCARD inline error_code _Make_ec(__std_win_error _Errno) noexcept { // make an error_code
-        return {static_cast<int>(_Errno), _STD system_category()};
-    }
-
-    [[noreturn]] inline void _Throw_system_error_from_std_win_error(const __std_win_error _Errno) {
-        _THROW(system_error{_Make_ec(_Errno)});
-    }
-
-    _NODISCARD inline int _Check_convert_result(const __std_fs_convert_result _Result) {
-        if (_Result._Err != __std_win_error::_Success) {
-            _Throw_system_error_from_std_win_error(_Result._Err);
-        }
-
-        return _Result._Len;
-    }
-
     _NODISCARD inline wstring _Convert_narrow_to_wide(const __std_code_page _Code_page, const string_view _Input) {
         wstring _Output;
 
@@ -77,30 +53,6 @@ namespace filesystem {
 
             (void) _Check_convert_result(__std_fs_convert_narrow_to_wide(
                 _Code_page, _Input.data(), static_cast<int>(_Input.size()), _Output.data(), _Len));
-        }
-
-        return _Output;
-    }
-
-    template <class _Traits, class _Alloc>
-    _NODISCARD basic_string<typename _Traits::char_type, _Traits, _Alloc> _Convert_wide_to_narrow(
-        const __std_code_page _Code_page, const wstring_view _Input, const _Alloc& _Al) {
-        basic_string<typename _Traits::char_type, _Traits, _Alloc> _Output(_Al);
-
-        if (!_Input.empty()) {
-            if (_Input.size() > static_cast<size_t>(INT_MAX)) {
-                _Throw_system_error(errc::invalid_argument);
-            }
-
-            const int _Len = _Check_convert_result(__std_fs_convert_wide_to_narrow(
-                _Code_page, _Input.data(), static_cast<int>(_Input.size()), nullptr, 0));
-
-            _Output.resize(static_cast<size_t>(_Len));
-
-            const auto _Data_as_char = reinterpret_cast<char*>(_Output.data());
-
-            (void) _Check_convert_result(__std_fs_convert_wide_to_narrow(
-                _Code_page, _Input.data(), static_cast<int>(_Input.size()), _Data_as_char, _Len));
         }
 
         return _Output;
@@ -1607,7 +1559,7 @@ namespace filesystem {
         }
         template <class _Iter2 = _Base_iter, enable_if_t<_Unwrappable_v<_Iter2>, int> = 0>
         _NODISCARD _Path_iterator<_Unwrapped_t<_Iter2>> _Unwrapped() && noexcept {
-            _STL_INTERNAL_STATIC_ASSERT(_Is_nothrow_unwrappable_v<_Iter2>);
+            _STL_INTERNAL_STATIC_ASSERT(_Has_nothrow_unwrapped<_Iter2>);
             return {_Position._Unwrapped(), _STD move(_Element), _Mypath};
         }
 

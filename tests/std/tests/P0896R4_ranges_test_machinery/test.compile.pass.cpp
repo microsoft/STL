@@ -12,10 +12,10 @@ using namespace std;
 
 int main() {} // COMPILE-ONLY
 
-using test::CanCompare, test::CanDifference, test::IsWrapped, test::ProxyRef, test::to_bool;
+using test::CanCompare, test::CanDifference, test::WrappedState, test::ProxyRef, test::to_bool;
 
 // Validate test::iterator and test::sentinel
-template <class Category, class Element, CanDifference Diff, CanCompare Eq, ProxyRef Proxy, IsWrapped Wrapped>
+template <class Category, class Element, CanDifference Diff, CanCompare Eq, ProxyRef Proxy, WrappedState Wrapped>
 constexpr bool iter_test() {
     using test::iterator, test::sentinel;
 
@@ -42,13 +42,29 @@ constexpr bool iter_test() {
     STATIC_ASSERT(!to_bool(Eq) || sentinel_for<I, I>);
     STATIC_ASSERT(!to_bool(Eq) || !to_bool(Diff) || sized_sentinel_for<I, I>);
 
-    if constexpr (to_bool(Wrapped)) {
+    if constexpr (Wrapped == WrappedState::ignorant) {
+        STATIC_ASSERT(sentinel_for<S, iterator<Category, Element, Diff, Eq, Proxy, WrappedState::wrapped>>);
+        STATIC_ASSERT(!sentinel_for<S, iterator<Category, Element, Diff, Eq, Proxy, WrappedState::unwrapped>>);
+
+        STATIC_ASSERT(sentinel_for<sentinel<Element, WrappedState::wrapped>, I>);
+        STATIC_ASSERT(!sentinel_for<sentinel<Element, WrappedState::unwrapped>, I>);
+
+        STATIC_ASSERT(!_Unwrappable_v<I>);
+        STATIC_ASSERT(!_Unwrappable_v<S>);
+    } else if constexpr (Wrapped == WrappedState::wrapped) {
+        STATIC_ASSERT(sentinel_for<S, iterator<Category, Element, Diff, Eq, Proxy, WrappedState::ignorant>>);
+        STATIC_ASSERT(!sentinel_for<S, iterator<Category, Element, Diff, Eq, Proxy, WrappedState::unwrapped>>);
+
+        STATIC_ASSERT(sentinel_for<sentinel<Element, WrappedState::ignorant>, I>);
+        STATIC_ASSERT(!sentinel_for<sentinel<Element, WrappedState::unwrapped>, I>);
+
         if constexpr (derived_from<Category, contiguous_iterator_tag>) {
             STATIC_ASSERT(same_as<_Unwrapped_t<I>, Element*>);
         } else {
-            STATIC_ASSERT(same_as<_Unwrapped_t<I>, iterator<Category, Element, Diff, Eq, Proxy, IsWrapped::no>>);
+            STATIC_ASSERT(
+                same_as<_Unwrapped_t<I>, iterator<Category, Element, Diff, Eq, Proxy, WrappedState::unwrapped>>);
         }
-        STATIC_ASSERT(same_as<_Unwrapped_t<S>, sentinel<Element, IsWrapped::no>>);
+        STATIC_ASSERT(same_as<_Unwrapped_t<S>, sentinel<Element, WrappedState::unwrapped>>);
     }
 
     STATIC_ASSERT(convertible_to<I, typename I::Consterator>);
@@ -57,98 +73,134 @@ constexpr bool iter_test() {
     return true;
 }
 
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::no, IsWrapped::no>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::no, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::yes, IsWrapped::no>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::yes, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, IsWrapped::no>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, IsWrapped::no>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::no, IsWrapped::no>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::no, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::yes, IsWrapped::no>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::yes, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, IsWrapped::no>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, IsWrapped::no>());
 STATIC_ASSERT(
-    iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, IsWrapped::yes>());
-
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::no, IsWrapped::no>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::no, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::yes, IsWrapped::no>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::yes, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, IsWrapped::no>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, IsWrapped::no>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::no, IsWrapped::no>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::no, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::yes, IsWrapped::no>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::yes, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, IsWrapped::no>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, IsWrapped::no>());
-STATIC_ASSERT(iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, IsWrapped::yes>());
-
-STATIC_ASSERT(iter_test<forward_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, IsWrapped::no>());
-STATIC_ASSERT(iter_test<forward_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<forward_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, IsWrapped::no>());
+    iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::no, WrappedState::unwrapped>());
 STATIC_ASSERT(
-    iter_test<forward_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, IsWrapped::yes>());
-STATIC_ASSERT(iter_test<forward_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, IsWrapped::no>());
+    iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::no, WrappedState::wrapped>());
 STATIC_ASSERT(
-    iter_test<forward_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, IsWrapped::yes>());
+    iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::yes, WrappedState::unwrapped>());
 STATIC_ASSERT(
-    iter_test<forward_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, IsWrapped::no>());
+    iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::yes, WrappedState::wrapped>());
 STATIC_ASSERT(
-    iter_test<forward_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, IsWrapped::yes>());
+    iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, WrappedState::unwrapped>());
+STATIC_ASSERT(
+    iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, WrappedState::wrapped>());
+STATIC_ASSERT(
+    iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, WrappedState::unwrapped>());
+STATIC_ASSERT(
+    iter_test<output_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, WrappedState::wrapped>());
+STATIC_ASSERT(
+    iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::no, WrappedState::unwrapped>());
+STATIC_ASSERT(
+    iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::no, WrappedState::wrapped>());
+STATIC_ASSERT(
+    iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::yes, WrappedState::unwrapped>());
+STATIC_ASSERT(
+    iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::yes, WrappedState::wrapped>());
+STATIC_ASSERT(
+    iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, WrappedState::unwrapped>());
+STATIC_ASSERT(
+    iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, WrappedState::wrapped>());
+STATIC_ASSERT(
+    iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, WrappedState::unwrapped>());
+STATIC_ASSERT(
+    iter_test<output_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, WrappedState::wrapped>());
 
 STATIC_ASSERT(
-    iter_test<bidirectional_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, IsWrapped::no>());
+    iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::no, WrappedState::unwrapped>());
 STATIC_ASSERT(
-    iter_test<bidirectional_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, IsWrapped::yes>());
+    iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::no, WrappedState::wrapped>());
 STATIC_ASSERT(
-    iter_test<bidirectional_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, IsWrapped::no>());
+    iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::yes, WrappedState::unwrapped>());
 STATIC_ASSERT(
-    iter_test<bidirectional_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, IsWrapped::yes>());
+    iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::no, ProxyRef::yes, WrappedState::wrapped>());
 STATIC_ASSERT(
-    iter_test<bidirectional_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, IsWrapped::no>());
+    iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, WrappedState::unwrapped>());
 STATIC_ASSERT(
-    iter_test<bidirectional_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, IsWrapped::yes>());
+    iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, WrappedState::wrapped>());
 STATIC_ASSERT(
-    iter_test<bidirectional_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, IsWrapped::no>());
+    iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, WrappedState::unwrapped>());
 STATIC_ASSERT(
-    iter_test<bidirectional_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, IsWrapped::yes>());
+    iter_test<input_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, WrappedState::wrapped>());
+STATIC_ASSERT(
+    iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::no, WrappedState::unwrapped>());
+STATIC_ASSERT(
+    iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::no, WrappedState::wrapped>());
+STATIC_ASSERT(
+    iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::yes, WrappedState::unwrapped>());
+STATIC_ASSERT(
+    iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::no, ProxyRef::yes, WrappedState::wrapped>());
+STATIC_ASSERT(
+    iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, WrappedState::unwrapped>());
+STATIC_ASSERT(
+    iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, WrappedState::wrapped>());
+STATIC_ASSERT(
+    iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, WrappedState::unwrapped>());
+STATIC_ASSERT(
+    iter_test<input_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, WrappedState::wrapped>());
 
 STATIC_ASSERT(
-    iter_test<random_access_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, IsWrapped::no>());
+    iter_test<forward_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, WrappedState::unwrapped>());
 STATIC_ASSERT(
-    iter_test<random_access_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, IsWrapped::yes>());
+    iter_test<forward_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, WrappedState::wrapped>());
 STATIC_ASSERT(
-    iter_test<random_access_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, IsWrapped::no>());
+    iter_test<forward_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, WrappedState::unwrapped>());
 STATIC_ASSERT(
-    iter_test<random_access_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, IsWrapped::yes>());
+    iter_test<forward_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, WrappedState::wrapped>());
 STATIC_ASSERT(
-    iter_test<random_access_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, IsWrapped::no>());
+    iter_test<forward_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, WrappedState::unwrapped>());
 STATIC_ASSERT(
-    iter_test<random_access_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, IsWrapped::yes>());
+    iter_test<forward_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, WrappedState::wrapped>());
+STATIC_ASSERT(iter_test<forward_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes,
+    WrappedState::unwrapped>());
 STATIC_ASSERT(
-    iter_test<random_access_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, IsWrapped::no>());
+    iter_test<forward_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, WrappedState::wrapped>());
+
+STATIC_ASSERT(iter_test<bidirectional_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no,
+    WrappedState::unwrapped>());
+STATIC_ASSERT(iter_test<bidirectional_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no,
+    WrappedState::wrapped>());
+STATIC_ASSERT(iter_test<bidirectional_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes,
+    WrappedState::unwrapped>());
+STATIC_ASSERT(iter_test<bidirectional_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes,
+    WrappedState::wrapped>());
+STATIC_ASSERT(iter_test<bidirectional_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no,
+    WrappedState::unwrapped>());
+STATIC_ASSERT(iter_test<bidirectional_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no,
+    WrappedState::wrapped>());
+STATIC_ASSERT(iter_test<bidirectional_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes,
+    WrappedState::unwrapped>());
+STATIC_ASSERT(iter_test<bidirectional_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes,
+    WrappedState::wrapped>());
+
+STATIC_ASSERT(iter_test<random_access_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no,
+    WrappedState::unwrapped>());
+STATIC_ASSERT(iter_test<random_access_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no,
+    WrappedState::wrapped>());
+STATIC_ASSERT(iter_test<random_access_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes,
+    WrappedState::unwrapped>());
+STATIC_ASSERT(iter_test<random_access_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes,
+    WrappedState::wrapped>());
+STATIC_ASSERT(iter_test<random_access_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no,
+    WrappedState::unwrapped>());
+STATIC_ASSERT(iter_test<random_access_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no,
+    WrappedState::wrapped>());
+STATIC_ASSERT(iter_test<random_access_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes,
+    WrappedState::unwrapped>());
+STATIC_ASSERT(iter_test<random_access_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes,
+    WrappedState::wrapped>());
+
+STATIC_ASSERT(iter_test<contiguous_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no,
+    WrappedState::unwrapped>());
 STATIC_ASSERT(
-    iter_test<random_access_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::yes, IsWrapped::yes>());
+    iter_test<contiguous_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, WrappedState::wrapped>());
+STATIC_ASSERT(iter_test<contiguous_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no,
+    WrappedState::unwrapped>());
+STATIC_ASSERT(iter_test<contiguous_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no,
+    WrappedState::wrapped>());
 
 STATIC_ASSERT(
-    iter_test<contiguous_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, IsWrapped::no>());
-STATIC_ASSERT(
-    iter_test<contiguous_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::no, IsWrapped::yes>());
-STATIC_ASSERT(
-    iter_test<contiguous_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, IsWrapped::no>());
-STATIC_ASSERT(
-    iter_test<contiguous_iterator_tag, int, CanDifference::yes, CanCompare::yes, ProxyRef::no, IsWrapped::yes>());
-
-STATIC_ASSERT(same_as<_Unwrapped_t<test::sentinel<int, IsWrapped::yes>>, test::sentinel<int, IsWrapped::no>>);
+    same_as<_Unwrapped_t<test::sentinel<int, WrappedState::wrapped>>, test::sentinel<int, WrappedState::unwrapped>>);
 
 // Validate test::range
 template <class R>
@@ -165,7 +217,7 @@ constexpr bool range_test() {
     using R = test::range<Category, Element, IsSized, Diff, IsCommon, Eq, Proxy>;
     using I = ranges::iterator_t<R>;
     using S = ranges::sentinel_t<R>;
-    STATIC_ASSERT(same_as<I, test::iterator<Category, Element, Diff, Eq, Proxy, IsWrapped::yes>>);
+    STATIC_ASSERT(same_as<I, test::iterator<Category, Element, Diff, Eq, Proxy, WrappedState::wrapped>>);
 
     STATIC_ASSERT(!derived_from<Category, output_iterator_tag> || ranges::output_range<R, Element>);
     STATIC_ASSERT(!derived_from<Category, input_iterator_tag> || ranges::input_range<R>);
@@ -178,7 +230,7 @@ constexpr bool range_test() {
         STATIC_ASSERT(to_bool(Eq));
         STATIC_ASSERT(ranges::common_range<R>);
     } else {
-        STATIC_ASSERT(same_as<S, test::sentinel<Element, IsWrapped::yes>>);
+        STATIC_ASSERT(same_as<S, test::sentinel<Element, WrappedState::wrapped>>);
     }
 
     STATIC_ASSERT(!to_bool(Eq) || sentinel_for<I, I>);

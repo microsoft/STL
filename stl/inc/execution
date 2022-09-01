@@ -1189,7 +1189,7 @@ struct _Static_partitioned_for_each2 { // for_each task scheduled on the system 
 template <class _ExPo, class _FwdIt, class _Fn, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void for_each(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* terminates */ {
     // perform function for each element [_First, _Last) with the indicated execution policy
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -1235,7 +1235,7 @@ _FwdIt _For_each_n_ivdep(_FwdIt _First, _Diff _Count, _Fn _Func) {
 template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt for_each_n(_ExPo&&, _FwdIt _First, const _Diff _Count_raw, _Fn _Func) noexcept /* terminates */ {
     // perform function for each element [_First, _First + _Count)
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
@@ -2565,7 +2565,8 @@ struct _Static_partitioned_remove_if2 {
 };
 
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_NODISCARD _FwdIt remove_if(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
+_NODISCARD_REMOVE_ALG _FwdIt remove_if(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept
+/* terminates */ {
     // remove each satisfying _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -2592,7 +2593,7 @@ _NODISCARD _FwdIt remove_if(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pre
 }
 
 template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_NODISCARD _FwdIt remove(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept
+_NODISCARD_REMOVE_ALG _FwdIt remove(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept
 /* terminates */ {
     // remove each matching _Val
     return _STD remove_if(_STD forward<_ExPo>(_Exec), _First, _Last,

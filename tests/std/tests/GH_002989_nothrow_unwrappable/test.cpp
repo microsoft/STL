@@ -31,14 +31,14 @@ struct Predicate {
 
 template <class It, bool CopyUnwrapNothrow = true>
 void do_single_test() {
-    // !a || b is equivalent to a => b (a implies b)
-    // This is written this way to avoid `if constexpr` in C++14 mode.
-    STATIC_ASSERT(_Unwrappable_v<It> == _Is_nothrow_unwrappable_v<It>);
-    STATIC_ASSERT(_Unwrappable_v<It> == _Is_nothrow_unwrappable_v<It&&>);
+    STATIC_ASSERT(_Unwrappable_v<It> == _Has_nothrow_unwrapped<It>);
+    STATIC_ASSERT(_Unwrappable_v<It> == _Has_nothrow_unwrapped<It&&>);
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<It>())));
 
-    STATIC_ASSERT(!_Unwrappable_v<It> || _Is_nothrow_unwrappable_v<const It&> == CopyUnwrapNothrow);
-    STATIC_ASSERT(!_Unwrappable_v<It> || _Is_nothrow_unwrappable_v<const It&&> == CopyUnwrapNothrow);
+    // !a || b is equivalent to a => b (a implies b)
+    // This is written this way to avoid `if constexpr` in C++14 mode.
+    STATIC_ASSERT(!_Unwrappable_v<It> || _Has_nothrow_unwrapped<const It&> == CopyUnwrapNothrow);
+    STATIC_ASSERT(!_Unwrappable_v<It> || _Has_nothrow_unwrapped<const It&&> == CopyUnwrapNothrow);
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<const It&>())) == CopyUnwrapNothrow);
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<const It&&>())) == CopyUnwrapNothrow);
 }
@@ -49,7 +49,7 @@ void do_full_test() {
     do_single_test<reverse_iterator<It>, CopyUnwrapNothrow>();
     do_single_test<move_iterator<It>, CopyUnwrapNothrow>();
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
     using R = ranges::subrange<It, It>;
 
     // TRANSITION, GH-2997

@@ -66,7 +66,7 @@ constexpr void sloc_constructor_test() {
     const s x;
     assert(x.loc.line() == __LINE__ - 1);
 #ifdef _PREFAST_
-    assert(x.loc.column() == 14);
+    assert(x.loc.column() == 14 || x.loc.column() == 13); // TRANSITION, 17.4 Preview 3
 #else // _PREFAST_
     assert(x.loc.column() == 13);
 #endif // _PREFAST_
@@ -90,7 +90,7 @@ constexpr void sub_member_test() {
     const s2 s;
     assert(s.x.loc.line() == __LINE__ - 1);
 #ifdef _PREFAST_
-    assert(s.x.loc.column() == 15);
+    assert(s.x.loc.column() == 15 || s.x.loc.column() == 14); // TRANSITION, 17.4 Preview 3
 #else // _PREFAST_
     assert(s.x.loc.column() == 14);
 #endif // _PREFAST_

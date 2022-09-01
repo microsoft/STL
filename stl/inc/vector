@@ -721,7 +721,7 @@ public:
         _Construct_n(_Convert_size<size_type>(_Ilist.size()), _Ilist.begin(), _Ilist.end());
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr vector(from_range_t, _Rng&& _Range, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
@@ -740,7 +740,7 @@ public:
             _Proxy._Release();
         }
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _CONSTEXPR20 vector(const vector& _Right)
         : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
@@ -955,7 +955,7 @@ private:
         }
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <class _Iter>
     _CONSTEXPR20 void _Append_counted_range(_Iter _First, const size_type _Count) {
         // insert counted range _First + [0, _Count) at end
@@ -1012,10 +1012,10 @@ private:
             _Orphan_range(_Oldlast, _Oldlast);
         }
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 public:
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr void append_range(_Rng&& _Range) {
         if constexpr (_RANGES forward_range<_Rng> || _RANGES sized_range<_Rng>) {
@@ -1026,7 +1026,7 @@ public:
             _Append_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     template <class... _Valty>
     _CONSTEXPR20 iterator emplace(const_iterator _Where, _Valty&&... _Val) {
@@ -1316,7 +1316,7 @@ public:
         return _Make_iterator_offset(_Whereoff);
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr iterator insert_range(const_iterator _Where, _Rng&& _Range) {
         const pointer _Whereptr = _Where._Ptr;
@@ -1338,7 +1338,7 @@ public:
         }
         return _Make_iterator_offset(_Whereoff);
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _CONSTEXPR20 iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
         const pointer _Whereptr = _Where._Ptr;
@@ -1524,7 +1524,7 @@ public:
         }
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr void assign_range(_Rng&& _Range) {
         if constexpr (_RANGES sized_range<_Rng> || _RANGES forward_range<_Rng>) {
@@ -1535,7 +1535,7 @@ public:
             _Assign_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _CONSTEXPR20 void assign(const initializer_list<_Ty> _Ilist) {
         const auto _Count = _Convert_size<size_type>(_Ilist.size());
@@ -1922,7 +1922,7 @@ public:
         return _Mypair._Myval2._Mylast;
     }
 
-    _NODISCARD _CONSTEXPR20 bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {
         auto& _My_data = _Mypair._Myval2;
         return _My_data._Myfirst == _My_data._Mylast;
     }
@@ -2267,11 +2267,11 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
 vector(_Iter, _Iter, _Alloc = _Alloc()) -> vector<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 vector(from_range_t, _Rng&&, _Alloc = _Alloc()) -> vector<_RANGES range_value_t<_Rng>, _Alloc>;
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <class _Alloc>
 class vector<bool, _Alloc>;
@@ -2967,7 +2967,7 @@ public:
         insert(begin(), _First, _Last);
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<bool> _Rng>
     constexpr vector(from_range_t, _Rng&& _Range, const _Alloc& _Al = _Alloc()) : _Mybase(_Al) {
         if constexpr (_RANGES forward_range<_Rng> || _RANGES sized_range<_Rng>) {
@@ -2978,7 +2978,7 @@ public:
             _Assign_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _CONSTEXPR20 vector(vector&& _Right) noexcept(is_nothrow_move_constructible_v<_Mybase>) // strengthened
         : _Mybase(_STD move(_Right)) {
@@ -3224,7 +3224,7 @@ public:
         return _Ints_max * _VBITS;
     }
 
-    _NODISCARD _CONSTEXPR20 bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {
         return this->_Mysize == 0;
     }
 
@@ -3304,12 +3304,12 @@ public:
         insert(end(), _Val);
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<bool> _Rng>
     constexpr void append_range(_Rng&& _Range) {
         insert_range(end(), _STD forward<_Rng>(_Range));
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _CONSTEXPR20 void pop_back() noexcept /* strengthened */ {
         erase(end() - 1);
@@ -3321,7 +3321,7 @@ public:
         insert(begin(), _First, _Last);
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <class _Iter>
     constexpr void _Assign_counted_range(_Iter _First, const size_type _Count) {
         _STL_INTERNAL_CHECK(this->_Myvec.empty());
@@ -3379,7 +3379,7 @@ public:
             _Assign_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _CONSTEXPR20 void assign(_CRT_GUARDOVERFLOW size_type _Count, const bool& _Val) {
         clear();
@@ -3427,7 +3427,7 @@ public:
         return begin() + _Saved_offset;
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<bool> _Rng>
     constexpr iterator insert_range(const_iterator _Where, _Rng&& _Range) {
         const difference_type _Old_off = _Where - begin();
@@ -3452,7 +3452,7 @@ public:
 
         return begin() + _Old_off;
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _CONSTEXPR20 iterator erase(const_iterator _Where_arg) noexcept /* strengthened */ {
         iterator _Where      = _Make_iter(_Where_arg);

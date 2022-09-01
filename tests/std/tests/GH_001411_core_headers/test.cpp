@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _CORE_HEADERS_ONLY
+#define _ENFORCE_ONLY_CORE_HEADERS // Also test GH-311 "Make it easy to limit the STL to core features"
 
 #include <__msvc_all_public_headers.hpp>
 
