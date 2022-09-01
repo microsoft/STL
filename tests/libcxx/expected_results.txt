@@ -234,10 +234,8 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_literal_type.deprecated.fail.cp
 
 # *** MISSING STL FEATURES ***
 # P2321R2 zip
-# NOTE: We skip these rather than FAILing them because the __cpp_lib_ranges_zip feature test macro is defined
-# in the MSVC STL.
-std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp SKIPPED
-std/language.support/support.limits/support.limits.general/utility.version.pass.cpp SKIPPED
+std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/utility.version.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
