@@ -4475,12 +4475,10 @@ inline void _Calculate_loop_simplicity(_Node_base* _Nx, _Node_base* _Ne, _Node_r
         case _N_end_rep:
             if (_Outer_rep == static_cast<_Node_end_rep*>(_Nx)->_Begin_rep) {
                 // if the _Node_rep is still undetermined when we reach its end, it is simple
-#pragma warning(push)
-#pragma warning(disable : 6011) // Dereferencing NULL pointer
+                _Analysis_assume_(_Outer_rep);
                 if (_Outer_rep->_Simple_loop == -1) {
                     _Outer_rep->_Simple_loop = 1;
                 }
-#pragma warning(pop)
                 _Outer_rep = nullptr;
             }
             break;
