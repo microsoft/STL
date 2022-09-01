@@ -376,7 +376,24 @@ public:
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
 #if _HAS_CXX17
+#if _HAS_CXX20 && defined(__EDG__) // TRANSITION, VSO-1601168
+        if (_STD is_constant_evaluated()) {
+            for (size_t _Idx = 0; _Idx != _Count; ++_Idx) {
+                if (static_cast<unsigned char>(_First1[_Idx]) < static_cast<unsigned char>(_First2[_Idx])) {
+                    return -1;
+                }
+
+                if (static_cast<unsigned char>(_First2[_Idx]) < static_cast<unsigned char>(_First1[_Idx])) {
+                    return 1;
+                }
+            }
+            return 0;
+        } else {
+            return _CSTD memcmp(_First1, _First2, _Count);
+        }
+#else // ^^^ workaround for EDG / no workaround needed for MSVC and Clang vvv
         return __builtin_memcmp(_First1, _First2, _Count);
+#endif // ^^^ no workaround needed for MSVC and Clang ^^^
 #else // _HAS_CXX17
         return _CSTD memcmp(_First1, _First2, _Count);
 #endif // _HAS_CXX17
@@ -606,7 +623,7 @@ constexpr size_t _Traits_find(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits>
     // search [_Haystack, _Haystack + _Hay_size) for [_Needle, _Needle + _Needle_size), at/after _Start_at
     if (_Needle_size > _Hay_size || _Start_at > _Hay_size - _Needle_size) {
         // xpos cannot exist, report failure
-        // N4659 24.3.2.7.2 [string.find]/1 says:
+        // N4910 23.3.3.8 [string.view.find]/3 says:
         // 1. _Start_at <= xpos
         // 2. xpos + _Needle_size <= _Hay_size;
         // therefore:
@@ -1200,12 +1217,12 @@ template <class _Elem, class _Traits>
 class basic_string_view { // wrapper for any kind of contiguous character buffer
 public:
     static_assert(is_same_v<_Elem, typename _Traits::char_type>,
-        "Bad char_traits for basic_string_view; "
-        "N4659 24.4.2 [string.view.template]/1 \"the type traits::char_type shall name the same type as charT.\"");
+        "Bad char_traits for basic_string_view; N4910 23.3.3.1 [string.view.template.general]/1 "
+        "\"The program is ill-formed if traits::char_type is not the same type as charT.\"");
 
     static_assert(!is_array_v<_Elem> && is_trivial_v<_Elem> && is_standard_layout_v<_Elem>,
-        "The character type of basic_string_view must be a non-array trivial standard-layout type. See N4861 "
-        "[strings.general]/1.");
+        "The character type of basic_string_view must be a non-array trivial standard-layout type. See N4910 "
+        "23.1 [strings.general]/1.");
 
     using traits_type            = _Traits;
     using value_type             = _Elem;
@@ -1806,7 +1823,7 @@ struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_cat
     using type = typename _Traits::comparison_category;
 
     static_assert(_Is_any_of_v<type, partial_ordering, weak_ordering, strong_ordering>,
-        "N4878 [string.view.comparison]/4: Mandates: R denotes a comparison category type.");
+        "N4910 23.3.5 [string.view.comparison]/4: Mandates: R denotes a comparison category type.");
 };
 
 template <class _Traits>
@@ -2440,12 +2457,12 @@ private:
         _MISMATCHED_ALLOCATOR_MESSAGE("basic_string<T, Traits, Allocator>", "T"));
 
     static_assert(is_same_v<_Elem, typename _Traits::char_type>,
-        "N4659 24.3.2.1 [string.require]/3 requires that the supplied "
+        "N4910 23.4.3.2 [string.require]/3 requires that the supplied "
         "char_traits character type match the string's character type.");
 
     static_assert(!is_array_v<_Elem> && is_trivial_v<_Elem> && is_standard_layout_v<_Elem>,
-        "The character type of basic_string must be a non-array trivial standard-layout type. See N4861 "
-        "[strings.general]/1.");
+        "The character type of basic_string must be a non-array trivial standard-layout type. See N4910 "
+        "23.1 [strings.general]/1.");
 
 public:
     using traits_type    = _Traits;
@@ -2474,7 +2491,7 @@ private:
     //   _String_val::_Bx::_Ptr (type is pointer)
     //   _String_val::_Mysize   (type is size_type)
     //   _String_val::_Myres    (type is size_type)
-    // N4810 21.1 [strings.general]/1 says _Elem must be trivial standard-layout, so memcpy is safe.
+    // N4910 23.1 [strings.general]/1 says _Elem must be trivial standard-layout, so memcpy is safe.
     // We need to ask if pointer is safe to memcpy.
     // size_type must be an unsigned integral type so memcpy is safe.
     // We also need to disable memcpy if the user has supplied _Traits, since
@@ -2628,6 +2645,19 @@ public:
         _Construct<_Construct_strategy::_From_ptr>(
             _Right._Mypair._Myval2._Myptr() + _Roff, _Right._Mypair._Myval2._Clamp_suffix_size(_Roff, _Count));
     }
+
+#if _HAS_CXX23
+    constexpr basic_string(basic_string&& _Right, const size_type _Roff, const _Alloc& _Al = _Alloc())
+        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, <end>), potentially move
+        _Move_construct_from_substr(_Right, _Roff, npos, _Al);
+    }
+
+    constexpr basic_string(
+        basic_string&& _Right, const size_type _Roff, const size_type _Count, const _Alloc& _Al = _Alloc())
+        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, _Roff + _Count), potentially move
+        _Move_construct_from_substr(_Right, _Roff, _Count, _Al);
+    }
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 basic_string(_In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count)
         : _Mypair(_Zero_then_variadic_args_t{}) {
@@ -3164,6 +3194,28 @@ private:
         _My_data._Myres  = _Right_data._Myres;
         _Right._Tidy_init();
     }
+
+#if _HAS_CXX23
+    constexpr void _Move_construct_from_substr(
+        basic_string& _Right, const size_type _Roff, const size_type _Size_max, const _Alloc& _Al) {
+        auto& _Right_data = _Right._Mypair._Myval2;
+        _Right_data._Check_offset(_Roff);
+
+        const auto _Result_size = _Right_data._Clamp_suffix_size(_Roff, _Size_max);
+        const auto _Right_ptr   = _Right_data._Myptr();
+        if (_Allocators_equal(_Al, _Right._Getal()) && _Result_size >= _BUF_SIZE) {
+            if (_Roff != 0) {
+                _Traits::move(_Right_ptr, _Right_ptr + _Roff, _Result_size);
+            }
+            _Right._Eos(_Result_size);
+
+            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
+            _Take_contents(_Right);
+        } else {
+            _Construct<_Construct_strategy::_From_ptr>(_Right_ptr + _Roff, _Result_size);
+        }
+    }
+#endif // _HAS_CXX23
 
 public:
     _CONSTEXPR20 basic_string(initializer_list<_Elem> _Ilist, const _Alloc& _Al = allocator_type())
@@ -4675,10 +4727,23 @@ public:
     }
 #endif // _HAS_CXX17
 
-    _NODISCARD _CONSTEXPR20 basic_string substr(const size_type _Off = 0, const size_type _Count = npos) const {
-        // return [_Off, _Off + _Count) as new string
-        return basic_string{*this, _Off, _Count, get_allocator()};
+    _NODISCARD _CONSTEXPR20 basic_string substr(const size_type _Off = 0, const size_type _Count = npos)
+#if _HAS_CXX23
+        const&
+#else // _HAS_CXX23
+        const
+#endif // _HAS_CXX23
+    {
+        // return [_Off, _Off + _Count) as new string, default-constructing its allocator
+        return basic_string{*this, _Off, _Count};
     }
+
+#if _HAS_CXX23
+    _NODISCARD constexpr basic_string substr(const size_type _Off = 0, const size_type _Count = npos) && {
+        // return [_Off, _Off + _Count) as new string, potentially moving, default-constructing its allocator
+        return basic_string{_STD move(*this), _Off, _Count};
+    }
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 bool _Equal(const basic_string& _Right) const noexcept {
         // compare [0, size()) with _Right for equality
@@ -5082,10 +5147,10 @@ _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     basic_string<_Elem, _Traits, _Alloc>&& _Left, basic_string<_Elem, _Traits, _Alloc>&& _Right) {
 #if _ITERATOR_DEBUG_LEVEL == 2
     _STL_VERIFY(_STD addressof(_Left) != _STD addressof(_Right),
-        "You cannot concatenate the same moved string to itself. See "
-        "N4849 [res.on.arguments]/1.3: If a function argument binds to an rvalue reference "
-        "parameter, the implementation may assume that this parameter is a unique reference "
-        "to this argument");
+        "You cannot concatenate the same moved string to itself. See N4910 16.4.5.9 [res.on.arguments]/1.3: "
+        "If a function argument is bound to an rvalue reference parameter, the implementation may assume that "
+        "this parameter is a unique reference to this argument, except that the argument passed to "
+        "a move-assignment operator may be a reference to *this (16.4.6.15 [lib.types.movedfrom]).");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
     return {_String_constructor_concat_tag{}, _Left, _Right};
 }
