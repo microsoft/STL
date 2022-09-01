@@ -1564,16 +1564,16 @@ struct _Visit_strategy<4> {
 #undef _STL_CASE
 
 template <class... _Types>
-variant<_Types...>& _As_variant_(variant<_Types...>&);
+variant<_Types...>& _As_variant_impl(variant<_Types...>&);
 template <class... _Types>
-const variant<_Types...>& _As_variant_(const variant<_Types...>&);
+const variant<_Types...>& _As_variant_impl(const variant<_Types...>&);
 template <class... _Types>
-variant<_Types...>&& _As_variant_(variant<_Types...>&&);
+variant<_Types...>&& _As_variant_impl(variant<_Types...>&&);
 template <class... _Types>
-const variant<_Types...>&& _As_variant_(const variant<_Types...>&&);
+const variant<_Types...>&& _As_variant_impl(const variant<_Types...>&&);
 template <class _Ty>
 using _As_variant = // Deduce variant specialization from a derived type
-    decltype(_As_variant_(_STD declval<_Ty>()));
+    decltype(_As_variant_impl(_STD declval<_Ty>()));
 
 template <size_t _Size, class _Ret, class _ListOfIndexVectors, class _Callable, class... _Variants>
 constexpr _Ret _Visit_impl(_Callable&& _Obj, _Variants&&... _Args) {
