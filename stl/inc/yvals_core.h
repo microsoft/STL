@@ -603,9 +603,10 @@
                    "the temporary 'std::future' is destroyed, waiting for an async result or evaluating "          \
                    "a deferred result, thus defeating the purpose of 'std::async'.")
 
-#define _NODISCARD_GET_FUTURE                                                                              \
-    _NODISCARD_MSG("Getting the future more than once or not satisfying the obtained future will throw a " \
-                   "future_error exception, so it is incorrect to call 'get_future' and discard the return value.")
+#define _NODISCARD_GET_FUTURE                                                                                         \
+    _NODISCARD_MSG("It is likely to be incorrect to call 'get_future' and discard the return value, as it will miss " \
+                   "the only chance yo get the shared state. (Getting the future more than once will throw a "        \
+                   "future_error exception).")
 
 #pragma push_macro("msvc")
 #pragma push_macro("known_semantics")
