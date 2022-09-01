@@ -147,20 +147,29 @@ struct test_vector {
     }
 };
 
-int main() {
-#ifndef _PREFAST_ // TRANSITION, GH-1030
+
+// These tests take up a lot of memory,
+// so we split them up into multiple functions to make sure the compiler doesn't run out of heap.
+void test1() {
     STATIC_ASSERT((test_bidi_write<instantiator, const nontrivial_int, nontrivial_int>(), true));
-#endif // TRANSITION, GH-1030
     test_bidi_write<instantiator, const nontrivial_int, nontrivial_int>();
 
     STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<1>, bytes<1>>(), true));
     STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<2>, bytes<2>>(), true));
+    test_contiguous_write<test_vector, const bytes<1>, bytes<1>>();
+    test_contiguous_write<test_vector, const bytes<2>, bytes<2>>();
+}
+
+void test2() {
     STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<4>, bytes<4>>(), true));
     STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<8>, bytes<8>>(), true));
     STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<3>, bytes<3>>(), true));
-    test_contiguous_write<test_vector, const bytes<1>, bytes<1>>();
-    test_contiguous_write<test_vector, const bytes<2>, bytes<2>>();
     test_contiguous_write<test_vector, const bytes<4>, bytes<4>>();
     test_contiguous_write<test_vector, const bytes<8>, bytes<8>>();
     test_contiguous_write<test_vector, const bytes<3>, bytes<3>>();
+}
+
+int main() {
+    test1();
+    test2();
 }

@@ -9,6 +9,11 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#ifdef _ENFORCE_ONLY_CORE_HEADERS
+_EMIT_STL_ERROR(
+    STL1005, "Tried to include a non-core C++ Standard Library header file with _ENFORCE_ONLY_CORE_HEADERS defined.");
+#endif // _ENFORCE_ONLY_CORE_HEADERS
+
 #include <crtdbg.h>
 #include <crtdefs.h>
 
@@ -453,6 +458,7 @@ private:
 #define _RELIABILITY_CONTRACT
 #endif // _M_CEE
 
+#ifdef _CRTBLD
 class _CRTIMP2_PURE_IMPORT _Init_locks { // initialize mutexes
 public:
 #ifdef _M_CEE_PURE
@@ -473,6 +479,7 @@ private:
     static void __cdecl _Init_locks_ctor(_Init_locks*) noexcept;
     static void __cdecl _Init_locks_dtor(_Init_locks*) noexcept;
 };
+#endif // _CRTBLD
 
 #if _HAS_EXCEPTIONS
 #define _TRY_BEGIN try {

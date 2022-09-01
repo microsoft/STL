@@ -55,6 +55,30 @@ language.support\support.limits\support.limits.general\optional.version.pass.cpp
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 containers\sequences\array\array.cons\implicit_copy.pass.cpp
 
+# string_view and array iterators are not portably pointers (https://reviews.llvm.org/D117368)
+iterators\iterator.primitives\iterator.traits\cxx20_iterator_traits.compile.pass.cpp
+iterators\iterator.requirements\iterator.cust\iterator.cust.move\iter_move.pass.cpp
+strings\string.view\string.view.cons\from_iterator_sentinel.pass.cpp
+strings\string.view\string.view.deduct\iterator_sentinel.pass.cpp
+utilities\format\format.formatter\format.parse.ctx\advance_to.pass.cpp
+utilities\format\format.formatter\format.parse.ctx\begin.pass.cpp
+utilities\format\format.formatter\format.parse.ctx\ctor.pass.cpp
+utilities\format\format.formatter\format.parse.ctx\end.pass.cpp
+
+# libc++ doesn't yet implement P2499R0
+strings\string.view\string.view.cons\from_range.pass.cpp
+strings\string.view\string.view.deduct\range.pass.cpp
+
+# libc++ doesn't correctly constrain the iterator_traits specialization for common_iterator (https://reviews.llvm.org/D117449)
+iterators\predef.iterators\iterators.common\iterator_traits.compile.pass.cpp
+
+# libc++ hasn't updated {move,reverse}_iterator for P0896R4
+iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op=\move_iterator.pass.cpp
+iterators\predef.iterators\move.iterators\move.iterator\iterator_concept_conformance.compile.pass.cpp
+iterators\predef.iterators\reverse.iterators\iterator_concept_conformance.compile.pass.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.cmp\three-way.pass.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.cons\assign.pass.cpp
+
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 utilities\format\format.functions\vformat_to.locale.pass.cpp
 utilities\format\format.functions\vformat_to.pass.cpp
@@ -639,7 +663,6 @@ re\re.alg\re.alg.search\ecma.pass.cpp
 re\re.alg\re.alg.search\extended.pass.cpp
 re\re.alg\re.alg.search\no_update_pos.pass.cpp
 re\re.const\re.synopt\syntax_option_type.pass.cpp
-re\re.grammar\excessive_brace_count.pass.cpp
 re\re.regex\re.regex.construct\bad_backref.pass.cpp
 re\re.regex\re.regex.construct\bad_escape.pass.cpp
 re\re.regex\re.regex.construct\bad_range.pass.cpp

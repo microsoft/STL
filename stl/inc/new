@@ -28,7 +28,7 @@ inline constexpr destroying_delete_t destroying_delete{};
 
 #if _HAS_CXX17
 template <class _Ty>
-_NODISCARD constexpr _Ty* launder(_Ty* _Ptr) noexcept {
+_NODISCARD_LAUNDER constexpr _Ty* launder(_Ty* _Ptr) noexcept {
     static_assert(!is_function_v<_Ty> && !is_void_v<_Ty>,
         "N4727 21.6.4 [ptr.launder]/3: The program is ill-formed if T is a function type or cv void.");
     return __builtin_launder(_Ptr);

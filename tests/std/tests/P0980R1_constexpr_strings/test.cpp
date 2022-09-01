@@ -165,7 +165,7 @@ struct string_view_convertible {
     }
 };
 
-// TRANSITION, EDG concepts support
+// TRANSITION, GH-395 (equalRanges should be replaced by direct calls to ranges::equal)
 template <class Range1, class Range2>
 constexpr bool equalRanges(const Range1& range1, const Range2& range2) noexcept {
 #ifdef __cpp_lib_concepts

@@ -111,6 +111,28 @@ public:
         this->insert(_First, _Last);
     }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<value_type> _Rng>
+    set(from_range_t, _Rng&& _Range) : _Mybase(key_compare()) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    set(from_range_t, _Rng&& _Range, const key_compare& _Pred) : _Mybase(_Pred) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    set(from_range_t, _Rng&& _Range, const key_compare& _Pred, const allocator_type& _Al) : _Mybase(_Pred, _Al) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    set(from_range_t, _Rng&& _Range, const allocator_type& _Al) : _Mybase(key_compare(), _Al) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     set& operator=(const set& _Right) {
         _Mybase::operator=(_Right);
         return *this;
@@ -170,6 +192,16 @@ set(_Iter, _Iter, _Alloc) -> set<_Iter_value_t<_Iter>, less<_Iter_value_t<_Iter>
 
 template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 set(initializer_list<_Kty>, _Alloc) -> set<_Kty, less<_Kty>, _Alloc>;
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>>,
+    class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
+    enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+set(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc()) -> set<_RANGES range_value_t<_Rng>, _Pr, _Alloc>;
+
+template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+set(from_range_t, _Rng&&, _Alloc) -> set<_RANGES range_value_t<_Rng>, less<_RANGES range_value_t<_Rng>>, _Alloc>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
 template <class _Kty, class _Pr, class _Alloc>
@@ -287,6 +319,28 @@ public:
         this->insert(_First, _Last);
     }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<value_type> _Rng>
+    multiset(from_range_t, _Rng&& _Range) : _Mybase(key_compare()) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    multiset(from_range_t, _Rng&& _Range, const key_compare& _Pred) : _Mybase(_Pred) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    multiset(from_range_t, _Rng&& _Range, const key_compare& _Pred, const allocator_type& _Al) : _Mybase(_Pred, _Al) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    multiset(from_range_t, _Rng&& _Range, const allocator_type& _Al) : _Mybase(key_compare(), _Al) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     multiset& operator=(const multiset& _Right) {
         _Mybase::operator=(_Right);
         return *this;
@@ -352,6 +406,17 @@ multiset(_Iter, _Iter, _Alloc) -> multiset<_Iter_value_t<_Iter>, less<_Iter_valu
 
 template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 multiset(initializer_list<_Kty>, _Alloc) -> multiset<_Kty, less<_Kty>, _Alloc>;
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>>,
+    class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
+    enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+multiset(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc()) -> multiset<_RANGES range_value_t<_Rng>, _Pr, _Alloc>;
+
+template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+multiset(from_range_t, _Rng&&, _Alloc)
+    -> multiset<_RANGES range_value_t<_Rng>, less<_RANGES range_value_t<_Rng>>, _Alloc>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
 template <class _Kty, class _Pr, class _Alloc>

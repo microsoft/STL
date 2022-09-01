@@ -12,6 +12,10 @@
 #include <deque>
 #include <vector>
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#include <ranges>
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -42,6 +46,11 @@ public:
     template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     queue(_InIt _First, _InIt _Last) noexcept(is_nothrow_constructible_v<_Container, _InIt, _InIt>) // strengthened
         : c(_STD move(_First), _STD move(_Last)) {}
+
+#ifdef __cpp_lib_concepts
+    template <_Container_compatible_range<_Ty> _Rng>
+    queue(from_range_t, _Rng&& _Range) : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range))) {}
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
@@ -70,9 +79,15 @@ public:
     queue(_InIt _First, _InIt _Last, const _Alloc& _Al) noexcept(
         is_nothrow_constructible_v<_Container, _InIt, _InIt, const _Alloc&>) // strengthened
         : c(_STD move(_First), _STD move(_Last), _Al) {}
+
+#ifdef __cpp_lib_concepts
+    template <_Container_compatible_range<_Ty> _Rng, class _Alloc>
+    queue(from_range_t, _Rng&& _Range, const _Alloc& _Al)
+        : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range), _Al)) {}
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
-    _NODISCARD bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
+    _NODISCARD_EMPTY_ADAPTOR_MEMBER bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
         return c.empty();
     }
 
@@ -103,6 +118,17 @@ public:
     void push(value_type&& _Val) {
         c.push_back(_STD move(_Val));
     }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    void push_range(_Rng&& _Range) {
+        if constexpr (requires { c.append_range(_Range); }) {
+            c.append_range(_Range);
+        } else {
+            _RANGES copy(_Range, back_insert_iterator{c});
+        }
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     template <class... _Valty>
     decltype(auto) emplace(_Valty&&... _Val) {
@@ -142,6 +168,13 @@ queue(_Container, _Alloc) -> queue<typename _Container::value_type, _Container>;
 template <class _InIt, class _Alloc = allocator<_Iter_value_t<_InIt>>,
     enable_if_t<conjunction_v<_Is_iterator<_InIt>, _Is_allocator<_Alloc>>, int> = 0>
 queue(_InIt, _InIt, _Alloc = _Alloc()) -> queue<_Iter_value_t<_InIt>, deque<_Iter_value_t<_InIt>, _Alloc>>;
+
+#ifdef __cpp_lib_concepts
+template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
+    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+queue(from_range_t, _Rng&&, _Alloc = _Alloc())
+    -> queue<_RANGES range_value_t<_Rng>, deque<_RANGES range_value_t<_Rng>, _Alloc>>;
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
 template <class _Ty, class _Container>
@@ -238,6 +271,14 @@ public:
         _STD make_heap(c.begin(), c.end(), comp);
     }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    priority_queue(from_range_t, _Rng&& _Range, const _Pr& _Pred = _Pr())
+        : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range))), comp(_Pred) {
+        _STD make_heap(c.begin(), c.end(), comp);
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
     explicit priority_queue(const _Alloc& _Al) noexcept(is_nothrow_constructible_v<_Container, const _Alloc&>&&
             is_nothrow_default_constructible_v<value_compare>) // strengthened
@@ -296,7 +337,23 @@ public:
         _STD make_heap(c.begin(), c.end(), comp);
     }
 
-    _NODISCARD bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng, class _Alloc,
+        enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
+    priority_queue(from_range_t, _Rng&& _Range, const _Pr& _Pred, const _Alloc& _Al)
+        : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range), _Al)), comp(_Pred) {
+        _STD make_heap(c.begin(), c.end(), comp);
+    }
+
+    template <_Container_compatible_range<_Ty> _Rng, class _Alloc,
+        enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
+    priority_queue(from_range_t, _Rng&& _Range, const _Alloc& _Al)
+        : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range), _Al)), comp() {
+        _STD make_heap(c.begin(), c.end(), comp);
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+    _NODISCARD_EMPTY_ADAPTOR_MEMBER bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
         return c.empty();
     }
 
@@ -317,6 +374,19 @@ public:
         c.push_back(_STD move(_Val));
         _STD push_heap(c.begin(), c.end(), comp);
     }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    void push_range(_Rng&& _Range) { // per LWG-3723
+        if constexpr (requires { c.append_range(_Range); }) {
+            c.append_range(_Range);
+        } else {
+            _RANGES copy(_Range, back_insert_iterator{c});
+        }
+
+        _STD make_heap(c.begin(), c.end(), comp);
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     template <class... _Valty>
     void emplace(_Valty&&... _Val) {
@@ -369,6 +439,22 @@ template <class _Iter, class _Compare, class _Container, class _Alloc,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, uses_allocator<_Container, _Alloc>>, int> = 0>
 priority_queue(_Iter, _Iter, _Compare, _Container, _Alloc)
     -> priority_queue<typename _Container::value_type, _Container, _Compare>;
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>>,
+    enable_if_t<!_Is_allocator<_Pr>::value, int> = 0>
+priority_queue(from_range_t, _Rng&&, _Pr = _Pr())
+    -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>>, _Pr>;
+
+template <_RANGES input_range _Rng, class _Pr, class _Alloc,
+    enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+priority_queue(from_range_t, _Rng&&, _Pr, _Alloc)
+    -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>, _Alloc>, _Pr>;
+
+template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+priority_queue(from_range_t, _Rng&&, _Alloc)
+    -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>, _Alloc>>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
 template <class _Ty, class _Container, class _Pr,

@@ -7660,6 +7660,28 @@ namespace msvc {
                 using R = immobile_data;
                 assert(std::visit<R>(std::identity{}, std::variant<int, short>{13}).x == 13);
                 assert(std::visit<R>(std::identity{}, std::variant<int, short>{short{42}}).x == 42);
+
+                // Verify that conversions to an object that can't be copied/moved are correctly handled
+                struct convertible_to_immobile_one {
+                    operator immobile_data() const {
+                        return immobile_data{1729};
+                    }
+                };
+
+                struct convertible_to_immobile_other {
+                    operator immobile_data() const {
+                        return immobile_data{1138};
+                    }
+                };
+
+                using VarTestConv = std::variant<convertible_to_immobile_one, convertible_to_immobile_other>;
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10111923 and DevCom-10112408
+                assert(std::visit<R>(std::identity{}, VarTestConv{convertible_to_immobile_one{}}).x == 1729);
+                assert(std::visit<R>(std::identity{}, VarTestConv{convertible_to_immobile_other{}}).x == 1138);
+#endif // TRANSITION, DevCom-10111923 and DevCom-10112408
+                auto immobile_converter = [](auto src) -> immobile_data { return src; };
+                assert(std::visit<R>(immobile_converter, VarTestConv{convertible_to_immobile_one{}}).x == 1729);
+                assert(std::visit<R>(immobile_converter, VarTestConv{convertible_to_immobile_other{}}).x == 1138);
             }
             {
                 // Verify that a returned object is not copied/moved/modified
