@@ -39,7 +39,7 @@ using _Convertible_from_all =
     bool_constant<conjunction_v<_Invoke_convertible<_From, _To>...>>; // variadic _Invoke_convertible
 
 template <class...>
-struct _Meta_list {}; // a sequence of types
+struct _Meta_list; // a sequence of types (not defined)
 struct _Meta_nil {};
 
 template <class _List>
