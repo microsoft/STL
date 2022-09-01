@@ -630,12 +630,12 @@ struct _Variant_raw_visit1<-1> { // Fallback case for variants too large for any
     }
 };
 
-#define _STL_CASE(n)                                                                                         \
-    case (n) + 1:                                                                                            \
-        if constexpr ((n) < _Size) {                                                                         \
-            return static_cast<_Fn&&>(_Func)(                                                                \
-                _Variant_tagged_ref_t<_Storage, (n)>{_Variant_raw_get<(n)>(static_cast<_Storage&&>(_Obj))}); \
-        }                                                                                                    \
+#define _STL_CASE(n)                                                                                              \
+    case (n) + 1:                                                                                                 \
+        if constexpr ((n) < _Size) {                                                                              \
+            return static_cast<_Fn&&>(_Func)(                                                                     \
+                _Variant_tagged_ref_t<_Storage, (n)>{_STD _Variant_raw_get<(n)>(static_cast<_Storage&&>(_Obj))}); \
+        }                                                                                                         \
         _STL_UNREACHABLE
 
 #define _STL_VISIT_STAMP(stamper, n)                                                                        \
@@ -1425,12 +1425,12 @@ _NODISCARD constexpr size_t _Variant_visit_index1(
     size_t _Acc, const _FirstTy& _First, const _RestTys&... _Rest) noexcept {
     // calculate a canonical index from the biased indices of the variants _First and _Rest...
     _Acc += (_First.index() + 1) * _Variant_total_states<_RestTys...>;
-    return _Variant_visit_index1(_Acc, _Rest...);
+    return _STD _Variant_visit_index1(_Acc, _Rest...);
 }
 
 template <class _Callable, class... _Types>
 using _Variant_visit_result_t =
-    decltype(_STD invoke(_STD declval<_Callable>(), _Variant_raw_get<0>(_STD declval<_Types>()._Storage())...));
+    decltype(_STD invoke(_STD declval<_Callable>(), _STD _Variant_raw_get<0>(_STD declval<_Types>()._Storage())...));
 
 template <class>
 struct _Variant_dispatcher;
@@ -1445,13 +1445,13 @@ struct _Variant_dispatcher<index_sequence<_Is...>> {
         }
 #if _HAS_CXX20
         else if constexpr (is_void_v<_Ret>) {
-            static_cast<void>(_STD invoke(
-                static_cast<_Callable&&>(_Obj), _Variant_raw_get<_Is - 1>(static_cast<_Types&&>(_Args)._Storage())...));
+            static_cast<void>(_STD invoke(static_cast<_Callable&&>(_Obj),
+                _STD _Variant_raw_get<_Is - 1>(static_cast<_Types&&>(_Args)._Storage())...));
         }
 #endif // _HAS_CXX20
         else {
-            return _STD invoke(
-                static_cast<_Callable&&>(_Obj), _Variant_raw_get<_Is - 1>(static_cast<_Types&&>(_Args)._Storage())...);
+            return _STD invoke(static_cast<_Callable&&>(_Obj),
+                _STD _Variant_raw_get<_Is - 1>(static_cast<_Types&&>(_Args)._Storage())...);
         }
     }
 };
@@ -1474,7 +1474,7 @@ template <class _Callable, size_t... _Idxs, class... _Variants>
 struct _Variant_single_visit_result<_Callable, index_sequence<_Idxs...>, _Variants...> {
     // result type/category from invoking _Callable with the elements of _Variants... at (_Idxs - 1)...
     using type = decltype(_STD invoke(_STD declval<_Callable>(),
-        _Variant_raw_get<_Idxs == 0 ? 0 : _Idxs - 1>(_STD declval<_Variants>()._Storage())...));
+        _STD _Variant_raw_get<_Idxs == 0 ? 0 : _Idxs - 1>(_STD declval<_Variants>()._Storage())...));
 };
 
 template <int _Strategy>
@@ -1573,7 +1573,7 @@ template <class... _Types>
 const variant<_Types...>&& _As_variant_impl(const variant<_Types...>&&);
 template <class _Ty>
 using _As_variant = // Deduce variant specialization from a derived type
-    decltype(_As_variant_impl(_STD declval<_Ty>()));
+    decltype(_STD _As_variant_impl(_STD declval<_Ty>()));
 
 template <size_t _Size, class _Ret, class _ListOfIndexVectors, class _Callable, class... _Variants>
 constexpr _Ret _Visit_impl(_Callable&& _Obj, _Variants&&... _Args) {
@@ -1584,7 +1584,7 @@ constexpr _Ret _Visit_impl(_Callable&& _Obj, _Variants&&... _Args) {
                             : _Size <= 256 ? 4
                                            : -1;
     return _Visit_strategy<_Strategy>::template _Visit2<_Ret, _ListOfIndexVectors>(
-        _Variant_visit_index1(0, static_cast<_As_variant<_Variants>&>(_Args)...), static_cast<_Callable&&>(_Obj),
+        _STD _Variant_visit_index1(0, static_cast<_As_variant<_Variants>&>(_Args)...), static_cast<_Callable&&>(_Obj),
         static_cast<_As_variant<_Variants>&&>(_Args)...);
 }
 
@@ -1628,7 +1628,7 @@ constexpr _Variant_visit_result_t<_Callable, _As_variant<_Variants>...> visit(_C
         "visit() requires the result of all potential invocations to have the same type and value category "
         "(N4835 [variant.visit]/2).");
 
-    return _Visit_impl<_Size, _Ret, _ListOfIndexVectors>(
+    return _STD _Visit_impl<_Size, _Ret, _ListOfIndexVectors>(
         static_cast<_Callable&&>(_Obj), static_cast<_Variants&&>(_Args)...);
 }
 
@@ -1673,7 +1673,7 @@ constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
             "(N4835 [variant.visit]/2).");
     }
 
-    return _Visit_impl<_Size, _Ret, _ListOfIndexVectors>(
+    return _STD _Visit_impl<_Size, _Ret, _ListOfIndexVectors>(
         static_cast<_Callable&&>(_Obj), static_cast<_Variants&&>(_Args)...);
 }
 #endif // _HAS_CXX20
