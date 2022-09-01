@@ -779,9 +779,9 @@ constexpr bool instantiation_test_for_category() {
 template <template <class, test::Sized, test::Common> class InstantiatorType>
 constexpr bool instantiation_test() {
     return (instantiation_test_for_category<std::input_iterator_tag, InstantiatorType>()
-           && instantiation_test_for_category<std::bidirectional_iterator_tag, InstantiatorType>()
-           && instantiation_test_for_category<std::forward_iterator_tag, InstantiatorType>()
-           && instantiation_test_for_category<std::random_access_iterator_tag, InstantiatorType>());
+            && instantiation_test_for_category<std::bidirectional_iterator_tag, InstantiatorType>()
+            && instantiation_test_for_category<std::forward_iterator_tag, InstantiatorType>()
+            && instantiation_test_for_category<std::random_access_iterator_tag, InstantiatorType>());
 }
 
 int main() {
