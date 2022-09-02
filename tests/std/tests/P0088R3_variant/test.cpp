@@ -7048,6 +7048,30 @@ namespace msvc {
 #endif // _HAS_CXX20
     } // namespace visit_R
 
+    namespace visit_pointer_to_member {
+        struct base {
+            int x;
+
+            int f() const {
+                return x;
+            }
+        };
+        struct derived : base {
+            int y;
+        };
+
+        void run_test() {
+            {
+                using V = std::variant<base, derived>;
+                assert(std::visit(&base::x, V{base{13}}) == 13);
+                assert(std::visit(&base::x, V{derived{{42}, 29}}) == 42);
+
+                assert(std::visit(&base::f, V{base{13}}) == 13);
+                assert(std::visit(&base::f, V{derived{{42}, 29}}) == 42);
+            }
+        }
+    } // namespace visit_pointer_to_member
+
     template <class, class = void>
     inline constexpr bool has_type = false;
     template <class T>
@@ -7198,6 +7222,7 @@ int main() {
     msvc::derived_variant::run_test();
     msvc::visit::run_test();
     msvc::visit_R::run_test();
+    msvc::visit_pointer_to_member::run_test();
 
     msvc::vso468746::run_test();
     msvc::vso508126::run_test();

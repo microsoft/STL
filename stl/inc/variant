@@ -31,7 +31,6 @@ _STD_BEGIN
 
 template <class...>
 struct _Meta_list; // a sequence of types (not defined)
-struct _Meta_nil {};
 
 template <class _List>
 struct _Meta_front_;
@@ -1467,16 +1466,6 @@ struct _Variant_dispatch_table<_Ret, _Meta_list<_Ordinals...>, _Callable, _Meta_
         &_Variant_dispatcher<_Ordinals>::template _Dispatch2<_Ret, _Callable, _Variants...>...};
 };
 
-template <class _Callable, class _IndexSequence, class... _Variants>
-struct _Variant_single_visit_result; // undefined
-
-template <class _Callable, size_t... _Idxs, class... _Variants>
-struct _Variant_single_visit_result<_Callable, index_sequence<_Idxs...>, _Variants...> {
-    // result type/category from invoking _Callable with the elements of _Variants... at (_Idxs - 1)...
-    using type = decltype(_STD invoke(_STD declval<_Callable>(),
-        _STD _Variant_raw_get<_Idxs == 0 ? 0 : _Idxs - 1>(_STD declval<_Variants>()._Storage())...));
-};
-
 template <int _Strategy>
 struct _Visit_strategy;
 
@@ -1593,7 +1582,7 @@ inline constexpr bool _Variant_all_visit_results_same = false;
 
 template <class _Expected, class _Callable, class... _Args>
 inline constexpr bool _Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args...>> =
-    is_same_v<decltype(_STD declval<_Callable>()(_STD declval<_Args>()...)), _Expected>;
+    is_same_v<decltype(_STD invoke(_STD declval<_Callable>(), _STD declval<_Args>()...)), _Expected>;
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
 inline constexpr bool
@@ -1638,7 +1627,7 @@ inline constexpr bool _Variant_all_visit_results_convertible = false;
 
 template <class _Expected, class _Callable, class... _Args>
 inline constexpr bool _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>> =
-    _Invoke_convertible<decltype(_STD declval<_Callable>()(_STD declval<_Args>()...)), _Expected>::value;
+    _Invoke_convertible<decltype(_STD invoke(_STD declval<_Callable>(), _STD declval<_Args>()...)), _Expected>::value;
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
 inline constexpr bool
