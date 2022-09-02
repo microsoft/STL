@@ -398,7 +398,7 @@ $PoolName = $ResourceGroupName + '-Pool'
 $PoolProperties = @{
   'organization' = 'https://dev.azure.com/vclibs'
   'projects' = @('STL')
-  'sku' = @{ 'name' = $VMSize; 'tier' = 'StandardSSD'; }
+  'sku' = @{ 'name' = $VMSize; 'tier' = 'StandardSSD'; 'enableSpot' = $true; }
   'images' = @(@{ 'imageName' = $ImageName; 'poolBufferPercentage' = '100'; })
   'maxPoolSize' = 64
   'agentProfile' = @{ 'type' = 'Stateless'; }
