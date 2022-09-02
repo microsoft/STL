@@ -447,4 +447,5 @@ Remove-AzNetworkSecurityGroup `
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
 
+Write-Host "Elapsed time: $(((Get-Date) - $CurrentDate).ToString('hh\:mm\:ss'))"
 Write-Host "Finished creating pool: $PoolName"
