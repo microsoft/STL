@@ -7061,14 +7061,12 @@ namespace msvc {
         };
 
         void run_test() {
-            {
-                using V = std::variant<base, derived>;
-                assert(std::visit(&base::x, V{base{13}}) == 13);
-                assert(std::visit(&base::x, V{derived{{42}, 29}}) == 42);
+            using V = std::variant<base, derived>;
+            assert(std::visit(&base::x, V{base{13}}) == 13);
+            assert(std::visit(&base::x, V{derived{{42}, 29}}) == 42);
 
-                assert(std::visit(&base::f, V{base{13}}) == 13);
-                assert(std::visit(&base::f, V{derived{{42}, 29}}) == 42);
-            }
+            assert(std::visit(&base::f, V{base{13}}) == 13);
+            assert(std::visit(&base::f, V{derived{{42}, 29}}) == 42);
         }
     } // namespace visit_pointer_to_member
 
