@@ -7122,6 +7122,25 @@ namespace msvc {
             Overload(42);
         }
     } // namespace DevCom1031281
+
+    namespace gh2770 {
+        // Previous metaprogramming to validate the type requirements for std::visit required typelists too long for
+        // Clang.
+        struct S {
+            template <class T0, class T1, class T2, class T3, class T4>
+            int operator()(T0, T1, T2, T3, T4) const {
+                return 1729;
+            }
+        };
+
+        void run_test() {
+            using V = std::variant<char, int, long, long long>;
+            assert(std::visit(S{}, V{'a'}, V{'b'}, V{10}, V{20L}, V{30LL}) == 1729);
+#if _HAS_CXX20
+            assert(std::visit<int>(S{}, V{'a'}, V{'b'}, V{10}, V{20L}, V{30LL}) == 1729);
+#endif // _HAS_CXX20
+        }
+    } // namespace gh2770
 } // namespace msvc
 
 int main() {
@@ -7184,4 +7203,5 @@ int main() {
     msvc::vso508126::run_test();
     msvc::vso492097::run_test();
     msvc::DevCom1031281::run_test();
+    msvc::gh2770::run_test();
 }
