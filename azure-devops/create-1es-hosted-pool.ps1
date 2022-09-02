@@ -24,7 +24,7 @@ $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Preparing STL CI pool'
-$TotalProgress = 23
+$TotalProgress = 24
 $CurrentProgress = 1
 
 <#
@@ -216,7 +216,7 @@ $VirtualNetwork = New-AzVirtualNetwork `
   -Subnet $Subnet
 
 ####################################################################################################
-Display-ProgressBar -Status 'Creating prototype VM'
+Display-ProgressBar -Status 'Creating network interface'
 
 $NicName = $ResourceGroupName + '-NIC'
 $Nic = New-AzNetworkInterface `
@@ -224,6 +224,9 @@ $Nic = New-AzNetworkInterface `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
   -Subnet $VirtualNetwork.Subnets[0]
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating prototype VM'
 
 $VM = New-AzVMConfig `
   -Name $ProtoVMName `
