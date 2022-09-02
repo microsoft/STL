@@ -150,60 +150,11 @@ $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser',
 ####################################################################################################
 Display-ProgressBar -Status 'Creating virtual network'
 
-$allowHttp = New-AzNetworkSecurityRuleConfig `
-  -Name AllowHTTP `
-  -Description 'Allow HTTP(S)' `
-  -Access Allow `
-  -Protocol Tcp `
-  -Direction Outbound `
-  -Priority 1000 `
-  -SourceAddressPrefix * `
-  -SourcePortRange * `
-  -DestinationAddressPrefix * `
-  -DestinationPortRange @(80, 443)
-
-$allowQuic = New-AzNetworkSecurityRuleConfig `
-  -Name AllowQUIC `
-  -Description 'Allow QUIC' `
-  -Access Allow `
-  -Protocol Udp `
-  -Direction Outbound `
-  -Priority 1010 `
-  -SourceAddressPrefix * `
-  -SourcePortRange * `
-  -DestinationAddressPrefix * `
-  -DestinationPortRange 443
-
-$allowDns = New-AzNetworkSecurityRuleConfig `
-  -Name AllowDNS `
-  -Description 'Allow DNS' `
-  -Access Allow `
-  -Protocol * `
-  -Direction Outbound `
-  -Priority 1020 `
-  -SourceAddressPrefix * `
-  -SourcePortRange * `
-  -DestinationAddressPrefix * `
-  -DestinationPortRange 53
-
-$denyEverythingElse = New-AzNetworkSecurityRuleConfig `
-  -Name DenyElse `
-  -Description 'Deny everything else' `
-  -Access Deny `
-  -Protocol * `
-  -Direction Outbound `
-  -Priority 2000 `
-  -SourceAddressPrefix * `
-  -SourcePortRange * `
-  -DestinationAddressPrefix * `
-  -DestinationPortRange *
-
 $NetworkSecurityGroupName = $ResourceGroupName + '-NetworkSecurity'
 $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
   -Name $NetworkSecurityGroupName `
   -ResourceGroupName $ResourceGroupName `
-  -Location $Location `
-  -SecurityRules @($allowHttp, $allowQuic, $allowDns, $denyEverythingElse)
+  -Location $Location
 
 $SubnetName = $ResourceGroupName + '-Subnet'
 $Subnet = New-AzVirtualNetworkSubnetConfig `
