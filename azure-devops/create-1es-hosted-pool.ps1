@@ -24,7 +24,7 @@ $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Preparing STL CI pool'
-$TotalProgress = 24
+$TotalProgress = 25
 $CurrentProgress = 1
 
 <#
@@ -131,7 +131,7 @@ Set-AzContext `
 Display-ProgressBar -Status 'Creating resource group'
 
 $ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-ddTHHmm')
-$AdminPW = New-Password
+
 # TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
 $SimplySecureV2OptInTag = @{ 'NRMSV2OptIn' = $CurrentDate.ToString('yyyyMMdd'); }
 
@@ -140,6 +140,10 @@ New-AzResourceGroup `
   -Location $Location `
   -Tag $SimplySecureV2OptInTag | Out-Null
 
+####################################################################################################
+Display-ProgressBar -Status 'Creating credentials'
+
+$AdminPW = New-Password
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
