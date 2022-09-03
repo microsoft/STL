@@ -1033,7 +1033,7 @@ void test_spec_replacement_field() {
     test_string_specs<charT>();
 }
 template <class charT, class... Args>
-void test_size_helper_impl(const size_t expected_size, const _Basic_format_string<charT, Args...> fmt, Args&&... args) {
+void test_size_helper_impl(const size_t expected_size, const basic_format_string<charT, Args...> fmt, Args&&... args) {
     assert(formatted_size(fmt, forward<Args>(args)...) == expected_size);
     assert(formatted_size(locale::classic(), fmt, forward<Args>(args)...) == expected_size);
 
@@ -1045,7 +1045,7 @@ void test_size_helper_impl(const size_t expected_size, const _Basic_format_strin
         assert(res.size == signed_size);
         assert(res.out - str.begin() == signed_size);
         assert(res.out == str.end());
-        assert(vformat(fmt._Str, make_testing_format_args<charT>(args...)) == str);
+        assert(vformat(fmt.get(), make_testing_format_args<charT>(args...)) == str);
 
         basic_string<charT> locale_str;
         locale_str.resize(expected_size);
@@ -1066,11 +1066,11 @@ void test_size_helper_impl(const size_t expected_size, const _Basic_format_strin
 }
 
 template <class... Args>
-void test_size_helper(const size_t expected_size, const _Fmt_string<Args...> fmt, Args&&... args) {
+void test_size_helper(const size_t expected_size, const format_string<Args...> fmt, Args&&... args) {
     test_size_helper_impl<char, Args...>(expected_size, fmt, forward<Args>(args)...);
 }
 template <class... Args>
-void test_size_helper(const size_t expected_size, const _Fmt_wstring<Args...> fmt, Args&&... args) {
+void test_size_helper(const size_t expected_size, const wformat_string<Args...> fmt, Args&&... args) {
     test_size_helper_impl<wchar_t, Args...>(expected_size, fmt, forward<Args>(args)...);
 }
 
