@@ -4344,7 +4344,6 @@ namespace ranges {
             constexpr bool _Allow_vectorization =
                 conjunction_v<_Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
 
-#pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
             if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
                 if (!_STD is_constant_evaluated()) {
                     _Elem* const _First_addr = _STD to_address(_First);
@@ -4414,7 +4413,6 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
         negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
-#pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
     if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
@@ -4503,7 +4501,6 @@ namespace ranges {
                     is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
                 constexpr size_t _Nx                = sizeof(_Elem);
 
-#pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
                 if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
                     if (!_STD is_constant_evaluated()) {
                         _Elem* const _First_addr      = _STD to_address(_First);

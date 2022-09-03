@@ -62,19 +62,16 @@ private:
         return &_Invoke<_Tuple, _Indices...>;
     }
 
+#pragma warning(push) // pointer or reference to potentially throwing function passed to 'extern "C"' function under
+#pragma warning(disable : 5039) // -EHc. Undefined behavior may occur if this function throws an exception. (/Wall)
     template <class _Fn, class... _Args>
     void _Start(_Fn&& _Fx, _Args&&... _Ax) {
         using _Tuple                 = tuple<decay_t<_Fn>, decay_t<_Args>...>;
         auto _Decay_copied           = _STD make_unique<_Tuple>(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
         constexpr auto _Invoker_proc = _Get_invoke<_Tuple>(make_index_sequence<1 + sizeof...(_Args)>{});
 
-#pragma warning(push)
-#pragma warning(disable : 5039) // pointer or reference to potentially throwing function passed to
-                                // extern C function under -EHc. Undefined behavior may occur
-                                // if this function throws an exception. (/Wall)
         _Thr._Hnd =
             reinterpret_cast<void*>(_CSTD _beginthreadex(nullptr, 0, _Invoker_proc, _Decay_copied.get(), 0, &_Thr._Id));
-#pragma warning(pop)
 
         if (_Thr._Hnd) { // ownership transferred to the thread
             (void) _Decay_copied.release();
@@ -83,6 +80,7 @@ private:
             _Throw_Cpp_error(_RESOURCE_UNAVAILABLE_TRY_AGAIN);
         }
     }
+#pragma warning(pop)
 
 public:
     template <class _Fn, class... _Args, enable_if_t<!is_same_v<_Remove_cvref_t<_Fn>, thread>, int> = 0>

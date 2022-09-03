@@ -1281,6 +1281,8 @@ namespace ranges {
             }
         }
 
+#pragma warning(push)
+#pragma warning(disable : 4146) // unary minus operator applied to unsigned type, result still unsigned
         // clang-format off
         _NODISCARD constexpr auto size() const noexcept(noexcept(_Bound - _Value)) /* strengthened */
             requires (same_as<_Wi, _Bo> && _Advanceable<_Wi>)
@@ -1288,15 +1290,14 @@ namespace ranges {
                 || sized_sentinel_for<_Bo, _Wi> {
             // clang-format on
             if constexpr (_Integer_like<_Wi> && _Integer_like<_Bo>) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
                 return (_Value < 0) ? ((_Bound < 0) ? (_To_unsigned_like(-_Value) - _To_unsigned_like(-_Bound))
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
                                                     : (_To_unsigned_like(_Bound) + _To_unsigned_like(-_Value)))
                                     : (_To_unsigned_like(_Bound) - _To_unsigned_like(_Value));
             } else {
                 return _To_unsigned_like(_Bound - _Value);
             }
         }
+#pragma warning(pop)
     };
 
     // clang-format off
