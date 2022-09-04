@@ -3271,11 +3271,10 @@ int run_test()
     == VariantAllowsNarrowingConversions, "");
   static_assert(!std::is_constructible<std::variant<std::string, bool>, int>::value, "");
 
-#ifndef __EDG__
   static_assert(!std::is_constructible<std::variant<int, bool>, decltype("meow")>::value, "");
   static_assert(!std::is_constructible<std::variant<int, const bool>, decltype("meow")>::value, "");
   static_assert(!std::is_constructible<std::variant<int, const volatile bool>, decltype("meow")>::value, "");
-#endif
+
   // libc++ is missing P1957R2
   static_assert(std::is_constructible<std::variant<bool>, std::true_type>::value, "");
   static_assert(!std::is_constructible<std::variant<bool>, std::unique_ptr<char> >::value, "");
