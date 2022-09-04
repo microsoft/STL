@@ -43,29 +43,9 @@ std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cp
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
 
-# string_view and array iterators are not portably pointers (https://reviews.llvm.org/D117368)
-std/iterators/iterator.primitives/iterator.traits/cxx20_iterator_traits.compile.pass.cpp FAIL
-std/iterators/iterator.requirements/iterator.cust/iterator.cust.move/iter_move.pass.cpp FAIL
-std/strings/string.view/string.view.cons/from_iterator_sentinel.pass.cpp FAIL
-std/strings/string.view/string.view.deduct/iterator_sentinel.pass.cpp FAIL
-std/utilities/format/format.formatter/format.parse.ctx/advance_to.pass.cpp FAIL
-std/utilities/format/format.formatter/format.parse.ctx/begin.pass.cpp FAIL
-std/utilities/format/format.formatter/format.parse.ctx/ctor.pass.cpp FAIL
-std/utilities/format/format.formatter/format.parse.ctx/end.pass.cpp FAIL
-
 # libc++ doesn't yet implement P2499R0
 std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
 std/strings/string.view/string.view.deduct/range.pass.cpp FAIL
-
-# libc++ doesn't correctly constrain the iterator_traits specialization for common_iterator (https://reviews.llvm.org/D117449)
-std/iterators/predef.iterators/iterators.common/iterator_traits.compile.pass.cpp FAIL
-
-# libc++ hasn't updated {move,reverse}_iterator for P0896R4
-std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op=/move_iterator.pass.cpp FAIL
-std/iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_conformance.compile.pass.cpp FAIL
-std/iterators/predef.iterators/reverse.iterators/iterator_concept_conformance.compile.pass.cpp FAIL
-std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp FAIL
-std/iterators/predef.iterators/reverse.iterators/reverse.iter.cons/assign.pass.cpp FAIL
 
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 std/utilities/format/format.functions/vformat_to.locale.pass.cpp FAIL
@@ -390,12 +370,6 @@ std/input.output/filesystems/class.path/range_concept_conformance.compile.pass.c
 std/language.support/cmp/cmp.alg/partial_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/strong_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/weak_order.pass.cpp FAIL
-
-# GH-2987 ranges::distance needs to better emulate the two overload presentation of LWG-3664
-std/iterators/iterator.primitives/range.iter.ops/range.iter.ops.distance/iterator_sentinel.pass.cpp FAIL
-
-# GH-3032 remove annotation 'NullTerminated'
-std/strings/string.view/string.view.comparison/common_type_specialization.pass.cpp:0 FAIL
 
 
 # *** CRT BUGS ***
@@ -1063,6 +1037,15 @@ std/algorithms/alg.modifying.operations/alg.random.sample/ranges_sample.pass.cpp
 std/algorithms/alg.modifying.operations/alg.rotate/ranges_rotate.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.clamp/ranges.clamp.pass.cpp FAIL
 std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
+std/algorithms/alg.sorting/alg.min.max/requires_forward_iterator.fail.cpp FAIL
+std/containers/sequences/deque/abi.compile.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/date_order.pass.cpp FAIL
+std/ranges/range.factories/range.single.view/cpo.pass.cpp FAIL
+std/strings/basic.string.literals/noexcept.compile.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_move_assignable.pass.cpp:0 FAIL
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:0 FAIL
+std/utilities/smartptr/unique.ptr/unique.ptr.create/make_unique.array.pass.cpp:0 FAIL
 
 
 # *** XFAILs WHICH PASS ***

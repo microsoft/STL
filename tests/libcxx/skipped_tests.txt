@@ -55,29 +55,9 @@ language.support\support.limits\support.limits.general\optional.version.pass.cpp
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 containers\sequences\array\array.cons\implicit_copy.pass.cpp
 
-# string_view and array iterators are not portably pointers (https://reviews.llvm.org/D117368)
-iterators\iterator.primitives\iterator.traits\cxx20_iterator_traits.compile.pass.cpp
-iterators\iterator.requirements\iterator.cust\iterator.cust.move\iter_move.pass.cpp
-strings\string.view\string.view.cons\from_iterator_sentinel.pass.cpp
-strings\string.view\string.view.deduct\iterator_sentinel.pass.cpp
-utilities\format\format.formatter\format.parse.ctx\advance_to.pass.cpp
-utilities\format\format.formatter\format.parse.ctx\begin.pass.cpp
-utilities\format\format.formatter\format.parse.ctx\ctor.pass.cpp
-utilities\format\format.formatter\format.parse.ctx\end.pass.cpp
-
 # libc++ doesn't yet implement P2499R0
 strings\string.view\string.view.cons\from_range.pass.cpp
 strings\string.view\string.view.deduct\range.pass.cpp
-
-# libc++ doesn't correctly constrain the iterator_traits specialization for common_iterator (https://reviews.llvm.org/D117449)
-iterators\predef.iterators\iterators.common\iterator_traits.compile.pass.cpp
-
-# libc++ hasn't updated {move,reverse}_iterator for P0896R4
-iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op=\move_iterator.pass.cpp
-iterators\predef.iterators\move.iterators\move.iterator\iterator_concept_conformance.compile.pass.cpp
-iterators\predef.iterators\reverse.iterators\iterator_concept_conformance.compile.pass.cpp
-iterators\predef.iterators\reverse.iterators\reverse.iter.cmp\three-way.pass.cpp
-iterators\predef.iterators\reverse.iterators\reverse.iter.cons\assign.pass.cpp
 
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 utilities\format\format.functions\vformat_to.locale.pass.cpp
@@ -402,12 +382,6 @@ input.output\filesystems\class.path\range_concept_conformance.compile.pass.cpp
 language.support\cmp\cmp.alg\partial_order.pass.cpp
 language.support\cmp\cmp.alg\strong_order.pass.cpp
 language.support\cmp\cmp.alg\weak_order.pass.cpp
-
-# GH-2987 ranges::distance needs to better emulate the two overload presentation of LWG-3664
-iterators\iterator.primitives\range.iter.ops\range.iter.ops.distance\iterator_sentinel.pass.cpp
-
-# GH-3032 remove annotation 'NullTerminated'
-strings\string.view\string.view.comparison\common_type_specialization.pass.cpp
 
 
 # *** CRT BUGS ***
@@ -1074,6 +1048,15 @@ algorithms\alg.modifying.operations\alg.random.sample\ranges_sample.pass.cpp
 algorithms\alg.modifying.operations\alg.rotate\ranges_rotate.pass.cpp
 algorithms\alg.sorting\alg.clamp\ranges.clamp.pass.cpp
 iterators\iterator.requirements\iterator.concepts\iterator.concept.random.access\contiguous_iterator.compile.pass.cpp
+algorithms\alg.sorting\alg.min.max\requires_forward_iterator.fail.cpp
+containers\sequences\deque\abi.compile.pass.cpp
+localization\locale.categories\category.time\locale.time.get\locale.time.get.members\date_order.pass.cpp
+ranges\range.factories\range.single.view\cpo.pass.cpp
+strings\basic.string.literals\noexcept.compile.pass.cpp
+utilities\meta\meta.unary\meta.unary.prop\is_nothrow_copy_assignable.pass.cpp
+utilities\meta\meta.unary\meta.unary.prop\is_nothrow_move_assignable.pass.cpp
+utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.modifiers\reset_self.pass.cpp
+utilities\smartptr\unique.ptr\unique.ptr.create\make_unique.array.pass.cpp
 
 
 # *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***
