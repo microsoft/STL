@@ -1532,21 +1532,20 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
-
-#define __cpp_lib_constexpr_algorithms    201806L
-#define __cpp_lib_constexpr_complex       201711L
-#define __cpp_lib_constexpr_dynamic_alloc 201907L
-#define __cpp_lib_constexpr_functional    201907L
-#define __cpp_lib_constexpr_iterator      201811L
-#define __cpp_lib_constexpr_numeric       201911L
-#define __cpp_lib_constexpr_string        201907L
-#define __cpp_lib_constexpr_string_view   201811L
-#define __cpp_lib_constexpr_tuple         201811L
-#define __cpp_lib_constexpr_utility       201811L
-#define __cpp_lib_constexpr_vector        201907L
-#define __cpp_lib_destroying_delete       201806L
-#define __cpp_lib_endian                  201907L
-#define __cpp_lib_erase_if                202002L
+#define __cpp_lib_constexpr_algorithms          201806L
+#define __cpp_lib_constexpr_complex             201711L
+#define __cpp_lib_constexpr_dynamic_alloc       201907L
+#define __cpp_lib_constexpr_functional          201907L
+#define __cpp_lib_constexpr_iterator            201811L
+#define __cpp_lib_constexpr_numeric             201911L
+#define __cpp_lib_constexpr_string              201907L
+#define __cpp_lib_constexpr_string_view         201811L
+#define __cpp_lib_constexpr_tuple               201811L
+#define __cpp_lib_constexpr_utility             201811L
+#define __cpp_lib_constexpr_vector              201907L
+#define __cpp_lib_destroying_delete             201806L
+#define __cpp_lib_endian                        201907L
+#define __cpp_lib_erase_if                      202002L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_format 202110L
@@ -1581,8 +1580,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_move_iterator_concept 202207L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_polymorphic_allocator 201902L
-
+#define __cpp_lib_polymorphic_allocator   201902L
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
