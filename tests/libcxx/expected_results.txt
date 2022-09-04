@@ -43,9 +43,6 @@ std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cp
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
 
-# libc++ doesn't yet implement P2499R0
-std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
-std/strings/string.view/string.view.deduct/range.pass.cpp FAIL
 
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 std/utilities/format/format.functions/vformat_to.locale.pass.cpp FAIL
@@ -1039,7 +1036,6 @@ std/algorithms/alg.sorting/alg.clamp/ranges.clamp.pass.cpp FAIL
 std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.min.max/requires_forward_iterator.fail.cpp FAIL
 std/containers/sequences/deque/abi.compile.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/date_order.pass.cpp FAIL
 std/ranges/range.factories/range.single.view/cpo.pass.cpp FAIL
 std/strings/basic.string.literals/noexcept.compile.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:0 FAIL
