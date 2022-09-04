@@ -336,7 +336,7 @@
 // P2446R2 views::as_rvalue
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
-// P2549R0 unexpected<E>::error()
+// P2549R1 unexpected<E>::error()
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
