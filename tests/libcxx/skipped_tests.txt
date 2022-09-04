@@ -268,6 +268,10 @@ algorithms\alg.sorting\alg.sort\partial.sort\partial_sort_comp.pass.cpp
 # Skipped as this sometimes emits "fatal error C1001: Internal compiler error." with a crash dialog.
 ranges\range.utility\range.subrange\structured_bindings.pass.cpp
 
+# DevCom-1436243 constexpr new initialized array
+utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.modifiers\reset_self.pass.cpp
+utilities\smartptr\unique.ptr\unique.ptr.create\make_unique.array.pass.cpp
+
 # DevCom-1626139 "compile-time NaN comparison"
 library\description\conventions\expos.only.func\synth_three_way.pass.cpp
 utilities\function.objects\comparisons\compare_three_way.pass.cpp
@@ -1050,8 +1054,6 @@ ranges\range.factories\range.single.view\cpo.pass.cpp
 strings\basic.string.literals\noexcept.compile.pass.cpp
 utilities\meta\meta.unary\meta.unary.prop\is_nothrow_copy_assignable.pass.cpp
 utilities\meta\meta.unary\meta.unary.prop\is_nothrow_move_assignable.pass.cpp
-utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.modifiers\reset_self.pass.cpp
-utilities\smartptr\unique.ptr\unique.ptr.create\make_unique.array.pass.cpp
 
 
 # *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***
