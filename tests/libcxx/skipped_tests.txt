@@ -272,6 +272,9 @@ ranges\range.utility\range.subrange\structured_bindings.pass.cpp
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.modifiers\reset_self.pass.cpp
 utilities\smartptr\unique.ptr\unique.ptr.create\make_unique.array.pass.cpp
 
+# DevCom-10138792: C4455 'operator ""s': literal suffix identifiers that do not start with an underscore are reserved
+strings\basic.string.literals\noexcept.compile.pass.cpp
+
 # DevCom-1626139 "compile-time NaN comparison"
 library\description\conventions\expos.only.func\synth_three_way.pass.cpp
 utilities\function.objects\comparisons\compare_three_way.pass.cpp
@@ -1051,7 +1054,6 @@ iterators\iterator.requirements\iterator.concepts\iterator.concept.random.access
 algorithms\alg.sorting\alg.min.max\requires_forward_iterator.fail.cpp
 containers\sequences\deque\abi.compile.pass.cpp
 ranges\range.factories\range.single.view\cpo.pass.cpp
-strings\basic.string.literals\noexcept.compile.pass.cpp
 utilities\meta\meta.unary\meta.unary.prop\is_nothrow_copy_assignable.pass.cpp
 utilities\meta\meta.unary\meta.unary.prop\is_nothrow_move_assignable.pass.cpp
 
