@@ -146,7 +146,7 @@ _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL locale::empty() { // make empty tra
 }
 
 _MRTIMP2_PURE locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Init(bool _Do_incref) { // setup global and "C" locales
-    locale::_Locimp* ptr = nullptr;
+    locale::_Locimp* ptr;
 
     _BEGIN_LOCK(_LOCK_LOCALE) // prevent double initialization
 

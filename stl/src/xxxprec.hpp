@@ -197,7 +197,7 @@ FTYPE* FNAME(Xp_addh)(FTYPE* p, int n, FTYPE x0) { // add a half-precision value
                             FNAME(Dunscale)(&yexp, &xscaled);
                             prevexp = yexp;
                         }
-                    } else if (k + 1 == n) {
+                    } else if (k == n - 1) {
                         break; // don't truncate bits in last word
                     } else { // propagate any excess bits down
                         x0 = p[k];

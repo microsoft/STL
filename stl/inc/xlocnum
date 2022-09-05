@@ -1241,7 +1241,7 @@ protected:
         _OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, bool _Val) const { // put formatted bool to _Dest
         if (!(_Iosbase.flags() & ios_base::boolalpha)) {
             return do_put(_Dest, _Iosbase, _Fill, static_cast<long>(_Val));
-        } else { // put "false" or "true"
+        } else { // put "true" or "false"
             const auto& _Punct_fac = _STD use_facet<numpunct<_Elem>>(_Iosbase.getloc());
             basic_string<_Elem> _Str;
             if (_Val) {

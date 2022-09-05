@@ -22,11 +22,11 @@ _EXTERN_C_UNLESS_PURE
 
 // static data
 extern /* const */ _Dconst _FDenorm = {INIT2(0, 1)};
-extern const _Dconst _FEps          = {INIT((_FBIAS - NBITS - 1) << _FOFF)};
+extern constexpr _Dconst _FEps      = {INIT((_FBIAS - NBITS - 1) << _FOFF)};
 extern /* const */ _Dconst _FInf    = {INIT(_FMAX << _FOFF)};
 extern /* const */ _Dconst _FNan    = {INIT((_FMAX << _FOFF) | (1 << (_FOFF - 1)))};
 extern /* const */ _Dconst _FSnan   = {INIT2(_FMAX << _FOFF, 1)};
-extern const _Dconst _FRteps        = {INIT((_FBIAS - NBITS / 2) << _FOFF)};
+extern constexpr _Dconst _FRteps    = {INIT((_FBIAS - NBITS / 2) << _FOFF)};
 
 extern const float _FXbig = (NBITS + 2) * 0.347f;
 

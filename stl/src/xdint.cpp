@@ -33,7 +33,7 @@ short _Dint(double* px, short xexp) { // test and drop (scaled) fraction bits
             0x000f, 0x001f, 0x003f, 0x007f, //
             0x00ff, 0x01ff, 0x03ff, 0x07ff, //
             0x0fff, 0x1fff, 0x3fff, 0x7fff};
-        static const size_t sub[]          = {_D3, _D2, _D1, _D0};
+        static constexpr size_t sub[]      = {_D3, _D2, _D1, _D0};
 
         unsigned short frac = mask[xchar & 0xf];
         xchar >>= 4;
@@ -49,8 +49,9 @@ short _Dint(double* px, short xexp) { // test and drop (scaled) fraction bits
         case 1:
             frac |= ps->_Sh[_D3];
             ps->_Sh[_D3] = 0;
+        default:
+            return frac == 0 ? 0 : _FINITE;
         }
-        return frac != 0 ? _FINITE : 0;
     }
 }
 

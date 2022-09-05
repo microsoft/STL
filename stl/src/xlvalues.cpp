@@ -20,10 +20,10 @@
 
 // static data
 extern /* const */ _Dconst _LDenorm = {INIT2(0, 1)};
-extern const _Dconst _LEps          = {INIT((_DBIAS - NBITS - 1) << _DOFF)};
+extern constexpr _Dconst _LEps      = {INIT((_DBIAS - NBITS - 1) << _DOFF)};
 extern /* const */ _Dconst _LInf    = {INIT(_DMAX << _DOFF)};
 extern /* const */ _Dconst _LNan    = {INIT((_DMAX << _DOFF) | (1 << (_DOFF - 1)))};
 extern /* const */ _Dconst _LSnan   = {INIT2(_DMAX << _DOFF, 1)};
-extern const _Dconst _LRteps        = {INIT((_DBIAS - NBITS / 2) << _DOFF)};
+extern constexpr _Dconst _LRteps    = {INIT((_DBIAS - NBITS / 2) << _DOFF)};
 
 extern const long double _LXbig = (NBITS + 2) * 0.347L;

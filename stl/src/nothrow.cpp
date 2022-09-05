@@ -14,5 +14,5 @@
 #include <new>
 _STD_BEGIN
 
-const nothrow_t nothrow = nothrow_t(); // define nothrow
+constexpr nothrow_t nothrow = nothrow_t(); // define nothrow
 _STD_END

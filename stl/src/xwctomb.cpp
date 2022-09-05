@@ -56,7 +56,7 @@ _CRTIMP2_PURE _Cvtvec __CLRCALL_PURE_OR_CDECL _Getcvt() { // get conversion info
 //     None.
 
 _CRTIMP2_PURE _Success_(return != -1) int __CLRCALL_PURE_OR_CDECL
-    _Wcrtomb(_Out_ char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) {
+    _Wcrtomb(_Out_ char* s, wchar_t wchar, const mbstate_t* pst, const _Cvtvec* ploc) {
     _CRT_UNUSED(pst);
     if (ploc->_Isclocale) {
         if (wchar > 255) { // validate high byte

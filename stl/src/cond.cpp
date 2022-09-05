@@ -12,8 +12,9 @@
 #include "primitives.hpp"
 
 struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
-    typename std::_Aligned_storage<Concurrency::details::stl_condition_variable_max_size,
-        Concurrency::details::stl_condition_variable_max_alignment>::type cv;
+    std::_Aligned_storage_t<Concurrency::details::stl_condition_variable_max_size,
+        Concurrency::details::stl_condition_variable_max_alignment>
+        cv;
 
     [[nodiscard]] Concurrency::details::stl_condition_variable_interface* _get_cv() noexcept {
         // get pointer to implementation

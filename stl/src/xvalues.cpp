@@ -21,11 +21,11 @@
 
 // static data
 extern /* const */ _Dconst _Denorm  = {INIT2(0, 1)};
-extern const _Dconst _Eps           = {INIT((_DBIAS - NBITS - 1) << _DOFF)};
+extern constexpr _Dconst _Eps       = {INIT((_DBIAS - NBITS - 1) << _DOFF)};
 extern /* const */ _Dconst _Hugeval = {INIT(_DMAX << _DOFF)};
 extern /* const */ _Dconst _Inf     = {INIT(_DMAX << _DOFF)};
 extern /* const */ _Dconst _Nan     = {INIT((_DMAX << _DOFF) | (1 << (_DOFF - 1)))};
 extern /* const */ _Dconst _Snan    = {INIT2(_DMAX << _DOFF, 1)};
-extern const _Dconst _Rteps         = {INIT((_DBIAS - NBITS / 2) << _DOFF)};
+extern constexpr _Dconst _Rteps     = {INIT((_DBIAS - NBITS / 2) << _DOFF)};
 
-extern const double _Xbig = (NBITS + 2) * 0.347;
+extern constexpr double _Xbig = (NBITS + 2) * 0.347;

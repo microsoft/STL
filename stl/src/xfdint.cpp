@@ -30,7 +30,7 @@ short _FDint(float* px, short xexp) { // test and drop (scaled) fraction bits
             0x000f, 0x001f, 0x003f, 0x007f, //
             0x00ff, 0x01ff, 0x03ff, 0x07ff, //
             0x0fff, 0x1fff, 0x3fff, 0x7fff};
-        static const size_t sub[]          = {_F1, _F0};
+        static constexpr size_t sub[]      = {_F1, _F0};
 
         unsigned short frac = mask[xchar & 0xf];
         xchar >>= 4;

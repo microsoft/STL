@@ -8,12 +8,12 @@
 _EXTERN_C_UNLESS_PURE
 
 // coefficients
-static const double p[]    = {1.0, 420.30235984910635, 15132.70094680474802};
-static const double q[]    = {30.01511290683317, 3362.72154416553028, 30265.40189360949691};
-static const double c1     = 22713.0 / 32768.0;
-static const double c2     = 1.4286068203094172321214581765680755e-6;
-static const double hugexp = HUGE_EXP;
-static const double invln2 = 1.4426950408889634073599246810018921;
+static constexpr double p[]    = {1.0, 420.30235984910635, 15132.70094680474802};
+static constexpr double q[]    = {30.01511290683317, 3362.72154416553028, 30265.40189360949691};
+static constexpr double c1     = 22713.0 / 32768.0;
+static constexpr double c2     = 1.4286068203094172321214581765680755e-6;
+static constexpr double hugexp = HUGE_EXP;
+static constexpr double invln2 = 1.4426950408889634073599246810018921;
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(
     double* px, double y, short eoff) { // compute y * e^(*px), (*px) finite, |y| not huge

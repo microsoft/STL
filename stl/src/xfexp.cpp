@@ -7,12 +7,12 @@
 
 _EXTERN_C_UNLESS_PURE
 
-static const float p[]    = {1.0F, 60.09114349F};
-static const float q[]    = {12.01517514F, 120.18228722F};
-static const float c1     = (22713.0F / 32768.0F);
-static const float c2     = 1.4286068203094172321214581765680755e-6F;
-static const float hugexp = FHUGE_EXP;
-static const float invln2 = 1.4426950408889634073599246810018921F;
+static constexpr float p[]    = {1.0F, 60.09114349F};
+static constexpr float q[]    = {12.01517514F, 120.18228722F};
+static constexpr float c1     = (22713.0F / 32768.0F);
+static constexpr float c2     = 1.4286068203094172321214581765680755e-6F;
+static constexpr float hugexp = FHUGE_EXP;
+static constexpr float invln2 = 1.4426950408889634073599246810018921F;
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(
     float* px, float y, short eoff) { // compute y * e^(*px), (*px) finite, |y| not huge

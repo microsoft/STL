@@ -18,7 +18,7 @@ _EXTERN_C
 #if FBITS == 53
 #define FRAC_BITS 67108864.0L // 2^26
 
-static const FTYPE tenth[] = {
+static constexpr FTYPE tenth[] = {
     // 53-bit: 0.100000
     static_cast<FTYPE>(FLIT(6710886.0) / FRAC_BITS),
     static_cast<FTYPE>(FLIT(26843545.0) / FRAC_BITS_2),
@@ -29,7 +29,7 @@ static const FTYPE tenth[] = {
 #elif FBITS == 24
 #define FRAC_BITS 4096.0L // 2^12
 
-static const FTYPE tenth[] = {
+static constexpr FTYPE tenth[] = {
     // 24-bit: 0.100000
     static_cast<FTYPE>(FLIT(409.0) / FRAC_BITS),
     static_cast<FTYPE>(FLIT(2457.0) / FRAC_BITS_2),

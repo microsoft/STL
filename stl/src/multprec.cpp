@@ -52,8 +52,8 @@ static void mul(
 
 void __CLRCALL_PURE_OR_CDECL _MP_Mul(
     _MP_arr w, unsigned long long u0, unsigned long long v0) noexcept { // multiply multi-word value by multi-word value
-    constexpr int m = 2;
-    constexpr int n = 2;
+    constexpr unsigned int m = 2;
+    constexpr unsigned int n = 2;
     unsigned long long u[2];
     unsigned long long v[2];
     u[0] = u0 & mask;
@@ -63,16 +63,16 @@ void __CLRCALL_PURE_OR_CDECL _MP_Mul(
 
     // Knuth, vol. 2, p. 268, Algorithm M
     // M1: [Initialize.]
-    for (int i = 0; i < m + n + 1; ++i) {
+    for (unsigned int i = 0; i < m + n + 1; ++i) {
         w[i] = 0;
     }
 
-    for (int j = 0; j < n; ++j) { // M2: [Zero multiplier?]
+    for (unsigned int j = 0; j < n; ++j) { // M2: [Zero multiplier?]
         if (v[j] == 0) {
             w[j + m] = 0;
         } else { // multiply by non-zero value
             unsigned long long k = 0;
-            int i;
+            unsigned int i;
             // M3: [Initialize i.]
             for (i = 0; i < m; ++i) { // M4: [Multiply and add.]
                 w[i + j] = u[i] * v[j] + w[i + j] + k;
@@ -170,7 +170,6 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
         }
         // D5: [Test remainder.]
         if (k != 0) { // D6: [Add back.]
-            --qh;
             add(u + j, n + 1, v, n);
         }
         // D7: [Loop on j.]

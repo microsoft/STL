@@ -46,12 +46,10 @@ namespace Concurrency {
 
 #else // defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
 
-namespace Concurrency {
-    namespace details {
+namespace Concurrency::details {
 
-        _CRTIMP2 void __thiscall _ExceptionHolder::ReportUnhandledError() {}
+    _CRTIMP2 void __thiscall _ExceptionHolder::ReportUnhandledError() {}
 
-    } // namespace details
-} // namespace Concurrency
+} // namespace Concurrency::details
 
 #endif // defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)

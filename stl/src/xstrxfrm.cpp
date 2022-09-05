@@ -53,7 +53,7 @@ _EXTERN_C_UNLESS_PURE
 //     Non-standard: if OM/API error, return INT_MAX.
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(_Out_writes_(end1 - string1)
                                                           _Post_readable_size_(return ) char* string1,
-    _In_z_ char* end1, const char* string2, const char* end2, const _Collvec* ploc) {
+    _In_z_ const char* end1, const char* string2, const char* end2, const _Collvec* ploc) {
     size_t n1     = end1 - string1;
     size_t n2     = end2 - string2;
     size_t retval = static_cast<size_t>(-1); // NON-ANSI: default if OM or API error
@@ -75,8 +75,8 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(_Out_writes_(end1 - string
         retval = n2;
     } else {
         // Inquire size of dst string in BYTES
-        const int dstlen =
-            __crtLCMapStringA(locale_name, LCMAP_SORTKEY, string2, static_cast<int>(n2), nullptr, 0, codepage, TRUE);
+        const int dstlen = __crtLCMapStringA(
+            locale_name, LCMAP_SORTKEY, string2, static_cast<int>(n2), nullptr, 0, static_cast<int>(codepage), TRUE);
 
         if (dstlen != 0) {
             retval = dstlen;
@@ -85,7 +85,7 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(_Out_writes_(end1 - string
             if (dstlen <= static_cast<int>(n1)) {
                 // Map src string to dst string
                 __crtLCMapStringA(locale_name, LCMAP_SORTKEY, string2, static_cast<int>(n2), string1,
-                    static_cast<int>(n1), codepage, TRUE);
+                    static_cast<int>(n1), static_cast<int>(codepage), TRUE);
             }
         }
     }

@@ -38,8 +38,9 @@ extern "C" _CRTIMP2 void __cdecl __set_stl_sync_api_mode(__stl_sync_api_modes_en
 
 struct _Mtx_internal_imp_t { // ConcRT mutex
     int type;
-    typename std::_Aligned_storage<Concurrency::details::stl_critical_section_max_size,
-        Concurrency::details::stl_critical_section_max_alignment>::type cs;
+    std::_Aligned_storage_t<Concurrency::details::stl_critical_section_max_size,
+        Concurrency::details::stl_critical_section_max_alignment>
+        cs;
     long thread_id;
     int count;
     Concurrency::details::stl_critical_section_interface* _get_cs() { // get pointer to implementation

@@ -84,7 +84,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc)
 
     // convert wide char to lowercase
     size = __crtLCMapStringA(locale_name, LCMAP_LOWERCASE, reinterpret_cast<const char*>(inbuffer), size,
-        reinterpret_cast<char*>(outbuffer), 3, codepage, TRUE);
+        reinterpret_cast<char*>(outbuffer), 3, static_cast<int>(codepage), TRUE);
 
     if (size == 0) {
         return c;

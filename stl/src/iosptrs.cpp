@@ -42,9 +42,8 @@ _MRTIMP2 void __cdecl _Atexit(void(__cdecl* pf)()) { // add to wrapup list
 struct _Init_atexit { // controller for atexit processing
     __CLR_OR_THIS_CALL ~_Init_atexit() noexcept { // process wrapup functions
         while (atcount_cdecl < _Nats) {
-            const auto pf = reinterpret_cast<void(__cdecl*)()>(
-                DecodePointer(reinterpret_cast<void*>(atfuns_cdecl[atcount_cdecl++])));
-            if (pf) {
+            if (const auto pf = reinterpret_cast<void(__cdecl*)()>(
+                    DecodePointer(reinterpret_cast<void*>(atfuns_cdecl[atcount_cdecl++])))) {
                 pf();
             }
         }

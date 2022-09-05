@@ -703,7 +703,7 @@ _NODISCARD pair<_CharT*, errc> __d2fixed_buffered_n(_CharT* _First, _CharT* cons
 
 _NODISCARD inline to_chars_result __d2exp_buffered_n(char* _First, char* const _Last, const double __d,
   uint32_t __precision) {
-  char* const _Original_first = _First;
+    const char* const _Original_first = _First;
 
   const uint64_t __bits = __double_to_bits(__d);
 
@@ -1832,11 +1832,11 @@ _NODISCARD inline __floating_decimal_64 __d2d(const uint64_t __ieeeMantissa, con
 
   // Step 4: Find the shortest decimal representation in the interval of valid representations.
   int32_t __removed = 0;
-  uint8_t __lastRemovedDigit = 0;
   uint64_t _Output;
   // On average, we remove ~2 digits.
   if (__vmIsTrailingZeros || __vrIsTrailingZeros) {
-    // General case, which happens rarely (~0.7%).
+      uint8_t __lastRemovedDigit = 0;
+      // General case, which happens rarely (~0.7%).
     for (;;) {
       const uint64_t __vpDiv10 = __div10(__vp);
       const uint64_t __vmDiv10 = __div10(__vm);
@@ -2331,8 +2331,7 @@ _NODISCARD pair<_CharT*, errc> __d2s_buffered_n(_CharT* const _First, _CharT* co
   }
 
   __floating_decimal_64 __v;
-  const bool __isSmallInt = __d2d_small_int(__ieeeMantissa, __ieeeExponent, &__v);
-  if (__isSmallInt) {
+  if (const bool __isSmallInt = __d2d_small_int(__ieeeMantissa, __ieeeExponent, &__v)) {
     // For small integers in the range [1, 2^53), __v.__mantissa might contain trailing (decimal) zeros.
     // For scientific notation we need to move these zeros into the exponent.
     // (This is not needed for fixed-point notation, so it might be beneficial to trim

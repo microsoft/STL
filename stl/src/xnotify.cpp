@@ -46,12 +46,12 @@ void _Cnd_register_at_thread_exit(
 
             block = block->next;
         } else { // found block with available space
-            for (int i = 0; i < _Nitems; ++i) { // find empty slot
-                if (block->data[i].mtx == nullptr) { // store into empty slot
-                    block->data[i].id._Id = GetCurrentThreadId();
-                    block->data[i].mtx    = mtx;
-                    block->data[i].cnd    = cnd;
-                    block->data[i].res    = p;
+            for (auto& i : block->data) { // find empty slot
+                if (i.mtx == nullptr) { // store into empty slot
+                    i.id._Id = GetCurrentThreadId();
+                    i.mtx    = mtx;
+                    i.cnd    = cnd;
+                    i.res    = p;
                     ++block->num_used;
                     break;
                 }
@@ -68,7 +68,7 @@ void _Cnd_unregister_at_thread_exit(_Mtx_t mtx) { // unregister condition variab
 
     _Lock_at_thread_exit_mutex();
     while (block != nullptr) { // loop through list of blocks
-        for (int i = 0; block->num_used != 0 && i < _Nitems; ++i) {
+        for (unsigned int i = 0; block->num_used != 0 && i < _Nitems; ++i) {
             if (block->data[i].mtx == mtx) { // release slot
                 block->data[i].mtx = nullptr;
                 --block->num_used;
@@ -87,7 +87,7 @@ void _Cnd_do_broadcast_at_thread_exit() { // notify condition variables waiting 
 
     _Lock_at_thread_exit_mutex();
     while (block != nullptr) { // loop through list of blocks
-        for (int i = 0; block->num_used != 0 && i < _Nitems; ++i) {
+        for (unsigned int i = 0; block->num_used != 0 && i < _Nitems; ++i) {
             if (block->data[i].mtx != nullptr && block->data[i].id._Id == currentThreadId) { // notify and release slot
                 if (block->data[i].res) {
                     *block->data[i].res = 1;

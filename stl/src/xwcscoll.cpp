@@ -37,9 +37,9 @@ _EXTERN_C_UNLESS_PURE
 //     errno = EINVAL
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(
     const wchar_t* string1, const wchar_t* end1, const wchar_t* string2, const wchar_t* end2, const _Collvec* ploc) {
-    int n1  = static_cast<int>(end1 - string1);
-    int n2  = static_cast<int>(end2 - string2);
-    int ret = 0;
+    int n1 = static_cast<int>(end1 - string1);
+    int n2 = static_cast<int>(end2 - string2);
+    int ret;
     const wchar_t* locale_name;
 
     if (ploc == nullptr) {

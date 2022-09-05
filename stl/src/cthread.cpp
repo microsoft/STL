@@ -85,6 +85,7 @@ void _Thrd_yield() { // surrender remainder of timeslice
     SwitchToThread();
 }
 
+extern "C" {
 // TRANSITION, ABI: _Thrd_equal() is preserved for binary compatibility
 _CRTIMP2_PURE int _Thrd_equal(_Thrd_t thr0, _Thrd_t thr1) { // return 1 if thr0 and thr1 identify same thread
     return thr0._Id == thr1._Id;
@@ -96,6 +97,7 @@ _CRTIMP2_PURE _Thrd_t _Thrd_current() { // return _Thrd_t identifying current th
     result._Hnd = nullptr;
     result._Id  = GetCurrentThreadId();
     return result;
+}
 }
 
 _Thrd_id_t _Thrd_id() { // return unique id for current thread

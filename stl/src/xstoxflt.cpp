@@ -25,8 +25,8 @@ _In_range_(0, maxsig) int _Stoxflt(
     int word = 0; // current long word to fill
 
     const char* pd;
-    static const char digits[] = "0123456789abcdefABCDEF";
-    static const char vals[]   = {// values of hex digits
+    static constexpr char digits[] = "0123456789abcdefABCDEF";
+    static const char vals[]       = {// values of hex digits
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 10, 11, 12, 13, 14, 15};
 
     maxsig *= _Ndig; // convert word count to digit count

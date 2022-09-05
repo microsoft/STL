@@ -17,7 +17,7 @@ _EXTERN_C_UNLESS_PURE
 constexpr int _Base_max = 36; // largest valid base
 
 // static data
-static const char digits[] = "0123456789abcdefghijklmnopqrstuvwxyz"; // valid digits
+static constexpr char digits[] = "0123456789abcdefghijklmnopqrstuvwxyz"; // valid digits
 
 // 64-bits!
 static const char ndigs[_Base_max + 1] = {0, 0, 65, 41, 33, 28, 25, 23, 22, 21, 20, 19, 18, 18, 17, 17, 17, 16, 16, 16,

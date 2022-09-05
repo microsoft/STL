@@ -40,7 +40,7 @@ _EXTERN_C_UNLESS_PURE
 //     errno = EINVAL
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(
     const char* string1, const char* end1, const char* string2, const char* end2, const _Collvec* ploc) {
-    int ret = 0;
+    int ret;
     UINT codepage;
     int n1 = static_cast<int>(end1 - string1);
     int n2 = static_cast<int>(end2 - string2);
