@@ -1435,6 +1435,28 @@ void test_localized_char() {
     assert(format(STR("{:Lc}"), T('c')) == STR("c"));
 }
 
+template <class charT>
+constexpr void test_basic_format_string() {
+    {
+        basic_format_string<charT> fmt_str = basic_string_view{STR("meow")};
+        assert(fmt_str.get() == STR("meow"));
+    }
+    {
+        basic_format_string<charT, double, int> fmt_str = STR("{:a} {:b}");
+        assert(fmt_str.get() == STR("{:a} {:b}"));
+    }
+}
+
+constexpr bool test_format_string() {
+    test_basic_format_string<char>();
+    test_basic_format_string<wchar_t>();
+
+    static_assert(is_same_v<format_string<int*>, basic_format_string<char, int*>>);
+    static_assert(is_same_v<wformat_string<int*>, basic_format_string<wchar_t, int*>>);
+
+    return true;
+}
+
 void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1515,4 +1537,7 @@ void test() {
 
 int main() {
     test();
+
+    test_format_string();
+    static_assert(test_format_string());
 }
