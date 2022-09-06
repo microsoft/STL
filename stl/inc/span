@@ -10,7 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #if !_HAS_CXX20
-#pragma message("The contents of <span> are available only with C++20 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <span> are available only with C++20 or later.");
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #include <compare>
 #include <cstddef>
@@ -554,14 +554,16 @@ public:
         return _Mysize;
     }
 
+#pragma warning(push)
+#pragma warning(disable : 4127) // conditional expression is constant
     _NODISCARD constexpr size_type size_bytes() const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-#pragma warning(suppress : 4127) // conditional expression is constant
         _STL_VERIFY(_Mysize <= dynamic_extent / sizeof(element_type),
             "size of span in bytes exceeds std::numeric_limits<size_t>::max()");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Mysize * sizeof(element_type);
     }
+#pragma warning(pop)
 
     _NODISCARD constexpr bool empty() const noexcept {
         return _Mysize == 0;
@@ -575,9 +577,10 @@ public:
         return _Mydata[_Off];
     }
 
+#pragma warning(push)
+#pragma warning(disable : 4127) // conditional expression is constant
     _NODISCARD constexpr reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-#pragma warning(suppress : 4127) // conditional expression is constant
         _STL_VERIFY(_Mysize > 0, "front of empty span");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Mydata[0];
@@ -585,11 +588,11 @@ public:
 
     _NODISCARD constexpr reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-#pragma warning(suppress : 4127) // conditional expression is constant
         _STL_VERIFY(_Mysize > 0, "back of empty span");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Mydata[_Mysize - 1];
     }
+#pragma warning(pop)
 
     _NODISCARD constexpr pointer data() const noexcept {
         return _Mydata;

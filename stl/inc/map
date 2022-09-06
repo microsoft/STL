@@ -46,9 +46,9 @@ public:
 
     class value_compare {
     public:
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef value_type _FIRST_ARGUMENT_TYPE_NAME;
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef value_type _SECOND_ARGUMENT_TYPE_NAME;
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
+        using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = value_type;
+        using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = value_type;
+        using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
 
         _NODISCARD bool operator()(const value_type& _Left, const value_type& _Right) const {
             // test if _Left precedes _Right by comparing just keys
@@ -133,6 +133,28 @@ public:
     map(_Iter _First, _Iter _Last, const key_compare& _Pred, const allocator_type& _Al) : _Mybase(_Pred, _Al) {
         insert(_First, _Last);
     }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<value_type> _Rng>
+    map(from_range_t, _Rng&& _Range) : _Mybase(key_compare()) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    map(from_range_t, _Rng&& _Range, const key_compare& _Pred) : _Mybase(_Pred) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    map(from_range_t, _Rng&& _Range, const key_compare& _Pred, const allocator_type& _Al) : _Mybase(_Pred, _Al) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    map(from_range_t, _Rng&& _Range, const allocator_type& _Al) : _Mybase(key_compare(), _Al) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     map& operator=(const map& _Right) {
         _Mybase::operator=(_Right);
@@ -359,6 +381,18 @@ map(_Iter, _Iter, _Alloc) -> map<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, less<
 
 template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 map(initializer_list<pair<_Kty, _Ty>>, _Alloc) -> map<_Kty, _Ty, less<_Kty>, _Alloc>;
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <_RANGES input_range _Rng, class _Pr = less<_Range_key_type<_Rng>>,
+    class _Alloc = allocator<_Range_to_alloc_type<_Rng>>,
+    enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+map(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc())
+    -> map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Pr, _Alloc>;
+
+template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+map(from_range_t, _Rng&&, _Alloc)
+    -> map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, less<_Range_key_type<_Rng>>, _Alloc>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
 template <class _Kty, class _Ty, class _Pr, class _Alloc>
@@ -478,6 +512,28 @@ public:
         insert(_First, _Last);
     }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<value_type> _Rng>
+    multimap(from_range_t, _Rng&& _Range) : _Mybase(key_compare()) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    multimap(from_range_t, _Rng&& _Range, const key_compare& _Pred) : _Mybase(_Pred) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    multimap(from_range_t, _Rng&& _Range, const key_compare& _Pred, const allocator_type& _Al) : _Mybase(_Pred, _Al) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    multimap(from_range_t, _Rng&& _Range, const allocator_type& _Al) : _Mybase(key_compare(), _Al) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     multimap& operator=(const multimap& _Right) {
         _Mybase::operator=(_Right);
         return *this;
@@ -556,6 +612,18 @@ multimap(_Iter, _Iter, _Alloc) -> multimap<_Guide_key_t<_Iter>, _Guide_val_t<_It
 
 template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 multimap(initializer_list<pair<_Kty, _Ty>>, _Alloc) -> multimap<_Kty, _Ty, less<_Kty>, _Alloc>;
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <_RANGES input_range _Rng, class _Pr = less<_Range_key_type<_Rng>>,
+    class _Alloc = allocator<_Range_to_alloc_type<_Rng>>,
+    enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+multimap(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc())
+    -> multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Pr, _Alloc>;
+
+template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+multimap(from_range_t, _Rng&&, _Alloc)
+    -> multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, less<_Range_key_type<_Rng>>, _Alloc>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
 template <class _Kty, class _Ty, class _Pr, class _Alloc>

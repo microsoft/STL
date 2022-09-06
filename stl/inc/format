@@ -39,9 +39,9 @@
 #define _FORMAT_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#ifndef __cpp_lib_format
-#pragma message("The contents of <format> are available only with C++20 or later.")
-#else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
+#ifndef __cpp_lib_concepts
+_EMIT_STL_WARNING(STL4038, "The contents of <format> are available only with C++20 or later.");
+#else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 
 #include <__msvc_format_ucd_tables.hpp>
 #include <algorithm>
@@ -1421,15 +1421,10 @@ public:
     template <class _Ty>
     _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
         if constexpr (is_integral_v<_Ty>) {
-            bool _Positive;
-            if constexpr (same_as<_Ty, bool>) { // avoid "bool > 0", which triggers C4804
-                _Positive = _Value != 0;
-            } else {
-                _Positive = _Value > 0;
-            }
-
-            if (!_Positive) {
-                _Throw_format_error("width is not positive.");
+            if constexpr (is_signed_v<_Ty>) {
+                if (_Value < 0) {
+                    _Throw_format_error("Negative width.");
+                }
             }
             return static_cast<unsigned long long>(_Value);
         } else {
@@ -1835,6 +1830,8 @@ private:
     _Format_arg_index _Index_array[_Num_args];
     unsigned char _Storage[_Storage_length];
 
+#pragma warning(push)
+#pragma warning(disable : 6386) // Buffer overrun while writing to '%s' ...
     template <class _Ty>
     void _Store_impl(
         const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, const type_identity_t<_Ty>& _Val) noexcept {
@@ -1846,10 +1843,10 @@ private:
         _Index_array[_Arg_index]._Type(_Arg_type);
         if (_Arg_index + 1 < _Num_args) {
             // Set the starting index of the next arg, as that is dynamic, must be called with increasing index
-#pragma warning(suppress : 6386) // Buffer overrun while writing to '%s' ...
             _Index_array[_Arg_index + 1] = _Format_arg_index{_Store_index + sizeof(_Ty)};
         }
     }
+#pragma warning(pop)
 
     template <class _Ty>
     void _Store(const size_t _Arg_index, _Ty&& _Val) noexcept {
@@ -2310,8 +2307,25 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _Arithmetic _Value) {
     // clang-format on
     // TRANSITION, Reusable buffer
     char _Buffer[_Format_min_buffer_length];
-    const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), _Value);
-    _STL_ASSERT(_Ec == errc{}, "to_chars failed");
+    char* _End = _Buffer;
+
+    if constexpr (is_floating_point_v<_Arithmetic>) {
+        if ((_STD isnan)(_Value)) {
+            if ((_STD signbit)(_Value)) {
+                *_End++ = '-';
+            }
+
+            _CSTD memcpy(_End, "nan", 3);
+            _End += 3;
+        }
+    }
+
+    if (_End == _Buffer) {
+        const to_chars_result _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value);
+        _STL_ASSERT(_Result.ec == errc{}, "to_chars failed");
+        _End = _Result.ptr;
+    }
+
     return _RANGES transform(_Buffer, _End, _STD move(_Out), _Widen_char<_CharT>{}).out;
 }
 
@@ -2550,6 +2564,8 @@ template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale);
 
+#pragma warning(push)
+#pragma warning(disable : 4296) // '<': expression is always false
 template <class _CharT, class _OutputIt, integral _Integral>
 _NODISCARD _OutputIt _Write_integral(
     _OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale) {
@@ -2630,10 +2646,7 @@ _NODISCARD _OutputIt _Write_integral(
 
     const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Fmt_align::_None;
     auto _Writer                     = [&, _End = _End](_OutputIt _Out) {
-#pragma warning(push)
-#pragma warning(disable : 4296) // '<': expression is always false
         _Out = _Write_sign(_STD move(_Out), _Specs._Sgn, _Value < _Integral{0});
-#pragma warning(pop)
         _Out = _RANGES transform(_Prefix, _STD move(_Out), _Widen_char<_CharT>{}).out;
         if (_Write_leading_zeroes && _Width < _Specs._Width) {
             _Out = _RANGES fill_n(_STD move(_Out), _Specs._Width - _Width, _CharT{'0'});
@@ -2653,6 +2666,7 @@ _NODISCARD _OutputIt _Write_integral(
 
     return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Right, _Writer);
 }
+#pragma warning(pop)
 
 // clang-format off
 template <class _CharT, class _OutputIt, integral _Integral>
@@ -2778,18 +2792,28 @@ _NODISCARD _OutputIt _Fmt_write(
         _Precision       = _Max_precision;
     }
 
-    if (_Precision == -1) {
-        _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format);
-    } else {
-        _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format, _Precision);
-    }
+    const auto _Is_negative = (_STD signbit)(_Value);
 
-    _STL_ASSERT(_Result.ec == errc{}, "to_chars failed");
+    if ((_STD isnan)(_Value)) {
+        _Result.ptr = _Buffer;
+        if (_Is_negative) {
+            ++_Result.ptr; // pretend to skip over a '-' that to_chars would put in _Buffer[0]
+        }
+
+        _CSTD memcpy(_Result.ptr, "nan", 3);
+        _Result.ptr += 3;
+    } else {
+        if (_Precision == -1) {
+            _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format);
+        } else {
+            _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format, _Precision);
+        }
+
+        _STL_ASSERT(_Result.ec == errc{}, "to_chars failed");
+    }
 
     auto _Buffer_start = _Buffer;
     auto _Width        = static_cast<int>(_Result.ptr - _Buffer_start);
-
-    const auto _Is_negative = (_STD signbit)(_Value);
 
     if (_Is_negative) {
         // Remove the '-', it will be dealt with directly
@@ -2939,7 +2963,7 @@ _NODISCARD _OutputIt _Fmt_write(
         // Add 3 to the bit width so we always round up on the division.
         // Divide that by the amount of bits a hexit represents (log2(16) = log2(2^4) = 4).
         // Add 2 for the 0x prefix.
-        _Width = static_cast<int>(2 + (_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4);
+        _Width = 2 + (_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4;
     }
 
     return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Right,
@@ -3337,8 +3361,11 @@ struct formatter<const _CharT*, _CharT>
     : _Formatter_base<const _CharT*, _CharT, _Basic_format_arg_type::_CString_type> {};
 
 template <_Format_supported_charT _CharT, size_t _Nx>
+struct formatter<_CharT[_Nx], _CharT> : _Formatter_base<_CharT[_Nx], _CharT, _Basic_format_arg_type::_CString_type> {};
+
+template <_Format_supported_charT _CharT, size_t _Nx>
 struct formatter<const _CharT[_Nx], _CharT>
-    : _Formatter_base<const _CharT[_Nx], _CharT, _Basic_format_arg_type::_CString_type> {};
+    : _Formatter_base<_CharT[_Nx], _CharT, _Basic_format_arg_type::_CString_type> {};
 
 template <_Format_supported_charT _CharT, class _Traits, class _Allocator>
 struct formatter<basic_string<_CharT, _Traits, _Allocator>, _CharT>
@@ -3581,6 +3608,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // __cpp_lib_format
+#endif // __cpp_lib_concepts
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FORMAT_

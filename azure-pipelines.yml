@@ -7,7 +7,9 @@ variables:
   tmpDir: 'D:\Temp'
   buildOutputLocation: 'D:\build'
 
-pool: 'StlBuild-2022-07-12-T1418'
+pool:
+  name: 'StlBuild-2022-09-01T2216-Pool'
+  demands: EnableSpotVM -equals true
 
 stages:
   - stage: Code_Format

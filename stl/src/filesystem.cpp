@@ -9,7 +9,6 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
-#include <atomic>
 #include <clocale>
 #include <corecrt_terminate.h>
 #include <cstdlib>
@@ -148,7 +147,7 @@ namespace {
         BY_HANDLE_FILE_INFORMATION _Info;
         if (GetFileInformationByHandle(_Handle, &_Info)) {
             _Id->VolumeSerialNumber = _Info.dwVolumeSerialNumber;
-            _CSTD memcpy(&_Id->FileId.Identifier[0], &_Info.nFileIndexHigh, 8);
+            _CSTD memcpy(&_Id->FileId.Identifier[0], &_Info.nFileIndexHigh, 8); // copying from 2 consecutive DWORDs
             _CSTD memset(&_Id->FileId.Identifier[8], 0, 8);
             return __std_win_error::_Success;
         }
@@ -490,6 +489,23 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     return __std_win_error{GetLastError()};
 }
 
+[[nodiscard]] __std_win_error __stdcall __std_fs_write_reparse_data_buffer(
+    _In_ const __std_fs_file_handle _Handle, _In_ const __std_fs_reparse_data_buffer* const _Buffer) noexcept {
+    if (DeviceIoControl(reinterpret_cast<HANDLE>(_Handle), FSCTL_SET_REPARSE_POINT,
+            const_cast<__std_fs_reparse_data_buffer*>(_Buffer), sizeof(_Buffer) + _Buffer->_Reparse_data_length,
+            nullptr, 0, nullptr, nullptr)) {
+        return __std_win_error::_Success;
+    }
+
+    // If DeviceIoControl fails, _Bytes_returned is 0.
+    return __std_win_error{GetLastError()};
+}
+
+[[nodiscard]] bool __stdcall __std_fs_is_junction_from_reparse_data_buffer(
+    _In_ const __std_fs_reparse_data_buffer* const _Buffer) noexcept {
+    return _Buffer->_Reparse_tag == IO_REPARSE_TAG_MOUNT_POINT;
+}
+
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_fs_read_name_from_reparse_data_buffer(_In_ __std_fs_reparse_data_buffer* const _Buffer,
         _Out_ wchar_t** const _Offset, _Out_ unsigned short* const _Length) noexcept {
@@ -504,8 +520,20 @@ _Success_(return == __std_win_error::_Success) __std_win_error
             *_Length = _Temp_length;
             *_Offset = &_Symlink_buffer._Path_buffer[_Symlink_buffer._Print_name_offset / sizeof(wchar_t)];
         }
+    } else if (_Buffer->_Reparse_tag == IO_REPARSE_TAG_MOUNT_POINT) {
+        // junction
+        auto& _Junction_buffer            = _Buffer->_Mount_point_reparse_buffer;
+        const unsigned short _Temp_length = _Junction_buffer._Print_name_length / sizeof(wchar_t);
+
+        if (_Temp_length == 0) {
+            *_Length = _Junction_buffer._Substitute_name_length / sizeof(wchar_t);
+            *_Offset = &_Junction_buffer._Path_buffer[_Junction_buffer._Substitute_name_offset / sizeof(wchar_t)];
+        } else {
+            *_Length = _Temp_length;
+            *_Offset = &_Junction_buffer._Path_buffer[_Junction_buffer._Print_name_offset / sizeof(wchar_t)];
+        }
     } else {
-        return __std_win_error{ERROR_REPARSE_TAG_INVALID};
+        return __std_win_error::_Reparse_tag_invalid;
     }
 
     return __std_win_error::_Success;
@@ -765,22 +793,15 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 namespace {
     _Success_(return > 0 && return < nBufferLength) DWORD WINAPI
         _Stl_GetTempPath2W(_In_ DWORD nBufferLength, _Out_writes_to_opt_(nBufferLength, return +1) LPWSTR lpBuffer) {
+        // See GH-3011: This is intentionally not attempting to cache the function pointer.
+        // TRANSITION, ABI: This should use __crtGetTempPath2W after this code is moved into the STL's DLL.
         using _Fun_ptr = decltype(&::GetTempPath2W);
 
-        _Fun_ptr _PfGetTempPath2W;
-        {
-            static _STD atomic<_Fun_ptr> _Static{nullptr};
-
-            _PfGetTempPath2W = _Static.load(_STD memory_order_relaxed);
-            if (!_PfGetTempPath2W) {
-                const auto _Kernel32 = ::GetModuleHandleW(L"kernel32.dll");
-                _Analysis_assume_(_Kernel32);
-                _PfGetTempPath2W = reinterpret_cast<_Fun_ptr>(::GetProcAddress(_Kernel32, "GetTempPath2W"));
-                if (!_PfGetTempPath2W) {
-                    _PfGetTempPath2W = &::GetTempPathW;
-                }
-                _Static.store(_PfGetTempPath2W, _STD memory_order_relaxed); // overwriting with the same value is okay
-            }
+        const auto _Kernel32 = ::GetModuleHandleW(L"kernel32.dll");
+        _Analysis_assume_(_Kernel32);
+        _Fun_ptr _PfGetTempPath2W = reinterpret_cast<_Fun_ptr>(::GetProcAddress(_Kernel32, "GetTempPath2W"));
+        if (!_PfGetTempPath2W) {
+            _PfGetTempPath2W = &::GetTempPathW;
         }
 
         return _PfGetTempPath2W(nBufferLength, lpBuffer);

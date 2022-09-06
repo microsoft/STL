@@ -2959,7 +2959,7 @@ namespace iter_ops {
             trace t{};
             I first{t};
             same_as<iter_difference_t<I>> auto const result = distance(move(first), default_sentinel);
-            STATIC_ASSERT(!noexcept(distance(move(first), default_sentinel))); // No conditional noexcept
+            STATIC_ASSERT(noexcept(distance(move(first), default_sentinel)));
             assert(result == sentinel_position);
             assert((t == trace{.compares_ = sentinel_position + 1, .increments_ = sentinel_position}));
         }
@@ -3271,17 +3271,19 @@ struct std::common_type<move_iterator_test::input_iter<true>::rvalue_reference,
 
 namespace move_iterator_test {
     // Validate the iterator_concept/iterator_category metaprogramming
-    STATIC_ASSERT(same_as<move_iterator<simple_contiguous_iter<>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_contiguous_iter<>>::iterator_concept, random_access_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_contiguous_iter<>>::iterator_category, random_access_iterator_tag>);
-    STATIC_ASSERT(same_as<move_iterator<simple_random_iter<>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_random_iter<>>::iterator_concept, random_access_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_random_iter<>>::iterator_category, random_access_iterator_tag>);
-    STATIC_ASSERT(same_as<move_iterator<simple_bidi_iter<>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_bidi_iter<>>::iterator_concept, bidirectional_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_bidi_iter<>>::iterator_category, bidirectional_iterator_tag>);
-    STATIC_ASSERT(same_as<move_iterator<simple_forward_iter<>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_forward_iter<>>::iterator_concept, forward_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_forward_iter<>>::iterator_category, forward_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_concept, input_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_category, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<input_iter<true>>::iterator_concept, input_iterator_tag>);
     STATIC_ASSERT(!has_member_iter_category<move_iterator<input_iter<true>>>);
+    STATIC_ASSERT(same_as<move_iterator<input_iter<false>>::iterator_concept, input_iterator_tag>);
     STATIC_ASSERT(!has_member_iter_category<move_iterator<input_iter<false>>>);
 
     // Validate that move_iterator<some_proxy_iterator>::reference is iter_rvalue_reference_t<some_proxy_iterator>

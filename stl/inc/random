@@ -790,12 +790,6 @@ protected:
     typename _Swc_Traits::_Cy_t _Carry;
 };
 
-template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
-const size_t _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>::short_lag;
-
-template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
-const size_t _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>::long_lag;
-
 template <class _Ty, _Ty _Mx, size_t _Nw>
 struct _Swc_traits { // traits for subtract_with_carry generator
     using _Cy_t   = int;
@@ -1005,6 +999,18 @@ public:
 };
 
 #if _HAS_TR1_NAMESPACE
+_CONSTEVAL double _Cx_exp2(const int _Exp) noexcept {
+    double _Ret = 1.0;
+    for (int _Count = _Exp; _Count > 0; --_Count) {
+        _Ret *= 2.0;
+    }
+    for (int _Count = _Exp; _Count < 0; ++_Count) {
+        _Ret *= 0.5;
+    }
+
+    return _Ret;
+}
+
 template <class _Ty, size_t _Wx, size_t _Rx>
 struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     using _Cy_t   = _Ty;
@@ -1012,9 +1018,9 @@ struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     using _Mod_t  = _Ty;
     using _Seed_t = unsigned int;
 
-    static const _Cy_t _Cy;
-    static const _Mod_t _Mod;
-    static const _Ty _Max;
+    static constexpr _Cy_t _Cy   = static_cast<_Cy_t>(_Cx_exp2(static_cast<int>(-static_cast<ptrdiff_t>(_Wx))));
+    static constexpr _Mod_t _Mod = 1;
+    static constexpr _Ty _Max    = 1;
     static constexpr int _Nwords = (_Wx + 31) / 32;
 
     template <class _Gen>
@@ -1058,23 +1064,9 @@ struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     }
 
 private:
-    static const _Ty _Scale1;
+    static constexpr _Ty _Scale1         = static_cast<_Ty>(_Cx_exp2(_Wx % 32));
     static constexpr unsigned long _Mask = ~((~0UL) << (_Wx % 32));
 };
-
-template <class _Ty, size_t _Wx, size_t _Rx>
-const typename _Swc_01_traits<_Ty, _Wx, _Rx>::_Cy_t
-    _Swc_01_traits<_Ty, _Wx, _Rx>::_Cy = static_cast<typename _Swc_01_traits<_Ty, _Wx, _Rx>::_Cy_t>(
-        _CSTD ldexp(1.0, static_cast<int>(-static_cast<ptrdiff_t>(_Wx))));
-
-template <class _Ty, size_t _Wx, size_t _Rx>
-const typename _Swc_01_traits<_Ty, _Wx, _Rx>::_Mod_t _Swc_01_traits<_Ty, _Wx, _Rx>::_Mod = 1;
-
-template <class _Ty, size_t _Wx, size_t _Rx>
-const _Ty _Swc_01_traits<_Ty, _Wx, _Rx>::_Max = 1;
-
-template <class _Ty, size_t _Wx, size_t _Rx>
-const _Ty _Swc_01_traits<_Ty, _Wx, _Rx>::_Scale1 = static_cast<_Ty>(_CSTD ldexp(1.0, _Wx % 32));
 
 template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class _DEPRECATE_TR1_NAMESPACE subtract_with_carry_01
@@ -1091,12 +1083,6 @@ public:
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, subtract_with_carry_01> = 0>
     subtract_with_carry_01(_Gen& _Gx) : _Mybase(_Gx) {}
 };
-
-_STL_DISABLE_DEPRECATED_WARNING
-template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
-const size_t subtract_with_carry_01<_Ty, _Wx, _Sx, _Rx>::word_size;
-_STL_RESTORE_DEPRECATED_WARNING
-
 #endif // _HAS_TR1_NAMESPACE
 
 template <class _Ty, int _Wx, int _Nx, int _Mx, int _Rx, _Ty _Px, int _Ux, int _Sx, _Ty _Bx, int _Tx, _Ty _Cx, int _Lx>
@@ -1442,12 +1428,6 @@ private:
     base_type _Eng;
     int _Nx;
 };
-
-template <class _Engine, int _Px, int _Rx>
-const int discard_block<_Engine, _Px, _Rx>::block_size;
-
-template <class _Engine, int _Px, int _Rx>
-const int discard_block<_Engine, _Px, _Rx>::used_block;
 
 template <class _Engine, size_t _Px, size_t _Rx>
 class discard_block_engine : public discard_block<_Engine, _Px, _Rx> { // discard_block_engine compound engine
@@ -4932,14 +4912,14 @@ using mt19937 = mersenne_twister_engine<unsigned int, 32, 624, 397, 31, 0x9908b0
 
 #if _HAS_TR1_NAMESPACE
 _STL_DISABLE_DEPRECATED_WARNING
-using _Ranbase = subtract_with_carry<unsigned int, 1 << 24, 10, 24>;
-_DEPRECATE_TR1_NAMESPACE typedef discard_block<_Ranbase, 223, 24> ranlux3;
-_DEPRECATE_TR1_NAMESPACE typedef discard_block<_Ranbase, 389, 24> ranlux4;
+using _Ranbase                         = subtract_with_carry<unsigned int, 1 << 24, 10, 24>;
+using ranlux3 _DEPRECATE_TR1_NAMESPACE = discard_block<_Ranbase, 223, 24>;
+using ranlux4 _DEPRECATE_TR1_NAMESPACE = discard_block<_Ranbase, 389, 24>;
 
-_DEPRECATE_TR1_NAMESPACE typedef subtract_with_carry_01<float, 24, 10, 24> ranlux_base_01;
-_DEPRECATE_TR1_NAMESPACE typedef subtract_with_carry_01<double, 48, 5, 12> ranlux64_base_01;
-_DEPRECATE_TR1_NAMESPACE typedef discard_block<ranlux_base_01, 223, 24> ranlux3_01;
-_DEPRECATE_TR1_NAMESPACE typedef discard_block<ranlux_base_01, 389, 24> ranlux4_01;
+using ranlux_base_01 _DEPRECATE_TR1_NAMESPACE   = subtract_with_carry_01<float, 24, 10, 24>;
+using ranlux64_base_01 _DEPRECATE_TR1_NAMESPACE = subtract_with_carry_01<double, 48, 5, 12>;
+using ranlux3_01 _DEPRECATE_TR1_NAMESPACE       = discard_block<ranlux_base_01, 223, 24>;
+using ranlux4_01 _DEPRECATE_TR1_NAMESPACE       = discard_block<ranlux_base_01, 389, 24>;
 _STL_RESTORE_DEPRECATED_WARNING
 #endif // _HAS_TR1_NAMESPACE
 

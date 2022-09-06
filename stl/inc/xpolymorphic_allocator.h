@@ -130,7 +130,7 @@ namespace pmr {
     public:
         virtual ~memory_resource() noexcept = default;
 
-        _NODISCARD __declspec(allocator) void* allocate(_CRT_GUARDOVERFLOW const size_t _Bytes,
+        _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) void* allocate(_CRT_GUARDOVERFLOW const size_t _Bytes,
             const size_t _Align = alignof(max_align_t)) { // allocate _Bytes bytes of memory with alignment _Align
             _STL_ASSERT(_Is_pow_2(_Align), "memory_resource::allocate(): Alignment must be a power of two.");
             void* _Ptr = do_allocate(_Bytes, _Align);
@@ -203,7 +203,7 @@ namespace pmr {
 
         polymorphic_allocator& operator=(const polymorphic_allocator&) = delete;
 
-        _NODISCARD __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
+        _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
             // get space for _Count objects of type _Ty from _Resource
             void* const _Vp = _Resource->allocate(_Get_size_of_n<sizeof(_Ty)>(_Count), alignof(_Ty));
             return static_cast<_Ty*>(_Vp);
@@ -216,7 +216,7 @@ namespace pmr {
         }
 
 #if _HAS_CXX20
-        _NODISCARD __declspec(allocator) void* allocate_bytes(
+        _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) void* allocate_bytes(
             const size_t _Bytes, const size_t _Align = alignof(max_align_t)) {
             return _Resource->allocate(_Bytes, _Align);
         }
@@ -227,7 +227,8 @@ namespace pmr {
         }
 
         template <class _Uty>
-        _NODISCARD __declspec(allocator) _Uty* allocate_object(_CRT_GUARDOVERFLOW const size_t _Count = 1) {
+        _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) _Uty* allocate_object(
+            _CRT_GUARDOVERFLOW const size_t _Count = 1) {
             void* const _Vp = allocate_bytes(_Get_size_of_n<sizeof(_Uty)>(_Count), alignof(_Uty));
             return static_cast<_Uty*>(_Vp);
         }
@@ -238,7 +239,7 @@ namespace pmr {
         }
 
         template <class _Uty, class... _Types>
-        _NODISCARD __declspec(allocator) _Uty* new_object(_Types&&... _Args) {
+        _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) _Uty* new_object(_Types&&... _Args) {
             _Uty* const _Ptr = allocate_object<_Uty>();
             _TRY_BEGIN
             construct(_Ptr, _STD forward<_Types>(_Args)...);
@@ -281,6 +282,18 @@ namespace pmr {
             // retrieve this allocator's memory_resource
             return _Resource;
         }
+
+        _NODISCARD_FRIEND bool operator==(
+            const polymorphic_allocator& _Lhs, const polymorphic_allocator& _Rhs) noexcept {
+            return *_Lhs._Resource == *_Rhs._Resource;
+        }
+
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(
+            const polymorphic_allocator& _Lhs, const polymorphic_allocator& _Rhs) noexcept {
+            return *_Lhs._Resource != *_Rhs._Resource;
+        }
+#endif // !_HAS_CXX20
 
     private:
         memory_resource* _Resource = _STD pmr::get_default_resource();
