@@ -1112,7 +1112,8 @@ export const daily_table: DailyRow[] = [
     { date: '2022-09-01', merged: 65.67, pr: 22, cxx20: null, cxx23: 24, lwg: 4, issue: 399, bug: 134, avg_age: 183.67, avg_wait: 123.62, sum_age: 134.69, sum_wait: 90.65, },
     { date: '2022-09-02', merged: 62.67, pr: 24, cxx20: null, cxx23: 24, lwg: 4, issue: 399, bug: 134, avg_age: 169.35, avg_wait: 113.76, sum_age: 135.48, sum_wait: 91.01, },
     { date: '2022-09-03', merged: 64.67, pr: 22, cxx20: null, cxx23: 24, lwg: 4, issue: 398, bug: 133, avg_age: 185.40, avg_wait: 124.77, sum_age: 135.96, sum_wait: 91.50, },
-    { date: '2022-09-04', merged: 61.67, pr: 24, cxx20: null, cxx23: 24, lwg: 4, issue: 399, bug: 133, avg_age: 170.92, avg_wait: 115.34, sum_age: 136.73, sum_wait: 92.27, },
-    { date: '2022-09-05', merged: 58.69, pr: 25, cxx20: null, cxx23: 24, lwg: 4, issue: 399, bug: 133, avg_age: 165.06, avg_wait: 111.71, sum_age: 137.55, sum_wait: 93.09, },
+    { date: '2022-09-04', merged: 61.67, pr: 24, cxx20: null, cxx23: 24, lwg: 4, issue: 399, bug: 134, avg_age: 170.92, avg_wait: 115.34, sum_age: 136.73, sum_wait: 92.27, },
+    { date: '2022-09-05', merged: 58.69, pr: 25, cxx20: null, cxx23: 24, lwg: 4, issue: 399, bug: 134, avg_age: 165.06, avg_wait: 111.71, sum_age: 137.55, sum_wait: 93.09, },
+    { date: '2022-09-06', merged: 56.39, pr: 27, cxx20: null, cxx23: 24, lwg: 4, issue: 399, bug: 134, avg_age: 153.78, avg_wait: 104.38, sum_age: 138.40, sum_wait: 93.94, },
 ];
 // Generated file - DO NOT EDIT manually!
