@@ -361,7 +361,7 @@ public:
         return _Ptr ? _Ptr->_Name.c_str() : string{};
     }
 
-    _Ret_z_ const char* c_str() const {
+    _Ret_z_ const char* _C_str() const noexcept {
         return _Ptr ? _Ptr->_Name.c_str() : "";
     }
 
@@ -717,7 +717,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new codecvt(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new codecvt(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -899,7 +899,7 @@ public:
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
             _STL_DISABLE_DEPRECATED_WARNING
-            *_Ppf = new codecvt(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new codecvt(_Locinfo(_Ploc->_C_str()));
             _STL_RESTORE_DEPRECATED_WARNING
         }
 
@@ -1197,7 +1197,7 @@ public:
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
             _STL_DISABLE_DEPRECATED_WARNING
-            *_Ppf = new codecvt(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new codecvt(_Locinfo(_Ploc->_C_str()));
             _STL_RESTORE_DEPRECATED_WARNING
         }
 
@@ -1965,7 +1965,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new codecvt(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new codecvt(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -2164,7 +2164,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new codecvt(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new codecvt(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -2459,7 +2459,7 @@ public:
 
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -2716,7 +2716,7 @@ public:
 
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -2881,7 +2881,7 @@ public:
 
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -3082,7 +3082,7 @@ public:
 
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
