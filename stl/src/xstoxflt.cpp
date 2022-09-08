@@ -22,7 +22,6 @@ _In_range_(0, maxsig) int _Stoxflt(
     char buf[_Maxsig + 1]; // worst case, with room for rounding digit
     int nsig = 0; // number of significant digits seen
     int seen = 0; // any valid field characters seen
-    int word = 0; // current long word to fill
 
     const char* pd;
     static const char digits[] = "0123456789abcdefABCDEF";
@@ -88,6 +87,9 @@ _In_range_(0, maxsig) int _Stoxflt(
     }
 
     lo[0] <<= 2; // change hex exponent to binary exponent
+
+    int word; // current long word to fill
+
     if (seen) { // convert digit sequence to words
         int bufidx  = 0; // next digit in buffer
         int wordidx = _Ndig - nsig % _Ndig; // next digit in word (% _Ndig)
