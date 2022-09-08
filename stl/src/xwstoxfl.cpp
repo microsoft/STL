@@ -27,7 +27,7 @@ _In_range_(0, maxsig) int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t
     static constexpr wchar_t digits[] = {// hex digits in both cases
         L'0', L'1', L'2', L'3', L'4', L'5', L'6', L'7', L'8', L'9', L'a', L'b', L'c', L'd', L'e', L'f', L'A', L'B',
         L'C', L'D', L'E', L'F', L'\0'};
-    static const char vals[]          = {// values of hex digits
+    static constexpr char vals[]      = {// values of hex digits
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 10, 11, 12, 13, 14, 15};
 
     maxsig *= _Ndig; // convert word count to digit count
