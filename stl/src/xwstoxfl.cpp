@@ -22,7 +22,6 @@ _In_range_(0, maxsig) int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t
     char buf[_Maxsig + 1]; // worst case, with room for rounding digit
     int nsig = 0; // number of significant digits seen
     int seen = 0; // any valid field characters seen
-    int word; // current long word to fill
 
     const wchar_t* pd;
     static constexpr wchar_t digits[] = {// hex digits in both cases
@@ -93,6 +92,9 @@ _In_range_(0, maxsig) int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t
     }
 
     lo[0] <<= 2; // change hex exponent to binary exponent
+
+    int word; // current long word to fill
+
     if (seen) { // convert digit sequence to words
         int bufidx  = 0; // next digit in buffer
         int wordidx = _Ndig - nsig % _Ndig; // next digit in word (% _Ndig)
