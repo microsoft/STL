@@ -129,9 +129,7 @@ _In_range_(0, maxsig) int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t
                 s = ssav; // roll back if incomplete exponent
             }
         }
-    }
-
-    else {
+    } else {
         word = 0; // return zero if bad parse
     }
 
