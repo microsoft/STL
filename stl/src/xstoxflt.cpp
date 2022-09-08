@@ -122,9 +122,7 @@ _In_range_(0, maxsig) int _Stoxflt(
                 s = ssav; // roll back if incomplete exponent
             }
         }
-    }
-
-    if (!seen) {
+    } else {
         word = 0; // return zero if bad parse
     }
 
