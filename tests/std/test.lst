@@ -272,6 +272,7 @@ tests\P0220R1_polymorphic_memory_resources
 tests\P0220R1_sample
 tests\P0220R1_searchers
 tests\P0220R1_string_view
+tests\P0226R1_math_special_functions
 tests\P0288R9_move_only_function
 tests\P0295R0_gcd_lcm
 tests\P0323R12_expected

@@ -552,11 +552,6 @@ void assert_close(const double f, const double g) {
     assert(abs(f - g) < 0.01);
 }
 
-// Also test GH-3076 <cmath>: Invalid output for incomplete elliptic integral of the second kind with k = 1
-void test_gh_3076() {
-    assert_close(ellint_2(1, 6.2831853071795862), 4.0);
-}
-
 int main() {
     test_assoc_laguerre();
     test_assoc_legendre();
@@ -579,6 +574,4 @@ int main() {
     test_sph_bessel();
     test_sph_legendre();
     test_sph_neumann();
-
-    test_gh_3076();
 }
