@@ -99,13 +99,11 @@ import <version>;
 using namespace std;
 
 constexpr bool test_source_location() {
-#ifdef __cpp_lib_source_location
     const auto sl = source_location::current();
     assert(sl.line() == __LINE__ - 1);
     assert(sl.column() == 1);
     assert(sl.function_name() == "test_source_location"sv);
     assert(string_view{sl.file_name()}.ends_with("test.cpp"sv));
-#endif // __cpp_lib_source_location
     return true;
 }
 
