@@ -7,13 +7,13 @@
 #include <random>
 
 _STD_BEGIN
-constexpr int shift                 = _STD numeric_limits<unsigned long long>::digits / 2;
+constexpr unsigned int shift        = _STD numeric_limits<unsigned long long>::digits / 2;
 constexpr unsigned long long mask   = ~(~0ULL << shift);
 constexpr unsigned long long maxVal = mask + 1;
 
 _NODISCARD unsigned long long __CLRCALL_PURE_OR_CDECL _MP_Get(
     _MP_arr u) noexcept { // convert multi-word value to scalar value
-    return (u[1] << shift) + u[0];
+    return (u[1] << shift) | u[0];
 }
 
 static void add(unsigned long long* u, int ulen, unsigned long long* v,
@@ -63,7 +63,7 @@ void __CLRCALL_PURE_OR_CDECL _MP_Mul(
 
     // Knuth, vol. 2, p. 268, Algorithm M
     // M1: [Initialize.]
-    for (int i = 0; i < m + n + 1; ++i) {
+    for (int i = 0; i <= m + n; ++i) {
         w[i] = 0;
     }
 
@@ -75,9 +75,9 @@ void __CLRCALL_PURE_OR_CDECL _MP_Mul(
             int i;
             // M3: [Initialize i.]
             for (i = 0; i < m; ++i) { // M4: [Multiply and add.]
-                w[i + j] = u[i] * v[j] + w[i + j] + k;
-                k        = w[i + j] >> shift;
-                w[i + j] &= mask;
+                const auto t = u[i] * v[j] + w[i + j] + k;
+                w[i + j]     = t & mask;
+                k            = t >> shift;
                 // M5: [Loop on i.]
             }
             w[i + j] = k;
@@ -90,16 +90,15 @@ static void div(_MP_arr u,
     unsigned long long
         v0) noexcept { // divide multi-word value by scalar value (fits in lower half of unsigned long long)
     unsigned long long k = 0;
-    int ulen             = _MP_len;
-    while (0 <= --ulen) { // propagate remainder and divide
-        unsigned long long tmp = (k << shift) + u[ulen];
+    for (int ulen = _MP_len - 1; ulen >= 0; --ulen) { // propagate remainder and divide
+        unsigned long long tmp = (k << shift) | u[ulen];
         u[ulen]                = tmp / v0;
-        k                      = tmp % v0;
+        k                      = tmp - (u[ulen] * v0);
     }
 }
 
 _NODISCARD static int limit(const unsigned long long* u, int ulen) noexcept { // get index of last non-zero value
-    while (u[ulen - 1] == 0) {
+    while (ulen > 0 && u[ulen - 1] == 0) {
         --ulen;
     }
 
@@ -121,29 +120,27 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
 
     // Knuth, vol. 2, p. 272, Algorithm D
     // D1: [Normalize.]
-    unsigned long long d = maxVal / (v[n - 1] + 1);
+    unsigned long long d = mask / v[n - 1];
     if (d != 1) { // scale numerator and divisor
         mul(u, _MP_len, d);
         mul(v, n, d);
     }
     // D2: [Initialize j.]
-    for (int j = m; 0 <= j; --j) { // D3: [Calculate qh.]
-        unsigned long long qh = ((u[j + n] << shift) + u[j + n - 1]) / v[n - 1];
+    for (int j = m; j >= 0; --j) { // D3: [Calculate qh.]
+        unsigned long long t  = ((u[j + n] << shift) | (u[j + n - 1]));
+        unsigned long long qh = t / v[n - 1];
         if (qh == 0) {
             continue;
         }
-
-        unsigned long long rh = ((u[j + n] << shift) + u[j + n - 1]) % v[n - 1];
-        for (;;) {
+        // a mod b = a - (floor(a / b) * b)
+        unsigned long long rh = t - qh * v[n - 1];
 #pragma warning(suppress : 6385) // TRANSITION, GH-1008
-            if (qh < maxVal && qh * v[n - 2] <= (rh << shift) + u[j + n - 2]) {
+        while (qh == maxVal || (qh * v[n - 2] > ((rh << shift) | u[j + n - 2]))) {
+            // reduce tentative value and retry
+            --qh;
+            rh += v[n - 1];
+            if (rh >= maxVal) {
                 break;
-            } else { // reduce tentative value and retry
-                --qh;
-                rh += v[n - 1];
-                if (maxVal <= rh) {
-                    break;
-                }
             }
         }
 
@@ -170,7 +167,6 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
         }
         // D5: [Test remainder.]
         if (k != 0) { // D6: [Add back.]
-            --qh;
             add(u + j, n + 1, v, n);
         }
         // D7: [Loop on j.]
