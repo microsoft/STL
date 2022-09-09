@@ -96,11 +96,11 @@ import <version>;
 #include <force_include.hpp>
 using namespace std;
 
-constexpr bool test_source_location() {
+constexpr bool impl_test_source_location() {
     const auto sl = source_location::current();
     assert(sl.line() == __LINE__ - 1);
     assert(sl.column() == 1);
-    assert(sl.function_name() == "test_source_location"sv);
+    assert(sl.function_name() == "impl_test_source_location"sv);
     assert(string_view{sl.file_name()}.ends_with("test.cpp"sv));
     return true;
 }
@@ -691,8 +691,8 @@ __declspec(dllexport) // for <stacktrace> test export main to have it named even
 
     {
         puts("Testing <source_location>.");
-        assert(test_source_location());
-        static_assert(test_source_location());
+        assert(impl_test_source_location());
+        static_assert(impl_test_source_location());
     }
 
     {
