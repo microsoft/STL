@@ -445,16 +445,6 @@ __declspec(dllexport) // for <stacktrace> test export main to have it named even
     }
 
     {
-        puts("Testing <memory_resource>.");
-        pmr::monotonic_buffer_resource mbr{};
-        pmr::polymorphic_allocator<int> al{&mbr};
-        pmr::vector<int> v({10, 20, 30, 40, 50}, al);
-        assert(v[2] == 30);
-        v.push_back(60);
-        assert(v[5] == 60);
-    }
-
-    {
         puts("Testing <memory>.");
         unique_ptr<int> up = make_unique<int>(1729);
         assert(*up == 1729);
@@ -467,6 +457,16 @@ __declspec(dllexport) // for <stacktrace> test export main to have it named even
         assert(*other == 1729);
         ++*sp;
         assert(*other == 1730);
+    }
+
+    {
+        puts("Testing <memory_resource>.");
+        pmr::monotonic_buffer_resource mbr{};
+        pmr::polymorphic_allocator<int> al{&mbr};
+        pmr::vector<int> v({10, 20, 30, 40, 50}, al);
+        assert(v[2] == 30);
+        v.push_back(60);
+        assert(v[5] == 60);
     }
 
     {
@@ -832,20 +832,20 @@ __declspec(dllexport) // for <stacktrace> test export main to have it named even
     }
 
     {
+        puts("Testing <string>.");
+        const string small_string{"homeowner"};
+        const string large_string{"Cute fluffy kittens are so adorable when they meow and purr."};
+        assert(small_string.find("meow") == 2);
+        assert(large_string.find("meow") == 46);
+    }
+
+    {
         puts("Testing <string_view>.");
         constexpr string_view catenary{"catenary"};
         assert(catenary.starts_with("cat"));
         assert(!catenary.starts_with("dog"));
         static_assert(catenary.starts_with("cat"));
         static_assert(!catenary.starts_with("dog"));
-    }
-
-    {
-        puts("Testing <string>.");
-        const string small_string{"homeowner"};
-        const string large_string{"Cute fluffy kittens are so adorable when they meow and purr."};
-        assert(small_string.find("meow") == 2);
-        assert(large_string.find("meow") == 46);
     }
 
     {
