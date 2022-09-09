@@ -3,6 +3,8 @@
 
 // _Sinh function
 
+#include <xutility>
+
 #include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
