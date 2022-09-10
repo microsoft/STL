@@ -368,7 +368,7 @@ void test_iosfwd() {
 
 void test_iostream() {
     puts("Testing <iostream>.");
-    cout << "Testing P1502R1_standard_library_header_units.\n";
+    cout << "Testing cout.\n";
     assert(cin.tie() == &cout);
 }
 
@@ -861,7 +861,7 @@ void test_syncstream() {
     assert(sync_buf.get_allocator() == allocator<char>{});
     assert(sync_buf.emit() == false);
     osyncstream sync_str{cout};
-    sync_str << "Testing P1502R1_standard_library_header_units.\n";
+    sync_str << "Testing osyncstream.\n";
     assert(sync_str.rdbuf()->get_wrapped() == cout.rdbuf());
 }
 
