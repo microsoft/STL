@@ -9,7 +9,6 @@
 // This EXCLUDES the <cmeow> headers in:
 // [tab:headers.cpp.c]: "Table 22: C++ headers for C library facilities"
 
-// clang-format off
 import <algorithm>;
 import <any>;
 import <array>;
@@ -90,7 +89,6 @@ import <valarray>;
 import <variant>;
 import <vector>;
 import <version>;
-// clang-format on
 
 #include <assert.h> // intentionally not <cassert>
 #include <stdio.h> // intentionally not <cstdio>
