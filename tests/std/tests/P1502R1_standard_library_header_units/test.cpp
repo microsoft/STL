@@ -94,9 +94,9 @@ import <version>;
 #include <stdio.h> // intentionally not <cstdio>
 
 #include <force_include.hpp>
-using namespace std;
 
 void test_algorithm() {
+    using namespace std;
     puts("Testing <algorithm>.");
     constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
     assert(count(begin(arr), end(arr), 0) == 4);
@@ -106,6 +106,7 @@ void test_algorithm() {
 }
 
 void test_any() {
+    using namespace std;
     puts("Testing <any>.");
     any a1{1729};
     any a2{7.5};
@@ -115,6 +116,7 @@ void test_any() {
 }
 
 void test_array() {
+    using namespace std;
     puts("Testing <array>.");
     constexpr array arr{10, 20, 30, 40, 50};
     assert(arr[2] == 30);
@@ -122,6 +124,7 @@ void test_array() {
 }
 
 void test_atomic() {
+    using namespace std;
     puts("Testing <atomic>.");
     atomic<int> atom{1729};
     assert(atom.load() == 1729);
@@ -131,6 +134,7 @@ void test_atomic() {
 }
 
 void test_barrier() {
+    using namespace std;
     puts("Testing <barrier>.");
     static_assert(barrier<>::max() >= 5);
     barrier b{2};
@@ -155,12 +159,14 @@ void test_barrier() {
 }
 
 void test_bit() {
+    using namespace std;
     puts("Testing <bit>.");
     assert(popcount(0x1234ABCDu) == 15);
     static_assert(popcount(0x1234ABCDu) == 15);
 }
 
 void test_bitset() {
+    using namespace std;
     puts("Testing <bitset>.");
     constexpr bitset<32> b{0x1234ABCDu};
     assert(b[3] && b[2] && !b[1] && b[0]);
@@ -168,6 +174,7 @@ void test_bitset() {
 }
 
 void test_charconv() {
+    using namespace std;
     puts("Testing <charconv>.");
     char buf[4]{};
     const to_chars_result result = to_chars(buf, end(buf), 3.14);
@@ -178,6 +185,7 @@ void test_charconv() {
 }
 
 void test_chrono() {
+    using namespace std;
     puts("Testing <chrono>.");
     constexpr chrono::seconds dur = 3min;
     assert(dur.count() == 180);
@@ -185,6 +193,7 @@ void test_chrono() {
 }
 
 void test_codecvt() {
+    using namespace std;
     puts("Testing <codecvt>.");
     const string utf8_koshka_cat{"\xD0\xBA\xD0\xBE\xD1\x88\xD0\xBA\xD0\xB0_\xF0\x9F\x90\x88"};
     const wstring utf16_koshka_cat{L"\x043A\x043E\x0448\x043A\x0430_\xD83D\xDC08"};
@@ -196,12 +205,14 @@ void test_codecvt() {
 }
 
 void test_compare() {
+    using namespace std;
     puts("Testing <compare>.");
     assert(is_lt(10 <=> 20));
     static_assert(is_lt(10 <=> 20));
 }
 
 void test_complex() {
+    using namespace std;
     puts("Testing <complex>.");
     constexpr complex<double> c{3.0, 4.0};
     assert(norm(c) == 25.0);
@@ -209,6 +220,7 @@ void test_complex() {
 }
 
 void test_concepts() {
+    using namespace std;
     puts("Testing <concepts>.");
     static_assert(signed_integral<short>);
     static_assert(!signed_integral<unsigned short>);
@@ -216,6 +228,7 @@ void test_concepts() {
 }
 
 void test_condition_variable() {
+    using namespace std;
     puts("Testing <condition_variable>.");
     condition_variable cv;
     mutex mut;
@@ -254,6 +267,7 @@ void test_condition_variable() {
 }
 
 void test_coroutine() {
+    using namespace std;
     puts("Testing <coroutine>.");
     constexpr coroutine_handle<> handle{};
     assert(handle.address() == nullptr);
@@ -261,12 +275,14 @@ void test_coroutine() {
 }
 
 void test_deque() {
+    using namespace std;
     puts("Testing <deque>.");
     const deque<int> d{10, 20, 30, 40, 50};
     assert(d[2] == 30);
 }
 
 void test_exception() {
+    using namespace std;
     puts("Testing <exception>.");
     assert(uncaught_exceptions() == 0);
     const exception_ptr ep = current_exception();
@@ -274,18 +290,21 @@ void test_exception() {
 }
 
 void test_execution() {
+    using namespace std;
     puts("Testing <execution>.");
     constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
     assert(count(execution::par, begin(arr), end(arr), 0) == 4);
 }
 
 void test_expected() {
+    using namespace std;
     puts("Testing <expected>.");
     constexpr expected<double, int> test{unexpect, 42};
     assert(test.error() == 42);
 }
 
 void test_filesystem() {
+    using namespace std;
     puts("Testing <filesystem>.");
     constexpr wstring_view dot{L"."};
     error_code ec{};
@@ -296,24 +315,28 @@ void test_filesystem() {
 }
 
 void test_format() {
+    using namespace std;
     puts("Testing <format>.");
     assert(format("{} {}", 1729, "kittens") == "1729 kittens");
     assert(format(L"{} {}", 1729, L"kittens") == L"1729 kittens");
 }
 
 void test_forward_list() {
+    using namespace std;
     puts("Testing <forward_list>.");
     const forward_list<int> fl{10, 20, 30, 40, 50};
     assert(*next(fl.begin(), 2) == 30);
 }
 
 void test_fstream() {
+    using namespace std;
     puts("Testing <fstream>.");
     const ifstream f{};
     assert(!f.is_open());
 }
 
 void test_functional() {
+    using namespace std;
     puts("Testing <functional>.");
     function<int(int, int)> f{multiplies{}};
     assert(f(3, 5) == 15);
@@ -325,6 +348,7 @@ void test_functional() {
 }
 
 void test_future() {
+    using namespace std;
     puts("Testing <future>.");
     promise<int> p{};
     future<int> f{p.get_future()};
@@ -335,12 +359,14 @@ void test_future() {
 }
 
 void test_initializer_list() {
+    using namespace std;
     puts("Testing <initializer_list>.");
     const initializer_list<int> il{10, 20, 30, 40, 50};
     assert(il.begin()[2] == 30);
 }
 
 void test_iomanip() {
+    using namespace std;
     puts("Testing <iomanip>.");
     ostringstream oss;
     oss << "I have " << setfill('.') << setw(7) << 9 * 9 * 9 + 10 * 10 * 10 << " cute fluffy kittens.";
@@ -352,6 +378,7 @@ void test_iomanip() {
 }
 
 void test_ios() {
+    using namespace std;
     puts("Testing <ios>.");
     ios b{nullptr};
     assert(b.rdbuf() == nullptr);
@@ -361,24 +388,28 @@ void test_ios() {
 }
 
 void test_iosfwd() {
+    using namespace std;
     puts("Testing <iosfwd>.");
     static_assert(is_same_v<istream, basic_istream<char>>);
     static_assert(is_same_v<wostream, basic_ostream<wchar_t>>);
 }
 
 void test_iostream() {
+    using namespace std;
     puts("Testing <iostream>.");
     cout << "Testing cout.\n";
     assert(cin.tie() == &cout);
 }
 
 void test_istream() {
+    using namespace std;
     puts("Testing <istream>.");
     const istream is{nullptr};
     assert(is.gcount() == 0);
 }
 
 void test_iterator() {
+    using namespace std;
     puts("Testing <iterator>.");
     constexpr int arr[]{10, 20, 30, 40, 50};
     constexpr reverse_iterator<const int*> ri{end(arr)};
@@ -389,6 +420,7 @@ void test_iterator() {
 }
 
 void test_latch() {
+    using namespace std;
     puts("Testing <latch>.");
     static_assert(latch::max() >= 5);
     for (const auto& release_wait : {true, false}) {
@@ -407,18 +439,21 @@ void test_latch() {
 }
 
 void test_limits() {
+    using namespace std;
     puts("Testing <limits>.");
     static_assert(numeric_limits<short>::min() == -32768);
     static_assert(numeric_limits<short>::max() == 32767);
 }
 
 void test_list() {
+    using namespace std;
     puts("Testing <list>.");
     const list<int> l{10, 20, 30, 40, 50};
     assert(*next(l.begin(), 2) == 30);
 }
 
 void test_locale() {
+    using namespace std;
     puts("Testing <locale>.");
     locale loc{};
     assert(isdigit('1', loc));
@@ -428,12 +463,14 @@ void test_locale() {
 }
 
 void test_map() {
+    using namespace std;
     puts("Testing <map>.");
     map<int, int> m{{10, 11}, {20, 22}, {30, 33}, {40, 44}, {50, 55}};
     assert(m[30] == 33);
 }
 
 void test_memory() {
+    using namespace std;
     puts("Testing <memory>.");
     unique_ptr<int> up = make_unique<int>(1729);
     assert(*up == 1729);
@@ -449,6 +486,7 @@ void test_memory() {
 }
 
 void test_memory_resource() {
+    using namespace std;
     puts("Testing <memory_resource>.");
     pmr::monotonic_buffer_resource mbr{};
     pmr::polymorphic_allocator<int> al{&mbr};
@@ -459,6 +497,7 @@ void test_memory_resource() {
 }
 
 void test_mutex() {
+    using namespace std;
     puts("Testing <mutex>.");
     // see above, tested with <condition_variable>
     int n       = 10;
@@ -472,6 +511,7 @@ void test_mutex() {
 }
 
 void test_new() {
+    using namespace std;
     puts("Testing <new>.");
     bool caught_bad_alloc = false;
 
@@ -495,12 +535,14 @@ void test_new() {
 }
 
 void test_numbers() {
+    using namespace std;
     puts("Testing <numbers>.");
     static_assert(3.14 < numbers::pi && numbers::pi < 3.15);
     static_assert(2.71828f < numbers::e_v<float> && numbers::e_v<float> < 2.71829f);
 }
 
 void test_numeric() {
+    using namespace std;
     puts("Testing <numeric>.");
     constexpr int arr[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     assert(accumulate(begin(arr), end(arr), 0) == 55);
@@ -508,6 +550,7 @@ void test_numeric() {
 }
 
 void test_optional() {
+    using namespace std;
     puts("Testing <optional>.");
     constexpr optional<int> opt{in_place, 1729};
     assert(opt.has_value());
@@ -523,12 +566,14 @@ void test_optional() {
 }
 
 void test_ostream() {
+    using namespace std;
     puts("Testing <ostream>.");
     const ostream os{nullptr};
     assert(os.rdbuf() == nullptr);
 }
 
 void test_queue() {
+    using namespace std;
     puts("Testing <queue>.");
     queue<int> q;
     q.push(10);
@@ -561,6 +606,7 @@ void test_queue() {
 }
 
 void test_random() {
+    using namespace std;
     puts("Testing <random>.");
     minstd_rand0 lcg;
 
@@ -572,6 +618,7 @@ void test_random() {
 }
 
 void test_ranges() {
+    using namespace std;
     puts("Testing <ranges>.");
     constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
     assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
@@ -579,11 +626,13 @@ void test_ranges() {
 }
 
 void test_ratio() {
+    using namespace std;
     puts("Testing <ratio>.");
     static_assert(ratio_equal_v<ratio_multiply<milli, hecto>, deci>);
 }
 
 void test_regex() {
+    using namespace std;
     puts("Testing <regex>.");
     const regex r{R"(\w+)"};
     const string s{"cute! fluffy? kittens."};
@@ -598,6 +647,7 @@ void test_regex() {
 }
 
 void test_scoped_allocator() {
+    using namespace std;
     puts("Testing <scoped_allocator>.");
     vector<int, scoped_allocator_adaptor<allocator<int>>> v;
     v.push_back(11);
@@ -608,6 +658,7 @@ void test_scoped_allocator() {
 }
 
 void test_semaphore() {
+    using namespace std;
     puts("Testing <semaphore>.");
     static_assert(binary_semaphore::max() >= 1);
     binary_semaphore s{1};
@@ -634,6 +685,7 @@ void test_semaphore() {
 }
 
 void test_set() {
+    using namespace std;
     puts("Testing <set>.");
     const set<int> s{10, 20, 30, 40, 50};
     assert(*next(s.begin(), 2) == 30);
@@ -644,6 +696,7 @@ void test_set() {
 }
 
 void test_shared_mutex() {
+    using namespace std;
     puts("Testing <shared_mutex>.");
     condition_variable_any cv;
     shared_mutex mut;
@@ -679,6 +732,7 @@ void test_shared_mutex() {
 }
 
 constexpr bool impl_test_source_location() {
+    using namespace std;
     const auto sl = source_location::current();
     assert(sl.line() == __LINE__ - 1);
     assert(sl.column() == 1);
@@ -688,12 +742,14 @@ constexpr bool impl_test_source_location() {
 }
 
 void test_source_location() {
+    using namespace std;
     puts("Testing <source_location>.");
     assert(impl_test_source_location());
     static_assert(impl_test_source_location());
 }
 
 void test_span() {
+    using namespace std;
     puts("Testing <span>.");
     constexpr int arr[]{11, 22, 33, 44, 55};
     constexpr span<const int, 5> whole{arr};
@@ -703,6 +759,7 @@ void test_span() {
 }
 
 void test_spanstream() {
+    using namespace std;
     puts("Testing <spanstream>.");
     char ibuffer[] = "1 2 3 4 5";
     ispanstream is{span<char>{ibuffer}};
@@ -735,6 +792,7 @@ void test_spanstream() {
 }
 
 void test_sstream() {
+    using namespace std;
     puts("Testing <sstream>.");
     ostringstream oss;
     oss << "I have " << 9 * 9 * 9 + 10 * 10 * 10 << " cute fluffy kittens.";
@@ -742,6 +800,7 @@ void test_sstream() {
 }
 
 void test_stack() {
+    using namespace std;
     puts("Testing <stack>.");
     stack<int> s;
     s.push(10);
@@ -758,6 +817,7 @@ void test_stack() {
 }
 
 __declspec(dllexport) void test_stacktrace() { // export test_stacktrace to have it named even without debug info
+    using namespace std;
     puts("Testing <stacktrace>.");
     auto desc = stacktrace::current().at(0).description();
 
@@ -773,6 +833,7 @@ __declspec(dllexport) void test_stacktrace() { // export test_stacktrace to have
 }
 
 void test_stdexcept() {
+    using namespace std;
     puts("Testing <stdexcept>.");
     bool caught_puppies = false;
 
@@ -788,6 +849,7 @@ void test_stdexcept() {
 }
 
 void test_stop_token() {
+    using namespace std;
     puts("Testing <stop_token>.");
     vector<int> vec;
     {
@@ -824,12 +886,14 @@ void test_stop_token() {
 }
 
 void test_streambuf() {
+    using namespace std;
     puts("Testing <streambuf>.");
     istringstream iss{"kittens"};
     assert(iss.rdbuf()->in_avail() == 7);
 }
 
 void test_string() {
+    using namespace std;
     puts("Testing <string>.");
     const string small_string{"homeowner"};
     const string large_string{"Cute fluffy kittens are so adorable when they meow and purr."};
@@ -838,6 +902,7 @@ void test_string() {
 }
 
 void test_string_view() {
+    using namespace std;
     puts("Testing <string_view>.");
     constexpr string_view catenary{"catenary"};
     assert(catenary.starts_with("cat"));
@@ -847,6 +912,7 @@ void test_string_view() {
 }
 
 void test_strstream() {
+    using namespace std;
     puts("Testing <strstream>.");
     istrstream istr{"1729"};
     int n = -1;
@@ -855,6 +921,7 @@ void test_strstream() {
 }
 
 void test_syncstream() {
+    using namespace std;
     puts("Testing <syncstream>.");
     syncbuf sync_buf{nullptr};
     assert(sync_buf.get_wrapped() == nullptr);
@@ -866,6 +933,7 @@ void test_syncstream() {
 }
 
 void test_system_error() {
+    using namespace std;
     puts("Testing <system_error>.");
     const error_code code = make_error_code(errc::value_too_large);
     assert(code.value() == static_cast<int>(errc::value_too_large));
@@ -874,12 +942,14 @@ void test_system_error() {
 }
 
 void test_thread() {
+    using namespace std;
     puts("Testing <thread>.");
     // see above, tested with <condition_variable>
     assert(this_thread::get_id() != thread::id{});
 }
 
 void test_tuple() {
+    using namespace std;
     puts("Testing <tuple>.");
     constexpr tuple<int, char, double> t{1729, 'c', 1.25};
     assert(get<int>(t) == 1729);
@@ -891,6 +961,7 @@ void test_tuple() {
 }
 
 void test_type_traits() {
+    using namespace std;
     puts("Testing <type_traits>.");
     static_assert(is_void_v<void>);
     static_assert(!is_void_v<double>);
@@ -910,6 +981,7 @@ void test_type_traits() {
 }
 
 void test_typeindex() {
+    using namespace std;
     puts("Testing <typeindex>.");
     const type_index ti_int{typeid(int)};
     type_index ti{typeid(double)};
@@ -919,6 +991,7 @@ void test_typeindex() {
 }
 
 void test_typeinfo() {
+    using namespace std;
     puts("Testing <typeinfo>.");
     const type_info& t1 = typeid(int);
     const type_info& t2 = typeid(const int&);
@@ -928,6 +1001,7 @@ void test_typeinfo() {
 }
 
 void test_unordered_map() {
+    using namespace std;
     puts("Testing <unordered_map>.");
     unordered_map<int, int> um{{1, 1}, {2, 4}, {3, 9}, {4, 16}, {5, 25}};
     for (const auto& p : um) {
@@ -936,6 +1010,7 @@ void test_unordered_map() {
 }
 
 void test_unordered_set() {
+    using namespace std;
     puts("Testing <unordered_set>.");
     unordered_set<int> us{10, 20, 30, 40, 50};
     for (const auto& elem : us) {
@@ -944,6 +1019,7 @@ void test_unordered_set() {
 }
 
 void test_utility() {
+    using namespace std;
     puts("Testing <utility>.");
     constexpr pair<int, double> p{44, 5.5};
     assert(p.first == 44);
@@ -961,6 +1037,7 @@ void test_utility() {
 }
 
 void test_valarray() {
+    using namespace std;
     puts("Testing <valarray>.");
     valarray<int> val{1, 2, 3};
     val *= 10;
@@ -968,6 +1045,7 @@ void test_valarray() {
 }
 
 void test_variant() {
+    using namespace std;
     puts("Testing <variant>.");
     constexpr const char* cats = "CATS";
     constexpr variant<int, const char*, double> var{in_place_type<const char*>, cats};
@@ -988,6 +1066,7 @@ void test_variant() {
 }
 
 void test_vector() {
+    using namespace std;
     puts("Testing <vector>.");
     const vector<int> v{10, 20, 30, 40, 50};
     assert(v[2] == 30);
@@ -997,6 +1076,7 @@ void test_vector() {
 }
 
 void test_version() {
+    using namespace std;
     puts("Testing <version>.");
 #ifdef TEST_HEADER_UNITS
     static_assert(__cpp_lib_make_unique >= 201304L);
