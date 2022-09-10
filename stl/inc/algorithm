@@ -2597,6 +2597,35 @@ namespace ranges {
     };
 
     inline constexpr _Ends_with_fn ends_with{_Not_quite_object::_Construct_tag{}};
+
+    template <class _Fn>
+    class _Flipped {
+    private:
+        _Fn _Func;
+
+    public:
+        // clang-format off
+        template <class _Ty, class _Uty>
+            requires invocable<_Fn&, _Uty, _Ty>
+        invoke_result_t<_Fn&, _Uty, _Ty> operator()(_Ty&&, _Uty&&);
+        // clang-format on
+    };
+
+    template <class _Fn, class _Ty, class _It, class _Uty>
+    concept _Indirectly_binary_left_foldable_impl =
+        movable<_Ty> && movable<_Uty> && convertible_to<_Ty, _Uty> && invocable<_Fn&, _Uty,
+            iter_reference_t<_It>> && assignable_from<_Uty&, invoke_result_t<_Fn&, _Uty, iter_reference_t<_It>>>;
+
+    template <class _Fn, class _Ty, class _It>
+    concept _Indirectly_binary_left_foldable = copy_constructible<_Fn> && indirectly_readable<_It> && //
+        invocable<_Fn&, _Ty, iter_reference_t<_It>> && //
+        convertible_to<invoke_result_t<_Fn&, _Ty, iter_reference_t<_It>>,
+            decay_t<invoke_result_t<_Fn&, _Ty, iter_reference_t<_It>>>> && //
+        _Indirectly_binary_left_foldable_impl<_Fn, _Ty, _It,
+            decay_t<invoke_result_t<_Fn&, _Ty, iter_reference_t<_It>>>>;
+
+    template <class _Fn, class _Ty, class _It>
+    concept _Indirectly_binary_right_foldable = _Indirectly_binary_left_foldable<_Flipped<_Fn>, _Ty, _It>;
 #endif // _HAS_CXX23
 } // namespace ranges
 #endif // __cpp_lib_concepts
