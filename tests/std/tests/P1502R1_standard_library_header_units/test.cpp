@@ -352,9 +352,9 @@ void test_future() {
     puts("Testing <future>.");
     promise<int> p{};
     future<int> f{p.get_future()};
-    assert(f.wait_for(chrono::seconds{0}) == future_status::timeout);
+    assert(f.wait_for(0s) == future_status::timeout);
     p.set_value(1729);
-    assert(f.wait_for(chrono::seconds{0}) == future_status::ready);
+    assert(f.wait_for(0s) == future_status::ready);
     assert(f.get() == 1729);
 }
 
@@ -840,7 +840,7 @@ void test_stdexcept() {
     try {
         throw overflow_error{"too many puppies"};
     } catch (const runtime_error& e) {
-        caught_puppies = e.what() == string_view{"too many puppies"};
+        caught_puppies = e.what() == "too many puppies"sv;
     } catch (...) {
         assert(false);
     }
