@@ -254,6 +254,26 @@ namespace ranges {
             return {_STD move(in), found};
         }
     };
+
+#if _HAS_CXX23
+    template <class _It, class _Ty>
+    struct in_value_result {
+        /* [[no_unique_address]] */ _It in;
+        /* [[no_unique_address]] */ _Ty value;
+
+        template <class _It2, class _Ty2>
+            requires convertible_to<const _It&, _It2> && convertible_to<const _Ty&, _Ty2>
+        constexpr operator in_value_result<_It2, _Ty2>() const& {
+            return {in, value};
+        }
+
+        template <class _It2, class _Ty2>
+            requires convertible_to<_It, _It2> && convertible_to<_Ty, _Ty2>
+        constexpr operator in_value_result<_It2, _Ty2>() && {
+            return {_STD move(in), _STD move(value)};
+        }
+    };
+#endif // _HAS_CXX23
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
