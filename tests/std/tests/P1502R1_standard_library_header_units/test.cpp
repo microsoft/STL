@@ -998,7 +998,9 @@ void test_vector() {
 
 void test_version() {
     puts("Testing <version>.");
+#ifdef TEST_HEADER_UNITS
     static_assert(__cpp_lib_make_unique >= 201304L);
+#endif // TEST_HEADER_UNITS
 }
 
 void all_cpp_header_tests() {
