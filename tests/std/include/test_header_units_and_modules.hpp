@@ -105,6 +105,8 @@ void test_chrono() {
     static_assert(dur.count() == 180);
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4996) // was declared deprecated
 void test_codecvt() {
     using namespace std;
     puts("Testing <codecvt>.");
@@ -116,6 +118,7 @@ void test_codecvt() {
 
     static_assert(static_cast<int>(codecvt_mode::consume_header) == 4);
 }
+#pragma warning(pop)
 
 void test_compare() {
     using namespace std;
@@ -824,6 +827,8 @@ void test_string_view() {
     static_assert(!catenary.starts_with("dog"));
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4996) // was declared deprecated
 void test_strstream() {
     using namespace std;
     puts("Testing <strstream>.");
@@ -832,6 +837,7 @@ void test_strstream() {
     istr >> n;
     assert(n == 1729);
 }
+#pragma warning(pop)
 
 void test_syncstream() {
     using namespace std;
