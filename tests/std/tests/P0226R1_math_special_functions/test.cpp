@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <limits>
 
 using namespace std;
 
@@ -11,7 +12,18 @@ void assert_close(const Float f, const Float g) {
     assert(abs(f - g) < 0.001);
 }
 
+constexpr float nanf_v       = numeric_limits<float>::quiet_NaN();
+constexpr double nand_v      = numeric_limits<double>::quiet_NaN();
+constexpr long double nanl_v = numeric_limits<long double>::quiet_NaN();
+
 void test_assoc_laguerre() {
+    {
+        assert(isnan(assoc_laguerre(1, 10, nanf_v)));
+        assert(isnan(assoc_laguerre(1, 10, nand_v)));
+        assert(isnan(assoc_laguerre(1, 10, nanl_v)));
+        assert(isnan(assoc_laguerref(1, 10, nanf_v)));
+        assert(isnan(assoc_laguerrel(1, 10, nanl_v)));
+    }
     {
         assert_close(assoc_laguerre(1, 10, 0.5), 10.5);
         assert_close(assoc_laguerre(1, 10, 0.5f), 10.5f);
@@ -85,6 +97,13 @@ void test_comp_ellint_1() {
 
 void test_comp_ellint_2() {
     {
+        assert(isnan(comp_ellint_2(nanf_v)));
+        assert(isnan(comp_ellint_2(nand_v)));
+        assert(isnan(comp_ellint_2(nanl_v)));
+        assert(isnan(comp_ellint_2f(nanf_v)));
+        assert(isnan(comp_ellint_2l(nanl_v)));
+    }
+    {
         assert_close(comp_ellint_2(0.0), 1.5708);
         assert_close(comp_ellint_2(0.0f), 1.5708f);
         assert_close(comp_ellint_2(0.0L), 1.5708L);
@@ -101,6 +120,20 @@ void test_comp_ellint_2() {
 }
 
 void test_comp_ellint_3() {
+    {
+        assert(isnan(comp_ellint_3(0.0f, nanf_v)));
+        assert(isnan(comp_ellint_3(0.0, nand_v)));
+        assert(isnan(comp_ellint_3(0.0L, nanl_v)));
+        assert(isnan(comp_ellint_3f(0.0f, nanf_v)));
+        assert(isnan(comp_ellint_3l(0.0L, nanl_v)));
+    }
+    {
+        assert(isnan(comp_ellint_3(nanf_v, 0.0f)));
+        assert(isnan(comp_ellint_3(nand_v, 0.0)));
+        assert(isnan(comp_ellint_3(nanl_v, 0.0L)));
+        assert(isnan(comp_ellint_3f(nanf_v, 0.0f)));
+        assert(isnan(comp_ellint_3l(nanl_v, 0.0L)));
+    }
     {
         assert_close(comp_ellint_3(0.0, 0.0), 1.5708);
         assert_close(comp_ellint_3(0.0f, 0.0f), 1.5708f);
@@ -119,6 +152,16 @@ void test_comp_ellint_3() {
 
 void test_cyl_bessel_i() {
     {
+        assert(isnan(cyl_bessel_i(0.0, nand_v)));
+        assert(isnan(cyl_bessel_if(0.0f, nanf_v)));
+        assert(isnan(cyl_bessel_il(0.0L, nanl_v)));
+    }
+    {
+        assert(isnan(cyl_bessel_i(nand_v, 0.0)));
+        assert(isnan(cyl_bessel_if(nanf_v, 0.0f)));
+        assert(isnan(cyl_bessel_il(nanl_v, 0.0L)));
+    }
+    {
         assert_close(cyl_bessel_i(0.0, 1.2345), 1.41886);
         assert_close(cyl_bessel_if(0.0f, 1.2345f), 1.41886f);
         assert_close(cyl_bessel_il(0.0L, 1.2345L), 1.41886L);
@@ -126,6 +169,16 @@ void test_cyl_bessel_i() {
 }
 
 void test_cyl_bessel_j() {
+    {
+        assert(isnan(cyl_bessel_j(0.0, nand_v)));
+        assert(isnan(cyl_bessel_jf(0.0f, nanf_v)));
+        assert(isnan(cyl_bessel_jl(0.0L, nanl_v)));
+    }
+    {
+        assert(isnan(cyl_bessel_j(nand_v, 0.0)));
+        assert(isnan(cyl_bessel_jf(nanf_v, 0.0f)));
+        assert(isnan(cyl_bessel_jl(nanl_v, 0.0L)));
+    }
     {
         assert_close(cyl_bessel_j(0.0, 1.2345), 0.653792);
         assert_close(cyl_bessel_jf(0.0f, 1.2345f), 0.653792f);
@@ -135,6 +188,16 @@ void test_cyl_bessel_j() {
 
 void test_cyl_bessel_k() {
     {
+        assert(isnan(cyl_bessel_k(0.0, nand_v)));
+        assert(isnan(cyl_bessel_kf(0.0f, nanf_v)));
+        assert(isnan(cyl_bessel_kl(0.0L, nanl_v)));
+    }
+    {
+        assert(isnan(cyl_bessel_k(nand_v, 0.0)));
+        assert(isnan(cyl_bessel_kf(nanf_v, 0.0f)));
+        assert(isnan(cyl_bessel_kl(nanl_v, 0.0L)));
+    }
+    {
         assert_close(cyl_bessel_k(0.5, 1.2345), 0.32823);
         assert_close(cyl_bessel_kf(0.5f, 1.2345f), 0.32823f);
         assert_close(cyl_bessel_kl(0.5L, 1.2345L), 0.32823L);
@@ -142,6 +205,16 @@ void test_cyl_bessel_k() {
 }
 
 void test_cyl_neumann() {
+    {
+        assert(isnan(cyl_neumann(0.0, nand_v)));
+        assert(isnan(cyl_neumannf(0.0f, nanf_v)));
+        assert(isnan(cyl_neumannl(0.0L, nanl_v)));
+    }
+    {
+        assert(isnan(cyl_neumann(nand_v, 0.0)));
+        assert(isnan(cyl_neumannf(nanf_v, 0.0f)));
+        assert(isnan(cyl_neumannl(nanl_v, 0.0L)));
+    }
     {
         assert_close(cyl_neumann(0.5, 0.333), -1.306713);
         assert_close(cyl_neumannf(0.5f, 0.333f), -1.306713f);
@@ -155,6 +228,16 @@ void test_cyl_neumann() {
 }
 
 void test_ellint_1() {
+    {
+        assert(isnan(ellint_1(0.0, nand_v)));
+        assert(isnan(ellint_1f(0.0f, nanf_v)));
+        assert(isnan(ellint_1l(0.0L, nanl_v)));
+    }
+    {
+        assert(isnan(ellint_1(nand_v, 0.0)));
+        assert(isnan(ellint_1f(nanf_v, 0.0f)));
+        assert(isnan(ellint_1l(nanl_v, 0.0L)));
+    }
     {
         const long double hpi = acos(-1.0L) / 2.0L;
         assert_close(ellint_1(0.0, static_cast<double>(hpi)), 1.5708);
@@ -170,6 +253,16 @@ void test_ellint_1() {
 
 void test_ellint_2() {
     {
+        assert(isnan(ellint_2(0.0, nand_v)));
+        assert(isnan(ellint_2f(0.0f, nanf_v)));
+        assert(isnan(ellint_2l(0.0L, nanl_v)));
+    }
+    {
+        assert(isnan(ellint_2(nand_v, 0.0)));
+        assert(isnan(ellint_2f(nanf_v, 0.0f)));
+        assert(isnan(ellint_2l(nanl_v, 0.0L)));
+    }
+    {
         const long double hpi = acos(-1.0L) / 2.0L;
         assert_close(ellint_2(0.0, static_cast<double>(hpi)), 1.5708);
         assert_close(ellint_2f(0.0f, static_cast<float>(hpi)), 1.5708f);
@@ -184,6 +277,21 @@ void test_ellint_2() {
 
 void test_ellint_3() {
     {
+        assert(isnan(ellint_3(nand_v, 0.0, 0.0)));
+        assert(isnan(ellint_3f(nanf_v, 0.0f, 0.0f)));
+        assert(isnan(ellint_3l(nanl_v, 0.0L, 0.0L)));
+    }
+    {
+        assert(isnan(ellint_3(0.0, nand_v, 0.0)));
+        assert(isnan(ellint_3f(0.0f, nanf_v, 0.0f)));
+        assert(isnan(ellint_3l(0.0L, nanl_v, 0.0L)));
+    }
+    {
+        assert(isnan(ellint_3(0.0, 0.0, nand_v)));
+        assert(isnan(ellint_3f(0.0f, 0.0f, nanf_v)));
+        assert(isnan(ellint_3l(0.0L, 0.0L, nanl_v)));
+    }
+    {
         const long double hpi = acos(-1.0L) / 2.0L;
         assert_close(ellint_3(0.0, 0.0, static_cast<double>(hpi)), 1.5708);
         assert_close(ellint_3f(0.0f, 0.0f, static_cast<float>(hpi)), 1.5708f);
@@ -192,6 +300,13 @@ void test_ellint_3() {
 }
 
 void test_expint() {
+    {
+        assert(isnan(expint(nand_v)));
+        assert(isnan(expint(nanf_v)));
+        assert(isnan(expint(nanl_v)));
+        assert(isnan(expintf(nanf_v)));
+        assert(isnan(expintl(nanl_v)));
+    }
     {
         assert_close(expint(1.0), 1.89512);
         assert_close(expint(1.0f), 1.89512f);
@@ -202,6 +317,13 @@ void test_expint() {
 }
 
 void test_hermite() {
+    {
+        assert(isnan(hermite(3, nand_v)));
+        assert(isnan(hermite(3, nanf_v)));
+        assert(isnan(hermite(3, nanl_v)));
+        assert(isnan(hermitef(3, nanf_v)));
+        assert(isnan(hermitel(3, nanl_v)));
+    }
     {
         assert_close(hermite(3, 10.0), 7880.0);
         assert_close(hermite(3, 10.0f), 7880.0f);
@@ -220,6 +342,13 @@ void test_hermite() {
 
 void test_legendre() {
     {
+        assert(isnan(legendre(3, nand_v)));
+        assert(isnan(legendre(3, nanf_v)));
+        assert(isnan(legendre(3, nanl_v)));
+        assert(isnan(legendref(3, nanf_v)));
+        assert(isnan(legendrel(3, nanl_v)));
+    }
+    {
         assert_close(legendre(3, 0.25), -0.335938);
         assert_close(legendre(3, 0.25f), -0.335938f);
         assert_close(legendre(3, 0.25L), -0.335938L);
@@ -236,6 +365,13 @@ void test_legendre() {
 }
 
 void test_laguerre() {
+    {
+        assert(isnan(laguerre(3, nand_v)));
+        assert(isnan(laguerre(3, nanf_v)));
+        assert(isnan(laguerre(3, nanl_v)));
+        assert(isnan(laguerref(3, nanf_v)));
+        assert(isnan(laguerrel(3, nanl_v)));
+    }
     {
         assert_close(laguerre(1, 0.5), 0.5);
         assert_close(laguerre(1, 0.5f), 0.5f);
@@ -254,6 +390,13 @@ void test_laguerre() {
 
 void test_riemann_zeta() {
     {
+        assert(isnan(riemann_zeta(nand_v)));
+        assert(isnan(riemann_zeta(nanf_v)));
+        assert(isnan(riemann_zeta(nanl_v)));
+        assert(isnan(riemann_zetaf(nanf_v)));
+        assert(isnan(riemann_zetal(nanl_v)));
+    }
+    {
         assert_close(riemann_zeta(-1.0), -0.0833333);
         assert_close(riemann_zeta(-1.0f), -0.0833333f);
         assert_close(riemann_zeta(-1.0L), -0.0833333L);
@@ -271,6 +414,13 @@ void test_riemann_zeta() {
 
 void test_sph_bessel() {
     {
+        assert(isnan(sph_bessel(1, nand_v)));
+        assert(isnan(sph_bessel(1, nanf_v)));
+        assert(isnan(sph_bessel(1, nanl_v)));
+        assert(isnan(sph_besself(1, nanf_v)));
+        assert(isnan(sph_bessell(1, nanl_v)));
+    }
+    {
         assert_close(sph_bessel(1, 1.2345), 0.352106);
         assert_close(sph_bessel(1, 1.2345f), 0.352106f);
         assert_close(sph_bessel(1, 1.2345L), 0.352106L);
@@ -281,6 +431,13 @@ void test_sph_bessel() {
 
 void test_sph_legendre() {
     {
+        assert(isnan(sph_legendre(1, 1, nand_v)));
+        assert(isnan(sph_legendre(1, 1, nanf_v)));
+        assert(isnan(sph_legendre(1, 1, nanl_v)));
+        assert(isnan(sph_legendref(1, 1, nanf_v)));
+        assert(isnan(sph_legendrel(1, 1, nanl_v)));
+    }
+    {
         assert_close(sph_legendre(3, 0, 1.2345), -0.302387);
         assert_close(sph_legendre(3, 0, 1.2345f), -0.302387f);
         assert_close(sph_legendre(3, 0, 1.2345L), -0.302387L);
@@ -290,6 +447,13 @@ void test_sph_legendre() {
 }
 
 void test_sph_neumann() {
+    {
+        assert(isnan(sph_neumann(1, nand_v)));
+        assert(isnan(sph_neumann(1, nanf_v)));
+        assert(isnan(sph_neumann(1, nanl_v)));
+        assert(isnan(sph_neumannf(1, nanf_v)));
+        assert(isnan(sph_neumannl(1, nanl_v)));
+    }
     {
         assert_close(sph_neumann(1, 1.2345), -0.981201);
         assert_close(sph_neumann(1, 1.2345f), -0.981201f);
