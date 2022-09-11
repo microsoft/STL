@@ -548,10 +548,6 @@ void test_sph_neumann() {
     assert(expect_epsilons(sph_neumann(1, 1), -cos(1) - sin(1), 2));
 }
 
-void assert_close(const double f, const double g) {
-    assert(abs(f - g) < 0.01);
-}
-
 int main() {
     test_assoc_laguerre();
     test_assoc_legendre();
