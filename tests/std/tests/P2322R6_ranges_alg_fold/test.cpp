@@ -34,6 +34,11 @@ struct instantiator {
 
             const same_as<double> auto res2 = fold_left(begin(vec_of_doubles), end(vec_of_doubles), 0.0, plus{});
             assert(res2 == left_folded_sum);
+
+            const double single_value       = 3.14;
+            const auto e                    = views::empty<const double>;
+            const same_as<double> auto res3 = fold_left(begin(e), end(e), single_value, plus{});
+            assert(res3 == single_value);
         }
 
         { // Validate fold_left range overload
@@ -42,6 +47,10 @@ struct instantiator {
 
             const same_as<double> auto res2 = fold_left(vec_of_doubles, 0.0, plus{});
             assert(res2 == left_folded_sum);
+
+            const double single_value       = 3.14;
+            const same_as<double> auto res3 = fold_left(views::empty<const double>, single_value, plus{});
+            assert(res3 == single_value);
         }
 
         { // Validate fold_left_first iterator+sentinel overload
@@ -80,6 +89,13 @@ struct instantiator {
                 fold_left_with_iter(begin(vec_of_doubles), end(vec_of_doubles), 0.0, plus{});
             assert(res2.in == end(vec_of_doubles));
             assert(res2.value == left_folded_sum);
+
+            const double single_value = 3.14;
+            const auto e              = views::empty<const double>;
+            const same_as<fold_left_with_iter_result<const double*, double>> auto res3 =
+                fold_left_with_iter(begin(e), end(e), single_value, plus{});
+            assert(res3.in == nullptr);
+            assert(res3.value == single_value);
         }
 
         { // Validate fold_left_with_iter range overload
@@ -97,6 +113,12 @@ struct instantiator {
             const same_as<fold_left_with_iter_result<ranges::dangling, double>> auto res3 =
                 fold_left_with_iter(some_doubles | ranges::to<vector>(), 0.0, plus{});
             assert(res3.value == left_folded_sum);
+
+            const double single_value = 3.14;
+            const same_as<fold_left_with_iter_result<const double*, double>> auto res4 =
+                fold_left_with_iter(views::empty<const double>, single_value, plus{});
+            assert(res4.in == nullptr);
+            assert(res4.value == single_value);
         }
 
         { // Validate fold_left_first_with_iter iterator+sentinel overload
@@ -138,7 +160,7 @@ struct instantiator {
 
             const same_as<fold_left_first_with_iter_result<ranges::dangling, optional<double>>> auto res4 =
                 fold_left_first_with_iter(some_doubles | ranges::to<vector>(), plus{});
-            assert(res3.value == left_folded_sum);
+            assert(res4.value == left_folded_sum);
         }
 
         if constexpr (ranges::bidirectional_range<Rng>) {
@@ -149,6 +171,11 @@ struct instantiator {
 
                 const same_as<double> auto res2 = fold_right(begin(vec_of_doubles), end(vec_of_doubles), 0.0, plus{});
                 assert(res2 == right_folded_sum);
+
+                const double single_value       = 3.14;
+                const auto e                    = views::empty<const double>;
+                const same_as<double> auto res3 = fold_left(begin(e), end(e), single_value, plus{});
+                assert(res3 == single_value);
             }
 
             { // Validate fold_right range overload
@@ -157,6 +184,10 @@ struct instantiator {
 
                 const same_as<double> auto res2 = fold_right(vec_of_doubles, 0.0, plus{});
                 assert(res2 == right_folded_sum);
+
+                const double single_value       = 3.14;
+                const same_as<double> auto res3 = fold_left(views::empty<const double>, single_value, plus{});
+                assert(res3 == single_value);
             }
 
             { // Validate fold_right_last iterator+sentinel overload
