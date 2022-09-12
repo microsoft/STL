@@ -2635,21 +2635,21 @@ namespace ranges {
     using fold_left_first_with_iter_result = in_value_result<_It, _Ty>;
 
     template <class _It, class _Se, class _Ty, class _Fn>
-    _NODISCARD constexpr fold_left_with_iter_result<_It, _Ty> _Fold_left_with_iter_unchecked(
-        _It _First, _Se _Last, _Ty _Init, _Fn _Func) {
+    _NODISCARD constexpr auto _Fold_left_with_iter_unchecked(_It _First, _Se _Last, _Ty _Init, _Fn _Func) {
         _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
         _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
         _STL_INTERNAL_STATIC_ASSERT(_Indirectly_binary_left_foldable<_Fn, _Ty, _It>);
 
-        using _Uty = decay_t<invoke_result_t<_Fn&, _Ty, iter_reference_t<_It>>>;
+        using _Uty         = decay_t<invoke_result_t<_Fn&, _Ty, iter_reference_t<_It>>>;
+        using _Return_type = fold_left_with_iter_result<_It, _Uty>;
         if (_First == _Last) {
-            return {_STD move(_First), _Uty(_STD move(_Init))};
+            return _Return_type{_STD move(_First), _Uty(_STD move(_Init))};
         } else {
             _Uty _Accum = _STD invoke(_Func, _STD move(_Init), *_First);
             for (++_First; _First != _Last; ++_First) {
                 _Accum = _STD invoke(_Func, _STD move(_Accum), *_First);
             }
-            return {_STD move(_First), _STD move(_Accum)};
+            return _Return_type{_STD move(_First), _STD move(_Accum)};
         }
     }
 
@@ -2721,7 +2721,6 @@ namespace ranges {
             for (++_First; _First != _Last; ++_First) {
                 *_Init = _STD invoke(_Func, _STD move(*_Init), *_First);
             }
-
             return _Return_type{_STD move(_First), _STD move(_Init)};
         }
     }
