@@ -29,190 +29,190 @@ struct instantiator {
 
         { // Validate fold_left iterator+sentinel overload
             const Rng wrapped{some_doubles};
-            const same_as<double> auto res = fold_left(begin(wrapped), end(wrapped), 0.0, plus{});
-            assert(res == left_folded_sum);
+            const same_as<double> auto sum1 = fold_left(begin(wrapped), end(wrapped), 0.0, plus{});
+            assert(sum1 == left_folded_sum);
 
-            const same_as<double> auto res2 = fold_left(begin(vec_of_doubles), end(vec_of_doubles), 0.0, plus{});
-            assert(res2 == left_folded_sum);
+            const same_as<double> auto sum2 = fold_left(begin(vec_of_doubles), end(vec_of_doubles), 0.0, plus{});
+            assert(sum2 == left_folded_sum);
 
             const double single_value       = 3.14;
             const auto e                    = views::empty<const double>;
-            const same_as<double> auto res3 = fold_left(begin(e), end(e), single_value, plus{});
-            assert(res3 == single_value);
+            const same_as<double> auto sum3 = fold_left(begin(e), end(e), single_value, plus{});
+            assert(sum3 == single_value);
         }
 
         { // Validate fold_left range overload
-            const same_as<double> auto res = fold_left(Rng{some_doubles}, 0.0, plus{});
-            assert(res == left_folded_sum);
+            const same_as<double> auto sum1 = fold_left(Rng{some_doubles}, 0.0, plus{});
+            assert(sum1 == left_folded_sum);
 
-            const same_as<double> auto res2 = fold_left(vec_of_doubles, 0.0, plus{});
-            assert(res2 == left_folded_sum);
+            const same_as<double> auto sum2 = fold_left(vec_of_doubles, 0.0, plus{});
+            assert(sum2 == left_folded_sum);
 
             const double single_value       = 3.14;
-            const same_as<double> auto res3 = fold_left(views::empty<const double>, single_value, plus{});
-            assert(res3 == single_value);
+            const same_as<double> auto sum3 = fold_left(views::empty<const double>, single_value, plus{});
+            assert(sum3 == single_value);
         }
 
         { // Validate fold_left_first iterator+sentinel overload
             const Rng wrapped{some_doubles};
-            const same_as<optional<double>> auto res = fold_left_first(begin(wrapped), end(wrapped), plus{});
-            assert(res == left_folded_sum);
+            const same_as<optional<double>> auto sum1 = fold_left_first(begin(wrapped), end(wrapped), plus{});
+            assert(sum1 == left_folded_sum);
 
-            const same_as<optional<double>> auto res2 =
+            const same_as<optional<double>> auto sum2 =
                 fold_left_first(begin(vec_of_doubles), end(vec_of_doubles), plus{});
-            assert(res2 == left_folded_sum);
+            assert(sum2 == left_folded_sum);
 
             const auto e                              = views::empty<const double>;
-            const same_as<optional<double>> auto res3 = fold_left_first(begin(e), end(e), plus{});
-            assert(res3 == nullopt);
+            const same_as<optional<double>> auto sum3 = fold_left_first(begin(e), end(e), plus{});
+            assert(sum3 == nullopt);
         }
 
         { // Validate fold_left_first range overload
-            const same_as<optional<double>> auto res = fold_left_first(Rng{some_doubles}, plus{});
-            assert(res == left_folded_sum);
+            const same_as<optional<double>> auto sum1 = fold_left_first(Rng{some_doubles}, plus{});
+            assert(sum1 == left_folded_sum);
 
-            const same_as<optional<double>> auto res2 = fold_left_first(vec_of_doubles, plus{});
-            assert(res2 == left_folded_sum);
+            const same_as<optional<double>> auto sum2 = fold_left_first(vec_of_doubles, plus{});
+            assert(sum2 == left_folded_sum);
 
-            const same_as<optional<double>> auto res3 = fold_left_first(views::empty<const double>, plus{});
-            assert(res3 == nullopt);
+            const same_as<optional<double>> auto sum3 = fold_left_first(views::empty<const double>, plus{});
+            assert(sum3 == nullopt);
         }
 
         { // Validate fold_left_with_iter iterator+sentinel overload
             const Rng wrapped{some_doubles};
-            const same_as<fold_left_with_iter_result<ranges::iterator_t<Rng>, double>> auto res =
+            const same_as<fold_left_with_iter_result<ranges::iterator_t<Rng>, double>> auto sum1 =
                 fold_left_with_iter(begin(wrapped), end(wrapped), 0.0, plus{});
-            assert(res.in == end(wrapped));
-            assert(res.value == left_folded_sum);
+            assert(sum1.in == end(wrapped));
+            assert(sum1.value == left_folded_sum);
 
-            const same_as<fold_left_with_iter_result<vector<double>::iterator, double>> auto res2 =
+            const same_as<fold_left_with_iter_result<vector<double>::iterator, double>> auto sum2 =
                 fold_left_with_iter(begin(vec_of_doubles), end(vec_of_doubles), 0.0, plus{});
-            assert(res2.in == end(vec_of_doubles));
-            assert(res2.value == left_folded_sum);
+            assert(sum2.in == end(vec_of_doubles));
+            assert(sum2.value == left_folded_sum);
 
             const double single_value = 3.14;
             const auto e              = views::empty<const double>;
-            const same_as<fold_left_with_iter_result<const double*, double>> auto res3 =
+            const same_as<fold_left_with_iter_result<const double*, double>> auto sum3 =
                 fold_left_with_iter(begin(e), end(e), single_value, plus{});
-            assert(res3.in == nullptr);
-            assert(res3.value == single_value);
+            assert(sum3.in == nullptr);
+            assert(sum3.value == single_value);
         }
 
         { // Validate fold_left_with_iter range overload
             const Rng wrapped{some_doubles};
-            const same_as<fold_left_with_iter_result<ranges::iterator_t<Rng>, double>> auto res =
+            const same_as<fold_left_with_iter_result<ranges::iterator_t<Rng>, double>> auto sum1 =
                 fold_left_with_iter(wrapped, 0.0, plus{});
-            assert(res.in == end(wrapped));
-            assert(res.value == left_folded_sum);
+            assert(sum1.in == end(wrapped));
+            assert(sum1.value == left_folded_sum);
 
-            const same_as<fold_left_with_iter_result<vector<double>::iterator, double>> auto res2 =
+            const same_as<fold_left_with_iter_result<vector<double>::iterator, double>> auto sum2 =
                 fold_left_with_iter(vec_of_doubles, 0.0, plus{});
-            assert(res2.in == end(vec_of_doubles));
-            assert(res2.value == left_folded_sum);
+            assert(sum2.in == end(vec_of_doubles));
+            assert(sum2.value == left_folded_sum);
 
-            const same_as<fold_left_with_iter_result<ranges::dangling, double>> auto res3 =
+            const same_as<fold_left_with_iter_result<ranges::dangling, double>> auto sum3 =
                 fold_left_with_iter(some_doubles | ranges::to<vector>(), 0.0, plus{});
-            assert(res3.value == left_folded_sum);
+            assert(sum3.value == left_folded_sum);
 
             const double single_value = 3.14;
-            const same_as<fold_left_with_iter_result<const double*, double>> auto res4 =
+            const same_as<fold_left_with_iter_result<const double*, double>> auto sum4 =
                 fold_left_with_iter(views::empty<const double>, single_value, plus{});
-            assert(res4.in == nullptr);
-            assert(res4.value == single_value);
+            assert(sum4.in == nullptr);
+            assert(sum4.value == single_value);
         }
 
         { // Validate fold_left_first_with_iter iterator+sentinel overload
             const Rng wrapped{some_doubles};
-            const same_as<fold_left_first_with_iter_result<ranges::iterator_t<Rng>, optional<double>>> auto res =
+            const same_as<fold_left_first_with_iter_result<ranges::iterator_t<Rng>, optional<double>>> auto sum1 =
                 fold_left_first_with_iter(begin(wrapped), end(wrapped), plus{});
-            assert(res.in == end(wrapped));
-            assert(res.value == left_folded_sum);
+            assert(sum1.in == end(wrapped));
+            assert(sum1.value == left_folded_sum);
 
-            const same_as<fold_left_first_with_iter_result<vector<double>::iterator, optional<double>>> auto res2 =
+            const same_as<fold_left_first_with_iter_result<vector<double>::iterator, optional<double>>> auto sum2 =
                 fold_left_first_with_iter(begin(vec_of_doubles), end(vec_of_doubles), plus{});
-            assert(res2.in == end(vec_of_doubles));
-            assert(res2.value == left_folded_sum);
+            assert(sum2.in == end(vec_of_doubles));
+            assert(sum2.value == left_folded_sum);
 
             const auto e = views::empty<const double>;
-            const same_as<fold_left_first_with_iter_result<const double*, optional<double>>> auto res3 =
+            const same_as<fold_left_first_with_iter_result<const double*, optional<double>>> auto sum3 =
                 fold_left_first_with_iter(begin(e), end(e), plus{});
-            assert(res3.in == end(e));
-            assert(res3.value == nullopt);
+            assert(sum3.in == end(e));
+            assert(sum3.value == nullopt);
         }
 
         { // Validate fold_left_first_with_iter range overload
             const Rng wrapped{some_doubles};
-            const same_as<fold_left_first_with_iter_result<ranges::iterator_t<Rng>, optional<double>>> auto res =
+            const same_as<fold_left_first_with_iter_result<ranges::iterator_t<Rng>, optional<double>>> auto sum1 =
                 fold_left_first_with_iter(wrapped, plus{});
-            assert(res.in == end(wrapped));
-            assert(res.value == left_folded_sum);
+            assert(sum1.in == end(wrapped));
+            assert(sum1.value == left_folded_sum);
 
-            const same_as<fold_left_first_with_iter_result<vector<double>::iterator, optional<double>>> auto res2 =
+            const same_as<fold_left_first_with_iter_result<vector<double>::iterator, optional<double>>> auto sum2 =
                 fold_left_first_with_iter(vec_of_doubles, plus{});
-            assert(res2.in == end(vec_of_doubles));
-            assert(res2.value == left_folded_sum);
+            assert(sum2.in == end(vec_of_doubles));
+            assert(sum2.value == left_folded_sum);
 
             const auto e = views::empty<const double>;
-            const same_as<fold_left_first_with_iter_result<const double*, optional<double>>> auto res3 =
+            const same_as<fold_left_first_with_iter_result<const double*, optional<double>>> auto sum3 =
                 fold_left_first_with_iter(e, plus{});
-            assert(res3.in == end(e));
-            assert(res3.value == nullopt);
+            assert(sum3.in == end(e));
+            assert(sum3.value == nullopt);
 
-            const same_as<fold_left_first_with_iter_result<ranges::dangling, optional<double>>> auto res4 =
+            const same_as<fold_left_first_with_iter_result<ranges::dangling, optional<double>>> auto sum4 =
                 fold_left_first_with_iter(some_doubles | ranges::to<vector>(), plus{});
-            assert(res4.value == left_folded_sum);
+            assert(sum4.value == left_folded_sum);
         }
 
         if constexpr (ranges::bidirectional_range<Rng>) {
             { // Validate fold_right iterator+sentinel overload
                 const Rng wrapped{some_doubles};
-                const same_as<double> auto res = fold_right(begin(wrapped), end(wrapped), 0.0, plus{});
-                assert(res == right_folded_sum);
+                const same_as<double> auto sum1 = fold_right(begin(wrapped), end(wrapped), 0.0, plus{});
+                assert(sum1 == right_folded_sum);
 
-                const same_as<double> auto res2 = fold_right(begin(vec_of_doubles), end(vec_of_doubles), 0.0, plus{});
-                assert(res2 == right_folded_sum);
+                const same_as<double> auto sum2 = fold_right(begin(vec_of_doubles), end(vec_of_doubles), 0.0, plus{});
+                assert(sum2 == right_folded_sum);
 
                 const double single_value       = 3.14;
                 const auto e                    = views::empty<const double>;
-                const same_as<double> auto res3 = fold_left(begin(e), end(e), single_value, plus{});
-                assert(res3 == single_value);
+                const same_as<double> auto sum3 = fold_left(begin(e), end(e), single_value, plus{});
+                assert(sum3 == single_value);
             }
 
             { // Validate fold_right range overload
-                const same_as<double> auto res = fold_right(Rng{some_doubles}, 0.0, plus{});
-                assert(res == right_folded_sum);
+                const same_as<double> auto sum1 = fold_right(Rng{some_doubles}, 0.0, plus{});
+                assert(sum1 == right_folded_sum);
 
-                const same_as<double> auto res2 = fold_right(vec_of_doubles, 0.0, plus{});
-                assert(res2 == right_folded_sum);
+                const same_as<double> auto sum2 = fold_right(vec_of_doubles, 0.0, plus{});
+                assert(sum2 == right_folded_sum);
 
                 const double single_value       = 3.14;
-                const same_as<double> auto res3 = fold_left(views::empty<const double>, single_value, plus{});
-                assert(res3 == single_value);
+                const same_as<double> auto sum3 = fold_left(views::empty<const double>, single_value, plus{});
+                assert(sum3 == single_value);
             }
 
             { // Validate fold_right_last iterator+sentinel overload
                 const Rng wrapped{some_doubles};
-                const same_as<optional<double>> auto res = fold_right_last(begin(wrapped), end(wrapped), plus{});
-                assert(res == right_folded_sum);
+                const same_as<optional<double>> auto sum1 = fold_right_last(begin(wrapped), end(wrapped), plus{});
+                assert(sum1 == right_folded_sum);
 
-                const same_as<optional<double>> auto res2 =
+                const same_as<optional<double>> auto sum2 =
                     fold_right_last(begin(vec_of_doubles), end(vec_of_doubles), plus{});
-                assert(res2 == right_folded_sum);
+                assert(sum2 == right_folded_sum);
 
                 const auto e                              = views::empty<const double>;
-                const same_as<optional<double>> auto res3 = fold_right_last(begin(e), end(e), plus{});
-                assert(res3 == nullopt);
+                const same_as<optional<double>> auto sum3 = fold_right_last(begin(e), end(e), plus{});
+                assert(sum3 == nullopt);
             }
 
             { // Validate fold_right_last range overload
-                const same_as<optional<double>> auto res = fold_right_last(Rng{some_doubles}, plus{});
-                assert(res == right_folded_sum);
+                const same_as<optional<double>> auto sum1 = fold_right_last(Rng{some_doubles}, plus{});
+                assert(sum1 == right_folded_sum);
 
-                const same_as<optional<double>> auto res2 = fold_right_last(vec_of_doubles, plus{});
-                assert(res2 == right_folded_sum);
+                const same_as<optional<double>> auto sum2 = fold_right_last(vec_of_doubles, plus{});
+                assert(sum2 == right_folded_sum);
 
-                const same_as<optional<double>> auto res3 = fold_right_last(views::empty<const double>, plus{});
-                assert(res3 == nullopt);
+                const same_as<optional<double>> auto sum3 = fold_right_last(views::empty<const double>, plus{});
+                assert(sum3 == nullopt);
             }
         }
     }
@@ -220,7 +220,6 @@ struct instantiator {
 
 constexpr bool test_in_value_result() {
     using ranges::in_value_result;
-
     STATIC_ASSERT(is_aggregate_v<in_value_result<int, int>>);
     STATIC_ASSERT(is_trivial_v<in_value_result<int, int>>);
 
