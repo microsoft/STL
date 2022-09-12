@@ -93,6 +93,10 @@ struct instantiator {
                 fold_left_with_iter(vec_of_doubles, 0.0, plus{});
             assert(res2.in == end(vec_of_doubles));
             assert(res2.value == left_folded_sum);
+
+            const same_as<fold_left_with_iter_result<ranges::dangling, double>> auto res3 =
+                fold_left_with_iter(some_doubles | ranges::to<vector>(), 0.0, plus{});
+            assert(res3.value == left_folded_sum);
         }
 
         { // Validate fold_left_first_with_iter iterator+sentinel overload
@@ -131,6 +135,10 @@ struct instantiator {
                 fold_left_first_with_iter(e, plus{});
             assert(res3.in == end(e));
             assert(res3.value == nullopt);
+
+            const same_as<fold_left_first_with_iter_result<ranges::dangling, optional<double>>> auto res4 =
+                fold_left_first_with_iter(some_doubles | ranges::to<vector>(), plus{});
+            assert(res3.value == left_folded_sum);
         }
 
         if constexpr (ranges::bidirectional_range<Rng>) {
