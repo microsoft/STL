@@ -3,8 +3,10 @@
 
 #include <algorithm>
 #include <cassert>
-#include <concepts>
+#include <functional>
+#include <optional>
 #include <ranges>
+#include <type_traits>
 #include <vector>
 
 #include <range_algorithm_support.hpp>
@@ -51,7 +53,7 @@ struct instantiator {
                 fold_left_first(begin(vec_of_doubles), end(vec_of_doubles), plus{});
             assert(res2 == left_folded_sum);
 
-            const auto e                              = views::empty<double>;
+            const auto e                              = views::empty<const double>;
             const same_as<optional<double>> auto res3 = fold_left_first(begin(e), end(e), plus{});
             assert(res3 == nullopt);
         }
@@ -63,7 +65,7 @@ struct instantiator {
             const same_as<optional<double>> auto res2 = fold_left_first(vec_of_doubles, plus{});
             assert(res2 == left_folded_sum);
 
-            const same_as<optional<double>> auto res3 = fold_left_first(views::empty<double>, plus{});
+            const same_as<optional<double>> auto res3 = fold_left_first(views::empty<const double>, plus{});
             assert(res3 == nullopt);
         }
 
@@ -158,7 +160,7 @@ struct instantiator {
                     fold_right_last(begin(vec_of_doubles), end(vec_of_doubles), plus{});
                 assert(res2 == right_folded_sum);
 
-                const auto e                              = views::empty<double>;
+                const auto e                              = views::empty<const double>;
                 const same_as<optional<double>> auto res3 = fold_right_last(begin(e), end(e), plus{});
                 assert(res3 == nullopt);
             }
@@ -170,7 +172,7 @@ struct instantiator {
                 const same_as<optional<double>> auto res2 = fold_right_last(vec_of_doubles, plus{});
                 assert(res2 == right_folded_sum);
 
-                const same_as<optional<double>> auto res3 = fold_right_last(views::empty<double>, plus{});
+                const same_as<optional<double>> auto res3 = fold_right_last(views::empty<const double>, plus{});
                 assert(res3 == nullopt);
             }
         }
@@ -197,7 +199,7 @@ constexpr bool test_in_value_result() {
     }
 
     { // Validate conversion operator (&&)
-        in_value_result<long long, long long> long_long_res = res;
+        in_value_result<long long, long long> long_long_res = std::move(res);
         assert(long_long_res.in == 5LL);
         assert(long_long_res.value == 6LL);
     }
