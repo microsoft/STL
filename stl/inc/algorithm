@@ -8,6 +8,7 @@
 #define _ALGORITHM_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <optional>
 #include <xmemory>
 
 #pragma pack(push, _CRT_PACKING)
@@ -2626,6 +2627,258 @@ namespace ranges {
 
     template <class _Fn, class _Ty, class _It>
     concept _Indirectly_binary_right_foldable = _Indirectly_binary_left_foldable<_Flipped<_Fn>, _Ty, _It>;
+
+    template <class _It, class _Ty>
+    using fold_left_with_iter_result = in_value_result<_It, _Ty>;
+
+    template <class _It, class _Ty>
+    using fold_left_first_with_iter_result = in_value_result<_It, _Ty>;
+
+    template <class _It, class _Se, class _Ty, class _Fn>
+    _NODISCARD constexpr fold_left_with_iter_result<_It, _Ty> _Fold_left_with_iter_unchecked(
+        _It _First, _Se _Last, _Ty _Init, _Fn _Func) {
+        _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+        _STL_INTERNAL_STATIC_ASSERT(_Indirectly_binary_left_foldable<_Fn, _Ty, _It>);
+
+        using _Uty = decay_t<invoke_result_t<_Fn&, _Ty, iter_reference_t<_It>>>;
+        if (_First == _Last) {
+            return {_STD move(_First), _Uty(_STD move(_Init))};
+        } else {
+            _Uty _Accum = _STD invoke(_Func, _STD move(_Init), *_First);
+            for (++_First; _First != _Last; ++_First) {
+                _Accum = _STD invoke(_Func, _STD move(_Accum), *_First);
+            }
+            return {_STD move(_First), _STD move(_Accum)};
+        }
+    }
+
+    class _Fold_left_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, _Indirectly_binary_left_foldable<_Ty, _It> _Fn>
+        _NODISCARD constexpr auto operator()(_It _First, _Se _Last, _Ty _Init, _Fn _Func) const {
+            _Adl_verify_range(_First, _Last);
+            return _Fold_left_with_iter_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
+                _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Init), _Pass_fn(_Func))
+                .value;
+        }
+
+        template <input_range _Rng, class _Ty, _Indirectly_binary_left_foldable<_Ty, iterator_t<_Rng>> _Fn>
+        _NODISCARD constexpr auto operator()(_Rng&& _Range, _Ty _Init, _Fn _Func) const {
+            return _Fold_left_with_iter_unchecked(
+                _Unwrap_range_iter<_Rng>(_RANGES begin(_Range)), _Uend(_Range), _STD move(_Init), _Pass_fn(_Func))
+                .value;
+        }
+    };
+
+    inline constexpr _Fold_left_fn fold_left{_Not_quite_object::_Construct_tag{}};
+
+    class _Fold_left_with_iter_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, _Indirectly_binary_left_foldable<_Ty, _It> _Fn>
+        _NODISCARD constexpr auto operator()(_It _First, _Se _Last, _Ty _Init, _Fn _Func) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _RANGES _Fold_left_with_iter_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
+                _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Init), _Pass_fn(_Func));
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+
+            using _Uty = decay_t<invoke_result_t<_Fn&, _Ty, iter_reference_t<_It>>>;
+            return fold_left_with_iter_result<_It, _Uty>{_STD move(_First), _STD move(_UResult.value)};
+        }
+
+        template <input_range _Rng, class _Ty, _Indirectly_binary_left_foldable<_Ty, iterator_t<_Rng>> _Fn>
+        _NODISCARD constexpr auto operator()(_Rng&& _Range, _Ty _Init, _Fn _Func) const {
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _RANGES _Fold_left_with_iter_unchecked(
+                _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _STD move(_Init), _Pass_fn(_Func));
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+
+            using _Uty = decay_t<invoke_result_t<_Fn&, _Ty, range_reference_t<_Rng>>>;
+            return fold_left_with_iter_result<borrowed_iterator_t<_Rng>, _Uty>{
+                _STD move(_First), _STD move(_UResult.value)};
+        }
+    };
+
+    inline constexpr _Fold_left_with_iter_fn fold_left_with_iter{_Not_quite_object::_Construct_tag{}};
+
+    template <class _It, class _Se, class _Fn>
+    _NODISCARD constexpr auto _Fold_left_first_with_iter_unchecked(_It _First, _Se _Last, _Fn _Func) {
+        _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+        _STL_INTERNAL_STATIC_ASSERT(_Indirectly_binary_left_foldable<_Fn, iter_value_t<_It>, _It>);
+        _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It>, iter_reference_t<_It>>);
+
+        using _Uty         = decltype(_RANGES fold_left(_STD move(_First), _Last, iter_value_t<_It>(*_First), _Func));
+        using _Return_type = fold_left_first_with_iter_result<_It, optional<_Uty>>;
+        if (_First == _Last) {
+            return _Return_type{_STD move(_First), optional<_Uty>()};
+        } else {
+            optional<_Uty> _Init(in_place, *_First);
+            for (++_First; _First != _Last; ++_First) {
+                *_Init = _STD invoke(_Func, _STD move(*_Init), *_First);
+            }
+
+            return _Return_type{_STD move(_First), _STD move(_Init)};
+        }
+    }
+
+    class _Fold_left_first_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se,
+            _Indirectly_binary_left_foldable<iter_value_t<_It>, _It> _Fn>
+            requires constructible_from<iter_value_t<_It>, iter_reference_t<_It>>
+        _NODISCARD constexpr auto operator()(_It _First, _Se _Last, _Fn _Func) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            return _Fold_left_first_with_iter_unchecked(
+                _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Func))
+                .value;
+        }
+
+        // clang-format off
+        template <input_range _Rng, _Indirectly_binary_left_foldable<range_value_t<_Rng>, iterator_t<_Rng>> _Fn>
+            requires constructible_from<range_value_t<_Rng>, range_reference_t<_Rng>>
+        _NODISCARD constexpr auto operator()(_Rng&& _Range, _Fn _Func) const {
+            // clang-format on
+            return _Fold_left_first_with_iter_unchecked(
+                _Unwrap_range_iter<_Rng>(_RANGES begin(_Range)), _Uend(_Range), _Pass_fn(_Func))
+                .value;
+        }
+    };
+
+    inline constexpr _Fold_left_first_fn fold_left_first{_Not_quite_object::_Construct_tag{}};
+
+    class _Fold_left_first_with_iter_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se,
+            _Indirectly_binary_left_foldable<iter_value_t<_It>, _It> _Fn>
+            requires constructible_from<iter_value_t<_It>, iter_reference_t<_It>>
+        _NODISCARD constexpr auto operator()(_It _First, _Se _Last, _Fn _Func) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Fold_left_first_with_iter_unchecked(
+                _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Func));
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+
+            using _Uty = decltype(_RANGES fold_left(_STD move(_First), _Last, iter_value_t<_It>(*_First), _Func));
+            return fold_left_first_with_iter_result<_It, optional<_Uty>>{_STD move(_First), _STD move(_UResult.value)};
+        }
+
+        // clang-format off
+        template <input_range _Rng, _Indirectly_binary_left_foldable<range_value_t<_Rng>, iterator_t<_Rng>> _Fn>
+            requires constructible_from<range_value_t<_Rng>, range_reference_t<_Rng>>
+        _NODISCARD constexpr auto operator()(_Rng&& _Range, _Fn _Func) const {
+            // clang-format on
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Fold_left_first_with_iter_unchecked(
+                _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Pass_fn(_Func));
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+
+            using _Uty = decltype(_RANGES fold_left(
+                _STD move(_First), _RANGES end(_Range), range_value_t<_Rng>(*_First), _Func));
+            return fold_left_first_with_iter_result<borrowed_iterator_t<_Rng>, optional<_Uty>>{
+                _STD move(_First), _STD move(_UResult.value)};
+        }
+    };
+
+    inline constexpr _Fold_left_first_with_iter_fn fold_left_first_with_iter{_Not_quite_object::_Construct_tag{}};
+
+    class _Fold_right_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <bidirectional_iterator _It, sentinel_for<_It> _Se, class _Ty,
+            _Indirectly_binary_right_foldable<_Ty, _It> _Fn>
+        _NODISCARD constexpr auto operator()(_It _First, _Se _Last, _Ty _Init, _Fn _Func) const {
+            _Adl_verify_range(_First, _Last);
+            return _Fold_right_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)),
+                _STD move(_Init), _Pass_fn(_Func));
+        }
+
+        template <bidirectional_range _Rng, class _Ty, _Indirectly_binary_right_foldable<_Ty, iterator_t<_Rng>> _Fn>
+        _NODISCARD constexpr auto operator()(_Rng&& _Range, _Ty _Init, _Fn _Func) const {
+            return _Fold_right_unchecked(
+                _Unwrap_range_iter<_Rng>(_RANGES begin(_Range)), _Uend(_Range), _STD move(_Init), _Pass_fn(_Func));
+        }
+
+    private:
+        template <class _It, class _Se, class _Ty, class _Fn>
+        _NODISCARD constexpr auto _Fold_right_unchecked(_It _First, _Se _Last, _Ty _Init, _Fn _Func) const {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(_Indirectly_binary_right_foldable<_Fn, _Ty, _It>);
+
+            using _Uty = decay_t<invoke_result_t<_Fn&, iter_reference_t<_It>, _Ty>>;
+            if (_First == _Last) {
+                return _Uty(_STD move(_Init));
+            } else {
+                _It _Tail   = _RANGES next(_First, _Last);
+                _Uty _Accum = _STD invoke(_Func, *--_Tail, _STD move(_Init));
+                while (_First != _Tail) {
+                    _Accum = _STD invoke(_Func, *--_Tail, _STD move(_Accum));
+                }
+                return _Accum;
+            }
+        }
+    };
+
+    inline constexpr _Fold_right_fn fold_right{_Not_quite_object::_Construct_tag{}};
+
+    class _Fold_right_last_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It, sentinel_for<_It> _Se,
+            _Indirectly_binary_right_foldable<iter_value_t<_It>, _It> _Fn>
+            requires constructible_from<iter_value_t<_It>, iter_reference_t<_It>>
+        _NODISCARD constexpr auto operator()(_It _First, _Se _Last, _Fn _Func) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            return _Fold_right_last_unchecked(
+                _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Func));
+        }
+
+        // clang-format off
+        template <bidirectional_range _Rng,
+            _Indirectly_binary_right_foldable<range_value_t<_Rng>, iterator_t<_Rng>> _Fn>
+            requires constructible_from<range_value_t<_Rng>, range_reference_t<_Rng>>
+        _NODISCARD constexpr auto operator()(_Rng&& _Range, _Fn _Func) const {
+            // clang-format on
+            return _Fold_right_last_unchecked(
+                _Unwrap_range_iter<_Rng>(_RANGES begin(_Range)), _Uend(_Range), _Pass_fn(_Func));
+        }
+
+    private:
+        template <class _It, class _Se, class _Fn>
+        _NODISCARD constexpr auto _Fold_right_last_unchecked(_It _First, _Se _Last, _Fn _Func) const {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(_Indirectly_binary_right_foldable<_Fn, iter_value_t<_It>, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It>, iter_reference_t<_It>>);
+
+            using _Uty = decltype(_RANGES fold_right(_First, _Last, iter_value_t<_It>(*_First), _Func));
+            if (_First == _Last) {
+                return optional<_Uty>{};
+            } else {
+                _It _Tail = _RANGES prev(_RANGES next(_First, _STD move(_Last)));
+                return optional<_Uty>(in_place,
+                    _RANGES fold_right(_STD move(_First), _Tail, iter_value_t<_It>(*_Tail), _STD move(_Func)));
+            }
+        }
+    };
+
+    inline constexpr _Fold_right_last_fn fold_right_last{_Not_quite_object::_Construct_tag{}};
 #endif // _HAS_CXX23
 } // namespace ranges
 #endif // __cpp_lib_concepts
