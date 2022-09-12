@@ -213,6 +213,23 @@ public:
         return _Last;
     }
 
+    using _Prevent_inheriting_unwrap = move_sentinel;
+
+    // clang-format off
+    _NODISCARD constexpr move_sentinel<_Unwrapped_t<const _Se&>> _Unwrapped() const&
+        noexcept(noexcept(move_sentinel<_Unwrapped_t<const _Se&>>(_Last._Unwrapped())))
+        requires _Weakly_unwrappable_sentinel<_Se> {
+        // clang-format on
+        return move_sentinel<_Unwrapped_t<const _Se&>>(_Last._Unwrapped());
+    }
+    // clang-format off
+    _NODISCARD constexpr move_sentinel<_Unwrapped_t<_Se>> _Unwrapped() &&
+        noexcept(noexcept(move_sentinel<_Unwrapped_t<_Se>>(_Last._Unwrapped())))
+        requires _Weakly_unwrappable_sentinel<_Se> {
+        // clang-format on
+        return move_sentinel<_Unwrapped_t<_Se>>(_STD move(_Last)._Unwrapped());
+    }
+
 private:
     _Se _Last{};
 };
