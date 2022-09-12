@@ -224,22 +224,22 @@ constexpr bool test_in_value_result() {
     STATIC_ASSERT(is_aggregate_v<in_value_result<int, int>>);
     STATIC_ASSERT(is_trivial_v<in_value_result<int, int>>);
 
-    in_value_result<int, int> res = {5, 6};
+    in_value_result<int*, int> res = {nullptr, 6};
     { // Validate binding
         auto [in, value] = res;
-        assert(in == 5);
+        assert(in == nullptr);
         assert(value == 6);
     }
 
     { // Validate conversion operator (const &)
-        in_value_result<long, long> long_res = res;
-        assert(long_res.in == 5L);
+        in_value_result<const int*, long> long_res = res;
+        assert(long_res.in == nullptr);
         assert(long_res.value == 6L);
     }
 
     { // Validate conversion operator (&&)
-        in_value_result<long long, long long> long_long_res = std::move(res);
-        assert(long_long_res.in == 5LL);
+        in_value_result<const int*, long long> long_long_res = std::move(res);
+        assert(long_long_res.in == nullptr);
         assert(long_long_res.value == 6LL);
     }
 
