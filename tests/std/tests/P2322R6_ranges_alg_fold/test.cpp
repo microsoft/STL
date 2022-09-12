@@ -25,8 +25,8 @@ struct instantiator {
             ranges::fold_left_first_with_iter, ranges::fold_right, ranges::fold_right_last,
             ranges::fold_left_with_iter_result, ranges::fold_left_first_with_iter_result, ranges::begin, ranges::end;
 
-        constexpr auto empty_rng = views::empty<const double>;
-        auto vec_of_doubles      = some_doubles | ranges::to<vector>();
+        constexpr auto empty_rng  = views::empty<const double>;
+        const auto vec_of_doubles = some_doubles | ranges::to<vector>();
 
         { // Validate fold_left iterator+sentinel overload
             const Rng wrapped{some_doubles};
@@ -85,7 +85,7 @@ struct instantiator {
             assert(sum1.in == end(wrapped));
             assert(sum1.value == left_sum);
 
-            const same_as<fold_left_with_iter_result<vector<double>::iterator, double>> auto sum2 =
+            const same_as<fold_left_with_iter_result<vector<double>::const_iterator, double>> auto sum2 =
                 fold_left_with_iter(begin(vec_of_doubles), end(vec_of_doubles), 0.0, plus{});
             assert(sum2.in == end(vec_of_doubles));
             assert(sum2.value == left_sum);
@@ -104,7 +104,7 @@ struct instantiator {
             assert(sum1.in == end(wrapped));
             assert(sum1.value == left_sum);
 
-            const same_as<fold_left_with_iter_result<vector<double>::iterator, double>> auto sum2 =
+            const same_as<fold_left_with_iter_result<vector<double>::const_iterator, double>> auto sum2 =
                 fold_left_with_iter(vec_of_doubles, 0.0, plus{});
             assert(sum2.in == end(vec_of_doubles));
             assert(sum2.value == left_sum);
@@ -127,8 +127,8 @@ struct instantiator {
             assert(diff1.in == end(wrapped));
             assert(diff1.value == left_difference);
 
-            const same_as<fold_left_first_with_iter_result<vector<double>::iterator, optional<double>>> auto diff2 =
-                fold_left_first_with_iter(begin(vec_of_doubles), end(vec_of_doubles), minus<double>{});
+            const same_as<fold_left_first_with_iter_result<vector<double>::const_iterator, optional<double>>> auto
+                diff2 = fold_left_first_with_iter(begin(vec_of_doubles), end(vec_of_doubles), minus<double>{});
             assert(diff2.in == end(vec_of_doubles));
             assert(diff2.value == left_difference);
 
@@ -145,8 +145,8 @@ struct instantiator {
             assert(diff1.in == end(wrapped));
             assert(diff1.value == left_difference);
 
-            const same_as<fold_left_first_with_iter_result<vector<double>::iterator, optional<double>>> auto diff2 =
-                fold_left_first_with_iter(vec_of_doubles, minus<double>{});
+            const same_as<fold_left_first_with_iter_result<vector<double>::const_iterator, optional<double>>> auto
+                diff2 = fold_left_first_with_iter(vec_of_doubles, minus<double>{});
             assert(diff2.in == end(vec_of_doubles));
             assert(diff2.value == left_difference);
 
