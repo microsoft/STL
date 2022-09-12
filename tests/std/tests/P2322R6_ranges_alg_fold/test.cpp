@@ -14,9 +14,10 @@
 using namespace std;
 
 struct instantiator {
-    static constexpr double some_doubles[] = {0.1, 0.2, 0.3};
-    static constexpr double left_sum       = 0.1 + 0.2 + 0.3;
-    static constexpr double right_product  = 0.1 * (0.2 * 0.3);
+    static constexpr double some_doubles[]  = {0.1, 0.2, 0.3};
+    static constexpr double left_sum        = 0.1 + 0.2 + 0.3;
+    static constexpr double left_difference = 0.1 - 0.2 - 0.3;
+    static constexpr double right_product   = 0.1 * (0.2 * 0.3);
 
     template <ranges::input_range Rng>
     static constexpr void call() {
@@ -53,27 +54,27 @@ struct instantiator {
 
         { // Validate fold_left_first iterator+sentinel overload
             const Rng wrapped{some_doubles};
-            const same_as<optional<double>> auto sum1 = fold_left_first(begin(wrapped), end(wrapped), plus{});
-            assert(sum1 == left_sum);
+            const same_as<optional<double>> auto diff1 = fold_left_first(begin(wrapped), end(wrapped), minus<double>{});
+            assert(diff1 == left_difference);
 
-            const same_as<optional<double>> auto sum2 =
-                fold_left_first(begin(vec_of_doubles), end(vec_of_doubles), plus{});
-            assert(sum2 == left_sum);
+            const same_as<optional<double>> auto diff2 =
+                fold_left_first(begin(vec_of_doubles), end(vec_of_doubles), minus<double>{});
+            assert(diff2 == left_difference);
 
-            const auto e                              = views::empty<const double>;
-            const same_as<optional<double>> auto sum3 = fold_left_first(begin(e), end(e), plus{});
-            assert(sum3 == nullopt);
+            const auto e                               = views::empty<const double>;
+            const same_as<optional<double>> auto diff3 = fold_left_first(begin(e), end(e), minus<double>{});
+            assert(diff3 == nullopt);
         }
 
         { // Validate fold_left_first range overload
-            const same_as<optional<double>> auto sum1 = fold_left_first(Rng{some_doubles}, plus{});
-            assert(sum1 == left_sum);
+            const same_as<optional<double>> auto diff1 = fold_left_first(Rng{some_doubles}, minus<double>{});
+            assert(diff1 == left_difference);
 
-            const same_as<optional<double>> auto sum2 = fold_left_first(vec_of_doubles, plus{});
-            assert(sum2 == left_sum);
+            const same_as<optional<double>> auto diff2 = fold_left_first(vec_of_doubles, minus<double>{});
+            assert(diff2 == left_difference);
 
-            const same_as<optional<double>> auto sum3 = fold_left_first(views::empty<const double>, plus{});
-            assert(sum3 == nullopt);
+            const same_as<optional<double>> auto diff3 = fold_left_first(views::empty<const double>, minus<double>{});
+            assert(diff3 == nullopt);
         }
 
         { // Validate fold_left_with_iter iterator+sentinel overload
@@ -121,44 +122,44 @@ struct instantiator {
 
         { // Validate fold_left_first_with_iter iterator+sentinel overload
             const Rng wrapped{some_doubles};
-            const same_as<fold_left_first_with_iter_result<ranges::iterator_t<Rng>, optional<double>>> auto sum1 =
-                fold_left_first_with_iter(begin(wrapped), end(wrapped), plus{});
-            assert(sum1.in == end(wrapped));
-            assert(sum1.value == left_sum);
+            const same_as<fold_left_first_with_iter_result<ranges::iterator_t<Rng>, optional<double>>> auto diff1 =
+                fold_left_first_with_iter(begin(wrapped), end(wrapped), minus<double>{});
+            assert(diff1.in == end(wrapped));
+            assert(diff1.value == left_difference);
 
-            const same_as<fold_left_first_with_iter_result<vector<double>::iterator, optional<double>>> auto sum2 =
-                fold_left_first_with_iter(begin(vec_of_doubles), end(vec_of_doubles), plus{});
-            assert(sum2.in == end(vec_of_doubles));
-            assert(sum2.value == left_sum);
+            const same_as<fold_left_first_with_iter_result<vector<double>::iterator, optional<double>>> auto diff2 =
+                fold_left_first_with_iter(begin(vec_of_doubles), end(vec_of_doubles), minus<double>{});
+            assert(diff2.in == end(vec_of_doubles));
+            assert(diff2.value == left_difference);
 
             const auto e = views::empty<const double>;
-            const same_as<fold_left_first_with_iter_result<const double*, optional<double>>> auto sum3 =
-                fold_left_first_with_iter(begin(e), end(e), plus{});
-            assert(sum3.in == end(e));
-            assert(sum3.value == nullopt);
+            const same_as<fold_left_first_with_iter_result<const double*, optional<double>>> auto diff3 =
+                fold_left_first_with_iter(begin(e), end(e), minus<double>{});
+            assert(diff3.in == end(e));
+            assert(diff3.value == nullopt);
         }
 
         { // Validate fold_left_first_with_iter range overload
             const Rng wrapped{some_doubles};
-            const same_as<fold_left_first_with_iter_result<ranges::iterator_t<Rng>, optional<double>>> auto sum1 =
-                fold_left_first_with_iter(wrapped, plus{});
-            assert(sum1.in == end(wrapped));
-            assert(sum1.value == left_sum);
+            const same_as<fold_left_first_with_iter_result<ranges::iterator_t<Rng>, optional<double>>> auto diff1 =
+                fold_left_first_with_iter(wrapped, minus<double>{});
+            assert(diff1.in == end(wrapped));
+            assert(diff1.value == left_difference);
 
-            const same_as<fold_left_first_with_iter_result<vector<double>::iterator, optional<double>>> auto sum2 =
-                fold_left_first_with_iter(vec_of_doubles, plus{});
-            assert(sum2.in == end(vec_of_doubles));
-            assert(sum2.value == left_sum);
+            const same_as<fold_left_first_with_iter_result<vector<double>::iterator, optional<double>>> auto diff2 =
+                fold_left_first_with_iter(vec_of_doubles, minus<double>{});
+            assert(diff2.in == end(vec_of_doubles));
+            assert(diff2.value == left_difference);
 
             const auto e = views::empty<const double>;
-            const same_as<fold_left_first_with_iter_result<const double*, optional<double>>> auto sum3 =
-                fold_left_first_with_iter(e, plus{});
-            assert(sum3.in == end(e));
-            assert(sum3.value == nullopt);
+            const same_as<fold_left_first_with_iter_result<const double*, optional<double>>> auto diff3 =
+                fold_left_first_with_iter(e, minus<double>{});
+            assert(diff3.in == end(e));
+            assert(diff3.value == nullopt);
 
-            const same_as<fold_left_first_with_iter_result<ranges::dangling, optional<double>>> auto sum4 =
-                fold_left_first_with_iter(some_doubles | ranges::to<vector>(), plus{});
-            assert(sum4.value == left_sum);
+            const same_as<fold_left_first_with_iter_result<ranges::dangling, optional<double>>> auto diff4 =
+                fold_left_first_with_iter(some_doubles | ranges::to<vector>(), minus<double>{});
+            assert(diff4.value == left_difference);
         }
 
         if constexpr (ranges::bidirectional_range<Rng>) {
