@@ -37,7 +37,7 @@ std::uint32_t GetMax() {
     return dist(gen);
 }
 
-static const std::uint32_t max = GetMax(); // random divisor to prevent strength reduction
+static const std::uint32_t maximum = GetMax(); // random divisor to prevent strength reduction
 
 /// Test mt19937
 
@@ -45,7 +45,7 @@ static void BM_raw_mt19937_old(benchmark::State& state) {
     std::mt19937 gen;
     std::_Rng_from_urng<std::uint32_t, decltype(gen)> rng(gen);
     for (auto _ : state) {
-        benchmark::DoNotOptimize(rng(max));
+        benchmark::DoNotOptimize(rng(maximum));
     }
 }
 BENCHMARK(BM_raw_mt19937_old);
@@ -54,7 +54,7 @@ static void BM_raw_mt19937_new(benchmark::State& state) {
     std::mt19937 gen;
     std::_Rng_from_urng_v2<std::uint32_t, decltype(gen)> rng(gen);
     for (auto _ : state) {
-        benchmark::DoNotOptimize(rng(max));
+        benchmark::DoNotOptimize(rng(maximum));
     }
 }
 BENCHMARK(BM_raw_mt19937_new);
@@ -65,7 +65,7 @@ static void BM_raw_mt19937_64_old(benchmark::State& state) {
     std::mt19937_64 gen;
     std::_Rng_from_urng<std::uint64_t, decltype(gen)> rng(gen);
     for (auto _ : state) {
-        benchmark::DoNotOptimize(rng(max));
+        benchmark::DoNotOptimize(rng(maximum));
     }
 }
 BENCHMARK(BM_raw_mt19937_64_old);
@@ -74,7 +74,7 @@ static void BM_raw_mt19937_64_new(benchmark::State& state) {
     std::mt19937_64 gen;
     std::_Rng_from_urng_v2<std::uint64_t, decltype(gen)> rng(gen);
     for (auto _ : state) {
-        benchmark::DoNotOptimize(rng(max));
+        benchmark::DoNotOptimize(rng(maximum));
     }
 }
 BENCHMARK(BM_raw_mt19937_64_new);
@@ -85,7 +85,7 @@ static void BM_raw_lcg_old(benchmark::State& state) {
     std::minstd_rand gen;
     std::_Rng_from_urng<std::uint32_t, decltype(gen)> rng(gen);
     for (auto _ : state) {
-        benchmark::DoNotOptimize(rng(max));
+        benchmark::DoNotOptimize(rng(maximum));
     }
 }
 BENCHMARK(BM_raw_lcg_old);
@@ -94,7 +94,7 @@ static void BM_raw_lcg_new(benchmark::State& state) {
     std::minstd_rand gen;
     std::_Rng_from_urng_v2<std::uint32_t, decltype(gen)> rng(gen);
     for (auto _ : state) {
-        benchmark::DoNotOptimize(rng(max));
+        benchmark::DoNotOptimize(rng(maximum));
     }
 }
 BENCHMARK(BM_raw_lcg_new);
