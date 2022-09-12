@@ -19,8 +19,7 @@ constexpr size_t max_line_length = 120;
 
 class BinaryFile {
 public:
-    explicit BinaryFile(const filesystem::path& filepath) //
-        : m_file(_wfopen(filepath.c_str(), L"rb")) {
+    explicit BinaryFile(const filesystem::path& filepath) : m_file(_wfopen(filepath.c_str(), L"rb")) {
         if (!m_file) {
             fwprintf(stderr, L"Validation failed: %ls couldn't be opened.\n", filepath.c_str());
         }
