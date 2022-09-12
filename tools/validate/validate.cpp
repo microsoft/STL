@@ -26,7 +26,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool read_next_block(vector<unsigned char>& buffer) const {
+    [[nodiscard]] bool read_next_block(vector<unsigned char>& buffer) {
         constexpr size_t BlockSize = 65536;
 
         buffer.resize(BlockSize);
