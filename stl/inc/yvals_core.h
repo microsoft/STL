@@ -272,6 +272,7 @@
 //     (span always provides this behavior)
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
 // P2281R1 Clarifying Range Adaptor Objects
+// P2322R6 ranges::fold
 // P2325R3 Views Should Not Be Required To Be Default Constructible
 // P2328R1 join_view Should Join All views Of ranges
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
@@ -1632,6 +1633,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts
+#define __cpp_lib_fold                    202207L
 #define __cpp_lib_out_ptr                 202106L
 #define __cpp_lib_ranges_as_rvalue        202207L
 #define __cpp_lib_ranges_chunk            202202L
