@@ -15,10 +15,8 @@ using namespace std;
 
 struct instantiator {
     static constexpr double some_doubles[] = {0.1, 0.2, 0.3};
-
-    static constexpr double left_sum  = 0.1 + 0.2 + 0.3;
-    static constexpr double right_sum = 0.1 + (0.2 + 0.3);
-    static_assert(left_sum != right_sum);
+    static constexpr double left_sum       = 0.1 + 0.2 + 0.3;
+    static constexpr double right_product  = 0.1 * (0.2 * 0.3);
 
     template <ranges::input_range Rng>
     static constexpr void call() {
@@ -166,53 +164,55 @@ struct instantiator {
         if constexpr (ranges::bidirectional_range<Rng>) {
             { // Validate fold_right iterator+sentinel overload
                 const Rng wrapped{some_doubles};
-                const same_as<double> auto sum1 = fold_right(begin(wrapped), end(wrapped), 0.0, plus{});
-                assert(sum1 == right_sum);
+                const same_as<double> auto prod1 = fold_right(begin(wrapped), end(wrapped), 1.0, multiplies{});
+                assert(prod1 == right_product);
 
-                const same_as<double> auto sum2 = fold_right(begin(vec_of_doubles), end(vec_of_doubles), 0.0, plus{});
-                assert(sum2 == right_sum);
+                const same_as<double> auto prod2 =
+                    fold_right(begin(vec_of_doubles), end(vec_of_doubles), 1.0, multiplies{});
+                assert(prod2 == right_product);
 
-                const double single_value       = 3.14;
-                const auto e                    = views::empty<const double>;
-                const same_as<double> auto sum3 = fold_left(begin(e), end(e), single_value, plus{});
-                assert(sum3 == single_value);
+                const double single_value        = 3.14;
+                const auto e                     = views::empty<const double>;
+                const same_as<double> auto prod3 = fold_left(begin(e), end(e), single_value, multiplies{});
+                assert(prod3 == single_value);
             }
 
             { // Validate fold_right range overload
-                const same_as<double> auto sum1 = fold_right(Rng{some_doubles}, 0.0, plus{});
-                assert(sum1 == right_sum);
+                const same_as<double> auto prod1 = fold_right(Rng{some_doubles}, 1.0, multiplies{});
+                assert(prod1 == right_product);
 
-                const same_as<double> auto sum2 = fold_right(vec_of_doubles, 0.0, plus{});
-                assert(sum2 == right_sum);
+                const same_as<double> auto prod2 = fold_right(vec_of_doubles, 1.0, multiplies{});
+                assert(prod2 == right_product);
 
-                const double single_value       = 3.14;
-                const same_as<double> auto sum3 = fold_left(views::empty<const double>, single_value, plus{});
-                assert(sum3 == single_value);
+                const double single_value        = 3.14;
+                const same_as<double> auto prod3 = fold_left(views::empty<const double>, single_value, multiplies{});
+                assert(prod3 == single_value);
             }
 
             { // Validate fold_right_last iterator+sentinel overload
                 const Rng wrapped{some_doubles};
-                const same_as<optional<double>> auto sum1 = fold_right_last(begin(wrapped), end(wrapped), plus{});
-                assert(sum1 == right_sum);
+                const same_as<optional<double>> auto prod1 =
+                    fold_right_last(begin(wrapped), end(wrapped), multiplies{});
+                assert(prod1 == right_product);
 
-                const same_as<optional<double>> auto sum2 =
-                    fold_right_last(begin(vec_of_doubles), end(vec_of_doubles), plus{});
-                assert(sum2 == right_sum);
+                const same_as<optional<double>> auto prod2 =
+                    fold_right_last(begin(vec_of_doubles), end(vec_of_doubles), multiplies{});
+                assert(prod2 == right_product);
 
-                const auto e                              = views::empty<const double>;
-                const same_as<optional<double>> auto sum3 = fold_right_last(begin(e), end(e), plus{});
-                assert(sum3 == nullopt);
+                const auto e                               = views::empty<const double>;
+                const same_as<optional<double>> auto prod3 = fold_right_last(begin(e), end(e), multiplies{});
+                assert(prod3 == nullopt);
             }
 
             { // Validate fold_right_last range overload
-                const same_as<optional<double>> auto sum1 = fold_right_last(Rng{some_doubles}, plus{});
-                assert(sum1 == right_sum);
+                const same_as<optional<double>> auto prod1 = fold_right_last(Rng{some_doubles}, multiplies{});
+                assert(prod1 == right_product);
 
-                const same_as<optional<double>> auto sum2 = fold_right_last(vec_of_doubles, plus{});
-                assert(sum2 == right_sum);
+                const same_as<optional<double>> auto prod2 = fold_right_last(vec_of_doubles, multiplies{});
+                assert(prod2 == right_product);
 
-                const same_as<optional<double>> auto sum3 = fold_right_last(views::empty<const double>, plus{});
-                assert(sum3 == nullopt);
+                const same_as<optional<double>> auto prod3 = fold_right_last(views::empty<const double>, multiplies{});
+                assert(prod3 == nullopt);
             }
         }
     }
