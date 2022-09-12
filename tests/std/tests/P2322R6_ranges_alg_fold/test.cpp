@@ -24,7 +24,9 @@ struct instantiator {
         using ranges::fold_left, ranges::fold_left_first, ranges::fold_left_with_iter,
             ranges::fold_left_first_with_iter, ranges::fold_right, ranges::fold_right_last,
             ranges::fold_left_with_iter_result, ranges::fold_left_first_with_iter_result, ranges::begin, ranges::end;
-        auto vec_of_doubles = some_doubles | ranges::to<vector>();
+
+        constexpr auto empty_rng = views::empty<const double>;
+        auto vec_of_doubles      = some_doubles | ranges::to<vector>();
 
         { // Validate fold_left iterator+sentinel overload
             const Rng wrapped{some_doubles};
@@ -35,8 +37,7 @@ struct instantiator {
             assert(sum2 == left_sum);
 
             const double single_value       = 3.14;
-            const auto e                    = views::empty<const double>;
-            const same_as<double> auto sum3 = fold_left(begin(e), end(e), single_value, plus{});
+            const same_as<double> auto sum3 = fold_left(begin(empty_rng), end(empty_rng), single_value, plus{});
             assert(sum3 == single_value);
         }
 
@@ -48,7 +49,7 @@ struct instantiator {
             assert(sum2 == left_sum);
 
             const double single_value       = 3.14;
-            const same_as<double> auto sum3 = fold_left(views::empty<const double>, single_value, plus{});
+            const same_as<double> auto sum3 = fold_left(empty_rng, single_value, plus{});
             assert(sum3 == single_value);
         }
 
@@ -61,8 +62,8 @@ struct instantiator {
                 fold_left_first(begin(vec_of_doubles), end(vec_of_doubles), minus<double>{});
             assert(diff2 == left_difference);
 
-            const auto e                               = views::empty<const double>;
-            const same_as<optional<double>> auto diff3 = fold_left_first(begin(e), end(e), minus<double>{});
+            const same_as<optional<double>> auto diff3 =
+                fold_left_first(begin(empty_rng), end(empty_rng), minus<double>{});
             assert(diff3 == nullopt);
         }
 
@@ -73,7 +74,7 @@ struct instantiator {
             const same_as<optional<double>> auto diff2 = fold_left_first(vec_of_doubles, minus<double>{});
             assert(diff2 == left_difference);
 
-            const same_as<optional<double>> auto diff3 = fold_left_first(views::empty<const double>, minus<double>{});
+            const same_as<optional<double>> auto diff3 = fold_left_first(empty_rng, minus<double>{});
             assert(diff3 == nullopt);
         }
 
@@ -90,10 +91,9 @@ struct instantiator {
             assert(sum2.value == left_sum);
 
             const double single_value = 3.14;
-            const auto e              = views::empty<const double>;
             const same_as<fold_left_with_iter_result<const double*, double>> auto sum3 =
-                fold_left_with_iter(begin(e), end(e), single_value, plus{});
-            assert(sum3.in == nullptr);
+                fold_left_with_iter(begin(empty_rng), end(empty_rng), single_value, plus{});
+            assert(sum3.in == empty_rng.end());
             assert(sum3.value == single_value);
         }
 
@@ -115,8 +115,8 @@ struct instantiator {
 
             const double single_value = 3.14;
             const same_as<fold_left_with_iter_result<const double*, double>> auto sum4 =
-                fold_left_with_iter(views::empty<const double>, single_value, plus{});
-            assert(sum4.in == nullptr);
+                fold_left_with_iter(empty_rng, single_value, plus{});
+            assert(sum4.in == empty_rng.end());
             assert(sum4.value == single_value);
         }
 
@@ -132,10 +132,9 @@ struct instantiator {
             assert(diff2.in == end(vec_of_doubles));
             assert(diff2.value == left_difference);
 
-            const auto e = views::empty<const double>;
             const same_as<fold_left_first_with_iter_result<const double*, optional<double>>> auto diff3 =
-                fold_left_first_with_iter(begin(e), end(e), minus<double>{});
-            assert(diff3.in == end(e));
+                fold_left_first_with_iter(begin(empty_rng), end(empty_rng), minus<double>{});
+            assert(diff3.in == end(empty_rng));
             assert(diff3.value == nullopt);
         }
 
@@ -151,10 +150,9 @@ struct instantiator {
             assert(diff2.in == end(vec_of_doubles));
             assert(diff2.value == left_difference);
 
-            const auto e = views::empty<const double>;
             const same_as<fold_left_first_with_iter_result<const double*, optional<double>>> auto diff3 =
-                fold_left_first_with_iter(e, minus<double>{});
-            assert(diff3.in == end(e));
+                fold_left_first_with_iter(empty_rng, minus<double>{});
+            assert(diff3.in == end(empty_rng));
             assert(diff3.value == nullopt);
 
             const same_as<fold_left_first_with_iter_result<ranges::dangling, optional<double>>> auto diff4 =
@@ -172,9 +170,9 @@ struct instantiator {
                     fold_right(begin(vec_of_doubles), end(vec_of_doubles), 1.0, multiplies{});
                 assert(prod2 == right_product);
 
-                const double single_value        = 3.14;
-                const auto e                     = views::empty<const double>;
-                const same_as<double> auto prod3 = fold_left(begin(e), end(e), single_value, multiplies{});
+                const double single_value = 3.14;
+                const same_as<double> auto prod3 =
+                    fold_left(begin(empty_rng), end(empty_rng), single_value, multiplies{});
                 assert(prod3 == single_value);
             }
 
@@ -186,7 +184,7 @@ struct instantiator {
                 assert(prod2 == right_product);
 
                 const double single_value        = 3.14;
-                const same_as<double> auto prod3 = fold_left(views::empty<const double>, single_value, multiplies{});
+                const same_as<double> auto prod3 = fold_left(empty_rng, single_value, multiplies{});
                 assert(prod3 == single_value);
             }
 
@@ -200,8 +198,8 @@ struct instantiator {
                     fold_right_last(begin(vec_of_doubles), end(vec_of_doubles), multiplies{});
                 assert(prod2 == right_product);
 
-                const auto e                               = views::empty<const double>;
-                const same_as<optional<double>> auto prod3 = fold_right_last(begin(e), end(e), multiplies{});
+                const same_as<optional<double>> auto prod3 =
+                    fold_right_last(begin(empty_rng), end(empty_rng), multiplies{});
                 assert(prod3 == nullopt);
             }
 
@@ -212,7 +210,7 @@ struct instantiator {
                 const same_as<optional<double>> auto prod2 = fold_right_last(vec_of_doubles, multiplies{});
                 assert(prod2 == right_product);
 
-                const same_as<optional<double>> auto prod3 = fold_right_last(views::empty<const double>, multiplies{});
+                const same_as<optional<double>> auto prod3 = fold_right_last(empty_rng, multiplies{});
                 assert(prod3 == nullopt);
             }
         }
@@ -248,8 +246,9 @@ constexpr bool test_in_value_result() {
 
 int main() {
     STATIC_ASSERT((test_in<instantiator, const double>(), true));
-    STATIC_ASSERT((test_bidi<instantiator, const double>(), true));
     test_in<instantiator, const double>();
+
+    STATIC_ASSERT((test_bidi<instantiator, const double>(), true));
     test_bidi<instantiator, const double>();
 
     STATIC_ASSERT(test_in_value_result());
