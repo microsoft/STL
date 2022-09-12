@@ -177,9 +177,40 @@ struct instantiator {
     }
 };
 
+constexpr bool test_in_value_result() {
+    using ranges::in_value_result;
+
+    STATIC_ASSERT(is_aggregate_v<in_value_result<int, int>>);
+    STATIC_ASSERT(is_trivial_v<in_value_result<int, int>>);
+
+    in_value_result<int, int> res = {5, 6};
+    { // Validate binding
+        auto [in, value] = res;
+        assert(in == 5);
+        assert(value == 6);
+    }
+
+    { // Validate conversion operator (const &)
+        in_value_result<long, long> long_res = res;
+        assert(long_res.in == 5L);
+        assert(long_res.value == 6L);
+    }
+
+    { // Validate conversion operator (&&)
+        in_value_result<long long, long long> long_long_res = res;
+        assert(long_long_res.in == 5LL);
+        assert(long_long_res.value == 6LL);
+    }
+
+    return true;
+}
+
 int main() {
     STATIC_ASSERT((test_in<instantiator, const double>(), true));
     STATIC_ASSERT((test_bidi<instantiator, const double>(), true));
     test_in<instantiator, const double>();
     test_bidi<instantiator, const double>();
+
+    STATIC_ASSERT(test_in_value_result());
+    assert(test_in_value_result());
 }
