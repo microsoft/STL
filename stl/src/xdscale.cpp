@@ -12,9 +12,8 @@ short _Dscale(double* px, long lexp) { // scale *px by 2^xexp with checking
     short xchar   = static_cast<short>((ps->_Sh[_D0] & _DMASK) >> _DOFF);
 
     if (xchar == _DMAX) {
-        return static_cast<short>(
-            (ps->_Sh[_D0] & _DFRAC) != 0 || ps->_Sh[_D1] != 0 || ps->_Sh[_D2] != 0 || ps->_Sh[_D3] != 0 ? _NANCODE
-                                                                                                        : _INFCODE);
+        return (ps->_Sh[_D0] & _DFRAC) != 0 || ps->_Sh[_D1] != 0 || ps->_Sh[_D2] != 0 || ps->_Sh[_D3] != 0 ? _NANCODE
+                                                                                                           : _INFCODE;
     } else if (xchar == 0 && 0 < (xchar = _Dnorm(ps))) {
         return 0;
     }

@@ -12,7 +12,7 @@ short _FDscale(float* px, long lexp) { // scale *px by 2^xexp with checking
     short xchar   = static_cast<short>((ps->_Sh[_F0] & _FMASK) >> _FOFF);
 
     if (xchar == _FMAX) {
-        return static_cast<short>((ps->_Sh[_F0] & _FFRAC) != 0 || ps->_Sh[_F1] != 0 ? _NANCODE : _INFCODE);
+        return (ps->_Sh[_F0] & _FFRAC) != 0 || ps->_Sh[_F1] != 0 ? _NANCODE : _INFCODE;
     } else if (xchar == 0 && 0 < (xchar = _FDnorm(ps))) {
         return 0;
     }
