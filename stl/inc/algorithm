@@ -2792,6 +2792,25 @@ namespace ranges {
 
     inline constexpr _Fold_left_first_with_iter_fn fold_left_first_with_iter{_Not_quite_object::_Construct_tag{}};
 
+    template <class _It, class _Se, class _Ty, class _Fn>
+    _NODISCARD constexpr auto _Fold_right_unchecked(_It _First, _Se _Last, _Ty _Init, _Fn _Func) {
+        _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+        _STL_INTERNAL_STATIC_ASSERT(_Indirectly_binary_right_foldable<_Fn, _Ty, _It>);
+
+        using _Uty = decay_t<invoke_result_t<_Fn&, iter_reference_t<_It>, _Ty>>;
+        if (_First == _Last) {
+            return _Uty(_STD move(_Init));
+        } else {
+            _It _Tail   = _RANGES next(_First, _Last);
+            _Uty _Accum = _STD invoke(_Func, *--_Tail, _STD move(_Init));
+            while (_First != _Tail) {
+                _Accum = _STD invoke(_Func, *--_Tail, _STD move(_Accum));
+            }
+            return _Accum;
+        }
+    }
+
     class _Fold_right_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2808,26 +2827,6 @@ namespace ranges {
         _NODISCARD constexpr auto operator()(_Rng&& _Range, _Ty _Init, _Fn _Func) const {
             return _Fold_right_unchecked(
                 _Unwrap_range_iter<_Rng>(_RANGES begin(_Range)), _Uend(_Range), _STD move(_Init), _Pass_fn(_Func));
-        }
-
-    private:
-        template <class _It, class _Se, class _Ty, class _Fn>
-        _NODISCARD constexpr auto _Fold_right_unchecked(_It _First, _Se _Last, _Ty _Init, _Fn _Func) const {
-            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
-            _STL_INTERNAL_STATIC_ASSERT(_Indirectly_binary_right_foldable<_Fn, _Ty, _It>);
-
-            using _Uty = decay_t<invoke_result_t<_Fn&, iter_reference_t<_It>, _Ty>>;
-            if (_First == _Last) {
-                return _Uty(_STD move(_Init));
-            } else {
-                _It _Tail   = _RANGES next(_First, _Last);
-                _Uty _Accum = _STD invoke(_Func, *--_Tail, _STD move(_Init));
-                while (_First != _Tail) {
-                    _Accum = _STD invoke(_Func, *--_Tail, _STD move(_Accum));
-                }
-                return _Accum;
-            }
         }
     };
 
@@ -2871,8 +2870,8 @@ namespace ranges {
                 return optional<_Uty>{};
             } else {
                 _It _Tail = _RANGES prev(_RANGES next(_First, _STD move(_Last)));
-                return optional<_Uty>(in_place,
-                    _RANGES fold_right(_STD move(_First), _Tail, iter_value_t<_It>(*_Tail), _STD move(_Func)));
+                return optional<_Uty>(in_place, _RANGES _Fold_right_unchecked(_STD move(_First), _Tail,
+                                                    iter_value_t<_It>(*_Tail), _STD move(_Func)));
             }
         }
     };
