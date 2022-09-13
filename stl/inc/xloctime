@@ -215,7 +215,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new time_get<_Elem, _InIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new time_get<_Elem, _InIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_TIME;
@@ -711,7 +711,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new time_put<_Elem, _OutIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new time_put<_Elem, _OutIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_TIME;
@@ -836,7 +836,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new time_put<_Elem, _OutIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new time_put<_Elem, _OutIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_TIME;
@@ -968,7 +968,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new time_put<_Elem, _OutIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new time_put<_Elem, _OutIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_TIME;
