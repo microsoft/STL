@@ -47,7 +47,8 @@ short _Dscale(double* px, long lexp) { // scale *px by 2^xexp with checking
                 ps->_Sh[_D1] = ps->_Sh[_D0];
                 ps->_Sh[_D0] = 0;
             }
-            if ((xexp = static_cast<short>(-xexp)) != 0) { // scale by bits
+            if (xexp != 0) { // scale by bits
+                xexp         = -xexp;
                 psx          = (ps->_Sh[_D3] << (16 - xexp)) | (psx != 0 ? 1 : 0);
                 ps->_Sh[_D3] = static_cast<unsigned short>(ps->_Sh[_D3] >> xexp | ps->_Sh[_D2] << (16 - xexp));
                 ps->_Sh[_D2] = static_cast<unsigned short>(ps->_Sh[_D2] >> xexp | ps->_Sh[_D1] << (16 - xexp));
