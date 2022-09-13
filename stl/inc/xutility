@@ -6087,6 +6087,14 @@ public:
     _Diff operator()(_Diff _Index) { // adapt _Urng closed range to [0, _Index)
         // From Daniel Lemire, "Fast Random Integer Generation in an Interval", ACM Trans. Model. Comput. Simul. 29 (1),
         // 2019.
+        //
+        // Algorithm 5 <-> This Code:
+        //   m <-> _Product
+        //   l <-> _Rem
+        //   s <-> _Index
+        //   t <-> _Threshold
+        //   L <-> _Generated_bits
+
         _Udiff _Mask        = _Bmask;
         unsigned int _Niter = 1;
 
@@ -6098,10 +6106,14 @@ public:
             }
         }
 
+        // x <- random integer in [0, 2^L)
+        // m <- x * s
         auto _Product = _Get_random_product(_Index, _Niter);
-        auto _Rem     = static_cast<_Udiff>(_Product) & _Mask;
+        // l <- m mod 2^L
+        auto _Rem = static_cast<_Udiff>(_Product) & _Mask;
 
         if (_Rem < _Index) {
+            // t <- (2^L - s) mod s
             const auto _Threshold = (_Mask - (_Index - 1)) % _Index;
             while (_Rem < _Threshold) {
                 _Product = _Get_random_product(_Index, _Niter);
@@ -6116,6 +6128,7 @@ public:
             _Generated_bits = _Udiff_bits;
         }
 
+        // m / 2^L
         return static_cast<_Diff>(_Product >> _Generated_bits);
     }
 
