@@ -1633,12 +1633,12 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_fold                    202207L
 #define __cpp_lib_out_ptr                 202106L
 #define __cpp_lib_ranges_as_rvalue        202207L
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
 #define __cpp_lib_ranges_contains         202207L
+#define __cpp_lib_ranges_fold             202207L
 #define __cpp_lib_ranges_iota             202202L
 #define __cpp_lib_ranges_join_with        202202L
 #define __cpp_lib_ranges_slide            202202L

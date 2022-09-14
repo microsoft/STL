@@ -842,20 +842,6 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #endif
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-#ifndef __cpp_lib_fold
-#error __cpp_lib_fold is not defined
-#elif __cpp_lib_fold != 202207L
-#error __cpp_lib_fold is not 202207L
-#else
-STATIC_ASSERT(__cpp_lib_fold == 202207L);
-#endif
-#else
-#ifdef __cpp_lib_fold
-#error __cpp_lib_fold is defined
-#endif
-#endif
-
 #ifdef __cpp_lib_concepts
 #ifndef __cpp_lib_format
 #error __cpp_lib_format is not defined
@@ -1557,6 +1543,20 @@ STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
 #else
 #ifdef __cpp_lib_ranges_contains
 #error __cpp_lib_ranges_contains is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_fold
+#error __cpp_lib_ranges_fold is not defined
+#elif __cpp_lib_ranges_fold != 202207L
+#error __cpp_lib_ranges_fold is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_fold == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_fold
+#error __cpp_lib_ranges_fold is defined
 #endif
 #endif
 
