@@ -140,7 +140,7 @@ using add_rvalue_reference_t = typename _Add_reference<_Ty>::_Rvalue;
 
 template <class _Ty>
 add_rvalue_reference_t<_Ty> declval() noexcept {
-    static_assert(_Always_false<_Ty>, "Calling declval is ill-formed, see N4892 [declval]/2.");
+    static_assert(_Always_false<_Ty>, "Calling declval is ill-formed, see N4917 22.2.6 [declval]/2.");
 }
 
 template <class _Ty>
@@ -1189,8 +1189,8 @@ using _Conditional_type = decltype(false ? _STD declval<_Ty1>() : _STD declval<_
 template <class _Ty1, class _Ty2, class = void>
 struct _Const_lvalue_cond_oper {};
 
-// N4810 [meta.trans.other]/3.3.4 (per the proposed resolution of LWG-3205): "Otherwise, if remove_cvref_t</**/> denotes
-// a type..."
+// N4917 21.3.8.7 [meta.trans.other]/3.3.4 (per the proposed resolution of LWG-3205): "Otherwise, if
+// remove_cvref_t</**/> denotes a type..."
 template <class _Ty1, class _Ty2>
 struct _Const_lvalue_cond_oper<_Ty1, _Ty2, void_t<_Conditional_type<const _Ty1&, const _Ty2&>>> {
     using type = remove_cvref_t<_Conditional_type<const _Ty1&, const _Ty2&>>;
@@ -1267,11 +1267,11 @@ struct _Copy_cv_impl<const volatile _From> {
     using _Apply = const volatile _To;
 };
 template <class _From, class _To>
-using _Copy_cv = // N4810 [meta.trans.other]/2.3
+using _Copy_cv = // N4917 21.3.8.7 [meta.trans.other]/2.3
     typename _Copy_cv_impl<_From>::template _Apply<_To>;
 
 template <class _Ty1>
-struct _Add_qualifiers { // _Add_qualifiers<A>::template _Apply is XREF(A) from N4810 [meta.trans.other]/2.1
+struct _Add_qualifiers { // _Add_qualifiers<A>::template _Apply is XREF(A) from N4917 21.3.8.7 [meta.trans.other]/2.1
     template <class _Ty2>
     using _Apply = _Copy_cv<_Ty1, _Ty2>;
 };
@@ -1288,7 +1288,7 @@ struct _Add_qualifiers<_Ty1&&> {
 
 #if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-10095944
 template <class _Ty1, class _Ty2>
-using _Cond_res_if_right = // N4810 [meta.trans.other]/2.4
+using _Cond_res_if_right = // N4917 21.3.8.7 [meta.trans.other]/2.4
     decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
 
 template <class _Ty>
@@ -1310,7 +1310,7 @@ template <class _Ty1, class _Ty2>
 using _Cond_res = typename _Cond_res_workaround<_Ty1, _Ty2>::type;
 #else // ^^^ workaround / no workaround vvv
 template <class _Ty1, class _Ty2>
-using _Cond_res = // N4810 [meta.trans.other]/2.4
+using _Cond_res = // N4917 21.3.8.7 [meta.trans.other]/2.4
     decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
 #endif // ^^^ no workaround ^^^
 
@@ -1320,30 +1320,30 @@ struct common_reference;
 template <class... _Types>
 using common_reference_t = typename common_reference<_Types...>::type;
 
-// N4810 [meta.trans.other]/5.1: "If sizeof...(T) is zero ..."
+// N4917 21.3.8.7 [meta.trans.other]/5.1: "If sizeof...(T) is zero ..."
 template <>
 struct common_reference<> {};
 
-// N4810 [meta.trans.other]/5.2: "...if sizeof...(T) is one ..."
+// N4917 21.3.8.7 [meta.trans.other]/5.2: "...if sizeof...(T) is one ..."
 template <class _Ty>
 struct common_reference<_Ty> {
     using type = _Ty;
 };
 
-// N4810 [meta.trans.other]/5.3: "...if sizeof...(T) is two..."
+// N4917 21.3.8.7 [meta.trans.other]/5.3: "...if sizeof...(T) is two..."
 
-// N4810 [meta.trans.other]/5.3.4: "if common_type_t<T1, T2> is well-formed..."
-// N4810 [meta.trans.other]/5.3.5: "Otherwise, there shall be no member type."
+// N4917 21.3.8.7 [meta.trans.other]/5.3.4: "if common_type_t<T1, T2> is well-formed..."
+// N4917 21.3.8.7 [meta.trans.other]/5.3.5: "Otherwise, there shall be no member type."
 template <class _Ty1, class _Ty2, class = void>
 struct _Common_reference2C : common_type<_Ty1, _Ty2> {};
 
-// N4810 [meta.trans.other]/5.3.3: "if COND_RES(T1, T2) is well-formed..."
+// N4917 21.3.8.7 [meta.trans.other]/5.3.3: "if COND_RES(T1, T2) is well-formed..."
 template <class _Ty1, class _Ty2>
 struct _Common_reference2C<_Ty1, _Ty2, void_t<_Cond_res<_Ty1, _Ty2>>> {
     using type = _Cond_res<_Ty1, _Ty2>;
 };
 
-// N4810 [meta.trans.other]/5.3.2: "if basic_common_reference<[...]>::type is well-formed..."
+// N4917 21.3.8.7 [meta.trans.other]/5.3.2: "if basic_common_reference<[...]>::type is well-formed..."
 template <class _Ty1, class _Ty2>
 using _Basic_specialization = typename basic_common_reference<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>,
     _Add_qualifiers<_Ty1>::template _Apply, _Add_qualifiers<_Ty2>::template _Apply>::type;
@@ -1356,7 +1356,7 @@ struct _Common_reference2B<_Ty1, _Ty2, void_t<_Basic_specialization<_Ty1, _Ty2>>
     using type = _Basic_specialization<_Ty1, _Ty2>;
 };
 
-// N4810 [meta.trans.other]/5.3.1: "If T1 and T2 are reference types and COMMON_REF(T1, T2) is well-formed..."
+// N4917 21.3.8.7 [meta.trans.other]/5.3.1: "If T1 and T2 are reference types and COMMON_REF(T1, T2) is well-formed..."
 template <class _Ty1, class _Ty2, class = void>
 struct _Common_reference2A : _Common_reference2B<_Ty1, _Ty2> {};
 
@@ -1366,17 +1366,19 @@ using _LL_common_ref = _Result;
 
 template <class _Ty1, class _Ty2>
 struct _Common_reference2A<_Ty1&, _Ty2&, void_t<_LL_common_ref<_Ty1, _Ty2>>> {
-    using type = _LL_common_ref<_Ty1, _Ty2>; // "both lvalues" case from N4810 [meta.trans.other]/2.5
+    using type = _LL_common_ref<_Ty1, _Ty2>; // "both lvalues" case from N4917 21.3.8.7 [meta.trans.other]/2.5
 };
 
 template <class _Ty1, class _Ty2>
 struct _Common_reference2A<_Ty1&&, _Ty2&, enable_if_t<is_convertible_v<_Ty1&&, _LL_common_ref<const _Ty1, _Ty2>>>> {
-    using type = _LL_common_ref<const _Ty1, _Ty2>; // "rvalue and lvalue" case from N4810 [meta.trans.other]/2.7
+    using type =
+        _LL_common_ref<const _Ty1, _Ty2>; // "rvalue and lvalue" case from N4917 21.3.8.7 [meta.trans.other]/2.7
 };
 
 template <class _Ty1, class _Ty2>
 struct _Common_reference2A<_Ty1&, _Ty2&&, enable_if_t<is_convertible_v<_Ty2&&, _LL_common_ref<const _Ty2, _Ty1>>>> {
-    using type = _LL_common_ref<const _Ty2, _Ty1>; // "lvalue and rvalue" case from N4810 [meta.trans.other]/2.8
+    using type =
+        _LL_common_ref<const _Ty2, _Ty1>; // "lvalue and rvalue" case from N4917 21.3.8.7 [meta.trans.other]/2.8
 };
 
 template <class _Ty1, class _Ty2>
@@ -1386,13 +1388,13 @@ template <class _Ty1, class _Ty2>
 struct _Common_reference2A<_Ty1&&, _Ty2&&,
     enable_if_t<
         is_convertible_v<_Ty1&&, _RR_common_ref<_Ty1, _Ty2>> && is_convertible_v<_Ty2&&, _RR_common_ref<_Ty1, _Ty2>>>> {
-    using type = _RR_common_ref<_Ty1, _Ty2>; // "both rvalues" case from N4810 [meta.trans.other]/2.6
+    using type = _RR_common_ref<_Ty1, _Ty2>; // "both rvalues" case from N4917 21.3.8.7 [meta.trans.other]/2.6
 };
 
 template <class _Ty1, class _Ty2>
 struct common_reference<_Ty1, _Ty2> : _Common_reference2A<_Ty1, _Ty2> {};
 
-// N4810 [meta.trans.other]/5.4: "if sizeof...(T) is greater than two..."
+// N4917 21.3.8.7 [meta.trans.other]/5.4: "if sizeof...(T) is greater than two..."
 template <class _Void, class _Ty1, class _Ty2, class... _Types>
 struct _Fold_common_reference {};
 template <class _Ty1, class _Ty2, class... _Types>
@@ -1448,8 +1450,9 @@ template <class _Ty>
 class reference_wrapper;
 
 // std::invoke isn't constexpr in C++17, and normally implementers are forbidden from "strengthening" constexpr
-// (WG21-N4842 [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and have
-// invoke-like behavior. As a result, we've chosen to apply the part of P1065R2 resolving LWG-2894 as a defect report.
+// (WG21-N4917 16.4.6.7 [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and
+// have invoke-like behavior. As a result, we've chosen to apply the part of P1065R2 resolving LWG-2894 as a defect
+// report.
 
 enum class _Invoker_strategy {
     _Functor,
@@ -1854,7 +1857,8 @@ template <class _Ty, class _Uty, class = void>
 struct _Refwrap_has_ctor_from : false_type {};
 
 template <class _Ty, class _Uty>
-struct _Refwrap_has_ctor_from<_Ty, _Uty, void_t<decltype(_Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))>> : true_type {};
+struct _Refwrap_has_ctor_from<_Ty, _Uty, void_t<decltype(_STD _Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))>>
+    : true_type {}; // qualified: avoid ADL, handle incomplete types
 
 template <class _Ty>
 class reference_wrapper
@@ -1871,7 +1875,8 @@ public:
     template <class _Uty, enable_if_t<conjunction_v<negation<is_same<_Remove_cvref_t<_Uty>, reference_wrapper>>,
                                           _Refwrap_has_ctor_from<_Ty, _Uty>>,
                               int> = 0>
-    _CONSTEXPR20 reference_wrapper(_Uty&& _Val) noexcept(noexcept(_Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))) {
+    _CONSTEXPR20 reference_wrapper(_Uty&& _Val) noexcept(
+        noexcept(_STD _Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))) { // qualified: avoid ADL, handle incomplete types
         _Ty& _Ref = static_cast<_Uty&&>(_Val);
         _Ptr      = _STD addressof(_Ref);
     }
