@@ -990,10 +990,12 @@ void test_vector() {
 
 void test_version() {
     using namespace std;
-    puts("Testing <version>.");
 #ifdef TEST_HEADER_UNITS
+    puts("Testing <version>.");
     static_assert(__cpp_lib_make_unique >= 201304L);
-#endif // TEST_HEADER_UNITS
+#else // ^^^ header units / named modules vvv
+    puts("Nothing to test in <version>, only macros.");
+#endif // ^^^ named modules ^^^
 }
 
 void all_cpp_header_tests() {
