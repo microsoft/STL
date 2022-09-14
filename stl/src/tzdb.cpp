@@ -196,9 +196,8 @@ namespace {
 
     _NODISCARD const char* _Allocate_wide_to_narrow(
         const char16_t* const _Input, const int _Input_len, __std_tzdb_error& _Err) noexcept {
-        const auto _Code_page      = __std_fs_code_page();
         const auto _Input_as_wchar = reinterpret_cast<const wchar_t*>(_Input);
-        const auto _Count_result = __std_fs_convert_wide_to_narrow(_Code_page, _Input_as_wchar, _Input_len, nullptr, 0);
+        const auto _Count_result = __std_fs_convert_wide_to_narrow(__std_code_page::_Utf8, _Input_as_wchar, _Input_len, nullptr, 0);
         if (_Count_result._Err != __std_win_error::_Success) {
             _Err = __std_tzdb_error::_Win_error;
             return nullptr;
