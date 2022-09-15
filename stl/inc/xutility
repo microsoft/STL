@@ -1728,6 +1728,18 @@ struct _Basic_const_iterator_category<_Iter> {
     using iterator_category = typename iterator_traits<_Iter>::iterator_category;
 };
 
+// These are distinct concepts to workaround LLVM-55945
+template <class _Ty, class _Iter>
+concept _Bci_order =
+    _Not_same_as<_Ty, basic_const_iterator<_Iter>> && random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Ty>;
+
+template <class _Ty, class _Iter>
+concept _Bci_order_3way = _Bci_order<_Ty, _Iter> && three_way_comparable_with<_Iter, _Ty>;
+
+template <class _Ty, class _Iter>
+concept _Not_bci_order =
+    _Not_a_const_iterator<_Ty> && random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Ty>;
+
 template <input_iterator _Iter>
 class basic_const_iterator : public _Basic_const_iterator_category<_Iter> {
 private:
@@ -1886,67 +1898,57 @@ public:
         return _Left._Current <=> _Right._Current;
     }
 
-    template <_Not_same_as<basic_const_iterator> _Other>
+    template <_Bci_order<_Iter> _Other>
     _NODISCARD_FRIEND constexpr bool operator<(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
-        noexcept(_Fake_copy_init<bool>(_Left._Current < _Right))) // strengthened
-        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        noexcept(_Fake_copy_init<bool>(_Left._Current < _Right))) /* strengthened */ {
         return _Left._Current < _Right;
     }
 
-    template <_Not_same_as<basic_const_iterator> _Other>
+    template <_Bci_order<_Iter> _Other>
     _NODISCARD_FRIEND constexpr bool operator>(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
-        noexcept(_Fake_copy_init<bool>(_Left._Current > _Right))) // strengthened
-        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        noexcept(_Fake_copy_init<bool>(_Left._Current > _Right))) /* strengthened */ {
         return _Left._Current > _Right;
     }
 
-    template <_Not_same_as<basic_const_iterator> _Other>
+    template <_Bci_order<_Iter> _Other>
     _NODISCARD_FRIEND constexpr bool operator<=(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
-        noexcept(_Fake_copy_init<bool>(_Left._Current <= _Right))) // strengthened
-        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        noexcept(_Fake_copy_init<bool>(_Left._Current <= _Right))) /* strengthened */ {
         return _Left._Current <= _Right;
     }
 
-    template <_Not_same_as<basic_const_iterator> _Other>
+    template <_Bci_order<_Iter> _Other>
     _NODISCARD_FRIEND constexpr bool operator>=(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
-        noexcept(_Fake_copy_init<bool>(_Left._Current >= _Right))) // strengthened
-        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        noexcept(_Fake_copy_init<bool>(_Left._Current >= _Right))) /* strengthened */ {
         return _Left._Current >= _Right;
     }
 
-    template <_Not_a_const_iterator _Other>
+    template <_Not_bci_order<_Iter> _Other>
     _NODISCARD_FRIEND constexpr bool operator<(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
-        noexcept(_Fake_copy_init<bool>(_Left < _Right._Current))) // strengthened
-        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        noexcept(_Fake_copy_init<bool>(_Left < _Right._Current))) /* strengthened */ {
         return _Left < _Right._Current;
     }
 
-    template <_Not_a_const_iterator _Other>
+    template <_Not_bci_order<_Iter> _Other>
     _NODISCARD_FRIEND constexpr bool operator>(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
-        noexcept(_Fake_copy_init<bool>(_Left > _Right._Current))) // strengthened
-        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        noexcept(_Fake_copy_init<bool>(_Left > _Right._Current))) /* strengthened */ {
         return _Left > _Right._Current;
     }
 
-    template <_Not_a_const_iterator _Other>
+    template <_Not_bci_order<_Iter> _Other>
     _NODISCARD_FRIEND constexpr bool operator<=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
-        noexcept(_Fake_copy_init<bool>(_Left <= _Right._Current))) // strengthened
-        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        noexcept(_Fake_copy_init<bool>(_Left <= _Right._Current))) /* strengthened */ {
         return _Left <= _Right._Current;
     }
 
-    template <_Not_a_const_iterator _Other>
+    template <_Not_bci_order<_Iter> _Other>
     _NODISCARD_FRIEND constexpr bool operator>=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
-        noexcept(_Fake_copy_init<bool>(_Left >= _Right._Current))) // strengthened
-        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        noexcept(_Fake_copy_init<bool>(_Left >= _Right._Current))) /* strengthened */ {
         return _Left >= _Right._Current;
     }
 
-    template <_Not_same_as<basic_const_iterator> _Other>
+    template <_Bci_order_3way<_Iter> _Other>
     _NODISCARD_FRIEND constexpr auto operator<=>(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
-        noexcept(_Left._Current <=> _Right)) // strengthened
-        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> && //
-        three_way_comparable_with<_Iter, _Other> {
+        noexcept(_Left._Current <=> _Right)) /* strengthened */ {
         return _Left._Current <=> _Right;
     }
 
