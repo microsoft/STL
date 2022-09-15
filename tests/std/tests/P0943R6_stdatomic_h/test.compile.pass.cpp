@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #ifndef __clang__ // TRANSITION, GH-2862
-#include <stdatomic.h>
+#include <__msvc_cxx_stdatomic.h>
 
 static_assert(ATOMIC_BOOL_LOCK_FREE == 2);
 static_assert(ATOMIC_CHAR_LOCK_FREE == 2);
