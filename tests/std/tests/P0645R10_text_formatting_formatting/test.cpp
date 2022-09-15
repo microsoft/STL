@@ -1033,7 +1033,7 @@ void test_spec_replacement_field() {
     test_string_specs<charT>();
 }
 template <class charT, class... Args>
-void test_size_helper_impl(const size_t expected_size, const _Basic_format_string<charT, Args...> fmt, Args&&... args) {
+void test_size_helper_impl(const size_t expected_size, const basic_format_string<charT, Args...> fmt, Args&&... args) {
     assert(formatted_size(fmt, forward<Args>(args)...) == expected_size);
     assert(formatted_size(locale::classic(), fmt, forward<Args>(args)...) == expected_size);
 
@@ -1045,7 +1045,7 @@ void test_size_helper_impl(const size_t expected_size, const _Basic_format_strin
         assert(res.size == signed_size);
         assert(res.out - str.begin() == signed_size);
         assert(res.out == str.end());
-        assert(vformat(fmt._Str, make_testing_format_args<charT>(args...)) == str);
+        assert(vformat(fmt.get(), make_testing_format_args<charT>(args...)) == str);
 
         basic_string<charT> locale_str;
         locale_str.resize(expected_size);
@@ -1066,11 +1066,11 @@ void test_size_helper_impl(const size_t expected_size, const _Basic_format_strin
 }
 
 template <class... Args>
-void test_size_helper(const size_t expected_size, const _Fmt_string<Args...> fmt, Args&&... args) {
+void test_size_helper(const size_t expected_size, const format_string<Args...> fmt, Args&&... args) {
     test_size_helper_impl<char, Args...>(expected_size, fmt, forward<Args>(args)...);
 }
 template <class... Args>
-void test_size_helper(const size_t expected_size, const _Fmt_wstring<Args...> fmt, Args&&... args) {
+void test_size_helper(const size_t expected_size, const wformat_string<Args...> fmt, Args&&... args) {
     test_size_helper_impl<wchar_t, Args...>(expected_size, fmt, forward<Args>(args)...);
 }
 
@@ -1435,6 +1435,28 @@ void test_localized_char() {
     assert(format(STR("{:Lc}"), T('c')) == STR("c"));
 }
 
+template <class charT>
+constexpr void test_basic_format_string() {
+    {
+        basic_format_string<charT> fmt_str = basic_string_view{STR("meow")};
+        assert(fmt_str.get() == STR("meow"));
+    }
+    {
+        basic_format_string<charT, double, int> fmt_str = STR("{:a} {:b}");
+        assert(fmt_str.get() == STR("{:a} {:b}"));
+    }
+}
+
+constexpr bool test_format_string() {
+    test_basic_format_string<char>();
+    test_basic_format_string<wchar_t>();
+
+    static_assert(is_same_v<format_string<int*>, basic_format_string<char, int*>>);
+    static_assert(is_same_v<wformat_string<int*>, basic_format_string<wchar_t, int*>>);
+
+    return true;
+}
+
 void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1515,4 +1537,7 @@ void test() {
 
 int main() {
     test();
+
+    test_format_string();
+    static_assert(test_format_string());
 }

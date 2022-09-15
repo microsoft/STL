@@ -257,7 +257,7 @@ public:
     static size_t _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new moneypunct<_Elem, _Intl>(_Locinfo(_Ploc->c_str()), 0, true);
+            *_Ppf = new moneypunct<_Elem, _Intl>(_Locinfo(_Ploc->_C_str()), 0, true);
         }
 
         return _X_MONETARY;
@@ -337,7 +337,7 @@ public:
     static size_t _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new money_get<_Elem, _InIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new money_get<_Elem, _InIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_MONETARY;
@@ -641,7 +641,7 @@ public:
     static size_t _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new money_put<_Elem, _OutIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new money_put<_Elem, _OutIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_MONETARY;

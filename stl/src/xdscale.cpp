@@ -12,9 +12,8 @@ short _Dscale(double* px, long lexp) { // scale *px by 2^xexp with checking
     short xchar   = static_cast<short>((ps->_Sh[_D0] & _DMASK) >> _DOFF);
 
     if (xchar == _DMAX) {
-        return static_cast<short>(
-            (ps->_Sh[_D0] & _DFRAC) != 0 || ps->_Sh[_D1] != 0 || ps->_Sh[_D2] != 0 || ps->_Sh[_D3] != 0 ? _NANCODE
-                                                                                                        : _INFCODE);
+        return (ps->_Sh[_D0] & _DFRAC) != 0 || ps->_Sh[_D1] != 0 || ps->_Sh[_D2] != 0 || ps->_Sh[_D3] != 0 ? _NANCODE
+                                                                                                           : _INFCODE;
     } else if (xchar == 0 && 0 < (xchar = _Dnorm(ps))) {
         return 0;
     }
@@ -47,7 +46,8 @@ short _Dscale(double* px, long lexp) { // scale *px by 2^xexp with checking
                 ps->_Sh[_D1] = ps->_Sh[_D0];
                 ps->_Sh[_D0] = 0;
             }
-            if ((xexp = static_cast<short>(-xexp)) != 0) { // scale by bits
+            if (xexp != 0) { // scale by bits
+                xexp         = -xexp;
                 psx          = (ps->_Sh[_D3] << (16 - xexp)) | (psx != 0 ? 1 : 0);
                 ps->_Sh[_D3] = static_cast<unsigned short>(ps->_Sh[_D3] >> xexp | ps->_Sh[_D2] << (16 - xexp));
                 ps->_Sh[_D2] = static_cast<unsigned short>(ps->_Sh[_D2] >> xexp | ps->_Sh[_D1] << (16 - xexp));

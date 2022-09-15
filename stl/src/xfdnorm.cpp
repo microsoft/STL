@@ -8,10 +8,9 @@
 _EXTERN_C_UNLESS_PURE
 
 short _FDnorm(_Fval* ps) { // normalize float fraction
-    short xchar;
+    short xchar         = 1;
     unsigned short sign = static_cast<unsigned short>(ps->_Sh[_F0] & _FSIGN);
 
-    xchar = 1;
     if ((ps->_Sh[_F0] &= _FFRAC) != 0 || ps->_Sh[_F1]) { // nonzero, scale
         if (ps->_Sh[_F0] == 0) {
             ps->_Sh[_F0] = ps->_Sh[_F1];
