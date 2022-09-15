@@ -9,7 +9,11 @@ using namespace std;
 
 template <typename Float>
 void assert_close(const Float f, const Float g) {
-    assert(abs(f - g) < 0.001);
+    auto eps = 0.0001 * abs(f);
+    if (eps == 0.0) {
+        eps = 0.00001;
+    }
+    assert(abs(f - g) < eps);
 }
 
 constexpr float nanf_v       = numeric_limits<float>::quiet_NaN();
