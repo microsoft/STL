@@ -3079,8 +3079,8 @@ namespace filesystem {
         const auto& _To_str = _To.native();
         // protected from overflow by wstring's max_size cap:
         unique_ptr<wchar_t[]> _Cleaned_link(::new (nothrow) wchar_t[_To_str.size() + 1]);
-        if (!_Cleaned_link) {
-            return _Cleaned_link;
+        if (_Cleaned_link == nullptr) {
+            return nullptr;
         }
 
         const auto _First = _To_str.c_str();
