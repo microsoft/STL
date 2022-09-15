@@ -211,8 +211,8 @@ namespace {
 
         _Data[_Count_result._Len] = '\0';
 
-        const auto _Result =
-            __std_fs_convert_wide_to_narrow(__std_code_page::_Utf8, _Input_as_wchar, _Input_len, _Data.get(), _Count_result._Len);
+        const auto _Result = __std_fs_convert_wide_to_narrow(
+                __std_code_page::_Utf8, _Input_as_wchar, _Input_len, _Data.get(), _Count_result._Len);
         if (_Result._Err != __std_win_error::_Success) {
             _Err = __std_tzdb_error::_Win_error;
             return nullptr;
