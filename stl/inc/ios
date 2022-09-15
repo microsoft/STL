@@ -18,7 +18,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-_EXPORT_STD template <class _Elem, class _Traits>
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits>
 class basic_ios : public ios_base { // base class for basic_istream/basic_ostream
 public:
     using _Myos       = basic_ostream<_Elem, _Traits>;

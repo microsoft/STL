@@ -20,7 +20,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 #pragma vtordisp(push, 2) // compiler bug workaround
 
-_EXPORT_STD template <class _Elem, class _Traits>
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits>
 class basic_ostream : virtual public basic_ios<_Elem, _Traits> { // control insertions into a stream buffer
 public:
     using _Myios = basic_ios<_Elem, _Traits>;

@@ -86,7 +86,7 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
     return _State;
 }
 
-_EXPORT_STD struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_get
+_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_get
     enum dateorder { // constants for different orders of date components
         no_order,
         dmy,
@@ -100,7 +100,7 @@ _EXPORT_STD struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base clas
     __CLR_OR_THIS_CALL ~time_base() noexcept override {}
 };
 
-_EXPORT_STD template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
+_EXPORT_STD extern "C++" template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_get : public time_base { // facet for converting text to encoded times
 private:
     friend _Tidy_guard<time_get>;
@@ -648,7 +648,7 @@ protected:
     __CLR_OR_THIS_CALL ~time_get_byname() noexcept override {}
 };
 
-_EXPORT_STD template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
+_EXPORT_STD extern "C++" template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put : public locale::facet { // facet for converting encoded times to text
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);

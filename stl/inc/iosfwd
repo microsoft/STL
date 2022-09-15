@@ -142,7 +142,7 @@ _EXPORT_STD using u8streampos = streampos;
 _EXPORT_STD using u16streampos = streampos;
 _EXPORT_STD using u32streampos = streampos;
 
-_EXPORT_STD class locale;
+_EXPORT_STD extern "C++" class locale;
 _EXPORT_STD template <class _Facet>
 const _Facet& __CRTDECL use_facet(const locale&);
 
@@ -167,24 +167,24 @@ struct char_traits<unsigned short>;
 
 _EXPORT_STD template <class _Ty>
 class allocator;
-_EXPORT_STD class ios_base;
-_EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>>
+_EXPORT_STD extern "C++" class ios_base;
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_ios;
 _EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>>
 class istreambuf_iterator;
 _EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>>
 class ostreambuf_iterator;
-_EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>>
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_streambuf;
 
 #pragma vtordisp(push, 2) // compiler bug workaround
-_EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>>
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_istream;
-_EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>>
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_ostream;
 #pragma vtordisp(pop) // compiler bug workaround
 
-_EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>>
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_iostream;
 _EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_stringbuf;
@@ -222,9 +222,9 @@ class basic_osyncstream;
 #endif // _HAS_CXX20
 
 #if defined(_DLL_CPPLIB)
-_EXPORT_STD template <class _Elem, class _InIt>
+_EXPORT_STD extern "C++" template <class _Elem, class _InIt>
 class num_get;
-_EXPORT_STD template <class _Elem, class _OutIt>
+_EXPORT_STD extern "C++" template <class _Elem, class _OutIt>
 class num_put;
 _EXPORT_STD template <class _Elem>
 class collate;
