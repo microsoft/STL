@@ -282,6 +282,7 @@
 // P2418R2 Add Support For std::generator-like Types To std::format
 // P2419R2 Clarify Handling Of Encodings In Localized Formatting Of chrono Types
 // P2432R1 Fix istream_view
+// P2508R1 basic_format_string, format_string, wformat_string
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 
 // _HAS_CXX20 indirectly controls:
@@ -1548,7 +1549,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_erase_if                      202002L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_format 202110L
+#define __cpp_lib_format 202207L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_generic_unordered_lookup     201811L
