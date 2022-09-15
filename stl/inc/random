@@ -4559,6 +4559,8 @@ public:
             return _Bvec;
         }
 
+#pragma warning(push)
+#pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data
         _NODISCARD vector<_Ty> densities() const {
             vector<_Ty> _Ans(this->_Pvec.begin(), this->_Pvec.end());
 
@@ -4568,6 +4570,7 @@ public:
 
             return _Ans;
         }
+#pragma warning(pop)
 
         void _Init() { // initialize
             _Mypbase::_Init();
