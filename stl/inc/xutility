@@ -1717,14 +1717,8 @@ struct _Const_sentinel<_Sent> {
 template <class _Sent>
 using const_sentinel = typename _Const_sentinel<_Sent>::type;
 
-template <class>
-inline constexpr bool _Is_basic_const_iterator_v = false;
-
-template <class _Iter>
-inline constexpr bool _Is_basic_const_iterator_v<basic_const_iterator<_Iter>> = true;
-
 template <class _Ty>
-concept _Not_a_const_iterator = !_Is_basic_const_iterator_v<_Ty>;
+concept _Not_a_const_iterator = !_Is_specialization_v<_Ty, basic_const_iterator>;
 
 template <class>
 struct _Basic_const_iterator_category {};
