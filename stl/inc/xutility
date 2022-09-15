@@ -1848,7 +1848,7 @@ public:
 
     template <sentinel_for<_Iter> _Sent>
     _NODISCARD constexpr bool operator==(const _Sent& _Se) const // FIXME: non conforming
-        noexcept(noexcept(_Current == _Se)) /* strengthened */ {
+        noexcept(noexcept(_Fake_copy_init<bool>(_Current == _Se))) /* strengthened */ {
         return _Current == _Se;
     }
 
