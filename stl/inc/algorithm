@@ -2651,7 +2651,7 @@ namespace ranges {
         template <input_range _Rng, class _Ty, _Indirectly_binary_left_foldable<_Ty, iterator_t<_Rng>> _Fn>
         _NODISCARD constexpr auto operator()(_Rng&& _Range, _Ty _Init, _Fn _Func) const {
             return _Fold_left_with_iter_impl<borrowed_iterator_t<_Rng>>(
-                _RANGES begin(_Range), _RANGES end(_Range), _STD move(_Init), _Pass_fn(_Func)));
+                _RANGES begin(_Range), _RANGES end(_Range), _STD move(_Init), _Pass_fn(_Func));
         }
 
     private:
@@ -2671,7 +2671,7 @@ namespace ranges {
                 auto _ULast  = _Unwrap_sent<_It>(_STD move(_Last));
 
                 _Uty _Accum = _STD invoke(_Func, _STD move(_Init), *_UFirst);
-                for (++_UFirst; _UFirst != _Last; ++_UFirst) {
+                for (++_UFirst; _UFirst != _ULast; ++_UFirst) {
                     _Accum = _STD invoke(_Func, _STD move(_Accum), *_UFirst);
                 }
 
