@@ -9,9 +9,9 @@ using namespace std;
 
 template <typename Float>
 void assert_close(const Float f, const Float g) {
-    auto eps = 0.00001 * abs(f);
+    auto eps = 0.000003 * abs(f);
     if (eps == Float{0}) {
-        eps = std::numeric_limits<Float>::min();
+        eps = numeric_limits<Float>::min();
     }
     assert(abs(f - g) < eps);
 }
