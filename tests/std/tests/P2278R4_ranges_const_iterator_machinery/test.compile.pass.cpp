@@ -50,6 +50,12 @@ namespace test_pointer {
     static_assert(same_as<const_iterator<ConstPtr>, ConstPtr>);
     static_assert(same_as<iter_reference_t<const_iterator<ConstPtr>>, const int&>);
     static_assert(same_as<const_sentinel<ConstPtr>, ConstPtr>);
+
+    // Validate common_type
+    static_assert(same_as<common_type_t<basic_const_iterator<Ptr>, ConstPtr>, basic_const_iterator<ConstPtr>>);
+    static_assert(same_as<common_type_t<ConstPtr, basic_const_iterator<Ptr>>, basic_const_iterator<ConstPtr>>);
+    static_assert(same_as<common_type_t<basic_const_iterator<Ptr>, basic_const_iterator<ConstPtr>>,
+        basic_const_iterator<ConstPtr>>);
 } // namespace test_pointer
 
 namespace test_random_access_iter {
