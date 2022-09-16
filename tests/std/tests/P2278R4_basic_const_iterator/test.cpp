@@ -44,8 +44,7 @@ constexpr void test_one(It iter) {
         return;
     }
 
-    // Validate basic_const_iterator::operator*()
-    {
+    { // Validate basic_const_iterator::operator*()
         same_as<iter_const_reference_t<It>> decltype(auto) val = *citer;
         assert(val == *iter);
         static_assert(noexcept(*citer) == noexcept(static_cast<iter_const_reference_t<It>>(*iter))); // strengthened
@@ -64,8 +63,7 @@ constexpr void test_one(It iter) {
         }
     }
 
-    // Validate basic_const_iterator::operator++()
-    {
+    { // Validate basic_const_iterator::operator++()
         same_as<ConstIt&> decltype(auto) citer2 = ++citer;
         ++iter;
         assert(citer2 == iter);
@@ -74,26 +72,24 @@ constexpr void test_one(It iter) {
     }
 
     // Validate basic_const_iterator::operator++(int)
-    {
-        if constexpr (forward_iterator<It>) {
-            same_as<ConstIt> decltype(auto) citer2 = citer++;
-            assert(citer2 == iter);
-            assert(*citer2 == *iter);
-            static_assert(
-                noexcept(citer++) == (noexcept(iter++) && is_nothrow_copy_constructible_v<ConstIt>) ); // strengthened
-        } else {
-            static_assert(is_void_v<decltype(citer++)>);
-            static_assert(noexcept(citer++) == noexcept(iter++)); // strengthened
-        }
-
-        iter++;
-        assert(citer == iter);
-        assert(*citer == *iter);
+    if constexpr (forward_iterator<It>) {
+        same_as<ConstIt> decltype(auto) citer2 = citer++;
+        assert(citer2 == iter);
+        assert(*citer2 == *iter);
+        static_assert(
+            noexcept(citer++) == (noexcept(iter++) && is_nothrow_copy_constructible_v<ConstIt>) ); // strengthened
+    } else {
+        static_assert(is_void_v<decltype(citer++)>);
+        static_assert(noexcept(citer++) == noexcept(iter++)); // strengthened
     }
 
+    iter++;
+    assert(citer == iter);
+    assert(*citer == *iter);
+
+
     if constexpr (bidirectional_iterator<It>) {
-        // Validate basic_const_iterator::operator--()
-        {
+        { // Validate basic_const_iterator::operator--()
             same_as<ConstIt&> decltype(auto) citer2 = --citer;
             --iter;
             assert(citer2 == iter);
@@ -101,8 +97,7 @@ constexpr void test_one(It iter) {
             static_assert(noexcept(--citer) == noexcept(--iter)); // strengthened
         }
 
-        // Validate basic_const_iterator::operator--(int)
-        {
+        { // Validate basic_const_iterator::operator--(int)
             same_as<ConstIt> decltype(auto) citer2 = citer--;
             assert(citer2 == iter);
             assert(*citer2 == *iter);
@@ -116,8 +111,7 @@ constexpr void test_one(It iter) {
     }
 
     if constexpr (random_access_iterator<It>) {
-        // Validate basic_const_iterator::operator+=()
-        {
+        { // Validate basic_const_iterator::operator+=()
             same_as<ConstIt&> decltype(auto) citer2 = (citer += 2);
             iter += 2;
             assert(citer2 == iter);
@@ -125,8 +119,7 @@ constexpr void test_one(It iter) {
             static_assert(noexcept(citer += 2) == noexcept(iter += 2)); // strengthened
         }
 
-        // Validate basic_const_iterator::operator-=()
-        {
+        { // Validate basic_const_iterator::operator-=()
             same_as<ConstIt&> decltype(auto) citer2 = (citer -= 2);
             iter -= 2;
             assert(citer2 == iter);
@@ -134,16 +127,14 @@ constexpr void test_one(It iter) {
             static_assert(noexcept(citer -= 2) == noexcept(iter -= 2)); // strengthened
         }
 
-        // Validate basic_const_iterator::operator[]
-        {
+        { // Validate basic_const_iterator::operator[]
             same_as<iter_const_reference_t<It>> decltype(auto) val = citer[0];
             assert(val == iter[0]);
             static_assert(
                 noexcept(citer[0]) == noexcept(static_cast<iter_const_reference_t<It>>(iter[0]))); // strengthened
         }
 
-        // Validate operator{<, >, <=, >=, <=>}(const basic_const_iterator&, const basic_const_iterator&)
-        {
+        { // Validate operator{<, >, <=, >=, <=>}(const basic_const_iterator&, const basic_const_iterator&)
             const same_as<ConstIt> auto citer2 = (citer + 1);
             assert(citer < citer2);
             assert(citer2 > citer);
@@ -160,8 +151,8 @@ constexpr void test_one(It iter) {
 
         iter += 2; // advance iter temporarily
 
-        // Validate operator{<, >, <=, >=, <=>}(const basic_const_iterator&, const "not same as basic_const_iterator"&)
-        {
+        { // Validate operator{<, >, <=, >=, <=>}(const basic_const_iterator&, const "not same as
+          // basic_const_iterator"&)
             assert(citer < iter);
             assert(!(citer > iter));
             assert(citer <= iter);
@@ -175,8 +166,7 @@ constexpr void test_one(It iter) {
             static_assert(noexcept(citer <=> iter) == noexcept(citer.base() <=> iter)); // strengthened
         }
 
-        // Validate operator{<, >, <=, >=}(const "not a const iterator"&, const basic_const_iterator&)
-        {
+        { // Validate operator{<, >, <=, >=}(const "not a const iterator"&, const basic_const_iterator&)
             assert(!(iter < citer));
             assert(iter > citer);
             assert(!(iter <= citer));
@@ -188,8 +178,7 @@ constexpr void test_one(It iter) {
             static_assert(noexcept(iter >= citer) == noexcept(iter >= citer.base())); // strengthened
         }
 
-        // Validate operator+(const basic_const_iterator&, difference_type)
-        {
+        { // Validate operator+(const basic_const_iterator&, difference_type)
             const same_as<ConstIt> auto citer2 = (citer + 2);
             const same_as<ConstIt> auto citer3 = (2 + citer);
             assert(citer2 == citer3);
@@ -199,8 +188,7 @@ constexpr void test_one(It iter) {
             static_assert(noexcept(2 + citer) == noexcept(2 + iter)); // strengthened
         }
 
-        // Validate operator-(const basic_const_iterator&, difference_type)
-        {
+        { // Validate operator-(const basic_const_iterator&, difference_type)
             citer += 4;
             const same_as<ConstIt> auto citer2 = (citer - 2);
             assert(*citer2 == *iter);
@@ -209,8 +197,7 @@ constexpr void test_one(It iter) {
             static_assert(noexcept(citer - 2) == noexcept(iter - 2)); // strengthened
         }
 
-        // Validate operator-(const basic_const_iterator&, sized_sentinel)
-        {
+        { // Validate operator-(const basic_const_iterator&, sized_sentinel)
             assert(citer - citer == 0);
             assert(citer - iter == -2);
             assert(iter - citer == 2);
@@ -245,14 +232,12 @@ constexpr void test_one(It iter) {
         static_assert(noexcept(citer == sent) == noexcept(iter == sent)); // strengthened
     }
 
-    // Validate basic_const_iterator::base() const&
-    {
+    { // Validate basic_const_iterator::base() const&
         [[maybe_unused]] same_as<const It&> decltype(auto) base = citer.base();
         static_assert(noexcept(citer.base()));
     }
 
-    // Validate basic_const_iterator::base() &&
-    {
+    { // Validate basic_const_iterator::base() &&
         [[maybe_unused]] same_as<It> decltype(auto) base = std::move(citer).base();
         static_assert(noexcept(std::move(citer).base()) == is_nothrow_move_constructible_v<It>); // strengthened
     }
@@ -275,7 +260,7 @@ using test_iterator = test::iterator<Category, const int, CanDiff, test::CanComp
 constexpr void instantiation_test() {
     using test::CanDifference;
 
-    // The iterator is sensitive to category and differencing
+    // The iterator is sensitive to category and differencing, but oblivious to proxyness
     instantiator::call<test_iterator<input_iterator_tag, CanDifference::no>>();
     instantiator::call<test_iterator<forward_iterator_tag, CanDifference::no>>();
     instantiator::call<test_iterator<bidirectional_iterator_tag, CanDifference::no>>();
