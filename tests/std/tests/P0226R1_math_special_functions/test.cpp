@@ -477,7 +477,6 @@ int main() {
     test_assoc_legendre();
     test_beta();
     test_comp_ellint_1();
-/*
     test_comp_ellint_2();
     test_comp_ellint_3();
     test_cyl_bessel_i();
@@ -495,7 +494,6 @@ int main() {
     test_sph_bessel();
     test_sph_legendre();
     test_sph_neumann();
-*/
 
     test_gh_3076();
 }
