@@ -189,7 +189,7 @@ namespace stdext {
             }
 
             int_type pbackfail(int_type _Meta = _Traits::eof()) override { // put an element back to stream
-                if (sizeof(_Myback) / sizeof(_Myback[0]) <= _Nback || _Status == _Wrote) {
+                if (_STD size(_Myback) <= _Nback || _Status == _Wrote) {
                     return _Traits::eof(); // nowhere to put back
                 } else { // enough room, put it back
                     if (!_Traits::eq_int_type(_Traits::eof(), _Meta)) {

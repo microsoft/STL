@@ -3376,23 +3376,29 @@ struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
     : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {};
 
 template <class _CharT, class... _Args>
-struct _Basic_format_string {
-    basic_string_view<_CharT> _Str;
-
+struct basic_format_string {
+public:
     template <class _Ty>
         requires convertible_to<const _Ty&, basic_string_view<_CharT>>
-    consteval _Basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
+    consteval basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
         if (_Is_execution_charset_self_synchronizing()) {
             _Parse_format_string(_Str, _Format_checker<_CharT, remove_cvref_t<_Args>...>{_Str});
         }
     }
+
+    _NODISCARD constexpr basic_string_view<_CharT> get() const noexcept {
+        return _Str;
+    }
+
+private:
+    basic_string_view<_CharT> _Str;
 };
 
 template <class... _Args>
-using _Fmt_string = _Basic_format_string<char, type_identity_t<_Args>...>;
+using format_string = basic_format_string<char, type_identity_t<_Args>...>;
 
 template <class... _Args>
-using _Fmt_wstring = _Basic_format_string<wchar_t, type_identity_t<_Args>...>;
+using wformat_string = basic_format_string<wchar_t, type_identity_t<_Args>...>;
 
 using format_args  = basic_format_args<format_context>;
 using wformat_args = basic_format_args<wformat_context>;
@@ -3464,23 +3470,23 @@ _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const _Fmt_string<_Types...> _Fmt, _Types&&... _Args) {
-    return _STD vformat_to(_STD move(_Out), _Fmt._Str, _STD make_format_args(_Args...));
+_OutputIt format_to(_OutputIt _Out, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    return _STD vformat_to(_STD move(_Out), _Fmt.get(), _STD make_format_args(_Args...));
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const _Fmt_wstring<_Types...> _Fmt, _Types&&... _Args) {
-    return _STD vformat_to(_STD move(_Out), _Fmt._Str, _STD make_wformat_args(_Args...));
+_OutputIt format_to(_OutputIt _Out, const wformat_string<_Types...> _Fmt, _Types&&... _Args) {
+    return _STD vformat_to(_STD move(_Out), _Fmt.get(), _STD make_wformat_args(_Args...));
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const _Fmt_string<_Types...> _Fmt, _Types&&... _Args) {
-    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt._Str, _STD make_format_args(_Args...));
+_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt.get(), _STD make_format_args(_Args...));
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const _Fmt_wstring<_Types...> _Fmt, _Types&&... _Args) {
-    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt._Str, _STD make_wformat_args(_Args...));
+_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wformat_string<_Types...> _Fmt, _Types&&... _Args) {
+    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt.get(), _STD make_wformat_args(_Args...));
 }
 
 template <int = 0> // improves throughput, see GH-2329
@@ -3516,23 +3522,23 @@ _NODISCARD wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wf
 }
 
 template <class... _Types>
-_NODISCARD string format(const _Fmt_string<_Types...> _Fmt, _Types&&... _Args) {
-    return _STD vformat(_Fmt._Str, _STD make_format_args(_Args...));
+_NODISCARD string format(const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    return _STD vformat(_Fmt.get(), _STD make_format_args(_Args...));
 }
 
 template <class... _Types>
-_NODISCARD wstring format(const _Fmt_wstring<_Types...> _Fmt, _Types&&... _Args) {
-    return _STD vformat(_Fmt._Str, _STD make_wformat_args(_Args...));
+_NODISCARD wstring format(const wformat_string<_Types...> _Fmt, _Types&&... _Args) {
+    return _STD vformat(_Fmt.get(), _STD make_wformat_args(_Args...));
 }
 
 template <class... _Types>
-_NODISCARD string format(const locale& _Loc, const _Fmt_string<_Types...> _Fmt, _Types&&... _Args) {
-    return _STD vformat(_Loc, _Fmt._Str, _STD make_format_args(_Args...));
+_NODISCARD string format(const locale& _Loc, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    return _STD vformat(_Loc, _Fmt.get(), _STD make_format_args(_Args...));
 }
 
 template <class... _Types>
-_NODISCARD wstring format(const locale& _Loc, const _Fmt_wstring<_Types...> _Fmt, _Types&&... _Args) {
-    return _STD vformat(_Loc, _Fmt._Str, _STD make_wformat_args(_Args...));
+_NODISCARD wstring format(const locale& _Loc, const wformat_string<_Types...> _Fmt, _Types&&... _Args) {
+    return _STD vformat(_Loc, _Fmt.get(), _STD make_wformat_args(_Args...));
 }
 
 template <class _OutputIt>
@@ -3543,61 +3549,61 @@ struct format_to_n_result {
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
 format_to_n_result<_OutputIt> format_to_n(
-    _OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const _Fmt_string<_Types...> _Fmt, _Types&&... _Args) {
+    _OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const format_string<_Types...> _Fmt, _Types&&... _Args) {
     _Fmt_iterator_buffer<_OutputIt, char, _Fmt_fixed_buffer_traits> _Buf(_STD move(_Out), _Max);
-    _STD vformat_to(_Fmt_it{_Buf}, _Fmt._Str, _STD make_format_args(_Args...));
+    _STD vformat_to(_Fmt_it{_Buf}, _Fmt.get(), _STD make_format_args(_Args...));
     return {.out = _Buf._Out(), .size = _Buf._Count()};
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
 format_to_n_result<_OutputIt> format_to_n(
-    _OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const _Fmt_wstring<_Types...> _Fmt, _Types&&... _Args) {
+    _OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const wformat_string<_Types...> _Fmt, _Types&&... _Args) {
     _Fmt_iterator_buffer<_OutputIt, wchar_t, _Fmt_fixed_buffer_traits> _Buf(_STD move(_Out), _Max);
-    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt._Str, _STD make_wformat_args(_Args...));
+    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt.get(), _STD make_wformat_args(_Args...));
     return {.out = _Buf._Out(), .size = _Buf._Count()};
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
 format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const locale& _Loc,
-    const _Fmt_string<_Types...> _Fmt, _Types&&... _Args) {
+    const format_string<_Types...> _Fmt, _Types&&... _Args) {
     _Fmt_iterator_buffer<_OutputIt, char, _Fmt_fixed_buffer_traits> _Buf(_STD move(_Out), _Max);
-    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt._Str, _STD make_format_args(_Args...));
+    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt.get(), _STD make_format_args(_Args...));
     return {.out = _Buf._Out(), .size = _Buf._Count()};
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
 format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const locale& _Loc,
-    const _Fmt_wstring<_Types...> _Fmt, _Types&&... _Args) {
+    const wformat_string<_Types...> _Fmt, _Types&&... _Args) {
     _Fmt_iterator_buffer<_OutputIt, wchar_t, _Fmt_fixed_buffer_traits> _Buf(_STD move(_Out), _Max);
-    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt._Str, _STD make_wformat_args(_Args...));
+    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt.get(), _STD make_wformat_args(_Args...));
     return {.out = _Buf._Out(), .size = _Buf._Count()};
 }
 
 template <class... _Types>
-_NODISCARD size_t formatted_size(const _Fmt_string<_Types...> _Fmt, _Types&&... _Args) {
+_NODISCARD size_t formatted_size(const format_string<_Types...> _Fmt, _Types&&... _Args) {
     _Fmt_counting_buffer<char> _Buf;
-    _STD vformat_to(_Fmt_it{_Buf}, _Fmt._Str, _STD make_format_args(_Args...));
+    _STD vformat_to(_Fmt_it{_Buf}, _Fmt.get(), _STD make_format_args(_Args...));
     return _Buf._Count();
 }
 
 template <class... _Types>
-_NODISCARD size_t formatted_size(const _Fmt_wstring<_Types...> _Fmt, _Types&&... _Args) {
+_NODISCARD size_t formatted_size(const wformat_string<_Types...> _Fmt, _Types&&... _Args) {
     _Fmt_counting_buffer<wchar_t> _Buf;
-    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt._Str, _STD make_wformat_args(_Args...));
+    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt.get(), _STD make_wformat_args(_Args...));
     return _Buf._Count();
 }
 
 template <class... _Types>
-_NODISCARD size_t formatted_size(const locale& _Loc, const _Fmt_string<_Types...> _Fmt, _Types&&... _Args) {
+_NODISCARD size_t formatted_size(const locale& _Loc, const format_string<_Types...> _Fmt, _Types&&... _Args) {
     _Fmt_counting_buffer<char> _Buf;
-    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt._Str, _STD make_format_args(_Args...));
+    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt.get(), _STD make_format_args(_Args...));
     return _Buf._Count();
 }
 
 template <class... _Types>
-_NODISCARD size_t formatted_size(const locale& _Loc, const _Fmt_wstring<_Types...> _Fmt, _Types&&... _Args) {
+_NODISCARD size_t formatted_size(const locale& _Loc, const wformat_string<_Types...> _Fmt, _Types&&... _Args) {
     _Fmt_counting_buffer<wchar_t> _Buf;
-    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt._Str, _STD make_wformat_args(_Args...));
+    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt.get(), _STD make_wformat_args(_Args...));
     return _Buf._Count();
 }
 

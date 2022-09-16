@@ -845,10 +845,10 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #ifdef __cpp_lib_concepts
 #ifndef __cpp_lib_format
 #error __cpp_lib_format is not defined
-#elif __cpp_lib_format != 202110L
-#error __cpp_lib_format is not 202110L
+#elif __cpp_lib_format != 202207L
+#error __cpp_lib_format is not 202207L
 #else
-STATIC_ASSERT(__cpp_lib_format == 202110L);
+STATIC_ASSERT(__cpp_lib_format == 202207L);
 #endif
 #else
 #ifdef __cpp_lib_format

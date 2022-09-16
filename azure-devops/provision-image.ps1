@@ -141,7 +141,7 @@ $Workloads = @(
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
-$PythonUrl = 'https://www.python.org/ftp/python/3.10.6/python-3.10.6-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.10.7/python-3.10.7-amd64.exe'
 
 $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/11.6.0/local_installers/cuda_11.6.0_511.23_windows.exe'
 

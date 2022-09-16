@@ -1846,13 +1846,30 @@ namespace ranges {
     template <range _Rng>
     using sentinel_t = decltype(_RANGES end(_STD declval<_Rng&>()));
 
+    template <class _Wrapped>
+    concept _Weakly_unwrappable =
+        same_as<typename remove_cvref_t<_Wrapped>::_Prevent_inheriting_unwrap, remove_cvref_t<_Wrapped>> //
+        && requires(_Wrapped&& _Wr) {
+        _STD forward<_Wrapped>(_Wr)._Unwrapped();
+    };
+
+    // clang-format off
+    template <class _Sent>
+    concept _Weakly_unwrappable_sentinel = _Weakly_unwrappable<const remove_reference_t<_Sent>&>;
+    // clang-format on
+
+    template <class _Iter>
+    concept _Weakly_unwrappable_iterator = //
+        _Weakly_unwrappable<_Iter> //
+        && requires(_Iter&& _It, remove_cvref_t<_Iter>& _MutIt) {
+        _MutIt._Seek_to(_STD forward<_Iter>(_It)._Unwrapped());
+    };
+
     template <class _Sent, class _Iter>
     concept _Unwrappable_sentinel_for = //
-        same_as<typename remove_cvref_t<_Sent>::_Prevent_inheriting_unwrap, remove_cvref_t<_Sent>> //
-        && same_as<typename remove_cvref_t<_Iter>::_Prevent_inheriting_unwrap, remove_cvref_t<_Iter>> //
-        && requires(_Iter&& _It, remove_cvref_t<_Iter>& _MutIt, const remove_reference_t<_Sent>& _Se) {
-        _STD forward<_Iter>(_It)._Unwrapped();
-        _MutIt._Seek_to(_STD forward<_Iter>(_It)._Unwrapped());
+        _Weakly_unwrappable_sentinel<_Sent> //
+        && _Weakly_unwrappable_iterator<_Iter> //
+        && requires(_Iter&& _It, const remove_reference_t<_Sent>& _Se) {
         { _Se._Unwrapped() } -> sentinel_for<decltype(_STD forward<_Iter>(_It)._Unwrapped())>;
     };
 

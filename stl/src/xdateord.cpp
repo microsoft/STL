@@ -11,7 +11,7 @@ _EXTERN_C_UNLESS_PURE
 
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Getdateorder() { // return date order for current locale
     wchar_t buf[2] = {0};
-    GetLocaleInfoEx(___lc_locale_name_func()[LC_TIME], LOCALE_ILDATE, buf, sizeof(buf) / sizeof(buf[0]));
+    GetLocaleInfoEx(___lc_locale_name_func()[LC_TIME], LOCALE_ILDATE, buf, static_cast<int>(std::size(buf)));
 
     switch (buf[0]) {
     case L'0':

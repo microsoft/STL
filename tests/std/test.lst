@@ -561,6 +561,7 @@ tests\P2441R2_views_join_with
 tests\P2442R1_views_chunk
 tests\P2442R1_views_chunk_death
 tests\P2442R1_views_slide
+tests\P2442R1_views_slide_death
 tests\P2443R1_views_chunk_by
 tests\P2443R1_views_chunk_by_death
 tests\P2445R1_forward_like

@@ -11,7 +11,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float* px) { // categorize *
     const auto ps = reinterpret_cast<_Fval*>(px);
 
     if ((ps->_Sh[_F0] & _FMASK) == _FMAX << _FOFF) {
-        return static_cast<short>((ps->_Sh[_F0] & _FFRAC) != 0 || ps->_Sh[_F1] != 0 ? _NANCODE : _INFCODE);
+        return (ps->_Sh[_F0] & _FFRAC) != 0 || ps->_Sh[_F1] != 0 ? _NANCODE : _INFCODE;
     } else if ((ps->_Sh[_F0] & ~_FSIGN) != 0 || ps->_Sh[_F1] != 0) {
         return (ps->_Sh[_F0] & _FMASK) == 0 ? _DENORM : _FINITE;
     } else {
