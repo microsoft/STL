@@ -300,7 +300,7 @@ export using std::uintmax_t;
 export using std::uintptr_t;
 
 // <cstdio>
-// export using std::size_t; // already exported, see <cstddef>
+// already exported std::size_t, see <cstddef>
 export using std::fpos_t;
 export using std::FILE;
 export using std::clearerr;
@@ -350,11 +350,11 @@ export using std::vscanf;
 export using std::vsscanf;
 
 // <cstdlib>
-// export using std::size_t; // already exported, see <cstddef>
+// already exported std::size_t, see <cstddef>
 export using std::div_t;
 export using std::ldiv_t;
 export using std::abort;
-// export using std::abs; // already exported, see <cmath>
+// already exported std::abs, see <cmath>
 export using std::atexit;
 export using std::atof;
 export using std::atoi;
@@ -394,7 +394,7 @@ export using std::at_quick_exit;
 export using std::quick_exit;
 
 // <cstring>
-// export using std::size_t; // already exported, see <cstddef>
+// already exported std::size_t, see <cstddef>
 export using std::memchr;
 export using std::memcmp;
 export using std::memcpy;
@@ -420,7 +420,7 @@ export using std::strxfrm;
 
 // <ctime>
 export using std::clock_t;
-// export using std::size_t; // already exported, see <cstddef>
+// already exported std::size_t, see <cstddef>
 export using std::time_t;
 export using std::tm;
 export using std::asctime;
@@ -437,16 +437,16 @@ export using std::timespec_get;
 
 // <cuchar>
 export using std::mbstate_t;
-// export using std::size_t; // already exported, see <cstddef>
+// already exported std::size_t, see <cstddef>
 export using std::mbrtoc16;
 export using std::c16rtomb;
 export using std::mbrtoc32;
 export using std::c32rtomb;
 
 // <cwchar>
-// export using std::mbstate_t; // already exported, see <cuchar>
-// export using std::size_t; // already exported, see <cstddef>
-// export using std::tm; // already exported, see <ctime>
+// already exported std::mbstate_t, see <cuchar>
+// already exported std::size_t, see <cstddef>
+// already exported std::tm, see <ctime>
 export using std::wint_t;
 export using std::btowc;
 export using std::fgetwc;
@@ -509,7 +509,7 @@ export using std::wcstoll;
 export using std::wcstoull;
 
 // <cwctype>
-// export using std::wint_t; // already exported, see <cwchar>
+// already exported std::wint_t, see <cwchar>
 export using std::wctrans_t;
 export using std::wctype_t;
 export using std::iswalnum;
