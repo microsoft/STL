@@ -6110,6 +6110,7 @@ public:
         //   s <-> _Index
         //   t <-> _Threshold
         //   L <-> _Generated_bits
+        //   2^L - 1 <-> _Mask
 
         _Udiff _Mask        = _Bmask;
         unsigned int _Niter = 1;
@@ -6130,7 +6131,7 @@ public:
 
         if (_Rem < _Index) {
             // t <- (2^L - s) mod s
-            const auto _Threshold = (_Mask - (_Index - 1)) % _Index;
+            const auto _Threshold = (_Mask - _Index + 1) % _Index;
             while (_Rem < _Threshold) {
                 _Product = _Get_random_product(_Index, _Niter);
                 _Rem     = static_cast<_Udiff>(_Product) & _Mask;
