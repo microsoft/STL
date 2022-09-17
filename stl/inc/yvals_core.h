@@ -282,6 +282,7 @@
 // P2418R2 Add Support For std::generator-like Types To std::format
 // P2419R2 Clarify Handling Of Encodings In Localized Formatting Of chrono Types
 // P2432R1 Fix istream_view
+// P2508R1 basic_format_string, format_string, wformat_string
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 
 // _HAS_CXX20 indirectly controls:
@@ -336,7 +337,7 @@
 // P2446R2 views::as_rvalue
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
-// P2549R0 unexpected<E>::error()
+// P2549R1 unexpected<E>::error()
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -603,9 +604,8 @@
                    "the temporary 'std::future' is destroyed, waiting for an async result or evaluating "          \
                    "a deferred result, thus defeating the purpose of 'std::async'.")
 
-#define _NODISCARD_GET_FUTURE                                                                              \
-    _NODISCARD_MSG("Getting the future more than once or not satisfying the obtained future will throw a " \
-                   "future_error exception, so it is incorrect to call 'get_future' and discard the return value.")
+#define _NODISCARD_GET_FUTURE \
+    _NODISCARD_MSG("Since 'get_future' may be called only once, discarding the result is likely a mistake.")
 
 #pragma push_macro("msvc")
 #pragma push_macro("known_semantics")
@@ -770,7 +770,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202208L
+#define _MSVC_STL_UPDATE  202209L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1533,24 +1533,23 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
-
-#define __cpp_lib_constexpr_algorithms    201806L
-#define __cpp_lib_constexpr_complex       201711L
-#define __cpp_lib_constexpr_dynamic_alloc 201907L
-#define __cpp_lib_constexpr_functional    201907L
-#define __cpp_lib_constexpr_iterator      201811L
-#define __cpp_lib_constexpr_numeric       201911L
-#define __cpp_lib_constexpr_string        201907L
-#define __cpp_lib_constexpr_string_view   201811L
-#define __cpp_lib_constexpr_tuple         201811L
-#define __cpp_lib_constexpr_utility       201811L
-#define __cpp_lib_constexpr_vector        201907L
-#define __cpp_lib_destroying_delete       201806L
-#define __cpp_lib_endian                  201907L
-#define __cpp_lib_erase_if                202002L
+#define __cpp_lib_constexpr_algorithms          201806L
+#define __cpp_lib_constexpr_complex             201711L
+#define __cpp_lib_constexpr_dynamic_alloc       201907L
+#define __cpp_lib_constexpr_functional          201907L
+#define __cpp_lib_constexpr_iterator            201811L
+#define __cpp_lib_constexpr_numeric             201911L
+#define __cpp_lib_constexpr_string              201907L
+#define __cpp_lib_constexpr_string_view         201811L
+#define __cpp_lib_constexpr_tuple               201811L
+#define __cpp_lib_constexpr_utility             201811L
+#define __cpp_lib_constexpr_vector              201907L
+#define __cpp_lib_destroying_delete             201806L
+#define __cpp_lib_endian                        201907L
+#define __cpp_lib_erase_if                      202002L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_format 202110L
+#define __cpp_lib_format 202207L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_generic_unordered_lookup     201811L
@@ -1582,8 +1581,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_move_iterator_concept 202207L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_polymorphic_allocator 201902L
-
+#define __cpp_lib_polymorphic_allocator   201902L
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L

@@ -842,7 +842,6 @@ strings\basic.string\string.modifiers\robust_against_adl.pass.cpp
 thread\thread.threads\thread.thread.class\thread.thread.constr\robust_against_adl.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\robust_against_adl.pass.cpp
 utilities\function.objects\refwrap\refwrap.invoke\robust_against_adl.pass.cpp
-utilities\variant\variant.visit\robust_against_adl.pass.cpp
 
 # Not yet analyzed. Possibly C1XX constexpr bug.
 utilities\function.objects\func.invoke\invoke_constexpr.pass.cpp

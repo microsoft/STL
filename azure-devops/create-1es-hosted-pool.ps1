@@ -24,7 +24,7 @@ $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Preparing STL CI pool'
-$TotalProgress = 23
+$TotalProgress = 25
 $CurrentProgress = 1
 
 <#
@@ -131,7 +131,7 @@ Set-AzContext `
 Display-ProgressBar -Status 'Creating resource group'
 
 $ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-ddTHHmm')
-$AdminPW = New-Password
+
 # TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
 $SimplySecureV2OptInTag = @{ 'NRMSV2OptIn' = $CurrentDate.ToString('yyyyMMdd'); }
 
@@ -140,66 +140,21 @@ New-AzResourceGroup `
   -Location $Location `
   -Tag $SimplySecureV2OptInTag | Out-Null
 
+####################################################################################################
+Display-ProgressBar -Status 'Creating credentials'
+
+$AdminPW = New-Password
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating virtual network'
 
-$allowHttp = New-AzNetworkSecurityRuleConfig `
-  -Name AllowHTTP `
-  -Description 'Allow HTTP(S)' `
-  -Access Allow `
-  -Protocol Tcp `
-  -Direction Outbound `
-  -Priority 1000 `
-  -SourceAddressPrefix * `
-  -SourcePortRange * `
-  -DestinationAddressPrefix * `
-  -DestinationPortRange @(80, 443)
-
-$allowQuic = New-AzNetworkSecurityRuleConfig `
-  -Name AllowQUIC `
-  -Description 'Allow QUIC' `
-  -Access Allow `
-  -Protocol Udp `
-  -Direction Outbound `
-  -Priority 1010 `
-  -SourceAddressPrefix * `
-  -SourcePortRange * `
-  -DestinationAddressPrefix * `
-  -DestinationPortRange 443
-
-$allowDns = New-AzNetworkSecurityRuleConfig `
-  -Name AllowDNS `
-  -Description 'Allow DNS' `
-  -Access Allow `
-  -Protocol * `
-  -Direction Outbound `
-  -Priority 1020 `
-  -SourceAddressPrefix * `
-  -SourcePortRange * `
-  -DestinationAddressPrefix * `
-  -DestinationPortRange 53
-
-$denyEverythingElse = New-AzNetworkSecurityRuleConfig `
-  -Name DenyElse `
-  -Description 'Deny everything else' `
-  -Access Deny `
-  -Protocol * `
-  -Direction Outbound `
-  -Priority 2000 `
-  -SourceAddressPrefix * `
-  -SourcePortRange * `
-  -DestinationAddressPrefix * `
-  -DestinationPortRange *
-
 $NetworkSecurityGroupName = $ResourceGroupName + '-NetworkSecurity'
 $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
   -Name $NetworkSecurityGroupName `
   -ResourceGroupName $ResourceGroupName `
-  -Location $Location `
-  -SecurityRules @($allowHttp, $allowQuic, $allowDns, $denyEverythingElse)
+  -Location $Location
 
 $SubnetName = $ResourceGroupName + '-Subnet'
 $Subnet = New-AzVirtualNetworkSubnetConfig `
@@ -216,7 +171,7 @@ $VirtualNetwork = New-AzVirtualNetwork `
   -Subnet $Subnet
 
 ####################################################################################################
-Display-ProgressBar -Status 'Creating prototype VM'
+Display-ProgressBar -Status 'Creating network interface'
 
 $NicName = $ResourceGroupName + '-NIC'
 $Nic = New-AzNetworkInterface `
@@ -224,6 +179,9 @@ $Nic = New-AzNetworkInterface `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
   -Subnet $VirtualNetwork.Subnets[0]
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating prototype VM'
 
 $VM = New-AzVMConfig `
   -Name $ProtoVMName `
@@ -391,7 +349,7 @@ $PoolName = $ResourceGroupName + '-Pool'
 $PoolProperties = @{
   'organization' = 'https://dev.azure.com/vclibs'
   'projects' = @('STL')
-  'sku' = @{ 'name' = $VMSize; 'tier' = 'StandardSSD'; }
+  'sku' = @{ 'name' = $VMSize; 'tier' = 'StandardSSD'; 'enableSpot' = $true; }
   'images' = @(@{ 'imageName' = $ImageName; 'poolBufferPercentage' = '100'; })
   'maxPoolSize' = 64
   'agentProfile' = @{ 'type' = 'Stateless'; }
@@ -447,4 +405,5 @@ Remove-AzNetworkSecurityGroup `
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
 
+Write-Host "Elapsed time: $(((Get-Date) - $CurrentDate).ToString('hh\:mm\:ss'))"
 Write-Host "Finished creating pool: $PoolName"
