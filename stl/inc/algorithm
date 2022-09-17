@@ -10092,7 +10092,8 @@ namespace ranges {
                     _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return {static_cast<_Vty>(*_Found.min), static_cast<_Vty>(*_Found.max)};
             } else {
-                minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst), static_cast<_Vty>(*_UFirst)};
+                minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst)};
+                _Found.max = _Found.max;
                 if (_UFirst == _ULast) {
                     return _Found;
                 }
