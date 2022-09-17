@@ -10093,7 +10093,7 @@ namespace ranges {
                 return {static_cast<_Vty>(*_Found.min), static_cast<_Vty>(*_Found.max)};
             } else {
                 minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst)};
-                _Found.max = _Found.max;
+                _Found.max = _Found.min;
                 if (_UFirst == _ULast) {
                     return _Found;
                 }
