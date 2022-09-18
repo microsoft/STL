@@ -319,13 +319,13 @@
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
 // P2136R3 invoke_r()
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
-//     (changes to std::views::zip only)
+//     (changes to views::zip only)
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
-//     (changes to pair, tuple, vector<bool>::reference, and std::views::zip only)
+//     (missing views::zip_transform, views::adjacent, and views::adjacent_transform)
 // P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2417R2 More constexpr bitset
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
