@@ -773,7 +773,7 @@ void test_stop_token() {
         jthread jt{[&](const stop_token& token) {
             int val{1729};
             // Generate the Collatz sequence for 1729.
-            // main() shouldn't ask us to stop early; if it does, the sequence will be truncated.
+            // test_stop_token() shouldn't ask us to stop early; if it does, the sequence will be truncated.
             while (!token.stop_requested()) {
                 vec.push_back(val);
                 if (val == 1) {
@@ -784,7 +784,7 @@ void test_stop_token() {
                     val = 3 * val + 1;
                 }
             }
-            l.count_down(); // tell main() that we're done
+            l.count_down(); // tell test_stop_token() that we're done
             while (!token.stop_requested()) {
                 this_thread::sleep_for(10ms); // not a timing assumption; avoids spinning furiously
             }
