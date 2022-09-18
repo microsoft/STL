@@ -268,6 +268,7 @@ export using std::va_list;
 export using std::ptrdiff_t;
 export using std::size_t;
 export using std::max_align_t;
+export using std::nullptr_t; // added to the C Standard Library in C23
 
 // <cstdint>
 export using std::int8_t;
