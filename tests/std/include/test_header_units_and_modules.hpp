@@ -525,11 +525,7 @@ void test_random() {
     using namespace std;
     puts("Testing <random>.");
     minstd_rand0 lcg;
-
-    for (int i = 0; i < 9999; ++i) {
-        (void) lcg();
-    }
-
+    lcg.discard(9999);
     assert(lcg() == 1043618065); // N4868 [rand.predef]/1
 }
 
