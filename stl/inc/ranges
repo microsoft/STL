@@ -6946,7 +6946,7 @@ namespace ranges {
                 (is_nothrow_convertible_v<iterator_t<_ViewTypes>,
                      iterator_t<_Maybe_const<!_IsConst, _ViewTypes>>> && ...)) // strengthened
                 // clang-format off
-                requires(_IsConst && 
+                requires(_IsConst &&
             (convertible_to<iterator_t<_ViewTypes>, iterator_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...))
                 // clang-format on
                 : _Current(_STD move(_Rhs._Current)) {}
