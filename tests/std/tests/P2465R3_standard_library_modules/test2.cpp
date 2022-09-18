@@ -36,7 +36,7 @@ template <typename... Args>
 struct IsGlobalHypotCallableImpl<std::void_t<decltype(::hypot(std::declval<Args>()...))>, Args...> : std::true_type {};
 
 template <typename... Args>
-inline constexpr bool IsGlobalHypotCallable = IsGlobalHypotCallableImpl<void, Args...>::value;
+constexpr bool IsGlobalHypotCallable = IsGlobalHypotCallableImpl<void, Args...>::value;
 
 void test_binary_hypot() {
     ::puts("std.compat: Testing binary hypot().");
