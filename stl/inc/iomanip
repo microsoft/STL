@@ -46,7 +46,7 @@ struct _Fillobj { // store fill character
     _Elem _Fill; // the fill character
 };
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD _Fillobj<_Elem> setfill(_Elem _Ch) {
     return _Fillobj<_Elem>(_Ch);
 }
@@ -103,12 +103,12 @@ struct _Monobj { // store reference to monetary amount
     bool _Intl; // international flag
 };
 
-template <class _Money>
+_EXPORT_STD template <class _Money>
 _NODISCARD _Monobj<_Money> get_money(_Money& _Val_arg, bool _Intl_arg = false) {
     return _Monobj<_Money>(_Val_arg, _Intl_arg);
 }
 
-template <class _Money>
+_EXPORT_STD template <class _Money>
 _NODISCARD _Monobj<const _Money> put_money(const _Money& _Val_arg, bool _Intl_arg = false) {
     return _Monobj<const _Money>(_Val_arg, _Intl_arg);
 }
@@ -174,12 +174,12 @@ struct _Timeobj { // store reference to tm object and format
     const _Elem* _Fmtlast; // format string end
 };
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD _Timeobj<_Elem, tm*> get_time(tm* _Tptr_arg, const _Elem* _Fmt_arg) {
     return _Timeobj<_Elem, tm*>(_Tptr_arg, _Fmt_arg);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD _Timeobj<_Elem, const tm*> put_time(const tm* _Tptr_arg, const _Elem* _Fmt_arg) {
     return _Timeobj<_Elem, const tm*>(_Tptr_arg, _Fmt_arg);
 }
@@ -352,28 +352,28 @@ struct _Quote_in { // store reference to string
     _Elem _Escape; // escape element
 };
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD _Quote_out<_Elem, void, size_t> quoted(
     const _Elem* _Ptr, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
     const size_t _Size = char_traits<_Elem>::length(_Ptr);
     return {_Ptr, _Size, _Delim, _Escape};
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _Quote_out<_Elem, _Traits, typename basic_string<_Elem, _Traits, _Alloc>::size_type> quoted(
     const basic_string<_Elem, _Traits, _Alloc>& _Str, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
     return {_Str.c_str(), _Str.size(), _Delim, _Escape};
 }
 
 #if _HAS_CXX17
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 _NODISCARD _Quote_out<_Elem, _Traits, size_t> quoted(
     const basic_string_view<_Elem, _Traits> _Str, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
     return {_Str.data(), _Str.size(), _Delim, _Escape};
 }
 #endif // _HAS_CXX17
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _Quote_in<_Elem, _Traits, _Alloc> quoted(
     basic_string<_Elem, _Traits, _Alloc>& _Str, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
     return {_Str, _Delim, _Escape};
@@ -401,11 +401,11 @@ struct _Smanip { // store function pointer and argument value
     _Arg _Manarg; // the argument value
 };
 
-_NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl resetiosflags(ios_base::fmtflags);
-_NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl setiosflags(ios_base::fmtflags);
-_NODISCARD _MRTIMP2 _Smanip<int> __cdecl setbase(int);
-_NODISCARD _MRTIMP2 _Smanip<streamsize> __cdecl setprecision(streamsize);
-_NODISCARD _MRTIMP2 _Smanip<streamsize> __cdecl setw(streamsize);
+_EXPORT_STD extern "C++" _NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl resetiosflags(ios_base::fmtflags);
+_EXPORT_STD extern "C++" _NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl setiosflags(ios_base::fmtflags);
+_EXPORT_STD extern "C++" _NODISCARD _MRTIMP2 _Smanip<int> __cdecl setbase(int);
+_EXPORT_STD extern "C++" _NODISCARD _MRTIMP2 _Smanip<streamsize> __cdecl setprecision(streamsize);
+_EXPORT_STD extern "C++" _NODISCARD _MRTIMP2 _Smanip<streamsize> __cdecl setw(streamsize);
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

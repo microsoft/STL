@@ -697,7 +697,6 @@ std/re/re.alg/re.alg.search/extended.pass.cpp FAIL
 std/re/re.alg/re.alg.search/no_update_pos.pass.cpp FAIL
 std/re/re.badexp/regex_error.pass.cpp FAIL
 std/re/re.const/re.synopt/syntax_option_type.pass.cpp FAIL
-std/re/re.grammar/excessive_brace_count.pass.cpp FAIL
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 std/re/re.regex/re.regex.construct/bad_escape.pass.cpp FAIL
 std/re/re.regex/re.regex.construct/bad_range.pass.cpp FAIL
@@ -847,7 +846,6 @@ std/strings/basic.string/string.modifiers/robust_against_adl.pass.cpp FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.constr/robust_against_adl.pass.cpp FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/robust_against_adl.pass.cpp FAIL
 std/utilities/function.objects/refwrap/refwrap.invoke/robust_against_adl.pass.cpp FAIL
-std/utilities/variant/variant.visit/robust_against_adl.pass.cpp FAIL
 
 # Not yet analyzed. Possibly C1XX constexpr bug.
 std/utilities/function.objects/func.invoke/invoke_constexpr.pass.cpp:0 FAIL

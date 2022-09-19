@@ -26,7 +26,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 #if _HAS_CXX17
 namespace filesystem {
-    class path;
+    _EXPORT_STD class path;
 }
 #endif // _HAS_CXX17
 
@@ -60,11 +60,11 @@ _INLINE_VAR constexpr bool _Is_any_path = _Is_any_of_v<_Ty
     >;
 // clang-format on
 
-_CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const char*, ios_base::openmode, int);
-_CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_base::openmode, int);
+extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const char*, ios_base::openmode, int);
+extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_base::openmode, int);
 
 #ifdef _CRTBLD
-_CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const unsigned short*, ios_base::openmode, int);
+extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const unsigned short*, ios_base::openmode, int);
 #endif // _CRTBLD
 
 template <class _Elem>
@@ -161,7 +161,7 @@ inline bool _Ungetc(const unsigned short& _Wchar, FILE* _File) { // put back an 
 }
 #endif // _CRTBLD
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 class basic_filebuf : public basic_streambuf<_Elem, _Traits> { // stream buffer associated with a C stream
 public:
     using _Mysb = basic_streambuf<_Elem, _Traits>;
@@ -797,12 +797,12 @@ private:
     _Elem* _Set_egptr; // saves egptr()
 };
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 void swap(basic_filebuf<_Elem, _Traits>& _Left, basic_filebuf<_Elem, _Traits>& _Right) {
     _Left.swap(_Right);
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 class basic_ifstream : public basic_istream<_Elem, _Traits> { // input stream associated with a C stream
 public:
     using _Mybase = basic_istream<_Elem, _Traits>;
@@ -981,12 +981,12 @@ private:
     _Myfb _Filebuffer;
 };
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 void swap(basic_ifstream<_Elem, _Traits>& _Left, basic_ifstream<_Elem, _Traits>& _Right) {
     _Left.swap(_Right);
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 class basic_ofstream : public basic_ostream<_Elem, _Traits> { // output stream associated with a C stream
 public:
     using _Mybase = basic_ostream<_Elem, _Traits>;
@@ -1164,12 +1164,12 @@ private:
     _Myfb _Filebuffer;
 };
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 void swap(basic_ofstream<_Elem, _Traits>& _Left, basic_ofstream<_Elem, _Traits>& _Right) {
     _Left.swap(_Right);
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 class basic_fstream : public basic_iostream<_Elem, _Traits> { // input/output stream associated with a C stream
 public:
     using _Mybase     = basic_iostream<_Elem, _Traits>;
@@ -1354,7 +1354,7 @@ private:
     _Myfb _Filebuffer;
 };
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 void swap(basic_fstream<_Elem, _Traits>& _Left, basic_fstream<_Elem, _Traits>& _Right) {
     _Left.swap(_Right);
 }

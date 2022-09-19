@@ -167,7 +167,7 @@ const typename _Iosb<_Dummy>::_Seekdir _Iosb<_Dummy>::cur;
 template <class _Dummy>
 const typename _Iosb<_Dummy>::_Seekdir _Iosb<_Dummy>::end;
 
-class _CRTIMP2_PURE_IMPORT ios_base : public _Iosb<int> { // base class for ios
+_EXPORT_STD extern "C++" class _CRTIMP2_PURE_IMPORT ios_base : public _Iosb<int> { // base class for ios
 public:
     using fmtflags = int;
     using iostate  = int;

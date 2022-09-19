@@ -9,6 +9,11 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#ifdef _ENFORCE_ONLY_CORE_HEADERS
+_EMIT_STL_ERROR(
+    STL1005, "Tried to include a non-core C++ Standard Library header file with _ENFORCE_ONLY_CORE_HEADERS defined.");
+#endif // _ENFORCE_ONLY_CORE_HEADERS
+
 #include <crtdbg.h>
 #include <crtdefs.h>
 
@@ -343,7 +348,7 @@ enum _Uninitialized { // tag for suppressing initialization
     _Noinit
 };
 
-class _CRTIMP2_PURE_IMPORT _Lockit { // lock while object in existence -- MUST NEST
+extern "C++" class _CRTIMP2_PURE_IMPORT _Lockit { // lock while object in existence -- MUST NEST
 public:
 #ifdef _M_CEE_PURE
     __CLR_OR_THIS_CALL _Lockit() noexcept : _Locktype(0) {

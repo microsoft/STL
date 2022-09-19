@@ -33,52 +33,52 @@ _NODISCARD _Check_return_ inline long double abs(_In_ long double _Xx) noexcept 
 }
 
 _STD_BEGIN
-using _CSTD size_t;
-using _CSTD div_t;
-using _CSTD ldiv_t;
-using _CSTD abort;
-using _CSTD abs;
-using _CSTD atexit;
-using _CSTD atof;
-using _CSTD atoi;
-using _CSTD atol;
-using _CSTD bsearch;
-using _CSTD calloc;
-using _CSTD div;
-using _CSTD exit;
-using _CSTD free;
-using _CSTD labs;
-using _CSTD ldiv;
-using _CSTD malloc;
-using _CSTD mblen;
-using _CSTD mbstowcs;
-using _CSTD mbtowc;
-using _CSTD qsort;
-using _CSTD rand;
-using _CSTD realloc;
-using _CSTD srand;
-using _CSTD strtod;
-using _CSTD strtol;
-using _CSTD strtoul;
-using _CSTD wcstombs;
-using _CSTD wctomb;
+_EXPORT_STD using _CSTD size_t;
+_EXPORT_STD using _CSTD div_t;
+_EXPORT_STD using _CSTD ldiv_t;
+_EXPORT_STD using _CSTD abort;
+_EXPORT_STD using _CSTD abs;
+_EXPORT_STD using _CSTD atexit;
+_EXPORT_STD using _CSTD atof;
+_EXPORT_STD using _CSTD atoi;
+_EXPORT_STD using _CSTD atol;
+_EXPORT_STD using _CSTD bsearch;
+_EXPORT_STD using _CSTD calloc;
+_EXPORT_STD using _CSTD div;
+_EXPORT_STD using _CSTD exit;
+_EXPORT_STD using _CSTD free;
+_EXPORT_STD using _CSTD labs;
+_EXPORT_STD using _CSTD ldiv;
+_EXPORT_STD using _CSTD malloc;
+_EXPORT_STD using _CSTD mblen;
+_EXPORT_STD using _CSTD mbstowcs;
+_EXPORT_STD using _CSTD mbtowc;
+_EXPORT_STD using _CSTD qsort;
+_EXPORT_STD using _CSTD rand;
+_EXPORT_STD using _CSTD realloc;
+_EXPORT_STD using _CSTD srand;
+_EXPORT_STD using _CSTD strtod;
+_EXPORT_STD using _CSTD strtol;
+_EXPORT_STD using _CSTD strtoul;
+_EXPORT_STD using _CSTD wcstombs;
+_EXPORT_STD using _CSTD wctomb;
 
-using _CSTD lldiv_t;
+_EXPORT_STD using _CSTD lldiv_t;
 
-using _CSTD getenv;
-using _CSTD system;
+_EXPORT_STD using _CSTD getenv;
+_EXPORT_STD using _CSTD system;
 
-using _CSTD atoll;
-using _CSTD llabs;
-using _CSTD lldiv;
-using _CSTD strtof;
-using _CSTD strtold;
-using _CSTD strtoll;
-using _CSTD strtoull;
+_EXPORT_STD using _CSTD atoll;
+_EXPORT_STD using _CSTD llabs;
+_EXPORT_STD using _CSTD lldiv;
+_EXPORT_STD using _CSTD strtof;
+_EXPORT_STD using _CSTD strtold;
+_EXPORT_STD using _CSTD strtoll;
+_EXPORT_STD using _CSTD strtoull;
 
-using _CSTD _Exit;
-using _CSTD at_quick_exit;
-using _CSTD quick_exit;
+_EXPORT_STD using _CSTD _Exit;
+_EXPORT_STD using _CSTD at_quick_exit;
+_EXPORT_STD using _CSTD quick_exit;
 _STD_END
 
 #pragma pop_macro("new")

@@ -23,7 +23,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 class collate : public locale::facet { // facet for ordering sequences of elements
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
@@ -140,7 +140,7 @@ template __PURE_APPDOMAIN_GLOBAL locale::id collate<unsigned short>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 class collate_byname : public collate<_Elem> { // collate for named locale
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
@@ -155,7 +155,7 @@ protected:
     __CLR_OR_THIS_CALL ~collate_byname() noexcept override {}
 };
 
-template <class _Facet>
+_EXPORT_STD template <class _Facet>
 _NODISCARD bool has_facet(const locale& _Loc) noexcept {
     _BEGIN_LOCK(_LOCK_LOCALE) // the thread lock, make get atomic
     size_t _Id = _Facet::id;
@@ -163,72 +163,72 @@ _NODISCARD bool has_facet(const locale& _Loc) noexcept {
     _END_LOCK()
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD bool isalnum(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::alnum, _Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD bool isalpha(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::alpha, _Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD bool isblank(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::blank, _Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD bool iscntrl(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::cntrl, _Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD bool isdigit(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::digit, _Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD bool isgraph(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::graph, _Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD bool islower(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::lower, _Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD bool isprint(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::print, _Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD bool ispunct(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::punct, _Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD bool isspace(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::space, _Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD bool isupper(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::upper, _Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD bool isxdigit(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::xdigit, _Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD _Elem tolower(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).tolower(_Ch);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD _Elem toupper(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).toupper(_Ch);
 }

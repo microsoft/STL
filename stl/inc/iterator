@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <class _Container>
+_EXPORT_STD template <class _Container>
 class back_insert_iterator { // wrap pushes to back of container as output iterator
 public:
     using iterator_category = output_iterator_tag;
@@ -64,13 +64,13 @@ protected:
     _Container* container;
 };
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD _CONSTEXPR20 back_insert_iterator<_Container> back_inserter(_Container& _Cont) noexcept /* strengthened */ {
     // return a back_insert_iterator
     return back_insert_iterator<_Container>(_Cont);
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 class front_insert_iterator { // wrap pushes to front of container as output iterator
 public:
     using iterator_category = output_iterator_tag;
@@ -115,12 +115,12 @@ protected:
     _Container* container;
 };
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD _CONSTEXPR20 front_insert_iterator<_Container> front_inserter(_Container& _Cont) {
     return front_insert_iterator<_Container>(_Cont);
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 class insert_iterator { // wrap inserts into container as output iterator
 public:
     using iterator_category = output_iterator_tag;
@@ -176,12 +176,12 @@ _NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, 
     return insert_iterator<_Container>(_Cont, _Where);
 }
 #else // ^^^ No Ranges / Ranges vvv
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD constexpr insert_iterator<_Container> inserter(_Container& _Cont, _RANGES iterator_t<_Container> _Where) {
     return insert_iterator<_Container>(_Cont, _Where);
 }
 
-template <semiregular _Se>
+_EXPORT_STD template <semiregular _Se>
 class move_sentinel {
 public:
     constexpr move_sentinel() = default;
@@ -213,12 +213,29 @@ public:
         return _Last;
     }
 
+    using _Prevent_inheriting_unwrap = move_sentinel;
+
+    // clang-format off
+    _NODISCARD constexpr move_sentinel<_Unwrapped_t<const _Se&>> _Unwrapped() const&
+        noexcept(noexcept(move_sentinel<_Unwrapped_t<const _Se&>>{_Last._Unwrapped()}))
+        requires _RANGES _Weakly_unwrappable_sentinel<_Se> {
+        // clang-format on
+        return move_sentinel<_Unwrapped_t<const _Se&>>{_Last._Unwrapped()};
+    }
+    // clang-format off
+    _NODISCARD constexpr move_sentinel<_Unwrapped_t<_Se>> _Unwrapped() &&
+        noexcept(noexcept(move_sentinel<_Unwrapped_t<_Se>>{_STD move(_Last)._Unwrapped()}))
+        requires _RANGES _Weakly_unwrappable_sentinel<_Se> {
+        // clang-format on
+        return move_sentinel<_Unwrapped_t<_Se>>{_STD move(_Last)._Unwrapped()};
+    }
+
 private:
     _Se _Last{};
 };
 #endif // __cpp_lib_concepts
 
-template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>, class _Diff = ptrdiff_t>
+_EXPORT_STD template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>, class _Diff = ptrdiff_t>
 class istream_iterator {
 public:
     using iterator_category = input_iterator_tag;
@@ -288,7 +305,7 @@ private:
     _Ty _Myval{}; // lookahead value (valid if _Myistr is not null)
 };
 
-template <class _Ty, class _Elem, class _Traits, class _Diff>
+_EXPORT_STD template <class _Ty, class _Elem, class _Traits, class _Diff>
 _NODISCARD bool operator==(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Left,
     const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Right) noexcept /* strengthened */ {
     return _Left._Equal(_Right);
@@ -302,7 +319,7 @@ _NODISCARD bool operator!=(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _
 }
 #endif // !_HAS_CXX20
 
-template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>>
+_EXPORT_STD template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>>
 class ostream_iterator {
 public:
     using iterator_category = output_iterator_tag;
@@ -347,7 +364,7 @@ private:
     ostream_type* _Myostr; // pointer to output stream
 };
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 class istreambuf_iterator {
 public:
     using iterator_category = input_iterator_tag;
@@ -470,7 +487,7 @@ private:
     mutable _Elem _Val; // next element to deliver
 };
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 _NODISCARD bool operator==(
     const istreambuf_iterator<_Elem, _Traits>& _Left, const istreambuf_iterator<_Elem, _Traits>& _Right) {
     return _Left.equal(_Right);
@@ -484,7 +501,7 @@ _NODISCARD bool operator!=(
 }
 #endif // !_HAS_CXX20
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 class ostreambuf_iterator {
 public:
     using iterator_category = output_iterator_tag;
@@ -831,7 +848,7 @@ concept _Use_postfix_proxy = !requires(_Iter& __it) { { *__it++ } -> _Can_refere
     && constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>
     && move_constructible<iter_value_t<_Iter>>;
 
-template <input_or_output_iterator _Iter, sentinel_for<_Iter> _Se>
+_EXPORT_STD template <input_or_output_iterator _Iter, sentinel_for<_Iter> _Se>
     requires (!same_as<_Iter, _Se> && copyable<_Iter>)
 class common_iterator {
     // clang-format on
@@ -1111,7 +1128,7 @@ struct _Counted_iterator_concept_base<_Iter> : _Counted_iterator_category_base<_
     using iterator_concept = typename _Iter::iterator_concept;
 };
 
-template <input_or_output_iterator _Iter>
+_EXPORT_STD template <input_or_output_iterator _Iter>
 class counted_iterator : public _Counted_iterator_concept_base<_Iter> {
 public:
     using iterator_type   = _Iter;

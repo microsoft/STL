@@ -35,13 +35,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-enum float_denorm_style { // constants for different IEEE float denormalization styles
+_EXPORT_STD enum float_denorm_style { // constants for different IEEE float denormalization styles
     denorm_indeterminate = -1,
     denorm_absent        = 0,
     denorm_present       = 1
 };
 
-enum float_round_style { // constants for different IEEE rounding styles
+_EXPORT_STD enum float_round_style { // constants for different IEEE rounding styles
     round_indeterminate       = -1,
     round_toward_zero         = 0,
     round_to_nearest          = 1,
@@ -75,7 +75,7 @@ struct _Num_base { // base for all types, with common defaults
     static constexpr int radix                     = 0;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class numeric_limits : public _Num_base { // numeric limits for arbitrary type _Ty (say little or nothing)
 public:
     _NODISCARD static constexpr _Ty(min)() noexcept {

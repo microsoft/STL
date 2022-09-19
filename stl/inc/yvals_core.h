@@ -282,6 +282,7 @@
 // P2418R2 Add Support For std::generator-like Types To std::format
 // P2419R2 Clarify Handling Of Encodings In Localized Formatting Of chrono Types
 // P2432R1 Fix istream_view
+// P2508R1 basic_format_string, format_string, wformat_string
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 
 // _HAS_CXX20 indirectly controls:
@@ -323,19 +324,23 @@
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
+// P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
 //     (missing views::zip_transform, views::adjacent, and views::adjacent_transform)
 // P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2417R2 More constexpr bitset
+// P2438R2 string::substr() &&
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
 // P2441R2 views::join_with
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
 // P2445R1 forward_like()
 // P2446R2 views::as_rvalue
+// P2465R3 Standard Library Modules std And std.compat
+// P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
-// P2549R0 unexpected<E>::error()
+// P2549R1 unexpected<E>::error()
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -474,12 +479,26 @@
 // _HAS_NODISCARD (in vcruntime.h) controls:
 // [[nodiscard]] attributes on STL functions
 
+// TRANSITION, This should go to vcruntime.h
+#ifndef __has_cpp_attribute
+#define _NODISCARD_MSG(_Msg)
+#elif __has_cpp_attribute(nodiscard) >= 201907L
+#define _NODISCARD_MSG(_Msg) [[nodiscard(_Msg)]]
+#elif __has_cpp_attribute(nodiscard) >= 201603L
+#define _NODISCARD_MSG(_Msg) [[nodiscard]]
+#else
+#define _NODISCARD_MSG(_Msg)
+#endif
+
 #ifndef __has_cpp_attribute
 #define _NODISCARD_CTOR
+#define _NODISCARD_CTOR_MSG(_Msg)
 #elif __has_cpp_attribute(nodiscard) >= 201907L
-#define _NODISCARD_CTOR _NODISCARD
+#define _NODISCARD_CTOR           _NODISCARD
+#define _NODISCARD_CTOR_MSG(_Msg) _NODISCARD_MSG(_Msg)
 #else
 #define _NODISCARD_CTOR
+#define _NODISCARD_CTOR_MSG(_Msg)
 #endif
 
 #if defined(__CUDACC__) && !defined(__clang__) // TRANSITION, VSO-568006
@@ -487,6 +506,109 @@
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
 #define _NODISCARD_FRIEND _NODISCARD friend
 #endif // TRANSITION, VSO-568006
+
+#define _NODISCARD_REMOVE_ALG                                                                                    \
+    _NODISCARD_MSG("The 'remove' and 'remove_if' algorithms return the iterator past the last element "          \
+                   "that should be kept. You need to call container.erase(result, container.end()) afterwards. " \
+                   "In C++20, 'std::erase' and 'std::erase_if' are simpler replacements for these two steps.")
+
+#define _NODISCARD_UNIQUE_ALG                                                                                \
+    _NODISCARD_MSG("The 'unique' algorithm returns the iterator past the last element that should be kept. " \
+                   "You need to call container.erase(result, container.end()) afterwards.")
+
+#define _NODISCARD_EMPTY_MEMBER                                                                                    \
+    _NODISCARD_MSG(                                                                                                \
+        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                             \
+        "Use the 'clear()' member function if you want to erase all elements.")
+
+#define _NODISCARD_EMPTY_ARRAY_MEMBER                                                                              \
+    _NODISCARD_MSG(                                                                                                \
+        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                             \
+        "There's no way to clear an array as its size is fixed.")
+
+#define _NODISCARD_EMPTY_STACKTRACE_MEMBER                                                                         \
+    _NODISCARD_MSG(                                                                                                \
+        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                             \
+        "'std::stacktrace' can be cleared by assigning an empty value to it.")
+
+#define _NODISCARD_EMPTY_NON_MEMBER                                                                            \
+    _NODISCARD_MSG(                                                                                            \
+        "This function returns a bool indicating whether the container or container-like object is empty and " \
+        "has no other effects. It is not useful to call this function and discard the return value.")
+
+#define _NODISCARD_EMPTY_ADAPTOR_MEMBER                                                                            \
+    _NODISCARD_MSG(                                                                                                \
+        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                             \
+        "Container adaptors don't provide 'clear()' member functions, but you can assign an empty object to them.")
+
+#define _NODISCARD_BARRIER_TOKEN \
+    _NODISCARD_MSG("The token from 'arrive()' should not be discarded; it should be passed to 'wait()'.")
+
+#define _NODISCARD_TRY_WAIT                                                                                    \
+    _NODISCARD_MSG(                                                                                            \
+        "This member function returns the state of the synchronization object and does not do anything else; " \
+        "it is not useful to call this member function and discard the return value.")
+
+#define _NODISCARD_TRY_CHANGE_STATE                                                                    \
+    _NODISCARD_MSG("This function returns whether the operation succeeded in modifying object state. " \
+                   "It is dangerous to ignore the return value.")
+
+#define _NODISCARD_SMART_PTR_ALLOC                                                                            \
+    _NODISCARD_MSG("This function constructs an object wrapped by a smart pointer and has no other effects; " \
+                   "it is not useful to call this function and discard the return value.")
+
+#define _NODISCARD_RAW_PTR_ALLOC                                                \
+    _NODISCARD_MSG("This function allocates memory and returns a raw pointer. " \
+                   "Discarding the return value will cause a memory leak.")
+
+#define _NODISCARD_ASSUME_ALIGNED                                                                                    \
+    _NODISCARD_MSG("'std::assume_aligned' has a potential effect on the return value (not on the passed argument). " \
+                   "It is not useful to call 'std::assume_aligned' and discard the return value.")
+
+#define _NODISCARD_LAUNDER                                                                                    \
+    _NODISCARD_MSG("'std::launder' has a potential effect on the return value (not on the passed argument). " \
+                   "It is not useful to call 'std::launder' and discard the return value.")
+
+#ifdef _SILENCE_NODISCARD_LOCK_WARNINGS
+
+#define _NODISCARD_LOCK
+#define _NODISCARD_CTOR_LOCK
+
+#else // ^^^ defined(_SILENCE_NODISCARD_LOCK_WARNINGS) ^^^ / vvv !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) vvv
+
+#define _NODISCARD_LOCK                                                                                                \
+    _NODISCARD_MSG("A lock should be stored in a variable to protect the scope. If you're intentionally constructing " \
+                   "a temporary to protect the rest of the current expression using the comma operator, you can cast " \
+                   "the temporary to void or define _SILENCE_NODISCARD_LOCK_WARNINGS to suppress this warning.")
+
+#define _NODISCARD_CTOR_LOCK                                                                                \
+    _NODISCARD_CTOR_MSG(                                                                                    \
+        "A lock should be stored in a variable to protect the scope. If you're intentionally constructing " \
+        "a temporary to protect the rest of the current expression using the comma operator, you can cast " \
+        "the temporary to void or define _SILENCE_NODISCARD_LOCK_WARNINGS to suppress this warning.")
+
+#endif // ^^^ !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) ^^^
+
+#define _NODISCARD_CTOR_THREAD                                                     \
+    _NODISCARD_CTOR_MSG("This temporary 'std::thread' is not joined or detached, " \
+                        "so 'std::terminate' will be called at the end of the statement.")
+
+#define _NODISCARD_CTOR_JTHREAD                                                                            \
+    _NODISCARD_CTOR_MSG("This temporary 'std::jthread' is implicitly joined at the end of the statement. " \
+                        "If this is intentional, you can add '.join()' to suppress this warning. "         \
+                        "Otherwise, this 'std::jthread' should be stored in a variable.")
+
+#define _NODISCARD_ASYNC                                                                                           \
+    _NODISCARD_MSG("The result of 'std::async' should be stored in a variable. If the return value is discarded, " \
+                   "the temporary 'std::future' is destroyed, waiting for an async result or evaluating "          \
+                   "a deferred result, thus defeating the purpose of 'std::async'.")
+
+#define _NODISCARD_GET_FUTURE \
+    _NODISCARD_MSG("Since 'get_future' may be called only once, discarding the result is likely a mistake.")
 
 #pragma push_macro("msvc")
 #pragma push_macro("known_semantics")
@@ -651,7 +773,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202208L
+#define _MSVC_STL_UPDATE  202209L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -704,6 +826,13 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.34 or ne
 #else // ^^^ constexpr in C++23 and later / inline (not constexpr) in C++20 and earlier vvv
 #define _CONSTEXPR23 inline
 #endif // ^^^ inline (not constexpr) in C++20 and earlier ^^^
+
+// P2465R3 Standard Library Modules std And std.compat
+#if _HAS_CXX23 && defined(_BUILD_STD_MODULE)
+#define _EXPORT_STD export
+#else // _HAS_CXX23 && defined(_BUILD_STD_MODULE)
+#define _EXPORT_STD
+#endif // _HAS_CXX23 && defined(_BUILD_STD_MODULE)
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
@@ -1232,6 +1361,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // next warning number: STL4040
 
+// next error number: STL1006
+
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
 #define _HAS_FEATURES_REMOVED_IN_CXX20 (!_HAS_CXX20)
@@ -1396,7 +1527,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_concepts 202002L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
 #define __cpp_lib_algorithm_iterator_requirements 202207L
 #endif // __cpp_lib_concepts
 
@@ -1412,24 +1543,23 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
+#define __cpp_lib_constexpr_algorithms          201806L
+#define __cpp_lib_constexpr_complex             201711L
+#define __cpp_lib_constexpr_dynamic_alloc       201907L
+#define __cpp_lib_constexpr_functional          201907L
+#define __cpp_lib_constexpr_iterator            201811L
+#define __cpp_lib_constexpr_numeric             201911L
+#define __cpp_lib_constexpr_string              201907L
+#define __cpp_lib_constexpr_string_view         201811L
+#define __cpp_lib_constexpr_tuple               201811L
+#define __cpp_lib_constexpr_utility             201811L
+#define __cpp_lib_constexpr_vector              201907L
+#define __cpp_lib_destroying_delete             201806L
+#define __cpp_lib_endian                        201907L
+#define __cpp_lib_erase_if                      202002L
 
-#define __cpp_lib_constexpr_algorithms    201806L
-#define __cpp_lib_constexpr_complex       201711L
-#define __cpp_lib_constexpr_dynamic_alloc 201907L
-#define __cpp_lib_constexpr_functional    201907L
-#define __cpp_lib_constexpr_iterator      201811L
-#define __cpp_lib_constexpr_numeric       201911L
-#define __cpp_lib_constexpr_string        201907L
-#define __cpp_lib_constexpr_string_view   201811L
-#define __cpp_lib_constexpr_tuple         201811L
-#define __cpp_lib_constexpr_utility       201811L
-#define __cpp_lib_constexpr_vector        201907L
-#define __cpp_lib_destroying_delete       201806L
-#define __cpp_lib_endian                  201907L
-#define __cpp_lib_erase_if                202002L
-
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
-#define __cpp_lib_format 202110L
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_format 202207L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_generic_unordered_lookup     201811L
@@ -1457,12 +1587,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
 #define __cpp_lib_move_iterator_concept 202207L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_polymorphic_allocator 201902L
-
+#define __cpp_lib_polymorphic_allocator   201902L
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
@@ -1476,7 +1605,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_starts_ends_with 201711L
 #define __cpp_lib_syncbuf          201803L
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
 #define __cpp_lib_three_way_comparison 201907L
 #endif // __cpp_lib_concepts
 
@@ -1498,6 +1627,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_bind_back                         202202L
 #define __cpp_lib_byteswap                          202110L
 #define __cpp_lib_constexpr_bitset                  202207L
+#define __cpp_lib_constexpr_charconv                202207L
 #define __cpp_lib_constexpr_typeinfo                202106L
 
 #ifdef __cpp_lib_concepts
@@ -1505,9 +1635,14 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_expected          202202L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_forward_like       202207L
-#define __cpp_lib_invoke_r           202106L
-#define __cpp_lib_is_scoped_enum     202011L
+#define __cpp_lib_forward_like   202207L
+#define __cpp_lib_invoke_r       202106L
+#define __cpp_lib_is_scoped_enum 202011L
+
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules
+#define __cpp_lib_modules 202207L
+#endif // !defined(__clang__) && !defined(__EDG__)
+
 #define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts
@@ -1540,7 +1675,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_array_constexpr 201803L // P0858R0 Constexpr Iterator Requirements
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
 #define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
 #elif _HAS_CXX17
 #define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
@@ -1572,9 +1707,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #if _HAS_CXX23
-#define __cpp_lib_ranges 202202L // P2387R3 Pipe Support For User-Defined Range Adaptors
+#define __cpp_lib_ranges 202207L // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
-#define __cpp_lib_ranges 202110L // P2415R2 What Is A `view`?
+#define __cpp_lib_ranges 202110L // P2415R2 What Is A view?
 #endif // _HAS_CXX20
 #endif // defined(__cpp_lib_concepts)
 

@@ -19,18 +19,18 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 // from <iterator>
-struct input_iterator_tag {};
+_EXPORT_STD struct input_iterator_tag {};
 
-struct output_iterator_tag {};
+_EXPORT_STD struct output_iterator_tag {};
 
-struct forward_iterator_tag : input_iterator_tag {};
+_EXPORT_STD struct forward_iterator_tag : input_iterator_tag {};
 
-struct bidirectional_iterator_tag : forward_iterator_tag {};
+_EXPORT_STD struct bidirectional_iterator_tag : forward_iterator_tag {};
 
-struct random_access_iterator_tag : bidirectional_iterator_tag {};
+_EXPORT_STD struct random_access_iterator_tag : bidirectional_iterator_tag {};
 
 #ifdef __cpp_lib_concepts
-struct contiguous_iterator_tag : random_access_iterator_tag {};
+_EXPORT_STD struct contiguous_iterator_tag : random_access_iterator_tag {};
 
 template <class _Ty>
 concept _Dereferenceable = requires(_Ty& __t) {
@@ -72,7 +72,7 @@ concept _Has_member_reference = requires {
     typename _Ty::reference;
 };
 
-template <class>
+_EXPORT_STD template <class>
 struct incrementable_traits {};
 
 template <class _Ty>
@@ -105,10 +105,10 @@ struct incrementable_traits<_Ty> {
 template <class _Ty>
 concept _Is_from_primary = _Same_impl<typename _Ty::_From_primary, _Ty>;
 
-template <class>
+_EXPORT_STD template <class>
 struct iterator_traits;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using iter_difference_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
     incrementable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::difference_type;
 
@@ -121,7 +121,7 @@ struct _Cond_value_type<_Ty> {
     using value_type = remove_cv_t<_Ty>;
 };
 
-template <class>
+_EXPORT_STD template <class>
 struct indirectly_readable_traits {};
 
 template <class _Ty>
@@ -153,11 +153,11 @@ template <_Has_member_value_type _Ty>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
 // clang-format on
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
     indirectly_readable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::value_type;
 
-template <_Dereferenceable _Ty>
+_EXPORT_STD template <_Dereferenceable _Ty>
 using iter_reference_t = decltype(*_STD declval<_Ty&>());
 
 template <class>
@@ -365,7 +365,7 @@ struct _Iterator_traits_base<_It> {
 };
 // clang-format on
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct iterator_traits : _Iterator_traits_base<_Ty> {
     using _From_primary = iterator_traits;
 };
@@ -394,7 +394,7 @@ template <class _Ty>
 concept _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
 
 // clang-format off
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 concept weakly_incrementable = movable<_Ty>
     && requires(_Ty __i) {
         typename iter_difference_t<_Ty>;
@@ -407,21 +407,21 @@ concept weakly_incrementable = movable<_Ty>
 #endif // TRANSITION, LLVM-48173
     ;
 
-template <class _It>
+_EXPORT_STD template <class _It>
 concept input_or_output_iterator = requires(_It __i) { { *__i } -> _Can_reference; }
     && weakly_incrementable<_It>;
 
-template <class _Se, class _It>
+_EXPORT_STD template <class _Se, class _It>
 concept sentinel_for = semiregular<_Se>
     && input_or_output_iterator<_It>
     && _Weakly_equality_comparable_with<_Se, _It>;
 // clang-format on
 
-template <class _Se, class _It>
+_EXPORT_STD template <class _Se, class _It>
 inline constexpr bool disable_sized_sentinel_for = false;
 
 // clang-format off
-template <class _Se, class _It>
+_EXPORT_STD template <class _Se, class _It>
 concept sized_sentinel_for = sentinel_for<_Se, _It>
     && !disable_sized_sentinel_for<remove_cv_t<_Se>, remove_cv_t<_It>>
     && requires(const _It& __i, const _Se& __s) {
@@ -432,24 +432,24 @@ concept sized_sentinel_for = sentinel_for<_Se, _It>
 
 namespace ranges {
     // clang-format off
-    enum class subrange_kind : bool { unsized, sized };
+    _EXPORT_STD enum class subrange_kind : bool { unsized, sized };
 
-    template <input_or_output_iterator _It, sentinel_for<_It> _Se = _It,
+    _EXPORT_STD template <input_or_output_iterator _It, sentinel_for<_It> _Se = _It,
         subrange_kind _Ki = sized_sentinel_for<_Se, _It> ? subrange_kind::sized : subrange_kind::unsized>
         requires (_Ki == subrange_kind::sized || !sized_sentinel_for<_Se, _It>)
     class subrange;
 
-    template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
+    _EXPORT_STD template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
         requires ((_Idx == 0 && copyable<_It>) || _Idx == 1)
     _NODISCARD constexpr auto get(const subrange<_It, _Se, _Ki>& _Val);
 
-    template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
+    _EXPORT_STD template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
         requires (_Idx < 2)
     _NODISCARD constexpr auto get(subrange<_It, _Se, _Ki>&& _Val);
     // clang-format on
 } // namespace ranges
 
-using ranges::get;
+_EXPORT_STD using ranges::get;
 
 template <class _It, class _Se, ranges::subrange_kind _Ki>
 struct tuple_size<ranges::subrange<_It, _Se, _Ki>> : integral_constant<size_t, 2> {};
