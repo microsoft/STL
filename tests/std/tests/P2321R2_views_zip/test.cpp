@@ -763,10 +763,21 @@ constexpr bool instantiation_test_for_category() {
 
 template <template <class, test::Sized, test::Common, test::CanDifference> class InstantiatorType>
 constexpr bool instantiation_test() {
-    return (instantiation_test_for_category<input_iterator_tag, InstantiatorType>()
-            && instantiation_test_for_category<bidirectional_iterator_tag, InstantiatorType>()
-            && instantiation_test_for_category<forward_iterator_tag, InstantiatorType>()
-            && instantiation_test_for_category<random_access_iterator_tag, InstantiatorType>());
+    // The MSVC tends to run out of compiler heap space due to the sheer number of instantiations
+    // if we try to test everything at once. So, we split it up into segments based on category.
+
+#if defined(TEST_INPUT)
+    return instantiation_test_for_category<input_iterator_tag, InstantiatorType>();
+#elif defined(TEST_BIDIRECTIONAL) // ^^^ TEST_INPUT ^^^ / vvv TEST_BIDIRECTIONAL vvv
+    return instantiation_test_for_category<bidirectional_iterator_tag, InstantiatorType>();
+#elif defined(TEST_FORWARD) // ^^^ TEST_BIDIRECTIONAL ^^^ / vvv TEST_FORWARD vvv
+    return instantiation_test_for_category<forward_iterator_tag, InstantiatorType>();
+#elif defined(TEST_RANDOM) // ^^^ TEST_FORWARD ^^^ / vvv TEST_RANDOM vvv
+    return instantiation_test_for_category<random_access_iterator_tag, InstantiatorType>();
+#else // ^^^ TEST_RANDOM ^^^ / vvv UNKNOWN vvv
+    static_assert(false, "ERROR: A defined test macro was never specified when executing test P2321R2_views_zip!");
+    return false
+#endif // ^^^ UNKNOWN ^^^
 }
 
 int main() {
@@ -788,15 +799,7 @@ int main() {
     }
 
     { // ... move-only, single and multiple views
-        // There's too many different variations to do this in a single STATIC_ASSERT without
-        // hitting the constexpr step limit.
-        {
-            STATIC_ASSERT(instantiation_test_for_category<input_iterator_tag, move_only_view_instantiator>());
-            STATIC_ASSERT(instantiation_test_for_category<bidirectional_iterator_tag, move_only_view_instantiator>());
-            STATIC_ASSERT(instantiation_test_for_category<forward_iterator_tag, move_only_view_instantiator>());
-            STATIC_ASSERT(instantiation_test_for_category<random_access_iterator_tag, move_only_view_instantiator>());
-        }
-
+        STATIC_ASSERT(instantiation_test<move_only_view_instantiator>());
         instantiation_test<move_only_view_instantiator>();
     }
 
@@ -819,14 +822,6 @@ int main() {
     // Empty RangeTypes... parameter pack
     STATIC_ASSERT(is_same_v<decltype(views::zip()), decay_t<decltype(views::empty<tuple<>>)>>);
 
-    // There's too many different variations to do this in a single STATIC_ASSERT without
-    // hitting the constexpr step limit.
-    {
-        STATIC_ASSERT(instantiation_test_for_category<input_iterator_tag, instantiator>());
-        STATIC_ASSERT(instantiation_test_for_category<bidirectional_iterator_tag, instantiator>());
-        STATIC_ASSERT(instantiation_test_for_category<forward_iterator_tag, instantiator>());
-        STATIC_ASSERT(instantiation_test_for_category<random_access_iterator_tag, instantiator>());
-    }
-
+    STATIC_ASSERT(instantiation_test<instantiator>());
     instantiation_test<instantiator>();
 }
