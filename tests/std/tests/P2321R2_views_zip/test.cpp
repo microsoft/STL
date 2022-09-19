@@ -710,7 +710,7 @@ private:
     }
 
 public:
-    static constexpr bool call() {
+    static constexpr void call() {
         // Test the single-range use of views::zip (i.e., sizeof...(RangeTypes) == 1).
         test_single_range(single_element_container_instance);
 
@@ -731,8 +731,6 @@ public:
         // and one range having iterators and sentinels which model sized_sentinel_for
         // differently.
         test_three_ranges<differing_iterator_sentinel_diff_range_type>(three_element_container_instance);
-
-        return true;
     }
 };
 
