@@ -30,8 +30,8 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 // mutex and recursive_mutex are not supported under /clr
 #ifndef _M_CEE
-class condition_variable;
-class condition_variable_any;
+_EXPORT_STD class condition_variable;
+_EXPORT_STD class condition_variable_any;
 
 class _Mutex_base { // base class for all mutex types
 public:
@@ -83,7 +83,7 @@ private:
     }
 };
 
-class mutex : public _Mutex_base { // class for mutual exclusion
+_EXPORT_STD class mutex : public _Mutex_base { // class for mutual exclusion
 public:
     /* constexpr */ mutex() noexcept // TRANSITION, ABI
         : _Mutex_base() {}
@@ -92,7 +92,7 @@ public:
     mutex& operator=(const mutex&) = delete;
 };
 
-class recursive_mutex : public _Mutex_base { // class for recursive mutual exclusion
+_EXPORT_STD class recursive_mutex : public _Mutex_base { // class for recursive mutual exclusion
 public:
     recursive_mutex() : _Mutex_base(_Mtx_recursive) {}
 
@@ -105,23 +105,23 @@ public:
 };
 #endif // _M_CEE
 
-struct adopt_lock_t { // indicates adopt lock
+_EXPORT_STD struct adopt_lock_t { // indicates adopt lock
     explicit adopt_lock_t() = default;
 };
 
-struct defer_lock_t { // indicates defer lock
+_EXPORT_STD struct defer_lock_t { // indicates defer lock
     explicit defer_lock_t() = default;
 };
 
-struct try_to_lock_t { // indicates try to lock
+_EXPORT_STD struct try_to_lock_t { // indicates try to lock
     explicit try_to_lock_t() = default;
 };
 
-_INLINE_VAR constexpr adopt_lock_t adopt_lock{};
-_INLINE_VAR constexpr defer_lock_t defer_lock{};
-_INLINE_VAR constexpr try_to_lock_t try_to_lock{};
+_EXPORT_STD _INLINE_VAR constexpr adopt_lock_t adopt_lock{};
+_EXPORT_STD _INLINE_VAR constexpr defer_lock_t defer_lock{};
+_EXPORT_STD _INLINE_VAR constexpr try_to_lock_t try_to_lock{};
 
-template <class _Mutex>
+_EXPORT_STD template <class _Mutex>
 class unique_lock { // whizzy class with destructor that unlocks mutex
 public:
     using mutex_type = _Mutex;
@@ -272,7 +272,7 @@ private:
     }
 };
 
-template <class _Mutex>
+_EXPORT_STD template <class _Mutex>
 void swap(unique_lock<_Mutex>& _Left, unique_lock<_Mutex>& _Right) noexcept {
     _Left.swap(_Right);
 }
@@ -346,7 +346,7 @@ int _Try_lock1(_Lock0& _Lk0, _Lock1& _Lk1) {
     return -1;
 }
 
-template <class _Lock0, class _Lock1, class... _LockN>
+_EXPORT_STD template <class _Lock0, class _Lock1, class... _LockN>
 _NODISCARD_TRY_CHANGE_STATE int try_lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // try to lock multiple locks
     return _Try_lock1(_Lk0, _Lk1, _LkN...);
 }
@@ -413,12 +413,12 @@ void _Lock_nonmember1(_Lock0& _Lk0, _Lock1& _Lk1) {
     }
 }
 
-template <class _Lock0, class _Lock1, class... _LockN>
+_EXPORT_STD template <class _Lock0, class _Lock1, class... _LockN>
 void lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // lock multiple locks, without deadlock
     _Lock_nonmember1(_Lk0, _Lk1, _LkN...);
 }
 
-template <class _Mutex>
+_EXPORT_STD template <class _Mutex>
 class _NODISCARD_LOCK lock_guard { // class with destructor that unlocks a mutex
 public:
     using mutex_type = _Mutex;
@@ -441,7 +441,7 @@ private:
 };
 
 #if _HAS_CXX17
-template <class... _Mutexes>
+_EXPORT_STD template <class... _Mutexes>
 class _NODISCARD_LOCK scoped_lock { // class with destructor that unlocks mutexes
 public:
     explicit scoped_lock(_Mutexes&... _Mtxes) : _MyMutexes(_Mtxes...) { // construct and lock
@@ -543,7 +543,7 @@ struct _Init_once_completer {
     }
 };
 
-template <class _Fn, class... _Args>
+_EXPORT_STD template <class _Fn, class... _Args>
 void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) noexcept(
     noexcept(_STD invoke(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...))) /* strengthened */ {
     // call _Fx(_Ax...) once
@@ -565,12 +565,12 @@ void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) noexcept(
 
 // condition_variable, timed_mutex, and recursive_timed_mutex are not supported under /clr
 #ifndef _M_CEE
-enum class cv_status { // names for wait returns
+_EXPORT_STD enum class cv_status { // names for wait returns
     no_timeout,
     timeout
 };
 
-class condition_variable { // class for waiting for conditions
+_EXPORT_STD class condition_variable { // class for waiting for conditions
 public:
     using native_handle_type = _Cnd_t;
 
@@ -744,7 +744,7 @@ struct _UInt_is_zero {
     }
 };
 
-class timed_mutex { // class for timed mutual exclusion
+_EXPORT_STD class timed_mutex { // class for timed mutual exclusion
 public:
     timed_mutex() noexcept : _My_locked(0) {}
 
@@ -815,7 +815,7 @@ private:
     unsigned int _My_locked;
 };
 
-class recursive_timed_mutex { // class for recursive timed mutual exclusion
+_EXPORT_STD class recursive_timed_mutex { // class for recursive timed mutual exclusion
 public:
     recursive_timed_mutex() noexcept : _My_locked(0) {}
 

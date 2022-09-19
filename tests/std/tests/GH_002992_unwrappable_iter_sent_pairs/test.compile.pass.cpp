@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -39,8 +40,11 @@ void test_algorithms(Rng& rng) {
     }
 }
 
-template <class It, class Se>
-void test_unwrappable_pair() {
+template <class Rng>
+void test_unwrappable_range() {
+    using It = ranges::iterator_t<Rng>;
+    using Se = ranges::sentinel_t<Rng>;
+
     constexpr bool is_const_unwrappable = requires(const It& ci) {
         ci._Unwrapped();
     };
@@ -70,12 +74,15 @@ void test_unwrappable_pair() {
         noexcept(ranges::_Unwrap_sent<It>(declval<const Se&>())) == noexcept(declval<const Se&>()._Unwrapped()));
 
     // instantiate without calling
-    void (*p)(ranges::subrange<It, Se>&) = test_algorithms<ranges::subrange<It, Se>>;
+    void (*p)(Rng&) = test_algorithms<Rng>;
     (void) p;
 }
 
-template <class It, class Se>
-void test_not_unwrappable_pair() {
+template <class Rng>
+void test_not_unwrappable_range() {
+    using It = ranges::iterator_t<Rng>;
+    using Se = ranges::sentinel_t<Rng>;
+
     STATIC_ASSERT(!ranges::_Unwrappable_sentinel_for<Se, It>);
     STATIC_ASSERT(same_as<ranges::_Unwrap_iter_t<It, Se>, It>);
     STATIC_ASSERT(same_as<ranges::_Unwrap_iter_t<const It&, Se>, It>);
@@ -90,14 +97,14 @@ void test_not_unwrappable_pair() {
     STATIC_ASSERT(noexcept(ranges::_Unwrap_sent<It>(declval<const Se&>())));
 
     // instantiate without calling
-    void (*p)(ranges::subrange<It, Se>&) = test_algorithms<ranges::subrange<It, Se>>;
+    void (*p)(Rng&) = test_algorithms<Rng>;
     (void) p;
 }
 
 template <class Rng>
 void test_classic_range() {
-    test_unwrappable_pair<ranges::iterator_t<Rng>, ranges::sentinel_t<Rng>>();
-    test_unwrappable_pair<ranges::iterator_t<const Rng>, ranges::sentinel_t<const Rng>>();
+    test_unwrappable_range<Rng>();
+    test_unwrappable_range<const Rng>();
 }
 void test_classic_ranges() {
     test_classic_range<string>();
@@ -113,6 +120,10 @@ void test_classic_ranges() {
     test_classic_range<unordered_map<int, int>>();
     test_classic_range<vector<int>>();
     test_classic_range<filesystem::path>();
+
+#if _HAS_CXX23
+    test_classic_range<ranges::as_rvalue_view<string_view>>();
+#endif
 }
 
 struct Nontrivial {
@@ -130,23 +141,45 @@ struct Nontrivial {
     bool operator==(const Nontrivial&) const noexcept = default;
 };
 
+template <class Iter, class Sent>
+void test_unwrappable_views() {
+    using R = ranges::subrange<Iter, Sent>;
+
+    test_unwrappable_range<R>();
+
+#if _HAS_CXX23
+    test_unwrappable_range<ranges::as_rvalue_view<R>>();
+#endif
+}
+
+template <class Iter, class Sent>
+void test_not_unwrappable_views() {
+    using R = ranges::subrange<Iter, Sent>;
+
+    test_not_unwrappable_range<R>();
+
+#if _HAS_CXX23
+    test_not_unwrappable_range<ranges::as_rvalue_view<R>>();
+#endif
+}
+
 void test_both_unwrappable() {
     using test::contiguous, test::random, test::bidi, test::fwd, test::input;
 
     using sent_int = test::sentinel<int>;
     using sent_nt  = test::sentinel<Nontrivial>;
 
-    test_unwrappable_pair<test::iterator<contiguous, int>, sent_int>();
-    test_unwrappable_pair<test::iterator<random, int>, sent_int>();
-    test_unwrappable_pair<test::iterator<bidi, int>, sent_int>();
-    test_unwrappable_pair<test::iterator<fwd, int>, sent_int>();
-    test_unwrappable_pair<test::iterator<input, int>, sent_int>();
+    test_unwrappable_views<test::iterator<contiguous, int>, sent_int>();
+    test_unwrappable_views<test::iterator<random, int>, sent_int>();
+    test_unwrappable_views<test::iterator<bidi, int>, sent_int>();
+    test_unwrappable_views<test::iterator<fwd, int>, sent_int>();
+    test_unwrappable_views<test::iterator<input, int>, sent_int>();
 
-    test_unwrappable_pair<test::iterator<contiguous, Nontrivial>, sent_nt>();
-    test_unwrappable_pair<test::iterator<random, Nontrivial>, sent_nt>();
-    test_unwrappable_pair<test::iterator<bidi, Nontrivial>, sent_nt>();
-    test_unwrappable_pair<test::iterator<fwd, Nontrivial>, sent_nt>();
-    test_unwrappable_pair<test::iterator<input, Nontrivial>, sent_nt>();
+    test_unwrappable_views<test::iterator<contiguous, Nontrivial>, sent_nt>();
+    test_unwrappable_views<test::iterator<random, Nontrivial>, sent_nt>();
+    test_unwrappable_views<test::iterator<bidi, Nontrivial>, sent_nt>();
+    test_unwrappable_views<test::iterator<fwd, Nontrivial>, sent_nt>();
+    test_unwrappable_views<test::iterator<input, Nontrivial>, sent_nt>();
 }
 
 void test_iter_unwrappable() {
@@ -155,17 +188,17 @@ void test_iter_unwrappable() {
     using sent_int = test::sentinel<int, test::WrappedState::ignorant>;
     using sent_nt  = test::sentinel<Nontrivial, test::WrappedState::ignorant>;
 
-    test_not_unwrappable_pair<test::iterator<contiguous, int>, sent_int>();
-    test_not_unwrappable_pair<test::iterator<random, int>, sent_int>();
-    test_not_unwrappable_pair<test::iterator<bidi, int>, sent_int>();
-    test_not_unwrappable_pair<test::iterator<fwd, int>, sent_int>();
-    test_not_unwrappable_pair<test::iterator<input, int>, sent_int>();
+    test_not_unwrappable_views<test::iterator<contiguous, int>, sent_int>();
+    test_not_unwrappable_views<test::iterator<random, int>, sent_int>();
+    test_not_unwrappable_views<test::iterator<bidi, int>, sent_int>();
+    test_not_unwrappable_views<test::iterator<fwd, int>, sent_int>();
+    test_not_unwrappable_views<test::iterator<input, int>, sent_int>();
 
-    test_not_unwrappable_pair<test::iterator<contiguous, Nontrivial>, sent_nt>();
-    test_not_unwrappable_pair<test::iterator<random, Nontrivial>, sent_nt>();
-    test_not_unwrappable_pair<test::iterator<bidi, Nontrivial>, sent_nt>();
-    test_not_unwrappable_pair<test::iterator<fwd, Nontrivial>, sent_nt>();
-    test_not_unwrappable_pair<test::iterator<input, Nontrivial>, sent_nt>();
+    test_not_unwrappable_views<test::iterator<contiguous, Nontrivial>, sent_nt>();
+    test_not_unwrappable_views<test::iterator<random, Nontrivial>, sent_nt>();
+    test_not_unwrappable_views<test::iterator<bidi, Nontrivial>, sent_nt>();
+    test_not_unwrappable_views<test::iterator<fwd, Nontrivial>, sent_nt>();
+    test_not_unwrappable_views<test::iterator<input, Nontrivial>, sent_nt>();
 }
 
 void test_sent_unwrappable() {
@@ -174,17 +207,17 @@ void test_sent_unwrappable() {
     using sent_int = test::sentinel<int>;
     using sent_nt  = test::sentinel<Nontrivial>;
 
-    test_not_unwrappable_pair<test::iterator<contiguous, int>::unwrapping_ignorant, sent_int>();
-    test_not_unwrappable_pair<test::iterator<random, int>::unwrapping_ignorant, sent_int>();
-    test_not_unwrappable_pair<test::iterator<bidi, int>::unwrapping_ignorant, sent_int>();
-    test_not_unwrappable_pair<test::iterator<fwd, int>::unwrapping_ignorant, sent_int>();
-    test_not_unwrappable_pair<test::iterator<input, int>::unwrapping_ignorant, sent_int>();
+    test_not_unwrappable_views<test::iterator<contiguous, int>::unwrapping_ignorant, sent_int>();
+    test_not_unwrappable_views<test::iterator<random, int>::unwrapping_ignorant, sent_int>();
+    test_not_unwrappable_views<test::iterator<bidi, int>::unwrapping_ignorant, sent_int>();
+    test_not_unwrappable_views<test::iterator<fwd, int>::unwrapping_ignorant, sent_int>();
+    test_not_unwrappable_views<test::iterator<input, int>::unwrapping_ignorant, sent_int>();
 
-    test_not_unwrappable_pair<test::iterator<contiguous, Nontrivial>::unwrapping_ignorant, sent_nt>();
-    test_not_unwrappable_pair<test::iterator<random, Nontrivial>::unwrapping_ignorant, sent_nt>();
-    test_not_unwrappable_pair<test::iterator<bidi, Nontrivial>::unwrapping_ignorant, sent_nt>();
-    test_not_unwrappable_pair<test::iterator<fwd, Nontrivial>::unwrapping_ignorant, sent_nt>();
-    test_not_unwrappable_pair<test::iterator<input, Nontrivial>::unwrapping_ignorant, sent_nt>();
+    test_not_unwrappable_views<test::iterator<contiguous, Nontrivial>::unwrapping_ignorant, sent_nt>();
+    test_not_unwrappable_views<test::iterator<random, Nontrivial>::unwrapping_ignorant, sent_nt>();
+    test_not_unwrappable_views<test::iterator<bidi, Nontrivial>::unwrapping_ignorant, sent_nt>();
+    test_not_unwrappable_views<test::iterator<fwd, Nontrivial>::unwrapping_ignorant, sent_nt>();
+    test_not_unwrappable_views<test::iterator<input, Nontrivial>::unwrapping_ignorant, sent_nt>();
 }
 
 void test_neither_unwrappable() {
@@ -193,17 +226,17 @@ void test_neither_unwrappable() {
     using sent_int = test::sentinel<int, test::WrappedState::ignorant>;
     using sent_nt  = test::sentinel<Nontrivial, test::WrappedState::ignorant>;
 
-    test_not_unwrappable_pair<test::iterator<contiguous, int>::unwrapping_ignorant, sent_int>();
-    test_not_unwrappable_pair<test::iterator<random, int>::unwrapping_ignorant, sent_int>();
-    test_not_unwrappable_pair<test::iterator<bidi, int>::unwrapping_ignorant, sent_int>();
-    test_not_unwrappable_pair<test::iterator<fwd, int>::unwrapping_ignorant, sent_int>();
-    test_not_unwrappable_pair<test::iterator<input, int>::unwrapping_ignorant, sent_int>();
+    test_not_unwrappable_views<test::iterator<contiguous, int>::unwrapping_ignorant, sent_int>();
+    test_not_unwrappable_views<test::iterator<random, int>::unwrapping_ignorant, sent_int>();
+    test_not_unwrappable_views<test::iterator<bidi, int>::unwrapping_ignorant, sent_int>();
+    test_not_unwrappable_views<test::iterator<fwd, int>::unwrapping_ignorant, sent_int>();
+    test_not_unwrappable_views<test::iterator<input, int>::unwrapping_ignorant, sent_int>();
 
-    test_not_unwrappable_pair<test::iterator<contiguous, Nontrivial>::unwrapping_ignorant, sent_nt>();
-    test_not_unwrappable_pair<test::iterator<random, Nontrivial>::unwrapping_ignorant, sent_nt>();
-    test_not_unwrappable_pair<test::iterator<bidi, Nontrivial>::unwrapping_ignorant, sent_nt>();
-    test_not_unwrappable_pair<test::iterator<fwd, Nontrivial>::unwrapping_ignorant, sent_nt>();
-    test_not_unwrappable_pair<test::iterator<input, Nontrivial>::unwrapping_ignorant, sent_nt>();
+    test_not_unwrappable_views<test::iterator<contiguous, Nontrivial>::unwrapping_ignorant, sent_nt>();
+    test_not_unwrappable_views<test::iterator<random, Nontrivial>::unwrapping_ignorant, sent_nt>();
+    test_not_unwrappable_views<test::iterator<bidi, Nontrivial>::unwrapping_ignorant, sent_nt>();
+    test_not_unwrappable_views<test::iterator<fwd, Nontrivial>::unwrapping_ignorant, sent_nt>();
+    test_not_unwrappable_views<test::iterator<input, Nontrivial>::unwrapping_ignorant, sent_nt>();
 }
 
 int main() {} // COMPILE-ONLY

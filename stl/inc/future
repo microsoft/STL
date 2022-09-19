@@ -60,21 +60,21 @@ _NODISCARD _Unique_ptr_alloc<_Alloc> _Make_unique_alloc(_Alloc& _Al, _Args&&... 
 
 struct _Nil {}; // empty struct, for unused argument types
 
-enum class future_errc { // names for futures errors
+_EXPORT_STD enum class future_errc { // names for futures errors
     broken_promise = 1,
     future_already_retrieved,
     promise_already_satisfied,
     no_state
 };
 
-enum class launch { // names for launch options passed to async
+_EXPORT_STD enum class launch { // names for launch options passed to async
     async    = 0x1,
     deferred = 0x2
 };
 
-_BITMASK_OPS(launch)
+_BITMASK_OPS(_EXPORT_STD, launch)
 
-enum class future_status { // names for timed wait function returns
+_EXPORT_STD enum class future_status { // names for timed wait function returns
     ready,
     timeout,
     deferred
@@ -83,13 +83,13 @@ enum class future_status { // names for timed wait function returns
 template <>
 struct is_error_code_enum<future_errc> : true_type {};
 
-_NODISCARD const error_category& future_category() noexcept;
+_EXPORT_STD _NODISCARD const error_category& future_category() noexcept;
 
-_NODISCARD inline error_code make_error_code(future_errc _Ec) noexcept {
+_EXPORT_STD _NODISCARD inline error_code make_error_code(future_errc _Ec) noexcept {
     return error_code(static_cast<int>(_Ec), _STD future_category());
 }
 
-_NODISCARD inline error_condition make_error_condition(future_errc _Ec) noexcept {
+_EXPORT_STD _NODISCARD inline error_condition make_error_condition(future_errc _Ec) noexcept {
     return error_condition(static_cast<int>(_Ec), _STD future_category());
 }
 
@@ -112,7 +112,7 @@ _NODISCARD inline const char* _Future_error_map(int _Errcode) noexcept { // conv
     }
 }
 
-class future_error : public logic_error { // future exception
+_EXPORT_STD class future_error : public logic_error { // future exception
 public:
     explicit future_error(error_code _Errcode) // internal, TRANSITION, will be removed
         : logic_error(""), _Mycode(_Errcode) {}
@@ -161,7 +161,7 @@ public:
     }
 };
 
-_NODISCARD inline const error_category& future_category() noexcept {
+_EXPORT_STD _NODISCARD inline const error_category& future_category() noexcept {
     return _Immortalize_memcpy_image<_Future_error_category2>();
 }
 
@@ -880,10 +880,10 @@ private:
     bool _Get_only_once;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class shared_future;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class future : public _State_manager<_Ty> {
     // class that defines a non-copyable asynchronous return object that holds a value
 private:
@@ -986,7 +986,7 @@ public:
     future& operator=(const future&) = delete;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class shared_future : public _State_manager<_Ty> {
     // class that defines a copyable asynchronous return object that holds a value
 private:
@@ -1159,7 +1159,7 @@ private:
     bool _Future_retrieved;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class promise { // class that defines an asynchronous provider that holds a value
 public:
     static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
@@ -1335,7 +1335,7 @@ private:
 template <class _Ty, class _Alloc>
 struct uses_allocator<promise<_Ty>, _Alloc> : true_type {};
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void swap(promise<_Ty>& _Left, promise<_Ty>& _Right) noexcept {
     _Left.swap(_Right);
 }
@@ -1355,7 +1355,7 @@ struct _P_arg_type<void> { // type for functions returning void
     using type = int;
 };
 
-template <class>
+_EXPORT_STD template <class>
 class packaged_task; // not defined
 
 template <class _Ret, class... _ArgTypes>
@@ -1458,7 +1458,7 @@ template <class _Ty, class _Alloc>
 struct uses_allocator<packaged_task<_Ty>, _Alloc> : true_type {};
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void swap(packaged_task<_Ty>& _Left, packaged_task<_Ty>& _Right) noexcept {
     _Left.swap(_Right);
 }
@@ -1518,7 +1518,7 @@ _Associated_state<typename _P_arg_type<_Ret>::type>* _Get_associated_state(launc
     }
 }
 
-template <class _Fty, class... _ArgTypes>
+_EXPORT_STD template <class _Fty, class... _ArgTypes>
 _NODISCARD_ASYNC future<_Invoke_result_t<decay_t<_Fty>, decay_t<_ArgTypes>...>> async(
     launch _Policy, _Fty&& _Fnarg, _ArgTypes&&... _Args) {
     // manages a callable object launched with supplied policy
@@ -1531,7 +1531,7 @@ _NODISCARD_ASYNC future<_Invoke_result_t<decay_t<_Fty>, decay_t<_ArgTypes>...>> 
     return future<_Ret>(_Pr._Get_state_for_future(), _Nil{});
 }
 
-template <class _Fty, class... _ArgTypes>
+_EXPORT_STD template <class _Fty, class... _ArgTypes>
 _NODISCARD_ASYNC future<_Invoke_result_t<decay_t<_Fty>, decay_t<_ArgTypes>...>> async(
     _Fty&& _Fnarg, _ArgTypes&&... _Args) {
     // manages a callable object launched with default policy

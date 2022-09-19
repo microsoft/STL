@@ -28,6 +28,7 @@ lit_config.library_dirs[config.name]     = ['@STL_LIBRARY_OUTPUT_DIRECTORY@', '@
 lit_config.test_subdirs[config.name]     = ['@CMAKE_CURRENT_SOURCE_DIR@/tests']
 
 lit_config.cxx_headers = '@STL_TESTED_HEADERS_DIR@'
+lit_config.cxx_modules = '@STL_TESTED_MODULES_DIR@'
 lit_config.cxx_runtime = '@STL_RUNTIME_OUTPUT_DIRECTORY@'
 lit_config.target_arch = '@VCLIBS_TARGET_ARCHITECTURE@'
 lit_config.build_only  = '@TESTS_BUILD_ONLY@'.lower() in ['1', 'true', 'on']

@@ -17,7 +17,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-enum class errc { // names for generic error codes
+_EXPORT_STD enum class errc { // names for generic error codes
     address_family_not_supported       = 102, // EAFNOSUPPORT
     address_in_use                     = 100, // EADDRINUSE
     address_not_available              = 101, // EADDRNOTAVAIL

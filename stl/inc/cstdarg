@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-using ::va_list;
+_EXPORT_STD using ::va_list;
 _STD_END
 
 #pragma pop_macro("new")

@@ -31,10 +31,10 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 #if _HAS_CXX20
-class jthread;
+_EXPORT_STD class jthread;
 #endif // _HAS_CXX20
 
-class thread { // class for observing and managing threads
+_EXPORT_STD class thread { // class for observing and managing threads
 public:
     class id;
 
@@ -62,19 +62,16 @@ private:
         return &_Invoke<_Tuple, _Indices...>;
     }
 
+#pragma warning(push) // pointer or reference to potentially throwing function passed to 'extern "C"' function under
+#pragma warning(disable : 5039) // -EHc. Undefined behavior may occur if this function throws an exception. (/Wall)
     template <class _Fn, class... _Args>
     void _Start(_Fn&& _Fx, _Args&&... _Ax) {
         using _Tuple                 = tuple<decay_t<_Fn>, decay_t<_Args>...>;
         auto _Decay_copied           = _STD make_unique<_Tuple>(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
         constexpr auto _Invoker_proc = _Get_invoke<_Tuple>(make_index_sequence<1 + sizeof...(_Args)>{});
 
-#pragma warning(push)
-#pragma warning(disable : 5039) // pointer or reference to potentially throwing function passed to
-                                // extern C function under -EHc. Undefined behavior may occur
-                                // if this function throws an exception. (/Wall)
         _Thr._Hnd =
             reinterpret_cast<void*>(_CSTD _beginthreadex(nullptr, 0, _Invoker_proc, _Decay_copied.get(), 0, &_Thr._Id));
-#pragma warning(pop)
 
         if (_Thr._Hnd) { // ownership transferred to the thread
             (void) _Decay_copied.release();
@@ -83,6 +80,7 @@ private:
             _Throw_Cpp_error(_RESOURCE_UNAVAILABLE_TRY_AGAIN);
         }
     }
+#pragma warning(pop)
 
 public:
     template <class _Fn, class... _Args, enable_if_t<!is_same_v<_Remove_cvref_t<_Fn>, thread>, int> = 0>
@@ -174,9 +172,9 @@ _NODISCARD auto _To_absolute_time(const chrono::duration<_Rep, _Period>& _Rel_ti
 }
 
 namespace this_thread {
-    _NODISCARD thread::id get_id() noexcept;
+    _EXPORT_STD _NODISCARD thread::id get_id() noexcept;
 
-    inline void yield() noexcept {
+    _EXPORT_STD inline void yield() noexcept {
         _Thrd_yield();
     }
 
@@ -184,7 +182,7 @@ namespace this_thread {
         _Thrd_sleep(_Abs_time);
     }
 
-    template <class _Clock, class _Duration>
+    _EXPORT_STD template <class _Clock, class _Duration>
     void sleep_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
@@ -201,7 +199,7 @@ namespace this_thread {
         }
     }
 
-    template <class _Rep, class _Period>
+    _EXPORT_STD template <class _Rep, class _Period>
     void sleep_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         sleep_until(_To_absolute_time(_Rel_time));
     }
@@ -233,20 +231,20 @@ _NODISCARD inline thread::id thread::get_id() const noexcept {
     return _Thr._Id;
 }
 
-_NODISCARD inline thread::id this_thread::get_id() noexcept {
+_EXPORT_STD _NODISCARD inline thread::id this_thread::get_id() noexcept {
     return _Thrd_id();
 }
 
-inline void swap(thread& _Left, thread& _Right) noexcept {
+_EXPORT_STD inline void swap(thread& _Left, thread& _Right) noexcept {
     _Left.swap(_Right);
 }
 
-_NODISCARD inline bool operator==(thread::id _Left, thread::id _Right) noexcept {
+_EXPORT_STD _NODISCARD inline bool operator==(thread::id _Left, thread::id _Right) noexcept {
     return _Left._Id == _Right._Id;
 }
 
 #if _HAS_CXX20
-_NODISCARD inline strong_ordering operator<=>(thread::id _Left, thread::id _Right) noexcept {
+_EXPORT_STD _NODISCARD inline strong_ordering operator<=>(thread::id _Left, thread::id _Right) noexcept {
     return _Left._Id <=> _Right._Id;
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
@@ -271,7 +269,7 @@ _NODISCARD inline bool operator>=(thread::id _Left, thread::id _Right) noexcept 
 }
 #endif // !_HAS_CXX20
 
-template <class _Ch, class _Tr>
+_EXPORT_STD template <class _Ch, class _Tr>
 basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _Id) {
     return _Str << _Id._Id;
 }
@@ -287,7 +285,7 @@ struct hash<thread::id> {
 };
 
 #if _HAS_CXX20
-class jthread {
+_EXPORT_STD class jthread {
 public:
     using id                 = thread::id;
     using native_handle_type = thread::native_handle_type;

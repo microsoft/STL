@@ -71,7 +71,7 @@ inline constexpr size_t _Oversubmission_multiplier   = 4;
 inline constexpr size_t _Still_active                = static_cast<size_t>(-1);
 
 namespace execution {
-    class sequenced_policy {
+    _EXPORT_STD class sequenced_policy {
         // indicates support for only sequential execution, and requests termination on exceptions
     public:
         using _Standard_execution_policy   = int;
@@ -79,9 +79,9 @@ namespace execution {
         static constexpr bool _Ivdep       = false;
     };
 
-    inline constexpr sequenced_policy seq{/* unspecified */};
+    _EXPORT_STD inline constexpr sequenced_policy seq{/* unspecified */};
 
-    class parallel_policy {
+    _EXPORT_STD class parallel_policy {
         // indicates support by element access functions for parallel execution with parallel forward progress
         // guarantees, and requests termination on exceptions
     public:
@@ -90,9 +90,9 @@ namespace execution {
         static constexpr bool _Ivdep       = true;
     };
 
-    inline constexpr parallel_policy par{/* unspecified */};
+    _EXPORT_STD inline constexpr parallel_policy par{/* unspecified */};
 
-    class parallel_unsequenced_policy {
+    _EXPORT_STD class parallel_unsequenced_policy {
         // indicates support by element access functions for parallel execution with weakly parallel forward progress
         // guarantees, and requests termination on exceptions
         //
@@ -103,10 +103,10 @@ namespace execution {
         static constexpr bool _Ivdep       = true;
     };
 
-    inline constexpr parallel_unsequenced_policy par_unseq{/* unspecified */};
+    _EXPORT_STD inline constexpr parallel_unsequenced_policy par_unseq{/* unspecified */};
 
 #if _HAS_CXX20
-    class unsequenced_policy {
+    _EXPORT_STD class unsequenced_policy {
         // indicates support by element access functions for weakly parallel forward progress guarantees, and for
         // executing interleaved on the same thread, and requests termination on exceptions
         //
@@ -117,7 +117,7 @@ namespace execution {
         static constexpr bool _Ivdep       = true;
     };
 
-    inline constexpr unsequenced_policy unseq{/* unspecified */};
+    _EXPORT_STD inline constexpr unsequenced_policy unseq{/* unspecified */};
 #endif // _HAS_CXX20
 
 } // namespace execution
@@ -472,7 +472,7 @@ struct _Parallel_choose_max_chunk {
     }
 };
 
-template <class _Ty>
+_EXPORT_STD /* TRANSITION, VSO-1592329 */ template <class _Ty>
 struct alignas(_Ty) alignas(size_t) alignas(_Atomic_counter_t) _Circular_buffer { // work stealing deque extent type
     static_assert(is_trivial_v<_Ty>, "Work stealing deques work only with trivial operations");
 
@@ -1109,7 +1109,7 @@ bool _All_of_family_parallel(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     return true;
 }
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD bool all_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // test if all elements in [_First, _Last) satisfy _Pred with the indicated execution policy
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
@@ -1123,7 +1123,7 @@ _NODISCARD bool all_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept
     }
 }
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD bool any_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // test if any element in [_First, _Last) satisfies _Pred with the indicated execution policy
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
@@ -1137,7 +1137,7 @@ _NODISCARD bool any_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pr
     }
 }
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD bool none_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // test if no element in [_First, _Last) satisfies _Pred with the indicated execution policy
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
@@ -1186,7 +1186,7 @@ struct _Static_partitioned_for_each2 { // for_each task scheduled on the system 
     }
 };
 
-template <class _ExPo, class _FwdIt, class _Fn, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Fn, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void for_each(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* terminates */ {
     // perform function for each element [_First, _Last) with the indicated execution policy
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
@@ -1232,7 +1232,7 @@ _FwdIt _For_each_n_ivdep(_FwdIt _First, _Diff _Count, _Fn _Func) {
     return _First;
 }
 
-template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt for_each_n(_ExPo&&, _FwdIt _First, const _Diff _Count_raw, _Fn _Func) noexcept /* terminates */ {
     // perform function for each element [_First, _First + _Count)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
@@ -1334,7 +1334,7 @@ _FwdIt _Find_parallel_unchecked(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
     return _Fx(_First, _Last);
 }
 
-template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept /* terminates */ {
     // find first matching _Val
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
@@ -1346,7 +1346,7 @@ _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _
     return _First;
 }
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find first satisfying _Pred
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
@@ -1359,7 +1359,7 @@ _NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr 
     return _First;
 }
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _FwdIt find_if_not(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find first satisfying !_Pred
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
@@ -1516,7 +1516,8 @@ struct _Static_partitioned_find_end_backward3 {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _FwdIt1 find_end(_ExPo&&, _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2,
     _Pr _Pred) noexcept /* terminates */ {
     // find last [_First2, _Last2) satisfying _Pred
@@ -1574,7 +1575,8 @@ _NODISCARD _FwdIt1 find_end(_ExPo&&, _FwdIt1 _First1, const _FwdIt1 _Last1, cons
     return _First1;
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
     // look for one of [_First2, _Last2) that matches element
@@ -1641,7 +1643,7 @@ struct _Static_partitioned_adjacent_find3 {
     }
 };
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _FwdIt adjacent_find(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find first satisfying _Pred with successor
     _Adl_verify_range(_First, _Last);
@@ -1699,7 +1701,7 @@ struct _Static_partitioned_count_if2 {
     }
 };
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _Iter_diff_t<_FwdIt> count_if(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept
 /* terminates */ {
     // count elements satisfying _Pred
@@ -1734,7 +1736,7 @@ _NODISCARD _Iter_diff_t<_FwdIt> count_if(_ExPo&&, const _FwdIt _First, const _Fw
     return _STD count_if(_UFirst, _ULast, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _Iter_diff_t<_FwdIt> count(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept
 /* terminates */ {
     // count elements that match _Val
@@ -1861,7 +1863,8 @@ struct _Static_partitioned_mismatch3 {
 #pragma warning(push)
 #pragma warning(disable : 4868) // compiler may not enforce left-to-right evaluation order
                                 // in braced initializer list (/Wall)
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) noexcept /* terminates */ {
     // return [_First1, _Last1)/[_First2, ...) mismatch
@@ -1903,7 +1906,8 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 }
 #pragma warning(pop)
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
     // return [_First1, _Last1)/[_First2, _Last2) mismatch
@@ -1980,7 +1984,8 @@ struct _Static_partitioned_equal2 {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, _Pr _Pred) noexcept
 /* terminates */ {
     // compare [_First1, _Last1) to [_First2, ...)
@@ -2013,7 +2018,8 @@ _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, cons
     return _STD equal(_UFirst1, _ULast1, _First2, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2,
     _Pr _Pred) noexcept /* terminates */ {
     // compare [_First1, _Last1) to [_First2, _Last2)
@@ -2099,7 +2105,8 @@ struct _Static_partitioned_search3 {
     }
 };
 
-template <class _ExPo, class _FwdItHaystack, class _FwdItPat, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdItHaystack, class _FwdItPat, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _FwdItHaystack search(_ExPo&&, const _FwdItHaystack _First1, _FwdItHaystack _Last1, const _FwdItPat _First2,
     const _FwdItPat _Last2, _Pr _Pred) noexcept /* terminates */ {
     // find first [_First2, _Last2) match
@@ -2228,7 +2235,8 @@ struct _Static_partitioned_search_n3 {
     }
 };
 
-template <class _ExPo, class _FwdIt, class _Diff, class _Ty, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _Ty, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _FwdIt search_n(_ExPo&&, const _FwdIt _First, _FwdIt _Last, const _Diff _Count_raw, const _Ty& _Val,
     _Pr _Pred) noexcept /* terminates */ {
     // find first _Count * _Val satisfying _Pred
@@ -2304,7 +2312,8 @@ struct _Static_partitioned_unary_transform2 {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Fn, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Fn,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 transform(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Fn _Func) noexcept
 /* terminates */ {
     // transform [_First, _Last) with _Func
@@ -2382,7 +2391,7 @@ struct _Static_partitioned_binary_transform2 {
 #pragma warning(push)
 #pragma warning(disable : 4868) // compiler may not enforce left-to-right evaluation order
                                 // in braced initializer list (/Wall)
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Fn,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Fn,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt3 transform(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, _FwdIt3 _Dest,
     _Fn _Func) noexcept /* terminates */ {
@@ -2428,7 +2437,7 @@ _FwdIt3 transform(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _F
 }
 #pragma warning(pop)
 
-template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void replace(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval, const _Ty& _Newval) noexcept
 /* terminates */ {
     // replace each matching _Oldval with _Newval
@@ -2440,7 +2449,7 @@ void replace(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& 
     });
 }
 
-template <class _ExPo, class _FwdIt, class _Pr, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void replace_if(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred, const _Ty& _Val) noexcept
 /* terminates */ {
     // replace each satisfying _Pred with _Val
@@ -2564,7 +2573,7 @@ struct _Static_partitioned_remove_if2 {
     }
 };
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD_REMOVE_ALG _FwdIt remove_if(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept
 /* terminates */ {
     // remove each satisfying _Pred
@@ -2592,7 +2601,7 @@ _NODISCARD_REMOVE_ALG _FwdIt remove_if(_ExPo&&, _FwdIt _First, const _FwdIt _Las
     return _First;
 }
 
-template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD_REMOVE_ALG _FwdIt remove(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept
 /* terminates */ {
     // remove each matching _Val
@@ -2703,7 +2712,7 @@ struct _Sort_operation { // context for background threads
     }
 };
 
-template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void sort(_ExPo&&, const _RanIt _First, const _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // order [_First, _Last)
     _Adl_verify_range(_First, _Last);
@@ -2960,7 +2969,7 @@ struct _Static_partitioned_stable_sort3 {
     }
 };
 
-template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // sort preserving order of equivalents
     _Adl_verify_range(_First, _Last);
@@ -3047,7 +3056,7 @@ struct _Static_partitioned_is_sorted_until2 {
     }
 };
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _FwdIt is_sorted_until(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find extent of range that is ordered by predicate
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
@@ -3201,7 +3210,7 @@ struct _Static_partitioned_is_partitioned {
     }
 };
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD bool is_partitioned(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // test if [_First, _Last) is partitioned by _Pred
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
@@ -3273,7 +3282,7 @@ struct _Static_partitioned_is_heap_until2 {
     }
 };
 
-template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _RanIt is_heap_until(_ExPo&&, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find extent of range that is a heap
     _REQUIRE_PARALLEL_ITERATOR(_RanIt);
@@ -3522,7 +3531,7 @@ struct _Static_partitioned_partition2 {
     }
 };
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt partition(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // move elements satisfying _Pred to beginning of sequence
     _Adl_verify_range(_First, _Last);
@@ -3851,7 +3860,7 @@ struct _Set_intersection_per_chunk {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt3 set_intersection(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept /* terminates */ {
@@ -3943,7 +3952,7 @@ struct _Set_difference_per_chunk {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt3 set_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept /* terminates */ {
@@ -4048,7 +4057,8 @@ struct _Static_partitioned_reduce2 {
     }
 };
 
-template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, class _BinOp,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _Ty reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Ty _Val, _BinOp _Reduce_op) noexcept
 /* terminates */ {
     // return commutative and associative reduction of _Val and [_First, _Last), using _Reduce_op
@@ -4147,7 +4157,7 @@ struct _Static_partitioned_transform_reduce_binary2 { // transform-reduction tas
 #pragma warning(push)
 #pragma warning(disable : 4868) // compiler may not enforce left-to-right evaluation order
                                 // in braced initializer list (/Wall)
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp1, class _BinOp2,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp1, class _BinOp2,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _Ty transform_reduce(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Ty _Val, _BinOp1 _Reduce_op,
     _BinOp2 _Transform_op) noexcept /* terminates */ {
@@ -4243,7 +4253,7 @@ struct _Static_partitioned_transform_reduce2 { // transformed reduction task sch
     }
 };
 
-template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, class _UnaryOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Ty _Val, _BinOp _Reduce_op,
     _UnaryOp _Transform_op) noexcept /* terminates */ {
@@ -4393,7 +4403,7 @@ struct _Static_partitioned_exclusive_scan2 {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Ty _Val,
     _BinOp _Reduce_op) noexcept /* terminates */ {
@@ -4522,7 +4532,7 @@ struct _Static_partitioned_inclusive_scan2 {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty _Val) noexcept
 /* terminates */ {
@@ -4566,7 +4576,8 @@ _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _B
     return _Dest;
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op) noexcept
 /* terminates */ {
     // compute partial noncommutative and associative reductions into _Dest, using _Reduce_op
@@ -4709,7 +4720,7 @@ struct _Static_partitioned_transform_exclusive_scan2 {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 transform_exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Ty _Val,
     _BinOp _Reduce_op, _UnaryOp _Transform_op) noexcept /* terminates */ {
@@ -4840,7 +4851,7 @@ struct _Static_partitioned_transform_inclusive_scan2 {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op,
     _UnaryOp _Transform_op, _Ty _Val) noexcept /* terminates */ {
@@ -4886,7 +4897,7 @@ _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
     return _Dest;
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op,
     _UnaryOp _Transform_op) noexcept /* terminates */ {
@@ -4988,7 +4999,8 @@ _FwdIt2 _Adjacent_difference_seq(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _D
     return _Dest;
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 adjacent_difference(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Diff_op) noexcept
 /* terminates */ {
     // compute adjacent differences into _Dest

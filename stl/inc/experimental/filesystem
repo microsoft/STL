@@ -89,7 +89,7 @@ enum class copy_options { // names for copy options
     _Unspecified_recursion_prevention_tag = 512
 };
 
-_BITMASK_OPS(copy_options)
+_BITMASK_OPS(_EMPTY_ARGUMENT, copy_options)
 
 enum class directory_options { // names for directory options
     none = 0,
@@ -121,7 +121,7 @@ enum class perms { // names for permissions
     resolve_symlinks = 0x40000
 };
 
-_BITMASK_OPS(perms)
+_BITMASK_OPS(_EMPTY_ARGUMENT, perms)
 
 class file_status { // stores file status
 public:

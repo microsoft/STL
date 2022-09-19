@@ -20,6 +20,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+_EXTERN_C
+
 using __std_tzdb_epoch_milli = double;
 
 struct __std_tzdb_leap_info {
@@ -63,8 +65,6 @@ struct __std_tzdb_sys_info {
     int32_t _Save;
     const char* _Abbrev;
 };
-
-_EXTERN_C
 
 _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noexcept;
 void __stdcall __std_tzdb_delete_time_zones(__std_tzdb_time_zones_info* _Info) noexcept;

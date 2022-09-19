@@ -26,6 +26,10 @@ struct TestEnvironmentPreparer {
         // set stdout to be unbuffered; see GH-789
         setvbuf(stdout, nullptr, _IONBF, 0);
     }
+
+    [[nodiscard]] bool succeeded() const noexcept {
+        return true;
+    }
 };
 
 const TestEnvironmentPreparer test_environment_preparer{};
