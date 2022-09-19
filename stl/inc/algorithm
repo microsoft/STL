@@ -260,7 +260,7 @@ namespace ranges {
     };
 
 #if _HAS_CXX23
-    template <class _It, class _Ty>
+    _EXPORT_STD template <class _It, class _Ty>
     struct in_value_result {
         /* [[no_unique_address]] */ _It in;
         /* [[no_unique_address]] */ _Ty value;
@@ -2634,10 +2634,10 @@ namespace ranges {
     template <class _Fn, class _Ty, class _It>
     concept _Indirectly_binary_right_foldable = _Indirectly_binary_left_foldable<_Flipped<_Fn>, _Ty, _It>;
 
-    template <class _It, class _Ty>
+    _EXPORT_STD template <class _It, class _Ty>
     using fold_left_with_iter_result = in_value_result<_It, _Ty>;
 
-    template <class _It, class _Ty>
+    _EXPORT_STD template <class _It, class _Ty>
     using fold_left_first_with_iter_result = in_value_result<_It, _Ty>;
 
     class _Fold_left_with_iter_fn : private _Not_quite_object {
@@ -2684,7 +2684,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Fold_left_with_iter_fn fold_left_with_iter{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Fold_left_with_iter_fn fold_left_with_iter{_Not_quite_object::_Construct_tag{}};
 
     class _Fold_left_fn : private _Not_quite_object {
     public:
@@ -2701,7 +2701,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Fold_left_fn fold_left{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Fold_left_fn fold_left{_Not_quite_object::_Construct_tag{}};
 
     class _Fold_left_first_with_iter_fn : private _Not_quite_object {
     public:
@@ -2754,7 +2754,8 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Fold_left_first_with_iter_fn fold_left_first_with_iter{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Fold_left_first_with_iter_fn fold_left_first_with_iter{
+        _Not_quite_object::_Construct_tag{}};
 
     class _Fold_left_first_fn : private _Not_quite_object {
     public:
@@ -2778,7 +2779,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Fold_left_first_fn fold_left_first{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Fold_left_first_fn fold_left_first{_Not_quite_object::_Construct_tag{}};
 
     template <class _It, class _Se, class _Ty, class _Fn>
     _NODISCARD constexpr auto _Fold_right_unchecked(_It _First, _Se _Last, _Ty _Init, _Fn _Func) {
@@ -2817,7 +2818,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Fold_right_fn fold_right{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Fold_right_fn fold_right{_Not_quite_object::_Construct_tag{}};
 
     class _Fold_right_last_fn : private _Not_quite_object {
     public:
@@ -2862,7 +2863,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Fold_right_last_fn fold_right_last{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Fold_right_last_fn fold_right_last{_Not_quite_object::_Construct_tag{}};
 #endif // _HAS_CXX23
 } // namespace ranges
 #endif // __cpp_lib_concepts
