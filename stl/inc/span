@@ -27,7 +27,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
+_EXPORT_STD inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 
 template <class _Ty>
 struct _Span_iterator {
@@ -222,10 +222,10 @@ struct _Span_extent_type<_Ty, dynamic_extent> {
     size_t _Mysize{0};
 };
 
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 class array;
 
-template <class _Ty, size_t _Extent>
+_EXPORT_STD template <class _Ty, size_t _Extent>
 class span;
 
 #ifdef __cpp_lib_concepts
@@ -303,7 +303,7 @@ inline constexpr bool _Is_span_compatible_range = conjunction_v< //
 #endif // !__cpp_lib_concepts
 
 // [views.span]
-template <class _Ty, size_t _Extent = dynamic_extent>
+_EXPORT_STD template <class _Ty, size_t _Extent = dynamic_extent>
 class span : private _Span_extent_type<_Ty, _Extent> {
 private:
     using _Mybase = _Span_extent_type<_Ty, _Extent>;
@@ -662,13 +662,13 @@ span(const _Rng&) -> span<const typename _Rng::value_type>;
 
 #ifdef __cpp_lib_byte
 // [span.objectrep] Views of object representation
-template <class _Ty, size_t _Extent>
+_EXPORT_STD template <class _Ty, size_t _Extent>
 _NODISCARD auto as_bytes(span<_Ty, _Extent> _Sp) noexcept {
     using _ReturnType = span<const byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent>;
     return _ReturnType{reinterpret_cast<const byte*>(_Sp.data()), _Sp.size_bytes()};
 }
 
-template <class _Ty, size_t _Extent, enable_if_t<!is_const_v<_Ty>, int> = 0>
+_EXPORT_STD template <class _Ty, size_t _Extent, enable_if_t<!is_const_v<_Ty>, int> = 0>
 _NODISCARD auto as_writable_bytes(span<_Ty, _Extent> _Sp) noexcept {
     using _ReturnType = span<byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent>;
     return _ReturnType{reinterpret_cast<byte*>(_Sp.data()), _Sp.size_bytes()};

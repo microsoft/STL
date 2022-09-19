@@ -274,17 +274,17 @@ inline constexpr bool _Might_have_non_value_bits =
     !has_unique_object_representations_v<_Ty> && !is_floating_point_v<_Ty>;
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 
-extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
+_EXPORT_STD extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
     ::_Atomic_thread_fence(static_cast<unsigned int>(_Order));
 }
 
-extern "C" inline void atomic_signal_fence(const memory_order _Order) noexcept {
+_EXPORT_STD extern "C" inline void atomic_signal_fence(const memory_order _Order) noexcept {
     if (_Order != memory_order_relaxed) {
         _Compiler_barrier();
     }
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty kill_dependency(_Ty _Arg) noexcept { // "magic" template that kills dependency ordering when called
     return _Arg;
 }
@@ -2084,7 +2084,7 @@ template <class _TVal, class _Ty = _TVal>
 using _Choose_atomic_base_t = _Choose_atomic_base2_t<_TVal, _Ty>;
 #endif // _HAS_CXX20
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct atomic : _Choose_atomic_base_t<_Ty> { // atomic value
 private:
     using _Base = _Choose_atomic_base_t<_Ty>;
@@ -2263,7 +2263,7 @@ atomic(_Ty) -> atomic<_Ty>;
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct atomic_ref : _Choose_atomic_base_t<_Ty, _Ty&> { // atomic reference
 private:
     using _Base = _Choose_atomic_base_t<_Ty, _Ty&>;
@@ -2372,382 +2372,382 @@ private:
 };
 #endif // _HAS_CXX20
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD bool atomic_is_lock_free(const volatile atomic<_Ty>* _Mem) noexcept {
     return _Mem->is_lock_free();
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD bool atomic_is_lock_free(const atomic<_Ty>* _Mem) noexcept {
     return _Mem->is_lock_free();
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void atomic_store(volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     _Mem->store(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void atomic_store(atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noexcept {
     _Mem->store(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void atomic_store_explicit(
     volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value, const memory_order _Order) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     _Mem->store(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void atomic_store_explicit(atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value, const memory_order _Order) noexcept {
     _Mem->store(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
     volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     _STD atomic_store_explicit(_Mem, _Value, memory_order_relaxed);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
     atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
     _STD atomic_store_explicit(_Mem, _Value, memory_order_relaxed);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Ty atomic_load(const volatile atomic<_Ty>* const _Mem) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->load();
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Ty atomic_load(const atomic<_Ty>* const _Mem) noexcept {
     return _Mem->load();
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Ty atomic_load_explicit(const volatile atomic<_Ty>* const _Mem, const memory_order _Order) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->load(_Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Ty atomic_load_explicit(const atomic<_Ty>* const _Mem, const memory_order _Order) noexcept {
     return _Mem->load(_Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_exchange(volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->exchange(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_exchange(atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noexcept {
     return _Mem->exchange(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_exchange_explicit(
     volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value, const memory_order _Order) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->exchange(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_exchange_explicit(
     atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value, const memory_order _Order) noexcept {
     return _Mem->exchange(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 bool atomic_compare_exchange_strong(
     volatile atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected, const _Identity_t<_Ty> _Desired) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->compare_exchange_strong(*_Expected, _Desired);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 bool atomic_compare_exchange_strong(
     atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected, const _Identity_t<_Ty> _Desired) noexcept {
     return _Mem->compare_exchange_strong(*_Expected, _Desired);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 bool atomic_compare_exchange_strong_explicit(volatile atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected,
     const _Identity_t<_Ty> _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->compare_exchange_strong(*_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 bool atomic_compare_exchange_strong_explicit(atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected,
     const _Identity_t<_Ty> _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
     return _Mem->compare_exchange_strong(*_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 bool atomic_compare_exchange_weak(
     volatile atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected, const _Identity_t<_Ty> _Desired) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->compare_exchange_strong(*_Expected, _Desired);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 bool atomic_compare_exchange_weak(
     atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected, const _Identity_t<_Ty> _Desired) noexcept {
     return _Mem->compare_exchange_strong(*_Expected, _Desired);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 bool atomic_compare_exchange_weak_explicit(volatile atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected,
     const _Identity_t<_Ty> _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->compare_exchange_strong(*_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 bool atomic_compare_exchange_weak_explicit(atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected,
     const _Identity_t<_Ty> _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
     return _Mem->compare_exchange_strong(*_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_add(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_add(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_add(atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value) noexcept {
     return _Mem->fetch_add(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_add_explicit(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value,
     const memory_order _Order) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_add(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_add_explicit(
     atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value, const memory_order _Order) noexcept {
     return _Mem->fetch_add(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_sub(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_sub(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_sub(atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value) noexcept {
     return _Mem->fetch_sub(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_sub_explicit(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value,
     const memory_order _Order) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_sub(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_sub_explicit(
     atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value, const memory_order _Order) noexcept {
     return _Mem->fetch_sub(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_and(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_and(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_and(atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
     return _Mem->fetch_and(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_and_explicit(
     volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_and(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_and_explicit(
     atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
     return _Mem->fetch_and(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_or(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_or(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_or(atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
     return _Mem->fetch_or(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_or_explicit(
     volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_or(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_or_explicit(
     atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
     return _Mem->fetch_or(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_xor(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_xor(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_xor(atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
     return _Mem->fetch_xor(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_xor_explicit(
     volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_xor(_Value, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty atomic_fetch_xor_explicit(
     atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
     return _Mem->fetch_xor(_Value, _Order);
 }
 
 #if _HAS_CXX20
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void atomic_wait(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept
 /* strengthened */ {
     _Mem->wait(_Expected);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void atomic_wait(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept
 /* strengthened */ {
     _Mem->wait(_Expected);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void atomic_wait_explicit(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected,
     const memory_order _Order) noexcept /* strengthened */ {
     _Mem->wait(_Expected, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void atomic_wait_explicit(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected,
     const memory_order _Order) noexcept /* strengthened */ {
     _Mem->wait(_Expected, _Order);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void atomic_notify_one(volatile atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
     _Mem->notify_one();
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void atomic_notify_one(atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
     _Mem->notify_one();
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void atomic_notify_all(volatile atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
     _Mem->notify_all();
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void atomic_notify_all(atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
     _Mem->notify_all();
 }
 #endif // _HAS_CXX20
 
-using atomic_bool = atomic<bool>;
+_EXPORT_STD using atomic_bool = atomic<bool>;
 
-using atomic_char   = atomic<char>;
-using atomic_schar  = atomic<signed char>;
-using atomic_uchar  = atomic<unsigned char>;
-using atomic_short  = atomic<short>;
-using atomic_ushort = atomic<unsigned short>;
-using atomic_int    = atomic<int>;
-using atomic_uint   = atomic<unsigned int>;
-using atomic_long   = atomic<long>;
-using atomic_ulong  = atomic<unsigned long>;
-using atomic_llong  = atomic<long long>;
-using atomic_ullong = atomic<unsigned long long>;
+_EXPORT_STD using atomic_char   = atomic<char>;
+_EXPORT_STD using atomic_schar  = atomic<signed char>;
+_EXPORT_STD using atomic_uchar  = atomic<unsigned char>;
+_EXPORT_STD using atomic_short  = atomic<short>;
+_EXPORT_STD using atomic_ushort = atomic<unsigned short>;
+_EXPORT_STD using atomic_int    = atomic<int>;
+_EXPORT_STD using atomic_uint   = atomic<unsigned int>;
+_EXPORT_STD using atomic_long   = atomic<long>;
+_EXPORT_STD using atomic_ulong  = atomic<unsigned long>;
+_EXPORT_STD using atomic_llong  = atomic<long long>;
+_EXPORT_STD using atomic_ullong = atomic<unsigned long long>;
 
 #ifdef __cpp_lib_char8_t
-using atomic_char8_t = atomic<char8_t>;
+_EXPORT_STD using atomic_char8_t = atomic<char8_t>;
 #endif // __cpp_lib_char8_t
-using atomic_char16_t = atomic<char16_t>;
-using atomic_char32_t = atomic<char32_t>;
-using atomic_wchar_t  = atomic<wchar_t>;
+_EXPORT_STD using atomic_char16_t = atomic<char16_t>;
+_EXPORT_STD using atomic_char32_t = atomic<char32_t>;
+_EXPORT_STD using atomic_wchar_t  = atomic<wchar_t>;
 
-using atomic_int8_t   = atomic<int8_t>;
-using atomic_uint8_t  = atomic<uint8_t>;
-using atomic_int16_t  = atomic<int16_t>;
-using atomic_uint16_t = atomic<uint16_t>;
-using atomic_int32_t  = atomic<int32_t>;
-using atomic_uint32_t = atomic<uint32_t>;
-using atomic_int64_t  = atomic<int64_t>;
-using atomic_uint64_t = atomic<uint64_t>;
+_EXPORT_STD using atomic_int8_t   = atomic<int8_t>;
+_EXPORT_STD using atomic_uint8_t  = atomic<uint8_t>;
+_EXPORT_STD using atomic_int16_t  = atomic<int16_t>;
+_EXPORT_STD using atomic_uint16_t = atomic<uint16_t>;
+_EXPORT_STD using atomic_int32_t  = atomic<int32_t>;
+_EXPORT_STD using atomic_uint32_t = atomic<uint32_t>;
+_EXPORT_STD using atomic_int64_t  = atomic<int64_t>;
+_EXPORT_STD using atomic_uint64_t = atomic<uint64_t>;
 
-using atomic_int_least8_t   = atomic<int_least8_t>;
-using atomic_uint_least8_t  = atomic<uint_least8_t>;
-using atomic_int_least16_t  = atomic<int_least16_t>;
-using atomic_uint_least16_t = atomic<uint_least16_t>;
-using atomic_int_least32_t  = atomic<int_least32_t>;
-using atomic_uint_least32_t = atomic<uint_least32_t>;
-using atomic_int_least64_t  = atomic<int_least64_t>;
-using atomic_uint_least64_t = atomic<uint_least64_t>;
+_EXPORT_STD using atomic_int_least8_t   = atomic<int_least8_t>;
+_EXPORT_STD using atomic_uint_least8_t  = atomic<uint_least8_t>;
+_EXPORT_STD using atomic_int_least16_t  = atomic<int_least16_t>;
+_EXPORT_STD using atomic_uint_least16_t = atomic<uint_least16_t>;
+_EXPORT_STD using atomic_int_least32_t  = atomic<int_least32_t>;
+_EXPORT_STD using atomic_uint_least32_t = atomic<uint_least32_t>;
+_EXPORT_STD using atomic_int_least64_t  = atomic<int_least64_t>;
+_EXPORT_STD using atomic_uint_least64_t = atomic<uint_least64_t>;
 
-using atomic_int_fast8_t   = atomic<int_fast8_t>;
-using atomic_uint_fast8_t  = atomic<uint_fast8_t>;
-using atomic_int_fast16_t  = atomic<int_fast16_t>;
-using atomic_uint_fast16_t = atomic<uint_fast16_t>;
-using atomic_int_fast32_t  = atomic<int_fast32_t>;
-using atomic_uint_fast32_t = atomic<uint_fast32_t>;
-using atomic_int_fast64_t  = atomic<int_fast64_t>;
-using atomic_uint_fast64_t = atomic<uint_fast64_t>;
+_EXPORT_STD using atomic_int_fast8_t   = atomic<int_fast8_t>;
+_EXPORT_STD using atomic_uint_fast8_t  = atomic<uint_fast8_t>;
+_EXPORT_STD using atomic_int_fast16_t  = atomic<int_fast16_t>;
+_EXPORT_STD using atomic_uint_fast16_t = atomic<uint_fast16_t>;
+_EXPORT_STD using atomic_int_fast32_t  = atomic<int_fast32_t>;
+_EXPORT_STD using atomic_uint_fast32_t = atomic<uint_fast32_t>;
+_EXPORT_STD using atomic_int_fast64_t  = atomic<int_fast64_t>;
+_EXPORT_STD using atomic_uint_fast64_t = atomic<uint_fast64_t>;
 
-using atomic_intptr_t  = atomic<intptr_t>;
-using atomic_uintptr_t = atomic<uintptr_t>;
-using atomic_size_t    = atomic<size_t>;
-using atomic_ptrdiff_t = atomic<ptrdiff_t>;
-using atomic_intmax_t  = atomic<intmax_t>;
-using atomic_uintmax_t = atomic<uintmax_t>;
+_EXPORT_STD using atomic_intptr_t  = atomic<intptr_t>;
+_EXPORT_STD using atomic_uintptr_t = atomic<uintptr_t>;
+_EXPORT_STD using atomic_size_t    = atomic<size_t>;
+_EXPORT_STD using atomic_ptrdiff_t = atomic<ptrdiff_t>;
+_EXPORT_STD using atomic_intmax_t  = atomic<intmax_t>;
+_EXPORT_STD using atomic_uintmax_t = atomic<uintmax_t>;
 
 #if _HAS_CXX20
 // Though there are CMPXCHG8B and CMPXCHG16B,
 // the largest atomics with a full set of efficient operations are pointer-sized.
-using atomic_signed_lock_free   = atomic_intptr_t;
-using atomic_unsigned_lock_free = atomic_uintptr_t;
+_EXPORT_STD using atomic_signed_lock_free   = atomic_intptr_t;
+_EXPORT_STD using atomic_unsigned_lock_free = atomic_uintptr_t;
 #endif // _HAS_CXX20
 
 #define ATOMIC_FLAG_INIT \
     {}
 
-struct atomic_flag { // flag with test-and-set semantics
+_EXPORT_STD struct atomic_flag { // flag with test-and-set semantics
 #if _HAS_CXX20
     _NODISCARD bool test(const memory_order _Order = memory_order_seq_cst) const noexcept {
         return _Storage.load(_Order) != 0;
@@ -2811,88 +2811,92 @@ struct atomic_flag { // flag with test-and-set semantics
 
 
 #if _HAS_CXX20
-_NODISCARD inline bool atomic_flag_test(const volatile atomic_flag* const _Flag) noexcept {
+_EXPORT_STD _NODISCARD inline bool atomic_flag_test(const volatile atomic_flag* const _Flag) noexcept {
     return _Flag->test();
 }
 
-_NODISCARD inline bool atomic_flag_test(const atomic_flag* const _Flag) noexcept {
+_EXPORT_STD _NODISCARD inline bool atomic_flag_test(const atomic_flag* const _Flag) noexcept {
     return _Flag->test();
 }
 
-_NODISCARD inline bool atomic_flag_test_explicit(
+_EXPORT_STD _NODISCARD inline bool atomic_flag_test_explicit(
     const volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
     return _Flag->test(_Order);
 }
 
-_NODISCARD inline bool atomic_flag_test_explicit(const atomic_flag* const _Flag, const memory_order _Order) noexcept {
+_EXPORT_STD _NODISCARD inline bool atomic_flag_test_explicit(
+    const atomic_flag* const _Flag, const memory_order _Order) noexcept {
     return _Flag->test(_Order);
 }
 #endif // _HAS_CXX20
 
-inline bool atomic_flag_test_and_set(atomic_flag* const _Flag) noexcept {
+_EXPORT_STD inline bool atomic_flag_test_and_set(atomic_flag* const _Flag) noexcept {
     return _Flag->test_and_set();
 }
 
-inline bool atomic_flag_test_and_set(volatile atomic_flag* const _Flag) noexcept {
+_EXPORT_STD inline bool atomic_flag_test_and_set(volatile atomic_flag* const _Flag) noexcept {
     return _Flag->test_and_set();
 }
 
-inline bool atomic_flag_test_and_set_explicit(atomic_flag* const _Flag, const memory_order _Order) noexcept {
+_EXPORT_STD inline bool atomic_flag_test_and_set_explicit(
+    atomic_flag* const _Flag, const memory_order _Order) noexcept {
     return _Flag->test_and_set(_Order);
 }
 
-inline bool atomic_flag_test_and_set_explicit(volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
+_EXPORT_STD inline bool atomic_flag_test_and_set_explicit(
+    volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
     return _Flag->test_and_set(_Order);
 }
 
-inline void atomic_flag_clear(atomic_flag* const _Flag) noexcept {
+_EXPORT_STD inline void atomic_flag_clear(atomic_flag* const _Flag) noexcept {
     _Flag->clear();
 }
 
-inline void atomic_flag_clear(volatile atomic_flag* const _Flag) noexcept {
+_EXPORT_STD inline void atomic_flag_clear(volatile atomic_flag* const _Flag) noexcept {
     _Flag->clear();
 }
 
-inline void atomic_flag_clear_explicit(atomic_flag* const _Flag, const memory_order _Order) noexcept {
+_EXPORT_STD inline void atomic_flag_clear_explicit(atomic_flag* const _Flag, const memory_order _Order) noexcept {
     _Flag->clear(_Order);
 }
 
-inline void atomic_flag_clear_explicit(volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
+_EXPORT_STD inline void atomic_flag_clear_explicit(
+    volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
     _Flag->clear(_Order);
 }
 
 #if _HAS_CXX20
-inline void atomic_flag_wait(const volatile atomic_flag* const _Flag, const bool _Expected) noexcept {
+_EXPORT_STD inline void atomic_flag_wait(const volatile atomic_flag* const _Flag, const bool _Expected) noexcept {
     return _Flag->wait(_Expected);
 }
 
-inline void atomic_flag_wait(const atomic_flag* const _Flag, const bool _Expected) noexcept {
+_EXPORT_STD inline void atomic_flag_wait(const atomic_flag* const _Flag, const bool _Expected) noexcept {
     return _Flag->wait(_Expected);
 }
 
-inline void atomic_flag_wait_explicit(
+_EXPORT_STD inline void atomic_flag_wait_explicit(
     const volatile atomic_flag* const _Flag, const bool _Expected, const memory_order _Order) noexcept {
     return _Flag->wait(_Expected, _Order);
 }
 
-inline void atomic_flag_wait_explicit(
+_EXPORT_STD inline void atomic_flag_wait_explicit(
     const atomic_flag* const _Flag, const bool _Expected, const memory_order _Order) noexcept {
     return _Flag->wait(_Expected, _Order);
 }
 
-inline void atomic_flag_notify_one(volatile atomic_flag* const _Flag) noexcept {
+_EXPORT_STD inline void atomic_flag_notify_one(volatile atomic_flag* const _Flag) noexcept {
     return _Flag->notify_one();
 }
 
-inline void atomic_flag_notify_one(atomic_flag* const _Flag) noexcept {
+_EXPORT_STD inline void atomic_flag_notify_one(atomic_flag* const _Flag) noexcept {
     return _Flag->notify_one();
 }
 
-inline void atomic_flag_notify_all(volatile atomic_flag* const _Flag) noexcept {
+_EXPORT_STD inline void atomic_flag_notify_all(volatile atomic_flag* const _Flag) noexcept {
     return _Flag->notify_all();
 }
 
-inline void atomic_flag_notify_all(atomic_flag* const _Flag) noexcept {
+_EXPORT_STD inline void atomic_flag_notify_all(atomic_flag* const _Flag) noexcept {
     return _Flag->notify_all();
 }
 

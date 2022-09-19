@@ -25,7 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-template <class _Err>
+_EXPORT_STD template <class _Err>
 class unexpected;
 
 template <class _Err>
@@ -39,7 +39,7 @@ struct _Check_unexpected_argument : true_type {
 };
 
 // [expected.un.general]
-template <class _Err>
+_EXPORT_STD template <class _Err>
 class unexpected {
     static_assert(_Check_unexpected_argument<_Err>::value);
 
@@ -110,7 +110,7 @@ private:
 template <class _Err>
 unexpected(_Err) -> unexpected<_Err>;
 
-template <class _Err>
+_EXPORT_STD template <class _Err>
 class bad_expected_access;
 
 template <>
@@ -134,7 +134,7 @@ protected:
 #endif // !_HAS_EXCEPTIONS
 };
 
-template <class _Err>
+_EXPORT_STD template <class _Err>
 class bad_expected_access : public bad_expected_access<void> {
 public:
     explicit bad_expected_access(_Err _Unex) noexcept(is_nothrow_move_constructible_v<_Err>) // strengthened
@@ -157,13 +157,11 @@ private:
     _Err _Unexpected;
 };
 
-struct unexpect_t {
-    explicit unexpect_t() = default;
-};
+_EXPORT_STD struct unexpect_t { explicit unexpect_t() = default; };
 
-inline constexpr unexpect_t unexpect{};
+_EXPORT_STD inline constexpr unexpect_t unexpect{};
 
-template <class _Ty, class _Err>
+_EXPORT_STD template <class _Ty, class _Err>
 class expected {
     static_assert(!is_reference_v<_Ty>, "T must not be a reference type. (N4910 [expected.object.general]/2)");
     static_assert(!is_function_v<_Ty>, "T must not be a function type. (N4910 [expected.object.general]/2)");

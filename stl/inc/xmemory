@@ -300,7 +300,7 @@ _CONSTEXPR20 void _Destroy_in_place(_Ty& _Obj) noexcept {
 }
 
 #if _HAS_CXX17
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _CONSTEXPR20 void destroy_at(_Ty* const _Location) noexcept /* strengthened */ {
 #if _HAS_CXX20
     if constexpr (is_array_v<_Ty>) {
@@ -450,7 +450,7 @@ struct _Get_rebind_type<_Ty, _Other, void_t<typename _Ty::template rebind<_Other
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class allocator;
 
 template <class _Alloc, class = void>
@@ -514,7 +514,7 @@ template <class _Alloc>
 struct _Has_select_on_container_copy_construction<_Alloc,
     void_t<decltype(_STD declval<const _Alloc&>().select_on_container_copy_construction())>> : true_type {};
 
-template <class _Alloc>
+_EXPORT_STD template <class _Alloc>
 struct allocator_traits;
 
 _STL_DISABLE_DEPRECATED_WARNING
@@ -699,7 +699,7 @@ struct _Default_allocator_traits { // traits for std::allocator
     }
 };
 
-template <class _Alloc>
+_EXPORT_STD template <class _Alloc>
 struct allocator_traits : conditional_t<_Is_default_allocator<_Alloc>::value, _Default_allocator_traits<_Alloc>,
                               _Normal_allocator_traits<_Alloc>> {};
 
@@ -750,7 +750,7 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
 };
 
 #if _HAS_CXX23
-template <class _Ptr>
+_EXPORT_STD template <class _Ptr>
 struct allocation_result {
     _Ptr ptr;
     size_t count;
@@ -762,7 +762,7 @@ concept _Has_member_allocate_at_least = requires(_Alloc _Al, size_t _Count) {
     _Al.allocate_at_least(_Count);
 };
 
-template <class _Alloc>
+_EXPORT_STD template <class _Alloc>
 _NODISCARD constexpr allocation_result<typename allocator_traits<_Alloc>::pointer> allocate_at_least(
     _Alloc& _Al, const size_t _Count) {
     if constexpr (_Has_member_allocate_at_least<_Alloc>) {
@@ -777,7 +777,7 @@ _NODISCARD constexpr allocation_result<typename allocator_traits<_Alloc>::pointe
 // The number of user bytes a single byte of ASAN shadow memory can track.
 _INLINE_VAR constexpr size_t _Asan_granularity = 8;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class allocator {
 public:
     static_assert(!is_const_v<_Ty>, "The C++ Standard forbids containers of const elements "
@@ -891,7 +891,7 @@ public:
 };
 #endif // _HAS_DEPRECATED_ALLOCATOR_VOID || _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
-template <class _Ty, class _Other>
+_EXPORT_STD template <class _Ty, class _Other>
 _NODISCARD _CONSTEXPR20 bool operator==(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
     return true;
 }
@@ -1604,7 +1604,7 @@ namespace ranges {
         return {_STD move(_IFirst), _STD move(_OFirst)};
     }
 
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using uninitialized_move_result = in_out_result<_In, _Out>;
 
     // clang-format off
@@ -1772,7 +1772,7 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _In
     return _Backout._Release();
 }
 
-template <class _InIt, class _NoThrowFwdIt>
+_EXPORT_STD template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // copy [_First, _Last) to raw [_Dest, ...)
     _Adl_verify_range(_First, _Last);
@@ -1843,7 +1843,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
     return _Backout._Release();
 }
 
-template <class _NoThrowFwdIt, class _Tval>
+_EXPORT_STD template <class _NoThrowFwdIt, class _Tval>
 void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, const _Tval& _Val) {
     // copy _Val throughout raw [_First, _Last)
     _Adl_verify_range(_First, _Last);
@@ -1923,12 +1923,12 @@ _NoThrowFwdIt _Uninitialized_value_construct_n_unchecked1(_NoThrowFwdIt _UFirst,
 }
 
 #if _HAS_DEPRECATED_TEMPORARY_BUFFER
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _CXX17_DEPRECATE_TEMPORARY_BUFFER _NODISCARD pair<_Ty*, ptrdiff_t> get_temporary_buffer(ptrdiff_t _Count) noexcept {
     return _Get_temporary_buffer<_Ty>(_Count);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _CXX17_DEPRECATE_TEMPORARY_BUFFER void return_temporary_buffer(_Ty* _Pbuf) {
     _Return_temporary_buffer(_Pbuf);
 }
@@ -2040,7 +2040,7 @@ _NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _R
     }
 }
 
-template <class _FwdIt, class _Ty>
+_EXPORT_STD template <class _FwdIt, class _Ty>
 _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
     // remove each matching _Val
     _Adl_verify_range(_First, _Last);
@@ -2061,7 +2061,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
     return _First;
 }
 
-template <class _FwdIt, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // remove each satisfying _Pred
     _Adl_verify_range(_First, _Last);
@@ -2145,7 +2145,7 @@ template <class _Ty, class _Uty>
 _INLINE_VAR constexpr bool _Is_normally_bindable<_Ty, _Uty, void_t<_Normally_bound_ref<_Ty, _Uty>>> = true;
 
 #if _HAS_CXX20
-template <class _Ty, class _Alloc, class... _Types, enable_if_t<!_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class... _Types, enable_if_t<!_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Types&&... _Args) noexcept {
     if constexpr (!uses_allocator_v<_Ty, _Alloc>) {
         static_assert(is_constructible_v<_Ty, _Types...>,
@@ -2164,34 +2164,40 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _T
     }
 }
 
-template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept;
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept;
 
 #if _HAS_CXX23
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>& _Pair) noexcept;
 #endif // _HAS_CXX23
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept;
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept;
 
 #if _HAS_CXX23
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>&& _Pair) noexcept;
 #endif // _HAS_CXX23
 
-template <class _Ty, class _Alloc, class _Uty,
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty,
     enable_if_t<_Is_specialization_v<_Ty, pair> && !_Is_deducible_as_pair<_Uty&>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept;
 
-template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, piecewise_construct_t, _Tuple1&& _Tup1, _Tuple2&& _Tup2) noexcept {
     return _STD make_tuple(piecewise_construct,
@@ -2209,7 +2215,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
             _STD forward<_Tuple2>(_Tup2)));
 }
 
-template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_EXPORT_STD template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct, tuple<>{}, tuple<>{});
@@ -2217,7 +2223,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) no
         _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al));
 }
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2228,7 +2235,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
 }
 
 #if _HAS_CXX23
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>& _Pair) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2239,7 +2247,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pa
 }
 #endif // _HAS_CXX23
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept {
     // equivalent to
@@ -2250,7 +2259,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
         _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _Pair.second));
 }
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2261,7 +2271,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pa
 }
 
 #if _HAS_CXX23
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>&& _Pair) noexcept {
     // equivalent to
@@ -2273,7 +2284,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
 }
 #endif // _HAS_CXX23
 
-template <class _Ty, class _Alloc, class _Uty,
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty,
     enable_if_t<_Is_specialization_v<_Ty, pair> && !_Is_deducible_as_pair<_Uty&>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
     struct _Pair_remaker {
@@ -2310,12 +2321,12 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
     return tuple<_Pair_remaker>({_Al, _Ux});
 }
 
-template <class _Ty, class _Alloc, class... _Types>
+_EXPORT_STD template <class _Ty, class _Alloc, class... _Types>
 _NODISCARD constexpr _Ty make_obj_using_allocator(const _Alloc& _Al, _Types&&... _Args) {
     return _STD make_from_tuple<_Ty>(_STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
 }
 
-template <class _Ty, class _Alloc, class... _Types>
+_EXPORT_STD template <class _Ty, class _Alloc, class... _Types>
 constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& _Al, _Types&&... _Args) {
     return _STD apply(
         [&](auto&&... _Construct_args) {
@@ -2326,10 +2337,8 @@ constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& 
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-struct from_range_t {
-    explicit from_range_t() = default;
-};
-inline constexpr from_range_t from_range;
+_EXPORT_STD struct from_range_t { explicit from_range_t() = default; };
+_EXPORT_STD inline constexpr from_range_t from_range;
 
 template <class _Rng, class _Elem>
 concept _Container_compatible_range =
@@ -2385,7 +2394,7 @@ protected:
     }
 };
 
-inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t& _Space) noexcept /* strengthened */ {
+_EXPORT_STD inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t& _Space) noexcept /* strengthened */ {
     // try to carve out _Size bytes on boundary _Bound
     size_t _Off = static_cast<size_t>(reinterpret_cast<uintptr_t>(_Ptr) & (_Bound - 1));
     if (_Off != 0) {
