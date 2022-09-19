@@ -1681,16 +1681,16 @@ template <class _Ty1, class _Ty2>
 concept _Not_same_as = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
 
 #if _HAS_CXX23
-template <indirectly_readable _Ty>
+_EXPORT_STD template <indirectly_readable _Ty>
 using iter_const_reference_t = common_reference_t<const iter_value_t<_Ty>&&, iter_reference_t<_Ty>>;
 
 template <class _Ty>
 concept _Constant_iterator = input_iterator<_Ty> && same_as<iter_const_reference_t<_Ty>, iter_reference_t<_Ty>>;
 
-template <input_iterator _Iter>
+_EXPORT_STD template <input_iterator _Iter>
 class basic_const_iterator;
 
-template <input_iterator _Iter>
+_EXPORT_STD template <input_iterator _Iter>
 using const_iterator = conditional_t<_Constant_iterator<_Iter>, _Iter, basic_const_iterator<_Iter>>;
 
 template <class _Sent>
@@ -1703,7 +1703,7 @@ struct _Const_sentinel<_Sent> {
     using type = const_iterator<_Sent>;
 };
 
-template <class _Sent>
+_EXPORT_STD template <class _Sent>
 using const_sentinel = typename _Const_sentinel<_Sent>::type;
 
 template <class _Ty>
@@ -1729,7 +1729,7 @@ template <class _Ty, class _Iter>
 concept _Not_bci_order =
     _Not_a_const_iterator<_Ty> && random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Ty>;
 
-template <input_iterator _Iter>
+_EXPORT_STD template <input_iterator _Iter>
 class basic_const_iterator : public _Basic_const_iterator_category<_Iter> {
 private:
     /* [[no_unique_address]] */ _Iter _Current{};
@@ -1990,13 +1990,13 @@ struct common_type<basic_const_iterator<_Ty1>, basic_const_iterator<_Ty2>> {
     using type = basic_const_iterator<common_type_t<_Ty1, _Ty2>>;
 };
 
-template <input_iterator _Iter>
+_EXPORT_STD template <input_iterator _Iter>
 _NODISCARD constexpr const_iterator<_Iter> make_const_iterator(_Iter _It) noexcept(
     is_nothrow_constructible_v<const_iterator<_Iter>, _Iter>) /* strengthened */ {
     return _It;
 }
 
-template <class _Sent>
+_EXPORT_STD template <class _Sent>
 _NODISCARD constexpr const_sentinel<_Sent> make_const_sentinel(_Sent _Se) noexcept(
     is_nothrow_constructible_v<const_sentinel<_Sent>, _Sent>) /* strengthened */ {
     return _Se;
