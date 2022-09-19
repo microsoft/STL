@@ -66,7 +66,7 @@ protected:
     bool _Sync_recorded{false};
 };
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 class basic_syncbuf : public _Basic_syncbuf_impl<_Elem, _Traits> {
 public:
     using int_type       = typename _Traits::int_type;
@@ -308,12 +308,12 @@ private:
     _Compressed_pair<_Alloc, shared_mutex*> _Mypair{_Zero_then_variadic_args_t{}, nullptr};
 };
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) {
     _Left.swap(_Right);
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 class basic_osyncstream : public basic_ostream<_Elem, _Traits> {
 public:
     using char_type      = _Elem;

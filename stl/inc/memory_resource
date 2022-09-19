@@ -35,7 +35,7 @@ namespace pmr {
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_set_default_resource(memory_resource*) noexcept;
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Unaligned_set_default_resource(memory_resource*) noexcept;
 
-    inline memory_resource* set_default_resource(memory_resource* const _Resource) noexcept {
+    _EXPORT_STD inline memory_resource* set_default_resource(memory_resource* const _Resource) noexcept {
 #ifdef __cpp_aligned_new
         return _Aligned_set_default_resource(_Resource);
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
@@ -43,7 +43,7 @@ namespace pmr {
 #endif // __cpp_aligned_new
     }
 
-    extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept;
+    _EXPORT_STD extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept;
 
     class _Identity_equal_resource : public memory_resource {
     protected:
@@ -92,13 +92,13 @@ namespace pmr {
 
     extern "C" _CRT_SATELLITE_1 _Aligned_new_delete_resource_impl* __cdecl _Aligned_new_delete_resource() noexcept;
 
-    _NODISCARD inline memory_resource* new_delete_resource() noexcept {
+    _EXPORT_STD _NODISCARD inline memory_resource* new_delete_resource() noexcept {
         return _Aligned_new_delete_resource();
     }
 
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
 
-    _NODISCARD inline memory_resource* new_delete_resource() noexcept {
+    _EXPORT_STD _NODISCARD inline memory_resource* new_delete_resource() noexcept {
         return _Unaligned_new_delete_resource();
     }
 #endif // __cpp_aligned_new
@@ -215,7 +215,7 @@ namespace pmr {
         _Link_type* _Head = nullptr;
     };
 
-    struct pool_options {
+    _EXPORT_STD struct pool_options {
         size_t max_blocks_per_chunk        = 0;
         size_t largest_required_pool_block = 0;
     };
@@ -227,7 +227,7 @@ namespace pmr {
         (void) _Align;
     }
 
-    struct unsynchronized_pool_resource : _Identity_equal_resource {
+    _EXPORT_STD struct unsynchronized_pool_resource : _Identity_equal_resource {
         unsynchronized_pool_resource() noexcept { // initialize pool with default options and default upstream
             _Setup_options();
         }
@@ -566,7 +566,7 @@ namespace pmr {
     };
 
 #ifndef _M_CEE
-    class synchronized_pool_resource : public unsynchronized_pool_resource {
+    _EXPORT_STD class synchronized_pool_resource : public unsynchronized_pool_resource {
     public:
         using unsynchronized_pool_resource::unsynchronized_pool_resource;
 
@@ -591,7 +591,7 @@ namespace pmr {
     };
 #endif // _M_CEE
 
-    class monotonic_buffer_resource : public _Identity_equal_resource {
+    _EXPORT_STD class monotonic_buffer_resource : public _Identity_equal_resource {
     public:
         explicit monotonic_buffer_resource(memory_resource* const _Upstream) noexcept // strengthened
             : _Resource{_Upstream} {} // initialize this resource with upstream

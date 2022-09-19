@@ -403,7 +403,7 @@ struct pointer_traits<_Array_iterator<_Ty, _Size>> {
 };
 #endif // _HAS_CXX20
 
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 class array { // fixed size array of values
 public:
     using value_type      = _Ty;
@@ -762,12 +762,12 @@ public:
         _Elems[1];
 };
 
-template <class _Ty, size_t _Size, enable_if_t<_Size == 0 || _Is_swappable<_Ty>::value, int> = 0>
+_EXPORT_STD template <class _Ty, size_t _Size, enable_if_t<_Size == 0 || _Is_swappable<_Ty>::value, int> = 0>
 _CONSTEXPR20 void swap(array<_Ty, _Size>& _Left, array<_Ty, _Size>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator==(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
 #ifdef __EDG__ // TRANSITION, VSO-1161663
     return _STD equal(_Left.begin(), _Left.end(), _Right.begin());
@@ -784,7 +784,7 @@ _NODISCARD bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Siz
 #endif // !_HAS_CXX20
 
 #ifdef __cpp_lib_concepts
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
 #ifdef __EDG__ // TRANSITION, VSO-1161663
@@ -835,7 +835,7 @@ _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> _To_array_rvalue_impl(
     return {{_STD move(_Array[_Idx])...}};
 }
 
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty (&_Array)[_Size]) {
     static_assert(!is_array_v<_Ty>, "N4830 [array.creation]/1: "
                                     "to_array does not accept multidimensional arrays.");
@@ -844,7 +844,7 @@ _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty (&_Array)[_Size
     return _To_array_lvalue_impl(_Array, make_index_sequence<_Size>{});
 }
 
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty (&&_Array)[_Size]) {
     static_assert(!is_array_v<_Ty>, "N4830 [array.creation]/4: "
                                     "to_array does not accept multidimensional arrays.");
@@ -854,25 +854,25 @@ _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty (&&_Array)[_Siz
 }
 #endif // _HAS_CXX20
 
-template <size_t _Idx, class _Ty, size_t _Size>
+_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty& get(array<_Ty, _Size>& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");
     return _Arr._Elems[_Idx];
 }
 
-template <size_t _Idx, class _Ty, size_t _Size>
+_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr const _Ty& get(const array<_Ty, _Size>& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");
     return _Arr._Elems[_Idx];
 }
 
-template <size_t _Idx, class _Ty, size_t _Size>
+_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");
     return _STD move(_Arr._Elems[_Idx]);
 }
 
-template <size_t _Idx, class _Ty, size_t _Size>
+_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");
     return _STD move(_Arr._Elems[_Idx]);

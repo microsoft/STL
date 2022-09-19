@@ -29,7 +29,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-class latch {
+_EXPORT_STD class latch {
 public:
     _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
         return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;

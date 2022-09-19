@@ -255,6 +255,16 @@ foreach(header ${HEADERS})
     configure_file("${header}" "${PROJECT_BINARY_DIR}/out/inc/${_header_path}" COPYONLY)
 endforeach()
 
+set(IXX_FILES
+    ${CMAKE_CURRENT_LIST_DIR}/modules/std.ixx
+    ${CMAKE_CURRENT_LIST_DIR}/modules/std.compat.ixx
+)
+
+foreach(ixx_file ${IXX_FILES})
+    file(RELATIVE_PATH _ixx_file_path "${CMAKE_CURRENT_LIST_DIR}/modules" "${ixx_file}")
+    configure_file("${ixx_file}" "${PROJECT_BINARY_DIR}/out/modules/${_ixx_file_path}" COPYONLY)
+endforeach()
+
 # Objs that implement aliases; these are completely independent of the configuration
 set(ALIAS_SOURCES_X86_X64
     ${CMAKE_CURRENT_LIST_DIR}/src/alias_init_once_begin_initialize.asm

@@ -24,7 +24,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <class _Ty, class _Container = deque<_Ty>>
+_EXPORT_STD template <class _Ty, class _Container = deque<_Ty>>
 class queue {
 public:
     using value_type      = typename _Container::value_type;
@@ -177,45 +177,45 @@ queue(from_range_t, _Rng&&, _Alloc = _Alloc())
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
-template <class _Ty, class _Container>
+_EXPORT_STD template <class _Ty, class _Container>
 _NODISCARD bool operator==(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
     return _Left._Get_container() == _Right._Get_container();
 }
 
-template <class _Ty, class _Container>
+_EXPORT_STD template <class _Ty, class _Container>
 _NODISCARD bool operator!=(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
     return _Left._Get_container() != _Right._Get_container();
 }
 
-template <class _Ty, class _Container>
+_EXPORT_STD template <class _Ty, class _Container>
 _NODISCARD bool operator<(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
     return _Left._Get_container() < _Right._Get_container();
 }
 
-template <class _Ty, class _Container>
+_EXPORT_STD template <class _Ty, class _Container>
 _NODISCARD bool operator>(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
     return _Left._Get_container() > _Right._Get_container();
 }
 
-template <class _Ty, class _Container>
+_EXPORT_STD template <class _Ty, class _Container>
 _NODISCARD bool operator<=(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
     return _Left._Get_container() <= _Right._Get_container();
 }
 
-template <class _Ty, class _Container>
+_EXPORT_STD template <class _Ty, class _Container>
 _NODISCARD bool operator>=(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
     return _Left._Get_container() >= _Right._Get_container();
 }
 
 #ifdef __cpp_lib_concepts
-template <class _Ty, three_way_comparable _Container>
+_EXPORT_STD template <class _Ty, three_way_comparable _Container>
 _NODISCARD compare_three_way_result_t<_Container> operator<=>(
     const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
     return _Left._Get_container() <=> _Right._Get_container();
 }
 #endif // __cpp_lib_concepts
 
-template <class _Ty, class _Container, enable_if_t<_Is_swappable<_Container>::value, int> = 0>
+_EXPORT_STD template <class _Ty, class _Container, enable_if_t<_Is_swappable<_Container>::value, int> = 0>
 void swap(queue<_Ty, _Container>& _Left, queue<_Ty, _Container>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
@@ -223,7 +223,7 @@ void swap(queue<_Ty, _Container>& _Left, queue<_Ty, _Container>& _Right) noexcep
 template <class _Ty, class _Container, class _Alloc>
 struct uses_allocator<queue<_Ty, _Container>, _Alloc> : uses_allocator<_Container, _Alloc>::type {};
 
-template <class _Ty, class _Container = vector<_Ty>, class _Pr = less<typename _Container::value_type>>
+_EXPORT_STD template <class _Ty, class _Container = vector<_Ty>, class _Pr = less<typename _Container::value_type>>
 class priority_queue {
 public:
     using value_type      = typename _Container::value_type;
@@ -457,7 +457,7 @@ priority_queue(from_range_t, _Rng&&, _Alloc)
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
-template <class _Ty, class _Container, class _Pr,
+_EXPORT_STD template <class _Ty, class _Container, class _Pr,
     enable_if_t<_Is_swappable<_Container>::value && _Is_swappable<_Pr>::value, int> = 0>
 void swap(priority_queue<_Ty, _Container, _Pr>& _Left, priority_queue<_Ty, _Container, _Pr>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {

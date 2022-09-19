@@ -21,9 +21,10 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 #if _HAS_DEPRECATED_UNCAUGHT_EXCEPTION
-_CXX17_DEPRECATE_UNCAUGHT_EXCEPTION _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL uncaught_exception() noexcept;
+_EXPORT_STD extern "C++" _CXX17_DEPRECATE_UNCAUGHT_EXCEPTION _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL
+    uncaught_exception() noexcept;
 #endif // _HAS_DEPRECATED_UNCAUGHT_EXCEPTION
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL uncaught_exceptions() noexcept;
+_EXPORT_STD extern "C++" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL uncaught_exceptions() noexcept;
 
 _STD_END
 
@@ -34,13 +35,16 @@ _STD_END
 
 _STD_BEGIN
 
-using ::terminate;
+_EXPORT_STD class exception;
+_EXPORT_STD class bad_exception;
+
+_EXPORT_STD using ::terminate;
 
 #ifndef _M_CEE_PURE
-using ::set_terminate;
-using ::terminate_handler;
+_EXPORT_STD using ::set_terminate;
+_EXPORT_STD using ::terminate_handler;
 
-_NODISCARD inline terminate_handler __CRTDECL get_terminate() noexcept {
+_EXPORT_STD _NODISCARD inline terminate_handler __CRTDECL get_terminate() noexcept {
     // get current terminate handler
     return _get_terminate();
 }
@@ -70,7 +74,7 @@ _STDEXT_END
 
 _STD_BEGIN
 
-using _STDEXT exception;
+_EXPORT_STD using _STDEXT exception;
 
 using _Prhand = void(__cdecl*)(const exception&);
 
@@ -158,19 +162,19 @@ public:
 _STDEXT_END
 
 _STD_BEGIN
-using terminate_handler = void(__cdecl*)();
+_EXPORT_STD using terminate_handler = void(__cdecl*)();
 
-inline terminate_handler __CRTDECL set_terminate(terminate_handler) noexcept {
+_EXPORT_STD inline terminate_handler __CRTDECL set_terminate(terminate_handler) noexcept {
     // register a terminate handler
     return nullptr;
 }
 
-[[noreturn]] inline void __CRTDECL terminate() noexcept {
+_EXPORT_STD [[noreturn]] inline void __CRTDECL terminate() noexcept {
     // handle exception termination
     _CSTD abort();
 }
 
-_NODISCARD inline terminate_handler __CRTDECL get_terminate() noexcept {
+_EXPORT_STD _NODISCARD inline terminate_handler __CRTDECL get_terminate() noexcept {
     // get current terminate handler
     return nullptr;
 }
@@ -191,29 +195,30 @@ _NODISCARD inline unexpected_handler __CRTDECL get_unexpected() noexcept {
 }
 #endif // _HAS_UNEXPECTED
 
-using _STDEXT bad_alloc;
-using _STDEXT bad_array_new_length;
-using _STDEXT bad_exception;
+_EXPORT_STD using _STDEXT bad_alloc;
+_EXPORT_STD using _STDEXT bad_array_new_length;
+_EXPORT_STD using _STDEXT bad_exception;
 
 _STD_END
 
 #endif // _HAS_EXCEPTIONS
 
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCreate(_Out_ void*) noexcept;
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrDestroy(_Inout_ void*) noexcept;
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCopy(_Out_ void*, _In_ const void*) noexcept;
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrAssign(_Inout_ void*, _In_ const void*) noexcept;
-_CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL __ExceptionPtrCompare(_In_ const void*, _In_ const void*) noexcept;
-_CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL __ExceptionPtrToBool(_In_ const void*) noexcept;
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrSwap(_Inout_ void*, _Inout_ void*) noexcept;
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void*) noexcept;
-[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrRethrow(_In_ const void*);
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCopyException(
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCreate(_Out_ void*) noexcept;
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrDestroy(_Inout_ void*) noexcept;
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCopy(_Out_ void*, _In_ const void*) noexcept;
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrAssign(_Inout_ void*, _In_ const void*) noexcept;
+extern "C++" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL __ExceptionPtrCompare(
+    _In_ const void*, _In_ const void*) noexcept;
+extern "C++" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL __ExceptionPtrToBool(_In_ const void*) noexcept;
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrSwap(_Inout_ void*, _Inout_ void*) noexcept;
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void*) noexcept;
+extern "C++" [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrRethrow(_In_ const void*);
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCopyException(
     _Inout_ void*, _In_ const void*, _In_ const void*) noexcept;
 
 _STD_BEGIN
 
-class exception_ptr {
+_EXPORT_STD class exception_ptr {
 public:
     exception_ptr() noexcept {
         __ExceptionPtrCreate(this);
@@ -304,18 +309,18 @@ private:
 #endif // __clang__
 };
 
-_NODISCARD inline exception_ptr current_exception() noexcept {
+_EXPORT_STD _NODISCARD inline exception_ptr current_exception() noexcept {
     return exception_ptr::_Current_exception();
 }
 
-[[noreturn]] inline void rethrow_exception(_In_ exception_ptr _Ptr) {
+_EXPORT_STD [[noreturn]] inline void rethrow_exception(_In_ exception_ptr _Ptr) {
     __ExceptionPtrRethrow(&_Ptr);
 }
 
 template <class _Ex>
 void* __GetExceptionInfo(_Ex);
 
-template <class _Ex>
+_EXPORT_STD template <class _Ex>
 _NODISCARD_SMART_PTR_ALLOC exception_ptr make_exception_ptr(_Ex _Except) noexcept {
     return exception_ptr::_Copy_exception(_STD addressof(_Except), __GetExceptionInfo(_Except));
 }
@@ -324,7 +329,7 @@ _NODISCARD_SMART_PTR_ALLOC exception_ptr make_exception_ptr(_Ex _Except) noexcep
     _THROW(bad_array_new_length{});
 }
 
-class nested_exception { // wrap an exception_ptr
+_EXPORT_STD class nested_exception { // wrap an exception_ptr
 public:
     nested_exception() noexcept : _Exc(_STD current_exception()) {}
 
@@ -354,7 +359,7 @@ struct _With_nested : _Uty, nested_exception { // glue user exception to nested_
         : _Uty(_STD forward<_Ty>(_Arg)), nested_exception() {} // store user exception and current_exception()
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 [[noreturn]] void throw_with_nested(_Ty&& _Arg) {
     // throw user exception, glued to nested_exception if possible
     using _Uty = decay_t<_Ty>;
@@ -370,7 +375,7 @@ template <class _Ty>
 }
 
 #ifdef _CPPRTTI
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void rethrow_if_nested(const _Ty& _Arg) {
     // detect nested_exception inheritance
     constexpr bool _Can_use_dynamic_cast =
@@ -385,11 +390,11 @@ void rethrow_if_nested(const _Ty& _Arg) {
     }
 }
 #else // _CPPRTTI
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void rethrow_if_nested(const _Ty&) = delete; // requires /GR option
 #endif // _CPPRTTI
 
-class bad_variant_access
+_EXPORT_STD class bad_variant_access
     : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
 public:
     bad_variant_access() noexcept = default;

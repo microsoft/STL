@@ -22,7 +22,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-class type_index { // wraps a typeinfo for indexing
+_EXPORT_STD class type_index { // wraps a typeinfo for indexing
 public:
     type_index(const type_info& _Tinfo) noexcept : _Tptr(&_Tinfo) {}
 

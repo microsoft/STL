@@ -126,7 +126,7 @@ void _Uses_allocator_construct(pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& _Oute
 
 #if _HAS_CXX17
 namespace pmr {
-    class __declspec(novtable) memory_resource {
+    _EXPORT_STD class __declspec(novtable) memory_resource {
     public:
         virtual ~memory_resource() noexcept = default;
 
@@ -154,7 +154,8 @@ namespace pmr {
         virtual bool do_is_equal(const memory_resource& _That) const noexcept = 0;
     };
 
-    _NODISCARD inline bool operator==(const memory_resource& _Left, const memory_resource& _Right) noexcept {
+    _EXPORT_STD _NODISCARD inline bool operator==(
+        const memory_resource& _Left, const memory_resource& _Right) noexcept {
         return &_Left == &_Right || _Left.is_equal(_Right);
     }
 
@@ -167,7 +168,7 @@ namespace pmr {
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_get_default_resource() noexcept;
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Unaligned_get_default_resource() noexcept;
 
-    _NODISCARD inline memory_resource* get_default_resource() noexcept {
+    _EXPORT_STD _NODISCARD inline memory_resource* get_default_resource() noexcept {
 #ifdef __cpp_aligned_new
         return _Aligned_get_default_resource();
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
@@ -176,9 +177,9 @@ namespace pmr {
     }
 
 #if _HAS_CXX20 && defined(__cpp_lib_byte)
-    template <class _Ty = byte>
+    _EXPORT_STD template <class _Ty = byte>
 #else
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
 #endif // _HAS_CXX20 && defined(__cpp_lib_byte)
     class polymorphic_allocator {
     public:
@@ -299,7 +300,7 @@ namespace pmr {
         memory_resource* _Resource = _STD pmr::get_default_resource();
     };
 
-    template <class _Ty1, class _Ty2>
+    _EXPORT_STD template <class _Ty1, class _Ty2>
     _NODISCARD bool operator==(
         const polymorphic_allocator<_Ty1>& _Left, const polymorphic_allocator<_Ty2>& _Right) noexcept {
         // polymorphic_allocators with the same resource are compatible

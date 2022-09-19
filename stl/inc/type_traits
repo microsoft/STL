@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <class _Ty, _Ty... _Vals>
+_EXPORT_STD template <class _Ty, _Ty... _Vals>
 struct integer_sequence { // sequence of integer parameters
     static_assert(is_integral_v<_Ty>, "integer_sequence<T, I...> requires T to be an integral type.");
 
@@ -30,16 +30,16 @@ struct integer_sequence { // sequence of integer parameters
     }
 };
 
-template <class _Ty, _Ty _Size>
+_EXPORT_STD template <class _Ty, _Ty _Size>
 using make_integer_sequence = __make_integer_seq<integer_sequence, _Ty, _Size>;
 
-template <size_t... _Vals>
+_EXPORT_STD template <size_t... _Vals>
 using index_sequence = integer_sequence<size_t, _Vals...>;
 
-template <size_t _Size>
+_EXPORT_STD template <size_t _Size>
 using make_index_sequence = make_integer_sequence<size_t, _Size>;
 
-template <class... _Types>
+_EXPORT_STD template <class... _Types>
 using index_sequence_for = make_index_sequence<sizeof...(_Types)>;
 
 template <bool _First_value, class _First, class... _Rest>
@@ -52,7 +52,7 @@ struct _Conjunction<true, _True, _Next, _Rest...> { // the first trait is true, 
     using type = typename _Conjunction<_Next::value, _Next, _Rest...>::type;
 };
 
-template <class... _Traits>
+_EXPORT_STD template <class... _Traits>
 struct conjunction : true_type {}; // If _Traits is empty, true_type
 
 template <class _First, class... _Rest>
@@ -60,22 +60,22 @@ struct conjunction<_First, _Rest...> : _Conjunction<_First::value, _First, _Rest
     // the first false trait in _Traits, or the last trait if none are false
 };
 
-template <class... _Traits>
+_EXPORT_STD template <class... _Traits>
 _INLINE_VAR constexpr bool conjunction_v = conjunction<_Traits...>::value;
 
-template <class _Trait>
+_EXPORT_STD template <class _Trait>
 struct negation : bool_constant<!static_cast<bool>(_Trait::value)> {}; // The negated result of _Trait
 
-template <class _Trait>
+_EXPORT_STD template <class _Trait>
 _INLINE_VAR constexpr bool negation_v = negation<_Trait>::value;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_void_v = is_same_v<remove_cv_t<_Ty>, void>;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_void : bool_constant<is_void_v<_Ty>> {};
 
-template <class... _Types>
+_EXPORT_STD template <class... _Types>
 using void_t = void;
 
 template <class _Ty>
@@ -86,28 +86,28 @@ template <class _Ty>
 using _Identity_t _MSVC_KNOWN_SEMANTICS = typename _Identity<_Ty>::type;
 
 // Type modifiers
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct add_const { // add top-level const qualifier
     using type = const _Ty;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using add_const_t = typename add_const<_Ty>::type;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct add_volatile { // add top-level volatile qualifier
     using type = volatile _Ty;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using add_volatile_t = typename add_volatile<_Ty>::type;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct add_cv { // add top-level const and volatile qualifiers
     using type = const volatile _Ty;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using add_cv_t = typename add_cv<_Ty>::type;
 
 template <class _Ty, class = void>
@@ -122,28 +122,28 @@ struct _Add_reference<_Ty, void_t<_Ty&>> { // (referenceable type)
     using _Rvalue = _Ty&&;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct add_lvalue_reference {
     using type = typename _Add_reference<_Ty>::_Lvalue;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using add_lvalue_reference_t = typename _Add_reference<_Ty>::_Lvalue;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct add_rvalue_reference {
     using type = typename _Add_reference<_Ty>::_Rvalue;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using add_rvalue_reference_t = typename _Add_reference<_Ty>::_Rvalue;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 add_rvalue_reference_t<_Ty> declval() noexcept {
     static_assert(_Always_false<_Ty>, "Calling declval is ill-formed, see N4892 [declval]/2.");
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct remove_extent { // remove array extent
     using type = _Ty;
 };
@@ -158,10 +158,10 @@ struct remove_extent<_Ty[]> {
     using type = _Ty;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using remove_extent_t = typename remove_extent<_Ty>::type;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct remove_all_extents { // remove all array extents
     using type = _Ty;
 };
@@ -176,10 +176,10 @@ struct remove_all_extents<_Ty[]> {
     using type = typename remove_all_extents<_Ty>::type;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using remove_all_extents_t = typename remove_all_extents<_Ty>::type;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct remove_pointer {
     using type = _Ty;
 };
@@ -204,7 +204,7 @@ struct remove_pointer<_Ty* const volatile> {
     using type = _Ty;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using remove_pointer_t = typename remove_pointer<_Ty>::type;
 
 template <class _Ty, class = void>
@@ -217,15 +217,15 @@ struct _Add_pointer<_Ty, void_t<remove_reference_t<_Ty>*>> { // (pointer type ca
     using type = remove_reference_t<_Ty>*;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct add_pointer {
     using type = typename _Add_pointer<_Ty>::type;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using add_pointer_t = typename _Add_pointer<_Ty>::type;
 
-template <class>
+_EXPORT_STD template <class>
 _INLINE_VAR constexpr bool is_array_v = false; // determine whether type argument is an array
 
 template <class _Ty, size_t _Nx>
@@ -234,48 +234,48 @@ _INLINE_VAR constexpr bool is_array_v<_Ty[_Nx]> = true;
 template <class _Ty>
 _INLINE_VAR constexpr bool is_array_v<_Ty[]> = true;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_array : bool_constant<is_array_v<_Ty>> {};
 
 #if _HAS_CXX20
-template <class>
+_EXPORT_STD template <class>
 inline constexpr bool is_bounded_array_v = false;
 
 template <class _Ty, size_t _Nx>
 inline constexpr bool is_bounded_array_v<_Ty[_Nx]> = true;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_bounded_array : bool_constant<is_bounded_array_v<_Ty>> {};
 
-template <class>
+_EXPORT_STD template <class>
 inline constexpr bool is_unbounded_array_v = false;
 
 template <class _Ty>
 inline constexpr bool is_unbounded_array_v<_Ty[]> = true;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_unbounded_array : bool_constant<is_unbounded_array_v<_Ty>> {};
 #endif // _HAS_CXX20
 
-template <class>
+_EXPORT_STD template <class>
 _INLINE_VAR constexpr bool is_lvalue_reference_v = false; // determine whether type argument is an lvalue reference
 
 template <class _Ty>
 _INLINE_VAR constexpr bool is_lvalue_reference_v<_Ty&> = true;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_lvalue_reference : bool_constant<is_lvalue_reference_v<_Ty>> {};
 
-template <class>
+_EXPORT_STD template <class>
 _INLINE_VAR constexpr bool is_rvalue_reference_v = false; // determine whether type argument is an rvalue reference
 
 template <class _Ty>
 _INLINE_VAR constexpr bool is_rvalue_reference_v<_Ty&&> = true;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_rvalue_reference : bool_constant<is_rvalue_reference_v<_Ty>> {};
 
-template <class>
+_EXPORT_STD template <class>
 _INLINE_VAR constexpr bool is_reference_v = false; // determine whether type argument is a reference
 
 template <class _Ty>
@@ -284,10 +284,10 @@ _INLINE_VAR constexpr bool is_reference_v<_Ty&> = true;
 template <class _Ty>
 _INLINE_VAR constexpr bool is_reference_v<_Ty&&> = true;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_reference : bool_constant<is_reference_v<_Ty>> {};
 
-template <class>
+_EXPORT_STD template <class>
 _INLINE_VAR constexpr bool is_pointer_v = false; // determine whether _Ty is a pointer
 
 template <class _Ty>
@@ -302,40 +302,40 @@ _INLINE_VAR constexpr bool is_pointer_v<_Ty* volatile> = true;
 template <class _Ty>
 _INLINE_VAR constexpr bool is_pointer_v<_Ty* const volatile> = true;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_pointer : bool_constant<is_pointer_v<_Ty>> {};
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_null_pointer_v =
     is_same_v<remove_cv_t<_Ty>, nullptr_t>; // determine whether _Ty is cv-qualified nullptr_t
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_null_pointer : bool_constant<is_null_pointer_v<_Ty>> {};
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_union : bool_constant<__is_union(_Ty)> {}; // determine whether _Ty is a union
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_union_v = __is_union(_Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_class : bool_constant<__is_class(_Ty)> {}; // determine whether _Ty is a class
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_class_v = __is_class(_Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_fundamental_v = is_arithmetic_v<_Ty> || is_void_v<_Ty> || is_null_pointer_v<_Ty>;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_fundamental : bool_constant<is_fundamental_v<_Ty>> {}; // determine whether _Ty is a fundamental type
 
-template <class _From, class _To>
+_EXPORT_STD template <class _From, class _To>
 struct is_convertible : bool_constant<__is_convertible_to(_From, _To)> {
     // determine whether _From is convertible to _To
 };
 
-template <class _From, class _To>
+_EXPORT_STD template <class _From, class _To>
 _INLINE_VAR constexpr bool is_convertible_v = __is_convertible_to(_From, _To);
 
 #if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
@@ -364,24 +364,24 @@ template <class _Ty>
 _INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, const volatile _Ty&> = true;
 #endif // ^^^ workaround
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_enum : bool_constant<__is_enum(_Ty)> {}; // determine whether _Ty is an enumerated type
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_enum_v = __is_enum(_Ty);
 
 #if _HAS_CXX23
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 inline constexpr bool is_scoped_enum_v = conjunction_v<is_enum<_Ty>, negation<is_convertible<_Ty, int>>>;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_scoped_enum : bool_constant<is_scoped_enum_v<_Ty>> {};
 #endif // _HAS_CXX23
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_compound : bool_constant<!is_fundamental_v<_Ty>> {}; // determine whether _Ty is a compound type
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 
 template <class... _Types>
@@ -446,46 +446,46 @@ _NON_MEMBER_CALL(_IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES, , , noexcept)
 #endif // _HAS_CXX23 && !defined(__clang__)
 
 #ifdef __clang__
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_member_function_pointer_v = __is_member_function_pointer(_Ty);
 #else // ^^^ Clang ^^^ / vvv Other vvv
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_member_function_pointer_v = _Is_memfunptr<remove_cv_t<_Ty>>::_Bool_type::value;
 #endif // ^^^ Other ^^^
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_member_function_pointer : bool_constant<is_member_function_pointer_v<_Ty>> {};
 
-template <class>
+_EXPORT_STD template <class>
 _INLINE_VAR constexpr bool is_const_v = false; // determine whether type argument is const qualified
 
 template <class _Ty>
 _INLINE_VAR constexpr bool is_const_v<const _Ty> = true;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_const : bool_constant<is_const_v<_Ty>> {};
 
-template <class>
+_EXPORT_STD template <class>
 _INLINE_VAR constexpr bool is_volatile_v = false; // determine whether type argument is volatile qualified
 
 template <class _Ty>
 _INLINE_VAR constexpr bool is_volatile_v<volatile _Ty> = true;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_volatile : bool_constant<is_volatile_v<_Ty>> {};
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_function_v = // only function types and reference types can't be const qualified
     !is_const_v<const _Ty> && !is_reference_v<_Ty>;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_function : bool_constant<is_function_v<_Ty>> {};
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_object_v = // only function types and reference types can't be const qualified
     is_const_v<const _Ty> && !is_void_v<_Ty>;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_object : bool_constant<is_object_v<_Ty>> {};
 
 template <class>
@@ -500,150 +500,150 @@ struct _Is_member_object_pointer<_Ty1 _Ty2::*> {
 };
 
 #ifdef __clang__
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_member_object_pointer_v = __is_member_object_pointer(_Ty);
 #else // ^^^ Clang / Other vvv
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_member_object_pointer_v = _Is_member_object_pointer<remove_cv_t<_Ty>>::value;
 #endif // ^^^ Other ^^^
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_member_object_pointer : bool_constant<is_member_object_pointer_v<_Ty>> {};
 
 #ifdef __clang__
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_member_pointer_v = __is_member_pointer(_Ty);
 #else // ^^^ Clang / Other vvv
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_member_pointer_v = is_member_object_pointer_v<_Ty> || is_member_function_pointer_v<_Ty>;
 #endif // ^^^ Other ^^^
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_member_pointer : bool_constant<is_member_pointer_v<_Ty>> {}; // determine whether _Ty is a pointer to member
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_scalar_v = // determine whether _Ty is a scalar type
     is_arithmetic_v<_Ty> || is_enum_v<_Ty> || is_pointer_v<_Ty> || is_member_pointer_v<_Ty> || is_null_pointer_v<_Ty>;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_scalar : bool_constant<is_scalar_v<_Ty>> {};
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct _CXX20_DEPRECATE_IS_POD is_pod : bool_constant<__is_pod(_Ty)> {}; // determine whether _Ty is a POD type
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _CXX20_DEPRECATE_IS_POD _INLINE_VAR constexpr bool is_pod_v = __is_pod(_Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_empty : bool_constant<__is_empty(_Ty)> {}; // determine whether _Ty is an empty class
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_empty_v = __is_empty(_Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_polymorphic : bool_constant<__is_polymorphic(_Ty)> {}; // determine whether _Ty is a polymorphic type
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_polymorphic_v = __is_polymorphic(_Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_abstract : bool_constant<__is_abstract(_Ty)> {}; // determine whether _Ty is an abstract class
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_abstract_v = __is_abstract(_Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_final : bool_constant<__is_final(_Ty)> {}; // determine whether _Ty is a final class
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_final_v = __is_final(_Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_standard_layout : bool_constant<__is_standard_layout(_Ty)> {}; // determine whether _Ty is standard layout
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_standard_layout_v = __is_standard_layout(_Ty);
 
 #if _HAS_DEPRECATED_IS_LITERAL_TYPE
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct _CXX17_DEPRECATE_IS_LITERAL_TYPE is_literal_type : bool_constant<__is_literal_type(_Ty)> {
     // determine whether _Ty is a literal type
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _CXX17_DEPRECATE_IS_LITERAL_TYPE _INLINE_VAR constexpr bool is_literal_type_v = __is_literal_type(_Ty);
 #endif // _HAS_DEPRECATED_IS_LITERAL_TYPE
 
 #if 1 // TRANSITION, VSO-119526 and LLVM-41915
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_trivial : bool_constant<__is_trivially_constructible(_Ty) && __is_trivially_copyable(_Ty)> {
     // determine whether _Ty is a trivial type
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_trivial_v = __is_trivially_constructible(_Ty) && __is_trivially_copyable(_Ty);
 #else // ^^^ workaround / no workaround vvv
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_trivial : bool_constant<__is_trivial(_Ty)> {}; // determine whether _Ty is a trivial type
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_trivial_v = __is_trivial(_Ty);
 #endif // TRANSITION
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_trivially_copyable : bool_constant<__is_trivially_copyable(_Ty)> {
     // determine whether _Ty is a trivially copyable type
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_trivially_copyable_v = __is_trivially_copyable(_Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct has_virtual_destructor : bool_constant<__has_virtual_destructor(_Ty)> {
     // determine whether _Ty has a virtual destructor
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool has_virtual_destructor_v = __has_virtual_destructor(_Ty);
 
 #if _HAS_CXX17
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct has_unique_object_representations : bool_constant<__has_unique_object_representations(_Ty)> {
     // determine whether _Ty has unique object representations
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool has_unique_object_representations_v = __has_unique_object_representations(_Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_aggregate : bool_constant<__is_aggregate(_Ty)> {}; // determine whether _Ty is an aggregate
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_aggregate_v = __is_aggregate(_Ty);
 #endif // _HAS_CXX17
 
-template <class _Ty, class... _Args>
+_EXPORT_STD template <class _Ty, class... _Args>
 struct is_constructible : bool_constant<__is_constructible(_Ty, _Args...)> {
     // determine whether _Ty can be direct-initialized with _Args...
 };
 
-template <class _Ty, class... _Args>
+_EXPORT_STD template <class _Ty, class... _Args>
 _INLINE_VAR constexpr bool is_constructible_v = __is_constructible(_Ty, _Args...);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_copy_constructible : bool_constant<__is_constructible(_Ty, add_lvalue_reference_t<const _Ty>)> {
     // determine whether _Ty can be direct-initialized with an lvalue const _Ty
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_copy_constructible_v = __is_constructible(_Ty, add_lvalue_reference_t<const _Ty>);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_default_constructible : bool_constant<__is_constructible(_Ty)> {
     // determine whether _Ty can be value-initialized
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_default_constructible_v = __is_constructible(_Ty);
 
 template <class _Ty, class = void>
@@ -658,18 +658,18 @@ template <class _Ty>
 struct _Is_implicitly_default_constructible<_Ty, void_t<decltype(_Implicitly_default_construct<_Ty>({}))>> : true_type {
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_move_constructible : bool_constant<__is_constructible(_Ty, _Ty)> {
     // determine whether _Ty can be direct-initialized from an rvalue _Ty
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_move_constructible_v = __is_constructible(_Ty, _Ty);
 
-template <class _To, class _From>
+_EXPORT_STD template <class _To, class _From>
 struct is_assignable : bool_constant<__is_assignable(_To, _From)> {}; // determine whether _From can be assigned to _To
 
-template <class _To, class _From>
+_EXPORT_STD template <class _To, class _From>
 _INLINE_VAR constexpr bool is_assignable_v = __is_assignable(_To, _From);
 
 #if defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
@@ -680,15 +680,15 @@ template <class _To, class _From>
 using _Is_assignable_no_precondition_check = is_assignable<_To, _From>;
 #endif // defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_copy_assignable
     : bool_constant<__is_assignable(add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>)> {
     // determine whether an lvalue const _Ty can be assigned to an lvalue _Ty
 };
 
-template <class _Ty>
-_INLINE_VAR constexpr bool is_copy_assignable_v = __is_assignable(
-    add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>);
+_EXPORT_STD template <class _Ty>
+_INLINE_VAR constexpr bool is_copy_assignable_v =
+    __is_assignable(add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>);
 
 #if defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
 template <class _Ty>
@@ -707,12 +707,12 @@ template <class _Ty>
 _INLINE_VAR constexpr bool _Is_copy_assignable_unchecked_v = is_copy_assignable_v<_Ty>;
 #endif // defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_move_assignable : bool_constant<__is_assignable(add_lvalue_reference_t<_Ty>, _Ty)> {
     // determine whether an rvalue _Ty can be assigned to an lvalue _Ty
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_move_assignable_v = __is_assignable(add_lvalue_reference_t<_Ty>, _Ty);
 
 #if defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
@@ -731,150 +731,150 @@ template <class _Ty>
 _INLINE_VAR constexpr bool _Is_move_assignable_unchecked_v = is_move_assignable_v<_Ty>;
 #endif // defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_destructible : bool_constant<__is_destructible(_Ty)> {
     // true iff remove_all_extents_t<_Ty> is a reference type, or can be explicitly destroyed
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_destructible_v = __is_destructible(_Ty);
 
-template <class _Ty, class... _Args>
+_EXPORT_STD template <class _Ty, class... _Args>
 struct is_trivially_constructible : bool_constant<__is_trivially_constructible(_Ty, _Args...)> {
     // determine whether direct-initialization of _Ty with _Args... is trivial
 };
 
-template <class _Ty, class... _Args>
+_EXPORT_STD template <class _Ty, class... _Args>
 _INLINE_VAR constexpr bool is_trivially_constructible_v = __is_trivially_constructible(_Ty, _Args...);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_trivially_copy_constructible
     : bool_constant<__is_trivially_constructible(_Ty, add_lvalue_reference_t<const _Ty>)> {
     // determine whether direct-initialization of _Ty with an lvalue const _Ty is trivial
 };
 
-template <class _Ty>
-_INLINE_VAR constexpr bool is_trivially_copy_constructible_v = __is_trivially_constructible(
-    _Ty, add_lvalue_reference_t<const _Ty>);
+_EXPORT_STD template <class _Ty>
+_INLINE_VAR constexpr bool is_trivially_copy_constructible_v =
+    __is_trivially_constructible(_Ty, add_lvalue_reference_t<const _Ty>);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_trivially_default_constructible : bool_constant<__is_trivially_constructible(_Ty)> {
     // determine whether value-initialization of _Ty is trivial
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_trivially_default_constructible_v = __is_trivially_constructible(_Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_trivially_move_constructible : bool_constant<__is_trivially_constructible(_Ty, _Ty)> {
     // determine whether direct-initialization of _Ty with an rvalue _Ty is trivial
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_trivially_move_constructible_v = __is_trivially_constructible(_Ty, _Ty);
 
-template <class _To, class _From>
+_EXPORT_STD template <class _To, class _From>
 struct is_trivially_assignable : bool_constant<__is_trivially_assignable(_To, _From)> {
     // determine whether _From can be trivially assigned to _To
 };
 
-template <class _To, class _From>
+_EXPORT_STD template <class _To, class _From>
 _INLINE_VAR constexpr bool is_trivially_assignable_v = __is_trivially_assignable(_To, _From);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_trivially_copy_assignable
     : bool_constant<__is_trivially_assignable(add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>)> {
     // determine whether an lvalue const _Ty can be trivially assigned to an lvalue _Ty
 };
 
-template <class _Ty>
-_INLINE_VAR constexpr bool is_trivially_copy_assignable_v = __is_trivially_assignable(
-    add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>);
+_EXPORT_STD template <class _Ty>
+_INLINE_VAR constexpr bool is_trivially_copy_assignable_v =
+    __is_trivially_assignable(add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_trivially_move_assignable : bool_constant<__is_trivially_assignable(add_lvalue_reference_t<_Ty>, _Ty)> {
     // determine whether an rvalue _Ty can be trivially assigned to an lvalue _Ty
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_trivially_move_assignable_v = __is_trivially_assignable(add_lvalue_reference_t<_Ty>, _Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_trivially_destructible : bool_constant<__is_trivially_destructible(_Ty)> {
     // determine whether remove_all_extents_t<_Ty> is a reference type or can trivially be explicitly destroyed
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_trivially_destructible_v = __is_trivially_destructible(_Ty);
 
-template <class _Ty, class... _Args>
+_EXPORT_STD template <class _Ty, class... _Args>
 struct is_nothrow_constructible : bool_constant<__is_nothrow_constructible(_Ty, _Args...)> {
     // determine whether direct-initialization of _Ty from _Args... is both valid and not potentially-throwing
 };
 
-template <class _Ty, class... _Args>
+_EXPORT_STD template <class _Ty, class... _Args>
 _INLINE_VAR constexpr bool is_nothrow_constructible_v = __is_nothrow_constructible(_Ty, _Args...);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_nothrow_copy_constructible
     : bool_constant<__is_nothrow_constructible(_Ty, add_lvalue_reference_t<const _Ty>)> {
     // determine whether direct-initialization of _Ty from an lvalue const _Ty is both valid
     // and not potentially-throwing
 };
 
-template <class _Ty>
-_INLINE_VAR constexpr bool is_nothrow_copy_constructible_v = __is_nothrow_constructible(
-    _Ty, add_lvalue_reference_t<const _Ty>);
+_EXPORT_STD template <class _Ty>
+_INLINE_VAR constexpr bool is_nothrow_copy_constructible_v =
+    __is_nothrow_constructible(_Ty, add_lvalue_reference_t<const _Ty>);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_nothrow_default_constructible : bool_constant<__is_nothrow_constructible(_Ty)> {
     // determine whether value-initialization of _Ty is both valid and not potentially-throwing
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_nothrow_default_constructible_v = __is_nothrow_constructible(_Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_nothrow_move_constructible : bool_constant<__is_nothrow_constructible(_Ty, _Ty)> {
     // determine whether direct-initialization of _Ty from an rvalue _Ty is both valid and not potentially-throwing
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_nothrow_move_constructible_v = __is_nothrow_constructible(_Ty, _Ty);
 
-template <class _To, class _From>
+_EXPORT_STD template <class _To, class _From>
 struct is_nothrow_assignable : bool_constant<__is_nothrow_assignable(_To, _From)> {
     // determine whether assignment of _From to _To is both valid and not potentially-throwing
 };
 
-template <class _To, class _From>
+_EXPORT_STD template <class _To, class _From>
 _INLINE_VAR constexpr bool is_nothrow_assignable_v = __is_nothrow_assignable(_To, _From);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_nothrow_copy_assignable
     : bool_constant<__is_nothrow_assignable(add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>)> {
     // determine whether assignment of an lvalue const _Ty to an lvalue _Ty is both valid and not potentially-throwing
 };
 
-template <class _Ty>
-_INLINE_VAR constexpr bool is_nothrow_copy_assignable_v = __is_nothrow_assignable(
-    add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>);
+_EXPORT_STD template <class _Ty>
+_INLINE_VAR constexpr bool is_nothrow_copy_assignable_v =
+    __is_nothrow_assignable(add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_nothrow_move_assignable : bool_constant<__is_nothrow_assignable(add_lvalue_reference_t<_Ty>, _Ty)> {
     // determine whether assignment of an rvalue _Ty to an lvalue _Ty is both valid and not potentially-throwing
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_nothrow_move_assignable_v = __is_nothrow_assignable(add_lvalue_reference_t<_Ty>, _Ty);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_nothrow_destructible : bool_constant<__is_nothrow_destructible(_Ty)> {
     // determine whether remove_all_extents_t<_Ty> is a reference type or has
     // non-potentially-throwing explicit destruction
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_nothrow_destructible_v = __is_nothrow_destructible(_Ty);
 
 template <class _Ty, bool = is_integral_v<_Ty>>
@@ -892,16 +892,16 @@ struct _Sign_base<_Ty, false> { // floating-point _Ty is signed
     static constexpr bool _Unsigned = false;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_signed : bool_constant<_Sign_base<_Ty>::_Signed> {}; // determine whether _Ty is a signed type
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_signed_v = _Sign_base<_Ty>::_Signed;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_unsigned : bool_constant<_Sign_base<_Ty>::_Unsigned> {}; // determine whether _Ty is an unsigned type
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_unsigned_v = _Sign_base<_Ty>::_Unsigned;
 
 template <class _Ty>
@@ -951,7 +951,7 @@ template <class _Ty>
 using _Make_signed1 = // signed partner to cv-unqualified _Ty
     typename _Make_signed2<sizeof(_Ty)>::template _Apply<_Ty>;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct make_signed { // signed partner to _Ty
     static_assert(_Is_nonbool_integral<_Ty> || is_enum_v<_Ty>,
         "make_signed<T> requires that T shall be a (possibly cv-qualified) "
@@ -960,7 +960,7 @@ struct make_signed { // signed partner to _Ty
     using type = typename remove_cv<_Ty>::template _Apply<_Make_signed1>;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using make_signed_t = typename make_signed<_Ty>::type;
 
 template <size_t>
@@ -996,7 +996,7 @@ template <class _Ty>
 using _Make_unsigned1 = // unsigned partner to cv-unqualified _Ty
     typename _Make_unsigned2<sizeof(_Ty)>::template _Apply<_Ty>;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct make_unsigned { // unsigned partner to _Ty
     static_assert(_Is_nonbool_integral<_Ty> || is_enum_v<_Ty>,
         "make_unsigned<T> requires that T shall be a (possibly cv-qualified) "
@@ -1005,7 +1005,7 @@ struct make_unsigned { // unsigned partner to _Ty
     using type = typename remove_cv<_Ty>::template _Apply<_Make_unsigned1>;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using make_unsigned_t = typename make_unsigned<_Ty>::type;
 
 template <class _Rep>
@@ -1013,10 +1013,10 @@ constexpr make_unsigned_t<_Rep> _Unsigned_value(_Rep _Val) { // makes _Val unsig
     return static_cast<make_unsigned_t<_Rep>>(_Val);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct alignment_of : integral_constant<size_t, alignof(_Ty)> {}; // determine alignment of _Ty
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr size_t alignment_of_v = alignof(_Ty);
 
 template <class _Ty, size_t _Len>
@@ -1087,12 +1087,12 @@ struct _Aligned_storage { // define type with size _Len and alignment _Align
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
 using _Aligned_storage_t = typename _Aligned_storage<_Len, _Align>::type;
 
-template <size_t _Len, size_t _Align = alignof(max_align_t)>
+_EXPORT_STD template <size_t _Len, size_t _Align = alignof(max_align_t)>
 struct _CXX23_DEPRECATE_ALIGNED_STORAGE aligned_storage { // define type with size _Len and alignment _Align
     using type = _Aligned_storage_t<_Len, _Align>;
 };
 
-template <size_t _Len, size_t _Align = alignof(max_align_t)>
+_EXPORT_STD template <size_t _Len, size_t _Align = alignof(max_align_t)>
 using aligned_storage_t _CXX23_DEPRECATE_ALIGNED_STORAGE = _Aligned_storage_t<_Len, _Align>;
 
 template <size_t... _Vals>
@@ -1109,7 +1109,7 @@ struct _Maximum<_First, _Second, _Rest...> : _Maximum<(_First < _Second ? _Secon
     // find maximum value in _First, _Second, _Rest...
 };
 
-template <size_t _Len, class... _Types>
+_EXPORT_STD template <size_t _Len, class... _Types>
 struct _CXX23_DEPRECATE_ALIGNED_UNION aligned_union {
     // define type with size at least _Len, for storing anything in _Types
     static constexpr size_t _Max_len        = _Maximum<_Len, sizeof(_Types)...>::value; // NOT sizeof...(_Types)
@@ -1119,7 +1119,7 @@ struct _CXX23_DEPRECATE_ALIGNED_UNION aligned_union {
 };
 
 _STL_DISABLE_DEPRECATED_WARNING
-template <size_t _Len, class... _Types>
+_EXPORT_STD template <size_t _Len, class... _Types>
 using aligned_union_t _CXX23_DEPRECATE_ALIGNED_UNION = typename aligned_union<_Len, _Types...>::type;
 _STL_RESTORE_DEPRECATED_WARNING
 
@@ -1131,13 +1131,13 @@ struct _Underlying_type {
 template <class _Ty>
 struct _Underlying_type<_Ty, false> {};
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct underlying_type : _Underlying_type<_Ty> {}; // determine underlying type for enum
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using underlying_type_t = typename _Underlying_type<_Ty>::type;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr size_t rank_v = 0; // determine number of dimensions of array _Ty
 
 template <class _Ty, size_t _Nx>
@@ -1146,10 +1146,10 @@ _INLINE_VAR constexpr size_t rank_v<_Ty[_Nx]> = rank_v<_Ty> + 1;
 template <class _Ty>
 _INLINE_VAR constexpr size_t rank_v<_Ty[]> = rank_v<_Ty> + 1;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct rank : integral_constant<size_t, rank_v<_Ty>> {};
 
-template <class _Ty, unsigned int _Ix = 0>
+_EXPORT_STD template <class _Ty, unsigned int _Ix = 0>
 _INLINE_VAR constexpr size_t extent_v = 0; // determine extent of dimension _Ix of array _Ty
 
 template <class _Ty, size_t _Nx>
@@ -1161,25 +1161,25 @@ _INLINE_VAR constexpr size_t extent_v<_Ty[_Nx], _Ix> = extent_v<_Ty, _Ix - 1>;
 template <class _Ty, unsigned int _Ix>
 _INLINE_VAR constexpr size_t extent_v<_Ty[], _Ix> = extent_v<_Ty, _Ix - 1>;
 
-template <class _Ty, unsigned int _Ix = 0>
+_EXPORT_STD template <class _Ty, unsigned int _Ix = 0>
 struct extent : integral_constant<size_t, extent_v<_Ty, _Ix>> {};
 
-template <class _Base, class _Derived>
+_EXPORT_STD template <class _Base, class _Derived>
 struct is_base_of : bool_constant<__is_base_of(_Base, _Derived)> {
     // determine whether _Base is a base of or the same as _Derived
 };
 
-template <class _Base, class _Derived>
+_EXPORT_STD template <class _Base, class _Derived>
 _INLINE_VAR constexpr bool is_base_of_v = __is_base_of(_Base, _Derived);
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct decay { // determines decayed version of _Ty
     using _Ty1 = remove_reference_t<_Ty>;
     using _Ty2 = typename _Select<is_function_v<_Ty1>>::template _Apply<add_pointer<_Ty1>, remove_cv<_Ty1>>;
     using type = typename _Select<is_array_v<_Ty1>>::template _Apply<add_pointer<remove_extent_t<_Ty1>>, _Ty2>::type;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using decay_t = typename decay<_Ty>::type;
 
 template <class _Ty1, class _Ty2>
@@ -1208,10 +1208,10 @@ struct _Decayed_cond_oper<_Ty1, _Ty2, void_t<_Conditional_type<_Ty1, _Ty2>>> {
     using type = decay_t<_Conditional_type<_Ty1, _Ty2>>;
 };
 
-template <class... _Ty>
+_EXPORT_STD template <class... _Ty>
 struct common_type;
 
-template <class... _Ty>
+_EXPORT_STD template <class... _Ty>
 using common_type_t = typename common_type<_Ty...>::type;
 
 template <>
@@ -1243,7 +1243,7 @@ template <class _Ty>
 _Ty _Returns_exactly() noexcept; // not defined
 
 #if _HAS_CXX20
-template <class, class, template <class> class, template <class> class>
+_EXPORT_STD template <class, class, template <class> class, template <class> class>
 struct basic_common_reference {};
 
 template <class _From>
@@ -1314,10 +1314,10 @@ using _Cond_res = // N4810 [meta.trans.other]/2.4
     decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
 #endif // ^^^ no workaround ^^^
 
-template <class...>
+_EXPORT_STD template <class...>
 struct common_reference;
 
-template <class... _Types>
+_EXPORT_STD template <class... _Types>
 using common_reference_t = typename common_reference<_Types...>::type;
 
 // N4810 [meta.trans.other]/5.1: "If sizeof...(T) is zero ..."
@@ -1404,11 +1404,11 @@ struct common_reference<_Ty1, _Ty2, _Ty3, _Rest...> : _Fold_common_reference<voi
 #endif // _HAS_CXX20
 
 #if _HAS_CXX20
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct type_identity {
     using type = _Ty;
 };
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using type_identity_t = typename type_identity<_Ty>::type;
 #endif // _HAS_CXX20
 
@@ -1420,31 +1420,31 @@ _INLINE_VAR constexpr bool _Is_specialization_v<_Template<_Types...>, _Template>
 template <class _Type, template <class...> class _Template>
 struct _Is_specialization : bool_constant<_Is_specialization_v<_Type, _Template>> {};
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty&& forward(
     remove_reference_t<_Ty>& _Arg) noexcept { // forward an lvalue as either an lvalue or an rvalue
     return static_cast<_Ty&&>(_Arg);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty&& forward(remove_reference_t<_Ty>&& _Arg) noexcept { // forward an rvalue as an rvalue
     static_assert(!is_lvalue_reference_v<_Ty>, "bad forward call");
     return static_cast<_Ty&&>(_Arg);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD constexpr remove_reference_t<_Ty>&& move(_Ty&& _Arg) noexcept { // forward _Arg as movable
     return static_cast<remove_reference_t<_Ty>&&>(_Arg);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD constexpr conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_copy_constructible_v<_Ty>, const _Ty&,
     _Ty&&>
     move_if_noexcept(_Ty& _Arg) noexcept { // forward _Arg as movable, sometimes
     return _STD move(_Arg);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class reference_wrapper;
 
 // std::invoke isn't constexpr in C++17, and normally implementers are forbidden from "strengthening" constexpr
@@ -1556,13 +1556,13 @@ struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, true>
 template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {};
 
-template <class _Callable>
+_EXPORT_STD template <class _Callable>
 _CONSTEXPR17 auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
     -> decltype(static_cast<_Callable&&>(_Obj)()) {
     return static_cast<_Callable&&>(_Obj)();
 }
 
-template <class _Callable, class _Ty1, class... _Types2>
+_EXPORT_STD template <class _Callable, class _Ty1, class... _Types2>
 _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
     noexcept(_Invoker1<_Callable, _Ty1>::_Call(
         static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
@@ -1608,10 +1608,10 @@ struct _Is_nothrow_convertible : bool_constant<_Is_nothrow_convertible_v<_From, 
 };
 
 #if _HAS_CXX20
-template <class _From, class _To>
+_EXPORT_STD template <class _From, class _To>
 inline constexpr bool is_nothrow_convertible_v = _Is_nothrow_convertible_v<_From, _To>;
 
-template <class _From, class _To>
+_EXPORT_STD template <class _From, class _To>
 using is_nothrow_convertible = _Is_nothrow_convertible<_From, _To>;
 #endif // _HAS_CXX20
 
@@ -1683,7 +1683,7 @@ using _Select_invoke_traits = conditional_t<sizeof...(_Args) == 0, _Invoke_trait
     _Invoke_traits_nonzero<void, _Callable, _Args...>>;
 
 #if _HAS_DEPRECATED_RESULT_OF
-template <class _Fty>
+_EXPORT_STD template <class _Fty>
 struct _CXX17_DEPRECATE_RESULT_OF result_of { // explain usage
     static_assert(_Always_false<_Fty>, "result_of<CallableType> is invalid; use "
                                        "result_of<CallableType(zero or more argument types)> instead.");
@@ -1699,7 +1699,7 @@ _NON_MEMBER_CALL(_RESULT_OF, X1, X2, X3)
 #undef _RESULT_OF
 
 _STL_DISABLE_DEPRECATED_WARNING
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using result_of_t _CXX17_DEPRECATE_RESULT_OF = typename result_of<_Ty>::type;
 _STL_RESTORE_DEPRECATED_WARNING
 #endif // _HAS_DEPRECATED_RESULT_OF
@@ -1716,44 +1716,44 @@ struct _Is_invocable_r : _Is_invocable_r_<_Rx, _Callable, _Args...> {
 };
 
 #if _HAS_CXX17
-template <class _Callable, class... _Args>
+_EXPORT_STD template <class _Callable, class... _Args>
 struct invoke_result : _Select_invoke_traits<_Callable, _Args...> {
     // determine the result type of invoking _Callable with _Args
 };
 
-template <class _Callable, class... _Args>
+_EXPORT_STD template <class _Callable, class... _Args>
 using invoke_result_t = typename _Select_invoke_traits<_Callable, _Args...>::type;
 
-template <class _Callable, class... _Args>
+_EXPORT_STD template <class _Callable, class... _Args>
 struct is_invocable : _Select_invoke_traits<_Callable, _Args...>::_Is_invocable {
     // determines whether _Callable is callable with _Args
 };
 
-template <class _Callable, class... _Args>
+_EXPORT_STD template <class _Callable, class... _Args>
 inline constexpr bool is_invocable_v = _Select_invoke_traits<_Callable, _Args...>::_Is_invocable::value;
 
-template <class _Callable, class... _Args>
+_EXPORT_STD template <class _Callable, class... _Args>
 struct is_nothrow_invocable : _Select_invoke_traits<_Callable, _Args...>::_Is_nothrow_invocable {
     // determines whether _Callable is nothrow-callable with _Args
 };
 
-template <class _Callable, class... _Args>
+_EXPORT_STD template <class _Callable, class... _Args>
 inline constexpr bool is_nothrow_invocable_v = _Select_invoke_traits<_Callable, _Args...>::_Is_nothrow_invocable::value;
 
-template <class _Rx, class _Callable, class... _Args>
+_EXPORT_STD template <class _Rx, class _Callable, class... _Args>
 struct is_invocable_r : _Is_invocable_r_<_Rx, _Callable, _Args...> {
     // determines whether _Callable is callable with _Args and return type _Rx
 };
 
-template <class _Rx, class _Callable, class... _Args>
+_EXPORT_STD template <class _Rx, class _Callable, class... _Args>
 inline constexpr bool is_invocable_r_v = _Is_invocable_r_<_Rx, _Callable, _Args...>::value;
 
-template <class _Rx, class _Callable, class... _Args>
+_EXPORT_STD template <class _Rx, class _Callable, class... _Args>
 struct is_nothrow_invocable_r : _Select_invoke_traits<_Callable, _Args...>::template _Is_nothrow_invocable_r<_Rx> {
     // determines whether _Callable is nothrow-callable with _Args and return type _Rx
 };
 
-template <class _Rx, class _Callable, class... _Args>
+_EXPORT_STD template <class _Rx, class _Callable, class... _Args>
 inline constexpr bool is_nothrow_invocable_r_v =
     _Select_invoke_traits<_Callable, _Args...>::template _Is_nothrow_invocable_r<_Rx>::value;
 #endif // _HAS_CXX17
@@ -1761,24 +1761,24 @@ inline constexpr bool is_nothrow_invocable_r_v =
 #if _HAS_CXX20
 #ifndef __EDG__ // TRANSITION, VSO-1268984
 #ifndef __clang__ // TRANSITION, LLVM-48860
-template <class _Ty1, class _Ty2>
+_EXPORT_STD template <class _Ty1, class _Ty2>
 struct is_layout_compatible : bool_constant<__is_layout_compatible(_Ty1, _Ty2)> {};
 
-template <class _Ty1, class _Ty2>
+_EXPORT_STD template <class _Ty1, class _Ty2>
 inline constexpr bool is_layout_compatible_v = __is_layout_compatible(_Ty1, _Ty2);
 
-template <class _Base, class _Derived>
+_EXPORT_STD template <class _Base, class _Derived>
 struct is_pointer_interconvertible_base_of : bool_constant<__is_pointer_interconvertible_base_of(_Base, _Derived)> {};
 
-template <class _Base, class _Derived>
+_EXPORT_STD template <class _Base, class _Derived>
 inline constexpr bool is_pointer_interconvertible_base_of_v = __is_pointer_interconvertible_base_of(_Base, _Derived);
 
-template <class _ClassTy, class _MemberTy>
+_EXPORT_STD template <class _ClassTy, class _MemberTy>
 _NODISCARD constexpr bool is_pointer_interconvertible_with_class(_MemberTy _ClassTy::*_Pm) noexcept {
     return __is_pointer_interconvertible_with_class(_ClassTy, _Pm);
 }
 
-template <class _ClassTy1, class _ClassTy2, class _MemberTy1, class _MemberTy2>
+_EXPORT_STD template <class _ClassTy1, class _ClassTy2, class _MemberTy1, class _MemberTy2>
 _NODISCARD constexpr bool is_corresponding_member(_MemberTy1 _ClassTy1::*_Pm1, _MemberTy2 _ClassTy2::*_Pm2) noexcept {
     return __is_corresponding_member(_ClassTy1, _ClassTy2, _Pm1, _Pm2);
 }
@@ -1856,7 +1856,7 @@ struct _Refwrap_has_ctor_from : false_type {};
 template <class _Ty, class _Uty>
 struct _Refwrap_has_ctor_from<_Ty, _Uty, void_t<decltype(_Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))>> : true_type {};
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class reference_wrapper
 #if !_HAS_CXX20
     : public _Weak_types<_Ty>
@@ -1901,34 +1901,34 @@ template <class _Ty>
 reference_wrapper(_Ty&) -> reference_wrapper<_Ty>;
 #endif // _HAS_CXX17
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _CONSTEXPR20 reference_wrapper<_Ty> ref(_Ty& _Val) noexcept {
     return reference_wrapper<_Ty>(_Val);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void ref(const _Ty&&) = delete;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _CONSTEXPR20 reference_wrapper<_Ty> ref(reference_wrapper<_Ty> _Val) noexcept {
     return _Val;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _CONSTEXPR20 reference_wrapper<const _Ty> cref(const _Ty& _Val) noexcept {
     return reference_wrapper<const _Ty>(_Val);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void cref(const _Ty&&) = delete;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _CONSTEXPR20 reference_wrapper<const _Ty> cref(reference_wrapper<_Ty> _Val) noexcept {
     return _Val;
 }
 
 #if _HAS_CXX20
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct unwrap_reference {
     using type = _Ty;
 };
@@ -1936,12 +1936,12 @@ template <class _Ty>
 struct unwrap_reference<reference_wrapper<_Ty>> {
     using type = _Ty&;
 };
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using unwrap_reference_t = typename unwrap_reference<_Ty>::type;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 using unwrap_ref_decay_t = unwrap_reference_t<decay_t<_Ty>>;
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct unwrap_ref_decay {
     using type = unwrap_ref_decay_t<_Ty>;
 };
@@ -1954,13 +1954,13 @@ template <class _Ty>
 struct _Is_nothrow_swappable;
 
 #if _HAS_CXX17
-template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assignable_v<_Ty>, int> = 0>
+_EXPORT_STD template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assignable_v<_Ty>, int> = 0>
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
 template <class _Ty, int _Enabled = 0>
 #endif // _HAS_CXX17
 _CONSTEXPR20 void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>);
 
-template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> = 0>
+_EXPORT_STD template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> = 0>
 _CONSTEXPR20 void swap(_Ty (&)[_Size], _Ty (&)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value);
 
 template <class _Ty1, class _Ty2, class = void>
@@ -2002,37 +2002,37 @@ struct _Is_nothrow_swappable
 };
 
 #if _HAS_CXX17
-template <class _Ty1, class _Ty2>
+_EXPORT_STD template <class _Ty1, class _Ty2>
 struct is_swappable_with : _Is_swappable_with<_Ty1, _Ty2>::type {
     // Determine if expressions with type and value category _Ty1 and _Ty2
     // can be swapped (and vice versa)
 };
 
-template <class _Ty1, class _Ty2>
+_EXPORT_STD template <class _Ty1, class _Ty2>
 inline constexpr bool is_swappable_with_v =
     conjunction_v<_Swappable_with_helper<_Ty1, _Ty2>, _Swappable_with_helper<_Ty2, _Ty1>>;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_swappable : _Is_swappable<_Ty>::type {}; // Determine if _Ty lvalues satisfy is_swappable_with
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 inline constexpr bool is_swappable_v = _Is_swappable<_Ty>::value;
 
-template <class _Ty1, class _Ty2>
+_EXPORT_STD template <class _Ty1, class _Ty2>
 struct is_nothrow_swappable_with : _Is_nothrow_swappable_with<_Ty1, _Ty2>::type {
     // Determine if expressions with type and value category _Ty1 and _Ty2
     // satisfy is_swappable_with, and can be swapped without emitting exceptions
 };
 
-template <class _Ty1, class _Ty2>
+_EXPORT_STD template <class _Ty1, class _Ty2>
 inline constexpr bool is_nothrow_swappable_with_v = _Is_nothrow_swappable_with<_Ty1, _Ty2>::value;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_nothrow_swappable : _Is_nothrow_swappable<_Ty>::type {
     // Determine if _Ty lvalues satisfy is_nothrow_swappable_with
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 inline constexpr bool is_nothrow_swappable_v = _Is_nothrow_swappable<_Ty>::value;
 #endif // _HAS_CXX17
 
@@ -2060,37 +2060,37 @@ struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
     // true_type if and only if it is valid to swap two _Ty lvalues by exchanging object representations.
 };
 
-#define _BITMASK_OPS(_BITMASK)                                                                  \
-    _NODISCARD constexpr _BITMASK operator&(_BITMASK _Left, _BITMASK _Right) noexcept {         \
-        using _IntTy = _STD underlying_type_t<_BITMASK>;                                        \
-        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) & static_cast<_IntTy>(_Right)); \
-    }                                                                                           \
-                                                                                                \
-    _NODISCARD constexpr _BITMASK operator|(_BITMASK _Left, _BITMASK _Right) noexcept {         \
-        using _IntTy = _STD underlying_type_t<_BITMASK>;                                        \
-        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) | static_cast<_IntTy>(_Right)); \
-    }                                                                                           \
-                                                                                                \
-    _NODISCARD constexpr _BITMASK operator^(_BITMASK _Left, _BITMASK _Right) noexcept {         \
-        using _IntTy = _STD underlying_type_t<_BITMASK>;                                        \
-        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) ^ static_cast<_IntTy>(_Right)); \
-    }                                                                                           \
-                                                                                                \
-    constexpr _BITMASK& operator&=(_BITMASK& _Left, _BITMASK _Right) noexcept {                 \
-        return _Left = _Left & _Right;                                                          \
-    }                                                                                           \
-                                                                                                \
-    constexpr _BITMASK& operator|=(_BITMASK& _Left, _BITMASK _Right) noexcept {                 \
-        return _Left = _Left | _Right;                                                          \
-    }                                                                                           \
-                                                                                                \
-    constexpr _BITMASK& operator^=(_BITMASK& _Left, _BITMASK _Right) noexcept {                 \
-        return _Left = _Left ^ _Right;                                                          \
-    }                                                                                           \
-                                                                                                \
-    _NODISCARD constexpr _BITMASK operator~(_BITMASK _Left) noexcept {                          \
-        using _IntTy = _STD underlying_type_t<_BITMASK>;                                        \
-        return static_cast<_BITMASK>(~static_cast<_IntTy>(_Left));                              \
+#define _BITMASK_OPS(_MAYBE_EXPORT, _BITMASK)                                                         \
+    _MAYBE_EXPORT _NODISCARD constexpr _BITMASK operator&(_BITMASK _Left, _BITMASK _Right) noexcept { \
+        using _IntTy = _STD underlying_type_t<_BITMASK>;                                              \
+        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) & static_cast<_IntTy>(_Right));       \
+    }                                                                                                 \
+                                                                                                      \
+    _MAYBE_EXPORT _NODISCARD constexpr _BITMASK operator|(_BITMASK _Left, _BITMASK _Right) noexcept { \
+        using _IntTy = _STD underlying_type_t<_BITMASK>;                                              \
+        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) | static_cast<_IntTy>(_Right));       \
+    }                                                                                                 \
+                                                                                                      \
+    _MAYBE_EXPORT _NODISCARD constexpr _BITMASK operator^(_BITMASK _Left, _BITMASK _Right) noexcept { \
+        using _IntTy = _STD underlying_type_t<_BITMASK>;                                              \
+        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) ^ static_cast<_IntTy>(_Right));       \
+    }                                                                                                 \
+                                                                                                      \
+    _MAYBE_EXPORT constexpr _BITMASK& operator&=(_BITMASK& _Left, _BITMASK _Right) noexcept {         \
+        return _Left = _Left & _Right;                                                                \
+    }                                                                                                 \
+                                                                                                      \
+    _MAYBE_EXPORT constexpr _BITMASK& operator|=(_BITMASK& _Left, _BITMASK _Right) noexcept {         \
+        return _Left = _Left | _Right;                                                                \
+    }                                                                                                 \
+                                                                                                      \
+    _MAYBE_EXPORT constexpr _BITMASK& operator^=(_BITMASK& _Left, _BITMASK _Right) noexcept {         \
+        return _Left = _Left ^ _Right;                                                                \
+    }                                                                                                 \
+                                                                                                      \
+    _MAYBE_EXPORT _NODISCARD constexpr _BITMASK operator~(_BITMASK _Left) noexcept {                  \
+        using _IntTy = _STD underlying_type_t<_BITMASK>;                                              \
+        return static_cast<_BITMASK>(~static_cast<_IntTy>(_Left));                                    \
     }
 
 template <class _Bitmask>
@@ -2152,7 +2152,7 @@ _NODISCARD size_t _Hash_array_representation(
         _FNV_offset_basis, reinterpret_cast<const unsigned char*>(_First), _Count * sizeof(_Kty));
 }
 
-template <class _Kty>
+_EXPORT_STD template <class _Kty>
 struct hash;
 
 template <class _Kty, bool _Enabled>
@@ -2175,7 +2175,7 @@ struct _Conditionally_enabled_hash<_Kty, false> { // conditionally disabled hash
     _Conditionally_enabled_hash& operator=(_Conditionally_enabled_hash&&)      = delete;
 };
 
-template <class _Kty>
+_EXPORT_STD template <class _Kty>
 struct hash
     : _Conditionally_enabled_hash<_Kty,
           !is_const_v<_Kty> && !is_volatile_v<_Kty> && (is_enum_v<_Kty> || is_integral_v<_Kty> || is_pointer_v<_Kty>)> {

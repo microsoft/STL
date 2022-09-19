@@ -157,55 +157,55 @@ _NODISCARD _CONSTEXPR23 to_chars_result _Integer_to_chars(
     return {_First + _Digits_written, errc{}};
 }
 
-_CONSTEXPR23 to_chars_result to_chars(
+_EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(
     char* const _First, char* const _Last, const char _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 to_chars_result to_chars(
+_EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(
     char* const _First, char* const _Last, const signed char _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned char _Value,
+_EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned char _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 to_chars_result to_chars(
+_EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(
     char* const _First, char* const _Last, const short _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned short _Value,
+_EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned short _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 to_chars_result to_chars(
+_EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(
     char* const _First, char* const _Last, const int _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned int _Value,
+_EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned int _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 to_chars_result to_chars(
+_EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(
     char* const _First, char* const _Last, const long _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned long _Value,
+_EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned long _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 to_chars_result to_chars(
+_EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(
     char* const _First, char* const _Last, const long long _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned long long _Value,
-    const int _Base = 10) noexcept /* strengthened */ {
+_EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last,
+    const unsigned long long _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
 
-to_chars_result to_chars(char* _First, char* _Last, bool _Value, int _Base = 10) = delete;
+_EXPORT_STD to_chars_result to_chars(char* _First, char* _Last, bool _Value, int _Base = 10) = delete;
 
 
-struct from_chars_result {
+_EXPORT_STD struct from_chars_result {
     const char* ptr;
     errc ec;
 #if _HAS_CXX20
@@ -309,48 +309,48 @@ _NODISCARD _CONSTEXPR23 from_chars_result _Integer_from_chars(
     return {_Next, errc{}};
 }
 
-_CONSTEXPR23 from_chars_result from_chars(
+_EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(
     const char* const _First, const char* const _Last, char& _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, signed char& _Value,
+_EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last,
+    signed char& _Value, const int _Base = 10) noexcept /* strengthened */ {
+    return _Integer_from_chars(_First, _Last, _Value, _Base);
+}
+_EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last,
+    unsigned char& _Value, const int _Base = 10) noexcept /* strengthened */ {
+    return _Integer_from_chars(_First, _Last, _Value, _Base);
+}
+_EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, short& _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned char& _Value,
-    const int _Base = 10) noexcept /* strengthened */ {
+_EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last,
+    unsigned short& _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, short& _Value,
-    const int _Base = 10) noexcept /* strengthened */ {
-    return _Integer_from_chars(_First, _Last, _Value, _Base);
-}
-_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned short& _Value,
-    const int _Base = 10) noexcept /* strengthened */ {
-    return _Integer_from_chars(_First, _Last, _Value, _Base);
-}
-_CONSTEXPR23 from_chars_result from_chars(
+_EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(
     const char* const _First, const char* const _Last, int& _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned int& _Value,
-    const int _Base = 10) noexcept /* strengthened */ {
+_EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last,
+    unsigned int& _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 from_chars_result from_chars(
+_EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(
     const char* const _First, const char* const _Last, long& _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned long& _Value,
-    const int _Base = 10) noexcept /* strengthened */ {
+_EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last,
+    unsigned long& _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, long long& _Value,
-    const int _Base = 10) noexcept /* strengthened */ {
+_EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last,
+    long long& _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned long long& _Value,
-    const int _Base = 10) noexcept /* strengthened */ {
+_EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last,
+    unsigned long long& _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
 
@@ -1901,15 +1901,15 @@ _NODISCARD from_chars_result _Floating_from_chars(
     }
 }
 
-inline from_chars_result from_chars(const char* const _First, const char* const _Last, float& _Value,
+_EXPORT_STD inline from_chars_result from_chars(const char* const _First, const char* const _Last, float& _Value,
     const chars_format _Fmt = chars_format::general) noexcept /* strengthened */ {
     return _Floating_from_chars(_First, _Last, _Value, _Fmt);
 }
-inline from_chars_result from_chars(const char* const _First, const char* const _Last, double& _Value,
+_EXPORT_STD inline from_chars_result from_chars(const char* const _First, const char* const _Last, double& _Value,
     const chars_format _Fmt = chars_format::general) noexcept /* strengthened */ {
     return _Floating_from_chars(_First, _Last, _Value, _Fmt);
 }
-inline from_chars_result from_chars(const char* const _First, const char* const _Last, long double& _Value,
+_EXPORT_STD inline from_chars_result from_chars(const char* const _First, const char* const _Last, long double& _Value,
     const chars_format _Fmt = chars_format::general) noexcept /* strengthened */ {
     double _Dbl; // intentionally default-init
     const from_chars_result _Result = _Floating_from_chars(_First, _Last, _Dbl, _Fmt);
@@ -2517,40 +2517,41 @@ _NODISCARD to_chars_result _Floating_to_chars(
     }
 }
 
-inline to_chars_result to_chars(char* const _First, char* const _Last, const float _Value) noexcept /* strengthened */ {
-    return _Floating_to_chars<_Floating_to_chars_overload::_Plain>(_First, _Last, _Value, chars_format{}, 0);
-}
-inline to_chars_result to_chars(char* const _First, char* const _Last, const double _Value) noexcept
+_EXPORT_STD inline to_chars_result to_chars(char* const _First, char* const _Last, const float _Value) noexcept
 /* strengthened */ {
     return _Floating_to_chars<_Floating_to_chars_overload::_Plain>(_First, _Last, _Value, chars_format{}, 0);
 }
-inline to_chars_result to_chars(char* const _First, char* const _Last, const long double _Value) noexcept
+_EXPORT_STD inline to_chars_result to_chars(char* const _First, char* const _Last, const double _Value) noexcept
+/* strengthened */ {
+    return _Floating_to_chars<_Floating_to_chars_overload::_Plain>(_First, _Last, _Value, chars_format{}, 0);
+}
+_EXPORT_STD inline to_chars_result to_chars(char* const _First, char* const _Last, const long double _Value) noexcept
 /* strengthened */ {
     return _Floating_to_chars<_Floating_to_chars_overload::_Plain>(
         _First, _Last, static_cast<double>(_Value), chars_format{}, 0);
 }
-inline to_chars_result to_chars(
+_EXPORT_STD inline to_chars_result to_chars(
     char* const _First, char* const _Last, const float _Value, const chars_format _Fmt) noexcept /* strengthened */ {
     return _Floating_to_chars<_Floating_to_chars_overload::_Format_only>(_First, _Last, _Value, _Fmt, 0);
 }
-inline to_chars_result to_chars(
+_EXPORT_STD inline to_chars_result to_chars(
     char* const _First, char* const _Last, const double _Value, const chars_format _Fmt) noexcept /* strengthened */ {
     return _Floating_to_chars<_Floating_to_chars_overload::_Format_only>(_First, _Last, _Value, _Fmt, 0);
 }
-inline to_chars_result to_chars(char* const _First, char* const _Last, const long double _Value,
+_EXPORT_STD inline to_chars_result to_chars(char* const _First, char* const _Last, const long double _Value,
     const chars_format _Fmt) noexcept /* strengthened */ {
     return _Floating_to_chars<_Floating_to_chars_overload::_Format_only>(
         _First, _Last, static_cast<double>(_Value), _Fmt, 0);
 }
-inline to_chars_result to_chars(char* const _First, char* const _Last, const float _Value, const chars_format _Fmt,
-    const int _Precision) noexcept /* strengthened */ {
+_EXPORT_STD inline to_chars_result to_chars(char* const _First, char* const _Last, const float _Value,
+    const chars_format _Fmt, const int _Precision) noexcept /* strengthened */ {
     return _Floating_to_chars<_Floating_to_chars_overload::_Format_precision>(_First, _Last, _Value, _Fmt, _Precision);
 }
-inline to_chars_result to_chars(char* const _First, char* const _Last, const double _Value, const chars_format _Fmt,
-    const int _Precision) noexcept /* strengthened */ {
+_EXPORT_STD inline to_chars_result to_chars(char* const _First, char* const _Last, const double _Value,
+    const chars_format _Fmt, const int _Precision) noexcept /* strengthened */ {
     return _Floating_to_chars<_Floating_to_chars_overload::_Format_precision>(_First, _Last, _Value, _Fmt, _Precision);
 }
-inline to_chars_result to_chars(char* const _First, char* const _Last, const long double _Value,
+_EXPORT_STD inline to_chars_result to_chars(char* const _First, char* const _Last, const long double _Value,
     const chars_format _Fmt, const int _Precision) noexcept /* strengthened */ {
     return _Floating_to_chars<_Floating_to_chars_overload::_Format_precision>(
         _First, _Last, static_cast<double>(_Value), _Fmt, _Precision);

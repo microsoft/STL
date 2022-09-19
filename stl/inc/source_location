@@ -22,7 +22,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-struct source_location {
+_EXPORT_STD struct source_location {
     _NODISCARD static consteval source_location current(const uint_least32_t _Line_ = __builtin_LINE(),
         const uint_least32_t _Column_ = __builtin_COLUMN(), const char* const _File_ = __builtin_FILE(),
         const char* const _Function_ = __builtin_FUNCTION()) noexcept {
