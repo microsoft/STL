@@ -29,11 +29,9 @@ constexpr int f3(int x, int y, int z) {
 
 struct Cat {
     string name;
-};
 
-struct CatNoise {
-    string noise(const string& s, const Cat& cat) const {
-        return cat.name + " says " + s;
+    constexpr string noise(const string& s) const {
+        return name + " says " + s;
     }
 };
 
@@ -101,6 +99,33 @@ constexpr bool test_constexpr() {
     assert(move(bound5)() == "modifiable rvalue");
     assert(move(as_const(bound5))() == "const rvalue");
 
+    // Test PMFs.
+    Cat cat{"Peppermint"};
+    auto bound2 = bind_back(&Cat::noise, "meow");
+    assert(bound2(cat) == "Peppermint says meow"); // // call with reference
+    auto bound3 = bind_back(&Cat::noise, "MEOW");
+    cat.name    = "Fluffy";
+    assert(bound3(&cat) == "Fluffy says MEOW"); // call with pointer
+
+    // Test movable-only types.
+    auto unique_lambda = [up1 = make_unique<int>(1200)](unique_ptr<int>&& up2) {
+        if (up1 && up2) {
+            return make_unique<int>(*up1 + *up2);
+        } else if (up1) {
+            return make_unique<int>(*up1 * -1);
+        } else if (up2) {
+            return make_unique<int>(*up2 * -10);
+        } else {
+            return make_unique<int>(-9000);
+        }
+    };
+    auto bound6 = bind_back(move(unique_lambda), make_unique<int>(34));
+    assert(*unique_lambda(make_unique<int>(56)) == -560);
+    assert(*move(bound6)() == 1234);
+    auto bound7 = move(bound6);
+    assert(*move(bound6)() == -9000);
+    assert(*move(bound7)() == 1234);
+
     // Test decay when binding.
     const int arr[] = {11, 22, 33};
     const int three = 3;
@@ -126,32 +151,9 @@ constexpr bool test_constexpr() {
     return true;
 }
 
-void test_move_only_types() {
-    // Test movable-only types.
-    auto unique_lambda = [up1 = make_unique<int>(1200)](unique_ptr<int>&& up2) {
-        if (up1 && up2) {
-            return make_unique<int>(*up1 + *up2);
-        } else if (up1) {
-            return make_unique<int>(*up1 * -1);
-        } else if (up2) {
-            return make_unique<int>(*up2 * -10);
-        } else {
-            return make_unique<int>(-9000);
-        }
-    };
-    auto bound6 = bind_back(move(unique_lambda), make_unique<int>(34));
-    assert(*unique_lambda(make_unique<int>(56)) == -560);
-    assert(*move(bound6)() == 1234);
-    auto bound7 = move(bound6);
-    assert(*move(bound6)() == -9000);
-    assert(*move(bound7)() == 1234);
-}
-
 int main() {
     assert(test_constexpr());
     static_assert(test_constexpr());
-
-    test_move_only_types();
 
     // Also test GH-1292 "bind_front violates [func.require]p8" in which the return type of bind_front inadvertently
     // depends on the value category and/or cv-qualification of its arguments.
