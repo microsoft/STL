@@ -1,4 +1,4 @@
-// xbit_ops.h internal header
+// xbit_ops.h internal header (core)
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -6,7 +6,7 @@
 #pragma once
 #ifndef _XBIT_OPS_H
 #define _XBIT_OPS_H
-#include <yvals.h>
+#include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <cstdint>
