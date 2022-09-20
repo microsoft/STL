@@ -29,7 +29,7 @@ void test_file_create(const std::ios_base::openmode mode) {
     fs::remove(test_file);
 }
 
-void test_file_already_exist(const std::ios_base::openmode mode) {
+void test_file_already_exists(const std::ios_base::openmode mode) {
     CreateTempFile tmp{test_file};
     std::fstream file{test_file, mode};
     assert(file.fail());
@@ -53,12 +53,12 @@ int main() {
     test_file_create(IB::out | IB::binary | IB::trunc | IB::noreplace);
     test_file_create(IB::out | IB::in | IB::trunc | IB::binary | IB::noreplace);
 
-    test_file_already_exist(IB::out | IB::noreplace);
-    test_file_already_exist(IB::out | IB::trunc | IB::noreplace);
-    test_file_already_exist(IB::out | IB::in | IB::trunc | IB::noreplace);
-    test_file_already_exist(IB::out | IB::binary | IB::noreplace);
-    test_file_already_exist(IB::out | IB::binary | IB::trunc | IB::noreplace);
-    test_file_already_exist(IB::out | IB::in | IB::trunc | IB::binary | IB::noreplace);
+    test_file_already_exists(IB::out | IB::noreplace);
+    test_file_already_exists(IB::out | IB::trunc | IB::noreplace);
+    test_file_already_exists(IB::out | IB::in | IB::trunc | IB::noreplace);
+    test_file_already_exists(IB::out | IB::binary | IB::noreplace);
+    test_file_already_exists(IB::out | IB::binary | IB::trunc | IB::noreplace);
+    test_file_already_exists(IB::out | IB::in | IB::trunc | IB::binary | IB::noreplace);
 
     test_file_create_fail(IB::in | IB::noreplace);
     test_file_create_fail(IB::in | IB::trunc | IB::noreplace);
