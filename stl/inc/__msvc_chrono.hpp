@@ -28,13 +28,13 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 namespace chrono {
-    template <class _Rep>
+    _EXPORT_STD template <class _Rep>
     struct treat_as_floating_point : is_floating_point<_Rep> {}; // tests for floating-point type
 
-    template <class _Rep>
+    _EXPORT_STD template <class _Rep>
     _INLINE_VAR constexpr bool treat_as_floating_point_v = treat_as_floating_point<_Rep>::value;
 
-    template <class _Rep>
+    _EXPORT_STD template <class _Rep>
     struct duration_values { // gets arithmetic properties of a type
         _NODISCARD static constexpr _Rep zero() noexcept {
             // get zero value
@@ -62,23 +62,23 @@ namespace chrono {
                                 typename _Clock::time_point, decltype(_Clock::is_steady), decltype(_Clock::now())>> =
             true; // TRANSITION, GH-602
 
-    template <class _Clock>
+    _EXPORT_STD template <class _Clock>
     struct is_clock : bool_constant<_Is_clock_v<_Clock>> {};
-    template <class _Clock>
+    _EXPORT_STD template <class _Clock>
     inline constexpr bool is_clock_v = _Is_clock_v<_Clock>;
 #endif // _HAS_CXX20
 
-    template <class _Rep, class _Period = ratio<1>>
+    _EXPORT_STD template <class _Rep, class _Period = ratio<1>>
     class duration;
 
     template <class _Ty>
     _INLINE_VAR constexpr bool _Is_duration_v = _Is_specialization_v<_Ty, duration>;
 
-    template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> = 0>
+    _EXPORT_STD template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> = 0>
     constexpr _To duration_cast(const duration<_Rep, _Period>&) noexcept(
         is_arithmetic_v<_Rep>&& is_arithmetic_v<typename _To::rep>); // strengthened
 
-    template <class _Rep, class _Period>
+    _EXPORT_STD template <class _Rep, class _Period>
     class duration { // represents a time duration
     public:
         using rep    = _Rep;
@@ -188,7 +188,7 @@ namespace chrono {
         _Rep _MyRep; // the stored rep
     };
 
-    template <class _Clock, class _Duration = typename _Clock::duration>
+    _EXPORT_STD template <class _Clock, class _Duration = typename _Clock::duration>
     class time_point { // represents a point in time
     public:
         using clock    = _Clock;
@@ -277,7 +277,7 @@ struct common_type<_CHRONO time_point<_Clock, _Duration1>,
 };
 
 namespace chrono {
-    template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>
         operator+(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
@@ -285,7 +285,7 @@ namespace chrono {
         return _CD(_CD(_Left).count() + _CD(_Right).count());
     }
 
-    template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>
         operator-(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
@@ -293,7 +293,7 @@ namespace chrono {
         return _CD(_CD(_Left).count() - _CD(_Right).count());
     }
 
-    template <class _Rep1, class _Period1, class _Rep2,
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2,
         enable_if_t<is_convertible_v<const _Rep2&, common_type_t<_Rep1, _Rep2>>, int> = 0>
     _NODISCARD constexpr duration<common_type_t<_Rep1, _Rep2>, _Period1> operator*(
         const duration<_Rep1, _Period1>& _Left,
@@ -303,7 +303,7 @@ namespace chrono {
         return _CD(_CD(_Left).count() * _Right);
     }
 
-    template <class _Rep1, class _Rep2, class _Period2,
+    _EXPORT_STD template <class _Rep1, class _Rep2, class _Period2,
         enable_if_t<is_convertible_v<const _Rep1&, common_type_t<_Rep1, _Rep2>>, int> = 0>
     _NODISCARD constexpr duration<common_type_t<_Rep1, _Rep2>, _Period2>
         operator*(const _Rep1& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
@@ -327,7 +327,7 @@ namespace chrono {
         // return type for duration / rep and duration % rep
     };
 
-    template <class _Rep1, class _Period1, class _Rep2>
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2>
     _NODISCARD constexpr typename _Duration_div_mod<common_type_t<_Rep1, _Rep2>, _Period1, _Rep2>::type operator/(
         const duration<_Rep1, _Period1>& _Left,
         const _Rep2& _Right) noexcept(is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
@@ -336,7 +336,7 @@ namespace chrono {
         return _CD(_CD(_Left).count() / _Right);
     }
 
-    template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr common_type_t<_Rep1, _Rep2>
         operator/(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
@@ -344,7 +344,7 @@ namespace chrono {
         return _CD(_Left).count() / _CD(_Right).count();
     }
 
-    template <class _Rep1, class _Period1, class _Rep2>
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2>
     _NODISCARD constexpr typename _Duration_div_mod<common_type_t<_Rep1, _Rep2>, _Period1, _Rep2>::type operator%(
         const duration<_Rep1, _Period1>& _Left,
         const _Rep2& _Right) noexcept(is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
@@ -353,7 +353,7 @@ namespace chrono {
         return _CD(_CD(_Left).count() % _Right);
     }
 
-    template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>
         operator%(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
@@ -361,7 +361,7 @@ namespace chrono {
         return _CD(_CD(_Left).count() % _CD(_Right).count());
     }
 
-    template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr bool
         operator==(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
@@ -378,7 +378,7 @@ namespace chrono {
     }
 #endif // !_HAS_CXX20
 
-    template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr bool
         operator<(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
@@ -386,21 +386,21 @@ namespace chrono {
         return _CT(_Left).count() < _CT(_Right).count();
     }
 
-    template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr bool
         operator<=(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
         return !(_Right < _Left);
     }
 
-    template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr bool
         operator>(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
         return _Right < _Left;
     }
 
-    template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr bool
         operator>=(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
@@ -409,7 +409,7 @@ namespace chrono {
 
 #ifdef __cpp_lib_concepts
     // clang-format off
-    template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+    _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2, class _Period2>
         requires three_way_comparable<typename common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>::rep>
     _NODISCARD constexpr auto
         operator<=>(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
@@ -420,7 +420,7 @@ namespace chrono {
     }
 #endif // defined(__cpp_lib_concepts)
 
-    template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> _Enabled>
+    _EXPORT_STD template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> _Enabled>
     _NODISCARD constexpr _To duration_cast(const duration<_Rep, _Period>& _Dur) noexcept(
         is_arithmetic_v<_Rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // convert duration to another duration; truncate
@@ -450,7 +450,7 @@ namespace chrono {
         }
     }
 
-    template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> = 0>
+    _EXPORT_STD template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> = 0>
     _NODISCARD constexpr _To floor(const duration<_Rep, _Period>& _Dur) noexcept(
         is_arithmetic_v<_Rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // convert duration to another duration; round towards negative infinity
@@ -463,7 +463,7 @@ namespace chrono {
         return _Casted;
     }
 
-    template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> = 0>
+    _EXPORT_STD template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> = 0>
     _NODISCARD constexpr _To ceil(const duration<_Rep, _Period>& _Dur) noexcept(
         is_arithmetic_v<_Rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // convert duration to another duration; round towards positive infinity
@@ -482,7 +482,7 @@ namespace chrono {
         return _Val % 2 == 0;
     }
 
-    template <class _To, class _Rep, class _Period,
+    _EXPORT_STD template <class _To, class _Rep, class _Period,
         enable_if_t<_Is_duration_v<_To> && !treat_as_floating_point_v<typename _To::rep>, int> = 0>
     _NODISCARD constexpr _To round(const duration<_Rep, _Period>& _Dur) noexcept(
         is_arithmetic_v<_Rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
@@ -499,7 +499,7 @@ namespace chrono {
         return _Ceiled;
     }
 
-    template <class _Rep, class _Period, enable_if_t<numeric_limits<_Rep>::is_signed, int> = 0>
+    _EXPORT_STD template <class _Rep, class _Period, enable_if_t<numeric_limits<_Rep>::is_signed, int> = 0>
     _NODISCARD constexpr duration<_Rep, _Period> abs(const duration<_Rep, _Period> _Dur) noexcept(
         is_arithmetic_v<_Rep>) /* strengthened */ {
         // create a duration whose count() is the absolute value of _Dur.count()
@@ -510,20 +510,20 @@ namespace chrono {
         }
     }
 
-    using nanoseconds  = duration<long long, nano>;
-    using microseconds = duration<long long, micro>;
-    using milliseconds = duration<long long, milli>;
-    using seconds      = duration<long long>;
-    using minutes      = duration<int, ratio<60>>;
-    using hours        = duration<int, ratio<3600>>;
+    _EXPORT_STD using nanoseconds  = duration<long long, nano>;
+    _EXPORT_STD using microseconds = duration<long long, micro>;
+    _EXPORT_STD using milliseconds = duration<long long, milli>;
+    _EXPORT_STD using seconds      = duration<long long>;
+    _EXPORT_STD using minutes      = duration<int, ratio<60>>;
+    _EXPORT_STD using hours        = duration<int, ratio<3600>>;
 #if _HAS_CXX20
-    using days   = duration<int, ratio_multiply<ratio<24>, hours::period>>;
-    using weeks  = duration<int, ratio_multiply<ratio<7>, days::period>>;
-    using years  = duration<int, ratio_multiply<ratio<146097, 400>, days::period>>;
-    using months = duration<int, ratio_divide<years::period, ratio<12>>>;
+    _EXPORT_STD using days   = duration<int, ratio_multiply<ratio<24>, hours::period>>;
+    _EXPORT_STD using weeks  = duration<int, ratio_multiply<ratio<7>, days::period>>;
+    _EXPORT_STD using years  = duration<int, ratio_multiply<ratio<146097, 400>, days::period>>;
+    _EXPORT_STD using months = duration<int, ratio_divide<years::period, ratio<12>>>;
 #endif // _HAS_CXX20
 
-    template <class _Clock, class _Duration, class _Rep, class _Period>
+    _EXPORT_STD template <class _Clock, class _Duration, class _Rep, class _Period>
     _NODISCARD constexpr time_point<_Clock, common_type_t<_Duration, duration<_Rep, _Period>>>
         operator+(const time_point<_Clock, _Duration>& _Left, const duration<_Rep, _Period>& _Right) noexcept(
             is_arithmetic_v<typename _Duration::rep>&& is_arithmetic_v<_Rep>) /* strengthened */ {
@@ -531,14 +531,14 @@ namespace chrono {
         return _RT(_Left.time_since_epoch() + _Right);
     }
 
-    template <class _Rep, class _Period, class _Clock, class _Duration>
+    _EXPORT_STD template <class _Rep, class _Period, class _Clock, class _Duration>
     _NODISCARD constexpr time_point<_Clock, common_type_t<duration<_Rep, _Period>, _Duration>>
         operator+(const duration<_Rep, _Period>& _Left, const time_point<_Clock, _Duration>& _Right) noexcept(
             is_arithmetic_v<_Rep>&& is_arithmetic_v<typename _Duration::rep>) /* strengthened */ {
         return _Right + _Left;
     }
 
-    template <class _Clock, class _Duration, class _Rep, class _Period>
+    _EXPORT_STD template <class _Clock, class _Duration, class _Rep, class _Period>
     _NODISCARD constexpr time_point<_Clock, common_type_t<_Duration, duration<_Rep, _Period>>>
         operator-(const time_point<_Clock, _Duration>& _Left, const duration<_Rep, _Period>& _Right) noexcept(
             is_arithmetic_v<typename _Duration::rep>&& is_arithmetic_v<_Rep>) /* strengthened */ {
@@ -546,14 +546,14 @@ namespace chrono {
         return _RT(_Left.time_since_epoch() - _Right);
     }
 
-    template <class _Clock, class _Duration1, class _Duration2>
+    _EXPORT_STD template <class _Clock, class _Duration1, class _Duration2>
     _NODISCARD constexpr common_type_t<_Duration1, _Duration2>
         operator-(const time_point<_Clock, _Duration1>& _Left, const time_point<_Clock, _Duration2>& _Right) noexcept(
             is_arithmetic_v<typename _Duration1::rep>&& is_arithmetic_v<typename _Duration2::rep>) /* strengthened */ {
         return _Left.time_since_epoch() - _Right.time_since_epoch();
     }
 
-    template <class _Clock, class _Duration1, class _Duration2>
+    _EXPORT_STD template <class _Clock, class _Duration1, class _Duration2>
     _NODISCARD constexpr bool
         operator==(const time_point<_Clock, _Duration1>& _Left, const time_point<_Clock, _Duration2>& _Right) noexcept(
             is_arithmetic_v<typename _Duration1::rep>&& is_arithmetic_v<typename _Duration2::rep>) /* strengthened */ {
@@ -569,28 +569,28 @@ namespace chrono {
     }
 #endif // !_HAS_CXX20
 
-    template <class _Clock, class _Duration1, class _Duration2>
+    _EXPORT_STD template <class _Clock, class _Duration1, class _Duration2>
     _NODISCARD constexpr bool
         operator<(const time_point<_Clock, _Duration1>& _Left, const time_point<_Clock, _Duration2>& _Right) noexcept(
             is_arithmetic_v<typename _Duration1::rep>&& is_arithmetic_v<typename _Duration2::rep>) /* strengthened */ {
         return _Left.time_since_epoch() < _Right.time_since_epoch();
     }
 
-    template <class _Clock, class _Duration1, class _Duration2>
+    _EXPORT_STD template <class _Clock, class _Duration1, class _Duration2>
     _NODISCARD constexpr bool
         operator<=(const time_point<_Clock, _Duration1>& _Left, const time_point<_Clock, _Duration2>& _Right) noexcept(
             is_arithmetic_v<typename _Duration1::rep>&& is_arithmetic_v<typename _Duration2::rep>) /* strengthened */ {
         return !(_Right < _Left);
     }
 
-    template <class _Clock, class _Duration1, class _Duration2>
+    _EXPORT_STD template <class _Clock, class _Duration1, class _Duration2>
     _NODISCARD constexpr bool
         operator>(const time_point<_Clock, _Duration1>& _Left, const time_point<_Clock, _Duration2>& _Right) noexcept(
             is_arithmetic_v<typename _Duration1::rep>&& is_arithmetic_v<typename _Duration2::rep>) /* strengthened */ {
         return _Right < _Left;
     }
 
-    template <class _Clock, class _Duration1, class _Duration2>
+    _EXPORT_STD template <class _Clock, class _Duration1, class _Duration2>
     _NODISCARD constexpr bool
         operator>=(const time_point<_Clock, _Duration1>& _Left, const time_point<_Clock, _Duration2>& _Right) noexcept(
             is_arithmetic_v<typename _Duration1::rep>&& is_arithmetic_v<typename _Duration2::rep>) /* strengthened */ {
@@ -598,7 +598,7 @@ namespace chrono {
     }
 
 #ifdef __cpp_lib_concepts
-    template <class _Clock, class _Duration1, three_way_comparable_with<_Duration1> _Duration2>
+    _EXPORT_STD template <class _Clock, class _Duration1, three_way_comparable_with<_Duration1> _Duration2>
     _NODISCARD constexpr auto
         operator<=>(const time_point<_Clock, _Duration1>& _Left, const time_point<_Clock, _Duration2>& _Right) noexcept(
             is_arithmetic_v<typename _Duration1::rep>&& is_arithmetic_v<typename _Duration2::rep>) /* strengthened */ {
@@ -606,28 +606,28 @@ namespace chrono {
     }
 #endif // defined(__cpp_lib_concepts)
 
-    template <class _To, class _Clock, class _Duration, enable_if_t<_Is_duration_v<_To>, int> = 0>
+    _EXPORT_STD template <class _To, class _Clock, class _Duration, enable_if_t<_Is_duration_v<_To>, int> = 0>
     _NODISCARD constexpr time_point<_Clock, _To> time_point_cast(const time_point<_Clock, _Duration>& _Time) noexcept(
         is_arithmetic_v<typename _Duration::rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // change the duration type of a time_point; truncate
         return time_point<_Clock, _To>(_CHRONO duration_cast<_To>(_Time.time_since_epoch()));
     }
 
-    template <class _To, class _Clock, class _Duration, enable_if_t<_Is_duration_v<_To>, int> = 0>
+    _EXPORT_STD template <class _To, class _Clock, class _Duration, enable_if_t<_Is_duration_v<_To>, int> = 0>
     _NODISCARD constexpr time_point<_Clock, _To> floor(const time_point<_Clock, _Duration>& _Time) noexcept(
         is_arithmetic_v<typename _Duration::rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // change the duration type of a time_point; round towards negative infinity
         return time_point<_Clock, _To>(_CHRONO floor<_To>(_Time.time_since_epoch()));
     }
 
-    template <class _To, class _Clock, class _Duration, enable_if_t<_Is_duration_v<_To>, int> = 0>
+    _EXPORT_STD template <class _To, class _Clock, class _Duration, enable_if_t<_Is_duration_v<_To>, int> = 0>
     _NODISCARD constexpr time_point<_Clock, _To> ceil(const time_point<_Clock, _Duration>& _Time) noexcept(
         is_arithmetic_v<typename _Duration::rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // change the duration type of a time_point; round towards positive infinity
         return time_point<_Clock, _To>(_CHRONO ceil<_To>(_Time.time_since_epoch()));
     }
 
-    template <class _To, class _Clock, class _Duration,
+    _EXPORT_STD template <class _To, class _Clock, class _Duration,
         enable_if_t<_Is_duration_v<_To> && !treat_as_floating_point_v<typename _To::rep>, int> = 0>
     _NODISCARD constexpr time_point<_Clock, _To> round(const time_point<_Clock, _Duration>& _Time) noexcept(
         is_arithmetic_v<typename _Duration::rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
@@ -635,7 +635,7 @@ namespace chrono {
         return time_point<_Clock, _To>(_CHRONO round<_To>(_Time.time_since_epoch()));
     }
 
-    struct system_clock { // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime
+    _EXPORT_STD struct system_clock { // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime
         using rep                       = long long;
         using period                    = ratio<1, 10'000'000>; // 100 nanoseconds
         using duration                  = _CHRONO duration<rep, period>;
@@ -656,13 +656,13 @@ namespace chrono {
     };
 
 #if _HAS_CXX20
-    template <class _Duration>
-    using sys_time    = time_point<system_clock, _Duration>;
-    using sys_seconds = sys_time<seconds>;
-    using sys_days    = sys_time<days>;
+    _EXPORT_STD template <class _Duration>
+    using sys_time                = time_point<system_clock, _Duration>;
+    _EXPORT_STD using sys_seconds = sys_time<seconds>;
+    _EXPORT_STD using sys_days    = sys_time<days>;
 #endif // _HAS_CXX20
 
-    struct steady_clock { // wraps QueryPerformanceCounter
+    _EXPORT_STD struct steady_clock { // wraps QueryPerformanceCounter
         using rep                       = long long;
         using period                    = nano;
         using duration                  = nanoseconds;
@@ -694,7 +694,7 @@ namespace chrono {
         }
     };
 
-    using high_resolution_clock = steady_clock;
+    _EXPORT_STD using high_resolution_clock = steady_clock;
 } // namespace chrono
 
 template <class _Rep, class _Period>
@@ -723,55 +723,62 @@ _NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const _CHRONO duratio
 
 inline namespace literals {
     inline namespace chrono_literals {
-        _NODISCARD constexpr _CHRONO hours operator"" h(unsigned long long _Val) noexcept /* strengthened */ {
+        _EXPORT_STD _NODISCARD constexpr _CHRONO hours operator"" h(unsigned long long _Val) noexcept
+        /* strengthened */ {
             return _CHRONO hours(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO duration<double, ratio<3600>> operator"" h(long double _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, ratio<3600>> operator"" h(long double _Val) noexcept
         /* strengthened */ {
             return _CHRONO duration<double, ratio<3600>>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO minutes(operator"" min)(unsigned long long _Val) noexcept /* strengthened */ {
+        _EXPORT_STD _NODISCARD constexpr _CHRONO minutes(operator"" min)(unsigned long long _Val) noexcept
+        /* strengthened */ {
             return _CHRONO minutes(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO duration<double, ratio<60>>(operator"" min)(long double _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, ratio<60>>(operator"" min)(long double _Val) noexcept
         /* strengthened */ {
             return _CHRONO duration<double, ratio<60>>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO seconds operator"" s(unsigned long long _Val) noexcept /* strengthened */ {
+        _EXPORT_STD _NODISCARD constexpr _CHRONO seconds operator"" s(unsigned long long _Val) noexcept
+        /* strengthened */ {
             return _CHRONO seconds(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO duration<double> operator"" s(long double _Val) noexcept /* strengthened */ {
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double> operator"" s(long double _Val) noexcept
+        /* strengthened */ {
             return _CHRONO duration<double>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO milliseconds operator"" ms(unsigned long long _Val) noexcept /* strengthened */ {
+        _EXPORT_STD _NODISCARD constexpr _CHRONO milliseconds operator"" ms(unsigned long long _Val) noexcept
+        /* strengthened */ {
             return _CHRONO milliseconds(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO duration<double, milli> operator"" ms(long double _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, milli> operator"" ms(long double _Val) noexcept
         /* strengthened */ {
             return _CHRONO duration<double, milli>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO microseconds operator"" us(unsigned long long _Val) noexcept /* strengthened */ {
+        _EXPORT_STD _NODISCARD constexpr _CHRONO microseconds operator"" us(unsigned long long _Val) noexcept
+        /* strengthened */ {
             return _CHRONO microseconds(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO duration<double, micro> operator"" us(long double _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, micro> operator"" us(long double _Val) noexcept
         /* strengthened */ {
             return _CHRONO duration<double, micro>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO nanoseconds operator"" ns(unsigned long long _Val) noexcept /* strengthened */ {
+        _EXPORT_STD _NODISCARD constexpr _CHRONO nanoseconds operator"" ns(unsigned long long _Val) noexcept
+        /* strengthened */ {
             return _CHRONO nanoseconds(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO duration<double, nano> operator"" ns(long double _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, nano> operator"" ns(long double _Val) noexcept
         /* strengthened */ {
             return _CHRONO duration<double, nano>(_Val);
         }
@@ -779,7 +786,7 @@ inline namespace literals {
 } // namespace literals
 
 namespace chrono {
-    using namespace literals::chrono_literals;
+    _EXPORT_STD using namespace literals::chrono_literals;
 } // namespace chrono
 _STD_END
 

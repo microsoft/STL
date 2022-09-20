@@ -53,10 +53,10 @@ const int _Locbase<_Dummy>::all;
 template <class _Dummy>
 const int _Locbase<_Dummy>::none;
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 class collate;
 
-struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for marking allocations as CRT blocks
+extern "C++" struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for marking allocations as CRT blocks
 #ifdef _DEBUG
     void* __CLRCALL_OR_CDECL operator new(size_t _Size) { // replace operator new
         void* _Ptr = operator new(_Size, nothrow);
@@ -87,7 +87,7 @@ struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for marking allocati
 #endif // _DEBUG
 };
 
-class locale : public _Locbase<int>, public _Crt_new_delete {
+_EXPORT_STD extern "C++" class locale : public _Locbase<int>, public _Crt_new_delete {
 public:
     using category = int;
 
@@ -361,7 +361,7 @@ public:
         return _Ptr ? _Ptr->_Name.c_str() : string{};
     }
 
-    _Ret_z_ const char* c_str() const {
+    _Ret_z_ const char* _C_str() const noexcept {
         return _Ptr ? _Ptr->_Name.c_str() : "";
     }
 
@@ -418,7 +418,7 @@ struct _Facetptr { // store pointer to lazy facet for use_facet
 template <class _Facet>
 __PURE_APPDOMAIN_GLOBAL const locale::facet* _Facetptr<_Facet>::_Psave = nullptr;
 
-template <class _Facet>
+_EXPORT_STD template <class _Facet>
 const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference from locale
     _BEGIN_LOCK(_LOCK_LOCALE) // the thread lock, make get atomic
     const locale::facet* _Psave = _Facetptr<_Facet>::_Psave; // static pointer to lazy facet
@@ -607,7 +607,7 @@ inline unsigned short* __CRTDECL _Maklocstr(const char* _Ptr, unsigned short*, c
 }
 #endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 
-class _CRTIMP2_PURE_IMPORT codecvt_base : public locale::facet { // base class for codecvt
+_EXPORT_STD extern "C++" class _CRTIMP2_PURE_IMPORT codecvt_base : public locale::facet { // base class for codecvt
 public:
     enum { // constants for different parse states
         ok,
@@ -665,7 +665,7 @@ template <class _Elem, class _Byte>
 _INLINE_VAR constexpr bool _Is_codecvt_do_always_noconv_v =
     is_same_v<_Byte, _Elem> || (_Is_one_byte_char_like_v<_Byte> && _Is_one_byte_char_like_v<_Elem>);
 
-template <class _Elem, class _Byte, class _Statype>
+_EXPORT_STD extern "C++" template <class _Elem, class _Byte, class _Statype>
 class codecvt : public codecvt_base { // facet for converting between _Elem and _Byte sequences
 public:
     // Explicitly specialized below:
@@ -717,7 +717,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new codecvt(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new codecvt(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -799,7 +799,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id codecvt<_Elem, _Byte, _Statype>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-template <class _CvtTy, class _Byte, class _Statype>
+_EXPORT_STD /* TRANSITION, VSO-1538698 */ template <class _CvtTy, class _Byte, class _Statype>
 _NODISCARD int _Codecvt_do_length(
     const _CvtTy& _Cvt, _Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) {
     // return p - _First1, for the largest value p in [_First1, _Last1] such that _Cvt will successfully convert
@@ -899,7 +899,7 @@ public:
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
             _STL_DISABLE_DEPRECATED_WARNING
-            *_Ppf = new codecvt(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new codecvt(_Locinfo(_Ploc->_C_str()));
             _STL_RESTORE_DEPRECATED_WARNING
         }
 
@@ -1197,7 +1197,7 @@ public:
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
             _STL_DISABLE_DEPRECATED_WARNING
-            *_Ppf = new codecvt(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new codecvt(_Locinfo(_Ploc->_C_str()));
             _STL_RESTORE_DEPRECATED_WARNING
         }
 
@@ -1965,7 +1965,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new codecvt(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new codecvt(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -2164,7 +2164,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new codecvt(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new codecvt(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -2319,7 +2319,7 @@ private:
 };
 #endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 
-template <class _Elem, class _Byte, class _Statype>
+_EXPORT_STD template <class _Elem, class _Byte, class _Statype>
 class codecvt_byname : public codecvt<_Elem, _Byte, _Statype> { // codecvt for named locale
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS
@@ -2350,7 +2350,7 @@ protected:
 #define _UP _UPPER // 'A'-'Z'
 #define _XD _HEX // '0'-'9', 'A'-'F', 'a'-'f'
 
-struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
+_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
     enum { // constants for character classifications
         alnum  = _DI | _LO | _UP | _XA,
         alpha  = _LO | _UP | _XA,
@@ -2382,7 +2382,7 @@ struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
 #undef _UP
 #undef _XD
 
-template <class _Elem>
+_EXPORT_STD extern "C++" template <class _Elem>
 class ctype : public ctype_base { // facet for classifying elements, converting cases
 public:
     // ctype<char>, ctype<wchar_t>, and ctype<unsigned short> are explicitly specialized below.
@@ -2459,7 +2459,7 @@ public:
 
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -2716,7 +2716,7 @@ public:
 
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -2881,7 +2881,7 @@ public:
 
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -3082,7 +3082,7 @@ public:
 
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_CTYPE;
@@ -3213,7 +3213,7 @@ private:
 };
 #endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 class ctype_byname : public ctype<_Elem> { // ctype for named locale
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);

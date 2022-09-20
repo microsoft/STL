@@ -39,29 +39,29 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef wctype
 
 _STD_BEGIN
-using _CSTD wint_t;
-using _CSTD wctrans_t;
-using _CSTD wctype_t;
+_EXPORT_STD using _CSTD wint_t;
+_EXPORT_STD using _CSTD wctrans_t;
+_EXPORT_STD using _CSTD wctype_t;
 
-using _CSTD iswalnum;
-using _CSTD iswalpha;
-using _CSTD iswcntrl;
-using _CSTD iswctype;
-using _CSTD iswdigit;
-using _CSTD iswgraph;
-using _CSTD iswlower;
-using _CSTD iswprint;
-using _CSTD iswpunct;
-using _CSTD iswspace;
-using _CSTD iswupper;
-using _CSTD iswxdigit;
-using _CSTD towctrans;
-using _CSTD towlower;
-using _CSTD towupper;
-using _CSTD wctrans;
-using _CSTD wctype;
+_EXPORT_STD using _CSTD iswalnum;
+_EXPORT_STD using _CSTD iswalpha;
+_EXPORT_STD using _CSTD iswcntrl;
+_EXPORT_STD using _CSTD iswctype;
+_EXPORT_STD using _CSTD iswdigit;
+_EXPORT_STD using _CSTD iswgraph;
+_EXPORT_STD using _CSTD iswlower;
+_EXPORT_STD using _CSTD iswprint;
+_EXPORT_STD using _CSTD iswpunct;
+_EXPORT_STD using _CSTD iswspace;
+_EXPORT_STD using _CSTD iswupper;
+_EXPORT_STD using _CSTD iswxdigit;
+_EXPORT_STD using _CSTD towctrans;
+_EXPORT_STD using _CSTD towlower;
+_EXPORT_STD using _CSTD towupper;
+_EXPORT_STD using _CSTD wctrans;
+_EXPORT_STD using _CSTD wctype;
 
-using _CSTD iswblank;
+_EXPORT_STD using _CSTD iswblank;
 _STD_END
 
 #pragma pop_macro("new")

@@ -3,6 +3,8 @@
 
 // _Sinh function
 
+#include <xutility>
+
 #include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
@@ -11,7 +13,7 @@ _EXTERN_C_UNLESS_PURE
 static constexpr double p[] = {0.0000000001632881, 0.0000000250483893, 0.0000027557344615, 0.0001984126975233,
     0.0083333333334816, 0.1666666666666574, 1.0000000000000001};
 
-static constexpr size_t NP = sizeof(p) / sizeof(p[0]) - 1;
+static constexpr size_t NP = std::size(p) - 1;
 
 _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) { // compute y * sinh(x), |y| <= 1
     short neg;

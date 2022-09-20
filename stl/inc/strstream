@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 _STL_DISABLE_DEPRECATED_WARNING
-class _CXX17_DEPRECATE_STRSTREAM strstreambuf : public streambuf {
+_EXPORT_STD class _CXX17_DEPRECATE_STRSTREAM strstreambuf : public streambuf {
     // stream buffer associated with static or allocated character array
 public:
     using _Mysb = streambuf;
@@ -421,7 +421,7 @@ inline void swap(strstreambuf& _Left, strstreambuf& _Right) {
     _Left.swap(_Right);
 }
 
-class _CXX17_DEPRECATE_STRSTREAM istrstream : public istream {
+_EXPORT_STD class _CXX17_DEPRECATE_STRSTREAM istrstream : public istream {
     // input stream associated with a character array
 public:
     using _Mybase = istream;
@@ -485,7 +485,7 @@ inline void swap(istrstream& _Left, istrstream& _Right) {
     _Left.swap(_Right);
 }
 
-class _CXX17_DEPRECATE_STRSTREAM ostrstream : public ostream {
+_EXPORT_STD class _CXX17_DEPRECATE_STRSTREAM ostrstream : public ostream {
     // output stream associated with a character array
 public:
     using _Mybase = ostream;
@@ -548,7 +548,7 @@ inline void swap(ostrstream& _Left, ostrstream& _Right) {
     _Left.swap(_Right);
 }
 
-class _CXX17_DEPRECATE_STRSTREAM strstream : public iostream {
+_EXPORT_STD class _CXX17_DEPRECATE_STRSTREAM strstream : public iostream {
     // input/output stream associated with character array buffer
 public:
     using _Mybase = iostream;

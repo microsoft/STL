@@ -88,7 +88,26 @@ namespace test {
     enum class CanDifference : bool { no, yes };
     enum class CanCompare : bool { no, yes };
     enum class ProxyRef { no, yes, prvalue };
-    enum class IsWrapped : bool { no, yes };
+    enum class WrappedState {
+        wrapped,
+        unwrapped,
+        ignorant,
+    };
+
+    template <class Derived, WrappedState Wrapped>
+    struct prevent_inheriting_unwrap_base {
+        using _Prevent_inheriting_unwrap = Derived;
+    };
+    template <class Derived>
+    struct prevent_inheriting_unwrap_base<Derived, WrappedState::ignorant> {};
+
+    [[nodiscard]] constexpr bool is_wrapped(WrappedState s) {
+        return s == WrappedState::wrapped;
+    }
+
+    template <WrappedState W1, WrappedState W2>
+    concept compatible_wrapped_state = (W1 == W2) || (W1 == WrappedState::wrapped && W2 == WrappedState::ignorant)
+                                    || (W1 == WrappedState::ignorant && W2 == WrappedState::wrapped);
 
     template <class T>
     [[nodiscard]] constexpr bool to_bool(T const t) noexcept {
@@ -96,8 +115,8 @@ namespace test {
         return static_cast<bool>(t);
     }
 
-    template <class Element, IsWrapped Wrapped = IsWrapped::yes>
-    class sentinel {
+    template <class Element, WrappedState Wrapped = WrappedState::wrapped>
+    class sentinel : public prevent_inheriting_unwrap_base<sentinel<Element, Wrapped>, Wrapped> {
         Element* ptr_ = nullptr;
 
     public:
@@ -108,9 +127,7 @@ namespace test {
             return ptr_;
         }
 
-        using _Prevent_inheriting_unwrap = sentinel;
-
-        using unwrap    = sentinel<Element, IsWrapped::no>;
+        using unwrap    = sentinel<Element, WrappedState::unwrapped>;
         using Constinel = sentinel<const Element, Wrapped>;
 
         constexpr operator Constinel() && noexcept {
@@ -121,19 +138,15 @@ namespace test {
             return Constinel{ptr_};
         }
 
-        // clang-format off
-        [[nodiscard]] constexpr auto _Unwrapped() const noexcept requires (to_bool(Wrapped)) {
+        [[nodiscard]] constexpr auto _Unwrapped() const noexcept requires(is_wrapped(Wrapped)) {
             return unwrap{ptr_};
         }
-        // clang-format on
 
         static constexpr bool _Unwrap_when_unverified = true;
 
-        // clang-format off
-        constexpr void _Seek_to(unwrap const& s) noexcept requires (to_bool(Wrapped)) {
+        constexpr void _Seek_to(unwrap const& s) noexcept requires(is_wrapped(Wrapped)) {
             ptr_ = s.peek();
         }
-        // clang-format on
 
         [[nodiscard]] friend constexpr boolish operator==(sentinel const s, Element* const ptr) noexcept {
             return {s.ptr_ == ptr};
@@ -345,10 +358,12 @@ namespace test {
         // Use a ProxyRef reference type (instead of Element&)?
         ProxyRef Proxy = ProxyRef{!derived_from<Category, contiguous>},
         // Interact with the STL's iterator unwrapping machinery?
-        IsWrapped Wrapped = IsWrapped::yes>
+        WrappedState Wrapped = WrappedState::wrapped>
         requires (to_bool(Eq) || !derived_from<Category, fwd>)
             && (Proxy == ProxyRef::no || !derived_from<Category, contiguous>)
-    class iterator {
+    class iterator
+        : public prevent_inheriting_unwrap_base<iterator<Category, Element, Diff, Eq, Proxy, Wrapped>, Wrapped> {
+        // clang-format on
         Element* ptr_;
 
         template <class T>
@@ -376,7 +391,7 @@ namespace test {
         using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
 
         // output iterator operations
-        iterator() requires at_least<fwd> || (Eq == CanCompare::yes) = default;
+        iterator() requires at_least<fwd> ||(Eq == CanCompare::yes) = default;
 
         constexpr explicit iterator(Element* ptr) noexcept : ptr_{ptr} {}
 
@@ -398,18 +413,27 @@ namespace test {
             return ReferenceType{*ptr_};
         }
 
-        [[nodiscard]] constexpr boolish operator==(sentinel<Element, Wrapped> const& s) const noexcept {
-            return boolish{ptr_ == s.peek()};
-        }
+        template <WrappedState OtherWrapped>
         [[nodiscard]] friend constexpr boolish operator==(
-            sentinel<Element, Wrapped> const& s, iterator const& i) noexcept {
+            iterator const& i, sentinel<Element, OtherWrapped> const& s) noexcept requires
+            compatible_wrapped_state<Wrapped, OtherWrapped> {
+            return boolish{i.peek() == s.peek()};
+        }
+        template <WrappedState OtherWrapped>
+        [[nodiscard]] friend constexpr boolish operator==(sentinel<Element, OtherWrapped> const& s,
+            iterator const& i) noexcept requires compatible_wrapped_state<Wrapped, OtherWrapped> {
             return i == s;
         }
-        [[nodiscard]] constexpr boolish operator!=(sentinel<Element, Wrapped> const& s) const noexcept {
-            return !(*this == s);
-        }
+
+        template <WrappedState OtherWrapped>
         [[nodiscard]] friend constexpr boolish operator!=(
-            sentinel<Element, Wrapped> const& s, iterator const& i) noexcept {
+            iterator const& i, sentinel<Element, OtherWrapped> const& s) noexcept requires
+            compatible_wrapped_state<Wrapped, OtherWrapped> {
+            return !(i == s);
+        }
+        template <WrappedState OtherWrapped>
+        [[nodiscard]] friend constexpr boolish operator!=(sentinel<Element, OtherWrapped> const& s,
+            iterator const& i) noexcept requires compatible_wrapped_state<Wrapped, OtherWrapped> {
             return !(i == s);
         }
 
@@ -457,8 +481,8 @@ namespace test {
             return std::move(*i.ptr_);
         }
 
-        friend constexpr void iter_swap(iterator const& x, iterator const& y)
-            noexcept(std::is_nothrow_swappable_v<Element>) requires at_least<input> && std::swappable<Element> {
+        friend constexpr void iter_swap(iterator const& x, iterator const& y) noexcept(
+            std::is_nothrow_swappable_v<Element>) requires at_least<input> && std::swappable<Element> {
             ranges::swap(*x.ptr_, *y.ptr_);
         }
 
@@ -470,18 +494,17 @@ namespace test {
         }
 
         // sentinel operations (implied by forward iterator):
-        iterator(iterator const&) requires (to_bool(Eq)) = default;
-        iterator& operator=(iterator const&) requires (to_bool(Eq)) = default;
+        iterator(iterator const&) requires(to_bool(Eq))            = default;
+        iterator& operator=(iterator const&) requires(to_bool(Eq)) = default;
 
-        constexpr operator Consterator() const& noexcept
-            requires (to_bool(Eq)) {
+        constexpr operator Consterator() const& noexcept requires(to_bool(Eq)) {
             return Consterator{ptr_};
         }
 
-        [[nodiscard]] constexpr boolish operator==(iterator const& that) const noexcept requires (to_bool(Eq)) {
+        [[nodiscard]] constexpr boolish operator==(iterator const& that) const noexcept requires(to_bool(Eq)) {
             return {ptr_ == that.ptr_};
         }
-        [[nodiscard]] constexpr boolish operator!=(iterator const& that) const noexcept requires (to_bool(Eq)) {
+        [[nodiscard]] constexpr boolish operator!=(iterator const& that) const noexcept requires(to_bool(Eq)) {
             return !(*this == that);
         }
 
@@ -529,8 +552,8 @@ namespace test {
         [[nodiscard]] constexpr iterator operator+(ptrdiff_t const n) const noexcept requires at_least<random> {
             return iterator{ptr_ + n};
         }
-        [[nodiscard]] friend constexpr iterator operator+(ptrdiff_t const n, iterator const& i) noexcept
-            requires at_least<random> {
+        [[nodiscard]] friend constexpr iterator operator+(
+            ptrdiff_t const n, iterator const& i) noexcept requires at_least<random> {
             return i + n;
         }
 
@@ -544,36 +567,44 @@ namespace test {
         }
 
         // sized_sentinel_for operations:
+        // clang-format off
         [[nodiscard]] constexpr ptrdiff_t operator-(iterator const& that) const noexcept
-            requires (to_bool(Diff) && to_bool(Eq)) || at_least<random> {
+            requires at_least<random> || (to_bool(Diff) && to_bool(Eq)) {
+            // clang-format on
             return ptr_ - that.ptr_;
         }
-        [[nodiscard]] constexpr ptrdiff_t operator-(sentinel<Element, Wrapped> const& s) const noexcept
-            requires (to_bool(Diff)) {
+
+        // clang-format off
+        template <WrappedState OtherWrapped>
+        [[nodiscard]] constexpr ptrdiff_t operator-(sentinel<Element, OtherWrapped> const& s) const noexcept
+            requires compatible_wrapped_state<Wrapped, OtherWrapped> && (to_bool(Diff)) {
+            // clang-format on
             return ptr_ - s.peek();
         }
+        // clang-format off
+        template <WrappedState OtherWrapped>
         [[nodiscard]] friend constexpr ptrdiff_t operator-(
-            sentinel<Element, Wrapped> const& s, iterator const& i) noexcept requires (to_bool(Diff)) {
+            sentinel<Element, OtherWrapped> const& s, iterator const& i) noexcept
+            requires compatible_wrapped_state<Wrapped, OtherWrapped> && (to_bool(Diff)) {
+            // clang-format on
             return -(i - s);
         }
 
-        // iterator unwrapping operations:
-        using _Prevent_inheriting_unwrap = iterator;
+        using unwrap              = std::conditional_t<derived_from<Category, contiguous>, Element*,
+            iterator<Category, Element, Diff, Eq, Proxy, WrappedState::unwrapped>>;
+        using unwrapping_ignorant = iterator<Category, Element, Diff, Eq, Proxy, WrappedState::ignorant>;
 
-        using unwrap = std::conditional_t<derived_from<Category, contiguous>, Element*,
-            iterator<Category, Element, Diff, Eq, Proxy, IsWrapped::no>>;
-
-        [[nodiscard]] constexpr auto _Unwrapped() const& noexcept requires (to_bool(Wrapped) && to_bool(Eq)) {
+        [[nodiscard]] constexpr auto _Unwrapped() const& noexcept requires(is_wrapped(Wrapped) && to_bool(Eq)) {
             return unwrap{ptr_};
         }
 
-        [[nodiscard]] constexpr auto _Unwrapped() && noexcept requires (to_bool(Wrapped)) {
+        [[nodiscard]] constexpr auto _Unwrapped() && noexcept requires(is_wrapped(Wrapped)) {
             return unwrap{exchange(ptr_, nullptr)};
         }
 
         static constexpr bool _Unwrap_when_unverified = true;
 
-        constexpr void _Seek_to(unwrap const& i) noexcept requires (to_bool(Wrapped) && to_bool(Eq)) {
+        constexpr void _Seek_to(unwrap const& i) noexcept requires(is_wrapped(Wrapped) && to_bool(Eq)) {
             if constexpr (at_least<contiguous>) {
                 ptr_ = i;
             } else {
@@ -581,7 +612,7 @@ namespace test {
             }
         }
 
-        constexpr void _Seek_to(unwrap&& i) noexcept requires (to_bool(Wrapped)) {
+        constexpr void _Seek_to(unwrap&& i) noexcept requires(is_wrapped(Wrapped)) {
             if constexpr (at_least<contiguous>) {
                 ptr_ = i;
             } else {
@@ -589,7 +620,6 @@ namespace test {
             }
         }
     };
-    // clang-format on
 
     template <class Category, bool IsForward, bool IsProxy, bool EqAndCopy>
     struct iterator_traits_base {};
@@ -611,7 +641,7 @@ namespace test {
 } // namespace test
 
 template <class Category, class Element, ::test::CanDifference Diff, ::test::CanCompare Eq, ::test::ProxyRef Proxy,
-    ::test::IsWrapped Wrapped>
+    ::test::WrappedState Wrapped>
 struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>>
     : ::test::iterator_traits_base<Category, derived_from<Category, forward_iterator_tag>,
           Proxy == ::test::ProxyRef::yes, Eq == ::test::CanCompare::yes> {
@@ -622,7 +652,7 @@ struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy,
     using reference        = iter_reference_t<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>>;
 };
 
-template <class Element, ::test::CanDifference Diff, ::test::IsWrapped Wrapped>
+template <class Element, ::test::CanDifference Diff, ::test::WrappedState Wrapped>
 struct std::pointer_traits<::test::iterator<std::contiguous_iterator_tag, Element, Diff, ::test::CanCompare::yes,
     ::test::ProxyRef::no, Wrapped>> {
     using pointer         = ::test::iterator<contiguous_iterator_tag, Element, Diff, ::test::CanCompare::yes,
@@ -754,8 +784,8 @@ namespace test {
         using detail::range_base<Element, Copy>::moved_from;
 
     public:
-        using I = iterator<Category, Element, Diff, Eq, Proxy, IsWrapped::yes>;
-        using S = conditional_t<to_bool(IsCommon), I, sentinel<Element, IsWrapped::yes>>;
+        using I = iterator<Category, Element, Diff, Eq, Proxy, WrappedState::wrapped>;
+        using S = conditional_t<to_bool(IsCommon), I, sentinel<Element, WrappedState::wrapped>>;
 
         using detail::range_base<Element, Copy>::range_base;
 
@@ -786,7 +816,7 @@ namespace test {
         }
 
         using UI = typename I::unwrap;
-        using US = conditional_t<to_bool(IsCommon), UI, sentinel<Element, IsWrapped::no>>;
+        using US = conditional_t<to_bool(IsCommon), UI, sentinel<Element, WrappedState::unwrapped>>;
 
         [[nodiscard]] constexpr UI _Unchecked_begin() const noexcept {
             assert(!moved_from());

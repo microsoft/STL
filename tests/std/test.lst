@@ -212,6 +212,8 @@ tests\GH_002760_syncstream_memory_leak
 tests\GH_002769_handle_deque_block_pointers
 tests\GH_002789_Hash_vec_Tidy
 tests\GH_002989_nothrow_unwrappable
+tests\GH_002992_unwrappable_iter_sent_pairs
+tests\GH_003022_substr_allocator
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\LWG3121_constrained_tuple_forwarding_ctor
@@ -550,6 +552,7 @@ tests\P2401R0_conditional_noexcept_for_exchange
 tests\P2408R5_ranges_iterators_to_classic_algorithms
 tests\P2415R2_owning_view
 tests\P2417R2_constexpr_bitset
+tests\P2438R2_substr_rvalue
 tests\P2440R1_ranges_alg_shift_left
 tests\P2440R1_ranges_alg_shift_right
 tests\P2440R1_ranges_numeric_iota
@@ -557,10 +560,12 @@ tests\P2441R2_views_join_with
 tests\P2442R1_views_chunk
 tests\P2442R1_views_chunk_death
 tests\P2442R1_views_slide
+tests\P2442R1_views_slide_death
 tests\P2443R1_views_chunk_by
 tests\P2443R1_views_chunk_by_death
 tests\P2445R1_forward_like
 tests\P2446R2_views_as_rvalue
+tests\P2465R3_standard_library_modules
 tests\P2467R1_exclusive_mode_fstreams
 tests\P2494R2_move_only_range_adaptors
 tests\P2517R1_apply_conditional_noexcept

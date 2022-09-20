@@ -22,12 +22,16 @@ _STD_BEGIN
 _INLINE_VAR constexpr int _Little_first = 1;
 _INLINE_VAR constexpr int _Big_first    = 2;
 
-enum _CXX17_DEPRECATE_CODECVT_HEADER codecvt_mode { consume_header = 4, generate_header = 2, little_endian = 1 };
+_EXPORT_STD enum _CXX17_DEPRECATE_CODECVT_HEADER codecvt_mode {
+    consume_header  = 4,
+    generate_header = 2,
+    little_endian   = 1
+};
 
 using _Statype = _CSTD mbstate_t;
 
 _STL_DISABLE_DEPRECATED_WARNING
-template <class _Elem, unsigned long _Mymax = 0x10ffff, codecvt_mode _Mymode = codecvt_mode{}>
+_EXPORT_STD template <class _Elem, unsigned long _Mymax = 0x10ffff, codecvt_mode _Mymode = codecvt_mode{}>
 class _CXX17_DEPRECATE_CODECVT_HEADER codecvt_utf8 : public codecvt<_Elem, char, _Statype> {
     // facet for converting between _Elem and UTF-8 byte sequences
 public:
@@ -218,7 +222,7 @@ protected:
     }
 };
 
-template <class _Elem, unsigned long _Mymax = 0x10ffff, codecvt_mode _Mymode = codecvt_mode{}>
+_EXPORT_STD template <class _Elem, unsigned long _Mymax = 0x10ffff, codecvt_mode _Mymode = codecvt_mode{}>
 class _CXX17_DEPRECATE_CODECVT_HEADER codecvt_utf16 : public codecvt<_Elem, char, _Statype> {
     // facet for converting between _Elem and UTF-16 multibyte sequences
 private:
@@ -435,7 +439,7 @@ protected:
     }
 };
 
-template <class _Elem, unsigned long _Mymax = 0x10ffff, codecvt_mode _Mymode = codecvt_mode{}>
+_EXPORT_STD template <class _Elem, unsigned long _Mymax = 0x10ffff, codecvt_mode _Mymode = codecvt_mode{}>
 class _CXX17_DEPRECATE_CODECVT_HEADER codecvt_utf8_utf16
     : public codecvt<_Elem, char, _Statype> { // facet for converting between UTF-16 _Elem and UTF-8 byte sequences
 public:

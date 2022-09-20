@@ -32,7 +32,7 @@ _STD_BEGIN
 // In this file, _STD span is qualified to avoid ambiguity with span() member functions.
 // This qualification is consistently used even when it isn't strictly necessary.
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 class basic_spanbuf : public basic_streambuf<_Elem, _Traits> {
 private:
     using _Mysb = basic_streambuf<_Elem, _Traits>;
@@ -184,12 +184,12 @@ private:
     _STD span<_Elem> _Buf{};
 };
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 void swap(basic_spanbuf<_Elem, _Traits>& _Left, basic_spanbuf<_Elem, _Traits>& _Right) {
     _Left.swap(_Right);
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 class basic_ispanstream : public basic_istream<_Elem, _Traits> {
 private:
     using _Mybase = basic_istream<_Elem, _Traits>;
@@ -266,12 +266,12 @@ private:
     _Mysb _Buf;
 };
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 void swap(basic_ispanstream<_Elem, _Traits>& _Left, basic_ispanstream<_Elem, _Traits>& _Right) {
     _Left.swap(_Right);
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 class basic_ospanstream : public basic_ostream<_Elem, _Traits> {
 private:
     using _Mybase = basic_ostream<_Elem, _Traits>;
@@ -325,12 +325,12 @@ private:
     _Mysb _Buf;
 };
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 void swap(basic_ospanstream<_Elem, _Traits>& _Left, basic_ospanstream<_Elem, _Traits>& _Right) {
     _Left.swap(_Right);
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 class basic_spanstream : public basic_iostream<_Elem, _Traits> {
 private:
     using _Mybase = basic_iostream<_Elem, _Traits>;
@@ -384,7 +384,7 @@ private:
     _Mysb _Buf;
 };
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 void swap(basic_spanstream<_Elem, _Traits>& _Left, basic_spanstream<_Elem, _Traits>& _Right) {
     _Left.swap(_Right);
 }
