@@ -138,7 +138,7 @@ struct instantiator {
             struct NonCopyableBool {
                 constexpr operator bool() {
                     return true;
-                };
+                }
 
                 NonCopyableBool()                       = default;
                 NonCopyableBool(const NonCopyableBool&) = delete;
