@@ -63,5 +63,6 @@ int main() {
 
     test_file_create_fail(IB::in | IB::noreplace);
     test_file_create_fail(IB::in | IB::trunc | IB::noreplace);
+    test_file_create_fail(IB::in | IB::binary | IB::noreplace);
     test_file_create_fail(IB::in | IB::binary | IB::trunc | IB::noreplace);
 }
