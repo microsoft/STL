@@ -11,9 +11,8 @@
 
 #if !_HAS_CXX17
 _EMIT_STL_WARNING(STL4038, "The contents of <any> are available only with C++17 or later.");
-#else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
-#if !_HAS_STATIC_RTTI
-_EMIT_STL_WARNING(STL4040, "The contents of <any> are available only when RTTI is available.");
+#elif !_HAS_STATIC_RTTI // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
+_EMIT_STL_WARNING(STL4040, "The contents of <any> require static RTTI.");
 #else // ^^^ !_HAS_STATIC_RTTI / _HAS_STATIC_RTTI vvv
 #include <initializer_list>
 #include <type_traits>
@@ -443,8 +442,7 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_STATIC_RTTI
-#endif // _HAS_CXX17
+#endif // ^^^ _HAS_STATIC_RTTI ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _ANY_

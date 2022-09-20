@@ -1357,7 +1357,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4039 is used to warn that "The contents of <coroutine> are not available with /await."
 
-// STL4040 is used to warn that "The contents of <meow> are available only when RTTI is available."
+// STL4040 is used to warn that "The contents of <any> require static RTTI."
 
 // next warning number: STL4041
 
