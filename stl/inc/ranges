@@ -7275,37 +7275,37 @@ namespace ranges {
     template <class... _ViewTypes>
     inline constexpr bool enable_borrowed_range<zip_view<_ViewTypes...>> = (enable_borrowed_range<_ViewTypes> && ...);
 
-    struct _Zip_fn {
-    private:
-        template <class... _Types>
-        static _CONSTEVAL bool _Is_invocation_noexcept() {
-            if constexpr (sizeof...(_Types) == 0) {
-                // NOTE: views::empty<tuple<>> is nothrow copy-constructible.
-                return true;
-            } else {
-                return noexcept(zip_view<views::all_t<_Types>...>(_STD declval<_Types>()...));
-            }
-        }
-
-    public:
-        template <class... _Types>
-            // clang-format off
-        constexpr auto operator()(_Types&&... _Args) const
-            noexcept(_Is_invocation_noexcept<_Types...>())
-            requires (sizeof...(_Types) == 0) || requires {
-                zip_view<views::all_t<_Types>...>(_STD forward<_Types>(_Args)...);
-            }
-        {
-            // clang-format on
-            if constexpr (sizeof...(_Types) == 0) {
-                return empty_view<tuple<>>{};
-            } else {
-                return zip_view<views::all_t<_Types&&>...>(_STD forward<_Types>(_Args)...);
-            }
-        }
-    };
-
     namespace views {
+        struct _Zip_fn {
+        private:
+            template <class... _Types>
+            static _CONSTEVAL bool _Is_invocation_noexcept() {
+                if constexpr (sizeof...(_Types) == 0) {
+                    // NOTE: views::empty<tuple<>> is nothrow copy-constructible.
+                    return true;
+                } else {
+                    return noexcept(zip_view<views::all_t<_Types>...>(_STD declval<_Types>()...));
+                }
+            }
+
+        public:
+            template <class... _Types>
+                // clang-format off
+            constexpr auto operator()(_Types&&... _Args) const
+                noexcept(_Is_invocation_noexcept<_Types...>())
+                requires(sizeof...(_Types) == 0) || requires {
+                    zip_view<views::all_t<_Types>...>(_STD forward<_Types>(_Args)...);
+                }
+            {
+                // clang-format on
+                if constexpr (sizeof...(_Types) == 0) {
+                    return empty_view<tuple<>>{};
+                } else {
+                    return zip_view<views::all_t<_Types&&>...>(_STD forward<_Types>(_Args)...);
+                }
+            }
+        };
+
         _EXPORT_STD inline constexpr _Zip_fn zip{};
     } // namespace views
 
