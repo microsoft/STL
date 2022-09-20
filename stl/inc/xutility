@@ -1969,9 +1969,9 @@ public:
     template <_Not_a_const_iterator _Sent>
         requires sized_sentinel_for<_Sent, _Iter>
     _NODISCARD_FRIEND constexpr difference_type operator-(const _Sent& _Se, const basic_const_iterator& _It) noexcept(
-        noexcept(_Se - _It.base())) /* strengthened */ { // per LWG-3769
+        noexcept(_Se - _It._Current)) /* strengthened */ { // per LWG-3769
         // clang-format on
-        return _Se - _It.base();
+        return _Se - _It._Current;
     }
 };
 
