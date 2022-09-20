@@ -6924,7 +6924,7 @@ namespace ranges {
     }
 
     // clang-format off
-    template <input_range... _ViewTypes>
+    _EXPORT_STD template <input_range... _ViewTypes>
         requires (view<_ViewTypes> && ...) && (sizeof...(_ViewTypes) > 0)
     class zip_view : public view_interface<zip_view<_ViewTypes...>> {
         // clang-format on
@@ -7306,7 +7306,7 @@ namespace ranges {
     };
 
     namespace views {
-        inline constexpr _Zip_fn zip{};
+        _EXPORT_STD inline constexpr _Zip_fn zip{};
     } // namespace views
 
 #ifdef __cpp_lib_ranges_to_container
