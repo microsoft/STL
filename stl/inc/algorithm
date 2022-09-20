@@ -260,20 +260,20 @@ namespace ranges {
     };
 
 #if _HAS_CXX23
-    _EXPORT_STD template <class _It, class _Ty>
+    _EXPORT_STD template <class _In, class _Ty>
     struct in_value_result {
-        /* [[no_unique_address]] */ _It in;
+        /* [[no_unique_address]] */ _In in;
         /* [[no_unique_address]] */ _Ty value;
 
-        template <class _It2, class _Ty2>
-            requires convertible_to<const _It&, _It2> && convertible_to<const _Ty&, _Ty2>
-        constexpr operator in_value_result<_It2, _Ty2>() const& {
+        template <class _IIn, class _TTy>
+            requires convertible_to<const _In&, _IIn> && convertible_to<const _Ty&, _TTy>
+        constexpr operator in_value_result<_IIn, _TTy>() const& {
             return {in, value};
         }
 
-        template <class _It2, class _Ty2>
-            requires convertible_to<_It, _It2> && convertible_to<_Ty, _Ty2>
-        constexpr operator in_value_result<_It2, _Ty2>() && {
+        template <class _IIn, class _TTy>
+            requires convertible_to<_In, _IIn> && convertible_to<_Ty, _TTy>
+        constexpr operator in_value_result<_IIn, _TTy>() && {
             return {_STD move(in), _STD move(value)};
         }
     };
