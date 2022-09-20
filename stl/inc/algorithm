@@ -171,7 +171,7 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In, class _Fun>
+    _EXPORT_STD template <class _In, class _Fun>
     struct in_fun_result {
         /* [[no_unique_address]] */ _In in;
         /* [[no_unique_address]] */ _Fun fun;
@@ -187,7 +187,7 @@ namespace ranges {
         }
     };
 
-    template <class _In1, class _In2, class _Out>
+    _EXPORT_STD template <class _In1, class _In2, class _Out>
     struct in_in_out_result {
         /* [[no_unique_address]] */ _In1 in1;
         /* [[no_unique_address]] */ _In2 in2;
@@ -205,7 +205,7 @@ namespace ranges {
         }
     };
 
-    template <class _In, class _Out1, class _Out2>
+    _EXPORT_STD template <class _In, class _Out1, class _Out2>
     struct in_out_out_result {
         /* [[no_unique_address]] */ _In in;
         /* [[no_unique_address]] */ _Out1 out1;
@@ -223,7 +223,7 @@ namespace ranges {
         }
     };
 
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     struct min_max_result {
         /* [[no_unique_address]] */ _Ty min;
         /* [[no_unique_address]] */ _Ty max;
@@ -239,7 +239,7 @@ namespace ranges {
         }
     };
 
-    template <class _In>
+    _EXPORT_STD template <class _In>
     struct in_found_result {
         /* [[no_unique_address]] */ _In in;
         bool found;
@@ -257,7 +257,7 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _InIt, class _Fn>
+_EXPORT_STD template <class _InIt, class _Fn>
 _CONSTEXPR20 _Fn for_each(_InIt _First, _InIt _Last, _Fn _Func) { // perform function for each element [_First, _Last)
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -270,10 +270,10 @@ _CONSTEXPR20 _Fn for_each(_InIt _First, _InIt _Last, _Fn _Func) { // perform fun
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
 void for_each(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept; // terminates
 
-template <class _InIt, class _Diff, class _Fn>
+_EXPORT_STD template <class _InIt, class _Diff, class _Fn>
 _CONSTEXPR20 _InIt for_each_n(_InIt _First, const _Diff _Count_raw, _Fn _Func) {
     // perform function for each element [_First, _First + _Count)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
@@ -291,13 +291,13 @@ _CONSTEXPR20 _InIt for_each_n(_InIt _First, const _Diff _Count_raw, _Fn _Func) {
     return _First;
 }
 
-template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt for_each_n(_ExPo&& _Exec, _FwdIt _First, _Diff _Count_raw, _Fn _Func) noexcept; // terminates
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In, class _Fun>
+    _EXPORT_STD template <class _In, class _Fun>
     using for_each_result = in_fun_result<_In, _Fun>;
 
     class _For_each_fn : private _Not_quite_object {
@@ -345,9 +345,9 @@ namespace ranges {
         }
     };
 
-    inline constexpr _For_each_fn for_each{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _For_each_fn for_each{_Not_quite_object::_Construct_tag{}};
 
-    template <class _In, class _Fun>
+    _EXPORT_STD template <class _In, class _Fun>
     using for_each_n_result = in_fun_result<_In, _Fun>;
 
     class _For_each_n_fn : private _Not_quite_object {
@@ -372,16 +372,16 @@ namespace ranges {
         }
     };
 
-    inline constexpr _For_each_n_fn for_each_n{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _For_each_n_fn for_each_n{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-template <class _InIt, class _Pr>
+_EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _InIt find_if_not(_InIt _First, const _InIt _Last, _Pr _Pred) {
     // find first element that satisfies !_Pred
     _Adl_verify_range(_First, _Last);
@@ -398,11 +398,11 @@ _NODISCARD _CONSTEXPR20 _InIt find_if_not(_InIt _First, const _InIt _Last, _Pr _
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt find_if_not(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-template <class _FwdIt, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find first satisfying _Pred with successor
     _Adl_verify_range(_First, _Last);
@@ -421,16 +421,16 @@ _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, 
     return _Last;
 }
 
-template <class _FwdIt>
+_EXPORT_STD template <class _FwdIt>
 _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, const _FwdIt _Last) { // find first matching successor
     return _STD adjacent_find(_First, _Last, equal_to<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 
-template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last) noexcept /* terminates */ {
     // find first matching successor
     return _STD adjacent_find(_STD forward<_ExPo>(_Exec), _First, _Last, equal_to{});
@@ -494,11 +494,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Count_fn count{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Count_fn count{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _InIt, class _Pr>
+_EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count_if(_InIt _First, _InIt _Last, _Pr _Pred) {
     // count elements satisfying _Pred
     _Adl_verify_range(_First, _Last);
@@ -515,7 +515,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count_if(_InIt _First, _InIt _Last, 
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _Iter_diff_t<_FwdIt> count_if(
     _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
@@ -559,11 +559,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Count_if_fn count_if{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Count_if_fn count_if{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _InIt1, class _InIt2, class _Pr>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _Pred) {
     // return [_First1, _Last1)/[_First2, ...) mismatch
     _Adl_verify_range(_First1, _Last1);
@@ -581,19 +581,19 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-template <class _InIt1, class _InIt2>
+_EXPORT_STD template <class _InIt1, class _InIt2>
 _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2) {
     // return [_First1, _Last1)/[_First2, ...) mismatch
     return _STD mismatch(_First1, _Last1, _First2, equal_to<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2) noexcept /* terminates */ {
     // return [_First1, _Last1)/[_First2, ...) mismatch
@@ -603,7 +603,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 }
 #endif // _HAS_CXX17
 
-template <class _InIt1, class _InIt2, class _Pr>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
     // return [_First1, _Last1)/[_First2, _Last2) mismatch
@@ -636,19 +636,19 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-template <class _InIt1, class _InIt2>
+_EXPORT_STD template <class _InIt1, class _InIt2>
 _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
     // return [_First1, _Last1)/[_First2, _Last2) mismatch
     return _STD mismatch(_First1, _Last1, _First2, _Last2, equal_to<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) noexcept /* terminates */ {
     // return [_First1, _Last1)/[_First2, _Last2) mismatch
@@ -759,11 +759,11 @@ namespace ranges {
         // clang-format on
     };
 
-    inline constexpr _Equal_fn equal{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Equal_fn equal{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt1, class _FwdIt2, class _Pr>
+_EXPORT_STD template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, ...)
     _Adl_verify_range(_First1, _Last1);
@@ -787,13 +787,13 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _Fw
     return _Check_match_counts(_UFirst1, _ULast1, _UFirst2, _STD next(_UFirst2, _Dist2), _Pass_fn(_Pred));
 }
 
-template <class _FwdIt1, class _FwdIt2>
+_EXPORT_STD template <class _FwdIt1, class _FwdIt2>
 _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2) {
     // test if [_First1, _Last1) == permuted [_First2, ...)
     return _STD is_permutation(_First1, _Last1, _First2, equal_to<>{});
 }
 
-template <class _FwdIt1, class _FwdIt2, class _Pr>
+_EXPORT_STD template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_permutation(
     _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2)
@@ -851,7 +851,7 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(
     }
 }
 
-template <class _FwdIt1, class _FwdIt2>
+_EXPORT_STD template <class _FwdIt1, class _FwdIt2>
 _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2)
     return _STD is_permutation(_First1, _Last1, _First2, _Last2, equal_to<>{});
@@ -1127,11 +1127,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Is_permutation_fn is_permutation{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Is_permutation_fn is_permutation{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _InIt, class _Pr>
+_EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool all_of(_InIt _First, _InIt _Last, _Pr _Pred) { // test if all elements satisfy _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -1146,7 +1146,7 @@ _NODISCARD _CONSTEXPR20 bool all_of(_InIt _First, _InIt _Last, _Pr _Pred) { // t
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool all_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
@@ -1188,11 +1188,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _All_of_fn all_of{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _All_of_fn all_of{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _InIt, class _Pr>
+_EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool any_of(const _InIt _First, const _InIt _Last, _Pr _Pred) {
     // test if any element satisfies _Pred
     _Adl_verify_range(_First, _Last);
@@ -1208,7 +1208,7 @@ _NODISCARD _CONSTEXPR20 bool any_of(const _InIt _First, const _InIt _Last, _Pr _
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool any_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
@@ -1250,11 +1250,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Any_of_fn any_of{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Any_of_fn any_of{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _InIt, class _Pr>
+_EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool none_of(const _InIt _First, const _InIt _Last, _Pr _Pred) {
     // test if no elements satisfy _Pred
     _Adl_verify_range(_First, _Last);
@@ -1270,7 +1270,7 @@ _NODISCARD _CONSTEXPR20 bool none_of(const _InIt _First, const _InIt _Last, _Pr 
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool none_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
@@ -1312,7 +1312,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _None_of_fn none_of{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _None_of_fn none_of{_Not_quite_object::_Construct_tag{}};
 
 #if _HAS_CXX23
     class _Contains_fn : private _Not_quite_object {
@@ -1341,7 +1341,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Contains_fn contains{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Contains_fn contains{_Not_quite_object::_Construct_tag{}};
 
     class _Contains_subrange_fn : private _Not_quite_object {
     public:
@@ -1383,10 +1383,10 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Contains_subrange_fn contains_subrange{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Contains_subrange_fn contains_subrange{_Not_quite_object::_Construct_tag{}};
 #endif // _HAS_CXX23
 
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using copy_n_result = in_out_result<_In, _Out>;
 
     class _Copy_n_fn : private _Not_quite_object {
@@ -1415,9 +1415,9 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Copy_n_fn copy_n{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Copy_n_fn copy_n{_Not_quite_object::_Construct_tag{}};
 
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using copy_backward_result = in_out_result<_In, _Out>;
 
     class _Copy_backward_fn : private _Not_quite_object {
@@ -1444,11 +1444,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Copy_backward_fn copy_backward{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Copy_backward_fn copy_backward{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _InIt, class _OutIt, class _Pr>
+_EXPORT_STD template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy each satisfying _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -1466,7 +1466,7 @@ _CONSTEXPR20 _OutIt copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) 
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred) noexcept /* terminates */ {
     // copy each satisfying _Pred
     // not parallelized at present, parallelism expected to be feasible in a future release
@@ -1478,7 +1478,7 @@ _FwdIt2 copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using copy_if_result = in_out_result<_In, _Out>;
 
     class _Copy_if_fn : private _Not_quite_object {
@@ -1529,9 +1529,9 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Copy_if_fn copy_if{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Copy_if_fn copy_if{_Not_quite_object::_Construct_tag{}};
 
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using move_result = in_out_result<_In, _Out>;
 
     template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
@@ -1579,9 +1579,9 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Move_fn move{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Move_fn move{_Not_quite_object::_Construct_tag{}};
 
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using move_backward_result = in_out_result<_In, _Out>;
 
     // concept-constrained for strict enforcement as it is used by several algorithms
@@ -1625,11 +1625,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Move_backward_fn move_backward{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Move_backward_fn move_backward{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _InIt, class _OutIt1, class _OutIt2, class _Pr>
+_EXPORT_STD template <class _InIt, class _OutIt1, class _OutIt2, class _Pr>
 _CONSTEXPR20 pair<_OutIt1, _OutIt2> partition_copy(
     _InIt _First, _InIt _Last, _OutIt1 _Dest_true, _OutIt2 _Dest_false, _Pr _Pred) {
     // copy true partition to _Dest_true, false to _Dest_false
@@ -1654,7 +1654,8 @@ _CONSTEXPR20 pair<_OutIt1, _OutIt2> partition_copy(
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 pair<_FwdIt2, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest_true, _FwdIt3 _Dest_false,
     _Pr _Pred) noexcept /* terminates */ {
     // copy true partition to _Dest_true, false to _Dest_false
@@ -1667,7 +1668,7 @@ pair<_FwdIt2, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _F
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In, class _Out1, class _Out2>
+    _EXPORT_STD template <class _In, class _Out1, class _Out2>
     using partition_copy_result = in_out_out_result<_In, _Out1, _Out2>;
 
     class _Partition_copy_fn : private _Not_quite_object {
@@ -1729,12 +1730,12 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Partition_copy_fn partition_copy{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Partition_copy_fn partition_copy{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-template <class _InIt, class _Pr>
+_EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_partitioned(const _InIt _First, const _InIt _Last, _Pr _Pred) {
     // test if [_First, _Last) partitioned by _Pred
     _Adl_verify_range(_First, _Last);
@@ -1761,7 +1762,7 @@ _NODISCARD _CONSTEXPR20 bool is_partitioned(const _InIt _First, const _InIt _Las
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool is_partitioned(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
@@ -1813,11 +1814,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Is_partitioned_fn is_partitioned{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Is_partitioned_fn is_partitioned{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find beginning of false partition in [_First, _Last)
     _Adl_verify_range(_First, _Last);
@@ -1935,7 +1936,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Partition_point_fn partition_point{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Partition_point_fn partition_point{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -1960,7 +1961,7 @@ _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _F
     return true;
 }
 
-template <class _FwdItHaystack, class _FwdItPat, class _Pr>
+_EXPORT_STD template <class _FwdItHaystack, class _FwdItPat, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHaystack _Last1, const _FwdItPat _First2,
     const _FwdItPat _Last2, _Pr _Pred) { // find first [_First2, _Last2) satisfying _Pred
     _Adl_verify_range(_First1, _Last1);
@@ -2004,12 +2005,13 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHays
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdItHaystack, class _FwdItPat, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdItHaystack, class _FwdItPat, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdItHaystack search(_ExPo&& _Exec, const _FwdItHaystack _First1, _FwdItHaystack _Last1,
     const _FwdItPat _First2, const _FwdItPat _Last2, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-template <class _FwdItHaystack, class _FwdItPat>
+_EXPORT_STD template <class _FwdItHaystack, class _FwdItPat>
 _NODISCARD _CONSTEXPR20 _FwdItHaystack search(
     const _FwdItHaystack _First1, const _FwdItHaystack _Last1, const _FwdItPat _First2, const _FwdItPat _Last2) {
     // find first [_First2, _Last2) match
@@ -2017,7 +2019,7 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdItHaystack, class _FwdItPat, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdItHaystack, class _FwdItPat, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdItHaystack search(_ExPo&& _Exec, const _FwdItHaystack _First1, const _FwdItHaystack _Last1,
     const _FwdItPat _First2, const _FwdItPat _Last2) noexcept /* terminates */ {
     // find first [_First2, _Last2) match
@@ -2025,14 +2027,14 @@ _NODISCARD _FwdItHaystack search(_ExPo&& _Exec, const _FwdItHaystack _First1, co
 }
 #endif // _HAS_CXX17
 
-template <class _FwdItHaystack, class _Searcher>
+_EXPORT_STD template <class _FwdItHaystack, class _Searcher>
 _NODISCARD _CONSTEXPR20 _FwdItHaystack search(
     const _FwdItHaystack _First, const _FwdItHaystack _Last, const _Searcher& _Search) {
     // find _Search's pattern in [_First, _Last)
     return _Search(_First, _Last).first;
 }
 
-template <class _FwdIt, class _Diff, class _Ty, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Diff, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt search_n(
     const _FwdIt _First, _FwdIt _Last, const _Diff _Count_raw, const _Ty& _Val, _Pr _Pred) {
     // find first _Count * _Val satisfying _Pred
@@ -2105,19 +2107,20 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Diff, class _Ty, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _Ty, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt search_n(_ExPo&& _Exec, const _FwdIt _First, _FwdIt _Last, const _Diff _Count_raw, const _Ty& _Val,
     _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-template <class _FwdIt, class _Diff, class _Ty>
+_EXPORT_STD template <class _FwdIt, class _Diff, class _Ty>
 _NODISCARD _CONSTEXPR20 _FwdIt search_n(const _FwdIt _First, const _FwdIt _Last, const _Diff _Count, const _Ty& _Val) {
     // find first _Count * _Val match
     return _STD search_n(_First, _Last, _Count, _Val, equal_to<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Diff, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt search_n(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Diff _Count,
     const _Ty& _Val) noexcept /* terminates */ { // find first _Count * _Val match
     return _STD search_n(_STD forward<_ExPo>(_Exec), _First, _Last, _Count, _Val, equal_to{});
@@ -2283,7 +2286,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Search_n_fn search_n{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Search_n_fn search_n{_Not_quite_object::_Construct_tag{}};
 
 #if _HAS_CXX23
     class _Starts_with_fn : private _Not_quite_object {
@@ -2348,7 +2351,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Starts_with_fn starts_with{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Starts_with_fn starts_with{_Not_quite_object::_Construct_tag{}};
 
     class _Ends_with_fn : private _Not_quite_object {
     public:
@@ -2576,12 +2579,12 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Ends_with_fn ends_with{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Ends_with_fn ends_with{_Not_quite_object::_Construct_tag{}};
 #endif // _HAS_CXX23
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt1, class _FwdIt2, class _Pr>
+_EXPORT_STD template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
     _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2, _Pr _Pred) {
     // find last [_First2, _Last2) satisfying _Pred
@@ -2662,7 +2665,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
     }
 }
 
-template <class _FwdIt1, class _FwdIt2>
+_EXPORT_STD template <class _FwdIt1, class _FwdIt2>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
     _FwdIt1 const _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2) {
     // find last [_First2, _Last2) match
@@ -2670,11 +2673,11 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt1 find_end(
     _ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept; // terminates
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt1 find_end(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) noexcept
 /* terminates */ { // find last [_First2, _Last2) match
     return _STD find_end(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
@@ -2842,11 +2845,11 @@ namespace ranges {
         // clang-format on
     };
 
-    inline constexpr _Find_end_fn find_end{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Find_end_fn find_end{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt1, class _FwdIt2, class _Pr>
+_EXPORT_STD template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
     _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2, _Pr _Pred) {
     // look for one of [_First2, _Last2) satisfying _Pred with element
@@ -2869,18 +2872,18 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
     return _First1;
 }
 
-template <class _FwdIt1, class _FwdIt2>
+_EXPORT_STD template <class _FwdIt1, class _FwdIt2>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2) { // look for one of [_First2, _Last2) that matches element
     return _STD find_first_of(_First1, _Last1, _First2, _Last2, equal_to<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2, _Pr _Pred) noexcept; // terminates
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2) noexcept /* terminates */ { // look for one of [_First2, _Last2) that matches element
     return _STD find_first_of(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
@@ -2946,9 +2949,9 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Find_first_of_fn find_first_of{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Find_first_of_fn find_first_of{_Not_quite_object::_Construct_tag{}};
 
-    template <class _In1, class _In2>
+    _EXPORT_STD template <class _In1, class _In2>
     using swap_ranges_result = in_in_result<_In1, _In2>;
 
     class _Swap_ranges_fn : private _Not_quite_object {
@@ -3038,11 +3041,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Swap_ranges_fn swap_ranges{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Swap_ranges_fn swap_ranges{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt1, class _FwdIt2>
+_EXPORT_STD template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...)
     _Adl_verify_range(_First1, _Last1);
@@ -3055,7 +3058,7 @@ _CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _F
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 swap_ranges(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Dest) noexcept /* terminates */ {
     // swap [_First1, _Last1) with [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
@@ -3063,7 +3066,7 @@ _FwdIt2 swap_ranges(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Dest) noe
 }
 #endif // _HAS_CXX17
 
-template <class _InIt, class _OutIt, class _Fn>
+_EXPORT_STD template <class _InIt, class _OutIt, class _Fn>
 _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Fn _Func) {
     // transform [_First, _Last) with _Func
     _Adl_verify_range(_First, _Last);
@@ -3079,12 +3082,12 @@ _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Des
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 transform(
     _ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Fn _Func) noexcept; // terminates
 #endif // _HAS_CXX17
 
-template <class _InIt1, class _InIt2, class _OutIt, class _Fn>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Fn>
 _CONSTEXPR20 _OutIt transform(
     const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _OutIt _Dest, _Fn _Func) {
     // transform [_First1, _Last1) and [_First2, ...) with _Func
@@ -3103,17 +3106,18 @@ _CONSTEXPR20 _OutIt transform(
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Fn,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 transform(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, _FwdIt3 _Dest,
     _Fn _Func) noexcept; // terminates
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using unary_transform_result = in_out_result<_In, _Out>;
 
-    template <class _In1, class _In2, class _Out>
+    _EXPORT_STD template <class _In1, class _In2, class _Out>
     using binary_transform_result = in_in_out_result<_In1, _In2, _Out>;
 
     class _Transform_fn : private _Not_quite_object {
@@ -3213,11 +3217,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Transform_fn transform{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Transform_fn transform{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt, class _Ty>
+_EXPORT_STD template <class _FwdIt, class _Ty>
 _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval, const _Ty& _Newval) {
     // replace each matching _Oldval with _Newval
     _Adl_verify_range(_First, _Last);
@@ -3231,7 +3235,7 @@ _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _O
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 void replace(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval,
     const _Ty& _Newval) noexcept; // terminates
 #endif // _HAS_CXX17
@@ -3292,11 +3296,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Replace_fn replace{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Replace_fn replace{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt, class _Pr, class _Ty>
+_EXPORT_STD template <class _FwdIt, class _Pr, class _Ty>
 _CONSTEXPR20 void replace_if(const _FwdIt _First, const _FwdIt _Last, _Pr _Pred, const _Ty& _Val) {
     // replace each satisfying _Pred with _Val
     _Adl_verify_range(_First, _Last);
@@ -3310,7 +3314,7 @@ _CONSTEXPR20 void replace_if(const _FwdIt _First, const _FwdIt _Last, _Pr _Pred,
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 void replace_if(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred, const _Ty& _Val) noexcept; // terminates
 #endif // _HAS_CXX17
 
@@ -3369,11 +3373,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Replace_if_fn replace_if{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Replace_if_fn replace_if{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _InIt, class _OutIt, class _Ty>
+_EXPORT_STD template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Oldval, const _Ty& _Newval) {
     // copy replacing each matching _Oldval with _Newval
     _Adl_verify_range(_First, _Last);
@@ -3393,7 +3397,7 @@ _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const 
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 replace_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, const _Ty& _Oldval,
     const _Ty& _Newval) noexcept /* terminates */ {
     // copy replacing each matching _Oldval with _Newval
@@ -3406,7 +3410,7 @@ _FwdIt2 replace_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, cons
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using replace_copy_result = in_out_result<_In, _Out>;
 
     class _Replace_copy_fn : private _Not_quite_object {
@@ -3467,11 +3471,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Replace_copy_fn replace_copy{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Replace_copy_fn replace_copy{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _InIt, class _OutIt, class _Pr, class _Ty>
+_EXPORT_STD template <class _InIt, class _OutIt, class _Pr, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred, const _Ty& _Val) {
     // copy replacing each satisfying _Pred with _Val
     _Adl_verify_range(_First, _Last);
@@ -3491,7 +3495,8 @@ _CONSTEXPR20 _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, class _Ty,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred, const _Ty& _Val) noexcept
 /* terminates */ {
     // copy replacing each satisfying _Pred with _Val
@@ -3504,7 +3509,7 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using replace_copy_if_result = in_out_result<_In, _Out>;
 
     class _Replace_copy_if_fn : private _Not_quite_object {
@@ -3560,7 +3565,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Replace_copy_if_fn replace_copy_if{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Replace_copy_if_fn replace_copy_if{_Not_quite_object::_Construct_tag{}};
 
     class _Fill_fn : private _Not_quite_object {
     public:
@@ -3605,7 +3610,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Fill_fn fill{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Fill_fn fill{_Not_quite_object::_Construct_tag{}};
 
     class _Generate_fn : private _Not_quite_object {
     public:
@@ -3646,7 +3651,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Generate_fn generate{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Generate_fn generate{_Not_quite_object::_Construct_tag{}};
 
     class _Generate_n_fn : private _Not_quite_object {
     public:
@@ -3669,11 +3674,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Generate_n_fn generate_n{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Generate_n_fn generate_n{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt, class _Fn>
+_EXPORT_STD template <class _FwdIt, class _Fn>
 _CONSTEXPR20 void generate(_FwdIt _First, _FwdIt _Last, _Fn _Func) { // replace [_First, _Last) with _Func()
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -3684,7 +3689,7 @@ _CONSTEXPR20 void generate(_FwdIt _First, _FwdIt _Last, _Fn _Func) { // replace 
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
 void generate(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* terminates */ {
     // replace [_First, _Last) with _Func()
     // not parallelized at present due to unclear parallelism requirements on _Func
@@ -3692,7 +3697,7 @@ void generate(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* termi
 }
 #endif // _HAS_CXX17
 
-template <class _OutIt, class _Diff, class _Fn>
+_EXPORT_STD template <class _OutIt, class _Diff, class _Fn>
 _CONSTEXPR20 _OutIt generate_n(_OutIt _Dest, const _Diff _Count_raw, _Fn _Func) {
     // replace [_Dest, _Dest + _Count) with _Func()
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
@@ -3711,7 +3716,7 @@ _CONSTEXPR20 _OutIt generate_n(_OutIt _Dest, const _Diff _Count_raw, _Fn _Func) 
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt generate_n(_ExPo&&, const _FwdIt _Dest, const _Diff _Count_raw, _Fn _Func) noexcept /* terminates */ {
     // replace [_Dest, _Dest + _Count) with _Func()
     // not parallelized at present due to unclear parallelism requirements on _Func
@@ -3720,7 +3725,7 @@ _FwdIt generate_n(_ExPo&&, const _FwdIt _Dest, const _Diff _Count_raw, _Fn _Func
 }
 #endif // _HAS_CXX17
 
-template <class _InIt, class _OutIt, class _Ty>
+_EXPORT_STD template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Val) {
     // copy omitting each matching _Val
     _Adl_verify_range(_First, _Last);
@@ -3739,7 +3744,7 @@ _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 remove_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, const _Ty& _Val) noexcept /* terminates */ {
     // copy omitting each matching _Val
     // not parallelized at present, parallelism expected to be feasible in a future release
@@ -3749,7 +3754,7 @@ _FwdIt2 remove_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, const
 }
 #endif // _HAS_CXX17
 
-template <class _InIt, class _OutIt, class _Pr>
+_EXPORT_STD template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt remove_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
     // copy omitting each element satisfying _Pred
     _Adl_verify_range(_First, _Last);
@@ -3768,7 +3773,7 @@ _CONSTEXPR20 _OutIt remove_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr 
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 remove_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred) noexcept /* terminates */ {
     // copy omitting each element satisfying _Pred
     // not parallelized at present, parallelism expected to be feasible in a future release
@@ -3779,11 +3784,11 @@ _FwdIt2 remove_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _P
 #endif // _HAS_CXX17
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD_REMOVE_ALG _FwdIt remove(
     _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD_REMOVE_ALG _FwdIt remove_if(
     _ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
@@ -3842,7 +3847,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Remove_fn remove{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Remove_fn remove{_Not_quite_object::_Construct_tag{}};
 
     class _Remove_if_fn : private _Not_quite_object {
     public:
@@ -3896,9 +3901,9 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Remove_if_fn remove_if{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Remove_if_fn remove_if{_Not_quite_object::_Construct_tag{}};
 
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using remove_copy_result = in_out_result<_In, _Out>;
 
     class _Remove_copy_fn : private _Not_quite_object {
@@ -3960,9 +3965,9 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Remove_copy_fn remove_copy{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Remove_copy_fn remove_copy{_Not_quite_object::_Construct_tag{}};
 
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using remove_copy_if_result = in_out_result<_In, _Out>;
 
     class _Remove_copy_if_fn : private _Not_quite_object {
@@ -4020,11 +4025,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Remove_copy_if_fn remove_copy_if{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Remove_copy_if_fn remove_copy_if{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD_UNIQUE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // remove each satisfying _Pred with previous
     _Adl_verify_range(_First, _Last);
@@ -4049,20 +4054,20 @@ _NODISCARD_UNIQUE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _P
     return _Last;
 }
 
-template <class _FwdIt>
+_EXPORT_STD template <class _FwdIt>
 _NODISCARD_UNIQUE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last) { // remove each matching previous
     return _STD unique(_First, _Last, equal_to<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD_UNIQUE_ALG _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // remove each satisfying _Pred with previous
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD unique(_First, _Last, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD_UNIQUE_ALG _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
     // remove each matching previous
     // not parallelized at present, parallelism expected to be feasible in a future release
@@ -4134,7 +4139,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Unique_fn unique{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Unique_fn unique{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -4146,7 +4151,7 @@ _INLINE_VAR constexpr bool
 #endif
     _Can_reread_dest = _Is_cpp17_fwd_iter_v<_OutIt> && is_same_v<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>;
 
-template <class _InIt, class _OutIt, class _Pr>
+_EXPORT_STD template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
     // copy compressing pairs that match
     _Adl_verify_range(_First, _Last);
@@ -4202,13 +4207,13 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
     return _Dest;
 }
 
-template <class _InIt, class _OutIt>
+_EXPORT_STD template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy compressing pairs that match
     return _STD unique_copy(_First, _Last, _Dest, equal_to<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred) noexcept /* terminates */ {
     // copy compressing pairs that match
     // not parallelized at present, parallelism expected to be feasible in a future release
@@ -4217,7 +4222,7 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _
     return _STD unique_copy(_First, _Last, _Dest, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy compressing pairs that match
     // not parallelized at present, parallelism expected to be feasible in a future release
@@ -4229,7 +4234,7 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexc
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using unique_copy_result = in_out_result<_In, _Out>;
 
     template <class _It, class _Ty>
@@ -4331,7 +4336,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Unique_copy_fn unique_copy{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Unique_copy_fn unique_copy{_Not_quite_object::_Construct_tag{}};
 
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <bidirectional_iterator _It>
@@ -4393,11 +4398,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Reverse_fn reverse{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Reverse_fn reverse{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _BidIt, class _OutIt>
+_EXPORT_STD template <class _BidIt, class _OutIt>
 _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     // copy reversing elements in [_First, _Last)
     _Adl_verify_range(_First, _Last);
@@ -4444,7 +4449,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _BidIt, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _BidIt, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept /* terminates */ {
     // copy reversing elements in [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
@@ -4455,7 +4460,7 @@ _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using reverse_copy_result = in_out_result<_In, _Out>;
 
     class _Reverse_copy_fn : private _Not_quite_object {
@@ -4531,7 +4536,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Reverse_copy_fn reverse_copy{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Reverse_copy_fn reverse_copy{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
@@ -4641,11 +4646,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Rotate_fn rotate{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Rotate_fn rotate{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt, class _OutIt>
+_EXPORT_STD template <class _FwdIt, class _OutIt>
 _CONSTEXPR20 _OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt _Dest) {
     // copy rotating [_First, _Last)
     _Adl_verify_range(_First, _Mid);
@@ -4660,7 +4665,7 @@ _CONSTEXPR20 _OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 rotate_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Mid, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy rotating [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
@@ -4671,7 +4676,7 @@ _FwdIt2 rotate_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Mid, _FwdIt1 _Last, _FwdIt
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using rotate_copy_result = in_out_result<_In, _Out>;
 
     class _Rotate_copy_fn : private _Not_quite_object {
@@ -4718,7 +4723,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Rotate_copy_fn rotate_copy{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Rotate_copy_fn rotate_copy{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -4766,7 +4771,7 @@ _SampleIt _Sample_selection_unchecked(
     return _Dest;
 }
 
-template <class _PopIt, class _SampleIt, class _Diff, class _Urng>
+_EXPORT_STD template <class _PopIt, class _SampleIt, class _Diff, class _Urng>
 _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Urng&& _Func) {
     // randomly select _Count elements from [_First, _Last) into _Dest
     static_assert(_Is_ranges_fwd_iter_v<_PopIt> || _Is_cpp17_random_iter_v<_SampleIt>,
@@ -4802,7 +4807,7 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Ur
 
 #ifdef __cpp_lib_concepts
 // clang-format off
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 concept uniform_random_bit_generator = invocable<_Ty&>
     && unsigned_integral<invoke_result_t<_Ty&>>
     && requires {
@@ -4915,7 +4920,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Sample_fn sample{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Sample_fn sample{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
@@ -4942,7 +4947,7 @@ void _Random_shuffle1(_RanIt _First, _RanIt _Last, _RngFn& _RngFunc) {
     }
 }
 
-template <class _RanIt, class _Urng>
+_EXPORT_STD template <class _RanIt, class _Urng>
 void shuffle(_RanIt _First, _RanIt _Last, _Urng&& _Func) { // shuffle [_First, _Last) using URNG _Func
     using _Urng0 = remove_reference_t<_Urng>;
     _Rng_from_urng<_Iter_diff_t<_RanIt>, _Urng0> _RngFunc(_Func);
@@ -5004,12 +5009,12 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Shuffle_fn shuffle{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Shuffle_fn shuffle{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
 #if _HAS_AUTO_PTR_ETC
-template <class _RanIt, class _RngFn>
+_EXPORT_STD template <class _RanIt, class _RngFn>
 void random_shuffle(_RanIt _First, _RanIt _Last, _RngFn&& _RngFunc) {
     // shuffle [_First, _Last) using random function _RngFunc
     _Random_shuffle1(_First, _Last, _RngFunc);
@@ -5031,7 +5036,7 @@ struct _Rand_urng_from_func { // wrap rand() as a URNG
     }
 };
 
-template <class _RanIt>
+_EXPORT_STD template <class _RanIt>
 void random_shuffle(_RanIt _First, _RanIt _Last) { // shuffle [_First, _Last) using rand()
     _Rand_urng_from_func _Func;
     _STD shuffle(_First, _Last, _Func);
@@ -5039,7 +5044,7 @@ void random_shuffle(_RanIt _First, _RanIt _Last) { // shuffle [_First, _Last) us
 #endif // _HAS_AUTO_PTR_ETC
 
 #if _HAS_CXX20
-template <class _FwdIt>
+_EXPORT_STD template <class _FwdIt>
 constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) left by _Pos_to_shift
     // positions; returns the end of the resulting range
@@ -5073,14 +5078,14 @@ constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fwd
     return _First;
 }
 
-template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt shift_left(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) noexcept /* terminates */ {
     // shift [_First, _Last) left by _Pos_to_shift positions
     // not parallelized as benchmarks show it isn't worth it
     return _STD shift_left(_First, _Last, _Pos_to_shift);
 }
 
-template <class _FwdIt>
+_EXPORT_STD template <class _FwdIt>
 constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) right by _Pos_to_shift
     // positions; returns the beginning of the resulting range
@@ -5154,7 +5159,7 @@ constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fw
     }
 }
 
-template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) noexcept /* terminates */ {
     // shift [_First, _Last) right by _Pos_to_shift positions
     // not parallelized as benchmarks show it isn't worth it
@@ -5227,7 +5232,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Shift_left_fn shift_left{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Shift_left_fn shift_left{_Not_quite_object::_Construct_tag{}};
 
     class _Shift_right_fn : private _Not_quite_object {
     public:
@@ -5388,11 +5393,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Shift_right_fn shift_right{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Shift_right_fn shift_right{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
-template <class _FwdIt, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Pr>
 _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // move elements satisfying _Pred to beginning of sequence
     _Adl_verify_range(_First, _Last);
@@ -5451,7 +5456,7 @@ _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt partition(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 
 #ifdef __cpp_lib_concepts
@@ -5532,7 +5537,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Partition_fn partition{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Partition_fn partition{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
@@ -5689,7 +5694,7 @@ _BidIt _Stable_partition_unchecked(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     return _Stable_partition_unchecked1(_First, _Last, _Pred, _Total_count, _Temp_buf._Data, _Temp_buf._Capacity).first;
 }
 
-template <class _BidIt, class _Pr>
+_EXPORT_STD template <class _BidIt, class _Pr>
 _BidIt stable_partition(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     // partition preserving order of equivalents
     _Adl_verify_range(_First, _Last);
@@ -5698,7 +5703,7 @@ _BidIt stable_partition(_BidIt _First, _BidIt _Last, _Pr _Pred) {
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _BidIt stable_partition(_ExPo&&, _BidIt _First, _BidIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // partition preserving order of equivalents
     // not parallelized at present, parallelism expected to be feasible in a future release
@@ -5905,7 +5910,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Stable_partition_fn stable_partition{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Stable_partition_fn stable_partition{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -5925,7 +5930,7 @@ _CONSTEXPR20 void _Push_heap_by_index(
     *(_First + _Hole) = _STD forward<_Ty>(_Val); // drop _Val into final hole
 }
 
-template <class _RanIt, class _Pr>
+_EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // push *(_Last - 1) onto heap at [_First, _Last - 1)
     _Adl_verify_range(_First, _Last);
@@ -5939,7 +5944,7 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     }
 }
 
-template <class _RanIt>
+_EXPORT_STD template <class _RanIt>
 _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last) {
     // push *(_Last - 1) onto heap at [_First, _Last - 1)
     _STD push_heap(_First, _Last, less<>{});
@@ -6015,7 +6020,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Push_heap_fn push_heap{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Push_heap_fn push_heap{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -6070,14 +6075,14 @@ _CONSTEXPR20 void _Pop_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     }
 }
 
-template <class _RanIt, class _Pr>
+_EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // pop *_First to *(_Last - 1) and reheap
     _Adl_verify_range(_First, _Last);
     _Pop_heap_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred));
 }
 
-template <class _RanIt>
+_EXPORT_STD template <class _RanIt>
 _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last) {
     // pop *_First to *(_Last - 1) and reheap
     _STD pop_heap(_First, _Last, less<>{});
@@ -6181,7 +6186,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Pop_heap_fn pop_heap{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Pop_heap_fn pop_heap{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -6198,13 +6203,13 @@ _CONSTEXPR20 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     }
 }
 
-template <class _RanIt, class _Pr>
+_EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // make [_First, _Last) into a heap
     _Adl_verify_range(_First, _Last);
     _Make_heap_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred));
 }
 
-template <class _RanIt>
+_EXPORT_STD template <class _RanIt>
 _CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Last) into a heap
     _STD make_heap(_First, _Last, less<>{});
 }
@@ -6255,7 +6260,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Make_heap_fn make_heap{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Make_heap_fn make_heap{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -6273,7 +6278,7 @@ _CONSTEXPR20 _RanIt _Is_heap_until_unchecked(_RanIt _First, _RanIt _Last, _Pr _P
     return _Last;
 }
 
-template <class _RanIt, class _Pr>
+_EXPORT_STD template <class _RanIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _RanIt is_heap_until(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // find extent of range that is a heap
     _Adl_verify_range(_First, _Last);
@@ -6281,7 +6286,7 @@ _NODISCARD _CONSTEXPR20 _RanIt is_heap_until(_RanIt _First, _RanIt _Last, _Pr _P
     return _First;
 }
 
-template <class _RanIt, class _Pr>
+_EXPORT_STD template <class _RanIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // test if range is a heap
     _Adl_verify_range(_First, _Last);
@@ -6290,34 +6295,34 @@ _NODISCARD _CONSTEXPR20 bool is_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     return _Is_heap_until_unchecked(_UFirst, _ULast, _Pass_fn(_Pred)) == _ULast;
 }
 
-template <class _RanIt>
+_EXPORT_STD template <class _RanIt>
 _NODISCARD _CONSTEXPR20 _RanIt is_heap_until(_RanIt _First, _RanIt _Last) {
     // find extent of range that is a heap ordered by operator<
     return _STD is_heap_until(_First, _Last, less<>{});
 }
 
-template <class _RanIt>
+_EXPORT_STD template <class _RanIt>
 _NODISCARD _CONSTEXPR20 bool is_heap(_RanIt _First, _RanIt _Last) { // test if range is a heap ordered by operator<
     return _STD is_heap(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _RanIt is_heap_until(_ExPo&& _Exec, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept; // terminates
 
-template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool is_heap(_ExPo&& _Exec, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // test if range is a heap
     return _STD is_heap_until(_STD forward<_ExPo>(_Exec), _First, _Last, _Pass_fn(_Pred)) == _Last;
 }
 
-template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _RanIt is_heap_until(_ExPo&& _Exec, _RanIt _First, _RanIt _Last) noexcept /* terminates */ {
     // find extent of range that is a heap ordered by operator<
     return _STD is_heap_until(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
 }
 
-template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool is_heap(_ExPo&& _Exec, _RanIt _First, _RanIt _Last) noexcept /* terminates */ {
     // test if range is a heap ordered by operator<
     return _STD is_heap(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
@@ -6375,7 +6380,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Is_heap_fn is_heap{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Is_heap_fn is_heap{_Not_quite_object::_Construct_tag{}};
 
     class _Is_heap_until_fn : private _Not_quite_object {
     public:
@@ -6402,7 +6407,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Is_heap_until_fn is_heap_until{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Is_heap_until_fn is_heap_until{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
@@ -6415,7 +6420,7 @@ _CONSTEXPR20 void _Sort_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     }
 }
 
-template <class _RanIt, class _Pr>
+_EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // order heap by repeatedly popping
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
@@ -6429,7 +6434,7 @@ _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // order h
     _Sort_heap_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
 }
 
-template <class _RanIt>
+_EXPORT_STD template <class _RanIt>
 _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repeatedly popping
     _STD sort_heap(_First, _Last, less<>{});
 }
@@ -6474,7 +6479,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Sort_heap_fn sort_heap{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Sort_heap_fn sort_heap{_Not_quite_object::_Construct_tag{}};
 
     template <class _It, class _Ty, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Lower_bound_unchecked(
@@ -6529,7 +6534,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Lower_bound_fn lower_bound{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Lower_bound_fn lower_bound{_Not_quite_object::_Construct_tag{}};
 
     template <class _It, class _Ty, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Upper_bound_unchecked(
@@ -6582,11 +6587,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Upper_bound_fn upper_bound{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Upper_bound_fn upper_bound{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt, class _Ty, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find range equivalent to _Val
     _Adl_verify_range(_First, _Last);
@@ -6623,7 +6628,7 @@ _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _
     return {_First, _Last};
 }
 
-template <class _FwdIt, class _Ty>
+_EXPORT_STD template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // find range equivalent to _Val
     return _STD equal_range(_First, _Last, _Val, less<>{});
@@ -6688,11 +6693,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Equal_range_fn equal_range{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Equal_range_fn equal_range{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt, class _Ty, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // test if _Val equivalent to some element
     _Adl_verify_range(_First, _Last);
@@ -6702,7 +6707,7 @@ _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _T
     return _UFirst != _ULast && !_Pred(_Val, *_UFirst);
 }
 
-template <class _FwdIt, class _Ty>
+_EXPORT_STD template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // test if _Val equivalent to some element
     return _STD binary_search(_First, _Last, _Val, less<>{});
@@ -6737,7 +6742,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Binary_search_fn binary_search{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Binary_search_fn binary_search{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -6760,7 +6765,7 @@ _NODISCARD constexpr auto _Idl_dist_add(_Diff1 _Lhs, _Diff2 _Rhs) {
     return _Lhs + _Rhs;
 }
 
-template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // copy merging ranges
     _Adl_verify_range(_First1, _Last1);
@@ -6801,14 +6806,15 @@ _CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 
     return _Dest;
 }
 
-template <class _InIt1, class _InIt2, class _OutIt>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // copy merging ranges
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept /* terminates */ {
     // copy merging ranges
@@ -6819,7 +6825,8 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest) noexcept
 /* terminates */ {
     // copy merging ranges
@@ -6832,7 +6839,7 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In1, class _In2, class _Out>
+    _EXPORT_STD template <class _In1, class _In2, class _Out>
     using merge_result = in_in_out_result<_In1, _In2, _Out>;
 
     class _Merge_fn : private _Not_quite_object {
@@ -6905,7 +6912,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Merge_fn merge{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Merge_fn merge{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
@@ -7100,7 +7107,7 @@ void _Buffered_inplace_merge_unchecked(_BidIt _First, _BidIt _Mid, _BidIt _Last,
     _Buffered_inplace_merge_unchecked_impl(_First, _Mid, _Last, _Count1, _Count2, _Temp_ptr, _Capacity, _Pred);
 }
 
-template <class _BidIt, class _Pr>
+_EXPORT_STD template <class _BidIt, class _Pr>
 void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
     // merge [_First, _Mid) with [_Mid, _Last)
     _Adl_verify_range(_First, _Mid);
@@ -7151,21 +7158,21 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
         _UFirst, _UMid, _ULast, _Count1, _Count2, _Temp_buf._Data, _Temp_buf._Capacity, _Pass_fn(_Pred));
 }
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last) {
     // merge [_First, _Mid) with [_Mid, _Last)
     _STD inplace_merge(_First, _Mid, _Last, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // merge [_First, _Mid) with [_Mid, _Last)
     // not parallelized at present, parallelism expected to be feasible in a future release
     _STD inplace_merge(_First, _Mid, _Last, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _BidIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _BidIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /* terminates */ {
     // merge [_First, _Mid) with [_Mid, _Last)
     // not parallelized at present, parallelism expected to be feasible in a future release
@@ -7497,7 +7504,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Inplace_merge_fn inplace_merge{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Inplace_merge_fn inplace_merge{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -7658,7 +7665,7 @@ _CONSTEXPR20 void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_Ran
     }
 }
 
-template <class _RanIt, class _Pr>
+_EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last, _Pr _Pred) { // order [_First, _Last)
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
@@ -7666,16 +7673,16 @@ _CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last, _Pr _Pred) { // 
     _Sort_unchecked(_UFirst, _ULast, _ULast - _UFirst, _Pass_fn(_Pred));
 }
 
-template <class _RanIt>
+_EXPORT_STD template <class _RanIt>
 _CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last) { // order [_First, _Last)
     _STD sort(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 void sort(_ExPo&& _Exec, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept; // terminates
 
-template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void sort(_ExPo&& _Exec, const _RanIt _First, const _RanIt _Last) noexcept /* terminates */ {
     // order [_First, _Last)
     _STD sort(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
@@ -7897,7 +7904,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Sort_fn sort{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Sort_fn sort{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -8060,7 +8067,7 @@ void _Stable_sort_unchecked(const _BidIt _First, const _BidIt _Last, const _Iter
     }
 }
 
-template <class _BidIt, class _Pr>
+_EXPORT_STD template <class _BidIt, class _Pr>
 void stable_sort(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
     // sort preserving order of equivalents
     _Adl_verify_range(_First, _Last);
@@ -8077,17 +8084,17 @@ void stable_sort(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 void stable_sort(_ExPo&& _Exec, const _BidIt _First, const _BidIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 void stable_sort(const _BidIt _First, const _BidIt _Last) { // sort preserving order of equivalents
     _STD stable_sort(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _BidIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _BidIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void stable_sort(_ExPo&& _Exec, _BidIt _First, _BidIt _Last) noexcept /* terminates */ {
     // sort preserving order of equivalents
     _STD stable_sort(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
@@ -8347,11 +8354,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Stable_sort_fn stable_sort{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Stable_sort_fn stable_sort{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _RanIt, class _Pr>
+_EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) {
     // order [_First, _Last) up to _Mid
     _Adl_verify_range(_First, _Mid);
@@ -8375,21 +8382,21 @@ _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pr
     _Sort_heap_unchecked(_UFirst, _UMid, _Pass_fn(_Pred));
 }
 
-template <class _RanIt>
+_EXPORT_STD template <class _RanIt>
 _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last) {
     // order [_First, _Last) up to _Mid
     _STD partial_sort(_First, _Mid, _Last, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 void partial_sort(_ExPo&&, _RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // order [_First, _Last) up to _Mid
     // parallelism suspected to be infeasible
     return _STD partial_sort(_First, _Mid, _Last, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void partial_sort(_ExPo&&, _RanIt _First, _RanIt _Mid, _RanIt _Last) noexcept /* terminates */ {
     // order [_First, _Last) up to _Mid
     // parallelism suspected to be infeasible
@@ -8466,12 +8473,12 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Partial_sort_fn partial_sort{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Partial_sort_fn partial_sort{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-template <class _InIt, class _RanIt, class _Pr>
+_EXPORT_STD template <class _InIt, class _RanIt, class _Pr>
 _CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _Last2, _Pr _Pred) {
     // copy [_First1, _Last1) into [_First2, _Last2)
     _Adl_verify_range(_First1, _Last1);
@@ -8503,14 +8510,14 @@ _CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First
     return _First2;
 }
 
-template <class _InIt, class _RanIt>
+_EXPORT_STD template <class _InIt, class _RanIt>
 _CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _Last2) {
     // copy [_First1, _Last1) into [_First2, _Last2)
     return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2, _RanIt _Last2, _Pr _Pred) noexcept
 /* terminates */ {
     // copy [_First1, _Last1) into [_First2, _Last2)
@@ -8520,7 +8527,7 @@ _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2,
     return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2, _RanIt _Last2) noexcept
 /* terminates */ {
     // copy [_First1, _Last1) into [_First2, _Last2)
@@ -8532,7 +8539,7 @@ _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2,
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using partial_sort_copy_result = in_out_result<_In, _Out>;
 
     class _Partial_sort_copy_fn : private _Not_quite_object {
@@ -8620,12 +8627,12 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Partial_sort_copy_fn partial_sort_copy{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Partial_sort_copy_fn partial_sort_copy{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-template <class _RanIt, class _Pr>
+_EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) {
     // order Nth element
     _Adl_verify_range(_First, _Nth);
@@ -8652,20 +8659,20 @@ _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pre
     _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred)); // sort any remainder
 }
 
-template <class _RanIt>
+_EXPORT_STD template <class _RanIt>
 _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last) { // order Nth element
     _STD nth_element(_First, _Nth, _Last, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // order Nth element
     // not parallelized at present, parallelism expected to be feasible in a future release
     _STD nth_element(_First, _Nth, _Last, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last) noexcept /* terminates */ {
     // order Nth element
     // not parallelized at present, parallelism expected to be feasible in a future release
@@ -8742,12 +8749,12 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Nth_element_fn nth_element{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Nth_element_fn nth_element{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-template <class _InIt1, class _InIt2, class _Pr>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
     _Adl_verify_range(_First1, _Last1);
@@ -8771,14 +8778,14 @@ _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _Fir
     return _UFirst2 == _ULast2;
 }
 
-template <class _InIt1, class _InIt2>
+_EXPORT_STD template <class _InIt1, class _InIt2>
 _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
     return _STD includes(_First1, _Last1, _First2, _Last2, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept
 /* terminates */ {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
@@ -8788,7 +8795,7 @@ _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
     return _STD includes(_First1, _Last1, _First2, _Last2, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) noexcept
 /* terminates */ {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
@@ -8866,12 +8873,12 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Includes_fn includes{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Includes_fn includes{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // OR sets [_First1, _Last1) and [_First2, _Last2)
     _Adl_verify_range(_First1, _Last1);
@@ -8902,14 +8909,15 @@ _CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _In
     return _Dest;
 }
 
-template <class _InIt1, class _InIt2, class _OutIt>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // OR sets [_First1, _Last1) and [_First2, _Last2)
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept /* terminates */ {
     // OR sets [_First1, _Last1) and [_First2, _Last2)
@@ -8920,7 +8928,8 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest) noexcept
 /* terminates */ {
     // OR sets [_First1, _Last1) and [_First2, _Last2)
@@ -8933,7 +8942,7 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In1, class _In2, class _Out>
+    _EXPORT_STD template <class _In1, class _In2, class _Out>
     using set_union_result = in_in_out_result<_In1, _In2, _Out>;
 
     class _Set_union_fn : private _Not_quite_object {
@@ -9003,12 +9012,12 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Set_union_fn set_union{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Set_union_fn set_union{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt set_intersection(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // AND sets [_First1, _Last1) and [_First2, _Last2)
@@ -9038,18 +9047,20 @@ _CONSTEXPR20 _OutIt set_intersection(
     return _Dest;
 }
 
-template <class _InIt1, class _InIt2, class _OutIt>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_intersection(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // AND sets [_First1, _Last1) and [_First2, _Last2)
     return _STD set_intersection(_First1, _Last1, _First2, _Last2, _Dest, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_intersection(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept; // terminates
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
     _FwdIt3 _Dest) noexcept /* terminates */ {
     // AND sets [_First1, _Last1) and [_First2, _Last2)
@@ -9058,7 +9069,7 @@ _FwdIt3 set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In1, class _In2, class _Out>
+    _EXPORT_STD template <class _In1, class _In2, class _Out>
     using set_intersection_result = in_in_out_result<_In1, _In2, _Out>;
 
     class _Set_intersection_fn : private _Not_quite_object {
@@ -9134,12 +9145,12 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Set_intersection_fn set_intersection{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Set_intersection_fn set_intersection{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt set_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // take set [_First2, _Last2) from [_First1, _Last1)
@@ -9170,18 +9181,20 @@ _CONSTEXPR20 _OutIt set_difference(
     return _Dest;
 }
 
-template <class _InIt1, class _InIt2, class _OutIt>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // take set [_First2, _Last2) from [_First1, _Last1)
     return _STD set_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept; // terminates
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
     _FwdIt3 _Dest) noexcept /* terminates */ {
     // take set [_First2, _Last2) from [_First1, _Last1)
@@ -9190,7 +9203,7 @@ _FwdIt3 set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using set_difference_result = in_out_result<_In, _Out>;
 
     class _Set_difference_fn : private _Not_quite_object {
@@ -9262,12 +9275,12 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Set_difference_fn set_difference{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Set_difference_fn set_difference{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // XOR sets [_First1, _Last1) and [_First2, _Last2)
@@ -9300,7 +9313,7 @@ _CONSTEXPR20 _OutIt set_symmetric_difference(
     return _Dest;
 }
 
-template <class _InIt1, class _InIt2, class _OutIt>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // XOR sets [_First1, _Last1) and [_First2, _Last2)
@@ -9308,7 +9321,8 @@ _CONSTEXPR20 _OutIt set_symmetric_difference(
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
     _FwdIt3 _Dest, _Pr _Pred) noexcept /* terminates */ {
     // XOR sets [_First1, _Last1) and [_First2, _Last2)
@@ -9319,7 +9333,8 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
     _FwdIt3 _Dest) noexcept /* terminates */ {
     // XOR sets [_First1, _Last1) and [_First2, _Last2)
@@ -9332,7 +9347,7 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In1, class _In2, class _Out>
+    _EXPORT_STD template <class _In1, class _In2, class _Out>
     using set_symmetric_difference_result = in_in_out_result<_In1, _In2, _Out>;
 
     class _Set_symmetric_difference_fn : private _Not_quite_object {
@@ -9412,7 +9427,8 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Set_symmetric_difference_fn set_symmetric_difference{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Set_symmetric_difference_fn set_symmetric_difference{
+        _Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
@@ -9456,27 +9472,27 @@ constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
     return _Found;
 }
 
-template <class _FwdIt, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD constexpr _FwdIt max_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
     _Adl_verify_range(_First, _Last);
     _Seek_wrapped(_First, _Max_element_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred)));
     return _First;
 }
 
-template <class _FwdIt>
+_EXPORT_STD template <class _FwdIt>
 _NODISCARD constexpr _FwdIt max_element(_FwdIt _First, _FwdIt _Last) { // find largest element
     return _STD max_element(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt max_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find largest element
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD max_element(_First, _Last, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt max_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
     // find largest element
     // not parallelized at present, parallelism expected to be feasible in a future release
@@ -9544,7 +9560,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Max_element_fn max_element{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Max_element_fn max_element{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
@@ -9577,27 +9593,27 @@ constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
     return _Found;
 }
 
-template <class _FwdIt, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD constexpr _FwdIt min_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
     _Adl_verify_range(_First, _Last);
     _Seek_wrapped(_First, _Min_element_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred)));
     return _First;
 }
 
-template <class _FwdIt>
+_EXPORT_STD template <class _FwdIt>
 _NODISCARD constexpr _FwdIt min_element(_FwdIt _First, _FwdIt _Last) { // find smallest element
     return _STD min_element(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt min_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find smallest element
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD min_element(_First, _Last, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt min_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
     // find smallest element
     // not parallelized at present, parallelism expected to be feasible in a future release
@@ -9665,7 +9681,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Min_element_fn min_element{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Min_element_fn min_element{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
@@ -9724,7 +9740,7 @@ constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _
     return _Found;
 }
 
-template <class _FwdIt, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD constexpr pair<_FwdIt, _FwdIt> minmax_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find smallest and largest elements
     _Adl_verify_range(_First, _Last);
@@ -9734,14 +9750,14 @@ _NODISCARD constexpr pair<_FwdIt, _FwdIt> minmax_element(_FwdIt _First, _FwdIt _
     return {_First, _Last};
 }
 
-template <class _FwdIt>
+_EXPORT_STD template <class _FwdIt>
 _NODISCARD constexpr pair<_FwdIt, _FwdIt> minmax_element(_FwdIt _First, _FwdIt _Last) {
     // find smallest and largest elements
     return _STD minmax_element(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept
 /* terminates */ {
     // find smallest and largest elements
@@ -9749,7 +9765,7 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
     return _STD minmax_element(_First, _Last, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
     // find smallest and largest elements
     // not parallelized at present, parallelism expected to be feasible in a future release
@@ -9758,7 +9774,7 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     using minmax_element_result = min_max_result<_Ty>;
 
     template <class _It, class _Se, class _Pr, class _Pj>
@@ -9856,19 +9872,19 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Minmax_element_fn minmax_element{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Minmax_element_fn minmax_element{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-template <class _Ty, class _Pr>
+_EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/largest
     const _Ty* _Res = _Max_element_unchecked(_Ilist.begin(), _Ilist.end(), _Pass_fn(_Pred));
     return *_Res;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist) {
     // return leftmost/largest
     return (_STD max)(_Ilist, less<>{});
@@ -9933,18 +9949,18 @@ namespace ranges {
         // clang-format on
     };
 
-    inline constexpr _Max_fn max{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Max_fn max{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _Ty, class _Pr>
+_EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/smallest
     const _Ty* _Res = _Min_element_unchecked(_Ilist.begin(), _Ilist.end(), _Pass_fn(_Pred));
     return *_Res;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist) {
     // return leftmost/smallest
     return (_STD min)(_Ilist, less<>{});
@@ -10003,11 +10019,11 @@ namespace ranges {
         // clang-format on
     };
 
-    inline constexpr _Min_fn min{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Min_fn min{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _Ty, class _Pr>
+_EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_DEBUG_LT_PRED(_Pred, _Right, _Left))) /* strengthened */ {
     // return pair(leftmost/smaller, rightmost/larger) of _Left and _Right
@@ -10018,14 +10034,14 @@ _NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left, const
     return {_Left, _Right};
 }
 
-template <class _Ty, class _Pr>
+_EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return {leftmost/smallest, rightmost/largest}
     pair<const _Ty*, const _Ty*> _Res = _Minmax_element_unchecked(_Ilist.begin(), _Ilist.end(), _Pass_fn(_Pred));
     return pair<_Ty, _Ty>(*_Res.first, *_Res.second);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left, const _Ty& _Right) noexcept(
     noexcept(_Right < _Left)) /* strengthened */ {
     // return pair(leftmost/smaller, rightmost/larger) of _Left and _Right
@@ -10037,7 +10053,7 @@ _NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left, const
     return {_Left, _Right};
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist) {
     // return {leftmost/smallest, rightmost/largest}
     return _STD minmax(_Ilist, less<>{});
@@ -10045,7 +10061,7 @@ _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     using minmax_result = min_max_result<_Ty>;
 
     class _Minmax_fn : private _Not_quite_object {
@@ -10135,11 +10151,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Minmax_fn minmax{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Minmax_fn minmax{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _BidIt, class _Pr>
+_EXPORT_STD template <class _BidIt, class _Pr>
 _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     // permute and test for pure ascending
     _Adl_verify_range(_First, _Last);
@@ -10170,7 +10186,7 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     }
 }
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last) {
     // permute and test for pure ascending
     return _STD next_permutation(_First, _Last, less<>{});
@@ -10178,7 +10194,7 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In>
+    _EXPORT_STD template <class _In>
     using next_permutation_result = in_found_result<_In>;
 
     class _Next_permutation_fn : private _Not_quite_object {
@@ -10239,11 +10255,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Next_permutation_fn next_permutation{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Next_permutation_fn next_permutation{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _BidIt, class _Pr>
+_EXPORT_STD template <class _BidIt, class _Pr>
 _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     // reverse permute and test for pure descending
     _Adl_verify_range(_First, _Last);
@@ -10274,7 +10290,7 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     }
 }
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last) {
     // reverse permute and test for pure descending
     return _STD prev_permutation(_First, _Last, less<>{});
@@ -10282,7 +10298,7 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _In>
+    _EXPORT_STD template <class _In>
     using prev_permutation_result = in_found_result<_In>;
 
     class _Prev_permutation_fn : private _Not_quite_object {
@@ -10343,11 +10359,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Prev_permutation_fn prev_permutation{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Prev_permutation_fn prev_permutation{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find extent of range that is ordered by predicate
     _Adl_verify_range(_First, _Last);
@@ -10366,7 +10382,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last
     return _Last;
 }
 
-template <class _FwdIt, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_sorted(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // test if range is ordered by predicate
     _Adl_verify_range(_First, _Last);
@@ -10375,34 +10391,34 @@ _NODISCARD _CONSTEXPR20 bool is_sorted(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     return _STD is_sorted_until(_UFirst, _ULast, _Pass_fn(_Pred)) == _ULast;
 }
 
-template <class _FwdIt>
+_EXPORT_STD template <class _FwdIt>
 _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(_FwdIt _First, _FwdIt _Last) {
     // find extent of range that is ordered by operator<
     return _STD is_sorted_until(_First, _Last, less<>{});
 }
 
-template <class _FwdIt>
+_EXPORT_STD template <class _FwdIt>
 _NODISCARD _CONSTEXPR20 bool is_sorted(_FwdIt _First, _FwdIt _Last) { // test if range is ordered by operator<
     return _STD is_sorted(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt is_sorted_until(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 
-template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool is_sorted(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // test if range is ordered by predicate
     return _STD is_sorted_until(_STD forward<_ExPo>(_Exec), _First, _Last, _Pass_fn(_Pred)) == _Last;
 }
 
-template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt is_sorted_until(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
     // find extent of range that is ordered by operator<
     return _STD is_sorted_until(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
 }
 
-template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool is_sorted(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
     // test if range is ordered by operator<
     return _STD is_sorted(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
@@ -10433,7 +10449,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Is_sorted_fn is_sorted{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Is_sorted_fn is_sorted{_Not_quite_object::_Construct_tag{}};
 
     class _Is_sorted_until_fn : private _Not_quite_object {
     public:
@@ -10460,11 +10476,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Is_sorted_until_fn is_sorted_until{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Is_sorted_until_fn is_sorted_until{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _Ty, class _Pr>
+_EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val, _Pr _Pred) {
     // returns _Val constrained to [_Min_val, _Max_val]
 #if _ITERATOR_DEBUG_LEVEL == 2
@@ -10492,7 +10508,7 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
     }
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val) {
     // returns _Val constrained to [_Min_val, _Max_val]
     return _STD clamp(_Val, _Min_val, _Max_val, less{});
@@ -10526,7 +10542,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Clamp_fn clamp{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Clamp_fn clamp{_Not_quite_object::_Construct_tag{}};
 
     class _Lexicographical_compare_fn : private _Not_quite_object {
     public:
@@ -10604,7 +10620,8 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Lexicographical_compare_fn lexicographical_compare{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Lexicographical_compare_fn lexicographical_compare{
+        _Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17

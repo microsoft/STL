@@ -18,7 +18,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <class _Elem, class _Traits>
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits>
 class basic_streambuf { // control read/write buffers
 protected:
     __CLR_OR_THIS_CALL basic_streambuf() : _Plocale(new locale) {

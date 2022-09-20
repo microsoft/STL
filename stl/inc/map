@@ -69,7 +69,7 @@ public:
     }
 };
 
-template <class _Kty, class _Ty, class _Pr = less<_Kty>, class _Alloc = allocator<pair<const _Kty, _Ty>>>
+_EXPORT_STD template <class _Kty, class _Ty, class _Pr = less<_Kty>, class _Alloc = allocator<pair<const _Kty, _Ty>>>
 class map : public _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, false>> {
     // ordered red-black tree of {key, mapped} values, unique keys
 public:
@@ -395,7 +395,7 @@ map(from_range_t, _Rng&&, _Alloc)
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
-template <class _Kty, class _Ty, class _Pr, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Ty, class _Pr, class _Alloc>
 _NODISCARD bool operator==(const map<_Kty, _Ty, _Pr, _Alloc>& _Left, const map<_Kty, _Ty, _Pr, _Alloc>& _Right) {
     return _Left.size() == _Right.size()
         && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin());
@@ -409,7 +409,7 @@ _NODISCARD bool operator!=(const map<_Kty, _Ty, _Pr, _Alloc>& _Left, const map<_
 #endif // !_HAS_CXX20
 
 #ifdef __cpp_lib_concepts
-template <class _Kty, class _Ty, class _Pr, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Ty, class _Pr, class _Alloc>
 _NODISCARD _Synth_three_way_result<pair<const _Kty, _Ty>> operator<=>(
     const map<_Kty, _Ty, _Pr, _Alloc>& _Left, const map<_Kty, _Ty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
@@ -438,20 +438,20 @@ _NODISCARD bool operator>=(const map<_Kty, _Ty, _Pr, _Alloc>& _Left, const map<_
 }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-template <class _Kty, class _Ty, class _Pr, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Ty, class _Pr, class _Alloc>
 void swap(map<_Kty, _Ty, _Pr, _Alloc>& _Left, map<_Kty, _Ty, _Pr, _Alloc>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
 #if _HAS_CXX20
-template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
 typename map<_Kty, _Ty, _Keylt, _Alloc>::size_type erase_if(map<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
-template <class _Kty, class _Ty, class _Pr = less<_Kty>, class _Alloc = allocator<pair<const _Kty, _Ty>>>
+_EXPORT_STD template <class _Kty, class _Ty, class _Pr = less<_Kty>, class _Alloc = allocator<pair<const _Kty, _Ty>>>
 class multimap : public _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, true>> {
     // ordered red-black tree of {key, mapped} values, non-unique keys
 public:
@@ -626,7 +626,7 @@ multimap(from_range_t, _Rng&&, _Alloc)
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
-template <class _Kty, class _Ty, class _Pr, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Ty, class _Pr, class _Alloc>
 _NODISCARD bool operator==(
     const multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, const multimap<_Kty, _Ty, _Pr, _Alloc>& _Right) {
     return _Left.size() == _Right.size()
@@ -642,7 +642,7 @@ _NODISCARD bool operator!=(
 #endif // !_HAS_CXX20
 
 #ifdef __cpp_lib_concepts
-template <class _Kty, class _Ty, class _Pr, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Ty, class _Pr, class _Alloc>
 _NODISCARD _Synth_three_way_result<pair<const _Kty, _Ty>> operator<=>(
     const multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, const multimap<_Kty, _Ty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
@@ -675,14 +675,14 @@ _NODISCARD bool operator>=(
 }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-template <class _Kty, class _Ty, class _Pr, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Ty, class _Pr, class _Alloc>
 void swap(multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, multimap<_Kty, _Ty, _Pr, _Alloc>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
 #if _HAS_CXX20
-template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
 typename multimap<_Kty, _Ty, _Keylt, _Alloc>::size_type erase_if(
     multimap<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
@@ -691,10 +691,10 @@ typename multimap<_Kty, _Ty, _Keylt, _Alloc>::size_type erase_if(
 
 #if _HAS_CXX17
 namespace pmr {
-    template <class _Kty, class _Ty, class _Pr = less<_Kty>>
+    _EXPORT_STD template <class _Kty, class _Ty, class _Pr = less<_Kty>>
     using map = _STD map<_Kty, _Ty, _Pr, polymorphic_allocator<pair<const _Kty, _Ty>>>;
 
-    template <class _Kty, class _Ty, class _Pr = less<_Kty>>
+    _EXPORT_STD template <class _Kty, class _Ty, class _Pr = less<_Kty>>
     using multimap = _STD multimap<_Kty, _Ty, _Pr, polymorphic_allocator<pair<const _Kty, _Ty>>>;
 } // namespace pmr
 #endif // _HAS_CXX17

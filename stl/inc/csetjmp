@@ -19,8 +19,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-using ::jmp_buf;
-using ::longjmp;
+_EXPORT_STD using ::jmp_buf;
+_EXPORT_STD using ::longjmp;
 using ::setjmp;
 _STD_END
 

@@ -53,7 +53,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 #if _HAS_CXX20
-enum class memory_order : int {
+_EXPORT_STD enum class memory_order : int {
     relaxed,
     consume,
     acquire,
@@ -69,12 +69,12 @@ enum class memory_order : int {
     memory_order_acq_rel = acq_rel,
     memory_order_seq_cst = seq_cst
 };
-inline constexpr memory_order memory_order_relaxed = memory_order::relaxed;
-inline constexpr memory_order memory_order_consume = memory_order::consume;
-inline constexpr memory_order memory_order_acquire = memory_order::acquire;
-inline constexpr memory_order memory_order_release = memory_order::release;
-inline constexpr memory_order memory_order_acq_rel = memory_order::acq_rel;
-inline constexpr memory_order memory_order_seq_cst = memory_order::seq_cst;
+_EXPORT_STD inline constexpr memory_order memory_order_relaxed = memory_order::relaxed;
+_EXPORT_STD inline constexpr memory_order memory_order_consume = memory_order::consume;
+_EXPORT_STD inline constexpr memory_order memory_order_acquire = memory_order::acquire;
+_EXPORT_STD inline constexpr memory_order memory_order_release = memory_order::release;
+_EXPORT_STD inline constexpr memory_order memory_order_acq_rel = memory_order::acq_rel;
+_EXPORT_STD inline constexpr memory_order memory_order_seq_cst = memory_order::seq_cst;
 #else // _HAS_CXX20
 enum memory_order {
     memory_order_relaxed,
@@ -86,7 +86,7 @@ enum memory_order {
 };
 #endif // _HAS_CXX20
 
-using _Atomic_counter_t = unsigned long;
+_EXPORT_STD /* TRANSITION, VSO-1592329 */ using _Atomic_counter_t = unsigned long;
 
 template <class _Integral, class _Ty>
 _NODISCARD volatile _Integral* _Atomic_address_as(_Ty& _Source) noexcept {

@@ -22,7 +22,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <class _Ty, class _Container = deque<_Ty>>
+_EXPORT_STD template <class _Ty, class _Container = deque<_Ty>>
 class stack {
 public:
     using value_type      = typename _Container::value_type;
@@ -168,45 +168,45 @@ stack(from_range_t, _Rng&&, _Alloc) -> stack<_RANGES range_value_t<_Rng>, deque<
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
-template <class _Ty, class _Container>
+_EXPORT_STD template <class _Ty, class _Container>
 _NODISCARD bool operator==(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
     return _Left._Get_container() == _Right._Get_container();
 }
 
-template <class _Ty, class _Container>
+_EXPORT_STD template <class _Ty, class _Container>
 _NODISCARD bool operator!=(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
     return _Left._Get_container() != _Right._Get_container();
 }
 
-template <class _Ty, class _Container>
+_EXPORT_STD template <class _Ty, class _Container>
 _NODISCARD bool operator<(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
     return _Left._Get_container() < _Right._Get_container();
 }
 
-template <class _Ty, class _Container>
+_EXPORT_STD template <class _Ty, class _Container>
 _NODISCARD bool operator>(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
     return _Left._Get_container() > _Right._Get_container();
 }
 
-template <class _Ty, class _Container>
+_EXPORT_STD template <class _Ty, class _Container>
 _NODISCARD bool operator<=(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
     return _Left._Get_container() <= _Right._Get_container();
 }
 
-template <class _Ty, class _Container>
+_EXPORT_STD template <class _Ty, class _Container>
 _NODISCARD bool operator>=(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
     return _Left._Get_container() >= _Right._Get_container();
 }
 
 #ifdef __cpp_lib_concepts
-template <class _Ty, three_way_comparable _Container>
+_EXPORT_STD template <class _Ty, three_way_comparable _Container>
 _NODISCARD compare_three_way_result_t<_Container> operator<=>(
     const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
     return _Left._Get_container() <=> _Right._Get_container();
 }
 #endif // __cpp_lib_concepts
 
-template <class _Ty, class _Container, enable_if_t<_Is_swappable<_Container>::value, int> = 0>
+_EXPORT_STD template <class _Ty, class _Container, enable_if_t<_Is_swappable<_Container>::value, int> = 0>
 void swap(stack<_Ty, _Container>& _Left, stack<_Ty, _Container>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }

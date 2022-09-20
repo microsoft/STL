@@ -55,7 +55,7 @@ _NODISCARD unsigned long _Semaphore_remaining_timeout(const chrono::time_point<_
 
 inline constexpr ptrdiff_t _Semaphore_max = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
 
-template <ptrdiff_t _Least_max_value = _Semaphore_max>
+_EXPORT_STD template <ptrdiff_t _Least_max_value = _Semaphore_max>
 class counting_semaphore {
 public:
     _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
@@ -299,7 +299,7 @@ private:
     atomic<unsigned char> _Counter;
 };
 
-using binary_semaphore = counting_semaphore<1>;
+_EXPORT_STD using binary_semaphore = counting_semaphore<1>;
 
 _STD_END
 
