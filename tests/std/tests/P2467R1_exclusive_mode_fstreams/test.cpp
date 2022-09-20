@@ -44,24 +44,23 @@ void test_file_create_fail(const std::ios_base::openmode bad_mode) {
 }
 
 int main() {
-    test_file_create(std::ios_base::out | std::ios_base::noreplace);
-    test_file_create(std::ios_base::out | std::ios_base::trunc | std::ios_base::noreplace);
-    test_file_create(std::ios_base::out | std::ios_base::in | std::ios_base::trunc | std::ios_base::noreplace);
-    test_file_create(std::ios_base::out | std::ios_base::binary | std::ios_base::noreplace);
-    test_file_create(std::ios_base::out | std::ios_base::binary | std::ios_base::trunc | std::ios_base::noreplace);
-    test_file_create(std::ios_base::out | std::ios_base::in | std::ios_base::trunc | std::ios_base::binary
-                     | std::ios_base::noreplace);
+    using IB = std::ios_base;
 
-    test_file_already_exist(std::ios_base::out | std::ios_base::noreplace);
-    test_file_already_exist(std::ios_base::out | std::ios_base::trunc | std::ios_base::noreplace);
-    test_file_already_exist(std::ios_base::out | std::ios_base::in | std::ios_base::trunc | std::ios_base::noreplace);
-    test_file_already_exist(std::ios_base::out | std::ios_base::binary | std::ios_base::noreplace);
-    test_file_already_exist(
-        std::ios_base::out | std::ios_base::binary | std::ios_base::trunc | std::ios_base::noreplace);
-    test_file_already_exist(std::ios_base::out | std::ios_base::in | std::ios_base::trunc | std::ios_base::binary
-                            | std::ios_base::noreplace);
+    test_file_create(IB::out | IB::noreplace);
+    test_file_create(IB::out | IB::trunc | IB::noreplace);
+    test_file_create(IB::out | IB::in | IB::trunc | IB::noreplace);
+    test_file_create(IB::out | IB::binary | IB::noreplace);
+    test_file_create(IB::out | IB::binary | IB::trunc | IB::noreplace);
+    test_file_create(IB::out | IB::in | IB::trunc | IB::binary | IB::noreplace);
 
-    test_file_create_fail(std::ios_base::in | std::ios_base::noreplace);
-    test_file_create_fail(std::ios_base::in | std::ios_base::trunc | std::ios_base::noreplace);
-    test_file_create_fail(std::ios_base::binary | std::ios_base::in | std::ios_base::trunc | std::ios_base::noreplace);
+    test_file_already_exist(IB::out | IB::noreplace);
+    test_file_already_exist(IB::out | IB::trunc | IB::noreplace);
+    test_file_already_exist(IB::out | IB::in | IB::trunc | IB::noreplace);
+    test_file_already_exist(IB::out | IB::binary | IB::noreplace);
+    test_file_already_exist(IB::out | IB::binary | IB::trunc | IB::noreplace);
+    test_file_already_exist(IB::out | IB::in | IB::trunc | IB::binary | IB::noreplace);
+
+    test_file_create_fail(IB::in | IB::noreplace);
+    test_file_create_fail(IB::in | IB::trunc | IB::noreplace);
+    test_file_create_fail(IB::binary | IB::in | IB::trunc | IB::noreplace);
 }
