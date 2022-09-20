@@ -42,12 +42,12 @@ namespace {
             ios_base::in | ios_base::out | ios_base::binary,
             ios_base::in | ios_base::out | ios_base::trunc | ios_base::binary,
             ios_base::in | ios_base::out | ios_base::app | ios_base::binary,
-            ios_base::out | ios_base::noreplace,
-            ios_base::out | ios_base::trunc | ios_base::noreplace,
-            ios_base::out | ios_base::in | ios_base::trunc | ios_base::noreplace,
-            ios_base::out | ios_base::binary | ios_base::noreplace,
-            ios_base::out | ios_base::binary | ios_base::trunc | ios_base::noreplace,
-            ios_base::out | ios_base::in | ios_base::trunc | ios_base::binary | ios_base::noreplace,
+            ios_base::out | ios_base::_Noreplace,
+            ios_base::out | ios_base::trunc | ios_base::_Noreplace,
+            ios_base::out | ios_base::in | ios_base::trunc | ios_base::_Noreplace,
+            ios_base::out | ios_base::binary | ios_base::_Noreplace,
+            ios_base::out | ios_base::binary | ios_base::trunc | ios_base::_Noreplace,
+            ios_base::out | ios_base::in | ios_base::trunc | ios_base::binary | ios_base::_Noreplace,
         };
 
         FILE* fp                     = nullptr;
