@@ -11,6 +11,10 @@
 #include <typeinfo>
 #include <utility>
 
+#if _HAS_CXX17
+#include <any>
+#endif // _HAS_CXX17
+
 using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
