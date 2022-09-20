@@ -4,6 +4,7 @@
 #include <cassert>
 #include <filesystem>
 #include <fstream>
+#include <ios>
 
 namespace fs = std::filesystem;
 
