@@ -66,6 +66,7 @@ export module std;
 #include <fstream>
 #include <functional>
 #include <future>
+#include <generator>
 #include <initializer_list>
 #include <iomanip>
 #include <ios>

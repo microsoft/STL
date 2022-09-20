@@ -376,6 +376,7 @@
 // P2474R2 views::repeat
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
+// P2502R2 <generator>: Synchronous Coroutine Generator For Ranges
 // P2505R5 Monadic Functions For expected
 // P2539R4 Synchronizing print() With The Underlying Stream
 // P2540R1 Empty Product For Certain Views
@@ -1833,7 +1834,12 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_formatters        202302L
 #endif // defined(__cpp_lib_concepts)
 
-#define __cpp_lib_forward_like   202207L
+#define __cpp_lib_forward_like 202207L
+
+#if defined(__cpp_lib_concepts) && defined(__cpp_lib_byte) && defined(__cpp_impl_coroutine)
+#define __cpp_lib_generator 202207L
+#endif // defined(__cpp_lib_concepts) && defined(__cpp_lib_byte) && defined(__cpp_impl_coroutine)
+
 #define __cpp_lib_invoke_r       202106L
 #define __cpp_lib_ios_noreplace  202207L
 #define __cpp_lib_is_scoped_enum 202011L

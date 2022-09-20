@@ -162,6 +162,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/fstream
     ${CMAKE_CURRENT_LIST_DIR}/inc/functional
     ${CMAKE_CURRENT_LIST_DIR}/inc/future
+    ${CMAKE_CURRENT_LIST_DIR}/inc/generator
     ${CMAKE_CURRENT_LIST_DIR}/inc/hash_map
     ${CMAKE_CURRENT_LIST_DIR}/inc/hash_set
     ${CMAKE_CURRENT_LIST_DIR}/inc/header-units.json

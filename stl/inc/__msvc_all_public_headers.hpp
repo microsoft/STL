@@ -96,6 +96,7 @@
 #include <forward_list>
 #include <fstream>
 #include <functional>
+#include <generator>
 #include <hash_map>
 #include <hash_set>
 #include <iomanip>
