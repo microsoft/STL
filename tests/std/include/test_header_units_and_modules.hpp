@@ -20,12 +20,16 @@ void test_algorithm() {
 
 void test_any() {
     using namespace std;
+#if defined(_HAS_STATIC_RTTI) && _HAS_STATIC_RTTI == 0 // intentional: `import std;` can't provide a default definition
+    puts("Nothing to test in <any> when static RTTI is disabled.");
+#else // ^^^ static RTTI is disabled / static RTTI is enabled vvv
     puts("Testing <any>.");
     any a1{1729};
     any a2{7.5};
     a1.swap(a2);
     assert(any_cast<double>(a1) == 7.5);
     assert(any_cast<int>(a2) == 1729);
+#endif // ^^^ static RTTI is enabled ^^^
 }
 
 void test_array() {
