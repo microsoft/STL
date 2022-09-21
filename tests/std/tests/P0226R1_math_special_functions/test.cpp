@@ -101,9 +101,9 @@ void test_beta() {
         assert(isclose(beta(1.0L, 1.0L), 1.0L));
     }
     {
-        assert(isclose(beta(2.0, 3.0), 0.08333'3333'3333'3333'3333));
-        assert(isclose(beta(2.0f, 3.0f), 0.08333'3333'3333'3333'3333f));
-        assert(isclose(beta(2.0L, 3.0L), 0.08333'3333'3333'3333'3333L));
+        assert(isclose(beta(2.0, 3.0), 0.0833'333'333'333'333'333, 2));
+        assert(isclose(beta(2.0f, 3.0f), 0.0833'333'333'333'333'333f));
+        assert(isclose(beta(2.0L, 3.0L), 0.0833'333'333'333'333'333L, 2));
     }
 }
 
