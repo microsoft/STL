@@ -12,7 +12,7 @@
 #include <utility>
 
 #if _HAS_CXX17
-#include <any>
+#include <any> // verify that <any> can be included (with no effect) when static RTTI is disabled
 #endif // _HAS_CXX17
 
 using namespace std;
