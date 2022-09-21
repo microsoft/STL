@@ -1478,7 +1478,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_void_t                           201411L
 
 #if _HAS_CXX17
-#define __cpp_lib_any                        201606L
+#if _HAS_STATIC_RTTI
+#define __cpp_lib_any 201606L
+#endif // _HAS_STATIC_RTTI
 #define __cpp_lib_apply                      201603L
 #define __cpp_lib_atomic_is_always_lock_free 201603L
 #define __cpp_lib_boyer_moore_searcher       201603L
