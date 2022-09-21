@@ -93,7 +93,7 @@ static void div(_MP_arr u,
     for (int ulen = _MP_len - 1; ulen >= 0; --ulen) { // propagate remainder and divide
         unsigned long long tmp = (k << shift) | u[ulen];
         u[ulen]                = tmp / v0;
-        k                      = tmp - (u[ulen] * v0);
+        k                      = tmp - (u[ulen] * v0); // a mod b = a - (floor(a / b) * b)
     }
 }
 
@@ -120,7 +120,7 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
 
     // Knuth, vol. 2, p. 272, Algorithm D
     // D1: [Normalize.]
-    unsigned long long d = mask / v[n - 1];
+    unsigned long long d = mask / v[n - 1]; // mask == maxVal - 1
     if (d != 1) { // scale numerator and divisor
         mul(u, _MP_len, d);
         mul(v, n, d);
@@ -132,8 +132,7 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
         if (qh == 0) {
             continue;
         }
-        // a mod b = a - (floor(a / b) * b)
-        unsigned long long rh = t - qh * v[n - 1];
+        unsigned long long rh = t - qh * v[n - 1]; // a mod b = a - (floor(a / b) * b)
 #pragma warning(suppress : 6385) // TRANSITION, GH-1008
         while (qh == maxVal || (qh * v[n - 2] > ((rh << shift) | u[j + n - 2]))) {
             // reduce tentative value and retry
