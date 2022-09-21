@@ -4756,10 +4756,13 @@ public:
             return _Bvec;
         }
 
+#pragma warning(push)
+#pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data
         _NODISCARD vector<_Ty> densities() const {
             vector<_Ty> _Ans(this->_Pvec.begin(), this->_Pvec.end());
             return _Ans;
         }
+#pragma warning(pop)
 
         _NODISCARD double _Piece_probability(const size_t _Idx) const {
             return 0.5 * (this->_Pvec[_Idx] + this->_Pvec[_Idx + 1])
