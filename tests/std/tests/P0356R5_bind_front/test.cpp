@@ -125,7 +125,7 @@ constexpr bool test_constexpr() {
     cat.name = "Peppermint";
     assert(bound3("PURR") == "Peppermint says PURR");
 
-    auto bound4 = bind_front(&Cat::noise, ref(cat)); // stores a reference_wrapper, uses LWG-2219
+    auto bound4 = bind_front(&Cat::noise, ref(cat)); // stores a reference_wrapper
     assert(bound4("Why do you keep renaming me?") == "Peppermint says Why do you keep renaming me?");
     cat.name = "Cat";
     assert(bound4("You can't rename me anymore, Human") == "Cat says You can't rename me anymore, Human");
@@ -139,7 +139,7 @@ constexpr bool test_constexpr() {
 
 #if _HAS_CXX23
     test_movable_only_types();
-#else
+#else // _HAS_CXX23
     if (!is_constant_evaluated()) {
         test_movable_only_types();
     }

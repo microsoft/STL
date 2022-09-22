@@ -102,7 +102,7 @@ constexpr bool test_constexpr() {
     // Test PMFs.
     Cat cat{"Peppermint"};
     auto bound2 = bind_back(&Cat::noise, "meow");
-    assert(bound2(cat) == "Peppermint says meow"); // // call with reference
+    assert(bound2(cat) == "Peppermint says meow"); // call with reference
     auto bound3 = bind_back(&Cat::noise, "MEOW");
     cat.name    = "Fluffy";
     assert(bound3(&cat) == "Fluffy says MEOW"); // call with pointer
