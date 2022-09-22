@@ -807,7 +807,12 @@ namespace test_subrange {
     inline constexpr bool is_subrange<subrange<I, S, K>> = true;
 
     template <class T>
-    inline constexpr auto kind_of = illformed<T>();
+    struct ill_formed {
+        static_assert(always_false<T>);
+    };
+
+    template <class T>
+    inline constexpr auto kind_of = ill_formed<T>{};
     template <class I, class S, subrange_kind K>
     inline constexpr auto kind_of<subrange<I, S, K>> = K;
 
