@@ -92,13 +92,6 @@ constexpr bool test_constexpr() {
     bound1(4);
     assert(value == 74);
 
-    // Test "perfect forwarding call wrapper" behavior.
-    auto bound5 = bind_back(DetectQualifiers{});
-    assert(bound5() == "modifiable lvalue");
-    assert(as_const(bound5)() == "const lvalue");
-    assert(move(bound5)() == "modifiable rvalue");
-    assert(move(as_const(bound5))() == "const rvalue");
-
     // Test PMFs.
     Cat cat{"Peppermint"};
     auto bound2 = bind_back(&Cat::noise, "meow");
@@ -106,6 +99,13 @@ constexpr bool test_constexpr() {
     auto bound3 = bind_back(&Cat::noise, "MEOW");
     cat.name    = "Fluffy";
     assert(bound3(&cat) == "Fluffy says MEOW"); // call with pointer
+
+    // Test "perfect forwarding call wrapper" behavior.
+    auto bound5 = bind_back(DetectQualifiers{});
+    assert(bound5() == "modifiable lvalue");
+    assert(as_const(bound5)() == "const lvalue");
+    assert(move(bound5)() == "modifiable rvalue");
+    assert(move(as_const(bound5))() == "const rvalue");
 
     // Test movable-only types.
     auto unique_lambda = [up1 = make_unique<int>(1200)](unique_ptr<int>&& up2) {
