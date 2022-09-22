@@ -99,6 +99,8 @@ constexpr bool test_constexpr() {
     auto bound3 = bind_back(&Cat::noise, "MEOW");
     cat.name    = "Fluffy";
     assert(bound3(&cat) == "Fluffy says MEOW"); // call with pointer
+    auto bound4 = bind_back(&Cat::noise, "HISS");
+    assert(bound4(ref(cat)) == "Fluffy says HISS"); // call with reference_wrapper
 
     // Test "perfect forwarding call wrapper" behavior.
     auto bound5 = bind_back(DetectQualifiers{});
