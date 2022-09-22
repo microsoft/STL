@@ -22,18 +22,21 @@ public:
 }};
 """
 
+
 def ref_permutations(cv, noex, noex_val, trait):
     return specialization(cv, "", "&", noex, noex_val, \
         f"{trait}<_Rx, {cv} _Vt, _Types...> && {trait}<_Rx, {cv} _Vt&, _Types...>") + "\n" \
         + specialization(cv, "&", "&", noex, noex_val, f"{trait}<_Rx, {cv} _Vt&, _Types...>") + "\n" \
         + specialization(cv, "&&", "&&", noex, noex_val, f"{trait}<_Rx, {cv} _Vt, _Types...>")
 
+
 def cvref_permutations(noex, noex_val, trait):
     return ref_permutations("", noex, noex_val, trait) + "\n" \
         + ref_permutations("const", noex, noex_val, trait)
 
 
-print(cvref_permutations("", "false", "is_invocable_r_v") + "\n" \
-    + "#ifdef __cpp_noexcept_function_type" + "\n" \
-    + cvref_permutations("noexcept", "true", "is_nothrow_invocable_r_v") \
-    + "#endif // __cpp_noexcept_function_type")
+if __name__ == "__main__":
+    print(cvref_permutations("", "false", "is_invocable_r_v") + "\n" \
+        + "#ifdef __cpp_noexcept_function_type" + "\n" \
+        + cvref_permutations("noexcept", "true", "is_nothrow_invocable_r_v") \
+        + "#endif // __cpp_noexcept_function_type")
