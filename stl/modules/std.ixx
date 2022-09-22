@@ -37,7 +37,9 @@ export module std;
 
 // "C++ library headers" [tab:headers.cpp]
 #include <algorithm>
+#if _HAS_STATIC_RTTI
 #include <any>
+#endif // _HAS_STATIC_RTTI
 #include <array>
 #include <atomic>
 #include <barrier>
