@@ -1271,7 +1271,7 @@ using _Copy_cv = // N4917 21.3.8.7 [meta.trans.other]/2.3
     typename _Copy_cv_impl<_From>::template _Apply<_To>;
 
 template <class _Ty1>
-struct _Add_qualifiers { // _Add_qualifiers<A>::template _Apply is XREF(A) from N4917 21.3.8.7 [meta.trans.other]/2.1
+struct _Add_qualifiers { // _Add_qualifiers<A>::template _Apply is XREF(A) from N4917 21.3.8.7 [meta.trans.other]/2.2
     template <class _Ty2>
     using _Apply = _Copy_cv<_Ty1, _Ty2>;
 };
@@ -1858,7 +1858,7 @@ struct _Refwrap_has_ctor_from : false_type {};
 
 template <class _Ty, class _Uty>
 struct _Refwrap_has_ctor_from<_Ty, _Uty, void_t<decltype(_STD _Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))>>
-    : true_type {}; // qualified: avoid ADL, handle incomplete types
+    : true_type {}; // _STD _Refwrap_ctor_fun is qualified: avoid ADL, handle incomplete types
 
 template <class _Ty>
 class reference_wrapper
