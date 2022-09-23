@@ -2412,10 +2412,6 @@ _EXPORT_STD inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t&
 }
 _STD_END
 
-#undef _Compiler_or_memory_barrier
-#undef _Memory_barrier
-#undef _Compiler_barrier
-
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
