@@ -15,10 +15,6 @@
 #include <xatomic.h>
 #include <xutility>
 
-#undef _Compiler_or_memory_barrier
-#undef _Memory_barrier
-#undef _Compiler_barrier
-
 #if _HAS_CXX20
 #include <tuple>
 #endif // _HAS_CXX20
@@ -2415,6 +2411,10 @@ _EXPORT_STD inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t&
     return _Ptr;
 }
 _STD_END
+
+#undef _Compiler_or_memory_barrier
+#undef _Memory_barrier
+#undef _Compiler_barrier
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
