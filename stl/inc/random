@@ -1844,7 +1844,9 @@ private:
 
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, _Ty _Min, _Ty _Max) const { // compute next value in range [_Min, _Max]
-        _Rng_from_urng<_Uty, _Engine> _Generator(_Eng);
+        conditional_t<_Has_static_min_max<_Engine>::value, _Rng_from_urng_v2<_Uty, _Engine>,
+            _Rng_from_urng<_Uty, _Engine>>
+            _Generator(_Eng);
 
         const _Uty _Umin = _Adjust(static_cast<_Uty>(_Min));
         const _Uty _Umax = _Adjust(static_cast<_Uty>(_Max));
@@ -1862,7 +1864,7 @@ private:
 
     static _Uty _Adjust(_Uty _Uval) { // convert signed ranges to unsigned ranges and vice versa
         if constexpr (is_signed_v<_Ty>) {
-            const _Uty _Adjuster = (static_cast<_Uty>(-1) >> 1) + 1; // 2^(N-1)
+            constexpr _Uty _Adjuster = (static_cast<_Uty>(-1) >> 1) + 1; // 2^(N-1)
 
             if (_Uval < _Adjuster) {
                 return static_cast<_Uty>(_Uval + _Adjuster);
@@ -4559,6 +4561,8 @@ public:
             return _Bvec;
         }
 
+#pragma warning(push)
+#pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data
         _NODISCARD vector<_Ty> densities() const {
             vector<_Ty> _Ans(this->_Pvec.begin(), this->_Pvec.end());
 
@@ -4568,6 +4572,7 @@ public:
 
             return _Ans;
         }
+#pragma warning(pop)
 
         void _Init() { // initialize
             _Mypbase::_Init();
@@ -4753,10 +4758,13 @@ public:
             return _Bvec;
         }
 
+#pragma warning(push)
+#pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data
         _NODISCARD vector<_Ty> densities() const {
             vector<_Ty> _Ans(this->_Pvec.begin(), this->_Pvec.end());
             return _Ans;
         }
+#pragma warning(pop)
 
         _NODISCARD double _Piece_probability(const size_t _Idx) const {
             return 0.5 * (this->_Pvec[_Idx] + this->_Pvec[_Idx + 1])
