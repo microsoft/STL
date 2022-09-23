@@ -12,7 +12,12 @@
 #include <cstdlib>
 #include <limits>
 #include <new>
+#include <xatomic.h>
 #include <xutility>
+
+#undef _Compiler_or_memory_barrier
+#undef _Memory_barrier
+#undef _Compiler_barrier
 
 #if _HAS_CXX20
 #include <tuple>

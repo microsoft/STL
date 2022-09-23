@@ -16,13 +16,7 @@
 
 #if _HAS_CXX20
 #include <atomic>
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-#include <xatomic.h>
-
-#undef _Compiler_or_memory_barrier
-#undef _Memory_barrier
-#undef _Compiler_barrier
-#endif // ^^^ !_HAS_CXX20 ^^^
+#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
