@@ -50,7 +50,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _MT_INCR(x) _INTRIN_RELAXED(_InterlockedIncrement)(reinterpret_cast<volatile long*>(&x))
 #define _MT_DECR(x) _INTRIN_ACQ_REL(_InterlockedDecrement)(reinterpret_cast<volatile long*>(&x))
 
-// The following macros are SHARED with vcruntime and any updates should be mirrored. 
+// The following macros are SHARED with vcruntime and any updates should be mirrored.
 // Also: if any macros are added they should be #undefed in vcruntime and <atomic> as well.
 #define _Compiler_barrier() _STL_DISABLE_DEPRECATED_WARNING _ReadWriteBarrier() _STL_RESTORE_DEPRECATED_WARNING
 
