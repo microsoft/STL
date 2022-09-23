@@ -12,7 +12,6 @@
 #include <cstdlib>
 #include <limits>
 #include <new>
-#include <xatomic.h>
 #include <xutility>
 
 #if _HAS_CXX20
