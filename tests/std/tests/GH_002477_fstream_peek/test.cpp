@@ -27,4 +27,5 @@ int main() {
     string s;
     getline(fin, s);
     assert(s == "cute fluffy kittens");
+    assert(fin.good());
 }
