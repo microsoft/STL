@@ -4,6 +4,7 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <string>
 using namespace std;
 
 int main() {
@@ -22,4 +23,8 @@ int main() {
     assert(static_cast<char>(fin.peek()) == 'c');
     assert(fin.good());
     assert(fin.tellg() == 0);
+
+    string s;
+    getline(fin, s);
+    assert(s == "cute fluffy kittens");
 }

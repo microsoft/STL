@@ -644,9 +644,22 @@ protected:
             _Off -= static_cast<off_type>(sizeof(_Elem)); // back up over _Elem bytes
         }
 
+        // fgetpos can't handle text mode stream when the file contains LF line endings
+        auto _Hacked_fgetpos = [](FILE* _Myfile, fpos_t* _Fileposition) {
+            auto _Res = _CSTD fgetpos(_Myfile, _Fileposition);
+            if (_Res != 0 && errno != 0) {
+                return _Res;
+            }
+
+            if (*_Fileposition == -1) {
+                *_Fileposition = 0;
+            }
+            return 0;
+        };
+
         if (!_Myfile || !_Endwrite()
             || ((_Off != 0 || _Way != ios_base::cur) && _CSTD _fseeki64(_Myfile, _Off, _Way) != 0)
-            || (_CSTD fgetpos(_Myfile, &_Fileposition) != 0 && errno != 0)) {
+            || _Hacked_fgetpos(_Myfile, &_Fileposition)) {
             return pos_type(-1); // report failure
         }
 
