@@ -13,7 +13,7 @@ int main() {
     {
         ofstream o(filename, ios_base::binary);
         assert(o.good());
-        o << "cute fluffy kittens\n";
+        o << "cute fluffy kittens\n\n\n";
     }
 
     ifstream fin(filename);

@@ -651,7 +651,7 @@ protected:
                 return _Res;
             }
 
-            if (*_Fileposition == -1) {
+            if (*_Fileposition < 0) {
                 *_Fileposition = 0;
             }
             return 0;
