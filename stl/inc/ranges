@@ -6891,7 +6891,7 @@ namespace ranges {
         noexcept((noexcept(static_cast<_ResultType>(
             _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>())) && ...)) {
         // clang-format on
-        const auto _Get_smallest_distance_lambda = [&_Lhs_tuple, &
+        const auto _Get_smallest_distance_closure = [&_Lhs_tuple, &
             _Rhs_tuple ]<std::size_t _FirstIdx /* = 0 */, std::size_t... _Idxs>(index_sequence<_FirstIdx, _Idxs...>) {
             const _ResultType _First_size = static_cast<_ResultType>(_STD get<0>(_Lhs_tuple) - _STD get<0>(_Rhs_tuple));
 
@@ -6904,7 +6904,7 @@ namespace ranges {
                                    : static_cast<_ResultType>((_RANGES min)(_Sizes));
         };
 
-        return _Get_smallest_distance_lambda(index_sequence_for<_LHSTupleTypes...>{});
+        return _Get_smallest_distance_closure(index_sequence_for<_LHSTupleTypes...>{});
     }
 
     template <class... _LHSTupleTypes, class... _RHSTupleTypes>
@@ -6914,12 +6914,12 @@ namespace ranges {
         // clang-format off
         noexcept((noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) && ...)) {
         // clang-format on
-        const auto _Evaluate_equality_lambda =
+        const auto _Evaluate_equality_closure =
             [&_Lhs_tuple, &_Rhs_tuple ]<size_t... _Indices>(index_sequence<_Indices...>) {
             return ((_STD get<_Indices>(_Lhs_tuple) == _STD get<_Indices>(_Rhs_tuple)) || ...);
         };
 
-        return _Evaluate_equality_lambda(index_sequence_for<_LHSTupleTypes...>{});
+        return _Evaluate_equality_closure(index_sequence_for<_LHSTupleTypes...>{});
     }
 
     // clang-format off
