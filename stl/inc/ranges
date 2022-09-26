@@ -12,7 +12,6 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <ranges> are available only with C++20 or later.");
 #else // ^^^ !defined(__cpp_lib_ranges) / defined(__cpp_lib_ranges) vvv
 #include <__msvc_int128.hpp>
-#include <algorithm>
 #include <iosfwd>
 #include <iterator>
 #include <limits>
@@ -7122,7 +7121,7 @@ namespace ranges {
                 noexcept((noexcept(_RANGES iter_swap(
                     _STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>(),
                     _STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>())) && ...))
-                requires(indirectly_swappable<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...)
+                requires (indirectly_swappable<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...)
             {
                 // clang-format on
                 const auto _Swap_every_pair_closure = [&_Lhs, &_Rhs ]<size_t... _Indices>(index_sequence<_Indices...>) {
@@ -7289,11 +7288,11 @@ namespace ranges {
             }
 
         public:
+            // clang-format off
             template <class... _Types>
-                // clang-format off
             constexpr auto operator()(_Types&&... _Args) const
                 noexcept(_Is_invocation_noexcept<_Types...>())
-                requires(sizeof...(_Types) == 0) || requires {
+                requires (sizeof...(_Types) == 0) || requires {
                     zip_view<views::all_t<_Types>...>(_STD forward<_Types>(_Args)...);
                 }
             {
@@ -7301,7 +7300,7 @@ namespace ranges {
                 if constexpr (sizeof...(_Types) == 0) {
                     return empty_view<tuple<>>{};
                 } else {
-                    return zip_view<views::all_t<_Types&&>...>(_STD forward<_Types>(_Args)...);
+                    return zip_view<views::all_t<_Types>...>(_STD forward<_Types>(_Args)...);
                 }
             }
         };
