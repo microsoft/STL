@@ -27,9 +27,9 @@ if __name__ == "__main__":
             test_log = json.load(file)
             for result in test_log["tests"]:
                 if not result["code"] in ["PASS", "UNSUPPORTED", "XFAIL"]:
-                    print("code: {}".format(result["code"]))
+                    print(f"code: {result['code']}")
                     # Ignore result["elapsed"].
-                    print("name: {}".format(result["name"]))
+                    print(f"name: {result['name']}")
                     # The JSON contains embedded CRLFs (which aren't affected by opening the file in text mode).
                     # If we don't replace these CRLFs with LFs here, this script will appear to be okay in the console,
                     # but redirecting it to a file will result in ugly double newlines.
