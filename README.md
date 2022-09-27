@@ -76,6 +76,7 @@ it'll update `package.json` and `package-lock.json` accordingly. `git add` and `
     `npm install [package1]@latest [package2]@latest [...]` for all of the packages listed
     as `dependencies` in `package.json` (e.g. `@octokit/graphql@latest dotenv@latest`).
     + Ensure that the `importmap` in `index.html` remains synchronized to the same versions.
+* Update other dependencies in `index.html` (e.g. Primer CSS and es-module-shims).
 * Update `weekly_table.ts` by adding a new row.
     + We update it every Friday, although nothing bad will happen if we skip a week or update it on a different day.
     + `vso` is the number of Active work items under the STL's Area Path.
@@ -87,6 +88,7 @@ it'll update `package.json` and `package-lock.json` accordingly. `git add` and `
         3. Sort the remaining lines.
         4. Find the last occurrence of `#`, so you can delete all of the empty lines and comments.
         5. Count the remaining lines.
+* Update `video_table.ts` if any [code review videos][] have been recorded or uploaded.
 * Run `npm run gather` to compile `gather_stats.ts` and then regenerate `daily_table.ts` and `monthly_table.ts`.
     + This regenerates the files from scratch, but the diff should be small because the data is stable and the process
     is deterministic.
@@ -114,6 +116,7 @@ Copyright (c) Microsoft Corporation.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 [Chart.js]: https://www.chartjs.org/
+[code review videos]: https://github.com/microsoft/STL/wiki/Code-Review-Videos
 [Node.js]: https://nodejs.org/en/
 [Personal Access Tokens]: https://github.com/settings/tokens
 [Status Chart]: https://microsoft.github.io/STL/

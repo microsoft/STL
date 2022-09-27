@@ -9,6 +9,8 @@ import { DateTime, Duration, Settings } from 'luxon';
 import { graphql } from '@octokit/graphql';
 import yargs from 'yargs';
 
+import { video_table } from './video_table';
+
 Settings.defaultZone = 'America/Los_Angeles';
 
 if (process.env.SECRET_GITHUB_PERSONAL_ACCESS_TOKEN === undefined) {
@@ -449,6 +451,7 @@ type Row = {
     lwg: number;
     issue: number;
     bug: number;
+    video: number;
     avg_age: number;
     avg_wait: number;
     sum_age: number;
@@ -552,6 +555,22 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
         }
     }
 
+    let num_video = 0;
+
+    for (const video of video_table) {
+        for (const { t, change } of [
+            { t: video.review_date, change: 1 },
+            { t: video.upload_date, change: -1 },
+        ]) {
+            if (t !== undefined) {
+                events.push({
+                    date: DateTime.fromISO(t),
+                    action: () => (num_video += change),
+                });
+            }
+        }
+    }
+
     events.sort((a, b) => a.date.toMillis() - b.date.toMillis());
 
     const rows: Row[] = [];
@@ -600,6 +619,7 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
                 lwg: num_lwg,
                 issue: num_issue,
                 bug: num_bug,
+                video: num_video,
                 avg_age: num_pr === 0 ? 0 : combined_pr_age.as('days') / num_pr,
                 avg_wait: num_pr === 0 ? 0 : combined_pr_wait.as('days') / num_pr,
                 sum_age: combined_pr_age.as('months'),
@@ -622,6 +642,7 @@ export type DailyRow = {
     lwg: number | null;
     issue: number | null;
     bug: number | null;
+    video: number | null;
     avg_age: number;
     avg_wait: number;
     sum_age: number;
@@ -636,7 +657,7 @@ export const daily_table: DailyRow[] = [
         str += `date: '${row.date.toISODate()}', `;
         str += `merged: ${row.merged.toFixed(2)}, `;
 
-        const keys: (keyof Row)[] = ['pr', 'cxx20', 'cxx23', 'lwg', 'issue', 'bug'];
+        const keys: (keyof Row)[] = ['pr', 'cxx20', 'cxx23', 'lwg', 'issue', 'bug', 'video'];
         for (const key of keys) {
             if (should_emit_data_point(rows, i, key)) {
                 str += `${key}: ${row[key]}, `;
