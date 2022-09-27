@@ -600,7 +600,6 @@ public:
 
     template <class... _Other>
     constexpr bool _Equals(const tuple<_Other...>& _Right) const {
-        // GH-3131, operator== is only required to return a type that is convertible to bool
         const bool _Val_eq = _Myfirst._Val == _Right._Myfirst._Val;
         return _Val_eq && _Mybase::_Equals(_Right._Get_rest());
     }
@@ -618,7 +617,6 @@ public:
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     template <class... _Other>
     _NODISCARD constexpr bool _Less(const tuple<_Other...>& _Right) const {
-        // GH-3131, operator< is only required to return a type that is convertible to bool
         const bool _Val_lt = _Myfirst._Val < _Right._Myfirst._Val;
         if (_Val_lt) {
             return true;

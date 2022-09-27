@@ -3,55 +3,31 @@
 
 using namespace std;
 
-struct WeirdBoolBinOp {
+struct EvilBool {
     bool b;
 
     operator bool() const {
         return b;
     }
-    WeirdBoolBinOp operator!() const {
-        return WeirdBoolBinOp{!b};
-    }
+    EvilBool operator!() const;
 
     // EVILLLLL
-    friend bool operator&&(const WeirdBoolBinOp& lhs, bool rhs) {
-        return !lhs.b && rhs;
-    }
-    friend bool operator||(const WeirdBoolBinOp& lhs, bool rhs) {
-        return !lhs.b || rhs;
-    }
-};
-struct WeirdBoolNot {
-    bool b;
-
-    operator bool() const {
-        return b;
-    }
-    // EVILLLLL
-    WeirdBoolNot operator!() const {
-        return *this;
-    }
+    friend bool operator&&(const EvilBool lhs, bool rhs);
+    friend bool operator||(const EvilBool lhs, bool rhs);
 };
 
-
-template <class T>
-struct EqLtReturnsT {
-    friend T operator==(const EqLtReturnsT&, const EqLtReturnsT&) noexcept {
-        return T{true};
+struct EqLtReturnsEvil {
+    friend EvilBool operator==(const EqLtReturnsEvil&, const EqLtReturnsEvil&) noexcept {
+        return EvilBool{true};
     }
-    friend T operator<(const EqLtReturnsT&, const EqLtReturnsT&) noexcept {
-        return T{false};
+    friend EvilBool operator<(const EqLtReturnsEvil&, const EqLtReturnsEvil&) noexcept {
+        return EvilBool{false};
     }
 };
 
 int main() {
-    tuple<EqLtReturnsT<WeirdBoolBinOp>> x1, y1;
-    assert(x1 == y1);
-    assert(!(x1 < y1));
-    assert(!(x1 > y1));
-
-    tuple<EqLtReturnsT<WeirdBoolNot>> x2, y2;
-    assert(x2 == y2);
-    assert(!(x2 < y2));
-    assert(!(x2 > y2));
+    tuple<EqLtReturnsEvil> x, y;
+    assert(x == y);
+    assert(!(x < y));
+    assert(!(x > y));
 }
