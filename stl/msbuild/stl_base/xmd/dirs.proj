@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
                            '$(Configuration)' == 'dbg')">
         <!-- Other components in dbg and chk builds depend on msvcprtd.lib -->
         <ProjectFile Include="msvcp_app\msvcp.nativeproj" />
-        <ProjectFile Include="msvcp_kernel32\msvcp.nativeproj" Condition="'$(BuildVCKernel32)' == 'true'" />
+        <ProjectFile Include="msvcp_kernel32\msvcp.nativeproj" />
         <ProjectFile Include="msvcp_onecore\msvcp.nativeproj" />
     </ItemGroup>
 
