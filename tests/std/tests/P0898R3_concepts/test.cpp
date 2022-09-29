@@ -810,7 +810,7 @@ namespace test_integral_concepts {
         enum class is { not_integral, integral, signed_integral, unsigned_integral, ull };
 
         template <class T>
-        constexpr is f(T&&) {
+        constexpr is f(T) {
             return is::not_integral;
         }
         template <integral T>
