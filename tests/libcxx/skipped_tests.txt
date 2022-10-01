@@ -372,9 +372,6 @@ localization\locale.categories\facet.numpunct\locale.numpunct.byname\thousands_s
 # GH-1264 <locale>: wbuffer_convert does not implement seek
 localization\locales\locale.convenience\conversions\conversions.buffer\seekoff.pass.cpp
 
-# GH-1116 <system_error>: error_category's default ctor isn't constexpr.
-diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp
-
 # GH-1190 <future>: incorrectly used copy assignment instead of copy construction in set_value
 thread\futures\futures.promise\set_value_const.pass.cpp
 
