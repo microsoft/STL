@@ -135,7 +135,7 @@ protected:
     };
     static_assert(sizeof(_Addr_storage) == sizeof(uintptr_t) && alignof(_Addr_storage) == alignof(uintptr_t),
         "Unsupported platform");
-    
+
     _Addr_storage _Addr;
 #else // ^^^ !defined(_M_CEE_PURE) / defined(_M_CEE_PURE) vvv
     uintptr_t _Addr;
