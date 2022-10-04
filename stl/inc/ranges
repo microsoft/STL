@@ -1336,7 +1336,7 @@ namespace ranges {
 #if _HAS_CXX23
     // clang-format off
     _EXPORT_STD template <move_constructible _Wx, semiregular _Bo = unreachable_sentinel_t>
-        requires(is_object_v<_Wx> && same_as<_Wx, remove_cv_t<_Wx>> 
+        requires(is_object_v<_Wx> && same_as<_Wx, remove_cv_t<_Wx>>
            && (_Integer_like<_Bo> || same_as<_Bo, unreachable_sentinel_t>))
     // clang-format on
     class repeat_view : public view_interface<repeat_view<_Wx, _Bo>> {
@@ -1428,7 +1428,7 @@ namespace ranges {
                 return _Iter -= _Off;
             }
             // clang-format off
-            _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left,const _Iterator& _Right) 
+            _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left,const _Iterator& _Right)
                 noexcept(noexcept(_Left._Current - _Right._Current)) /* strengthened */ {
                 // clang-format on
                 return static_cast<difference_type>(_Left._Current) - static_cast<difference_type>(_Right._Current);
@@ -1448,7 +1448,7 @@ namespace ranges {
         // clang-format off
         repeat_view() requires default_initializable<_Wx> = default;
 
-        _NODISCARD_CTOR constexpr explicit repeat_view(const _Wx& _Value_, _Bo _Bound_ = _Bo()) 
+        _NODISCARD_CTOR constexpr explicit repeat_view(const _Wx& _Value_, _Bo _Bound_ = _Bo())
             noexcept(is_nothrow_copy_constructible_v<_Wx> && is_nothrow_copy_constructible_v<_Bo>) // strengthened
             requires copy_constructible<_Wx> : _Value(in_place, _Value_),
                                                _Bound(_Bound_) {
