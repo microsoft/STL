@@ -2831,9 +2831,11 @@ namespace ranges {
                 } else if constexpr (_Random_sized_range<_Ty> && _Is_specialization_v<_Ty, iota_view>) {
                     return {_St::_Reconstruct_iota_view,
                         noexcept(_RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>()))};
+#if _HAS_CXX23
                 } else if constexpr (_Is_specialization_v<_Ty, repeat_view>) {
                     return {_St::_Reconstruct_repeat_view,
                         !sized_range<_Rng> || noexcept(_RANGES distance(_STD declval<_Rng&>()))};
+#endif
                 } else if constexpr (_Random_sized_range<_Ty> && _Is_subrange<_Ty>) {
                     return {_St::_Reconstruct_subrange,
                         noexcept(subrange(_RANGES begin(_STD declval<_Rng&>()),
@@ -2857,9 +2859,11 @@ namespace ranges {
                     return remove_cvref_t<_Rng>{};
                 } else if constexpr (_Strat == _St::_Take_view) {
                     return take_view(_STD forward<_Rng>(_Range), _Count);
+#if _HAS_CXX23
                 } else if constexpr (!sized_range<_Rng> && _Strat == _St::_Reconstruct_repeat_view) {
                     return repeat_view(
                         _STD forward_like<_Rng>(*_Range._Value), static_cast<range_difference_t<_Rng>>(_Count));
+#endif
                 } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
                     _Count            = (_STD min)(_RANGES distance(_Range), _Count);
@@ -2872,9 +2876,11 @@ namespace ranges {
                     } else if constexpr (_Strat == _St::_Reconstruct_iota_view) {
                         using _Vt = range_value_t<_Rng>;
                         return iota_view<_Vt, _Vt>(_First, _First + _Count);
+#if _HAS_CXX23
                     } else if constexpr (_Strat == _St::_Reconstruct_repeat_view) {
                         return repeat_view(
                             _STD forward_like<_Rng>(*_Range._Value), static_cast<range_difference_t<_Rng>>(_Count));
+#endif
                     } else if constexpr (_Strat == _St::_Reconstruct_subrange) {
                         return subrange(_First, _First + _Count);
                     } else {
@@ -3208,8 +3214,10 @@ namespace ranges {
                     return {_St::_Reconstruct_span, true};
                 } else if constexpr (_Is_specialization_v<_Ty, basic_string_view>) {
                     return {_St::_Reconstruct_other, true};
+#if _HAS_CXX21
                 } else if constexpr (_Is_specialization_v<_Ty, repeat_view>) {
                     return {_St::_Reconstruct_repeat, true};
+#endif
                 } else if constexpr (_Random_sized_range<_Ty> && _Is_subrange<_Ty>) {
                     if constexpr (sized_sentinel_for<sentinel_t<_Ty>, iterator_t<_Ty>>) {
                         return {_St::_Reconstruct_subrange,
@@ -3243,6 +3251,7 @@ namespace ranges {
                     return remove_cvref_t<_Rng>{};
                 } else if constexpr (_Strat == _St::_Drop_view) {
                     return drop_view(_STD forward<_Rng>(_Range), _Count);
+#if _HAS_CXX23
                 } else if constexpr (_Strat == _St::_Reconstruct_repeat) {
                     if constexpr (sized_range<_Rng>) {
                         _Count = _RANGES distance(_Range) - (_STD min)(_RANGES distance(_Range), _Count);
@@ -3251,6 +3260,7 @@ namespace ranges {
                     } else {
                         return _Range;
                     }
+#endif
                 } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
                     _Count = (_STD min)(_RANGES distance(_Range), _Count);
@@ -4708,9 +4718,9 @@ namespace ranges {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
                 auto [_Begin, _End] = _RANGES search(subrange{_Current, _Last}, _Parent->_Pattern);
 #else // ^^^ no workaround / workaround vvv
-                auto _Match = _RANGES search(subrange{_Current, _Last}, _Parent->_Pattern);
-                auto _Begin = _Match.begin();
-                auto _End   = _Match.end();
+            auto _Match = _RANGES search(subrange{_Current, _Last}, _Parent->_Pattern);
+            auto _Begin = _Match.begin();
+            auto _End = _Match.end();
 #endif // TRANSITION, DevCom-1559808
                 if (_Begin != _Last && _RANGES empty(_Parent->_Pattern)) {
                     ++_Begin;
@@ -4760,9 +4770,9 @@ namespace ranges {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
             auto [_Begin, _End] = _RANGES search(subrange{_It, _Last}, _Pattern);
 #else // ^^^ no workaround / workaround vvv
-            auto _Match = _RANGES search(subrange{_It, _Last}, _Pattern);
-            auto _Begin = _Match.begin();
-            auto _End   = _Match.end();
+        auto _Match = _RANGES search(subrange{_It, _Last}, _Pattern);
+        auto _Begin = _Match.begin();
+        auto _End = _Match.end();
 #endif // TRANSITION, DevCom-1559808
             if (_Begin != _Last && _RANGES empty(_Pattern)) {
                 ++_Begin;
@@ -5289,9 +5299,9 @@ namespace ranges {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 (void) _Off;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
-                if constexpr (_Offset_verifiable_v<iterator_t<_Base>>) {
-                      _Current._Verify_offset(_Off);
-                }
+            if constexpr (_Offset_verifiable_v<iterator_t<_Base>>) {
+                _Current._Verify_offset(_Off);
+            }
 #endif // _ITERATOR_DEBUG_LEVEL == 0
             }
 
