@@ -3214,7 +3214,7 @@ namespace ranges {
                     return {_St::_Reconstruct_span, true};
                 } else if constexpr (_Is_specialization_v<_Ty, basic_string_view>) {
                     return {_St::_Reconstruct_other, true};
-#if _HAS_CXX21
+#if _HAS_CXX23
                 } else if constexpr (_Is_specialization_v<_Ty, repeat_view>) {
                     return {_St::_Reconstruct_repeat, true};
 #endif
