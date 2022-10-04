@@ -4718,9 +4718,9 @@ namespace ranges {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
                 auto [_Begin, _End] = _RANGES search(subrange{_Current, _Last}, _Parent->_Pattern);
 #else // ^^^ no workaround / workaround vvv
-            auto _Match = _RANGES search(subrange{_Current, _Last}, _Parent->_Pattern);
-            auto _Begin = _Match.begin();
-            auto _End = _Match.end();
+                auto _Match = _RANGES search(subrange{_Current, _Last}, _Parent->_Pattern);
+                auto _Begin = _Match.begin();
+                auto _End   = _Match.end();
 #endif // TRANSITION, DevCom-1559808
                 if (_Begin != _Last && _RANGES empty(_Parent->_Pattern)) {
                     ++_Begin;
@@ -4770,9 +4770,9 @@ namespace ranges {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
             auto [_Begin, _End] = _RANGES search(subrange{_It, _Last}, _Pattern);
 #else // ^^^ no workaround / workaround vvv
-        auto _Match = _RANGES search(subrange{_It, _Last}, _Pattern);
-        auto _Begin = _Match.begin();
-        auto _End = _Match.end();
+            auto _Match = _RANGES search(subrange{_It, _Last}, _Pattern);
+            auto _Begin = _Match.begin();
+            auto _End   = _Match.end();
 #endif // TRANSITION, DevCom-1559808
             if (_Begin != _Last && _RANGES empty(_Pattern)) {
                 ++_Begin;
@@ -5299,9 +5299,9 @@ namespace ranges {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 (void) _Off;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
-            if constexpr (_Offset_verifiable_v<iterator_t<_Base>>) {
-                _Current._Verify_offset(_Off);
-            }
+                if constexpr (_Offset_verifiable_v<iterator_t<_Base>>) {
+                      _Current._Verify_offset(_Off);
+                }
 #endif // _ITERATOR_DEBUG_LEVEL == 0
             }
 
