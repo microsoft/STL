@@ -6,7 +6,7 @@
     "BuildAsHeaderUnits": [
         // "__msvc_all_public_headers.hpp", // for testing, not production
         "__msvc_chrono.hpp",
-        "__msvc_cxx_stdatomic.h",
+        "__msvc_cxx_stdatomic.hpp",
         "__msvc_format_ucd_tables.hpp",
         "__msvc_int128.hpp",
         "__msvc_iter_core.hpp",

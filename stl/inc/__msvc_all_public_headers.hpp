@@ -139,7 +139,7 @@
 #include <vector>
 
 #ifndef _M_CEE_PURE
-#include <__msvc_cxx_stdatomic.h>
+#include <__msvc_cxx_stdatomic.hpp>
 #include <atomic>
 #include <barrier>
 #include <latch>
