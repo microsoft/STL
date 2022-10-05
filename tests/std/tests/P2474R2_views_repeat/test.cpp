@@ -85,11 +85,16 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
         assert(cmp_equal(rng.size(), bound));
         static_assert(noexcept(rng.size()) == is_nothrow<is_nothrow_copy_constructible, B>()); // strengthened
 
-        const same_as<R> auto take = rng | views::take(3);
-        assert(take.size() == 3);
+        constexpr int amount   = 3;
+        const auto size        = ranges::distance(rng);
+        const auto take_amount = ranges::min(size, amount);
 
-        const same_as<R> auto drop = rng | views::drop(3);
-        assert(cmp_equal(drop.size(), bound - 3));
+        const same_as<R> auto take = rng | views::take(amount);
+        assert(cmp_equal(take.size(), take_amount));
+
+        const auto drop_amount     = size - ranges::min(size, amount);
+        const same_as<R> auto drop = rng | views::drop(amount);
+        assert(cmp_equal(drop.size(), drop_amount));
     } else {
         static_assert(noexcept(rng.end()));
 
@@ -256,8 +261,10 @@ constexpr bool test() {
     using namespace std::string_literals;
 
     test_common(7, 5);
+    test_common(7, 2);
     test_common(3);
     test_common("woof"s, 5);
+    test_common("woof"s, 2);
     test_common("meow"s);
 
     static_assert(!CanViewRepeat<const move_tester&, int>);
@@ -283,6 +290,7 @@ constexpr bool test() {
 }
 
 int main() {
+
     assert(test());
     static_assert(test());
 }
