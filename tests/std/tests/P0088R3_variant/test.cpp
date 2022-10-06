@@ -6064,9 +6064,7 @@ template<class T> struct Holder { T t; };
 constexpr bool test(bool do_it)
 {
     if (do_it) {
-#if 0 // FIXME
-// error C2079: "visit::robust_against_adl::Holder<visit::robust_against_adl::Incomplete>::t" uses
-//              undefined struct "visit::robust_against_adl::Incomplete"
+#if 0 // TRANSITION, GH-140
         std::variant<Holder<Incomplete>*, int> v = nullptr;
         std::visit([](auto){}, v);
         std::visit([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
@@ -6074,7 +6072,7 @@ constexpr bool test(bool do_it)
         std::visit<void>([](auto){}, v);
         std::visit<void*>([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
 #endif
-#endif // FIXME
+#endif // TRANSITION, GH-140
   }
     return true;
   }
