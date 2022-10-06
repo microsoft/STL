@@ -40,18 +40,6 @@ containers\associative\set\insert_and_emplace_allocator_requirements.pass.cpp
 containers\unord\unord.map\unord.map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp
 containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp
 
-# libc++ doesn't yet implement P1423R3, so it expects an old value for `__cpp_lib_char8_t`
-language.support\support.limits\support.limits.general\atomic.version.pass.cpp
-language.support\support.limits\support.limits.general\filesystem.version.pass.cpp
-language.support\support.limits\support.limits.general\istream.version.pass.cpp
-language.support\support.limits\support.limits.general\limits.version.pass.cpp
-language.support\support.limits\support.limits.general\locale.version.pass.cpp
-language.support\support.limits\support.limits.general\ostream.version.pass.cpp
-language.support\support.limits\support.limits.general\string_view.version.pass.cpp
-
-# libc++ doesn't yet implement P2231R1, so it expects an old value for `__cpp_lib_optional`
-language.support\support.limits\support.limits.general\optional.version.pass.cpp
-
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 containers\sequences\array\array.cons\implicit_copy.pass.cpp
 
@@ -276,10 +264,12 @@ utilities\smartptr\unique.ptr\unique.ptr.create\make_unique.array.pass.cpp
 strings\basic.string.literals\noexcept.compile.pass.cpp
 
 # DevCom-1626139 "compile-time NaN comparison"
+iterators\predef.iterators\reverse.iterators\reverse.iter.cmp\three-way.pass.cpp
 library\description\conventions\expos.only.func\synth_three_way.pass.cpp
 utilities\function.objects\comparisons\compare_three_way.pass.cpp
 utilities\tuple\tuple.tuple\tuple.rel\three_way.pass.cpp
 utilities\utility\pairs\pairs.spec\three_way_comparison.pass.cpp
+utilities\variant\variant.relops\three_way.pass.cpp
 
 # DevCom-1626727: bogus "failure was caused by a conversion from void* to a pointer-to-object type" for conversion to void
 algorithms\robust_re_difference_type.compile.pass.cpp
@@ -550,7 +540,7 @@ language.support\support.limits\support.limits.general\chrono.version.compile.pa
 # libc++ doesn't implement P2273R3 constexpr unique_ptr
 language.support\support.limits\support.limits.general\memory.version.compile.pass.cpp
 
-# libc++ doesn't implement P2231R1 Add further constexpr support for optional/variant
+# libc++ doesn't implement P2231R1 Add further constexpr support for variant
 language.support\support.limits\support.limits.general\variant.version.compile.pass.cpp
 
 # Tests non-portable behavior
@@ -626,6 +616,15 @@ algorithms\alg.modifying.operations\alg.rotate\ranges.rotate_copy.pass.cpp
 algorithms\alg.modifying.operations\alg.swap\ranges.swap_ranges.pass.cpp
 algorithms\alg.modifying.operations\alg.transform\ranges.transform.pass.cpp
 algorithms\alg.modifying.operations\alg.unique\ranges_unique_copy.pass.cpp
+
+# libc++ doesn't yet implement P1957R2 "Converting from `T*` to `bool` should be considered narrowing"
+utilities\variant\variant.variant\variant.assign\conv.pass.cpp
+utilities\variant\variant.variant\variant.assign\T.pass.cpp
+utilities\variant\variant.variant\variant.ctor\conv.pass.cpp
+utilities\variant\variant.variant\variant.ctor\T.pass.cpp
+
+# libc++ is missing a requires-clause on variant's operator<=> (llvm/llvm-project#58192)
+utilities\variant\variant.relops\three_way.pass.cpp
 
 
 # *** LIKELY STL BUGS ***
@@ -800,12 +799,6 @@ re\re.alg\re.alg.search\basic.locale.pass.cpp
 re\re.alg\re.alg.search\ecma.locale.pass.cpp
 re\re.alg\re.alg.search\extended.locale.pass.cpp
 
-# Not yet analyzed. Various static_asserts.
-utilities\variant\variant.variant\variant.assign\conv.pass.cpp
-utilities\variant\variant.variant\variant.assign\T.pass.cpp
-utilities\variant\variant.variant\variant.ctor\conv.pass.cpp
-utilities\variant\variant.variant\variant.ctor\T.pass.cpp
-
 # Not yet analyzed. Involves incomplete types.
 utilities\memory\allocator.traits\allocator.traits.members\construct.pass.cpp
 utilities\memory\allocator.traits\allocator.traits.members\destroy.pass.cpp
@@ -838,7 +831,6 @@ numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.extreme\eval.pass.cpp
 numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.gamma\eval_param.pass.cpp
 numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.gamma\eval.pass.cpp
 numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.poisson\eval_param.pass.cpp
-numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
 
 # Not yet analyzed. Assertion failed: std::abs((skew - x_skew) / x_skew) < 0.01
 numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.bin\eval_param.pass.cpp
@@ -852,6 +844,9 @@ numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.bin\eval.pass.cpp
 language.support\cmp\cmp.alg\compare_partial_order_fallback.pass.cpp
 language.support\cmp\cmp.alg\compare_strong_order_fallback.pass.cpp
 language.support\cmp\cmp.alg\compare_weak_order_fallback.pass.cpp
+
+# Not yet analyzed. Runs forever
+numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
 
 # Not yet analyzed. This test seemly fails for ARM/ARM64 platforms because MSVC STL considers `tinyness_before` to be
 # always `false` even for ARM, but libc++ considers it to be `true` for floating-point types on ARM.
@@ -883,9 +878,8 @@ utilities\template.bitset\bitset.members\right_shift_eq.pass.cpp
 utilities\template.bitset\bitset.members\to_string.pass.cpp
 
 # Not yet analyzed
-utilities\variant\variant.relops\three_way.pass.cpp
-thread\thread.threads\thread.thread.class\thread.thread.id\eq.pass.cpp
-thread\thread.threads\thread.thread.class\thread.thread.id\lt.pass.cpp
+algorithms\alg.modifying.operations\alg.random.sample\ranges_sample.pass.cpp
+algorithms\alg.modifying.operations\alg.rotate\ranges_rotate.pass.cpp
 algorithms\alg.nonmodifying\alg.all_of\ranges.all_of.pass.cpp
 algorithms\alg.nonmodifying\alg.any_of\ranges.any_of.pass.cpp
 algorithms\alg.nonmodifying\alg.equal\ranges.equal.pass.cpp
@@ -896,6 +890,7 @@ algorithms\alg.nonmodifying\alg.none_of\ranges.none_of.pass.cpp
 algorithms\alg.nonmodifying\alg.search\ranges.search.pass.cpp
 algorithms\alg.nonmodifying\alg.search\ranges.search_n.pass.cpp
 algorithms\alg.nonmodifying\mismatch\ranges_mismatch.pass.cpp
+algorithms\alg.sorting\alg.clamp\ranges.clamp.pass.cpp
 algorithms\alg.sorting\alg.heap.operations\make.heap\ranges_make_heap.pass.cpp
 algorithms\alg.sorting\alg.heap.operations\pop.heap\ranges_pop_heap.pass.cpp
 algorithms\alg.sorting\alg.heap.operations\push.heap\ranges_push_heap.pass.cpp
@@ -903,6 +898,7 @@ algorithms\alg.sorting\alg.heap.operations\sort.heap\ranges_sort_heap.pass.cpp
 algorithms\alg.sorting\alg.merge\ranges_inplace_merge.pass.cpp
 algorithms\alg.sorting\alg.merge\ranges_merge.pass.cpp
 algorithms\alg.sorting\alg.min.max\ranges.minmax.pass.cpp
+algorithms\alg.sorting\alg.min.max\requires_forward_iterator.fail.cpp
 algorithms\alg.sorting\alg.nth.element\ranges_nth_element.pass.cpp
 algorithms\alg.sorting\alg.partitions\ranges.is_partitioned.pass.cpp
 algorithms\alg.sorting\alg.set.operations\set.difference\ranges_set_difference.pass.cpp
@@ -921,6 +917,7 @@ algorithms\ranges_robust_against_omitting_invoke.pass.cpp
 algorithms\ranges_robust_against_proxy_iterators.pass.cpp
 algorithms\robust_against_proxy_iterators_lifetime_bugs.pass.cpp
 concepts\concepts.lang\concept.default.init\default_initializable.compile.pass.cpp
+containers\sequences\deque\abi.compile.pass.cpp
 containers\sequences\vector.bool\construct_iter_iter.pass.cpp
 containers\sequences\vector.bool\construct_iter_iter_alloc.pass.cpp
 containers\sequences\vector.bool\construct_size.pass.cpp
@@ -941,6 +938,7 @@ containers\sequences\vector\vector.erasure\erase.pass.cpp
 containers\sequences\vector\vector.erasure\erase_if.pass.cpp
 input.output\filesystems\fs.op.funcs\fs.op.remove_all\toctou.pass.cpp
 input.output\iostream.format\quoted.manip\quoted_traits.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.random.access\contiguous_iterator.compile.pass.cpp
 iterators\iterator.requirements\iterator.cust\iterator.cust.move\iter_rvalue_reference_t.compile.pass.cpp
 iterators\iterator.requirements\iterator.cust\iterator.cust.swap\iter_swap.pass.cpp
 iterators\predef.iterators\iterators.common\iterator_traits.compile.pass.cpp
@@ -1003,6 +1001,7 @@ ranges\range.adaptors\range.lazy.split\range.lazy.split.outer\increment.pass.cpp
 ranges\range.adaptors\range.lazy.split\range.lazy.split.outer\types.compile.pass.cpp
 ranges\range.adaptors\range.lazy.split\view_interface.pass.cpp
 ranges\range.adaptors\range.take\adaptor.pass.cpp
+ranges\range.factories\range.single.view\cpo.pass.cpp
 strings\basic.string\string.cons\dtor.pass.cpp
 strings\basic.string\string.cons\implicit_deduction_guides.pass.cpp
 strings\basic.string\string.modifiers\string_erase\iter.pass.cpp
@@ -1022,6 +1021,8 @@ strings\string.view\string.view.comparison\less.pass.cpp
 strings\string.view\string.view.comparison\less_equal.pass.cpp
 strings\string.view\string.view.comparison\not_equal.pass.cpp
 thread\futures\futures.task\futures.task.members\ctor2.compile.pass.cpp
+thread\thread.threads\thread.thread.class\thread.thread.id\eq.pass.cpp
+thread\thread.threads\thread.thread.class\thread.thread.id\lt.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\addressof.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.alg\swap.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.cap\operator_bool.pass.cpp
@@ -1047,13 +1048,6 @@ utilities\meta\meta.logical\disjunction.compile.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\convert_const_move.pass.cpp
 utilities\format\format.fmt.string\get.pass.cpp
 utilities\format\format.fmt.string\types.compile.pass.cpp
-algorithms\alg.modifying.operations\alg.random.sample\ranges_sample.pass.cpp
-algorithms\alg.modifying.operations\alg.rotate\ranges_rotate.pass.cpp
-algorithms\alg.sorting\alg.clamp\ranges.clamp.pass.cpp
-iterators\iterator.requirements\iterator.concepts\iterator.concept.random.access\contiguous_iterator.compile.pass.cpp
-algorithms\alg.sorting\alg.min.max\requires_forward_iterator.fail.cpp
-containers\sequences\deque\abi.compile.pass.cpp
-ranges\range.factories\range.single.view\cpo.pass.cpp
 utilities\meta\meta.unary\meta.unary.prop\is_nothrow_copy_assignable.pass.cpp
 utilities\meta\meta.unary\meta.unary.prop\is_nothrow_move_assignable.pass.cpp
 

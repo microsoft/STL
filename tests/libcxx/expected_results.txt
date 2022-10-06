@@ -268,6 +268,7 @@ std/library/description/conventions/expos.only.func/synth_three_way.pass.cpp:0 F
 std/utilities/function.objects/comparisons/compare_three_way.pass.cpp:0 FAIL
 std/utilities/tuple/tuple.tuple/tuple.rel/three_way.pass.cpp:0 FAIL
 std/utilities/utility/pairs/pairs.spec/three_way_comparison.pass.cpp:0 FAIL
+std/utilities/variant/variant.relops/three_way.pass.cpp:0 FAIL
 
 # DevCom-1626727: bogus "failure was caused by a conversion from void* to a pointer-to-object type" for conversion to void
 std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
@@ -538,7 +539,7 @@ std/language.support/support.limits/support.limits.general/chrono.version.compil
 # libc++ doesn't implement P2273R3 constexpr unique_ptr
 std/language.support/support.limits/support.limits.general/memory.version.compile.pass.cpp FAIL
 
-# libc++ doesn't implement P2231R1 Add further constexpr support for optional/variant
+# libc++ doesn't implement P2231R1 Add further constexpr support for variant
 std/language.support/support.limits/support.limits.general/variant.version.compile.pass.cpp FAIL
 
 # Tests non-portable behavior
@@ -614,6 +615,15 @@ std/algorithms/alg.modifying.operations/alg.rotate/ranges.rotate_copy.pass.cpp F
 std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp FAIL
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.unique/ranges_unique_copy.pass.cpp FAIL
+
+# libc++ doesn't yet implement P1957R2 "Converting from `T*` to `bool` should be considered narrowing"
+std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
+std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
+std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp FAIL
+std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
+
+# libc++ is missing a requires-clause on variant's operator<=> (llvm/llvm-project#58192)
+std/utilities/variant/variant.relops/three_way.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -788,12 +798,6 @@ std/re/re.alg/re.alg.search/basic.locale.pass.cpp FAIL
 std/re/re.alg/re.alg.search/ecma.locale.pass.cpp FAIL
 std/re/re.alg/re.alg.search/extended.locale.pass.cpp FAIL
 
-# Not yet analyzed. Various static_asserts.
-std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
-std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
-std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp FAIL
-std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
-
 # Not yet analyzed. Involves incomplete types.
 std/utilities/memory/allocator.traits/allocator.traits.members/construct.pass.cpp FAIL
 std/utilities/memory/allocator.traits/allocator.traits.members/destroy.pass.cpp FAIL
@@ -840,7 +844,7 @@ std/language.support/cmp/cmp.alg/compare_partial_order_fallback.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/compare_strong_order_fallback.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/compare_weak_order_fallback.pass.cpp FAIL
 
-# Not yet analyzed. Run forever
+# Not yet analyzed. Runs forever
 std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp SKIPPED
 
 # Not yet analyzed. This test seemly fails for ARM/ARM64 platforms because MSVC STL considers `tinyness_before` to be
@@ -873,9 +877,8 @@ std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/to_string.pass.cpp:1 FAIL
 
 # Not yet analyzed
-std/utilities/variant/variant.relops/three_way.pass.cpp FAIL
-std/thread/thread.threads/thread.thread.class/thread.thread.id/eq.pass.cpp FAIL
-std/thread/thread.threads/thread.thread.class/thread.thread.id/lt.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.random.sample/ranges_sample.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.rotate/ranges_rotate.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.all_of/ranges.all_of.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.any_of/ranges.any_of.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
@@ -886,6 +889,7 @@ std/algorithms/alg.nonmodifying/alg.none_of/ranges.none_of.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.search/ranges.search.pass.cpp:0 FAIL
 std/algorithms/alg.nonmodifying/alg.search/ranges.search_n.pass.cpp:0 FAIL
 std/algorithms/alg.nonmodifying/mismatch/ranges_mismatch.pass.cpp FAIL
+std/algorithms/alg.sorting/alg.clamp/ranges.clamp.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.heap.operations/make.heap/ranges_make_heap.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.heap.operations/pop.heap/ranges_pop_heap.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.heap.operations/push.heap/ranges_push_heap.pass.cpp FAIL
@@ -893,6 +897,7 @@ std/algorithms/alg.sorting/alg.heap.operations/sort.heap/ranges_sort_heap.pass.c
 std/algorithms/alg.sorting/alg.merge/ranges_inplace_merge.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.merge/ranges_merge.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.min.max/ranges.minmax.pass.cpp FAIL
+std/algorithms/alg.sorting/alg.min.max/requires_forward_iterator.fail.cpp FAIL
 std/algorithms/alg.sorting/alg.nth.element/ranges_nth_element.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.partitions/ranges.is_partitioned.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.set.operations/set.difference/ranges_set_difference.pass.cpp FAIL
@@ -911,6 +916,7 @@ std/algorithms/ranges_robust_against_omitting_invoke.pass.cpp FAIL
 std/algorithms/ranges_robust_against_proxy_iterators.pass.cpp FAIL
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
 std/concepts/concepts.lang/concept.default.init/default_initializable.compile.pass.cpp:0 FAIL
+std/containers/sequences/deque/abi.compile.pass.cpp FAIL
 std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_size.pass.cpp:0 FAIL
@@ -931,6 +937,7 @@ std/containers/sequences/vector/vector.erasure/erase.pass.cpp:0 FAIL
 std/containers/sequences/vector/vector.erasure/erase_if.pass.cpp:0 FAIL
 std/input.output/filesystems/fs.op.funcs/fs.op.remove_all/toctou.pass.cpp FAIL
 std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
+std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.move/iter_rvalue_reference_t.compile.pass.cpp FAIL
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.swap/iter_swap.pass.cpp FAIL
 std/iterators/predef.iterators/iterators.common/iterator_traits.compile.pass.cpp:1 FAIL
@@ -992,6 +999,7 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer/increment.pass
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer/types.compile.pass.cpp FAIL
 std/ranges/range.adaptors/range.lazy.split/view_interface.pass.cpp FAIL
 std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
+std/ranges/range.factories/range.single.view/cpo.pass.cpp FAIL
 std/strings/basic.string/string.cons/dtor.pass.cpp FAIL
 std/strings/basic.string/string.cons/implicit_deduction_guides.pass.cpp FAIL
 std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:0 FAIL
@@ -1011,6 +1019,8 @@ std/strings/string.view/string.view.comparison/less.pass.cpp FAIL
 std/strings/string.view/string.view.comparison/less_equal.pass.cpp FAIL
 std/strings/string.view/string.view.comparison/not_equal.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
+std/thread/thread.threads/thread.thread.class/thread.thread.id/eq.pass.cpp FAIL
+std/thread/thread.threads/thread.thread.class/thread.thread.id/lt.pass.cpp FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/addressof.pass.cpp:0 FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.alg/swap.pass.cpp:0 FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.cap/operator_bool.pass.cpp:0 FAIL
@@ -1033,18 +1043,11 @@ std/utilities/function.objects/refwrap/refwrap.const/type_conv_ctor.pass.cpp:0 F
 std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.create/allocate_shared.array.unbounded.pass.cpp FAIL
 std/utilities/meta/meta.logical/conjunction.compile.pass.cpp FAIL
 std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_move_assignable.pass.cpp:0 FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
 std/utilities/format/format.fmt.string/get.pass.cpp FAIL
 std/utilities/format/format.fmt.string/types.compile.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.random.sample/ranges_sample.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.rotate/ranges_rotate.pass.cpp FAIL
-std/algorithms/alg.sorting/alg.clamp/ranges.clamp.pass.cpp FAIL
-std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
-std/algorithms/alg.sorting/alg.min.max/requires_forward_iterator.fail.cpp FAIL
-std/containers/sequences/deque/abi.compile.pass.cpp FAIL
-std/ranges/range.factories/range.single.view/cpo.pass.cpp FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_move_assignable.pass.cpp:0 FAIL
 
 
 # *** XFAILs WHICH PASS ***
