@@ -1837,7 +1837,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::ranges::repeat_view&lt;*,*&gt;">
-    <DisplayString>[{_Value._Val}; {_Bound})</DisplayString>
+    <DisplayString>[{_Value._Val} x {_Bound}]</DisplayString>
     <Expand>
         <Item Name="[size]">_Bound</Item>
         <CustomListItems Optional="true">
@@ -1853,7 +1853,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::ranges::repeat_view&lt;*,std::unreachable_sentinel_t&gt;">
-    <DisplayString>[{_Value._Val}; +&#8734;)</DisplayString>
+    <DisplayString>[{_Value._Val} x +&#8734;]</DisplayString>
     <Expand>
       <Item Name="[+&#8734;]">_Value._Val</Item>
     </Expand>

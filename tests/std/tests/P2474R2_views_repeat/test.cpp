@@ -290,7 +290,6 @@ constexpr bool test() {
 }
 
 int main() {
-
     assert(test());
     static_assert(test());
 }
