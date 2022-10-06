@@ -190,13 +190,13 @@ struct
         // Pre: __u + [0, __u_size), __v + [0, __v_size), and __q + [0, __u_size - __v_size) are all valid ranges
         // constexpr auto _Int_max = size_t{(numeric_limits<int>::max)()};
         // _STL_INTERNAL_CHECK(__v_size <= _Int_max);
-        const auto __n = static_cast<int>(__v_size);
+        const int __n = static_cast<int>(__v_size);
         // _STL_INTERNAL_CHECK(__u_size > __v_size);
         // _STL_INTERNAL_CHECK(__u_size <= _Int_max);
-        const auto __m = static_cast<int>(__u_size - __v_size - 1);
+        const int __m = static_cast<int>(__u_size - __v_size - 1);
         // _STL_INTERNAL_CHECK(__v[__n - 1] >> 31 != 0); // Arguments are already normalized
 
-        for (auto __j = static_cast<int>(__m); __j >= 0; --__j) {
+        for (int __j = __m; __j >= 0; --__j) {
             const auto _Two_digits = (static_cast<uint64_t>(__u[__j + __n]) << 32) | __u[__j + __n - 1];
             auto __qhat            = _Two_digits / __v[__n - 1];
             auto __rhat            = _Two_digits % __v[__n - 1];
@@ -213,7 +213,7 @@ struct
 
             int64_t __k = 0;
             int64_t __t _ZERO_OR_NO_INIT;
-            for (int __i = 0; __i < static_cast<int>(__n); ++__i) {
+            for (int __i = 0; __i < __n; ++__i) {
                 const auto _Prod = static_cast<uint32_t>(__qhat) * static_cast<uint64_t>(__v[__i]);
                 __t              = __u[__i + __j] - __k - static_cast<uint32_t>(_Prod);
                 __u[__i + __j]   = static_cast<uint32_t>(__t);
@@ -226,7 +226,7 @@ struct
             if (__t < 0) {
                 --__q[__j];
                 __k = 0;
-                for (int __i = 0; __i < static_cast<int>(__n); ++__i) {
+                for (int __i = 0; __i < __n; ++__i) {
                     __t            = __u[__i + __j] + __k + __v[__i];
                     __u[__i + __j] = static_cast<uint32_t>(__t);
                     __k            = __t >> 32;

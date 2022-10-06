@@ -27,7 +27,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-class shared_mutex { // class for mutual exclusion shared across threads
+_EXPORT_STD class shared_mutex { // class for mutual exclusion shared across threads
 public:
     using native_handle_type = _Smtx_t*;
 
@@ -73,7 +73,7 @@ private:
 
 // shared_timed_mutex is not supported under /clr
 #ifndef _M_CEE
-class shared_timed_mutex { // class for mutual exclusion shared across threads
+_EXPORT_STD class shared_timed_mutex { // class for mutual exclusion shared across threads
 private:
     using _Read_cnt_t = unsigned int;
 
@@ -232,7 +232,7 @@ private:
 };
 #endif // _M_CEE
 
-template <class _Mutex>
+_EXPORT_STD template <class _Mutex>
 class shared_lock { // shareable lock
 public:
     using mutex_type = _Mutex;
@@ -373,7 +373,7 @@ private:
     }
 };
 
-template <class _Mutex>
+_EXPORT_STD template <class _Mutex>
 void swap(shared_lock<_Mutex>& _Left, shared_lock<_Mutex>& _Right) noexcept {
     _Left.swap(_Right);
 }

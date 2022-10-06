@@ -20,7 +20,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <size_t _Bits>
+_EXPORT_STD template <size_t _Bits>
 class bitset { // store fixed-length sequence of Boolean elements
 public:
 #pragma warning(push)
@@ -492,28 +492,28 @@ private:
     _Ty _Array[_Words + 1];
 };
 
-template <size_t _Bits>
+_EXPORT_STD template <size_t _Bits>
 _NODISCARD _CONSTEXPR23 bitset<_Bits> operator&(const bitset<_Bits>& _Left, const bitset<_Bits>& _Right) noexcept {
     bitset<_Bits> _Ans = _Left;
     _Ans &= _Right;
     return _Ans;
 }
 
-template <size_t _Bits>
+_EXPORT_STD template <size_t _Bits>
 _NODISCARD _CONSTEXPR23 bitset<_Bits> operator|(const bitset<_Bits>& _Left, const bitset<_Bits>& _Right) noexcept {
     bitset<_Bits> _Ans = _Left;
     _Ans |= _Right;
     return _Ans;
 }
 
-template <size_t _Bits>
+_EXPORT_STD template <size_t _Bits>
 _NODISCARD _CONSTEXPR23 bitset<_Bits> operator^(const bitset<_Bits>& _Left, const bitset<_Bits>& _Right) noexcept {
     bitset<_Bits> _Ans = _Left;
     _Ans ^= _Right;
     return _Ans;
 }
 
-template <class _Elem, class _Tr, size_t _Bits>
+_EXPORT_STD template <class _Elem, class _Tr, size_t _Bits>
 basic_ostream<_Elem, _Tr>& operator<<(basic_ostream<_Elem, _Tr>& _Ostr, const bitset<_Bits>& _Right) {
     using _Ctype             = typename basic_ostream<_Elem, _Tr>::_Ctype;
     const _Ctype& _Ctype_fac = _STD use_facet<_Ctype>(_Ostr.getloc());
@@ -523,7 +523,7 @@ basic_ostream<_Elem, _Tr>& operator<<(basic_ostream<_Elem, _Tr>& _Ostr, const bi
     return _Ostr << _Right.template to_string<_Elem, _Tr, allocator<_Elem>>(_Elem0, _Elem1);
 }
 
-template <class _Elem, class _Tr, size_t _Bits>
+_EXPORT_STD template <class _Elem, class _Tr, size_t _Bits>
 basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_Bits>& _Right) {
     using _Istr_t                    = basic_istream<_Elem, _Tr>;
     using _Ctype                     = typename _Istr_t::_Ctype;

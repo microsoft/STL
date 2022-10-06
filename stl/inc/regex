@@ -101,7 +101,7 @@ enum _Meta_type { // meta character representations for parser
 
 namespace regex_constants {
     // constants used in regular expressions
-    enum syntax_option_type : int { // specify RE syntax rules
+    _EXPORT_STD enum syntax_option_type : int { // specify RE syntax rules
         ECMAScript = 0x01,
         basic      = 0x02,
         extended   = 0x04,
@@ -116,9 +116,9 @@ namespace regex_constants {
         collate  = 0x0800
     };
 
-    _BITMASK_OPS(syntax_option_type)
+    _BITMASK_OPS(_EXPORT_STD, syntax_option_type)
 
-    enum match_flag_type : int { // specify matching and formatting rules
+    _EXPORT_STD enum match_flag_type : int { // specify matching and formatting rules
         match_default     = 0x0000,
         match_not_bol     = 0x0001,
         match_not_eol     = 0x0002,
@@ -136,9 +136,9 @@ namespace regex_constants {
         _Skip_zero_length = 0x4000,
     };
 
-    _BITMASK_OPS(match_flag_type)
+    _BITMASK_OPS(_EXPORT_STD, match_flag_type)
 
-    enum error_type { // identify error
+    _EXPORT_STD enum error_type { // identify error
         error_collate,
         error_ctype,
         error_escape,
@@ -157,9 +157,9 @@ namespace regex_constants {
     };
 } // namespace regex_constants
 
-[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xregex_error(regex_constants::error_type _Code);
+extern "C++" [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xregex_error(regex_constants::error_type _Code);
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 class regex_traits;
 
 struct _Cl_names { // structure to associate class name with mask value
@@ -300,7 +300,7 @@ public:
     char_class_type lookup_classname(_Iter _First, _Iter _Last, bool _Icase = false) const {
         // map [_First, _Last) to character class mask value
 #define _REGEX_CHAR_CLASS_NAME(n, c) \
-    { n, L##n, sizeof(n) / sizeof(n[0]) - 1, c }
+    { n, L##n, static_cast<unsigned int>(_STD size(n) - 1), c }
         static constexpr _Cl_names _Names[] = {
             // map class names to numeric constants
             _REGEX_CHAR_CLASS_NAME("alnum", _Ch_alnum),
@@ -426,7 +426,7 @@ public:
     }
 };
 
-class regex_error : public runtime_error { // type of all regular expression exceptions
+_EXPORT_STD class regex_error : public runtime_error { // type of all regular expression exceptions
 public:
     explicit regex_error(regex_constants::error_type _Ex) : runtime_error(_Stringify(_Ex)), _Err(_Ex) {}
 
@@ -579,7 +579,7 @@ struct _Get_member_comparison_category<_Ty, void_t<typename _Ty::comparison_cate
 };
 #endif // _HAS_CXX20
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 class sub_match : public pair<_BidIt, _BidIt> { // class to hold contents of a capture group
 public:
     using _Mybase         = pair<_BidIt, _BidIt>;
@@ -688,18 +688,18 @@ public:
     }
 };
 
-using csub_match  = sub_match<const char*>;
-using wcsub_match = sub_match<const wchar_t*>;
-using ssub_match  = sub_match<string::const_iterator>;
-using wssub_match = sub_match<wstring::const_iterator>;
+_EXPORT_STD using csub_match  = sub_match<const char*>;
+_EXPORT_STD using wcsub_match = sub_match<const wchar_t*>;
+_EXPORT_STD using ssub_match  = sub_match<string::const_iterator>;
+_EXPORT_STD using wssub_match = sub_match<wstring::const_iterator>;
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return _Left._Match_equal(_Right);
 }
 
 #if _HAS_CXX20
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
@@ -730,13 +730,13 @@ _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const sub_match<_BidI
 }
 #endif // !_HAS_CXX20
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return _Left._Match_equal(_Right);
 }
 
 #if _HAS_CXX20
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
@@ -797,13 +797,13 @@ _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 }
 #endif // !_HAS_CXX20
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return _Left._Match_equal(_STD addressof(_Right), 1);
 }
 
 #if _HAS_CXX20
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(
         _Left._Compare(_STD addressof(_Right), 1) <=> 0);
@@ -865,14 +865,14 @@ _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 }
 #endif // !_HAS_CXX20
 
-template <class _BidIt, class _Traits, class _Alloc>
+_EXPORT_STD template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator==(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
     return _Left._Match_equal(_Right.data(), _Right.size());
 }
 
 #if _HAS_CXX20
-template <class _BidIt, class _Traits, class _Alloc>
+_EXPORT_STD template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD auto operator<=>(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
@@ -945,12 +945,12 @@ _NODISCARD bool operator>=(
 }
 #endif // !_HAS_CXX20
 
-template <class _Elem, class _Traits, class _BidIt>
+_EXPORT_STD template <class _Elem, class _Traits, class _BidIt>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const sub_match<_BidIt>& _Match) {
     return _Ostr << _Match.str();
 }
 
-template <class _BidIt, class _Alloc = allocator<sub_match<_BidIt>>>
+_EXPORT_STD template <class _BidIt, class _Alloc = allocator<sub_match<_BidIt>>>
 class match_results;
 
 template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
@@ -961,7 +961,7 @@ template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
 _OutIt _Format_sed(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _InIt _First, _InIt _Last,
     regex_constants::match_flag_type _Flags = regex_constants::format_default);
 
-template <class _BidIt, class _Alloc>
+_EXPORT_STD template <class _BidIt, class _Alloc>
 class match_results { // class to hold contents of all capture groups
 public:
     using _Elem     = sub_match<_BidIt>;
@@ -1132,7 +1132,7 @@ private:
     _Elem _Null_elem;
 };
 
-template <class _BidIt, class _Alloc>
+_EXPORT_STD template <class _BidIt, class _Alloc>
 _NODISCARD bool operator==(const match_results<_BidIt, _Alloc>& _Left, const match_results<_BidIt, _Alloc>& _Right) {
     if (!_Left.ready() && !_Right.ready()) {
         return true;
@@ -1174,7 +1174,7 @@ enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_longest = 0x08
 };
 
-_BITMASK_OPS(_Node_flags)
+_BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
 
 enum _Node_type { // type flag for nfa nodes
     _N_none,
@@ -1767,7 +1767,7 @@ public:
 #endif // 0 < _ITERATOR_DEBUG_LEVEL
 };
 
-template <class _Elem, class _RxTraits = regex_traits<_Elem>>
+_EXPORT_STD template <class _Elem, class _RxTraits = regex_traits<_Elem>>
 class basic_regex : public _Regex_base { // regular expression
 public:
     using value_type  = _Elem;
@@ -2018,23 +2018,23 @@ basic_regex(_FwdIt, _FwdIt, regex_constants::syntax_option_type = regex_constant
     -> basic_regex<typename iterator_traits<_FwdIt>::value_type>;
 #endif // _HAS_CXX17
 
-template <class _Elem, class _RxTraits>
+_EXPORT_STD template <class _Elem, class _RxTraits>
 void swap(basic_regex<_Elem, _RxTraits>& _Left, basic_regex<_Elem, _RxTraits>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 
-template <class _BidIt, class _Alloc>
+_EXPORT_STD template <class _BidIt, class _Alloc>
 void swap(match_results<_BidIt, _Alloc>& _Left, match_results<_BidIt, _Alloc>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) /* strengthened */ {
     _Left.swap(_Right);
 }
 
-using regex   = basic_regex<char>;
-using wregex  = basic_regex<wchar_t>;
-using cmatch  = match_results<const char*>;
-using wcmatch = match_results<const wchar_t*>;
-using smatch  = match_results<string::const_iterator>;
-using wsmatch = match_results<wstring::const_iterator>;
+_EXPORT_STD using regex   = basic_regex<char>;
+_EXPORT_STD using wregex  = basic_regex<wchar_t>;
+_EXPORT_STD using cmatch  = match_results<const char*>;
+_EXPORT_STD using wcmatch = match_results<const wchar_t*>;
+_EXPORT_STD using smatch  = match_results<string::const_iterator>;
+_EXPORT_STD using wsmatch = match_results<wstring::const_iterator>;
 
 template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
 _OutIt _Format_default(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _InIt _First, _InIt _Last,
@@ -2122,7 +2122,7 @@ bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matche
     return _Mx._Match(_Matches, _Full);
 }
 
-template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
+_EXPORT_STD template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
 bool regex_match(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // try to match regular expression to target text
@@ -2130,7 +2130,7 @@ bool regex_match(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Ma
     return _Regex_match1(_First, _Last, _STD addressof(_Matches), _Re, _Flgs, true);
 }
 
-template <class _BidIt, class _Elem, class _RxTraits>
+_EXPORT_STD template <class _BidIt, class _Elem, class _RxTraits>
 _NODISCARD bool regex_match(_BidIt _First, _BidIt _Last, const basic_regex<_Elem, _RxTraits>& _Re,
     regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // try to match regular expression to target text
@@ -2140,7 +2140,7 @@ _NODISCARD bool regex_match(_BidIt _First, _BidIt _Last, const basic_regex<_Elem
         true);
 }
 
-template <class _Elem, class _RxTraits>
+_EXPORT_STD template <class _Elem, class _RxTraits>
 _NODISCARD bool regex_match(_In_z_ const _Elem* _Str, const basic_regex<_Elem, _RxTraits>& _Re,
     regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // try to match regular expression to target text
@@ -2149,7 +2149,7 @@ _NODISCARD bool regex_match(_In_z_ const _Elem* _Str, const basic_regex<_Elem, _
         _Str, _Last, static_cast<match_results<const _Elem*>*>(nullptr), _Re, _Flgs | regex_constants::match_any, true);
 }
 
-template <class _Elem, class _Alloc, class _RxTraits>
+_EXPORT_STD template <class _Elem, class _Alloc, class _RxTraits>
 bool regex_match(_In_z_ const _Elem* _Str, match_results<const _Elem*, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // try to match regular expression to target text
@@ -2157,7 +2157,7 @@ bool regex_match(_In_z_ const _Elem* _Str, match_results<const _Elem*, _Alloc>& 
     return _Regex_match1(_Str, _Last, _STD addressof(_Matches), _Re, _Flgs, true);
 }
 
-template <class _StTraits, class _StAlloc, class _Alloc, class _Elem, class _RxTraits>
+_EXPORT_STD template <class _StTraits, class _StAlloc, class _Alloc, class _Elem, class _RxTraits>
 bool regex_match(const basic_string<_Elem, _StTraits, _StAlloc>& _Str,
     match_results<typename basic_string<_Elem, _StTraits, _StAlloc>::const_iterator, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
@@ -2165,12 +2165,12 @@ bool regex_match(const basic_string<_Elem, _StTraits, _StAlloc>& _Str,
     return _Regex_match1(_Str.begin(), _Str.end(), _STD addressof(_Matches), _Re, _Flgs, true);
 }
 
-template <class _StTraits, class _StAlloc, class _Alloc, class _Elem, class _RxTraits>
+_EXPORT_STD template <class _StTraits, class _StAlloc, class _Alloc, class _Elem, class _RxTraits>
 bool regex_match(const basic_string<_Elem, _StTraits, _StAlloc>&&,
     match_results<typename basic_string<_Elem, _StTraits, _StAlloc>::const_iterator, _Alloc>&,
     const basic_regex<_Elem, _RxTraits>&, regex_constants::match_flag_type = regex_constants::match_default) = delete;
 
-template <class _StTraits, class _StAlloc, class _Elem, class _RxTraits>
+_EXPORT_STD template <class _StTraits, class _StAlloc, class _Elem, class _RxTraits>
 _NODISCARD bool regex_match(const basic_string<_Elem, _StTraits, _StAlloc>& _Str,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // try to match regular expression to target text
@@ -2220,7 +2220,7 @@ bool _Regex_search2(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Match
     return _Found;
 }
 
-template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
+_EXPORT_STD template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
 bool regex_search(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // search for regular expression match in target text
@@ -2228,7 +2228,7 @@ bool regex_search(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _M
     return _Regex_search2(_First, _Last, _STD addressof(_Matches), _Re, _Flgs, _First);
 }
 
-template <class _BidIt, class _Elem, class _RxTraits>
+_EXPORT_STD template <class _BidIt, class _Elem, class _RxTraits>
 _NODISCARD bool regex_search(_BidIt _First, _BidIt _Last, const basic_regex<_Elem, _RxTraits>& _Re,
     regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // search for regular expression match in target text
@@ -2238,7 +2238,7 @@ _NODISCARD bool regex_search(_BidIt _First, _BidIt _Last, const basic_regex<_Ele
         _Get_unwrapped(_First));
 }
 
-template <class _Elem, class _RxTraits>
+_EXPORT_STD template <class _Elem, class _RxTraits>
 _NODISCARD bool regex_search(_In_z_ const _Elem* _Str, const basic_regex<_Elem, _RxTraits>& _Re,
     regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // search for regular expression match in target text
@@ -2247,7 +2247,7 @@ _NODISCARD bool regex_search(_In_z_ const _Elem* _Str, const basic_regex<_Elem, 
         _Str, _Last, static_cast<match_results<const _Elem*>*>(nullptr), _Re, _Flgs | regex_constants::match_any, _Str);
 }
 
-template <class _Elem, class _Alloc, class _RxTraits>
+_EXPORT_STD template <class _Elem, class _Alloc, class _RxTraits>
 bool regex_search(_In_z_ const _Elem* _Str, match_results<const _Elem*, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // search for regular expression match in target text
@@ -2255,7 +2255,7 @@ bool regex_search(_In_z_ const _Elem* _Str, match_results<const _Elem*, _Alloc>&
     return _Regex_search2(_Str, _Last, _STD addressof(_Matches), _Re, _Flgs, _Str);
 }
 
-template <class _StTraits, class _StAlloc, class _Alloc, class _Elem, class _RxTraits>
+_EXPORT_STD template <class _StTraits, class _StAlloc, class _Alloc, class _Elem, class _RxTraits>
 bool regex_search(const basic_string<_Elem, _StTraits, _StAlloc>& _Str,
     match_results<typename basic_string<_Elem, _StTraits, _StAlloc>::const_iterator, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
@@ -2263,12 +2263,12 @@ bool regex_search(const basic_string<_Elem, _StTraits, _StAlloc>& _Str,
     return _Regex_search2(_Str.begin(), _Str.end(), _STD addressof(_Matches), _Re, _Flgs, _Str.begin());
 }
 
-template <class _StTraits, class _StAlloc, class _Alloc, class _Elem, class _RxTraits>
+_EXPORT_STD template <class _StTraits, class _StAlloc, class _Alloc, class _Elem, class _RxTraits>
 bool regex_search(const basic_string<_Elem, _StTraits, _StAlloc>&&,
     match_results<typename basic_string<_Elem, _StTraits, _StAlloc>::const_iterator, _Alloc>&,
     const basic_regex<_Elem, _RxTraits>&, regex_constants::match_flag_type = regex_constants::match_default) = delete;
 
-template <class _StTraits, class _StAlloc, class _Elem, class _RxTraits>
+_EXPORT_STD template <class _StTraits, class _StAlloc, class _Elem, class _RxTraits>
 _NODISCARD bool regex_search(const basic_string<_Elem, _StTraits, _StAlloc>& _Str,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // search for regular expression match in target text
@@ -2312,7 +2312,7 @@ _OutIt _Regex_replace1(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_
     return _Flgs & regex_constants::format_no_copy ? _Result : _Copy_unchecked(_Pos, _Last, _Result);
 }
 
-template <class _OutIt, class _BidIt, class _RxTraits, class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _OutIt, class _BidIt, class _RxTraits, class _Elem, class _Traits, class _Alloc>
 _OutIt regex_replace(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_regex<_Elem, _RxTraits>& _Re,
     const basic_string<_Elem, _Traits, _Alloc>& _Fmt,
     regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
@@ -2323,7 +2323,7 @@ _OutIt regex_replace(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_re
     return _Result;
 }
 
-template <class _OutIt, class _BidIt, class _RxTraits, class _Elem>
+_EXPORT_STD template <class _OutIt, class _BidIt, class _RxTraits, class _Elem>
 _OutIt regex_replace(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_regex<_Elem, _RxTraits>& _Re,
     const _Elem* _Ptr, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // search and replace, iterator result, NTBS format
@@ -2331,7 +2331,7 @@ _OutIt regex_replace(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_re
     return _STD regex_replace(_Result, _First, _Last, _Re, _Fmt, _Flgs);
 }
 
-template <class _RxTraits, class _Elem, class _Traits1, class _Alloc1, class _Traits2, class _Alloc2>
+_EXPORT_STD template <class _RxTraits, class _Elem, class _Traits1, class _Alloc1, class _Traits2, class _Alloc2>
 _NODISCARD basic_string<_Elem, _Traits1, _Alloc1> regex_replace(const basic_string<_Elem, _Traits1, _Alloc1>& _Str,
     const basic_regex<_Elem, _RxTraits>& _Re, const basic_string<_Elem, _Traits2, _Alloc2>& _Fmt,
     regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
@@ -2341,7 +2341,7 @@ _NODISCARD basic_string<_Elem, _Traits1, _Alloc1> regex_replace(const basic_stri
     return _Res;
 }
 
-template <class _RxTraits, class _Elem, class _Traits1, class _Alloc1>
+_EXPORT_STD template <class _RxTraits, class _Elem, class _Traits1, class _Alloc1>
 _NODISCARD basic_string<_Elem, _Traits1, _Alloc1> regex_replace(const basic_string<_Elem, _Traits1, _Alloc1>& _Str,
     const basic_regex<_Elem, _RxTraits>& _Re, const _Elem* _Ptr,
     regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
@@ -2352,7 +2352,7 @@ _NODISCARD basic_string<_Elem, _Traits1, _Alloc1> regex_replace(const basic_stri
     return _Res;
 }
 
-template <class _RxTraits, class _Elem, class _Traits2, class _Alloc2>
+_EXPORT_STD template <class _RxTraits, class _Elem, class _Traits2, class _Alloc2>
 _NODISCARD basic_string<_Elem> regex_replace(const _Elem* _Pstr, const basic_regex<_Elem, _RxTraits>& _Re,
     const basic_string<_Elem, _Traits2, _Alloc2>& _Fmt,
     regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
@@ -2363,7 +2363,7 @@ _NODISCARD basic_string<_Elem> regex_replace(const _Elem* _Pstr, const basic_reg
     return _Res;
 }
 
-template <class _RxTraits, class _Elem>
+_EXPORT_STD template <class _RxTraits, class _Elem>
 _NODISCARD basic_string<_Elem> regex_replace(const _Elem* _Pstr, const basic_regex<_Elem, _RxTraits>& _Re,
     const _Elem* _Ptr, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // search and replace, string result, NTBS target, NTBS format
@@ -2374,7 +2374,7 @@ _NODISCARD basic_string<_Elem> regex_replace(const _Elem* _Pstr, const basic_reg
     return _Res;
 }
 
-template <class _BidIt, class _Elem = _Iter_value_t<_BidIt>, class _RxTraits = regex_traits<_Elem>>
+_EXPORT_STD template <class _BidIt, class _Elem = _Iter_value_t<_BidIt>, class _RxTraits = regex_traits<_Elem>>
 class regex_iterator : public _Iterator_base {
 public:
     using regex_type        = basic_regex<_Elem, _RxTraits>;
@@ -2504,12 +2504,12 @@ private:
     match_results<_BidIt> _MyVal; // lookahead value (if _MyRe not null)
 };
 
-using cregex_iterator  = regex_iterator<const char*>;
-using wcregex_iterator = regex_iterator<const wchar_t*>;
-using sregex_iterator  = regex_iterator<string::const_iterator>;
-using wsregex_iterator = regex_iterator<wstring::const_iterator>;
+_EXPORT_STD using cregex_iterator  = regex_iterator<const char*>;
+_EXPORT_STD using wcregex_iterator = regex_iterator<const wchar_t*>;
+_EXPORT_STD using sregex_iterator  = regex_iterator<string::const_iterator>;
+_EXPORT_STD using wsregex_iterator = regex_iterator<wstring::const_iterator>;
 
-template <class _BidIt, class _Elem = _Iter_value_t<_BidIt>, class _RxTraits = regex_traits<_Elem>>
+_EXPORT_STD template <class _BidIt, class _Elem = _Iter_value_t<_BidIt>, class _RxTraits = regex_traits<_Elem>>
 class regex_token_iterator {
 public:
     using _Position         = regex_iterator<_BidIt, _Elem, _RxTraits>;
@@ -2694,10 +2694,10 @@ private:
     }
 };
 
-using cregex_token_iterator  = regex_token_iterator<const char*>;
-using wcregex_token_iterator = regex_token_iterator<const wchar_t*>;
-using sregex_token_iterator  = regex_token_iterator<string::const_iterator>;
-using wsregex_token_iterator = regex_token_iterator<wstring::const_iterator>;
+_EXPORT_STD using cregex_token_iterator  = regex_token_iterator<const char*>;
+_EXPORT_STD using wcregex_token_iterator = regex_token_iterator<const wchar_t*>;
+_EXPORT_STD using sregex_token_iterator  = regex_token_iterator<string::const_iterator>;
+_EXPORT_STD using wsregex_token_iterator = regex_token_iterator<wstring::const_iterator>;
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 _Builder<_FwdIt, _Elem, _RxTraits>::_Builder(const _RxTraits& _Tr, regex_constants::syntax_option_type _Fx)
@@ -4611,13 +4611,13 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
 
 #if _HAS_CXX17
 namespace pmr {
-    template <class _BidIt>
+    _EXPORT_STD template <class _BidIt>
     using match_results = _STD match_results<_BidIt, polymorphic_allocator<sub_match<_BidIt>>>;
 
-    using cmatch  = match_results<const char*>;
-    using wcmatch = match_results<const wchar_t*>;
-    using smatch  = match_results<string::const_iterator>;
-    using wsmatch = match_results<wstring::const_iterator>;
+    _EXPORT_STD using cmatch  = match_results<const char*>;
+    _EXPORT_STD using wcmatch = match_results<const wchar_t*>;
+    _EXPORT_STD using smatch  = match_results<string::const_iterator>;
+    _EXPORT_STD using wsmatch = match_results<wstring::const_iterator>;
 } // namespace pmr
 #endif // _HAS_CXX17
 _STD_END

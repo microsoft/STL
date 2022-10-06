@@ -6,6 +6,24 @@
 
 #include <__msvc_all_public_headers.hpp>
 
+// Also test GH-3103 "<xatomic.h>: Investigate making this a core header" and other internal core headers
+#include <__msvc_int128.hpp>
+#include <__msvc_system_error_abi.hpp>
+#include <__msvc_xlocinfo_types.hpp>
+#include <xatomic.h>
+#include <xbit_ops.h>
+#include <xerrc.h>
+
+#if _HAS_CXX17
+#include <xfilesystem_abi.h>
+#endif // _HAS_CXX17
+
+// <__msvc_iter_core.hpp> is included by <tuple>
+// <xkeycheck.h> should not be included outside of <yvals_core.h>
+// <xstddef> is included by <type_traits>
+// <xtr1common> is included by <cstddef>
+// <yvals_core.h> is included by every public core header
+
 #ifdef _YVALS
 #error Core headers should not include <yvals.h>.
 #endif

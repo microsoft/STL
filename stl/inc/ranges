@@ -34,7 +34,7 @@ namespace ranges {
     inline constexpr bool _Is_initializer_list = _Is_specialization_v<remove_cvref_t<_Ty>, initializer_list>;
 
     // clang-format off
-    template <class _Rng>
+    _EXPORT_STD template <class _Rng>
     concept viewable_range = range<_Rng>
         && ((view<remove_cvref_t<_Rng>> && constructible_from<remove_cvref_t<_Rng>, _Rng>)
             || (!view<remove_cvref_t<_Rng>>
@@ -123,7 +123,7 @@ namespace ranges {
         template <class _Ty1, class _Ty2>
         _Pipeline(_Ty1, _Ty2) -> _Pipeline<_Ty1, _Ty2>;
 
-        template <class _Left, class _Right>
+        _EXPORT_STD template <class _Left, class _Right>
         requires _Range_adaptor_closure_object<_Left> //
             && _Range_adaptor_closure_object<_Right> //
             && constructible_from<remove_cvref_t<_Left>, _Left> //
@@ -133,7 +133,7 @@ namespace ranges {
             return _Pipeline{static_cast<_Left&&>(__l), static_cast<_Right&&>(__r)};
         }
 
-        template <class _Left, class _Right>
+        _EXPORT_STD template <class _Left, class _Right>
         requires _Range_adaptor_closure_object<_Right> && range<_Left> //
             _NODISCARD constexpr auto operator|(_Left&& __l, _Right&& __r) noexcept(
                 noexcept(_STD forward<_Right>(__r)(_STD forward<_Left>(__l)))) //
@@ -795,7 +795,7 @@ namespace ranges {
     };
 
 #if _HAS_CXX23
-    template <class _Derived>
+    _EXPORT_STD template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
     class range_adaptor_closure : public _Pipe::_Base<_Derived> {
     };
@@ -867,7 +867,7 @@ namespace ranges {
         tuple<_Types...> _Captures;
     };
 
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
         requires is_object_v<_Ty>
     class empty_view : public view_interface<empty_view<_Ty>> {
     public:
@@ -896,11 +896,11 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<empty_view<_Ty>> = true;
 
     namespace views {
-        template <class _Ty>
+        _EXPORT_STD template <class _Ty>
         inline constexpr empty_view<_Ty> empty;
     } // namespace views
 
-    template <_Valid_movable_box_object _Ty>
+    _EXPORT_STD template <_Valid_movable_box_object _Ty>
     class single_view : public view_interface<single_view<_Ty>> {
     public:
         // clang-format off
@@ -964,7 +964,7 @@ namespace ranges {
             // clang-format on
         };
 
-        inline constexpr _Single_fn single;
+        _EXPORT_STD inline constexpr _Single_fn single;
     } // namespace views
 
     template <class _Ty>
@@ -1224,7 +1224,7 @@ namespace ranges {
         }
     };
 
-    template <weakly_incrementable _Wi, semiregular _Bo = unreachable_sentinel_t>
+    _EXPORT_STD template <weakly_incrementable _Wi, semiregular _Bo = unreachable_sentinel_t>
         requires _Weakly_equality_comparable_with<_Wi, _Bo> && copyable<_Wi>
     class iota_view : public view_interface<iota_view<_Wi, _Bo>> {
     private:
@@ -1327,7 +1327,7 @@ namespace ranges {
             { return iota_view(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2)); }
         };
 
-        inline constexpr _Iota_fn iota;
+        _EXPORT_STD inline constexpr _Iota_fn iota;
     } // namespace views
 
     template <class _Ty, class _Elem, class _Traits>
@@ -1335,7 +1335,7 @@ namespace ranges {
         __is >> __t;
     };
 
-    template <movable _Ty, class _Elem, class _Traits = char_traits<_Elem>>
+    _EXPORT_STD template <movable _Ty, class _Elem, class _Traits = char_traits<_Elem>>
         requires default_initializable<_Ty> && _Stream_extractable<_Ty, _Elem, _Traits>
     class basic_istream_view : public view_interface<basic_istream_view<_Ty, _Elem, _Traits>> {
     private:
@@ -1406,9 +1406,9 @@ namespace ranges {
         }
     };
 
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     using istream_view = basic_istream_view<_Ty, char>;
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     using wistream_view = basic_istream_view<_Ty, wchar_t>;
 
     namespace views {
@@ -1425,11 +1425,11 @@ namespace ranges {
             }
         };
 
-        template <class _Ty>
+        _EXPORT_STD template <class _Ty>
         inline constexpr _Istream_fn<_Ty> istream;
     } // namespace views
 
-    template <range _Rng>
+    _EXPORT_STD template <range _Rng>
         requires is_object_v<_Rng>
     class ref_view : public view_interface<ref_view<_Rng>> {
     private:
@@ -1484,7 +1484,7 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<ref_view<_Rng>> = true;
 
     // clang-format off
-    template <range _Rng>
+    _EXPORT_STD template <range _Rng>
         requires (movable<_Rng> && !_Is_initializer_list<_Rng>)
     class owning_view : public view_interface<owning_view<_Rng>> {
         // clang-format on
@@ -1617,14 +1617,14 @@ namespace ranges {
             }
         };
 
-        inline constexpr _All_fn all;
+        _EXPORT_STD inline constexpr _All_fn all;
 
-        template <viewable_range _Rng>
+        _EXPORT_STD template <viewable_range _Rng>
         using all_t = decltype(all(_STD declval<_Rng>()));
     } // namespace views
 
 #if _HAS_CXX23
-    template <input_range _Vw>
+    _EXPORT_STD template <input_range _Vw>
         requires view<_Vw>
     class as_rvalue_view : public view_interface<as_rvalue_view<_Vw>> {
     private:
@@ -1737,11 +1737,11 @@ namespace ranges {
             }
         };
 
-        inline constexpr _As_rvalue_fn as_rvalue;
+        _EXPORT_STD inline constexpr _As_rvalue_fn as_rvalue;
     } // namespace views
 #endif // _HAS_CXX23
 
-    template <input_range _Vw, indirect_unary_predicate<iterator_t<_Vw>> _Pr>
+    _EXPORT_STD template <input_range _Vw, indirect_unary_predicate<iterator_t<_Vw>> _Pr>
         requires view<_Vw> && is_object_v<_Pr>
     class filter_view : public _Cached_position_t<forward_range<_Vw>, _Vw, filter_view<_Vw, _Pr>> {
     private:
@@ -1991,7 +1991,7 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Filter_fn filter;
+        _EXPORT_STD inline constexpr _Filter_fn filter;
     } // namespace views
 
     // clang-format off
@@ -2004,7 +2004,7 @@ namespace ranges {
 #define _NOEXCEPT_IDL0(...)
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 
-    template <input_range _Vw, _Valid_movable_box_object _Fn>
+    _EXPORT_STD template <input_range _Vw, _Valid_movable_box_object _Fn>
         requires view<_Vw>
             && regular_invocable<_Fn&, range_reference_t<_Vw>>
             && _Can_reference<invoke_result_t<_Fn&, range_reference_t<_Vw>>>
@@ -2444,10 +2444,10 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Transform_fn transform;
+        _EXPORT_STD inline constexpr _Transform_fn transform;
     } // namespace views
 
-    template <view _Vw>
+    _EXPORT_STD template <view _Vw>
     class take_view : public view_interface<take_view<_Vw>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
@@ -2701,10 +2701,10 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Take_fn take;
+        _EXPORT_STD inline constexpr _Take_fn take;
     } // namespace views
 
-    template <view _Vw, class _Pr>
+    _EXPORT_STD template <view _Vw, class _Pr>
         requires input_range<_Vw> && is_object_v<_Pr> && indirect_unary_predicate<const _Pr, iterator_t<_Vw>>
     class take_while_view : public view_interface<take_while_view<_Vw, _Pr>> {
     private:
@@ -2870,10 +2870,10 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Take_while_fn take_while;
+        _EXPORT_STD inline constexpr _Take_while_fn take_while;
     } // namespace views
 
-    template <view _Vw>
+    _EXPORT_STD template <view _Vw>
     class drop_view : public _Cached_position_t<forward_range<_Vw> && !(random_access_range<_Vw> && sized_range<_Vw>),
                           _Vw, drop_view<_Vw>> {
     private:
@@ -3073,10 +3073,10 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Drop_fn drop;
+        _EXPORT_STD inline constexpr _Drop_fn drop;
     } // namespace views
 
-    template <view _Vw, class _Pr>
+    _EXPORT_STD template <view _Vw, class _Pr>
         requires input_range<_Vw> && is_object_v<_Pr> && indirect_unary_predicate<const _Pr, iterator_t<_Vw>>
     class drop_while_view : public _Cached_position_t<forward_range<_Vw>, _Vw, drop_while_view<_Vw, _Pr>> {
     private:
@@ -3156,10 +3156,10 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Drop_while_fn drop_while;
+        _EXPORT_STD inline constexpr _Drop_while_fn drop_while;
     } // namespace views
 
-    template <input_range _Vw>
+    _EXPORT_STD template <input_range _Vw>
         requires view<_Vw> && input_range<range_reference_t<_Vw>>
     class join_view;
 
@@ -3187,7 +3187,7 @@ namespace ranges {
         requires is_reference_v<range_reference_t<_Vw>>
     class _Join_view_base<_Vw> : public view_interface<join_view<_Vw>> {};
 
-    template <input_range _Vw>
+    _EXPORT_STD template <input_range _Vw>
         requires view<_Vw> && input_range<range_reference_t<_Vw>>
     class join_view : public _Join_view_base<_Vw> {
         // clang-format on
@@ -3547,7 +3547,7 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Join_fn join;
+        _EXPORT_STD inline constexpr _Join_fn join;
     } // namespace views
 
 #if _HAS_CXX23
@@ -3560,7 +3560,7 @@ namespace ranges {
     concept _Can_const_join_with =
         input_range<const _Rng> && forward_range<const _Pat> && is_reference_v<range_reference_t<const _Rng>>;
 
-    template <input_range _Vw, forward_range _Pat>
+    _EXPORT_STD template <input_range _Vw, forward_range _Pat>
         requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat> //
             && _Compatible_joinable_ranges<range_reference_t<_Vw>, _Pat>
     class join_with_view;
@@ -3586,7 +3586,7 @@ namespace ranges {
     class _Join_with_view_base<_Vw, _Pat> : public view_interface<join_with_view<_Vw, _Pat>> {
     };
 
-    template <input_range _Vw, forward_range _Pat>
+    _EXPORT_STD template <input_range _Vw, forward_range _Pat>
         requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat> //
             && _Compatible_joinable_ranges<range_reference_t<_Vw>, _Pat>
     class join_with_view : public _Join_with_view_base<_Vw, _Pat> {
@@ -4019,7 +4019,7 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Join_with_fn join_with;
+        _EXPORT_STD inline constexpr _Join_with_fn join_with;
     } // namespace views
 #endif // _HAS_CXX23
 
@@ -4032,7 +4032,7 @@ namespace ranges {
         && requires { typename _Require_constant<remove_reference_t<_Ty>::size()>; }
         && (remove_reference_t<_Ty>::size() <= 1);
 
-    template <input_range _Vw, forward_range _Pat>
+    _EXPORT_STD template <input_range _Vw, forward_range _Pat>
         requires (view<_Vw> && view<_Pat>
             && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
             && (forward_range<_Vw> || _Tiny_range<_Pat>))
@@ -4049,7 +4049,7 @@ namespace ranges {
     class _Lazy_split_view_base<_Vw, _Pat> : public view_interface<lazy_split_view<_Vw, _Pat>> {};
 
     // clang-format off
-    template <input_range _Vw, forward_range _Pat>
+    _EXPORT_STD template <input_range _Vw, forward_range _Pat>
         requires (view<_Vw> && view<_Pat>
             && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
             && (forward_range<_Vw> || _Tiny_range<_Pat>))
@@ -4437,10 +4437,10 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Lazy_split_fn lazy_split;
+        _EXPORT_STD inline constexpr _Lazy_split_fn lazy_split;
     } // namespace views
 
-    template <forward_range _Vw, forward_range _Pat>
+    _EXPORT_STD template <forward_range _Vw, forward_range _Pat>
         requires view<_Vw> && view<_Pat> && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
     class split_view : public view_interface<split_view<_Vw, _Pat>> {
     private:
@@ -4636,7 +4636,7 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Split_fn split;
+        _EXPORT_STD inline constexpr _Split_fn split;
 
         class _Counted_fn {
         private:
@@ -4684,11 +4684,11 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Counted_fn counted;
+        _EXPORT_STD inline constexpr _Counted_fn counted;
     } // namespace views
 
     // clang-format off
-    template <view _Vw>
+    _EXPORT_STD template <view _Vw>
         requires (!common_range<_Vw> && copyable<iterator_t<_Vw>>)
     class common_view : public view_interface<common_view<_Vw>> {
         // clang-format on
@@ -4799,10 +4799,10 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Common_fn common;
+        _EXPORT_STD inline constexpr _Common_fn common;
     } // namespace views
 
-    template <view _Vw>
+    _EXPORT_STD template <view _Vw>
         requires bidirectional_range<_Vw>
     class reverse_view : public _Cached_position_t<!common_range<_Vw>, _Vw, reverse_view<_Vw>> {
     private:
@@ -4948,7 +4948,7 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Reverse_fn reverse;
+        _EXPORT_STD inline constexpr _Reverse_fn reverse;
     } // namespace views
 
     template <class _Tuple, size_t _Index>
@@ -4965,7 +4965,7 @@ namespace ranges {
     concept _Returnable_element = is_reference_v<_Tuple> || move_constructible<tuple_element_t<_Index, _Tuple>>;
 
     // clang-format off
-    template <input_range _Vw, size_t _Index>
+    _EXPORT_STD template <input_range _Vw, size_t _Index>
         requires view<_Vw> && _Has_tuple_element<range_value_t<_Vw>, _Index>
             && _Has_tuple_element<remove_reference_t<range_reference_t<_Vw>>, _Index>
             && _Returnable_element<range_reference_t<_Vw>, _Index>
@@ -5332,9 +5332,9 @@ namespace ranges {
     template <class _Rng, size_t _Index>
     inline constexpr bool enable_borrowed_range<elements_view<_Rng, _Index>> = enable_borrowed_range<_Rng>;
 
-    template <class _Rng>
+    _EXPORT_STD template <class _Rng>
     using keys_view = elements_view<_Rng, 0>;
-    template <class _Rng>
+    _EXPORT_STD template <class _Rng>
     using values_view = elements_view<_Rng, 1>;
 
     namespace views {
@@ -5349,10 +5349,10 @@ namespace ranges {
             { return elements_view<views::all_t<_Rng>, _Index>{_STD forward<_Rng>(_Range)}; }
         };
 
-        template <size_t _Index>
+        _EXPORT_STD template <size_t _Index>
         inline constexpr _Elements_fn<_Index> elements;
-        inline constexpr auto keys   = elements<0>;
-        inline constexpr auto values = elements<1>;
+        _EXPORT_STD inline constexpr auto keys   = elements<0>;
+        _EXPORT_STD inline constexpr auto values = elements<1>;
     } // namespace views
 
 #if _HAS_CXX23
@@ -5365,7 +5365,7 @@ namespace ranges {
         return _Result;
     }
 
-    template <view _Vw>
+    _EXPORT_STD template <view _Vw>
         requires input_range<_Vw>
     class chunk_view : public view_interface<chunk_view<_Vw>> {
     private:
@@ -5916,7 +5916,7 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Chunk_fn chunk;
+        _EXPORT_STD inline constexpr _Chunk_fn chunk;
     } // namespace views
 
     template <class _Vw>
@@ -5928,7 +5928,7 @@ namespace ranges {
     template <class _Vw>
     concept _Slide_caches_first = !_Slide_caches_nothing<_Vw> && !_Slide_caches_last<_Vw>;
 
-    template <forward_range _Vw>
+    _EXPORT_STD template <forward_range _Vw>
         requires view<_Vw>
     class slide_view : public _Cached_position_t<!_Slide_caches_nothing<_Vw>, _Vw, slide_view<_Vw>> {
     private:
@@ -6168,7 +6168,11 @@ namespace ranges {
     public:
         constexpr explicit slide_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
             is_nothrow_move_constructible_v<_Vw>) /* strengthened */
-            : _Range(_STD move(_Range_)), _Count{_Count_} {}
+            : _Range(_STD move(_Range_)), _Count{_Count_} {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_Count > 0, "The window size must be positive (N4917 [range.slide.view]/1)");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        }
 
         // clang-format off
         _NODISCARD constexpr auto begin() requires (!(_Simple_view<_Vw> && _Slide_caches_nothing<const _Vw>) ) {
@@ -6278,7 +6282,7 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Slide_fn slide;
+        _EXPORT_STD inline constexpr _Slide_fn slide;
     } // namespace views
 
     template <class _Pr>
@@ -6301,7 +6305,7 @@ namespace ranges {
         _Pr& _Pred;
     };
 
-    template <forward_range _Vw, indirect_binary_predicate<iterator_t<_Vw>, iterator_t<_Vw>> _Pr>
+    _EXPORT_STD template <forward_range _Vw, indirect_binary_predicate<iterator_t<_Vw>, iterator_t<_Vw>> _Pr>
         requires view<_Vw> && is_object_v<_Pr>
     class chunk_by_view : public _Cached_position<_Vw, chunk_by_view<_Vw, _Pr>> {
     private:
@@ -6474,10 +6478,10 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Chunk_by_fn chunk_by;
+        _EXPORT_STD inline constexpr _Chunk_by_fn chunk_by;
     } // namespace views
 
-    template <input_range _Vw>
+    _EXPORT_STD template <input_range _Vw>
         requires view<_Vw>
     class stride_view : public view_interface<stride_view<_Vw>> {
     private:
@@ -6835,7 +6839,7 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Stride_fn stride;
+        _EXPORT_STD inline constexpr _Stride_fn stride;
     } // namespace views
 
 #ifdef __cpp_lib_ranges_to_container
@@ -6894,7 +6898,7 @@ namespace ranges {
     }
 
     // clang-format off
-    template <class _Container, input_range _Rng, class... _Types>
+    _EXPORT_STD template <class _Container, input_range _Rng, class... _Types>
         requires (!view<_Container>)
     _NODISCARD constexpr _Container to(_Rng&& _Range, _Types&&... _Args) {
         // clang-format on
@@ -6933,7 +6937,7 @@ namespace ranges {
     };
 
     // clang-format off
-    template <class _Container, class... _Types>
+    _EXPORT_STD template <class _Container, class... _Types>
         requires (!view<_Container>)
     _NODISCARD constexpr auto to(_Types&&... _Args) {
         return _Range_closure<_To_class_fn<_Container>, decay_t<_Types>...>{_STD forward<_Types>(_Args)...};
@@ -6972,7 +6976,7 @@ namespace ranges {
         }
     }
 
-    template <template <class...> class _Container, input_range _Rng, class... _Types,
+    _EXPORT_STD template <template <class...> class _Container, input_range _Rng, class... _Types,
         class _Deduced = remove_pointer_t<decltype(_To_helper<_Container, _Rng, _Types...>())>>
     _NODISCARD constexpr _Deduced to(_Rng&& _Range, _Types&&... _Args) {
         return _RANGES to<_Deduced>(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
@@ -6987,7 +6991,7 @@ namespace ranges {
         }
     };
 
-    template <template <class...> class _Container, class... _Types>
+    _EXPORT_STD template <template <class...> class _Container, class... _Types>
     _NODISCARD constexpr auto to(_Types&&... _Args) {
         return _Range_closure<_To_template_fn<_Container>, decay_t<_Types>...>{_STD forward<_Types>(_Args)...};
     }
@@ -6995,7 +6999,7 @@ namespace ranges {
 #endif // _HAS_CXX23
 } // namespace ranges
 
-namespace views = ranges::views;
+_EXPORT_STD namespace views = ranges::views;
 
 _STD_END
 

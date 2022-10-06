@@ -8,8 +8,11 @@ variables:
   buildOutputLocation: 'D:\build'
 
 pool:
-  name: 'StlBuild-2022-09-01T2216-Pool'
+  name: 'StlBuild-2022-09-14T1332-Pool'
   demands: EnableSpotVM -equals true
+
+pr:
+  drafts: false
 
 stages:
   - stage: Code_Format
