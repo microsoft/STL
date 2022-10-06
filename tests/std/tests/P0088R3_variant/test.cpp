@@ -31,6 +31,7 @@
 // Yes, this is an awkward hand process; notably the required headers can change without notice. We should investigate
 // running the libc++ tests directly in all of our configurations so we needn't replicate this subset of files.
 
+#if !defined(_PREFAST_) || !defined(_M_IX86) // TRANSITION, VSO-1639191
 #ifdef CONSTEXPR_NOTHROW
 #define TEST_WORKAROUND_CONSTEXPR_IMPLIES_NOEXCEPT
 #endif // CONSTEXPR_NOTHROW
@@ -6063,7 +6064,7 @@ template<class T> struct Holder { T t; };
 constexpr bool test(bool do_it)
 {
     if (do_it) {
-#if 0
+#if 0 // FIXME
 // error C2079: "visit::robust_against_adl::Holder<visit::robust_against_adl::Incomplete>::t" uses
 //              undefined struct "visit::robust_against_adl::Incomplete"
         std::variant<Holder<Incomplete>*, int> v = nullptr;
@@ -6073,7 +6074,7 @@ constexpr bool test(bool do_it)
         std::visit<void>([](auto){}, v);
         std::visit<void*>([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
 #endif
-#endif // 0
+#endif // FIXME
   }
     return true;
   }
@@ -7918,3 +7919,6 @@ int main() {
     msvc::DevCom1031281::run_test();
     msvc::gh2770::run_test();
 }
+#else // ^^^ not x86 or not /analyze ^^^ / vvv x86 /analyze vvv
+int main() {}
+#endif // !defined(_PREFAST_) || !defined(_M_IX86)
