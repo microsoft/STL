@@ -285,6 +285,9 @@ language.support\support.coroutines\end.to.end\go.pass.cpp
 # DevCom-10026599: conditional expression has two different types
 concepts\concepts.compare\concept.equalitycomparable\equality_comparable_with.compile.pass.cpp
 
+# DevCom-10165380: [ICE] constexpr evaluation confused by complicated use of string literals
+utilities\format\format.fmt.string\get.pass.cpp
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
@@ -1045,11 +1048,9 @@ utilities\function.objects\refwrap\refwrap.const\type_conv_ctor.pass.cpp
 utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.create\allocate_shared.array.unbounded.pass.cpp
 utilities\meta\meta.logical\conjunction.compile.pass.cpp
 utilities\meta\meta.logical\disjunction.compile.pass.cpp
-utilities\tuple\tuple.tuple\tuple.cnstr\convert_const_move.pass.cpp
-utilities\format\format.fmt.string\get.pass.cpp
-utilities\format\format.fmt.string\types.compile.pass.cpp
 utilities\meta\meta.unary\meta.unary.prop\is_nothrow_copy_assignable.pass.cpp
 utilities\meta\meta.unary\meta.unary.prop\is_nothrow_move_assignable.pass.cpp
+utilities\tuple\tuple.tuple\tuple.cnstr\convert_const_move.pass.cpp
 
 
 # *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***

@@ -284,6 +284,9 @@ std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
 # DevCom-10026599: conditional expression has two different types
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
 
+# DevCom-10165380: [ICE] constexpr evaluation confused by complicated use of string literals
+std/utilities/format/format.fmt.string/get.pass.cpp:0 FAIL
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
@@ -1046,8 +1049,6 @@ std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_move_assignable.pass.cpp:0 FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
-std/utilities/format/format.fmt.string/get.pass.cpp FAIL
-std/utilities/format/format.fmt.string/types.compile.pass.cpp FAIL
 
 
 # *** XFAILs WHICH PASS ***
