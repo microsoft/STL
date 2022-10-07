@@ -1024,8 +1024,6 @@ strings\string.view\string.view.comparison\less.pass.cpp
 strings\string.view\string.view.comparison\less_equal.pass.cpp
 strings\string.view\string.view.comparison\not_equal.pass.cpp
 thread\futures\futures.task\futures.task.members\ctor2.compile.pass.cpp
-thread\thread.threads\thread.thread.class\thread.thread.id\eq.pass.cpp
-thread\thread.threads\thread.thread.class\thread.thread.id\lt.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\addressof.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.alg\swap.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.cap\operator_bool.pass.cpp

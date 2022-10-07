@@ -1022,8 +1022,6 @@ std/strings/string.view/string.view.comparison/less.pass.cpp FAIL
 std/strings/string.view/string.view.comparison/less_equal.pass.cpp FAIL
 std/strings/string.view/string.view.comparison/not_equal.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
-std/thread/thread.threads/thread.thread.class/thread.thread.id/eq.pass.cpp FAIL
-std/thread/thread.threads/thread.thread.class/thread.thread.id/lt.pass.cpp FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/addressof.pass.cpp:0 FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.alg/swap.pass.cpp:0 FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.cap/operator_bool.pass.cpp:0 FAIL
