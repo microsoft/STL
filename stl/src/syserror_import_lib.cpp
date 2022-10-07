@@ -51,11 +51,12 @@ _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
     if (_Ret == 0) {
         _Lang_id = 0;
     }
+    // Flag FORMAT_MESSAGE_MAX_WIDTH_MASK Removes All Trailing \r \n Leaves Only Whitespace Character
     const unsigned long _Chars =
-        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK,
             nullptr, _Message_id, _Lang_id, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
 
-    return _CSTD __std_get_string_size_without_trailing_whitespace(*_Ptr_str, _Chars);
+    return _Chars - 1;
 }
 
 void __CLRCALL_PURE_OR_STDCALL __std_system_error_deallocate_message(char* const _Str) noexcept {
