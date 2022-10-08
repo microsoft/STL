@@ -25,13 +25,13 @@
         _NODISCARD constexpr bool _Test(const char _Ch) const noexcept {
             return _Is_whitespace[static_cast<unsigned char>(_Ch)];
         }
-    }; */
+    };
 
     constexpr _Whitespace_bitmap_t _Whitespace_bitmap;
-} // unnamed namespace
+} // unnamed namespace */
 
-/* _EXTERN_C
-_NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
+_EXTERN_C
+/* _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
     const char* const _Str, size_t _Size) noexcept {
     while (_Size != 0 && _Whitespace_bitmap._Test(_Str[_Size - 1])) {
         --_Size;
