@@ -1328,7 +1328,6 @@ language.support\support.runtime\ctime.timespec.compile.pass.cpp
 language.support\support.types\cstddef.compile.pass.cpp
 language.support\support.types\max_align_t.compile.pass.cpp
 library\description\conventions\customization.point.object\cpo.compile.pass.cpp
-library\description\conventions\customization.point.object\niebloid.compile.pass.cpp
 numerics\bit\bit.cast\bit_cast.compile.pass.cpp
 numerics\numarray\template.valarray\valarray.assign\value_assign.addressof.compile.pass.cpp
 ranges\range.adaptors\range.all\all_t.compile.pass.cpp
@@ -1415,14 +1414,11 @@ strings\string.view\string.view.io\stream_insert_decl_present.compile.pass.cpp
 strings\string.view\string.view.iterators\iterator_concept_conformance.compile.pass.cpp
 strings\string.view\trivially_copyable.compile.pass.cpp
 thread\futures\futures.task\futures.task.members\ctor2.compile.pass.cpp
-thread\futures\futures.task\futures.task.nonmembers\uses_allocator.compile.pass.cpp
 thread\thread.semaphore\ctor.compile.pass.cpp
 utilities\format\format.fmt.string\types.compile.pass.cpp
 utilities\format\format.formatter\format.formatter.spec\types.compile.pass.cpp
 utilities\function.objects\comparisons\transparent_three_way.compile.pass.cpp
-utilities\function.objects\refwrap\binder_typedefs.compile.pass.cpp
 utilities\memory\default.allocator\PR50299.compile.pass.cpp
-utilities\memory\default.allocator\allocator_types.void.compile.pass.cpp
 utilities\memory\storage.iterator\types.compile.pass.cpp
 utilities\memory\unique.ptr\iterator_concept_conformance.compile.pass.cpp
 utilities\memory\util.smartptr\util.smartptr.shared\iterator_concept_conformance.compile.pass.cpp
@@ -1470,8 +1466,6 @@ containers\views\views.span\span.sub\first.verify.cpp
 containers\views\views.span\span.sub\last.verify.cpp
 containers\views\views.span\span.sub\subspan.verify.cpp
 depr\depr.atomics\depr.atomics.nonmembers\atomic_init.depr_in_cxx20.verify.cpp
-depr\depr.function.objects\depr.base\binary_function.depr.verify.cpp
-depr\depr.function.objects\depr.base\unary_function.depr.verify.cpp
 depr\depr.lib.binders\depr.lib.bind.1st\bind1st.depr_in_cxx11.verify.cpp
 depr\depr.lib.binders\depr.lib.bind.2nd\bind2nd.depr_in_cxx11.verify.cpp
 depr\depr.lib.binders\depr.lib.binder.1st\binder1st.depr_in_cxx11.verify.cpp
