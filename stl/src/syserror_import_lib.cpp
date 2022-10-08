@@ -11,6 +11,15 @@
 #include <Windows.h>
 
 _EXTERN_C
+_NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
+    const char* const _Str, size_t _Size) noexcept {
+    while (_Size != 0 && _Whitespace_bitmap._Test(_Str[_Size - 1])) {
+        --_Size;
+    }
+
+    return _Size;
+}
+
 _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
     const unsigned long _Message_id, char** const _Ptr_str) noexcept {
     // convert to name of Windows error, return 0 for failure, otherwise return number of chars in buffer
