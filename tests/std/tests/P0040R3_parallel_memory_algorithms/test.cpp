@@ -81,7 +81,7 @@ struct test_case_destroy_parallel {
         const auto begin_it = reinterpret_cast<wrap_uchar*>(buffer.get());
         const auto end_it   = begin_it + testSize;
 
-        uninitialized_default_construct(begin_it, end_it);
+        uninitialized_default_construct(exec, begin_it, end_it);
         destroy(exec, begin_it, end_it);
     }
 };
@@ -112,7 +112,7 @@ struct test_case_uninitialized_copy_parallel {
         const auto begin_it2 = buffer2.get();
         const auto end_it2   = begin_it2 + testSize;
 
-        uninitialized_copy(begin_it, end_it, begin_it2);
+        uninitialized_copy(exec, begin_it, end_it, begin_it2);
         assert(equal(begin_it, end_it, begin_it2, end_it2));
     }
 };
@@ -130,7 +130,7 @@ struct test_case_uninitialized_copy_n_parallel {
         const auto begin_it2 = buffer2.get();
         const auto end_it2   = begin_it2 + testSize;
 
-        uninitialized_copy_n(begin_it, testSize, begin_it2);
+        uninitialized_copy_n(exec, begin_it, testSize, begin_it2);
         assert(equal(begin_it, end_it, begin_it2, end_it2));
     }
 };
@@ -148,7 +148,7 @@ struct test_case_uninitialized_move_parallel {
         const auto begin_it2 = buffer2.get();
         const auto end_it2   = begin_it2 + testSize;
 
-        uninitialized_move(begin_it, end_it, begin_it2);
+        uninitialized_move(exec, begin_it, end_it, begin_it2);
         assert(equal(begin_it, end_it, begin_it2, end_it2));
     }
 };
@@ -166,7 +166,7 @@ struct test_case_uninitialized_move_n_parallel {
         const auto begin_it2 = buffer2.get();
         const auto end_it2   = begin_it2 + testSize;
 
-        uninitialized_move_n(begin_it, testSize, begin_it2);
+        uninitialized_move_n(exec, begin_it, testSize, begin_it2);
         assert(equal(begin_it, end_it, begin_it2, end_it2));
     }
 };
@@ -178,7 +178,7 @@ struct test_case_uninitialized_fill_parallel {
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
-        uninitialized_fill(begin_it, end_it, 42);
+        uninitialized_fill(exec, begin_it, end_it, 42);
         assert(all_of(begin_it, end_it, [](int n) { return n == 42; }));
     }
 };
@@ -190,7 +190,7 @@ struct test_case_uninitialized_fill_n_parallel {
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
-        uninitialized_fill_n(begin_it, testSize, 42);
+        uninitialized_fill_n(exec, begin_it, testSize, 42);
         assert(all_of(begin_it, end_it, [](int n) { return n == 42; }));
     }
 };
