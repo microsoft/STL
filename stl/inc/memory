@@ -311,8 +311,8 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _NoThrowFwdIt,
     _Enable_if_execution_policy_t<_ExPo> = 0>
-_NoThrowFwdIt uninitialized_move_n(_ExPo&&, const _FwdIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) noexcept
-/* terminates */ {
+pair<_FwdIt, _NoThrowFwdIt> uninitialized_move_n(
+    _ExPo&&, const _FwdIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) noexcept /* terminates */ {
     // move [_First, _First + _Count) to raw [_Dest, ...)
     // not parallelized at present
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
@@ -323,7 +323,7 @@ _NoThrowFwdIt uninitialized_move_n(_ExPo&&, const _FwdIt _First, const _Diff _Co
 }
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Tval, _Enable_if_execution_policy_t<_ExPo> = 0>
-void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, const _Tval& _Val) noexcept
+void uninitialized_fill(_ExPo&&, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, const _Tval& _Val) noexcept
 /* terminates */ {
     // copy _Val throughout raw [_First, _Last)
     // not parallelized at present
