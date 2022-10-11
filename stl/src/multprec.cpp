@@ -100,9 +100,6 @@ static void div(_MP_arr u,
 _NODISCARD static inline int limit(const unsigned long long* u, int ulen) noexcept { // get index of last non-zero value
     while (u[ulen - 1] == 0) {
         --ulen;
-        // Prevent from reading outside of ulen if 0 is not found
-        if (ulen == 0)
-            return 0;
     }
 
     return ulen;
