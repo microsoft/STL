@@ -257,7 +257,6 @@ std/ranges/range.utility/range.subrange/structured_bindings.pass.cpp:0 SKIPPED
 
 # DevCom-1436243 constexpr new initialized array
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:0 FAIL
-std/utilities/smartptr/unique.ptr/unique.ptr.create/make_unique.array.pass.cpp:0 FAIL
 
 # DevCom-10138792: C4455 'operator ""s': literal suffix identifiers that do not start with an underscore are reserved
 std/strings/basic.string.literals/noexcept.compile.pass.cpp:0 FAIL
@@ -872,7 +871,6 @@ std/utilities/format/format.functions/unicode.pass.cpp:0 FAIL
 #Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
 std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp FAIL
 
 # Not yet analyzed
@@ -1040,8 +1038,6 @@ std/utilities/function.objects/refwrap/refwrap.const/type_conv_ctor.pass.cpp:0 F
 std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.create/allocate_shared.array.unbounded.pass.cpp FAIL
 std/utilities/meta/meta.logical/conjunction.compile.pass.cpp FAIL
 std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_move_assignable.pass.cpp:0 FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
 
 
