@@ -6071,9 +6071,9 @@ constexpr bool test(bool do_it)
         std::visit<void>([](auto){}, v);
         std::visit<void*>([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
 #endif
-  }
+    }
     return true;
-  }
+}
 
 int run_test()
 {
@@ -6082,7 +6082,7 @@ int run_test()
     static_assert(test(true));
 #endif
     return 0;
-  }
+}
 } // namespace visit::robust_against_adl
 // -- END: test/std/utilities/variant/variant.visit/robust_against_adl.pass.cpp
 
