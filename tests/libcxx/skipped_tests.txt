@@ -873,7 +873,7 @@ localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.memb
 utilities\format\format.functions\ascii.pass.cpp
 utilities\format\format.functions\unicode.pass.cpp
 
-#Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
+# Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
 utilities\template.bitset\bitset.members\left_shift_eq.pass.cpp
 utilities\template.bitset\bitset.members\op_and_eq.pass.cpp
 utilities\template.bitset\bitset.members\op_or_eq.pass.cpp

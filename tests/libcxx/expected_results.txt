@@ -872,7 +872,7 @@ std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.
 std/utilities/format/format.functions/ascii.pass.cpp FAIL
 std/utilities/format/format.functions/unicode.pass.cpp:0 FAIL
 
-#Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
+# Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
 std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp FAIL
