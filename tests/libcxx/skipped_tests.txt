@@ -865,7 +865,7 @@ algorithms\alg.modifying.operations\alg.random.shuffle\ranges_shuffle.pass.cpp
 algorithms\alg.sorting\alg.set.operations\includes\ranges_includes.pass.cpp
 algorithms\alg.modifying.operations\alg.unique\ranges_unique.pass.cpp
 
-# Not yet analyzed. the test fails on ARM but passes on AMD64
+# Not yet analyzed. These tests are marked `XFAIL: msvc`, citing DevCom-1660844.
 localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_long_double.hex.pass.cpp
 localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_double.hex.pass.cpp
 

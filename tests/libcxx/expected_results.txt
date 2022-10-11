@@ -865,7 +865,7 @@ std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.c
 std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.unique/ranges_unique.pass.cpp:0 SKIPPED
 
-# Not yet analyzed. the test fails on AMD64 but passes on ARM
+# Not yet analyzed. These tests are marked `XFAIL: msvc`, citing DevCom-1660844.
 std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp SKIPPED
 std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_double.hex.pass.cpp SKIPPED
 
