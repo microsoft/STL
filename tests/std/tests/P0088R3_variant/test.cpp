@@ -6064,7 +6064,6 @@ template<class T> struct Holder { T t; };
 constexpr bool test(bool do_it)
 {
     if (do_it) {
-#if 0 // TRANSITION, GH-140
         std::variant<Holder<Incomplete>*, int> v = nullptr;
         std::visit([](auto){}, v);
         std::visit([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
@@ -6072,10 +6071,9 @@ constexpr bool test(bool do_it)
         std::visit<void>([](auto){}, v);
         std::visit<void*>([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
 #endif
-#endif // TRANSITION, GH-140
-  }
+    }
     return true;
-  }
+}
 
 int run_test()
 {
@@ -6084,7 +6082,7 @@ int run_test()
     static_assert(test(true));
 #endif
     return 0;
-  }
+}
 } // namespace visit::robust_against_adl
 // -- END: test/std/utilities/variant/variant.visit/robust_against_adl.pass.cpp
 
