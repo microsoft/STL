@@ -46,7 +46,7 @@ using _Scoped_outermost_t = remove_reference_t<decltype(_Scoped_outermost(_STD d
 template <class _Alloc>
 using _Scoped_outermost_traits = allocator_traits<_Scoped_outermost_t<_Alloc>>;
 
-template <class _Outer, class... _Inner>
+_EXPORT_STD template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor;
 
 template <class _Outer, class... _Inner>
@@ -121,7 +121,7 @@ struct _Scoped_base<_Outer> : _Outer { // nest of allocators, one deep
     }
 };
 
-template <class _Outer, class... _Inner>
+_EXPORT_STD template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor : public _Scoped_base<_Outer, _Inner...> { // nest of allocators
 private:
     using _Mybase       = _Scoped_base<_Outer, _Inner...>;
@@ -251,7 +251,7 @@ template <class _Outer, class... _Inner>
 scoped_allocator_adaptor(_Outer, _Inner...) -> scoped_allocator_adaptor<_Outer, _Inner...>;
 #endif // _HAS_CXX17
 
-template <class _Outer1, class _Outer2, class... _Inner>
+_EXPORT_STD template <class _Outer1, class _Outer2, class... _Inner>
 _NODISCARD bool operator==(const scoped_allocator_adaptor<_Outer1, _Inner...>& _Left,
     const scoped_allocator_adaptor<_Outer2, _Inner...>& _Right) noexcept {
     if constexpr (sizeof...(_Inner) == 0) {

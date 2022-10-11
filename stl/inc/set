@@ -48,7 +48,7 @@ public:
     }
 };
 
-template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>>
+_EXPORT_STD template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>>
 class set : public _Tree<_Tset_traits<_Kty, _Pr, _Alloc, false>> {
     // ordered red-black tree of key values, unique keys
 public:
@@ -204,7 +204,7 @@ set(from_range_t, _Rng&&, _Alloc) -> set<_RANGES range_value_t<_Rng>, less<_RANG
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
-template <class _Kty, class _Pr, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD bool operator==(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
     return _Left.size() == _Right.size()
         && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin());
@@ -218,7 +218,7 @@ _NODISCARD bool operator!=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, 
 #endif // !_HAS_CXX20
 
 #ifdef __cpp_lib_concepts
-template <class _Kty, class _Pr, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Kty> operator<=>(
     const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
@@ -247,19 +247,19 @@ _NODISCARD bool operator>=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, 
 }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-template <class _Kty, class _Pr, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
 void swap(set<_Kty, _Pr, _Alloc>& _Left, set<_Kty, _Pr, _Alloc>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
 #if _HAS_CXX20
-template <class _Kty, class _Keylt, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Kty, class _Keylt, class _Alloc, class _Pr>
 typename set<_Kty, _Keylt, _Alloc>::size_type erase_if(set<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
-template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>>
+_EXPORT_STD template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>>
 class multiset : public _Tree<_Tset_traits<_Kty, _Pr, _Alloc, true>> {
     // ordered red-black tree of key values, non-unique keys
 public:
@@ -419,7 +419,7 @@ multiset(from_range_t, _Rng&&, _Alloc)
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
-template <class _Kty, class _Pr, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD bool operator==(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
     return _Left.size() == _Right.size()
         && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin());
@@ -433,7 +433,7 @@ _NODISCARD bool operator!=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multi
 #endif // !_HAS_CXX20
 
 #ifdef __cpp_lib_concepts
-template <class _Kty, class _Pr, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Kty> operator<=>(
     const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
@@ -462,14 +462,14 @@ _NODISCARD bool operator>=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multi
 }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-template <class _Kty, class _Pr, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
 void swap(multiset<_Kty, _Pr, _Alloc>& _Left, multiset<_Kty, _Pr, _Alloc>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
 #if _HAS_CXX20
-template <class _Kty, class _Keylt, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Kty, class _Keylt, class _Alloc, class _Pr>
 typename multiset<_Kty, _Keylt, _Alloc>::size_type erase_if(multiset<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
@@ -477,10 +477,10 @@ typename multiset<_Kty, _Keylt, _Alloc>::size_type erase_if(multiset<_Kty, _Keyl
 
 #if _HAS_CXX17
 namespace pmr {
-    template <class _Kty, class _Pr = less<_Kty>>
+    _EXPORT_STD template <class _Kty, class _Pr = less<_Kty>>
     using set = _STD set<_Kty, _Pr, polymorphic_allocator<_Kty>>;
 
-    template <class _Kty, class _Pr = less<_Kty>>
+    _EXPORT_STD template <class _Kty, class _Pr = less<_Kty>>
     using multiset = _STD multiset<_Kty, _Pr, polymorphic_allocator<_Kty>>;
 } // namespace pmr
 #endif // _HAS_CXX17

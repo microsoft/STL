@@ -19,9 +19,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-using _CSTD lconv;
-using _CSTD localeconv;
-using _CSTD setlocale;
+_EXPORT_STD using _CSTD lconv;
+_EXPORT_STD using _CSTD localeconv;
+_EXPORT_STD using _CSTD setlocale;
 _STD_END
 
 #pragma pop_macro("new")

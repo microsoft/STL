@@ -19,6 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+_EXTERN_C
 inline constexpr size_t __std_fs_max_path      = 260; // #define MAX_PATH          260
 inline constexpr size_t __std_fs_temp_path_max = __std_fs_max_path + 1;
 
@@ -76,8 +77,11 @@ enum class __std_fs_file_attr : unsigned long {
 
     _Invalid = 0xFFFFFFFF, // #define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
 };
-_BITMASK_OPS(__std_fs_file_attr)
+_END_EXTERN_C
 
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_file_attr)
+
+_EXTERN_C
 enum class __std_fs_reparse_tag : unsigned long {
     _None        = 0,
     _Mount_point = (0xA0000003L), // #define IO_REPARSE_TAG_MOUNT_POINT              (0xA0000003L)
@@ -118,9 +122,11 @@ enum class __std_fs_stats_flags : unsigned long {
 
     _All_data = _Attributes | _Reparse_tag | _File_size | _Link_count | _Last_write_time
 };
+_END_EXTERN_C
 
-_BITMASK_OPS(__std_fs_stats_flags)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_stats_flags)
 
+_EXTERN_C
 struct __std_fs_stats {
     long long _Last_write_time;
     unsigned long long _File_size;
@@ -192,17 +198,21 @@ enum class __std_access_rights : unsigned long {
     //                                   | FILE_WRITE_EA | FILE_APPEND_DATA | SYNCHRONIZE)
     _File_generic_write = 0x00120116,
 };
+_END_EXTERN_C
 
-_BITMASK_OPS(__std_access_rights)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_access_rights)
 
+_EXTERN_C
 enum class __std_fs_file_flags : unsigned long {
     _None               = 0,
     _Backup_semantics   = 0x02000000, // #define FILE_FLAG_BACKUP_SEMANTICS      0x02000000
     _Open_reparse_point = 0x00200000, // #define FILE_FLAG_OPEN_REPARSE_POINT    0x00200000
 };
+_END_EXTERN_C
 
-_BITMASK_OPS(__std_fs_file_flags)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_file_flags)
 
+_EXTERN_C
 enum class __std_fs_file_handle : intptr_t { _Invalid = -1 };
 
 enum class __std_code_page : unsigned int { _Acp = 0, _Utf8 = 65001 };
@@ -225,8 +235,9 @@ enum class __std_fs_copy_options {
     _Overwrite_existing = 0x2,
     _Update_existing    = 0x4,
 };
+_END_EXTERN_C
 
-_BITMASK_OPS(__std_fs_copy_options)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_copy_options)
 
 _EXTERN_C
 _NODISCARD __std_ulong_and_error __stdcall __std_fs_get_full_path_name(_In_z_ const wchar_t* _Source,

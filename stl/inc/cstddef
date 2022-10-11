@@ -20,71 +20,72 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-using _CSTD ptrdiff_t;
-using _CSTD size_t;
-using max_align_t = double; // most aligned type
+_EXPORT_STD using _CSTD ptrdiff_t;
+_EXPORT_STD using _CSTD size_t;
+_EXPORT_STD using max_align_t = double; // most aligned type
+_EXPORT_STD using nullptr_t   = decltype(nullptr);
 
 #ifdef __cpp_lib_byte
-enum class byte : unsigned char {};
+_EXPORT_STD enum class byte : unsigned char {};
 
-template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
+_EXPORT_STD template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
 _NODISCARD constexpr byte operator<<(const byte _Arg, const _IntType _Shift) noexcept {
     // every static_cast is intentional
     return static_cast<byte>(static_cast<unsigned char>(static_cast<unsigned int>(_Arg) << _Shift));
 }
 
-template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
+_EXPORT_STD template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
 _NODISCARD constexpr byte operator>>(const byte _Arg, const _IntType _Shift) noexcept {
     // every static_cast is intentional
     return static_cast<byte>(static_cast<unsigned char>(static_cast<unsigned int>(_Arg) >> _Shift));
 }
 
-_NODISCARD constexpr byte operator|(const byte _Left, const byte _Right) noexcept {
+_EXPORT_STD _NODISCARD constexpr byte operator|(const byte _Left, const byte _Right) noexcept {
     // every static_cast is intentional
     return static_cast<byte>(
         static_cast<unsigned char>(static_cast<unsigned int>(_Left) | static_cast<unsigned int>(_Right)));
 }
 
-_NODISCARD constexpr byte operator&(const byte _Left, const byte _Right) noexcept {
+_EXPORT_STD _NODISCARD constexpr byte operator&(const byte _Left, const byte _Right) noexcept {
     // every static_cast is intentional
     return static_cast<byte>(
         static_cast<unsigned char>(static_cast<unsigned int>(_Left) & static_cast<unsigned int>(_Right)));
 }
 
-_NODISCARD constexpr byte operator^(const byte _Left, const byte _Right) noexcept {
+_EXPORT_STD _NODISCARD constexpr byte operator^(const byte _Left, const byte _Right) noexcept {
     // every static_cast is intentional
     return static_cast<byte>(
         static_cast<unsigned char>(static_cast<unsigned int>(_Left) ^ static_cast<unsigned int>(_Right)));
 }
 
-_NODISCARD constexpr byte operator~(const byte _Arg) noexcept {
+_EXPORT_STD _NODISCARD constexpr byte operator~(const byte _Arg) noexcept {
     // every static_cast is intentional
     return static_cast<byte>(static_cast<unsigned char>(~static_cast<unsigned int>(_Arg)));
 }
 
-template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
+_EXPORT_STD template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
 constexpr byte& operator<<=(byte& _Arg, const _IntType _Shift) noexcept {
     return _Arg = _Arg << _Shift;
 }
 
-template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
+_EXPORT_STD template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
 constexpr byte& operator>>=(byte& _Arg, const _IntType _Shift) noexcept {
     return _Arg = _Arg >> _Shift;
 }
 
-constexpr byte& operator|=(byte& _Left, const byte _Right) noexcept {
+_EXPORT_STD constexpr byte& operator|=(byte& _Left, const byte _Right) noexcept {
     return _Left = _Left | _Right;
 }
 
-constexpr byte& operator&=(byte& _Left, const byte _Right) noexcept {
+_EXPORT_STD constexpr byte& operator&=(byte& _Left, const byte _Right) noexcept {
     return _Left = _Left & _Right;
 }
 
-constexpr byte& operator^=(byte& _Left, const byte _Right) noexcept {
+_EXPORT_STD constexpr byte& operator^=(byte& _Left, const byte _Right) noexcept {
     return _Left = _Left ^ _Right;
 }
 
-template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
+_EXPORT_STD template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
 _NODISCARD constexpr _IntType to_integer(const byte _Arg) noexcept {
     return static_cast<_IntType>(_Arg);
 }

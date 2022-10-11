@@ -49,7 +49,7 @@ private:
     _Lock& _Mtx;
 };
 
-class condition_variable_any { // class for waiting for conditions with any kind of mutex
+_EXPORT_STD class condition_variable_any { // class for waiting for conditions with any kind of mutex
 public:
     condition_variable_any() : _Myptr{_STD make_shared<mutex>()} {
         _Cnd_init_in_situ(_Mycnd());
@@ -273,7 +273,7 @@ private:
     }
 };
 
-inline void notify_all_at_thread_exit(condition_variable& _Cnd, unique_lock<mutex> _Lck) {
+_EXPORT_STD inline void notify_all_at_thread_exit(condition_variable& _Cnd, unique_lock<mutex> _Lck) {
     // register _Cnd for release at thread exit
     _Cnd._Register(_Lck, nullptr);
 }
