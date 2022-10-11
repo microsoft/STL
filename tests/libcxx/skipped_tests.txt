@@ -856,12 +856,12 @@ numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
 # I don't know which is right.
 language.support\support.limits\limits\numeric.limits.members\tinyness_before.pass.cpp
 
-# Not yet analyzed. the test fails on AMD64 but passes on X86
+# Not yet analyzed. the test fails on x64 but passes on x86
 containers\associative\map\map.access\iterator.pass.cpp
 iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.-\sentinel.pass.cpp
 algorithms\alg.modifying.operations\alg.random.shuffle\ranges_shuffle.pass.cpp
 
-# Not yet analyzed. the test fails on X86 but passes on AMD64
+# Not yet analyzed. the test fails on x86 but passes on x64
 algorithms\alg.sorting\alg.set.operations\includes\ranges_includes.pass.cpp
 algorithms\alg.modifying.operations\alg.unique\ranges_unique.pass.cpp
 
