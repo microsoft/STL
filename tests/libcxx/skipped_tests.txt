@@ -954,7 +954,6 @@ iterators\predef.iterators\move.iterators\move.iterator\iterator_concept_conform
 language.support\support.limits\support.limits.general\cmath.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\cstdlib.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\new.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\version.version.compile.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_zh_CN.pass.cpp
 ranges\range.adaptors\range.filter\iterator\arrow.pass.cpp
 ranges\range.adaptors\range.filter\iterator\base.pass.cpp
