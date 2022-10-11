@@ -874,7 +874,6 @@ std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/to_string.pass.cpp:1 FAIL
 
 # Not yet analyzed
 std/algorithms/alg.modifying.operations/alg.random.sample/ranges_sample.pass.cpp FAIL
