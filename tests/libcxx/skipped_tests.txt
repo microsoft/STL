@@ -523,19 +523,16 @@ iterators\iterator.primitives\iterator.operations\robust_against_adl.pass.cpp
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 input.output\filesystems\fs.filesystem.synopsis\file_time_type_resolution.compile.pass.cpp
 
-# Uses-allocator class constructor wants non-const allocator ref and mismatched piecewise_construct's value category
-utilities\allocator.adaptor\allocator.adaptor.members\construct.pass.cpp
-utilities\allocator.adaptor\allocator.adaptor.members\construct_pair.pass.cpp
-utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_const_lvalue_pair.pass.cpp
-utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_piecewise.pass.cpp
-utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_rvalue.pass.cpp
-utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass.cpp
-utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
-
 # Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
 language.support\support.limits\support.limits.general\algorithm.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\functional.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\iterator.version.compile.pass.cpp
+
+# Did not implement P2286R8 yet
+std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp
+
+# Did not implement P0482R6 yet
+std/strings/c.strings/cuchar.compile.pass.cpp
 
 # Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
 language.support\support.limits\support.limits.general\chrono.version.compile.pass.cpp

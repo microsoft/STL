@@ -522,14 +522,11 @@ std/iterators/iterator.primitives/iterator.operations/robust_against_adl.pass.cp
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 std/input.output/filesystems/fs.filesystem.synopsis/file_time_type_resolution.compile.pass.cpp FAIL
 
-# Uses-allocator class constructor wants non-const allocator ref and mismatched piecewise_construct's value category
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct.pass.cpp FAIL
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair.pass.cpp FAIL
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_const_lvalue_pair.pass.cpp FAIL
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_piecewise.pass.cpp FAIL
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_rvalue.pass.cpp FAIL
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_values.pass.cpp FAIL
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct_type.pass.cpp FAIL
+# Did not implement P2286R8 yet
+std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp FAIL
+
+# Did not implement P0482R6 yet
+std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
 # Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
 std/language.support/support.limits/support.limits.general/algorithm.version.compile.pass.cpp FAIL
