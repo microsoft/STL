@@ -164,6 +164,7 @@ IndentWidth:     4
 # IndentWrappedFunctionNames: false
 IndentWrappedFunctionNames: true
 # InsertBraces:    false
+InsertBraces:    true
 # InsertTrailingCommas: None
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
