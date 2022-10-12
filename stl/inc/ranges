@@ -1416,16 +1416,19 @@ namespace ranges {
 
             _NODISCARD_FRIEND constexpr _Iterator operator+(_Iterator _Iter, difference_type _Off) noexcept(
                 noexcept(_Iter += _Off)) /* strengthened */ {
-                return _Iter += _Off;
+                _Iter += _Off;
+                return _Iter;
             }
             _NODISCARD_FRIEND constexpr _Iterator operator+(difference_type _Off, _Iterator _Iter) noexcept(
                 noexcept(_Iter += _Off)) /* strengthened */ {
-                return _Iter += _Off;
+                _Iter += _Off;
+                return _Iter;
             }
 
             _NODISCARD_FRIEND constexpr _Iterator operator-(_Iterator _Iter, difference_type _Off) noexcept(
                 noexcept(_Iter -= _Off)) /* strengthened */ {
-                return _Iter -= _Off;
+                _Iter -= _Off;
+                return _Iter;
             }
             // clang-format off
             _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left,const _Iterator& _Right)
