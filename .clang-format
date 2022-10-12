@@ -223,6 +223,9 @@ SpaceAfterCStyleCast: true
 #   AfterRequiresInClause: false
 #   AfterRequiresInExpression: false
 #   BeforeNonEmptyParentheses: false
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterRequiresInClause: true
 # SpaceAroundPointerQualifiers: Default
 # SpaceBeforeRangeBasedForLoopColon: true
 # SpaceInEmptyBlock: false
