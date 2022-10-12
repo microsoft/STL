@@ -34,9 +34,7 @@ using pipeline_t =
         Fun>;
 
 template <class Rng>
-concept CanViewTransform = requires(Rng&& r) {
-    views::transform(forward<Rng>(r), add8);
-};
+concept CanViewTransform = requires(Rng&& r) { views::transform(forward<Rng>(r), add8); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {

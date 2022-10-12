@@ -15,9 +15,8 @@
 using namespace std;
 
 template <class Rng, class Delimiter>
-concept CanViewJoinWith = requires(Rng&& r, Delimiter&& d) {
-    views::join_with(forward<Rng>(r), forward<Delimiter>(d));
-};
+concept CanViewJoinWith =
+    requires(Rng&& r, Delimiter&& d) { views::join_with(forward<Rng>(r), forward<Delimiter>(d)); };
 
 template <bool IsElement>
 struct delimiter_view_impl {

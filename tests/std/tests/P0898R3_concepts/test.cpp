@@ -2680,8 +2680,8 @@ namespace test_totally_ordered_with {
             STATIC_ASSERT(totally_ordered_with<T, U const&&> == result);
         }
 
-        if constexpr (!std::is_same_v<T,
-                          std::add_lvalue_reference_t<T>> && !std::is_same_v<U, std::add_lvalue_reference_t<U>>) {
+        if constexpr (!std::is_same_v<T, std::add_lvalue_reference_t<T>>
+                      && !std::is_same_v<U, std::add_lvalue_reference_t<U>>) {
             STATIC_ASSERT(totally_ordered_with<T&, U&> == result);
             STATIC_ASSERT(totally_ordered_with<T const&, U&> == result);
             STATIC_ASSERT(totally_ordered_with<T&&, U&> == result);

@@ -44,7 +44,7 @@ _Ty* _Allocate_for_op_delete(size_t _Count) {
 #ifdef __cpp_aligned_new
     constexpr bool _Extended_alignment = alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__;
     if constexpr (_Extended_alignment) {
-        return static_cast<_Ty*>(::operator new (_Bytes, align_val_t{alignof(_Ty)}));
+        return static_cast<_Ty*>(::operator new(_Bytes, align_val_t{alignof(_Ty)}));
     } else
 #endif // __cpp_aligned_new
     {
@@ -563,7 +563,7 @@ private:
 #ifdef __cpp_aligned_new
             constexpr bool _Extended_alignment = alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__;
             if constexpr (_Extended_alignment) {
-                ::operator delete (static_cast<void*>(_Myptr), align_val_t{alignof(_Ty)});
+                ::operator delete(static_cast<void*>(_Myptr), align_val_t{alignof(_Ty)});
             } else
 #endif // __cpp_aligned_new
             {

@@ -201,7 +201,9 @@ namespace test_expected {
         constexpr bool should_be_defaultable = IsYes(defaultConstructible);
 
         struct payload_default_constructor {
-            constexpr payload_default_constructor() requires(should_be_defaultable) : _val(42) {}
+            constexpr payload_default_constructor()
+                requires(should_be_defaultable)
+                : _val(42) {}
 
             [[nodiscard]] constexpr bool operator==(const int val) const noexcept {
                 return _val == val;

@@ -209,13 +209,13 @@ _NODISCARD constexpr void* _Voidify_iter(_Iter _It) noexcept {
 #if _HAS_CXX20
 #ifdef __EDG__ // TRANSITION, DevCom-1691516
 _EXPORT_STD template <class _Ty, class... _Types,
-    class = void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>>
+    class = void_t<decltype(::new(_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>>
 #else // ^^^ no workaround // workaround vvv
 _EXPORT_STD template <class _Ty, class... _Types,
-    void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>* = nullptr>
+    void_t<decltype(::new(_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>* = nullptr>
 #endif // TRANSITION, DevCom-1691516
 constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
-    noexcept(::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
+    noexcept(::new(_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
     _MSVC_CONSTEXPR return ::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...);
 }
 #endif // _HAS_CXX20
@@ -275,9 +275,9 @@ struct pointer_traits<_Ty*> {
 #ifdef __cpp_lib_concepts
 template <class _Ty>
 concept _Has_to_address = requires(const _Ty& _Val) {
-    typename pointer_traits<_Ty>;
-    pointer_traits<_Ty>::to_address(_Val);
-};
+                              typename pointer_traits<_Ty>;
+                              pointer_traits<_Ty>::to_address(_Val);
+                          };
 #else // ^^^ Use concept / use variable template vvv
 template <class _Ty, class = void>
 inline constexpr bool _Has_to_address = false; // determines whether pointer_traits<_Ty> has to_address
@@ -446,12 +446,13 @@ _EXPORT_STD template <indirectly_readable _Ty>
 using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, iter_value_t<_Ty>&>;
 
 _EXPORT_STD template <class _It, class _Ty>
-concept indirectly_writable = requires(_It && __i, _Ty&& __t) {
-    *__i                                                                = static_cast<_Ty&&>(__t);
-    *static_cast<_It&&>(__i)                                            = static_cast<_Ty&&>(__t);
-    const_cast<const iter_reference_t<_It>&&>(*__i)                     = static_cast<_Ty&&>(__t);
-    const_cast<const iter_reference_t<_It>&&>(*static_cast<_It&&>(__i)) = static_cast<_Ty&&>(__t);
-};
+concept indirectly_writable =
+    requires(_It && __i, _Ty&& __t) {
+        *__i                                                                = static_cast<_Ty&&>(__t);
+        *static_cast<_It&&>(__i)                                            = static_cast<_Ty&&>(__t);
+        const_cast<const iter_reference_t<_It>&&>(*__i)                     = static_cast<_Ty&&>(__t);
+        const_cast<const iter_reference_t<_It>&&>(*static_cast<_It&&>(__i)) = static_cast<_Ty&&>(__t);
+    };
 
 template <bool _Is_integer_class>
 struct _Make_unsigned_like_impl {
@@ -493,8 +494,8 @@ _NODISCARD constexpr auto _To_signed_like(const _Ty _Value) noexcept {
 
 _EXPORT_STD template <class _Ty>
 concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {
-    { __t++ } -> same_as<_Ty>;
-};
+                                                                         { __t++ } -> same_as<_Ty>;
+                                                                     };
 
 template <bool _Iterator_category_present>
 struct _Iter_concept_impl2 {
@@ -774,10 +775,10 @@ namespace ranges {
 _EXPORT_STD template <class _It1, class _It2, class _Out, class _Pr = ranges::less, class _Pj1 = identity,
     class _Pj2 = identity>
 concept mergeable = input_iterator<_It1> && input_iterator<_It2> //
-    && weakly_incrementable<_Out> //
-    && indirectly_copyable<_It1, _Out> //
-    && indirectly_copyable<_It2, _Out> //
-    && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>;
+                 && weakly_incrementable<_Out> //
+                 && indirectly_copyable<_It1, _Out> //
+                 && indirectly_copyable<_It2, _Out> //
+                 && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>;
 
 _EXPORT_STD template <class _It, class _Pr = ranges::less, class _Proj = identity>
 concept sortable = permutable<_It> && indirect_strict_weak_order<_Pr, projected<_It, _Proj>>;
@@ -935,7 +936,7 @@ _INLINE_VAR constexpr bool
 
 template <class _Iter>
 _INLINE_VAR constexpr bool _Unwrappable_for_unverified_v =
-    _Unwrappable_v<_Iter>&& _Do_unwrap_when_unverified_v<_Remove_cvref_t<_Iter>>;
+    _Unwrappable_v<_Iter> && _Do_unwrap_when_unverified_v<_Remove_cvref_t<_Iter>>;
 
 template <class _Iter>
 _NODISCARD constexpr decltype(auto) _Get_unwrapped_unverified(_Iter&& _It) {
@@ -974,7 +975,7 @@ _INLINE_VAR constexpr bool
 
 template <class _Iter>
 _INLINE_VAR constexpr bool _Unwrappable_for_offset_v =
-    _Unwrappable_v<_Iter>&& _Offset_verifiable_v<_Remove_cvref_t<_Iter>>;
+    _Unwrappable_v<_Iter> && _Offset_verifiable_v<_Remove_cvref_t<_Iter>>;
 
 template <class _Iter, class _Diff>
 _NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _Off) {
@@ -1206,8 +1207,8 @@ template <class _Iter, class _Pointer, bool = is_pointer_v<_Remove_cvref_t<_Iter
 _INLINE_VAR constexpr bool _Has_nothrow_operator_arrow = _Is_nothrow_convertible_v<_Iter, _Pointer>;
 
 template <class _Iter, class _Pointer>
-_INLINE_VAR constexpr bool _Has_nothrow_operator_arrow<_Iter, _Pointer, false> = noexcept(
-    _Fake_copy_init<_Pointer>(_STD declval<_Iter>().operator->()));
+_INLINE_VAR constexpr bool _Has_nothrow_operator_arrow<_Iter, _Pointer, false> =
+    noexcept(_Fake_copy_init<_Pointer>(_STD declval<_Iter>().operator->()));
 
 _EXPORT_STD template <class _BidIt>
 class reverse_iterator {
@@ -1405,7 +1406,9 @@ _NODISCARD _CONSTEXPR17 bool
     }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return _Left._Get_current() == _Right._Get_current(); }
+{
+    return _Left._Get_current() == _Right._Get_current();
+}
 
 _EXPORT_STD template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
@@ -1418,7 +1421,9 @@ _NODISCARD _CONSTEXPR17 bool
     }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return _Left._Get_current() != _Right._Get_current(); }
+{
+    return _Left._Get_current() != _Right._Get_current();
+}
 
 _EXPORT_STD template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
@@ -1431,7 +1436,9 @@ _NODISCARD _CONSTEXPR17 bool
     }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return _Left._Get_current() > _Right._Get_current(); }
+{
+    return _Left._Get_current() > _Right._Get_current();
+}
 
 _EXPORT_STD template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
@@ -1444,7 +1451,9 @@ _NODISCARD _CONSTEXPR17 bool
     }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return _Left._Get_current() < _Right._Get_current(); }
+{
+    return _Left._Get_current() < _Right._Get_current();
+}
 
 _EXPORT_STD template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
@@ -1457,7 +1466,9 @@ _NODISCARD _CONSTEXPR17 bool
     }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return _Left._Get_current() >= _Right._Get_current(); }
+{
+    return _Left._Get_current() >= _Right._Get_current();
+}
 
 _EXPORT_STD template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
@@ -1470,7 +1481,9 @@ _NODISCARD _CONSTEXPR17 bool
     }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return _Left._Get_current() <= _Right._Get_current(); }
+{
+    return _Left._Get_current() <= _Right._Get_current();
+}
 
 #ifdef __cpp_lib_concepts
 _EXPORT_STD template <class _BidIt1, three_way_comparable_with<_BidIt1> _BidIt2>
@@ -1680,7 +1693,8 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 
 #ifdef __cpp_lib_concepts
 template <class _Ty1, class _Ty2>
-concept _Not_same_as = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
+concept _Not_same_as = !
+same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
 
 namespace ranges {
     template <class>
@@ -1706,13 +1720,15 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-            { _Fake_copy_init(__t.begin()) } -> input_or_output_iterator;
-        };
+                                  { _Fake_copy_init(__t.begin()) } -> input_or_output_iterator;
+                              };
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
-            { _Fake_copy_init(begin(__t)) } -> input_or_output_iterator;
-        };
+                                                               {
+                                                                   _Fake_copy_init(begin(__t))
+                                                                   } -> input_or_output_iterator;
+                                                           };
 
         class _Cpo {
         private:
@@ -1775,13 +1791,15 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-            { _Fake_copy_init(__t.end()) } -> sentinel_for<iterator_t<_Ty>>;
-        };
+                                  { _Fake_copy_init(__t.end()) } -> sentinel_for<iterator_t<_Ty>>;
+                              };
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
-            { _Fake_copy_init(end(__t)) } -> sentinel_for<iterator_t<_Ty>>;
-        };
+                                                               {
+                                                                   _Fake_copy_init(end(__t))
+                                                                   } -> sentinel_for<iterator_t<_Ty>>;
+                                                           };
 
         class _Cpo {
         private:
@@ -1842,9 +1860,9 @@ namespace ranges {
 
     _EXPORT_STD template <class _Rng>
     concept range = requires(_Rng & __r) {
-        _RANGES begin(__r);
-        _RANGES end(__r);
-    };
+                        _RANGES begin(__r);
+                        _RANGES end(__r);
+                    };
 
     _EXPORT_STD template <range _Rng>
     using sentinel_t = decltype(_RANGES end(_STD declval<_Rng&>()));
@@ -1852,9 +1870,7 @@ namespace ranges {
     template <class _Wrapped>
     concept _Weakly_unwrappable =
         same_as<typename remove_cvref_t<_Wrapped>::_Prevent_inheriting_unwrap, remove_cvref_t<_Wrapped>> //
-        && requires(_Wrapped&& _Wr) {
-        _STD forward<_Wrapped>(_Wr)._Unwrapped();
-    };
+        && requires(_Wrapped&& _Wr) { _STD forward<_Wrapped>(_Wr)._Unwrapped(); };
 
     // clang-format off
     template <class _Sent>
@@ -1864,17 +1880,16 @@ namespace ranges {
     template <class _Iter>
     concept _Weakly_unwrappable_iterator = //
         _Weakly_unwrappable<_Iter> //
-        && requires(_Iter&& _It, remove_cvref_t<_Iter>& _MutIt) {
-        _MutIt._Seek_to(_STD forward<_Iter>(_It)._Unwrapped());
-    };
+        && requires(
+            _Iter&& _It, remove_cvref_t<_Iter>& _MutIt) { _MutIt._Seek_to(_STD forward<_Iter>(_It)._Unwrapped()); };
 
     template <class _Sent, class _Iter>
     concept _Unwrappable_sentinel_for = //
         _Weakly_unwrappable_sentinel<_Sent> //
         && _Weakly_unwrappable_iterator<_Iter> //
         && requires(_Iter&& _It, const remove_reference_t<_Sent>& _Se) {
-        { _Se._Unwrapped() } -> sentinel_for<decltype(_STD forward<_Iter>(_It)._Unwrapped())>;
-    };
+               { _Se._Unwrapped() } -> sentinel_for<decltype(_STD forward<_Iter>(_It)._Unwrapped())>;
+           };
 
     template <class _Sent, class _Iter>
     _NODISCARD constexpr decltype(auto) _Unwrap_iter(_Iter&& _It) noexcept(
@@ -1929,13 +1944,11 @@ namespace ranges {
     namespace _Unchecked_begin {
         template <class _Ty>
         concept _Has_member = requires(_Ty& __t) {
-            { __t._Unchecked_begin() } -> input_or_output_iterator;
-        };
+                                  { __t._Unchecked_begin() } -> input_or_output_iterator;
+                              };
 
         template <class _Ty>
-        concept _Can_begin = requires(_Ty& __t) {
-            _Unwrap_range_iter<_Ty>(_RANGES begin(__t));
-        };
+        concept _Can_begin = requires(_Ty& __t) { _Unwrap_range_iter<_Ty>(_RANGES begin(__t)); };
 
         class _Cpo {
         private:
@@ -1984,15 +1997,14 @@ namespace ranges {
 
     namespace _Unchecked_end {
         template <class _Ty>
-        concept _Has_member = _Unchecked_begin::_Has_member<_Ty> && requires(_Ty& __t) {
-            __t._Unchecked_begin(); // required explicitly for better diagnostics
-            { __t._Unchecked_end() } -> sentinel_for<decltype(__t._Unchecked_begin())>;
-        };
+        concept _Has_member = _Unchecked_begin::_Has_member<_Ty>
+                           && requires(_Ty& __t) {
+                                  __t._Unchecked_begin(); // required explicitly for better diagnostics
+                                  { __t._Unchecked_end() } -> sentinel_for<decltype(__t._Unchecked_begin())>;
+                              };
 
         template <class _Ty>
-        concept _Can_end = requires(_Ty& __t) {
-            _Unwrap_range_sent<_Ty>(_RANGES end(__t));
-        };
+        concept _Can_end = requires(_Ty& __t) { _Unwrap_range_sent<_Ty>(_RANGES end(__t)); };
 
         class _Cpo {
         private:
@@ -2089,19 +2101,21 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-            { _Fake_copy_init(__t.rbegin()) } -> input_or_output_iterator;
-        };
+                                  { _Fake_copy_init(__t.rbegin()) } -> input_or_output_iterator;
+                              };
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
-            { _Fake_copy_init(rbegin(__t)) } -> input_or_output_iterator;
-        };
+                                                               {
+                                                                   _Fake_copy_init(rbegin(__t))
+                                                                   } -> input_or_output_iterator;
+                                                           };
 
         template <class _Ty>
         concept _Can_make_reverse = requires(_Ty __t) {
-            { _RANGES begin(__t) } -> bidirectional_iterator;
-            { _RANGES end(__t) } -> same_as<decltype(_RANGES begin(__t))>;
-        };
+                                        { _RANGES begin(__t) } -> bidirectional_iterator;
+                                        { _RANGES end(__t) } -> same_as<decltype(_RANGES begin(__t))>;
+                                    };
 
         class _Cpo {
         private:
@@ -2157,19 +2171,21 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-            { _Fake_copy_init(__t.rend()) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
-        };
+                                  { _Fake_copy_init(__t.rend()) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
+                              };
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
-            { _Fake_copy_init(rend(__t)) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
-        };
+                                                               {
+                                                                   _Fake_copy_init(rend(__t))
+                                                                   } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
+                                                           };
 
         template <class _Ty>
         concept _Can_make_reverse = requires(_Ty __t) {
-            { _RANGES begin(__t) } -> bidirectional_iterator;
-            { _RANGES end(__t) } -> same_as<decltype(_RANGES begin(__t))>;
-        };
+                                        { _RANGES begin(__t) } -> bidirectional_iterator;
+                                        { _RANGES end(__t) } -> same_as<decltype(_RANGES begin(__t))>;
+                                    };
 
         class _Cpo {
         private:
@@ -2258,20 +2274,22 @@ namespace ranges {
         void size(const _Ty&) = delete;
 
         template <class _Ty, class _UnCV>
-        concept _Has_member = !disable_sized_range<_UnCV> && requires(_Ty __t) {
-            { _Fake_copy_init(__t.size()) } -> _Integer_like;
-        };
+        concept _Has_member = !
+        disable_sized_range<_UnCV>&& requires(_Ty __t) {
+                                         { _Fake_copy_init(__t.size()) } -> _Integer_like;
+                                     };
 
         template <class _Ty, class _UnCV>
-        concept _Has_ADL = _Has_class_or_enum_type<_Ty> && !disable_sized_range<_UnCV> && requires(_Ty __t) {
-            { _Fake_copy_init(size(__t)) } -> _Integer_like;
-        };
+        concept _Has_ADL = _Has_class_or_enum_type<_Ty> && !
+        disable_sized_range<_UnCV>&& requires(_Ty __t) {
+                                         { _Fake_copy_init(size(__t)) } -> _Integer_like;
+                                     };
 
         template <class _Ty>
         concept _Can_difference = requires(_Ty __t) {
-            { _RANGES begin(__t) } -> forward_iterator;
-            { _RANGES end(__t) } -> sized_sentinel_for<decltype(_RANGES begin(__t))>;
-        };
+                                      { _RANGES begin(__t) } -> forward_iterator;
+                                      { _RANGES end(__t) } -> sized_sentinel_for<decltype(_RANGES begin(__t))>;
+                                  };
 
         class _Cpo {
         private:
@@ -2334,20 +2352,16 @@ namespace ranges {
 
     namespace _Empty {
         template <class _Ty>
-        concept _Has_member = requires(_Ty __t) {
-            static_cast<bool>(__t.empty());
-        };
+        concept _Has_member = requires(_Ty __t) { static_cast<bool>(__t.empty()); };
 
         template <class _Ty>
-        concept _Has_size = requires(_Ty __t) {
-            _RANGES size(__t);
-        };
+        concept _Has_size = requires(_Ty __t) { _RANGES size(__t); };
 
         template <class _Ty>
         concept _Can_begin_end = requires(_Ty __t) {
-            { _RANGES begin(__t) } -> forward_iterator;
-            _RANGES end(__t);
-        };
+                                     { _RANGES begin(__t) } -> forward_iterator;
+                                     _RANGES end(__t);
+                                 };
 
         class _Cpo {
         private:
@@ -2405,13 +2419,13 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-            { _Fake_copy_init(__t.data()) } -> _Points_to_object;
-        };
+                                  { _Fake_copy_init(__t.data()) } -> _Points_to_object;
+                              };
 
         template <class _Ty>
         concept _Has_contiguous_iterator = requires(_Ty __t) {
-            { _RANGES begin(__t) } -> contiguous_iterator;
-        };
+                                               { _RANGES begin(__t) } -> contiguous_iterator;
+                                           };
 
         class _Cpo {
         private:
@@ -2471,9 +2485,7 @@ namespace ranges {
     }
 
     _EXPORT_STD template <class _Rng>
-    concept sized_range = range<_Rng> && requires(_Rng & __r) {
-        _RANGES size(__r);
-    };
+    concept sized_range = range<_Rng> && requires(_Rng & __r) { _RANGES size(__r); };
 
     _EXPORT_STD template <sized_range _Rng>
     using range_size_t = decltype(_RANGES size(_STD declval<_Rng&>()));
@@ -2484,9 +2496,11 @@ namespace ranges {
     void _Derived_from_specialization_impl(const _Template<_Args...>&);
 
     template <class _Ty, template <class...> class _Template>
-    concept _Derived_from_specialization_of = is_object_v<_Ty> && requires(const _Ty& _Obj) {
-        _RANGES _Derived_from_specialization_impl<_Template>(_Obj); // qualified: avoid ADL, handle incompletable types
-    };
+    concept _Derived_from_specialization_of =
+        is_object_v<_Ty> && requires(const _Ty& _Obj) {
+                                _RANGES _Derived_from_specialization_impl<_Template>(
+                                    _Obj); // qualified: avoid ADL, handle incompletable types
+                            };
 
     _EXPORT_STD template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
@@ -2515,9 +2529,10 @@ namespace ranges {
     concept random_access_range = range<_Rng> && random_access_iterator<iterator_t<_Rng>>;
 
     _EXPORT_STD template <class _Rng>
-    concept contiguous_range = range<_Rng> && contiguous_iterator<iterator_t<_Rng>> && requires(_Rng & __r) {
-        { _RANGES data(__r) } -> same_as<add_pointer_t<range_reference_t<_Rng>>>;
-    };
+    concept contiguous_range = range<_Rng> && contiguous_iterator<iterator_t<_Rng>>
+                            && requires(_Rng & __r) {
+                                   { _RANGES data(__r) } -> same_as<add_pointer_t<range_reference_t<_Rng>>>;
+                               };
 
     class _Not_quite_object {
     public:
@@ -2679,8 +2694,8 @@ namespace ranges {
         }
 
         template <class _Rng>
-        static constexpr bool _Nothrow_size = noexcept(
-            _Distance_unchecked(_Ubegin(_STD declval<_Rng&>()), _Uend(_STD declval<_Rng&>())));
+        static constexpr bool _Nothrow_size =
+            noexcept(_Distance_unchecked(_Ubegin(_STD declval<_Rng&>()), _Uend(_STD declval<_Rng&>())));
 
         template <sized_range _Rng>
         static constexpr bool _Nothrow_size<_Rng> = noexcept(_RANGES size(_STD declval<_Rng&>()));
@@ -2822,9 +2837,7 @@ namespace ranges {
     concept _Bidi_common_range = common_range<_Rng> && bidirectional_iterator<iterator_t<_Rng>>;
 
     template <class _Ty>
-    concept _Can_empty = requires(_Ty __t) {
-        _RANGES empty(__t);
-    };
+    concept _Can_empty = requires(_Ty __t) { _RANGES empty(__t); };
 
     // clang-format off
     _EXPORT_STD template <class _Derived>
@@ -3164,7 +3177,9 @@ namespace ranges {
         }
         // clang-format on
 
-        _NODISCARD constexpr _It begin() const requires copyable<_It> {
+        _NODISCARD constexpr _It begin() const
+            requires copyable<_It>
+        {
             return _First;
         }
         // clang-format off
@@ -3191,7 +3206,9 @@ namespace ranges {
             }
         }
 
-        _NODISCARD constexpr subrange next() const& requires forward_iterator<_It> {
+        _NODISCARD constexpr subrange next() const&
+            requires forward_iterator<_It>
+        {
             auto _Tmp = *this;
             if (_Tmp._First != _Tmp._Last) {
                 ++_Tmp._First;
@@ -3201,7 +3218,9 @@ namespace ranges {
             }
             return _Tmp;
         }
-        _NODISCARD constexpr subrange next(const iter_difference_t<_It> _Count) const& requires forward_iterator<_It> {
+        _NODISCARD constexpr subrange next(const iter_difference_t<_It> _Count) const&
+            requires forward_iterator<_It>
+        {
             auto _Tmp = *this;
             _Tmp.advance(_Count);
             return _Tmp;
@@ -3221,7 +3240,9 @@ namespace ranges {
             return _STD move(*this);
         }
 
-        _NODISCARD constexpr subrange prev() const requires bidirectional_iterator<_It> {
+        _NODISCARD constexpr subrange prev() const
+            requires bidirectional_iterator<_It>
+        {
             auto _Tmp = *this;
             --_Tmp._First;
             if constexpr (_Store_size) {
@@ -3229,8 +3250,9 @@ namespace ranges {
             }
             return _Tmp;
         }
-        _NODISCARD constexpr subrange prev(
-            const iter_difference_t<_It> _Count) const requires bidirectional_iterator<_It> {
+        _NODISCARD constexpr subrange prev(const iter_difference_t<_It> _Count) const
+            requires bidirectional_iterator<_It>
+        {
             auto _Tmp = *this;
             _Tmp.advance(-_Count);
             return _Tmp;
@@ -3604,7 +3626,9 @@ _NODISCARD _CONSTEXPR17 bool
     }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return _Left.base() == _Right.base(); }
+{
+    return _Left.base() == _Right.base();
+}
 
 #if !_HAS_CXX20
 template <class _Iter1, class _Iter2>
@@ -3625,7 +3649,9 @@ _NODISCARD _CONSTEXPR17 bool
     }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return _Left.base() < _Right.base(); }
+{
+    return _Left.base() < _Right.base();
+}
 
 _EXPORT_STD template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator>(const move_iterator<_Iter1>& _Left,
@@ -3635,7 +3661,9 @@ _NODISCARD _CONSTEXPR17 bool operator>(const move_iterator<_Iter1>& _Left,
     requires requires { _Right < _Left; }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return _Right < _Left; }
+{
+    return _Right < _Left;
+}
 
 _EXPORT_STD template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator<=(const move_iterator<_Iter1>& _Left,
@@ -3645,7 +3673,9 @@ _NODISCARD _CONSTEXPR17 bool operator<=(const move_iterator<_Iter1>& _Left,
     requires requires { _Right < _Left; }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return !(_Right < _Left); }
+{
+    return !(_Right < _Left);
+}
 
 _EXPORT_STD template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left,
@@ -3655,7 +3685,9 @@ _NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left,
     requires requires { _Left < _Right; }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return !(_Left < _Right); }
+{
+    return !(_Left < _Right);
+}
 
 #ifdef __cpp_lib_concepts
 _EXPORT_STD template <class _Iter1, three_way_comparable_with<_Iter1> _Iter2>
@@ -3683,7 +3715,9 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter>
     }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return move_iterator<_Iter>(_Right.base() + _Off); }
+{
+    return move_iterator<_Iter>(_Right.base() + _Off);
+}
 
 _EXPORT_STD template <class _Iter>
 _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) noexcept(
@@ -3744,19 +3778,20 @@ _NODISCARD constexpr auto _To_address(const move_iterator<_Iter>& _Val) noexcept
 
 template <class _Iter1, class _Iter2>
 _INLINE_VAR constexpr bool _Iterators_are_contiguous =
-    _Iterator_is_contiguous<_Iter1>&& _Iterator_is_contiguous<_Iter2>;
+    _Iterator_is_contiguous<_Iter1> && _Iterator_is_contiguous<_Iter2>;
 
 template <class _Iter>
 _INLINE_VAR constexpr bool _Iterator_is_volatile = is_volatile_v<remove_reference_t<_Iter_ref_t<_Iter>>>;
 
 template <class _Source, class _Dest>
-_INLINE_VAR constexpr bool _Is_pointer_address_convertible = is_void_v<_Source> || is_void_v<_Dest>
-            // NOTE: is_same_v is required for function pointers to work
-            || is_same_v<remove_cv_t<_Source>, remove_cv_t<_Dest>>
+_INLINE_VAR constexpr bool _Is_pointer_address_convertible = is_void_v<_Source>
+                                                          || is_void_v<_Dest>
+                                                          // NOTE: is_same_v is required for function pointers to work
+                                                          || is_same_v<remove_cv_t<_Source>, remove_cv_t<_Dest>>
 #ifdef __cpp_lib_is_pointer_interconvertible
-            || is_pointer_interconvertible_base_of_v<_Dest, _Source>
+                                                          || is_pointer_interconvertible_base_of_v<_Dest, _Source>
 #endif // __cpp_lib_is_pointer_interconvertible
-        ;
+    ;
 
 template <class _Source, class _Dest, class _SourceRef, class _DestRef>
 struct _Trivial_cat {
@@ -4499,8 +4534,8 @@ _INLINE_VAR constexpr bool
 
 template <class _Ty1, class _Ty2>
 _INLINE_VAR constexpr bool _Is_pointer_address_comparable =
-    _Can_compare_with_operator_equal<_Ty1*,
-        _Ty2*> && (_Is_pointer_address_convertible<_Ty1, _Ty2> || _Is_pointer_address_convertible<_Ty2, _Ty1>);
+    _Can_compare_with_operator_equal<_Ty1*, _Ty2*>
+    && (_Is_pointer_address_convertible<_Ty1, _Ty2> || _Is_pointer_address_convertible<_Ty2, _Ty1>);
 
 // _Can_memcmp_elements<_Elem1, _Elem2> reports whether `_Elem1 == _Elem2` can be optimized to memcmp.
 // Here, _Elem1 and _Elem2 aren't top-level const, because we remove_const_t before using _Can_memcmp_elements.
@@ -4543,8 +4578,8 @@ _INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred = false;
 // object representation (we use _Iter_copy_cat for this task) and _Elem3 can be safely memcmp'ed with itself
 template <class _Elem1, class _Elem2, class _Elem3>
 _INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred<_Elem1, _Elem2, equal_to<_Elem3>> =
-    _Iter_copy_cat<_Elem1*, _Elem3*>::_Bitcopy_constructible&& _Iter_copy_cat<_Elem2*,
-        _Elem3*>::_Bitcopy_constructible&& _Can_memcmp_elements<remove_cv_t<_Elem3>, remove_cv_t<_Elem3>>;
+    _Iter_copy_cat<_Elem1*, _Elem3*>::_Bitcopy_constructible && _Iter_copy_cat<_Elem2*, _Elem3*>::_Bitcopy_constructible
+    && _Can_memcmp_elements<remove_cv_t<_Elem3>, remove_cv_t<_Elem3>>;
 
 // equal_to<> is transparent.
 template <class _Elem1, class _Elem2>
@@ -4962,8 +4997,8 @@ struct _Lex_compare_three_way_memcmp_classify_comp {
 
 template <class _Elem1, class _Elem2>
 struct _Lex_compare_three_way_memcmp_classify_comp<_Elem1, _Elem2, compare_three_way> {
-    using _Comp = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1,
-                                    _Elem2> && three_way_comparable_with<const _Elem1&, const _Elem2&>,
+    using _Comp = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>
+                                    && three_way_comparable_with<const _Elem1&, const _Elem2&>,
         compare_three_way, void>;
 };
 
@@ -5176,8 +5211,8 @@ namespace ranges {
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
         // clang-format on
         constexpr bool _Is_sized = sized_sentinel_for<_Se, _It>;
-        if constexpr (_Vector_alg_in_find_is_safe<_It,
-                          _Ty> && _Sized_or_unreachable_sentinel_for<_Se, _It> && same_as<_Pj, identity>) {
+        if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && _Sized_or_unreachable_sentinel_for<_Se, _It>
+                      && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
                 if (!_Within_limits(_First, _Val)) {
                     if constexpr (_Is_sized) {

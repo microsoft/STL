@@ -12,14 +12,10 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewCommon = requires(Rng&& r) {
-    views::common(static_cast<Rng&&>(r));
-};
+concept CanViewCommon = requires(Rng&& r) { views::common(static_cast<Rng&&>(r)); };
 
 template <class Rng>
-concept CanViewAll = requires(Rng&& r) {
-    views::all(static_cast<Rng&&>(r));
-};
+concept CanViewAll = requires(Rng&& r) { views::all(static_cast<Rng&&>(r)); };
 
 // Test a silly precomposed range adaptor pipeline
 constexpr auto pipeline = views::all | views::common;

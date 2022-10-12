@@ -87,9 +87,7 @@ template <ranges::viewable_range Rng>
 using pipeline_t = mapped_t<mapped_t<mapped_t<mapped_t<Rng>>>>;
 
 template <class Rng>
-concept CanViewDrop = requires(Rng&& r) {
-    views::drop(forward<Rng>(r), 42);
-};
+concept CanViewDrop = requires(Rng&& r) { views::drop(forward<Rng>(r), 42); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {

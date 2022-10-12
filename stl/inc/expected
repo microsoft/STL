@@ -92,7 +92,8 @@ public:
     }
 
     friend constexpr void swap(unexpected& _Left, unexpected& _Right) noexcept(is_nothrow_swappable_v<_Err>) //
-        requires is_swappable_v<_Err> {
+        requires is_swappable_v<_Err>
+    {
         _Left.swap(_Right);
     }
 
@@ -157,7 +158,9 @@ private:
     _Err _Unexpected;
 };
 
-_EXPORT_STD struct unexpect_t { explicit unexpect_t() = default; };
+_EXPORT_STD struct unexpect_t {
+    explicit unexpect_t() = default;
+};
 
 _EXPORT_STD inline constexpr unexpect_t unexpect{};
 
@@ -242,7 +245,7 @@ public:
 
     template <class _Uty, class _UErr>
         requires is_constructible_v<_Ty, const _Uty&> && is_constructible_v<_Err, const _UErr&> //
-            && _Allow_unwrapping<_Uty, _UErr>
+              && _Allow_unwrapping<_Uty, _UErr>
     constexpr explicit(!is_convertible_v<const _Uty&, _Ty> || !is_convertible_v<const _UErr&, _Err>)
         expected(const expected<_Uty, _UErr>& _Other) noexcept(is_nothrow_constructible_v<_Ty, const _Uty&> //
                 && is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
@@ -379,8 +382,9 @@ public:
         is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_constructible_v<_Err> //
             && is_nothrow_copy_assignable_v<_Ty>&& is_nothrow_copy_assignable_v<_Err>) // strengthened
         requires is_copy_assignable_v<_Ty> && is_copy_constructible_v<_Ty> //
-        && is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err> //
-        &&(is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>) {
+              && is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err> //
+              && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
+    {
         if (_Has_value && _Other._Has_value) {
             _Value = _Other._Value;
         } else if (_Has_value) {
@@ -399,8 +403,9 @@ public:
         is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_constructible_v<_Err> //
             && is_nothrow_move_assignable_v<_Ty>&& is_nothrow_move_assignable_v<_Err>) //
         requires is_move_assignable_v<_Ty> && is_move_constructible_v<_Ty> //
-        && is_move_assignable_v<_Err> && is_move_constructible_v<_Err> //
-        &&(is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>) {
+              && is_move_assignable_v<_Err> && is_move_constructible_v<_Err> //
+              && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
+    {
         if (_Has_value && _Other._Has_value) {
             _Value = _STD move(_Other._Value);
         } else if (_Has_value) {
@@ -509,8 +514,9 @@ public:
     constexpr void swap(expected& _Other) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_swappable_v<_Ty>&&
             is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>) //
         requires is_swappable_v<_Ty> && is_swappable_v<_Err> //
-        && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err> //
-        &&(is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>) {
+              && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err> //
+              && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
+    {
         if (_Has_value && _Other._Has_value) {
             _Swap_adl(_Value, _Other._Value);
         } else if (_Has_value) {
@@ -560,8 +566,9 @@ public:
     friend constexpr void swap(expected& _Lhs, expected& _Rhs) noexcept(is_nothrow_move_constructible_v<_Ty>&&
             is_nothrow_swappable_v<_Ty>&& is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>) //
         requires is_swappable_v<_Ty> && is_swappable_v<_Err> //
-        && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err> //
-        &&(is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>) {
+              && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err> //
+              && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
+    {
         _Lhs.swap(_Rhs);
     }
 
@@ -863,7 +870,8 @@ public:
     // [expected.void.assign]
     constexpr expected& operator=(const expected& _Other) noexcept(
         is_nothrow_copy_constructible_v<_Err>&& is_nothrow_copy_assignable_v<_Err>) // strengthened
-        requires is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err> {
+        requires is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err>
+    {
         if (_Has_value && _Other._Has_value) {
             // nothing to do
         } else if (_Has_value) {
@@ -883,7 +891,8 @@ public:
 
     constexpr expected& operator=(expected&& _Other) noexcept(
         is_nothrow_move_constructible_v<_Err>&& is_nothrow_move_assignable_v<_Err>) //
-        requires is_move_assignable_v<_Err> && is_move_constructible_v<_Err> {
+        requires is_move_assignable_v<_Err> && is_move_constructible_v<_Err>
+    {
         if (_Has_value && _Other._Has_value) {
             // nothing to do
         } else if (_Has_value) {
@@ -941,7 +950,8 @@ public:
     // [expected.void.swap]
     constexpr void swap(expected& _Other) noexcept(
         is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>) //
-        requires is_swappable_v<_Err> && is_move_constructible_v<_Err> {
+        requires is_swappable_v<_Err> && is_move_constructible_v<_Err>
+    {
         if (_Has_value && _Other._Has_value) {
             // nothing
         } else if (_Has_value) {
@@ -965,7 +975,8 @@ public:
 
     friend constexpr void swap(expected& _Left, expected& _Right) noexcept(
         is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>) //
-        requires is_swappable_v<_Err> && is_move_constructible_v<_Err> {
+        requires is_swappable_v<_Err> && is_move_constructible_v<_Err>
+    {
         if (_Left._Has_value && _Right._Has_value) {
             // nothing
         } else if (_Left._Has_value) {

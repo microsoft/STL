@@ -70,7 +70,9 @@ _STD_BEGIN
 _EXPORT_STD template <class, class>
 class vector;
 
-_EXPORT_STD class format_error : public runtime_error { using runtime_error::runtime_error; };
+_EXPORT_STD class format_error : public runtime_error {
+    using runtime_error::runtime_error;
+};
 
 [[noreturn]] inline void _Throw_format_error(const char* const _Message) {
     _THROW(format_error{_Message});
@@ -532,9 +534,10 @@ template <class _CharT>
 concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;
 
 template <class _Ty, class _Context>
-concept _Has_formatter = requires(_Ty& _Val, _Context& _Ctx) {
-    _STD declval<typename _Context::template formatter_type<remove_cvref_t<_Ty>>>().format(_Val, _Ctx);
-};
+concept _Has_formatter =
+    requires(_Ty& _Val, _Context& _Ctx) {
+        _STD declval<typename _Context::template formatter_type<remove_cvref_t<_Ty>>>().format(_Val, _Ctx);
+    };
 
 template <class _Ty, class _Context>
 concept _Has_const_formatter = _Has_formatter<const remove_reference_t<_Ty>, _Context>;

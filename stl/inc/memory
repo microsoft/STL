@@ -2102,7 +2102,7 @@ _NODISCARD _Refc* _Allocate_flexible_array(const size_t _Count) {
 #ifdef __cpp_aligned_new
     constexpr size_t _Align = alignof(_Refc);
     if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        return static_cast<_Refc*>(::operator new (_Bytes, align_val_t{_Align}));
+        return static_cast<_Refc*>(::operator new(_Bytes, align_val_t{_Align}));
     } else
 #endif // __cpp_aligned_new
     {
@@ -2115,7 +2115,7 @@ void _Deallocate_flexible_array(_Refc* const _Ptr) noexcept {
 #ifdef __cpp_aligned_new
     constexpr size_t _Align = alignof(_Refc);
     if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        ::operator delete (static_cast<void*>(_Ptr), align_val_t{_Align});
+        ::operator delete(static_cast<void*>(_Ptr), align_val_t{_Align});
     } else
 #endif // __cpp_aligned_new
     {
@@ -2558,8 +2558,8 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
         _Fill_memset(_Out, _Val, _Size);
     } else {
-        if constexpr (_Fill_zero_memset_is_safe<_Ty*,
-                          _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
+        if constexpr (_Fill_zero_memset_is_safe<_Ty*, _Ty>
+                      && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
             if (_Is_all_bits_zero(_Val)) {
                 _Fill_zero_memset(_Out, _Size);
                 return;
@@ -4139,8 +4139,8 @@ using _Pointer_of_or = typename _Pointer_of_or_helper<_Ty, _Uty>::type;
 // TRANSITION, requires expression support
 template <class _SmartPtr, class _Sp, class _Pointer, class... _ArgsT>
 concept _Resettable_pointer = requires(_SmartPtr& _Smart_ptr, _Pointer _Ptr, _ArgsT&&... _Args) {
-    _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args)...);
-};
+                                  _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args)...);
+                              };
 
 _EXPORT_STD template <class _SmartPtr, class _Pointer, class... _ArgsT>
 class out_ptr_t {
@@ -4177,7 +4177,9 @@ public:
         return _STD addressof(_Get_ptr());
     }
 
-    operator void**() const noexcept requires(!is_same_v<_Pointer, void*>) {
+    operator void**() const noexcept
+        requires(!is_same_v<_Pointer, void*>)
+    {
         static_assert(is_pointer_v<_Pointer>, "conversion of out_ptr_t<Smart, Pointer, Args...> to void** requires "
                                               "Pointer to be a raw pointer (N4892 [out.ptr.t]/13)");
         return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
@@ -4213,7 +4215,9 @@ class inout_ptr_t {
         "inout_ptr_t doesn't work with shared_ptr (N4892 [inout.ptr.t]/3)");
 
 private:
-    _NODISCARD static auto _Get_ptr_from_smart(_SmartPtr& _Smart_ptr) noexcept requires is_pointer_v<_SmartPtr> {
+    _NODISCARD static auto _Get_ptr_from_smart(_SmartPtr& _Smart_ptr) noexcept
+        requires is_pointer_v<_SmartPtr>
+    {
         return _Smart_ptr;
     }
 
@@ -4257,7 +4261,9 @@ public:
         return _STD addressof(_Get_ptr());
     }
 
-    operator void**() const noexcept requires(!is_same_v<_Pointer, void*>) {
+    operator void**() const noexcept
+        requires(!is_same_v<_Pointer, void*>)
+    {
         static_assert(is_pointer_v<_Pointer>, "conversion of inout_ptr_t<Smart, Pointer, Args...> to void** requires "
                                               "Pointer to be a raw pointer (N4892 [inout.ptr.t]/15)");
         return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
@@ -4301,7 +4307,7 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD static_pointer_cast;
     using _STD swap;
     using _STD weak_ptr;
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 #endif // _HAS_TR1_NAMESPACE
 
 _STD_END

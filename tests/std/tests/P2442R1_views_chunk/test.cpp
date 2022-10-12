@@ -14,9 +14,7 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewChunk = requires(Rng&& r) {
-    views::chunk(forward<Rng>(r), 2);
-};
+concept CanViewChunk = requires(Rng&& r) { views::chunk(forward<Rng>(r), 2); };
 
 constexpr auto equal_ranges = [](auto&& left, auto&& right) { return ranges::equal(left, right); };
 

@@ -563,7 +563,8 @@ class _Variantish {
 public:
     constexpr explicit _Variantish(_Variantish_empty_tag) noexcept : _Contains{_Variantish_state::_Nothing} {}
 
-    constexpr _Variantish() noexcept(is_nothrow_default_constructible_v<_Ty1>) requires default_initializable<_Ty1>
+    constexpr _Variantish() noexcept(is_nothrow_default_constructible_v<_Ty1>)
+        requires default_initializable<_Ty1>
         : _First{}, _Contains{_Variantish_state::_Holds_first} {}
 
     template <class... _Types>
@@ -901,7 +902,9 @@ public:
         return *_Val._First;
     }
 
-    _NODISCARD constexpr decltype(auto) operator*() const requires _Dereferenceable<const _Iter> {
+    _NODISCARD constexpr decltype(auto) operator*() const
+        requires _Dereferenceable<const _Iter>
+    {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");
@@ -1039,7 +1042,9 @@ public:
     }
 
     _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_Iter> iter_move(const common_iterator& _Right) noexcept(
-        noexcept(_RANGES iter_move(_Right._Val._First))) requires input_iterator<_Iter> {
+        noexcept(_RANGES iter_move(_Right._Val._First)))
+        requires input_iterator<_Iter>
+    {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Right._Val._Contains == _Variantish_state::_Holds_first,
             "can only iter_move from common_iterator if it holds an iterator");
@@ -1090,9 +1095,9 @@ struct _Common_iterator_pointer_type<_Iter, _Se> {
 
 template <class _Iter>
 concept _Has_forward_category = requires {
-    typename _Iter_cat_t<_Iter>;
-    requires derived_from<_Iter_cat_t<_Iter>, forward_iterator_tag>;
-};
+                                    typename _Iter_cat_t<_Iter>;
+                                    requires derived_from<_Iter_cat_t<_Iter>, forward_iterator_tag>;
+                                };
 
 template <input_iterator _Iter, class _Se>
 struct iterator_traits<common_iterator<_Iter, _Se>> {
@@ -1186,19 +1191,23 @@ public:
     }
 
     _NODISCARD constexpr decltype(auto) operator*() const noexcept(noexcept(*_Current)) /* strengthened */
-        requires _Dereferenceable<const _Iter> {
+        requires _Dereferenceable<const _Iter>
+    {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator dereference beyond end of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return *_Current;
     }
 
-    _NODISCARD constexpr auto operator->() const noexcept requires contiguous_iterator<_Iter> {
+    _NODISCARD constexpr auto operator->() const noexcept
+        requires contiguous_iterator<_Iter>
+    {
         return _STD to_address(_Current);
     }
 
-    _NODISCARD constexpr decltype(auto) operator[](
-        const iter_difference_t<_Iter> _Diff) const requires random_access_iterator<_Iter> {
+    _NODISCARD constexpr decltype(auto) operator[](const iter_difference_t<_Iter> _Diff) const
+        requires random_access_iterator<_Iter>
+    {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Diff < _Length, "counted_iterator index out of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1230,7 +1239,9 @@ public:
         _CATCH_END
     }
 
-    constexpr counted_iterator operator++(int) requires forward_iterator<_Iter> {
+    constexpr counted_iterator operator++(int)
+        requires forward_iterator<_Iter>
+    {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator increment beyond end of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1240,31 +1251,39 @@ public:
         return _Tmp;
     }
 
-    constexpr counted_iterator& operator--() requires bidirectional_iterator<_Iter> {
+    constexpr counted_iterator& operator--()
+        requires bidirectional_iterator<_Iter>
+    {
         --_Current;
         ++_Length;
         return *this;
     }
 
-    constexpr counted_iterator operator--(int) requires bidirectional_iterator<_Iter> {
+    constexpr counted_iterator operator--(int)
+        requires bidirectional_iterator<_Iter>
+    {
         counted_iterator _Tmp = *this;
         --_Current;
         ++_Length;
         return _Tmp;
     }
 
-    _NODISCARD constexpr counted_iterator operator+(
-        const iter_difference_t<_Iter> _Diff) const requires random_access_iterator<_Iter> {
+    _NODISCARD constexpr counted_iterator operator+(const iter_difference_t<_Iter> _Diff) const
+        requires random_access_iterator<_Iter>
+    {
         return counted_iterator{_Current + _Diff, static_cast<iter_difference_t<_Iter>>(_Length - _Diff)};
     }
 
     _NODISCARD_FRIEND constexpr counted_iterator operator+(
-        const iter_difference_t<_Iter> _Diff, const counted_iterator& _Right) requires random_access_iterator<_Iter> {
+        const iter_difference_t<_Iter> _Diff, const counted_iterator& _Right)
+        requires random_access_iterator<_Iter>
+    {
         return counted_iterator{_Right._Current + _Diff, static_cast<iter_difference_t<_Iter>>(_Right._Length - _Diff)};
     }
 
-    constexpr counted_iterator& operator+=(
-        const iter_difference_t<_Iter> _Diff) requires random_access_iterator<_Iter> {
+    constexpr counted_iterator& operator+=(const iter_difference_t<_Iter> _Diff)
+        requires random_access_iterator<_Iter>
+    {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Diff <= _Length, "counted_iterator seek beyond end of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1273,8 +1292,9 @@ public:
         return *this;
     }
 
-    _NODISCARD constexpr counted_iterator operator-(
-        const iter_difference_t<_Iter> _Diff) const requires random_access_iterator<_Iter> {
+    _NODISCARD constexpr counted_iterator operator-(const iter_difference_t<_Iter> _Diff) const
+        requires random_access_iterator<_Iter>
+    {
         return counted_iterator{_Current - _Diff, static_cast<iter_difference_t<_Iter>>(_Length + _Diff)};
     }
 
@@ -1297,8 +1317,9 @@ public:
         return _Right._Length;
     }
 
-    constexpr counted_iterator& operator-=(
-        const iter_difference_t<_Iter> _Diff) requires random_access_iterator<_Iter> {
+    constexpr counted_iterator& operator-=(const iter_difference_t<_Iter> _Diff)
+        requires random_access_iterator<_Iter>
+    {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(-_Diff <= _Length, "counted_iterator decrement beyond end of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1333,7 +1354,9 @@ public:
 
     // [counted.iter.cust]
     _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_Iter> iter_move(const counted_iterator& _Right) noexcept(
-        noexcept(_RANGES iter_move(_Right._Current))) requires input_iterator<_Iter> {
+        noexcept(_RANGES iter_move(_Right._Current)))
+        requires input_iterator<_Iter>
+    {
         return _RANGES iter_move(_Right._Current);
     }
 

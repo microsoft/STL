@@ -221,14 +221,10 @@ STATIC_ASSERT(test_three_way_comparable_with(std::make_integer_sequence<int, thr
 
 // Validate static properties of compare_three_way, compare_three_way_result, and compare_three_way_result_t
 template <class T>
-concept is_trait = requires {
-    typename T::type;
-};
+concept is_trait = requires { typename T::type; };
 
 template <class T, class U>
-concept can_three_way = requires(T const& t, U const& u) {
-    t <=> u;
-};
+concept can_three_way = requires(T const& t, U const& u) { t <=> u; };
 
 template <class T, class U, class Cat>
 constexpr bool test_compare_three_way() {

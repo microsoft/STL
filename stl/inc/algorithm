@@ -4242,8 +4242,8 @@ namespace ranges {
 
     template <class _It, class _Out>
     concept _Can_reread_or_store = forward_iterator<_It> //
-        || _Is_input_with_value_type<_Out, iter_value_t<_It>> //
-        || indirectly_copyable_storable<_It, _Out>;
+                                || _Is_input_with_value_type<_Out, iter_value_t<_It>> //
+                                || indirectly_copyable_storable<_It, _Out>;
 
     class _Unique_copy_fn : private _Not_quite_object {
     public:
@@ -5892,7 +5892,7 @@ namespace ranges {
                     const auto _Right_count = static_cast<_Diff>(_Count - _Mid_offset);
                     const auto _Remaining   = static_cast<_Diff>(_Right_count - _Right_true_count);
                     const auto _High        = _Stable_partition_common_buffered(
-                               _STD move(_Right), _Last, _Pred, _Proj, _Remaining, _Temp_ptr, _Capacity);
+                        _STD move(_Right), _Last, _Pred, _Proj, _Remaining, _Temp_ptr, _Capacity);
                     _Right = _STD move(_High.first);
                     _Right_true_count += _High.second;
                     break;

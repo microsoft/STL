@@ -40,9 +40,7 @@ template <class T>
 concept Decayed = std::same_as<std::decay_t<T>, T>;
 
 template <class R>
-concept CanSizeType = requires {
-    typename ranges::range_size_t<R>;
-};
+concept CanSizeType = requires { typename ranges::range_size_t<R>; };
 
 struct invalid_type {};
 
@@ -1547,13 +1545,18 @@ struct arbitrary_range {
     arbitrary_range(arbitrary_range&&)            = default;
     arbitrary_range& operator=(arbitrary_range&&) = default;
 
-    int* begin() requires AllowNonConst;
-    int* end() requires AllowNonConst;
+    int* begin()
+        requires AllowNonConst;
+    int* end()
+        requires AllowNonConst;
 
-    int const* begin() const requires AllowConst;
-    int const* end() const requires AllowConst;
+    int const* begin() const
+        requires AllowConst;
+    int const* end() const
+        requires AllowConst;
 
-    unsigned char size() const requires AllowSize;
+    unsigned char size() const
+        requires AllowSize;
 };
 
 using mutable_unsized_range      = arbitrary_range<true, true, false>;

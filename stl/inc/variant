@@ -1642,8 +1642,9 @@ inline constexpr bool
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
 inline constexpr bool _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>,
-    const variant<_Types...>&, _Rest...> = (_Variant_all_visit_results_convertible<_Expected, _Callable,
-                                                _Meta_list<_Args..., const _Types&>, _Rest...> && ...);
+    const variant<_Types...>&, _Rest...> =
+    (_Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args..., const _Types&>, _Rest...>
+        && ...);
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
 inline constexpr bool

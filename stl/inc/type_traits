@@ -697,8 +697,8 @@ struct _Is_copy_assignable_no_precondition_check
           add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>)> {};
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_copy_assignable_unchecked_v = __is_assignable_no_precondition_check(
-    add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>);
+_INLINE_VAR constexpr bool _Is_copy_assignable_unchecked_v =
+    __is_assignable_no_precondition_check(add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>);
 #else // ^^^ Use intrinsic / intrinsic not supported vvv
 template <class _Ty>
 using _Is_copy_assignable_no_precondition_check = is_copy_assignable<_Ty>;
@@ -721,8 +721,8 @@ struct _Is_move_assignable_no_precondition_check
     : bool_constant<__is_assignable_no_precondition_check(add_lvalue_reference_t<_Ty>, _Ty)> {};
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_move_assignable_unchecked_v = __is_assignable_no_precondition_check(
-    add_lvalue_reference_t<_Ty>, _Ty);
+_INLINE_VAR constexpr bool _Is_move_assignable_unchecked_v =
+    __is_assignable_no_precondition_check(add_lvalue_reference_t<_Ty>, _Ty);
 #else // ^^^ Use intrinsic / intrinsic not supported vvv
 template <class _Ty>
 using _Is_move_assignable_no_precondition_check = is_move_assignable<_Ty>;
@@ -1386,8 +1386,8 @@ using _RR_common_ref = remove_reference_t<_LL_common_ref<_Ty1, _Ty2>>&&;
 
 template <class _Ty1, class _Ty2>
 struct _Common_reference2A<_Ty1&&, _Ty2&&,
-    enable_if_t<
-        is_convertible_v<_Ty1&&, _RR_common_ref<_Ty1, _Ty2>> && is_convertible_v<_Ty2&&, _RR_common_ref<_Ty1, _Ty2>>>> {
+    enable_if_t<is_convertible_v<_Ty1&&, _RR_common_ref<_Ty1, _Ty2>>
+                && is_convertible_v<_Ty2&&, _RR_common_ref<_Ty1, _Ty2>>>> {
     using type = _RR_common_ref<_Ty1, _Ty2>; // "both rvalues" case from N4917 21.3.8.7 [meta.trans.other]/2.6
 };
 
@@ -1988,7 +1988,7 @@ struct _Is_swappable : _Is_swappable_with<add_lvalue_reference_t<_Ty>, add_lvalu
 
 template <class _Ty1, class _Ty2>
 struct _Swap_cannot_throw : bool_constant<noexcept(swap(_STD declval<_Ty1>(), _STD declval<_Ty2>())) //
-                                    && noexcept(swap(_STD declval<_Ty2>(), _STD declval<_Ty1>()))> {
+                                          && noexcept(swap(_STD declval<_Ty2>(), _STD declval<_Ty1>()))> {
     // Determine if expressions with type and value category _Ty1 and _Ty2
     // (presumed to satisfy is_swappable_with) can be swapped without emitting exceptions
 };
@@ -2181,9 +2181,8 @@ struct _Conditionally_enabled_hash<_Kty, false> { // conditionally disabled hash
 };
 
 _EXPORT_STD template <class _Kty>
-struct hash
-    : _Conditionally_enabled_hash<_Kty,
-          !is_const_v<_Kty> && !is_volatile_v<_Kty> && (is_enum_v<_Kty> || is_integral_v<_Kty> || is_pointer_v<_Kty>)> {
+struct hash : _Conditionally_enabled_hash<_Kty, !is_const_v<_Kty> && !is_volatile_v<_Kty>
+                                                    && (is_enum_v<_Kty> || is_integral_v<_Kty> || is_pointer_v<_Kty>)> {
     // hash functor primary template (handles enums, integrals, and pointers)
     static size_t _Do_hash(const _Kty& _Keyval) noexcept {
         return _Hash_representation(_Keyval);
@@ -2347,7 +2346,7 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD result_of;
 #endif // _HAS_DEPRECATED_RESULT_OF
     using _STD hash;
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 _STL_RESTORE_DEPRECATED_WARNING
 #endif // _HAS_TR1_NAMESPACE
 

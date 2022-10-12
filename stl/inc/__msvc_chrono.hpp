@@ -91,17 +91,16 @@ namespace chrono {
         constexpr duration() = default;
 
         template <class _Rep2,
-            enable_if_t<is_convertible_v<const _Rep2&,
-                            _Rep> && (treat_as_floating_point_v<_Rep> || !treat_as_floating_point_v<_Rep2>),
+            enable_if_t<is_convertible_v<const _Rep2&, _Rep>
+                            && (treat_as_floating_point_v<_Rep> || !treat_as_floating_point_v<_Rep2>),
                 int> = 0>
         constexpr explicit duration(const _Rep2& _Val) noexcept(
             is_arithmetic_v<_Rep>&& is_arithmetic_v<_Rep2>) // strengthened
             : _MyRep(static_cast<_Rep>(_Val)) {}
 
         template <class _Rep2, class _Period2,
-            enable_if_t<
-                treat_as_floating_point_v<
-                    _Rep> || (_Ratio_divide_sfinae<_Period2, _Period>::den == 1 && !treat_as_floating_point_v<_Rep2>),
+            enable_if_t<treat_as_floating_point_v<_Rep>
+                            || (_Ratio_divide_sfinae<_Period2, _Period>::den == 1 && !treat_as_floating_point_v<_Rep2>),
                 int> = 0>
         constexpr duration(const duration<_Rep2, _Period2>& _Dur) noexcept(
             is_arithmetic_v<_Rep>&& is_arithmetic_v<_Rep2>) // strengthened

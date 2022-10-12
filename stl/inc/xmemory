@@ -91,7 +91,7 @@ struct _Default_allocate_traits {
 #endif // _HAS_CXX20
 #endif // __clang__
         {
-            return ::operator new (_Bytes, align_val_t{_Align});
+            return ::operator new(_Bytes, align_val_t{_Align});
         }
     }
 #endif // __cpp_aligned_new
@@ -207,7 +207,7 @@ _CONSTEXPR20 void _Deallocate(void* _Ptr, const size_t _Bytes) noexcept {
             _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
         }
 #endif // defined(_M_IX86) || defined(_M_X64)
-        ::operator delete (_Ptr, _Bytes, align_val_t{_Passed_align});
+        ::operator delete(_Ptr, _Bytes, align_val_t{_Passed_align});
     }
 }
 
@@ -716,12 +716,12 @@ enum class _Pocma_values {
 };
 
 template <class _Alloc>
-_INLINE_VAR constexpr _Pocma_values
-    _Choose_pocma_v = allocator_traits<_Alloc>::is_always_equal::value
-                        ? _Pocma_values::_Equal_allocators
-                        : (allocator_traits<_Alloc>::propagate_on_container_move_assignment::value
-                                ? _Pocma_values::_Propagate_allocators
-                                : _Pocma_values::_No_propagate_allocators);
+_INLINE_VAR constexpr _Pocma_values _Choose_pocma_v =
+    allocator_traits<_Alloc>::is_always_equal::value
+        ? _Pocma_values::_Equal_allocators
+        : (allocator_traits<_Alloc>::propagate_on_container_move_assignment::value
+                ? _Pocma_values::_Propagate_allocators
+                : _Pocma_values::_No_propagate_allocators);
 
 template <class _Alloc, class _Value_type>
 using _Rebind_alloc_t = typename allocator_traits<_Alloc>::template rebind_alloc<_Value_type>;
@@ -734,10 +734,11 @@ using _Maybe_rebind_alloc_t =
         _Rebind_alloc_t<_Alloc, _Value_type>>;
 
 template <class _Alloc> // tests if allocator has simple addressing
-_INLINE_VAR constexpr bool _Is_simple_alloc_v = is_same_v<typename allocator_traits<_Alloc>::size_type, size_t>&&
-    is_same_v<typename allocator_traits<_Alloc>::difference_type, ptrdiff_t>&&
-        is_same_v<typename allocator_traits<_Alloc>::pointer, typename _Alloc::value_type*>&&
-            is_same_v<typename allocator_traits<_Alloc>::const_pointer, const typename _Alloc::value_type*>;
+_INLINE_VAR constexpr bool _Is_simple_alloc_v =
+    is_same_v<typename allocator_traits<_Alloc>::size_type, size_t>
+    && is_same_v<typename allocator_traits<_Alloc>::difference_type, ptrdiff_t>
+    && is_same_v<typename allocator_traits<_Alloc>::pointer, typename _Alloc::value_type*>
+    && is_same_v<typename allocator_traits<_Alloc>::const_pointer, const typename _Alloc::value_type*>;
 
 template <class _Value_type>
 struct _Simple_types { // wraps types from allocators with simple addressing for use in iterators
@@ -758,9 +759,7 @@ struct allocation_result {
 
 #ifdef __cpp_lib_concepts
 template <class _Alloc>
-concept _Has_member_allocate_at_least = requires(_Alloc _Al, size_t _Count) {
-    _Al.allocate_at_least(_Count);
-};
+concept _Has_member_allocate_at_least = requires(_Alloc _Al, size_t _Count) { _Al.allocate_at_least(_Count); };
 
 _EXPORT_STD template <class _Alloc>
 _NODISCARD constexpr allocation_result<typename allocator_traits<_Alloc>::pointer> allocate_at_least(
@@ -1426,7 +1425,7 @@ pair<_Ty*, ptrdiff_t> _Get_temporary_buffer(ptrdiff_t _Count) noexcept {
             void* _Pbuf;
 #ifdef __cpp_aligned_new
             if constexpr (alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-                _Pbuf = ::operator new (_Size, align_val_t{alignof(_Ty)}, nothrow);
+                _Pbuf = ::operator new(_Size, align_val_t{alignof(_Ty)}, nothrow);
             } else
 #endif // __cpp_aligned_new
             {
@@ -1446,7 +1445,7 @@ template <class _Ty>
 void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
 #ifdef __cpp_aligned_new
     if constexpr (alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        ::operator delete (_Pbuf, align_val_t{alignof(_Ty)});
+        ::operator delete(_Pbuf, align_val_t{alignof(_Ty)});
     } else
 #endif // __cpp_aligned_new
     {
@@ -1507,25 +1506,25 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _In
 namespace ranges {
     template <class _It>
     concept _No_throw_input_iterator = input_iterator<_It> //
-        && is_lvalue_reference_v<iter_reference_t<_It>> //
-        && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
+                                    && is_lvalue_reference_v<iter_reference_t<_It>> //
+                                    && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
 
     template <class _Se, class _It>
     concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
 
     template <class _It>
     concept _No_throw_forward_iterator = _No_throw_input_iterator<_It> //
-        && forward_iterator<_It> //
-        && _No_throw_sentinel_for<_It, _It>;
+                                      && forward_iterator<_It> //
+                                      && _No_throw_sentinel_for<_It, _It>;
 
     template <class _Rng>
     concept _No_throw_input_range = range<_Rng> //
-        && _No_throw_input_iterator<iterator_t<_Rng>> //
-        && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
+                                 && _No_throw_input_iterator<iterator_t<_Rng>> //
+                                 && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
 
     template <class _Rng>
     concept _No_throw_forward_range = _No_throw_input_range<_Rng> //
-        && _No_throw_forward_iterator<iterator_t<_Rng>>;
+                                   && _No_throw_forward_iterator<iterator_t<_Rng>>;
 
     template <class _InIt, class _OutIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_count(_InIt _IFirst, _OutIt _OFirst, const size_t _Count) noexcept {
@@ -2337,12 +2336,14 @@ constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& 
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-_EXPORT_STD struct from_range_t { explicit from_range_t() = default; };
+_EXPORT_STD struct from_range_t {
+    explicit from_range_t() = default;
+};
 _EXPORT_STD inline constexpr from_range_t from_range;
 
 template <class _Rng, class _Elem>
-concept _Container_compatible_range =
-    _RANGES input_range<_Rng> && convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
+concept _Container_compatible_range = _RANGES
+input_range<_Rng>&& convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
 
 template <_RANGES input_range _Rng>
 using _Range_key_type = remove_const_t<typename _RANGES range_value_t<_Rng>::first_type>;

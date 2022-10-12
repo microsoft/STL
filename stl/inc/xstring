@@ -2424,8 +2424,8 @@ extern const bool _Asan_string_should_annotate;
 #endif // ^^^ unknown architecture ^^^
 
 template <class _String, class = void>
-_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string = alignof(typename _String::value_type)
-                                                                   >= _Asan_granularity;
+_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string =
+    alignof(typename _String::value_type) >= _Asan_granularity;
 
 template <class _String>
 _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string<_String,
@@ -2437,8 +2437,8 @@ _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string<_String,
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 template <class _Rng, class _Ty>
-concept _Contiguous_range_of =
-    _RANGES contiguous_range<_Rng> && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
+concept _Contiguous_range_of = _RANGES
+contiguous_range<_Rng>&& same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>

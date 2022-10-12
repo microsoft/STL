@@ -15,9 +15,7 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewStride = requires(Rng&& r) {
-    views::stride(forward<Rng>(r), 3);
-};
+concept CanViewStride = requires(Rng&& r) { views::stride(forward<Rng>(r), 3); };
 
 template <ranges::input_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
