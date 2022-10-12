@@ -51,7 +51,7 @@ private:
     static unsigned int __stdcall _Invoke(void* _RawVals) noexcept /* terminates */ {
         // adapt invoke of user's callable object to _beginthreadex's thread procedure
         const unique_ptr<_Tuple> _FnVals(static_cast<_Tuple*>(_RawVals));
-        _Tuple& _Tup = *_FnVals;
+        _Tuple& _Tup = *_FnVals.get(); // avoid ADL, handle incomplete types
         _STD invoke(_STD move(_STD get<_Indices>(_Tup))...);
         _Cnd_do_broadcast_at_thread_exit(); // TRANSITION, ABI
         return 0;
