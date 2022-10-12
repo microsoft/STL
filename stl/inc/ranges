@@ -1459,7 +1459,7 @@ namespace ranges {
         }
         _NODISCARD_CTOR constexpr explicit repeat_view(_Wx&& _Value_, _Bo _Bound_ = _Bo()) noexcept(
             is_nothrow_move_constructible_v<_Wx>&& is_nothrow_copy_constructible_v<_Bo>) // strengthened
-            : _Value(in_place, std::move(_Value_)), _Bound(_Bound_) {
+            : _Value(in_place, _STD move(_Value_)), _Bound(_Bound_) {
             if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
                 _STL_ASSERT(_Bound >= 0, "Bound must be >= 0");
             }
@@ -1472,11 +1472,11 @@ namespace ranges {
             : repeat_view(_Val_args, _Bound_args, index_sequence_for<_WArgs...>{}, index_sequence_for<_BArgs...>{}) {}
 
         _NODISCARD constexpr _Iterator begin() const noexcept /* strengthened */ {
-            return _Iterator(addressof(*_Value));
+            return _Iterator(_STD addressof(*_Value));
         }
         _NODISCARD constexpr _Iterator end() const noexcept(is_nothrow_copy_constructible_v<_Bo>) // strengthened
             requires(!same_as<_Bo, unreachable_sentinel_t>) {
-            return _Iterator(addressof(*_Value), _Bound);
+            return _Iterator(_STD addressof(*_Value), _Bound);
         }
         _NODISCARD constexpr unreachable_sentinel_t end() const noexcept {
             return unreachable_sentinel;
@@ -1484,7 +1484,7 @@ namespace ranges {
 
         _NODISCARD constexpr auto size() const noexcept(is_nothrow_copy_constructible_v<_Bo>) // strengthened
             requires(!same_as<_Bo, unreachable_sentinel_t>) {
-            return _To_unsigned_like<_Bo>(_Bound);
+            return _STD _To_unsigned_like<_Bo>(_Bound);
         }
     };
 

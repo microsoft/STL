@@ -132,13 +132,13 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
         I tmp = first;
         static_assert(is_nothrow_copy_constructible_v<I>);
 
-        I i = move(tmp);
+        I i = std::move(tmp);
         static_assert(is_nothrow_move_constructible_v<I>);
 
         tmp = i;
         static_assert(is_nothrow_copy_assignable_v<I>);
 
-        i = move(tmp);
+        i = std::move(tmp);
         static_assert(is_nothrow_move_assignable_v<I>);
     }
 
