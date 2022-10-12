@@ -1381,11 +1381,17 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator--() noexcept(noexcept(--_Current)) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Current > 0, "cannot decrement below 0");
+#endif
                 --_Current;
                 return *this;
             }
             constexpr _Iterator operator--(int) noexcept(
                 is_nothrow_copy_constructible_v<_Iterator>&& noexcept(--_Current)) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Current > 0, "cannot decrement below 0");
+#endif
                 auto _Tmp = *this;
                 --*this;
                 return _Tmp;
@@ -1393,11 +1399,17 @@ namespace ranges {
 
             constexpr _Iterator& operator+=(difference_type _Off) noexcept(
                 noexcept(_Current += _Off)) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Current + _Off > 0, "cannot subtract below 0");
+#endif
                 _Current += _Off;
                 return *this;
             }
             constexpr _Iterator& operator-=(difference_type _Off) noexcept(
                 noexcept(_Current -= _Off)) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Current - _Off > 0, "cannot subtract below 0");
+#endif
                 _Current -= _Off;
                 return *this;
             }
