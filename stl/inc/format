@@ -44,19 +44,16 @@ _EMIT_STL_WARNING(STL4038, "The contents of <format> are available only with C++
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 
 #include <__msvc_format_ucd_tables.hpp>
-#include <algorithm>
 #include <charconv>
 #include <concepts>
 #include <cstdint>
-#include <exception>
 #include <iterator>
 #include <limits>
 #include <locale>
 #include <mutex>
 #include <stdexcept>
-#include <string>
-#include <string_view>
 #include <xfilesystem_abi.h>
+#include <xstring>
 #include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
@@ -2291,12 +2288,14 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _CharT* _Value);
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, basic_string_view<_CharT> _Value);
 
-template <class _CharT>
-struct _Widen_char {
-    _NODISCARD _CharT operator()(const char _Ch) const noexcept {
-        return static_cast<_CharT>(_Ch);
+template <class _CharT, class _OutputIt>
+_NODISCARD _OutputIt _Widen_and_copy(const char* _First, const char* const _Last, _OutputIt _Out) {
+    for (; _First != _Last; ++_First, (void) ++_Out) {
+        *_Out = static_cast<_CharT>(*_First);
     }
-};
+
+    return _Out;
+}
 
 // clang-format off
 template <class _CharT, class _OutputIt, class _Arithmetic>
@@ -2324,7 +2323,7 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _Arithmetic _Value) {
         _End = _Result.ptr;
     }
 
-    return _RANGES transform(_Buffer, _End, _STD move(_Out), _Widen_char<_CharT>{}).out;
+    return _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
 }
 
 template <class _CharT, class _OutputIt>
@@ -2350,7 +2349,7 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const void* const _Value) {
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
     *_Out++ = '0';
     *_Out++ = 'x';
-    return _RANGES transform(_Buffer, _End, _STD move(_Out), _Widen_char<_CharT>{}).out;
+    return _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
 }
 
 template <class _CharT, class _OutputIt>
@@ -2503,7 +2502,7 @@ _NODISCARD _OutputIt _Write_separated_integer(const char* _First, const char* co
             ++_Repeats;
         }
     }
-    _Out   = _RANGES transform(_First, _Last - _Grouped, _STD move(_Out), _Widen_char<_CharT>{}).out;
+    _Out   = _Widen_and_copy<_CharT>(_First, _Last - _Grouped, _STD move(_Out));
     _First = _Last - _Grouped;
 
     for (; _Separators > 0; --_Separators) {
@@ -2514,7 +2513,7 @@ _NODISCARD _OutputIt _Write_separated_integer(const char* _First, const char* co
         }
 
         *_Out++ = _Separator;
-        _Out    = _RANGES transform(_First, _First + *_Group_it, _STD move(_Out), _Widen_char<_CharT>{}).out;
+        _Out    = _Widen_and_copy<_CharT>(_First, _First + *_Group_it, _STD move(_Out));
         _First += *_Group_it;
     }
     _STL_INTERNAL_CHECK(_First == _Last);
@@ -2645,7 +2644,7 @@ _NODISCARD _OutputIt _Write_integral(
     const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Fmt_align::_None;
     auto _Writer                     = [&, _End = _End](_OutputIt _Out) {
         _Out = _Write_sign(_STD move(_Out), _Specs._Sgn, _Value < _Integral{0});
-        _Out = _RANGES transform(_Prefix, _STD move(_Out), _Widen_char<_CharT>{}).out;
+        _Out = _Widen_and_copy<_CharT>(_Prefix.data(), _Prefix.data() + _Prefix.size(), _STD move(_Out));
         if (_Write_leading_zeroes && _Width < _Specs._Width) {
             _Out = _RANGES fill_n(_STD move(_Out), _Specs._Width - _Width, _CharT{'0'});
         }
@@ -2655,7 +2654,7 @@ _NODISCARD _OutputIt _Write_integral(
                                     _STD use_facet<numpunct<_CharT>>(_Locale._Get()).thousands_sep(), //
                                     _Separators, _STD move(_Out));
         }
-        return _RANGES transform(_Buffer_start, _End, _STD move(_Out), _Widen_char<_CharT>{}).out;
+        return _Widen_and_copy<_CharT>(_Buffer_start, _End, _STD move(_Out));
     };
 
     if (_Write_leading_zeroes) {
@@ -2925,7 +2924,7 @@ _NODISCARD _OutputIt _Fmt_write(
             }
         }
 
-        _Out = _RANGES transform(_Buffer_start, _Exponent_start, _STD move(_Out), _Widen_char<_CharT>{}).out;
+        _Out = _Widen_and_copy<_CharT>(_Buffer_start, _Exponent_start, _STD move(_Out));
         if (_Specs._Alt && _Append_decimal) {
             *_Out++ = '.';
         }
@@ -2934,7 +2933,7 @@ _NODISCARD _OutputIt _Fmt_write(
             *_Out++ = '0';
         }
 
-        return _RANGES transform(_Exponent_start, _Result.ptr, _STD move(_Out), _Widen_char<_CharT>{}).out;
+        return _Widen_and_copy<_CharT>(_Exponent_start, _Result.ptr, _STD move(_Out));
     };
 
     if (_Write_leading_zeroes) {
