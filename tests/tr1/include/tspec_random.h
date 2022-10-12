@@ -42,8 +42,7 @@ public:
 
         // collect random sample data from given distribution
         mt19937 gen;
-        i     = 0;
-        int n = 0;
+        i = 0;
         for (; i < BINSIZE; ++i)
             got_count[i] = 0;
 
@@ -59,7 +58,6 @@ public:
             Ty zero = (Ty) 0; // to quiet diagnostics
             if (zero <= rand_value && rand_value < (Ty) BINSIZE) { // increase the count of the proper bin
                 got_count[(int) rand_value]++;
-                ++n;
             } else if (rand_value < zero)
                 ++under_bin;
             else if ((Ty) (BINSIZE - 1) < rand_value)
