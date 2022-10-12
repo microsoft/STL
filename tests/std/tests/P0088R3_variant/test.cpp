@@ -6064,6 +6064,7 @@ template<class T> struct Holder { T t; };
 constexpr bool test(bool do_it)
 {
     if (do_it) {
+#ifndef _M_CEE
         std::variant<Holder<Incomplete>*, int> v = nullptr;
         std::visit([](auto){}, v);
         std::visit([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
@@ -6071,6 +6072,7 @@ constexpr bool test(bool do_it)
         std::visit<void>([](auto){}, v);
         std::visit<void*>([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
 #endif
+#endif // _M_CEE
     }
     return true;
 }
