@@ -1347,13 +1347,13 @@ namespace ranges {
         class _Iterator {
         private:
             friend repeat_view;
-            using index_type = conditional_t<same_as<_Bo, unreachable_sentinel_t>, ptrdiff_t, _Bo>;
+            using _Index_type = conditional_t<same_as<_Bo, unreachable_sentinel_t>, ptrdiff_t, _Bo>;
 
             const _Wx* _Value{};
-            /* [[no_unique_address]] */ index_type _Current{};
+            /* [[no_unique_address]] */ _Index_type _Current{};
 
-            constexpr explicit _Iterator(const _Wx* _Val_, index_type _Bo_ = index_type()) noexcept(
-                is_nothrow_copy_constructible_v<index_type>) // strengthened
+            constexpr explicit _Iterator(const _Wx* _Val_, _Index_type _Bo_ = _Index_type()) noexcept(
+                is_nothrow_copy_constructible_v<_Index_type>) // strengthened
                 : _Value(_Val_), _Current(_Bo_) {}
 
         public:
@@ -1361,7 +1361,7 @@ namespace ranges {
             using iterator_category = random_access_iterator_tag;
             using value_type        = _Wx;
             using difference_type =
-                conditional_t<_Signed_integer_like<index_type>, index_type, _Iota_diff_t<index_type>>;
+                conditional_t<_Signed_integer_like<_Index_type>, _Index_type, _Iota_diff_t<_Index_type>>;
 
             _Iterator() = default;
 
