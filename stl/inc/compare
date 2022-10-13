@@ -333,14 +333,12 @@ _EXPORT_STD struct compare_three_way {
 };
 
 struct _Synth_three_way {
-    // clang-format off
     template <class _Ty1, class _Ty2>
     _NODISCARD constexpr auto operator()(const _Ty1& _Left, const _Ty2& _Right) const
-    requires requires {
-        { _Left < _Right } -> _Boolean_testable;
-        { _Right < _Left } -> _Boolean_testable;
-    }
-    // clang-format on
+        requires requires {
+                     { _Left < _Right } -> _Boolean_testable;
+                     { _Right < _Left } -> _Boolean_testable;
+                 }
     {
         if constexpr (three_way_comparable_with<_Ty1, _Ty2>) {
             return _Left <=> _Right;

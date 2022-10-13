@@ -358,7 +358,6 @@ struct std::basic_common_reference<::test::proxy_reference<Cat1, Elem1>, ::test:
 };
 
 namespace test {
-    // clang-format off
     template <class Category, class Element,
         // Model sized_sentinel_for along with sentinel?
         CanDifference Diff = CanDifference{derived_from<Category, random>},
@@ -369,10 +368,9 @@ namespace test {
         // Interact with the STL's iterator unwrapping machinery?
         WrappedState Wrapped = WrappedState::wrapped>
         requires (to_bool(Eq) || !derived_from<Category, fwd>)
-            && (Proxy == ProxyRef::no || !derived_from<Category, contiguous>)
+              && (Proxy == ProxyRef::no || !derived_from<Category, contiguous>)
     class iterator
         : public prevent_inheriting_unwrap_base<iterator<Category, Element, Diff, Eq, Proxy, Wrapped>, Wrapped> {
-        // clang-format on
         Element* ptr_;
 
         template <class T>

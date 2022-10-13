@@ -126,16 +126,14 @@ struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_ty
 template <_Has_member_element_type _Ty>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::element_type> {};
 
-// clang-format off
 template <_Has_member_value_type _Ty>
     requires _Has_member_element_type<_Ty>
 struct indirectly_readable_traits<_Ty> {};
 
 template <_Has_member_value_type _Ty>
     requires _Has_member_element_type<_Ty>
-        && same_as<remove_cv_t<typename _Ty::value_type>, remove_cv_t<typename _Ty::element_type>>
+          && same_as<remove_cv_t<typename _Ty::value_type>, remove_cv_t<typename _Ty::element_type>>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
-// clang-format on
 
 _EXPORT_STD template <class _Ty>
 using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,

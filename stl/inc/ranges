@@ -2786,12 +2786,10 @@ namespace ranges {
                 }
             }
 
-            // clang-format off
             template <class _Ty>
                 requires constructible_from<decay_t<_Ty>, _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Length) const
-            noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
-                // clang-format on
+                noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
                 return _Range_closure<_Take_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Length)};
             }
         };
@@ -3416,12 +3414,10 @@ namespace ranges {
                 _Satisfy();
             }
 
-            // clang-format off
             constexpr _Iterator(_Iterator<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, _OuterIter>
-                      && convertible_to<iterator_t<_InnerRng<false>>, _InnerIter>
+                          && convertible_to<iterator_t<_InnerRng<false>>, _InnerIter>
                 : _Outer{_STD move(_It._Outer)}, _Inner{_STD move(_It._Inner)}, _Parent{_It._Parent} {}
-            // clang-format on
 
             _NODISCARD constexpr decltype(auto) operator*() const noexcept(noexcept(**_Inner)) /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -3594,15 +3590,13 @@ namespace ranges {
             return _Iterator<_Use_const>{*this, _RANGES begin(_Range)};
         }
 
-        // clang-format off
         _NODISCARD constexpr _Iterator<true> begin() const
-        #ifdef __clang__ // TRANSITION, LLVM-47414
+#ifdef __clang__ // TRANSITION, LLVM-47414
             requires _Can_const_join<_Vw>
-        #else // ^^^ workaround / no workaround vvv
+#else // ^^^ workaround / no workaround vvv
             requires input_range<const _Vw> && is_reference_v<_InnerRng<true>>
-        #endif // TRANSITION, LLVM-47414
+#endif // TRANSITION, LLVM-47414
         {
-            // clang-format on
             return _Iterator<true>{*this, _RANGES begin(_Range)};
         }
 
