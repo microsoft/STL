@@ -1866,9 +1866,9 @@ namespace iter_ops {
         constexpr explicit trace_iterator(int const pos, trace& t) noexcept(NoThrow == nothrow::yes)
             : trace_{&t}, pos_{pos} {}
 
-        trace_iterator(trace_iterator const&)
-            requires is_forward
-        = default;
+        // clang-format off
+        trace_iterator(trace_iterator const&) requires is_forward = default;
+        // clang-format on
         trace_iterator(trace_iterator&&) = default;
 
         constexpr trace_iterator& operator=(trace_iterator const& that) noexcept(NoThrow == nothrow::yes)
@@ -3203,13 +3203,11 @@ namespace move_iterator_test {
         };
 
         input_iter() = default;
-        input_iter(input_iter const&)
-            requires CanCopy
-        = default;
+        // clang-format off
+        input_iter(input_iter const&) requires CanCopy = default;
         input_iter(input_iter&&) = default;
-        input_iter& operator=(input_iter const&)
-            requires CanCopy
-        = default;
+        input_iter& operator=(input_iter const&) requires CanCopy = default;
+        // clang-format on
         input_iter& operator=(input_iter&&) = default;
 
         reference operator*() const;

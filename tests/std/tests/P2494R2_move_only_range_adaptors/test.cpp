@@ -29,33 +29,19 @@ template <SmfKind CCtor, SmfKind MCtor, SmfKind CAssign, SmfKind MAssign>
 struct Transform : BaseTransform {
     using BaseTransform::BaseTransform;
 
-    Transform(const Transform&) noexcept(CCtor == Nothrow)
-        requires (CCtor != Deleted)
-    = default;
-    Transform(const Transform&)
-        requires (CCtor == Deleted)
-    = delete;
+    // clang-format off
+    Transform(const Transform&) noexcept(CCtor == Nothrow) requires (CCtor != Deleted) = default;
+    Transform(const Transform&) requires (CCtor == Deleted) = delete;
 
-    Transform(Transform&&) noexcept(MCtor == Nothrow)
-        requires (MCtor != Deleted)
-    = default;
-    Transform(Transform&&)
-        requires (MCtor == Deleted)
-    = delete;
+    Transform(Transform&&) noexcept(MCtor == Nothrow) requires (MCtor != Deleted) = default;
+    Transform(Transform&&) requires (MCtor == Deleted) = delete;
 
-    Transform& operator=(const Transform&) noexcept(CAssign == Nothrow)
-        requires (CAssign != Deleted)
-    = default;
-    Transform& operator=(const Transform&)
-        requires (CAssign == Deleted)
-    = delete;
+    Transform& operator=(const Transform&) noexcept(CAssign == Nothrow) requires (CAssign != Deleted) = default;
+    Transform& operator=(const Transform&) requires (CAssign == Deleted) = delete;
 
-    Transform& operator=(Transform&&) noexcept(MAssign == Nothrow)
-        requires (MAssign != Deleted)
-    = default;
-    Transform& operator=(Transform&&)
-        requires (MAssign == Deleted)
-    = delete;
+    Transform& operator=(Transform&&) noexcept(MAssign == Nothrow) requires (MAssign != Deleted) = default;
+    Transform& operator=(Transform&&) requires (MAssign == Deleted) = delete;
+    // clang-format on
 };
 
 template <SmfKind CCtor, SmfKind MCtor, SmfKind CAssign, SmfKind MAssign>

@@ -398,9 +398,9 @@ namespace test {
         using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
 
         // output iterator operations
-        iterator()
-            requires at_least<fwd> || (Eq == CanCompare::yes)
-        = default;
+        // clang-format off
+        iterator() requires at_least<fwd> || (Eq == CanCompare::yes) = default;
+        // clang-format on
 
         constexpr explicit iterator(Element* ptr) noexcept : ptr_{ptr} {}
 
@@ -521,12 +521,10 @@ namespace test {
         }
 
         // sentinel operations (implied by forward iterator):
-        iterator(iterator const&)
-            requires (to_bool(Eq))
-        = default;
-        iterator& operator=(iterator const&)
-            requires (to_bool(Eq))
-        = default;
+        // clang-format off
+        iterator(iterator const&) requires (to_bool(Eq)) = default;
+        iterator& operator=(iterator const&) requires (to_bool(Eq)) = default;
+        // clang-format on
 
         constexpr operator Consterator() const& noexcept
             requires (to_bool(Eq))
