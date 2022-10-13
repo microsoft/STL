@@ -449,14 +449,12 @@
 #define _STL_PRAGMA_MESSAGE(MESSAGE) _STL_PRAGMA(message(MESSAGE))
 #define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _CRT_STRINGIZE(__LINE__) "): " MESSAGE)
 
-// clang-format off
-#define _EMIT_STL_WARNING(NUMBER, MESSAGE) \
+#define _EMIT_STL_WARNING(NUMBER, MESSAGE)             \
     _EMIT_STL_MESSAGE("warning " #NUMBER ": " MESSAGE) \
     static_assert(true, "")
-#define _EMIT_STL_ERROR(NUMBER, MESSAGE) \
+#define _EMIT_STL_ERROR(NUMBER, MESSAGE)             \
     _EMIT_STL_MESSAGE("error " #NUMBER ": " MESSAGE) \
     static_assert(false, "Error in C++ Standard Library usage.")
-// clang-format on
 
 #ifndef _STL_WARNING_LEVEL
 #if defined(_MSVC_WARNING_LEVEL) && _MSVC_WARNING_LEVEL >= 4
