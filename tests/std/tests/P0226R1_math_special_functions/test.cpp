@@ -9,17 +9,17 @@
 using namespace std;
 
 template <class Float>
-bool isclose(Float f, Float g, int ulps = 1) {
+bool isclose(Float f, Float g, const int ulps = 1) {
     if (f == g) {
         return true;
     }
 
     if (f > g) {
-        std::swap(f, g);
+        swap(f, g);
     }
     // f < g
     for (int i = 0; i < ulps; ++i) {
-        f = std::nextafter(f, std::numeric_limits<Float>::infinity());
+        f = nextafter(f, numeric_limits<Float>::infinity());
         if (f == g) {
             return true;
         }
