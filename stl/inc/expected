@@ -408,14 +408,13 @@ public:
         return *this;
     }
 
-    // clang-format off
     template <class _Uty = _Ty>
         requires (!is_same_v<remove_cvref_t<_Uty>, expected> && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
-        && is_constructible_v<_Ty, _Uty> && is_assignable_v<_Ty&, _Uty> && (is_nothrow_constructible_v<_Ty, _Uty>
-        || is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>))
+                  && is_constructible_v<_Ty, _Uty> && is_assignable_v<_Ty&, _Uty>
+                  && (is_nothrow_constructible_v<_Ty, _Uty> || is_nothrow_move_constructible_v<_Ty>
+                      || is_nothrow_move_constructible_v<_Err>) )
     constexpr expected& operator=(_Uty&& _Other) noexcept(
         is_nothrow_constructible_v<_Ty, _Uty>&& is_nothrow_assignable_v<_Ty&, _Uty>) { // strengthened
-        // clang-format on
         if (_Has_value) {
             _Value = _STD forward<_Uty>(_Other);
         } else {
@@ -426,14 +425,12 @@ public:
         return *this;
     }
 
-    // clang-format off
     template <class _UErr>
-        requires (is_constructible_v<_Err, const _UErr&>&& is_assignable_v<_Err&, const _UErr&>
-                 && (is_nothrow_constructible_v<_Err, const _UErr&> || is_nothrow_move_constructible_v<_Ty>
-                     || is_nothrow_move_constructible_v<_Err>) )
+        requires (is_constructible_v<_Err, const _UErr&> && is_assignable_v<_Err&, const _UErr&>
+                  && (is_nothrow_constructible_v<_Err, const _UErr&> || is_nothrow_move_constructible_v<_Ty>
+                      || is_nothrow_move_constructible_v<_Err>) )
     constexpr expected& operator=(const unexpected<_UErr>& _Other) noexcept(
         is_nothrow_constructible_v<_Err, const _UErr&>&& is_nothrow_assignable_v<_Err&, const _UErr&>) { // strengthened
-        // clang-format on
         if (_Has_value) {
             _Reinit_expected(_Unexpected, _Value, _Other._Unexpected);
             _Has_value = false;
@@ -444,14 +441,12 @@ public:
         return *this;
     }
 
-    // clang-format off
     template <class _UErr>
-        requires (is_constructible_v<_Err, _UErr>&& is_assignable_v<_Err&, _UErr>
-                 && (is_nothrow_constructible_v<_Err, _UErr> || is_nothrow_move_constructible_v<_Ty>
-                     || is_nothrow_move_constructible_v<_Err>) )
+        requires (is_constructible_v<_Err, _UErr> && is_assignable_v<_Err&, _UErr>
+                  && (is_nothrow_constructible_v<_Err, _UErr> || is_nothrow_move_constructible_v<_Ty>
+                      || is_nothrow_move_constructible_v<_Err>) )
     constexpr expected& operator=(unexpected<_UErr>&& _Other) noexcept(
         is_nothrow_constructible_v<_Err, _UErr>&& is_nothrow_assignable_v<_Err&, _UErr>) { // strengthened
-        // clang-format on
         if (_Has_value) {
             _Reinit_expected(_Unexpected, _Value, _STD move(_Other._Unexpected));
             _Has_value = false;

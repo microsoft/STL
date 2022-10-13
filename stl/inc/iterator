@@ -189,21 +189,19 @@ public:
     constexpr explicit move_sentinel(_Se _Val) noexcept(is_nothrow_move_constructible_v<_Se>) // strengthened
         : _Last{_STD move(_Val)} {}
 
-    // clang-format off
     template <class _Se2>
         requires convertible_to<const _Se2&, _Se>
-    constexpr move_sentinel(const move_sentinel<_Se2>& _Val)
-        noexcept(is_nothrow_constructible_v<_Se, const _Se2&>) // strengthened
+    constexpr move_sentinel(const move_sentinel<_Se2>& _Val) noexcept(
+        is_nothrow_constructible_v<_Se, const _Se2&>) // strengthened
         : _Last{_Val._Get_last()} {}
 
     template <class _Se2>
         requires assignable_from<_Se&, const _Se2&>
-    constexpr move_sentinel& operator=(const move_sentinel<_Se2>& _Val)
-        noexcept(is_nothrow_assignable_v<_Se&, const _Se2&>) /* strengthened */ {
+    constexpr move_sentinel& operator=(const move_sentinel<_Se2>& _Val) noexcept(
+        is_nothrow_assignable_v<_Se&, const _Se2&>) /* strengthened */ {
         _Last = _Val._Get_last();
         return *this;
     }
-    // clang-format on
 
     _NODISCARD constexpr _Se base() const noexcept(is_nothrow_copy_constructible_v<_Se>) /* strengthened */ {
         return _Last;
@@ -981,12 +979,10 @@ public:
         }
     }
 
-    // clang-format off
     template <class _OIter, sentinel_for<_Iter> _OSe>
         requires sentinel_for<_Se, _OIter>
-    _NODISCARD_FRIEND constexpr
-    bool operator==(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
-        // clang-format on
+    _NODISCARD_FRIEND constexpr bool operator==(
+        const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
@@ -1405,19 +1401,17 @@ public:
 
     using _Prevent_inheriting_unwrap = counted_iterator;
 
-    // clang-format off
-    _NODISCARD constexpr counted_iterator<_Unwrapped_t<const _Iter&>> _Unwrapped() const&
-        noexcept(noexcept(counted_iterator<_Unwrapped_t<const _Iter&>>{_Current._Unwrapped(), _Length}))
-        requires _Unwrappable_v<const _Iter&> {
-        // clang-format on
+    _NODISCARD constexpr counted_iterator<_Unwrapped_t<const _Iter&>> _Unwrapped() const& noexcept(
+        noexcept(counted_iterator<_Unwrapped_t<const _Iter&>>{_Current._Unwrapped(), _Length}))
+        requires _Unwrappable_v<const _Iter&>
+    {
         return counted_iterator<_Unwrapped_t<const _Iter&>>{_Current._Unwrapped(), _Length};
     }
 
-    // clang-format off
-    _NODISCARD constexpr counted_iterator<_Unwrapped_t<_Iter>> _Unwrapped() &&
-        noexcept(noexcept(counted_iterator<_Unwrapped_t<_Iter>>{_STD move(_Current)._Unwrapped(), _Length}))
-        requires _Unwrappable_v<_Iter> {
-        // clang-format on
+    _NODISCARD constexpr counted_iterator<_Unwrapped_t<_Iter>> _Unwrapped() && noexcept(
+        noexcept(counted_iterator<_Unwrapped_t<_Iter>>{_STD move(_Current)._Unwrapped(), _Length}))
+        requires _Unwrappable_v<_Iter>
+    {
         return counted_iterator<_Unwrapped_t<_Iter>>{_STD move(_Current)._Unwrapped(), _Length};
     }
 

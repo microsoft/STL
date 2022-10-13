@@ -2527,12 +2527,10 @@ template <class _CharT, class _OutputIt, integral _Integral>
 _NODISCARD _OutputIt _Write_integral(
     _OutputIt _Out, _Integral _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
 
-// clang-format off
 template <class _CharT, class _OutputIt, integral _Integral>
     requires (!_CharT_or_bool<_Integral, _CharT>)
-_NODISCARD _OutputIt _Fmt_write(
-    _OutputIt _Out, _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale);
-// clang-format on
+_NODISCARD _OutputIt
+    _Fmt_write(_OutputIt _Out, _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale);
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, bool _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
