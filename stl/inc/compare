@@ -287,10 +287,10 @@ struct common_comparison_category {
 };
 
 #ifdef __cpp_lib_concepts
-// clang-format off
 template <class _Ty, class _Cat>
 concept _Compares_as = same_as<common_comparison_category_t<_Ty, _Cat>, _Cat>;
 
+// clang-format off
 _EXPORT_STD template <class _Ty, class _Cat = partial_ordering>
 concept three_way_comparable = _Half_equality_comparable<_Ty, _Ty> && _Half_ordered<_Ty, _Ty>
     && requires(const remove_reference_t<_Ty>& __a, const remove_reference_t<_Ty>& __b) {
@@ -306,6 +306,7 @@ concept three_way_comparable_with = three_way_comparable<_Ty1, _Cat> && three_wa
         { __t <=> __u } -> _Compares_as<_Cat>;
         { __u <=> __t } -> _Compares_as<_Cat>;
     };
+// clang-format on
 
 _EXPORT_STD template <class _Ty1, class _Ty2 = _Ty1>
 using compare_three_way_result_t =
@@ -330,7 +331,6 @@ _EXPORT_STD struct compare_three_way {
 
     using is_transparent = int;
 };
-// clang-format on
 
 struct _Synth_three_way {
     // clang-format off

@@ -848,11 +848,11 @@ concept _Use_postfix_proxy = !requires(_Iter& __it) { { *__it++ } -> _Can_refere
     && indirectly_readable<_Iter>
     && constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>
     && move_constructible<iter_value_t<_Iter>>;
+// clang-format on
 
 _EXPORT_STD template <input_or_output_iterator _Iter, sentinel_for<_Iter> _Se>
     requires (!same_as<_Iter, _Se> && copyable<_Iter>)
 class common_iterator {
-    // clang-format on
 private:
     struct _Proxy_base {
         iter_value_t<_Iter> _Keep;
@@ -875,13 +875,13 @@ public:
 
     constexpr explicit common_iterator(_Variantish_empty_tag _Tag) noexcept : _Val{_Tag} {}
 
-    // clang-format off
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
     constexpr common_iterator(const common_iterator<_OIter, _OSe>& _Right) noexcept(
         is_nothrow_constructible_v<_Iter, const _OIter&>&& is_nothrow_constructible_v<_Se, const _OSe&>) // strengthened
         : _Val{_Right._Get_val()} {}
 
+    // clang-format off
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
             && assignable_from<_Iter&, const _OIter&> && assignable_from<_Se&, const _OSe&>

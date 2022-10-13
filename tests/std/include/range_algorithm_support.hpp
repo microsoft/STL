@@ -224,13 +224,13 @@ namespace test {
         constexpr operator Element&() const requires derived_from<Category, input> {
             return ref_;
         }
+        // clang-format on
 
         template <class T>
             requires (!std::same_as<std::remove_cvref_t<T>, proxy_reference> && assignable_from<Element&, T>)
         constexpr void operator=(T&& val) const {
             ref_ = std::forward<T>(val);
         }
-        // clang-format on
 
         template <class Cat, class Elem>
         [[nodiscard]] constexpr boolish operator==(proxy_reference<Cat, Elem> that) const

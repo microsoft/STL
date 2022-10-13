@@ -2401,7 +2401,6 @@ namespace ranges {
                 return _Last;
             }
 
-            // clang-format off
             template <bool _OtherConst>
                 requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
@@ -2409,6 +2408,7 @@ namespace ranges {
                 return _Get_current(_Left) == _Right._Last;
             }
 
+            // clang-format off
             template <bool _OtherConst>
                 requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD_FRIEND constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>>
@@ -2416,6 +2416,7 @@ namespace ranges {
                     noexcept(_Get_current(_Left) - _Right._Last)) /* strengthened */ {
                 return _Get_current(_Left) - _Right._Last;
             }
+            // clang-format on
 
             template <bool _OtherConst>
                 requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
@@ -2427,6 +2428,7 @@ namespace ranges {
         };
 
     public:
+        // clang-format off
         transform_view() requires default_initializable<_Vw> && default_initializable<_Fn> = default;
         // clang-format on
 
@@ -3560,12 +3562,12 @@ namespace ranges {
                 noexcept(is_nothrow_constructible_v<sentinel_t<_Base>, sentinel_t<_Vw>>) // strengthened
                 requires _Const && convertible_to<sentinel_t<_Vw>, sentinel_t<_Base>>
                 : _Last(_STD move(_Se._Last)) {}
+            // clang-format on
 
             template <bool _OtherConst>
                 requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
                 const _Sentinel& _Right) noexcept(noexcept(_Right._Equal(_Left))) /* strengthened */ {
-                // clang-format on
                 return _Right._Equal(_Left);
             }
         };

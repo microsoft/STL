@@ -371,6 +371,7 @@ namespace ranges {
         concept _Can_deref = requires(_Ty&& __t) {
             *static_cast<_Ty&&>(__t);
         };
+        // clang-format on
 
         class _Cpo {
         private:
@@ -410,7 +411,6 @@ namespace ranges {
                 }
             }
         };
-        // clang-format on
     } // namespace _Iter_move
 
     inline namespace _Cpos {
@@ -3138,13 +3138,13 @@ namespace ranges {
             requires _Convertible_to_non_slicing<iterator_t<_Rng>, _It> && convertible_to<sentinel_t<_Rng>, _Se>
         constexpr subrange(_Rng&& _Val, const _Size_type _Count) requires (_Ki == subrange_kind::sized)
             : subrange{_RANGES begin(_Val), _RANGES end(_Val), _Count} {}
+        // clang-format on
 
         template <_Not_same_as<subrange> _Pair_like>
             requires _Pair_like_convertible_from<_Pair_like, const _It&, const _Se&>
         constexpr operator _Pair_like() const {
             return _Pair_like(_First, _Last);
         }
-        // clang-format on
 
         _NODISCARD constexpr _It begin() const
             requires copyable<_It>

@@ -771,7 +771,6 @@ public:
     // [expected.void.ctor]
     constexpr expected() noexcept : _Has_value(true) {}
 
-    // clang-format off
     constexpr expected(const expected& _Other) noexcept(is_nothrow_copy_constructible_v<_Err>) // strengthened
         requires (!is_trivially_copy_constructible_v<_Err> && is_copy_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
@@ -780,7 +779,9 @@ public:
         }
     }
 
+    // clang-format off
     expected(const expected&) requires is_trivially_copy_constructible_v<_Err> = default;
+    // clang-format on
 
     constexpr expected(expected&& _Other) noexcept(is_nothrow_move_constructible_v<_Err>)
         requires (!is_trivially_move_constructible_v<_Err> && is_move_constructible_v<_Err>)
@@ -790,6 +791,7 @@ public:
         }
     }
 
+    // clang-format off
     expected(expected&&) requires is_trivially_move_constructible_v<_Err> = default;
     // clang-format on
 

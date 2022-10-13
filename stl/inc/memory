@@ -4060,13 +4060,13 @@ struct _Pointer_of_helper<_Ty> {
     using type = typename _Ty::pointer;
 };
 
-// clang-format off
 template <_Has_member_element_type _Ty>
     requires (!_Has_member_pointer<_Ty>)
 struct _Pointer_of_helper<_Ty> {
     using type = typename _Ty::element_type*;
 };
 
+// clang-format off
 template <class _Ty>
     requires (!_Has_member_element_type<_Ty> && !_Has_member_pointer<_Ty>
         && _Has_member_element_type<pointer_traits<_Ty>>)
