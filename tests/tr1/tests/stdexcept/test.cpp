@@ -24,8 +24,9 @@ void test_main() { // test basic workings of exception definitions
     STD logic_error* plog   = &x2;
     STD runtime_error* prun = &x7;
 
-    if (!terse)
+    if (!terse) {
         printf("exception().what() returns \"%s\"\n", pex->what());
+    }
 
     CHECK(pex->what() != nullptr);
     pex = plog;
