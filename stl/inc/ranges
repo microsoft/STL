@@ -1335,11 +1335,11 @@ namespace ranges {
 
 #if _HAS_CXX23
     // clang-format off
-    _EXPORT_STD template <move_constructible _Wx, semiregular _Bo = unreachable_sentinel_t>
-        requires(is_object_v<_Wx> && same_as<_Wx, remove_cv_t<_Wx>>
+    _EXPORT_STD template <move_constructible _Ty, semiregular _Bo = unreachable_sentinel_t>
+        requires(is_object_v<_Ty> && same_as<_Ty, remove_cv_t<_Ty>>
            && (_Integer_like<_Bo> || same_as<_Bo, unreachable_sentinel_t>))
     // clang-format on
-    class repeat_view : public view_interface<repeat_view<_Wx, _Bo>> {
+    class repeat_view : public view_interface<repeat_view<_Ty, _Bo>> {
     private:
         friend views::_Take_fn;
         friend views::_Drop_fn;
@@ -1349,22 +1349,22 @@ namespace ranges {
             friend repeat_view;
             using _Index_type = conditional_t<same_as<_Bo, unreachable_sentinel_t>, ptrdiff_t, _Bo>;
 
-            const _Wx* _Value{};
+            const _Ty* _Value{};
             /* [[no_unique_address]] */ _Index_type _Current{};
 
-            constexpr explicit _Iterator(const _Wx* _Val_, _Index_type _Bo_ = _Index_type()) noexcept // strengthened
+            constexpr explicit _Iterator(const _Ty* _Val_, _Index_type _Bo_ = _Index_type()) noexcept // strengthened
                 : _Value(_Val_), _Current(_Bo_) {}
 
         public:
             using iterator_concept  = random_access_iterator_tag;
             using iterator_category = random_access_iterator_tag;
-            using value_type        = _Wx;
+            using value_type        = _Ty;
             using difference_type =
                 conditional_t<_Signed_integer_like<_Index_type>, _Index_type, _Iota_diff_t<_Index_type>>;
 
             _Iterator() = default;
 
-            _NODISCARD constexpr const _Wx& operator*() const noexcept {
+            _NODISCARD constexpr const _Ty& operator*() const noexcept {
                 return *_Value;
             }
 
@@ -1408,7 +1408,7 @@ namespace ranges {
                 _Current -= _Off;
                 return *this;
             }
-            _NODISCARD constexpr const _Wx& operator[](difference_type _Idx) const noexcept {
+            _NODISCARD constexpr const _Ty& operator[](difference_type _Idx) const noexcept {
                 return *(*this + _Idx);
             }
 
@@ -1443,7 +1443,7 @@ namespace ranges {
             }
         };
 
-        /* [[no_unique_address]] */ _Movable_box<_Wx> _Value{};
+        /* [[no_unique_address]] */ _Movable_box<_Ty> _Value{};
         /* [[no_unique_address]] */ _Bo _Bound{};
 
         template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>
@@ -1454,29 +1454,29 @@ namespace ranges {
 
     public:
         // clang-format off
-        repeat_view() requires default_initializable<_Wx> = default;
+        repeat_view() requires default_initializable<_Ty> = default;
 
-        _NODISCARD_CTOR constexpr explicit repeat_view(const _Wx& _Value_, _Bo _Bound_ = _Bo())
-            noexcept(is_nothrow_copy_constructible_v<_Wx>) // strengthened
-            requires copy_constructible<_Wx> : _Value(in_place, _Value_),
+        _NODISCARD_CTOR constexpr explicit repeat_view(const _Ty& _Value_, _Bo _Bound_ = _Bo())
+            noexcept(is_nothrow_copy_constructible_v<_Ty>) // strengthened
+            requires copy_constructible<_Ty> : _Value(in_place, _Value_),
                                                _Bound(_Bound_) {
             // clang-format on
             if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
                 _STL_ASSERT(_Bound >= 0, "Bound must be >= 0");
             }
         }
-        _NODISCARD_CTOR constexpr explicit repeat_view(_Wx&& _Value_, _Bo _Bound_ = _Bo()) noexcept(
-            is_nothrow_move_constructible_v<_Wx>) // strengthened
+        _NODISCARD_CTOR constexpr explicit repeat_view(_Ty&& _Value_, _Bo _Bound_ = _Bo()) noexcept(
+            is_nothrow_move_constructible_v<_Ty>) // strengthened
             : _Value(in_place, _STD move(_Value_)), _Bound(_Bound_) {
             if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
                 _STL_ASSERT(_Bound >= 0, "Bound must be >= 0");
             }
         }
-        template <class... _WArgs, class... _BArgs>
-        requires constructible_from<_Wx, _WArgs...> && constructible_from<_Bo, _BArgs...>
-            _NODISCARD_CTOR constexpr explicit repeat_view(piecewise_construct_t, tuple<_WArgs...> _Val_args,
-                tuple<_BArgs...> _Bound_args = tuple<>{}) noexcept(is_nothrow_constructible_v<_Wx, _WArgs...>)
-            : repeat_view(_Val_args, _Bound_args, index_sequence_for<_WArgs...>{}, index_sequence_for<_BArgs...>{}) {}
+        template <class... _TArgs, class... _BArgs>
+        requires constructible_from<_Ty, _TArgs...> && constructible_from<_Bo, _BArgs...>
+            _NODISCARD_CTOR constexpr explicit repeat_view(piecewise_construct_t, tuple<_TArgs...> _Val_args,
+                tuple<_BArgs...> _Bound_args = tuple<>{}) noexcept(is_nothrow_constructible_v<_Ty, _TArgs...>)
+            : repeat_view(_Val_args, _Bound_args, index_sequence_for<_TArgs...>{}, index_sequence_for<_BArgs...>{}) {}
 
         _NODISCARD constexpr _Iterator begin() const noexcept /* strengthened */ {
             return _Iterator(_STD addressof(*_Value));
@@ -1495,24 +1495,23 @@ namespace ranges {
         }
     };
 
-    template <class _Wx, class _Bo>
-    repeat_view(_Wx, _Bo) -> repeat_view<_Wx, _Bo>;
+    template <class _Ty, class _Bo>
+    repeat_view(_Ty, _Bo) -> repeat_view<_Ty, _Bo>;
 
     namespace views {
         struct _Repeat_fn {
             template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Value) const
-                noexcept(noexcept(repeat_view(static_cast<_Ty&&>(_Value)))) requires requires {
-                repeat_view(static_cast<_Ty&&>(_Value));
+                noexcept(noexcept(repeat_view(_STD forward<_Ty>(_Value)))) requires requires { repeat_view(_STD forward<_Ty>(_Value));
             }
-            { return repeat_view(static_cast<_Ty&&>(_Value)); }
+            { return repeat_view(_STD forward<_Ty&&>(_Value)); }
 
             template <class _Ty1, class _Ty2>
             _NODISCARD constexpr auto operator()(_Ty1&& _Val1, _Ty2&& _Val2) const noexcept(
-                noexcept(repeat_view(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2)))) requires requires {
-                repeat_view(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
+                noexcept(repeat_view(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2)))) requires requires {
+                repeat_view(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2));
             }
-            { return repeat_view(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2)); }
+            { return repeat_view(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2)); }
         };
 
         _EXPORT_STD inline constexpr _Repeat_fn repeat;
