@@ -168,6 +168,7 @@ namespace {
             } else {
                 result = std::malloc(bytes);
             }
+
             if (result) {
                 return result;
             }
@@ -199,11 +200,13 @@ namespace {
             } else {
                 bytes_ = bytes;
             }
+
             if (align_ != 0) {
                 CHECK(align == align_);
             } else {
                 align_ = align;
             }
+
             if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 return ptr_ = ::operator new(bytes);
             } else {
@@ -219,6 +222,7 @@ namespace {
                 } else {
                     bytes_ = bytes;
                 }
+
                 if (align_ != 0) {
                     CHECK(align == align_);
                 } else {
@@ -228,10 +232,12 @@ namespace {
                 if (bytes_ != 0) {
                     CHECK(bytes == bytes_);
                 }
+
                 if (align_ != 0) {
                     CHECK(align == align_);
                 }
             }
+
             if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 ::operator delete(ptr, bytes);
             } else {

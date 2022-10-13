@@ -1517,6 +1517,7 @@ void expect_absolute(const path& input, const wstring_view expected) {
         if (actual.native() != expected) {
             wcerr << L"Actual result: " << actual.native() << L"\n";
         }
+
         if (ec) {
             wcerr << L"The call failed.\n";
         }
@@ -3847,6 +3848,7 @@ basic_ostream<Elem, Traits>& operator<<(basic_ostream<Elem, Traits>& ostr, const
     if (p == perms::owner_all) {
         return ostr << L"perms::owner_all";
     }
+
     if (p == perms::owner_read) {
         return ostr << L"perms::owner_read";
     }

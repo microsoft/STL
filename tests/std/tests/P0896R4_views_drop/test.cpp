@@ -336,6 +336,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         if constexpr (CanIndex<R>) {
             assert(r[0] == *r.begin());
         }
+
         if constexpr (CanIndex<const R>) {
             assert(as_const(r)[0] == *as_const(r).begin());
         }

@@ -276,6 +276,7 @@ struct instantiator {
                 assert(counted_iterator<Iter>{} <=> counted_iterator<Iter>{} == strong_ordering::equal);
                 assert(counted_iterator<Iter>{} <=> counted_iterator<Iter>{} == strong_ordering::equivalent);
             }
+
             if constexpr (common_with<Iter, ConstIter>) {
                 { // equality converting
                     counted_iterator<ConstIter> const_iter1{ConstIter{input}, 2};

@@ -165,6 +165,7 @@ void test_path_data() { // test path accesses against data tables
                     str.insert((size_t) 0, (size_t) 1, '|');
                     str.insert((size_t) 0, *pi);
                 }
+
                 if (pi == p.begin()) {
                     break;
                 }

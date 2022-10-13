@@ -196,6 +196,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                 }
             }
         }
+
         if constexpr (!common_range<R>) {
             STATIC_ASSERT(same_as<sentinel_t<R>, default_sentinel_t>);
         }
@@ -220,6 +221,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                 }
             }
         }
+
         if constexpr (!common_range<const R>) {
             STATIC_ASSERT(same_as<sentinel_t<const R>, default_sentinel_t>);
         }

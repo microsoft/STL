@@ -42,6 +42,7 @@ short _FDscale(float* px, long lexp) { // scale *px by 2^xexp with checking
                 ps->_Sh[_F0] = 0;
                 xexp += 16;
             }
+
             if (xexp != 0) { // scale by bits
                 xexp         = -xexp;
                 psx          = (ps->_Sh[_F1] << (16 - xexp)) | (psx != 0 ? 1 : 0);
