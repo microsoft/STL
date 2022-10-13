@@ -140,11 +140,10 @@ namespace ranges {
         }
 
         _EXPORT_STD template <class _Left, class _Right>
-            requires _Range_adaptor_closure_object<_Right>
-                  && range<_Left>
-                     _NODISCARD constexpr auto operator|(_Left&& __l, _Right&& __r) noexcept(
-                         noexcept(_STD forward<_Right>(__r)(_STD forward<_Left>(__l))))
-                         requires requires { static_cast<_Right&&>(__r)(static_cast<_Left&&>(__l)); }
+            requires (_Range_adaptor_closure_object<_Right> && range<_Left>)
+        _NODISCARD constexpr auto operator|(_Left&& __l, _Right&& __r) noexcept(
+            noexcept(_STD forward<_Right>(__r)(_STD forward<_Left>(__l))))
+            requires requires { static_cast<_Right&&>(__r)(static_cast<_Left&&>(__l)); }
         {
             return _STD forward<_Right>(__r)(_STD forward<_Left>(__l));
         }
