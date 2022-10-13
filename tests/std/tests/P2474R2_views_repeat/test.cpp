@@ -12,15 +12,6 @@
 
 using namespace std;
 
-template <template <class> class Trait, class R, class T, class B>
-constexpr bool nothrow_view() {
-    return Trait<R>::value == Trait<T>::value && Trait<B>::value;
-}
-template <template <class> class Trait, class T, class B = int>
-constexpr bool is_nothrow() {
-    return Trait<T>::value && Trait<B>::value;
-}
-
 template <class W, class B>
 concept CanViewRepeat = requires(W&& w, B b) {
     views::repeat(forward<W>(w), b);
@@ -47,13 +38,14 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
     static_assert(ranges::view<R>);
     static_assert(semiregular<R>);
     static_assert(default_initializable<R> == default_initializable<T>);
-    static_assert(nothrow_view<is_nothrow_copy_constructible, R, T, B>()); // strengthened
-    static_assert(nothrow_view<is_nothrow_copy_assignable, R, T, B>()); // strengthened
-    static_assert(nothrow_view<is_nothrow_move_constructible, R, T, B>()); // strengthened
-    static_assert(nothrow_view<is_nothrow_move_assignable, R, T, B>()); // strengthened
+    static_assert(is_nothrow_copy_constructible_v<R> == is_nothrow_copy_constructible_v<T>); // strengthened
+    static_assert(is_nothrow_copy_assignable_v<R> == is_nothrow_copy_assignable_v<T>); // strengthened
+    static_assert(is_nothrow_move_constructible_v<R> == is_nothrow_move_constructible_v<T>); // strengthened
+    static_assert(is_nothrow_move_assignable_v<R> == is_nothrow_move_assignable_v<T>); // strengthened
 
     if constexpr (!bounded) {
         static_assert(same_as<ranges::range_difference_t<R>, ptrdiff_t>);
+        static_assert(same_as<ranges::sentinel_t<R>, unreachable_sentinel_t>);
     } else if constexpr (_Signed_integer_like<B>) {
         static_assert(same_as<ranges::range_difference_t<R>, B>);
     } else {
@@ -65,13 +57,12 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
         same_as<ranges::iterator_t<const ranges::repeat_view<T, B>>, ranges::iterator_t<ranges::repeat_view<T, B>>>);
 
     static_assert(same_as<ranges::range_difference_t<const R>, ranges::range_difference_t<R>>);
-    static_assert(same_as<ranges::sentinel_t<ranges::repeat_view<T>>, unreachable_sentinel_t>);
 
     static_assert(CanSize<ranges::repeat_view<T, B>> == bounded);
 
     const same_as<R> auto rng = views::repeat(val, bound);
     static_assert(
-        noexcept(views::repeat(val, bound)) == is_nothrow<is_nothrow_copy_constructible, T, B>()); // strengthened
+        noexcept(views::repeat(val, bound)) == is_nothrow_copy_constructible_v<T>); // strengthened
 
     if constexpr (bounded) {
         B i = 0;
@@ -81,9 +72,9 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
         }
         assert(i == bound);
 
-        static_assert(noexcept(rng.end()) == is_nothrow<is_nothrow_copy_constructible, B>()); // strengthened
+        static_assert(noexcept(rng.end())); // strengthened
         assert(cmp_equal(rng.size(), bound));
-        static_assert(noexcept(rng.size()) == is_nothrow<is_nothrow_copy_constructible, B>()); // strengthened
+        static_assert(noexcept(rng.size())); // strengthened
 
         constexpr int amount   = 3;
         const auto size        = ranges::distance(rng);
