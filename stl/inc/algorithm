@@ -467,7 +467,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty> //
+            if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty>
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
                     if (!_Within_limits(_First, _Val)) {
@@ -9426,7 +9426,7 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr> //
+        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
@@ -9547,7 +9547,7 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr> //
+        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
@@ -9702,7 +9702,7 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr> //
+        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);

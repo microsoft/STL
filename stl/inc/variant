@@ -1027,9 +1027,9 @@ public:
         // initialize alternative _Idx from _Ilist and _Args...
     }
 
-    template <class _Ty, enable_if_t<!is_same_v<_Remove_cvref_t<_Ty>, variant> //
-                                         && is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty> //
-                                         && is_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>, //
+    template <class _Ty, enable_if_t<!is_same_v<_Remove_cvref_t<_Ty>, variant>
+                                         && is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>
+                                         && is_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>,
                              int> = 0>
     _CONSTEXPR20 variant& operator=(_Ty&& _Obj) noexcept(
         is_nothrow_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>&&

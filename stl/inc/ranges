@@ -141,9 +141,9 @@ namespace ranges {
 
         _EXPORT_STD template <class _Left, class _Right>
             requires _Range_adaptor_closure_object<_Right>
-                  && range<_Left> //
+                  && range<_Left>
                      _NODISCARD constexpr auto operator|(_Left&& __l, _Right&& __r) noexcept(
-                         noexcept(_STD forward<_Right>(__r)(_STD forward<_Left>(__l)))) //
+                         noexcept(_STD forward<_Right>(__r)(_STD forward<_Left>(__l))))
                          requires requires { static_cast<_Right&&>(__r)(static_cast<_Left&&>(__l)); }
         {
             return _STD forward<_Right>(__r)(_STD forward<_Left>(__l));
@@ -3318,11 +3318,11 @@ namespace ranges {
         template <forward_range _Outer, forward_range _Inner>
         struct _Category_base<_Outer, _Inner, true> {
             using iterator_category =
-                conditional_t<common_range<_Inner> //
-                                  && derived_from<_Iter_cat_t<iterator_t<_Outer>>, bidirectional_iterator_tag> //
+                conditional_t<common_range<_Inner>
+                                  && derived_from<_Iter_cat_t<iterator_t<_Outer>>, bidirectional_iterator_tag>
                                   && derived_from<_Iter_cat_t<iterator_t<_Inner>>, bidirectional_iterator_tag>,
                     bidirectional_iterator_tag,
-                    conditional_t<derived_from<_Iter_cat_t<iterator_t<_Outer>>, forward_iterator_tag> //
+                    conditional_t<derived_from<_Iter_cat_t<iterator_t<_Outer>>, forward_iterator_tag>
                                       && derived_from<_Iter_cat_t<iterator_t<_Inner>>, forward_iterator_tag>,
                         forward_iterator_tag, input_iterator_tag>>;
         };
@@ -3650,8 +3650,8 @@ namespace ranges {
 #if _HAS_CXX23
     template <class _Rng, class _Pat>
     concept _Compatible_joinable_ranges =
-        common_with<range_value_t<_Rng>, range_value_t<_Pat>> //
-        && common_reference_with<range_reference_t<_Rng>, range_reference_t<_Pat>> //
+        common_with<range_value_t<_Rng>, range_value_t<_Pat>>
+        && common_reference_with<range_reference_t<_Rng>, range_reference_t<_Pat>>
         && common_reference_with<range_rvalue_reference_t<_Rng>, range_rvalue_reference_t<_Pat>>;
 
     template <class _Rng, class _Pat> // TRANSITION, LLVM-47414
@@ -3659,7 +3659,7 @@ namespace ranges {
         input_range<const _Rng> && forward_range<const _Pat> && is_reference_v<range_reference_t<const _Rng>>;
 
     _EXPORT_STD template <input_range _Vw, forward_range _Pat>
-        requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat> //
+        requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat>
               && _Compatible_joinable_ranges<range_reference_t<_Vw>, _Pat>
     class join_with_view;
 
@@ -3684,7 +3684,7 @@ namespace ranges {
     class _Join_with_view_base<_Vw, _Pat> : public view_interface<join_with_view<_Vw, _Pat>> {};
 
     _EXPORT_STD template <input_range _Vw, forward_range _Pat>
-        requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat> //
+        requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat>
               && _Compatible_joinable_ranges<range_reference_t<_Vw>, _Pat>
     class join_with_view : public _Join_with_view_base<_Vw, _Pat> {
     private:
@@ -3701,7 +3701,7 @@ namespace ranges {
         struct _Category_base {};
 
         template <bool _Const>
-            requires forward_range<_Maybe_const<_Const, _Vw>> && forward_range<_InnerRng<_Const>> //
+            requires forward_range<_Maybe_const<_Const, _Vw>> && forward_range<_InnerRng<_Const>>
                   && is_reference_v<_InnerRng<_Const>>
         struct _Category_base<_Const> {
             using _Outer       = _Maybe_const<_Const, _Vw>;
@@ -3711,13 +3711,13 @@ namespace ranges {
             using iterator_category = conditional_t<
                 !is_lvalue_reference_v<common_reference_t<range_reference_t<_Inner>, range_reference_t<_PatternBase>>>,
                 input_iterator_tag,
-                conditional_t<common_range<_Inner> && common_range<_PatternBase> //
-                                  && derived_from<_Iter_cat_t<iterator_t<_Outer>>, bidirectional_iterator_tag> //
-                                  && derived_from<_Iter_cat_t<iterator_t<_Inner>>, bidirectional_iterator_tag> //
+                conditional_t<common_range<_Inner> && common_range<_PatternBase>
+                                  && derived_from<_Iter_cat_t<iterator_t<_Outer>>, bidirectional_iterator_tag>
+                                  && derived_from<_Iter_cat_t<iterator_t<_Inner>>, bidirectional_iterator_tag>
                                   && derived_from<_Iter_cat_t<iterator_t<_PatternBase>>, bidirectional_iterator_tag>,
                     bidirectional_iterator_tag,
-                    conditional_t<derived_from<_Iter_cat_t<iterator_t<_Outer>>, forward_iterator_tag> //
-                                      && derived_from<_Iter_cat_t<iterator_t<_Inner>>, forward_iterator_tag> //
+                    conditional_t<derived_from<_Iter_cat_t<iterator_t<_Outer>>, forward_iterator_tag>
+                                      && derived_from<_Iter_cat_t<iterator_t<_Inner>>, forward_iterator_tag>
                                       && derived_from<_Iter_cat_t<iterator_t<_PatternBase>>, forward_iterator_tag>,
                         forward_iterator_tag, input_iterator_tag>>>;
         };
@@ -4016,7 +4016,7 @@ namespace ranges {
 
             constexpr _Sentinel(_Sentinel<!_Const> _Se) noexcept(
                 is_nothrow_constructible_v<sentinel_t<_Base>, sentinel_t<_Vw>>) // strengthened
-                requires _Const && convertible_to<sentinel_t<_Vw>, sentinel_t<_Base>> //
+                requires _Const && convertible_to<sentinel_t<_Vw>, sentinel_t<_Base>>
                 : _Last{_STD move(_Se._Last)} {}
 
             template <bool _OtherConst>
@@ -5776,8 +5776,8 @@ namespace ranges {
                 is_nothrow_constructible_v<_Base_iterator, typename _Iterator<!_Const>::_Base_iterator> //
                     && is_nothrow_constructible_v<_Base_sentinel, typename _Iterator<!_Const>::_Base_sentinel> //
                 ) /* strengthened */
-                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iterator> //
-                          && convertible_to<sentinel_t<_Vw>, _Base_sentinel> //
+                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iterator>
+                          && convertible_to<sentinel_t<_Vw>, _Base_sentinel>
                 : _Current(_STD move(_Other._Current)), _End(_STD move(_Other._End)), _Count(_Other._Count),
                   _Missing(_Other._Missing) {}
 
@@ -6147,7 +6147,7 @@ namespace ranges {
 
             constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(is_nothrow_constructible_v<_Base_iterator,
                 typename _Iterator<!_Const>::_Base_iterator>) /* strengthened */
-                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iterator> //
+                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iterator>
                 : _Current(_STD move(_Other._Current)), _Count(_Other._Count) {}
 
             _NODISCARD constexpr value_type operator*() const
@@ -6865,7 +6865,7 @@ namespace ranges {
                 return _Left._Current <=> _Right._Current;
             }
 
-            _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _It, const difference_type _Off) //
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _It, const difference_type _Off)
                 requires random_access_range<_Base>
             {
                 auto _Copy = _It;
@@ -6873,7 +6873,7 @@ namespace ranges {
                 return _Copy;
             }
 
-            _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, const _Iterator& _It) //
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, const _Iterator& _It)
                 requires random_access_range<_Base>
             {
                 auto _Copy = _It;
@@ -6881,7 +6881,7 @@ namespace ranges {
                 return _Copy;
             }
 
-            _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off) //
+            _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off)
                 requires random_access_range<_Base>
             {
                 auto _Copy = _It;
@@ -6925,7 +6925,7 @@ namespace ranges {
             }
 
             friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_RANGES iter_swap(_Left._Current, _Right._Current))) //
+                noexcept(_RANGES iter_swap(_Left._Current, _Right._Current)))
                 requires indirectly_swappable<_Base_iterator>
             {
                 return _RANGES iter_swap(_Left._Current, _Right._Current);

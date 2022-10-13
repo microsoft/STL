@@ -1096,7 +1096,7 @@ private:
 
     template <class _Kx>
     static constexpr bool _Noexcept_heterogeneous_erasure() {
-        return _Nothrow_hash<_Traits, _Kx> //
+        return _Nothrow_hash<_Traits, _Kx>
             && (!_Multi || (_Nothrow_compare<_Traits, key_type, _Kx> && _Nothrow_compare<_Traits, _Kx, key_type>) );
     }
 

@@ -1856,7 +1856,7 @@ namespace ranges {
 
     template <class _Wrapped>
     concept _Weakly_unwrappable =
-        same_as<typename remove_cvref_t<_Wrapped>::_Prevent_inheriting_unwrap, remove_cvref_t<_Wrapped>> //
+        same_as<typename remove_cvref_t<_Wrapped>::_Prevent_inheriting_unwrap, remove_cvref_t<_Wrapped>>
         && requires(_Wrapped&& _Wr) { _STD forward<_Wrapped>(_Wr)._Unwrapped(); };
 
     template <class _Sent>
@@ -3764,7 +3764,7 @@ struct _Trivial_cat {
         // If _UDest is bool, _USource also needs to be bool
         // Conversion from non-bool => non-bool | bool => bool | bool => non-bool is fine.
         // Conversion from non-bool => bool is not fine.
-        && is_same_v<bool, _USource> >= is_same_v<bool, _UDest> //
+        && is_same_v<bool, _USource> >= is_same_v<bool, _UDest>
         && (is_same_v<_USource, _UDest> || (is_integral_v<_USource> && is_integral_v<_UDest>)
             || (is_floating_point_v<_USource> && is_floating_point_v<_UDest>) );
 
@@ -4835,7 +4835,7 @@ struct _Lex_compare_memcmp_classify_pred {
 
 template <class _Elem1, class _Elem2, class _Elem3>
 struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, less<_Elem3>> {
-    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem3, _Elem3> //
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem3, _Elem3>
                                     && _Iter_copy_cat<_Elem1*, _Elem3*>::_Bitcopy_constructible
                                     && _Iter_copy_cat<_Elem2*, _Elem3*>::_Bitcopy_constructible,
         less<int>, void>;
@@ -4848,7 +4848,7 @@ struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, less<>> {
 
 template <class _Elem1, class _Elem2, class _Elem3>
 struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, greater<_Elem3>> {
-    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem3, _Elem3> //
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem3, _Elem3>
                                     && _Iter_copy_cat<_Elem1*, _Elem3*>::_Bitcopy_constructible
                                     && _Iter_copy_cat<_Elem2*, _Elem3*>::_Bitcopy_constructible,
         greater<int>, void>;
@@ -5981,7 +5981,7 @@ _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last
 #if _USE_STD_VECTOR_ALGORITHMS
     using _Elem1 = remove_reference_t<_Iter_ref_t<_FwdIt1>>;
     using _Elem2 = remove_reference_t<_Iter_ref_t<_FwdIt2>>;
-    if constexpr (is_same_v<_Elem1, _Elem2> && _Is_trivially_swappable_v<_Elem1> //
+    if constexpr (is_same_v<_Elem1, _Elem2> && _Is_trivially_swappable_v<_Elem1>
                   && _Iterators_are_contiguous<_FwdIt1, _FwdIt2>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())

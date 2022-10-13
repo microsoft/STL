@@ -87,7 +87,7 @@ public:
         _Swap_adl(_Unexpected, _Other._Unexpected);
     }
 
-    friend constexpr void swap(unexpected& _Left, unexpected& _Right) noexcept(is_nothrow_swappable_v<_Err>) //
+    friend constexpr void swap(unexpected& _Left, unexpected& _Right) noexcept(is_nothrow_swappable_v<_Err>)
         requires is_swappable_v<_Err>
     {
         _Left.swap(_Right);
@@ -95,7 +95,7 @@ public:
 
     // [expected.un.eq]
     template <class _UErr>
-    _NODISCARD_FRIEND constexpr bool operator==(const unexpected& _Left, const unexpected<_UErr>& _Right) noexcept( //
+    _NODISCARD_FRIEND constexpr bool operator==(const unexpected& _Left, const unexpected<_UErr>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
         return _Left._Unexpected == _Right.error();
     }
@@ -186,7 +186,7 @@ public:
 
     // [expected.object.ctor]
     constexpr expected() noexcept(is_nothrow_default_constructible_v<_Ty>) // strengthened
-        requires is_default_constructible_v<_Ty> //
+        requires is_default_constructible_v<_Ty>
         : _Value(), _Has_value(true) {}
 
     constexpr expected(const expected& _Other) noexcept(
@@ -238,7 +238,7 @@ public:
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>>;
 
     template <class _Uty, class _UErr>
-        requires is_constructible_v<_Ty, const _Uty&> && is_constructible_v<_Err, const _UErr&> //
+        requires is_constructible_v<_Ty, const _Uty&> && is_constructible_v<_Err, const _UErr&>
               && _Allow_unwrapping<_Uty, _UErr>
     constexpr explicit(!is_convertible_v<const _Uty&, _Ty> || !is_convertible_v<const _UErr&, _Err>)
         expected(const expected<_Uty, _UErr>& _Other) noexcept(is_nothrow_constructible_v<_Ty, const _Uty&> //
@@ -783,9 +783,9 @@ public:
     // clang-format on
 
     template <class _Uty, class _UErr>
-    static constexpr bool _Allow_unwrapping = !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>&> //
-                                           && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>> //
-                                           && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>&> //
+    static constexpr bool _Allow_unwrapping = !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>&>
+                                           && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>>
+                                           && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>&>
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>>;
 
     template <class _Uty, class _UErr>
@@ -869,7 +869,7 @@ public:
     }
 
     constexpr expected& operator=(expected&& _Other) noexcept(
-        is_nothrow_move_constructible_v<_Err>&& is_nothrow_move_assignable_v<_Err>) //
+        is_nothrow_move_constructible_v<_Err>&& is_nothrow_move_assignable_v<_Err>)
         requires is_move_assignable_v<_Err> && is_move_constructible_v<_Err>
     {
         if (_Has_value && _Other._Has_value) {
@@ -953,7 +953,7 @@ public:
     }
 
     friend constexpr void swap(expected& _Left, expected& _Right) noexcept(
-        is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>) //
+        is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>)
         requires is_swappable_v<_Err> && is_move_constructible_v<_Err>
     {
         if (_Left._Has_value && _Right._Has_value) {

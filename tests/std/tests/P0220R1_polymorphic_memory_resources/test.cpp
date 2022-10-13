@@ -1348,7 +1348,7 @@ namespace {
         } // namespace allocate_deallocate
 
         namespace release {
-            void test() { //
+            void test() {
                 recording_resource rr;
                 std::pmr::unsynchronized_pool_resource upr{{0_zu, sizeof(void*) << 8}, &rr};
 
