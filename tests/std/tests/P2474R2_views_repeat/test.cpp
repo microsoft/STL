@@ -123,13 +123,13 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
         I tmp = first;
         static_assert(is_nothrow_copy_constructible_v<I>);
 
-        I i = std::move(tmp);
+        I i = move(tmp);
         static_assert(is_nothrow_move_constructible_v<I>);
 
         tmp = i;
         static_assert(is_nothrow_copy_assignable_v<I>);
 
-        i = std::move(tmp);
+        i = move(tmp);
         static_assert(is_nothrow_move_assignable_v<I>);
     }
 
@@ -245,11 +245,11 @@ struct tuple_tester {
     // clang doesn't support parenthesized initialization of aggregates
     // TRANSITION ???
     template <class T, class U>
-    constexpr tuple_tester(T&& a, U&& b) : y{std::forward<T>(a)}, z{std::forward<U>(b)} {}
+    constexpr tuple_tester(T&& a, U&& b) : y{forward<T>(a)}, z{forward<U>(b)} {}
 };
 
 constexpr bool test() {
-    using namespace std::string_literals;
+    using namespace string_literals;
 
     test_common(7, 5);
     test_common(7, 2);
@@ -264,13 +264,13 @@ constexpr bool test() {
 
     {
         move_tester to_move;
-        (void) views::repeat(std::move(to_move));
+        (void) views::repeat(move(to_move));
         assert(to_move.x == 1);
     }
     {
         forward_tester to_copy;
         forward_tester to_move;
-        ranges::repeat_view<tuple_tester> r(piecewise_construct, forward_as_tuple(to_copy, std::move(to_move)));
+        ranges::repeat_view<tuple_tester> r(piecewise_construct, forward_as_tuple(to_copy, move(to_move)));
         const auto& i = *r.begin();
         assert(i.y.x == 1);
         assert(i.z.x == 2);
