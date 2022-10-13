@@ -30,31 +30,31 @@ struct Transform : BaseTransform {
     using BaseTransform::BaseTransform;
 
     Transform(const Transform&) noexcept(CCtor == Nothrow) //
-        requires(CCtor != Deleted)
+        requires (CCtor != Deleted)
     = default;
     Transform(const Transform&)
-        requires(CCtor == Deleted)
+        requires (CCtor == Deleted)
     = delete;
 
     Transform(Transform&&) noexcept(MCtor == Nothrow) //
-        requires(MCtor != Deleted)
+        requires (MCtor != Deleted)
     = default;
     Transform(Transform&&)
-        requires(MCtor == Deleted)
+        requires (MCtor == Deleted)
     = delete;
 
     Transform& operator=(const Transform&) noexcept(CAssign == Nothrow) //
-        requires(CAssign != Deleted)
+        requires (CAssign != Deleted)
     = default;
     Transform& operator=(const Transform&)
-        requires(CAssign == Deleted)
+        requires (CAssign == Deleted)
     = delete;
 
     Transform& operator=(Transform&&) noexcept(MAssign == Nothrow) //
-        requires(MAssign != Deleted)
+        requires (MAssign != Deleted)
     = default;
     Transform& operator=(Transform&&)
-        requires(MAssign == Deleted)
+        requires (MAssign == Deleted)
     = delete;
 };
 

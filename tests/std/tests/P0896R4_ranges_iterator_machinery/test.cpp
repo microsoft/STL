@@ -291,7 +291,7 @@ inline constexpr std::size_t destructible_archetype_max = 1;
 template <std::size_t I>
 struct semiregular_archetype : destructible_archetype<I> {
     semiregular_archetype()
-        requires(I != 5);
+        requires (I != 5);
     COPYABLE_OPS(semiregular);
 };
 
@@ -341,7 +341,7 @@ template <std::size_t I>
 struct incrementable_archetype : weakly_incrementable_archetype<I>,
                                  increment_ops<I, incrementable_archetype<I>, incrementable_archetype<I>> {
     incrementable_archetype()
-        requires(I != 11);
+        requires (I != 11);
     COPYABLE_OPS(incrementable);
     using increment_ops<I, incrementable_archetype<I>, incrementable_archetype<I>>::operator++;
 
@@ -372,7 +372,7 @@ inline constexpr std::size_t iterator_archetype_max = 12;
 template <std::size_t I>
 struct sentinel_archetype : semiregular_archetype<I> {
     sentinel_archetype()
-        requires(I != 5);
+        requires (I != 5);
     COPYABLE_OPS(sentinel);
 
     // clang-format off
@@ -387,7 +387,7 @@ inline constexpr std::size_t sentinel_archetype_max = 7;
 template <std::size_t I>
 struct sized_sentinel_archetype : sentinel_archetype<I> {
     sized_sentinel_archetype()
-        requires(I != 5);
+        requires (I != 5);
     COPYABLE_OPS(sized_sentinel);
 };
 
@@ -475,7 +475,7 @@ template <std::size_t I>
 struct forward_iterator_archetype : input_iterator_archetype<I>,
                                     increment_ops<I, forward_iterator_archetype<I>, forward_iterator_archetype<I>> {
     forward_iterator_archetype()
-        requires(I != 16);
+        requires (I != 16);
     COPYABLE_OPS(forward_iterator);
     using increment_ops<I, forward_iterator_archetype<I>, forward_iterator_archetype<I>>::operator++;
 
@@ -502,7 +502,7 @@ struct bidi_iterator_archetype : forward_iterator_archetype<I>,
                                  increment_ops<I, bidi_iterator_archetype<I>, bidi_iterator_archetype<I>>,
                                  decrement_ops<I, bidi_iterator_archetype<I>> {
     bidi_iterator_archetype()
-        requires(I != 16);
+        requires (I != 16);
     COPYABLE_OPS(bidi_iterator);
     using increment_ops<I, bidi_iterator_archetype<I>, bidi_iterator_archetype<I>>::operator++;
 };
@@ -514,7 +514,7 @@ struct random_iterator_archetype : bidi_iterator_archetype<I>,
                                    increment_ops<I, random_iterator_archetype<I>, random_iterator_archetype<I>>,
                                    decrement_ops<I, random_iterator_archetype<I>> {
     random_iterator_archetype()
-        requires(I != 16);
+        requires (I != 16);
     COPYABLE_OPS(random_iterator);
     using increment_ops<I, random_iterator_archetype<I>, random_iterator_archetype<I>>::operator++;
     using decrement_ops<I, random_iterator_archetype<I>>::operator--;
@@ -564,7 +564,7 @@ struct contig_iterator_archetype : increment_ops<I, contig_iterator_archetype<I>
                                    decrement_ops<I, contig_iterator_archetype<I>>,
                                    contig_iterator_archetype_types<I> {
     contig_iterator_archetype()
-        requires(I != 16);
+        requires (I != 16);
     COPYABLE_OPS(contig_iterator);
     using increment_ops<I, contig_iterator_archetype<I>, contig_iterator_archetype<I>>::operator++;
     using decrement_ops<I, contig_iterator_archetype<I>>::operator--;

@@ -4178,7 +4178,7 @@ public:
     }
 
     operator void**() const noexcept
-        requires(!is_same_v<_Pointer, void*>)
+        requires (!is_same_v<_Pointer, void*>)
     {
         static_assert(is_pointer_v<_Pointer>, "conversion of out_ptr_t<Smart, Pointer, Args...> to void** requires "
                                               "Pointer to be a raw pointer (N4892 [out.ptr.t]/13)");
@@ -4262,7 +4262,7 @@ public:
     }
 
     operator void**() const noexcept
-        requires(!is_same_v<_Pointer, void*>)
+        requires (!is_same_v<_Pointer, void*>)
     {
         static_assert(is_pointer_v<_Pointer>, "conversion of inout_ptr_t<Smart, Pointer, Args...> to void** requires "
                                               "Pointer to be a raw pointer (N4892 [inout.ptr.t]/15)");

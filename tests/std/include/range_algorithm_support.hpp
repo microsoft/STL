@@ -139,7 +139,7 @@ namespace test {
         }
 
         [[nodiscard]] constexpr auto _Unwrapped() const noexcept
-            requires(is_wrapped(Wrapped))
+            requires (is_wrapped(Wrapped))
         {
             return unwrap{ptr_};
         }
@@ -147,7 +147,7 @@ namespace test {
         static constexpr bool _Unwrap_when_unverified = true;
 
         constexpr void _Seek_to(unwrap const& s) noexcept
-            requires(is_wrapped(Wrapped))
+            requires (is_wrapped(Wrapped))
         {
             ptr_ = s.peek();
         }
@@ -528,25 +528,25 @@ namespace test {
 
         // sentinel operations (implied by forward iterator):
         iterator(iterator const&)
-            requires(to_bool(Eq))
+            requires (to_bool(Eq))
         = default;
         iterator& operator=(iterator const&)
-            requires(to_bool(Eq))
+            requires (to_bool(Eq))
         = default;
 
         constexpr operator Consterator() const& noexcept
-            requires(to_bool(Eq))
+            requires (to_bool(Eq))
         {
             return Consterator{ptr_};
         }
 
         [[nodiscard]] constexpr boolish operator==(iterator const& that) const noexcept
-            requires(to_bool(Eq))
+            requires (to_bool(Eq))
         {
             return {ptr_ == that.ptr_};
         }
         [[nodiscard]] constexpr boolish operator!=(iterator const& that) const noexcept
-            requires(to_bool(Eq))
+            requires (to_bool(Eq))
         {
             return !(*this == that);
         }
@@ -665,13 +665,13 @@ namespace test {
         using unwrapping_ignorant = iterator<Category, Element, Diff, Eq, Proxy, WrappedState::ignorant>;
 
         [[nodiscard]] constexpr auto _Unwrapped() const& noexcept
-            requires(is_wrapped(Wrapped) && to_bool(Eq))
+            requires (is_wrapped(Wrapped) && to_bool(Eq))
         {
             return unwrap{ptr_};
         }
 
         [[nodiscard]] constexpr auto _Unwrapped() && noexcept
-            requires(is_wrapped(Wrapped))
+            requires (is_wrapped(Wrapped))
         {
             return unwrap{exchange(ptr_, nullptr)};
         }
@@ -679,7 +679,7 @@ namespace test {
         static constexpr bool _Unwrap_when_unverified = true;
 
         constexpr void _Seek_to(unwrap const& i) noexcept
-            requires(is_wrapped(Wrapped) && to_bool(Eq))
+            requires (is_wrapped(Wrapped) && to_bool(Eq))
         {
             if constexpr (at_least<contiguous>) {
                 ptr_ = i;
@@ -689,7 +689,7 @@ namespace test {
         }
 
         constexpr void _Seek_to(unwrap&& i) noexcept
-            requires(is_wrapped(Wrapped))
+            requires (is_wrapped(Wrapped))
         {
             if constexpr (at_least<contiguous>) {
                 ptr_ = i;

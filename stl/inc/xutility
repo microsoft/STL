@@ -1272,7 +1272,7 @@ public:
         noexcept(is_nothrow_copy_constructible_v<_BidIt>&& noexcept(--(_STD declval<_BidIt&>()))
                  && _Has_nothrow_operator_arrow<_BidIt&, pointer>) /* strengthened */
 #ifdef __cpp_lib_concepts
-        requires(is_pointer_v<_BidIt> || requires(const _BidIt __i) { __i.operator->(); })
+        requires (is_pointer_v<_BidIt> || requires(const _BidIt __i) { __i.operator->(); })
 #endif
     {
         _BidIt _Tmp = current;
@@ -2650,7 +2650,7 @@ namespace ranges {
         using _Not_quite_object::_Not_quite_object;
 
         template <class _It, sentinel_for<_It> _Se>
-            requires(!sized_sentinel_for<_Se, _It>)
+            requires (!sized_sentinel_for<_Se, _It>)
         _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last) const
             noexcept(noexcept(_Distance_unchecked(_Get_unwrapped(_STD move(_First)),
                 _Get_unwrapped(_STD move(_Last))))) /* strengthened */ { // Per LWG-3664

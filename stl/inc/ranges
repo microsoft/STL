@@ -1710,7 +1710,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto begin() noexcept(noexcept(move_iterator{_RANGES begin(_Range)})) // strengthened
-            requires(!_Simple_view<_Vw>)
+            requires (!_Simple_view<_Vw>)
         {
             return move_iterator{_RANGES begin(_Range)};
         }
@@ -1722,7 +1722,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto end() noexcept(_Is_end_nothrow_v<_Vw>) // strengthened
-            requires(!_Simple_view<_Vw>)
+            requires (!_Simple_view<_Vw>)
         {
             if constexpr (common_range<_Vw>) {
                 return move_iterator{_RANGES end(_Range)};
@@ -1784,7 +1784,7 @@ namespace ranges {
 
         public:
             template <viewable_range _Rng>
-                requires(_Choice<_Rng>._Strategy != _St::_None)
+                requires (_Choice<_Rng>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
                 if constexpr (_Strat == _St::_All) {
@@ -7011,7 +7011,7 @@ namespace ranges {
 
         _NODISCARD constexpr auto begin() noexcept(
             noexcept(_RANGES begin(_Range)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
-            requires(!_Simple_view<_Vw>)
+            requires (!_Simple_view<_Vw>)
         {
             return _Iterator<false>{this, _RANGES begin(_Range)};
         }
@@ -7025,7 +7025,7 @@ namespace ranges {
 
         _NODISCARD constexpr auto end() noexcept(noexcept(_RANGES distance(_Range)) && noexcept(_RANGES end(_Range))
                                                  && is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
-            requires(!_Simple_view<_Vw>)
+            requires (!_Simple_view<_Vw>)
         {
             if constexpr (common_range<_Vw> && sized_range<_Vw> && forward_range<_Vw>) {
                 const auto _Missing =

@@ -51,7 +51,7 @@ struct helper {
     helper(second<Is, initializer_list<int>>... ils) : tup(ils...) {}
 
     helper(initializer_list<int> il)
-        requires(sizeof...(Is) > 1)
+        requires (sizeof...(Is) > 1)
         : tup(second_v<Is>(il.size())...) {
         get<0>(tup).v.assign(il);
     }
