@@ -443,7 +443,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         _NODISCARD constexpr iter_difference_t<_It> operator()(
@@ -458,7 +457,7 @@ namespace ranges {
         _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
             return _Count_unchecked(_Ubegin(_Range), _Uend(_Range), _Val, _Pass_fn(_Proj));
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Ty, class _Pj>
         _NODISCARD static constexpr iter_difference_t<_It> _Count_unchecked(
@@ -2882,7 +2881,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
@@ -2912,7 +2910,7 @@ namespace ranges {
             _Seek_wrapped(_First1, _STD move(_UResult));
             return _First1;
         }
-        // clang-format on
+
     private:
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr _It1 _Find_first_of_unchecked(_It1 _First1, const _Se1 _Last1, const _It2 _First2,
@@ -3773,7 +3771,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <permutable _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         _NODISCARD_REMOVE_ALG constexpr subrange<_It> operator()(
@@ -3794,7 +3791,7 @@ namespace ranges {
 
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Ty, class _Pj>
         _NODISCARD static constexpr subrange<_It> _Remove_unchecked(
@@ -3838,7 +3835,6 @@ namespace ranges {
             return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
-        // clang-format off
         template <forward_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
             requires permutable<iterator_t<_Rng>>
@@ -3848,7 +3844,7 @@ namespace ranges {
 
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Pr, class _Pj>
         _NODISCARD static constexpr subrange<_It> _Remove_if_unchecked(
@@ -4062,7 +4058,6 @@ namespace ranges {
             return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
-        // clang-format off
         template <forward_range _Rng, class _Pj = identity,
             indirect_equivalence_relation<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::equal_to>
             requires permutable<iterator_t<_Rng>>
@@ -4072,7 +4067,7 @@ namespace ranges {
 
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Pj, class _Pr>
         _NODISCARD static constexpr subrange<_It> _Unique_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
@@ -4928,7 +4923,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Urng>
             requires permutable<_It> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _It operator()(_It _First, _Se _Last, _Urng&& _Func) const {
@@ -4949,7 +4943,7 @@ namespace ranges {
 
             return _Rewrap_iterator(_Range, _Shuffle_unchecked(_Ubegin(_Range), _Uend(_Range), _RngFunc));
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Rng>
         _NODISCARD static _It _Shuffle_unchecked(_It _First, const _Se _Last, _Rng& _Func) {
