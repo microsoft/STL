@@ -156,9 +156,11 @@ void check_mem(const char* label, const char* file_name, int line_number, const 
     for (; 0 <= --n && *s1 == *s2; ++s1, ++s2) {
         ;
     }
+
     if (n <= 0) {
         ans = 1;
     }
+
     if (!terse && !ans) { // put differing strings
         CSTD printf(" GOT \"");
         for (n = length, s1 = (const char*) left; 0 <= --n; ++s1) {
@@ -211,9 +213,11 @@ void check_wmem(const char* label, const char* file_name, int line_number, const
     for (; 0 <= --n && *s1 == *s2; ++s1, ++s2) {
         ;
     }
+
     if (n <= 0) {
         ans = 1;
     }
+
     if (!terse && !ans) { // put differing strings
         CSTD printf(" GOT L\"");
         for (n = length; 0 <= --n; ++left) {
@@ -285,6 +289,7 @@ int leave_chk(const char* file_name) { // print summary on exit
     if (!terse || 0 < total_fail) {
         CSTD printf("***** %d erroneous test cases in %s *****\n", total_fail, file_name);
     }
+
     if (!terse) {
         CSTD printf("***** %d successful test cases in %s *****\n", total_pass, file_name);
     }
@@ -370,6 +375,7 @@ int approx2(Float_type d1, Float_type d2, Float_type sensitivity) { // test for 
             if (isnan(d1)) {
                 CSTD printf("approx(x, y): x is a NaN\n");
             }
+
             if (isnan(d2)) {
                 CSTD printf("approx(x, y): y is a NaN\n");
             }
@@ -385,6 +391,7 @@ int approx2(Float_type d1, Float_type d2, Float_type sensitivity) { // test for 
         } else {
             err = d1;
         }
+
         if (err < (Float_type) 0) {
             err = -err;
         }
