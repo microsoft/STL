@@ -73,13 +73,12 @@ namespace ranges {
         template <class _Ty>
         _Ty* _Derived_from_range_adaptor_closure(_Base<_Ty>&); // not defined
 
+        // clang-format off
         template <class _Ty>
-        concept _Range_adaptor_closure_object = !
-        range<remove_cvref_t<_Ty>>&& requires(remove_cvref_t<_Ty>& __t) {
-                                         {
-                                             _Pipe::_Derived_from_range_adaptor_closure(__t)
-                                             } -> same_as<remove_cvref_t<_Ty>*>;
-                                     };
+        concept _Range_adaptor_closure_object = !range<remove_cvref_t<_Ty>> && requires(remove_cvref_t<_Ty>& __t) {
+            { _Pipe::_Derived_from_range_adaptor_closure(__t) } -> same_as<remove_cvref_t<_Ty>*>;
+        };
+        // clang-format on
 
         template <class _ClosureLeft, class _ClosureRight>
         struct _Pipeline : _Base<_Pipeline<_ClosureLeft, _ClosureRight>> {
@@ -5105,14 +5104,13 @@ namespace ranges {
     } // namespace views
 
     template <class _Tuple, size_t _Index>
-    concept _Has_tuple_element = requires(_Tuple __t) {
-                                     typename tuple_size<_Tuple>::type;
-                                     requires _Index < tuple_size_v<_Tuple>;
-                                     typename tuple_element_t<_Index, _Tuple>;
-                                     // clang-format off
-        { _STD get<_Index>(__t) } -> convertible_to<const tuple_element_t<_Index, _Tuple>&>;
-                                     // clang-format on
-                                 };
+    concept _Has_tuple_element = //
+        requires(_Tuple __t) {
+            typename tuple_size<_Tuple>::type;
+            requires _Index < tuple_size_v<_Tuple>;
+            typename tuple_element_t<_Index, _Tuple>;
+            { _STD get<_Index>(__t) } -> convertible_to<const tuple_element_t<_Index, _Tuple>&>;
+        };
 
     template <class _Tuple, size_t _Index>
     concept _Returnable_element = is_reference_v<_Tuple> || move_constructible<tuple_element_t<_Index, _Tuple>>;
@@ -6133,12 +6131,10 @@ namespace ranges {
     concept _Slide_caches_nothing = random_access_range<_Vw> && sized_range<_Vw>;
 
     template <class _Vw>
-    concept _Slide_caches_last = !
-    _Slide_caches_nothing<_Vw>&& bidirectional_range<_Vw>&& common_range<_Vw>;
+    concept _Slide_caches_last = (!_Slide_caches_nothing<_Vw>) && bidirectional_range<_Vw> && common_range<_Vw>;
 
     template <class _Vw>
-    concept _Slide_caches_first = !
-    _Slide_caches_nothing<_Vw> && !_Slide_caches_last<_Vw>;
+    concept _Slide_caches_first = (!_Slide_caches_nothing<_Vw>) && (!_Slide_caches_last<_Vw>);
 
     _EXPORT_STD template <forward_range _Vw>
         requires view<_Vw>

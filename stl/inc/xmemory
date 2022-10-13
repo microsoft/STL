@@ -2342,8 +2342,8 @@ _EXPORT_STD struct from_range_t {
 _EXPORT_STD inline constexpr from_range_t from_range;
 
 template <class _Rng, class _Elem>
-concept _Container_compatible_range = _RANGES
-input_range<_Rng>&& convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
+concept _Container_compatible_range =
+    (_RANGES input_range<_Rng>) && convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
 
 template <_RANGES input_range _Rng>
 using _Range_key_type = remove_const_t<typename _RANGES range_value_t<_Rng>::first_type>;
