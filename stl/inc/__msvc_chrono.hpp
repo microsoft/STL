@@ -407,13 +407,11 @@ namespace chrono {
     }
 
 #ifdef __cpp_lib_concepts
-    // clang-format off
     _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2, class _Period2>
         requires three_way_comparable<typename common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>::rep>
     _NODISCARD constexpr auto
         operator<=>(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
-        // clang-format on
         using _CT = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
         return _CT(_Left).count() <=> _CT(_Right).count();
     }

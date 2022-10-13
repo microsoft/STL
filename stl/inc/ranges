@@ -833,13 +833,11 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT((same_as<decay_t<_Types>, _Types> && ...));
         _STL_INTERNAL_STATIC_ASSERT(is_empty_v<_Fn>&& is_default_constructible_v<_Fn>);
 
-        // clang-format off
         template <class... _UTypes>
             requires (same_as<decay_t<_UTypes>, _Types> && ...)
         constexpr explicit _Range_closure(_UTypes&&... _Args) noexcept(
             conjunction_v<is_nothrow_constructible<_Types, _UTypes>...>)
             : _Captures(_STD forward<_UTypes>(_Args)...) {}
-        // clang-format on
 
         void operator()(auto&&) &       = delete;
         void operator()(auto&&) const&  = delete;
@@ -1077,13 +1075,11 @@ namespace ranges {
         }
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1347136
-        // clang-format off
     private:
         template <class _Left, class _Right>
         static constexpr bool _Nothrow_plus_equal = noexcept(_STD declval<_Left&>() += _STD declval<const _Right&>());
         template <_Integer_like _Left, class _Right>
         static constexpr bool _Nothrow_plus_equal<_Left, _Right> = true;
-        // clang-format on
 
         template <class _Left, class _Right>
         static constexpr bool _Nothrow_minus_equal = noexcept(_STD declval<_Left&>() -= _STD declval<const _Right&>());
@@ -1462,13 +1458,11 @@ namespace ranges {
     namespace views {
         template <class _Ty>
         struct _Istream_fn {
-            // clang-format off
             template <class _StreamTy>
                 requires derived_from<_StreamTy,
                     basic_istream<typename _StreamTy::char_type, typename _StreamTy::traits_type>>
             _NODISCARD constexpr auto operator()(_StreamTy& _Stream) const
                 noexcept(is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {
-                // clang-format on
                 return basic_istream_view<_Ty, typename _StreamTy::char_type, typename _StreamTy::traits_type>(_Stream);
             }
         };
@@ -1534,11 +1528,9 @@ namespace ranges {
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<ref_view<_Rng>> = true;
 
-    // clang-format off
     _EXPORT_STD template <range _Rng>
         requires (movable<_Rng> && !_Is_initializer_list<_Rng>)
     class owning_view : public view_interface<owning_view<_Rng>> {
-        // clang-format on
     private:
         _Rng _Range{};
 
@@ -1653,11 +1645,9 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
 
         public:
-            // clang-format off
             template <viewable_range _Rng>
                 requires (_Choice<_Rng>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
-                // clang-format on
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
                 if constexpr (_Strat == _St::_View) {
@@ -2049,12 +2039,10 @@ namespace ranges {
                 return filter_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred));
             }
 
-            // clang-format off
             template <class _Pr>
                 requires constructible_from<decay_t<_Pr>, _Pr>
             _NODISCARD constexpr auto operator()(_Pr&& _Pred) const
                 noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
-                // clang-format on
                 return _Range_closure<_Filter_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
             }
         };
@@ -2530,12 +2518,10 @@ namespace ranges {
                 return transform_view(_STD forward<_Rng>(_Range), _STD move(_Fun));
             }
 
-            // clang-format off
             template <class _Fn>
                 requires constructible_from<decay_t<_Fn>, _Fn>
             _NODISCARD constexpr auto operator()(_Fn&& _Fun) const
                 noexcept(is_nothrow_constructible_v<decay_t<_Fn>, _Fn>) {
-                // clang-format on
                 return _Range_closure<_Transform_fn, decay_t<_Fn>>{_STD forward<_Fn>(_Fun)};
             }
         };
@@ -2587,12 +2573,10 @@ namespace ranges {
                 return _Left.count() == 0 || _Left.base() == _Right._Last;
             }
 
-            // clang-format off
             template <bool _OtherConst = !_Const>
                 requires sentinel_for<_Base_sentinel, _Base_iterator<_OtherConst>>
             _NODISCARD_FRIEND constexpr bool operator==(
                 const _Counted_iter<_OtherConst>& _Left, const _Sentinel& _Right) {
-                // clang-format on
                 return _Left.count() == 0 || _Left.base() == _Right._Last;
             }
 
@@ -2859,12 +2843,10 @@ namespace ranges {
                 return _Right._Last == _Left || !_STD invoke(*_Right._Pred, *_Left);
             }
 
-            // clang-format off
             template <bool _OtherConst = !_Const>
                 requires sentinel_for<_Base_sentinel, _Maybe_const_iter<_OtherConst>>
             _NODISCARD_FRIEND constexpr bool operator==(
                 const _Maybe_const_iter<_OtherConst>& _Left, const _Sentinel& _Right) {
-                // clang-format on
                 return _Right._Last == _Left || !_STD invoke(*_Right._Pred, *_Left);
             }
 
@@ -2975,12 +2957,10 @@ namespace ranges {
                 return take_while_view(_STD forward<_Rng>(_Range), _STD move(_Pred));
             }
 
-            // clang-format off
             template <class _Pr>
                 requires constructible_from<decay_t<_Pr>, _Pr>
             _NODISCARD constexpr auto operator()(_Pr&& _Pred) const
                 noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
-                // clang-format on
                 return _Range_closure<_Take_while_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
             }
         };
@@ -3185,12 +3165,10 @@ namespace ranges {
                 }
             }
 
-            // clang-format off
             template <class _Ty>
                 requires constructible_from<decay_t<_Ty>, _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Length) const
                 noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
-                // clang-format on
                 return _Range_closure<_Drop_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Length)};
             }
         };
@@ -3270,12 +3248,10 @@ namespace ranges {
                 return drop_while_view(_STD forward<_Rng>(_Range), _STD move(_Pred));
             }
 
-            // clang-format off
             template <class _Pr>
                 requires constructible_from<decay_t<_Pr>, _Pr>
             _NODISCARD constexpr auto operator()(_Pr&& _Pred) const
                 noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
-                // clang-format on
                 return _Range_closure<_Drop_while_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
             }
         };
@@ -4142,12 +4118,10 @@ namespace ranges {
                 return join_with_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern));
             }
 
-            // clang-format off
             template <class _Delim>
                 requires constructible_from<decay_t<_Delim>, _Delim>
             _NODISCARD constexpr auto operator()(_Delim&& _Delimiter) const
                 noexcept(is_nothrow_constructible_v<decay_t<_Delim>, _Delim>) {
-                // clang-format on
                 return _Range_closure<_Join_with_fn, decay_t<_Delim>>{_STD forward<_Delim>(_Delimiter)};
             }
         };
@@ -4281,11 +4255,9 @@ namespace ranges {
                 requires forward_range<_BaseTy>
                 : _Mybase{_STD move(_Current_)}, _Parent{_STD addressof(_Parent_)} {}
 
-            // clang-format off
             constexpr _Outer_iter(_Outer_iter<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_BaseTy>>
                 : _Mybase{_STD move(_It._Current)}, _Parent{_It._Parent} {}
-            // clang-format on
 
             _NODISCARD constexpr auto operator*() const noexcept(noexcept(value_type{*this})) /* strengthened */ {
                 return value_type{*this};
@@ -4569,12 +4541,10 @@ namespace ranges {
                 return lazy_split_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern));
             }
 
-            // clang-format off
             template <class _Delim>
                 requires constructible_from<decay_t<_Delim>, _Delim>
             _NODISCARD constexpr auto operator()(_Delim&& _Delimiter) const
                 noexcept(is_nothrow_constructible_v<decay_t<_Delim>, _Delim>) {
-                // clang-format on
                 return _Range_closure<_Lazy_split_fn, decay_t<_Delim>>{_STD forward<_Delim>(_Delimiter)};
             }
         };
@@ -4769,12 +4739,10 @@ namespace ranges {
                 return split_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern));
             }
 
-            // clang-format off
             template <class _Delim>
                 requires constructible_from<decay_t<_Delim>, _Delim>
             _NODISCARD constexpr auto operator()(_Delim&& _Delimiter) const
                 noexcept(is_nothrow_constructible_v<decay_t<_Delim>, _Delim>) {
-                // clang-format on
                 return _Range_closure<_Split_fn, decay_t<_Delim>>{_STD forward<_Delim>(_Delimiter)};
             }
         };
@@ -4830,11 +4798,9 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Counted_fn counted;
     } // namespace views
 
-    // clang-format off
     _EXPORT_STD template <view _Vw>
         requires (!common_range<_Vw> && copyable<iterator_t<_Vw>>)
     class common_view : public view_interface<common_view<_Vw>> {
-        // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Base{};
 
@@ -4931,11 +4897,9 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
 
         public:
-            // clang-format off
             template <viewable_range _Rng>
                 requires (_Choice<_Rng>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
-                // clang-format on
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
                 if constexpr (_Strat == _St::_All) {
@@ -5079,11 +5043,9 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
 
         public:
-            // clang-format off
             template <viewable_range _Rng>
                 requires (_Choice<_Rng>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
-                // clang-format on
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
                 if constexpr (_Strat == _St::_Base) {
@@ -5167,12 +5129,10 @@ namespace ranges {
                 is_nothrow_move_constructible_v<iterator_t<_Base>>) // strengthened
                 : _Current{_STD move(_Current_)} {}
 
-            // clang-format off
             constexpr _Iterator(_Iterator<!_Const> _It) noexcept(
                 is_nothrow_constructible_v<iterator_t<_Base>, iterator_t<_Vw>>) // strengthened
                 requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_Base>>
                 : _Current{_STD move(_It._Current)} {}
-            // clang-format on
 
             _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept {
                 return _Current;
@@ -5409,12 +5369,10 @@ namespace ranges {
                 return _Last;
             }
 
-            // clang-format off
             template <bool _OtherConst>
                 requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
                 const _Sentinel& _Right) noexcept(noexcept(_Get_current(_Left) == _Right._Last)) /* strengthened */ {
-                // clang-format on
                 return _Get_current(_Left) == _Right._Last;
             }
 
@@ -6114,12 +6072,10 @@ namespace ranges {
                 return chunk_view(_STD forward<_Rng>(_Range), _Count);
             }
 
-            // clang-format off
             template <class _Ty>
                 requires constructible_from<decay_t<_Ty>, _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Count) const
                 noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
-                // clang-format on
                 return _Range_closure<_Chunk_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Count)};
             }
         };
@@ -6174,12 +6130,10 @@ namespace ranges {
             /* [[no_unique_address]] */ _Base_iterator _Current{};
             range_difference_t<_Base> _Count = 0;
 
-            // clang-format off
             constexpr _Iterator(_Base_iterator _Current_, range_difference_t<_Base> _Count_) noexcept(
                 is_nothrow_move_constructible_v<_Base_iterator>) /* strengthened */
                 requires (!_Slide_caches_first<_Base>)
                 : _Current(_STD move(_Current_)), _Count(_Count_) {}
-            // clang-format on
 
             constexpr _Iterator(_Base_iterator _Current_, _Base_iterator _Last_, range_difference_t<_Base> _Count_) //
                 noexcept(is_nothrow_move_constructible_v<_Base_iterator>) /* strengthened */
@@ -6500,12 +6454,10 @@ namespace ranges {
                 return slide_view(_STD forward<_Rng>(_Range), _Count);
             }
 
-            // clang-format off
             template <class _Ty>
                 requires constructible_from<decay_t<_Ty>, _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Count) const
                 noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
-                // clang-format on
                 return _Range_closure<_Slide_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Count)};
             }
         };
@@ -6701,12 +6653,10 @@ namespace ranges {
                 return chunk_by_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred));
             }
 
-            // clang-format off
             template <class _Pr>
                 requires constructible_from<decay_t<_Pr>, _Pr>
             _NODISCARD constexpr auto operator()(_Pr&& _Pred) const
                 noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
-                // clang-format on
                 return _Range_closure<_Chunk_by_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
             }
         };
@@ -7093,12 +7043,10 @@ namespace ranges {
                 return stride_view(_STD forward<_Rng>(_Range), _Stride);
             }
 
-            // clang-format off
             template <class _Ty>
                 requires constructible_from<decay_t<_Ty>, _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Stride) const
                 noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
-                // clang-format on
                 return _Range_closure<_Stride_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Stride)};
             }
         };
@@ -7158,11 +7106,9 @@ namespace ranges {
         }
     }
 
-    // clang-format off
     _EXPORT_STD template <class _Container, input_range _Rng, class... _Types>
         requires (!view<_Container>)
     _NODISCARD constexpr _Container to(_Rng&& _Range, _Types&&... _Args) {
-        // clang-format on
         if constexpr (_Converts_direct_constructible<_Rng, _Container, _Types...>) {
             return _Container(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
         } else if constexpr (_Converts_tag_constructible<_Rng, _Container, _Types...>) {
@@ -7198,13 +7144,11 @@ namespace ranges {
         }
     };
 
-    // clang-format off
     _EXPORT_STD template <class _Container, class... _Types>
         requires (!view<_Container>)
     _NODISCARD constexpr auto to(_Types&&... _Args) {
         return _Range_closure<_To_class_fn<_Container>, decay_t<_Types>...>{_STD forward<_Types>(_Args)...};
     }
-    // clang-format on
 
     template <input_range _Rng>
     struct _Phony_input_iterator {

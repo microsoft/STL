@@ -1606,13 +1606,11 @@ namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_move_result = in_out_result<_In, _Out>;
 
-    // clang-format off
     template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
         _No_throw_sentinel_for<_Out> _OSe>
         requires (constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>)
     uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
         _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
-        // clang-format on
         constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
         constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
         if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_constructible

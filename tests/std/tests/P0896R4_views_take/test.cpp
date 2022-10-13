@@ -72,11 +72,9 @@ struct mapped<ranges::iota_view<W, B>> {
     template <class>
     using apply = ranges::iota_view<W, W>;
 };
-// clang-format off
 template <class I, class S>
     requires random_access_iterator<I>
 struct mapped<ranges::subrange<I, S, ranges::subrange_kind::sized>> {
-    // clang-format on
     template <class>
     using apply = ranges::subrange<I, I, ranges::subrange_kind::sized>;
 };

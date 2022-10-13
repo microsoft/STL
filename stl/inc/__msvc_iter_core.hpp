@@ -80,13 +80,11 @@ concept _Can_difference = requires(const _Ty& __a, const _Ty& __b) {
                               { __a - __b } -> integral;
                           };
 
-// clang-format off
 template <class _Ty>
     requires (!_Has_member_difference_type<_Ty> && _Can_difference<_Ty>)
 struct incrementable_traits<_Ty> {
     using difference_type = make_signed_t<decltype(_STD declval<_Ty>() - _STD declval<_Ty>())>;
 };
-// clang-format on
 
 template <class _Ty>
 concept _Is_from_primary = _Same_impl<typename _Ty::_From_primary, _Ty>;
@@ -415,7 +413,6 @@ concept sized_sentinel_for = sentinel_for<_Se, _It>
 // clang-format on
 
 namespace ranges {
-    // clang-format off
     _EXPORT_STD enum class subrange_kind : bool { unsized, sized };
 
     _EXPORT_STD template <input_or_output_iterator _It, sentinel_for<_It> _Se = _It,
@@ -430,7 +427,6 @@ namespace ranges {
     _EXPORT_STD template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
         requires (_Idx < 2)
     _NODISCARD constexpr auto get(subrange<_It, _Se, _Ki>&& _Val);
-    // clang-format on
 } // namespace ranges
 
 _EXPORT_STD using ranges::get;

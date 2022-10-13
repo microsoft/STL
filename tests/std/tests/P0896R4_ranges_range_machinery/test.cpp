@@ -854,11 +854,9 @@ struct fancy_pointer {
 
     fancy_pointer() = default;
     fancy_pointer(std::nullptr_t);
-    // clang-format off
     template <class U>
         requires std::convertible_to<U*, T*>
     fancy_pointer(fancy_pointer<U>);
-    // clang-format on
 
     element_type& operator*() const;
     element_type& operator[](difference_type) const;

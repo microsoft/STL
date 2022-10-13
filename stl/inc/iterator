@@ -1013,12 +1013,10 @@ public:
         }
     }
 
-    // clang-format off
     template <sized_sentinel_for<_Iter> _OIter, sized_sentinel_for<_Iter> _OSe>
         requires sized_sentinel_for<_Se, _OIter>
     _NODISCARD_FRIEND constexpr iter_difference_t<_OIter> operator-(
         const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
-        // clang-format on
         auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
@@ -1085,11 +1083,9 @@ struct _Common_iterator_pointer_type {
     using pointer = void;
 };
 
-// clang-format off
 template <class _Iter, class _Se>
     requires _Has_member_arrow<const common_iterator<_Iter, _Se>&>
 struct _Common_iterator_pointer_type<_Iter, _Se> {
-    // clang-format on
     using pointer = decltype(_STD declval<const common_iterator<_Iter, _Se>&>().operator->());
 };
 
@@ -1152,7 +1148,6 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL != 0
     }
 
-    // clang-format off
     template <class _Other>
         requires convertible_to<const _Other&, _Iter>
     constexpr counted_iterator(const counted_iterator<_Other>& _Right) noexcept(
@@ -1163,7 +1158,6 @@ public:
         requires assignable_from<_Iter&, const _Other&>
     constexpr counted_iterator& operator=(const counted_iterator<_Other>& _Right) noexcept(
         is_nothrow_assignable_v<_Iter&, const _Other&>) /* strengthened */ {
-        // clang-format on
         _Current = _Right.base();
         _Length  = _Right.count();
         return *this;
@@ -1429,20 +1423,16 @@ public:
 
     static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_Iter>;
 
-    // clang-format off
     template <class _Other>
         requires _Wrapped_seekable_v<_Iter, const _Other&>
     constexpr void _Seek_to(const counted_iterator<_Other>& _It) {
-        // clang-format on
         _Current._Seek_to(_It.base());
         _Length = _It.count();
     }
 
-    // clang-format off
     template <class _Other>
         requires _Wrapped_seekable_v<_Iter, _Other>
     constexpr void _Seek_to(counted_iterator<_Other>&& _It) {
-        // clang-format on
         _Current._Seek_to(_STD move(_It).base());
         _Length = _It.count();
     }
@@ -1452,11 +1442,9 @@ private:
     iter_difference_t<_Iter> _Length = 0;
 };
 
-// clang-format off
 template <input_iterator _Iter>
     requires (!_Is_from_primary<iterator_traits<_Iter>>)
 struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
-    // clang-format on
     using pointer = conditional_t<contiguous_iterator<_Iter>, add_pointer_t<iter_reference_t<_Iter>>, void>;
 };
 #endif // __cpp_lib_concepts

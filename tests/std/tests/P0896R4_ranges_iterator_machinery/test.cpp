@@ -391,7 +391,6 @@ struct sized_sentinel_archetype : sentinel_archetype<I> {
     COPYABLE_OPS(sized_sentinel);
 };
 
-// clang-format off
 template <std::size_t I, std::size_t J>
     requires (I == 8)
 double operator-(sized_sentinel_archetype<I> const&, iterator_archetype<J> const&);
@@ -409,7 +408,6 @@ template <std::size_t I, std::size_t J>
     requires (I < 9 || I >= 11)
 std::iter_difference_t<iterator_archetype<J>> operator-(
     iterator_archetype<J> const&, sized_sentinel_archetype<I> const&);
-// clang-format on
 
 template <class I>
 inline constexpr bool std::disable_sized_sentinel_for<sized_sentinel_archetype<11>, I> = true;
@@ -544,11 +542,9 @@ struct contig_iterator_archetype_types : random_iterator_archetype<I> {
     using iterator_concept  = std::contiguous_iterator_tag;
     using iterator_category = std::random_access_iterator_tag;
 };
-// clang-format off
 template <std::size_t I>
     requires (I == 14 || I == 15 || I == 31)
 struct contig_iterator_archetype_types<I> : random_iterator_archetype<I> {};
-// clang-format on
 template <>
 struct contig_iterator_archetype_types<32> : random_iterator_archetype<32> {
     using iterator_category = std::random_access_iterator_tag;

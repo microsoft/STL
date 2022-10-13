@@ -301,7 +301,6 @@ namespace test_same_as {
     STATIC_ASSERT(same_as<void() const, void() const>);
     STATIC_ASSERT(same_as<void() &, void() &>);
 
-    // clang-format off
     // Verify that `same_as<T, U>` subsumes `same_as<U, T>` (note reversed argument order)
     template <class T, class U>
         requires same_as<U, T>
@@ -314,7 +313,6 @@ namespace test_same_as {
     constexpr bool f() {
         return true;
     }
-    // clang-format on
 
     STATIC_ASSERT(!f<int*, int*>());
     STATIC_ASSERT(!f<void, void>());
@@ -1625,7 +1623,6 @@ namespace test_move_constructible {
 namespace test_ranges_swap {
     namespace ranges = std::ranges;
 
-    // clang-format off
     template <class T, class U = T>
     constexpr bool can_swap = false;
     template <class T, class U>
@@ -1637,7 +1634,6 @@ namespace test_ranges_swap {
     template <class T, class U>
         requires can_swap<T, U>
     constexpr bool can_nothrow_swap<T, U> = noexcept(ranges::swap(std::declval<T>(), std::declval<U>()));
-    // clang-format on
 
     STATIC_ASSERT(!can_swap<void>);
     STATIC_ASSERT(!can_swap<void const>);
@@ -3348,11 +3344,9 @@ namespace test_relation {
 
     template <unsigned int>
     struct A {};
-    // clang-format off
     template <unsigned int U>
         requires (0 < U)
     Bool operator==(A<U>, A<U>); // A<0> == A<0> is invalid
-    // clang-format on
     STATIC_ASSERT(!test<Equivalent, A<0>>());
     STATIC_ASSERT(test<Equivalent, A<1>>());
 
@@ -3383,11 +3377,9 @@ namespace test_relation {
     struct C {};
     enum E : bool { No, Yes };
     E operator==(C<0>&, C<0>&); // const C<0> == const C<0> is invalid
-    // clang-format off
     template <unsigned int I>
         requires (0 != I)
     E operator==(C<I>, C<I>);
-    // clang-format on
 
     STATIC_ASSERT(!test<Equivalent, const C<0>>());
     STATIC_ASSERT(test<Equivalent, const C<1>>());

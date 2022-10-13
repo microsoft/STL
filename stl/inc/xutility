@@ -725,7 +725,6 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Ty1, _Ty2>();
 
         public:
-            // clang-format off
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1, _Ty2>._Strategy != _St::_None)
             constexpr void operator()(_Ty1&& _Val1, _Ty2&& _Val2) const noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
@@ -742,7 +741,6 @@ namespace ranges {
                     static_assert(_Always_false<_Ty1>, "should be unreachable");
                 }
             }
-            // clang-format on
         };
     } // namespace _Iter_swap
 
@@ -1515,11 +1513,9 @@ _NODISCARD _CONSTEXPR17 reverse_iterator<_BidIt> make_reverse_iterator(_BidIt _I
 }
 
 #ifdef __cpp_lib_concepts
-// clang-format off
 template <class _BidIt1, class _BidIt2>
     requires (!sized_sentinel_for<_BidIt1, _BidIt2>)
 inline constexpr bool disable_sized_sentinel_for<reverse_iterator<_BidIt1>, reverse_iterator<_BidIt2>> = true;
-// clang-format on
 #endif // __cpp_lib_concepts
 
 _EXPORT_STD template <class _Container>
@@ -1699,11 +1695,9 @@ namespace ranges {
     template <class>
     inline constexpr bool _Has_complete_elements = false;
 
-    // clang-format off
     template <class _Ty>
         requires requires(_Ty& __t) { sizeof(__t[0]); }
     inline constexpr bool _Has_complete_elements<_Ty> = true;
-    // clang-format on
 
     _EXPORT_STD template <class>
     inline constexpr bool enable_borrowed_range = false;
@@ -1754,7 +1748,6 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
 
         public:
-            // clang-format off
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
@@ -1770,7 +1763,6 @@ namespace ranges {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
                 }
             }
-            // clang-format on
         };
     } // namespace _Begin
 
@@ -1830,7 +1822,6 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
 
         public:
-            // clang-format off
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
@@ -1847,7 +1838,6 @@ namespace ranges {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
             }
-            // clang-format on
         };
     } // namespace _End
 
@@ -1869,10 +1859,8 @@ namespace ranges {
         same_as<typename remove_cvref_t<_Wrapped>::_Prevent_inheriting_unwrap, remove_cvref_t<_Wrapped>> //
         && requires(_Wrapped&& _Wr) { _STD forward<_Wrapped>(_Wr)._Unwrapped(); };
 
-    // clang-format off
     template <class _Sent>
     concept _Weakly_unwrappable_sentinel = _Weakly_unwrappable<const remove_reference_t<_Sent>&>;
-    // clang-format on
 
     template <class _Iter>
     concept _Weakly_unwrappable_iterator = //
@@ -1970,11 +1958,9 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
 
         public:
-            // clang-format off
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                // clang-format on
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -2023,7 +2009,6 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
 
         public:
-            // clang-format off
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
@@ -2037,7 +2022,6 @@ namespace ranges {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
                 }
             }
-            // clang-format on
         };
     } // namespace _Unchecked_end
 
@@ -2135,7 +2119,6 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
 
         public:
-            // clang-format off
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
@@ -2151,7 +2134,6 @@ namespace ranges {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
             }
-            // clang-format on
         };
     } // namespace _Rbegin
 
@@ -2205,7 +2187,6 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
 
         public:
-            // clang-format off
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
@@ -2221,7 +2202,6 @@ namespace ranges {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
             }
-            // clang-format on
         };
     } // namespace _Rend
 
@@ -2317,7 +2297,6 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
 
         public:
-            // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
@@ -2337,7 +2316,6 @@ namespace ranges {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
             }
-            // clang-format on
         };
     } // namespace _Size
 
@@ -2442,7 +2420,6 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
 
         public:
-            // clang-format off
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
@@ -2456,7 +2433,6 @@ namespace ranges {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
             }
-            // clang-format on
         };
     } // namespace _Data
 
@@ -3107,11 +3083,9 @@ namespace ranges {
         constexpr explicit _Subrange_base(const _Size_type&) noexcept {}
     };
 
-    // clang-format off
     _EXPORT_STD template <input_or_output_iterator _It, sentinel_for<_It> _Se, subrange_kind _Ki>
         requires (_Ki == subrange_kind::sized || !sized_sentinel_for<_Se, _It>)
     class subrange : public _Subrange_base<_It, _Se, _Ki> {
-        // clang-format on
     private:
         using _Mybase = _Subrange_base<_It, _Se, _Ki>;
         using _Mybase::_Store_size;
@@ -3290,7 +3264,6 @@ namespace ranges {
     template <class _It, class _Se, subrange_kind _Ki>
     inline constexpr bool enable_borrowed_range<subrange<_It, _Se, _Ki>> = true;
 
-    // clang-format off
     _EXPORT_STD template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
         requires ((_Idx == 0 && copyable<_It>) || _Idx == 1)
     _NODISCARD constexpr auto get(const subrange<_It, _Se, _Ki>& _Val) {
@@ -3310,7 +3283,6 @@ namespace ranges {
             return _Val.end();
         }
     }
-    // clang-format on
 
     _EXPORT_STD struct dangling {
         constexpr dangling() noexcept = default;
@@ -3652,9 +3624,7 @@ _EXPORT_STD template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator>(const move_iterator<_Iter1>& _Left,
     const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Right < _Left)) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires { _Right < _Left; }
-// clang-format on
 #endif // __cpp_lib_concepts
 {
     return _Right < _Left;
@@ -3664,9 +3634,7 @@ _EXPORT_STD template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator<=(const move_iterator<_Iter1>& _Left,
     const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Right < _Left)) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires { _Right < _Left; }
-// clang-format on
 #endif // __cpp_lib_concepts
 {
     return !(_Right < _Left);
@@ -3676,9 +3644,7 @@ _EXPORT_STD template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left,
     const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left < _Right)) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires { _Left < _Right; }
-// clang-format on
 #endif // __cpp_lib_concepts
 {
     return !(_Left < _Right);
@@ -4014,12 +3980,10 @@ namespace ranges {
         }
     };
 
-    // clang-format off
     template <forward_iterator _It, class _Se>
         requires sentinel_for<remove_cvref_t<_Se>, _It>
     _NODISCARD constexpr _Unwrap_iter_t<_It, _Se> _Get_final_iterator_unwrapped(
         const _Unwrap_iter_t<_It, _Se>& _UFirst, _Se&& _Last) {
-        // clang-format on
         // find the iterator in [_UFirst, _Unwrap_sent<_It>(_Last)) which equals _Unwrap_sent<_It>(_Last)
         // [possibly O(N)]
         if constexpr (is_same_v<_Unwrap_iter_t<_It, _Se>, _Unwrap_sent_t<_Se, _It>>) {
@@ -4088,11 +4052,9 @@ namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using copy_result = in_out_result<_In, _Out>;
 
-    // clang-format off
     template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
         requires indirectly_copyable<_It, _Out>
     _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, _Se _Last, _Out _Result) {
-        // clang-format on
         if constexpr (_Sent_copy_cat<_It, _Se, _Out>::_Bitcopy_assignable) {
             if (!_STD is_constant_evaluated()) {
                 if constexpr (is_same_v<_It, _Se>) {
@@ -4118,7 +4080,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
             requires indirectly_copyable<_It, _Out>
         constexpr copy_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
@@ -4138,7 +4099,6 @@ namespace ranges {
             _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
-        // clang-format on
     };
 
     _EXPORT_STD inline constexpr _Copy_fn copy{_Not_quite_object::_Construct_tag {}};
@@ -4772,13 +4732,11 @@ namespace ranges {
         return {_STD move(_First1), _STD move(_First2)};
     }
 
-    // clang-format off
     template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2, class _Pr,
         class _Pj1, class _Pj2>
         requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
     _NODISCARD constexpr mismatch_result<_It1, _It2> _Mismatch_4(
         _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-        // clang-format on
 
         for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) {
             if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
@@ -4825,13 +4783,11 @@ namespace ranges {
             }
         }
 
-        // clang-format off
         template <input_range _Rng1, input_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
             class _Pj2 = identity>
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr mismatch_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            // clang-format on
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
                 range_difference_t<_Rng1> _Count1       = _RANGES distance(_Range1);
                 const range_difference_t<_Rng2> _Count2 = _RANGES distance(_Range2);
@@ -5195,7 +5151,6 @@ namespace ranges {
     template <class _Se, class _It>
     concept _Sized_or_unreachable_sentinel_for = sized_sentinel_for<_Se, _It> || same_as<_Se, unreachable_sentinel_t>;
 
-    // clang-format off
     template <class _Rng>
     concept _Sized_or_infinite_range = range<_Rng>
                                     && (sized_range<_Rng> || same_as<sentinel_t<_Rng>, unreachable_sentinel_t>);
@@ -5204,7 +5159,6 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
-        // clang-format on
         constexpr bool _Is_sized = sized_sentinel_for<_Se, _It>;
         if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && _Sized_or_unreachable_sentinel_for<_Se, _It>
                       && same_as<_Pj, identity>) {
@@ -5290,12 +5244,10 @@ namespace ranges {
             return _First;
         }
 
-        // clang-format off
         template <input_range _Rng, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
-            // clang-format on
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _RANGES _Find_unchecked(
                 _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Val, _Pass_fn(_Proj));
@@ -5867,13 +5819,11 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr subrange<_It1> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
             _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             auto _UFirst1 = _Unwrap_iter<_Se1>(_STD move(_First1));
@@ -5894,13 +5844,11 @@ namespace ranges {
             }
         }
 
-        // clang-format off
         template <forward_range _Rng1, forward_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
             class _Pj2 = identity>
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr borrowed_subrange_t<_Rng1> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            // clang-format on
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
                 const auto _Count1 = _RANGES distance(_Range1);
                 const auto _Count2 = _RANGES distance(_Range2);

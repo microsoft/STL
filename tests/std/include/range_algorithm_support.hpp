@@ -331,15 +331,12 @@ namespace test {
 
         common_reference(Ref r) : ref_{static_cast<Ref>(r)} {}
 
-        // clang-format off
         template <class Cat, class Elem>
             requires convertible_to<Elem&, Ref>
         common_reference(proxy_reference<Cat, Elem> pref) : ref_{pref.peek()} {}
-        // clang-format on
     };
 } // namespace test
 
-// clang-format off
 template <class Cat, class Elem, class U, template <class> class TQuals, template <class> class UQuals>
     requires std::common_reference_with<Elem&, UQuals<U>>
 struct std::basic_common_reference<::test::proxy_reference<Cat, Elem>, U, TQuals, UQuals> {
@@ -359,7 +356,6 @@ struct std::basic_common_reference<::test::proxy_reference<Cat1, Elem1>, ::test:
     UQuals> {
     using type = common_reference_t<Elem1&, Elem2&>;
 };
-// clang-format on
 
 namespace test {
     // clang-format off
