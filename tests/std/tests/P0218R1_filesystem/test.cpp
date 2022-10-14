@@ -35,8 +35,8 @@ using namespace std::filesystem;
 
 constexpr wstring_view badPath = L"// ?? ?? ///// ?? ?? ? ////"sv;
 const path nonexistentPaths[]  = {
-     L"C:/This/Path/Should/Not/Exist"sv,
-     L"//this_path_does_not_exist_on_the_network_e9da301701f70ead24c65bd30f600d15/docs"sv,
+    L"C:/This/Path/Should/Not/Exist"sv,
+    L"//this_path_does_not_exist_on_the_network_e9da301701f70ead24c65bd30f600d15/docs"sv,
 };
 constexpr wstring_view longSuffix =
     LR"(really\long\path\longer\than\max_path\goes\here\and it just goes)"
@@ -1517,6 +1517,7 @@ void expect_absolute(const path& input, const wstring_view expected) {
         if (actual.native() != expected) {
             wcerr << L"Actual result: " << actual.native() << L"\n";
         }
+
         if (ec) {
             wcerr << L"The call failed.\n";
         }
@@ -3847,6 +3848,7 @@ basic_ostream<Elem, Traits>& operator<<(basic_ostream<Elem, Traits>& ostr, const
     if (p == perms::owner_all) {
         return ostr << L"perms::owner_all";
     }
+
     if (p == perms::owner_read) {
         return ostr << L"perms::owner_read";
     }

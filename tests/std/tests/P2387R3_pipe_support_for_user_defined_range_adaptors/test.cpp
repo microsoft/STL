@@ -10,9 +10,7 @@
 using namespace std;
 
 template <class T>
-concept CanInstantiateRangeAdaptorClosure = requires {
-    typename ranges::range_adaptor_closure<T>;
-};
+concept CanInstantiateRangeAdaptorClosure = requires { typename ranges::range_adaptor_closure<T>; };
 
 class EmptyTestType {};
 class IncompleteTestType;
@@ -25,14 +23,12 @@ static_assert(!CanInstantiateRangeAdaptorClosure<int>);
 static_assert(CanInstantiateRangeAdaptorClosure<IncompleteTestType>);
 
 template <class LHS, class RHS>
-concept CanPipe = requires(LHS lhs, RHS rhs) {
-    forward<LHS>(lhs) | forward<RHS>(rhs);
-};
+concept CanPipe = requires(LHS lhs, RHS rhs) { forward<LHS>(lhs) | forward<RHS>(rhs); };
 
 template <class LHS, class RHS, class Ret>
 concept CanPipe_R = requires(LHS lhs, RHS rhs) {
-    { forward<LHS>(lhs) | forward<RHS>(rhs) } -> same_as<Ret>;
-};
+                        { forward<LHS>(lhs) | forward<RHS>(rhs) } -> same_as<Ret>;
+                    };
 
 using TestRange = array<int, 1>;
 
@@ -127,15 +123,15 @@ static_assert(CanPipe_R<TestRange, RangeAdaptorClosureMemberRefQualTest&&, range
 static_assert(CanPipe_R<TestRange, RangeAdaptorClosureMemberRefQualTest const&, ranges::empty_view<float>>);
 static_assert(CanPipe_R<TestRange, RangeAdaptorClosureMemberRefQualTest const&&, ranges::empty_view<double>>);
 
-using FirstIdentityThenMemberRefQualTest = decltype(
-    IdentityRangeAdaptorClosure{} | RangeAdaptorClosureMemberRefQualTest{});
+using FirstIdentityThenMemberRefQualTest =
+    decltype(IdentityRangeAdaptorClosure{} | RangeAdaptorClosureMemberRefQualTest{});
 static_assert(CanPipe_R<TestRange, FirstIdentityThenMemberRefQualTest&, ranges::empty_view<char>>);
 static_assert(CanPipe_R<TestRange, FirstIdentityThenMemberRefQualTest&&, ranges::empty_view<short>>);
 static_assert(CanPipe_R<TestRange, FirstIdentityThenMemberRefQualTest const&, ranges::empty_view<float>>);
 static_assert(CanPipe_R<TestRange, FirstIdentityThenMemberRefQualTest const&&, ranges::empty_view<double>>);
 
-using FirstTransformThenMemberRefQualTest = decltype(
-    views::transform([](auto x) { return x; }) | RangeAdaptorClosureMemberRefQualTest{});
+using FirstTransformThenMemberRefQualTest =
+    decltype(views::transform([](auto x) { return x; }) | RangeAdaptorClosureMemberRefQualTest{});
 static_assert(CanPipe_R<TestRange, FirstTransformThenMemberRefQualTest&, ranges::empty_view<char>>);
 static_assert(CanPipe_R<TestRange, FirstTransformThenMemberRefQualTest&&, ranges::empty_view<short>>);
 static_assert(CanPipe_R<TestRange, FirstTransformThenMemberRefQualTest const&, ranges::empty_view<float>>);

@@ -14,7 +14,6 @@ using namespace std;
 template <class>
 inline constexpr void* must_be_countable = nullptr;
 
-// clang-format off
 template <input_or_output_iterator I>
     requires requires { typename counted_iterator<I>; }
 inline constexpr bool must_be_countable<I> = true;
@@ -22,6 +21,7 @@ inline constexpr bool must_be_countable<I> = true;
 template <class... Is>
 concept Counted = (must_be_countable<Is> && ...);
 
+// clang-format off
 template <class I1, class I2>
 concept CountedCompare = Counted<I1, I2>
     && requires(const counted_iterator<I1>& c1, const counted_iterator<I2>& c2) {
@@ -276,6 +276,7 @@ struct instantiator {
                 assert(counted_iterator<Iter>{} <=> counted_iterator<Iter>{} == strong_ordering::equal);
                 assert(counted_iterator<Iter>{} <=> counted_iterator<Iter>{} == strong_ordering::equivalent);
             }
+
             if constexpr (common_with<Iter, ConstIter>) {
                 { // equality converting
                     counted_iterator<ConstIter> const_iter1{ConstIter{input}, 2};

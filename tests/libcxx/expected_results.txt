@@ -222,6 +222,7 @@ std/ranges/range.adaptors/range.zip/size.pass.cpp FAIL
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 
+
 # *** MISSING COMPILER FEATURES ***
 # Nothing here! :-)
 
@@ -855,16 +856,16 @@ std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp 
 # I don't know which is right.
 std/language.support/support.limits/limits/numeric.limits.members/tinyness_before.pass.cpp SKIPPED
 
-# Not yet analyzed. the test fails on AMD64 but passes on X86
+# Not yet analyzed. the test fails on x64 but passes on x86
 std/containers/associative/map/map.access/iterator.pass.cpp:0 SKIPPED
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:0 SKIPPED
 
-# Not yet analyzed. the test fails on X86 but passes on AMD64
+# Not yet analyzed. the test fails on x86 but passes on x64
 std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.unique/ranges_unique.pass.cpp:0 SKIPPED
 
-# Not yet analyzed. the test fails on AMD64 but passes on ARM
+# Not yet analyzed. These tests are marked `XFAIL: msvc`, citing DevCom-1660844.
 std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp SKIPPED
 std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_double.hex.pass.cpp SKIPPED
 
@@ -872,7 +873,7 @@ std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.
 std/utilities/format/format.functions/ascii.pass.cpp FAIL
 std/utilities/format/format.functions/unicode.pass.cpp:0 FAIL
 
-#Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
+# Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
 std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp FAIL

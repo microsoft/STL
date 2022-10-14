@@ -34,6 +34,7 @@ static xtime xtime_diff(const xtime* xt,
         diff.sec -= now->sec;
         diff.nsec -= now->nsec;
     }
+
     if (diff.sec < 0 || (diff.sec == 0 && diff.nsec <= 0)) { // time is zero
         diff.sec  = 0;
         diff.nsec = 0;

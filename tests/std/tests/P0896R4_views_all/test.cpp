@@ -13,9 +13,7 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewAll = requires(Rng&& r) {
-    views::all(forward<Rng>(r));
-};
+concept CanViewAll = requires(Rng&& r) { views::all(forward<Rng>(r)); };
 
 // Test a silly precomposed range adaptor pipeline
 constexpr auto pipeline = views::all | views::all | views::all | views::all | views::all | views::all;

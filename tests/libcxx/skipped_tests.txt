@@ -856,16 +856,16 @@ numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
 # I don't know which is right.
 language.support\support.limits\limits\numeric.limits.members\tinyness_before.pass.cpp
 
-# Not yet analyzed. the test fails on AMD64 but passes on X86
+# Not yet analyzed. the test fails on x64 but passes on x86
 containers\associative\map\map.access\iterator.pass.cpp
 iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.-\sentinel.pass.cpp
 algorithms\alg.modifying.operations\alg.random.shuffle\ranges_shuffle.pass.cpp
 
-# Not yet analyzed. the test fails on X86 but passes on AMD64
+# Not yet analyzed. the test fails on x86 but passes on x64
 algorithms\alg.sorting\alg.set.operations\includes\ranges_includes.pass.cpp
 algorithms\alg.modifying.operations\alg.unique\ranges_unique.pass.cpp
 
-# Not yet analyzed. the test fails on ARM but passes on AMD64
+# Not yet analyzed. These tests are marked `XFAIL: msvc`, citing DevCom-1660844.
 localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_long_double.hex.pass.cpp
 localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_double.hex.pass.cpp
 
@@ -873,7 +873,7 @@ localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.memb
 utilities\format\format.functions\ascii.pass.cpp
 utilities\format\format.functions\unicode.pass.cpp
 
-#Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
+# Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
 utilities\template.bitset\bitset.members\left_shift_eq.pass.cpp
 utilities\template.bitset\bitset.members\op_and_eq.pass.cpp
 utilities\template.bitset\bitset.members\op_or_eq.pass.cpp
@@ -954,7 +954,6 @@ iterators\predef.iterators\move.iterators\move.iterator\iterator_concept_conform
 language.support\support.limits\support.limits.general\cmath.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\cstdlib.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\new.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\version.version.compile.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_zh_CN.pass.cpp
 ranges\range.adaptors\range.filter\iterator\arrow.pass.cpp
 ranges\range.adaptors\range.filter\iterator\base.pass.cpp

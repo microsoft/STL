@@ -377,14 +377,16 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
 
     _Info->_Num_time_zones = static_cast<size_t>(_Num_time_zones);
     // value-init to ensure __std_tzdb_delete_time_zones() cleanup is valid
-    _Info->_Names = new (_STD nothrow) const char* [_Info->_Num_time_zones] {};
-    if (_Info->_Names == nullptr) {
+    if (const auto _Names = new (_STD nothrow) const char* [_Info->_Num_time_zones] {}; _Names) {
+        _Info->_Names = _Names;
+    } else {
         return nullptr;
     }
 
     // value-init to ensure __std_tzdb_delete_time_zones() cleanup is valid
-    _Info->_Links = new (_STD nothrow) const char* [_Info->_Num_time_zones] {};
-    if (_Info->_Links == nullptr) {
+    if (const auto _Links = new (_STD nothrow) const char* [_Info->_Num_time_zones] {}; _Links) {
+        _Info->_Links = _Links;
+    } else {
         return nullptr;
     }
 

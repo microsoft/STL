@@ -443,7 +443,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         _NODISCARD constexpr iter_difference_t<_It> operator()(
@@ -458,7 +457,7 @@ namespace ranges {
         _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
             return _Count_unchecked(_Ubegin(_Range), _Uend(_Range), _Val, _Pass_fn(_Proj));
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Ty, class _Pj>
         _NODISCARD static constexpr iter_difference_t<_It> _Count_unchecked(
@@ -468,7 +467,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty> //
+            if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty>
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
                     if (!_Within_limits(_First, _Val)) {
@@ -660,12 +659,10 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
     template <input_iterator _It1, input_iterator _It2, integral _Size, class _Pr, class _Pj1, class _Pj2>
         requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
     _NODISCARD constexpr bool _Equal_count(
         _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-        // clang-format on
         _STL_INTERNAL_CHECK(_Count >= 0);
         if constexpr (_Equal_memcmp_is_safe<_It1, _It2, _Pr> && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
             if (!_STD is_constant_evaluated()) {
@@ -710,7 +707,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
@@ -729,8 +725,8 @@ namespace ranges {
                     return false;
                 }
 
-                return _Equal_count(_STD move(_UFirst1), _STD move(_UFirst2), _Count,
-                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                return _Equal_count(_STD move(_UFirst1), _STD move(_UFirst2), _Count, _Pass_fn(_Pred), _Pass_fn(_Proj1),
+                    _Pass_fn(_Proj2));
             } else {
                 return _Equal_4(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2), _STD move(_ULast2),
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
@@ -743,20 +739,19 @@ namespace ranges {
         _NODISCARD constexpr bool operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
-                using _Size1 = _Make_unsigned_like_t<range_size_t<_Rng1>>;
+                using _Size1      = _Make_unsigned_like_t<range_size_t<_Rng1>>;
                 const auto _Count = static_cast<_Size1>(_RANGES size(_Range1));
-                using _Size2 = _Make_unsigned_like_t<range_size_t<_Rng2>>;
+                using _Size2      = _Make_unsigned_like_t<range_size_t<_Rng2>>;
                 if (_Count != static_cast<_Size2>(_RANGES size(_Range2))) {
                     return false;
                 }
-                return _Equal_count(_Ubegin(_Range1), _Ubegin(_Range2), _Count,
-                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                return _Equal_count(
+                    _Ubegin(_Range1), _Ubegin(_Range2), _Count, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             } else {
-                return _Equal_4(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2),
-                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                return _Equal_4(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred),
+                    _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             }
         }
-        // clang-format on
     };
 
     _EXPORT_STD inline constexpr _Equal_fn equal{_Not_quite_object::_Construct_tag{}};
@@ -1319,11 +1314,9 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         _NODISCARD constexpr bool operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             const auto _ULast = _Unwrap_sent<_It>(_STD move(_Last));
             const auto _UResult =
@@ -1331,11 +1324,9 @@ namespace ranges {
             return _UResult != _ULast;
         }
 
-        // clang-format off
         template <input_range _Rng, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
         _NODISCARD constexpr bool operator()(_Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
-            // clang-format on
             const auto _UResult = _RANGES _Find_unchecked(_Ubegin(_Range), _Uend(_Range), _Val, _Pass_fn(_Proj));
             return _UResult != _Uend(_Range);
         }
@@ -1347,13 +1338,11 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr bool operator()(_It1 _First1,
-            _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            // clang-format on
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First2, _Last2);
             auto _UFirst2 = _Unwrap_iter<_Se2>(_STD move(_First2));
             auto _ULast2  = _Unwrap_sent<_It2>(_STD move(_Last2));
@@ -1367,13 +1356,11 @@ namespace ranges {
             return !_Match.empty();
         }
 
-        // clang-format off
         template <forward_range _Rng1, forward_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
             class _Pj2 = identity>
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr bool operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            // clang-format on
             if (_RANGES empty(_Range2)) {
                 return true;
             }
@@ -2133,7 +2120,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pr = ranges::equal_to,
             class _Pj = identity>
             requires indirectly_comparable<_It, const _Ty*, _Pr, _Pj>
@@ -2182,7 +2168,6 @@ namespace ranges {
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_First, _STD move(_UResult));
             }
         }
-        // clang-format on
 
     private:
         template <class _It, class _Ty, class _Pr, class _Pj>
@@ -2293,13 +2278,11 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
             _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
 
@@ -2324,13 +2307,11 @@ namespace ranges {
             }
         }
 
-        // clang-format off
         template <input_range _Rng1, input_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
             class _Pj2 = identity>
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr bool operator()(
-                _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            // clang-format on
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             if constexpr (_Sized_or_infinite_range<_Rng1> && sized_range<_Rng2>) {
                 const range_difference_t<_Rng2> _Count2 = _RANGES distance(_Range2);
                 if constexpr (sized_range<_Rng1>) {
@@ -2357,7 +2338,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires (forward_iterator<_It1> || sized_sentinel_for<_Se1, _It1>)
@@ -2365,7 +2345,6 @@ namespace ranges {
                   && indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
             _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             auto _UFirst1 = _Unwrap_iter<_Se1>(_STD move(_First1));
@@ -2380,15 +2359,12 @@ namespace ranges {
                 _STD move(_ULast2), _Count2, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
         }
 
-        // clang-format off
         template <input_range _Rng1, input_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
             class _Pj2 = identity>
-            requires (forward_range<_Rng1> || sized_range<_Rng1>)
-                  && (forward_range<_Rng2> || sized_range<_Rng2>)
+            requires (forward_range<_Rng1> || sized_range<_Rng1>) && (forward_range<_Rng2> || sized_range<_Rng2>)
                   && indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr bool operator()(
-                _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            // clang-format on
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             const auto _Count1 = _Distance_helper(_Range1);
             const auto _Count2 = _Distance_helper(_Range2);
 
@@ -2791,7 +2767,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
@@ -2804,8 +2779,8 @@ namespace ranges {
             auto _UFirst2 = _Unwrap_iter<_Se2>(_First2);
             auto _ULast2  = _Unwrap_sent<_It2>(_Last2);
 
-            if constexpr (random_access_iterator<_It1> && sized_sentinel_for<_Se1, _It1>
-                && random_access_iterator<_It2> && sized_sentinel_for<_Se2, _It2>) {
+            if constexpr (random_access_iterator<_It1> && sized_sentinel_for<_Se1, _It1> && random_access_iterator<_It2>
+                          && sized_sentinel_for<_Se2, _It2>) {
                 const auto _Count1 = _ULast1 - _UFirst1;
                 const auto _Count2 = _ULast2 - _UFirst2;
                 auto _UResult = _Random_access_sized_ranges(_STD move(_UFirst1), _Count1, _STD move(_UFirst2), _Count2,
@@ -2827,22 +2802,21 @@ namespace ranges {
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr borrowed_subrange_t<_Rng1> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            if constexpr (random_access_range<_Rng1> && sized_range<_Rng1>
-                && random_access_range<_Rng2> && sized_range<_Rng2>) {
+            if constexpr (random_access_range<_Rng1> && sized_range<_Rng1> && random_access_range<_Rng2>
+                          && sized_range<_Rng2>) {
                 auto _UResult = _Random_access_sized_ranges(_Ubegin(_Range1), _RANGES distance(_Range1),
                     _Ubegin(_Range2), _RANGES distance(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_Range1, _STD move(_UResult));
             } else if constexpr (_Bidi_common_range<_Rng1> && _Bidi_common_range<_Rng2>) {
-                auto _UResult = _Bidi_common_ranges(_Ubegin(_Range1), _Uend(_Range1),
-                    _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                auto _UResult = _Bidi_common_ranges(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_Range1, _STD move(_UResult));
             } else {
-                auto _UResult = _Forward_ranges(_Ubegin(_Range1), _Uend(_Range1),
-                    _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                auto _UResult = _Forward_ranges(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_Range1, _STD move(_UResult));
             }
         }
-        // clang-format on
     };
 
     _EXPORT_STD inline constexpr _Find_end_fn find_end{_Not_quite_object::_Construct_tag{}};
@@ -2896,7 +2870,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
@@ -2926,7 +2899,7 @@ namespace ranges {
             _Seek_wrapped(_First1, _STD move(_UResult));
             return _First1;
         }
-        // clang-format on
+
     private:
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr _It1 _Find_first_of_unchecked(_It1 _First1, const _Se1 _Last1, const _It2 _First2,
@@ -3246,13 +3219,11 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty1, class _Ty2, class _Pj = identity>
             requires indirectly_writable<_It, const _Ty2&>
                   && indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>
         constexpr _It operator()(
             _It _First, _Se _Last, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Replace_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
                 _Unwrap_sent<_It>(_STD move(_Last)), _Oldval, _Newval, _Pass_fn(_Proj));
@@ -3261,13 +3232,11 @@ namespace ranges {
             return _First;
         }
 
-        // clang-format off
         template <input_range _Rng, class _Ty1, class _Ty2, class _Pj = identity>
             requires indirectly_writable<iterator_t<_Rng>, const _Ty2&>
                   && indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty1*>
         constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
-            // clang-format on
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _Replace_unchecked(
                 _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Oldval, _Newval, _Pass_fn(_Proj));
@@ -3324,12 +3293,10 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
             requires indirectly_writable<_It, const _Ty&>
         constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) const {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Replace_if_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
                 _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Pred), _Newval, _Pass_fn(_Proj));
@@ -3338,13 +3305,11 @@ namespace ranges {
             return _First;
         }
 
-        // clang-format off
         template <input_range _Rng, class _Ty, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
             requires indirectly_writable<iterator_t<_Rng>, const _Ty&>
         constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) const {
-            // clang-format on
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _Replace_if_unchecked(
                 _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Newval, _Pass_fn(_Proj));
@@ -3417,14 +3382,12 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty1, class _Ty2, output_iterator<const _Ty2&> _Out,
             class _Pj = identity>
             requires indirectly_copyable<_It, _Out>
                   && indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>
         constexpr replace_copy_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Replace_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
                 _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _Oldval, _Newval, _Pass_fn(_Proj));
@@ -3433,13 +3396,11 @@ namespace ranges {
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
-        // clang-format off
         template <input_range _Rng, class _Ty1, class _Ty2, output_iterator<const _Ty2&> _Out, class _Pj = identity>
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
                   && indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty1*>
         constexpr replace_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
-            // clang-format on
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _Replace_copy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
                 _STD move(_Result), _Oldval, _Newval, _Pass_fn(_Proj));
@@ -3799,7 +3760,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <permutable _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         _NODISCARD_REMOVE_ALG constexpr subrange<_It> operator()(
@@ -3820,7 +3780,7 @@ namespace ranges {
 
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Ty, class _Pj>
         _NODISCARD static constexpr subrange<_It> _Remove_unchecked(
@@ -3864,7 +3824,6 @@ namespace ranges {
             return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
-        // clang-format off
         template <forward_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
             requires permutable<iterator_t<_Rng>>
@@ -3874,7 +3833,7 @@ namespace ranges {
 
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Pr, class _Pj>
         _NODISCARD static constexpr subrange<_It> _Remove_if_unchecked(
@@ -3910,12 +3869,10 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out, class _Ty, class _Pj = identity>
             requires indirectly_copyable<_It, _Out>
                   && indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         constexpr remove_copy_result<_It, _Out> operator()(
-            // clang-format on
             _It _First, _Se _Last, _Out _Result, const _Ty& _Val, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UResult =
@@ -3927,13 +3884,11 @@ namespace ranges {
             return {_STD move(_First), _STD move(_Result)};
         }
 
-        // clang-format off
         template <input_range _Rng, weakly_incrementable _Out, class _Ty, class _Pj = identity>
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
                   && indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
         constexpr remove_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, const _Ty& _Val, _Pj _Proj = {}) const {
-            // clang-format on
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _Remove_copy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
                 _Get_unwrapped_unverified(_STD move(_Result)), _Val, _Pass_fn(_Proj));
@@ -4092,7 +4047,6 @@ namespace ranges {
             return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
-        // clang-format off
         template <forward_range _Rng, class _Pj = identity,
             indirect_equivalence_relation<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::equal_to>
             requires permutable<iterator_t<_Rng>>
@@ -4102,7 +4056,7 @@ namespace ranges {
 
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Pj, class _Pr>
         _NODISCARD static constexpr subrange<_It> _Unique_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
@@ -4242,8 +4196,8 @@ namespace ranges {
 
     template <class _It, class _Out>
     concept _Can_reread_or_store = forward_iterator<_It> //
-        || _Is_input_with_value_type<_Out, iter_value_t<_It>> //
-        || indirectly_copyable_storable<_It, _Out>;
+                                || _Is_input_with_value_type<_Out, iter_value_t<_It>> //
+                                || indirectly_copyable_storable<_It, _Out>;
 
     class _Unique_copy_fn : private _Not_quite_object {
     public:
@@ -4822,12 +4776,10 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out, class _Urng>
             requires (forward_iterator<_It> || random_access_iterator<_Out>)
                   && indirectly_copyable<_It, _Out> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _Out operator()(_It _First, _Se _Last, _Out _Result, iter_difference_t<_It> _Count, _Urng&& _Func) const {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             if (_Count <= 0) {
                 return _Result;
@@ -4844,13 +4796,11 @@ namespace ranges {
             }
         }
 
-        // clang-format off
         template <input_range _Rng, weakly_incrementable _Out, class _Urng>
-           requires (forward_range<_Rng> || random_access_iterator<_Out>)
+            requires (forward_range<_Rng> || random_access_iterator<_Out>)
                   && indirectly_copyable<iterator_t<_Rng>, _Out>
                   && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _Out operator()(_Rng&& _Range, _Out _Result, range_difference_t<_Rng> _Count, _Urng&& _Func) const {
-            // clang-format on
             if (_Count <= 0) {
                 return _Result;
             }
@@ -4960,7 +4910,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Urng>
             requires permutable<_It> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _It operator()(_It _First, _Se _Last, _Urng&& _Func) const {
@@ -4981,7 +4930,7 @@ namespace ranges {
 
             return _Rewrap_iterator(_Range, _Shuffle_unchecked(_Ubegin(_Range), _Uend(_Range), _RngFunc));
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Rng>
         _NODISCARD static _It _Shuffle_unchecked(_It _First, const _Se _Last, _Rng& _Func) {
@@ -5282,11 +5231,9 @@ namespace ranges {
             }
         }
 
-        // clang-format off
         template <input_iterator _It, weakly_incrementable _Out>
             requires indirectly_movable<_It, _Out>
         _NODISCARD static constexpr _Out _Move_n_helper(_It _First, iter_difference_t<_It> _Count, _Out _Result) {
-            // clang-format on
             for (; _Count > 0; ++_First, (void) --_Count, ++_Result) {
                 *_Result = _RANGES iter_move(_First);
             }
@@ -5751,12 +5698,10 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <bidirectional_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
             requires permutable<_It>
         subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
@@ -5766,12 +5711,10 @@ namespace ranges {
             return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
-        // clang-format off
         template <bidirectional_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
             requires permutable<iterator_t<_Rng>>
         borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            // clang-format on
             auto _ULast = _Get_final_iterator_unwrapped(_Range);
             auto _UResult =
                 _Stable_partition_common(_Ubegin(_Range), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
@@ -5892,7 +5835,7 @@ namespace ranges {
                     const auto _Right_count = static_cast<_Diff>(_Count - _Mid_offset);
                     const auto _Remaining   = static_cast<_Diff>(_Right_count - _Right_true_count);
                     const auto _High        = _Stable_partition_common_buffered(
-                               _STD move(_Right), _Last, _Pred, _Proj, _Remaining, _Temp_ptr, _Capacity);
+                        _STD move(_Right), _Last, _Pred, _Proj, _Remaining, _Temp_ptr, _Capacity);
                     _Right = _STD move(_High.first);
                     _Right_true_count += _High.second;
                     break;
@@ -5952,13 +5895,11 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
-            && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
+              && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
     constexpr void _Push_heap_by_index(const _It _First, iter_difference_t<_It> _Hole,
         const iter_difference_t<_It> _Top, _Ty&& _Val, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-        // clang-format on
         // percolate _Hole to _Top or where _Val belongs
         while (_Top < _Hole) {
             const auto _Idx = static_cast<iter_difference_t<_It>>((_Hole - 1) >> 1); // shift for codegen
@@ -6090,13 +6031,11 @@ _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
-            && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
+              && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
     constexpr void _Pop_heap_hole_by_index(_It _First, iter_difference_t<_It> _Hole,
         const iter_difference_t<_It> _Bottom, _Ty&& _Val, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-        // clang-format on
         // percolate _Hole to _Bottom, then push _Val
         _STL_INTERNAL_CHECK(_Hole >= 0);
         _STL_INTERNAL_CHECK(_Bottom > 0);
@@ -6127,13 +6066,11 @@ namespace ranges {
         _RANGES _Push_heap_by_index(_STD move(_First), _Hole, _Top, _STD forward<_Ty>(_Val), _Pred, _Proj1, _Proj2);
     }
 
-    // clang-format off
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
-            && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
+              && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
     constexpr void _Pop_heap_hole_unchecked(
         _It _First, const _It _Last, const _It _Dest, _Ty&& _Val, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-        // clang-format on
         // pop *_First to *_Dest and reheap
         _STL_INTERNAL_CHECK(_First != _Last);
         _STL_INTERNAL_CHECK(_First != _Dest);
@@ -7182,11 +7119,9 @@ void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
     template <forward_iterator _It, sentinel_for<_It> _Se, class _Pr, class _Pj>
         requires indirect_strict_weak_order<_Pr, projected<_It, _Pj>>
     _NODISCARD constexpr _It _Is_sorted_until_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
-        // clang-format on
         if (_First == _Last) {
             return _First;
         }
@@ -7404,11 +7339,9 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <bidirectional_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
             requires sortable<_It, _Pr, _Pj>
         _It operator()(_It _First, _It _Mid, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            // clang-format on
             _Adl_verify_range(_First, _Mid);
             _Adl_verify_range(_Mid, _Last);
 
@@ -7421,12 +7354,10 @@ namespace ranges {
             return _First;
         }
 
-        // clang-format off
         template <bidirectional_range _Rng, class _Pr = ranges::less, class _Pj = identity>
             requires sortable<iterator_t<_Rng>, _Pr, _Pj>
         borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, iterator_t<_Rng> _Mid, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            // clang-format on
             auto _First = _RANGES begin(_Range);
             auto _Last  = _RANGES end(_Range);
 
@@ -7758,12 +7689,9 @@ namespace ranges {
         }
     }
 
-    // clang-format off
     template <random_access_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
-    _NODISCARD constexpr subrange<_It> _Partition_by_median_guess_common(
-        _It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
-        // clang-format on
+    _NODISCARD constexpr subrange<_It> _Partition_by_median_guess_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
         // Choose a pivot, partition [_First, _Last) into elements less than pivot, elements equal to pivot, and
         // elements greater than pivot; return the equal partition as a subrange.
 
@@ -8107,11 +8035,9 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
             requires sortable<_It, _Pr, _Pj>
         _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
@@ -8122,11 +8048,9 @@ namespace ranges {
             return _First;
         }
 
-        // clang-format off
         template <random_access_range _Rng, class _Pr = ranges::less, class _Pj = identity>
             requires sortable<iterator_t<_Rng>, _Pr, _Pj>
         borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            // clang-format on
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Get_final_iterator_unwrapped(_Range);
 
@@ -8546,15 +8470,12 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It1, sentinel_for<_It1> _Se1, random_access_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
-            requires indirectly_copyable<_It1, _It2>
-                && sortable<_It2, _Pr, _Pj2>
-                && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>
+            requires indirectly_copyable<_It1, _It2> && sortable<_It2, _Pr, _Pj2>
+                  && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>
         constexpr partial_sort_copy_result<_It1, _It2> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
             _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
 
@@ -8567,16 +8488,13 @@ namespace ranges {
             return {_STD move(_First1), _STD move(_First2)};
         }
 
-        // clang-format off
         template <input_range _Rng1, random_access_range _Rng2, class _Pr = ranges::less, class _Pj1 = identity,
             class _Pj2 = identity>
-            requires indirectly_copyable<iterator_t<_Rng1>, iterator_t<_Rng2>>
-                && sortable<iterator_t<_Rng2>, _Pr, _Pj2>
-                && indirect_strict_weak_order<_Pr, projected<iterator_t<_Rng1>, _Pj1>,
-                    projected<iterator_t<_Rng2>, _Pj2>>
+            requires indirectly_copyable<iterator_t<_Rng1>, iterator_t<_Rng2>> && sortable<iterator_t<_Rng2>, _Pr, _Pj2>
+                  && indirect_strict_weak_order<_Pr, projected<iterator_t<_Rng1>, _Pj1>,
+                      projected<iterator_t<_Rng2>, _Pj2>>
         constexpr partial_sort_copy_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            // clang-format on
             auto _First   = _RANGES begin(_Range1);
             auto _UResult = _Partial_sort_copy_unchecked(_Unwrap_range_iter<_Rng1>(_STD move(_First)), _Uend(_Range1),
                 _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
@@ -9508,7 +9426,7 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr> //
+        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
@@ -9629,7 +9547,7 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr> //
+        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
@@ -9784,7 +9702,7 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr> //
+        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
@@ -9923,7 +9841,6 @@ namespace ranges {
             return *_RANGES _Max_element_unchecked(_First, _Last, _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
 
-        // clang-format off
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
@@ -9946,7 +9863,6 @@ namespace ranges {
                 return _Found;
             }
         }
-        // clang-format on
     };
 
     _EXPORT_STD inline constexpr _Max_fn max{_Not_quite_object::_Construct_tag{}};
@@ -9993,7 +9909,6 @@ namespace ranges {
             return *_RANGES _Min_element_unchecked(_First, _Last, _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
 
-        // clang-format off
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
@@ -10016,7 +9931,6 @@ namespace ranges {
                 return _Found;
             }
         }
-        // clang-format on
     };
 
     _EXPORT_STD inline constexpr _Min_fn min{_Not_quite_object::_Construct_tag{}};
@@ -10091,13 +10005,11 @@ namespace ranges {
             return {static_cast<_Ty>(*_Found.min), static_cast<_Ty>(*_Found.max)};
         }
 
-        // clang-format off
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
         _NODISCARD constexpr minmax_result<range_value_t<_Rng>> operator()(
             _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            // clang-format on
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(

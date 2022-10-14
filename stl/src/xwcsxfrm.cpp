@@ -44,7 +44,7 @@ _EXTERN_C_UNLESS_PURE
 //
 // Exceptions:
 //     Non-standard: if OM/API error, return INT_MAX.
-_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string1) _Post_readable_size_(return )
+_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string1) _Post_readable_size_(return)
                                                           wchar_t* string1,
     _In_z_ wchar_t* end1, const wchar_t* string2, const wchar_t* end2, const _Collvec* ploc) {
     size_t n1   = end1 - string1;

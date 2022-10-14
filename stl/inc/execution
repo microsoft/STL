@@ -269,7 +269,7 @@ struct _Parallelism_allocate_traits {
 
 #ifdef __cpp_aligned_new
     __declspec(allocator) static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
-        void* _Result = ::operator new (_Bytes, align_val_t{_Align}, nothrow);
+        void* _Result = ::operator new(_Bytes, align_val_t{_Align}, nothrow);
         if (!_Result) {
             _Throw_parallelism_resources_exhausted();
         }
@@ -4187,10 +4187,11 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt
                     while (const auto _Stolen_key = _Operation._Team._Get_next_key()) {
                         const auto _Chunk_number = _Stolen_key._Chunk_number;
                         const auto _Chunk1       = _Operation._Basis1._Get_chunk(_Stolen_key);
-                        _Val                     = _STD transform_reduce(_Chunk1._First, _Chunk1._Last,
-                                                _Operation._Basis2._Get_first(
-                                                    _Chunk_number, _Operation._Team._Get_chunk_offset(_Chunk_number)),
-                                                _STD move(_Val), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op));
+
+                        _Val = _STD transform_reduce(_Chunk1._First, _Chunk1._Last,
+                            _Operation._Basis2._Get_first(
+                                _Chunk_number, _Operation._Team._Get_chunk_offset(_Chunk_number)),
+                            _STD move(_Val), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op));
                     }
                 } // join with _Work_ptr threads
 

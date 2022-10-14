@@ -1027,9 +1027,9 @@ public:
         // initialize alternative _Idx from _Ilist and _Args...
     }
 
-    template <class _Ty, enable_if_t<!is_same_v<_Remove_cvref_t<_Ty>, variant> //
-                                         && is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty> //
-                                         && is_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>, //
+    template <class _Ty, enable_if_t<!is_same_v<_Remove_cvref_t<_Ty>, variant>
+                                         && is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>
+                                         && is_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>,
                              int> = 0>
     _CONSTEXPR20 variant& operator=(_Ty&& _Obj) noexcept(
         is_nothrow_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>&&
@@ -1397,14 +1397,12 @@ _NODISCARD constexpr bool operator>=(const variant<_Types...>& _Left, const vari
 }
 
 #ifdef __cpp_lib_concepts
-// clang-format off
 _EXPORT_STD template <class... _Types>
     requires (three_way_comparable<_Types> && ...)
 _NODISCARD constexpr common_comparison_category_t<compare_three_way_result_t<_Types>...>
     operator<=>(const variant<_Types...>& _Left, const variant<_Types...>& _Right) noexcept(
         conjunction_v<is_nothrow_invocable_r<common_comparison_category_t<compare_three_way_result_t<_Types>...>,
             compare_three_way, const _Types&, const _Types&>...>) /* strengthened */ {
-    // clang-format on
     // determine the three-way comparison of _Left's and _Right's index, if equal
     // return the three-way comparison of the contained values of _Left and _Right
     using _Visitor             = _Variant_relop_visitor2<compare_three_way,
@@ -1642,8 +1640,9 @@ inline constexpr bool
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
 inline constexpr bool _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>,
-    const variant<_Types...>&, _Rest...> = (_Variant_all_visit_results_convertible<_Expected, _Callable,
-                                                _Meta_list<_Args..., const _Types&>, _Rest...> && ...);
+    const variant<_Types...>&, _Rest...> =
+    (_Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args..., const _Types&>, _Rest...>
+        && ...);
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
 inline constexpr bool

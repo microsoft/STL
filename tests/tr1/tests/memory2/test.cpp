@@ -32,12 +32,15 @@ static void ctors() { // construct a gazillion shared and weak pointers
         lock_guard<mutex> lock(start_mtx);
     }
 
-    for (int i = 0; i < NSETS; ++i)
-        for (int j = 0; j < NREPS; ++j)
-            if (rand() % 2 != 0)
+    for (int i = 0; i < NSETS; ++i) {
+        for (int j = 0; j < NREPS; ++j) {
+            if (rand() % 2 != 0) {
                 shared_ptr<int> sp0(sp);
-            else
+            } else {
                 weak_ptr<int> wp0(sp);
+            }
+        }
+    }
 }
 
 static void tctors() { // check for race conditions
@@ -46,12 +49,14 @@ static void tctors() { // check for race conditions
 
     { // wait for access
         lock_guard<mutex> lock(start_mtx);
-        for (int i = 0; i < NTHREADS; ++i)
+        for (int i = 0; i < NTHREADS; ++i) {
             grp.emplace_back(ctors);
+        }
     }
 
-    for (int i = 0; i < NTHREADS; ++i)
+    for (int i = 0; i < NTHREADS; ++i) {
         grp[i].join();
+    }
 
     CHECK_INT(sp.use_count(), 1);
 }
