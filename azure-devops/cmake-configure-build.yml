@@ -71,4 +71,4 @@ steps:
   displayName: 'Build the benchmarks'
   timeoutInMinutes: 10
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-  condition: ne(parameters['benchmarkBuildOutputLocationVar'], '')
+  condition: ne('${{ parameters.benchmarkBuildOutputLocationVar }}', '')
