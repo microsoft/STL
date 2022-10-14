@@ -11,16 +11,14 @@
 
 #if !_HAS_CXX17
 _EMIT_STL_WARNING(STL4038, "The contents of <any> are available only with C++17 or later.");
-#else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
+#elif !_HAS_STATIC_RTTI // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
+_EMIT_STL_WARNING(STL4040, "The contents of <any> require static RTTI.");
+#else // ^^^ !_HAS_STATIC_RTTI / _HAS_STATIC_RTTI vvv
 #include <initializer_list>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
 #include <xmemory>
-
-#if !_HAS_STATIC_RTTI
-#error class any requires static RTTI.
-#endif // _HAS_STATIC_RTTI
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -31,7 +29,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-class bad_any_cast : public bad_cast { // thrown by failed any_cast
+_EXPORT_STD class bad_any_cast : public bad_cast { // thrown by failed any_cast
 public:
     _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "Bad any_cast";
@@ -45,8 +43,8 @@ public:
 inline constexpr size_t _Any_trivial_space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
 template <class _Ty>
-inline constexpr bool _Any_is_trivial = alignof(_Ty) <= alignof(max_align_t)
-                                     && is_trivially_copyable_v<_Ty> && sizeof(_Ty) <= _Any_trivial_space_size;
+inline constexpr bool _Any_is_trivial =
+    alignof(_Ty) <= alignof(max_align_t) && is_trivially_copyable_v<_Ty> && sizeof(_Ty) <= _Any_trivial_space_size;
 
 inline constexpr size_t _Any_small_space_size = (_Small_object_num_ptrs - 2) * sizeof(void*);
 
@@ -107,7 +105,7 @@ template <class _Ty>
 inline constexpr _Any_small_RTTI _Any_small_RTTI_obj = {
     &_Any_small_RTTI::_Destroy_impl<_Ty>, &_Any_small_RTTI::_Copy_impl<_Ty>, &_Any_small_RTTI::_Move_impl<_Ty>};
 
-class any { // storage for any (CopyConstructible) type
+_EXPORT_STD class any { // storage for any (CopyConstructible) type
 public:
     // Construction and destruction [any.cons]
     constexpr any() noexcept {}
@@ -353,23 +351,23 @@ private:
 };
 
 // Non-member functions [any.nonmembers]
-inline void swap(any& _Left, any& _Right) noexcept {
+_EXPORT_STD inline void swap(any& _Left, any& _Right) noexcept {
     _Left.swap(_Right);
 }
 
-template <class _ValueType, class... _Types,
+_EXPORT_STD template <class _ValueType, class... _Types,
     enable_if_t<is_constructible_v<any, in_place_type_t<_ValueType>, _Types...>, int> = 0>
 _NODISCARD any make_any(_Types&&... _Args) { // construct an any containing a _ValueType initialized with _Args...
     return any{in_place_type<_ValueType>, _STD forward<_Types>(_Args)...};
 }
-template <class _ValueType, class _Elem, class... _Types,
+_EXPORT_STD template <class _ValueType, class _Elem, class... _Types,
     enable_if_t<is_constructible_v<any, in_place_type_t<_ValueType>, initializer_list<_Elem>&, _Types...>, int> = 0>
 _NODISCARD any make_any(initializer_list<_Elem> _Ilist, _Types&&... _Args) {
     // construct an any containing a _ValueType initialized with _Ilist and _Args...
     return any{in_place_type<_ValueType>, _Ilist, _STD forward<_Types>(_Args)...};
 }
 
-template <class _ValueType>
+_EXPORT_STD template <class _ValueType>
 _NODISCARD const _ValueType* any_cast(const any* const _Any) noexcept {
     // retrieve a pointer to the _ValueType contained in _Any, or null
     static_assert(!is_void_v<_ValueType>, "std::any cannot contain void.");
@@ -384,7 +382,7 @@ _NODISCARD const _ValueType* any_cast(const any* const _Any) noexcept {
         return _Any->_Cast<_Remove_cvref_t<_ValueType>>();
     }
 }
-template <class _ValueType>
+_EXPORT_STD template <class _ValueType>
 _NODISCARD _ValueType* any_cast(any* const _Any) noexcept {
     // retrieve a pointer to the _ValueType contained in _Any, or null
     static_assert(!is_void_v<_ValueType>, "std::any cannot contain void.");
@@ -400,7 +398,7 @@ _NODISCARD _ValueType* any_cast(any* const _Any) noexcept {
     }
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD remove_cv_t<_Ty> any_cast(const any& _Any) {
     static_assert(is_constructible_v<remove_cv_t<_Ty>, const _Remove_cvref_t<_Ty>&>,
         "any_cast<T>(const any&) requires remove_cv_t<T> to be constructible from "
@@ -413,7 +411,7 @@ _NODISCARD remove_cv_t<_Ty> any_cast(const any& _Any) {
 
     return static_cast<remove_cv_t<_Ty>>(*_Ptr);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD remove_cv_t<_Ty> any_cast(any& _Any) {
     static_assert(is_constructible_v<remove_cv_t<_Ty>, _Remove_cvref_t<_Ty>&>,
         "any_cast<T>(any&) requires remove_cv_t<T> to be constructible from remove_cv_t<remove_reference_t<T>>&");
@@ -425,7 +423,7 @@ _NODISCARD remove_cv_t<_Ty> any_cast(any& _Any) {
 
     return static_cast<remove_cv_t<_Ty>>(*_Ptr);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD remove_cv_t<_Ty> any_cast(any&& _Any) {
     static_assert(is_constructible_v<remove_cv_t<_Ty>, _Remove_cvref_t<_Ty>>,
         "any_cast<T>(any&&) requires remove_cv_t<T> to be constructible from remove_cv_t<remove_reference_t<T>>");
@@ -444,7 +442,7 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX17
+#endif // ^^^ _HAS_STATIC_RTTI ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _ANY_

@@ -62,7 +62,7 @@ public:
     }
 };
 
-template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,
+_EXPORT_STD template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,
     class _Alloc = allocator<pair<const _Kty, _Ty>>>
 class unordered_map : public _Hash<_Umap_traits<_Kty, _Ty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, false>> {
     // hash table of {key, mapped} values, unique keys
@@ -521,21 +521,21 @@ unordered_map(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
-template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
 void swap(unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Left,
     unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
 #if _HAS_CXX20
-template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
 typename unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
     unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
-template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
 _NODISCARD bool operator==(const unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Left,
     const unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Right) {
     return _Hash_equal(_Left, _Right);
@@ -549,7 +549,7 @@ _NODISCARD bool operator!=(const unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Allo
 }
 #endif // !_HAS_CXX20
 
-template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,
+_EXPORT_STD template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,
     class _Alloc = allocator<pair<const _Kty, _Ty>>>
 class unordered_multimap : public _Hash<_Umap_traits<_Kty, _Ty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, true>> {
     // hash table of {key, mapped} values, non-unique keys
@@ -890,21 +890,21 @@ unordered_multimap(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc>, _Hasher, _A
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
-template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
 void swap(unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Left,
     unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
 #if _HAS_CXX20
-template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
 typename unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
     unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
-template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
 _NODISCARD bool operator==(const unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Left,
     const unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Right) {
     return _Hash_equal(_Left, _Right);
@@ -922,15 +922,15 @@ _NODISCARD bool operator!=(const unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, 
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD unordered_map;
     using _STD unordered_multimap;
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 #endif // _HAS_TR1_NAMESPACE
 
 #if _HAS_CXX17
 namespace pmr {
-    template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>>
+    _EXPORT_STD template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>>
     using unordered_map = _STD unordered_map<_Kty, _Ty, _Hasher, _Keyeq, polymorphic_allocator<pair<const _Kty, _Ty>>>;
 
-    template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>>
+    _EXPORT_STD template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>>
     using unordered_multimap =
         _STD unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, polymorphic_allocator<pair<const _Kty, _Ty>>>;
 } // namespace pmr

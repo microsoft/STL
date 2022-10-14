@@ -37,10 +37,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <DllDefName>$(LibOutputFileName).$(MsvcpFlavor)</DllDefName>
         <DllDef>$(IntermediateOutputDirectory)\$(DllDefName).def</DllDef>
 
-        <LinkGenerateDebugInformation Condition="'$(BLD_REL_NO_DBINFO)' != '1'">true</LinkGenerateDebugInformation>
-        <LinkProgramDataBaseFileName Condition="'$(BLD_REL_NO_DBINFO)' != '1'">$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
+        <LinkGenerateDebugInformation>true</LinkGenerateDebugInformation>
+        <LinkProgramDataBaseFileName>$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
 
-        <LinkAdditionalOptions Condition="'$(BLD_REL_NO_DBINFO)' != '1'">-debugtype:cv,fixup $(LinkAdditionalOptions)</LinkAdditionalOptions>
+        <LinkAdditionalOptions>-debugtype:cv,fixup $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions Condition="$(DebugBuild) != 'true'">-opt:ref,icf=3 $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions Condition="$(DebugBuild) == 'true'">-opt:ref,noicf $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions>-nodefaultlib:libcpmt$(BuildSuffix).lib $(LinkAdditionalOptions)</LinkAdditionalOptions>

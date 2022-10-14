@@ -27,13 +27,13 @@ _INLINE_VAR constexpr bool _Always_false = false;
 
 // stuff from <functional>
 #if _HAS_AUTO_PTR_ETC
-template <class _Arg, class _Result>
+_EXPORT_STD template <class _Arg, class _Result>
 struct unary_function { // base class for unary functions
     using argument_type = _Arg;
     using result_type   = _Result;
 };
 
-template <class _Arg1, class _Arg2, class _Result>
+_EXPORT_STD template <class _Arg1, class _Arg2, class _Result>
 struct binary_function { // base class for binary functions
     using first_argument_type  = _Arg1;
     using second_argument_type = _Arg2;
@@ -63,7 +63,7 @@ _NODISCARD _Ty _Fake_copy_init(_Ty) noexcept;
 
 #pragma warning(pop)
 
-template <class _Ty = void>
+_EXPORT_STD template <class _Ty = void>
 struct plus {
     using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
     using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
@@ -74,7 +74,7 @@ struct plus {
     }
 };
 
-template <class _Ty = void>
+_EXPORT_STD template <class _Ty = void>
 struct minus {
     using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
     using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
@@ -85,7 +85,7 @@ struct minus {
     }
 };
 
-template <class _Ty = void>
+_EXPORT_STD template <class _Ty = void>
 struct multiplies {
     using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
     using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
@@ -96,7 +96,7 @@ struct multiplies {
     }
 };
 
-template <class _Ty = void>
+_EXPORT_STD template <class _Ty = void>
 struct equal_to {
     using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
     using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
@@ -108,7 +108,7 @@ struct equal_to {
     }
 };
 
-template <class _Ty = void>
+_EXPORT_STD template <class _Ty = void>
 struct not_equal_to {
     using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
     using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
@@ -120,7 +120,7 @@ struct not_equal_to {
     }
 };
 
-template <class _Ty = void>
+_EXPORT_STD template <class _Ty = void>
 struct greater {
     using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
     using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
@@ -132,7 +132,7 @@ struct greater {
     }
 };
 
-template <class _Ty = void>
+_EXPORT_STD template <class _Ty = void>
 struct less {
     using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
     using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
@@ -144,7 +144,7 @@ struct less {
     }
 };
 
-template <class _Ty = void>
+_EXPORT_STD template <class _Ty = void>
 struct greater_equal {
     using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
     using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
@@ -156,7 +156,7 @@ struct greater_equal {
     }
 };
 
-template <class _Ty = void>
+_EXPORT_STD template <class _Ty = void>
 struct less_equal {
     using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
     using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
@@ -276,12 +276,12 @@ struct less_equal<void> {
     using is_transparent = int;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty* addressof(_Ty& _Val) noexcept {
     return __builtin_addressof(_Val);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 const _Ty* addressof(const _Ty&&) = delete;
 
 template <class _Ptrty>

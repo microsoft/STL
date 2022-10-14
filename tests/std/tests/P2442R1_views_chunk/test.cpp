@@ -14,9 +14,7 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewChunk = requires(Rng&& r) {
-    views::chunk(forward<Rng>(r), 2);
-};
+concept CanViewChunk = requires(Rng&& r) { views::chunk(forward<Rng>(r), 2); };
 
 constexpr auto equal_ranges = [](auto&& left, auto&& right) { return ranges::equal(left, right); };
 
@@ -211,8 +209,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         if constexpr (CanMemberBegin<const R>) {
             const same_as<sentinel_t<const R>> auto cs = as_const(r).end();
             assert((r.begin() == cs) == is_empty);
-            STATIC_ASSERT(common_range<const R> //
-                          == (forward_range<const V> && common_range<const V> //
+            STATIC_ASSERT(common_range<const R>
+                          == (forward_range<const V> && common_range<const V>
                               && (sized_range<const V> || !bidirectional_range<const V>) ));
             if constexpr (common_range<const R> && bidirectional_range<V>) {
                 if (!is_empty) {

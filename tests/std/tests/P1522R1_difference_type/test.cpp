@@ -856,9 +856,7 @@ T val() noexcept;
 
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
 template <class T, class U>
-concept CanConditional = requires {
-    true ? val<T>() : val<U>();
-};
+concept CanConditional = requires { true ? val<T>() : val<U>(); };
 #else // ^^^ has concepts / has no concepts vvv
 template <class T, class U, class = void>
 constexpr bool CanConditional = false;

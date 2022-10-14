@@ -35,7 +35,7 @@ struct _No_completion_function {
     void operator()() noexcept {}
 };
 
-template <class _Completion_function = _No_completion_function>
+_EXPORT_STD template <class _Completion_function = _No_completion_function>
 class barrier;
 
 inline constexpr ptrdiff_t _Barrier_arrival_token_mask = 1;
@@ -66,7 +66,7 @@ private:
     ptrdiff_t _Value;
 };
 
-template <class _Completion_function>
+_EXPORT_STD template <class _Completion_function>
 class barrier {
 public:
     static_assert(

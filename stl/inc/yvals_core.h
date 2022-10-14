@@ -335,6 +335,7 @@
 // P2443R1 views::chunk_by
 // P2445R1 forward_like()
 // P2446R2 views::as_rvalue
+// P2465R3 Standard Library Modules std And std.compat
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2549R1 unexpected<E>::error()
@@ -448,14 +449,12 @@
 #define _STL_PRAGMA_MESSAGE(MESSAGE) _STL_PRAGMA(message(MESSAGE))
 #define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _CRT_STRINGIZE(__LINE__) "): " MESSAGE)
 
-// clang-format off
-#define _EMIT_STL_WARNING(NUMBER, MESSAGE) \
+#define _EMIT_STL_WARNING(NUMBER, MESSAGE)             \
     _EMIT_STL_MESSAGE("warning " #NUMBER ": " MESSAGE) \
     static_assert(true, "")
-#define _EMIT_STL_ERROR(NUMBER, MESSAGE) \
+#define _EMIT_STL_ERROR(NUMBER, MESSAGE)             \
     _EMIT_STL_MESSAGE("error " #NUMBER ": " MESSAGE) \
     static_assert(false, "Error in C++ Standard Library usage.")
-// clang-format on
 
 #ifndef _STL_WARNING_LEVEL
 #if defined(_MSVC_WARNING_LEVEL) && _MSVC_WARNING_LEVEL >= 4
@@ -770,7 +769,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202209L
+#define _MSVC_STL_UPDATE  202210L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -780,8 +779,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or new
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 14
-_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 14.0.0 or newer.");
+#if __clang_major__ < 15
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 15.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1934 // Coarse-grained, not inspecting _MSC_FULL_VER
@@ -823,6 +822,13 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.34 or ne
 #else // ^^^ constexpr in C++23 and later / inline (not constexpr) in C++20 and earlier vvv
 #define _CONSTEXPR23 inline
 #endif // ^^^ inline (not constexpr) in C++20 and earlier ^^^
+
+// P2465R3 Standard Library Modules std And std.compat
+#if _HAS_CXX23 && defined(_BUILD_STD_MODULE)
+#define _EXPORT_STD export
+#else // _HAS_CXX23 && defined(_BUILD_STD_MODULE)
+#define _EXPORT_STD
+#endif // _HAS_CXX23 && defined(_BUILD_STD_MODULE)
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
@@ -1349,7 +1355,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4039 is used to warn that "The contents of <coroutine> are not available with /await."
 
-// next warning number: STL4040
+// STL4040 is used to warn that "The contents of <any> require static RTTI."
+
+// next warning number: STL4041
 
 // next error number: STL1006
 
@@ -1468,7 +1476,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_void_t                           201411L
 
 #if _HAS_CXX17
-#define __cpp_lib_any                        201606L
+#if _HAS_STATIC_RTTI
+#define __cpp_lib_any 201606L
+#endif // _HAS_STATIC_RTTI
 #define __cpp_lib_apply                      201603L
 #define __cpp_lib_atomic_is_always_lock_free 201603L
 #define __cpp_lib_boyer_moore_searcher       201603L
@@ -1625,9 +1635,14 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_expected          202202L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_forward_like       202207L
-#define __cpp_lib_invoke_r           202106L
-#define __cpp_lib_is_scoped_enum     202011L
+#define __cpp_lib_forward_like   202207L
+#define __cpp_lib_invoke_r       202106L
+#define __cpp_lib_is_scoped_enum 202011L
+
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules
+#define __cpp_lib_modules 202207L
+#endif // !defined(__clang__) && !defined(__EDG__)
+
 #define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts

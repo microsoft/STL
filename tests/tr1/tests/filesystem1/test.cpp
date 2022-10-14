@@ -32,18 +32,21 @@ typedef PFX path::value_type path_value_type;
 
 STD string fix_bslash(const STD string& tbl_str) { // convert table entry to preferred
     STD string str;
-    for (size_t idx = 0; idx < tbl_str.size(); ++idx)
-        if (tbl_str[idx] == '/' || tbl_str[idx] == '\\')
+    for (size_t idx = 0; idx < tbl_str.size(); ++idx) {
+        if (tbl_str[idx] == '/' || tbl_str[idx] == '\\') {
             str.append((size_t) 1, BSLASH[0]);
-        else
+        } else {
             str.append((size_t) 1, tbl_str[idx]);
+        }
+    }
     return str;
 }
 
 STD string native_to_char(const path_string_type& path_str) { // convert native to string
     STD string str;
-    for (size_t idx = 0; idx < path_str.size(); ++idx)
+    for (size_t idx = 0; idx < path_str.size(); ++idx) {
         str.append((size_t) 1, (char) path_str[idx]);
+    }
     return str;
 }
 
@@ -141,29 +144,33 @@ void test_path_data() { // test path accesses against data tables
 
         str.clear();
         PFX path::iterator pi = p.begin();
-        for (int i = 0; i < 10 && pi != p.end(); ++i, ++pi)
-            if (str.empty())
+        for (int i = 0; i < 10 && pi != p.end(); ++i, ++pi) {
+            if (str.empty()) {
                 str.append(*pi);
-            else { // append with separator
+            } else { // append with separator
                 str.append(1, '|');
                 str.append(*pi);
             }
+        }
         CHECK_TBL(str, pd->pd_fields);
 
         str.clear();
         pi = p.end();
-        if (pi != p.begin())
+        if (pi != p.begin()) {
             for (int i = 0; i < 10; ++i) { // prepend an element
                 --pi;
-                if (str.empty())
+                if (str.empty()) {
                     str.append(*pi);
-                else { // prepend with separator
+                } else { // prepend with separator
                     str.insert((size_t) 0, (size_t) 1, '|');
                     str.insert((size_t) 0, *pi);
                 }
-                if (pi == p.begin())
+
+                if (pi == p.begin()) {
                     break;
+                }
             }
+        }
         CHECK_TBL(str, pd->pd_fields);
 
         str = p.native();
@@ -893,8 +900,9 @@ void test_ops() { // test operations
         PFX create_directory_symlink(PFX current_path(), tpz, ec);
         CHECK(PFX exists(tpz));
     } catch (...) { // link failed
-        if (!terse)
+        if (!terse) {
             CSTD printf("symlink not supported\n");
+        }
     }
     PFX remove(tpy);
     PFX remove(tpz);
@@ -915,8 +923,9 @@ void test_ops() { // test operations
         PFX create_hard_link(tpx, tpz, ec);
         CHECK(PFX exists(tpz));
     } catch (...) { // link failed
-        if (!terse)
+        if (!terse) {
             CSTD printf("hard link not supported\n");
+        }
     }
     PFX remove(tpy);
     PFX remove(tpz);

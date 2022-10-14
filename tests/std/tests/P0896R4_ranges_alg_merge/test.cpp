@@ -30,7 +30,7 @@ struct instantiator {
     static constexpr P elements1[] = {{0, 10}, {0, 11}, {0, 12}, {1, 10}, {1, 11}, {3, 10}};
     static constexpr P elements2[] = {{13, 0}, {14, 0}, {10, 2}, {11, 3}, {12, 3}};
     static constexpr P expected[]  = {
-         {0, 10}, {0, 11}, {0, 12}, {13, 0}, {14, 0}, {1, 10}, {1, 11}, {10, 2}, {3, 10}, {11, 3}, {12, 3}};
+        {0, 10}, {0, 11}, {0, 12}, {13, 0}, {14, 0}, {1, 10}, {1, 11}, {10, 2}, {3, 10}, {11, 3}, {12, 3}};
 
     static constexpr auto counting_compare(size_t& counter) {
         return [&counter](auto&& x, auto&& y) {
