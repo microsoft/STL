@@ -56,12 +56,8 @@ _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
     const unsigned long _Chars = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM
                                                     | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK,
         nullptr, _Message_id, _Lang_id, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
-
-    if (_Chars == 0) {
-        return 0;
-    } else {
-        return _Chars - 1;
-    }
+    
+    return (_Chars == 0) ? 0 : _Chars - 1;
 }
 
 void __CLRCALL_PURE_OR_STDCALL __std_system_error_deallocate_message(char* const _Str) noexcept {
