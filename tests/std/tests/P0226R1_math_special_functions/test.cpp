@@ -29,7 +29,7 @@ bool isclose(Float f, Float g, const int ulps = 1) {
 }
 
 template <class Float>
-constexpr static Float half_pi = static_cast<Float>(1.57'079'632'679'489'662);
+constexpr Float half_pi = static_cast<Float>(1.57'079'632'679'489'662);
 
 constexpr float nanf_v       = numeric_limits<float>::quiet_NaN();
 constexpr double nand_v      = numeric_limits<double>::quiet_NaN();
@@ -99,11 +99,15 @@ void test_beta() {
         assert(isclose(beta(1.0, 1.0), 1.0));
         assert(isclose(beta(1.0f, 1.0f), 1.0f));
         assert(isclose(beta(1.0L, 1.0L), 1.0L));
+        assert(isclose(betaf(1.0f, 1.0f), 1.0f));
+        assert(isclose(betal(1.0L, 1.0L), 1.0L));
     }
     {
         assert(isclose(beta(2.0, 3.0), 0.0833'333'333'333'333'333, 2));
         assert(isclose(beta(2.0f, 3.0f), 0.0833'333'333'333'333'333f));
         assert(isclose(beta(2.0L, 3.0L), 0.0833'333'333'333'333'333L, 2));
+        assert(isclose(betaf(2.0f, 3.0f), 0.0833'333'333'333'333'333f));
+        assert(isclose(betal(2.0L, 3.0L), 0.0833'333'333'333'333'333L, 2));
     }
 }
 
@@ -466,8 +470,8 @@ void test_sph_bessel() {
         assert(isclose(sph_bessel(1, 1.2345), 0.352'106'432'958'031'885));
         assert(isclose(sph_bessel(1, 1.2345f), 0.352'106'432'958'031'885f));
         assert(isclose(sph_bessel(1, 1.2345L), 0.352'106'432'958'031'885L));
-        assert(isclose(sph_bessel(1, 1.2345f), 0.352'106'432'958'031'885f));
-        assert(isclose(sph_bessel(1, 1.2345L), 0.352'106'432'958'031'885L));
+        assert(isclose(sph_besself(1, 1.2345f), 0.352'106'432'958'031'885f));
+        assert(isclose(sph_bessell(1, 1.2345L), 0.352'106'432'958'031'885L));
     }
 }
 
@@ -485,8 +489,8 @@ void test_sph_legendre() {
         assert(isclose(sph_legendre(3, 0, 1.2345), -0.302'386'890'645'537'993, 2));
         assert(isclose(sph_legendre(3, 0, 1.2345f), -0.302'386'890'645'537'993f));
         assert(isclose(sph_legendre(3, 0, 1.2345L), -0.302'386'890'645'537'993L, 2));
-        assert(isclose(sph_legendre(3, 0, 1.2345f), -0.302'386'890'645'537'993f));
-        assert(isclose(sph_legendre(3, 0, 1.2345L), -0.302'386'890'645'537'993L, 2));
+        assert(isclose(sph_legendref(3, 0, 1.2345f), -0.302'386'890'645'537'993f));
+        assert(isclose(sph_legendrel(3, 0, 1.2345L), -0.302'386'890'645'537'993L, 2));
     }
 }
 
@@ -503,8 +507,8 @@ void test_sph_neumann() {
         assert(isclose(sph_neumann(1, 1.2345), -0.981'200'877'819'308'099, 2));
         assert(isclose(sph_neumann(1, 1.2345f), -0.981'200'877'819'308'099f));
         assert(isclose(sph_neumann(1, 1.2345L), -0.981'200'877'819'308'099L, 2));
-        assert(isclose(sph_neumann(1, 1.2345f), -0.981'200'877'819'308'099f));
-        assert(isclose(sph_neumann(1, 1.2345L), -0.981'200'877'819'308'099L, 2));
+        assert(isclose(sph_neumannf(1, 1.2345f), -0.981'200'877'819'308'099f));
+        assert(isclose(sph_neumannl(1, 1.2345L), -0.981'200'877'819'308'099L, 2));
     }
 }
 
