@@ -63,7 +63,7 @@ steps:
   displayName: 'Configure the benchmarks'
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-  condition: ne(parameters['benchmarkBuildOutputLocationVar'], '')
+  condition: ne('${{ parameters.benchmarkBuildOutputLocationVar }}', '')
 - script: |
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
