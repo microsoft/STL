@@ -71,7 +71,5 @@ function(add_benchmark name)
     target_link_libraries(benchmark-${name} PRIVATE benchmark::benchmark)
 endfunction()
 
-add_benchmark(std_copy
-    src/std_copy.cpp
-    CXX_STANDARD 23
-)
+add_benchmark(std_copy src/std_copy.cpp)
+add_benchmark(random_integer_generation src/random_integer_generation.cpp)

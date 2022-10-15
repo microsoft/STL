@@ -18,9 +18,7 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewAsRvalue = requires(Rng&& r) {
-    views::as_rvalue(forward<Rng>(r));
-};
+concept CanViewAsRvalue = requires(Rng&& r) { views::as_rvalue(forward<Rng>(r)); };
 
 template <ranges::input_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {

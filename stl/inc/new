@@ -84,7 +84,9 @@ _EXPORT_STD class bad_array_new_length;
 #endif // ^^^ !_HAS_EXCEPTIONS ^^^
 
 #if _HAS_CXX20
-_EXPORT_STD struct destroying_delete_t { explicit destroying_delete_t() = default; };
+_EXPORT_STD struct destroying_delete_t {
+    explicit destroying_delete_t() = default;
+};
 _EXPORT_STD inline constexpr destroying_delete_t destroying_delete{};
 #endif // _HAS_CXX20
 

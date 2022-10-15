@@ -34,9 +34,7 @@ using pipeline_t =
         Fun>;
 
 template <class Rng>
-concept CanViewTransform = requires(Rng&& r) {
-    views::transform(forward<Rng>(r), add8);
-};
+concept CanViewTransform = requires(Rng&& r) { views::transform(forward<Rng>(r), add8); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
@@ -356,7 +354,7 @@ constexpr void test_difference_on_const_functor(Rng&& rng) {
         using VItCat  = typename iterator_traits<It>::iterator_category;
         using TVItCat = typename iterator_traits<TVIt>::iterator_category;
         STATIC_ASSERT(
-            is_same_v<TVItCat, VItCat> //
+            is_same_v<TVItCat, VItCat>
             || (is_same_v<TVItCat, random_access_iterator_tag> && is_same_v<VItCat, contiguous_iterator_tag>) );
     }
 

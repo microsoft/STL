@@ -24,9 +24,7 @@ template <class Rng, class V = views::all_t<Rng>>
 using pipeline_t = ranges::elements_view<V, 0>;
 
 template <class Rng>
-concept CanViewElements = requires(Rng&& r) {
-    views::elements<0>(forward<Rng>(r));
-};
+concept CanViewElements = requires(Rng&& r) { views::elements<0>(forward<Rng>(r)); };
 
 constexpr P some_pairs[]        = {{0, -1}, {1, -2}, {2, -3}, {3, -4}, {4, -5}, {5, -6}, {6, -7}, {7, -8}};
 constexpr int expected_keys[]   = {0, 1, 2, 3, 4, 5, 6, 7};

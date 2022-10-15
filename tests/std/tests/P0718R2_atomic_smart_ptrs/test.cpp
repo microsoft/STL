@@ -544,13 +544,16 @@ void ensure_nonmember_calls_compile() {
     if (atomic_compare_exchange_weak(&instance, &loaded, loaded)) {
         // intentionally empty
     }
+
     if (atomic_compare_exchange_weak_explicit(
             &instance, &loaded, loaded, memory_order::relaxed, memory_order::relaxed)) {
         // intentionally empty
     }
+
     if (atomic_compare_exchange_strong(&instance, &loaded, loaded)) {
         // intentionally empty
     }
+
     if (atomic_compare_exchange_strong_explicit(
             &instance, &loaded, loaded, memory_order::relaxed, memory_order::relaxed)) {
         // intentionally empty
@@ -571,6 +574,7 @@ void ensure_member_calls_compile() {
     if (instance.compare_exchange_weak(loaded, constInstance)) {
         // intentionally empty
     }
+
     if (instance.compare_exchange_strong(loaded, constInstance)) {
         // intentionally empty
     }
