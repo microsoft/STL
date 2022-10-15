@@ -7174,7 +7174,7 @@ namespace ranges {
                 // clang-format off
                 (is_nothrow_convertible_v<iterator_t<_ViewTypes>, iterator_t<const _ViewTypes>>
                     && ...)) // strengthened
-                requires(_IsConst && (convertible_to<iterator_t<_ViewTypes>, iterator_t<const _ViewTypes> && ...))
+                requires(_IsConst && (convertible_to<iterator_t<_ViewTypes>, iterator_t<const _ViewTypes>> && ...))
                 // clang-format on
                 : _Current(_STD move(_Rhs._Current)) {}
 
@@ -7190,12 +7190,12 @@ namespace ranges {
                 return *this;
             }
 
-            constexpr void operator++(int) noexcept(noexcept(++*this)) /* strengthened */ {
+            constexpr void operator++(int) noexcept(noexcept(++(_STD declval<_Iterator>()))) /* strengthened */ {
                 ++*this;
             }
 
             constexpr _Iterator operator++(int) noexcept(
-                noexcept(++*this) && is_nothrow_copy_constructible_v<_Iterator>) // strengthened
+                noexcept(++(_STD declval<_Iterator>())) && is_nothrow_copy_constructible_v<_Iterator>) // strengthened
                 requires _All_forward<_IsConst, _ViewTypes...>
             {
                 auto _Temp = *this;
@@ -7213,7 +7213,7 @@ namespace ranges {
             }
 
             constexpr _Iterator operator--(int) noexcept(
-                noexcept(--*this) && is_nothrow_copy_constructible_v<_Iterator>) // strengthened
+                noexcept(--(_STD declval<_Iterator>())) && is_nothrow_copy_constructible_v<_Iterator>) // strengthened
                 requires _All_bidirectional<_IsConst, _ViewTypes...>
             {
                 auto _Temp = *this;
@@ -7375,8 +7375,7 @@ namespace ranges {
             _Sentinel() = default;
 
             constexpr _Sentinel(_Sentinel<!_IsConst> _Rhs) noexcept(
-                (is_nothrow_move_convertible_v<sentinel_t<_ViewTypes>, sentinel_t<const _ViewTypes>>
-                    && ...)) // strengthened
+                (is_nothrow_convertible_v<sentinel_t<_ViewTypes>, sentinel_t<const _ViewTypes>> && ...)) // strengthened
                 requires (_IsConst && (convertible_to<sentinel_t<_ViewTypes>, sentinel_t<const _ViewTypes>> && ...))
                 : _End(_STD move(_Rhs._End)) {}
 
