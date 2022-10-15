@@ -211,6 +211,15 @@ $VM = Set-AzVMBootDiagnostic `
   -VM $VM `
   -Disable
 
+$VM = Set-AzVMSecurityProfile `
+  -VM $VM `
+  -SecurityType 'TrustedLaunch'
+
+$VM = Set-AzVMUefi `
+  -VM $VM `
+  -EnableVtpm $true `
+  -EnableSecureBoot $true
+
 New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
@@ -309,6 +318,7 @@ New-AzGalleryImageDefinition `
   -Publisher $ImagePublisher `
   -Offer $ImageOffer `
   -Sku $ImageSku `
+  -Feature @(@{ Name = 'SecurityType'; Value = 'TrustedLaunch'; }) `
   -HyperVGeneration 'V2' | Out-Null
 
 ####################################################################################################
