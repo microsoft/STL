@@ -60,10 +60,10 @@ bool test_write(const char* fname, const Mystring& mystring) { // write sequence
     STD wbuffer_convert<MYNAME, MYWCHAR> mybuf(&mybbuf);
     Myostream mystr(&mybuf);
 
-    for (size_t idx = 0; idx < mystring.size(); ++idx)
-        if (mystr.write(&mystring[idx], 1))
+    for (size_t idx = 0; idx < mystring.size(); ++idx) {
+        if (mystr.write(&mystring[idx], 1)) {
             CHECK(1);
-        else { // write failed, quit
+        } else { // write failed, quit
 #ifndef TERSE
             cout << hex << "write failed for " << (unsigned long) mystring[idx] << endl;
 #endif // TERSE
@@ -71,6 +71,7 @@ bool test_write(const char* fname, const Mystring& mystring) { // write sequence
             CHECK_INT((int) idx, -1);
             return false;
         }
+    }
     return true;
 }
 
@@ -93,9 +94,9 @@ bool test_read(const char* fname, const Mystring& mystring) { // read sequences 
     MYWCHAR ch;
     for (size_t idx = 0; idx < mystring.size(); ++idx) { // read a wide char and test for expected value
         ch = (MYWCHAR) (-1);
-        if (mystr.read(&ch, 1) && ch == mystring[idx])
+        if (mystr.read(&ch, 1) && ch == mystring[idx]) {
             CHECK(1);
-        else { // read failed, quit
+        } else { // read failed, quit
 #ifndef TERSE
             cout << hex << "read failed for " << (unsigned long) mystring[idx] << ", got " << (unsigned long) ch
                  << endl;
@@ -124,12 +125,14 @@ void test_main() { // write a file and read it back
 
     for (unsigned long ch = 0; ch <= MYWC_MAX && mystring.size() < NCHARS; ++ch) { // add a wide character if valid
         string buf = myconv.to_bytes((MYWCHAR) ch);
-        if (0 < buf.size() && ch != (unsigned long) WEOF)
+        if (0 < buf.size() && ch != (unsigned long) WEOF) {
             mystring.insert(mystring.end(), (MYWCHAR) ch);
+        }
     }
 #endif // defined(MYMAKE)
 
-    if (test_write(fname, mystring))
+    if (test_write(fname, mystring)) {
         test_read(fname, mystring);
+    }
     remove(fname);
 }

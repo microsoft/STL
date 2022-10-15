@@ -32,10 +32,11 @@ STD ostream& operator<<(STD ostream& ostr, const Boolx& b) { // insert a Boolx
     const STD ostream::sentry ok(ostr);
 
     if (ok) {
-        if (b.value() != 0)
+        if (b.value() != 0) {
             ostr.rdbuf()->sputc('Y');
-        else
+        } else {
             ostr.rdbuf()->sputc('N');
+        }
     }
     ostr.setstate(state);
     return ostr;

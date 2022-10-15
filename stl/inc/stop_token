@@ -25,7 +25,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-_EXPORT_STD struct nostopstate_t { explicit nostopstate_t() = default; };
+_EXPORT_STD struct nostopstate_t {
+    explicit nostopstate_t() = default;
+};
 
 _EXPORT_STD inline constexpr nostopstate_t nostopstate{};
 

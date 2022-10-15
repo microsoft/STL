@@ -56,7 +56,7 @@ struct ExplicitDefault {
 };
 
 template <typename T>
-constexpr bool OrdinaryDC = is_default_constructible_v<T>&& IsImplicitlyDefaultConstructible<T>::value;
+constexpr bool OrdinaryDC = is_default_constructible_v<T> && IsImplicitlyDefaultConstructible<T>::value;
 
 template <typename T>
 constexpr bool ExplicitDC = is_default_constructible_v<T> && !IsImplicitlyDefaultConstructible<T>::value;

@@ -165,8 +165,9 @@ void test_find(char* first, char* last) { // test searching template functions
 // TEST GENERATING TEMPLATE FUNCTIONS
 CSTD size_t gen_count = 0;
 void count_c(char ch) { // count calls with value 'c'
-    if (ch == 'c')
+    if (ch == 'c') {
         ++gen_count;
+    }
 }
 
 char gen_x() { // return literal x

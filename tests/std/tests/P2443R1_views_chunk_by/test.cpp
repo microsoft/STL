@@ -20,9 +20,7 @@ using Pred = less<>;
 constexpr Pred pred{};
 
 template <class Rng>
-concept CanViewChunkBy = requires(Rng&& r) {
-    views::chunk_by(forward<Rng>(r), pred);
-};
+concept CanViewChunkBy = requires(Rng&& r) { views::chunk_by(forward<Rng>(r), pred); };
 
 template <ranges::forward_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {

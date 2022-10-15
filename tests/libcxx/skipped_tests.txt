@@ -370,14 +370,18 @@ utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp
 depr\depr.c.headers\math_h.pass.cpp
 numerics\c.math\cmath.pass.cpp
 
-# GH-2358: <filesystem>: path's comparison operators are IF-NDR
-input.output\filesystems\class.path\range_concept_conformance.compile.pass.cpp
-
 # GH-1374: Spaceship CPO wording in [cmp.alg] needs an overhaul
 # (Technically an STL bug until the wording in the working draft is fixed to agree.)
 language.support\cmp\cmp.alg\partial_order.pass.cpp
 language.support\cmp\cmp.alg\strong_order.pass.cpp
 language.support\cmp\cmp.alg\weak_order.pass.cpp
+
+# GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
+algorithms\robust_against_adl.compile.pass.cpp
+strings\basic.string\string.modifiers\robust_against_adl.pass.cpp
+
+# GH-3100: <memory> etc.: ADL should be avoided when calling _Construct_in_place and its friends
+utilities\function.objects\func.wrap\func.wrap.func\robust_against_adl.pass.cpp
 
 
 # *** CRT BUGS ***
@@ -582,6 +586,9 @@ utilities\format\format.functions\locale-specific_form.pass.cpp
 # libc++ chose option A for [time.clock.file.members], and we chose option B.
 time\time.clock\time.clock.file\to_from_sys.pass.cpp
 
+# libc++'s filesystem::path::iterator model bidirectional_iterator, which is not guaranteed by the Standard
+input.output\filesystems\class.path\range_concept_conformance.compile.pass.cpp
+
 # libc++ is missing various Ranges DRs
 language.support\support.limits\support.limits.general\ranges.version.compile.pass.cpp
 
@@ -782,13 +789,6 @@ re\re.const\re.matchflag\match_prev_avail.pass.cpp
 # Not yet analyzed. Many diagnostics.
 input.output\filesystems\class.path\path.member\path.charconv.pass.cpp
 
-# Not yet analyzed. Probably ADL shenanigans.
-algorithms\robust_against_adl.compile.pass.cpp
-strings\basic.string\string.modifiers\robust_against_adl.pass.cpp
-thread\thread.threads\thread.thread.class\thread.thread.constr\robust_against_adl.pass.cpp
-utilities\function.objects\func.wrap\func.wrap.func\robust_against_adl.pass.cpp
-utilities\function.objects\refwrap\refwrap.invoke\robust_against_adl.pass.cpp
-
 # Not yet analyzed. Possibly C1XX constexpr bug.
 utilities\function.objects\func.invoke\invoke_constexpr.pass.cpp
 
@@ -856,16 +856,16 @@ numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
 # I don't know which is right.
 language.support\support.limits\limits\numeric.limits.members\tinyness_before.pass.cpp
 
-# Not yet analyzed. the test fails on AMD64 but passes on X86
+# Not yet analyzed. the test fails on x64 but passes on x86
 containers\associative\map\map.access\iterator.pass.cpp
 iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.-\sentinel.pass.cpp
 algorithms\alg.modifying.operations\alg.random.shuffle\ranges_shuffle.pass.cpp
 
-# Not yet analyzed. the test fails on X86 but passes on AMD64
+# Not yet analyzed. the test fails on x86 but passes on x64
 algorithms\alg.sorting\alg.set.operations\includes\ranges_includes.pass.cpp
 algorithms\alg.modifying.operations\alg.unique\ranges_unique.pass.cpp
 
-# Not yet analyzed. the test fails on ARM but passes on AMD64
+# Not yet analyzed. These tests are marked `XFAIL: msvc`, citing DevCom-1660844.
 localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_long_double.hex.pass.cpp
 localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_double.hex.pass.cpp
 
@@ -873,7 +873,7 @@ localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.memb
 utilities\format\format.functions\ascii.pass.cpp
 utilities\format\format.functions\unicode.pass.cpp
 
-#Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
+# Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
 utilities\template.bitset\bitset.members\left_shift_eq.pass.cpp
 utilities\template.bitset\bitset.members\op_and_eq.pass.cpp
 utilities\template.bitset\bitset.members\op_or_eq.pass.cpp
@@ -954,7 +954,6 @@ iterators\predef.iterators\move.iterators\move.iterator\iterator_concept_conform
 language.support\support.limits\support.limits.general\cmath.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\cstdlib.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\new.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\version.version.compile.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_zh_CN.pass.cpp
 ranges\range.adaptors\range.filter\iterator\arrow.pass.cpp
 ranges\range.adaptors\range.filter\iterator\base.pass.cpp

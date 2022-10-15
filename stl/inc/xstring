@@ -376,7 +376,7 @@ public:
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
 #if _HAS_CXX17
-#if _HAS_CXX20 && defined(__EDG__) // TRANSITION, VSO-1601168
+#if _HAS_CXX20 && defined(__EDG__) // TRANSITION, VSO-1641993
         if (_STD is_constant_evaluated()) {
             for (size_t _Idx = 0; _Idx != _Count; ++_Idx) {
                 if (static_cast<unsigned char>(_First1[_Idx]) < static_cast<unsigned char>(_First2[_Idx])) {
@@ -1260,12 +1260,10 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    // clang-format off
     template <contiguous_iterator _Iter, sized_sentinel_for<_Iter> _Sent>
         requires (is_same_v<iter_value_t<_Iter>, _Elem> && !is_convertible_v<_Sent, size_type>)
     constexpr basic_string_view(_Iter _First, _Sent _Last) noexcept(noexcept(_Last - _First)) // strengthened
         : _Mydata(_STD to_address(_First)), _Mysize(static_cast<size_type>(_Last - _First)) {}
-    // clang-format on
 
 #if _HAS_CXX23
     // clang-format off
@@ -2424,8 +2422,8 @@ extern const bool _Asan_string_should_annotate;
 #endif // ^^^ unknown architecture ^^^
 
 template <class _String, class = void>
-_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string = alignof(typename _String::value_type)
-                                                                   >= _Asan_granularity;
+_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string =
+    alignof(typename _String::value_type) >= _Asan_granularity;
 
 template <class _String>
 _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string<_String,
@@ -2438,7 +2436,7 @@ _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string<_String,
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 template <class _Rng, class _Ty>
 concept _Contiguous_range_of =
-    _RANGES contiguous_range<_Rng> && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
+    (_RANGES contiguous_range<_Rng>) && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>

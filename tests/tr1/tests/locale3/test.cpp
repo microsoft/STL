@@ -118,38 +118,42 @@ struct Myxctype2 : public STD ctype<char> { // get protected members
     }
 
     virtual char do_widen(char ch) const { // widen a character
-        if (ch == '-')
+        if (ch == '-') {
             return '@';
-        else if (ch == '0')
+        } else if (ch == '0') {
             return 'A';
-        else if (ch == '1')
+        } else if (ch == '1') {
             return 'b';
-        else
+        } else {
             return ch;
+        }
     }
 
     virtual const char* do_widen(const char* first, const char* last,
         char* dest) const { // widen a character sequence
-        for (; first != last; ++first, ++dest)
+        for (; first != last; ++first, ++dest) {
             *dest = do_widen(*first);
+        }
         return first;
     }
 
     virtual char do_narrow(char ch, char) const { // narrow a character
-        if (ch == 'P')
+        if (ch == 'P') {
             return '%';
-        else if (ch == 'K')
+        } else if (ch == 'K') {
             return ':';
-        else if (ch == 'Z')
+        } else if (ch == 'Z') {
             return 'H';
-        else
+        } else {
             return ch;
+        }
     }
 
     virtual const char* do_narrow(
         const char* first, const char* last, char, char* dest) const { // narrow a character sequence
-        for (; first != last; ++first, ++dest)
+        for (; first != last; ++first, ++dest) {
             *dest = do_narrow(*first, '\0');
+        }
         return first;
     }
 };

@@ -37,15 +37,16 @@ public:
 
         // load wanted probabilities from data
         int i;
-        for (i = 0; i < 10; ++i)
+        for (i = 0; i < 10; ++i) {
             prob_want[(int) tab[i].arg1] = tab[i].ans;
+        }
 
         // collect random sample data from given distribution
         mt19937 gen;
-        i     = 0;
-        int n = 0;
-        for (; i < BINSIZE; ++i)
+        i = 0;
+        for (; i < BINSIZE; ++i) {
             got_count[i] = 0;
+        }
 
         over_bin  = 0;
         under_bin = 0;
@@ -59,18 +60,19 @@ public:
             Ty zero = (Ty) 0; // to quiet diagnostics
             if (zero <= rand_value && rand_value < (Ty) BINSIZE) { // increase the count of the proper bin
                 got_count[(int) rand_value]++;
-                ++n;
-            } else if (rand_value < zero)
+            } else if (rand_value < zero) {
                 ++under_bin;
-            else if ((Ty) (BINSIZE - 1) < rand_value)
+            } else if ((Ty) (BINSIZE - 1) < rand_value) {
                 ++over_bin;
-            else
+            } else {
                 ++junk_bin;
+            }
         }
 
         int tc0 = 0;
-        if (verbose)
+        if (verbose) {
             printf("bin\twant(bin)\tgot(bin)\n");
+        }
 
         // Compute results
         for (i = 0; i < BINSIZE; ++i) { // compute results for each bin
@@ -78,8 +80,9 @@ public:
 
             if ((int) i == (int) tab[tc0].arg1) {
                 ++tc0;
-                if (verbose)
+                if (verbose) {
                     printf("%.2d\t%.9g\t%d\n", i, want_count[i], got_count[i]);
+                }
             }
         }
 
@@ -87,25 +90,29 @@ public:
         double chi_squared = 0;
         int tc             = 0;
 
-        for (i = 0; i < BINSIZE; i++)
+        for (i = 0; i < BINSIZE; i++) {
             if ((int) i == (int) tab[tc].arg1) {
                 ++tc;
                 if (0 < want_count[i]) { // avoid divide by zero and count empty bins
                     double want_diff = got_count[i] - (double) want_count[i];
                     chi_squared += (want_diff * want_diff) / (double) want_count[i];
-                } else if (0 < got_count[i])
+                } else if (0 < got_count[i]) {
                     chi_squared += got_count[i];
+                }
             }
+        }
 
         // Check results
         int under_bin_ok = 1;
         int over_bin_ok  = 1;
 
-        if (0 < under_bin && !smaller_ok)
+        if (0 < under_bin && !smaller_ok) {
             under_bin_ok = 0;
+        }
 
-        if (0 < over_bin && !larger_ok)
+        if (0 < over_bin && !larger_ok) {
             over_bin_ok = 0;
+        }
 
         CHECK_MSG("smaller values not ok\n", under_bin_ok);
         CHECK_MSG("larger values not ok\n", over_bin_ok);

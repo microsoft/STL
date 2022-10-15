@@ -13,17 +13,11 @@
 using namespace std;
 
 template <class Range>
-concept can_empty = requires(Range& r) {
-    ranges::empty(r);
-};
+concept can_empty = requires(Range& r) { ranges::empty(r); };
 template <class Range>
-concept can_data = requires(Range& r) {
-    ranges::data(r);
-};
+concept can_data = requires(Range& r) { ranges::data(r); };
 template <class Range>
-concept can_size = requires(Range& r) {
-    ranges::size(r);
-};
+concept can_size = requires(Range& r) { ranges::size(r); };
 
 struct instantiator {
     template <ranges::range R>
