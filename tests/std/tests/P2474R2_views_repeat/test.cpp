@@ -62,8 +62,12 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
 
     static_assert(CanSize<ranges::repeat_view<T, B>> == bounded);
 
-    const same_as<R> auto rng = views::repeat(val, bound);
+    same_as<R> auto rng = views::repeat(val, bound);
     static_assert(noexcept(views::repeat(val, bound)) == is_nothrow_copy_constructible_v<T>); // strengthened
+    static_assert(noexcept(rng | views::drop(1)) == is_nothrow_copy_constructible_v<T>); // strengthened
+    static_assert(noexcept(rng | views::take(1)) == is_nothrow_copy_constructible_v<T>); // strengthened
+    static_assert(noexcept(std::move(rng) | views::drop(1)) == is_nothrow_move_constructible_v<T>); // strengthened
+    static_assert(noexcept(std::move(rng) | views::take(1)) == is_nothrow_move_constructible_v<T>); // strengthened
 
     if constexpr (bounded) {
         B i = 0;
