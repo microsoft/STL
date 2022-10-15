@@ -13,14 +13,10 @@
 using namespace std;
 
 template <class W, class B>
-concept CanViewRepeat = requires(W&& w, B b) {
-    views::repeat(forward<W>(w), b);
-};
+concept CanViewRepeat = requires(W&& w, B b) { views::repeat(forward<W>(w), b); };
 
 template <class R>
-concept CanSize = requires(R& r) {
-    ranges::size(r);
-};
+concept CanSize = requires(R& r) { ranges::size(r); };
 
 template <class T, class B = unreachable_sentinel_t>
 constexpr void test_common(T val, B bound = unreachable_sentinel) {
@@ -61,8 +57,7 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
     static_assert(CanSize<ranges::repeat_view<T, B>> == bounded);
 
     const same_as<R> auto rng = views::repeat(val, bound);
-    static_assert(
-        noexcept(views::repeat(val, bound)) == is_nothrow_copy_constructible_v<T>); // strengthened
+    static_assert(noexcept(views::repeat(val, bound)) == is_nothrow_copy_constructible_v<T>); // strengthened
 
     if constexpr (bounded) {
         B i = 0;
