@@ -5,6 +5,7 @@
 AdamBucior
 AlexGuteniev
 cpplearner
+frederick-vs-ja
 fsb4000
 killerswin2
 MattStephanson
