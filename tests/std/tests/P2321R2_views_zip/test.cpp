@@ -13,19 +13,17 @@
 using namespace std;
 
 template <class... RangeTypes>
-concept CanViewZip = requires(RangeTypes&&... range) {
-    views::zip(std::forward<RangeTypes>(range)...);
-};
+concept CanViewZip = requires(RangeTypes&&... range) { views::zip(std::forward<RangeTypes>(range)...); };
 
 template <class RangeType>
 using AllView = views::all_t<RangeType>;
 
 template <class ElementType>
 concept CanTestElementType = // Required for iter_swap test
-    (copy_constructible<ElementType>&& equality_comparable<ElementType>&& swappable<ElementType>);
+    (copy_constructible<ElementType> && equality_comparable<ElementType> && swappable<ElementType>);
 
 template <class Type1, size_t Type1Size, class Type2, size_t Type2Size, class Type3, size_t Type3Size>
-    requires(CanTestElementType<Type1>&& CanTestElementType<Type2>&& CanTestElementType<Type3>)
+    requires (CanTestElementType<Type1> && CanTestElementType<Type2> && CanTestElementType<Type3>)
 class three_element_test_container {
 private:
     array<Type1, Type1Size> type_one_array;
@@ -127,7 +125,7 @@ public:
 };
 
 template <class Type, size_t Size>
-    requires(CanTestElementType<Type>)
+    requires (CanTestElementType<Type>)
 class single_element_test_container {
 private:
     array<Type, Size> element_array;
@@ -563,8 +561,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
                 const same_as<ranges::sentinel_t<LocalZipType>> auto sen = relevant_range.end();
                 // clang-format on
 
-                if constexpr ((sentinel_for<ranges::sentinel_t<LocalRangeTypes>,
-                                   ranges::iterator_t<LocalRangeTypes>> && ...)) {
+                if constexpr ((sentinel_for<ranges::sentinel_t<LocalRangeTypes>, ranges::iterator_t<LocalRangeTypes>>
+                                  && ...)) {
                     auto advanced_itr = relevant_range.begin();
                     ranges::advance(advanced_itr, TestContainerType::smallest_array_size);
 
@@ -573,7 +571,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
                 }
 
                 if constexpr ((sized_sentinel_for<ranges::sentinel_t<LocalRangeTypes>,
-                                   ranges::iterator_t<LocalRangeTypes>> && ...)) {
+                                   ranges::iterator_t<LocalRangeTypes>>
+                                  && ...)) {
                     using difference_type = common_type_t<ranges::range_difference_t<LocalRangeTypes>...>;
 
                     const same_as<difference_type> auto diff1 = (itr2 - sen);
