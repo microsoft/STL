@@ -18,6 +18,12 @@ concept CanViewRepeat = requires(W&& w, B b) { views::repeat(forward<W>(w), b); 
 template <class R>
 concept CanSize = requires(R& r) { ranges::size(r); };
 
+template <class R>
+concept CanTakeDrop = requires(R r) {
+                          forward<R>(r) | views::take(1);
+                          forward<R>(r) | views::drop(1);
+                      };
+
 template <class T, class B = unreachable_sentinel_t>
 constexpr void test_common(T val, B bound = unreachable_sentinel) {
     constexpr bool bounded = !same_as<B, unreachable_sentinel_t>;
@@ -217,7 +223,7 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
 struct move_tester {
     int x         = -1;
     move_tester() = default;
-    constexpr move_tester(move_tester&& other) {
+    constexpr move_tester(move_tester&& other) noexcept {
         other.x = 1;
     }
 };
@@ -261,6 +267,9 @@ constexpr bool test() {
         move_tester to_move;
         (void) views::repeat(move(to_move));
         assert(to_move.x == 1);
+        using repeat_move = ranges::repeat_view<move_tester>;
+        static_assert(CanTakeDrop<repeat_move>);
+        static_assert(!CanTakeDrop<const repeat_move&>);
     }
     {
         forward_tester to_copy;
