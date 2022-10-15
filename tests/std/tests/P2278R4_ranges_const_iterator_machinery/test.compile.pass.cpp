@@ -11,21 +11,19 @@
 using namespace std;
 
 template <typename It>
-concept CanIterConstRef = requires {
-    typename iter_const_reference_t<It>;
-};
+concept CanIterConstRef = requires { typename iter_const_reference_t<It>; };
 
 template <typename It>
 concept CanConstIterator = requires(It it) {
-    typename const_iterator<It>;
-    { make_const_iterator(std::move(it)) } -> same_as<const_iterator<It>>;
-};
+                               typename const_iterator<It>;
+                               { make_const_iterator(std::move(it)) } -> same_as<const_iterator<It>>;
+                           };
 
 template <typename Se>
 concept CanConstSentinel = requires(Se se) {
-    typename const_sentinel<Se>;
-    { make_const_sentinel(std::move(se)) } -> same_as<const_sentinel<Se>>;
-};
+                               typename const_sentinel<Se>;
+                               { make_const_sentinel(std::move(se)) } -> same_as<const_sentinel<Se>>;
+                           };
 
 static_assert(!CanIterConstRef<int>);
 static_assert(!CanIterConstRef<list<int>>);

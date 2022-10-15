@@ -13,8 +13,8 @@ using namespace std;
 
 template <typename It>
 concept HasPeek = requires(It iter) {
-    { iter.peek() } -> same_as<add_pointer_t<iter_reference_t<It>>>;
-};
+                      { iter.peek() } -> same_as<add_pointer_t<iter_reference_t<It>>>;
+                  };
 
 template <input_iterator It>
 constexpr void test_one(It iter) {

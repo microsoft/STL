@@ -1717,8 +1717,10 @@ struct _Const_sentinel<_Sent> {
 _EXPORT_STD template <class _Sent>
 using const_sentinel = typename _Const_sentinel<_Sent>::type;
 
+// clang-format off
 template <class _Ty>
 concept _Not_a_const_iterator = !_Is_specialization_v<_Ty, basic_const_iterator>;
+// clang-format on
 
 template <class>
 struct _Basic_const_iterator_category {};
@@ -1798,8 +1800,10 @@ public:
     }
 
     _NODISCARD constexpr const value_type* operator->() const
-        noexcept(contiguous_iterator<_Iter> || noexcept(*_Current)) /* strengthened */ requires
-        is_lvalue_reference_v<iter_reference_t<_Iter>> && same_as<remove_cvref_t<iter_reference_t<_Iter>>, value_type> {
+        noexcept(contiguous_iterator<_Iter> || noexcept(*_Current)) /* strengthened */
+        requires is_lvalue_reference_v<iter_reference_t<_Iter>>
+              && same_as<remove_cvref_t<iter_reference_t<_Iter>>, value_type>
+    {
         if constexpr (contiguous_iterator<_Iter>) {
             return _STD to_address(_Current);
         } else {
@@ -1818,21 +1822,24 @@ public:
 
     constexpr basic_const_iterator operator++(int) noexcept(
         noexcept(++*this) && is_nothrow_copy_constructible_v<basic_const_iterator>) // strengthened
-        requires forward_iterator<_Iter> {
+        requires forward_iterator<_Iter>
+    {
         auto _Tmp = *this;
         ++*this;
         return _Tmp;
     }
 
     constexpr basic_const_iterator& operator--() noexcept(noexcept(--_Current)) // strengthened
-        requires bidirectional_iterator<_Iter> {
+        requires bidirectional_iterator<_Iter>
+    {
         --_Current;
         return *this;
     }
 
     constexpr basic_const_iterator operator--(int) noexcept(
         noexcept(--*this) && is_nothrow_copy_constructible_v<basic_const_iterator>) // strengthened
-        requires bidirectional_iterator<_Iter> {
+        requires bidirectional_iterator<_Iter>
+    {
         auto _Tmp = *this;
         --*this;
         return _Tmp;
@@ -1840,21 +1847,24 @@ public:
 
     constexpr basic_const_iterator& operator+=(const difference_type _Off) noexcept(
         noexcept(_Current += _Off)) // strengthened
-        requires random_access_iterator<_Iter> {
+        requires random_access_iterator<_Iter>
+    {
         _Current += _Off;
         return *this;
     }
 
     constexpr basic_const_iterator& operator-=(const difference_type _Off) noexcept(
         noexcept(_Current -= _Off)) // strengthened
-        requires random_access_iterator<_Iter> {
+        requires random_access_iterator<_Iter>
+    {
         _Current -= _Off;
         return *this;
     }
 
     _NODISCARD constexpr _Reference operator[](const difference_type _Idx) const
         noexcept(noexcept(static_cast<_Reference>(_Current[_Idx]))) // strengthened
-        requires random_access_iterator<_Iter> {
+        requires random_access_iterator<_Iter>
+    {
         return static_cast<_Reference>(_Current[_Idx]);
     }
 
@@ -1867,34 +1877,39 @@ public:
     _NODISCARD_FRIEND constexpr bool
         operator<(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
             noexcept(_Fake_copy_init<bool>(_Left._Current < _Right._Current))) // strengthened
-        requires random_access_iterator<_Iter> {
+        requires random_access_iterator<_Iter>
+    {
         return _Left._Current < _Right._Current;
     }
 
     _NODISCARD_FRIEND constexpr bool
         operator>(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
             noexcept(_Fake_copy_init<bool>(_Left._Current > _Right._Current))) // strengthened
-        requires random_access_iterator<_Iter> {
+        requires random_access_iterator<_Iter>
+    {
         return _Left._Current > _Right._Current;
     }
 
     _NODISCARD_FRIEND constexpr bool
         operator<=(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
             noexcept(_Fake_copy_init<bool>(_Left._Current <= _Right._Current))) // strengthened
-        requires random_access_iterator<_Iter> {
+        requires random_access_iterator<_Iter>
+    {
         return _Left._Current <= _Right._Current;
     }
 
     _NODISCARD_FRIEND constexpr bool
         operator>=(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
             noexcept(_Fake_copy_init<bool>(_Left._Current >= _Right._Current))) // strengthened
-        requires random_access_iterator<_Iter> {
+        requires random_access_iterator<_Iter>
+    {
         return _Left._Current >= _Right._Current;
     }
 
     _NODISCARD_FRIEND constexpr auto operator<=>(const basic_const_iterator& _Left,
         const basic_const_iterator& _Right) noexcept(noexcept(_Left._Current <=> _Right._Current)) // strengthened
-        requires random_access_iterator<_Iter> && three_way_comparable<_Iter> {
+        requires random_access_iterator<_Iter> && three_way_comparable<_Iter>
+    {
         return _Left._Current <=> _Right._Current;
     }
 
@@ -1954,19 +1969,22 @@ public:
 
     _NODISCARD_FRIEND constexpr basic_const_iterator operator+(const basic_const_iterator& _It,
         const difference_type _Off) noexcept(noexcept(basic_const_iterator{_It._Current + _Off})) // strengthened
-        requires random_access_iterator<_Iter> {
+        requires random_access_iterator<_Iter>
+    {
         return basic_const_iterator{_It._Current + _Off};
     }
 
     _NODISCARD_FRIEND constexpr basic_const_iterator operator+(const difference_type _Off,
         const basic_const_iterator& _It) noexcept(noexcept(basic_const_iterator{_It._Current + _Off})) // strengthened
-        requires random_access_iterator<_Iter> {
+        requires random_access_iterator<_Iter>
+    {
         return basic_const_iterator{_It._Current + _Off};
     }
 
     _NODISCARD_FRIEND constexpr basic_const_iterator operator-(const basic_const_iterator& _It,
         const difference_type _Off) noexcept(noexcept(basic_const_iterator{_It._Current - _Off})) // strengthened
-        requires random_access_iterator<_Iter> {
+        requires random_access_iterator<_Iter>
+    {
         return basic_const_iterator{_It._Current - _Off};
     }
 
@@ -1976,12 +1994,10 @@ public:
         return _Current - _Se;
     }
 
-    // clang-format off
     template <_Not_a_const_iterator _Sent>
         requires sized_sentinel_for<_Sent, _Iter>
     _NODISCARD_FRIEND constexpr difference_type operator-(const _Sent& _Se, const basic_const_iterator& _It) noexcept(
         noexcept(_Se - _It._Current)) /* strengthened */ { // per LWG-3769
-        // clang-format on
         return _Se - _It._Current;
     }
 };
