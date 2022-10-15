@@ -2587,11 +2587,9 @@ namespace ranges {
         _Fn _Func;
 
     public:
-        // clang-format off
         template <class _Ty, class _Uty>
             requires invocable<_Fn&, _Uty, _Ty>
         invoke_result_t<_Fn&, _Uty, _Ty> operator()(_Ty&&, _Uty&&);
-        // clang-format on
     };
 
     template <class _Fn, class _Ty, class _It, class _Uty>
@@ -2683,21 +2681,17 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se,
             _Indirectly_binary_left_foldable<iter_value_t<_It>, _It> _Fn>
             requires constructible_from<iter_value_t<_It>, iter_reference_t<_It>>
         _NODISCARD constexpr auto operator()(_It _First, _Se _Last, _Fn _Func) const {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             return _Fold_left_first_with_iter_impl<_It>(_STD move(_First), _STD move(_Last), _Pass_fn(_Func));
         }
 
-        // clang-format off
         template <input_range _Rng, _Indirectly_binary_left_foldable<range_value_t<_Rng>, iterator_t<_Rng>> _Fn>
             requires constructible_from<range_value_t<_Rng>, range_reference_t<_Rng>>
         _NODISCARD constexpr auto operator()(_Rng&& _Range, _Fn _Func) const {
-            // clang-format on
             return _Fold_left_first_with_iter_impl<borrowed_iterator_t<_Rng>>(
                 _RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Func));
         }
@@ -2737,20 +2731,16 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se,
             _Indirectly_binary_left_foldable<iter_value_t<_It>, _It> _Fn>
             requires constructible_from<iter_value_t<_It>, iter_reference_t<_It>>
         _NODISCARD constexpr auto operator()(_It _First, _Se _Last, _Fn _Func) const {
-            // clang-format on
             return fold_left_first_with_iter(_STD move(_First), _STD move(_Last), _Pass_fn(_Func)).value;
         }
 
-        // clang-format off
         template <input_range _Rng, _Indirectly_binary_left_foldable<range_value_t<_Rng>, iterator_t<_Rng>> _Fn>
             requires constructible_from<range_value_t<_Rng>, range_reference_t<_Rng>>
         _NODISCARD constexpr auto operator()(_Rng&& _Range, _Fn _Func) const {
-            // clang-format on
             return fold_left_first_with_iter(_STD forward<_Rng>(_Range), _Pass_fn(_Func)).value;
         }
     };
@@ -2800,23 +2790,19 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <bidirectional_iterator _It, sentinel_for<_It> _Se,
             _Indirectly_binary_right_foldable<iter_value_t<_It>, _It> _Fn>
             requires constructible_from<iter_value_t<_It>, iter_reference_t<_It>>
         _NODISCARD constexpr auto operator()(_It _First, _Se _Last, _Fn _Func) const {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             return _Fold_right_last_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Func));
         }
 
-        // clang-format off
         template <bidirectional_range _Rng,
             _Indirectly_binary_right_foldable<range_value_t<_Rng>, iterator_t<_Rng>> _Fn>
             requires constructible_from<range_value_t<_Rng>, range_reference_t<_Rng>>
         _NODISCARD constexpr auto operator()(_Rng&& _Range, _Fn _Func) const {
-            // clang-format on
             return _Fold_right_last_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Func));
         }
 
