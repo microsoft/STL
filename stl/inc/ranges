@@ -2923,7 +2923,6 @@ namespace ranges {
             template <class _Rng>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 using _Ty          = remove_cvref_t<_Rng>;
-                using _Range_val_t = _RANGES range_value_t<_Ty>;
 
                 if constexpr (_Is_specialization_v<_Ty, empty_view>) {
                     return {_St::_Empty, true};
@@ -2936,6 +2935,7 @@ namespace ranges {
                         noexcept(_RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>()))};
 #if _HAS_CXX23
                 } else if constexpr (_Is_specialization_v<_Ty, repeat_view>) {
+                    using _Range_val_t = _RANGES range_value_t<_Ty>;
                     return {_St::_Reconstruct_repeat_view,
                         is_nothrow_constructible_v<_Range_val_t, _Forward_like_t<_Rng, _Range_val_t>>};
 #endif
@@ -3317,7 +3317,6 @@ namespace ranges {
             template <class _Rng>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 using _Ty          = remove_cvref_t<_Rng>;
-                using _Range_val_t = _RANGES range_value_t<_Ty>;
 
                 if constexpr (_Is_specialization_v<_Ty, empty_view>) {
                     return {_St::_Empty, true};
@@ -3327,6 +3326,7 @@ namespace ranges {
                     return {_St::_Reconstruct_other, true};
 #if _HAS_CXX23
                 } else if constexpr (_Is_specialization_v<_Ty, repeat_view>) {
+                    using _Range_val_t = _RANGES range_value_t<_Ty>;
                     return {_St::_Reconstruct_repeat,
                         is_nothrow_constructible_v<_Range_val_t, _Forward_like_t<_Rng, _Range_val_t>>};
 #endif
