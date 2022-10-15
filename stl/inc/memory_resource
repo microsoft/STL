@@ -74,7 +74,7 @@ namespace pmr {
         : public _Identity_equal_resource { // implementation for new_delete_resource with aligned new support
         void* do_allocate(const size_t _Bytes, const size_t _Align) override {
             if (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-                return ::operator new (_Bytes, align_val_t{_Align});
+                return ::operator new(_Bytes, align_val_t{_Align});
             }
 
             return ::operator new(_Bytes);
@@ -83,7 +83,7 @@ namespace pmr {
         void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) noexcept override
         /* strengthened */ {
             if (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-                return ::operator delete (_Ptr, _Bytes, align_val_t{_Align});
+                return ::operator delete(_Ptr, _Bytes, align_val_t{_Align});
             }
 
             ::operator delete(_Ptr, _Bytes);

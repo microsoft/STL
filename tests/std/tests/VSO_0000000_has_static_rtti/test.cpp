@@ -11,6 +11,10 @@
 #include <typeinfo>
 #include <utility>
 
+#if _HAS_CXX17
+#include <any> // verify that <any> can be included (with no effect) when static RTTI is disabled
+#endif // _HAS_CXX17
+
 using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)

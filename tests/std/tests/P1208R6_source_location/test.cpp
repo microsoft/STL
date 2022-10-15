@@ -65,11 +65,7 @@ constexpr void argument_test(
 constexpr void sloc_constructor_test() {
     const s x;
     assert(x.loc.line() == __LINE__ - 1);
-#ifdef _PREFAST_
-    assert(x.loc.column() == 14 || x.loc.column() == 13); // TRANSITION, 17.4 Preview 3
-#else // _PREFAST_
     assert(x.loc.column() == 13);
-#endif // _PREFAST_
     if (is_constant_evaluated()) {
         assert(x.loc.function_name() == "main"sv); // TRANSITION, VSO-1285783
     } else {
@@ -89,11 +85,7 @@ constexpr void different_constructor_test() {
 constexpr void sub_member_test() {
     const s2 s;
     assert(s.x.loc.line() == __LINE__ - 1);
-#ifdef _PREFAST_
-    assert(s.x.loc.column() == 15 || s.x.loc.column() == 14); // TRANSITION, 17.4 Preview 3
-#else // _PREFAST_
     assert(s.x.loc.column() == 14);
-#endif // _PREFAST_
     if (is_constant_evaluated()) {
         assert(s.x.loc.function_name() == "main"sv); // TRANSITION, VSO-1285783
     } else {

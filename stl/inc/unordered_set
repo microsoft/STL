@@ -749,7 +749,7 @@ _NODISCARD bool operator!=(const unordered_multiset<_Kty, _Hasher, _Keyeq, _Allo
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD unordered_multiset;
     using _STD unordered_set;
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 #endif // _HAS_TR1_NAMESPACE
 
 #if _HAS_CXX17
