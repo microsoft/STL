@@ -12,11 +12,14 @@ class BreakTestItem:
     breaks: list[int] = field(default_factory=list)
     code_points: list[int] = field(default_factory=list)
 
+
 class CommentLine:
     pass
 
+
 class EOF:
     pass
+
 
 def parseBreakTestLine(input: TextIO) -> Optional[BreakTestItem]:
     result = BreakTestItem()
@@ -76,6 +79,7 @@ def lineToCppDataLineUtf32(line: BreakTestItem) -> str:
         [f"U'\\x{x:x}'" for x in line.code_points]), ','.join(
         [str(x) for x in line.breaks]))
 
+
 def lineToCppDataLineUtf8(line: BreakTestItem) -> str:
     utf8_rep = str(array('L', line.code_points),
                    encoding='utf-32').encode('utf-8')
@@ -100,6 +104,7 @@ def generate_all() -> str:
                 lines.append(line)
     return cpp_template.format(len(lines), ','.join(map(lineToCppDataLineUtf32, lines)),
         ','.join(map(lineToCppDataLineUtf8, lines)))
+
 
 if __name__ == "__main__":
     print(generate_all())

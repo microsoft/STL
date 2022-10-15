@@ -8,7 +8,7 @@ variables:
   buildOutputLocation: 'D:\build'
 
 pool:
-  name: 'StlBuild-2022-09-14T1332-Pool'
+  name: 'StlBuild-2022-10-11T1916-Pool'
   demands: EnableSpotVM -equals true
 
 pr:

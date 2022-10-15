@@ -66,7 +66,7 @@ STATIC_ASSERT(__cpp_lib_allocate_at_least == 202106L);
 STATIC_ASSERT(__cpp_lib_allocator_traits_is_always_equal == 201411L);
 #endif
 
-#if _HAS_CXX17
+#if _HAS_CXX17 && _HAS_STATIC_RTTI
 #ifndef __cpp_lib_any
 #error __cpp_lib_any is not defined
 #elif __cpp_lib_any != 201606L

@@ -1200,9 +1200,9 @@ union alignas(max_align_t) _Move_only_function_data {
     char _Data; // For aliasing
 
     template <class _Fn>
-    static constexpr size_t _Buf_offset = alignof(_Fn) <= sizeof(_Impl)
-                                            ? sizeof(_Impl) // Store _Fn immediately after _Impl
-                                            : alignof(_Fn); // Pad _Fn to next alignment
+    static constexpr size_t _Buf_offset =
+        alignof(_Fn) <= sizeof(_Impl) ? sizeof(_Impl) // Store _Fn immediately after _Impl
+                                      : alignof(_Fn); // Pad _Fn to next alignment
 
     template <class _Fn>
     static constexpr size_t _Buf_size = sizeof(_Pointers) - _Buf_offset<_Fn>;
@@ -1285,7 +1285,7 @@ template <size_t _Align>
 void __stdcall _Function_deallocate_large_overaligned(_Move_only_function_data& _Self) noexcept {
     _STL_INTERNAL_STATIC_ASSERT(_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 #ifdef __cpp_aligned_new
-    ::operator delete (_Self._Large_fn_ptr<void>(), align_val_t{_Align});
+    ::operator delete(_Self._Large_fn_ptr<void>(), align_val_t{_Align});
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
     ::operator delete(_Self._Large_fn_ptr<void>());
 #endif // __cpp_aligned_new
@@ -1297,7 +1297,7 @@ void __stdcall _Function_destroy_large(_Move_only_function_data& _Self) noexcept
     _Pfn->~_Vt();
 #ifdef __cpp_aligned_new
     if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        ::operator delete (static_cast<void*>(_Pfn), align_val_t{alignof(_Vt)});
+        ::operator delete(static_cast<void*>(_Pfn), align_val_t{alignof(_Vt)});
     } else
 #endif // __cpp_aligned_new
     {
@@ -1307,8 +1307,8 @@ void __stdcall _Function_destroy_large(_Move_only_function_data& _Self) noexcept
 
 template <class _Vt>
 inline constexpr size_t _Function_small_copy_size = // We copy Impl* and the functor data at once
-    _Move_only_function_data::_Buf_offset<_Vt> + // Impl* plus possible alignment
-    (size_t{sizeof(_Vt) + sizeof(void*) - 1} & ~size_t{sizeof(void*) - 1}); // size in whole pointers
+    _Move_only_function_data::_Buf_offset<_Vt> // Impl* plus possible alignment
+    + (size_t{sizeof(_Vt) + sizeof(void*) - 1} & ~size_t{sizeof(void*) - 1}); // size in whole pointers
 
 template <class _Vt, class... _CTypes>
 _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
@@ -1321,7 +1321,7 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
             if (_Ptr) {
 #ifdef __cpp_aligned_new
                 if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-                    ::operator delete (_Ptr, align_val_t{alignof(_Vt)});
+                    ::operator delete(_Ptr, align_val_t{alignof(_Vt)});
                 } else
 #endif // __cpp_aligned_new
                 {
@@ -1334,7 +1334,7 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
     void* _Ptr;
 #ifdef __cpp_aligned_new
     if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        _Ptr = ::operator new (sizeof(_Vt), align_val_t{alignof(_Vt)});
+        _Ptr = ::operator new(sizeof(_Vt), align_val_t{alignof(_Vt)});
     } else
 #endif // __cpp_aligned_new
     {
@@ -1470,9 +1470,9 @@ public:
     }
 
     template <class _Vt>
-    static constexpr bool _Large_function_engaged =
-        alignof(_Vt) > alignof(max_align_t)
-        || sizeof(_Vt) > _Move_only_function_data::_Buf_size<_Vt> || !is_nothrow_move_constructible_v<_Vt>;
+    static constexpr bool _Large_function_engaged = alignof(_Vt) > alignof(max_align_t)
+                                                 || sizeof(_Vt) > _Move_only_function_data::_Buf_size<_Vt>
+                                                 || !is_nothrow_move_constructible_v<_Vt>;
 
     _NODISCARD auto _Get_invoke() const noexcept {
         return _Get_impl(_Data)->_Invoke;
@@ -1558,7 +1558,7 @@ public:
 
     template <class _Vt>
     static constexpr bool _Is_callable_from =
-        is_invocable_r_v<_Rx, _Vt, _Types...>&& is_invocable_r_v<_Rx, _Vt&, _Types...>;
+        is_invocable_r_v<_Rx, _Vt, _Types...> && is_invocable_r_v<_Rx, _Vt&, _Types...>;
 
     _Rx operator()(_Types... _Args) {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
@@ -1607,7 +1607,7 @@ public:
 
     template <class _Vt>
     static constexpr bool _Is_callable_from =
-        is_invocable_r_v<_Rx, const _Vt, _Types...>&& is_invocable_r_v<_Rx, const _Vt&, _Types...>;
+        is_invocable_r_v<_Rx, const _Vt, _Types...> && is_invocable_r_v<_Rx, const _Vt&, _Types...>;
 
     _Rx operator()(_Types... _Args) const {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
@@ -1657,7 +1657,7 @@ public:
 
     template <class _Vt>
     static constexpr bool _Is_callable_from =
-        is_nothrow_invocable_r_v<_Rx, _Vt, _Types...>&& is_nothrow_invocable_r_v<_Rx, _Vt&, _Types...>;
+        is_nothrow_invocable_r_v<_Rx, _Vt, _Types...> && is_nothrow_invocable_r_v<_Rx, _Vt&, _Types...>;
 
     _Rx operator()(_Types... _Args) noexcept {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
@@ -1665,7 +1665,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...)& noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
+class _Move_only_function_call<_Rx(_Types...) & noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
     using result_type = _Rx;
 
@@ -1681,7 +1681,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...)&& noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
+class _Move_only_function_call<_Rx(_Types...) && noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
     using result_type = _Rx;
 
@@ -1706,7 +1706,7 @@ public:
 
     template <class _Vt>
     static constexpr bool _Is_callable_from =
-        is_nothrow_invocable_r_v<_Rx, const _Vt, _Types...>&& is_nothrow_invocable_r_v<_Rx, const _Vt&, _Types...>;
+        is_nothrow_invocable_r_v<_Rx, const _Vt, _Types...> && is_nothrow_invocable_r_v<_Rx, const _Vt&, _Types...>;
 
     _Rx operator()(_Types... _Args) const noexcept {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
@@ -1714,7 +1714,8 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const& noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
+class _Move_only_function_call<_Rx(_Types...) const & noexcept>
+    : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
     using result_type = _Rx;
 
@@ -1730,7 +1731,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const&& noexcept>
+class _Move_only_function_call<_Rx(_Types...) const && noexcept>
     : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
     using result_type = _Rx;
@@ -2862,40 +2863,34 @@ private:
 #ifdef __cpp_lib_concepts
 namespace ranges {
     _EXPORT_STD struct not_equal_to {
-        // clang-format off
         template <class _Ty1, class _Ty2>
             requires equality_comparable_with<_Ty1, _Ty2>
-        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
-            static_cast<bool>(static_cast<_Ty1&&>(_Left) == static_cast<_Ty2&&>(_Right)))) /* strengthened */ {
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(
+            noexcept(static_cast<bool>(static_cast<_Ty1&&>(_Left) == static_cast<_Ty2&&>(_Right)))) /* strengthened */ {
             return !static_cast<bool>(static_cast<_Ty1&&>(_Left) == static_cast<_Ty2&&>(_Right));
         }
-        // clang-format on
 
         using is_transparent = int;
     };
 
     _EXPORT_STD struct greater_equal {
-        // clang-format off
         template <class _Ty1, class _Ty2>
             requires totally_ordered_with<_Ty1, _Ty2>
-        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
-            static_cast<bool>(static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right)))) /* strengthened */ {
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(
+            noexcept(static_cast<bool>(static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right)))) /* strengthened */ {
             return !static_cast<bool>(static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right));
         }
-        // clang-format on
 
         using is_transparent = int;
     };
 
     _EXPORT_STD struct less_equal {
-        // clang-format off
         template <class _Ty1, class _Ty2>
             requires totally_ordered_with<_Ty1, _Ty2>
-        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
-            static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left)))) /* strengthened */ {
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(
+            noexcept(static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left)))) /* strengthened */ {
             return !static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left));
         }
-        // clang-format on
 
         using is_transparent = int;
     };
@@ -2914,7 +2909,7 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     namespace placeholders {
         using namespace _STD placeholders;
     }
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 #endif // _HAS_TR1_NAMESPACE
 
 _STD_END
