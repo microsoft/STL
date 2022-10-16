@@ -7416,13 +7416,15 @@ namespace ranges {
         template <bool _IsConst>
         static constexpr bool _Is_end_noexcept = []() {
             if constexpr (!_Zip_is_common<_ViewTypes...>) {
-                return noexcept(_Sentinel<_IsConst>{_Tuple_transform(_RANGES end, _Views)});
+                return noexcept(_Sentinel<_IsConst>{
+                    _Tuple_transform(_RANGES end, _STD declval<_Maybe_const<_IsConst, tuple<_ViewTypes...>>&>())});
             } else if constexpr ((random_access_range<_ViewTypes> && ...)) {
                 // Operations on iter_difference_t values must be noexcept, so we only
                 // need to check the noexcept of begin().
-                return noexcept(_STD declval<_Maybe_const<_IsConst, zip_view<_ViewTypes...>>>().begin());
+                return noexcept(_STD declval<_Maybe_const<_IsConst, zip_view<_ViewTypes...>>&>().begin());
             } else {
-                return noexcept(_Iterator<_IsConst>{_Tuple_transform(_RANGES end, _Views)});
+                return noexcept(_Iterator<_IsConst>{
+                    _Tuple_transform(_RANGES end, _STD declval<_Maybe_const<_IsConst, tuple<_ViewTypes...>>&>())});
             }
         }();
 
