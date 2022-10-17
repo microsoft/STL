@@ -1,11 +1,11 @@
-// stdatomic.h standard header
+// __msvc_cxx_stdatomic.h internal header
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
-#ifndef _STDATOMIC_H_
-#define _STDATOMIC_H_
+#ifndef __MSVC_CXX_STDATOMIC_HPP
+#define __MSVC_CXX_STDATOMIC_HPP
 
 // see _STL_COMPILER_PREPROCESSOR in yvals_core.h
 #if !defined(RC_INVOKED) && !defined(Q_MOC_RUN) && !defined(__midl)
@@ -136,4 +136,4 @@ _STL_RESTORE_CLANG_WARNINGS
 #endif // ^^^ _HAS_CXX23 ^^^
 
 #endif // !defined(RC_INVOKED) && !defined(Q_MOC_RUN) && !defined(__midl)
-#endif // _STDATOMIC_H_
+#endif // __MSVC_CXX_STDATOMIC_HPP
