@@ -4,9 +4,13 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cstddef>
+#include <memory>
 #include <ranges>
 #include <span>
 #include <tuple>
+#include <type_traits>
+#include <utility>
 
 #include <range_algorithm_support.hpp>
 
