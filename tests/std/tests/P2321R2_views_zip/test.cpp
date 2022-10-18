@@ -209,8 +209,8 @@ constexpr bool do_tuples_reference_same_objects(const LHSTupleType& lhs_tuple, c
 
     const auto evaluate_single_element_lambda = [&lhs_tuple, &rhs_tuple]<size_t CurrIndex>() {
         using reference_type = typename reference_type_solver<tuple_element_t<CurrIndex, LHSTupleType>>::reference_type;
-        return (addressof(static_cast<reference_type>(get<CurrIndex>(lhs_tuple)))
-                == addressof(static_cast<reference_type>(get<CurrIndex>(rhs_tuple))));
+        return addressof(static_cast<reference_type>(get<CurrIndex>(lhs_tuple)))
+            == addressof(static_cast<reference_type>(get<CurrIndex>(rhs_tuple)));
     };
 
     using index_sequence_type = make_index_sequence<tuple_size_v<LHSTupleType>>;
