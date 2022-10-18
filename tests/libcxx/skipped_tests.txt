@@ -724,9 +724,6 @@ input.output\iostream.format\ext.manip\get_money.pass.cpp
 input.output\iostream.format\ext.manip\put_money.pass.cpp
 input.output\iostreams.base\ios\basic.ios.members\copyfmt.pass.cpp
 
-# Likely STL bug: Looks like we shouldn't be using assignment.
-thread\futures\futures.promise\set_rvalue.pass.cpp
-
 # Possible STL bugs in pair and tuple.
 utilities\tuple\tuple.tuple\tuple.cnstr\PR23256_constrain_UTypes_ctor.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\PR31384.pass.cpp
