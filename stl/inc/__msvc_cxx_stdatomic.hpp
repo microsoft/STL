@@ -1,4 +1,4 @@
-// __msvc_cxx_stdatomic.h internal header
+// __msvc_cxx_stdatomic.hpp internal header
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
