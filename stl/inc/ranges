@@ -7355,7 +7355,7 @@ namespace ranges {
                 : _End(_End_) {}
 
             template <bool _IteratorConst>
-            _NODISCARD static inline constexpr const auto& _Get_iterator_tuple(
+            _NODISCARD static constexpr const auto& _Get_iterator_tuple(
                 const _Iterator<_IteratorConst>& _Itr) noexcept {
                 // NOTE: This function is necessary because friend functions are never
                 // member functions, and friendship is not transitive.
