@@ -10,6 +10,7 @@
 
 static std::atomic<int> has_default_objects{0};
 static std::atomic<int> no_default_objects{0};
+static std::atomic<int> no_assign_objects{0};
 static std::atomic<int> no_default_or_assign_objects{0};
 
 struct has_default {
@@ -41,6 +42,27 @@ struct no_default {
 
     ~no_default() {
         --no_default_objects;
+    }
+
+    int x;
+};
+
+// Also partially test GH-1190: incorrectly used copy assignment instead of copy construction in set_value
+struct no_assign {
+    no_assign() : x(0xbad) {
+        ++no_assign_objects;
+    }
+    explicit no_assign(int n) : x(n) {
+        ++no_assign_objects;
+    }
+    no_assign(const no_assign& v) : x(v.x) {
+        ++no_assign_objects;
+    }
+
+    void operator=(const no_assign&) = delete;
+
+    ~no_assign() {
+        --no_assign_objects;
     }
 
     int x;
@@ -155,18 +177,20 @@ void run_tests() {
     }
 
     {
-        (void) std::async(std::launch::async, [] { return T(16); });
-        (void) std::async(std::launch::async, [] {
+        // use explicit return type to allow returning cv-qualified class values
+        (void) std::async(std::launch::async, []() -> T { return T(16); });
+        (void) std::async(std::launch::async, []() -> T {
             const T x(40);
             return x;
         });
 
-        Future f = std::async(std::launch::async, [] { return T(23); });
+        Future f = std::async(std::launch::async, []() -> T { return T(23); });
         assert(f.get().x == 23);
     }
 
     {
-        std::packaged_task<T()> pt([] { return T(7); });
+        // use explicit return type to allow returning cv-qualified class values
+        std::packaged_task<T()> pt([]() -> T { return T(7); });
         Future f = pt.get_future();
         pt();
 
@@ -174,11 +198,116 @@ void run_tests() {
     }
 }
 
+// Also test GH-2599: Consider supporting promise<const int> and future<const int>
+template <class T>
+void run_scalar_tests() {
+    static_assert(std::is_scalar_v<T>, "Must test a scalar type");
+
+    using Promise = std::promise<T>;
+    using Future  = std::future<T>;
+
+    {
+        Promise p;
+        p.set_value(4);
+        assert(p.get_future().get() == 4);
+    }
+
+    {
+        Promise p;
+        Future f = p.get_future();
+        T v = 10;
+        p.set_value(v);
+        assert(f.get() == 10);
+        assert_throws_future_error([&] { p.set_value(v); }, std::future_errc::promise_already_satisfied);
+        assert_throws_future_error([&] { f.get(); }, std::future_errc::no_state);
+        assert_throws_future_error([&] { p.get_future().get(); }, std::future_errc::future_already_retrieved);
+    }
+
+    {
+        Promise p;
+        Future f = p.get_future();
+        p.set_exception(std::make_exception_ptr(5));
+        try {
+            f.get();
+            assert(false);
+        } catch (int i) {
+            assert(i == 5);
+        } catch (...) {
+            assert(false);
+        }
+    }
+
+    {
+        Promise p;
+        Future f = p.get_future();
+        p.set_exception(std::make_exception_ptr(3));
+        assert_throws_future_error([&] { p.set_value(2); }, std::future_errc::promise_already_satisfied);
+        try {
+            f.get();
+            assert(false);
+        } catch (int i) {
+            assert(i == 3);
+        } catch (...) {
+            assert(false);
+        }
+    }
+
+    {
+        Promise p;
+        Future f = p.get_future();
+        std::atomic<int> failures{0};
+        int succeeded    = -1;
+        auto make_thread = [&](int n) {
+            return std::thread([&, n] {
+                try {
+                    p.set_value(T(n));
+                } catch (std::future_error) {
+                    ++failures;
+                    return;
+                }
+                succeeded = n;
+            });
+        };
+        std::thread threads[]{make_thread(0), make_thread(1), make_thread(2), make_thread(3), make_thread(4),
+            make_thread(5), make_thread(6), make_thread(7)};
+
+        for (auto& t : threads) {
+            t.join();
+        }
+
+        assert(failures == 7);
+        assert(succeeded != -1 && f.get() == succeeded);
+    }
+}
+
 int main() {
-    run_tests<has_default>();
-    run_tests<no_default>();
-    run_tests<no_default_or_assign>();
-    assert(has_default_objects == 0);
-    assert(no_default_objects == 0);
-    assert(no_default_or_assign_objects == 0);
+    {
+        run_tests<has_default>();
+        run_tests<no_default>();
+        run_tests<no_assign>();
+        run_tests<no_default_or_assign>();
+        assert(has_default_objects == 0);
+        assert(no_default_objects == 0);
+        assert(no_assign_objects == 0);
+        assert(no_default_or_assign_objects == 0);
+    }
+    {
+        run_tests<const has_default>();
+        run_tests<const no_default>();
+        run_tests<const no_assign>();
+        run_tests<const no_default_or_assign>();
+        assert(has_default_objects == 0);
+        assert(no_default_objects == 0);
+        assert(no_assign_objects == 0);
+        assert(no_default_or_assign_objects == 0);
+    }
+    {
+        run_scalar_tests<char>();
+        run_scalar_tests<int>();
+        run_scalar_tests<double>();
+
+        run_scalar_tests<const char>();
+        run_scalar_tests<const int>();
+        run_scalar_tests<const double>();
+    }
 }
