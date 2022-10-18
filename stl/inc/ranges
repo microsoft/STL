@@ -7219,8 +7219,7 @@ namespace ranges {
 
             constexpr _Iterator& operator+=(const difference_type _Off) noexcept(
                 (noexcept(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>() +=
-                          static_cast<iter_difference_t<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>>(
-                              _STD declval<difference_type>()))
+                          static_cast<iter_difference_t<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>>(_Off))
                     && ...)) // strengthened
                 requires _All_random_access<_IsConst, _ViewTypes...>
             {
@@ -7234,8 +7233,7 @@ namespace ranges {
 
             constexpr _Iterator& operator-=(const difference_type _Off) noexcept(
                 (noexcept(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>() -=
-                          static_cast<iter_difference_t<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>>(
-                              _STD declval<difference_type>()))
+                          static_cast<iter_difference_t<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>>(_Off))
                     && ...)) // strengthened
                 requires _All_random_access<_IsConst, _ViewTypes...>
             {
@@ -7247,11 +7245,10 @@ namespace ranges {
                 return *this;
             }
 
-            _NODISCARD constexpr auto operator[](const difference_type _Where) const
-                noexcept((noexcept((_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>())
-                                  [static_cast<iter_difference_t<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>>(
-                                      _STD declval<difference_type>())])
-                          && ...)) // strengthened
+            _NODISCARD constexpr auto operator[](const difference_type _Where) const noexcept(
+                (noexcept((_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>())
+                         [static_cast<iter_difference_t<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>>(_Where)])
+                    && ...)) // strengthened
                 requires _All_random_access<_IsConst, _ViewTypes...>
             {
                 return _Tuple_transform(
