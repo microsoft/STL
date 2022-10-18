@@ -775,7 +775,7 @@ constexpr bool instantiation_test() {
     return instantiation_test_for_category<random_access_iterator_tag, InstantiatorType>();
 #else // ^^^ TEST_RANDOM ^^^ / vvv UNKNOWN vvv
     static_assert(false, "ERROR: A defined test macro was never specified when executing test P2321R2_views_zip!");
-    return false
+    return false;
 #endif // ^^^ UNKNOWN ^^^
 }
 
