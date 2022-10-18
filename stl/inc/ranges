@@ -7497,7 +7497,7 @@ namespace ranges {
         struct _Zip_fn {
         private:
             template <class... _Types>
-            static _CONSTEVAL bool _Is_invocation_noexcept() {
+            _NODISCARD static _CONSTEVAL bool _Is_invocation_noexcept() {
                 if constexpr (sizeof...(_Types) == 0) {
                     // NOTE: views::empty<tuple<>> is nothrow copy-constructible.
                     return true;
@@ -7508,7 +7508,7 @@ namespace ranges {
 
         public:
             template <class... _Types>
-            constexpr auto operator()(_Types&&... _Args) const noexcept(_Is_invocation_noexcept<_Types...>())
+            _NODISCARD constexpr auto operator()(_Types&&... _Args) const noexcept(_Is_invocation_noexcept<_Types...>())
                 requires (sizeof...(_Types) == 0)
                       || requires { zip_view<views::all_t<_Types>...>(_STD forward<_Types>(_Args)...); }
             {
