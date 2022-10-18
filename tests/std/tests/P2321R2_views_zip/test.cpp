@@ -45,8 +45,8 @@ public:
 
     static constexpr size_t smallest_array_size = (min) ({Type1Size, Type2Size, Type3Size});
 
-    constexpr three_element_test_container(const array<Type1, Type1Size> type_one_init_arr,
-        const array<Type2, Type2Size> type_two_init_arr, const array<Type3, Type3Size> type_three_init_arr)
+    constexpr three_element_test_container(const array<Type1, Type1Size>& type_one_init_arr,
+        const array<Type2, Type2Size>& type_two_init_arr, const array<Type3, Type3Size>& type_three_init_arr)
         : type_one_array(type_one_init_arr), type_two_array(type_two_init_arr), type_three_array(type_three_init_arr) {}
 
     template <size_t ElementIndex>
@@ -145,7 +145,7 @@ public:
 
     static constexpr size_t smallest_array_size = Size;
 
-    constexpr single_element_test_container(const array<Type, Size> element_init_arr)
+    constexpr single_element_test_container(const array<Type, Size>& element_init_arr)
         : element_array(element_init_arr) {}
 
     constexpr auto get_element_span() {
