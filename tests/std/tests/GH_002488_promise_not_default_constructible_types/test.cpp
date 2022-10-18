@@ -215,7 +215,7 @@ void run_scalar_tests() {
     {
         Promise p;
         Future f = p.get_future();
-        T v = 10;
+        T v      = 10;
         p.set_value(v);
         assert(f.get() == 10);
         assert_throws_future_error([&] { p.set_value(v); }, std::future_errc::promise_already_satisfied);
