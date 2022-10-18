@@ -7174,7 +7174,7 @@ namespace ranges {
                 : _Current(_STD move(_Rhs._Current)) {}
 
             _NODISCARD constexpr auto operator*() const
-                noexcept((noexcept(*(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>()))
+                noexcept((noexcept(*(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>()))
                           && ...)) /* strengthened */ {
                 return _Tuple_transform([](auto& _Itr) -> decltype(auto) { return *_Itr; }, _Current);
             }
@@ -7246,7 +7246,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr auto operator[](const difference_type _Where) const noexcept(
-                (noexcept((_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>())
+                (noexcept((_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>())
                          [static_cast<iter_difference_t<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>>(_Where)])
                     && ...)) // strengthened
                 requires _All_random_access<_IsConst, _ViewTypes...>
@@ -7328,8 +7328,8 @@ namespace ranges {
             // clang-format off
             friend constexpr void iter_swap(const _Iterator& _Lhs, const _Iterator& _Rhs)
                 noexcept((noexcept(_RANGES iter_swap(
-                    _STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>(),
-                    _STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>())) && ...))
+                    _STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>(),
+                    _STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>())) && ...))
                 requires (indirectly_swappable<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...)
             {
                 // clang-format on
