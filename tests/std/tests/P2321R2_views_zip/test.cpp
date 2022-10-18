@@ -43,7 +43,7 @@ public:
     using rvalue_reference_tuple_type       = tuple<Type1&&, Type2&&, Type3&&>;
     using const_rvalue_reference_tuple_type = tuple<const Type1&&, const Type2&&, const Type3&&>;
 
-    static constexpr size_t smallest_array_size = (min) (Type1Size, (min) (Type2Size, Type3Size));
+    static constexpr size_t smallest_array_size = (min) ({Type1Size, Type2Size, Type3Size});
 
     constexpr three_element_test_container(const array<Type1, Type1Size> type_one_init_arr,
         const array<Type2, Type2Size> type_two_init_arr, const array<Type3, Type3Size> type_three_init_arr)
