@@ -317,7 +317,7 @@ public:
         _Ty* _Res_addr;
 
         _Reconstruction_guard& operator=(const _Reconstruction_guard&) = delete;
-        _Reconstruction_guard& operator=(_Reconstruction_guard&&) = delete;
+        _Reconstruction_guard& operator=(_Reconstruction_guard&&)      = delete;
 
         ~_Reconstruction_guard() {
             if (_Res_addr != nullptr) {
