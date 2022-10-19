@@ -438,7 +438,7 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             assert(end == as_const(zipped_range).end());
         }
 
-        const auto validate_iterators_lambda = []<class ArrayType, class LocalZipType, class... LocalRangeTypes>(
+        const auto validate_iterators_lambda = []<class LocalZipType, class ArrayType, class... LocalRangeTypes>(
                                                    LocalZipType& relevant_range,
                                                    const ArrayType& relevant_tuple_element_arr) {
             constexpr bool is_const = same_as<LocalZipType, add_const_t<LocalZipType>>;
@@ -575,12 +575,12 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         // Validate iterators and sentinels
         if constexpr (CanMemberBegin<ZipType> && CanMemberEnd<ZipType>) {
             validate_iterators_lambda
-                .template operator()<decltype(tuple_element_arr), ZipType, AllView<decltype((ranges))>...>(
+                .template operator()<ZipType, decltype(tuple_element_arr), AllView<decltype((ranges))>...>(
                     zipped_range, tuple_element_arr);
         }
 
         if constexpr (CanMemberBegin<const ZipType> && CanMemberEnd<const ZipType>) {
-            validate_iterators_lambda.template operator()<decltype(const_tuple_element_arr), const ZipType,
+            validate_iterators_lambda.template operator()<const ZipType, decltype(const_tuple_element_arr),
                 const AllView<decltype((ranges))>...>(as_const(zipped_range), const_tuple_element_arr);
         }
     }
