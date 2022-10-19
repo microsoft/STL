@@ -452,7 +452,7 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             if constexpr (ranges::forward_range<LocalZipType>) {
                 assert(do_tuples_reference_same_objects(*itr++, relevant_tuple_element_arr[0]));
             } else {
-                // If LocalZipType does not model forward_range, we can still use post-fix operator
+                // If LocalZipType does not model forward_range, we can still use the postfix operator
                 // which returns void.
                 itr++;
             }
