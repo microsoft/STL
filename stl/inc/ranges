@@ -7057,8 +7057,8 @@ namespace ranges {
     template <class _CallbackType>
     constexpr auto _Tuple_transform_closure(_CallbackType& _Callback) noexcept {
         return [&_Callback]<class... _ViewTupleTypes>(_ViewTupleTypes&&... _View_tuples) {
-            return tuple<invoke_result_t<_CallbackType&, _ViewTupleTypes>...>(
-                _STD invoke(_Callback, _STD forward<_ViewTupleTypes>(_View_tuples))...);
+            return tuple<invoke_result_t<_CallbackType&, _ViewTupleTypes>...>{
+                _STD invoke(_Callback, _STD forward<_ViewTupleTypes>(_View_tuples))...};
         };
     }
 
