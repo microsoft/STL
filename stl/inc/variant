@@ -636,7 +636,8 @@ struct _Variant_raw_visit1<-1> { // Fallback case for variants too large for any
             return static_cast<_Fn&&>(_Func)(                                                                     \
                 _Variant_tagged_ref_t<_Storage, (n)>{_STD _Variant_raw_get<(n)>(static_cast<_Storage&&>(_Obj))}); \
         }                                                                                                         \
-        _STL_UNREACHABLE
+        _STL_UNREACHABLE;                                                                                         \
+        [[fallthrough]]
 
 #define _STL_VISIT_STAMP(stamper, n)                                                                        \
     constexpr size_t _Size = remove_reference_t<_Storage>::_Size;                                           \
@@ -1506,7 +1507,8 @@ struct _Visit_strategy<0> {
             return _Variant_dispatcher<_Indices>::template _Dispatch2<_Ret, _Callable, _Variants...>( \
                 static_cast<_Callable&&>(_Obj), static_cast<_Variants&&>(_Args)...);                  \
         }                                                                                             \
-        _STL_UNREACHABLE
+        _STL_UNREACHABLE;                                                                             \
+        [[fallthrough]]
 
 #define _STL_VISIT_STAMP(stamper, n)                                               \
     constexpr size_t _Size = _Variant_total_states<_Remove_cvref_t<_Variants>...>; \
