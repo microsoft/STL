@@ -308,9 +308,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             same_as<expected_size_type> auto zip_size = zipped_range.size();
 
             assert(zip_size == ranges::size(tuple_element_arr));
-            STATIC_ASSERT(
-                noexcept(zipped_range.size())
-                == noexcept(ranges::min({static_cast<expected_size_type>(declval<AllView<RangeTypes>>().size())...})));
+            STATIC_ASSERT(noexcept(zipped_range.size())
+                          == (noexcept(static_cast<expected_size_type>(declval<AllView<RangeTypes>>().size())) && ...));
         }
 
         STATIC_ASSERT(CanMemberSize<const ZipType> == (ranges::sized_range<const AllView<RangeTypes>> && ...));
@@ -320,9 +319,9 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             same_as<expected_size_type> auto zip_size = as_const(zipped_range).size();
 
             assert(zip_size == ranges::size(tuple_element_arr));
-            STATIC_ASSERT(noexcept(as_const(zipped_range).size())
-                          == noexcept(ranges::min(
-                              {static_cast<expected_size_type>(declval<const AllView<RangeTypes>>().size())...})));
+            STATIC_ASSERT(
+                noexcept(as_const(zipped_range).size())
+                == (noexcept(static_cast<expected_size_type>(declval<const AllView<RangeTypes>>().size())) && ...));
         }
 
         const bool is_empty = ranges::empty(tuple_element_arr);
@@ -811,4 +810,54 @@ int main() {
 
     STATIC_ASSERT(instantiation_test<instantiator>());
     instantiation_test<instantiator>();
+}
+
+void test_noexcept_strengthening() { // COMPILE-ONLY
+    // This quickly verifies that various operations have been noexcept-strengthened.
+    // This isn't attempting to be exhaustive - it skips operations that haven't been strengthened, or that are
+    // difficult to test. Also, this isn't attempting to test corner cases for conditional noexcept.
+
+    int arr1[]{10, 20, 30};
+    int arr2[]{11, 22, 33};
+
+    {
+        STATIC_ASSERT(noexcept(ranges::zip_view{arr1, arr2}));
+        STATIC_ASSERT(noexcept(views::zip(arr1, arr2)));
+
+        ranges::zip_view zipped{arr1, arr2};
+
+        STATIC_ASSERT(noexcept(zipped.begin()));
+        STATIC_ASSERT(noexcept(zipped.end()));
+        STATIC_ASSERT(noexcept(zipped.size()));
+
+        auto it = zipped.begin();
+
+        STATIC_ASSERT(noexcept(*it));
+        STATIC_ASSERT(noexcept(++it));
+        STATIC_ASSERT(noexcept(it++));
+        STATIC_ASSERT(noexcept(--it));
+        STATIC_ASSERT(noexcept(it--));
+        STATIC_ASSERT(noexcept(it += 0));
+        STATIC_ASSERT(noexcept(it -= 0));
+        STATIC_ASSERT(noexcept(it[0]));
+        STATIC_ASSERT(noexcept(it == it));
+        STATIC_ASSERT(noexcept(it + 0));
+        STATIC_ASSERT(noexcept(0 + it));
+        STATIC_ASSERT(noexcept(it - 0));
+        STATIC_ASSERT(noexcept(it - it));
+        STATIC_ASSERT(noexcept(iter_move(it)));
+        STATIC_ASSERT(noexcept(iter_swap(it, it)));
+    }
+
+    {
+        ranges::zip_view zipped2{arr1, ranges::subrange{arr2, unreachable_sentinel}};
+
+        auto iter = zipped2.begin();
+        auto sent = zipped2.end();
+
+        // The unreachable_sentinel causes sent to be a zip_view::_Sentinel.
+        STATIC_ASSERT(!is_same_v<decltype(iter), decltype(sent)>);
+
+        STATIC_ASSERT(noexcept(iter == sent));
+    }
 }

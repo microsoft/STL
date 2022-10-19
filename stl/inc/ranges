@@ -7056,7 +7056,9 @@ namespace ranges {
 
     template <class _CallbackType>
     constexpr auto _Tuple_transform_closure(_CallbackType& _Callback) noexcept {
-        return [&_Callback]<class... _ViewTupleTypes>(_ViewTupleTypes&&... _View_tuples) {
+        return [&_Callback]<class... _ViewTupleTypes>(_ViewTupleTypes&&... _View_tuples) noexcept(
+                   noexcept(tuple<invoke_result_t<_CallbackType&, _ViewTupleTypes>...>{
+                       _STD invoke(_Callback, _STD forward<_ViewTupleTypes>(_View_tuples))...})) {
             return tuple<invoke_result_t<_CallbackType&, _ViewTupleTypes>...>{
                 _STD invoke(_Callback, _STD forward<_ViewTupleTypes>(_View_tuples))...};
         };
@@ -7070,7 +7072,8 @@ namespace ranges {
 
     template <class _CallbackType>
     constexpr auto _Tuple_for_each_closure(_CallbackType& _Callback) noexcept {
-        return [&_Callback]<class... _ViewTupleTypes>(_ViewTupleTypes&&... _View_tuples) {
+        return [&_Callback]<class... _ViewTupleTypes>(_ViewTupleTypes&&... _View_tuples) noexcept(
+                   noexcept(((void) (_STD invoke(_Callback, _STD forward<_ViewTupleTypes>(_View_tuples))), ...))) {
             ((void) (_STD invoke(_Callback, _STD forward<_ViewTupleTypes>(_View_tuples))), ...);
         };
     }
@@ -7097,9 +7100,12 @@ namespace ranges {
         // clang-format off
         noexcept((noexcept(static_cast<_ResultType>(
             _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>())) && ...)) {
+        constexpr bool _Is_noexcept = (noexcept(static_cast<_ResultType>(
+            _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>())) && ...);
         // clang-format on
-        const auto _Get_smallest_distance_closure = [&_Lhs_tuple, &
-            _Rhs_tuple ]<size_t _FirstIdx /* = 0 */, size_t... _Idxs>(index_sequence<_FirstIdx, _Idxs...>) {
+        const auto _Get_smallest_distance_closure =
+            [&_Lhs_tuple, &_Rhs_tuple ]<size_t _FirstIdx /* = 0 */, size_t... _Idxs>(
+                index_sequence<_FirstIdx, _Idxs...>) noexcept(_Is_noexcept) {
             const _ResultType _First_size = static_cast<_ResultType>(_STD get<0>(_Lhs_tuple) - _STD get<0>(_Rhs_tuple));
 
             if (_First_size == 0) {
@@ -7122,7 +7128,8 @@ namespace ranges {
         noexcept((noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) && ...)) {
         // clang-format on
         const auto _Evaluate_equality_closure =
-            [&_Lhs_tuple, &_Rhs_tuple ]<size_t... _Indices>(index_sequence<_Indices...>) {
+            [&_Lhs_tuple, &_Rhs_tuple ]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(
+                (noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) && ...)) {
             return ((_STD get<_Indices>(_Lhs_tuple) == _STD get<_Indices>(_Rhs_tuple)) || ...);
         };
 
@@ -7176,12 +7183,13 @@ namespace ranges {
             _NODISCARD constexpr auto operator*() const
                 noexcept((noexcept(*(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>()))
                           && ...)) /* strengthened */ {
-                return _Tuple_transform([](auto& _Itr) -> decltype(auto) { return *_Itr; }, _Current);
+                return _Tuple_transform(
+                    [](auto& _Itr) noexcept(noexcept(*_Itr)) -> decltype(auto) { return *_Itr; }, _Current);
             }
 
-            constexpr _Iterator& operator++() noexcept(
-                noexcept(_Tuple_for_each([](auto& _Itr) { ++_Itr; }, _Current))) /* strengthened */ {
-                _Tuple_for_each([](auto& _Itr) { ++_Itr; }, _Current);
+            constexpr _Iterator& operator++() noexcept(noexcept(
+                _Tuple_for_each([](auto& _Itr) noexcept(noexcept(++_Itr)) { ++_Itr; }, _Current))) /* strengthened */ {
+                _Tuple_for_each([](auto& _Itr) noexcept(noexcept(++_Itr)) { ++_Itr; }, _Current);
                 return *this;
             }
 
@@ -7199,11 +7207,11 @@ namespace ranges {
                 return _Temp;
             }
 
-            constexpr _Iterator& operator--() noexcept(
-                noexcept(_Tuple_for_each([](auto& _Itr) { --_Itr; }, _Current))) // strengthened
+            constexpr _Iterator& operator--() noexcept(noexcept(
+                _Tuple_for_each([](auto& _Itr) noexcept(noexcept(--_Itr)) { --_Itr; }, _Current))) // strengthened
                 requires _All_bidirectional<_IsConst, _ViewTypes...>
             {
-                _Tuple_for_each([](auto& _Itr) { --_Itr; }, _Current);
+                _Tuple_for_each([](auto& _Itr) noexcept(noexcept(--_Itr)) { --_Itr; }, _Current);
                 return *this;
             }
 
@@ -7224,8 +7232,10 @@ namespace ranges {
                 requires _All_random_access<_IsConst, _ViewTypes...>
             {
                 _Tuple_for_each(
-                    [&_Off]<class _IteratorType>(
-                        _IteratorType& _Itr) { _Itr += static_cast<iter_difference_t<_IteratorType>>(_Off); },
+                    [&_Off]<class _IteratorType>(_IteratorType& _Itr) noexcept(
+                        noexcept(_Itr += static_cast<iter_difference_t<_IteratorType>>(_Off))) {
+                        _Itr += static_cast<iter_difference_t<_IteratorType>>(_Off);
+                    },
                     _Current);
 
                 return *this;
@@ -7238,8 +7248,10 @@ namespace ranges {
                 requires _All_random_access<_IsConst, _ViewTypes...>
             {
                 _Tuple_for_each(
-                    [&_Off]<class _IteratorType>(
-                        _IteratorType& _Itr) { _Itr -= static_cast<iter_difference_t<_IteratorType>>(_Off); },
+                    [&_Off]<class _IteratorType>(_IteratorType& _Itr) noexcept(
+                        noexcept(_Itr -= static_cast<iter_difference_t<_IteratorType>>(_Off))) {
+                        _Itr -= static_cast<iter_difference_t<_IteratorType>>(_Off);
+                    },
                     _Current);
 
                 return *this;
@@ -7252,14 +7264,15 @@ namespace ranges {
                 requires _All_random_access<_IsConst, _ViewTypes...>
             {
                 return _Tuple_transform(
-                    [&_Where]<class _IteratorType>(_IteratorType& _Itr) -> decltype(auto) {
+                    [&_Where]<class _IteratorType>(_IteratorType& _Itr) noexcept(
+                        noexcept(_Itr[static_cast<iter_difference_t<_IteratorType>>(_Where)])) -> decltype(auto) {
                         return _Itr[static_cast<iter_difference_t<_IteratorType>>(_Where)];
                     },
                     _Current);
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept(
-                noexcept(_Lhs._Current == _Rhs._Current)) // strengthened
+                noexcept(_Zip_iterator_sentinel_equal(_Lhs._Current, _Rhs._Current))) // strengthened
                 requires (equality_comparable<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...)
             {
                 if constexpr (!_Zip_is_common<_Maybe_const<_IsConst, _ViewTypes>...>
@@ -7270,8 +7283,7 @@ namespace ranges {
                 }
             }
 
-            _NODISCARD_FRIEND constexpr auto operator<=>(const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept(
-                noexcept(_Lhs._Current <=> _Rhs._Current)) // strengthened
+            _NODISCARD_FRIEND constexpr auto operator<=>(const _Iterator& _Lhs, const _Iterator& _Rhs)
                 requires _All_random_access<_IsConst, _ViewTypes...>
             {
                 return _Lhs._Current <=> _Rhs._Current;
@@ -7333,7 +7345,10 @@ namespace ranges {
                 requires (indirectly_swappable<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...)
             {
                 // clang-format on
-                const auto _Swap_every_pair_closure = [&_Lhs, &_Rhs ]<size_t... _Indices>(index_sequence<_Indices...>) {
+                const auto _Swap_every_pair_closure =
+                    [&_Lhs, &_Rhs ]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(noexcept(
+                        ((_RANGES iter_swap(_STD get<_Indices>(_Lhs._Current), _STD get<_Indices>(_Rhs._Current))),
+                            ...))) {
                     ((_RANGES iter_swap(_STD get<_Indices>(_Lhs._Current), _STD get<_Indices>(_Rhs._Current))), ...);
                 };
 
@@ -7480,7 +7495,7 @@ namespace ranges {
 
     private:
         _NODISCARD static constexpr auto _Size_closure() noexcept {
-            return [](auto... _Sizes) {
+            return [](auto... _Sizes) noexcept {
                 using _Common_unsigned_type = _Make_unsigned_like_t<common_type_t<decltype(_Sizes)...>>;
                 return (_RANGES min)({static_cast<_Common_unsigned_type>(_Sizes)...});
             };
