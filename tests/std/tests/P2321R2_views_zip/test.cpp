@@ -317,7 +317,7 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         if constexpr (CanMemberSize<const ZipType>) {
             using expected_size_type =
                 _Make_unsigned_like_t<common_type_t<decltype(ranges::size(declval<const AllView<RangeTypes>>()))...>>;
-            same_as<expected_size_type> auto zip_size = zipped_range.size();
+            same_as<expected_size_type> auto zip_size = as_const(zipped_range).size();
 
             assert(zip_size == ranges::size(tuple_element_arr));
             STATIC_ASSERT(noexcept(as_const(zipped_range).size())
