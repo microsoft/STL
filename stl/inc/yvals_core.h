@@ -472,6 +472,14 @@
 #error _STL_WARNING_LEVEL cannot be greater than 4.
 #endif // _STL_WARNING_LEVEL > 4
 
+#ifndef __has_cpp_attribute
+#define _FALLTHROUGH
+#elif __has_cpp_attribute(fallthrough) >= 201603L
+#define _FALLTHROUGH [[fallthrough]]
+#else
+#define _FALLTHROUGH
+#endif
+
 // _HAS_NODISCARD (in vcruntime.h) controls:
 // [[nodiscard]] attributes on STL functions
 

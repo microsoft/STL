@@ -362,7 +362,7 @@ protected:
                 }
             }
 
-            // fallthrough
+            _FALLTHROUGH;
         default:
             return pos_type(off_type(-1));
         }
