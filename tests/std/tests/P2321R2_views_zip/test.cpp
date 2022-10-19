@@ -237,8 +237,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         STATIC_ASSERT(ranges::forward_range<ZipType> == (ranges::forward_range<decltype((ranges))> && ...));
         STATIC_ASSERT(ranges::bidirectional_range<ZipType> == (ranges::bidirectional_range<decltype((ranges))> && ...));
         STATIC_ASSERT(ranges::random_access_range<ZipType> == (ranges::random_access_range<decltype((ranges))> && ...));
-        STATIC_ASSERT(ranges::common_range<ZipType> == //
-                          (sizeof...(RangeTypes) == 1 && (ranges::common_range<decltype((ranges))> && ...))
+        STATIC_ASSERT(ranges::common_range<ZipType>
+                          == (sizeof...(RangeTypes) == 1 && (ranges::common_range<decltype((ranges))> && ...))
                       || (!(ranges::bidirectional_range<decltype((ranges))> && ...)
                           && (ranges::common_range<decltype((ranges))> && ...))
                       || ((ranges::random_access_range<decltype((ranges))> && ...)
@@ -263,8 +263,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         }
 
         // ... with const lvalue arguments
-        STATIC_ASSERT(CanViewZip<const remove_reference_t<RangeTypes>&...> == //
-                      (!are_views || (copy_constructible<AllView<RangeTypes>> && ...)));
+        STATIC_ASSERT(CanViewZip<const remove_reference_t<RangeTypes>&...>
+                      == (!are_views || (copy_constructible<AllView<RangeTypes>> && ...)));
         if constexpr (CanViewZip<const remove_reference_t<RangeTypes>&...>) {
             using ExpectedZipType      = ranges::zip_view<AllView<const remove_reference_t<RangeTypes>&>...>;
             constexpr bool is_noexcept = (is_nothrow_copy_constructible_v<AllView<RangeTypes>> && ...);
@@ -274,8 +274,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         }
 
         // ... with rvalue argument
-        STATIC_ASSERT(CanViewZip<remove_reference_t<RangeTypes>...> == //
-                      (are_views || (movable<remove_reference_t<RangeTypes>> && ...)));
+        STATIC_ASSERT(CanViewZip<remove_reference_t<RangeTypes>...>
+                      == (are_views || (movable<remove_reference_t<RangeTypes>> && ...)));
         if constexpr (CanViewZip<remove_reference_t<RangeTypes>...>) {
             using ExpectedZipType      = ranges::zip_view<AllView<remove_reference_t<RangeTypes>>...>;
             constexpr bool is_noexcept = (is_nothrow_move_constructible_v<AllView<RangeTypes>> && ...);
@@ -285,8 +285,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         }
 
         // ... with const rvalue argument
-        STATIC_ASSERT(CanViewZip<const remove_reference_t<RangeTypes>...> == //
-                      (are_views && (copy_constructible<AllView<RangeTypes>> && ...)));
+        STATIC_ASSERT(CanViewZip<const remove_reference_t<RangeTypes>...>
+                      == (are_views && (copy_constructible<AllView<RangeTypes>> && ...)));
         if constexpr (CanViewZip<const remove_reference_t<RangeTypes>...>) {
             using ExpectedZipType      = ranges::zip_view<AllView<const remove_reference_t<RangeTypes>>...>;
             constexpr bool is_noexcept = (is_nothrow_copy_constructible_v<AllView<RangeTypes>> && ...);
@@ -336,12 +336,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             assert(zipped_range.empty() == is_empty);
         }
 
-        // clang-format off
-        STATIC_ASSERT(
-            CanMemberEmpty<
-            const ZipType> == (ranges::sized_range<const ZipType> ||
-                ranges::forward_range<const ZipType>));
-        // clang-format on
+        STATIC_ASSERT(CanMemberEmpty<const ZipType>
+                      == (ranges::sized_range<const ZipType> || ranges::forward_range<const ZipType>) );
         if constexpr (CanMemberEmpty<const ZipType>) {
             assert(as_const(zipped_range).empty() == is_empty);
         }
@@ -399,19 +395,15 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         }
 
         // Validate view_interface::back()
-        STATIC_ASSERT(CanMemberBack<ZipType> == //
-                      (ranges::bidirectional_range<ZipType> && ranges::common_range<ZipType>) );
+        STATIC_ASSERT(
+            CanMemberBack<ZipType> == (ranges::bidirectional_range<ZipType> && ranges::common_range<ZipType>) );
         if constexpr (CanMemberBack<ZipType>) {
             assert(do_tuples_reference_same_objects(
                 zipped_range.back(), tuple_element_arr[TestContainerType::smallest_array_size - 1]));
         }
 
-        // clang-format off
-        STATIC_ASSERT(
-            CanMemberBack<const ZipType> == //
-            (ranges::bidirectional_range<const ZipType> &&
-                ranges::common_range<const ZipType>));
-        // clang-format on
+        STATIC_ASSERT(CanMemberBack<const ZipType>
+                      == (ranges::bidirectional_range<const ZipType> && ranges::common_range<const ZipType>) );
         if constexpr (CanMemberBack<const ZipType>) {
             assert(do_tuples_reference_same_objects(
                 as_const(zipped_range).back(), const_tuple_element_arr[TestContainerType::smallest_array_size - 1]));
@@ -451,12 +443,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
                                                    const ArrayType& relevant_tuple_element_arr) {
             constexpr bool is_const = same_as<LocalZipType, add_const_t<LocalZipType>>;
 
-            // clang-format off
-            STATIC_ASSERT(
-                is_default_constructible_v<ranges::iterator_t<
-                LocalZipType>> ==
-                (is_default_constructible_v<ranges::iterator_t<LocalRangeTypes>> && ...));
-            // clang-format on
+            STATIC_ASSERT(is_default_constructible_v<ranges::iterator_t<LocalZipType>>
+                          == (is_default_constructible_v<ranges::iterator_t<LocalRangeTypes>> && ...));
 
             same_as<ranges::iterator_t<LocalZipType>> auto itr = relevant_range.begin();
 
@@ -526,10 +514,9 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             }
 
             STATIC_ASSERT(
-                noexcept(ranges::iter_move(itr)) == //
-                    (noexcept(ranges::iter_move(declval<const ranges::iterator_t<LocalRangeTypes>&>())) && ...)
-                && (is_nothrow_move_constructible_v<ranges::range_rvalue_reference_t<LocalRangeTypes>> && //
-                    ...));
+                noexcept(ranges::iter_move(itr))
+                    == (noexcept(ranges::iter_move(declval<const ranges::iterator_t<LocalRangeTypes>&>())) && ...)
+                && (is_nothrow_move_constructible_v<ranges::range_rvalue_reference_t<LocalRangeTypes>> && ...));
 
             assert(do_tuples_reference_same_objects(*itr, ranges::iter_move(itr)));
 
@@ -555,15 +542,12 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             }
 
             // Validate sentinels
-            // clang-format off
             if constexpr (!ranges::common_range<LocalZipType>) {
-                STATIC_ASSERT(
-                    is_default_constructible_v<ranges::sentinel_t<LocalZipType>> == //
-                    (is_default_constructible_v<ranges::sentinel_t<LocalRangeTypes>> && ...));
+                STATIC_ASSERT(is_default_constructible_v<ranges::sentinel_t<LocalZipType>>
+                              == (is_default_constructible_v<ranges::sentinel_t<LocalRangeTypes>> && ...));
 
                 const same_as<ranges::iterator_t<LocalZipType>> auto itr2 = relevant_range.begin();
-                const same_as<ranges::sentinel_t<LocalZipType>> auto sen = relevant_range.end();
-                // clang-format on
+                const same_as<ranges::sentinel_t<LocalZipType>> auto sen  = relevant_range.end();
 
                 if constexpr ((sentinel_for<ranges::sentinel_t<LocalRangeTypes>, ranges::iterator_t<LocalRangeTypes>>
                                   && ...)) {
