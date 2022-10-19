@@ -539,29 +539,6 @@ private:
         _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Mylast + _Count);
     }
 
-    _NODISCARD static const void* _Get_aligned_first(const void* _First, const void* _End) noexcept {
-        const auto _CFirst     = reinterpret_cast<const char*>(_First);
-        const auto _CEnd       = reinterpret_cast<const char*>(_End);
-        const size_t _Capacity = static_cast<size_t>(_CEnd - _CFirst);
-
-        if (_Capacity >= _Asan_granularity) {
-            // We are guaranteed to have sufficient space to find an aligned address.
-            return reinterpret_cast<const void*>(
-                (reinterpret_cast<uintptr_t>(_CFirst) + (_Asan_granularity - 1)) & ~(_Asan_granularity - 1));
-        }
-
-        uintptr_t _Alignment_offset = reinterpret_cast<uintptr_t>(_CFirst) & (_Asan_granularity - 1);
-        if (_Alignment_offset != 0) {
-            _Alignment_offset = _Asan_granularity - _Alignment_offset;
-        }
-
-        if (_Capacity > _Alignment_offset) {
-            return _CFirst + _Alignment_offset;
-        }
-
-        return nullptr;
-    }
-
     static _CONSTEXPR20 void _Apply_annotation(
         pointer _First_, pointer _End_, pointer _Old_last_, pointer _New_last_) noexcept {
         _STL_INTERNAL_CHECK(_First_ != nullptr);
@@ -586,7 +563,7 @@ private:
         if constexpr (_Has_minimum_allocation_alignment<vector>) {
             __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
         } else {
-            const void* const _Aligned_first = _Get_aligned_first(_First, _End);
+            const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _End);
             if (!_Aligned_first) {
                 // There is no aligned address within the underlying buffer; nothing to do.
                 return;
