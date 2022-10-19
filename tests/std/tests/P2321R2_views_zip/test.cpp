@@ -620,17 +620,17 @@ template <bool IsMoveOnly>
 class range_type_solver {
 protected:
     template <class Category, class Element, test::Sized IsSized, test::Common IsCommon, test::CanDifference Diff>
-    using range_type = test_range<Category, Element, IsSized, IsCommon, Diff>;
-};
-
-template <>
-class range_type_solver<true> {
-protected:
-    template <class Category, class Element, test::Sized IsSized, test::Common IsCommon, test::CanDifference Diff>
     using range_type = test::range<Category, Element, IsSized, Diff, IsCommon,
         (to_bool(IsCommon) ? test::CanCompare::yes : test::CanCompare{derived_from<Category, forward_iterator_tag>}),
         test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes,
         test::Copyability::move_only>;
+};
+
+template <>
+class range_type_solver<false> {
+protected:
+    template <class Category, class Element, test::Sized IsSized, test::Common IsCommon, test::CanDifference Diff>
+    using range_type = test_range<Category, Element, IsSized, IsCommon, Diff>;
 };
 
 template <bool IsMoveOnly, class Category, test::Sized IsSized, test::Common IsCommon, test::CanDifference Diff>
