@@ -312,17 +312,52 @@ public:
         }
     }
 
+    // TRANSITION, keeps _Result living
+    struct _Reconstruction_guard {
+        _Ty* _Res_addr;
+
+        _Reconstruction_guard& operator=(const _Reconstruction_guard&) = delete;
+        _Reconstruction_guard& operator=(_Reconstruction_guard&&) = delete;
+
+        ~_Reconstruction_guard() {
+            if (_Res_addr != nullptr) {
+                ::new (_STD _Voidify_iter(_Res_addr)) _Ty; // terminates if the default-initialization throws
+            }
+        }
+    };
+
+    template <class _Ty2>
+    void _Reconstruct_result(_Ty2&& _Val) {
+        if constexpr (is_nothrow_constructible_v<_Ty, _Ty2>) {
+            if constexpr (!is_trivially_destructible_v<_Ty>) {
+                _Result.~_Ty();
+            }
+            ::new (_STD _Voidify_iter(_STD addressof(_Result))) _Ty(_STD forward<_Ty2>(_Val));
+        } else if constexpr (is_nothrow_move_constructible_v<remove_cv_t<_Ty>>) {
+            remove_cv_t<_Ty> _Tmp(_STD forward<_Ty2>(_Val));
+            if constexpr (!is_trivially_destructible_v<_Ty>) {
+                _Result.~_Ty();
+            }
+            ::new (_STD _Voidify_iter(_STD addressof(_Result))) _Ty(_STD move(_Tmp));
+        } else {
+            _Reconstruction_guard _Guard{_STD addressof(_Result)};
+            if constexpr (!is_trivially_destructible_v<_Ty>) {
+                _Result.~_Ty();
+            }
+            ::new (_STD _Voidify_iter(_STD addressof(_Result))) _Ty(_STD forward<_Ty2>(_Val));
+            _Guard._Res_addr = nullptr;
+        }
+    }
+
     template <class _Ty2>
     void _Emplace_result(_Ty2&& _Val) {
+        // TRANSITION, keeps _Result living when _Ty is default initializable
         if constexpr (_Is_default_newable<_Ty>) {
             // TRANSITION, incorrectly assigns _Result when _Ty is default initializable and assignable
             if constexpr (is_assignable_v<_Ty&, _Ty2>) {
                 _Result = _STD forward<_Ty2>(_Val);
             } else {
-                if constexpr (!is_trivially_destructible_v<_Ty>) {
-                    _Result.~_Ty();
-                }
-                ::new (_STD _Voidify_iter(_STD addressof(_Result))) _Ty(_STD forward<_Ty2>(_Val));
+                _Reconstruct_result(_STD forward<_Ty2>(_Val));
             }
         } else {
             ::new (_STD _Voidify_iter(_STD addressof(_Result._Held_value))) _Ty(_STD forward<_Ty2>(_Val));
