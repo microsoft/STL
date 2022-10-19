@@ -17,7 +17,7 @@
 using namespace std;
 
 template <class... RangeTypes>
-concept CanViewZip = requires(RangeTypes&&... range) { views::zip(std::forward<RangeTypes>(range)...); };
+concept CanViewZip = requires(RangeTypes&&... ranges) { views::zip(std::forward<RangeTypes>(ranges)...); };
 
 template <class RangeType>
 using AllView = views::all_t<RangeType>;
