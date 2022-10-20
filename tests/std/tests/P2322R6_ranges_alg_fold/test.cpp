@@ -173,7 +173,7 @@ struct instantiator {
 
                 const double single_value = 3.14;
                 const same_as<double> auto prod3 =
-                    fold_left(begin(empty_rng), end(empty_rng), single_value, multiplies{});
+                    fold_right(begin(empty_rng), end(empty_rng), single_value, multiplies{});
                 assert(prod3 == single_value);
             }
 
@@ -185,7 +185,7 @@ struct instantiator {
                 assert(prod2 == right_product);
 
                 const double single_value        = 3.14;
-                const same_as<double> auto prod3 = fold_left(empty_rng, single_value, multiplies{});
+                const same_as<double> auto prod3 = fold_right(empty_rng, single_value, multiplies{});
                 assert(prod3 == single_value);
             }
 
