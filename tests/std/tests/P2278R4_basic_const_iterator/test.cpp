@@ -54,12 +54,12 @@ constexpr void test_one(It iter) {
     if constexpr (is_lvalue_reference_v<iter_reference_t<It>> && //
                   same_as<remove_cvref_t<iter_reference_t<It>>, iter_value_t<It>>) {
         const same_as<const iter_value_t<It>*> auto ptr = citer.operator->();
-        assert(ptr == std::addressof(*citer));
+        assert(ptr == addressof(*citer));
 
         if constexpr (contiguous_iterator<It>) {
-            static_assert(noexcept(citer.operator->()) == noexcept(std::to_address(iter))); // strengthened
+            static_assert(noexcept(citer.operator->()) == noexcept(to_address(iter))); // strengthened
         } else {
-            static_assert(noexcept(citer.operator->()) == noexcept(std::addressof(*iter))); // strengthened
+            static_assert(noexcept(citer.operator->()) == noexcept(addressof(*iter))); // strengthened
         }
     }
 
@@ -219,7 +219,7 @@ constexpr void test_one(It iter) {
 
     // Validate to_address
     if constexpr (contiguous_iterator<It> && HasPeek<It>) {
-        assert(std::to_address(citer) == iter.peek());
+        assert(to_address(citer) == iter.peek());
     }
 
     // Validate basic_const_iterator::operator==()
@@ -238,8 +238,8 @@ constexpr void test_one(It iter) {
     }
 
     { // Validate basic_const_iterator::base() &&
-        [[maybe_unused]] same_as<It> decltype(auto) base = std::move(citer).base();
-        static_assert(noexcept(std::move(citer).base()) == is_nothrow_move_constructible_v<It>); // strengthened
+        [[maybe_unused]] same_as<It> decltype(auto) base = move(citer).base();
+        static_assert(noexcept(move(citer).base()) == is_nothrow_move_constructible_v<It>); // strengthened
     }
 }
 
