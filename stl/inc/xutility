@@ -2019,13 +2019,13 @@ struct common_type<basic_const_iterator<_Ty1>, basic_const_iterator<_Ty2>> {
 
 _EXPORT_STD template <input_iterator _Iter>
 _NODISCARD constexpr const_iterator<_Iter> make_const_iterator(_Iter _It) noexcept(
-    is_nothrow_constructible_v<const_iterator<_Iter>, _Iter>) /* strengthened */ {
+    is_nothrow_constructible_v<const_iterator<_Iter>, _Iter&>) /* strengthened */ {
     return _It;
 }
 
 _EXPORT_STD template <semiregular _Sent>
 _NODISCARD constexpr const_sentinel<_Sent> make_const_sentinel(_Sent _Se) noexcept(
-    is_nothrow_constructible_v<const_sentinel<_Sent>, _Sent>) /* strengthened */ {
+    is_nothrow_constructible_v<const_sentinel<_Sent>, _Sent&>) /* strengthened */ {
     return _Se;
 }
 #endif // _HAS_CXX23
