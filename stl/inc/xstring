@@ -2551,7 +2551,7 @@ private:
         if constexpr (_Large_string_always_aligned && _Small_string_always_aligned) {
             __sanitizer_annotate_contiguous_container(_First, _Buffer_last, _Old_last, _New_last);
         } else {
-            const void* _Aligned_first = _STD _Get_asan_aligned_first(_First, _Buffer_last);
+            const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _Buffer_last);
             if (!_Aligned_first) {
                 // There is no aligned address within the underlying buffer.
                 // This should be impossible, as the minimum allocation size for string is 16...
@@ -2559,7 +2559,8 @@ private:
                 return;
             }
 
-            // last must be >= than first, so fix up when `_Aligned_first > _Old_last` or `_Aligned_first > _New_last`
+            // last must be >= than first, so fix up when `_Aligned_first > _*_last`
+            // note that _Buffer_last must be > 16 from _First, so it certainly is past _Aligned_first (< _First + 8)
             const void* const _Old_last_fixed = _Old_last >= _Aligned_first ? _Old_last : _Aligned_first;
             const void* const _New_last_fixed = _New_last >= _Aligned_first ? _New_last : _Aligned_first;
             _STD __sanitizer_annotate_contiguous_container(

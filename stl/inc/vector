@@ -540,7 +540,7 @@ private:
     }
 
     static _CONSTEXPR20 void _Apply_annotation(
-        pointer _First_, pointer _End_, pointer _Old_last_, pointer _New_last_) noexcept {
+        pointer _First_, pointer _Buffer_last_, pointer _Old_last_, pointer _New_last_) noexcept {
         _STL_INTERNAL_CHECK(_First_ != nullptr);
         _STL_INTERNAL_CHECK(_End_ != nullptr);
         _STL_INTERNAL_CHECK(_Old_last_ != nullptr);
@@ -556,12 +556,12 @@ private:
             return;
         }
 
-        const auto _First    = reinterpret_cast<const char*>(_Unfancy(_First_));
-        const auto _End      = reinterpret_cast<const char*>(_Unfancy(_End_));
-        const auto _Old_last = reinterpret_cast<const char*>(_Unfancy(_Old_last_));
-        const auto _New_last = reinterpret_cast<const char*>(_Unfancy(_New_last_));
-        if constexpr (_Has_minimum_allocation_alignment<vector>) {
-            __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
+        const void* const _First       = _STD _Unfancy(_First_);
+        const void* const _Buffer_last = _STD _Unfancy(_Buffer_last_);
+        const void* const _Old_last    = _STD _Unfancy(_Old_last_);
+        const void* const _New_last    = _STD _Unfancy(_New_last_);
+        if constexpr ((_Container_allocation_minimum_alignment<vector>) > _Asan_granularity) {
+            __sanitizer_annotate_contiguous_container(_First, _Buffer_last, _Old_last, _New_last);
         } else {
             const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _End);
             if (!_Aligned_first) {
@@ -569,11 +569,12 @@ private:
                 return;
             }
 
-            const void* const _Aligned_old_last = _Old_last < _Aligned_first ? _Aligned_first : _Old_last;
-            const void* const _Aligned_new_last = _New_last < _Aligned_first ? _Aligned_first : _New_last;
-            const void* const _Aligned_end      = _End < _Aligned_first ? _Aligned_first : _End;
+            // last must be >= than first, so fix up when `_Aligned_first > _*_last`
+            const void* const _Buffer_last_fixed = _Buffer_last >= _Aligned_first ? _Buffer_last : _Aligned_first;
+            const void* const _Old_last_fixed    = _Old_last >= _Aligned_first ? _Old_last : _Aligned_first;
+            const void* const _New_last_fixed    = _New_last >= _Aligned_first ? _New_last : _Aligned_first;
             __sanitizer_annotate_contiguous_container(
-                _Aligned_first, _Aligned_end, _Aligned_old_last, _Aligned_new_last);
+                _Aligned_first, _Buffer_last_fixed, _Old_last_fixed, _New_last_fixed);
         }
     }
 
