@@ -1714,7 +1714,7 @@ struct _Const_sentinel<_Sent> {
     using type = const_iterator<_Sent>;
 };
 
-_EXPORT_STD template <class _Sent>
+_EXPORT_STD template <semiregular _Sent>
 using const_sentinel = typename _Const_sentinel<_Sent>::type;
 
 // clang-format off
@@ -2023,7 +2023,7 @@ _NODISCARD constexpr const_iterator<_Iter> make_const_iterator(_Iter _It) noexce
     return _It;
 }
 
-_EXPORT_STD template <class _Sent>
+_EXPORT_STD template <semiregular _Sent>
 _NODISCARD constexpr const_sentinel<_Sent> make_const_sentinel(_Sent _Se) noexcept(
     is_nothrow_constructible_v<const_sentinel<_Sent>, _Sent>) /* strengthened */ {
     return _Se;

@@ -186,4 +186,11 @@ static_assert(!CanConstIterator<unreachable_sentinel_t>);
 static_assert(CanConstSentinel<unreachable_sentinel_t>);
 static_assert(same_as<const_sentinel<unreachable_sentinel_t>, unreachable_sentinel_t>);
 
+struct NotSemiregular {
+    NotSemiregular()                      = default;
+    NotSemiregular(const NotSemiregular&) = delete;
+};
+
+static_assert(!CanConstSentinel<NotSemiregular>);
+
 int main() {} // COMPILE-ONLY
