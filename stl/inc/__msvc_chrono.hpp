@@ -91,17 +91,16 @@ namespace chrono {
         constexpr duration() = default;
 
         template <class _Rep2,
-            enable_if_t<is_convertible_v<const _Rep2&,
-                            _Rep> && (treat_as_floating_point_v<_Rep> || !treat_as_floating_point_v<_Rep2>),
+            enable_if_t<is_convertible_v<const _Rep2&, _Rep>
+                            && (treat_as_floating_point_v<_Rep> || !treat_as_floating_point_v<_Rep2>),
                 int> = 0>
         constexpr explicit duration(const _Rep2& _Val) noexcept(
             is_arithmetic_v<_Rep>&& is_arithmetic_v<_Rep2>) // strengthened
             : _MyRep(static_cast<_Rep>(_Val)) {}
 
         template <class _Rep2, class _Period2,
-            enable_if_t<
-                treat_as_floating_point_v<
-                    _Rep> || (_Ratio_divide_sfinae<_Period2, _Period>::den == 1 && !treat_as_floating_point_v<_Rep2>),
+            enable_if_t<treat_as_floating_point_v<_Rep>
+                            || (_Ratio_divide_sfinae<_Period2, _Period>::den == 1 && !treat_as_floating_point_v<_Rep2>),
                 int> = 0>
         constexpr duration(const duration<_Rep2, _Period2>& _Dur) noexcept(
             is_arithmetic_v<_Rep>&& is_arithmetic_v<_Rep2>) // strengthened
@@ -408,13 +407,11 @@ namespace chrono {
     }
 
 #ifdef __cpp_lib_concepts
-    // clang-format off
     _EXPORT_STD template <class _Rep1, class _Period1, class _Rep2, class _Period2>
         requires three_way_comparable<typename common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>::rep>
     _NODISCARD constexpr auto
         operator<=>(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
-        // clang-format on
         using _CT = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
         return _CT(_Left).count() <=> _CT(_Right).count();
     }

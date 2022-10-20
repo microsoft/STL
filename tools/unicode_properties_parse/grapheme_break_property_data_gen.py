@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 from io import StringIO
 from pathlib import Path
 from dataclasses import dataclass, field
@@ -13,10 +14,12 @@ class PropertyRange:
     upper: int = -1
     prop: str = None
 
+
 @dataclass
 class PropertyTable:
     lower_bounds: list[int] = field(default_factory=list)
     props_and_range: list[int] = field(default_factory=list)
+
 
 LINE_REGEX = re.compile(
     r"^(?P<lower>[0-9A-F]{4,5})(?:\.\.(?P<upper>[0-9A-F]{4,5}))?\s*;\s*(?P<prop>\w+)")
@@ -30,9 +33,9 @@ def parsePropertyLine(inputLine: str) -> Optional[PropertyRange]:
         if upper_str is not None:
             result.upper = int(upper_str, base=16)
         return result
-
     else:
         return None
+
 
 def compactPropertyRanges(input: list[PropertyRange]) -> list[PropertyRange]:
     """
@@ -218,6 +221,7 @@ def property_ranges_to_table(ranges: list[PropertyRange], props: list[str]) -> P
         result.props_and_range.append(size | (prop_idx << 12))
     return result
 
+
 def generate_cpp_data(prop_name: str, ranges: list[PropertyRange]) -> str:
     result = StringIO()
     prop_values = sorted(set(x.prop for x in ranges))
@@ -231,8 +235,6 @@ def generate_cpp_data(prop_name: str, ranges: list[PropertyRange]) -> str:
                                        for x in table.lower_bounds]),
                  props_and_size=",".join(["0x" + format(x, 'x') for x in table.props_and_range])))
     return result.getvalue()
-
-
 
 
 def generate_data_tables() -> str:
@@ -261,6 +263,7 @@ def generate_data_tables() -> str:
     emoji_cpp_data = generate_cpp_data("Extended_Pictographic", [
         x for x in emoji_ranges if x.prop == "Extended_Pictographic"])
     return "\n".join([gpb_cpp_data, emoji_cpp_data])
+
 
 if __name__ == "__main__":
     print(MSVC_FORMAT_UCD_TABLES_HPP_TEMPLATE.lstrip().format(content=generate_data_tables()))

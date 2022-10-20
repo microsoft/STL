@@ -4606,7 +4606,7 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     namespace regex_constants {
         using namespace _STD regex_constants;
     }
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 #endif // _HAS_TR1_NAMESPACE
 
 #if _HAS_CXX17

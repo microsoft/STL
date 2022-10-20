@@ -908,17 +908,13 @@ struct uses_allocator<tuple<_Types...>, _Alloc> : true_type {}; // true_type if 
 
 #ifdef __cpp_lib_concepts
 template <class... _TTypes, class... _UTypes, template <class> class _TQual, template <class> class _UQual>
-    requires requires {
-        typename tuple<common_reference_t<_TQual<_TTypes>, _UQual<_UTypes>>...>;
-    }
+    requires requires { typename tuple<common_reference_t<_TQual<_TTypes>, _UQual<_UTypes>>...>; }
 struct basic_common_reference<tuple<_TTypes...>, tuple<_UTypes...>, _TQual, _UQual> {
     using type = tuple<common_reference_t<_TQual<_TTypes>, _UQual<_UTypes>>...>;
 };
 
 template <class... _TTypes, class... _UTypes>
-    requires requires {
-        typename tuple<common_type_t<_TTypes, _UTypes>...>;
-    }
+    requires requires { typename tuple<common_type_t<_TTypes, _UTypes>...>; }
 struct common_type<tuple<_TTypes...>, tuple<_UTypes...>> {
     using type = tuple<common_type_t<_TTypes, _UTypes>...>;
 };
@@ -932,7 +928,7 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD ref;
     using _STD tie;
     using _STD tuple;
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 #endif // _HAS_TR1_NAMESPACE
 
 _STD_END

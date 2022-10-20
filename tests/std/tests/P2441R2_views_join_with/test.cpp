@@ -15,9 +15,8 @@
 using namespace std;
 
 template <class Rng, class Delimiter>
-concept CanViewJoinWith = requires(Rng&& r, Delimiter&& d) {
-    views::join_with(forward<Rng>(r), forward<Delimiter>(d));
-};
+concept CanViewJoinWith =
+    requires(Rng&& r, Delimiter&& d) { views::join_with(forward<Rng>(r), forward<Delimiter>(d)); };
 
 template <bool IsElement>
 struct delimiter_view_impl {
@@ -51,11 +50,9 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
     STATIC_ASSERT(ranges::view<R>);
     STATIC_ASSERT(input_range<R>);
     STATIC_ASSERT(forward_range<R> == (deref_is_glvalue && forward_range<Outer> && forward_range<Inner>) );
-    // clang-format off
     STATIC_ASSERT(bidirectional_range<R>
                   == (deref_is_glvalue && bidirectional_range<Outer> && bidirectional_range<Inner>
                       && common_range<Inner> && bidirectional_range<DV> && common_range<DV>) );
-    // clang-format on
     STATIC_ASSERT(!ranges::random_access_range<R>);
 
     // Validate range adaptor object and range adaptor closure
@@ -140,10 +137,8 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
 
     // Validate join_with_view::begin
     STATIC_ASSERT(CanMemberBegin<R>);
-    // clang-format off
     STATIC_ASSERT(CanMemberBegin<const R&>
                   == (input_range<const V> && forward_range<const DV> && is_reference_v<range_reference_t<const V>>) );
-    // clang-format on
     if (forward_range<R>) { // intentionally not if constexpr
         const auto i = r.begin();
         if (!is_empty) {
@@ -177,7 +172,6 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
 
     // Validate join_with_view::end
     static_assert(CanMemberEnd<R>);
-    // clang-format off
     static_assert(CanMemberEnd<const R>
                   == (input_range<const V> && forward_range<const DV> && is_reference_v<range_reference_t<const V>>) );
     static_assert(common_range<R>
@@ -187,7 +181,6 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
                   == (forward_range<const V> && forward_range<const DV> && is_reference_v<range_reference_t<const V>>
                       && common_range<const V> && forward_range<range_reference_t<const V>>
                       && common_range<range_reference_t<const V>>) );
-    // clang-format on
     const same_as<sentinel_t<R>> auto s = r.end();
     if (!is_empty) {
         if constexpr (bidirectional_range<R> && common_range<R>) {

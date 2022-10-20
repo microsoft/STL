@@ -449,14 +449,12 @@
 #define _STL_PRAGMA_MESSAGE(MESSAGE) _STL_PRAGMA(message(MESSAGE))
 #define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _CRT_STRINGIZE(__LINE__) "): " MESSAGE)
 
-// clang-format off
-#define _EMIT_STL_WARNING(NUMBER, MESSAGE) \
+#define _EMIT_STL_WARNING(NUMBER, MESSAGE)             \
     _EMIT_STL_MESSAGE("warning " #NUMBER ": " MESSAGE) \
     static_assert(true, "")
-#define _EMIT_STL_ERROR(NUMBER, MESSAGE) \
+#define _EMIT_STL_ERROR(NUMBER, MESSAGE)             \
     _EMIT_STL_MESSAGE("error " #NUMBER ": " MESSAGE) \
     static_assert(false, "Error in C++ Standard Library usage.")
-// clang-format on
 
 #ifndef _STL_WARNING_LEVEL
 #if defined(_MSVC_WARNING_LEVEL) && _MSVC_WARNING_LEVEL >= 4
@@ -771,7 +769,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202209L
+#define _MSVC_STL_UPDATE  202210L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -781,8 +779,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or new
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 14
-_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 14.0.0 or newer.");
+#if __clang_major__ < 15
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 15.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1934 // Coarse-grained, not inspecting _MSC_FULL_VER
