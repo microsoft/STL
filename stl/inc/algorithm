@@ -2704,7 +2704,8 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_Indirectly_binary_left_foldable<_Fn, iter_value_t<_It>, _It>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It>, iter_reference_t<_It>>);
 
-            using _Uty = decltype(_RANGES fold_left(_STD move(_First), _Last, iter_value_t<_It>(*_First), _Func));
+            using _Uty =
+                decltype(_RANGES fold_left(_STD move(_First), _Last, static_cast<iter_value_t<_It>>(*_First), _Func));
             using _Return_type = fold_left_first_with_iter_result<_RetIt, optional<_Uty>>;
             if (_First == _Last) {
                 return _Return_type{_STD move(_First), optional<_Uty>()};
@@ -2814,13 +2815,13 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_Indirectly_binary_right_foldable<_Fn, iter_value_t<_It>, _It>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It>, iter_reference_t<_It>>);
 
-            using _Uty = decltype(_RANGES fold_right(_First, _Last, iter_value_t<_It>(*_First), _Func));
+            using _Uty = decltype(_RANGES fold_right(_First, _Last, static_cast<iter_value_t<_It>>(*_First), _Func));
             if (_First == _Last) {
                 return optional<_Uty>{};
             } else {
                 _It _Tail = _RANGES prev(_RANGES next(_First, _STD move(_Last)));
                 return optional<_Uty>(in_place, _RANGES _Fold_right_unchecked(_STD move(_First), _Tail,
-                                                    iter_value_t<_It>(*_Tail), _STD move(_Func)));
+                                                    static_cast<iter_value_t<_It>>(*_Tail), _STD move(_Func)));
             }
         }
     };
