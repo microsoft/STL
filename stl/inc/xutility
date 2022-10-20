@@ -1730,7 +1730,7 @@ struct _Basic_const_iterator_category<_Iter> {
     using iterator_category = typename iterator_traits<_Iter>::iterator_category;
 };
 
-// These are distinct concepts to workaround LLVM-55945
+// TRANSITION, LLVM-55945: These are distinct concepts as a workaround
 template <class _Ty, class _Iter>
 concept _Bci_order =
     _Not_same_as<_Ty, basic_const_iterator<_Iter>> && random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Ty>;
