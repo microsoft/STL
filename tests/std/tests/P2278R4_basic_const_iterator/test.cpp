@@ -51,8 +51,8 @@ constexpr void test_one(It iter) {
     }
 
     // Validate basic_const_iterator::operator->()
-    if constexpr (is_lvalue_reference_v<iter_reference_t<It>> && //
-                  same_as<remove_cvref_t<iter_reference_t<It>>, iter_value_t<It>>) {
+    if constexpr (is_lvalue_reference_v<iter_reference_t<It>>
+                  && same_as<remove_cvref_t<iter_reference_t<It>>, iter_value_t<It>>) {
         const same_as<const iter_value_t<It>*> auto ptr = citer.operator->();
         assert(ptr == addressof(*citer));
 
