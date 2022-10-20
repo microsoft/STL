@@ -6,7 +6,6 @@
 
 using namespace std;
 
-#ifndef _M_CEE_PURE
 struct meow_category : error_category {
     constexpr meow_category() = default;
 
@@ -22,6 +21,5 @@ struct meow_category : error_category {
 #if _HAS_CXX20
 [[maybe_unused]] constexpr meow_category meowing_cat;
 #endif // _HAS_CXX20
-#endif // _M_CEE_PURE
 
 int main() {} // COMPILE-ONLY
