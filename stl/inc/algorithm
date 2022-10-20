@@ -2708,12 +2708,12 @@ namespace ranges {
                 decltype(_RANGES fold_left(_STD move(_First), _Last, static_cast<iter_value_t<_It>>(*_First), _Func));
             using _Return_type = fold_left_first_with_iter_result<_RetIt, optional<_Uty>>;
             if (_First == _Last) {
-                return _Return_type{_STD move(_First), optional<_Uty>()};
+                return _Return_type{_STD move(_First), optional<_Uty>{}};
             } else {
                 auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
                 auto _ULast  = _Unwrap_sent<_It>(_STD move(_Last));
 
-                optional<_Uty> _Init(in_place, *_UFirst);
+                optional<_Uty> _Init{in_place, *_UFirst};
                 _Uty& _Init_ref = *_Init;
                 for (++_UFirst; _UFirst != _ULast; ++_UFirst) {
                     _Init_ref = _STD invoke(_Func, _STD move(_Init_ref), *_UFirst);
@@ -2820,8 +2820,8 @@ namespace ranges {
                 return optional<_Uty>{};
             } else {
                 _It _Tail = _RANGES prev(_RANGES next(_First, _STD move(_Last)));
-                return optional<_Uty>(in_place, _RANGES _Fold_right_unchecked(_STD move(_First), _Tail,
-                                                    static_cast<iter_value_t<_It>>(*_Tail), _STD move(_Func)));
+                return optional<_Uty>{in_place, _RANGES _Fold_right_unchecked(_STD move(_First), _Tail,
+                                                    static_cast<iter_value_t<_It>>(*_Tail), _STD move(_Func))};
             }
         }
     };
