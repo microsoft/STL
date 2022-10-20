@@ -2666,12 +2666,12 @@ namespace ranges {
 
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, _Indirectly_binary_left_foldable<_Ty, _It> _Fn>
         _NODISCARD constexpr auto operator()(_It _First, _Se _Last, _Ty _Init, _Fn _Func) const {
-            return fold_left_with_iter(_STD move(_First), _Last, _STD move(_Init), _Pass_fn(_Func)).value;
+            return _RANGES fold_left_with_iter(_STD move(_First), _Last, _STD move(_Init), _Pass_fn(_Func)).value;
         }
 
         template <input_range _Rng, class _Ty, _Indirectly_binary_left_foldable<_Ty, iterator_t<_Rng>> _Fn>
         _NODISCARD constexpr auto operator()(_Rng&& _Range, _Ty _Init, _Fn _Func) const {
-            return fold_left_with_iter(_STD forward<_Rng>(_Range), _STD move(_Init), _Pass_fn(_Func)).value;
+            return _RANGES fold_left_with_iter(_STD forward<_Rng>(_Range), _STD move(_Init), _Pass_fn(_Func)).value;
         }
     };
 
@@ -2735,13 +2735,13 @@ namespace ranges {
             _Indirectly_binary_left_foldable<iter_value_t<_It>, _It> _Fn>
             requires constructible_from<iter_value_t<_It>, iter_reference_t<_It>>
         _NODISCARD constexpr auto operator()(_It _First, _Se _Last, _Fn _Func) const {
-            return fold_left_first_with_iter(_STD move(_First), _STD move(_Last), _Pass_fn(_Func)).value;
+            return _RANGES fold_left_first_with_iter(_STD move(_First), _STD move(_Last), _Pass_fn(_Func)).value;
         }
 
         template <input_range _Rng, _Indirectly_binary_left_foldable<range_value_t<_Rng>, iterator_t<_Rng>> _Fn>
             requires constructible_from<range_value_t<_Rng>, range_reference_t<_Rng>>
         _NODISCARD constexpr auto operator()(_Rng&& _Range, _Fn _Func) const {
-            return fold_left_first_with_iter(_STD forward<_Rng>(_Range), _Pass_fn(_Func)).value;
+            return _RANGES fold_left_first_with_iter(_STD forward<_Rng>(_Range), _Pass_fn(_Func)).value;
         }
     };
 
