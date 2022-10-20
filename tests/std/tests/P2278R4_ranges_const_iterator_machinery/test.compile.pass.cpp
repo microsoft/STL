@@ -125,12 +125,10 @@ namespace test_input_iter {
     using Iter = ranges::iterator_t<ranges::istream_view<int>>;
     static_assert(CanIterConstRef<Iter>);
     static_assert(CanConstIterator<Iter>);
-    static_assert(CanConstSentinel<Iter>);
+    static_assert(!CanConstSentinel<Iter>);
     static_assert(same_as<iter_const_reference_t<Iter>, const int&>);
     static_assert(same_as<const_iterator<Iter>, basic_const_iterator<Iter>>);
     static_assert(same_as<iter_reference_t<const_iterator<Iter>>, const int&>);
-    static_assert(same_as<const_sentinel<Iter>, basic_const_iterator<Iter>>);
-    static_assert(same_as<iter_reference_t<const_sentinel<Iter>>, const int&>);
 } // namespace test_input_iter
 
 namespace test_prvalue_iter {
