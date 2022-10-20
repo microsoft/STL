@@ -2419,14 +2419,6 @@ extern const bool _Asan_string_should_annotate;
 #error Unknown architecture
 #endif // ^^^ unknown architecture ^^^
 
-template <class _String, class = void>
-_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string =
-    alignof(typename _String::value_type) >= _Asan_granularity;
-
-template <class _String>
-_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string<_String,
-    void_t<decltype(_String::allocator_type::_Minimum_allocation_alignment)>> =
-    _String::allocator_type::_Minimum_allocation_alignment >= _Asan_granularity;
 #else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
 #pragma detect_mismatch("annotate_string", "0")
 #endif // !_INSERT_STRING_ANNOTATION
@@ -2547,25 +2539,16 @@ private:
             return;
         }
 
-        // When SSO is active, the buffer may not be aligned on an ASan shadow memory boundary;
-        if constexpr (_Memcpy_val_offset % _Asan_granularity != 0) {
-            // The alignment can be incorrect on this platform and for this type
-            if (_Capacity == _BUF_SIZE - 1) {
-                // This string is in SSO mode, so we need to check if the buffer happens to be aligned or not
-                const uintptr_t _Buffer_alignment = reinterpret_cast<uintptr_t>(_First) & (_Asan_granularity - 1);
-                if (_Buffer_alignment != 0) {
-                    // NOTE TO REVIEWER: shouldn't this do the `_Aligned_first` thing that's done when in large string mode?
-                    return;
-                }
-            }
-        }
-
         // Note that `_Capacity`, `_Old_size`, and `_New_size` do not include the null terminator,
         // so we need to add one back.
-        const void* const _Buffer_last      = _First + _Capacity + 1;
-        const void* const _Old_last = _First + _Old_size + 1;
-        const void* const _New_last = _First + _New_size + 1;
-        if constexpr (_Has_minimum_allocation_alignment_string<basic_string>) {
+        const void* const _Buffer_last = _First + _Capacity + 1;
+        const void* const _Old_last    = _First + _Old_size + 1;
+        const void* const _New_last    = _First + _New_size + 1;
+
+        constexpr bool _Large_string_always_aligned =
+            (_Container_allocation_minimum_alignment<basic_string>) > _Asan_granularity;
+        constexpr bool _Small_string_always_aligned = _Memcpy_val_offset % _Asan_granularity == 0;
+        if constexpr (_Large_string_always_aligned && _Small_string_always_aligned) {
             __sanitizer_annotate_contiguous_container(_First, _Buffer_last, _Old_last, _New_last);
         } else {
             const void* _Aligned_first = _STD _Get_asan_aligned_first(_First, _Buffer_last);
@@ -2579,11 +2562,12 @@ private:
             // last must be >= than first, so fix up when `_Aligned_first > _Old_last` or `_Aligned_first > _New_last`
             const void* const _Old_last_fixed = _Old_last >= _Aligned_first ? _Old_last : _Aligned_first;
             const void* const _New_last_fixed = _New_last >= _Aligned_first ? _New_last : _Aligned_first;
-            _STD __sanitizer_annotate_contiguous_container(_Aligned_first, _Buffer_last, _Old_last_fixed, _New_last_fixed);
+            _STD __sanitizer_annotate_contiguous_container(
+                _Aligned_first, _Buffer_last, _Old_last_fixed, _New_last_fixed);
         }
     }
 
-#define _ASAN_STRING_MODIFY(n) _Modify_annotation(n)
+#define _ASAN_STRING_MODIFY(n)    _Modify_annotation(n)
 #define _ASAN_STRING_REMOVE(_Str) (_Str)._Remove_annotation()
 #define _ASAN_STRING_CREATE(_Str) (_Str)._Create_annotation()
 #else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv

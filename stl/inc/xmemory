@@ -776,20 +776,29 @@ _NODISCARD constexpr allocation_result<typename allocator_traits<_Alloc>::pointe
 // The number of user bytes a single byte of ASAN shadow memory can track.
 _INLINE_VAR constexpr size_t _Asan_granularity = 8;
 
-_NODISCARD inline const void* _Get_asan_aligned_first(const void* _First, const void* _Last) noexcept {
-    const auto _First_address     = reinterpret_cast<uintptr_t>(_First);
-    const auto _Last_address       = reinterpret_cast<uintptr_t>(_Last);
+_NODISCARD inline const void* _Get_asan_aligned_first(const void* const _First, const void* const _Last) noexcept {
+    const auto _First_address = reinterpret_cast<uintptr_t>(_First);
+    const auto _Last_address  = reinterpret_cast<uintptr_t>(_Last);
 
     const auto _Aligned_address = (_First_address + _Asan_granularity - 1) & ~(_Asan_granularity - 1);
 
     if (_Aligned_address > _Last_address) {
         return nullptr;
     } else {
-        // strict provenance requires that we reconstruct `_Aligned_address` via `_First`
-        return static_cast<const char*>(_First) + (_Aligned_address - _First_address);
+        return reinterpret_cast<const char*>(_Aligned_address);
     }
 }
 
+// Works for standard containers with the `value_type` typedef.
+template <class _Container, class = void>
+_INLINE_VAR constexpr size_t _Container_allocation_minimum_alignment = alignof(typename _Container::value_type);
+
+template <class _Container>
+_INLINE_VAR constexpr size_t _Container_allocation_minimum_alignment<_Container,
+    void_t<decltype(_Container::allocator_type::_Minimum_allocation_alignment)>> =
+    alignof(typename _Container::value_type) > _Container::allocator_type::_Minimum_allocation_alignment
+        ? alignof(typename _Container::value_type)
+        : _Container::allocator_type::_Minimum_allocation_alignment;
 
 _EXPORT_STD template <class _Ty>
 class allocator {
