@@ -39,10 +39,10 @@ extern "C" int __cdecl __crtLCMapStringW(_In_opt_z_ LPCWSTR const locale_name, _
         const int source_length = static_cast<int>(wcsnlen(source, source_count));
 
         // Include the null terminator if the source string is terminated within the buffer.
-        if (source_length < source_count) {
-            source_count = source_length + 1;
-        } else {
+        if (source_length > source_count) {
             source_count = source_length;
+        } else {
+            source_count = source_length + 1;
         }
     }
 
