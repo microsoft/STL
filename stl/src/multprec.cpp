@@ -7,7 +7,7 @@
 #include <random>
 
 _STD_BEGIN
-constexpr int shift                 = _STD numeric_limits<unsigned long long>::digits / 2;
+constexpr unsigned int shift        = _STD numeric_limits<unsigned long long>::digits / 2;
 constexpr unsigned long long mask   = ~(~0ULL << shift);
 constexpr unsigned long long maxVal = mask + 1;
 
@@ -63,7 +63,7 @@ void __CLRCALL_PURE_OR_CDECL _MP_Mul(
 
     // Knuth, vol. 2, p. 268, Algorithm M
     // M1: [Initialize.]
-    for (int i = 0; i < m + n + 1; ++i) {
+    for (int i = 0; i <= m + n; ++i) {
         w[i] = 0;
     }
 
@@ -121,7 +121,7 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
 
     // Knuth, vol. 2, p. 272, Algorithm D
     // D1: [Normalize.]
-    unsigned long long d = maxVal / (v[n - 1] + 1);
+    unsigned long long d = mask / v[n - 1]; // mask is maskVal - 1
     if (d != 1) { // scale numerator and divisor
         mul(u, _MP_len, d);
         mul(v, n, d);
@@ -134,16 +134,13 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
         }
 
         unsigned long long rh = ((u[j + n] << shift) + u[j + n - 1]) % v[n - 1];
-        for (;;) {
 #pragma warning(suppress : 6385) // TRANSITION, GH-1008
-            if (qh < maxVal && qh * v[n - 2] <= (rh << shift) + u[j + n - 2]) {
+        while (qh == maxVal || (qh * v[n - 2] > ((rh << shift) + u[j + n - 2]))) {
+            // reduce tentative value and retry
+            --qh;
+            rh += v[n - 1];
+            if (maxVal <= rh) {
                 break;
-            } else { // reduce tentative value and retry
-                --qh;
-                rh += v[n - 1];
-                if (maxVal <= rh) {
-                    break;
-                }
             }
         }
 
@@ -170,7 +167,6 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
         }
         // D5: [Test remainder.]
         if (k != 0) { // D6: [Add back.]
-            --qh;
             add(u + j, n + 1, v, n);
         }
         // D7: [Loop on j.]
