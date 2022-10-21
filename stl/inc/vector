@@ -542,7 +542,7 @@ private:
     static _CONSTEXPR20 void _Apply_annotation(
         pointer _First_, pointer _Buffer_last_, pointer _Old_last_, pointer _New_last_) noexcept {
         _STL_INTERNAL_CHECK(_First_ != nullptr);
-        _STL_INTERNAL_CHECK(_End_ != nullptr);
+        _STL_INTERNAL_CHECK(_Buffer_last_ != nullptr);
         _STL_INTERNAL_CHECK(_Old_last_ != nullptr);
         _STL_INTERNAL_CHECK(_New_last_ != nullptr);
 
@@ -563,7 +563,7 @@ private:
         if constexpr ((_Container_allocation_minimum_alignment<vector>) > _Asan_granularity) {
             __sanitizer_annotate_contiguous_container(_First, _Buffer_last, _Old_last, _New_last);
         } else {
-            const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _End);
+            const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _Buffer_last);
             if (!_Aligned_first) {
                 // There is no aligned address within the underlying buffer; nothing to do.
                 return;
