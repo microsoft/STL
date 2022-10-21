@@ -12,8 +12,8 @@
 
 using namespace std;
 
-template <class W, class B>
-concept CanViewRepeat = requires(W&& w, B b) { views::repeat(forward<W>(w), b); };
+template <class T, class B>
+concept CanViewRepeat = requires(T&& w, B b) { views::repeat(forward<T>(w), b); };
 
 template <class R>
 concept CanSize = requires(R& r) { ranges::size(r); };

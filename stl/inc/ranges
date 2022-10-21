@@ -1549,7 +1549,7 @@ namespace ranges {
                 noexcept(noexcept(repeat_view(_STD forward<_Ty>(_Value))))
                 requires requires { repeat_view(_STD forward<_Ty>(_Value)); }
             {
-                return repeat_view(_STD forward<_Ty&&>(_Value));
+                return repeat_view(_STD forward<_Ty>(_Value));
             }
 
             template <class _Ty1, class _Ty2>
@@ -2935,7 +2935,7 @@ namespace ranges {
                         noexcept(_RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>()))};
 #if _HAS_CXX23
                 } else if constexpr (_Is_specialization_v<_Ty, repeat_view>) {
-                    using _Range_val_t = _RANGES range_value_t<_Ty>;
+                    using _Range_val_t = range_value_t<_Ty>;
                     return {_St::_Reconstruct_repeat_view,
                         is_nothrow_constructible_v<_Range_val_t, _Forward_like_t<_Rng, _Range_val_t>>};
 #endif
@@ -3326,7 +3326,7 @@ namespace ranges {
                     return {_St::_Reconstruct_other, true};
 #if _HAS_CXX23
                 } else if constexpr (_Is_specialization_v<_Ty, repeat_view>) {
-                    using _Range_val_t = _RANGES range_value_t<_Ty>;
+                    using _Range_val_t = range_value_t<_Ty>;
                     return {_St::_Reconstruct_repeat,
                         is_nothrow_constructible_v<_Range_val_t, _Forward_like_t<_Rng, _Range_val_t>>};
 #endif
