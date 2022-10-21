@@ -41,7 +41,7 @@ _In_range_(0, maxsig) int _Stoxflt(
         seen = 1;
     }
 
-    while ((pd = static_cast<const char*>(memchr(&digits[0], *s, 22))) != nullptr) {
+    while ((pd = strchr(&digits[0], *s)) != nullptr) {
         if (nsig <= maxsig) {
             buf[nsig++] = vals[pd - digits]; // accumulate a digit
         } else {
@@ -62,7 +62,7 @@ _In_range_(0, maxsig) int _Stoxflt(
         }
     }
 
-    while ((pd = static_cast<const char*>(memchr(&digits[0], *s, 22))) != nullptr) {
+    while ((pd = strchr(&digits[0], *s)) != nullptr) {
         if (nsig <= maxsig) { // accumulate a fraction digit
             buf[nsig++] = vals[pd - digits];
             --lo[0];

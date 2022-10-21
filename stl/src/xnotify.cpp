@@ -46,12 +46,12 @@ void _Cnd_register_at_thread_exit(
 
             block = block->next;
         } else { // found block with available space
-            for (int i = 0; i < _Nitems; ++i) { // find empty slot
-                if (block->data[i].mtx == nullptr) { // store into empty slot
-                    block->data[i].id._Id = GetCurrentThreadId();
-                    block->data[i].mtx    = mtx;
-                    block->data[i].cnd    = cnd;
-                    block->data[i].res    = p;
+            for (auto& i : block->data) { // find empty slot
+                if (i.mtx == nullptr) { // store into empty slot
+                    i.id._Id = GetCurrentThreadId();
+                    i.mtx    = mtx;
+                    i.cnd    = cnd;
+                    i.res    = p;
                     ++block->num_used;
                     break;
                 }

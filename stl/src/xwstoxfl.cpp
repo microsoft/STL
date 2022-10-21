@@ -41,7 +41,7 @@ _In_range_(0, maxsig) int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t
         seen = 1;
     }
 
-    while ((pd = wmemchr(&digits[0], *s, 22)) != nullptr) {
+    while ((pd = wcschr(&digits[0], *s)) != nullptr) {
         if (nsig <= maxsig) {
             buf[nsig++] = vals[pd - digits]; // accumulate a digit
         } else {
@@ -62,7 +62,7 @@ _In_range_(0, maxsig) int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t
         }
     }
 
-    while ((pd = wmemchr(&digits[0], *s, 22)) != nullptr) {
+    while ((pd = wcschr(&digits[0], *s)) != nullptr) {
         if (nsig <= maxsig) { // accumulate a fraction digit
             buf[nsig++] = vals[pd - digits];
             --lo[0];
