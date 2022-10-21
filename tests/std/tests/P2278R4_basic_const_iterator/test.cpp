@@ -11,10 +11,18 @@
 
 using namespace std;
 
+template <typename T>
+concept Pointer = is_pointer_v<T>;
+
 template <typename It>
-concept HasPeek = requires(It iter) {
-                      { iter.peek() } -> same_as<add_pointer_t<iter_reference_t<It>>>;
+concept HasPeek = requires(const It& iter) {
+                      { iter.peek() } -> Pointer;
+                      requires convertible_to<decltype(iter.peek()), const iter_value_t<It>*>;
                   };
+
+static_assert(!HasPeek<int*>);
+static_assert(!HasPeek<reverse_iterator<int*>>);
+static_assert(HasPeek<test::iterator<forward_iterator_tag, int>>);
 
 template <input_iterator It>
 constexpr void test_one(It iter) {
