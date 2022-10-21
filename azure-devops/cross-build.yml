@@ -18,9 +18,6 @@ parameters:
 - name: numShards
   type: number
   default: 8
-- name: buildBenchmarking
-  type: string
-  default: 'ON'
 jobs:
 - job: '${{ parameters.targetPlatform }}'
   variables:

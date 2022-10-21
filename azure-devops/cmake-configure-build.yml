@@ -59,7 +59,8 @@ steps:
     -DCMAKE_BUILD_TYPE=Release ^
     -DLIT_FLAGS=$(litFlags) ^
     -DSTL_USE_ANALYZE=ON ^
-    -S $(Build.SourcesDirectory) -B $(${{ parameters.benchmarkBuildOutputLocationVar }})
+    -DSTL_BINARY_DIR=$(${{ parameters.buildOutputLocationVar }}) ^
+    -S $(Build.SourcesDirectory)/benchmarks -B $(${{ parameters.benchmarkBuildOutputLocationVar }})
   displayName: 'Configure the benchmarks'
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }

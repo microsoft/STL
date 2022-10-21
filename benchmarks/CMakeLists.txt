@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 cmake_minimum_required(VERSION 3.24)
-project(msvc_standard_libraries_benchmark LANGUAGES CXX)
+project(msvc_standard_libraries_benchmarks LANGUAGES CXX)
 
 if(DEFINED STL_BINARY_DIR)
     cmake_path(ABSOLUTE_PATH STL_BINARY_DIR
@@ -69,6 +69,9 @@ set(BENCHMARK_ENABLE_DOXYGEN OFF)
 set(BENCHMARK_ENABLE_INSTALL OFF)
 set(BENCHMARK_ENABLE_TESTING OFF)
 
+set(HAVE_GNU_POSIX_REGEX OFF)
+set(HAVE_POSIX_REGEX OFF)
+
 add_subdirectory(google-benchmark EXCLUDE_FROM_ALL)
 
 set(benchmark_headers
@@ -98,7 +101,7 @@ function(add_benchmark name)
     target_compile_features(benchmark-${name} PRIVATE cxx_std_${arg_CXX_STANDARD})
     target_include_directories(benchmark-${name} PRIVATE inc)
     target_link_libraries(benchmark-${name} PRIVATE benchmark::benchmark)
-    # TRANSITION, google/benchmark #1450
+    # TRANSITION, google/benchmark#1450
     target_compile_definitions(benchmark-${name} PRIVATE BENCHMARK_STATIC_DEFINE)
 endfunction()
 
