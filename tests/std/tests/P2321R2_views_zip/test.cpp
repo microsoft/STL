@@ -226,23 +226,20 @@ template <class TestContainerType, ranges::input_range... RangeTypes>
 constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... ranges) {
     // Ignore instances where one of the generated test ranges does not model
     // ranges::viewable_range.
-    if constexpr ((ranges::viewable_range<decltype((ranges))> && ...)) {
-        using ZipType = ranges::zip_view<AllView<decltype((ranges))>...>;
+    if constexpr ((ranges::viewable_range<RangeTypes&> && ...)) {
+        using ZipType = ranges::zip_view<AllView<RangeTypes&>...>;
 
-        constexpr bool are_views =
-            (ranges::view<remove_cvref_t<decltype((ranges))>> && ...) && (sizeof...(RangeTypes) > 0);
+        constexpr bool are_views = (ranges::view<remove_cvref_t<RangeTypes&>> && ...) && (sizeof...(RangeTypes) > 0);
 
         STATIC_ASSERT(ranges::view<ZipType>);
         STATIC_ASSERT(ranges::input_range<ZipType>);
-        STATIC_ASSERT(ranges::forward_range<ZipType> == (ranges::forward_range<decltype((ranges))> && ...));
-        STATIC_ASSERT(ranges::bidirectional_range<ZipType> == (ranges::bidirectional_range<decltype((ranges))> && ...));
-        STATIC_ASSERT(ranges::random_access_range<ZipType> == (ranges::random_access_range<decltype((ranges))> && ...));
-        STATIC_ASSERT(ranges::common_range<ZipType>
-                          == (sizeof...(RangeTypes) == 1 && (ranges::common_range<decltype((ranges))> && ...))
-                      || (!(ranges::bidirectional_range<decltype((ranges))> && ...)
-                          && (ranges::common_range<decltype((ranges))> && ...))
-                      || ((ranges::random_access_range<decltype((ranges))> && ...)
-                          && (ranges::sized_range<decltype((ranges))> && ...)));
+        STATIC_ASSERT(ranges::forward_range<ZipType> == (ranges::forward_range<RangeTypes&> && ...));
+        STATIC_ASSERT(ranges::bidirectional_range<ZipType> == (ranges::bidirectional_range<RangeTypes&> && ...));
+        STATIC_ASSERT(ranges::random_access_range<ZipType> == (ranges::random_access_range<RangeTypes&> && ...));
+        STATIC_ASSERT(
+            ranges::common_range<ZipType> == (sizeof...(RangeTypes) == 1 && (ranges::common_range<RangeTypes&> && ...))
+            || (!(ranges::bidirectional_range<RangeTypes&> && ...) && (ranges::common_range<RangeTypes&> && ...))
+            || ((ranges::random_access_range<RangeTypes&> && ...) && (ranges::sized_range<RangeTypes&> && ...)));
 
         // Validate conditional default-initializability
         STATIC_ASSERT(is_default_constructible_v<ZipType> == (is_default_constructible_v<AllView<RangeTypes>> && ...));
@@ -574,13 +571,14 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         // Validate iterators and sentinels
         if constexpr (CanMemberBegin<ZipType> && CanMemberEnd<ZipType>) {
             validate_iterators_lambda
-                .template operator()<ZipType, decltype(tuple_element_arr), AllView<decltype((ranges))>...>(
+                .template operator()<ZipType, decltype(tuple_element_arr), AllView<RangeTypes&>...>(
                     zipped_range, tuple_element_arr);
         }
 
         if constexpr (CanMemberBegin<const ZipType> && CanMemberEnd<const ZipType>) {
-            validate_iterators_lambda.template operator()<const ZipType, decltype(const_tuple_element_arr),
-                const AllView<decltype((ranges))>...>(as_const(zipped_range), const_tuple_element_arr);
+            validate_iterators_lambda
+                .template operator()<const ZipType, decltype(const_tuple_element_arr), const AllView<RangeTypes&>...>(
+                    as_const(zipped_range), const_tuple_element_arr);
         }
     }
 
