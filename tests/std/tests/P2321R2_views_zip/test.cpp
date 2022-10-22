@@ -597,9 +597,15 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
 //
 // Other conditions are irrelevant.
 
+// TRANSITION, VSO-1655299: use a helper function as a workaround
+template <class Category, test::Common IsCommon>
+_NODISCARD constexpr test::CanCompare test_range_can_compare() {
+    return test::CanCompare{to_bool(IsCommon) || derived_from<Category, forward_iterator_tag>};
+}
+
 template <class Category, class Element, test::Sized IsSized, test::Common IsCommon, test::CanDifference Diff>
-using test_range = test::range<Category, Element, IsSized, Diff, IsCommon,
-    (to_bool(IsCommon) ? test::CanCompare::yes : test::CanCompare{derived_from<Category, forward_iterator_tag>})>;
+using test_range =
+    test::range<Category, Element, IsSized, Diff, IsCommon, test_range_can_compare<Category, IsCommon>()>;
 
 constexpr array default_int_array{0, 1, 2, 3, 4, 5, 6};
 
@@ -620,9 +626,8 @@ class range_type_solver {
 protected:
     template <class Category, class Element, test::Sized IsSized, test::Common IsCommon, test::CanDifference Diff>
     using range_type = test::range<Category, Element, IsSized, Diff, IsCommon,
-        (to_bool(IsCommon) ? test::CanCompare::yes : test::CanCompare{derived_from<Category, forward_iterator_tag>}),
-        test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes,
-        test::Copyability::move_only>;
+        test_range_can_compare<Category, IsCommon>(), test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>},
+        test::CanView::yes, test::Copyability::move_only>;
 };
 
 template <>
