@@ -1839,8 +1839,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   <Type Name="std::ranges::repeat_view&lt;*,*&gt;">
     <DisplayString>[{_Value._Val} x {_Bound}]</DisplayString>
     <Expand>
-        <Item Name="[size]">_Bound</Item>
-        <CustomListItems Optional="true">
+      <Item Name="[size]">_Bound</Item>
+      <CustomListItems Optional="true">
         <Variable Name="idx" InitialValue="0" />
 
         <Loop>

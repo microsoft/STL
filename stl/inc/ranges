@@ -1395,7 +1395,7 @@ namespace ranges {
             const _Ty* _Value{};
             /* [[no_unique_address]] */ _Index_type _Current{};
 
-            constexpr explicit _Iterator(const _Ty* _Val, _Index_type _Bo_ = _Index_type()) noexcept // strengthened
+            constexpr explicit _Iterator(const _Ty* _Val, _Index_type _Bo_ = _Index_type{}) noexcept // strengthened
                 : _Value(_Val), _Current(_Bo_) {}
 
         public:
@@ -1429,9 +1429,6 @@ namespace ranges {
                 return *this;
             }
             constexpr _Iterator operator--(int) noexcept /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                _STL_VERIFY(_Current > 0, "cannot decrement below 0");
-#endif
                 auto _Tmp = *this;
                 --*this;
                 return _Tmp;
@@ -1482,24 +1479,25 @@ namespace ranges {
             }
             _NODISCARD_FRIEND constexpr difference_type operator-(
                 const _Iterator& _Left, const _Iterator& _Right) noexcept /* strengthened */ {
-                return static_cast<difference_type>(_Left._Current) - static_cast<difference_type>(_Right._Current);
+                return static_cast<difference_type>(
+                    static_cast<difference_type>(_Left._Current) - static_cast<difference_type>(_Right._Current));
             }
         };
 
         /* [[no_unique_address]] */ _Movable_box<_Ty> _Value{};
         /* [[no_unique_address]] */ _Bo _Bound{};
 
-        template <class _Tuple, size_t... _Indexes>
-        _NODISCARD_CTOR constexpr repeat_view(_Tuple& _Val, index_sequence<_Indexes...>, _Bo _Bound_) noexcept(
-            is_nothrow_constructible_v<_Ty, tuple_element_t<_Indexes, _Tuple>...>)
-            : _Value(in_place, _Tuple_get<_Indexes>(_STD move(_Val))...), _Bound(_Bound_) {}
+        template <class _Tuple, size_t... _Indices>
+        _NODISCARD_CTOR constexpr repeat_view(_Tuple& _Val, index_sequence<_Indices...>, _Bo _Bound_) noexcept(
+            is_nothrow_constructible_v<_Ty, tuple_element_t<_Indices, _Tuple>...>)
+            : _Value(in_place, _Tuple_get<_Indices>(_STD move(_Val))...), _Bound(_Bound_) {}
 
     public:
         // clang-format off
         repeat_view() requires default_initializable<_Ty> = default;
         // clang-format on
 
-        _NODISCARD_CTOR constexpr explicit repeat_view(const _Ty& _Value_, _Bo _Bound_ = _Bo()) noexcept(
+        _NODISCARD_CTOR constexpr explicit repeat_view(const _Ty& _Value_, _Bo _Bound_ = _Bo{}) noexcept(
             is_nothrow_copy_constructible_v<_Ty>) // strengthened
             requires copy_constructible<_Ty>
             : _Value(in_place, _Value_), _Bound(_Bound_) {
@@ -1507,7 +1505,7 @@ namespace ranges {
                 _STL_ASSERT(_Bound >= 0, "Bound must be >= 0");
             }
         }
-        _NODISCARD_CTOR constexpr explicit repeat_view(_Ty&& _Value_, _Bo _Bound_ = _Bo()) noexcept(
+        _NODISCARD_CTOR constexpr explicit repeat_view(_Ty&& _Value_, _Bo _Bound_ = _Bo{}) noexcept(
             is_nothrow_move_constructible_v<_Ty>) // strengthened
             : _Value(in_place, _STD move(_Value_)), _Bound(_Bound_) {
             if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
@@ -1516,17 +1514,20 @@ namespace ranges {
         }
         template <class... _TArgs, class... _BArgs>
             requires constructible_from<_Ty, _TArgs...> && constructible_from<_Bo, _BArgs...>
-        _NODISCARD_CTOR constexpr explicit repeat_view(piecewise_construct_t, tuple<_TArgs...> _Val_args,
-            tuple<_BArgs...> _Bound_args = tuple<>{}) noexcept(is_nothrow_constructible_v<_Ty, _TArgs...>)
-            : repeat_view(_Val_args, index_sequence_for<_TArgs...>{}, make_from_tuple<_Bo>(_Bound_args)) {}
+        // clang-format off
+        _NODISCARD_CTOR constexpr explicit repeat_view(piecewise_construct_t,
+            tuple<_TArgs...> _Val_args, tuple<_BArgs...> _Bound_args = tuple<>{})
+            noexcept(is_nothrow_constructible_v<_Ty, _TArgs...>) // strengthened
+            // clang-format on
+            : repeat_view(_Val_args, index_sequence_for<_TArgs...>{}, _STD make_from_tuple<_Bo>(_Bound_args)) {}
 
         _NODISCARD constexpr _Iterator begin() const noexcept /* strengthened */ {
-            return _Iterator(_STD addressof(*_Value));
+            return _Iterator{_STD addressof(*_Value)};
         }
         _NODISCARD constexpr _Iterator end() const noexcept // strengthened
             requires (!same_as<_Bo, unreachable_sentinel_t>)
         {
-            return _Iterator(_STD addressof(*_Value), _Bound);
+            return _Iterator{_STD addressof(*_Value), _Bound};
         }
         _NODISCARD constexpr unreachable_sentinel_t end() const noexcept {
             return unreachable_sentinel;
@@ -1535,7 +1536,7 @@ namespace ranges {
         _NODISCARD constexpr auto size() const noexcept // strengthened
             requires (!same_as<_Bo, unreachable_sentinel_t>)
         {
-            return _STD _To_unsigned_like<_Bo>(_Bound);
+            return _STD _To_unsigned_like(_Bound);
         }
     };
 
@@ -2938,7 +2939,7 @@ namespace ranges {
                     using _Range_val_t = range_value_t<_Ty>;
                     return {_St::_Reconstruct_repeat_view,
                         is_nothrow_constructible_v<_Range_val_t, _Forward_like_t<_Rng, _Range_val_t>>};
-#endif
+#endif // _HAS_CXX23
                 } else if constexpr (_Random_sized_range<_Ty> && _Is_subrange<_Ty>) {
                     return {_St::_Reconstruct_subrange,
                         noexcept(subrange(_RANGES begin(_STD declval<_Rng&>()),
@@ -2964,8 +2965,7 @@ namespace ranges {
                     return take_view(_STD forward<_Rng>(_Range), _Count);
 #if _HAS_CXX23
                 } else if constexpr (!sized_range<_Rng> && _Strat == _St::_Reconstruct_repeat_view) {
-                    return repeat_view(
-                        _STD forward_like<_Rng>(*_Range._Value), static_cast<range_difference_t<_Rng>>(_Count));
+                    return repeat_view(_STD forward_like<_Rng>(*_Range._Value), _Count);
 #endif
                 } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
@@ -2981,8 +2981,7 @@ namespace ranges {
                         return iota_view<_Vt, _Vt>(_First, _First + _Count);
 #if _HAS_CXX23
                     } else if constexpr (_Strat == _St::_Reconstruct_repeat_view) {
-                        return repeat_view(
-                            _STD forward_like<_Rng>(*_Range._Value), static_cast<range_difference_t<_Rng>>(_Count));
+                        return repeat_view(_STD forward_like<_Rng>(*_Range._Value), _Count);
 #endif
                     } else if constexpr (_Strat == _St::_Reconstruct_subrange) {
                         return subrange(_First, _First + _Count);
@@ -3329,7 +3328,7 @@ namespace ranges {
                     using _Range_val_t = range_value_t<_Ty>;
                     return {_St::_Reconstruct_repeat,
                         is_nothrow_constructible_v<_Range_val_t, _Forward_like_t<_Rng, _Range_val_t>>};
-#endif
+#endif // _HAS_CXX23
                 } else if constexpr (_Random_sized_range<_Ty> && _Is_subrange<_Ty>) {
                     if constexpr (sized_sentinel_for<sentinel_t<_Ty>, iterator_t<_Ty>>) {
                         return {_St::_Reconstruct_subrange,
@@ -3368,12 +3367,11 @@ namespace ranges {
                     if constexpr (sized_range<_Rng>) {
                         const auto _Size = _RANGES distance(_Range);
                         _Count           = _Size - (_STD min)(_Size, _Count);
-                        return repeat_view(
-                            _STD forward_like<_Rng>(*_Range._Value), static_cast<range_difference_t<_Rng>>(_Count));
+                        return repeat_view(_STD forward_like<_Rng>(*_Range._Value), _Count);
                     } else {
                         return _Range;
                     }
-#endif
+#endif // _HAS_CXX23
                 } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
                     _Count = (_STD min)(_RANGES distance(_Range), _Count);

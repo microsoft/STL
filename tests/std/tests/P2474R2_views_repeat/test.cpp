@@ -4,16 +4,16 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <functional>
-#include <limits>
 #include <ranges>
+#include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
 using namespace std;
 
 template <class T, class B>
-concept CanViewRepeat = requires(T&& w, B b) { views::repeat(forward<T>(w), b); };
+concept CanViewRepeat = requires(T&& v, B b) { views::repeat(forward<T>(v), b); };
 
 template <class R>
 concept CanSize = requires(R& r) { ranges::size(r); };
@@ -55,19 +55,18 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
     }
 
     static_assert(ranges::common_range<const R> == bounded);
-    static_assert(
-        same_as<ranges::iterator_t<const ranges::repeat_view<T, B>>, ranges::iterator_t<ranges::repeat_view<T, B>>>);
+    static_assert(same_as<ranges::iterator_t<const R>, ranges::iterator_t<R>>);
 
     static_assert(same_as<ranges::range_difference_t<const R>, ranges::range_difference_t<R>>);
 
-    static_assert(CanSize<ranges::repeat_view<T, B>> == bounded);
+    static_assert(CanSize<R> == bounded);
 
     same_as<R> auto rng = views::repeat(val, bound);
     static_assert(noexcept(views::repeat(val, bound)) == is_nothrow_copy_constructible_v<T>); // strengthened
     static_assert(noexcept(rng | views::drop(1)) == is_nothrow_copy_constructible_v<T>); // strengthened
     static_assert(noexcept(rng | views::take(1)) == is_nothrow_copy_constructible_v<T>); // strengthened
-    static_assert(noexcept(std::move(rng) | views::drop(1)) == is_nothrow_move_constructible_v<T>); // strengthened
-    static_assert(noexcept(std::move(rng) | views::take(1)) == is_nothrow_move_constructible_v<T>); // strengthened
+    static_assert(noexcept(move(rng) | views::drop(1)) == is_nothrow_move_constructible_v<T>); // strengthened
+    static_assert(noexcept(move(rng) | views::take(1)) == is_nothrow_move_constructible_v<T>); // strengthened
 
     if constexpr (bounded) {
         B i = 0;
@@ -247,10 +246,11 @@ struct tuple_tester {
     forward_tester y;
     forward_tester z;
 
-    // clang doesn't support parenthesized initialization of aggregates
-    // TRANSITION ???
+#ifndef __cpp_aggregate_paren_int
+    // TRANSITION P0960R3: clang doesn't support parenthesized initialization of aggregates
     template <class T, class U>
     constexpr tuple_tester(T&& a, U&& b) : y{forward<T>(a)}, z{forward<U>(b)} {}
+#endif
 };
 
 constexpr bool test() {
