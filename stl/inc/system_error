@@ -68,7 +68,10 @@ _EXPORT_STD _NODISCARD const error_category& system_category() noexcept;
 _EXPORT_STD class __declspec(novtable) error_category { // categorize an error
 public:
 #ifndef _M_CEE_PURE
+#pragma warning(push)
+#pragma warning(disable : 4355) // 'this': used in base member initializer list
     constexpr error_category() noexcept : _Addr(this) {}
+#pragma warning(pop)
 #else // ^^^ !defined(_M_CEE_PURE) / defined(_M_CEE_PURE) vvv
     /* constexpr */ error_category() noexcept { // TRANSITION, ABI
         _Addr = reinterpret_cast<uintptr_t>(this);
