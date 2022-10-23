@@ -1448,9 +1448,7 @@ namespace ranges {
                 if (_Off > 0) {
                     _STL_VERIFY(_Current <= (numeric_limits<_Index_type>::max)() - static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator past end (integer overflow)");
-                }
-                else
-                {
+                } else {
                     _STL_VERIFY(_Current >= (numeric_limits<_Index_type>::min)() - static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator past end (integer overflow)");
                 }

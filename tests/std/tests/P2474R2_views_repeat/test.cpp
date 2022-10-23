@@ -105,6 +105,7 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
     static_assert(noexcept(rng.begin())); // strengthened
     using I = ranges::iterator_t<R>;
     static_assert(same_as<typename I::iterator_concept, random_access_iterator_tag>);
+    static_assert(same_as<typename I::iterator_category, random_access_iterator_tag>);
 
     static_assert(is_nothrow_default_constructible_v<I>);
     assert(I{} == I{});
