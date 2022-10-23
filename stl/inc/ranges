@@ -1412,6 +1412,10 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator++() noexcept /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Current < (numeric_limits<_Index_type>::max)(),
+                    "cannot increment repeat_view iterator past end (integer overflow)");
+#endif
                 ++_Current;
                 return *this;
             }
@@ -1423,7 +1427,9 @@ namespace ranges {
 
             constexpr _Iterator& operator--() noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                _STL_VERIFY(_Current > 0, "cannot decrement below 0");
+                if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
+                    _STL_VERIFY(_Current > 0, "cannot decrement below 0");
+                }
 #endif
                 --_Current;
                 return *this;
@@ -1436,15 +1442,35 @@ namespace ranges {
 
             constexpr _Iterator& operator+=(difference_type _Off) noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                _STL_VERIFY(_Current + _Off >= 0, "cannot subtract below 0");
-#endif
+                if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
+                    _STL_VERIFY(_Current + _Off >= 0, "cannot subtract below 0");
+                }
+                if (_Off > 0) {
+                    _STL_VERIFY(_Current <= (numeric_limits<_Index_type>::max)() - static_cast<_Index_type>(_Off),
+                        "cannot advance repeat_view iterator past end (integer overflow)");
+                }
+                else
+                {
+                    _STL_VERIFY(_Current >= (numeric_limits<_Index_type>::min)() - static_cast<_Index_type>(_Off),
+                        "cannot advance repeat_view iterator past end (integer overflow)");
+                }
+#endif //_ITERATOR_DEBUG_LEVEL != 0
                 _Current += _Off;
                 return *this;
             }
             constexpr _Iterator& operator-=(difference_type _Off) noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                _STL_VERIFY(_Current - _Off >= 0, "cannot subtract below 0");
-#endif
+                if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
+                    _STL_VERIFY(_Current - _Off >= 0, "cannot subtract below 0");
+                }
+                if (_Off < 0) {
+                    _STL_VERIFY(_Current <= (numeric_limits<_Index_type>::max)() + static_cast<_Index_type>(_Off),
+                        "cannot advance repeat_view iterator past end (integer overflow)");
+                } else {
+                    _STL_VERIFY(_Current >= (numeric_limits<_Index_type>::min)() + static_cast<_Index_type>(_Off),
+                        "cannot advance repeat_view iterator past end (integer overflow)");
+                }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
                 _Current -= _Off;
                 return *this;
             }
@@ -1501,16 +1527,20 @@ namespace ranges {
             is_nothrow_copy_constructible_v<_Ty>) // strengthened
             requires copy_constructible<_Ty>
             : _Value(in_place, _Value_), _Bound(_Bound_) {
+#if _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
-                _STL_ASSERT(_Bound >= 0, "Bound must be >= 0");
+                _STL_VERIFY(_Bound >= 0, "Bound must be >= 0");
             }
+#endif
         }
         _NODISCARD_CTOR constexpr explicit repeat_view(_Ty&& _Value_, _Bo _Bound_ = _Bo{}) noexcept(
             is_nothrow_move_constructible_v<_Ty>) // strengthened
             : _Value(in_place, _STD move(_Value_)), _Bound(_Bound_) {
+#if _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
-                _STL_ASSERT(_Bound >= 0, "Bound must be >= 0");
+                _STL_VERIFY(_Bound >= 0, "Bound must be >= 0");
             }
+#endif
         }
         template <class... _TArgs, class... _BArgs>
             requires constructible_from<_Ty, _TArgs...> && constructible_from<_Bo, _BArgs...>
