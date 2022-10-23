@@ -480,7 +480,7 @@ _NODISCARD basic_string<_Elem> _Integral_to_string(const _Ty _Val) {
     _Elem* _RNext          = _Buff_end;
     const auto _UVal       = static_cast<_UTy>(_Val);
     if (_Val < 0) {
-        _RNext    = _UIntegral_to_buff(_RNext, 0 - _UVal);
+        _RNext    = _UIntegral_to_buff(_RNext, -1 * _UVal);
         *--_RNext = '-';
     } else {
         _RNext = _UIntegral_to_buff(_RNext, _UVal);

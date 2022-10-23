@@ -681,7 +681,7 @@ namespace pmr {
         };
 
         static constexpr size_t _Min_allocation = 2 * sizeof(_Header);
-        static constexpr size_t _Max_allocation = 0 - alignof(_Header);
+        static constexpr size_t _Max_allocation = -1 * alignof(_Header);
 
         static constexpr size_t _Round(const size_t _Size) noexcept {
             // return the smallest multiple of alignof(_Header) greater than _Size,

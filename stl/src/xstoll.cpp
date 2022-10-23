@@ -37,7 +37,7 @@ _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
     }
 
     if (s == *endptr && x != 0 || sign == '+' && LLONG_MAX < x
-        || sign == '-' && 0 - static_cast<unsigned long long>(LLONG_MIN) < x) { // overflow
+        || sign == '-' && -1 * static_cast<unsigned long long>(LLONG_MIN) < x) { // overflow
         errno = ERANGE;
         if (perr != nullptr) {
             *perr = 1;
@@ -46,7 +46,7 @@ _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
         return sign == '-' ? LLONG_MIN : LLONG_MAX;
     }
 
-    return static_cast<long long>(sign == '-' ? 0 - x : x);
+    return static_cast<long long>(sign == '-' ? -1 * x : x);
 }
 
 _CRTIMP2_PURE long long(__CLRCALL_PURE_OR_CDECL _Stoll)(

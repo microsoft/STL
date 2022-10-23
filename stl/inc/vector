@@ -2611,7 +2611,7 @@ public:
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-        if (_Off < 0 && this->_Myoff < 0 - static_cast<_Size_type>(_Off)) { // add negative increment
+        if (_Off < 0 && this->_Myoff < -1 * static_cast<_Size_type>(_Off)) { // add negative increment
             this->_Myoff += static_cast<_Size_type>(_Off);
             this->_Myptr -= 1 + (static_cast<_Size_type>(-1) - this->_Myoff) / _VBITS;
             this->_Myoff %= _VBITS;

@@ -99,7 +99,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     }
 
     if (sign == '-') { // get final value
-        x = 0 - x;
+        x = -1 * x;
     }
 
     if (endptr != nullptr) {
