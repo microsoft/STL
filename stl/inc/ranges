@@ -2250,6 +2250,7 @@ namespace ranges {
                 requires random_access_range<_Base>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Off != _Min_possible_v<difference_type>, "integer overflow");
                 _Verify_offset(-_Off);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 _Current -= _Off;
@@ -2342,6 +2343,7 @@ namespace ranges {
                 requires random_access_range<_Base>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Off != _Min_possible_v<difference_type>, "integer overflow");
                 _It._Verify_offset(-_Off);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 _It._Current -= _Off;
@@ -5213,6 +5215,7 @@ namespace ranges {
                 requires random_access_range<_Base>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Off != _Min_possible_v<difference_type>, "integer overflow");
                 _Verify_offset(-_Off);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 _Current -= _Off;
@@ -5313,6 +5316,7 @@ namespace ranges {
                 requires random_access_range<_Base>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Off != _Min_possible_v<difference_type>, "integer overflow");
                 _It._Verify_offset(-_Off);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 auto _Copy = _It;
