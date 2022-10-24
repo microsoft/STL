@@ -43,6 +43,9 @@ containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 containers\sequences\array\array.cons\implicit_copy.pass.cpp
 
+# Bogus test returns a non-const int& using a const iterator's member variable
+ranges\range.adaptors\range.zip\end.pass.cpp
+
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 utilities\format\format.functions\vformat_to.locale.pass.cpp
 utilities\format\format.functions\vformat_to.pass.cpp
@@ -54,6 +57,21 @@ strings\basic.string\string.nonmembers\string_op+\allocator_propagation.pass.cpp
 
 # libc++ hasn't updated move_iterator for P2520R0
 iterators\predef.iterators\move.iterators\move.iterator\types.pass.cpp
+
+# libc++ doesn't implement LWG-3692: "zip_view::iterator's operator<=> is overconstrained"
+ranges\range.adaptors\range.zip\iterator\compare.pass.cpp
+
+# libc++ is incorrect on the constraints for constructors of zip_view::iterator and zip_view::sentinel
+ranges\range.adaptors\range.zip\begin.pass.cpp
+ranges\range.adaptors\range.zip\sentinel\ctor.default.pass.cpp
+
+# libc++ has not implemented P2165R4: "Compatibility between tuple, pair, and tuple-like objects"
+# for zip_view
+ranges\range.adaptors\range.zip\cpo.pass.cpp
+ranges\range.adaptors\range.zip\ctor.default.pass.cpp
+ranges\range.adaptors\range.zip\iterator\deref.pass.cpp
+ranges\range.adaptors\range.zip\iterator\member_types.compile.pass.cpp
+ranges\range.adaptors\range.zip\iterator\subscript.pass.cpp
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -192,32 +210,6 @@ utilities\tuple\tuple.tuple\tuple.cnstr\recursion_depth.pass.cpp
 # P2321R2 zip
 language.support\support.limits\support.limits.general\tuple.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\utility.version.compile.pass.cpp
-ranges\range.adaptors\range.zip\begin.pass.cpp
-ranges\range.adaptors\range.zip\borrowing.compile.pass.cpp
-ranges\range.adaptors\range.zip\cpo.pass.cpp
-ranges\range.adaptors\range.zip\ctad.compile.pass.cpp
-ranges\range.adaptors\range.zip\ctor.default.pass.cpp
-ranges\range.adaptors\range.zip\ctor.views.pass.cpp
-ranges\range.adaptors\range.zip\end.pass.cpp
-ranges\range.adaptors\range.zip\general.pass.cpp
-ranges\range.adaptors\range.zip\iterator\arithmetic.pass.cpp
-ranges\range.adaptors\range.zip\iterator\compare.pass.cpp
-ranges\range.adaptors\range.zip\iterator\ctor.default.pass.cpp
-ranges\range.adaptors\range.zip\iterator\ctor.other.pass.cpp
-ranges\range.adaptors\range.zip\iterator\decrement.pass.cpp
-ranges\range.adaptors\range.zip\iterator\deref.pass.cpp
-ranges\range.adaptors\range.zip\iterator\increment.pass.cpp
-ranges\range.adaptors\range.zip\iterator\iter_move.pass.cpp
-ranges\range.adaptors\range.zip\iterator\iter_swap.pass.cpp
-ranges\range.adaptors\range.zip\iterator\member_types.compile.pass.cpp
-ranges\range.adaptors\range.zip\iterator\singular.pass.cpp
-ranges\range.adaptors\range.zip\iterator\subscript.pass.cpp
-ranges\range.adaptors\range.zip\range.concept.compile.pass.cpp
-ranges\range.adaptors\range.zip\sentinel\ctor.default.pass.cpp
-ranges\range.adaptors\range.zip\sentinel\ctor.other.pass.cpp
-ranges\range.adaptors\range.zip\sentinel\eq.pass.cpp
-ranges\range.adaptors\range.zip\sentinel\minus.pass.cpp
-ranges\range.adaptors\range.zip\size.pass.cpp
 
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 language.support\support.limits\support.limits.general\type_traits.version.compile.pass.cpp
