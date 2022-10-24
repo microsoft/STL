@@ -2516,15 +2516,31 @@ private:
         _Apply_annotation(_My_data._Myptr(), _My_data._Myres, _My_data._Mysize, _My_data._Myres);
     }
 
-    _CONSTEXPR20 void _Modify_annotation(const difference_type _Count) const noexcept {
-        // Extends/shrinks the annotated range by _Count
-        if (_Count == 0) {
-            return;
-        }
+    _CONSTEXPR20 void _Modify_annotation(const size_type _Old_size, const size_type _New_size) const noexcept {
+        auto& _My_data = _Mypair._Myval2;
+        _Apply_annotation(_My_data._Myptr(), _My_data._Myres, _Old_size, _New_size);
+    }
+
+    _CONSTEXPR20 void _Annotate_switch_to_large() const noexcept {
+        // annotates exactly the pointer as valid
+        _Remove_annotation();
 
         auto& _My_data = _Mypair._Myval2;
-        _Apply_annotation(
-            _My_data._Myptr(), _My_data._Myres, _My_data._Mysize, static_cast<size_type>(_My_data._Mysize + _Count));
+        const void* const _My_buf = _My_data._Bx._Buf;
+        const void* const _Ptr_last = &_My_data._Bx._Ptr + 1;
+        const void* const _Buf_last = _My_data._Bx._Buf + _BUF_SIZE;
+
+        constexpr bool _Small_string_always_aligned = _Memcpy_val_offset % _Asan_granularity == 0;
+        if constexpr (_Small_string_always_aligned) {
+            __sanitizer_annotate_contiguous_container(_My_buf, _Buf_last, _Buf_last, _Ptr_last);
+        } else {
+            const auto _My_buf_address = reinterpret_cast<uintptr_t>(_My_buf);
+            if ((_My_buf_address & (_Asan_granularity - 1)) == 0) {
+                __sanitizer_annotate_contiguous_container(_My_buf, _Buf_last, _Buf_last, _Ptr_last);
+            }
+
+            // otherwise, there's nothing to do - we can't annotate just the latter nybble of the byte
+        }
     }
 
     static _CONSTEXPR20 void _Apply_annotation(const value_type* const _First, const size_type _Capacity,
@@ -2541,7 +2557,7 @@ private:
 
         // Note that `_Capacity`, `_Old_size`, and `_New_size` do not include the null terminator,
         // so we need to add one back.
-        const void* const _Buffer_last = _First + _Capacity + 1;
+        const void* const _Buf_last = _First + _Capacity + 1;
         const void* const _Old_last    = _First + _Old_size + 1;
         const void* const _New_last    = _First + _New_size + 1;
 
@@ -2549,9 +2565,9 @@ private:
             (_Container_allocation_minimum_alignment<basic_string>) > _Asan_granularity;
         constexpr bool _Small_string_always_aligned = _Memcpy_val_offset % _Asan_granularity == 0;
         if constexpr (_Large_string_always_aligned && _Small_string_always_aligned) {
-            __sanitizer_annotate_contiguous_container(_First, _Buffer_last, _Old_last, _New_last);
+            __sanitizer_annotate_contiguous_container(_First, _Buf_last, _Old_last, _New_last);
         } else {
-            const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _Buffer_last);
+            const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _Buf_last);
             if (!_Aligned_first) {
                 // There is no aligned address within the underlying buffer.
                 // This should be impossible, as the minimum allocation size for string is 16...
@@ -2560,21 +2576,23 @@ private:
             }
 
             // last must be >= than first, so fix up when `_Aligned_first > _*_last`
-            // note that _Buffer_last must be > 16 from _First, so it certainly is past _Aligned_first (< _First + 8)
+            // note that _Buf_last must be > 16 from _First, so it certainly is past _Aligned_first (< _First + 8)
             const void* const _Old_last_fixed = _Old_last >= _Aligned_first ? _Old_last : _Aligned_first;
             const void* const _New_last_fixed = _New_last >= _Aligned_first ? _New_last : _Aligned_first;
             _STD __sanitizer_annotate_contiguous_container(
-                _Aligned_first, _Buffer_last, _Old_last_fixed, _New_last_fixed);
+                _Aligned_first, _Buf_last, _Old_last_fixed, _New_last_fixed);
         }
     }
 
-#define _ASAN_STRING_MODIFY(n)    _Modify_annotation(n)
 #define _ASAN_STRING_REMOVE(_Str) (_Str)._Remove_annotation()
 #define _ASAN_STRING_CREATE(_Str) (_Str)._Create_annotation()
+#define _ASAN_STRING_MODIFY(_Str, _Old_size, _New_size) (_Str)._Modify_annotation(_Old_size, _New_size)
+#define _ASAN_STRING_SWITCH_TO_LARGE(_Str) (_Str)._Annotate_switch_to_large()
 #else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
-#define _ASAN_STRING_MODIFY(n)
 #define _ASAN_STRING_REMOVE(_Str)
 #define _ASAN_STRING_CREATE(_Str)
+#define _ASAN_STRING_MODIFY(_Str, _Old_size, _New_size)
+#define _ASAN_STRING_SWITCH_TO_LARGE(_Str)
 #endif // !_INSERT_STRING_ANNOTATION
 
 public:
@@ -2713,8 +2731,11 @@ private:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
         if (_Count < _BUF_SIZE) {
-            _My_data._Mysize = _Count;
             _My_data._Myres  = _BUF_SIZE - 1;
+
+            _My_data._Mysize = _Count;
+            _ASAN_STRING_CREATE(*this);
+
             if constexpr (_Strat == _Construct_strategy::_From_char) {
                 _Traits::assign(_My_data._Bx._Buf, _Count, _Arg);
             } else if constexpr (_Strat == _Construct_strategy::_From_ptr) {
@@ -2727,7 +2748,6 @@ private:
 #endif // !_INSERT_STRING_ANNOTATION
             }
 
-            _ASAN_STRING_CREATE(*this);
             _Proxy._Release();
             return;
         }
@@ -2812,9 +2832,11 @@ private:
 #endif // _HAS_CXX20
                     _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
                     if (_My_data._Myres >= _BUF_SIZE) { // Need to deallocate old storage
+                        _ASAN_STRING_REMOVE(*this);
                         _Al.deallocate(_My_data._Bx._Ptr, _My_data._Myres + 1);
                         _My_data._Bx._Ptr = _New_ptr;
                     } else {
+                        _ASAN_STRING_SWITCH_TO_LARGE(*this);
                         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
                     }
                     _My_data._Myres = _New_capacity;
@@ -2930,7 +2952,7 @@ public:
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
             _Take_contents(_Left);
             const auto _Ptr = _My_data._Myptr();
-            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Right_size));
+            _ASAN_STRING_MODIFY(*this, _Left_size, _New_size);
             _Traits::copy(_Ptr + _Left_size, _Right_data._Myptr(), _Right_size + 1);
             _My_data._Mysize = _New_size;
             return;
@@ -2951,7 +2973,7 @@ public:
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
             _Take_contents(_Right);
             const auto _Ptr = _Unfancy(_My_data._Bx._Ptr);
-            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Left_size));
+            _ASAN_STRING_MODIFY(*this, _Right_size, _New_size);
             _Traits::move(_Ptr + _Left_size, _Ptr, _Right_size + 1);
             _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
             _My_data._Mysize = _New_size;
@@ -3025,7 +3047,7 @@ public:
             _My_data._Myres  = _Res - 1;
             _ASAN_STRING_CREATE(*this);
         } else {
-            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Size));
+            _ASAN_STRING_MODIFY(*this, _My_data._Mysize, _Size);
             _Traits::copy(_My_data._Bx._Buf, _Right, _Res);
             _My_data._Mysize = _Size;
             _My_data._Myres  = _BUF_SIZE - 1;
@@ -3138,7 +3160,6 @@ private:
 
 #ifdef _INSERT_STRING_ANNOTATION
                 if (!_Right_data._Large_string_engaged()) {
-                    _ASAN_STRING_REMOVE(_Right);
                     _ASAN_STRING_CREATE(*this);
                 }
 #endif // _INSERT_STRING_ANNOTATION
@@ -3160,6 +3181,7 @@ private:
 
         _My_data._Mysize = _Right_data._Mysize;
         _My_data._Myres  = _Right_data._Myres;
+        _ASAN_STRING_CREATE(*this);
         _Right._Tidy_init();
     }
 
@@ -3264,6 +3286,7 @@ private:
         _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
         _My_data._Mysize = _Right_data._Mysize;
         _My_data._Myres  = _Right_data._Myres;
+        _ASAN_STRING_CREATE(*this);
     }
 
 public:
@@ -3328,7 +3351,7 @@ public:
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 basic_string& operator=(const _Elem _Ch) { // assign {_Ch, _Elem()}
-        _ASAN_STRING_MODIFY(static_cast<difference_type>(1 - _Mypair._Myval2._Mysize));
+        _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, 1);
         _Mypair._Myval2._Mysize = 1;
         _Elem* const _Ptr       = _Mypair._Myval2._Myptr();
         _Traits::assign(_Ptr[0], _Ch);
@@ -3388,7 +3411,7 @@ public:
         // append [_Ptr, _Ptr + _Count)
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
-            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Count));
+            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
             _Mypair._Myval2._Mysize = _Old_size + _Count;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Traits::move(_Old_ptr + _Old_size, _Ptr, _Count);
@@ -3415,7 +3438,7 @@ public:
         // append _Count * _Ch
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
-            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Count));
+            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
             _Mypair._Myval2._Mysize = _Old_size + _Count;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Traits::assign(_Old_ptr + _Old_size, _Count, _Ch);
@@ -3493,7 +3516,7 @@ public:
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
         // assign [_Ptr, _Ptr + _Count)
         if (_Count <= _Mypair._Myval2._Myres) {
-            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Count - _Mypair._Myval2._Mysize));
+            _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _Count);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Mypair._Myval2._Mysize = _Count;
             _Traits::move(_Old_ptr, _Ptr, _Count);
@@ -3517,7 +3540,7 @@ public:
     _CONSTEXPR20 basic_string& assign(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch) {
         // assign _Count * _Ch
         if (_Count <= _Mypair._Myval2._Myres) {
-            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Count - _Mypair._Myval2._Mysize));
+            _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _Count);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Mypair._Myval2._Mysize = _Count;
             _Traits::assign(_Old_ptr, _Count, _Ch);
@@ -3617,7 +3640,7 @@ public:
 #endif // _HAS_CXX20
 
         if (_Check_overlap) {
-            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Count));
+            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
             _Mypair._Myval2._Mysize = _Old_size + _Count;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
@@ -3662,7 +3685,7 @@ public:
         _Mypair._Myval2._Check_offset(_Off);
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
-            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Count));
+            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
             _Mypair._Myval2._Mysize = _Old_size + _Count;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
@@ -3756,7 +3779,7 @@ private:
         _Elem* const _Erase_at    = _My_ptr + _Off;
         const size_type _New_size = _Old_size - _Count;
         _Traits::move(_Erase_at, _Erase_at + _Count, _New_size - _Off + 1); // move suffix + null up
-        _ASAN_STRING_MODIFY(-static_cast<difference_type>(_Count));
+        _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
         _Mypair._Myval2._Mysize = _New_size;
         return *this;
     }
@@ -3835,11 +3858,12 @@ public:
         const size_type _Old_size    = _Mypair._Myval2._Mysize;
         const size_type _Suffix_size = _Old_size - _Nx - _Off + 1;
         if (_Count < _Nx) { // suffix shifts backwards; we don't have to move anything out of the way
-            _Mypair._Myval2._Mysize = _Old_size - (_Nx - _Count);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
             _Traits::move(_Insert_at, _Ptr, _Count);
             _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, _Suffix_size);
+            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size - (_Nx - _Count));
+            _Mypair._Myval2._Mysize = _Old_size - (_Nx - _Count);
             return *this;
         }
 
@@ -3852,6 +3876,7 @@ public:
 #endif // _HAS_CXX20
         {
             if (_Growth <= _Mypair._Myval2._Myres - _Old_size) { // growth fits
+                _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Growth);
                 _Mypair._Myval2._Mysize = _Old_size + _Growth;
                 _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
                 _Elem* const _Insert_at = _Old_ptr + _Off;
@@ -4162,7 +4187,7 @@ public:
     _CONSTEXPR20 void push_back(const _Elem _Ch) { // insert element at end
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Old_size < _Mypair._Myval2._Myres) {
-            _ASAN_STRING_MODIFY(1);
+            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + 1);
             _Mypair._Myval2._Mysize = _Old_size + 1;
             _Elem* const _Ptr       = _Mypair._Myval2._Myptr();
             _Traits::assign(_Ptr[_Old_size], _Ch);
@@ -4958,7 +4983,7 @@ private:
     }
 
     _CONSTEXPR20 void _Eos(const size_type _New_size) { // set new length and null terminator
-        _ASAN_STRING_MODIFY(static_cast<difference_type>(_New_size - _Mypair._Myval2._Mysize));
+        _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
         _Traits::assign(_Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize = _New_size], _Elem());
     }
 
