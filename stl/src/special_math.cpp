@@ -14,8 +14,6 @@
 #pragma warning(disable : 5219) // implicit conversion from '%s' to '%s', possible loss of data
 #pragma warning(disable : 6326) // potential comparison of a constant with another constant
 
-#define BOOST_CHRONO_HEADER_ONLY
-#define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
 #define BOOST_MATH_DOMAIN_ERROR_POLICY   errno_on_error
 #define BOOST_MATH_OVERFLOW_ERROR_POLICY ignore_error
 
