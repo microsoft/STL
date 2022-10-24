@@ -2053,12 +2053,6 @@ namespace ranges {
     template <class _Rng, class _Fn> // TRANSITION, LLVM-47414
     concept _Can_const_transform = range<const _Rng> && regular_invocable<const _Fn&, range_reference_t<const _Rng>>;
 
-#if _ITERATOR_DEBUG_LEVEL == 0
-#define _NOEXCEPT_IDL0(...) noexcept(__VA_ARGS__)
-#else
-#define _NOEXCEPT_IDL0(...)
-#endif // _ITERATOR_DEBUG_LEVEL == 0
-
     _EXPORT_STD template <input_range _Vw, _Valid_movable_box_object _Fn>
         requires view<_Vw>
             && regular_invocable<_Fn&, range_reference_t<_Vw>>
@@ -2204,39 +2198,19 @@ namespace ranges {
                 return _Tmp;
             }
 
-            constexpr void _Verify_offset(const difference_type _Off) const
+#if _ITERATOR_DEBUG_LEVEL != 0
+            constexpr void _Verify_offset(const difference_type _Off) const noexcept
                 requires random_access_range<_Base>
             {
-#if _ITERATOR_DEBUG_LEVEL == 0
-                (void) _Off;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
                 _STL_VERIFY(_Off == 0 || _Parent, "cannot seek value-initialized transform_view iterator");
-
                 if constexpr (_Offset_verifiable_v<iterator_t<_Base>>) {
                     _Current._Verify_offset(_Off);
-                } else {
-                    if (_Off < 0) {
-                        if constexpr (sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>>) {
-                            _STL_VERIFY(_Off >= _RANGES begin(_Parent->_Range) - _Current,
-                                "cannot seek transform_view iterator before begin");
-                        }
-                    } else if (_Off > 0) {
-                        if constexpr (sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>) {
-                            _STL_VERIFY(_Off <= _RANGES end(_Parent->_Range) - _Current,
-                                "cannot seek transform_view iterator after end");
-                        } else if constexpr (sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>>
-                                             && sized_range<_Base>) {
-                            const auto _Size = _RANGES distance(_Parent->_Range);
-                            _STL_VERIFY(_Off <= _Size - (_Current - _RANGES begin(_Parent->_Range)),
-                                "cannot seek transform_view iterator after end");
-                        }
-                    }
                 }
-#endif // _ITERATOR_DEBUG_LEVEL == 0
             }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
-            constexpr _Iterator& operator+=(const difference_type _Off)
-                _NOEXCEPT_IDL0(noexcept(_Current += _Off)) /* strengthened */
+            constexpr _Iterator& operator+=(const difference_type _Off) noexcept(
+                noexcept(_Current += _Off)) /* strengthened */
                 requires random_access_range<_Base>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2245,8 +2219,8 @@ namespace ranges {
                 _Current += _Off;
                 return *this;
             }
-            constexpr _Iterator& operator-=(const difference_type _Off)
-                _NOEXCEPT_IDL0(noexcept(_Current -= _Off)) /* strengthened */
+            constexpr _Iterator& operator-=(const difference_type _Off) noexcept(
+                noexcept(_Current -= _Off)) /* strengthened */
                 requires random_access_range<_Base>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2258,7 +2232,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator[](const difference_type _Idx) const
-                _NOEXCEPT_IDL0(noexcept(_STD invoke(*_Parent->_Fun, _Current[_Idx]))) /* strengthened */
+                noexcept(noexcept(_STD invoke(*_Parent->_Fun, _Current[_Idx]))) /* strengthened */
                 requires random_access_range<_Base>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2317,8 +2291,8 @@ namespace ranges {
                 return _Left._Current <=> _Right._Current;
             }
 
-            _NODISCARD_FRIEND constexpr _Iterator operator+(_Iterator _It, difference_type _Off)
-                _NOEXCEPT_IDL0(noexcept(_It._Current += _Off)) /* strengthened */
+            _NODISCARD_FRIEND constexpr _Iterator operator+(_Iterator _It, const difference_type _Off) noexcept(
+                noexcept(_It._Current += _Off)) /* strengthened */
                 requires random_access_range<_Base>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2327,8 +2301,8 @@ namespace ranges {
                 _It._Current += _Off;
                 return _It;
             }
-            _NODISCARD_FRIEND constexpr _Iterator operator+(difference_type _Off, _Iterator _It)
-                _NOEXCEPT_IDL0(noexcept(_It._Current += _Off)) /* strengthened */
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, _Iterator _It) noexcept(
+                noexcept(_It._Current += _Off)) /* strengthened */
                 requires random_access_range<_Base>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2338,8 +2312,8 @@ namespace ranges {
                 return _It;
             }
 
-            _NODISCARD_FRIEND constexpr _Iterator operator-(_Iterator _It, difference_type _Off)
-                _NOEXCEPT_IDL0(noexcept(_It._Current -= _Off)) /* strengthened */
+            _NODISCARD_FRIEND constexpr _Iterator operator-(_Iterator _It, const difference_type _Off) noexcept(
+                noexcept(_It._Current -= _Off)) /* strengthened */
                 requires random_access_range<_Base>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2503,8 +2477,6 @@ namespace ranges {
             return _RANGES size(_Range);
         }
     };
-
-#undef _NOEXCEPT_IDL0
 
     template <class _Rng, class _Fn>
     transform_view(_Rng&&, _Fn) -> transform_view<views::all_t<_Rng>, _Fn>;
@@ -5188,17 +5160,15 @@ namespace ranges {
                 return _Tmp;
             }
 
+#if _ITERATOR_DEBUG_LEVEL != 0
             constexpr void _Verify_offset(const difference_type _Off) const
                 requires random_access_range<_Base>
             {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                (void) _Off;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
                 if constexpr (_Offset_verifiable_v<iterator_t<_Base>>) {
                     _Current._Verify_offset(_Off);
                 }
-#endif // _ITERATOR_DEBUG_LEVEL == 0
             }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
             constexpr _Iterator& operator+=(const difference_type _Off) noexcept(
                 noexcept(_Current += _Off)) /* strengthened */
