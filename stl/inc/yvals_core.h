@@ -330,6 +330,7 @@
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
 //     (missing views::zip_transform, views::adjacent, and views::adjacent_transform)
+// P2322R6 ranges::fold_left, ranges::fold_right, Etc.
 // P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2417R2 More constexpr bitset
 // P2438R2 string::substr() &&
@@ -1655,6 +1656,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
 #define __cpp_lib_ranges_contains         202207L
+#define __cpp_lib_ranges_fold             202207L
 #define __cpp_lib_ranges_iota             202202L
 #define __cpp_lib_ranges_join_with        202202L
 #define __cpp_lib_ranges_slide            202202L
