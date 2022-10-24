@@ -6,6 +6,7 @@
 variables:
   tmpDir: 'D:\Temp'
   buildOutputLocation: 'D:\build'
+  benchmarkBuildOutputLocation: 'D:\benchmark'
 
 pool:
   name: 'StlBuild-2022-10-11T1916-Pool'
@@ -91,7 +92,7 @@ stages:
         parameters:
           targetPlatform: arm
           vsDevCmdArch: arm
-          buildBenchmarking: 'OFF'
+          benchmarkBuildOutputLocationVar: ''
 
   - stage: Build_ARM64
     dependsOn: Build_And_Test_x64
