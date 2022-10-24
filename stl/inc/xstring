@@ -2525,8 +2525,8 @@ private:
         // annotates exactly the pointer as valid
         _Remove_annotation();
 
-        auto& _My_data = _Mypair._Myval2;
-        const void* const _My_buf = _My_data._Bx._Buf;
+        auto& _My_data              = _Mypair._Myval2;
+        const void* const _My_buf   = _My_data._Bx._Buf;
         const void* const _Ptr_last = &_My_data._Bx._Ptr + 1;
         const void* const _Buf_last = _My_data._Bx._Buf + _BUF_SIZE;
 
@@ -2558,8 +2558,8 @@ private:
         // Note that `_Capacity`, `_Old_size`, and `_New_size` do not include the null terminator,
         // so we need to add one back.
         const void* const _Buf_last = _First + _Capacity + 1;
-        const void* const _Old_last    = _First + _Old_size + 1;
-        const void* const _New_last    = _First + _New_size + 1;
+        const void* const _Old_last = _First + _Old_size + 1;
+        const void* const _New_last = _First + _New_size + 1;
 
         constexpr bool _Large_string_always_aligned =
             (_Container_allocation_minimum_alignment<basic_string>) > _Asan_granularity;
@@ -2579,15 +2579,14 @@ private:
             // note that _Buf_last must be > 16 from _First, so it certainly is past _Aligned_first (< _First + 8)
             const void* const _Old_last_fixed = _Old_last >= _Aligned_first ? _Old_last : _Aligned_first;
             const void* const _New_last_fixed = _New_last >= _Aligned_first ? _New_last : _Aligned_first;
-            _STD __sanitizer_annotate_contiguous_container(
-                _Aligned_first, _Buf_last, _Old_last_fixed, _New_last_fixed);
+            _STD __sanitizer_annotate_contiguous_container(_Aligned_first, _Buf_last, _Old_last_fixed, _New_last_fixed);
         }
     }
 
-#define _ASAN_STRING_REMOVE(_Str) (_Str)._Remove_annotation()
-#define _ASAN_STRING_CREATE(_Str) (_Str)._Create_annotation()
+#define _ASAN_STRING_REMOVE(_Str)                       (_Str)._Remove_annotation()
+#define _ASAN_STRING_CREATE(_Str)                       (_Str)._Create_annotation()
 #define _ASAN_STRING_MODIFY(_Str, _Old_size, _New_size) (_Str)._Modify_annotation(_Old_size, _New_size)
-#define _ASAN_STRING_SWITCH_TO_LARGE(_Str) (_Str)._Annotate_switch_to_large()
+#define _ASAN_STRING_SWITCH_TO_LARGE(_Str)              (_Str)._Annotate_switch_to_large()
 #else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
 #define _ASAN_STRING_REMOVE(_Str)
 #define _ASAN_STRING_CREATE(_Str)
@@ -2731,7 +2730,7 @@ private:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
         if (_Count < _BUF_SIZE) {
-            _My_data._Myres  = _BUF_SIZE - 1;
+            _My_data._Myres = _BUF_SIZE - 1;
 
             _My_data._Mysize = _Count;
             _ASAN_STRING_CREATE(*this);
