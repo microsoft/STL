@@ -113,7 +113,7 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
         break;                                                     \
     default:                                                       \
         _INVALID_MEMORY_ORDER;                                     \
-        /* [[fallthrough]]; */                                     \
+        _FALLTHROUGH;                                              \
     case _Atomic_memory_order_acq_rel:                             \
     case _Atomic_memory_order_seq_cst:                             \
         _Result = _Intrinsic(__VA_ARGS__);                         \
@@ -153,7 +153,7 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     case _Atomic_memory_order_acquire:                    \
     case _Atomic_memory_order_acq_rel:                    \
         _INVALID_MEMORY_ORDER;                            \
-        /* [[fallthrough]]; */
+        _FALLTHROUGH;
 
 
 #define _ATOMIC_STORE_SEQ_CST_ARM(_Width, _Ptr, _Desired) \
@@ -1150,7 +1150,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
         case memory_order_release:
         case memory_order_acq_rel:
             _INVALID_MEMORY_ORDER;
-            // [[fallthrough]];
+            _FALLTHROUGH;
         case memory_order_seq_cst:
             (void) _InterlockedCompareExchange128(_Storage_ptr, 0, 0, &_Result._Low);
             break;
