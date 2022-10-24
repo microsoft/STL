@@ -125,6 +125,18 @@ constexpr bool test_unsigned() {
     STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, unsigned long long>, _Unsigned128>);
     STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, _Signed128>, _Unsigned128>);
 
+    struct ConversionSource {
+        constexpr operator _Unsigned128() const {
+            return _Unsigned128{};
+        }
+    };
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, ConversionSource>, _Unsigned128>);
+
+    struct ConversionTarget {
+        constexpr ConversionTarget(_Unsigned128) {}
+    };
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, ConversionTarget>, ConversionTarget>);
+
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
     STATIC_ASSERT(std::_Integer_class<_Unsigned128>);
     STATIC_ASSERT(std::_Integer_like<_Unsigned128>);
@@ -445,6 +457,18 @@ constexpr bool test_signed() {
     STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, unsigned long>, _Signed128>);
     STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, long long>, _Signed128>);
     STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, unsigned long long>, _Signed128>);
+
+    struct ConversionSource {
+        constexpr operator _Signed128() const {
+            return _Signed128{};
+        }
+    };
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, ConversionSource>, _Signed128>);
+
+    struct ConversionTarget {
+        constexpr ConversionTarget(_Signed128) {}
+    };
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, ConversionTarget>, ConversionTarget>);
 
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
     STATIC_ASSERT(std::_Integer_class<_Signed128>);
