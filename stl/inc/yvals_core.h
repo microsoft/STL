@@ -324,6 +324,8 @@
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
+// P2278R4 cbegin Should Always Return A Constant Iterator
+//     ("Iterators" section from the paper only)
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
