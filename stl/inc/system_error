@@ -134,9 +134,8 @@ protected:
         constexpr explicit _Addr_storage(const uintptr_t _Addr_num) noexcept : _Num(_Addr_num) {}
         constexpr explicit _Addr_storage(error_category* const _Addr_ptr) noexcept : _Ptr(_Addr_ptr) {}
     };
-    _STL_INTERNAL_STATIC_ASSERT(
-        sizeof(_Addr_storage) == sizeof(uintptr_t) && alignof(_Addr_storage) == alignof(uintptr_t),
-        "Unsupported platform");
+    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Addr_storage) == sizeof(uintptr_t));
+    _STL_INTERNAL_STATIC_ASSERT(alignof(_Addr_storage) == alignof(uintptr_t));
 
     _Addr_storage _Addr;
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
