@@ -2568,8 +2568,8 @@ private:
             __sanitizer_annotate_contiguous_container(_First, _Buf_last, _Old_last, _New_last);
         } else {
             const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _Buf_last);
-            // There is no aligned address within the underlying buffer.
-            // This is impossible, as the minimum allocation size for basic_string is at least 16.
+            // It is impossible for there to be no aligned address within the underlying buffer,
+            // as the minimum allocation size for basic_string is at least 16.
             _STL_ASSERT(_Aligned_first);
 
             // last must be >= than first, so fix up when `_Aligned_first > _*_last`
