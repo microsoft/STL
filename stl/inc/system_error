@@ -67,9 +67,16 @@ _EXPORT_STD _NODISCARD const error_category& system_category() noexcept;
 
 _EXPORT_STD class __declspec(novtable) error_category { // categorize an error
 public:
+#ifndef _M_CEE_PURE
+#pragma warning(push)
+#pragma warning(disable : 4355) // 'this': used in base member initializer list
+    constexpr error_category() noexcept : _Addr(this) {}
+#pragma warning(pop)
+#else // ^^^ !defined(_M_CEE_PURE) / defined(_M_CEE_PURE) vvv
     /* constexpr */ error_category() noexcept { // TRANSITION, ABI
         _Addr = reinterpret_cast<uintptr_t>(this);
     }
+#endif // ^^^ defined(_M_CEE_PURE) ^^^
 
     _CONSTEXPR20 virtual ~error_category() noexcept = default;
 
@@ -84,7 +91,11 @@ public:
     _NODISCARD virtual bool equivalent(const error_code& _Code, int _Errval) const noexcept;
 
     _NODISCARD bool operator==(const error_category& _Right) const noexcept {
+#ifndef _M_CEE_PURE
+        return _Bit_cast<uintptr_t>(_Addr) == _Bit_cast<uintptr_t>(_Right._Addr);
+#else // ^^^ !defined(_M_CEE_PURE) / defined(_M_CEE_PURE) vvv
         return _Addr == _Right._Addr;
+#endif // ^^^ defined(_M_CEE_PURE) ^^^
     }
 
 #if !_HAS_CXX20
@@ -95,11 +106,15 @@ public:
 
 #ifdef __cpp_lib_concepts
     _NODISCARD strong_ordering operator<=>(const error_category& _Right) const noexcept {
-        return compare_three_way{}(_Addr, _Right._Addr);
+        return _Bit_cast<uintptr_t>(_Addr) <=> _Bit_cast<uintptr_t>(_Right._Addr);
     }
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     _NODISCARD bool operator<(const error_category& _Right) const noexcept {
+#ifndef _M_CEE_PURE
+        return _Bit_cast<uintptr_t>(_Addr) < _Bit_cast<uintptr_t>(_Right._Addr);
+#else // ^^^ !defined(_M_CEE_PURE) / defined(_M_CEE_PURE) vvv
         return _Addr < _Right._Addr;
+#endif // ^^^ defined(_M_CEE_PURE) ^^^
     }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
@@ -107,7 +122,23 @@ public:
     error_category& operator=(const error_category&) = delete;
 
 protected:
+#ifndef _M_CEE_PURE
+    union _Addr_storage {
+    private:
+        uintptr_t _Num;
+        error_category* _Ptr;
+
+    public:
+        constexpr explicit _Addr_storage(const uintptr_t _Addr_num) noexcept : _Num(_Addr_num) {}
+        constexpr explicit _Addr_storage(error_category* const _Addr_ptr) noexcept : _Ptr(_Addr_ptr) {}
+    };
+    static_assert(sizeof(_Addr_storage) == sizeof(uintptr_t) && alignof(_Addr_storage) == alignof(uintptr_t),
+        "Unsupported platform");
+
+    _Addr_storage _Addr;
+#else // ^^^ !defined(_M_CEE_PURE) / defined(_M_CEE_PURE) vvv
     uintptr_t _Addr;
+#endif // ^^^ defined(_M_CEE_PURE) ^^^
 
     constexpr explicit error_category(const uintptr_t _Addr_) noexcept : _Addr(_Addr_) {}
 

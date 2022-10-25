@@ -43,6 +43,9 @@ std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cp
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
 
+# Bogus test returns a non-const int& using a const iterator's member variable
+std/ranges/range.adaptors/range.zip/end.pass.cpp FAIL
+
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 std/utilities/format/format.functions/vformat_to.locale.pass.cpp FAIL
 std/utilities/format/format.functions/vformat_to.pass.cpp FAIL
@@ -54,6 +57,21 @@ std/strings/basic.string/string.nonmembers/string_op+/allocator_propagation.pass
 
 # libc++ hasn't updated move_iterator for P2520R0
 std/iterators/predef.iterators/move.iterators/move.iterator/types.pass.cpp FAIL
+
+# libc++ doesn't implement LWG-3692: "zip_view::iterator's operator<=> is overconstrained"
+std/ranges/range.adaptors/range.zip/iterator/compare.pass.cpp FAIL
+
+# libc++ is incorrect on the constraints for constructors of zip_view::iterator and zip_view::sentinel
+std/ranges/range.adaptors/range.zip/begin.pass.cpp SKIPPED
+std/ranges/range.adaptors/range.zip/sentinel/ctor.default.pass.cpp SKIPPED
+
+# libc++ has not implemented P2165R4: "Compatibility between tuple, pair, and tuple-like objects"
+# for zip_view
+std/ranges/range.adaptors/range.zip/cpo.pass.cpp FAIL
+std/ranges/range.adaptors/range.zip/ctor.default.pass.cpp FAIL
+std/ranges/range.adaptors/range.zip/iterator/deref.pass.cpp FAIL
+std/ranges/range.adaptors/range.zip/iterator/member_types.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.zip/iterator/subscript.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -192,32 +210,6 @@ std/utilities/tuple/tuple.tuple/tuple.cnstr/recursion_depth.pass.cpp SKIPPED
 # P2321R2 zip
 std/language.support/support.limits/support.limits.general/tuple.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/utility.version.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/begin.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/borrowing.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/cpo.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/ctad.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/ctor.default.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/ctor.views.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/end.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/general.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/arithmetic.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/compare.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/ctor.default.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/ctor.other.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/decrement.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/deref.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/increment.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/iter_move.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/iter_swap.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/member_types.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/singular.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/subscript.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/range.concept.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/sentinel/ctor.default.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/sentinel/ctor.other.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/sentinel/eq.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/sentinel/minus.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/size.pass.cpp FAIL
 
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
@@ -356,9 +348,6 @@ std/localization/locale.categories/facet.numpunct/locale.numpunct.byname/thousan
 
 # GH-1264 <locale>: wbuffer_convert does not implement seek
 std/localization/locales/locale.convenience/conversions/conversions.buffer/seekoff.pass.cpp FAIL
-
-# GH-1116 <system_error>: error_category's default ctor isn't constexpr.
-std/diagnostics/syserr/syserr.errcat/syserr.errcat.nonvirtuals/default_ctor.pass.cpp:1 FAIL
 
 # GH-1190 <future>: incorrectly used copy assignment instead of copy construction in set_value
 std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
