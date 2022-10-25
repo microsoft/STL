@@ -43,8 +43,8 @@ void test_operator_preincrement_value_initialized_iterator() {
 }
 
 void test_operator_preincrement_after_end() {
-    ranges::transform_view r{span{some_ints}, lambda};
-    auto i = ranges::next(r.begin(), r.end());
+    TV r{some_ints, lambda};
+    ranges::iterator_t<TV> i = ranges::next(r.begin(), r.end());
     ++i; // cannot increment transform_view iterator past end
 }
 
