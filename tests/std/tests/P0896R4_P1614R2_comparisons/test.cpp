@@ -79,8 +79,8 @@ STATIC_ASSERT(is_trivially_constexpr<ranges::greater_equal>());
 // Validate three_way_comparable
 template <int I, class Category>
 struct three_way_archetype {
-    three_way_archetype()                           = delete;
-    three_way_archetype(three_way_archetype const&) = delete;
+    three_way_archetype()                                      = delete;
+    three_way_archetype(three_way_archetype const&)            = delete;
     three_way_archetype& operator=(three_way_archetype const&) = delete;
     ~three_way_archetype()                                     = delete;
     // clang-format off
@@ -133,7 +133,6 @@ constexpr bool test_three_way_comparable(std::integer_sequence<int, Is...>) {
 STATIC_ASSERT(test_three_way_comparable(std::make_integer_sequence<int, three_way_archetype_max>{}));
 
 // Validate three_way_comparable_with
-// clang-format off
 
 // 4: not common_reference_with
 // 5: common_reference_t is not three_way_comparable
@@ -142,6 +141,8 @@ template <int I1, class Cat1, int I2, class Cat2>
 struct std::common_type<three_way_archetype<I1, Cat1>, three_way_archetype<I2, Cat2>> {
     using type = conditional_t<I1 == 5 || I2 == 5, ::common_incomparable, ::common_comparable>;
 };
+
+// clang-format off
 
 // 6: not _Weakly_equality_comparable_with
 template <int I1, class Cat1, int I2, class Cat2>
@@ -168,6 +169,8 @@ template <int I1, class Cat1, int I2, class Cat2>
     requires (I1 != I2 || !same_as<Cat1, Cat2>)
 bool operator>=(three_way_archetype<I1, Cat1> const&, three_way_archetype<I2, Cat2> const&);
 
+// clang-format on
+
 // 8: <=> isn't defined
 template <int I1, class Cat1, int I2, class Cat2>
     requires ((I1 != I2 || !same_as<Cat1, Cat2>) && I1 != 8 && I1 != 9 && I2 != 8 && I2 != 9)
@@ -178,8 +181,6 @@ common_comparison_category_t<Cat1, Cat2> operator<=>(
 template <int I1, class Cat1, int I2, class Cat2>
     requires ((I1 != I2 || !same_as<Cat1, Cat2>) && I1 == 9 && I2 == 9)
 int operator<=>(three_way_archetype<I1, Cat1> const&, three_way_archetype<I2, Cat2> const&);
-
-// clang-format on
 
 constexpr int three_way_with_max = 10;
 
@@ -221,14 +222,10 @@ STATIC_ASSERT(test_three_way_comparable_with(std::make_integer_sequence<int, thr
 
 // Validate static properties of compare_three_way, compare_three_way_result, and compare_three_way_result_t
 template <class T>
-concept is_trait = requires {
-    typename T::type;
-};
+concept is_trait = requires { typename T::type; };
 
 template <class T, class U>
-concept can_three_way = requires(T const& t, U const& u) {
-    t <=> u;
-};
+concept can_three_way = requires(T const& t, U const& u) { t <=> u; };
 
 template <class T, class U, class Cat>
 constexpr bool test_compare_three_way() {
@@ -500,7 +497,7 @@ constexpr void ordering_test_cases() {
 
         constexpr explicit partially_ordered_class(int x) noexcept : i{x} {}
 
-        partially_ordered_class(partially_ordered_class const&) = delete;
+        partially_ordered_class(partially_ordered_class const&)            = delete;
         partially_ordered_class& operator=(partially_ordered_class const&) = delete;
 
         constexpr bool operator==(partially_ordered_class const& that) const {
@@ -523,7 +520,7 @@ constexpr void ordering_test_cases() {
 
         constexpr explicit weakly_ordered_class(int x) noexcept : i{x} {}
 
-        weakly_ordered_class(weakly_ordered_class const&) = delete;
+        weakly_ordered_class(weakly_ordered_class const&)            = delete;
         weakly_ordered_class& operator=(weakly_ordered_class const&) = delete;
 
         constexpr bool operator==(weakly_ordered_class const& that) const {
@@ -538,7 +535,7 @@ constexpr void ordering_test_cases() {
 
         constexpr explicit strongly_ordered_class(int x) noexcept : i{x} {}
 
-        strongly_ordered_class(strongly_ordered_class const&) = delete;
+        strongly_ordered_class(strongly_ordered_class const&)            = delete;
         strongly_ordered_class& operator=(strongly_ordered_class const&) = delete;
 
         auto operator<=>(strongly_ordered_class const&) const = default;
@@ -556,7 +553,7 @@ constexpr void ordering_test_cases() {
 
         constexpr explicit equality_comparable_class(int x) noexcept : i{x} {}
 
-        equality_comparable_class(equality_comparable_class const&) = delete;
+        equality_comparable_class(equality_comparable_class const&)            = delete;
         equality_comparable_class& operator=(equality_comparable_class const&) = delete;
 
         constexpr boolish operator==(equality_comparable_class const& that) const {

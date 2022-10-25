@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <exception>
 #include <functional>
 #include <memory>
@@ -10,6 +10,10 @@
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
+
+#if _HAS_CXX17
+#include <any> // verify that <any> can be included (with no effect) when static RTTI is disabled
+#endif // _HAS_CXX17
 
 using namespace std;
 

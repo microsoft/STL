@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
+#include <cstring>
 #include <limits>
 #include <memory>
 #include <span>
-#include <stddef.h>
-#include <string.h>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -18,19 +18,14 @@ using namespace std;
 
 #ifdef __cpp_lib_concepts
 template <class Ty, class... Types>
-concept can_std_construct_at = requires(Ty* ptr, Types&&... args) {
-    construct_at(ptr, forward<Types>(args)...);
-};
+concept can_std_construct_at = requires(Ty* ptr, Types&&... args) { construct_at(ptr, forward<Types>(args)...); };
 
 template <class Ty, class... Types>
-concept can_ranges_construct_at = requires(Ty* ptr, Types&&... args) {
-    ranges::construct_at(ptr, forward<Types>(args)...);
-};
+concept can_ranges_construct_at =
+    requires(Ty* ptr, Types&&... args) { ranges::construct_at(ptr, forward<Types>(args)...); };
 
 template <class Ty>
-concept can_ranges_destroy_at = requires(Ty* ptr) {
-    ranges::destroy_at(ptr);
-};
+concept can_ranges_destroy_at = requires(Ty* ptr) { ranges::destroy_at(ptr); };
 
 template <class Ty, class... Types>
 inline constexpr bool can_construct_at = [] {
@@ -214,11 +209,7 @@ void test_array(const T& val) {
         ranges::construct_at(ptr + i, val);
     }
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1049320
     ranges::destroy_at(reinterpret_cast<U(*)[N]>(ptr));
-#else // ^^^ no workaround / workaround vvv
-    ranges::destroy_at(reinterpret_cast<T(*)[N]>(const_cast<T*>(ptr)));
-#endif // TRANSITION, VSO-1049320
 #endif // __cpp_lib_concepts
 }
 
@@ -409,11 +400,15 @@ struct Alloc {
         allocator<T>{}.deallocate(ptr, n);
     }
 
-    constexpr void construct(value_type* ptr, value_type n) requires Construct {
+    constexpr void construct(value_type* ptr, value_type n)
+        requires Construct
+    {
         construct_at(ptr, n);
     }
 
-    constexpr void destroy(value_type* ptr) requires Destroy {
+    constexpr void destroy(value_type* ptr)
+        requires Destroy
+    {
         destroy_at(ptr);
     }
 

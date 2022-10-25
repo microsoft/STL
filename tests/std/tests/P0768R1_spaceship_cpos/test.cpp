@@ -24,11 +24,9 @@ struct CpoResultImpl {
     using type = IllFormed;
 };
 
-// clang-format off
 template <const auto& CPO, typename E, typename F>
     requires requires { CPO(declval<E>(), declval<F>()); }
 struct CpoResultImpl<CPO, E, F> {
-    // clang-format on
     using type = decltype(CPO(declval<E>(), declval<F>()));
 };
 

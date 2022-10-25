@@ -4,12 +4,12 @@
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 #include <array>
-#include <stddef.h>
-#include <stdlib.h>
+#include <cstddef>
+#include <cstdlib>
 #ifndef _M_CEE_PURE
 #include <atomic>
 #endif // _M_CEE_PURE
-#include <assert.h>
+#include <cassert>
 #include <deque>
 #include <exception>
 #include <forward_list>
@@ -41,6 +41,12 @@ namespace Meow {
         int data;
 
         constexpr Evil() noexcept : data(1701) {}
+
+        template <int = 0>
+        const Evil& operator=(const Evil&) const {
+            // provide an Evil operator= for std::tuple::swap
+            return *this;
+        }
 
         int func() const {
             return 1729;

@@ -6,13 +6,13 @@
 // Notably, all permutations of all iterator strengths are tested.
 
 #include <algorithm>
+#include <cstddef>
 #include <forward_list>
 #include <functional>
 #include <iterator>
 #include <list>
 #include <memory>
 #include <numeric>
-#include <stddef.h>
 #include <type_traits>
 
 #if _HAS_CXX17 && !defined(_M_CEE)
@@ -42,17 +42,17 @@ namespace std_testing {
         // mode perf.
 
         struct Immobile {
-            Immobile()                = default;
-            Immobile(const Immobile&) = delete;
+            Immobile()                           = default;
+            Immobile(const Immobile&)            = delete;
             Immobile& operator=(const Immobile&) = delete;
         };
 
         struct MoveOnly {
-            MoveOnly()                = default;
-            MoveOnly(const MoveOnly&) = delete;
-            MoveOnly(MoveOnly&&)      = default;
+            MoveOnly()                           = default;
+            MoveOnly(const MoveOnly&)            = delete;
+            MoveOnly(MoveOnly&&)                 = default;
             MoveOnly& operator=(const MoveOnly&) = delete;
-            MoveOnly& operator=(MoveOnly&&) = delete;
+            MoveOnly& operator=(MoveOnly&&)      = delete;
         };
 
         template <typename T>
@@ -582,27 +582,9 @@ namespace std_testing {
 #endif // _HAS_CXX17
         }
 
-#if HAS_PARALLEL_ALGORITHMS
-        template <typename Bid1, typename Bid2, typename ExecutionPolicy>
-        void test_exec_bid1_bid2_xxx_backward(ExecutionPolicy&& exec, Bid1 bid1, Bid2 bid2) {
-            // SPLIT_MODE 2
-            std::copy_backward(std::forward<ExecutionPolicy>(exec), bid1, bid1, bid2);
-            std::move_backward(std::forward<ExecutionPolicy>(exec), bid1, bid1, bid2);
-        }
-#endif // HAS_PARALLEL_ALGORITHMS
-
         template <typename Bid1, typename Bid2>
         void test_bid1_bid2_xxx_backward(Bid1 bid1, Bid2 bid2) {
             // SPLIT_MODE 2
-#if HAS_PARALLEL_ALGORITHMS
-            test_exec_bid1_bid2_xxx_backward(std::execution::seq, bid1, bid2);
-            test_exec_bid1_bid2_xxx_backward(std::execution::par, bid1, bid2);
-            test_exec_bid1_bid2_xxx_backward(std::execution::par_unseq, bid1, bid2);
-#if _HAS_CXX20
-            test_exec_bid1_bid2_xxx_backward(std::execution::unseq, bid1, bid2);
-#endif // _HAS_CXX20
-#endif // HAS_PARALLEL_ALGORITHMS
-
             std::copy_backward(bid1, bid1, bid2);
             std::move_backward(bid1, bid1, bid2);
         }

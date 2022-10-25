@@ -1,11 +1,21 @@
 {
+    "$schema": "https://json.schemastore.org/component-detection-manifest.json",
     "Registrations": [
         {
             "component": {
                 "type": "git",
                 "git": {
+                    "repositoryUrl": "https://github.com/boostorg/math",
+                    "commitHash": "db2a7cbb44a84c4c9cba62232c07f18b22bd965d"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "git",
+                "git": {
                     "repositoryUrl": "https://github.com/llvm/llvm-project.git",
-                    "commitHash": "fc2a5ef9c8754fe3fbdf96483901ca3f13406b35"
+                    "commitHash": "b8d38e8b4fcab071c5c4cb698e154023d06de69e"
                 }
             }
         },
@@ -14,7 +24,7 @@
                 "type": "git",
                 "git": {
                     "repositoryUrl": "https://github.com/microsoft/STL.git",
-                    "commitHash": "ee5a216b516ef033d9153b324842369eee7653d1"
+                    "commitHash": "9bf8f3f9b03ff71ea83baff189eb1d6a46dd48e1"
                 }
             }
         },

@@ -59,7 +59,8 @@ public:
     }
 };
 
-template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>, class _Alloc = allocator<_Kty>>
+_EXPORT_STD template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,
+    class _Alloc = allocator<_Kty>>
 class unordered_set : public _Hash<_Uset_traits<_Kty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, false>> {
     // hash table of key-values, unique keys
 public:
@@ -184,6 +185,60 @@ public:
         this->insert(_First, _Last);
     }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_set(from_range_t, _Rng&& _Range) : _Mybase(_Key_compare(), allocator_type()) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_set(from_range_t, _Rng&& _Range, const allocator_type& _Al) : _Mybase(_Key_compare(), _Al) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_set(from_range_t, _Rng&& _Range, size_type _Buckets) : _Mybase(_Key_compare(), allocator_type()) {
+        _Mybase::rehash(_Buckets);
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_set(from_range_t, _Rng&& _Range, size_type _Buckets, const allocator_type& _Al)
+        : _Mybase(_Key_compare(), _Al) {
+        _Mybase::rehash(_Buckets);
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_set(from_range_t, _Rng&& _Range, size_type _Buckets, const hasher& _Hasharg)
+        : _Mybase(_Key_compare(_Hasharg), allocator_type()) {
+        _Mybase::rehash(_Buckets);
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_set(from_range_t, _Rng&& _Range, size_type _Buckets, const hasher& _Hasharg, const allocator_type& _Al)
+        : _Mybase(_Key_compare(_Hasharg), _Al) {
+        _Mybase::rehash(_Buckets);
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_set(from_range_t, _Rng&& _Range, size_type _Buckets, const hasher& _Hasharg, const _Keyeq& _Keyeqarg)
+        : _Mybase(_Key_compare(_Hasharg, _Keyeqarg), allocator_type()) {
+        _Mybase::rehash(_Buckets);
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_set(from_range_t, _Rng&& _Range, size_type _Buckets, const hasher& _Hasharg, const _Keyeq& _Keyeqarg,
+        const allocator_type& _Al)
+        : _Mybase(_Key_compare(_Hasharg, _Keyeqarg), _Al) {
+        _Mybase::rehash(_Buckets);
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     unordered_set& operator=(const unordered_set& _Right) {
         _Mybase::operator=(_Right);
         return *this;
@@ -298,23 +353,44 @@ template <class _Kty, class _Hasher, class _Alloc,
     enable_if_t<conjunction_v<_Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_set(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
     -> unordered_set<_Kty, _Hasher, equal_to<_Kty>, _Alloc>;
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <_RANGES input_range _Rng, class _Hasher = hash<_RANGES range_value_t<_Rng>>,
+    class _Keyeq = equal_to<_RANGES range_value_t<_Rng>>, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
+    enable_if_t<conjunction_v<_Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>, int> = 0>
+unordered_set(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
+    _Alloc = _Alloc()) -> unordered_set<_RANGES range_value_t<_Rng>, _Hasher, _Keyeq, _Alloc>;
+
+template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+unordered_set(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc>, _Alloc) -> unordered_set<_RANGES range_value_t<_Rng>,
+    hash<_RANGES range_value_t<_Rng>>, equal_to<_RANGES range_value_t<_Rng>>, _Alloc>;
+
+template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+unordered_set(from_range_t, _Rng&&, _Alloc) -> unordered_set<_RANGES range_value_t<_Rng>,
+    hash<_RANGES range_value_t<_Rng>>, equal_to<_RANGES range_value_t<_Rng>>, _Alloc>;
+
+template <_RANGES input_range _Rng, class _Hasher, class _Alloc,
+    enable_if_t<conjunction_v<_Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
+unordered_set(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
+    -> unordered_set<_RANGES range_value_t<_Rng>, _Hasher, equal_to<_RANGES range_value_t<_Rng>>, _Alloc>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
-template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
 void swap(unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
     unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
 #if _HAS_CXX20
-template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
 typename unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
     unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
-template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
 _NODISCARD bool operator==(const unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
     const unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Right) {
     return _Hash_equal(_Left, _Right);
@@ -328,7 +404,8 @@ _NODISCARD bool operator!=(const unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _
 }
 #endif // !_HAS_CXX20
 
-template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>, class _Alloc = allocator<_Kty>>
+_EXPORT_STD template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,
+    class _Alloc = allocator<_Kty>>
 class unordered_multiset : public _Hash<_Uset_traits<_Kty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, true>> {
     // hash table of key-values, non-unique keys
 public:
@@ -455,6 +532,61 @@ public:
 
     unordered_multiset(unordered_multiset&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_multiset(from_range_t, _Rng&& _Range) : _Mybase(_Key_compare(), allocator_type()) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_multiset(from_range_t, _Rng&& _Range, const allocator_type& _Al) : _Mybase(_Key_compare(), _Al) {
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_multiset(from_range_t, _Rng&& _Range, size_type _Buckets) : _Mybase(_Key_compare(), allocator_type()) {
+        _Mybase::rehash(_Buckets);
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_multiset(from_range_t, _Rng&& _Range, size_type _Buckets, const allocator_type& _Al)
+        : _Mybase(_Key_compare(), _Al) {
+        _Mybase::rehash(_Buckets);
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_multiset(from_range_t, _Rng&& _Range, size_type _Buckets, const hasher& _Hasharg)
+        : _Mybase(_Key_compare(_Hasharg), allocator_type()) {
+        _Mybase::rehash(_Buckets);
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_multiset(
+        from_range_t, _Rng&& _Range, size_type _Buckets, const hasher& _Hasharg, const allocator_type& _Al)
+        : _Mybase(_Key_compare(_Hasharg), _Al) {
+        _Mybase::rehash(_Buckets);
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_multiset(from_range_t, _Rng&& _Range, size_type _Buckets, const hasher& _Hasharg, const _Keyeq& _Keyeqarg)
+        : _Mybase(_Key_compare(_Hasharg, _Keyeqarg), allocator_type()) {
+        _Mybase::rehash(_Buckets);
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    unordered_multiset(from_range_t, _Rng&& _Range, size_type _Buckets, const hasher& _Hasharg, const _Keyeq& _Keyeqarg,
+        const allocator_type& _Al)
+        : _Mybase(_Key_compare(_Hasharg, _Keyeqarg), _Al) {
+        _Mybase::rehash(_Buckets);
+        this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     unordered_multiset& operator=(unordered_multiset&& _Right) noexcept(_Alnode_traits::is_always_equal::value&&
             is_nothrow_move_assignable_v<_Hasher>&& is_nothrow_move_assignable_v<_Keyeq>) {
         _Mybase::operator=(_STD move(_Right));
@@ -561,23 +693,45 @@ template <class _Kty, class _Hasher, class _Alloc,
     enable_if_t<conjunction_v<_Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_multiset(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
     -> unordered_multiset<_Kty, _Hasher, equal_to<_Kty>, _Alloc>;
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <_RANGES input_range _Rng, class _Hasher = hash<_RANGES range_value_t<_Rng>>,
+    class _Keyeq = equal_to<_RANGES range_value_t<_Rng>>, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
+    enable_if_t<conjunction_v<_Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>, int> = 0>
+unordered_multiset(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
+    _Alloc = _Alloc()) -> unordered_multiset<_RANGES range_value_t<_Rng>, _Hasher, _Keyeq, _Alloc>;
+
+template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+unordered_multiset(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc>, _Alloc)
+    -> unordered_multiset<_RANGES range_value_t<_Rng>, hash<_RANGES range_value_t<_Rng>>,
+        equal_to<_RANGES range_value_t<_Rng>>, _Alloc>;
+
+template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+unordered_multiset(from_range_t, _Rng&&, _Alloc) -> unordered_multiset<_RANGES range_value_t<_Rng>,
+    hash<_RANGES range_value_t<_Rng>>, equal_to<_RANGES range_value_t<_Rng>>, _Alloc>;
+
+template <_RANGES input_range _Rng, class _Hasher, class _Alloc,
+    enable_if_t<conjunction_v<_Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
+unordered_multiset(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
+    -> unordered_multiset<_RANGES range_value_t<_Rng>, _Hasher, equal_to<_RANGES range_value_t<_Rng>>, _Alloc>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
-template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
 void swap(unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
     unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
 #if _HAS_CXX20
-template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
 typename unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
     unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
-template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
+_EXPORT_STD template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
 _NODISCARD bool operator==(const unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
     const unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Right) {
     return _Hash_equal(_Left, _Right);
@@ -595,15 +749,15 @@ _NODISCARD bool operator!=(const unordered_multiset<_Kty, _Hasher, _Keyeq, _Allo
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD unordered_multiset;
     using _STD unordered_set;
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 #endif // _HAS_TR1_NAMESPACE
 
 #if _HAS_CXX17
 namespace pmr {
-    template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>>
+    _EXPORT_STD template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>>
     using unordered_set = _STD unordered_set<_Kty, _Hasher, _Keyeq, polymorphic_allocator<_Kty>>;
 
-    template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>>
+    _EXPORT_STD template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>>
     using unordered_multiset = _STD unordered_multiset<_Kty, _Hasher, _Keyeq, polymorphic_allocator<_Kty>>;
 } // namespace pmr
 #endif // _HAS_CXX17

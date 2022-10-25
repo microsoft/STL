@@ -16,7 +16,7 @@ class future_tester_base { // base class for testing future types with set and g
 public:
     future_tester_base() = default;
 
-    future_tester_base(const future_tester_base&) = delete;
+    future_tester_base(const future_tester_base&)            = delete;
     future_tester_base& operator=(const future_tester_base&) = delete;
     virtual ~future_tester_base() {}
 
@@ -41,8 +41,10 @@ private:
 
         pr = MyPromise();
 
-        if (when == set_after_get)
+        if (when == set_after_get) {
             fut = pr.get_future();
+        }
+
         if (what == set_a_value) {
             STD thread thr0(&future_tester_base::set_value, this);
             thr = STD move(thr0);
@@ -50,13 +52,18 @@ private:
             STD thread thr0(&future_tester_base::set_exception, this);
             thr = STD move(thr0);
         }
-        while (status == ready)
+
+        while (status == ready) {
             cnd.wait(lock);
-        if (when == set_before_get)
+        }
+
+        if (when == set_before_get) {
             fut = pr.get_future();
-        if (what == set_a_value)
+        }
+
+        if (what == set_a_value) {
             check_value();
-        else if (what == set_an_exception) { // get() should throw exception
+        } else if (what == set_an_exception) { // get() should throw exception
             bool thrown = false;
             try { // try to get()
                 fut.get();

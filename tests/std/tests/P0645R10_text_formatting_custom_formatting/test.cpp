@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <format>
 #include <iterator>
 #include <limits>
@@ -126,7 +126,7 @@ void test_numeric_custom_formattable_type() {
     test_custom_equiv_with_format<T>(STR("{}"), numeric_limits<T>::min());
     test_custom_equiv_with_format<T>(STR("{}"), numeric_limits<T>::max());
     test_custom_equiv_with_format<T>(STR("{:3}"), 1);
-    if constexpr (!is_floating_point_v<T> && !_Is_any_of_v<T, charT, bool>) {
+    if constexpr (!is_floating_point_v<T> && !is_same_v<T, charT> && !is_same_v<T, bool>) {
         test_custom_equiv_with_format<T>(STR("{:#x}"), 255);
         test_custom_equiv_with_format<T>(STR("{:#X}"), 255);
     }
@@ -141,7 +141,7 @@ void test_numeric_mixed_args_custom_formattable_type() {
     test_custom_equiv_with_format_mixed<T>(STR("{}{}"), numeric_limits<T>::max());
     test_custom_equiv_with_format_mixed<T>(STR("{:3}{:4}"), 1);
     test_custom_equiv_with_format_mixed<T>(STR("{0}{0}"), 42);
-    if constexpr (!is_floating_point_v<T> && !_Is_any_of_v<T, charT, bool>) {
+    if constexpr (!is_floating_point_v<T> && !is_same_v<T, charT> && !is_same_v<T, bool>) {
         test_custom_equiv_with_format_mixed<T>(STR("{:#x}{}"), 255);
         test_custom_equiv_with_format_mixed<T>(STR("{:#X}{}"), 255);
     }
@@ -172,8 +172,10 @@ void test_format_family_overloads() {
 template <class charT>
 void test_custom_formattable_type() {
     test_numeric_custom_formattable_type<int, charT>();
+    test_numeric_custom_formattable_type<long, charT>();
     test_numeric_custom_formattable_type<long long, charT>();
     test_numeric_custom_formattable_type<unsigned int, charT>();
+    test_numeric_custom_formattable_type<unsigned long, charT>();
     test_numeric_custom_formattable_type<unsigned long long, charT>();
     test_numeric_custom_formattable_type<short, charT>();
 #ifdef _NATIVE_WCHAR_T_DEFINED
@@ -181,13 +183,16 @@ void test_custom_formattable_type() {
 #endif
     test_numeric_custom_formattable_type<float, charT>();
     test_numeric_custom_formattable_type<double, charT>();
+    test_numeric_custom_formattable_type<long double, charT>();
 }
 
 template <class charT>
 void test_mixed_custom_formattable_type() {
     test_numeric_mixed_args_custom_formattable_type<int, charT>();
+    test_numeric_mixed_args_custom_formattable_type<long, charT>();
     test_numeric_mixed_args_custom_formattable_type<long long, charT>();
     test_numeric_mixed_args_custom_formattable_type<unsigned int, charT>();
+    test_numeric_mixed_args_custom_formattable_type<unsigned long, charT>();
     test_numeric_mixed_args_custom_formattable_type<unsigned long long, charT>();
     test_numeric_mixed_args_custom_formattable_type<short, charT>();
 #ifdef _NATIVE_WCHAR_T_DEFINED
@@ -195,6 +200,7 @@ void test_mixed_custom_formattable_type() {
 #endif
     test_numeric_mixed_args_custom_formattable_type<float, charT>();
     test_numeric_mixed_args_custom_formattable_type<double, charT>();
+    test_numeric_mixed_args_custom_formattable_type<long double, charT>();
 }
 
 int main() {

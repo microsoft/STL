@@ -15,14 +15,10 @@ using namespace std;
 static_assert(ranges::_Advanceable<long long>);
 
 template <class W, class B>
-concept CanViewIota = requires(W w, B b) {
-    views::iota(w, b);
-};
+concept CanViewIota = requires(W w, B b) { views::iota(w, b); };
 
 template <class R>
-concept CanSize = requires(R& r) {
-    ranges::size(r);
-};
+concept CanSize = requires(R& r) { ranges::size(r); };
 
 struct empty_type {};
 

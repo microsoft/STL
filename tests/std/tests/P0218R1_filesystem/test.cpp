@@ -4,8 +4,10 @@
 #define _SILENCE_CXX20_U8PATH_DEPRECATION_WARNING
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <chrono>
+#include <cstdlib>
+#include <cstring>
 #include <cvt/cp1251>
 #include <cvt/sjis>
 #include <cvt/utf8_utf16>
@@ -18,8 +20,6 @@
 #include <memory>
 #include <optional>
 #include <sstream>
-#include <stdlib.h>
-#include <string.h>
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -996,7 +996,11 @@ void test_directory_entry() {
         EXPECT(!nonexistentEntryEc.exists());
         EXPECT(good(ec));
 
-        EXPECT(throws_filesystem_error([&] { nonexistentEntryEc.refresh(); }, "directory_entry::refresh", nonexistent));
+        // Also test GH-232 "<filesystem>: directory_entry(const path& p, error_code& ec) does not return error code"
+        nonexistentEntry.refresh();
+
+        nonexistentEntryEc.refresh(ec);
+        EXPECT(good(ec));
     }
 
     directory_entry goodEntry(filePath, ec);
@@ -1196,18 +1200,6 @@ void test_directory_entry() {
     EXPECT(good(ec));
     EXPECT(cachingEntry.is_regular_file(ec));
     EXPECT(good(ec));
-#if _HAS_CXX20
-    // break caching again, and assert that things aren't cached
-    cachingEntry.clear_cache();
-    EXPECT(cachingEntry.file_size(ec) == static_cast<uintmax_t>(-1));
-    EXPECT(bad(ec));
-    EXPECT(cachingEntry.last_write_time(ec) == file_time_type::min());
-    EXPECT(bad(ec));
-    EXPECT(cachingEntry.hard_link_count(ec) == static_cast<uintmax_t>(-1));
-    EXPECT(bad(ec));
-    EXPECT(!cachingEntry.is_regular_file(ec));
-    EXPECT(bad(ec));
-#endif // _HAS_CXX20
 
     // assert that mutating the path doesn't fail even though the target doesn't exist
     for (auto&& nonexistent : nonexistentPaths) {
@@ -1525,6 +1517,7 @@ void expect_absolute(const path& input, const wstring_view expected) {
         if (actual.native() != expected) {
             wcerr << L"Actual result: " << actual.native() << L"\n";
         }
+
         if (ec) {
             wcerr << L"The call failed.\n";
         }
@@ -3153,6 +3146,14 @@ void test_lexically_relative() {
 
     // LWG-3070
     EXPECT(path(LR"(\a:\b:)"sv).lexically_relative(LR"(\a:\c:)"sv).native() == LR"()"sv);
+
+    // LWG-3699
+    EXPECT(path(LR"(\\?\a:\meow)"sv).lexically_relative(LR"(\\?\a:\meow)"sv).native() == LR"(.)"sv);
+    EXPECT(path(LR"(\\?\a:\meow\purr\nyan)"sv).lexically_relative(LR"(\\?\a:\meow)"sv).native() == LR"(purr\nyan)"sv);
+    EXPECT(path(LR"(\\?\a:\meow)"sv).lexically_relative(LR"(\\?\a:\meow\purr\nyan)"sv).native() == LR"(..\..)"sv);
+    // UNC/DOS together should return an empty path
+    EXPECT(path(LR"(a:\meow)"sv).lexically_relative(LR"(\\?\a:\meow)"sv).native().empty());
+    EXPECT(path(LR"(\\?\a:\meow)"sv).lexically_relative(LR"(a:\meow)"sv).native().empty());
 }
 
 void test_lexically_proximate() {
@@ -3847,6 +3848,7 @@ basic_ostream<Elem, Traits>& operator<<(basic_ostream<Elem, Traits>& ostr, const
     if (p == perms::owner_all) {
         return ostr << L"perms::owner_all";
     }
+
     if (p == perms::owner_read) {
         return ostr << L"perms::owner_read";
     }

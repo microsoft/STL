@@ -139,6 +139,20 @@ static_assert(same_as<ranges::single_view<const char*>, decltype(views::single("
 void double_function(double);
 static_assert(same_as<ranges::single_view<void (*)(double)>, decltype(views::single(double_function))>);
 
+// Validate that the _Copyable_box primary template works when fed with a non-trivially-destructible type
+void test_non_trivially_destructible_type() { // COMPILE-ONLY
+    struct non_trivially_destructible {
+        non_trivially_destructible() = default;
+        ~non_trivially_destructible() {}
+
+        // To test the correct specialization of _Copyable_box, this type must not be copy assignable.
+        non_trivially_destructible(const non_trivially_destructible&)            = default;
+        non_trivially_destructible& operator=(const non_trivially_destructible&) = delete;
+    };
+
+    (void) views::single(non_trivially_destructible{});
+}
+
 int main() {
     static_assert(test_one_type(42, 42));
     test_one_type(42, 42);

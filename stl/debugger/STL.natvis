@@ -49,77 +49,55 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-
   <Type Name="std::tuple&lt;&gt;">
-      <DisplayString IncludeView="noparens"></DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand/>
+    <DisplayString IncludeView="noparens;noparensasptr"></DisplayString>
+    <DisplayString>({*this,view(noparens)})</DisplayString>
+    <Expand/>
   </Type>
+
+  <!--
+    Tuple uses a bit of a SFINAE-style technique in order to allow us to write less code.
+    It uses Condition="(void)<expr>, true", along with Optional="true".
+    This allows us to check if <expr> compiles, and if so, use that "branch".
+  -->
 
   <Type Name="std::tuple&lt;*&gt;">
-      <DisplayString IncludeView="noparens">{_Myfirst._Val}</DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[0]">_Myfirst._Val</Item>
-      </Expand>
+    <DisplayString IncludeView="noparens" Optional="true" Condition="(void)((_Mybase *)this)->_Myfirst._Val, true">
+      {_Myfirst._Val}, {*((_Mybase *) this),view(noparens)}
+    </DisplayString>
+    <DisplayString IncludeView="noparens">{_Myfirst._Val}</DisplayString>
+    <DisplayString>({*this,view(noparens)})</DisplayString>
+    <Expand>
+      <Item Name="[0]">_Myfirst._Val</Item>
+      <Item Name="[1]" Optional="true">((_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[2]" Optional="true">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[3]" Optional="true">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[4]" Optional="true">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Synthetic Name="[...]" Optional="true" Condition="(void)((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val, true">
+        <DisplayString>Next five elements:</DisplayString>
+      </Synthetic>
+      <ExpandedItem Optional="true">*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)</ExpandedItem>
+    </Expand>
   </Type>
 
-  <Type Name="std::tuple&lt;*,*&gt;">
-      <DisplayString IncludeView="noparens">{_Myfirst._Val}, {((_Mybase *) this)->_Myfirst._Val}</DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[0]">_Myfirst._Val</Item>
-          <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
-      </Expand>
+  <Type Name="std::tuple&lt;*&gt;" IncludeView="asptr;noparensasptr">
+    <DisplayString IncludeView="noparensasptr" Optional="true" Condition="(void)((_Mybase *)this)->_Myfirst._Val, true">
+      {_Myfirst._Val}, {*((_Mybase *) this),view(noparensasptr)}
+    </DisplayString>
+    <DisplayString IncludeView="noparensasptr">{&amp;_Myfirst._Val}</DisplayString>
+    <DisplayString>({*this,view(noparensasptr)})</DisplayString>
+    <Expand>
+      <Item Name="[0]">&amp;_Myfirst._Val</Item>
+      <Item Name="[1]">&amp;((_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[2]" Optional="true">&amp;((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[3]" Optional="true">&amp;((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[4]" Optional="true">&amp;((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Synthetic Name="[...]" Optional="true" Condition="(void)((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val, true">
+        <DisplayString>Next five elements:</DisplayString>
+      </Synthetic>
+      <ExpandedItem Optional="true">*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this),view(asptr)</ExpandedItem>
+    </Expand>
   </Type>
-
-  <Type Name="std::tuple&lt;*,*,*&gt;">
-      <DisplayString IncludeView="noparens">{_Myfirst._Val}, {((_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase *) this)->_Myfirst._Val}</DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[0]">_Myfirst._Val</Item>
-          <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[2]">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      </Expand>
-  </Type>
-
-  <Type Name="std::tuple&lt;*,*,*,*&gt;">
-      <DisplayString IncludeView="noparens">{_Myfirst._Val}, {((_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val}</DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[0]">_Myfirst._Val</Item>
-          <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[2]">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[3]">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      </Expand>
-  </Type>
-
-  <Type Name="std::tuple&lt;*,*,*,*,*&gt;">
-      <DisplayString IncludeView="noparens">{_Myfirst._Val}, {((_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val}</DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[0]">_Myfirst._Val</Item>
-          <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[2]">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[3]">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[4]">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      </Expand>
-  </Type>
-
-  <Type Name="std::tuple&lt;*,*,*,*,*,*&gt;">
-      <DisplayString IncludeView="noparens">{_Myfirst._Val}, {((_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val}, {*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this),view(noparens)}</DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[0]">_Myfirst._Val</Item>
-          <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[2]">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[3]">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[4]">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-          <Synthetic Name="[...]"><DisplayString>Next five elements:</DisplayString></Synthetic>
-          <ExpandedItem>*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)</ExpandedItem>
-      </Expand>
-  </Type>
-
 
   <Type Name="std::nullopt_t">
       <DisplayString>nullopt</DisplayString>
@@ -216,33 +194,41 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <DisplayString>monostate</DisplayString>
   </Type>
 
-
-  <Type Name="std::any">
-      <Intrinsic Name="has_value"   Expression="_Storage._TypeData != 0"/>
-      <Intrinsic Name="_Rep"        Expression="_Storage._TypeData &amp; _Rep_mask"/>
-      <Intrinsic Name="type"        Expression="(const type_info*)(_Storage._TypeData &amp; ~_Rep_mask)"/>
-      <Intrinsic Name="_Is_trivial" Expression="has_value() &amp;&amp; _Rep() == 0"/>
-      <Intrinsic Name="_Is_big"     Expression="has_value() &amp;&amp; _Rep() == 1"/>
-      <Intrinsic Name="_Is_small"   Expression="has_value() &amp;&amp; _Rep() == 2"/>
-      <DisplayString Condition="!has_value()">[empty]</DisplayString>
-      <DisplayString Condition="_Is_trivial() || _Is_small()">[not empty (Small)]</DisplayString>
-      <DisplayString Condition="_Is_big()">[not empty (Large)]</DisplayString>
+  <Type Name="std::unexpected&lt;*&gt;">
+      <Intrinsic Name="unex" Expression="_Unexpected"/>
+      <DisplayString>{unex()}</DisplayString>
       <Expand>
-          <Synthetic Name="has_value">
-              <DisplayString>{has_value()}</DisplayString>
-          </Synthetic>
-          <Synthetic Name="type" Condition="has_value()">
-              <DisplayString>{type()}</DisplayString>
-          </Synthetic>
-          <Synthetic Name="[representation]" Condition="_Is_trivial()">
-              <DisplayString>(Small/Trivial Object)</DisplayString>
-          </Synthetic>
-          <Synthetic Name="[representation]" Condition="_Is_small()">
-              <DisplayString>(Small Object)</DisplayString>
-          </Synthetic>
-          <Synthetic Name="[representation]" Condition="_Is_big()">
-              <DisplayString>(Dynamic Allocation)</DisplayString>
-          </Synthetic>
+          <Item Name="unex">unex()</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::bad_expected_access&lt;*&gt;">
+      <Intrinsic Name="unex" Expression="_Unexpected"/>
+      <DisplayString>{unex()}</DisplayString>
+      <Expand>
+          <Item Name="unex">unex()</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::expected&lt;*,*&gt;">
+      <Intrinsic Name="has_value" Expression="_Has_value"/>
+      <Intrinsic Name="value" Expression="_Value"/>
+      <Intrinsic Name="unex" Expression="_Unexpected"/>
+      <DisplayString Condition="has_value()">{value()}</DisplayString>
+      <DisplayString Condition="!has_value()">{unex()}</DisplayString>
+      <Expand>
+          <Item Condition="has_value()" Name="value">value()</Item>
+          <Item Condition="!has_value()" Name="unex">unex()</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::expected&lt;void,*&gt;">
+      <Intrinsic Name="has_value" Expression="_Has_value"/>
+      <Intrinsic Name="unex" Expression="_Unexpected"/>
+      <DisplayString Condition="has_value()">void</DisplayString>
+      <DisplayString Condition="!has_value()">{unex()}</DisplayString>
+      <Expand>
+          <Item Condition="!has_value()" Name="unex">unex()</Item>
       </Expand>
   </Type>
 
@@ -277,17 +263,17 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Expand/>
   </Type>
 
-  <!-- VC 2013 -->
-  <Type Name="std::unique_ptr&lt;*&gt;" Priority="MediumLow">
-      <SmartPointer Usage="Minimal">_Myptr</SmartPointer>
-      <DisplayString Condition="_Myptr == 0">empty</DisplayString>
-      <DisplayString Condition="_Myptr != 0">unique_ptr {*_Myptr}</DisplayString>
+  <!-- VC 2015 -->
+   <Type Name="std::unique_ptr&lt;void, *&gt;">
+      <SmartPointer Usage="Minimal">_Mypair._Myval2</SmartPointer>
+      <DisplayString Condition="_Mypair._Myval2 == 0">empty</DisplayString>
+      <DisplayString Condition="_Mypair._Myval2 != 0">unique_ptr void</DisplayString>
       <Expand>
-          <Item Condition="_Myptr != 0" Name="[ptr]">_Myptr</Item>
+          <Item Condition="_Mypair._Myval2 != 0" Name="[ptr]">_Mypair._Myval2</Item>
+          <Item Condition="_Mypair._Myval2 != 0" Name="[deleter]">_Mypair</Item>
       </Expand>
   </Type>
 
-  <!-- VC 2015 -->
   <Type Name="std::unique_ptr&lt;*&gt;">
       <SmartPointer Usage="Minimal">_Mypair._Myval2</SmartPointer>
       <DisplayString Condition="_Mypair._Myval2 == 0">empty</DisplayString>
@@ -298,20 +284,29 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <Type Name="std::unique_ptr&lt;wchar_t [0],*&gt;">
+    <AlternativeType Name="std::unique_ptr&lt;char [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char8_t [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char16_t [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char32_t [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;wchar_t const [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char const [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char8_t const [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char16_t const [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char32_t const [0],*&gt;"/>
+    <DisplayString Condition="_Mypair._Myval2 == nullptr">{{empty}}</DisplayString>
+    <DisplayString Condition="_Mypair._Myval2 != nullptr">{_Mypair._Myval2}</DisplayString>
+    <StringView>_Mypair._Myval2</StringView>
+    <Expand>
+      <Item Condition="_Mypair._Myval2 != nullptr" Name="[deleter]">_Mypair</Item>
+      <ExpandedItem Condition="_Mypair._Myval2 != nullptr">_Mypair._Myval2,hv</ExpandedItem>
+    </Expand>
+  </Type>
 
   <Type Name="std::_Ref_count&lt;*&gt;">
       <DisplayString>default</DisplayString>
       <Expand>
           <Item Condition="_Uses != 0" Name="[original ptr]">_Ptr</Item>
-      </Expand>
-  </Type>
-
-  <!-- VC 2013 -->
-  <Type Name="std::_Ref_count_del&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>custom deleter</DisplayString>
-      <Expand>
-          <Item Condition="_Uses != 0" Name="[original ptr]">_Ptr</Item>
-          <Item Name="[deleter]">_Dtor</Item>
       </Expand>
   </Type>
 
@@ -321,16 +316,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Expand>
           <Item Condition="_Uses != 0" Name="[original ptr]">_Mypair._Myval2</Item>
           <Item Name="[deleter]">_Mypair</Item>
-      </Expand>
-  </Type>
-
-  <!-- VC 2013 -->
-  <Type Name="std::_Ref_count_del_alloc&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>custom deleter, custom allocator</DisplayString>
-      <Expand>
-          <Item Condition="_Uses != 0" Name="[original ptr]">_Ptr</Item>
-          <Item Name="[deleter]">_Dtor</Item>
-          <Item Name="[allocator]">_Myal</Item>
       </Expand>
   </Type>
 
@@ -351,12 +336,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- VC 2013 -->
-  <Type Name="std::_Ref_count_obj_alloc&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>allocate_shared</DisplayString>
+  <!-- VS 2019 16.3 -->
+  <Type Name="std::_Ref_count_obj2&lt;*&gt;">
+      <DisplayString>make_shared</DisplayString>
       <Expand>
           <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Storage</Item>
-          <Item Name="[allocator]">_Myal</Item>
       </Expand>
   </Type>
 
@@ -366,6 +350,21 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Expand>
           <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Mypair._Myval2</Item>
           <Item Name="[allocator]">_Mypair</Item>
+      </Expand>
+  </Type>
+
+  <!-- VS 2019 16.7: _Ref_count_obj_alloc3 -->
+  <!-- VS 2019 16.3: _Ref_count_obj_alloc2 -->
+  <Type Name="std::_Ref_count_obj_alloc3&lt;*&gt;">
+      <AlternativeType Name="std::_Ref_count_obj_alloc2&lt;*&gt;" />
+      <!-- stateless allocator -->
+      <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+      <!-- stateful allocator -->
+      <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+      <DisplayString>allocate_shared</DisplayString>
+      <Expand>
+          <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Storage</Item>
+          <Item Name="[allocator]">allocator()</Item>
       </Expand>
   </Type>
 
@@ -388,6 +387,24 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <!-- Do not dereference _Ptr when type is void -->
+  <Type Name="std::shared_ptr&lt;void&gt;">
+    <SmartPointer Usage="Minimal">_Ptr</SmartPointer>
+      <DisplayString Condition="_Rep == 0">empty</DisplayString>
+      <DisplayString IncludeView="ptr" Condition="_Ptr == 0">nullptr</DisplayString>
+      <DisplayString IncludeView="ptr" Condition="_Ptr != 0">void</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 1)   &amp;&amp; (_Rep-&gt;_Weaks == 1)"  >shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong ref] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 1)   &amp;&amp; (_Rep-&gt;_Weaks == 2)"  >shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong ref, {_Rep-&gt;_Weaks - 1} weak ref] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 1)   &amp;&amp; (_Rep-&gt;_Weaks &gt; 2)">shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong ref, {_Rep-&gt;_Weaks - 1} weak refs] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 1) &amp;&amp; (_Rep-&gt;_Weaks == 1)"  >shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong refs] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 1) &amp;&amp; (_Rep-&gt;_Weaks == 2)"  >shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong refs, {_Rep-&gt;_Weaks - 1} weak ref] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 1) &amp;&amp; (_Rep-&gt;_Weaks &gt; 2)">shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong refs, {_Rep-&gt;_Weaks - 1} weak refs] [{*_Rep}]</DisplayString>
+      <Expand>
+          <Item Condition="_Rep != 0" Name="[ptr]">_Ptr</Item>
+          <Item Condition="_Rep != 0" Name="[control block]">*_Rep</Item>
+      </Expand>
+  </Type>
+
   <Type Name="std::shared_ptr&lt;*&gt;">
       <SmartPointer Usage="Minimal">_Ptr</SmartPointer>
       <DisplayString Condition="_Rep == 0">empty</DisplayString>
@@ -401,6 +418,23 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 1) &amp;&amp; (_Rep-&gt;_Weaks &gt; 2)">shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong refs, {_Rep-&gt;_Weaks - 1} weak refs] [{*_Rep}]</DisplayString>
       <Expand>
           <Item Condition="_Rep != 0" Name="[ptr]">_Ptr</Item>
+          <Item Condition="_Rep != 0" Name="[control block]">*_Rep</Item>
+      </Expand>
+  </Type>
+
+  <!-- Do not dereference _Ptr when type is void -->
+  <Type Name="std::weak_ptr&lt;void&gt;">
+      <DisplayString Condition="_Rep == 0">empty</DisplayString>
+      <DisplayString IncludeView="ptr" Condition="_Ptr == 0">nullptr</DisplayString>
+      <DisplayString IncludeView="ptr" Condition="_Ptr != 0">void</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 0)   &amp;&amp; (_Rep-&gt;_Weaks == 1)"  >expired [{_Rep-&gt;_Weaks} weak ref] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 0)   &amp;&amp; (_Rep-&gt;_Weaks &gt; 1)">expired [{_Rep-&gt;_Weaks} weak refs] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 1)   &amp;&amp; (_Rep-&gt;_Weaks == 2)"  >weak_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong ref, {_Rep-&gt;_Weaks - 1} weak ref] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 1)   &amp;&amp; (_Rep-&gt;_Weaks &gt; 2)">weak_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong ref, {_Rep-&gt;_Weaks - 1} weak refs] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 1) &amp;&amp; (_Rep-&gt;_Weaks == 2)"  >weak_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong refs, {_Rep-&gt;_Weaks - 1} weak ref] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 1) &amp;&amp; (_Rep-&gt;_Weaks &gt; 2)">weak_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong refs, {_Rep-&gt;_Weaks - 1} weak refs] [{*_Rep}]</DisplayString>
+      <Expand>
+          <Item Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 0)" Name="[ptr]">_Ptr</Item>
           <Item Condition="_Rep != 0" Name="[control block]">*_Rep</Item>
       </Expand>
   </Type>
@@ -421,28 +455,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-
-  <!-- VC 2013 -->
-  <Type Name="std::_Callable_base&lt;*,1&gt;">
-      <DisplayString>{*_Ptr}</DisplayString>
-      <Expand>
-          <Item Name="[ptr]">_Ptr</Item>
-      </Expand>
-  </Type>
-
-  <!-- VC 2013 -->
-  <Type Name="std::_Callable_base&lt;*,0&gt;">
-      <DisplayString>{_Object}</DisplayString>
-      <Expand/>
-  </Type>
-
-  <!-- VC 2013 -->
-  <Type Name="std::reference_wrapper&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>{_Callee}</DisplayString>
-      <Expand>
-          <ExpandedItem>_Callee</ExpandedItem>
-      </Expand>
-  </Type>
 
   <!-- VC 2015 -->
   <Type Name="std::reference_wrapper&lt;*&gt;">
@@ -590,15 +602,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Expand/>
   </Type>
 
-  <!-- VC 2013 -->
-  <Type Name="std::_Bind&lt;*&gt;">
-      <DisplayString>bind({_Myfun}, {_Mybargs,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[f]">_Myfun</Item>
-          <Item Name="[bound_args]">_Mybargs</Item>
-      </Expand>
-  </Type>
-
   <!-- VC 2015 -->
   <Type Name="std::_Binder&lt;*&gt;">
       <DisplayString>bind({_Mypair}, {_Mypair._Myval2,view(noparens)})</DisplayString>
@@ -616,12 +619,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-
-  <!-- VC 2013 -->
-  <Type Name="std::_Mem_fn_wrap&lt;*&gt;">
-      <DisplayString>mem_fn({_Callee._Object})</DisplayString>
-      <Expand/>
+  <Type Name="std::_Back_binder&lt;*&gt;">
+    <DisplayString>bind_back({_Mypair}, {_Mypair._Myval2,view(noparens)})</DisplayString>
+    <Expand>
+      <Item Name="[f]">_Mypair</Item>
+      <Item Name="[bound_args]">_Mypair._Myval2</Item>
+    </Expand>
   </Type>
+
 
   <!-- VC 2015 -->
   <Type Name="std::_Mem_fn&lt;*&gt;">
@@ -629,15 +634,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Expand/>
   </Type>
 
-
-  <!-- VC 2013 -->
-  <Type Name="std::_Func_impl&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>{_Callee._Object}</DisplayString>
-      <Expand>
-          <Item Name="[functor]">_Callee._Object</Item>
-          <Item Name="[allocator]">_Myal</Item>
-      </Expand>
-  </Type>
 
   <!-- VC 2015 -->
   <Type Name="std::_Func_impl&lt;*&gt;">
@@ -652,15 +648,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <DisplayString>{_Callee}</DisplayString>
       <Expand>
           <Item Name="[functor]">_Callee</Item>
-      </Expand>
-  </Type>
-
-  <!-- VC 2013 -->
-  <Type Name="std::function&lt;*&gt;" Priority="MediumLow">
-      <DisplayString Condition="_Impl == 0">empty</DisplayString>
-      <DisplayString Condition="_Impl != 0">{*_Impl}</DisplayString>
-      <Expand>
-          <ExpandedItem Condition="_Impl != 0">*_Impl</ExpandedItem>
       </Expand>
   </Type>
 
@@ -887,41 +874,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- VC 2013 -->
-  <Type Name="std::basic_string&lt;char,*&gt;" Priority="MediumLow">
-      <DisplayString Condition="_Myres &lt; _BUF_SIZE">{_Bx._Buf,na}</DisplayString>
-      <DisplayString Condition="_Myres &gt;= _BUF_SIZE">{_Bx._Ptr,na}</DisplayString>
-      <StringView Condition="_Myres &lt; _BUF_SIZE">_Bx._Buf,na</StringView>
-      <StringView Condition="_Myres &gt;= _BUF_SIZE">_Bx._Ptr,na</StringView>
-      <Expand>
-          <Item Name="[size]" ExcludeView="simple">_Mysize</Item>
-          <Item Name="[capacity]" ExcludeView="simple">_Myres</Item>
-          <ArrayItems>
-              <Size>_Mysize</Size>
-              <ValuePointer Condition="_Myres &lt; _BUF_SIZE">_Bx._Buf</ValuePointer>
-              <ValuePointer Condition="_Myres &gt;= _BUF_SIZE">_Bx._Ptr</ValuePointer>
-          </ArrayItems>
-      </Expand>
-  </Type>
-
-  <!-- VC 2013 -->
-  <Type Name="std::basic_string&lt;wchar_t,*&gt;" Priority="MediumLow">
-      <AlternativeType Name="std::basic_string&lt;unsigned short,*&gt;" />
-      <DisplayString Condition="_Myres &lt; _BUF_SIZE">{_Bx._Buf,su}</DisplayString>
-      <DisplayString Condition="_Myres &gt;= _BUF_SIZE">{_Bx._Ptr,su}</DisplayString>
-      <StringView Condition="_Myres &lt; _BUF_SIZE">_Bx._Buf,su</StringView>
-      <StringView Condition="_Myres &gt;= _BUF_SIZE">_Bx._Ptr,su</StringView>
-      <Expand>
-          <Item Name="[size]" ExcludeView="simple">_Mysize</Item>
-          <Item Name="[capacity]" ExcludeView="simple">_Myres</Item>
-          <ArrayItems>
-              <Size>_Mysize</Size>
-              <ValuePointer Condition="_Myres &lt; _BUF_SIZE">_Bx._Buf</ValuePointer>
-              <ValuePointer Condition="_Myres &gt;= _BUF_SIZE">_Bx._Ptr</ValuePointer>
-          </ArrayItems>
-      </Expand>
-  </Type>
-
   <!--
    * VC 2015+ ABI basic_string
    * Notes:
@@ -1098,17 +1050,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- VC 2013 -->
-  <Type Name="std::deque&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>{{ size={_Mysize} }}</DisplayString>
-      <Expand>
-          <IndexListItems>
-              <Size>_Mysize</Size>
-              <ValueNode>_Map[(($i + _Myoff) / _EEN_DS) % _Mapsize][($i + _Myoff) % _EEN_DS]</ValueNode>
-          </IndexListItems>
-      </Expand>
-  </Type>
-
   <!-- VC 2015 -->
   <Type Name="std::deque&lt;*&gt;">
       <DisplayString>{{ size={_Mypair._Myval2._Mysize} }}</DisplayString>
@@ -1132,19 +1073,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
-  <!-- VC 2013 -->
-  <Type Name="std::forward_list&lt;*&gt;" Priority="MediumLow">
-      <DisplayString Condition="_Myhead == 0">empty</DisplayString>
-      <DisplayString Condition="_Myhead != 0">non-empty</DisplayString>
-      <Expand>
-          <LinkedListItems>
-              <HeadPointer>_Myhead</HeadPointer>
-              <NextPointer>_Next</NextPointer>
-              <ValueNode>_Myval</ValueNode>
-          </LinkedListItems>
-      </Expand>
-  </Type>
-
   <!-- VC 2015 -->
   <Type Name="std::forward_list&lt;*&gt;">
       <DisplayString Condition="_Mypair._Myval2._Myhead == 0">empty</DisplayString>
@@ -1166,20 +1094,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <DisplayString Condition="_Ptr != 0">{**this}</DisplayString>
   </Type>
 
-
-  <!-- VC 2013 -->
-  <Type Name="std::list&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>{{ size={_Mysize} }}</DisplayString>
-      <Expand>
-          <LinkedListItems>
-              <Size>_Mysize</Size>
-              <HeadPointer>_Myhead-&gt;_Next</HeadPointer>
-              <NextPointer>_Next</NextPointer>
-              <ValueNode>_Myval</ValueNode>
-          </LinkedListItems>
-      </Expand>
-  </Type>
-
   <!-- VC 2015 -->
   <Type Name="std::list&lt;*&gt;">
       <DisplayString>{{ size={_Mypair._Myval2._Mysize} }}</DisplayString>
@@ -1199,18 +1113,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <SmartPointer Usage="Minimal">&amp;_Ptr-&gt;_Myval,na</SmartPointer>
   </Type>
 
-
-  <!-- VC 2013 -->
-  <Type Name="std::vector&lt;bool,*&gt;" Priority="MediumLow">
-      <DisplayString>{{ size={_Mysize} }}</DisplayString>
-      <Expand>
-          <Item Name="[capacity]" ExcludeView="simple">(_Myvec._Myend - _Myvec._Myfirst) * _EEN_VBITS</Item>
-          <IndexListItems>
-              <Size>_Mysize</Size>
-              <ValueNode>(bool)((_Myvec._Myfirst[$i / _EEN_VBITS] &gt;&gt; ($i % _EEN_VBITS)) &amp; 1)</ValueNode>
-          </IndexListItems>
-      </Expand>
-  </Type>
 
   <!-- VC 2015 -->
   <Type Name="std::vector&lt;bool,*&gt;">
@@ -1238,18 +1140,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
-  <!-- VC 2013 -->
-  <Type Name="std::vector&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>{{ size={_Mylast - _Myfirst} }}</DisplayString>
-      <Expand>
-          <Item Name="[capacity]" ExcludeView="simple">_Myend - _Myfirst</Item>
-          <ArrayItems>
-              <Size>_Mylast - _Myfirst</Size>
-              <ValuePointer>_Myfirst</ValuePointer>
-          </ArrayItems>
-      </Expand>
-  </Type>
-
   <!-- VC 2015 -->
   <Type Name="std::vector&lt;*&gt;">
     <Intrinsic Name="size" Expression="(size_t)(_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst)" />
@@ -1265,6 +1155,27 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
+  <Type Name="std::vector&lt;wchar_t,*&gt;">
+    <AlternativeType Name="std::vector&lt;char,*&gt;" />
+    <AlternativeType Name="std::vector&lt;char8_t,*&gt;" />
+    <AlternativeType Name="std::vector&lt;char16_t,*&gt;" />
+    <AlternativeType Name="std::vector&lt;char32_t,*&gt;" />
+    <Intrinsic Name="data" Expression="_Mypair._Myval2._Myfirst" />
+    <Intrinsic Name="size" Expression="(size_t)(_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst)" />
+    <Intrinsic Name="capacity" Expression="(size_t)(_Mypair._Myval2._Myend - _Mypair._Myval2._Myfirst)" />
+    <SmartPointer Usage="Indexable" DefaultExpansion="false">data()</SmartPointer>
+    <DisplayString Condition="size() > 0">{data(),na} (size = {size()})</DisplayString>
+    <DisplayString Condition="size() == 0">{{empty}}</DisplayString>
+    <Expand>
+      <Item Name="[capacity]" ExcludeView="simple">capacity()</Item>
+      <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>data()</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
   <Type Name="std::_Vector_iterator&lt;*&gt;">
       <AlternativeType Name="std::_Vector_const_iterator&lt;*&gt;" />
       <SmartPointer Usage="Indexable">_Ptr,na</SmartPointer>
@@ -1273,23 +1184,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-
-  <!-- VC 2013 -->
-  <Type Name="std::map&lt;*&gt;" Priority="MediumLow">
-      <AlternativeType Name="std::multimap&lt;*&gt;" />
-      <AlternativeType Name="std::set&lt;*&gt;" />
-      <AlternativeType Name="std::multiset&lt;*&gt;" />
-      <DisplayString>{{ size={_Mysize} }}</DisplayString>
-      <Expand>
-          <TreeItems>
-              <Size>_Mysize</Size>
-              <HeadPointer>_Myhead-&gt;_Parent</HeadPointer>
-              <LeftPointer>_Left</LeftPointer>
-              <RightPointer>_Right</RightPointer>
-              <ValueNode Condition="_Isnil == 0">_Myval</ValueNode>
-          </TreeItems>
-      </Expand>
-  </Type>
 
   <!-- VC 2015 -->
   <Type Name="std::map&lt;*&gt;" Priority="Medium">
@@ -1344,18 +1238,18 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
-  <!-- VC 2013 - must have lower priority -->
-  <Type Name="std::unordered_map&lt;*&gt;" Priority="MediumLow">
-      <AlternativeType Name="std::unordered_multimap&lt;*&gt;" />
-      <AlternativeType Name="std::unordered_set&lt;*&gt;"  />
-      <AlternativeType Name="std::unordered_multiset&lt;*&gt;"  />
-      <AlternativeType Name="stdext::hash_map&lt;*&gt;"  />
-      <AlternativeType Name="stdext::hash_multimap&lt;*&gt;"  />
-      <AlternativeType Name="stdext::hash_set&lt;*&gt;"  />
+  <!-- VC 2015 - must have higher priority -->
+  <Type Name="stdext::hash_map&lt;*&gt;" Priority="Medium">
+      <AlternativeType Name="stdext::hash_multimap&lt;*&gt;" />
+      <AlternativeType Name="stdext::hash_set&lt;*&gt;" />
       <AlternativeType Name="stdext::hash_multiset&lt;*&gt;" />
       <DisplayString>{_List}</DisplayString>
       <Expand>
-          <ExpandedItem>_List</ExpandedItem>
+          <Item Name="[bucket_count]" IncludeView="detailed">_Maxidx</Item>
+          <Item Name="[load_factor]" IncludeView="detailed">((float)_List._Mypair._Myval2._Mysize) / ((float)_Maxidx)</Item>
+          <Item Name="[max_load_factor]" IncludeView="detailed">_Traitsobj._Max_buckets</Item>
+          <Item Name="[allocator]" ExcludeView="simple">_List._Mypair</Item>
+          <ExpandedItem>_List,view(simple)</ExpandedItem>
       </Expand>
   </Type>
 
@@ -1364,10 +1258,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <AlternativeType Name="std::unordered_multimap&lt;*&gt;" />
       <AlternativeType Name="std::unordered_set&lt;*&gt;" />
       <AlternativeType Name="std::unordered_multiset&lt;*&gt;" />
-      <AlternativeType Name="stdext::hash_map&lt;*&gt;" />
-      <AlternativeType Name="stdext::hash_multimap&lt;*&gt;" />
-      <AlternativeType Name="stdext::hash_set&lt;*&gt;" />
-      <AlternativeType Name="stdext::hash_multiset&lt;*&gt;" />
       <DisplayString>{_List}</DisplayString>
       <Expand>
           <Item Name="[bucket_count]" IncludeView="detailed">_Maxidx</Item>
@@ -1510,6 +1400,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <DisplayString>move_iterator {current}</DisplayString>
       <Expand>
           <Item Name="current">current</Item>
+      </Expand>
+  </Type>
+
+
+  <Type Name="std::basic_const_iterator&lt;*&gt;">
+      <DisplayString>basic_const_iterator {_Current}</DisplayString>
+      <Expand>
+        <Item Name="current">_Current</Item>
       </Expand>
   </Type>
 
@@ -1665,9 +1563,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Expand/>
   </Type>
 
-
-  <!-- VC 2015 -->
-  <Type Name="std::recursive_mutex">
+  <Type Name="std::mutex">
+      <AlternativeType Name="std::recursive_mutex"/>
       <DisplayString Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) == 0">unlocked</DisplayString>
       <DisplayString Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) != 0">locked</DisplayString>
       <DisplayString Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 76) == 0">unlocked</DisplayString>
@@ -1680,6 +1577,67 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <Type Name="std::timed_mutex">
+    <AlternativeType Name="std::recursive_timed_mutex"/>
+    <DisplayString Condition="_My_locked == 0">unlocked</DisplayString>
+    <DisplayString Condition="_My_locked != 0">locked</DisplayString>
+    <Expand>
+      <Item Name="[locking_thread_id]" Optional="true">_My_owner</Item>
+      <Item Name="[ownership_levels]">_My_locked</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::lock_guard&lt;*&gt;">
+    <DisplayString>{&amp;_MyMutex}</DisplayString>
+    <Expand>
+      <Item Name="mutex">&amp;_MyMutex</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::unique_lock&lt;*&gt;">
+    <DisplayString Condition="_Pmtx == nullptr">empty</DisplayString>
+    <DisplayString Condition="_Pmtx != nullptr &amp;&amp; !_Owns">{*_Pmtx} - unowned</DisplayString>
+    <DisplayString Condition="_Pmtx != nullptr &amp;&amp; _Owns">{*_Pmtx} - owned</DisplayString>
+    <Expand>
+      <Item Name="mutex">_Pmtx</Item>
+      <Item Name="owned">_Owns</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::scoped_lock&lt;&gt;">
+    <DisplayString>()</DisplayString>
+  </Type>
+
+  <Type Name="std::scoped_lock&lt;*&gt;">
+    <DisplayString>({&amp;_MyMutex})</DisplayString>
+    <Expand>
+      <Item Name="[0]">&amp;_MyMutex</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::scoped_lock&lt;*,*&gt;">
+    <DisplayString>{_MyMutexes,view(asptr)}</DisplayString>
+    <Expand>
+      <ExpandedItem>_MyMutexes,view(asptr)</ExpandedItem>
+    </Expand>
+  </Type>
+
+  <Type Name="std::defer_lock_t">
+    <DisplayString>std::defer_lock</DisplayString>
+  </Type>
+
+  <Type Name="std::try_to_lock_t">
+    <DisplayString>std::try_to_lock</DisplayString>
+  </Type>
+
+  <Type Name="std::adopt_lock_t">
+    <DisplayString>std::adopt_lock</DisplayString>
+  </Type>
+
+  <Type Name="std::once_flag">
+    <DisplayString Condition="!_Opaque">incomplete</DisplayString>
+    <DisplayString Condition="_Opaque">complete</DisplayString>
+  </Type>
 
   <!-- VC 2015 -->
   <Type Name="std::_Associated_state&lt;*&gt;">
@@ -1886,6 +1844,31 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
+  <Type Name="std::ranges::view_interface&lt;*&gt;">
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <Item Optional="true" Name="empty">empty()</Item>
+      <Item Optional="true" Name="front">front()</Item>
+      <Item Optional="true" Name="back">back()</Item>
+      <Item Optional="true" Name="data">data()</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::dangling">
+    <DisplayString>dangling</DisplayString>
+  </Type>
+
+  <Type Name="std::ranges::common_view&lt;*&gt;">
+    <DisplayString>{_Base}</DisplayString>
+  </Type>
+
+  <Type Name="std::ranges::basic_istream_view&lt;*&gt;">
+    <DisplayString>{_Stream}</DisplayString>
+    <Expand>
+      <Item Name="value">_Val</Item>
+    </Expand>
+  </Type>
+
   <Type Name="std::ranges::_Ioterator&lt;*&gt;">
     <SmartPointer Usage="Minimal">&amp;_Current,na</SmartPointer>
     <Expand>
@@ -1900,10 +1883,29 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <Type Name="std::ranges::ref_view&lt;*&gt;">
-    <DisplayString>{*_Range}</DisplayString>
+  <Type Name="std::ranges::take_while_view&lt;*&gt;">
+    <AlternativeType Name="std::ranges::drop_while_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::drop_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::join_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::transform_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::split_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::lazy_split_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::reverse_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::elements_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::take_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::ref_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::filter_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::owning_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::chunk_by_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::stride_view&lt;*&gt;"/>
+    <DisplayString>{_Range}</DisplayString>
     <Expand>
-      <ExpandedItem>*_Range</ExpandedItem>
+      <Item Optional="true" Name="pred">_Pred</Item>
+      <Item Optional="true" Name="next">_Next</Item>
+      <Item Optional="true" Name="count">_Count</Item>
+      <Item Optional="true" Name="function">_Fun</Item>
+      <Item Optional="true" Name="pattern">_Pattern</Item>
+      <Item Optional="true" Name="stride">_Stride</Item>
     </Expand>
   </Type>
 
@@ -1953,6 +1955,214 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <DisplayString Condition="_Value == 1">greater</DisplayString>
     <DisplayString Condition="_Value == -128">unordered</DisplayString>
     <Expand/>
+  </Type>
+
+  <Type Name="std::basic_format_parse_context&lt;*&gt;">
+    <DisplayString>{_Format_string}</DisplayString>
+    <Expand>
+      <Item Name="Arguments">_Num_args</Item>
+      <Item Name="Next arg id">_Next_arg_id</Item>
+    </Expand>
+  </Type>
+
+  <!-- std::format_args -->
+  <Type Name="std::basic_format_args&lt;std::basic_format_context&lt;std::back_insert_iterator&lt;std::_Fmt_buffer&lt;char&gt;&gt;, char&gt;&gt;">
+    <!-- decltype(std::make_format_args(...))-->
+    <AlternativeType Name="std::_Format_arg_store&lt;std::basic_format_context&lt;std::back_insert_iterator&lt;std::_Fmt_buffer&lt;char&gt;&gt;, char&gt;, *&gt;" />
+    <Intrinsic Name="storage" Expression="(char*)(&amp;_Index_array[_Num_args])" />
+    <DisplayString>{{ size={_Num_args} }}</DisplayString>
+    <Expand>
+      <IndexListItems>
+        <Size>_Num_args</Size>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 0">"None"</ValueNode>
+        <!-- _Basic_format_arg_type::_Int_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 1">
+          *(int*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_UInt_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 2">
+          *(unsigned int*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Long_long_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 3">
+          *(long long*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_ULong_long_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 4">
+          *(unsigned long long*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Bool_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 5">
+          *(bool*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Char_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 6">
+          *(char*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Float_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 7">
+          *(float*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Double_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 8">
+          *(double*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Long_double_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 9">
+          *(long double*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Pointer_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 10">
+          *(void**)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_CString_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 11">
+          *(char**)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_String_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 12">
+          *(std::string_view*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Custom_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 13">
+          *(void**)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+      </IndexListItems>
+    </Expand>
+  </Type>
+
+  <!-- std::wformat_args -->
+  <Type Name="std::basic_format_args&lt;std::basic_format_context&lt;std::back_insert_iterator&lt;std::_Fmt_buffer&lt;wchar_t&gt;&gt;, wchar_t&gt;&gt;">
+    <!-- decltype(std::make_wformat_args(...))-->
+    <AlternativeType Name="std::_Format_arg_store&lt;std::basic_format_context&lt;std::back_insert_iterator&lt;std::_Fmt_buffer&lt;wchar_t&gt;&gt;, wchar_t&gt;, *&gt;" />
+    <Intrinsic Name="storage" Expression="(char*)(&amp;_Index_array[_Num_args])" />
+    <DisplayString>{{ size={_Num_args} }}</DisplayString>
+    <Expand>
+      <IndexListItems>
+        <Size>_Num_args</Size>
+        <!-- _Basic_format_arg_type::_Int_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 1">
+          *(int*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_UInt_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 2">
+          *(unsigned int*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Long_long_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 3">
+          *(long long*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_ULong_long_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 4">
+          *(unsigned long long*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Bool_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 5">
+          *(bool*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Char_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 6">
+          *(wchar_t*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Float_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 7">
+          *(float*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Double_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 8">
+          *(double*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Long_double_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 9">
+          *(long double*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Pointer_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 10">
+          *(void**)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_CString_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 11">
+          *(wchar_t**)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_String_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 12">
+          *(std::wstring_view*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Custom_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 13">
+          *(void**)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+      </IndexListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::basic_format_arg&lt;*&gt;">
+    <DisplayString Condition="_Active_state == 0">No state: {_No_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 1">Int state: {_Int_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 2">UInt state: {_UInt_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 3">Long long state: {_Long_long_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 4">ULong long state: {_ULong_long_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 5">Bool state: {_Bool_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 6">Char state: {_Char_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 7">Float state: {_Float_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 8">Double state: {_Double_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 9">Long double state: {_Long_double_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 10">Pointer state: {_Pointer_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 11">CString state: {_CString_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 12">String state: {_String_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 13">Custom state: {_Custom_state}</DisplayString>
+    <DisplayString Condition="_Active_state >= 14">Invalid state: {_Active_state}</DisplayString>
+  </Type>
+
+  <Type Name="std::basic_format_context&lt;*&gt;">
+    <DisplayString>{_Args}</DisplayString>
+    <Expand>
+      <Item Name="Iterator">_OutputIt</Item>
+      <Item Name="Loc">_Loc</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::exception">
+    <DisplayString>{what()}</DisplayString>
+  </Type>
+
+  <Type Name="std::default_searcher&lt;*&gt;">
+    <AlternativeType Name="std::boyer_moore_searcher&lt;*&gt;" />
+    <AlternativeType Name="std::boyer_moore_horspool_searcher&lt;*&gt;" />
+    <DisplayString>{_Data}</DisplayString>
+  </Type>
+
+  <Type Name="std::any">
+    <Intrinsic Name="has_value"   Expression="_Storage._TypeData != 0"/>
+    <Intrinsic Name="_Rep"        Expression="_Storage._TypeData &amp; _Rep_mask"/>
+    <Intrinsic Name="type"        Expression="(const type_info*)(_Storage._TypeData &amp; ~_Rep_mask)"/>
+    <Intrinsic Name="_Is_trivial" Expression="has_value() &amp;&amp; _Rep() == 0"/>
+    <Intrinsic Name="_Is_big"     Expression="has_value() &amp;&amp; _Rep() == 1"/>
+    <Intrinsic Name="_Is_small"   Expression="has_value() &amp;&amp; _Rep() == 2"/>
+    <DisplayString Condition="!has_value()">[empty]</DisplayString>
+    <DisplayString Condition="_Is_trivial()">[not empty (trivial)]</DisplayString>
+    <DisplayString Condition="_Is_small()">[not empty (small)]</DisplayString>
+    <DisplayString Condition="_Is_big()">[not empty (large)]</DisplayString>
+    <Expand>
+      <Item Name="[castable_ptr]" Condition="_Is_trivial()">(void*)(&amp;_Storage._TrivialData)</Item>
+      <Item Name="[castable_ptr]" Condition="_Is_small()">(void*)(&amp;_Storage._SmallStorage._Data)</Item>
+      <Item Name="[castable_ptr]" Condition="_Is_big()">_Storage._BigStorage._Ptr</Item>
+      <Synthetic Name="has_value">
+        <DisplayString>{has_value()}</DisplayString>
+      </Synthetic>
+      <Synthetic Name="type" Condition="has_value()">
+        <DisplayString>{type()}</DisplayString>
+      </Synthetic>
+      <Synthetic Name="[representation]" Condition="_Is_trivial()">
+        <DisplayString>(Small and Trivial Object)</DisplayString>
+      </Synthetic>
+      <Synthetic Name="[representation]" Condition="_Is_small()">
+        <DisplayString>(Small Object)</DisplayString>
+      </Synthetic>
+      <Synthetic Name="[representation]" Condition="_Is_big()">
+        <DisplayString>(Dynamic Allocation)</DisplayString>
+      </Synthetic>
+    </Expand>
   </Type>
 
 </AutoVisualizer>

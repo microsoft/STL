@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 _STD_BEGIN
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 class basic_stringbuf
     : public basic_streambuf<_Elem, _Traits> { // stream buffer maintaining an allocated character array
 public:
@@ -103,7 +103,7 @@ public:
         }
     }
 
-    basic_stringbuf(const basic_stringbuf&) = delete;
+    basic_stringbuf(const basic_stringbuf&)            = delete;
     basic_stringbuf& operator=(const basic_stringbuf&) = delete;
 
     ~basic_stringbuf() noexcept override {
@@ -184,7 +184,6 @@ public:
             // the buffer is full
             _Result.assign(_View._Ptr, _View._Size);
         } else {
-            _Traits::assign(_View._Ptr[_View._Size], _Elem());
             if (_Result._Move_assign_from_buffer(_View._Ptr, _View._Size, _View._Res)) {
                 _Mystate &= ~_Allocated;
             }
@@ -363,7 +362,7 @@ protected:
                 }
             }
 
-            // fallthrough
+            _FALLTHROUGH;
         default:
             return pos_type(off_type(-1));
         }
@@ -420,7 +419,6 @@ protected:
         return pos_type(_Off);
     }
 
-protected:
     void _Init(const _Elem* _Ptr, _Mysize_type _Count, int _State) {
         // initialize buffer to [_Ptr, _Ptr + _Count), set state
         _State &= ~_From_rvalue;
@@ -429,9 +427,8 @@ protected:
             _Xbad_alloc();
         }
 
-        if (_Count != 0
-            && (_State & (_Noread | _Constant))
-                   != (_Noread | _Constant)) { // finite buffer that can be read or written, set it up
+        if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
+            // finite buffer that can be read or written, set it up
             const auto _Pnew = _Unfancy(_Al.allocate(_Count));
             _Traits::copy(_Pnew, _Ptr, _Count);
             _Seekhigh = _Pnew + _Count;
@@ -529,13 +526,13 @@ private:
     allocator_type _Al; // the allocator object
 };
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 void swap(basic_stringbuf<_Elem, _Traits, _Alloc>& _Left, basic_stringbuf<_Elem, _Traits, _Alloc>& _Right) noexcept
 /* strengthened */ {
     _Left.swap(_Right);
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 class basic_istringstream : public basic_istream<_Elem, _Traits> { // input stream associated with a character array
 public:
     using _Mybase        = basic_istream<_Elem, _Traits>;
@@ -599,7 +596,7 @@ public:
         }
     }
 
-    basic_istringstream(const basic_istringstream&) = delete;
+    basic_istringstream(const basic_istringstream&)            = delete;
     basic_istringstream& operator=(const basic_istringstream&) = delete;
 
     ~basic_istringstream() noexcept override {}
@@ -649,12 +646,12 @@ private:
     _Mysb _Stringbuffer;
 };
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 void swap(basic_istringstream<_Elem, _Traits, _Alloc>& _Left, basic_istringstream<_Elem, _Traits, _Alloc>& _Right) {
     _Left.swap(_Right);
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 class basic_ostringstream : public basic_ostream<_Elem, _Traits> { // output stream associated with a character array
 public:
     using _Mybase        = basic_ostream<_Elem, _Traits>;
@@ -718,7 +715,7 @@ public:
         }
     }
 
-    basic_ostringstream(const basic_ostringstream&) = delete;
+    basic_ostringstream(const basic_ostringstream&)            = delete;
     basic_ostringstream& operator=(const basic_ostringstream&) = delete;
 
     ~basic_ostringstream() noexcept override {}
@@ -768,12 +765,12 @@ private:
     _Mysb _Stringbuffer;
 };
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 void swap(basic_ostringstream<_Elem, _Traits, _Alloc>& _Left, basic_ostringstream<_Elem, _Traits, _Alloc>& _Right) {
     _Left.swap(_Right);
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 class basic_stringstream
     : public basic_iostream<_Elem, _Traits> { // input/output stream associated with a character array
 public:
@@ -843,7 +840,7 @@ public:
         }
     }
 
-    basic_stringstream(const basic_stringstream&) = delete;
+    basic_stringstream(const basic_stringstream&)            = delete;
     basic_stringstream& operator=(const basic_stringstream&) = delete;
 
     ~basic_stringstream() noexcept override {}
@@ -893,7 +890,7 @@ private:
     _Mysb _Stringbuffer;
 };
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 void swap(basic_stringstream<_Elem, _Traits, _Alloc>& _Left, basic_stringstream<_Elem, _Traits, _Alloc>& _Right) {
     _Left.swap(_Right);
 }

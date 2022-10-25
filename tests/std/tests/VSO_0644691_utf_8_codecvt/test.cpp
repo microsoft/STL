@@ -3,15 +3,15 @@
 
 #define _SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <clocale>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <exception>
 #include <fstream>
 #include <iostream>
-#include <locale.h>
 #include <locale>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <string>
 
 using namespace std;
@@ -237,7 +237,7 @@ void test_codecvt_encoding(
             }
         } else {
             assert(testCase.wide != nullptr);
-            __analysis_assume(testCase.wide);
+            _Analysis_assume_(testCase.wide);
             wstring wide = widePrefix;
             wide.append(testCase.wide);
             const wchar_t* const wideFirst = wide.data();
@@ -253,14 +253,13 @@ void test_codecvt_encoding(const codecvt<wchar_t, char, mbstate_t>& f) {
 }
 
 int main() {
-#if 0 // TRANSITION, VSO-801237
     try {
-        locale loc("en-US.utf8");
+        locale loc("en-US.UTF-8");
         test_fstream(loc);
         test_codecvt_encoding(use_facet<codecvt<wchar_t, char, mbstate_t>>(loc));
     } catch (const exception& ex) {
-        puts("Warning, could not test UTF-8 on this platform, newer Windows 10 required.");
+        puts("Could not test UTF-8 on this platform, newer Windows 10 required.");
         puts(ex.what());
+        assert(false);
     }
-#endif // TRANSITION, VSO-801237
 }

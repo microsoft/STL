@@ -186,11 +186,13 @@ namespace {
         typedef STD chrono::duration<typename Clock::rep, typename Clock::period> dur;
         CHECK_TYPE(typename Clock::duration, dur);
         typedef STD chrono::time_point<Clock, typename Clock::duration> tp;
-        if (tp_known)
+        if (tp_known) {
             CHECK_TYPE(typename Clock::time_point, tp);
+        }
         static_assert(STD is_same_v<decltype(Clock::is_steady), const bool>, "incorrect is_steady type");
-        if (steady_known)
+        if (steady_known) {
             CHECK_INT(Clock::is_steady, steady);
+        }
         CHECK_INT(Clock::now() < Clock::time_point::max(), true);
     }
 
@@ -233,8 +235,9 @@ namespace {
         CHECK_TYPE(tp::period, r_1_1);
 
         bool is_steady = my_clock::is_steady; // to quiet diagnostics
-        if (is_steady)
+        if (is_steady) {
             my_clock::now();
+        }
 
         // constructors, time_since_epoch
         tp t0;

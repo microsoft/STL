@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <execution>
 #include <functional>
 #include <iterator>
@@ -120,14 +120,14 @@ void test_case_inclusive_scan_bop_init_parallel_associative_in_place(const size_
 struct inputType {
     inputType() = delete;
     /* implicit */ inputType(int) {} // so that the test can make an array
-    inputType(const inputType&) = delete;
+    inputType(const inputType&)            = delete;
     inputType& operator=(const inputType&) = delete;
 };
 
 struct bopResult {
     bopResult() = delete;
     /* implicit */ bopResult(int) {}
-    bopResult(const bopResult&) = delete;
+    bopResult(const bopResult&)            = delete;
     bopResult& operator=(const bopResult&) = delete;
 };
 
@@ -136,10 +136,10 @@ struct intermediateType {
     explicit intermediateType(int) {} // so that the test can make one of these
     explicit intermediateType(inputType&) {} // Intermediate tmp(*first)
     explicit intermediateType(bopResult&&) {} // Intermediate tmp(binary_op((one of tmp, move(tmp), *first), *first))
-    intermediateType(const intermediateType&) = delete;
-    intermediateType(intermediateType&&)      = default; // tmp = move(tmp)
+    intermediateType(const intermediateType&)            = delete;
+    intermediateType(intermediateType&&)                 = default; // tmp = move(tmp)
     intermediateType& operator=(const intermediateType&) = delete;
-    intermediateType& operator=(intermediateType&&) = delete;
+    intermediateType& operator=(intermediateType&&)      = delete;
     // tmp = binary_op((one of tmp, move(tmp), *first), *first)
     intermediateType& operator=(bopResult&&) {
         return *this;
@@ -149,9 +149,9 @@ struct intermediateType {
 struct outputType {
     outputType() = delete;
     /* implicit */ outputType(int) {} // so that the test can make an array
-    outputType(const outputType&) = delete;
+    outputType(const outputType&)            = delete;
     outputType& operator=(const outputType&) = delete;
-    outputType& operator=(outputType&&) = delete;
+    outputType& operator=(outputType&&)      = delete;
 
     // in the first pass
     outputType& operator=(intermediateType&) {

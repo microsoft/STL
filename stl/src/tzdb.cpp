@@ -200,6 +200,7 @@ namespace {
         const auto _Input_as_wchar = reinterpret_cast<const wchar_t*>(_Input);
         const auto _Count_result = __std_fs_convert_wide_to_narrow(_Code_page, _Input_as_wchar, _Input_len, nullptr, 0);
         if (_Count_result._Err != __std_win_error::_Success) {
+            SetLastError(static_cast<DWORD>(_Count_result._Err));
             _Err = __std_tzdb_error::_Win_error;
             return nullptr;
         }
@@ -214,6 +215,7 @@ namespace {
         const auto _Result =
             __std_fs_convert_wide_to_narrow(_Code_page, _Input_as_wchar, _Input_len, _Data.get(), _Count_result._Len);
         if (_Result._Err != __std_win_error::_Success) {
+            SetLastError(static_cast<DWORD>(_Result._Err));
             _Err = __std_tzdb_error::_Win_error;
             return nullptr;
         }
@@ -342,8 +344,11 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
     //    _Info == nullptr          --> bad_alloc
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
     //    _Info->_Err == _Icu_error --> runtime_error interacting with ICU
+#pragma warning(push)
+#pragma warning(disable : 28182) // TRANSITION, VSO-1558277: Dereferencing NULL pointer.
     _STD unique_ptr<__std_tzdb_time_zones_info, _STD _Tzdb_deleter<__std_tzdb_time_zones_info>> _Info{
         new (_STD nothrow) __std_tzdb_time_zones_info{}};
+#pragma warning(pop)
     if (_Info == nullptr) {
         return nullptr;
     }
@@ -372,20 +377,22 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
 
     _Info->_Num_time_zones = static_cast<size_t>(_Num_time_zones);
     // value-init to ensure __std_tzdb_delete_time_zones() cleanup is valid
-    _Info->_Names = new (_STD nothrow) const char* [_Info->_Num_time_zones] {};
-    if (_Info->_Names == nullptr) {
+    if (const auto _Names = new (_STD nothrow) const char* [_Info->_Num_time_zones] {}; _Names) {
+        _Info->_Names = _Names;
+    } else {
         return nullptr;
     }
 
     // value-init to ensure __std_tzdb_delete_time_zones() cleanup is valid
-    _Info->_Links = new (_STD nothrow) const char* [_Info->_Num_time_zones] {};
-    if (_Info->_Links == nullptr) {
+    if (const auto _Links = new (_STD nothrow) const char* [_Info->_Num_time_zones] {}; _Links) {
+        _Info->_Links = _Links;
+    } else {
         return nullptr;
     }
 
     for (size_t _Name_idx = 0; _Name_idx < _Info->_Num_time_zones; ++_Name_idx) {
         int32_t _Elem_len{};
-        const auto* const _Elem = __icu_uenum_unext(_Enum.get(), &_Elem_len, &_UErr);
+        const auto _Elem = __icu_uenum_unext(_Enum.get(), &_Elem_len, &_UErr);
         if (U_FAILURE(_UErr) || _Elem == nullptr) {
             return _Report_error(_Info, __std_tzdb_error::_Icu_error);
         }
@@ -440,8 +447,11 @@ _NODISCARD __std_tzdb_current_zone_info* __stdcall __std_tzdb_get_current_zone()
     //    _Info == nullptr          --> bad_alloc
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
     //    _Info->_Err == _Icu_error --> runtime_error interacting with ICU
+#pragma warning(push)
+#pragma warning(disable : 28182) // TRANSITION, VSO-1558277: Dereferencing NULL pointer.
     _STD unique_ptr<__std_tzdb_current_zone_info, _STD _Tzdb_deleter<__std_tzdb_current_zone_info>> _Info{
         new (_STD nothrow) __std_tzdb_current_zone_info{}};
+#pragma warning(pop)
     if (_Info == nullptr) {
         return nullptr;
     }
@@ -478,8 +488,11 @@ _NODISCARD __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
     //    _Info == nullptr          --> bad_alloc
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
     //    _Info->_Err == _Icu_error --> runtime_error interacting with ICU
+#pragma warning(push)
+#pragma warning(disable : 28182) // TRANSITION, VSO-1558277: Dereferencing NULL pointer.
     _STD unique_ptr<__std_tzdb_sys_info, _STD _Tzdb_deleter<__std_tzdb_sys_info>> _Info{
         new (_STD nothrow) __std_tzdb_sys_info{}};
+#pragma warning(pop)
     if (_Info == nullptr) {
         return nullptr;
     }

@@ -4,9 +4,8 @@
 __pycache__/
 .vs/
 .vscode/
-/azure-devops/vmss-config.json
-/azure-devops/vmss-protected.json
 /build/
 /out/
 /tools/out/
 /CMakeLists.txt.user
+/*.log

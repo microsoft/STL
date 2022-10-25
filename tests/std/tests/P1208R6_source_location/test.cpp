@@ -4,6 +4,7 @@
 #if defined(__cpp_consteval) && !defined(__EDG__) // TRANSITION, VSO-1285779
 #include "header.h"
 #include <cassert>
+#include <functional>
 #include <source_location>
 #include <string_view>
 #include <type_traits>
@@ -64,11 +65,7 @@ constexpr void argument_test(
 constexpr void sloc_constructor_test() {
     const s x;
     assert(x.loc.line() == __LINE__ - 1);
-#ifdef _PREFAST_
-    assert(x.loc.column() == 14);
-#else // _PREFAST_
     assert(x.loc.column() == 13);
-#endif // _PREFAST_
     if (is_constant_evaluated()) {
         assert(x.loc.function_name() == "main"sv); // TRANSITION, VSO-1285783
     } else {
@@ -88,11 +85,7 @@ constexpr void different_constructor_test() {
 constexpr void sub_member_test() {
     const s2 s;
     assert(s.x.loc.line() == __LINE__ - 1);
-#ifdef _PREFAST_
-    assert(s.x.loc.column() == 15);
-#else // _PREFAST_
     assert(s.x.loc.column() == 14);
-#endif // _PREFAST_
     if (is_constant_evaluated()) {
         assert(s.x.loc.function_name() == "main"sv); // TRANSITION, VSO-1285783
     } else {
@@ -148,6 +141,12 @@ constexpr bool test() {
     function_template_test();
     header_test();
     return true;
+}
+
+// Also test GH-2822 Failed to specialize std::invoke on operator() with default argument
+// std::source_location::current()
+void test_gh_2822() { // COMPILE-ONLY
+    invoke([](source_location = source_location::current()) {});
 }
 
 int main() {

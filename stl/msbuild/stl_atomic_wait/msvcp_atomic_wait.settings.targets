@@ -37,10 +37,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <DllDefName>$(LibOutputFileName).$(MsvcpFlavor)</DllDefName>
         <DllDef>$(IntermediateOutputDirectory)\$(DllDefName).def</DllDef>
 
-        <LinkGenerateDebugInformation Condition="'$(BLD_REL_NO_DBINFO)' != '1'">true</LinkGenerateDebugInformation>
-        <LinkProgramDataBaseFileName Condition="'$(BLD_REL_NO_DBINFO)' != '1'">$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
+        <LinkGenerateDebugInformation>true</LinkGenerateDebugInformation>
+        <LinkProgramDataBaseFileName>$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
 
-        <LinkAdditionalOptions Condition="'$(BLD_REL_NO_DBINFO)' != '1'">-debugtype:cv,fixup $(LinkAdditionalOptions)</LinkAdditionalOptions>
+        <LinkAdditionalOptions>-debugtype:cv,fixup $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions Condition="$(DebugBuild) != 'true'">-opt:ref,icf=3 $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions Condition="$(DebugBuild) == 'true'">-opt:ref,noicf $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions>-nodefaultlib:libcpmt$(BuildSuffix).lib $(LinkAdditionalOptions)</LinkAdditionalOptions>
@@ -63,7 +63,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true' and ('$(CrtBuildModel)'=='md' or '$(CrtBuildModel)'=='xmd')" Include="$(VCToolsRootPath)\crt\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)$(CrtSpectreSuffix)\msvcp.nativeproj"/>
+        <ProjectReference Condition="'$(CrtBuildModel)'=='md' or '$(CrtBuildModel)'=='xmd'" Include="$(VCToolsRootPath)\crt\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)$(CrtSpectreSuffix)\msvcp.nativeproj"/>
         <TargetLib Include="$(CrtLibPath)\msvcprt_base$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>
@@ -74,10 +74,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <!-- Copy the output dll and pdb to various destinations -->
     <ItemGroup>
         <CopyFilesForCrossTools Condition="'$(MsvcpFlavor)' == 'kernel32'" Include="
-           $(LinkOutputFile);
-           $(LinkProgramDataBaseFileName);
-        "/>
-        <CopyFilesForNetFx Condition="'$(MsvcpFlavor)' == 'netfx'" Include="
            $(LinkOutputFile);
            $(LinkProgramDataBaseFileName);
         "/>

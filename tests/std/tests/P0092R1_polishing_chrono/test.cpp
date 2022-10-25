@@ -5,10 +5,10 @@
 // Tests the new functions added as part of P0092R1, "Polishing Chrono"
 //
 
-#include <assert.h>
+#include <cassert>
 #include <chrono>
+#include <cstdint>
 #include <ratio>
-#include <stdint.h>
 
 using namespace std;
 using namespace std::chrono;

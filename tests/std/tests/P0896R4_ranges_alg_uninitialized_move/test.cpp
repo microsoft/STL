@@ -265,7 +265,7 @@ struct memcpy_test {
 
 template <test::ProxyRef IsProxy>
 using test_input  = test::range<test::input, int_wrapper, test::Sized::no, test::CanDifference::no, test::Common::no,
-    test::CanCompare::yes, IsProxy>;
+    test::CanCompare::no, IsProxy>;
 using test_output = test::range<test::fwd, int_wrapper, test::Sized::no, test::CanDifference::no, test::Common::no,
     test::CanCompare::yes, test::ProxyRef::no>;
 

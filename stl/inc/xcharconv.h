@@ -25,20 +25,20 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-enum class chars_format {
+_EXPORT_STD enum class chars_format {
     scientific = 0b001,
     fixed      = 0b010,
     hex        = 0b100,
     general    = fixed | scientific,
 };
 
-_BITMASK_OPS(chars_format)
+_BITMASK_OPS(_EXPORT_STD, chars_format)
 
-struct to_chars_result {
+_EXPORT_STD struct to_chars_result {
     char* ptr;
     errc ec;
 #if _HAS_CXX20
-    _NODISCARD friend bool operator==(const to_chars_result&, const to_chars_result&) = default;
+    _NODISCARD_FRIEND bool operator==(const to_chars_result&, const to_chars_result&) = default;
 #endif // _HAS_CXX20
 };
 

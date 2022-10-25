@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <forward_list>
 #include <iterator>
 #include <list>
@@ -21,7 +21,7 @@ struct MoveOnly {
     MoveOnly(MoveOnly&&)      = default;
 
     MoveOnly& operator=(const MoveOnly&) = delete;
-    MoveOnly& operator=(MoveOnly&&) = default;
+    MoveOnly& operator=(MoveOnly&&)      = default;
 
     MoveOnly& operator=(const ptrdiff_t x) {
         value = x;
@@ -101,17 +101,47 @@ void test_case_shift_left(const ptrdiff_t tmpSize) {
     Container tmp;
     fill_iota(tmp, tmpSize);
 
-    test_iota(tmp.begin(), shift_left(tmp.begin(), tmp.end(), -1), 1, tmpSize);
-
     for (ptrdiff_t pos_to_shift = 0; pos_to_shift < tmpSize; ++pos_to_shift) {
         fill_iota(tmp, tmpSize);
         test_iota(tmp.begin(), shift_left(tmp.begin(), tmp.end(), pos_to_shift), pos_to_shift + 1, tmpSize);
+
+#if __cpp_lib_shift >= 202202L
+        {
+            fill_iota(tmp, tmpSize);
+            auto [first, last] = ranges::shift_left(tmp.begin(), tmp.end(), pos_to_shift);
+            assert(first == tmp.begin());
+            test_iota(first, last, pos_to_shift + 1, tmpSize);
+        }
+
+        {
+            fill_iota(tmp, tmpSize);
+            auto [first, last] = ranges::shift_left(tmp, pos_to_shift);
+            assert(first == tmp.begin());
+            test_iota(first, last, pos_to_shift + 1, tmpSize);
+        }
+#endif // __cpp_lib_shift >= 202202L
     }
 
     fill_iota(tmp, tmpSize);
     for (int i = 0; i < 3; ++i) {
         test_iota(shift_left(tmp.begin(), tmp.end(), tmpSize + i), tmp.end(), 1, tmpSize);
     }
+
+#if __cpp_lib_shift >= 202202L
+    fill_iota(tmp, tmpSize);
+    for (int i = 0; i < 3; ++i) {
+        auto [first, last] = ranges::shift_left(tmp.begin(), tmp.end(), tmpSize + i);
+        assert(first == tmp.begin());
+        test_iota(last, tmp.end(), 1, tmpSize);
+    }
+
+    fill_iota(tmp, tmpSize);
+    for (int i = 0; i < 3; ++i) {
+        auto [first, last] = ranges::shift_left(tmp, tmpSize + i);
+        assert(first == tmp.begin());
+        test_iota(last, tmp.end(), 1, tmpSize);
+    }
+#endif // __cpp_lib_shift >= 202202L
 }
 
 template <typename Container>
@@ -119,17 +149,47 @@ void test_case_shift_right(const ptrdiff_t tmpSize) {
     Container tmp;
     fill_iota(tmp, tmpSize);
 
-    test_iota(shift_right(tmp.begin(), tmp.end(), -1), tmp.end(), 1, tmpSize);
-
     for (ptrdiff_t pos_to_shift = 0; pos_to_shift < tmpSize; ++pos_to_shift) {
         fill_iota(tmp, tmpSize);
         test_iota(shift_right(tmp.begin(), tmp.end(), pos_to_shift), tmp.end(), 1, tmpSize - pos_to_shift);
+
+#if __cpp_lib_shift >= 202202L
+        {
+            fill_iota(tmp, tmpSize);
+            auto [first, last] = ranges::shift_right(tmp.begin(), tmp.end(), pos_to_shift);
+            assert(last == tmp.end());
+            test_iota(first, last, 1, tmpSize - pos_to_shift);
+        }
+
+        {
+            fill_iota(tmp, tmpSize);
+            auto [first, last] = ranges::shift_right(tmp, pos_to_shift);
+            assert(last == tmp.end());
+            test_iota(first, last, 1, tmpSize - pos_to_shift);
+        }
+#endif // __cpp_lib_shift >= 202202L
     }
 
     fill_iota(tmp, tmpSize);
     for (int i = 0; i < 3; ++i) {
         test_iota(tmp.begin(), shift_right(tmp.begin(), tmp.end(), tmpSize + i), 1, tmpSize);
     }
+
+#if __cpp_lib_shift >= 202202L
+    fill_iota(tmp, tmpSize);
+    for (int i = 0; i < 3; ++i) {
+        auto [first, last] = ranges::shift_right(tmp.begin(), tmp.end(), tmpSize + i);
+        assert(last == tmp.end());
+        test_iota(tmp.begin(), first, 1, tmpSize);
+    }
+
+    fill_iota(tmp, tmpSize);
+    for (int i = 0; i < 3; ++i) {
+        auto [first, last] = ranges::shift_right(tmp, tmpSize + i);
+        assert(last == tmp.end());
+        test_iota(tmp.begin(), first, 1, tmpSize);
+    }
+#endif // __cpp_lib_shift >= 202202L
 }
 
 int main() {

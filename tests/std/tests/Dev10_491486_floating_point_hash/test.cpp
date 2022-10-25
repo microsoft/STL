@@ -3,9 +3,9 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
+#include <cstring>
 #include <functional>
-#include <string.h>
 #include <type_traits>
 
 using namespace std;

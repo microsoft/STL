@@ -165,7 +165,7 @@ struct string_view_convertible {
     }
 };
 
-// TRANSITION, EDG concepts support
+// TRANSITION, GH-395 (equalRanges should be replaced by direct calls to ranges::equal)
 template <class Range1, class Range2>
 constexpr bool equalRanges(const Range1& range1, const Range2& range2) noexcept {
 #ifdef __cpp_lib_concepts
@@ -613,17 +613,7 @@ constexpr bool test_interface() {
         literal_constructed.shrink_to_fit();
 
         const auto c4 = literal_constructed.capacity();
-        if (is_constant_evaluated()) { // check minimum allocation of _BUF_SIZE when constant evaluated
-            assert(c4 == 16 / sizeof(CharType));
-        } else {
-            if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, wchar_t>) {
-                assert(c4 == 7);
-            } else if constexpr (is_same_v<CharType, char32_t>) {
-                assert(c4 == 3);
-            } else {
-                assert(c4 == 15);
-            }
-        }
+        assert(c4 == 16 / sizeof(CharType) - 1);
     }
 
     { // clear
@@ -2384,9 +2374,8 @@ constexpr void test_all() {
 }
 
 #if _HAS_CXX23
-void test_gh_2524() // COMPILE-ONLY
-{
-    // resize_and_overwrite generates warning C4018 when Operation returns int
+void test_gh_2524() { // COMPILE-ONLY
+    // GH-2524 resize_and_overwrite generates warning C4018 when Operation returns int
     string s;
     s.resize_and_overwrite(1, [](char* buffer, size_t) {
         *buffer = 'x';

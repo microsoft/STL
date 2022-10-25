@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
 #include <functional>
 #include <iterator>
 #include <list>
 #include <regex>
 #include <sstream>
-#include <stdio.h>
 #include <string>
 
 using namespace std;
@@ -158,6 +158,7 @@ void test_dev10_505773_default_constructed_regex_should_not_match_empty_string()
 
 template <typename ContainerT>
 void test_LWG_2217_sub_match_should_not_slice_nulls() {
+    // LWG-2217: "operator==(sub_match, string) slices on embedded '\0's"
     const char input[] = {'a', 'b', '\0', 'c', 'd'};
     const ContainerT subject(begin(input), end(input));
     const regex pattern(".(.).*");

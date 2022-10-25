@@ -3,10 +3,11 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
+#include <cstdint>
+#include <cstdlib>
+#include <limits>
 #include <new>
-#include <stdint.h>
-#include <stdlib.h>
 
 #if _HAS_CXX17 && !defined(_M_CEE)
 #define HAS_PARALLEL_ALGORITHMS 1
@@ -20,10 +21,12 @@
 
 using namespace std;
 
+constexpr auto size_max = numeric_limits<size_t>::max();
+
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 
-constexpr size_t prohibit_attempts_to_allocate = SIZE_MAX; // extension provided by our STL
-constexpr size_t max_allocate                  = SIZE_MAX - 1;
+constexpr size_t prohibit_attempts_to_allocate = size_max; // extension provided by our STL
+constexpr size_t max_allocate                  = size_max - 1;
 size_t g_max_memory                            = max_allocate;
 
 void* operator new(size_t size) {
@@ -113,8 +116,8 @@ void test_more() {
 
 struct int_ish {
     /* implicit */ int_ish(int init) : value(init) {}
-    int_ish(const int_ish&) = delete;
-    int_ish(int_ish&&)      = default;
+    int_ish(const int_ish&)            = delete;
+    int_ish(int_ish&&)                 = default;
     int_ish& operator=(const int_ish&) = delete;
 
     int_ish& operator=(int_ish&& rhs) {
@@ -186,7 +189,7 @@ void test_stability() {
         const auto partitionPoint         = stable_partition(a.begin(), a.end(), [&](const int_ish& x) {
             ++predCalls;
             return x.value < 50;
-                });
+        });
         const array<int_ish, 100> correct = {
             {20, 13, 29, 28, 17, 44, 48, 26, 47, 43, 20, 19, 35, 42, 39, 18, 33, 26, 40, 16, 27, 11, 16, 28, 21, 30, 21,
                 37, 20, 41, 15, 42, 26, 47, 41, 46, 41, 58, 85, 91, 99, 64, 60, 86, 89, 51, 96, 66, 75, 65, 99, 80, 66,
@@ -201,7 +204,7 @@ void test_stability() {
 
 void test_after_skipping_in_position_overhaul() {
     g_max_memory = prohibit_attempts_to_allocate;
-    { // check that 1 element trivial cases don't explode
+    { // check that 1 element trivial cases don't fail
         array<int, 1> a = {{5}};
         inplace_merge(a.begin(), a.begin(), a.begin()); // empty degenerate case
         inplace_merge(a.begin(), a.begin(), a.end()); // first partition eliminates everything degenerate case

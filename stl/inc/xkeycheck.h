@@ -356,7 +356,7 @@ Enable warning C4005 to find the forbidden define.
 Enable warning C4005 to find the forbidden define.
 #endif // requires
 
-#if defined(return )
+#if defined(return)
 #define return EMIT WARNING C4005
 #error The C++ Standard Library forbids macroizing the keyword "return". \
 Enable warning C4005 to find the forbidden define.

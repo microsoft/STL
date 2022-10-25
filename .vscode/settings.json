@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 {
     "C_Cpp.autoAddFileAssociations": false,
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
+    "[cpp]": {
+        "editor.formatOnSave": true
+    },
     "files.associations": {
         ".clang-format": "yaml",
         "header-units.json": "jsonc",
@@ -10,11 +13,17 @@
     },
     "files.eol": "\r\n",
     "files.exclude": {
+        "benchmarks/google-benchmark": true,
         "llvm-project": true,
         "stl/msbuild": true,
         "boost-math": true
     },
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
-    "files.trimTrailingWhitespace": true
+    "files.trimTrailingWhitespace": true,
+    "python.analysis.extraPaths": [
+        "./llvm-project/libcxx/utils",
+        "./llvm-project/llvm/utils/lit",
+        "./tests/utils"
+    ]
 }

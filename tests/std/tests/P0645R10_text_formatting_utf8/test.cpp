@@ -129,6 +129,8 @@ void test_width_estimation() {
         {TYPED_LITERAL(CharT, "\ufe40\u2000\ufe40\x58"), 6},
         {TYPED_LITERAL(CharT, "\ufe40\ufe40\u2000\x58"), 6},
         {TYPED_LITERAL(CharT, "\ufe40\ufe40\ufe40\x58"), 7},
+        {TYPED_LITERAL(CharT, "\u0061\u200D\x58"), 2},
+        {TYPED_LITERAL(CharT, "\u0061\U0001F1E6\U0001F1E7\u200D\U0001F1E8\u0062\x58"), 5},
     };
 
     for (const auto& test : test_cases) {
@@ -154,8 +156,6 @@ int main() {
     assert(setlocale(LC_ALL, ".932") != nullptr);
     run_tests();
 
-#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
     assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
     run_tests();
-#endif
 }

@@ -4,8 +4,9 @@
 #define _USE_HETEROGENEOUS_ALLOCATOR_COMPARE_IN_INTERNAL_CHECK
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <cstdio>
+#include <cstdlib>
 #include <deque>
 #include <forward_list>
 #include <functional>
@@ -16,7 +17,6 @@
 #include <regex>
 #include <set>
 #include <stdexcept>
-#include <stdlib.h>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -25,17 +25,15 @@
 
 using namespace std;
 
-const char* const report_header_format = "%-30s| %-23s| %-8s| %-9s| %-10s| %-11s| %-10s\n";
-const char* const report_entry_format  = "%-30s  %-23s  %-8d  %-9d  %-10s  %-11d  %-10d\n";
-
 void print_report_header() {
-    printf(report_header_format, "Type", "Test", "# Moves", "# Copies", "Result", "# Expctd M", "# Expctd C");
+    printf("%-30s| %-23s| %-8s| %-9s| %-10s| %-11s| %-10s\n", "Type", "Test", "# Moves", "# Copies", "Result",
+        "# Expctd M", "# Expctd C");
 }
 
 void print_report_entry(const string& type, const string& test, int num_moves, int num_copies, bool result,
     int num_expected_moves, int num_expected_copies) {
-    printf(report_entry_format, type.data(), test.data(), num_moves, num_copies, (result ? "Pass" : "FAILED"),
-        num_expected_moves, num_expected_copies);
+    printf("%-30s  %-23s  %-8d  %-9d  %-10s  %-11d  %-10d\n", type.data(), test.data(), num_moves, num_copies,
+        (result ? "Pass" : "FAILED"), num_expected_moves, num_expected_copies);
 }
 
 int& get_alloc_moved_count() {

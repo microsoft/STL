@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
 #include <bit>
+#include <cassert>
+#include <cfenv>
 #include <charconv>
 #include <cmath>
-#include <fenv.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iterator>
 #include <limits>
 #include <numeric>
 #include <optional>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <type_traits>
 
 using namespace std;
@@ -48,7 +48,7 @@ public:
         checked_fesetround(newRound);
     }
 
-    RoundGuard(const RoundGuard&) = delete;
+    RoundGuard(const RoundGuard&)            = delete;
     RoundGuard& operator=(const RoundGuard&) = delete;
 
     ~RoundGuard() {
@@ -75,7 +75,7 @@ public:
         checked_feholdexcept(&env);
     }
 
-    ExceptGuard(const ExceptGuard&) = delete;
+    ExceptGuard(const ExceptGuard&)            = delete;
     ExceptGuard& operator=(const ExceptGuard&) = delete;
 
     ~ExceptGuard() {
@@ -94,7 +94,7 @@ class ExceptGuard {
 public:
     ExceptGuard() {}
 
-    ExceptGuard(const ExceptGuard&) = delete;
+    ExceptGuard(const ExceptGuard&)            = delete;
     ExceptGuard& operator=(const ExceptGuard&) = delete;
 
     ~ExceptGuard() {}
@@ -1023,6 +1023,100 @@ bool test_lerp() {
     return true;
 }
 
+void test_gh_1917() {
+    // GH-1917 <cmath>: lerp(1e+308, 5e+307, 4.0) spuriously overflows
+    using bit_type       = unsigned long long;
+    using float_bit_type = unsigned int;
+    STATIC_ASSERT(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+    {
+        ExceptGuard except;
+
+        assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(0));
+    }
+    STATIC_ASSERT(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+    {
+        ExceptGuard except;
+
+        assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+        assert(check_feexcept(0));
+    }
+#ifdef _M_FP_STRICT
+    {
+        ExceptGuard except;
+        RoundGuard round{FE_UPWARD};
+
+        assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(0));
+    }
+    {
+        ExceptGuard except;
+        RoundGuard round{FE_UPWARD};
+
+        assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+        assert(check_feexcept(0));
+    }
+    {
+        ExceptGuard except;
+        RoundGuard round{FE_DOWNWARD};
+
+        assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(0));
+    }
+    {
+        ExceptGuard except;
+        RoundGuard round{FE_DOWNWARD};
+
+        assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+        assert(check_feexcept(0));
+    }
+    {
+        ExceptGuard except;
+        RoundGuard round{FE_TOWARDZERO};
+
+        assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(0));
+    }
+    {
+        ExceptGuard except;
+        RoundGuard round{FE_TOWARDZERO};
+
+        assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+        assert(check_feexcept(0));
+    }
+    {
+        ExceptGuard except;
+        const int r = feraiseexcept(FE_OVERFLOW);
+
+        assert(r == 0);
+        assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(FE_OVERFLOW));
+    }
+    {
+        ExceptGuard except;
+        const int r = feraiseexcept(FE_OVERFLOW);
+
+        assert(r == 0);
+        assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+        assert(check_feexcept(FE_OVERFLOW));
+    }
+#endif // _M_FP_STRICT
+}
+
+constexpr bool test_gh_2112() {
+    // GH-2112 <cmath>: std::lerp is missing Arithmetic overloads
+    assert(lerp(0, 0, 0) == 0.0);
+    assert(lerp(0.0f, 0.0f, 0.0) == 0.0);
+    assert(lerp(0.0L, 0, 0) == 0.0L);
+
+    STATIC_ASSERT(is_same_v<double, decltype(lerp(0, 0, 0))>);
+    STATIC_ASSERT(is_same_v<long double, decltype(lerp(0.0L, 0, 0))>);
+    STATIC_ASSERT(is_same_v<long double, decltype(lerp(0, 0.0L, 0))>);
+    STATIC_ASSERT(is_same_v<long double, decltype(lerp(0, 0, 0.0L))>);
+
+    return true;
+}
+
 int main() {
     test_constants<float>();
     test_constants<double>();
@@ -1093,4 +1187,8 @@ int main() {
     test_lerp<float>();
     test_lerp<double>();
     test_lerp<long double>();
+
+    test_gh_1917();
+    test_gh_2112();
+    STATIC_ASSERT(test_gh_2112());
 }

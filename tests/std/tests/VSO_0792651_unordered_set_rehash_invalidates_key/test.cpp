@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <memory>
 #include <unordered_set>
 
@@ -21,6 +21,7 @@ struct eq {
         if (p == nullptr) {
             return q == nullptr;
         }
+
         if (q == nullptr) {
             return false;
         }

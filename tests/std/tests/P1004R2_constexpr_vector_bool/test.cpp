@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <cstddef>
 #include <iterator>
 #include <limits>
@@ -15,6 +15,39 @@ using namespace std;
 
 static constexpr bool input[]         = {true, false, true, true, false, true};
 static constexpr bool input_flipped[] = {false, true, false, false, true, false};
+
+struct demoterator { // demote pointer to input iterator
+    using iterator_category = input_iterator_tag;
+    using value_type        = int;
+    using difference_type   = ptrdiff_t;
+    using reference         = const int&;
+    using pointer           = void;
+
+    constexpr bool operator==(const demoterator& that) const {
+        return ptr == that.ptr;
+    }
+
+    constexpr reference operator*() const {
+        return *ptr;
+    }
+
+    constexpr demoterator& operator++() {
+        ++ptr;
+        return *this;
+    }
+    constexpr void operator++(int) {
+        ++*this;
+    }
+
+    const int* ptr;
+};
+
+// Just long enough to force a reallocation when inserting
+static constexpr int num_arr[33] = { //
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //
+    0, 1, 2};
 
 template <typename T>
 struct soccc_allocator {
@@ -462,6 +495,18 @@ constexpr bool test_interface() {
 
         emplaced.erase(emplaced.begin(), emplaced.begin() + 2);
         assert(emplaced.size() == 22);
+
+        {
+            // GH-2440: we were incorrectly reallocating _before_ orphaning iterators
+            // (resulting in UB) while inserting ranges of unknown length
+
+            vector<bool> input_inserted;
+            const auto result =
+                input_inserted.insert(input_inserted.end(), demoterator{begin(num_arr)}, demoterator{end(num_arr)});
+            static_assert(is_same_v<decltype(result), const vector<bool>::iterator>);
+            assert(result == input_inserted.begin());
+            assert(input_inserted.size() == size(num_arr));
+        }
 #endif // __EDG__
     }
 

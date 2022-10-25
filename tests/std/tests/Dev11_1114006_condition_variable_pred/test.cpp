@@ -3,11 +3,11 @@
 
 // Test DevDiv-1114006 "[+ VS2015] conditional_variable with predicate does not behave according to the standard".
 
-#include <assert.h>
+#include <cassert>
 #include <chrono>
 #include <condition_variable>
+#include <cstdlib>
 #include <mutex>
-#include <stdlib.h>
 #include <thread>
 
 using namespace std;
@@ -21,10 +21,10 @@ struct Pred {
     // to ensure we don't copy them, because copying some functors (e.g. std::function) is comparatively
     // expensive, and even for relatively cheap to copy function objects we care (somewhat) about debug
     // mode perf.
-    Pred(const Pred&) = delete;
-    Pred(Pred&& o)    = default;
+    Pred(const Pred&)            = delete;
+    Pred(Pred&& o)               = default;
     Pred& operator=(const Pred&) = delete;
-    Pred& operator=(Pred&&) = delete;
+    Pred& operator=(Pred&&)      = delete;
 
     bool operator()() {
         switch (counter_) {

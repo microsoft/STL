@@ -46,7 +46,7 @@ using _Scoped_outermost_t = remove_reference_t<decltype(_Scoped_outermost(_STD d
 template <class _Alloc>
 using _Scoped_outermost_traits = allocator_traits<_Scoped_outermost_t<_Alloc>>;
 
-template <class _Outer, class... _Inner>
+_EXPORT_STD template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor;
 
 template <class _Outer, class... _Inner>
@@ -80,10 +80,10 @@ struct _Scoped_base<_Outer, _Inner0, _Inner...> : _Outer { // nest of allocators
         // also handles rebinding
     }
 
-    _Scoped_base(const _Scoped_base&) = default;
-    _Scoped_base(_Scoped_base&&)      = default;
+    _Scoped_base(const _Scoped_base&)            = default;
+    _Scoped_base(_Scoped_base&&)                 = default;
     _Scoped_base& operator=(const _Scoped_base&) = default;
-    _Scoped_base& operator=(_Scoped_base&&) = default;
+    _Scoped_base& operator=(_Scoped_base&&)      = default;
 
     _NODISCARD _Myadaptor select_on_container_copy_construction() const { // make new adaptor
         return _Myadaptor(_Secret_scoped_allocator_construct_tag{},
@@ -110,10 +110,10 @@ struct _Scoped_base<_Outer> : _Outer { // nest of allocators, one deep
     template <class _Other1, enable_if_t<!is_base_of_v<_Scoped_base, decay_t<_Other1>>, int> = 0>
     _Scoped_base(_Other1&& _Outer_arg) : _Outer(_STD forward<_Other1>(_Outer_arg)) {} // also handles rebinding
 
-    _Scoped_base(const _Scoped_base&) = default;
-    _Scoped_base(_Scoped_base&&)      = default;
+    _Scoped_base(const _Scoped_base&)            = default;
+    _Scoped_base(_Scoped_base&&)                 = default;
     _Scoped_base& operator=(const _Scoped_base&) = default;
-    _Scoped_base& operator=(_Scoped_base&&) = default;
+    _Scoped_base& operator=(_Scoped_base&&)      = default;
 
     _NODISCARD _Myadaptor select_on_container_copy_construction() const { // make new adaptor
         return _Myadaptor(
@@ -121,8 +121,9 @@ struct _Scoped_base<_Outer> : _Outer { // nest of allocators, one deep
     }
 };
 
-template <class _Outer, class... _Inner>
+_EXPORT_STD template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor : public _Scoped_base<_Outer, _Inner...> { // nest of allocators
+private:
     using _Mybase       = _Scoped_base<_Outer, _Inner...>;
     using _Outer_traits = allocator_traits<_Outer>;
 
@@ -187,7 +188,7 @@ public:
         : _Mybase(_Outer_arg, _Inner_arg) {}
 
     scoped_allocator_adaptor& operator=(const scoped_allocator_adaptor&) = default;
-    scoped_allocator_adaptor& operator=(scoped_allocator_adaptor&&) = default;
+    scoped_allocator_adaptor& operator=(scoped_allocator_adaptor&&)      = default;
 
     _NODISCARD inner_allocator_type& inner_allocator() noexcept { // get reference to inner allocator
         return this->_Get_inner_object(*this);
@@ -205,12 +206,12 @@ public:
         return static_cast<const _Outer&>(*this);
     }
 
-    _NODISCARD __declspec(allocator) pointer
+    _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) pointer
         allocate(_CRT_GUARDOVERFLOW size_type _Count) { // allocate array of _Count elements, ignore hint
         return _Outer_traits::allocate(outer_allocator(), _Count);
     }
 
-    _NODISCARD __declspec(allocator) pointer allocate(
+    _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) pointer allocate(
         _CRT_GUARDOVERFLOW size_type _Count, const_void_pointer _Hint) { // allocate array of _Count elements, with hint
         return _Outer_traits::allocate(outer_allocator(), _Count, _Hint);
     }
@@ -250,16 +251,15 @@ template <class _Outer, class... _Inner>
 scoped_allocator_adaptor(_Outer, _Inner...) -> scoped_allocator_adaptor<_Outer, _Inner...>;
 #endif // _HAS_CXX17
 
-template <class _Outer1, class _Outer2, class _Inner1, class... _Inner>
-_NODISCARD bool operator==(const scoped_allocator_adaptor<_Outer1, _Inner1, _Inner...>& _Left,
-    const scoped_allocator_adaptor<_Outer2, _Inner1, _Inner...>& _Right) noexcept {
-    return _Left.outer_allocator() == _Right.outer_allocator() && _Left.inner_allocator() == _Right.inner_allocator();
-}
-
-template <class _Outer1, class _Outer2>
-_NODISCARD bool operator==(
-    const scoped_allocator_adaptor<_Outer1>& _Left, const scoped_allocator_adaptor<_Outer2>& _Right) noexcept {
-    return _Left.outer_allocator() == _Right.outer_allocator();
+_EXPORT_STD template <class _Outer1, class _Outer2, class... _Inner>
+_NODISCARD bool operator==(const scoped_allocator_adaptor<_Outer1, _Inner...>& _Left,
+    const scoped_allocator_adaptor<_Outer2, _Inner...>& _Right) noexcept {
+    if constexpr (sizeof...(_Inner) == 0) {
+        return _Left.outer_allocator() == _Right.outer_allocator();
+    } else {
+        return _Left.outer_allocator() == _Right.outer_allocator()
+            && _Left.inner_allocator() == _Right.inner_allocator();
+    }
 }
 
 #if !_HAS_CXX20

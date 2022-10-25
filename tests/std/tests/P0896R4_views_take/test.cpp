@@ -72,11 +72,9 @@ struct mapped<ranges::iota_view<W, B>> {
     template <class>
     using apply = ranges::iota_view<W, W>;
 };
-// clang-format off
 template <class I, class S>
     requires random_access_iterator<I>
 struct mapped<ranges::subrange<I, S, ranges::subrange_kind::sized>> {
-    // clang-format on
     template <class>
     using apply = ranges::subrange<I, I, ranges::subrange_kind::sized>;
 };
@@ -88,9 +86,7 @@ template <ranges::viewable_range Rng>
 using pipeline_t = mapped_t<mapped_t<mapped_t<mapped_t<Rng>>>>;
 
 template <class Rng>
-concept CanViewTake = requires(Rng&& r) {
-    views::take(forward<Rng>(r), 42);
-};
+concept CanViewTake = requires(Rng&& r) { views::take(forward<Rng>(r), 42); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
@@ -219,7 +215,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate view_interface::empty and operator bool
-    STATIC_ASSERT(CanMemberEmpty<R> == forward_range<Rng>);
+    STATIC_ASSERT(CanMemberEmpty<R> == (sized_range<Rng> || forward_range<Rng>) );
     STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
     if constexpr (CanMemberEmpty<R>) {
         assert(r.empty() == is_empty);
@@ -232,7 +228,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
-    STATIC_ASSERT(CanMemberEmpty<const R> == forward_range<const Rng>);
+    STATIC_ASSERT(CanMemberEmpty<const R> == (sized_range<const Rng> || forward_range<const Rng>) );
     STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
     if constexpr (CanMemberEmpty<const R>) {
         assert(as_const(r).empty() == is_empty);
@@ -367,6 +363,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         if constexpr (CanIndex<R>) {
             assert(r[0] == *r.begin());
         }
+
         if constexpr (CanIndex<const R>) {
             assert(as_const(r)[0] == *as_const(r).begin());
         }
