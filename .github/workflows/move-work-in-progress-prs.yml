@@ -10,7 +10,10 @@ on:
 
 jobs:
   move-pr-to-wip:
-    if: contains(github.event.comment.body, '/pr mark wip') && github.event.issue.pull_request
+    if: >
+      github.event.issue.pull_request
+      && github.event.comment.user.login == github.event.issue.user.login
+      && contains(github.event.comment.body, '/pr wip')
     runs-on: ubuntu-latest
     steps:
       - name: Move To Work In Progress

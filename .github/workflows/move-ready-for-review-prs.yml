@@ -10,7 +10,10 @@ on:
 
 jobs:
   move-pr-to-initial-review:
-    if: contains(github.event.comment.body, '/pr mark ready') && github.event.issue.pull_request
+    if: >
+      github.event.issue.pull_request
+      && github.event.comment.user.login == github.event.issue.user.login
+      && contains(github.event.comment.body, '/pr review')
     runs-on: ubuntu-latest
     steps:
       - name: Move To Initial Review
