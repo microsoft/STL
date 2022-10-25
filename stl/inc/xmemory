@@ -785,20 +785,17 @@ _NODISCARD inline const void* _Get_asan_aligned_first(const void* const _First, 
     if (_Aligned_address > _Last_address) {
         return nullptr;
     } else {
-        return reinterpret_cast<const char*>(_Aligned_address);
+        return reinterpret_cast<const void*>(_Aligned_address);
     }
 }
 
-// Works for standard containers with the `value_type` typedef.
 template <class _Container, class = void>
 _INLINE_VAR constexpr size_t _Container_allocation_minimum_alignment = alignof(typename _Container::value_type);
 
 template <class _Container>
 _INLINE_VAR constexpr size_t _Container_allocation_minimum_alignment<_Container,
     void_t<decltype(_Container::allocator_type::_Minimum_allocation_alignment)>> =
-    alignof(typename _Container::value_type) > _Container::allocator_type::_Minimum_allocation_alignment
-        ? alignof(typename _Container::value_type)
-        : _Container::allocator_type::_Minimum_allocation_alignment;
+    (_STD max)(alignof(typename _Container::value_type), _Container::allocator_type::_Minimum_allocation_alignment);
 
 _EXPORT_STD template <class _Ty>
 class allocator {

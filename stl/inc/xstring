@@ -2504,6 +2504,9 @@ private:
 #endif // _HAS_CXX17
 
 #ifdef _INSERT_STRING_ANNOTATION
+    constexpr bool _Small_string_always_asan_aligned =
+        alignof(*this) >= 8 && _Memcpy_val_offset % _Asan_granularity == 0;
+
     _CONSTEXPR20 void _Create_annotation() const noexcept {
         // Annotates the valid range with shadow memory
         auto& _My_data = _Mypair._Myval2;
@@ -2527,10 +2530,9 @@ private:
 
         auto& _My_data              = _Mypair._Myval2;
         const void* const _My_buf   = _My_data._Bx._Buf;
-        const void* const _Ptr_last = &_My_data._Bx._Ptr + 1;
+        const void* const _Ptr_last = _STD addressof(_My_data._Bx._Ptr) + 1;
         const void* const _Buf_last = _My_data._Bx._Buf + _BUF_SIZE;
 
-        constexpr bool _Small_string_always_aligned = _Memcpy_val_offset % _Asan_granularity == 0;
         if constexpr (_Small_string_always_aligned) {
             __sanitizer_annotate_contiguous_container(_My_buf, _Buf_last, _Buf_last, _Ptr_last);
         } else {
@@ -2555,25 +2557,20 @@ private:
             return;
         }
 
-        // Note that `_Capacity`, `_Old_size`, and `_New_size` do not include the null terminator,
-        // so we need to add one back.
+        // Note that `_Capacity`, `_Old_size`, and `_New_size` do not include the null terminator
         const void* const _Buf_last = _First + _Capacity + 1;
         const void* const _Old_last = _First + _Old_size + 1;
         const void* const _New_last = _First + _New_size + 1;
 
         constexpr bool _Large_string_always_aligned =
             (_Container_allocation_minimum_alignment<basic_string>) > _Asan_granularity;
-        constexpr bool _Small_string_always_aligned = _Memcpy_val_offset % _Asan_granularity == 0;
         if constexpr (_Large_string_always_aligned && _Small_string_always_aligned) {
             __sanitizer_annotate_contiguous_container(_First, _Buf_last, _Old_last, _New_last);
         } else {
             const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _Buf_last);
-            if (!_Aligned_first) {
-                // There is no aligned address within the underlying buffer.
-                // This should be impossible, as the minimum allocation size for string is 16...
-                // NOTE TO REVIEWER: should this be a _STL_ASSERT or smth?
-                return;
-            }
+            // There is no aligned address within the underlying buffer.
+            // This is impossible, as the minimum allocation size for basic_string is at least 16.
+            _STL_ASSERT(_Aligned_first);
 
             // last must be >= than first, so fix up when `_Aligned_first > _*_last`
             // note that _Buf_last must be > 16 from _First, so it certainly is past _Aligned_first (< _First + 8)
