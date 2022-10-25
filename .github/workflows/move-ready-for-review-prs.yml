@@ -22,11 +22,11 @@ jobs:
             const projects = await github.paginate(github.rest.projects.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
-            })
+            });
             const code_reviews = projects.find(project => project.name === 'Code Reviews');
             if (!code_reviews) {
-              console.error("'Code Reviews' project not found!")
-              return
+              console.error("'Code Reviews' project not found!");
+              return;
             }
 
             // Find "Initial Review" column manually by name matching
@@ -36,24 +36,24 @@ jobs:
               project_id: code_reviews.id,
             });
 
-            const work_in_progress = columns.find(column => column.name === 'Work In Progress')
+            const work_in_progress = columns.find(column => column.name === 'Work In Progress');
             if (!work_in_progress) {
-              console.error("'Work In Progress' column not found!")
-              return
+              console.error("'Work In Progress' column not found!");
+              return;
             }
 
-            const initial_review = columns.find(column => column.name === 'Initial Review')
+            const initial_review = columns.find(column => column.name === 'Initial Review');
             if (!initial_review) {
-              console.error("'Initial Review' column not found!")
-              return
+              console.error("'Initial Review' column not found!");
+              return;
             }
 
             const pr_card = await github.paginate(github.rest.projects.listCards, {
               column_id: work_in_progress.id,
-            }).then(cards => cards.find(card => card.content_url === context.payload.issue.url))
+            }).then(cards => cards.find(card => card.content_url === context.payload.issue.url));
             if (!pr_card) {
-              console.error("Corresponding card for PR not found!")
-              return
+              console.error("Corresponding card for PR not found!");
+              return;
             }
 
             github.rest.projects.moveCard({
@@ -61,5 +61,5 @@ jobs:
               position: 'bottom',
               column_id: initial_review.id,
             }).catch(error => {
-              console.error(`Error occurred while moving card to 'Initial Review': ${error}`)
-            })
+              console.error(`Error occurred while moving card to 'Initial Review': ${error}`);
+            });
