@@ -129,8 +129,8 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
 
     _CONSTEXPR20 void reset() noexcept {
         if (_Has_value) {
-            _Destroy_in_place(_Value);
             _Has_value = false;
+            _Destroy_in_place(_Value);
         }
     }
 };
