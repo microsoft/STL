@@ -1038,6 +1038,10 @@ utilities\meta\meta.unary\meta.unary.prop\is_nothrow_copy_assignable.pass.cpp
 utilities\meta\meta.unary\meta.unary.prop\is_nothrow_move_assignable.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\convert_const_move.pass.cpp
 
+# Not yet analyzed, possible path length issue. With a repo root of D:\GitHub\STL (13 characters), fails with:
+# "error RC2136 : missing '=' in EXSTYLE=<flags>" followed by "LINK : fatal error LNK1327: failure during running rc.exe"
+thread\thread.mutex\thread.mutex.requirements\thread.sharedtimedmutex.requirements\thread.sharedtimedmutex.class\try_lock_until_deadlock_bug.pass.cpp
+
 
 # *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***
 # "XFAIL: msvc" or "XFAIL: clang"
