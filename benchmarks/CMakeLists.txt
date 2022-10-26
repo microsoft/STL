@@ -105,5 +105,6 @@ function(add_benchmark name)
     target_compile_definitions(benchmark-${name} PRIVATE BENCHMARK_STATIC_DEFINE)
 endfunction()
 
-add_benchmark(std_copy src/std_copy.cpp)
+add_benchmark(locale_classic src/locale_classic.cpp)
 add_benchmark(random_integer_generation src/random_integer_generation.cpp)
+add_benchmark(std_copy src/std_copy.cpp)
