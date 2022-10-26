@@ -1441,10 +1441,8 @@ _NODISCARD _MSVC_INTRINSIC constexpr remove_reference_t<_Ty>&& move(_Ty&& _Arg) 
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD
-    _MSVC_INTRINSIC constexpr conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_copy_constructible_v<_Ty>,
-        const _Ty&,
-        _Ty&&>
+_NODISCARD _MSVC_INTRINSIC constexpr //
+    conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_copy_constructible_v<_Ty>, const _Ty&, _Ty&&>
     move_if_noexcept(_Ty& _Arg) noexcept { // forward _Arg as movable, sometimes
     return _STD move(_Arg);
 }
