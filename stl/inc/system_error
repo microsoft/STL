@@ -131,6 +131,12 @@ protected:
     public:
         constexpr explicit _Addr_storage(const uintptr_t _Addr_num) noexcept : _Num(_Addr_num) {}
         constexpr explicit _Addr_storage(error_category* const _Addr_ptr) noexcept : _Ptr(_Addr_ptr) {}
+
+        // TRANSITION: As of Boost 1.80.0, boost::system::detail::std_category assigns to _Addr.
+        constexpr _Addr_storage& operator=(const uintptr_t _Addr_num) noexcept {
+            _Num = _Addr_num;
+            return *this;
+        }
     };
     static_assert(sizeof(_Addr_storage) == sizeof(uintptr_t) && alignof(_Addr_storage) == alignof(uintptr_t),
         "Unsupported platform");
