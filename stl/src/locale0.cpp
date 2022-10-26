@@ -5,6 +5,7 @@
 
 #include <crtdbg.h>
 #include <internal_shared.h>
+#include <xatomic.h>
 #include <xfacet>
 
 // This must be as small as possible, because its contents are
@@ -135,18 +136,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id ctype<unsigned short>::id(0);
 
 __PURE_APPDOMAIN_GLOBAL locale::id codecvt<unsigned short, char, mbstate_t>::id(0);
 
-#define _Compiler_barrier() _STL_DISABLE_DEPRECATED_WARNING _ReadWriteBarrier() _STL_RESTORE_DEPRECATED_WARNING
-
-#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
-#define _Memory_barrier()             __dmb(0xB) // inner shared data memory barrier
-#define _Compiler_or_memory_barrier() _Memory_barrier()
-#elif defined(_M_IX86) || defined(_M_X64)
-// x86/x64 hardware only emits memory barriers inside _Interlocked intrinsics
-#define _Compiler_or_memory_barrier() _Compiler_barrier()
-#else // ^^^ x86/x64 / unsupported hardware vvv
-#error Unsupported hardware
-#endif // hardware
-
 _MRTIMP2_PURE const locale& __CLRCALL_PURE_OR_CDECL locale::classic() { // get reference to "C" locale
 #if !defined(_M_CEE_PURE)
     const auto mem = reinterpret_cast<const intptr_t*>(&locale::_Locimp::_Clocptr);
@@ -190,7 +179,7 @@ _MRTIMP2_PURE locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Init(bool _Do_in
 #if defined(_M_CEE_PURE)
         locale::_Locimp::_Clocptr = ptr;
 #else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
-        const auto mem = reinterpret_cast<volatile intptr_t*>(&locale::_Locimp::_Clocptr);
+        const auto mem      = reinterpret_cast<volatile intptr_t*>(&locale::_Locimp::_Clocptr);
         const auto as_bytes = reinterpret_cast<intptr_t>(ptr);
         _Compiler_or_memory_barrier();
 #ifdef _WIN64
