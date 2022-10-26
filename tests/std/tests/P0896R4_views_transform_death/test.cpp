@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstddef>
 #include <ranges>
+#include <span>
 #include <vector>
 
 #include <test_death.hpp>
@@ -14,7 +15,7 @@ using namespace std;
 static int some_ints[] = {0, 1, 2, 3};
 
 [[maybe_unused]] constexpr auto lambda = [x = 42](int) { return x == 42; };
-using TV                               = decltype(ranges::transform_view{some_ints, lambda});
+using TV                               = decltype(ranges::transform_view{span{some_ints}, lambda});
 
 void test_constructor_wrong_range() {
     vector<int> vec0{0, 1, 2, 3};

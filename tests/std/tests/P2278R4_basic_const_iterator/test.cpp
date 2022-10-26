@@ -11,13 +11,13 @@
 
 using namespace std;
 
-template <typename T>
+template <class T>
 concept Pointer = is_pointer_v<T>;
 
-template <typename It>
+template <class It>
 concept HasPeek = requires(const It& iter) {
                       { iter.peek() } -> Pointer;
-                      requires convertible_to<decltype(iter.peek()), const iter_value_t<It>*>;
+                      { iter.peek() } -> convertible_to<const iter_value_t<It>*>;
                   };
 
 static_assert(!HasPeek<int*>);
@@ -94,7 +94,6 @@ constexpr void test_one(It iter) {
     iter++;
     assert(citer == iter);
     assert(*citer == *iter);
-
 
     if constexpr (bidirectional_iterator<It>) {
         { // Validate basic_const_iterator::operator--()
