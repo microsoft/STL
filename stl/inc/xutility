@@ -1732,7 +1732,7 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 
 #ifdef __cpp_lib_concepts
 template <class _Ty1, class _Ty2>
-concept _Not_same_as = (!same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>);
+concept _Different_from = (!same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>);
 
 #if _HAS_CXX23
 _EXPORT_STD template <indirectly_readable _Ty>
@@ -1775,8 +1775,8 @@ struct _Basic_const_iterator_category<_Iter> {
 
 // TRANSITION, LLVM-55945: These are distinct concepts as a workaround
 template <class _Ty, class _Iter>
-concept _Bci_order =
-    _Not_same_as<_Ty, basic_const_iterator<_Iter>> && random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Ty>;
+concept _Bci_order = _Different_from<_Ty, basic_const_iterator<_Iter>> && random_access_iterator<_Iter>
+                  && totally_ordered_with<_Iter, _Ty>;
 
 template <class _Ty, class _Iter>
 concept _Bci_order_3way = _Bci_order<_Ty, _Iter> && three_way_comparable_with<_Iter, _Ty>;
@@ -1823,7 +1823,7 @@ public:
         is_nothrow_constructible_v<_Iter, _Other>) // strengthened
         : _Current(_STD move(_Current_._Current)) {}
 
-    template <_Not_same_as<basic_const_iterator> _Other>
+    template <_Different_from<basic_const_iterator> _Other>
         requires convertible_to<_Other, _Iter>
     constexpr basic_const_iterator(_Other&& _Current_) noexcept(
         is_nothrow_constructible_v<_Iter, _Other>) // strengthened
@@ -3509,7 +3509,7 @@ namespace ranges {
             }
         }
 
-        template <_Not_same_as<subrange> _Rng>
+        template <_Different_from<subrange> _Rng>
             requires borrowed_range<_Rng>
                 && _Convertible_to_non_slicing<iterator_t<_Rng>, _It>
                 && convertible_to<sentinel_t<_Rng>, _Se>
@@ -3522,7 +3522,7 @@ namespace ranges {
             : subrange{_RANGES begin(_Val), _RANGES end(_Val), _Count} {}
         // clang-format on
 
-        template <_Not_same_as<subrange> _Pair_like>
+        template <_Different_from<subrange> _Pair_like>
             requires _Pair_like_convertible_from<_Pair_like, const _It&, const _Se&>
         constexpr operator _Pair_like() const {
             return _Pair_like(_First, _Last);
