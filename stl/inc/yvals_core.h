@@ -622,9 +622,11 @@
 #pragma push_macro("msvc")
 #pragma push_macro("known_semantics")
 #pragma push_macro("noop_dtor")
+#pragma push_macro("intrinsic")
 #undef msvc
 #undef known_semantics
 #undef noop_dtor
+#undef intrinsic
 
 #ifndef __has_cpp_attribute
 #define _HAS_MSVC_ATTRIBUTE(x) 0
@@ -650,7 +652,16 @@
 #define _MSVC_NOOP_DTOR
 #endif
 
+// Should we use [[msvc::intrinsic]] allowing the compiler to implement the
+// behavior of certain trivial functions?
+#if _HAS_MSVC_ATTRIBUTE(intrinsic)
+#define _MSVC_INTRINSIC [[msvc::intrinsic]]
+#else
+#define _MSVC_INTRINSIC
+#endif
+
 #undef _HAS_MSVC_ATTRIBUTE
+#pragma pop_macro("intrinsic")
 #pragma pop_macro("noop_dtor")
 #pragma pop_macro("known_semantics")
 #pragma pop_macro("msvc")
