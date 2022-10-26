@@ -30,19 +30,19 @@
     "tabWidth": 4
   },
   "dependencies": {
-    "@octokit/graphql": "^5.0.1",
+    "@octokit/graphql": "^5.0.4",
     "@types/cli-progress": "^3.11.0",
-    "@types/luxon": "^3.0.1",
-    "@types/node": "^18.7.20",
+    "@types/luxon": "^3.0.2",
+    "@types/node": "^18.11.6",
     "@types/yargs": "^17.0.13",
     "chart.js": "^3.9.1",
     "chartjs-adapter-luxon": "^1.2.0",
     "cli-progress": "^3.11.2",
-    "dotenv": "^16.0.2",
-    "esbuild": "^0.15.9",
+    "dotenv": "^16.0.3",
+    "esbuild": "^0.15.12",
     "http-server": "^14.1.1",
     "luxon": "^3.0.4",
-    "typescript": "^4.8.3",
-    "yargs": "^17.5.1"
+    "typescript": "^4.8.4",
+    "yargs": "^17.6.0"
   }
 }
