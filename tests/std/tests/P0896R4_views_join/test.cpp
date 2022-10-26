@@ -20,9 +20,7 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewJoin = requires(Rng&& r) {
-    views::join(forward<Rng>(r));
-};
+concept CanViewJoin = requires(Rng&& r) { views::join(forward<Rng>(r)); };
 
 template <ranges::input_range Outer, ranges::random_access_range Expected>
 constexpr bool test_one(Outer&& rng, Expected&& expected) {

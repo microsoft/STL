@@ -16,5 +16,5 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ProjectFile Condition="'$(CrtBuildXMT)' != 'false' and ('$(SpectreBuildMode)' == '' or '$(SpectreBuildDebug)' == 'true')" Include="xmt1\dirs.proj" />
     </ItemGroup>
 
-    <Import Project="$(_NTDRIVE)$(_NTROOT)\tools\Microsoft.DevDiv.Traversal.targets" />
+    <Import Project="$(RepoSrc)\tools\Microsoft.DevDiv.Traversal.targets" />
 </Project>

@@ -34,11 +34,11 @@ STD wistream& operator>>(STD wistream& istr, Boolx& b) { // extract a Boolx
     if (ok) { // state okay, extract Y or N
         const CSTD wint_t c = istr.rdbuf()->sbumpc();
 
-        if (c == L'Y')
+        if (c == L'Y') {
             b.value(1);
-        else if (c == L'N')
+        } else if (c == L'N') {
             b.value(0);
-        else { // report failure
+        } else { // report failure
             istr.rdbuf()->sputbackc(c);
             state = STD ios::failbit;
         }

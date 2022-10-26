@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-struct money_base : locale::facet { // ultimate base class for moneypunct
+_EXPORT_STD struct money_base : locale::facet { // ultimate base class for moneypunct
     enum { // constants for different format codes
         symbol = '$',
         sign   = '+',
@@ -241,7 +241,7 @@ private:
     _Locinfo::_Cvtvec _Cvt; // conversion information
 };
 
-template <class _Elem, bool _Intl = false>
+_EXPORT_STD template <class _Elem, bool _Intl = false>
 class moneypunct : public _Mpunct<_Elem> { // facet for defining monetary punctuation text
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
@@ -257,7 +257,7 @@ public:
     static size_t _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new moneypunct<_Elem, _Intl>(_Locinfo(_Ploc->c_str()), 0, true);
+            *_Ppf = new moneypunct<_Elem, _Intl>(_Locinfo(_Ploc->_C_str()), 0, true);
         }
 
         return _X_MONETARY;
@@ -284,7 +284,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id moneypunct<_Elem, _Intl>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-template <class _Elem, bool _Intl = false>
+_EXPORT_STD template <class _Elem, bool _Intl = false>
 class moneypunct_byname : public moneypunct<_Elem, _Intl> { // moneypunct for named locale
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
@@ -299,7 +299,7 @@ protected:
     __CLR_OR_THIS_CALL ~moneypunct_byname() noexcept override {}
 };
 
-template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
+_EXPORT_STD template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class money_get : public locale::facet { // facet for converting text to encoded monetary amounts
 private:
     using _Mypunct0 = moneypunct<_Elem, false>;
@@ -337,7 +337,7 @@ public:
     static size_t _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new money_get<_Elem, _InIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new money_get<_Elem, _InIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_MONETARY;
@@ -603,7 +603,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id money_get<_Elem, _InIt>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
+_EXPORT_STD template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class money_put : public locale::facet { // facet for converting encoded monetary amounts to text
 private:
     using _Mypunct0 = moneypunct<_Elem, false>;
@@ -641,7 +641,7 @@ public:
     static size_t _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new money_put<_Elem, _OutIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new money_put<_Elem, _OutIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_MONETARY;
@@ -777,7 +777,7 @@ private:
 
             case money_base::space: // count space size
                 ++_Fillcount; // at least one space
-                // fall through
+                _FALLTHROUGH;
 
             case money_base::none: // count space size
                 if (_Off != 3) {
@@ -831,7 +831,7 @@ private:
 
             case money_base::space: // put any internal fill
                 _Dest = _Rep(_Dest, _Fill, 1);
-                // fall through
+                _FALLTHROUGH;
 
             case money_base::none: // put any internal fill
                 if (_Afl == ios_base::internal) { // put internal fill

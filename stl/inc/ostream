@@ -20,7 +20,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 #pragma vtordisp(push, 2) // compiler bug workaround
 
-template <class _Elem, class _Traits>
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits>
 class basic_ostream : virtual public basic_ios<_Elem, _Traits> { // control insertions into a stream buffer
 public:
     using _Myios = basic_ios<_Elem, _Traits>;
@@ -677,7 +677,7 @@ template class _CRTIMP2_PURE_IMPORT basic_ostream<unsigned short, char_traits<un
 #endif // __FORCE_INSTANCE
 #endif // defined(_DLL_CPPLIB)
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const char* _Val) { // insert NTBS
     ios_base::iostate _State = ios_base::goodbit;
     streamsize _Count        = static_cast<streamsize>(_CSTD strlen(_Val));
@@ -721,7 +721,7 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, char _Ch) { // insert a character
     ios_base::iostate _State = ios_base::goodbit;
     const typename basic_ostream<_Elem, _Traits>::sentry _Ok(_Ostr);
@@ -757,7 +757,7 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
     return _Ostr;
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, const char* _Val) {
     // insert NTBS into char stream
     using _Elem = char;
@@ -802,7 +802,7 @@ basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, co
     return _Ostr;
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, char _Ch) {
     // insert a char into char stream
     using _Elem = char;
@@ -840,7 +840,7 @@ basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, ch
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const _Elem* _Val) { // insert NTCS
     using _Myos = basic_ostream<_Elem, _Traits>;
 
@@ -883,7 +883,7 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, _Elem _Ch) { // insert a character
     using _Myos = basic_ostream<_Elem, _Traits>;
 
@@ -919,24 +919,24 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
     return _Ostr;
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, const signed char* _Val) {
     // insert a signed char NTBS
     return _Ostr << reinterpret_cast<const char*>(_Val);
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, signed char _Ch) { // insert a signed char
     return _Ostr << static_cast<char>(_Ch);
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, const unsigned char* _Val) {
     // insert an unsigned char NTBS
     return _Ostr << reinterpret_cast<const char*>(_Val);
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, unsigned char _Ch) {
     // insert an unsigned char
     return _Ostr << static_cast<char>(_Ch);
@@ -944,45 +944,45 @@ basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, un
 
 #ifdef __cpp_char8_t // These deleted overloads are specified in P1423.
 // don't insert a UTF-8 NTBS
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, const char8_t*) = delete;
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, const char8_t*) = delete;
 
 // don't insert a UTF-8 code unit
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, char8_t) = delete;
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, char8_t) = delete;
 #endif // __cpp_char8_t
 
 #if !_HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 #ifdef _NATIVE_WCHAR_T_DEFINED
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, wchar_t) = delete;
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, const wchar_t*) = delete;
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, char16_t) = delete;
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, char32_t) = delete;
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, char16_t) = delete;
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, char32_t) = delete;
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, const char16_t*) = delete;
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, const char32_t*) = delete;
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, const char16_t*) = delete;
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, const char32_t*) = delete;
 #endif // !_HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 
@@ -993,14 +993,14 @@ template <class _Ostr, class _Ty>
 struct _Can_stream_out<_Ostr, _Ty, void_t<decltype(_STD declval<_Ostr&>() << _STD declval<const _Ty&>())>> : true_type {
 };
 
-template <class _Ostr, class _Ty,
+_EXPORT_STD template <class _Ostr, class _Ty,
     enable_if_t<conjunction_v<is_convertible<_Ostr*, ios_base*>, _Can_stream_out<_Ostr, _Ty>>, int> = 0>
 _Ostr&& operator<<(_Ostr&& _Os, const _Ty& _Val) { // insert to rvalue stream
     _Os << _Val;
     return _STD move(_Os);
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL endl(
     basic_ostream<_Elem, _Traits>& _Ostr) { // insert newline and flush stream
     _Ostr.put(_Ostr.widen('\n'));
@@ -1008,13 +1008,13 @@ basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL endl(
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL ends(basic_ostream<_Elem, _Traits>& _Ostr) { // insert null character
     _Ostr.put(_Elem());
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL flush(basic_ostream<_Elem, _Traits>& _Ostr) { // flush stream
     _Ostr.flush();
     return _Ostr;
@@ -1022,7 +1022,7 @@ basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL flush(basic_ostream<_Elem, _Tr
 
 #if _HAS_CXX20
 #ifdef _CPPRTTI
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& emit_on_flush(basic_ostream<_Elem, _Traits>& _Ostr) {
     const auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
     if (_Sync_buf_ptr) {
@@ -1031,7 +1031,7 @@ basic_ostream<_Elem, _Traits>& emit_on_flush(basic_ostream<_Elem, _Traits>& _Ost
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& noemit_on_flush(basic_ostream<_Elem, _Traits>& _Ostr) {
     const auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
     if (_Sync_buf_ptr) {
@@ -1040,7 +1040,7 @@ basic_ostream<_Elem, _Traits>& noemit_on_flush(basic_ostream<_Elem, _Traits>& _O
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>& _Ostr) {
     _Ostr.flush();
     const auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
@@ -1062,16 +1062,16 @@ basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>& _Ostr) 
     return _Ostr;
 }
 #else // _CPPRTTI
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& emit_on_flush(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& noemit_on_flush(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
 #endif // _CPPRTTI
 #endif // _HAS_CXX20
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const error_code& _Errcode) {
     // display error code
     return _Ostr << _Errcode.category().name() << ':' << _Errcode.value();

@@ -18,26 +18,7 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewAsRvalue = requires(Rng&& r) {
-    views::as_rvalue(forward<Rng>(r));
-};
-
-template <ranges::input_range R1, ranges::input_range R2>
-constexpr bool test_equal(R1&& r1, R2&& r2) { // TRANSITION, GH-3009
-    auto first1 = ranges::begin(r1);
-    auto last1  = ranges::end(r1);
-    auto first2 = ranges::begin(r2);
-    auto last2  = ranges::end(r2);
-    while (true) {
-        if (first1 == last1) {
-            return first2 == last2;
-        } else if (first2 == last2 || *first1 != *first2) {
-            return false;
-        }
-        ++first1;
-        ++first2;
-    }
-}
+concept CanViewAsRvalue = requires(Rng&& r) { views::as_rvalue(forward<Rng>(r)); };
 
 template <ranges::input_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
@@ -169,7 +150,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     // Validate deduction guide
     same_as<R> auto r = as_rvalue_view{std::forward<Rng>(rng)};
 
-    // Validate as_const_view::size
+    // Validate as_rvalue_view::size
     STATIC_ASSERT(CanMemberSize<R> == sized_range<V>);
     if constexpr (CanMemberSize<R>) {
         same_as<ranges::range_size_t<V>> auto s = r.size();
@@ -177,7 +158,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(noexcept(r.size()) == noexcept(ranges::size(as_const(rng))));
     }
 
-    // Validate as_const_view::size (const)
+    // Validate as_rvalue_view::size (const)
     STATIC_ASSERT(CanMemberSize<const R> == sized_range<const V>);
     if constexpr (CanMemberSize<const R>) {
         same_as<ranges::range_size_t<const V>> auto s = as_const(r).size();
@@ -203,7 +184,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         assert(static_cast<bool>(as_const(r)) == !is_empty);
     }
 
-    assert(test_equal(r, expected)); // TRANSITION, GH-3009 (use ranges::equal)
+    assert(ranges::equal(r, expected));
     if (!forward_range<V>) { // intentionally not if constexpr
         return true;
     }

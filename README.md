@@ -58,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4910][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N4917][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -141,11 +141,11 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.4 Preview 1 or later.
+1. Install Visual Studio 2022 17.4 Preview 3 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.23 or later, and [Ninja][] 1.11.0 or later.
+    * Otherwise, install [CMake][] 3.24 or later, and [Ninja][] 1.11.0 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
@@ -157,11 +157,11 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.4 Preview 1 or later.
+1. Install Visual Studio 2022 17.4 Preview 3 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.23 or later, and [Ninja][] 1.11.0 or later.
+    * Otherwise, install [CMake][] 3.24 or later, and [Ninja][] 1.11.0 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open a command prompt.
@@ -413,17 +413,19 @@ You may also modify an existing benchmark file. We use Google's [Benchmark][gben
 so you may find [their documentation][gbenchmark:docs] helpful, and you can also read the existing code
 for how _we_ use it.
 
-To run benchmarks, you'll need to configure the STL with the `-DSTL_BUILD_BENCHMARKING=ON` option:
+To run benchmarks, you'll need to first build the STL, then build the benchmarks:
 
 ```cmd
-cmake -B out\bench -S . -G Ninja -DSTL_BUILD_BENCHMARKING=ON
-cmake --build out\bench
+cmake -B out\x64 -S . -G Ninja
+cmake --build out\x64
+cmake -B out\benchmark -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\x64
+cmake --build out\benchmark
 ```
 
 You can then run your benchmark with:
 
 ```cmd
-out\bench\benchmarks\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
+out\benchmark\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
 ```
 
 And then you can copy this csv file into Excel, or another spreadsheet program. For example:
@@ -530,7 +532,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4910]: https://wg21.link/n4910
+[N4917]: https://wg21.link/n4917
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main

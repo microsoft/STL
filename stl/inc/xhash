@@ -118,8 +118,8 @@ struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq,
 #endif // _HAS_CXX20
 
 template <class _Hasher, class _Kty>
-_INLINE_VAR constexpr bool _Nothrow_hash = noexcept(
-    static_cast<size_t>(_STD declval<const _Hasher&>()(_STD declval<const _Kty&>())));
+_INLINE_VAR constexpr bool _Nothrow_hash =
+    noexcept(static_cast<size_t>(_STD declval<const _Hasher&>()(_STD declval<const _Kty&>())));
 
 template <class _Kty, class _Hasher, class _Keyeq>
 class _Uhash_compare
@@ -830,7 +830,7 @@ public:
         return _List.max_size();
     }
 
-    _NODISCARD bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
         return _List.empty();
     }
 
@@ -960,12 +960,12 @@ public:
         _Insert_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<value_type> _Rng>
     void insert_range(_Rng&& _Range) {
         _Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     void insert(initializer_list<value_type> _Ilist) {
         _Insert_range_unchecked(_Ilist.begin(), _Ilist.end());
@@ -1096,7 +1096,7 @@ private:
 
     template <class _Kx>
     static constexpr bool _Noexcept_heterogeneous_erasure() {
-        return _Nothrow_hash<_Traits, _Kx> //
+        return _Nothrow_hash<_Traits, _Kx>
             && (!_Multi || (_Nothrow_compare<_Traits, key_type, _Kx> && _Nothrow_compare<_Traits, _Kx, key_type>) );
     }
 
@@ -2004,7 +2004,7 @@ template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
 #endif // _HAS_CXX17
 
-template <class _Traits>
+_EXPORT_STD /* TRANSITION, VSO-1538698 */ template <class _Traits>
 _NODISCARD bool _Hash_equal(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right) {
     if (_Left.size() != _Right.size()) {
         return false;

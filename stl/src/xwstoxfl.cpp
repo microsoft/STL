@@ -22,14 +22,11 @@ _In_range_(0, maxsig) int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t
     char buf[_Maxsig + 1]; // worst case, with room for rounding digit
     int nsig = 0; // number of significant digits seen
     int seen = 0; // any valid field characters seen
-    int word = 0; // current long word to fill
 
     const wchar_t* pd;
-    static const wchar_t digits[] = {// hex digits in both cases
-        L'0', L'1', L'2', L'3', L'4', L'5', L'6', L'7', L'8', L'9', L'a', L'b', L'c', L'd', L'e', L'f', L'A', L'B',
-        L'C', L'D', L'E', L'F', L'\0'};
-    static const char vals[]      = {// values of hex digits
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 10, 11, 12, 13, 14, 15};
+    static constexpr wchar_t digits[] = L"0123456789abcdefABCDEF"; // hex digits in both cases
+    static constexpr char vals[]      = {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 10, 11, 12, 13, 14, 15}; // values of hex digits
 
     maxsig *= _Ndig; // convert word count to digit count
     if (_Maxsig < maxsig) {
@@ -55,7 +52,7 @@ _In_range_(0, maxsig) int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t
         seen = 1;
     }
 
-    if (*s == localeconv()->decimal_point[0]) {
+    if (*s == localeconv()->_W_decimal_point[0]) {
         ++s;
     }
 
@@ -93,6 +90,9 @@ _In_range_(0, maxsig) int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t
     }
 
     lo[0] <<= 2; // change hex exponent to binary exponent
+
+    int word; // current long word to fill
+
     if (seen) { // convert digit sequence to words
         int bufidx  = 0; // next digit in buffer
         int wordidx = _Ndig - nsig % _Ndig; // next digit in word (% _Ndig)
@@ -127,9 +127,7 @@ _In_range_(0, maxsig) int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t
                 s = ssav; // roll back if incomplete exponent
             }
         }
-    }
-
-    if (!seen) {
+    } else {
         word = 0; // return zero if bad parse
     }
 

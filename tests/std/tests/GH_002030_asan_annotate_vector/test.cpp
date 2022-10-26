@@ -235,7 +235,7 @@ struct explicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
     }
 
     void deallocate(T* p, size_t) noexcept {
-        delete[](p - 1);
+        delete[] (p - 1);
     }
 };
 
@@ -251,7 +251,7 @@ struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
     }
 
     void deallocate(T* p, size_t) noexcept {
-        delete[](p - 1);
+        delete[] (p - 1);
     }
 };
 

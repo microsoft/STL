@@ -123,8 +123,8 @@ enum { // constants for error codes
     _RESOURCE_UNAVAILABLE_TRY_AGAIN
 };
 
-[[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_C_error(int _Code);
-[[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_Cpp_error(int _Code);
+extern "C++" [[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_C_error(int _Code);
+extern "C++" [[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_Cpp_error(int _Code);
 
 inline int _Check_C_return(int _Res) { // throw exception on failure
     if (_Res != _Thrd_success) {

@@ -30,9 +30,7 @@ using pipeline_t = ranges::take_while_view<
     ranges::take_while_view<ranges::take_while_view<ranges::take_while_view<V, Pred>, Pred>, Pred>, Pred>;
 
 template <class Rng>
-concept CanViewTakeWhile = requires(Rng&& r) {
-    views::take_while(forward<Rng>(r), is_less_than<3>);
-};
+concept CanViewTakeWhile = requires(Rng&& r) { views::take_while(forward<Rng>(r), is_less_than<3>); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {

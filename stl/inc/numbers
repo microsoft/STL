@@ -32,31 +32,31 @@ namespace numbers {
                                           "variable template is ill-formed. (N4835 [math.constants]/3)");
     };
 
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty e_v = _Invalid<_Ty>{};
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty log2e_v = _Invalid<_Ty>{};
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty log10e_v = _Invalid<_Ty>{};
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty pi_v = _Invalid<_Ty>{};
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty inv_pi_v = _Invalid<_Ty>{};
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty inv_sqrtpi_v = _Invalid<_Ty>{};
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty ln2_v = _Invalid<_Ty>{};
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty ln10_v = _Invalid<_Ty>{};
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty sqrt2_v = _Invalid<_Ty>{};
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty sqrt3_v = _Invalid<_Ty>{};
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty inv_sqrt3_v = _Invalid<_Ty>{};
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty egamma_v = _Invalid<_Ty>{};
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr _Ty phi_v = _Invalid<_Ty>{};
 
 #ifdef __cpp_lib_concepts
@@ -169,19 +169,19 @@ namespace numbers {
     inline constexpr long double phi_v<long double> = phi_v<double>;
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-    inline constexpr double e          = e_v<double>;
-    inline constexpr double log2e      = log2e_v<double>;
-    inline constexpr double log10e     = log10e_v<double>;
-    inline constexpr double pi         = pi_v<double>;
-    inline constexpr double inv_pi     = inv_pi_v<double>;
-    inline constexpr double inv_sqrtpi = inv_sqrtpi_v<double>;
-    inline constexpr double ln2        = ln2_v<double>;
-    inline constexpr double ln10       = ln10_v<double>;
-    inline constexpr double sqrt2      = sqrt2_v<double>;
-    inline constexpr double sqrt3      = sqrt3_v<double>;
-    inline constexpr double inv_sqrt3  = inv_sqrt3_v<double>;
-    inline constexpr double egamma     = egamma_v<double>;
-    inline constexpr double phi        = phi_v<double>;
+    _EXPORT_STD inline constexpr double e          = e_v<double>;
+    _EXPORT_STD inline constexpr double log2e      = log2e_v<double>;
+    _EXPORT_STD inline constexpr double log10e     = log10e_v<double>;
+    _EXPORT_STD inline constexpr double pi         = pi_v<double>;
+    _EXPORT_STD inline constexpr double inv_pi     = inv_pi_v<double>;
+    _EXPORT_STD inline constexpr double inv_sqrtpi = inv_sqrtpi_v<double>;
+    _EXPORT_STD inline constexpr double ln2        = ln2_v<double>;
+    _EXPORT_STD inline constexpr double ln10       = ln10_v<double>;
+    _EXPORT_STD inline constexpr double sqrt2      = sqrt2_v<double>;
+    _EXPORT_STD inline constexpr double sqrt3      = sqrt3_v<double>;
+    _EXPORT_STD inline constexpr double inv_sqrt3  = inv_sqrt3_v<double>;
+    _EXPORT_STD inline constexpr double egamma     = egamma_v<double>;
+    _EXPORT_STD inline constexpr double phi        = phi_v<double>;
 } // namespace numbers
 _STD_END
 

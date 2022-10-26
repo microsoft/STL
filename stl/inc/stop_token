@@ -25,14 +25,14 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-struct nostopstate_t {
+_EXPORT_STD struct nostopstate_t {
     explicit nostopstate_t() = default;
 };
 
-inline constexpr nostopstate_t nostopstate{};
+_EXPORT_STD inline constexpr nostopstate_t nostopstate{};
 
 struct _Stop_state;
-class stop_token;
+_EXPORT_STD class stop_token;
 
 class _Stop_callback_base {
     friend _Stop_state;
@@ -114,9 +114,9 @@ struct _Stop_state {
     }
 };
 
-class stop_source;
+_EXPORT_STD class stop_source;
 
-class stop_token {
+_EXPORT_STD class stop_token {
     friend stop_source;
     friend _Stop_callback_base;
 
@@ -175,7 +175,7 @@ private:
     _Stop_state* _State;
 };
 
-class stop_source {
+_EXPORT_STD class stop_source {
 public:
     stop_source() : _State{new _Stop_state} {}
     explicit stop_source(nostopstate_t) noexcept : _State{} {}
@@ -353,7 +353,7 @@ inline void _Stop_callback_base::_Detach() noexcept {
     _Token._State->_Current_callback.wait(this, memory_order_acquire);
 }
 
-template <class _Callback>
+_EXPORT_STD template <class _Callback>
 class stop_callback : public _Stop_callback_base {
 public:
     using callback_type = _Callback;

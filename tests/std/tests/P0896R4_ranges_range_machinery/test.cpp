@@ -40,9 +40,7 @@ template <class T>
 concept Decayed = std::same_as<std::decay_t<T>, T>;
 
 template <class R>
-concept CanSizeType = requires {
-    typename ranges::range_size_t<R>;
-};
+concept CanSizeType = requires { typename ranges::range_size_t<R>; };
 
 struct invalid_type {};
 
@@ -856,11 +854,9 @@ struct fancy_pointer {
 
     fancy_pointer() = default;
     fancy_pointer(std::nullptr_t);
-    // clang-format off
     template <class U>
         requires std::convertible_to<U*, T*>
     fancy_pointer(fancy_pointer<U>);
-    // clang-format on
 
     element_type& operator*() const;
     element_type& operator[](difference_type) const;
@@ -1547,13 +1543,18 @@ struct arbitrary_range {
     arbitrary_range(arbitrary_range&&)            = default;
     arbitrary_range& operator=(arbitrary_range&&) = default;
 
-    int* begin() requires AllowNonConst;
-    int* end() requires AllowNonConst;
+    int* begin()
+        requires AllowNonConst;
+    int* end()
+        requires AllowNonConst;
 
-    int const* begin() const requires AllowConst;
-    int const* end() const requires AllowConst;
+    int const* begin() const
+        requires AllowConst;
+    int const* end() const
+        requires AllowConst;
 
-    unsigned char size() const requires AllowSize;
+    unsigned char size() const
+        requires AllowSize;
 };
 
 using mutable_unsized_range      = arbitrary_range<true, true, false>;
@@ -1888,27 +1889,27 @@ namespace poison_pill_test {
 
 namespace unwrapped_begin_end {
     // Validate the iterator-unwrapping range access CPOs ranges::_Ubegin and ranges::_Uend
-    using test::CanCompare, test::CanDifference, test::Common, test::ProxyRef, test::Sized, test::IsWrapped;
+    using test::CanCompare, test::CanDifference, test::Common, test::ProxyRef, test::Sized, test::WrappedState;
 
-    template <IsWrapped Wrapped>
+    template <WrappedState IterWrapped, WrappedState SentWrapped = IterWrapped>
     struct range {
-        using I =
-            test::iterator<std::forward_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, Wrapped>;
-        using S = test::sentinel<int, Wrapped>;
+        using I = test::iterator<std::forward_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes,
+            IterWrapped>;
+        using S = test::sentinel<int, SentWrapped>;
 
         I begin() const;
         S end() const;
     };
 
-    struct with_unchecked : range<IsWrapped::yes> {
+    struct with_unchecked : range<WrappedState::wrapped> {
         bool begin_called_ = false;
         bool end_called_   = false;
 
-        [[nodiscard]] constexpr range<IsWrapped::no>::I _Unchecked_begin() {
+        [[nodiscard]] constexpr range<WrappedState::unwrapped>::I _Unchecked_begin() {
             begin_called_ = true;
             return {};
         }
-        [[nodiscard]] constexpr range<IsWrapped::no>::S _Unchecked_end() {
+        [[nodiscard]] constexpr range<WrappedState::unwrapped>::S _Unchecked_end() {
             end_called_ = true;
             return {};
         }
@@ -1917,17 +1918,25 @@ namespace unwrapped_begin_end {
     constexpr bool test() {
         using std::same_as, ranges::_Ubegin, ranges::_Uend;
 
-        range<IsWrapped::no> not_wrapped;
-        STATIC_ASSERT(same_as<decltype(_Ubegin(not_wrapped)), range<IsWrapped::no>::I>);
-        STATIC_ASSERT(same_as<decltype(_Uend(not_wrapped)), range<IsWrapped::no>::S>);
+        range<WrappedState::unwrapped> unwrapped;
+        STATIC_ASSERT(same_as<decltype(_Ubegin(unwrapped)), range<WrappedState::unwrapped>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(unwrapped)), range<WrappedState::unwrapped>::S>);
 
-        range<IsWrapped::yes> wrapped;
-        STATIC_ASSERT(same_as<decltype(_Ubegin(wrapped)), range<IsWrapped::no>::I>);
-        STATIC_ASSERT(same_as<decltype(_Uend(wrapped)), range<IsWrapped::no>::S>);
+        range<WrappedState::wrapped> wrapped;
+        STATIC_ASSERT(same_as<decltype(_Ubegin(wrapped)), range<WrappedState::unwrapped>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(wrapped)), range<WrappedState::unwrapped>::S>);
+
+        range<WrappedState::wrapped, WrappedState::ignorant> it_wrapped_se_ignorant;
+        STATIC_ASSERT(same_as<decltype(_Ubegin(it_wrapped_se_ignorant)), range<WrappedState::wrapped>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(it_wrapped_se_ignorant)), range<WrappedState::ignorant>::S>);
+
+        range<WrappedState::ignorant, WrappedState::wrapped> it_ignorant_se_wrapped;
+        STATIC_ASSERT(same_as<decltype(_Ubegin(it_ignorant_se_wrapped)), range<WrappedState::ignorant>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(it_ignorant_se_wrapped)), range<WrappedState::wrapped>::S>);
 
         with_unchecked uncheckable;
-        STATIC_ASSERT(same_as<decltype(_Ubegin(uncheckable)), range<IsWrapped::no>::I>);
-        STATIC_ASSERT(same_as<decltype(_Uend(uncheckable)), range<IsWrapped::no>::S>);
+        STATIC_ASSERT(same_as<decltype(_Ubegin(uncheckable)), range<WrappedState::unwrapped>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(uncheckable)), range<WrappedState::unwrapped>::S>);
         (void) _Ubegin(uncheckable);
         assert(uncheckable.begin_called_);
         (void) _Uend(uncheckable);

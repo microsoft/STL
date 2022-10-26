@@ -1,4 +1,4 @@
-// xerrc.h internal header
+// xerrc.h internal header (core)
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -6,7 +6,7 @@
 #pragma once
 #ifndef _XERRC_H
 #define _XERRC_H
-#include <yvals.h>
+#include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
 #pragma pack(push, _CRT_PACKING)
@@ -17,7 +17,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-enum class errc { // names for generic error codes
+_EXPORT_STD enum class errc { // names for generic error codes
     address_family_not_supported       = 102, // EAFNOSUPPORT
     address_in_use                     = 100, // EADDRINUSE
     address_not_available              = 101, // EADDRNOTAVAIL
