@@ -1423,27 +1423,25 @@ template <class _Type, template <class...> class _Template>
 struct _Is_specialization : bool_constant<_Is_specialization_v<_Type, _Template>> {};
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _MSVC_INTRINSIC constexpr _Ty&& forward(
-    remove_reference_t<_Ty>& _Arg) noexcept { // forward an lvalue as either an lvalue or an rvalue
+_NODISCARD _MSVC_INTRINSIC constexpr _Ty&& forward(remove_reference_t<_Ty>& _Arg) noexcept {
     return static_cast<_Ty&&>(_Arg);
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _MSVC_INTRINSIC constexpr _Ty&& forward(
-    remove_reference_t<_Ty>&& _Arg) noexcept { // forward an rvalue as an rvalue
+_NODISCARD _MSVC_INTRINSIC constexpr _Ty&& forward(remove_reference_t<_Ty>&& _Arg) noexcept {
     static_assert(!is_lvalue_reference_v<_Ty>, "bad forward call");
     return static_cast<_Ty&&>(_Arg);
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _MSVC_INTRINSIC constexpr remove_reference_t<_Ty>&& move(_Ty&& _Arg) noexcept { // forward _Arg as movable
+_NODISCARD _MSVC_INTRINSIC constexpr remove_reference_t<_Ty>&& move(_Ty&& _Arg) noexcept {
     return static_cast<remove_reference_t<_Ty>&&>(_Arg);
 }
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD _MSVC_INTRINSIC constexpr //
     conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_copy_constructible_v<_Ty>, const _Ty&, _Ty&&>
-    move_if_noexcept(_Ty& _Arg) noexcept { // forward _Arg as movable, sometimes
+    move_if_noexcept(_Ty& _Arg) noexcept {
     return _STD move(_Arg);
 }
 
