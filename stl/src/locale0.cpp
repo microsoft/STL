@@ -152,11 +152,7 @@ _MRTIMP2_PURE const locale& __CLRCALL_PURE_OR_CDECL locale::classic() { // get r
     const auto mem = reinterpret_cast<const intptr_t*>(&locale::_Locimp::_Clocptr);
     intptr_t as_bytes;
 #ifdef _WIN64
-#ifdef _M_ARM
-    as_bytes = __ldrexd(_Mem);
-#else // ^^^ ARM64 / x64 vvv
     as_bytes = __iso_volatile_load64(mem);
-#endif // ^^^ x64
 #else // ^^^ 64-bit / 32-bit vvv
     as_bytes = __iso_volatile_load32(mem);
 #endif // ^^^ 32-bit ^^^
@@ -199,9 +195,9 @@ _MRTIMP2_PURE locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Init(bool _Do_in
         _Compiler_or_memory_barrier();
 #ifdef _WIN64
         __iso_volatile_store64(mem, as_bytes);
-#else
+#else // ^^^ 64-bit / 32-bit vvv
         __iso_volatile_store32(mem, as_bytes);
-#endif
+#endif // ^^^ 32-bit ^^^
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
     }
 
