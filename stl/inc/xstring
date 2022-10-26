@@ -2504,8 +2504,10 @@ private:
 #endif // _HAS_CXX17
 
 #ifdef _INSERT_STRING_ANNOTATION
-    constexpr bool _Small_string_always_asan_aligned =
-        alignof(*this) >= 8 && _Memcpy_val_offset % _Asan_granularity == 0;
+    // this is a function so we can get the alignment of the class while defining it.
+    static constexpr bool _Small_string_always_asan_aligned() {
+        return alignof(basic_string) >= _Asan_granularity && _Memcpy_val_offset % _Asan_granularity == 0;
+    }
 
     _CONSTEXPR20 void _Create_annotation() const noexcept {
         // Annotates the valid range with shadow memory
@@ -2531,14 +2533,14 @@ private:
         auto& _My_data              = _Mypair._Myval2;
         const void* const _My_buf   = _My_data._Bx._Buf;
         const void* const _Ptr_last = _STD addressof(_My_data._Bx._Ptr) + 1;
-        const void* const _Buf_last = _My_data._Bx._Buf + _BUF_SIZE;
+        const void* const _End      = _My_data._Bx._Buf + _BUF_SIZE;
 
-        if constexpr (_Small_string_always_aligned) {
-            __sanitizer_annotate_contiguous_container(_My_buf, _Buf_last, _Buf_last, _Ptr_last);
+        if constexpr (_Small_string_always_asan_aligned()) {
+            __sanitizer_annotate_contiguous_container(_My_buf, _End, _End, _Ptr_last);
         } else {
             const auto _My_buf_address = reinterpret_cast<uintptr_t>(_My_buf);
             if ((_My_buf_address & (_Asan_granularity - 1)) == 0) {
-                __sanitizer_annotate_contiguous_container(_My_buf, _Buf_last, _Buf_last, _Ptr_last);
+                __sanitizer_annotate_contiguous_container(_My_buf, _End, _End, _Ptr_last);
             }
 
             // otherwise, there's nothing to do - we can't annotate just the latter nybble of the byte
@@ -2558,25 +2560,25 @@ private:
         }
 
         // Note that `_Capacity`, `_Old_size`, and `_New_size` do not include the null terminator
-        const void* const _Buf_last = _First + _Capacity + 1;
+        const void* const _End      = _First + _Capacity + 1;
         const void* const _Old_last = _First + _Old_size + 1;
         const void* const _New_last = _First + _New_size + 1;
 
-        constexpr bool _Large_string_always_aligned =
-            (_Container_allocation_minimum_alignment<basic_string>) > _Asan_granularity;
-        if constexpr (_Large_string_always_aligned && _Small_string_always_aligned) {
-            __sanitizer_annotate_contiguous_container(_First, _Buf_last, _Old_last, _New_last);
+        constexpr bool _Large_string_always_asan_aligned =
+            (_Container_allocation_minimum_alignment<basic_string>) >= _Asan_granularity;
+        if constexpr (_Large_string_always_asan_aligned && _Small_string_always_asan_aligned()) {
+            __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
         } else {
-            const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _Buf_last);
-            // It is impossible for there to be no aligned address within the underlying buffer,
-            // as the minimum allocation size for basic_string is at least 16.
-            _STL_ASSERT(_Aligned_first);
+            const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _End);
+            // It is impossible for there to be no aligned address within the underlying buffer.
+            // The minimum allocation size for basic_string is `_BUF_SIZE * sizeof(value_type)`,
+            // and `_BUF_SIZE = max(1, floor(16 / sizeof(value_type)))`.
+            // This implies that the smallest it can be is 9, for `sizeof(value_type) = 9`.
 
             // last must be >= than first, so fix up when `_Aligned_first > _*_last`
-            // note that _Buf_last must be > 16 from _First, so it certainly is past _Aligned_first (< _First + 8)
-            const void* const _Old_last_fixed = _Old_last >= _Aligned_first ? _Old_last : _Aligned_first;
-            const void* const _New_last_fixed = _New_last >= _Aligned_first ? _New_last : _Aligned_first;
-            _STD __sanitizer_annotate_contiguous_container(_Aligned_first, _Buf_last, _Old_last_fixed, _New_last_fixed);
+            const void* const _Old_last_fixed = (_STD min)(_Old_last, _Aligned_first);
+            const void* const _New_last_fixed = (_STD min)(_New_last, _Aligned_first);
+            _STD __sanitizer_annotate_contiguous_container(_Aligned_first, _End, _Old_last_fixed, _New_last_fixed);
         }
     }
 
