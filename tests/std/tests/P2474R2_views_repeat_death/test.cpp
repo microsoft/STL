@@ -15,42 +15,55 @@ void test_view_negative() {
 }
 
 void test_iter_decrement() {
-    repeat_view v(1, 0);
+    repeat_view v(1, 1);
     auto it = v.begin();
     --it; // can't decrement bound past 0
 }
 void test_iter_increment() {
     repeat_view v(1);
     auto it = v.begin();
-    it += (numeric_limits<ptrdiff_t>::max)() - 1;
-    it++;
+    it += (numeric_limits<ptrdiff_t>::max)();
     it++; // integer overflow
 }
 
 void test_iter_subtract_zero() {
-    repeat_view v(1, 3);
+    repeat_view v(1, 1);
     auto it = v.begin();
-    it -= 4; // can't subtract bound past 0
+    it -= 1; // can't subtract bound past 0
 }
 
-void test_iter_subtract_overflow() {
+void test_iter_subtract_pos_overflow() {
     repeat_view v(1);
     auto it = v.begin();
-    it += (numeric_limits<ptrdiff_t>::max)() - 1;
-    it -= -2; // integer overflow
+    it += (numeric_limits<ptrdiff_t>::max)();
+    it -= -1; // integer overflow
+}
+
+void test_iter_subtract_neg_overflow() {
+    repeat_view v(1);
+    auto it = v.begin();
+    it += (numeric_limits<ptrdiff_t>::min)();
+    it -= 1; // integer overflow
 }
 
 void test_iter_add_zero() {
-    repeat_view v(1, 3);
+    repeat_view v(1, 1);
     auto it = v.begin();
-    it += -4; // can't subtract bound past 0
+    it += -1; // can't subtract bound past 0
 }
 
-void test_iter_add_overflow() {
+void test_iter_add_pos_overflow() {
     repeat_view v(1);
     auto it = v.begin();
-    it += (numeric_limits<ptrdiff_t>::max)() - 1;
-    it += 2; // integer overflow
+    it += (numeric_limits<ptrdiff_t>::max)();
+    it += 1; // integer overflow
+}
+
+void test_iter_add_neg_overflow() {
+    repeat_view v(1);
+    auto it = v.begin();
+    it += (numeric_limits<ptrdiff_t>::min)();
+    it += -1; // integer overflow
 }
 
 int main(int argc, char* argv[]) {
@@ -62,9 +75,11 @@ int main(int argc, char* argv[]) {
         test_iter_decrement,
         test_iter_increment,
         test_iter_subtract_zero,
-        test_iter_subtract_overflow,
+        test_iter_subtract_pos_overflow,
+        test_iter_subtract_neg_overflow,
         test_iter_add_zero,
-        test_iter_add_overflow,
+        test_iter_add_pos_overflow,
+        test_iter_add_neg_overflow,
     });
 #else // ^^^ test everything / test only _CONTAINER_DEBUG_LEVEL case vvv
     exec.add_death_tests({
