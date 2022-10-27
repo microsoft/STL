@@ -16,7 +16,7 @@
 
 #if _HAS_CXX20
 #include <atomic>
-#endif
+#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

@@ -843,7 +843,7 @@ template <class _Ty, class _Uty>
 using _Forward_like_t = typename decltype(_STD _Forward_like_t_impl<_Ty, _Uty>())::type;
 
 _EXPORT_STD template <class _Ty, class _Uty>
-_NODISCARD constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
+_NODISCARD _MSVC_INTRINSIC constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
     static_assert(_Can_reference<_Ty>, "std::forward_like's first template argument must be a referenceable type.");
 
     return static_cast<_Forward_like_t<_Ty, _Uty>>(_Ux);

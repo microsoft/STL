@@ -1026,22 +1026,6 @@ public:
     static constexpr int digits10   = 38;
 };
 
-#ifdef __cpp_lib_concepts
-template <integral _Ty>
-struct common_type<_Ty, _Unsigned128> {
-    using type = _Unsigned128;
-};
-template <integral _Ty>
-struct common_type<_Unsigned128, _Ty> {
-    using type = _Unsigned128;
-};
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
-template <class _Ty>
-struct common_type<_Ty, _Unsigned128> : enable_if<is_integral_v<_Ty>, _Unsigned128> {};
-template <class _Ty>
-struct common_type<_Unsigned128, _Ty> : enable_if<is_integral_v<_Ty>, _Unsigned128> {};
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
-
 struct _Signed128 : _Base128 {
     using _Signed_type   = _Signed128;
     using _Unsigned_type = _Unsigned128;
@@ -1426,22 +1410,6 @@ public:
     static constexpr int digits   = 127;
     static constexpr int digits10 = 38;
 };
-
-#ifdef __cpp_lib_concepts
-template <integral _Ty>
-struct common_type<_Ty, _Signed128> {
-    using type = _Signed128;
-};
-template <integral _Ty>
-struct common_type<_Signed128, _Ty> {
-    using type = _Signed128;
-};
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
-template <class _Ty>
-struct common_type<_Ty, _Signed128> : enable_if<is_integral_v<_Ty>, _Signed128> {};
-template <class _Ty>
-struct common_type<_Signed128, _Ty> : enable_if<is_integral_v<_Ty>, _Signed128> {};
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 template <>
 struct common_type<_Signed128, _Unsigned128> {

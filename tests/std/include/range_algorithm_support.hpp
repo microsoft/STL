@@ -361,7 +361,7 @@ namespace test {
     template <class Category, class Element,
         // Model sized_sentinel_for along with sentinel?
         CanDifference Diff = CanDifference{derived_from<Category, random>},
-        // Model sentinel_for with self (and sized_sentinel_for if Diff; implies copyable)?
+        // Model sentinel_for with self (and sized_sentinel_for if Diff implies copyable)?
         CanCompare Eq = CanCompare{derived_from<Category, fwd>},
         // Use a ProxyRef reference type (instead of Element&)?
         ProxyRef Proxy = ProxyRef{!derived_from<Category, contiguous>},
