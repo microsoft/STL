@@ -102,7 +102,6 @@
         "sstream",
         "stack",
         "stacktrace",
-        "stdatomic.h",
         "stdexcept",
         "stop_token",
         "streambuf",
