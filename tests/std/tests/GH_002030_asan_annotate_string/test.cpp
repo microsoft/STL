@@ -3,7 +3,6 @@
 
 // REQUIRES: asan, x64 || x86
 
-#if 0 // TRANSITION, VSO-1586016: String annotations disabled temporarily.
 #pragma warning(disable : 4389) // signed/unsigned mismatch in arithmetic
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 #pragma warning(disable : 6326) // Potential comparison of a constant with another constant.
@@ -17,6 +16,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
+#include <iostream>
 #include <iterator>
 #include <memory>
 #include <new>
@@ -170,29 +170,17 @@ public:
 };
 
 template <class CharType, class Alloc>
-bool verify_string(basic_string<CharType, char_traits<CharType>, Alloc>& str) {
+bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& str) {
 #ifdef __SANITIZE_ADDRESS__
-    constexpr auto proxy_size = _Size_after_ebco_v<_Container_base>;
-    if constexpr (proxy_size % _Asan_granularity != 0) { // If we have a misaligned SSO buffer we disable ASAN
-        constexpr size_t max_sso_size = (16 / sizeof(CharType) < 1 ? 1 : 16 / sizeof(CharType)) - 1;
-        if (str.capacity() == max_sso_size) {
-            return true;
-        }
-    }
+    const void* const buffer        = str.data();
+    const void* const end           = str.data() + (str.capacity() + 1);
+    const void* const aligned_start = _Get_asan_aligned_first(buffer, end);
+    assert(aligned_start);
 
-    size_t buffer_size  = (str.capacity() + 1) * sizeof(CharType);
-    void* buffer        = const_cast<void*>(static_cast<const void*>(str.data()));
-    void* aligned_start = align(8, 1, buffer, buffer_size);
+    const void* const mid       = str.data() + str.size() + 1;
+    const void* const fixed_mid = mid > aligned_start ? mid : aligned_start;
 
-    if (!aligned_start) {
-        return true;
-    }
-
-    const void* end         = const_cast<void*>(static_cast<const void*>(str.data() + (str.capacity() + 1)));
-    const void* mid         = const_cast<void*>(static_cast<const void*>(str.data() + str.size() + 1));
-    const void* aligned_mid = mid > aligned_start ? mid : aligned_start;
-
-    return __sanitizer_verify_contiguous_container(aligned_start, aligned_mid, end) != 0;
+    return __sanitizer_verify_contiguous_container(aligned_start, fixed_mid, end) != 0;
 #else // ^^^ ASan instrumentation enabled ^^^ // vvv ASan instrumentation disabled vvv
     (void) str;
     return true;
@@ -250,7 +238,7 @@ struct explicit_allocator : public custom_test_allocator<CharType, Pocma, Statel
     }
 
     void deallocate(CharType* p, size_t) noexcept {
-        delete[](p - 1);
+        delete[] (p - 1);
     }
 };
 
@@ -266,7 +254,7 @@ struct implicit_allocator : public custom_test_allocator<CharType, Pocma, Statel
     }
 
     void deallocate(CharType* p, size_t) noexcept {
-        delete[](p - 1);
+        delete[] (p - 1);
     }
 };
 
@@ -276,11 +264,11 @@ void test_construction() {
     using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
     { // constructors
         // range constructors
-        str literal_constructed{get_large_input<CharType>()};
-        assert(verify_string(literal_constructed));
-
         str literal_constructed_sso{get_sso_input<CharType>()};
         assert(verify_string(literal_constructed_sso));
+
+        str literal_constructed{get_large_input<CharType>()};
+        assert(verify_string(literal_constructed));
 
         str initializer_list_constructed({CharType{'H'}, CharType{'e'}, CharType{'l'}, CharType{'l'}, CharType{'o'},
             CharType{' '}, //
@@ -1809,17 +1797,25 @@ void run_tests() {
 
 template <class CharType, template <class, class, class> class Alloc>
 void run_custom_allocator_matrix() {
+    cerr << "    pocma stateless\n";
     run_tests<Alloc<CharType, true_type, true_type>>();
+    cerr << "    pocma !stateless\n";
     run_tests<Alloc<CharType, true_type, false_type>>();
+    cerr << "    !pocma stateless\n";
     run_tests<Alloc<CharType, false_type, true_type>>();
+    cerr << "    !pocma !stateless\n";
     run_tests<Alloc<CharType, false_type, false_type>>();
 }
 
 template <class CharType>
 void run_allocator_matrix() {
+    cerr << "  allocator:\n";
     run_tests<allocator<CharType>>();
+    cerr << "  aligned_allocator:\n";
     run_custom_allocator_matrix<CharType, aligned_allocator>();
+    cerr << "  explicit_allocator:\n";
     run_custom_allocator_matrix<CharType, explicit_allocator>();
+    cerr << "  implicit_allocator:\n";
     run_custom_allocator_matrix<CharType, implicit_allocator>();
 }
 
@@ -1846,16 +1842,18 @@ void test_DevCom_10116361() {
 }
 
 int main() {
+    cerr << "char:\n";
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
+    cerr << "char8_t:\n";
     run_allocator_matrix<char8_t>();
 #endif // __cpp_char8_t
+    cerr << "char16_t:\n";
     run_allocator_matrix<char16_t>();
+    cerr << "char32_t:\n";
     run_allocator_matrix<char32_t>();
+    cerr << "wchar_t:\n";
     run_allocator_matrix<wchar_t>();
 
     test_DevCom_10116361();
 }
-#endif // TRANSITION, VSO-1586016
-
-int main() {}

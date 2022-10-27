@@ -2576,8 +2576,8 @@ private:
             // This implies that the smallest it can be is 9, for `sizeof(value_type) = 9`.
 
             // last must be >= than first, so fix up when `_Aligned_first > _*_last`
-            const void* const _Old_last_fixed = (_STD min)(_Old_last, _Aligned_first);
-            const void* const _New_last_fixed = (_STD min)(_New_last, _Aligned_first);
+            const void* const _Old_last_fixed = _Old_last > _Aligned_first ? _Old_last : _Aligned_first;
+            const void* const _New_last_fixed = _New_last > _Aligned_first ? _New_last : _Aligned_first;
             _STD __sanitizer_annotate_contiguous_container(_Aligned_first, _End, _Old_last_fixed, _New_last_fixed);
         }
     }
