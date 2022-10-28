@@ -3260,7 +3260,6 @@ namespace ranges {
     template <class _Ty>
     concept _Can_empty = requires(_Ty __t) { _RANGES empty(__t); };
 
-    // clang-format off
     _EXPORT_STD template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
     class view_interface {
@@ -3284,9 +3283,11 @@ namespace ranges {
     public:
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
-        _NODISCARD constexpr bool empty() requires sized_range<_Dx> || forward_range<_Dx>
+        _NODISCARD constexpr bool empty()
+            requires sized_range<_Dx> || forward_range<_Dx>
 #else // ^^^ workaround / no workaround vvv
-        _NODISCARD constexpr bool empty() requires sized_range<_Derived> || forward_range<_Derived>
+        _NODISCARD constexpr bool empty()
+            requires sized_range<_Derived> || forward_range<_Derived>
 #endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
@@ -3299,9 +3300,11 @@ namespace ranges {
 
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
-        _NODISCARD constexpr bool empty() const requires sized_range<const _Dx> || forward_range<const _Dx>
+        _NODISCARD constexpr bool empty() const
+            requires sized_range<const _Dx> || forward_range<const _Dx>
 #else // ^^^ workaround / no workaround vvv
-        _NODISCARD constexpr bool empty() const requires sized_range<const _Derived> || forward_range<const _Derived>
+        _NODISCARD constexpr bool empty() const
+            requires sized_range<const _Derived> || forward_range<const _Derived>
 #endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
@@ -3312,11 +3315,63 @@ namespace ranges {
             }
         }
 
+#if _HAS_CXX23
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
-        constexpr explicit operator bool() requires _Can_empty<_Dx>
+        _NODISCARD constexpr auto cbegin()
+            requires input_range<_Dx> // Per LWG-3766
 #else // ^^^ workaround / no workaround vvv
-        constexpr explicit operator bool() requires _Can_empty<_Derived>
+        _NODISCARD constexpr auto cbegin()
+            requires input_range<_Derived> // Per LWG-3766
+#endif // TRANSITION, LLVM-44833
+        {
+            return _RANGES cbegin(_Cast());
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr auto cbegin() const
+            requires input_range<const _Dx> // Per LWG-3766
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr auto cbegin() const
+            requires input_range<const _Derived> // Per LWG-3766
+#endif // TRANSITION, LLVM-44833
+        {
+            return _RANGES cbegin(_Cast());
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr auto cend()
+            requires input_range<_Dx> // Per LWG-3766
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr auto cend()
+            requires input_range<_Derived> // Per LWG-3766
+#endif // TRANSITION, LLVM-44833
+        {
+            return _RANGES cend(_Cast());
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr auto cend() const
+            requires input_range<const _Dx> // Per LWG-3766
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr auto cend() const
+            requires input_range<const _Derived> // Per LWG-3766
+#endif // TRANSITION, LLVM-44833
+        {
+            return _RANGES cend(_Cast());
+        }
+#endif // _HAS_CXX23
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        constexpr explicit operator bool()
+            requires _Can_empty<_Dx>
+#else // ^^^ workaround / no workaround vvv
+        constexpr explicit operator bool()
+            requires _Can_empty<_Derived>
 #endif // TRANSITION, LLVM-44833
         {
             return !_RANGES empty(_Cast());
@@ -3324,9 +3379,11 @@ namespace ranges {
 
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
-        constexpr explicit operator bool() const requires _Can_empty<const _Dx>
+        constexpr explicit operator bool() const
+            requires _Can_empty<const _Dx>
 #else // ^^^ workaround / no workaround vvv
-        constexpr explicit operator bool() const requires _Can_empty<const _Derived>
+        constexpr explicit operator bool() const
+            requires _Can_empty<const _Derived>
 #endif // TRANSITION, LLVM-44833
         {
             return !_RANGES empty(_Cast());
@@ -3334,9 +3391,11 @@ namespace ranges {
 
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
-        _NODISCARD constexpr auto data() requires contiguous_iterator<iterator_t<_Dx>>
+        _NODISCARD constexpr auto data()
+            requires contiguous_iterator<iterator_t<_Dx>>
 #else // ^^^ workaround / no workaround vvv
-        _NODISCARD constexpr auto data() requires contiguous_iterator<iterator_t<_Derived>>
+        _NODISCARD constexpr auto data()
+            requires contiguous_iterator<iterator_t<_Derived>>
 #endif // TRANSITION, LLVM-44833
         {
             return _STD to_address(_RANGES begin(_Cast()));
@@ -3369,11 +3428,12 @@ namespace ranges {
 
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
-        _NODISCARD constexpr auto size() const requires forward_range<const _Dx>
-            && sized_sentinel_for<sentinel_t<const _Dx>, iterator_t<const _Dx>>
+        _NODISCARD constexpr auto size() const
+            requires forward_range<const _Dx> && sized_sentinel_for<sentinel_t<const _Dx>, iterator_t<const _Dx>>
 #else // ^^^ workaround / no workaround vvv
-        _NODISCARD constexpr auto size() const requires forward_range<const _Derived>
-            && sized_sentinel_for<sentinel_t<const _Derived>, iterator_t<const _Derived>>
+        _NODISCARD constexpr auto size() const
+            requires forward_range<const _Derived>
+                  && sized_sentinel_for<sentinel_t<const _Derived>, iterator_t<const _Derived>>
 #endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
@@ -3382,9 +3442,11 @@ namespace ranges {
 
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
-        _NODISCARD constexpr decltype(auto) front() requires forward_range<_Dx>
+        _NODISCARD constexpr decltype(auto) front()
+            requires forward_range<_Dx>
 #else // ^^^ workaround / no workaround vvv
-        _NODISCARD constexpr decltype(auto) front() requires forward_range<_Derived>
+        _NODISCARD constexpr decltype(auto) front()
+            requires forward_range<_Derived>
 #endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
@@ -3396,9 +3458,11 @@ namespace ranges {
 
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
-        _NODISCARD constexpr decltype(auto) front() const requires forward_range<const _Dx>
+        _NODISCARD constexpr decltype(auto) front() const
+            requires forward_range<const _Dx>
 #else // ^^^ workaround / no workaround vvv
-        _NODISCARD constexpr decltype(auto) front() const requires forward_range<const _Derived>
+        _NODISCARD constexpr decltype(auto) front() const
+            requires forward_range<const _Derived>
 #endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
@@ -3410,9 +3474,11 @@ namespace ranges {
 
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
-        _NODISCARD constexpr decltype(auto) back() requires bidirectional_range<_Dx> && common_range<_Dx>
+        _NODISCARD constexpr decltype(auto) back()
+            requires bidirectional_range<_Dx> && common_range<_Dx>
 #else // ^^^ workaround / no workaround vvv
-        _NODISCARD constexpr decltype(auto) back() requires bidirectional_range<_Derived> && common_range<_Derived>
+        _NODISCARD constexpr decltype(auto) back()
+            requires bidirectional_range<_Derived> && common_range<_Derived>
 #endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
@@ -3466,7 +3532,6 @@ namespace ranges {
             return _RANGES begin(_Self)[_Idx];
         }
     };
-    // clang-format on
 } // namespace ranges
 
 // These declarations must be visible to qualified name lookup for _STD get in _Pair_like below, even if <tuple> hasn't
