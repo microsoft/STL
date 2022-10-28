@@ -2233,6 +2233,9 @@ namespace ranges {
                         _RANGES end(__r);
                     };
 
+    _EXPORT_STD template <class _Rng>
+    concept input_range = range<_Rng> && input_iterator<iterator_t<_Rng>>;
+
     _EXPORT_STD template <range _Rng>
     using sentinel_t = decltype(_RANGES end(_STD declval<_Rng&>()));
 
@@ -2426,15 +2429,44 @@ namespace ranges {
     _EXPORT_STD template <range _Rng>
     using range_rvalue_reference_t = iter_rvalue_reference_t<iterator_t<_Rng>>;
 
+#if _HAS_CXX23
+    _EXPORT_STD template <class _Rng>
+    concept constant_range = input_range<_Rng> && _Constant_iterator<iterator_t<_Rng>>;
+
+    template <range _Rng> // Per LWG-3768
+    constexpr auto& _Possibly_const_range(_Rng& _Range) {
+        if constexpr (constant_range<const _Rng> && !constant_range<_Rng>) {
+            return const_cast<const _Rng&>(_Range);
+        } else {
+            return _Range;
+        }
+    }
+
+    template <class _Ty>
+    constexpr auto _As_const_pointer(const _Ty* _Ptr) noexcept {
+        return _Ptr;
+    }
+#endif // _HAS_CXX23
+
     struct _Cbegin_fn {
-        // clang-format off
+#if _HAS_CXX23
+        template <_Should_range_access _Ty,
+            class _Uty = decltype(_RANGES begin(_RANGES _Possibly_const_range(declval<_Ty>())))>
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+            noexcept(noexcept(const_iterator<_Uty>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}))
+            requires requires { const_iterator<_Uty>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}; }
+        {
+            return const_iterator<_Uty>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
+        }
+#else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
             noexcept(noexcept(_RANGES begin(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES begin(static_cast<_CTy&&>(_Val)); } {
+            requires requires { _RANGES begin(static_cast<_CTy&&>(_Val)); }
+        {
             return _RANGES begin(static_cast<_CTy&&>(_Val));
         }
-        // clang-format on
+#endif // C++20
     };
 
     inline namespace _Cpos {
@@ -2442,14 +2474,24 @@ namespace ranges {
     }
 
     struct _Cend_fn {
-        // clang-format off
+#if _HAS_CXX23
+        template <_Should_range_access _Ty,
+            class _Uty = decltype(_RANGES end(_RANGES _Possibly_const_range(declval<_Ty>())))>
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+            noexcept(noexcept(const_sentinel<_Uty>{_RANGES end(_RANGES _Possibly_const_range(_Val))}))
+            requires requires { const_sentinel<_Uty>{_RANGES end(_RANGES _Possibly_const_range(_Val))}; }
+        {
+            return const_sentinel<_Uty>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
+        }
+#else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
             noexcept(noexcept(_RANGES end(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES end(static_cast<_CTy&&>(_Val)); } {
+            requires requires { _RANGES end(static_cast<_CTy&&>(_Val)); }
+        {
             return _RANGES end(static_cast<_CTy&&>(_Val));
         }
-        // clang-format on
+#endif // C++20
     };
 
     inline namespace _Cpos {
@@ -2592,14 +2634,24 @@ namespace ranges {
     }
 
     struct _Crbegin_fn {
-        // clang-format off
+#if _HAS_CXX23
+        template <_Should_range_access _Ty,
+            class _Uty = decltype(_RANGES rbegin(_RANGES _Possibly_const_range(declval<_Ty>())))>
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+            noexcept(noexcept(const_iterator<_Uty>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}))
+            requires requires { const_iterator<_Uty>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}; }
+        {
+            return const_iterator<_Uty>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
+        }
+#else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
             noexcept(noexcept(_RANGES rbegin(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES rbegin(static_cast<_CTy&&>(_Val)); } {
+            requires requires { _RANGES rbegin(static_cast<_CTy&&>(_Val)); }
+        {
             return _RANGES rbegin(static_cast<_CTy&&>(_Val));
         }
-        // clang-format on
+#endif // C++20
     };
 
     inline namespace _Cpos {
@@ -2607,14 +2659,24 @@ namespace ranges {
     }
 
     struct _Crend_fn {
-        // clang-format off
+#if _HAS_CXX23
+        template <_Should_range_access _Ty,
+            class _Uty = decltype(_RANGES rend(_RANGES _Possibly_const_range(declval<_Ty>())))>
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+            noexcept(noexcept(const_sentinel<_Uty>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}))
+            requires requires { const_sentinel<_Uty>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}; }
+        {
+            return const_sentinel<_Uty>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
+        }
+#else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
             noexcept(noexcept(_RANGES rend(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES rend(static_cast<_CTy&&>(_Val)); } {
+            requires requires { _RANGES rend(static_cast<_CTy&&>(_Val)); }
+        {
             return _RANGES rend(static_cast<_CTy&&>(_Val));
         }
-        // clang-format on
+#endif // C++20
     };
 
     inline namespace _Cpos {
@@ -2823,14 +2885,23 @@ namespace ranges {
     }
 
     struct _Cdata_fn {
-        // clang-format off
+#if _HAS_CXX23
+        template <_Should_range_access _Ty>
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+            noexcept(noexcept(_RANGES data(_RANGES _Possibly_const_range(_Val))))
+            requires requires { _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val))); }
+        {
+            return _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
+        }
+#else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
             noexcept(noexcept(_RANGES data(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES data(static_cast<_CTy&&>(_Val)); } {
+            requires requires { _RANGES data(static_cast<_CTy&&>(_Val)); }
+        {
             return _RANGES data(static_cast<_CTy&&>(_Val));
         }
-        // clang-format on
+#endif // C++20
     };
 
     inline namespace _Cpos {
@@ -2868,9 +2939,6 @@ namespace ranges {
 
     _EXPORT_STD template <class _Rng, class _Ty>
     concept output_range = range<_Rng> && output_iterator<iterator_t<_Rng>, _Ty>;
-
-    _EXPORT_STD template <class _Rng>
-    concept input_range = range<_Rng> && input_iterator<iterator_t<_Rng>>;
 
     _EXPORT_STD template <class _Rng>
     concept forward_range = range<_Rng> && forward_iterator<iterator_t<_Rng>>;
