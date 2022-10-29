@@ -1459,7 +1459,12 @@ concept CanMemberEnd = requires(R&& r) { std::forward<R>(r).end(); };
 template <class R>
 concept CanCBegin = requires(R&& r) { ranges::cbegin(std::forward<R>(r)); };
 template <class R>
+concept CanMemberCBegin = requires(R&& r) { std::forward<R>(r).cbegin(); };
+
+template <class R>
 concept CanCEnd = requires(R&& r) { ranges::cend(std::forward<R>(r)); };
+template <class R>
+concept CanMemberCEnd = requires(R&& r) { std::forward<R>(r).cend(); };
 
 template <class R>
 concept CanRBegin = requires(R&& r) { ranges::rbegin(std::forward<R>(r)); };
