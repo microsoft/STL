@@ -1839,6 +1839,13 @@ void test_DevCom_10116361() {
     s1.~string();
 }
 
+void test_DevCom_10109507() {
+    // replace failed to correctly munge asan annotations while working
+    string s("abcd");
+    s.replace(0, 1, "ef", 2);
+    s.replace(0, 0, "xy", 2);
+}
+
 int main() {
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
@@ -1849,4 +1856,5 @@ int main() {
     run_allocator_matrix<wchar_t>();
 
     test_DevCom_10116361();
+    test_DevCom_10109507();
 }
