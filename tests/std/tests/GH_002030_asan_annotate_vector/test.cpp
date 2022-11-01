@@ -3,8 +3,6 @@
 
 // REQUIRES: x64 || x86
 
-#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
-
 #include <cassert>
 #include <cstddef>
 #include <iostream>
@@ -13,6 +11,12 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
+#endif // __clang__
 
 using namespace std;
 

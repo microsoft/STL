@@ -3,12 +3,9 @@
 
 // REQUIRES: asan, x64 || x86
 
-#pragma warning(disable : 4389) // signed/unsigned mismatch in arithmetic
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
-#pragma warning(disable : 6326) // Potential comparison of a constant with another constant.
 
 #ifdef __clang__
-#pragma clang diagnostic ignored "-Wsign-compare"
 #pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
 #endif // __clang__
 
@@ -171,14 +168,14 @@ public:
 template <class CharType, class Alloc>
 bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& str) {
 #ifdef __SANITIZE_ADDRESS__
-    const void* const buffer = str.data();
-    const void* const end    = str.data() + (str.capacity() + 1);
+    const void* const buffer  = str.data();
+    const void* const buf_end = str.data() + (str.capacity() + 1);
 
     _AsanAlignedPointers aligned;
     if constexpr ((_Container_allocation_minimum_alignment<basic_string<CharType, char_traits<CharType>, Alloc>>) > 8) {
         aligned = {buffer, buf_end};
     } else {
-        aligned = _Get_asan_aligned_first_end(buffer, end);
+        aligned = _Get_asan_aligned_first_end(buffer, buf_end);
         assert(aligned._First);
         assert(aligned._End);
     }
