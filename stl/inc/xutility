@@ -2433,7 +2433,7 @@ namespace ranges {
     _EXPORT_STD template <class _Rng>
     concept constant_range = input_range<_Rng> && _Constant_iterator<iterator_t<_Rng>>;
 
-    template <range _Rng> // Per LWG-3768
+    template <input_range _Rng>
     _NODISCARD constexpr auto& _Possibly_const_range(_Rng& _Range) noexcept {
         if constexpr (constant_range<const _Rng> && !constant_range<_Rng>) {
 #ifndef __clang__ // TRANSITION, DevCom-???????
