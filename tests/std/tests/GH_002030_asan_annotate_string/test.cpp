@@ -173,9 +173,15 @@ bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& s
 #ifdef __SANITIZE_ADDRESS__
     const void* const buffer = str.data();
     const void* const end    = str.data() + (str.capacity() + 1);
-    const auto aligned       = _Get_asan_aligned_first_last(buffer, end);
-    assert(aligned._First);
-    assert(aligned._End);
+
+    _AsanAlignedPointers aligned;
+    if constexpr ((_Container_allocation_minimum_alignment<basic_string<CharType, char_traits<CharType>, Alloc>>) > 8) {
+        aligned = {buffer, buf_end};
+    } else {
+        aligned = _Get_asan_aligned_first_end(buffer, end);
+        assert(aligned._First);
+        assert(aligned._End);
+    }
 
     const void* const mid       = str.data() + str.size() + 1;
     const void* const fixed_mid = aligned._Clamp(mid);

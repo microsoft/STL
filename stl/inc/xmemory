@@ -780,7 +780,7 @@ struct _AsanAlignedPointers {
     const void* _First;
     const void* _End;
 
-    constexpr const void* _Clamp(const void* _Mid) const noexcept {
+    _NODISCARD constexpr const void* _Clamp(const void* _Mid) const noexcept {
         if (_Mid < _First) {
             return _First;
         } else if (_Mid > _End) {
@@ -790,7 +790,7 @@ struct _AsanAlignedPointers {
         }
     }
 };
-// Returns {nullptr, nullptr} if [_First, _Last) does not cover a full ASAN shadow memory section.
+// Returns {nullptr, nullptr} if [_First, _End) does not cover a full ASAN shadow memory section.
 // `__sanitizer_annotate_contiguous_container` _requires_
 // its first pointer to be aligned to the beginning of an ASAN shadow memory section (a single 8-byte).
 // When the `end` pointer is not on a boundary, it will also mark the remainder of the section.
@@ -805,7 +805,7 @@ struct _AsanAlignedPointers {
 // Additionally, if you attempt to mark up to `buffer + 16` (the real end of buffer), it'll also mark `purr`.
 // Thus, the only part you can _actually_ mark is the complete shadow memory section of `buffer + [4, 12)`
 // (i.e., bytes [8, 16)).
-_NODISCARD inline _AsanAlignedPointers _Get_asan_aligned_first_last(
+_NODISCARD inline _AsanAlignedPointers _Get_asan_aligned_first_end(
     const void* const _First, const void* const _Last) noexcept {
     constexpr static uintptr_t _Mask = ~(_Asan_granularity - 1);
 
@@ -815,7 +815,7 @@ _NODISCARD inline _AsanAlignedPointers _Get_asan_aligned_first_last(
     const uintptr_t _Aligned_first_address = (_First_address + _Asan_granularity - 1) & _Mask;
     const uintptr_t _Aligned_last_address  = _Last_address & _Mask;
 
-    if (_Aligned_first_address == _Aligned_last_address) {
+    if (_Aligned_first_address >= _Aligned_last_address) {
         return {nullptr, nullptr};
     } else {
         return {

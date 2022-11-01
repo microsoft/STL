@@ -3,6 +3,8 @@
 
 // REQUIRES: x64 || x86
 
+#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+
 #include <cassert>
 #include <cstddef>
 #include <iostream>
@@ -148,19 +150,23 @@ public:
 template <class T, class Alloc>
 bool verify_vector(vector<T, Alloc>& vec) {
 #ifdef __SANITIZE_ADDRESS__
-    size_t buffer_bytes = vec.capacity() * sizeof(T);
-    void* buffer        = vec.data();
-    void* aligned_start = align(8, 1, buffer, buffer_bytes);
+    const void* buffer  = vec.data();
+    const void* buf_end = vec.data() + vec.capacity();
+    _AsanAlignedPointers aligned;
 
-    if (!aligned_start) {
-        return true;
+    if constexpr ((_Container_allocation_minimum_alignment<vector<T, Alloc>>) > 8) {
+        aligned = {buffer, buf_end};
+    } else {
+        aligned = _Get_asan_aligned_first_end(buffer, buf_end);
+        if (!aligned._First) {
+            return true;
+        }
     }
 
-    void* mid = vec.data() + vec.size();
-    mid       = mid > aligned_start ? mid : aligned_start;
+    const void* const mid       = vec.data() + vec.size();
+    const void* const fixed_mid = aligned._Clamp(mid);
 
-    void* bad_address =
-        __sanitizer_contiguous_container_find_bad_address(aligned_start, mid, vec.data() + vec.capacity());
+    void* bad_address = __sanitizer_contiguous_container_find_bad_address(aligned._First, fixed_mid, aligned._End);
     if (bad_address == nullptr) {
         return true;
     }
@@ -172,9 +178,11 @@ bool verify_vector(vector<T, Alloc>& vec) {
     }
     cout << "Vector State:" << endl;
     cout << "  begin:         " << buffer << endl;
-    cout << "  aligned begin: " << aligned_start << endl;
-    cout << "  last:          " << reinterpret_cast<void*>(vec.data() + vec.size()) << endl;
-    cout << "  end:           " << reinterpret_cast<void*>(vec.data() + vec.capacity()) << endl;
+    cout << "  aligned begin: " << aligned._First << endl;
+    cout << "  last:          " << mid << endl;
+    cout << "  aligned_last:  " << fixed_mid << endl;
+    cout << "  end:           " << buf_end << endl;
+    cout << "  aligned_end:   " << aligned._End << endl;
     __asan_describe_address(bad_address);
 
     return false;

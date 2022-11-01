@@ -563,7 +563,7 @@ private:
         if constexpr ((_Container_allocation_minimum_alignment<vector>) > _Asan_granularity) {
             __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
         } else {
-            const auto _Aligned = _STD _Get_asan_aligned_first_last(_First, _End);
+            const auto _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
             if (!_Aligned._First) {
                 // The buffer does not cover at least a full shadow memory section; nothing to do.
                 return;

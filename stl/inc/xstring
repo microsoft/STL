@@ -2505,7 +2505,7 @@ private:
 
 #ifdef _INSERT_STRING_ANNOTATION
     // this is a function so we can get the alignment of the class while defining it.
-    static constexpr bool _Small_string_always_asan_aligned() {
+    _NODISCARD static constexpr bool _Small_string_always_asan_aligned() noexcept {
         return alignof(basic_string) >= _Asan_granularity && _Memcpy_val_offset % _Asan_granularity == 0;
     }
 
@@ -2522,6 +2522,10 @@ private:
     }
 
     _CONSTEXPR20 void _Modify_annotation(const size_type _Old_size, const size_type _New_size) const noexcept {
+        if (_Old_size == _New_size) {
+            return;
+        }
+
         auto& _My_data = _Mypair._Myval2;
         _Apply_annotation(_My_data._Myptr(), _My_data._Myres, _Old_size, _New_size);
     }
@@ -2540,7 +2544,7 @@ private:
         if constexpr (_Small_string_always_asan_aligned()) {
             _STD __sanitizer_annotate_contiguous_container(_My_buf, _End, _My_buf, _End);
         } else {
-            const auto _Aligned = _STD _Get_asan_aligned_first_last(_My_buf, _End);
+            const auto _Aligned = _STD _Get_asan_aligned_first_end(_My_buf, _End);
             if (!_Aligned._First) {
                 // The buffer does not cover at least a full shadow memory section; nothing to do.
                 return;
@@ -2598,7 +2602,7 @@ private:
         if constexpr (_Large_string_always_asan_aligned && _Small_string_always_asan_aligned()) {
             _STD __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
         } else {
-            const auto _Aligned = _STD _Get_asan_aligned_first_last(_First, _End);
+            const auto _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
             if (!_Aligned._First) {
                 // The buffer does not cover at least a full shadow memory section; nothing to do.
                 return;
@@ -2842,6 +2846,8 @@ private:
             }
         }
 
+        _ASAN_STRING_REMOVE(*this);
+
         _Tidy_deallocate_guard<basic_string> _Guard{this};
         for (; _First != _Last; ++_First) {
             if constexpr (!is_same_v<_Size, size_type>) {
@@ -2861,7 +2867,6 @@ private:
 #endif // _HAS_CXX20
                     _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
                     if (_My_data._Myres >= _BUF_SIZE) { // Need to deallocate old storage
-                        _ASAN_STRING_REMOVE(*this);
                         _Al.deallocate(_My_data._Bx._Ptr, _My_data._Myres + 1);
                         _My_data._Bx._Ptr = _New_ptr;
                     } else {
