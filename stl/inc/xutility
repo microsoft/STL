@@ -2436,11 +2436,11 @@ namespace ranges {
     template <input_range _Rng>
     _NODISCARD constexpr auto& _Possibly_const_range(_Rng& _Range) noexcept {
         if constexpr (constant_range<const _Rng> && !constant_range<_Rng>) {
-#ifndef __clang__ // TRANSITION, DevCom-???????
+#ifndef __clang__ // TRANSITION, DevCom-10187107
             return _STD as_const(_Range);
 #else // ^^^ workaround / no workaround vvv
             return const_cast<const _Rng&>(_Range);
-#endif // TRANSITION, DevCom-???????
+#endif // TRANSITION, DevCom-10187107
         } else {
             return _Range;
         }
