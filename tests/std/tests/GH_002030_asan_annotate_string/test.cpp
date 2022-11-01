@@ -16,7 +16,6 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
-#include <iostream>
 #include <iterator>
 #include <memory>
 #include <new>
@@ -1797,25 +1796,17 @@ void run_tests() {
 
 template <class CharType, template <class, class, class> class Alloc>
 void run_custom_allocator_matrix() {
-    cerr << "    pocma stateless\n";
     run_tests<Alloc<CharType, true_type, true_type>>();
-    cerr << "    pocma !stateless\n";
     run_tests<Alloc<CharType, true_type, false_type>>();
-    cerr << "    !pocma stateless\n";
     run_tests<Alloc<CharType, false_type, true_type>>();
-    cerr << "    !pocma !stateless\n";
     run_tests<Alloc<CharType, false_type, false_type>>();
 }
 
 template <class CharType>
 void run_allocator_matrix() {
-    cerr << "  allocator:\n";
     run_tests<allocator<CharType>>();
-    cerr << "  aligned_allocator:\n";
     run_custom_allocator_matrix<CharType, aligned_allocator>();
-    cerr << "  explicit_allocator:\n";
     run_custom_allocator_matrix<CharType, explicit_allocator>();
-    cerr << "  implicit_allocator:\n";
     run_custom_allocator_matrix<CharType, implicit_allocator>();
 }
 
@@ -1842,17 +1833,12 @@ void test_DevCom_10116361() {
 }
 
 int main() {
-    cerr << "char:\n";
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
-    cerr << "char8_t:\n";
     run_allocator_matrix<char8_t>();
 #endif // __cpp_char8_t
-    cerr << "char16_t:\n";
     run_allocator_matrix<char16_t>();
-    cerr << "char32_t:\n";
     run_allocator_matrix<char32_t>();
-    cerr << "wchar_t:\n";
     run_allocator_matrix<wchar_t>();
 
     test_DevCom_10116361();
