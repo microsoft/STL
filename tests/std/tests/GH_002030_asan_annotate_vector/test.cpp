@@ -162,13 +162,13 @@ bool verify_vector(vector<T, Alloc>& vec) {
         aligned = {buffer, buf_end};
     } else {
         aligned = _Get_asan_aligned_first_end(buffer, buf_end);
-        if (!aligned._First) {
+        if (aligned._First == aligned._End) {
             return true;
         }
     }
 
     const void* const mid       = vec.data() + vec.size();
-    const void* const fixed_mid = aligned._Clamp(mid);
+    const void* const fixed_mid = aligned._Clamp_to_end(mid);
 
     void* bad_address = __sanitizer_contiguous_container_find_bad_address(aligned._First, fixed_mid, aligned._End);
     if (bad_address == nullptr) {

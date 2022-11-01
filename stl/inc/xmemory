@@ -780,49 +780,80 @@ struct _AsanAlignedPointers {
     const void* _First;
     const void* _End;
 
-    _NODISCARD constexpr const void* _Clamp(const void* _Mid) const noexcept {
-        if (_Mid < _First) {
-            return _First;
-        } else if (_Mid > _End) {
+    _NODISCARD constexpr const void* _Clamp_to_end(const void* _Mid) const noexcept {
+        _STL_ASSERT(_Mid >= _First, "");
+        if (_Mid > _End) {
             return _End;
         } else {
             return _Mid;
         }
     }
 };
-// Returns {nullptr, nullptr} if [_First, _End) does not cover a full ASAN shadow memory section.
-// `__sanitizer_annotate_contiguous_container` _requires_
-// its first pointer to be aligned to the beginning of an ASAN shadow memory section (a single 8-byte).
-// When the `end` pointer is not on a boundary, it will also mark the remainder of the section.
-// This means that if you have, for example:
+
+// The way that ASan shadow memory works, each eight byte block of memory ("shadow memory section")
+// has a single byte to mark it as either poison or valid.
+// Each section has 0 to 8 "valid" bytes followed by poison bytes, so:
+//   [ v v v p p p p p ]
+// or
+//   [ v v v v v v v v ]
+// are okay, but
+//   [ p p p p v v v v ]
+// is not.
+//
+// This function exists to fix up `first` and `end` pointers so that one can call
+// `__sanitizer_annotate_contiguous_container`:
+//
+//   - `__sanitizer_annotate_contiguous_container` checks that `first` is aligned to an 8-byte boundary
+//   - if `end` is not aligned to an 8-byte boundary, `__sanitizer_annotate_contiguous_container` still poisons the
+//     remaining bytes in the shadow memory section.
+//
+// Because of the second property, we can only mark poison up to the final aligned address before the true `last`.
+// Otherwise, we'd poison the memory _after_ `last` as well.
+// For the first property, we can assume that everything before `first` in the shadow memory section is valid
+// (since otherwise we couldn't mark `first` valid), and so we just return back the first address in
+// `first`'s shadow memory section.
+//
+// ### Example
+//
+// ```cpp
 // struct alignas(8) cat {
-//    int meow; // bytes [0, 4)
-//    char buffer[16]; // bytes [4, 20)
-//    int purr; // bytes [20, 24)
+//     int meow; // bytes [0, 4)
+//     char buffer[16]; // bytes [4, 20)
+//     int purr; // bytes [20, 24)
 // };
-// you cannot mark `buffer + [0, 4)`, since `buffer + 0` doesn't start a shadow memory section
-// (i.e., it's not on an 8-byte boundary).
-// Additionally, if you attempt to mark up to `buffer + 16` (the real end of buffer), it'll also mark `purr`.
-// Thus, the only part you can _actually_ mark is the complete shadow memory section of `buffer + [4, 12)`
-// (i.e., bytes [8, 16)).
+// ```
+//
+// First, `meow` and `purr` are just regular data members, not container buffers, so they _must_ be valid.
+// Then, assume we want to poison all of `buffer`.
+// We call `aligned = _Get_asan_aligned_first_end(cat.buffer, cat.buffer + 16);`, and we get back
+//
+// ```cpp
+// aligned = {
+//     ._First = &cat.meow,
+//     ._End = cat.buffer + 12,
+// };
+// ```
+//
+// Then, we poison as much of buffer as we can via
+//
+// ```cpp
+// __sanitizer_annotate_contiguous_container(
+//     aligned._First,
+//     aligned._End,
+//     cat.buffer,
+//     aligned._Clamp_to_end(cat.buffer + 16));
+// ```
+//
+// We are allowed to assume that `aligned._First` is valid, since otherwise `cat.buffer + [0, 4)` could not be valid.
+// We cannot poison up to `cat.buffer + 16`, since then `purr` could not be valid.
 _NODISCARD inline _AsanAlignedPointers _Get_asan_aligned_first_end(
     const void* const _First, const void* const _Last) noexcept {
-    constexpr static uintptr_t _Mask = ~(_Asan_granularity - 1);
+    static constexpr uintptr_t _Mask = ~(_Asan_granularity - 1);
 
-    const auto _First_address = reinterpret_cast<uintptr_t>(_First);
-    const auto _Last_address  = reinterpret_cast<uintptr_t>(_Last);
-
-    const uintptr_t _Aligned_first_address = (_First_address + _Asan_granularity - 1) & _Mask;
-    const uintptr_t _Aligned_last_address  = _Last_address & _Mask;
-
-    if (_Aligned_first_address >= _Aligned_last_address) {
-        return {nullptr, nullptr};
-    } else {
-        return {
-            reinterpret_cast<const void*>(_Aligned_first_address),
-            reinterpret_cast<const void*>(_Aligned_last_address),
-        };
-    }
+    return {
+        reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(_First) & _Mask),
+        reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(_Last) & _Mask),
+    };
 }
 
 template <class _Container, class = void>

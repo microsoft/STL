@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// REQUIRES: asan, x64 || x86
+// REQUIRES: x64 || x86
 
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 
@@ -176,12 +176,11 @@ bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& s
         aligned = {buffer, buf_end};
     } else {
         aligned = _Get_asan_aligned_first_end(buffer, buf_end);
-        assert(aligned._First);
-        assert(aligned._End);
+        assert(aligned._First != aligned._End);
     }
 
     const void* const mid       = str.data() + str.size() + 1;
-    const void* const fixed_mid = aligned._Clamp(mid);
+    const void* const fixed_mid = aligned._Clamp_to_end(mid);
 
     return __sanitizer_verify_contiguous_container(aligned._First, fixed_mid, aligned._End) != 0;
 #else // ^^^ ASan instrumentation enabled ^^^ // vvv ASan instrumentation disabled vvv
