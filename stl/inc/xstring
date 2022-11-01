@@ -2538,11 +2538,15 @@ private:
         const void* const _End    = _My_data._Bx._Buf + _BUF_SIZE;
 
         if constexpr (_Small_string_always_asan_aligned()) {
-            __sanitizer_annotate_contiguous_container(_My_buf, _End, _My_buf, _End);
+            _STD __sanitizer_annotate_contiguous_container(_My_buf, _End, _My_buf, _End);
         } else {
-            const void* const _Aligned_first = _STD _Get_asan_aligned_first(_My_buf, _End);
-            // see _Apply_annotation for reasoning on why _Aligned_first doesn't need to be checked.
-            _STD __sanitizer_annotate_contiguous_container(_Aligned_first, _End, _Aligned_first, _End);
+            const auto _Aligned = _STD _Get_asan_aligned_first_last(_My_buf, _End);
+            if (!_Aligned._First) {
+                // The buffer does not cover at least a full shadow memory section; nothing to do.
+                return;
+            }
+            _STD __sanitizer_annotate_contiguous_container(
+                _Aligned._First, _Aligned._End, _Aligned._First, _Aligned._End);
         }
     }
 
@@ -2561,11 +2565,11 @@ private:
         const void* const _End      = _My_data._Bx._Buf + _BUF_SIZE;
 
         if constexpr (_Small_string_always_asan_aligned()) {
-            __sanitizer_annotate_contiguous_container(_My_buf, _End, _End, _Ptr_last);
+            _STD __sanitizer_annotate_contiguous_container(_My_buf, _End, _End, _Ptr_last);
         } else {
             const auto _My_buf_address = reinterpret_cast<uintptr_t>(_My_buf);
             if ((_My_buf_address & (_Asan_granularity - 1)) == 0) {
-                __sanitizer_annotate_contiguous_container(_My_buf, _End, _End, _Ptr_last);
+                _STD __sanitizer_annotate_contiguous_container(_My_buf, _End, _End, _Ptr_last);
             }
 
             // otherwise, there's nothing to do - we can't annotate just the latter nybble of the byte
@@ -2592,18 +2596,18 @@ private:
         constexpr bool _Large_string_always_asan_aligned =
             (_Container_allocation_minimum_alignment<basic_string>) >= _Asan_granularity;
         if constexpr (_Large_string_always_asan_aligned && _Small_string_always_asan_aligned()) {
-            __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
+            _STD __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
         } else {
-            const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _End);
-            // It is impossible for there to be no aligned address within the underlying buffer.
-            // The minimum allocation size for basic_string is `_BUF_SIZE * sizeof(value_type)`,
-            // and `_BUF_SIZE = max(1, floor(16 / sizeof(value_type)))`.
-            // This implies that the smallest it can be is 9, for `sizeof(value_type) = 9`.
+            const auto _Aligned = _STD _Get_asan_aligned_first_last(_First, _End);
+            if (!_Aligned._First) {
+                // The buffer does not cover at least a full shadow memory section; nothing to do.
+                return;
+            }
 
-            // last must be >= than first, so fix up when `_Aligned_first > _*_last`
-            const void* const _Old_last_fixed = _Old_last > _Aligned_first ? _Old_last : _Aligned_first;
-            const void* const _New_last_fixed = _New_last > _Aligned_first ? _New_last : _Aligned_first;
-            _STD __sanitizer_annotate_contiguous_container(_Aligned_first, _End, _Old_last_fixed, _New_last_fixed);
+            // last must be >= than first, so fix up when `_Aligned._First > _*_last`
+            const void* const _Old_fixed = _Aligned._Clamp(_Old_last);
+            const void* const _New_fixed = _Aligned._Clamp(_New_last);
+            _STD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
         }
     }
 
@@ -4423,7 +4427,6 @@ public:
         _ASAN_STRING_REMOVE_SSO_ANNOTATION(_Starts_large);
         _Starts_large._Activate_SSO_buffer();
         _Traits::copy(_Starts_large._Bx._Buf, _Starts_small._Bx._Buf, _Starts_small._Mysize + 1);
-        _Starts_large._Bx._Buf[_Starts_small._Mysize] = value_type();
 
         _ASAN_STRING_SWITCH_TO_LARGE(_Starts_small);
         _Construct_in_place(_Starts_small._Bx._Ptr, _Ptr);

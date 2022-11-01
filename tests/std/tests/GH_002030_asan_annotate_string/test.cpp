@@ -171,15 +171,16 @@ public:
 template <class CharType, class Alloc>
 bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& str) {
 #ifdef __SANITIZE_ADDRESS__
-    const void* const buffer        = str.data();
-    const void* const end           = str.data() + (str.capacity() + 1);
-    const void* const aligned_start = _Get_asan_aligned_first(buffer, end);
-    assert(aligned_start);
+    const void* const buffer = str.data();
+    const void* const end    = str.data() + (str.capacity() + 1);
+    const auto aligned       = _Get_asan_aligned_first_last(buffer, end);
+    assert(aligned._First);
+    assert(aligned._End);
 
     const void* const mid       = str.data() + str.size() + 1;
-    const void* const fixed_mid = mid > aligned_start ? mid : aligned_start;
+    const void* const fixed_mid = aligned._Clamp(mid);
 
-    return __sanitizer_verify_contiguous_container(aligned_start, fixed_mid, end) != 0;
+    return __sanitizer_verify_contiguous_container(aligned._First, fixed_mid, aligned._End) != 0;
 #else // ^^^ ASan instrumentation enabled ^^^ // vvv ASan instrumentation disabled vvv
     (void) str;
     return true;

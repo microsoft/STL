@@ -776,16 +776,52 @@ _NODISCARD constexpr allocation_result<typename allocator_traits<_Alloc>::pointe
 // The number of user bytes a single byte of ASAN shadow memory can track.
 _INLINE_VAR constexpr size_t _Asan_granularity = 8;
 
-_NODISCARD inline const void* _Get_asan_aligned_first(const void* const _First, const void* const _Last) noexcept {
+struct _AsanAlignedPointers {
+    const void* _First;
+    const void* _End;
+
+    constexpr const void* _Clamp(const void* _Mid) const noexcept {
+        if (_Mid < _First) {
+            return _First;
+        } else if (_Mid > _End) {
+            return _End;
+        } else {
+            return _Mid;
+        }
+    }
+};
+// Returns {nullptr, nullptr} if [_First, _Last) does not cover a full ASAN shadow memory section.
+// `__sanitizer_annotate_contiguous_container` _requires_
+// its first pointer to be aligned to the beginning of an ASAN shadow memory section (a single 8-byte).
+// When the `end` pointer is not on a boundary, it will also mark the remainder of the section.
+// This means that if you have, for example:
+// struct alignas(8) cat {
+//    int meow; // bytes [0, 4)
+//    char buffer[16]; // bytes [4, 20)
+//    int purr; // bytes [20, 24)
+// };
+// you cannot mark `buffer + [0, 4)`, since `buffer + 0` doesn't start a shadow memory section
+// (i.e., it's not on an 8-byte boundary).
+// Additionally, if you attempt to mark up to `buffer + 16` (the real end of buffer), it'll also mark `purr`.
+// Thus, the only part you can _actually_ mark is the complete shadow memory section of `buffer + [4, 12)`
+// (i.e., bytes [8, 16)).
+_NODISCARD inline _AsanAlignedPointers _Get_asan_aligned_first_last(
+    const void* const _First, const void* const _Last) noexcept {
+    constexpr static uintptr_t _Mask = ~(_Asan_granularity - 1);
+
     const auto _First_address = reinterpret_cast<uintptr_t>(_First);
     const auto _Last_address  = reinterpret_cast<uintptr_t>(_Last);
 
-    const auto _Aligned_address = (_First_address + _Asan_granularity - 1) & ~(_Asan_granularity - 1);
+    const uintptr_t _Aligned_first_address = (_First_address + _Asan_granularity - 1) & _Mask;
+    const uintptr_t _Aligned_last_address  = _Last_address & _Mask;
 
-    if (_Aligned_address > _Last_address) {
-        return nullptr;
+    if (_Aligned_first_address == _Aligned_last_address) {
+        return {nullptr, nullptr};
     } else {
-        return reinterpret_cast<const void*>(_Aligned_address);
+        return {
+            reinterpret_cast<const void*>(_Aligned_first_address),
+            reinterpret_cast<const void*>(_Aligned_last_address),
+        };
     }
 }
 

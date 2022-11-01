@@ -563,17 +563,15 @@ private:
         if constexpr ((_Container_allocation_minimum_alignment<vector>) > _Asan_granularity) {
             __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
         } else {
-            const void* const _Aligned_first = _STD _Get_asan_aligned_first(_First, _End);
-            if (!_Aligned_first) {
-                // There is no aligned address within the underlying buffer; nothing to do.
+            const auto _Aligned = _STD _Get_asan_aligned_first_last(_First, _End);
+            if (!_Aligned._First) {
+                // The buffer does not cover at least a full shadow memory section; nothing to do.
                 return;
             }
 
-            // last must be >= than first, so fix up when `_Aligned_first > _*_last`
-            const void* const _End_fixed = _End >= _Aligned_first ? _End : _Aligned_first;
-            const void* const _Old_fixed = _Old_last >= _Aligned_first ? _Old_last : _Aligned_first;
-            const void* const _New_fixed = _New_last >= _Aligned_first ? _New_last : _Aligned_first;
-            __sanitizer_annotate_contiguous_container(_Aligned_first, _End_fixed, _Old_fixed, _New_fixed);
+            const void* const _Old_fixed = _Aligned._Clamp(_Old_last);
+            const void* const _New_fixed = _Aligned._Clamp(_New_last);
+            __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
         }
     }
 
