@@ -17,6 +17,8 @@
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
+#include <__msvc_sanitizer_annotate_container.hpp>
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -2366,63 +2368,6 @@ struct _String_constructor_rvalue_allocator_tag {
     _Xlength_error("string too long");
 }
 
-#if !defined(_M_CEE_PURE) && !defined(_DISABLE_STRING_ANNOTATION)
-#if defined(__SANITIZE_ADDRESS__)
-#define _ACTIVATE_STRING_ANNOTATION
-#define _INSERT_STRING_ANNOTATION
-#elif defined(__clang__) && defined(__has_feature) // ^^^ __SANITIZE_ADDRESS__ ^^^ // vvv __clang__ vvv
-#if __has_feature(address_sanitizer)
-#define _ACTIVATE_STRING_ANNOTATION
-#define _INSERT_STRING_ANNOTATION
-#pragma comment(linker, "/INFERASANLIBS")
-#endif // __has_feature(address_sanitizer)
-#elif defined(_ANNOTATE_STRING) // ^^^ __clang__ ^^^ // vvv _ANNOTATE_STRING vvv
-#define _INSERT_STRING_ANNOTATION
-#endif // _ANNOTATE_STRING
-#endif // !_M_CEE_PURE && !_DISABLE_STRING_ANNOTATION
-
-#ifdef _ACTIVATE_STRING_ANNOTATION
-#pragma comment(lib, "stl_asan")
-#pragma detect_mismatch("annotate_string", "1")
-#endif // _ACTIVATE_STRING_ANNOTATION
-
-#ifdef _INSERT_STRING_ANNOTATION
-extern "C" {
-void __cdecl __sanitizer_annotate_contiguous_container(
-    const void* _First, const void* _End, const void* _Old_last, const void* _New_last) noexcept;
-extern const bool _Asan_string_should_annotate;
-}
-
-#if defined(_M_ARM64EC)
-#pragma comment(linker, \
-    "/alternatename:#__sanitizer_annotate_contiguous_container=#__sanitizer_annotate_contiguous_container_default")
-#pragma comment(linker, \
-    "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
-#pragma comment(linker, "/alternatename:#_Asan_string_should_annotate=#_Asan_string_should_annotate_default")
-#pragma comment(linker, "/alternatename:_Asan_string_should_annotate=_Asan_string_should_annotate_default")
-#elif defined(_M_HYBRID)
-#pragma comment(linker, \
-    "/alternatename:#__sanitizer_annotate_contiguous_container=#__sanitizer_annotate_contiguous_container_default")
-#pragma comment(linker, \
-    "/alternatename:___sanitizer_annotate_contiguous_container=___sanitizer_annotate_contiguous_container_default")
-#pragma comment(linker, "/alternatename:#_Asan_string_should_annotate=#_Asan_string_should_annotate_default")
-#pragma comment(linker, "/alternatename:__Asan_string_should_annotate=__Asan_string_should_annotate_default")
-#elif defined(_M_IX86)
-#pragma comment(linker, \
-    "/alternatename:___sanitizer_annotate_contiguous_container=___sanitizer_annotate_contiguous_container_default")
-#pragma comment(linker, "/alternatename:__Asan_string_should_annotate=__Asan_string_should_annotate_default")
-#elif defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
-#pragma comment(linker, \
-    "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
-#pragma comment(linker, "/alternatename:_Asan_string_should_annotate=_Asan_string_should_annotate_default")
-#else // ^^^ known architecture / unknown architecture vvv
-#error Unknown architecture
-#endif // ^^^ unknown architecture ^^^
-
-#else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
-#pragma detect_mismatch("annotate_string", "0")
-#endif // !_INSERT_STRING_ANNOTATION
-
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 template <class _Rng, class _Ty>
 concept _Contiguous_range_of =
@@ -2547,7 +2492,7 @@ private:
             //   [_My_buf, _End) unknown
             // new state:
             //   [_My_buf, _End) valid
-            _STD __sanitizer_annotate_contiguous_container(_My_buf, _End, _My_buf, _End);
+            _CSTD __sanitizer_annotate_contiguous_container(_My_buf, _End, _My_buf, _End);
         } else {
             const auto _Aligned = _STD _Get_asan_aligned_first_end(_My_buf, _End);
             // old state:
@@ -2556,7 +2501,7 @@ private:
             //   [_Aligned._End, _End) valid
             // new state:
             //   [_Aligned._First, _End) valid
-            _STD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _My_buf, _Aligned._End);
+            _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _My_buf, _Aligned._End);
         }
     }
 
@@ -2580,7 +2525,7 @@ private:
             // new state:
             //   [_My_buf, _Ptr_last) valid
             //   [_Ptr_last, _End) poison
-            _STD __sanitizer_annotate_contiguous_container(_My_buf, _End, _End, _Ptr_last);
+            _CSTD __sanitizer_annotate_contiguous_container(_My_buf, _End, _End, _Ptr_last);
         } else {
             const auto _Aligned = _STD _Get_asan_aligned_first_end(_My_buf, _End);
             // old state:
@@ -2589,7 +2534,7 @@ private:
             //   [_Aligned._First, _Ptr_last) valid
             //   [_Ptr_last, _Aligned._End) poison
             //   [_Aligned._End, _End) valid
-            _STD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Aligned._End, _Ptr_last);
+            _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Aligned._End, _Ptr_last);
         }
     }
 
@@ -2619,7 +2564,7 @@ private:
             // new state:
             //   [_First, _New_last) valid
             //   [_New_last, _End) poison
-            _STD __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
+            _CSTD __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
         } else {
             const auto _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
             // The buffer must always have size >= 9 bytes, so it will always end at least one shadow memory section.
@@ -2636,7 +2581,7 @@ private:
             //   [_Aligned._First, _New_fixed) valid
             //   [_New_fixed, _Aligned._End) poison
             //   [_Aligned._End, _End) valid
-            _STD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
+            _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
         }
     }
 
