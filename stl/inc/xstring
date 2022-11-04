@@ -2493,8 +2493,7 @@ private:
             // new state:
             //   [_My_buf, _End) valid
             //   [_End, asan_aligned_after(_End)) poison
-            _CSTD __sanitizer_annotate_contiguous_container(
-                _My_buf, _STD _Get_asan_aligned_after(_End), _My_buf, _End);
+            _CSTD __sanitizer_annotate_contiguous_container(_My_buf, _STD _Get_asan_aligned_after(_End), _My_buf, _End);
         } else {
             const auto _Aligned = _STD _Get_asan_aligned_first_end(_My_buf, _End);
             // old state:
