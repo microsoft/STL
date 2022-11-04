@@ -2492,7 +2492,9 @@ private:
             //   [_My_buf, _End) unknown
             // new state:
             //   [_My_buf, _End) valid
-            _CSTD __sanitizer_annotate_contiguous_container(_My_buf, _End, _My_buf, _End);
+            //   [_End, asan_aligned_after(_End)) poison
+            _CSTD __sanitizer_annotate_contiguous_container(
+                _My_buf, _STD _Get_asan_aligned_after(_End), _My_buf, _End);
         } else {
             const auto _Aligned = _STD _Get_asan_aligned_first_end(_My_buf, _End);
             // old state:
@@ -2524,8 +2526,9 @@ private:
             //   [_My_buf, _End) valid (from _Remove_sso_annotation)
             // new state:
             //   [_My_buf, _Ptr_last) valid
-            //   [_Ptr_last, _End) poison
-            _CSTD __sanitizer_annotate_contiguous_container(_My_buf, _End, _End, _Ptr_last);
+            //   [_Ptr_last, asan_aligned_after(_End)) poison
+            _CSTD __sanitizer_annotate_contiguous_container(
+                _My_buf, _STD _Get_asan_aligned_after(_End), _End, _Ptr_last);
         } else {
             const auto _Aligned = _STD _Get_asan_aligned_first_end(_My_buf, _End);
             // old state:
@@ -2563,8 +2566,9 @@ private:
             //   [_Old_last, _End) poison
             // new state:
             //   [_First, _New_last) valid
-            //   [_New_last, _End) poison
-            _CSTD __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
+            //   [_New_last, asan_aligned_after(_End)) poison
+            _CSTD __sanitizer_annotate_contiguous_container(
+                _First, _STD _Get_asan_aligned_after(_End), _Old_last, _New_last);
         } else {
             const auto _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
             // The buffer must always have size >= 9 bytes, so it will always end at least one shadow memory section.
@@ -3937,8 +3941,9 @@ public:
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count < _Nx || _Count - _Nx <= _Mypair._Myval2._Myres - _Old_size) {
             // either we are shrinking, or the growth fits
-            _Mypair._Myval2._Mysize = _Old_size + _Count - _Nx; // may temporarily overflow;
-                                                                // OK because size_type must be unsigned
+            // may temporarily overflow; OK because size_type must be unsigned
+            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count - _Nx);
+            _Mypair._Myval2._Mysize = _Old_size + _Count - _Nx;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
             _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, _Old_size - _Nx - _Off + 1);

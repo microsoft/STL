@@ -4,6 +4,8 @@
 // REQUIRES: x64 || x86
 
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+#pragma warning(disable : 4324) // '%s': structure was padded due to alignment specifier
+#pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
@@ -37,6 +39,60 @@ constexpr auto literal_input_u8 = u8"Hello fluffy kittens";
 constexpr auto literal_input_u16 = u"Hello fluffy kittens";
 constexpr auto literal_input_u32 = U"Hello fluffy kittens";
 constexpr auto literal_input_w   = L"Hello fluffy kittens";
+
+struct FourByte {
+    int padding = 0;
+};
+
+#if _HAS_CXX17
+template <class T>
+struct alignas(8) AlignOnFour : FourByte, T {
+    using T::T;
+    using T::operator=;
+
+    T& base() & {
+        return *this;
+    }
+    const T& base() const& {
+        return *this;
+    }
+    T&& base() && {
+        return move(*this);
+    }
+    const T&& base() const&& {
+        return move(*this);
+    }
+
+    template <class T1, class T2>
+    friend auto operator+(T1&& t1, T2&& t2)
+        -> enable_if_t<is_same_v<decay_t<T1>, AlignOnFour> || is_same_v<decay_t<T2>, AlignOnFour>, AlignOnFour> {
+        return AlignOnFour(InternalConstructTag{}, [&] {
+            if constexpr (is_same_v<decay_t<T1>, AlignOnFour> && is_same_v<decay_t<T2>, AlignOnFour>) {
+                return forward<T1>(t1).base() + forward<T2>(t2).base();
+            } else if constexpr (is_same_v<decay_t<T1>, AlignOnFour>) {
+                return forward<T1>(t1).base() + forward<T2>(t2);
+            } else {
+                return forward<T1>(t1) + forward<T2>(t2).base();
+            }
+        });
+    }
+
+    template <class... Ts>
+    AlignOnFour substr(Ts&&... ts) const {
+        return AlignOnFour(InternalConstructTag{}, [&] { return base().substr(forward<Ts>(ts)...); });
+    }
+
+private:
+    struct InternalConstructTag {};
+
+    template <class F>
+    AlignOnFour(InternalConstructTag, F f) : T(f()) {}
+};
+#else // ^^^ no workaround / workaround vvv
+// in C++14, you can't do the `using T::T;` thing and also define your own ctor
+template <class T>
+using AlignOnFour = T;
+#endif
 
 template <class CharType>
 constexpr auto get_large_input() {
@@ -263,7 +319,7 @@ struct implicit_allocator : public custom_test_allocator<CharType, Pocma, Statel
 template <class Alloc>
 void test_construction() {
     using CharType = typename Alloc::value_type;
-    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = AlignOnFour<basic_string<CharType, char_traits<CharType>, Alloc>>;
     { // constructors
         // range constructors
         str literal_constructed_sso{get_sso_input<CharType>()};
@@ -516,7 +572,7 @@ void test_construction() {
 template <class Alloc>
 void test_append() {
     using CharType = typename Alloc::value_type;
-    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = AlignOnFour<basic_string<CharType, char_traits<CharType>, Alloc>>;
 
     constexpr size_t large_size   = 20;
     constexpr size_t sso_size     = 1;
@@ -858,7 +914,7 @@ void test_append() {
 template <class Alloc>
 void test_assign() {
     using CharType = typename Alloc::value_type;
-    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = AlignOnFour<basic_string<CharType, char_traits<CharType>, Alloc>>;
 
     constexpr size_t large_size = 20;
     constexpr size_t sso_size   = 2;
@@ -1189,7 +1245,7 @@ void test_assign() {
 template <class Alloc>
 void test_insertion() {
     using CharType = typename Alloc::value_type;
-    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = AlignOnFour<basic_string<CharType, char_traits<CharType>, Alloc>>;
 
     constexpr size_t large_size   = 20;
     constexpr size_t sso_size     = 1;
@@ -1371,7 +1427,7 @@ void test_insertion() {
 template <class Alloc>
 void test_removal() {
     using CharType = typename Alloc::value_type;
-    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = AlignOnFour<basic_string<CharType, char_traits<CharType>, Alloc>>;
 
     constexpr size_t large_size     = 20;
     constexpr size_t sso_size       = 2;
@@ -1507,7 +1563,7 @@ void test_removal() {
 template <class Alloc>
 void test_misc() {
     using CharType = typename Alloc::value_type;
-    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = AlignOnFour<basic_string<CharType, char_traits<CharType>, Alloc>>;
 
     constexpr size_t large_size     = 20;
     constexpr size_t sso_size       = 2;

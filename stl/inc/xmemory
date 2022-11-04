@@ -871,13 +871,20 @@ struct _AsanAlignedPointers {
 // We cannot poison up to `cat.buffer + 16`, since then `&purr` could not be valid.
 // Thus, this results in the shadow memory state from the second example.
 _NODISCARD inline _AsanAlignedPointers _Get_asan_aligned_first_end(
-    const void* const _First, const void* const _Last) noexcept {
+    const void* const _First, const void* const _End) noexcept {
     static constexpr uintptr_t _Mask = ~(_Asan_granularity - 1);
-
     return {
         reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(_First) & _Mask),
-        reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(_Last) & _Mask),
+        reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(_End) & _Mask),
     };
+}
+
+// When we can assume that the allocator we are using will always align allocations to the 8-byte,
+// we can simply push the `_End` pointer to the end of the shadow memory section.
+// This is _not_ safe in general (see _Get_asan_aligned_first_end's comment for why).
+_NODISCARD inline const void* _Get_asan_aligned_after(const void* const _End) noexcept {
+    static constexpr uintptr_t _Mask = ~(_Asan_granularity - 1);
+    return reinterpret_cast<const void*>((reinterpret_cast<uintptr_t>(_End) + _Asan_granularity - 1) & _Mask);
 }
 
 template <class _Container, class = void>
