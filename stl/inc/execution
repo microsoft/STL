@@ -830,8 +830,9 @@ template <class _RanIt, class _Diff>
 struct _Static_partition_range<_RanIt, _Diff, true> {
     using _Target_diff = _Iter_diff_t<_RanIt>;
     using _URanIt      = _Unwrapped_t<const _RanIt&>;
+    using _Chunk_type  = _Iterator_range<_URanIt>;
+
     _URanIt _Start_at;
-    using _Chunk_type = _Iterator_range<_URanIt>;
 
     _RanIt _Populate(const _Static_partition_team<_Diff>& _Team, _RanIt _First) {
         // statically partition a random-access iterator range and return next(_First, _Team._Count)
@@ -866,8 +867,9 @@ template <class _FwdIt, class _Diff>
 struct _Static_partition_range<_FwdIt, _Diff, false> {
     using _Target_diff = _Iter_diff_t<_FwdIt>;
     using _UFwdIt      = _Unwrapped_t<const _FwdIt&>;
+    using _Chunk_type  = _Iterator_range<_UFwdIt>;
+
     _Parallel_vector<_UFwdIt> _Division_points;
-    using _Chunk_type = _Iterator_range<_UFwdIt>;
 
     _FwdIt _Populate(const _Static_partition_team<_Diff>& _Team, _FwdIt _First) {
         // statically partition a forward iterator range and return next(_First, _Team._Count)
@@ -949,8 +951,9 @@ struct _Static_partition_range_backward;
 template <class _RanIt, class _Diff>
 struct _Static_partition_range_backward<_RanIt, _Diff, true> {
     using _Target_diff = _Iter_diff_t<_RanIt>;
+    using _Chunk_type  = _Iterator_range<_Unwrapped_t<const _RanIt&>>;
+
     _Unwrapped_t<const _RanIt&> _Start_at;
-    using _Chunk_type = _Iterator_range<_Unwrapped_t<const _RanIt&>>;
 
     void _Populate(const _Static_partition_team<_Diff>& _Team, _RanIt _Last) {
         // statically partition a random-access iterator range ending at _Last
@@ -969,8 +972,9 @@ struct _Static_partition_range_backward<_RanIt, _Diff, true> {
 template <class _BidIt, class _Diff>
 struct _Static_partition_range_backward<_BidIt, _Diff, false> {
     using _Target_diff = _Iter_diff_t<_BidIt>;
+    using _Chunk_type  = _Iterator_range<_Unwrapped_t<const _BidIt&>>;
+
     _Parallel_vector<_Unwrapped_t<const _BidIt&>> _Division_points;
-    using _Chunk_type = _Iterator_range<_Unwrapped_t<const _BidIt&>>;
 
     void _Populate(const _Static_partition_team<_Diff>& _Team, _BidIt _Last) {
         // statically partition a bidirectional iterator range ending at _Last

@@ -820,7 +820,7 @@ _EXPORT_STD [[noreturn]] __forceinline void unreachable() noexcept /* strengthen
 }
 
 _EXPORT_STD template <class _Ty, class _Uty>
-_NODISCARD constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
+_NODISCARD _MSVC_INTRINSIC constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
     static_assert(_Can_reference<_Ty>, "std::forward_like's first template argument must be a referenceable type.");
 
     using _UnrefT = remove_reference_t<_Ty>;
