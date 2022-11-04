@@ -158,7 +158,7 @@ bool verify_vector(vector<T, Alloc>& vec) {
     const void* buf_end = vec.data() + vec.capacity();
     _AsanAlignedPointers aligned;
 
-    if constexpr ((_Container_allocation_minimum_alignment<vector<T, Alloc>>) > 8) {
+    if constexpr ((_Container_allocation_minimum_alignment<vector<T, Alloc>>) >= 8) {
         aligned = {buffer, buf_end};
     } else {
         aligned = _Get_asan_aligned_first_end(buffer, buf_end);
@@ -232,6 +232,7 @@ struct aligned_allocator : custom_test_allocator<T, Pocma, Stateless> {
         delete[] p;
     }
 };
+static_assert(_Container_allocation_minimum_asan_alignment<vector<char, aligned_allocator<char>>> == 8);
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct explicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
@@ -250,6 +251,8 @@ struct explicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
         delete[] (p - 1);
     }
 };
+static_assert(_Container_allocation_minimum_asan_alignment<vector<char, explicit_allocator<char>>> == 1);
+static_assert(_Container_allocation_minimum_asan_alignment<vector<wchar_t, explicit_allocator<wchar_t>>> == 2);
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
@@ -266,6 +269,8 @@ struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
         delete[] (p - 1);
     }
 };
+static_assert(_Container_allocation_minimum_asan_alignment<vector<char, implicit_allocator<char>>> == 1);
+static_assert(_Container_allocation_minimum_asan_alignment<vector<wchar_t, implicit_allocator<wchar_t>>> == 2);
 
 template <class Alloc>
 void test_push_pop() {

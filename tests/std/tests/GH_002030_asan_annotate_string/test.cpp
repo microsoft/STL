@@ -225,10 +225,10 @@ template <class CharType, class Alloc>
 bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& str) {
 #ifdef __SANITIZE_ADDRESS__
     const void* const buffer  = str.data();
-    const void* const buf_end = str.data() + (str.capacity() + 1);
+    const void* const buf_end = str.data() + str.capacity() + 1;
 
-    _AsanAlignedPointers aligned;
-    if constexpr ((_Container_allocation_minimum_alignment<basic_string<CharType, char_traits<CharType>, Alloc>>) > 8) {
+    _Asan_aligned_pointers aligned;
+    if constexpr ((_Container_allocation_minimum_alignment<decay_t<decltype(str)>>) >= 8) {
         aligned = {buffer, buf_end};
     } else {
         aligned = _Get_asan_aligned_first_end(buffer, buf_end);
@@ -267,7 +267,7 @@ constexpr bool operator!=(
 
 template <class CharType, class Pocma = true_type, class Stateless = true_type>
 struct aligned_allocator : public custom_test_allocator<CharType, Pocma, Stateless> {
-    static constexpr size_t _Minimum_allocation_alignment = 8;
+    static constexpr size_t _Minimum_asan_allocation_alignment = 8;
 
     aligned_allocator() = default;
     template <class U>
@@ -281,10 +281,15 @@ struct aligned_allocator : public custom_test_allocator<CharType, Pocma, Statele
         delete[] p;
     }
 };
+static_assert(
+    _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, aligned_allocator<char>>> == 8);
+static_assert(_Container_allocation_minimum_asan_alignment<
+                  basic_string<wchar_t, char_traits<wchar_t>, aligned_allocator<wchar_t>>>
+              == 8);
 
 template <class CharType, class Pocma = true_type, class Stateless = true_type>
 struct explicit_allocator : public custom_test_allocator<CharType, Pocma, Stateless> {
-    static constexpr size_t _Minimum_allocation_alignment = alignof(CharType);
+    static constexpr size_t _Minimum_asan_allocation_alignment = alignof(CharType);
 
     explicit_allocator() = default;
     template <class U>
@@ -299,6 +304,11 @@ struct explicit_allocator : public custom_test_allocator<CharType, Pocma, Statel
         delete[] (p - 1);
     }
 };
+static_assert(
+    _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, explicit_allocator<char>>> == 1);
+static_assert(_Container_allocation_minimum_asan_alignment<
+                  basic_string<wchar_t, char_traits<wchar_t>, explicit_allocator<wchar_t>>>
+              == 2);
 
 template <class CharType, class Pocma = true_type, class Stateless = true_type>
 struct implicit_allocator : public custom_test_allocator<CharType, Pocma, Stateless> {
@@ -315,6 +325,11 @@ struct implicit_allocator : public custom_test_allocator<CharType, Pocma, Statel
         delete[] (p - 1);
     }
 };
+static_assert(
+    _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, implicit_allocator<char>>> == 1);
+static_assert(_Container_allocation_minimum_asan_alignment<
+                  basic_string<wchar_t, char_traits<wchar_t>, implicit_allocator<wchar_t>>>
+              == 2);
 
 template <class Alloc>
 void test_construction() {
@@ -1896,6 +1911,7 @@ void test_DevCom_10109507() {
     string s("abcd");
     s.replace(0, 1, "ef", 2);
     s.replace(0, 0, "xy", 2);
+    assert(s == "xyefbcd");
 }
 
 int main() {

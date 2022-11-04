@@ -776,12 +776,12 @@ _NODISCARD constexpr allocation_result<typename allocator_traits<_Alloc>::pointe
 // The number of user bytes a single byte of ASAN shadow memory can track.
 _INLINE_VAR constexpr size_t _Asan_granularity = 8;
 
-struct _AsanAlignedPointers {
+struct _Asan_aligned_pointers {
     const void* _First;
     const void* _End;
 
     _NODISCARD constexpr const void* _Clamp_to_end(const void* _Mid) const noexcept {
-        _STL_ASSERT(_Mid >= _First, "");
+        _STL_INTERNAL_CHECK(_Mid >= _First);
         if (_Mid > _End) {
             return _End;
         } else {
@@ -870,7 +870,7 @@ struct _AsanAlignedPointers {
 // We are allowed to assume that `&cat.meow` is valid, since otherwise `cat.buffer + [0, 4)` could not be valid.
 // We cannot poison up to `cat.buffer + 16`, since then `&purr` could not be valid.
 // Thus, this results in the shadow memory state from the second example.
-_NODISCARD inline _AsanAlignedPointers _Get_asan_aligned_first_end(
+_NODISCARD inline _Asan_aligned_pointers _Get_asan_aligned_first_end(
     const void* const _First, const void* const _End) noexcept {
     static constexpr uintptr_t _Mask = ~(_Asan_granularity - 1);
     return {
@@ -892,8 +892,9 @@ _INLINE_VAR constexpr size_t _Container_allocation_minimum_alignment = alignof(t
 
 template <class _Container>
 _INLINE_VAR constexpr size_t _Container_allocation_minimum_alignment<_Container,
-    void_t<decltype(_Container::allocator_type::_Minimum_allocation_alignment)>> =
-    (_STD max)(alignof(typename _Container::value_type), _Container::allocator_type::_Minimum_allocation_alignment);
+    void_t<decltype(_Container::allocator_type::_Minimum_asan_allocation_alignment)>> =
+    (_STD max)(
+        alignof(typename _Container::value_type), _Container::allocator_type::_Minimum_asan_allocation_alignment);
 
 _EXPORT_STD template <class _Ty>
 class allocator {
@@ -981,7 +982,7 @@ public:
     }
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
-    static constexpr size_t _Minimum_allocation_alignment = _Asan_granularity;
+    static constexpr size_t _Minimum_asan_allocation_alignment = _Asan_granularity;
 };
 
 #if _HAS_DEPRECATED_ALLOCATOR_VOID || _HAS_DEPRECATED_ALLOCATOR_MEMBERS

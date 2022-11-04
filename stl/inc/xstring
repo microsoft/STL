@@ -2451,8 +2451,21 @@ private:
 #ifdef _INSERT_STRING_ANNOTATION
     // this is a function so we can get the alignment of the class while defining it.
     _NODISCARD static constexpr bool _Small_string_always_asan_aligned() noexcept {
-        return alignof(basic_string) >= _Asan_granularity && _Memcpy_val_offset % _Asan_granularity == 0
-            && (sizeof(value_type[_BUF_SIZE]) % _Asan_granularity == 0 || alignof(size_type) >= _Asan_granularity);
+        constexpr bool _Aligned_first =
+            // The offset of the buffer is a multiple of 8 bytes from the front of the object, and
+            _Memcpy_val_offset % _Asan_granularity == 0
+            // the front of the object is always on an 8-byte boundary.
+            && alignof(basic_string) >= _Asan_granularity;
+
+        constexpr bool _Aligned_end =
+            // The size of the buffer is a multiple of 8 bytes, or
+            sizeof(value_type[_BUF_SIZE]) % _Asan_granularity == 0
+            // even though the size of the buffer is not a multiple of 8 bytes,
+            // _Mysize must be aligned on an 8-byte boundary,
+            // so there's padding between the end of _Bx._Buf and _Mysize.
+            || alignof(size_type) >= _Asan_granularity;
+
+        return _Aligned_first && _Aligned_end;
     }
 
     _CONSTEXPR20 void _Create_annotation() const noexcept {
@@ -2558,7 +2571,7 @@ private:
         const void* const _New_last = _First + _New_size + 1;
 
         constexpr bool _Large_string_always_asan_aligned =
-            (_Container_allocation_minimum_alignment<basic_string>) >= _Asan_granularity;
+            (_Container_allocation_minimum_asan_alignment<basic_string>) >= _Asan_granularity;
         if constexpr (_Large_string_always_asan_aligned && _Small_string_always_asan_aligned()) {
             // old state:
             //   [_First, _Old_last) valid
@@ -3870,8 +3883,10 @@ public:
             _Elem* const _Insert_at = _Old_ptr + _Off;
             _Traits::move(_Insert_at, _Ptr, _Count);
             _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, _Suffix_size);
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size - (_Nx - _Count));
-            _Mypair._Myval2._Mysize = _Old_size - (_Nx - _Count);
+
+            const auto _New_size = _Old_size - (_Nx - _Count);
+            _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
+            _Mypair._Myval2._Mysize = _New_size;
             return *this;
         }
 
@@ -4460,6 +4475,7 @@ public:
         if (!_Right_large) {
             _ASAN_STRING_CREATE(*this);
         }
+
         if (!_My_large) {
             _ASAN_STRING_CREATE(_Right);
         }
