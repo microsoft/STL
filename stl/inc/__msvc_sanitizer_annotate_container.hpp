@@ -127,5 +127,10 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 
 #endif // !_M_CEE_PURE && asan not disabled
 
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // __MSVC_SANITIZER_ANNOTATE_CONTAINER_HPP

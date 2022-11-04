@@ -28,6 +28,8 @@
 
 using namespace std;
 
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
 #ifdef __SANITIZE_ADDRESS__
 extern "C" int __sanitizer_verify_contiguous_container(const void* beg, const void* mid, const void* end) noexcept;
 #endif // ASan instrumentation enabled
@@ -160,7 +162,7 @@ template <class CharType>
 struct throw_on_conversion {
     throw_on_conversion() = default;
     throw_on_conversion(CharType) {}
-    operator const CharType() const {
+    operator CharType() const {
         throw 42;
     }
 };
@@ -228,7 +230,7 @@ bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& s
     const void* const buf_end = str.data() + str.capacity() + 1;
 
     _Asan_aligned_pointers aligned;
-    if constexpr ((_Container_allocation_minimum_alignment<decay_t<decltype(str)>>) >= 8) {
+    if constexpr ((_Container_allocation_minimum_asan_alignment<decay_t<decltype(str)>>) >= 8) {
         aligned = {buffer, buf_end};
     } else {
         aligned = _Get_asan_aligned_first_end(buffer, buf_end);
@@ -281,9 +283,9 @@ struct aligned_allocator : public custom_test_allocator<CharType, Pocma, Statele
         delete[] p;
     }
 };
-static_assert(
+STATIC_ASSERT(
     _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, aligned_allocator<char>>> == 8);
-static_assert(_Container_allocation_minimum_asan_alignment<
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
                   basic_string<wchar_t, char_traits<wchar_t>, aligned_allocator<wchar_t>>>
               == 8);
 
@@ -304,9 +306,9 @@ struct explicit_allocator : public custom_test_allocator<CharType, Pocma, Statel
         delete[] (p - 1);
     }
 };
-static_assert(
+STATIC_ASSERT(
     _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, explicit_allocator<char>>> == 1);
-static_assert(_Container_allocation_minimum_asan_alignment<
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
                   basic_string<wchar_t, char_traits<wchar_t>, explicit_allocator<wchar_t>>>
               == 2);
 
@@ -325,9 +327,9 @@ struct implicit_allocator : public custom_test_allocator<CharType, Pocma, Statel
         delete[] (p - 1);
     }
 };
-static_assert(
+STATIC_ASSERT(
     _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, implicit_allocator<char>>> == 1);
-static_assert(_Container_allocation_minimum_asan_alignment<
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
                   basic_string<wchar_t, char_traits<wchar_t>, implicit_allocator<wchar_t>>>
               == 2);
 
@@ -1640,6 +1642,49 @@ void test_misc() {
         str resize_char_sso_to_sso{input_sso};
         resize_char_sso_to_sso.resize(3, CharType{'c'});
         assert(verify_string(resize_char_sso_to_sso));
+    }
+
+    { // replace
+        const CharType mrow[] = {'m', 'r', 'o', 'w', '\0'};
+
+        str replace_front_bigger{input};
+        replace_front_bigger.replace(0, 2, mrow);
+        assert(verify_string(replace_front_bigger));
+        str replace_front_same{input};
+        replace_front_same.replace(0, 4, mrow);
+        assert(verify_string(replace_front_same));
+        str replace_front_smaller{input};
+        replace_front_smaller.replace(0, 6, mrow);
+        assert(verify_string(replace_front_smaller));
+
+        str replace_mid_bigger{input};
+        replace_mid_bigger.replace(2, 2, mrow);
+        assert(verify_string(replace_mid_bigger));
+        str replace_mid_same{input};
+        replace_mid_same.replace(2, 4, mrow);
+        assert(verify_string(replace_mid_same));
+        str replace_mid_smaller{input};
+        replace_mid_smaller.replace(2, 6, mrow);
+        assert(verify_string(replace_mid_smaller));
+
+        str replace_back_bigger{input};
+        replace_back_bigger.replace(replace_back_bigger.size() - 2, 2, mrow);
+        assert(verify_string(replace_back_bigger));
+        str replace_back_same{input};
+        replace_back_same.replace(replace_back_same.size() - 4, 4, mrow);
+        assert(verify_string(replace_back_same));
+        str replace_back_smaller{input};
+        replace_back_smaller.replace(replace_back_smaller.size() - 6, 6, mrow);
+        assert(verify_string(replace_back_smaller));
+
+        const CharType hi[] = {'h', 'i', '\0'};
+        str replace_large_to_sso{input};
+        replace_large_to_sso.replace(0, replace_large_to_sso.size() - 1, hi);
+        assert(verify_string(replace_large_to_sso));
+
+        str replace_sso_to_large{input_sso};
+        replace_sso_to_large.replace(0, 1, input);
+        assert(verify_string(replace_sso_to_large));
     }
 
     if constexpr (allocator_traits<Alloc>::propagate_on_container_swap::value) { // swap

@@ -498,7 +498,7 @@ private:
         const void* const _End      = _STD _Unfancy(_End_);
         const void* const _Old_last = _STD _Unfancy(_Old_last_);
         const void* const _New_last = _STD _Unfancy(_New_last_);
-        if constexpr ((_Container_allocation_minimum_alignment<vector>) >= _Asan_granularity) {
+        if constexpr ((_Container_allocation_minimum_asan_alignment<vector>) >= _Asan_granularity) {
             // old state:
             //   [_First, _Old_last) valid
             //   [_Old_last, _End) poison
