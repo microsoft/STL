@@ -1430,7 +1430,8 @@ namespace ranges {
                 if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
                     _STL_VERIFY(_Current > 0, "cannot decrement below 0");
                 } else {
-                    _STL_VERIFY(_Current > (numeric_limits<_Index_type>::min)(), "cannot decrement repeat_view iterator past end (integer overflow)");
+                    _STL_VERIFY(_Current > (numeric_limits<_Index_type>::min)(),
+                        "cannot decrement repeat_view iterator past end (integer overflow)");
                 }
 #endif
                 --_Current;
