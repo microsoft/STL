@@ -19,6 +19,14 @@ void test_iter_decrement() {
     auto it = v.begin();
     --it; // can't decrement bound past 0
 }
+
+void test_iter_decrement_overflow() {
+    repeat_view v(1);
+    auto it = v.begin();
+    it += (numeric_limits<ptrdiff_t>::min)();
+    --it; // integer overflow
+}
+
 void test_iter_increment() {
     repeat_view v(1);
     auto it = v.begin();
@@ -73,6 +81,7 @@ int main(int argc, char* argv[]) {
     exec.add_death_tests({
         test_view_negative,
         test_iter_decrement,
+        test_iter_decrement_overflow,
         test_iter_increment,
         test_iter_subtract_zero,
         test_iter_subtract_pos_overflow,
