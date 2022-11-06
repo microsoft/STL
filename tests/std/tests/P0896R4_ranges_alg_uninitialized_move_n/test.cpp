@@ -58,6 +58,12 @@ struct int_wrapper {
 };
 STATIC_ASSERT(movable<int_wrapper> && !copyable<int_wrapper>);
 
+#ifdef _M_CEE // TRANSITION, VSO-1664341
+constexpr auto get_int_wrapper_val = [](const int_wrapper& w) { return w.val; };
+#else // ^^^ workaround / no workaround vvv
+constexpr auto get_int_wrapper_val = &int_wrapper::val;
+#endif // ^^^ no workaround ^^^
+
 struct instantiator {
     static constexpr int expected_output[]      = {13, 55, 12345};
     static constexpr int expected_output_long[] = {13, 55, 12345, -1};
@@ -81,8 +87,8 @@ struct instantiator {
             assert(int_wrapper::destructions == 0);
             assert(result.in == wrapped_input.end());
             assert(result.out == wrapped_output.end());
-            assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
-            assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
+            assert(equal(wrapped_output, expected_output, equal_to{}, get_int_wrapper_val));
+            assert(equal(input, expected_input, equal_to{}, get_int_wrapper_val));
             destroy(wrapped_output);
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 3);
@@ -101,8 +107,8 @@ struct instantiator {
             assert(int_wrapper::destructions == 0);
             assert(++result.in == wrapped_input.end());
             assert(result.out == wrapped_output.end());
-            assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
-            assert(equal(input, expected_input_long, equal_to{}, &int_wrapper::val));
+            assert(equal(wrapped_output, expected_output, equal_to{}, get_int_wrapper_val));
+            assert(equal(input, expected_input_long, equal_to{}, get_int_wrapper_val));
             destroy(wrapped_output);
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 3);
@@ -122,8 +128,8 @@ struct instantiator {
             assert(result.in == wrapped_input.end());
             construct_at(addressof(*result.out), -1); // Need to construct non written element for comparison
             assert(++result.out == wrapped_output.end());
-            assert(equal(wrapped_output, expected_output_long, equal_to{}, &int_wrapper::val));
-            assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
+            assert(equal(wrapped_output, expected_output_long, equal_to{}, get_int_wrapper_val));
+            assert(equal(input, expected_input, equal_to{}, get_int_wrapper_val));
             destroy(wrapped_output);
             assert(int_wrapper::constructions == 4);
             assert(int_wrapper::destructions == 4);
@@ -152,7 +158,7 @@ struct throwing_test {
         }
         assert(int_wrapper::constructions == 2);
         assert(int_wrapper::destructions == 2);
-        assert(ranges::equal(input, expected_input, ranges::equal_to{}, &int_wrapper::val));
+        assert(ranges::equal(input, expected_input, ranges::equal_to{}, get_int_wrapper_val));
     }
 };
 
