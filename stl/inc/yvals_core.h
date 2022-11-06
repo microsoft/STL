@@ -1473,9 +1473,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_quoted_string_io            201304L
 #define __cpp_lib_result_of_sfinae            201210L
 #define __cpp_lib_robust_nonmodifying_seq_ops 201304L
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #define __cpp_lib_shared_timed_mutex 201402L
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 #define __cpp_lib_string_udls                  201304L
 #define __cpp_lib_transformation_trait_aliases 201304L
 #define __cpp_lib_tuple_element_t              201402L
@@ -1524,9 +1524,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_memory_resource                   201603L
 #define __cpp_lib_node_extract                      201606L
 #define __cpp_lib_not_fn                            201603L
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #define __cpp_lib_parallel_algorithm 201603L
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 #define __cpp_lib_raw_memory_algorithms 201606L
 #define __cpp_lib_sample                201603L
 #define __cpp_lib_scoped_lock           201703L
@@ -1714,13 +1714,13 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_constexpr_memory 201811L // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 #endif // _HAS_CXX20
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #if _HAS_CXX20
 #define __cpp_lib_execution 201902L // P1001R2 execution::unseq
 #elif _HAS_CXX17
 #define __cpp_lib_execution 201603L // P0024R2 Parallel Algorithms
 #endif // language mode
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional

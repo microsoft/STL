@@ -17,9 +17,9 @@ _EMIT_STL_WARNING(STL4038, "The contents of <memory_resource> are available only
 #include <xpolymorphic_allocator.h>
 #include <xutility>
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #include <mutex>
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -565,7 +565,7 @@ namespace pmr {
         pmr::vector<_Pool> _Pools{}; // pools in order of increasing block size
     };
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
     _EXPORT_STD class synchronized_pool_resource : public unsynchronized_pool_resource {
     public:
         using unsynchronized_pool_resource::unsynchronized_pool_resource;
@@ -589,7 +589,7 @@ namespace pmr {
     private:
         mutable mutex _Mtx;
     };
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
     _EXPORT_STD class monotonic_buffer_resource : public _Identity_equal_resource {
     public:
