@@ -439,11 +439,6 @@ private:
 
 #define _END_LOCINFO() _END_LOCK()
 
-#define _RELIABILITY_CONTRACT                                                    \
-    [System::Runtime::ConstrainedExecution::ReliabilityContract(                 \
-        System::Runtime::ConstrainedExecution::Consistency::WillNotCorruptState, \
-        System::Runtime::ConstrainedExecution::Cer::Success)]
-
 #else // _M_CEE
 #define _BEGIN_LOCK(_Kind) \
     {                      \
@@ -456,8 +451,6 @@ private:
         _Locinfo _VarName;
 
 #define _END_LOCINFO() }
-
-#define _RELIABILITY_CONTRACT
 #endif // _M_CEE
 
 #ifdef _CRTBLD
@@ -481,6 +474,16 @@ private:
     static void __cdecl _Init_locks_ctor(_Init_locks*) noexcept;
     static void __cdecl _Init_locks_dtor(_Init_locks*) noexcept;
 };
+
+#ifdef _M_CEE
+#define _RELIABILITY_CONTRACT                                                    \
+    [System::Runtime::ConstrainedExecution::ReliabilityContract(                 \
+        System::Runtime::ConstrainedExecution::Consistency::WillNotCorruptState, \
+        System::Runtime::ConstrainedExecution::Cer::Success)]
+#else // _M_CEE
+#define _RELIABILITY_CONTRACT
+#endif // _M_CEE
+
 #endif // _CRTBLD
 
 #if _HAS_EXCEPTIONS
@@ -520,10 +523,6 @@ private:
 #define _THROW(x) x._Raise()
 #endif // _HAS_EXCEPTIONS
 _STD_END
-
-#ifndef _RELIABILITY_CONTRACT
-#define _RELIABILITY_CONTRACT
-#endif // _RELIABILITY_CONTRACT
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
