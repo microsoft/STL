@@ -508,11 +508,13 @@ void test_midpoint_floating() {
         assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::infinity()) == limits<Ty>::infinity());
         assert(midpoint(limits<Ty>::denorm_min(), -limits<Ty>::infinity()) == -limits<Ty>::infinity());
 
+#ifndef _M_CEE // TRANSITION, VSO-1666178
         assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), Ty(0)));
         assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(Ty(0), mint_nan<Ty>(0, 1)));
         assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), limits<Ty>::max()));
         assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(limits<Ty>::max(), mint_nan<Ty>(0, 1)));
         assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), mint_nan<Ty>(0, 1)));
+#endif // _M_CEE
 
         assert(isnan(midpoint(limits<Ty>::quiet_NaN(), Ty(2.0))));
         assert(isnan(midpoint(Ty(2.0), limits<Ty>::quiet_NaN())));
