@@ -67,16 +67,6 @@ struct int_wrapper {
 };
 STATIC_ASSERT(movable<int_wrapper> && !copyable<int_wrapper>);
 
-template <class T, size_t N>
-struct holder {
-    STATIC_ASSERT(N < ~size_t{0} / sizeof(T));
-    alignas(T) unsigned char space[N * sizeof(T)];
-
-    auto as_span() {
-        return span<T, N>{reinterpret_cast<T*>(space + 0), N};
-    }
-};
-
 struct instantiator {
     static constexpr int expected_output[]      = {13, 55, 12345};
     static constexpr int expected_output_long[] = {13, 55, 12345, -1};
