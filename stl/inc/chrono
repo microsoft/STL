@@ -5685,10 +5685,10 @@ namespace chrono {
                 return;
             }
 
-            constexpr bool _Is_ymd =
-                _Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday, year_month_weekday_last>;
-
             const auto _Validate = [&] {
+                constexpr bool _Is_ymd =
+                    _Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday, year_month_weekday_last>;
+
                 switch (_Spec._Type) {
                 case 'a':
                 case 'A':
