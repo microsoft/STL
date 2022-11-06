@@ -385,12 +385,14 @@ private:
     int _Locktype;
 };
 
-#ifdef _M_CEE
+#ifdef _M_CEE_PURE
 class _CRTIMP2_PURE_IMPORT _EmptyLockit { // empty lock class used for bin compat
 private:
     int _Locktype;
 };
+#endif // _M_CEE_PURE
 
+#ifdef _M_CEE
 #ifndef _PREPARE_CONSTRAINED_REGIONS
 #ifdef _M_CEE_PURE
 #define _PREPARE_CONSTRAINED_REGIONS 1
