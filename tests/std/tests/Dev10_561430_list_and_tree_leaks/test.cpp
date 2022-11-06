@@ -18,9 +18,9 @@
 #include <utility>
 #include <vector>
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #include <future>
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 int g_mallocs = 0;
 
@@ -120,7 +120,7 @@ int main() {
 
     { shared_ptr<int> sp = allocate_shared<int>(Mallocator<int>(), 1729); }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
     {
         promise<int> p(allocator_arg, Mallocator<int>());
 
@@ -186,7 +186,7 @@ int main() {
         f.get();
     }
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
     assert(g_mallocs == 0);
 

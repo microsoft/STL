@@ -1250,13 +1250,11 @@ namespace {
                     std::pmr::unsynchronized_pool_resource upr{{0_zu, 64_zu}, &rr};
                     lambda(&upr);
                 }
-#ifndef _M_CEE
                 {
                     recording_resource rr;
                     std::pmr::synchronized_pool_resource upr{{0_zu, 64_zu}, &rr};
                     lambda(&upr);
                 }
-#endif // _M_CEE
             }
 
             void test_medium_allocation() {
@@ -1458,9 +1456,7 @@ namespace {
 
             void test() {
                 test_is_equal<std::pmr::unsynchronized_pool_resource>();
-#ifndef _M_CEE
                 test_is_equal<std::pmr::synchronized_pool_resource>();
-#endif // _M_CEE
             }
         } // namespace is_equal
     } // namespace pool

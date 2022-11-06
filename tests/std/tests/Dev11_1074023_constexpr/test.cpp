@@ -9,27 +9,18 @@
 
 #include <algorithm>
 #include <array>
-#include <cassert>
-#ifndef _M_CEE_PURE
-#include <atomic>
-#endif // _M_CEE_PURE
 #include <bitset>
+#include <cassert>
 #include <chrono>
 #include <complex>
+#include <cstdint>
 #include <functional>
-#ifndef _M_CEE
-#include <future>
-#endif // _M_CEE
 #include <initializer_list>
 #include <ios>
 #include <iterator>
 #include <limits>
 #include <locale>
 #include <memory>
-#ifndef _M_CEE
-#include <mutex>
-#endif // _M_CEE
-#include <cstdint>
 #include <new>
 #include <numeric>
 #include <random>
@@ -40,6 +31,12 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+
+#ifndef _M_CEE_PURE
+#include <atomic>
+#include <future>
+#include <mutex>
+#endif // _M_CEE_PURE
 
 using namespace std;
 using namespace std::chrono;
@@ -814,7 +811,7 @@ STATIC_ASSERT(sm.first == nullptr);
 STATIC_ASSERT(sm.second == nullptr);
 STATIC_ASSERT(sm.matched == false);
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 
 constexpr defer_lock_t defer_lock2   = defer_lock;
 constexpr try_to_lock_t try_to_lock2 = try_to_lock;
@@ -825,7 +822,7 @@ constexpr once_flag once{};
 // TRANSITION,
 // constexpr mutex() noexcept;
 
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 // reverse_iterator and string_view constexpr are tested in P0220R1_string_view
 
@@ -849,9 +846,9 @@ void test_all_bitmasks() {
     test_bitmask<ios_base::openmode, ios_base::binary, ios_base::out>();
     test_bitmask<RC::syntax_option_type, RC::icase, RC::nosubs>();
     test_bitmask<RC::match_flag_type, RC::match_not_bol, RC::match_not_eol>();
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
     test_bitmask<launch, launch::async, launch::deferred>();
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 }
 
 template <typename T>
@@ -1015,12 +1012,12 @@ int main() {
     (void) istream_it;
     (void) istreambuf_it;
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
     (void) defer_lock2;
     (void) try_to_lock2;
     (void) adopt_lock2;
     (void) once;
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
     // Compare against VC 2013's values.
     assert_bits(numeric_limits<float>::denorm_min(), 0x00000001UL);
