@@ -580,17 +580,17 @@ STATIC_ASSERT(test_crbegin<int (&)[]>());
 STATIC_ASSERT(test_crend<int (&)[]>());
 STATIC_ASSERT(test_size<int (&)[]>());
 STATIC_ASSERT(test_empty<int (&)[], false>());
-// Can't use test_data here because they use range_value_t and this isn't a range
+// Can't use test_data here because it uses range_value_t and this isn't a range
 STATIC_ASSERT(std::same_as<decltype(ranges::data(std::declval<int (&)[]>())), int*>);
 STATIC_ASSERT(!ranges::range<int (&)[]>);
 STATIC_ASSERT(!ranges::view<int (&)[]>);
 
-#if _HAS_CXX23 // ranges::cbegin and ranges::cdata behaviour differs in C++20 and C++23 modes
+#if _HAS_CXX23 // ranges::cbegin and ranges::cdata behavior differs in C++20 and C++23 modes
 STATIC_ASSERT(test_cbegin<int (&)[]>());
 STATIC_ASSERT(test_cdata<int (&)[]>());
 #else // ^^^ C++23 / C++20 vvv
 STATIC_ASSERT(test_cbegin<int (&)[], int const*>());
-// Can't use test_cdata here because they use range_value_t and this isn't a range
+// Can't use test_cdata here because it uses range_value_t and this isn't a range
 STATIC_ASSERT(std::same_as<decltype(ranges::cdata(std::declval<int (&)[]>())), int const*>);
 #endif // C++20
 
@@ -603,17 +603,17 @@ STATIC_ASSERT(test_crbegin<int const (&)[]>());
 STATIC_ASSERT(test_crend<int const (&)[]>());
 STATIC_ASSERT(test_size<int const (&)[]>());
 STATIC_ASSERT(test_empty<int const (&)[], false>());
-// Can't use test_data here because they use range_value_t and this isn't a range
+// Can't use test_data here because it uses range_value_t and this isn't a range
 STATIC_ASSERT(std::same_as<decltype(ranges::data(std::declval<int const (&)[]>())), int const*>);
 STATIC_ASSERT(!ranges::range<int const (&)[]>);
 STATIC_ASSERT(!ranges::view<int const (&)[]>);
 
-#if _HAS_CXX23 // ranges::cbegin and ranges::cdata behaviour differs in C++20 and C++23 modes
+#if _HAS_CXX23 // ranges::cbegin and ranges::cdata behavior differs in C++20 and C++23 modes
 STATIC_ASSERT(test_cbegin<int const (&)[]>());
 STATIC_ASSERT(test_cdata<int const (&)[]>());
 #else // ^^^ C++23 / C++20 vvv
 STATIC_ASSERT(test_cbegin<int const (&)[], int const*>());
-// Can't use test_cdata here because they use range_value_t and this isn't a range
+// Can't use test_cdata here because it uses range_value_t and this isn't a range
 STATIC_ASSERT(std::same_as<decltype(ranges::cdata(std::declval<int const (&)[]>())), int const*>);
 #endif // C++20
 
@@ -630,7 +630,7 @@ STATIC_ASSERT(!CanSize<decltype((initially_unbounded))>);
 STATIC_ASSERT(!CanEmpty<decltype((initially_unbounded))>);
 STATIC_ASSERT(ranges::data(initially_unbounded) == initially_unbounded);
 
-#if _HAS_CXX23 // ranges::cbegin and ranges::cdata behaviour differs in C++20 and C++23 modes
+#if _HAS_CXX23 // ranges::cbegin and ranges::cdata behavior differs in C++20 and C++23 modes
 STATIC_ASSERT(!CanCBegin<decltype((initially_unbounded))>);
 STATIC_ASSERT(!CanCData<decltype((initially_unbounded))>);
 #else // ^^^ C++23 / C++20 vvv
@@ -1001,7 +1001,7 @@ STATIC_ASSERT(test_data<std::span<int>, int*>());
 STATIC_ASSERT(test_contiguous_range<std::span<int>>());
 STATIC_ASSERT(ranges::view<std::span<int>>);
 
-#if _HAS_CXX23 // behaviour of span members differs in C++20 and C++23 modes
+#if _HAS_CXX23 // behavior of span members differs in C++20 and C++23 modes
 STATIC_ASSERT(test_cbegin<std::span<int>, std::span<int>::const_iterator>());
 STATIC_ASSERT(test_cend<std::span<int>, std::span<int>::const_iterator>());
 STATIC_ASSERT(test_crbegin<std::span<int>, std::span<int>::const_reverse_iterator>());
@@ -1025,7 +1025,7 @@ STATIC_ASSERT(test_data<std::span<int> const, int*>());
 STATIC_ASSERT(test_contiguous_range<std::span<int> const>());
 STATIC_ASSERT(!ranges::view<std::span<int> const>);
 
-#if _HAS_CXX23 // behaviour of const span members differs in C++20 and C++23 modes
+#if _HAS_CXX23 // behavior of const span members differs in C++20 and C++23 modes
 STATIC_ASSERT(test_cbegin<std::span<int> const, std::span<int>::const_iterator>());
 STATIC_ASSERT(test_cend<std::span<int> const, std::span<int>::const_iterator>());
 STATIC_ASSERT(test_crbegin<std::span<int> const, std::span<int>::const_reverse_iterator>());
@@ -1049,7 +1049,7 @@ STATIC_ASSERT(test_data<std::span<int>&, int*>());
 STATIC_ASSERT(test_contiguous_range<std::span<int>&>());
 STATIC_ASSERT(!ranges::view<std::span<int>&>);
 
-#if _HAS_CXX23 // behaviour of span& members differs in C++20 and C++23 modes
+#if _HAS_CXX23 // behavior of span& members differs in C++20 and C++23 modes
 STATIC_ASSERT(test_cbegin<std::span<int>&, std::span<int>::const_iterator>());
 STATIC_ASSERT(test_cend<std::span<int>&, std::span<int>::const_iterator>());
 STATIC_ASSERT(test_crbegin<std::span<int>&, std::span<int>::const_reverse_iterator>());
@@ -1073,7 +1073,7 @@ STATIC_ASSERT(test_data<std::span<int> const&, int*>());
 STATIC_ASSERT(test_contiguous_range<std::span<int> const&>());
 STATIC_ASSERT(!ranges::view<std::span<int> const&>);
 
-#if _HAS_CXX23 // behaviour of const span& members differs in C++20 and C++23 modes
+#if _HAS_CXX23 // behavior of const span& members differs in C++20 and C++23 modes
 STATIC_ASSERT(test_cbegin<std::span<int> const&, std::span<int>::const_iterator>());
 STATIC_ASSERT(test_cend<std::span<int> const&, std::span<int>::const_iterator>());
 STATIC_ASSERT(test_crbegin<std::span<int> const&, std::span<int>::const_reverse_iterator>());
