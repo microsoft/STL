@@ -233,6 +233,7 @@ int main(int argc, char* argv[]) {
         test_case_operator_retreat_negative_after_end,
         test_case_operator_retreat_copy_before_begin,
         test_case_operator_retreat_copy_after_end,
+#ifndef _M_CEE // TRANSITION, VSO-1665606
         test_case_operator_subtract_incompatible_different_data,
         test_case_operator_subtract_incompatible_different_size,
         test_case_operator_subtract_incompatible_value_initialized,
@@ -242,6 +243,7 @@ int main(int argc, char* argv[]) {
         test_case_operator_spaceship_incompatible_different_data,
         test_case_operator_spaceship_incompatible_different_size,
         test_case_operator_spaceship_incompatible_value_initialized,
+#endif // _M_CEE
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 

@@ -510,6 +510,7 @@ int main() {
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
 
+#ifndef _M_CEE // TRANSITION, VSO-1666180
     {
         // Validate a view borrowed range
         constexpr auto v =
@@ -517,6 +518,7 @@ int main() {
         STATIC_ASSERT(test_one(v, only_four_ints));
         test_one(v, only_four_ints);
     }
+#endif // _M_CEE
 
     { // Validate that we can use something that is convertible to integral (GH-1957)
         constexpr span s{some_ints};

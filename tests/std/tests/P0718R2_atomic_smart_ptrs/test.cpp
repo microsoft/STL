@@ -580,9 +580,11 @@ void ensure_member_calls_compile() {
     }
 }
 
+#ifndef _M_CEE // TRANSITION, VSO-1664382
 // LWG-3661: constinit atomic<shared_ptr<T>> a(nullptr); should work
 constinit atomic<shared_ptr<bool>> a{};
 constinit atomic<shared_ptr<bool>> b{nullptr};
+#endif // _M_CEE
 
 int main() {
     // These values for is_always_lock_free are not required by the standard, but they are true for our implementation.

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <array>
+#include <atomic>
 #include <bitset>
 #include <cassert>
 #include <chrono>
@@ -10,16 +11,19 @@
 #include <deque>
 #include <forward_list>
 #include <functional>
+#include <future>
 #include <initializer_list>
 #include <iterator>
 #include <list>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <queue>
 #include <regex>
 #include <scoped_allocator>
 #include <set>
+#include <shared_mutex>
 #include <sstream>
 #include <stack>
 #include <streambuf>
@@ -32,16 +36,6 @@
 #include <utility>
 #include <valarray>
 #include <vector>
-
-#ifndef _M_CEE_PURE
-#include <atomic>
-#endif // _M_CEE_PURE
-
-#ifndef _M_CEE
-#include <future>
-#include <mutex>
-#include <shared_mutex>
-#endif // _M_CEE
 
 #if _HAS_CXX23 && !defined(__clang__) // TRANSITION, DevCom-10107077, Clang has not implemented Deducing this
 #define HAS_EXPLICIT_THIS_PARAMETER
@@ -1102,7 +1096,6 @@ void test_regex() {
 }
 
 void test_atomic() {
-#ifndef _M_CEE_PURE
     long x = 11L;
 
     atomic atom1(x);
@@ -1110,11 +1103,9 @@ void test_atomic() {
 
     static_assert(is_same_v<decltype(atom1), atomic<long>>);
     static_assert(is_same_v<decltype(atom2), atomic<long*>>);
-#endif // _M_CEE_PURE
 }
 
 void test_locks() {
-#ifndef _M_CEE
     recursive_mutex rm{};
     recursive_timed_mutex rtm{};
     lock_guard lg(rm);
@@ -1144,7 +1135,6 @@ void test_locks() {
     static_assert(is_same_v<decltype(scoped5), scoped_lock<recursive_mutex, recursive_timed_mutex>>);
     static_assert(is_same_v<decltype(shared), shared_lock<shared_timed_mutex>>);
     static_assert(is_same_v<decltype(shared2), shared_lock<shared_timed_mutex>>);
-#endif // _M_CEE
 }
 
 int main() {
@@ -1161,9 +1151,7 @@ int main() {
     test_transparent_operator_functors();
 
     test_function_wrapper<function>();
-#ifndef _M_CEE
     test_function_wrapper<packaged_task>();
-#endif // _M_CEE
 
     test_searchers();
     test_duration_and_time_point();

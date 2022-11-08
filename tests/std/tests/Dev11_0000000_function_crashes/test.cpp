@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <functional>
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #include <future>
 #endif
 using namespace std;
@@ -68,14 +68,14 @@ int main() {
         g();
     }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
     {
         future<int> f = async([]() { return 500000; });
         global += f.get();
     }
 #endif
 
-#ifdef _M_CEE
+#ifdef _M_CEE_PURE
     return global != 83210;
 #else
     return global != 583210;

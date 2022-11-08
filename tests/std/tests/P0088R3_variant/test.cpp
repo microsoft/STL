@@ -6064,7 +6064,7 @@ template<class T> struct Holder { T t; };
 constexpr bool test(bool do_it)
 {
     if (do_it) {
-#ifndef _M_CEE
+#ifndef _M_CEE // TRANSITION, VSO-1659496
         std::variant<Holder<Incomplete>*, int> v = nullptr;
         std::visit([](auto){}, v);
         std::visit([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
