@@ -9,7 +9,7 @@
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
-#endif                                                // __clang__
+#endif // __clang__
 
 #include <algorithm>
 #include <cassert>
@@ -31,7 +31,7 @@ using namespace std;
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 #ifdef __SANITIZE_ADDRESS__
-extern "C" int __sanitizer_verify_contiguous_container(const void *beg, const void *mid, const void *end) noexcept;
+extern "C" int __sanitizer_verify_contiguous_container(const void* beg, const void* mid, const void* end) noexcept;
 #endif // ASan instrumentation enabled
 
 constexpr auto literal_input = "Hello fluffy kittens";
@@ -40,58 +40,38 @@ constexpr auto literal_input_u8 = u8"Hello fluffy kittens";
 #endif // __cpp_char8_t
 constexpr auto literal_input_u16 = u"Hello fluffy kittens";
 constexpr auto literal_input_u32 = U"Hello fluffy kittens";
-constexpr auto literal_input_w = L"Hello fluffy kittens";
+constexpr auto literal_input_w   = L"Hello fluffy kittens";
 
 template <class CharType>
-constexpr auto get_large_input()
-{
-    if constexpr (is_same_v<CharType, char>)
-    {
+constexpr auto get_large_input() {
+    if constexpr (is_same_v<CharType, char>) {
         return literal_input;
 #ifdef __cpp_char8_t
-    }
-    else if constexpr (is_same_v<CharType, char8_t>)
-    {
+    } else if constexpr (is_same_v<CharType, char8_t>) {
         return literal_input_u8;
 #endif // __cpp_char8_t
-    }
-    else if constexpr (is_same_v<CharType, char16_t>)
-    {
+    } else if constexpr (is_same_v<CharType, char16_t>) {
         return literal_input_u16;
-    }
-    else if constexpr (is_same_v<CharType, char32_t>)
-    {
+    } else if constexpr (is_same_v<CharType, char32_t>) {
         return literal_input_u32;
-    }
-    else
-    {
+    } else {
         return literal_input_w;
     }
 }
 
 template <class CharType>
-constexpr auto get_sso_input()
-{
-    if constexpr (is_same_v<CharType, char>)
-    {
+constexpr auto get_sso_input() {
+    if constexpr (is_same_v<CharType, char>) {
         return "cat";
 #ifdef __cpp_char8_t
-    }
-    else if constexpr (is_same_v<CharType, char8_t>)
-    {
+    } else if constexpr (is_same_v<CharType, char8_t>) {
         return u8"cat";
 #endif // __cpp_char8_t
-    }
-    else if constexpr (is_same_v<CharType, char16_t>)
-    {
+    } else if constexpr (is_same_v<CharType, char16_t>) {
         return u"cat";
-    }
-    else if constexpr (is_same_v<CharType, char32_t>)
-    {
+    } else if constexpr (is_same_v<CharType, char32_t>) {
         return U"cat";
-    }
-    else
-    {
+    } else {
         return L"cat";
     }
 }
@@ -101,262 +81,224 @@ constexpr size_t max_sso_size = (16 / sizeof(CharType) < 1 ? 1 : 16 / sizeof(Cha
 
 #if _HAS_CXX17
 template <class CharType>
-constexpr auto get_large_input_view()
-{
+constexpr auto get_large_input_view() {
     return basic_string_view<CharType>{get_large_input<CharType>()};
 }
 
 template <class CharType>
-constexpr auto get_sso_input_view()
-{
+constexpr auto get_sso_input_view() {
     return basic_string_view<CharType>{get_sso_input<CharType>()};
 }
 #endif // _HAS_CXX17
 
 #if _HAS_CXX17
 template <class CharType>
-struct string_view_convertible
-{
-    constexpr operator basic_string_view<CharType>() const noexcept
-    {
+struct string_view_convertible {
+    constexpr operator basic_string_view<CharType>() const noexcept {
         return get_large_input_view<CharType>();
     }
 };
 
 template <class CharType>
-struct string_view_convertible_sso
-{
-    constexpr operator basic_string_view<CharType>() const noexcept
-    {
+struct string_view_convertible_sso {
+    constexpr operator basic_string_view<CharType>() const noexcept {
         return get_sso_input_view<CharType>();
     }
 };
 #endif // _HAS_CXX17
 
 template <class CharType>
-struct throw_on_conversion
-{
+struct throw_on_conversion {
     throw_on_conversion() = default;
     throw_on_conversion(CharType) {}
-    operator CharType() const
-    {
+    operator CharType() const {
         throw 42;
     }
 };
 
 template <class CharType, int N>
-class input_iterator_tester
-{
+class input_iterator_tester {
 private:
     CharType data[N] = {};
 
 public:
-    input_iterator_tester() noexcept
-    {
+    input_iterator_tester() noexcept {
         fill(data, data + N, CharType{'b'});
     }
 
-    class iterator
-    {
+    class iterator {
     private:
-        CharType *curr;
+        CharType* curr;
 
     public:
         using iterator_category = input_iterator_tag;
-        using value_type = CharType;
-        using difference_type = ptrdiff_t;
-        using pointer = void;
-        using reference = CharType &;
+        using value_type        = CharType;
+        using difference_type   = ptrdiff_t;
+        using pointer           = void;
+        using reference         = CharType&;
 
-        explicit iterator(CharType *start) : curr(start) {}
+        explicit iterator(CharType* start) : curr(start) {}
 
-        reference operator*() const
-        {
+        reference operator*() const {
             return *curr;
         }
 
-        iterator &operator++()
-        {
+        iterator& operator++() {
             ++curr;
             return *this;
         }
 
-        iterator operator++(int)
-        {
+        iterator operator++(int) {
             auto tmp = *this;
             ++curr;
             return tmp;
         }
 
-        bool operator==(const iterator &that) const
-        {
+        bool operator==(const iterator& that) const {
             return curr == that.curr;
         }
 
-        bool operator!=(const iterator &that) const
-        {
+        bool operator!=(const iterator& that) const {
             return !(*this == that);
         }
     };
 
-    iterator begin()
-    {
+    iterator begin() {
         return iterator(data);
     }
 
-    iterator end()
-    {
+    iterator end() {
         return iterator(data + N);
     }
 };
 
 template <class CharType, class Alloc>
-bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc> &str)
-{
+bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& str) {
 #ifdef __SANITIZE_ADDRESS__
-    const void *const buffer = str.data();
-    const void *const buf_end = str.data() + str.capacity() + 1;
+    const void* const buffer  = str.data();
+    const void* const buf_end = str.data() + str.capacity() + 1;
 
     _Asan_aligned_pointers aligned;
-    constexpr bool _Large_string_always_aligned = (_Container_allocation_minimum_asan_alignment<decay_t<decltype(str)>>) >= 8;
-    constexpr bool _Small_string_always_aligned =
-        alignof(CharType *) >= 8 || alignof(CharType) >= 8;
+    constexpr bool _Large_string_always_aligned =
+        (_Container_allocation_minimum_asan_alignment<decay_t<decltype(str)>>) >= 8;
+    constexpr bool _Small_string_always_aligned = alignof(CharType*) >= 8 || alignof(CharType) >= 8;
 
-    if (str.capacity() == max_sso_size<CharType>)
-    {
+    if (str.capacity() == max_sso_size<CharType>) {
         // SSO
-        if constexpr (_Small_string_always_aligned)
-        {
+        if constexpr (_Small_string_always_aligned) {
             aligned = {buffer, _Get_asan_aligned_after(buf_end)};
-        }
-        else
-        {
+        } else {
             aligned = _Get_asan_aligned_first_end(buffer, buf_end);
         }
-    }
-    else
-    {
-        if constexpr (_Large_string_always_aligned)
-        {
+    } else {
+        if constexpr (_Large_string_always_aligned) {
             aligned = {buffer, _Get_asan_aligned_after(buf_end)};
-        }
-        else
-        {
+        } else {
             aligned = _Get_asan_aligned_first_end(buffer, buf_end);
         }
     }
     assert(aligned._First != aligned._End);
 
-    const void *const mid = str.data() + str.size() + 1;
-    const void *const fixed_mid = aligned._Clamp_to_end(mid);
+    const void* const mid       = str.data() + str.size() + 1;
+    const void* const fixed_mid = aligned._Clamp_to_end(mid);
 
     return __sanitizer_verify_contiguous_container(aligned._First, fixed_mid, aligned._End) != 0;
-#else  // ^^^ ASan instrumentation enabled ^^^ // vvv ASan instrumentation disabled vvv
-    (void)str;
+#else // ^^^ ASan instrumentation enabled ^^^ // vvv ASan instrumentation disabled vvv
+    (void) str;
     return true;
 #endif // ASan instrumentation disabled
 }
 
 // Note: This class does not satisfy all the allocator requirements but is sufficient for this test.
 template <class CharType, class Pocma, class Stateless>
-struct custom_test_allocator
-{
-    using value_type = CharType;
+struct custom_test_allocator {
+    using value_type                             = CharType;
     using propagate_on_container_move_assignment = Pocma;
-    using is_always_equal = Stateless;
+    using is_always_equal                        = Stateless;
 };
 
 template <class T1, class T2, class Pocma, class Stateless>
 constexpr bool operator==(
-    const custom_test_allocator<T1, Pocma, Stateless> &, const custom_test_allocator<T2, Pocma, Stateless> &) noexcept
-{
+    const custom_test_allocator<T1, Pocma, Stateless>&, const custom_test_allocator<T2, Pocma, Stateless>&) noexcept {
     return Stateless::value;
 }
 
 template <class T1, class T2, class Pocma, class Stateless>
 constexpr bool operator!=(
-    const custom_test_allocator<T1, Pocma, Stateless> &, const custom_test_allocator<T2, Pocma, Stateless> &) noexcept
-{
+    const custom_test_allocator<T1, Pocma, Stateless>&, const custom_test_allocator<T2, Pocma, Stateless>&) noexcept {
     return !Stateless::value;
 }
 
 template <class CharType, class Pocma = true_type, class Stateless = true_type>
-struct aligned_allocator : public custom_test_allocator<CharType, Pocma, Stateless>
-{
+struct aligned_allocator : public custom_test_allocator<CharType, Pocma, Stateless> {
     static constexpr size_t _Minimum_asan_allocation_alignment = 8;
 
     aligned_allocator() = default;
     template <class U>
-    constexpr aligned_allocator(const aligned_allocator<U, Pocma, Stateless> &) noexcept {}
+    constexpr aligned_allocator(const aligned_allocator<U, Pocma, Stateless>&) noexcept {}
 
-    CharType *allocate(size_t n)
-    {
+    CharType* allocate(size_t n) {
         return new CharType[n];
     }
 
-    void deallocate(CharType *p, size_t) noexcept
-    {
+    void deallocate(CharType* p, size_t) noexcept {
         delete[] p;
     }
 };
 STATIC_ASSERT(
     _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, aligned_allocator<char>>> == 8);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
-                  basic_string<wchar_t, char_traits<wchar_t>, aligned_allocator<wchar_t>>> == 8);
+                  basic_string<wchar_t, char_traits<wchar_t>, aligned_allocator<wchar_t>>>
+              == 8);
 
 template <class CharType, class Pocma = true_type, class Stateless = true_type>
-struct explicit_allocator : public custom_test_allocator<CharType, Pocma, Stateless>
-{
+struct explicit_allocator : public custom_test_allocator<CharType, Pocma, Stateless> {
     static constexpr size_t _Minimum_asan_allocation_alignment = alignof(CharType);
 
     explicit_allocator() = default;
     template <class U>
-    constexpr explicit_allocator(const explicit_allocator<U, Pocma, Stateless> &) noexcept {}
+    constexpr explicit_allocator(const explicit_allocator<U, Pocma, Stateless>&) noexcept {}
 
-    CharType *allocate(size_t n)
-    {
-        CharType *mem = new CharType[n + 1];
+    CharType* allocate(size_t n) {
+        CharType* mem = new CharType[n + 1];
         return mem + 1;
     }
 
-    void deallocate(CharType *p, size_t) noexcept
-    {
+    void deallocate(CharType* p, size_t) noexcept {
         delete[] (p - 1);
     }
 };
 STATIC_ASSERT(
     _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, explicit_allocator<char>>> == 1);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
-                  basic_string<wchar_t, char_traits<wchar_t>, explicit_allocator<wchar_t>>> == 2);
+                  basic_string<wchar_t, char_traits<wchar_t>, explicit_allocator<wchar_t>>>
+              == 2);
 
 template <class CharType, class Pocma = true_type, class Stateless = true_type>
-struct implicit_allocator : public custom_test_allocator<CharType, Pocma, Stateless>
-{
+struct implicit_allocator : public custom_test_allocator<CharType, Pocma, Stateless> {
     implicit_allocator() = default;
     template <class U>
-    constexpr implicit_allocator(const implicit_allocator<U, Pocma, Stateless> &) noexcept {}
+    constexpr implicit_allocator(const implicit_allocator<U, Pocma, Stateless>&) noexcept {}
 
-    CharType *allocate(size_t n)
-    {
-        CharType *mem = new CharType[n + 1];
+    CharType* allocate(size_t n) {
+        CharType* mem = new CharType[n + 1];
         return mem + 1;
     }
 
-    void deallocate(CharType *p, size_t) noexcept
-    {
+    void deallocate(CharType* p, size_t) noexcept {
         delete[] (p - 1);
     }
 };
 STATIC_ASSERT(
     _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, implicit_allocator<char>>> == 1);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
-                  basic_string<wchar_t, char_traits<wchar_t>, implicit_allocator<wchar_t>>> == 2);
+                  basic_string<wchar_t, char_traits<wchar_t>, implicit_allocator<wchar_t>>>
+              == 2);
 
 template <class Alloc>
-void test_construction()
-{
+void test_construction() {
     using CharType = typename Alloc::value_type;
-    using str = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
     { // constructors
         // range constructors
         str literal_constructed_sso{get_sso_input<CharType>()};
@@ -366,9 +308,9 @@ void test_construction()
         assert(verify_string(literal_constructed));
 
         str initializer_list_constructed({CharType{'H'}, CharType{'e'}, CharType{'l'}, CharType{'l'}, CharType{'o'},
-                                          CharType{' '}, //
-                                          CharType{'f'}, CharType{'l'}, CharType{'u'}, CharType{'f'}, CharType{'f'}, CharType{'y'}, CharType{' '},
-                                          CharType{'k'}, CharType{'i'}, CharType{'t'}, CharType{'t'}, CharType{'e'}, CharType{'n'}, CharType{'s'}});
+            CharType{' '}, //
+            CharType{'f'}, CharType{'l'}, CharType{'u'}, CharType{'f'}, CharType{'f'}, CharType{'y'}, CharType{' '},
+            CharType{'k'}, CharType{'i'}, CharType{'t'}, CharType{'t'}, CharType{'e'}, CharType{'n'}, CharType{'s'}});
         assert(verify_string(initializer_list_constructed));
 
         str initializer_list_constructed_sso({CharType{'c'}, CharType{'a'}, CharType{'t'}});
@@ -523,9 +465,9 @@ void test_construction()
 
         str initializer_list_constructed(
             {CharType{'H'}, CharType{'e'}, CharType{'l'}, CharType{'l'}, CharType{'o'}, CharType{' '}, //
-             CharType{'f'}, CharType{'l'}, CharType{'u'}, CharType{'f'}, CharType{'f'}, CharType{'y'}, CharType{' '},
-             CharType{'k'}, CharType{'i'}, CharType{'t'}, CharType{'t'}, CharType{'e'}, CharType{'n'},
-             CharType{'s'}},
+                CharType{'f'}, CharType{'l'}, CharType{'u'}, CharType{'f'}, CharType{'f'}, CharType{'y'}, CharType{' '},
+                CharType{'k'}, CharType{'i'}, CharType{'t'}, CharType{'t'}, CharType{'e'}, CharType{'n'},
+                CharType{'s'}},
             alloc);
         assert(verify_string(initializer_list_constructed));
 
@@ -607,13 +549,12 @@ void test_construction()
 }
 
 template <class Alloc>
-void test_append()
-{
+void test_append() {
     using CharType = typename Alloc::value_type;
-    using str = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
 
     constexpr size_t large_size = 20;
-    constexpr size_t sso_size = 1;
+    constexpr size_t sso_size   = 1;
 
     const str input(large_size, CharType{'b'});
     const str input_sso(sso_size, CharType{'b'});
@@ -949,13 +890,12 @@ void test_append()
 }
 
 template <class Alloc>
-void test_assign()
-{
+void test_assign() {
     using CharType = typename Alloc::value_type;
-    using str = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
 
     constexpr size_t large_size = 20;
-    constexpr size_t sso_size = 2;
+    constexpr size_t sso_size   = 2;
 
     const str start(large_size - 1, CharType{'a'});
     const str start_sso(sso_size + 1, CharType{'a'});
@@ -1029,9 +969,9 @@ void test_assign()
 
         str initializer_list_assigned_large_large{start};
         initializer_list_assigned_large_large = {CharType{'H'}, CharType{'e'}, CharType{'l'}, CharType{'l'},
-                                                 CharType{'o'}, CharType{' '}, //
-                                                 CharType{'f'}, CharType{'l'}, CharType{'u'}, CharType{'f'}, CharType{'f'}, CharType{'y'}, CharType{' '},
-                                                 CharType{'k'}, CharType{'i'}, CharType{'t'}, CharType{'t'}, CharType{'e'}, CharType{'n'}, CharType{'s'}};
+            CharType{'o'}, CharType{' '}, //
+            CharType{'f'}, CharType{'l'}, CharType{'u'}, CharType{'f'}, CharType{'f'}, CharType{'y'}, CharType{' '},
+            CharType{'k'}, CharType{'i'}, CharType{'t'}, CharType{'t'}, CharType{'e'}, CharType{'n'}, CharType{'s'}};
         assert(verify_string(initializer_list_assigned_large_large));
 
         str initializer_list_assigned_large_sso{start};
@@ -1040,9 +980,9 @@ void test_assign()
 
         str initializer_list_assigned_sso_large{start_sso};
         initializer_list_assigned_sso_large = {CharType{'H'}, CharType{'e'}, CharType{'l'}, CharType{'l'},
-                                               CharType{'o'}, CharType{' '}, //
-                                               CharType{'f'}, CharType{'l'}, CharType{'u'}, CharType{'f'}, CharType{'f'}, CharType{'y'}, CharType{' '},
-                                               CharType{'k'}, CharType{'i'}, CharType{'t'}, CharType{'t'}, CharType{'e'}, CharType{'n'}, CharType{'s'}};
+            CharType{'o'}, CharType{' '}, //
+            CharType{'f'}, CharType{'l'}, CharType{'u'}, CharType{'f'}, CharType{'f'}, CharType{'y'}, CharType{' '},
+            CharType{'k'}, CharType{'i'}, CharType{'t'}, CharType{'t'}, CharType{'e'}, CharType{'n'}, CharType{'s'}};
         assert(verify_string(initializer_list_assigned_sso_large));
 
         str initializer_list_assigned_sso_sso{start_sso};
@@ -1221,9 +1161,9 @@ void test_assign()
 
         str assign_initializer_list_large_large{start};
         assign_initializer_list_large_large.assign({CharType{'H'}, CharType{'e'}, CharType{'l'}, CharType{'l'},
-                                                    CharType{'o'}, CharType{' '}, //
-                                                    CharType{'f'}, CharType{'l'}, CharType{'u'}, CharType{'f'}, CharType{'f'}, CharType{'y'}, CharType{' '},
-                                                    CharType{'k'}, CharType{'i'}, CharType{'t'}, CharType{'t'}, CharType{'e'}, CharType{'n'}, CharType{'s'}});
+            CharType{'o'}, CharType{' '}, //
+            CharType{'f'}, CharType{'l'}, CharType{'u'}, CharType{'f'}, CharType{'f'}, CharType{'y'}, CharType{' '},
+            CharType{'k'}, CharType{'i'}, CharType{'t'}, CharType{'t'}, CharType{'e'}, CharType{'n'}, CharType{'s'}});
         assert(verify_string(assign_initializer_list_large_large));
 
         str assign_initializer_list_large_sso{start};
@@ -1232,9 +1172,9 @@ void test_assign()
 
         str assign_initializer_list_sso_large{start_sso};
         assign_initializer_list_sso_large.assign({CharType{'H'}, CharType{'e'}, CharType{'l'}, CharType{'l'},
-                                                  CharType{'o'}, CharType{' '}, //
-                                                  CharType{'f'}, CharType{'l'}, CharType{'u'}, CharType{'f'}, CharType{'f'}, CharType{'y'}, CharType{' '},
-                                                  CharType{'k'}, CharType{'i'}, CharType{'t'}, CharType{'t'}, CharType{'e'}, CharType{'n'}, CharType{'s'}});
+            CharType{'o'}, CharType{' '}, //
+            CharType{'f'}, CharType{'l'}, CharType{'u'}, CharType{'f'}, CharType{'f'}, CharType{'y'}, CharType{' '},
+            CharType{'k'}, CharType{'i'}, CharType{'t'}, CharType{'t'}, CharType{'e'}, CharType{'n'}, CharType{'s'}});
         assert(verify_string(assign_initializer_list_sso_large));
 
         str assign_initializer_list_sso_sso{start_sso};
@@ -1281,13 +1221,12 @@ void test_assign()
 }
 
 template <class Alloc>
-void test_insertion()
-{
+void test_insertion() {
     using CharType = typename Alloc::value_type;
-    using str = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
 
     constexpr size_t large_size = 20;
-    constexpr size_t sso_size = 1;
+    constexpr size_t sso_size   = 1;
 
     const str input(large_size, CharType{'b'});
     const str input_sso(sso_size, CharType{'b'});
@@ -1463,13 +1402,12 @@ void test_insertion()
 }
 
 template <class Alloc>
-void test_removal()
-{
+void test_removal() {
     using CharType = typename Alloc::value_type;
-    using str = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
 
-    constexpr size_t large_size = 20;
-    constexpr size_t sso_size = 2;
+    constexpr size_t large_size     = 20;
+    constexpr size_t sso_size       = 2;
     constexpr size_t min_large_size = (16 / sizeof(CharType) < 1 ? 1 : 16 / sizeof(CharType));
 
     const str input(large_size, CharType{'b'});
@@ -1558,13 +1496,11 @@ void test_removal()
         assert(verify_string(erased_free_sso));
 
         str erased_free_if{get_large_input<CharType>()};
-        erase_if(erased_free_if, [](const CharType val)
-                 { return val == CharType{'t'}; });
+        erase_if(erased_free_if, [](const CharType val) { return val == CharType{'t'}; });
         assert(verify_string(erased_free_if));
 
         str erased_free_if_sso{get_sso_input<CharType>()};
-        erase_if(erased_free_if_sso, [](const CharType val)
-                 { return val == CharType{'t'}; });
+        erase_if(erased_free_if_sso, [](const CharType val) { return val == CharType{'t'}; });
         assert(verify_string(erased_free_if_sso));
 #endif // _HAS_CXX20
     }
@@ -1602,13 +1538,12 @@ void test_removal()
 }
 
 template <class Alloc>
-void test_misc()
-{
+void test_misc() {
     using CharType = typename Alloc::value_type;
-    using str = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
 
-    constexpr size_t large_size = 20;
-    constexpr size_t sso_size = 2;
+    constexpr size_t large_size     = 20;
+    constexpr size_t sso_size       = 2;
     constexpr size_t min_large_size = (16 / sizeof(CharType) < 1 ? 1 : 16 / sizeof(CharType));
 
     const str input(large_size, CharType{'b'});
@@ -1712,8 +1647,7 @@ void test_misc()
         assert(verify_string(replace_sso_to_large));
     }
 
-    if constexpr (allocator_traits<Alloc>::propagate_on_container_swap::value)
-    { // swap
+    if constexpr (allocator_traits<Alloc>::propagate_on_container_swap::value) { // swap
         str first_large{input};
         str second_large = input + str{CharType{'c'}, CharType{'a'}, CharType{'t'}};
 
@@ -1739,14 +1673,13 @@ void test_misc()
 }
 
 template <class Alloc>
-void test_sstream()
-{
+void test_sstream() {
     using CharType = typename Alloc::value_type;
-    using str = basic_string<CharType, char_traits<CharType>, Alloc>;
-    using stream = basic_stringbuf<CharType, char_traits<CharType>, Alloc>;
+    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using stream   = basic_stringbuf<CharType, char_traits<CharType>, Alloc>;
 
     constexpr size_t large_size = 20;
-    constexpr size_t sso_size = 2;
+    constexpr size_t sso_size   = 2;
 
     const str input(large_size, CharType{'b'});
     const str input_sso(sso_size, CharType{'b'});
@@ -1788,13 +1721,12 @@ void test_sstream()
 }
 
 template <class Alloc>
-void test_exceptions()
-{
+void test_exceptions() {
     using CharType = typename Alloc::value_type;
-    using str = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
 
     constexpr size_t large_size = 20;
-    constexpr size_t sso_size = 2;
+    constexpr size_t sso_size   = 2;
 
     const str input(large_size, CharType{'b'});
     const str input_sso(sso_size, CharType{'b'});
@@ -1804,14 +1736,11 @@ void test_exceptions()
 
     { // append
         str append_iterator{input};
-        try
-        {
+        try {
             assert(verify_string(append_iterator));
             append_iterator.append(begin(iter_data), end(iter_data));
             assert(false);
-        }
-        catch (...)
-        {
+        } catch (...) {
             assert(verify_string(append_iterator));
         }
 
@@ -1827,14 +1756,11 @@ void test_exceptions()
 #endif
 
         str append_input_iterator{input};
-        try
-        {
+        try {
             assert(verify_string(append_input_iterator));
             append_input_iterator.append(input_iter_data.begin(), input_iter_data.end());
             assert(false);
-        }
-        catch (...)
-        {
+        } catch (...) {
             assert(verify_string(append_input_iterator));
         }
 
@@ -1850,14 +1776,11 @@ void test_exceptions()
 
     { // assign
         str assign_iterator{input};
-        try
-        {
+        try {
             assert(verify_string(assign_iterator));
             assign_iterator.assign(begin(iter_data), end(iter_data));
             assert(false);
-        }
-        catch (...)
-        {
+        } catch (...) {
             assert(verify_string(assign_iterator));
         }
 
@@ -1872,14 +1795,11 @@ void test_exceptions()
 #endif
 
         str assign_input_iterator{input};
-        try
-        {
+        try {
             assert(verify_string(assign_input_iterator));
             assign_input_iterator.assign(input_iter_data.begin(), input_iter_data.end());
             assert(false);
-        }
-        catch (...)
-        {
+        } catch (...) {
             assert(verify_string(assign_input_iterator));
         }
 
@@ -1897,14 +1817,11 @@ void test_exceptions()
 
     { // insert
         str insert_iterator{input};
-        try
-        {
+        try {
             assert(verify_string(insert_iterator));
             insert_iterator.insert(insert_iterator.begin(), begin(iter_data), end(iter_data));
             assert(false);
-        }
-        catch (...)
-        {
+        } catch (...) {
             assert(verify_string(insert_iterator));
         }
 
@@ -1920,14 +1837,11 @@ void test_exceptions()
 #endif
 
         str insert_input_iterator{input};
-        try
-        {
+        try {
             assert(verify_string(insert_input_iterator));
             insert_input_iterator.insert(insert_input_iterator.begin(), input_iter_data.begin(), input_iter_data.end());
             assert(false);
-        }
-        catch (...)
-        {
+        } catch (...) {
             assert(verify_string(insert_input_iterator));
         }
 
@@ -1946,8 +1860,7 @@ void test_exceptions()
 }
 
 template <class Alloc>
-void run_tests()
-{
+void run_tests() {
     test_construction<Alloc>();
     test_append<Alloc>();
     test_assign<Alloc>();
@@ -1961,8 +1874,7 @@ void run_tests()
 }
 
 template <class CharType, template <class, class, class> class Alloc>
-void run_custom_allocator_matrix()
-{
+void run_custom_allocator_matrix() {
     run_tests<Alloc<CharType, true_type, true_type>>();
     run_tests<Alloc<CharType, true_type, false_type>>();
     run_tests<Alloc<CharType, false_type, true_type>>();
@@ -1970,23 +1882,21 @@ void run_custom_allocator_matrix()
 }
 
 template <class CharType>
-void run_allocator_matrix()
-{
+void run_allocator_matrix() {
     run_tests<allocator<CharType>>();
     run_custom_allocator_matrix<CharType, aligned_allocator>();
     run_custom_allocator_matrix<CharType, explicit_allocator>();
     run_custom_allocator_matrix<CharType, implicit_allocator>();
 }
 
-void test_DevCom_10116361()
-{
+void test_DevCom_10116361() {
     // We failed to null-terminate copies of SSO strings with ASAN annotations active.
 #ifdef _WIN64
-    constexpr const char *text = "testtest";
-    constexpr size_t n = 8;
+    constexpr const char* text = "testtest";
+    constexpr size_t n         = 8;
 #else
-    constexpr const char *text = "test";
-    constexpr size_t n = 4;
+    constexpr const char* text = "test";
+    constexpr size_t n         = 4;
 #endif
 
     string s0{text};
@@ -1995,14 +1905,13 @@ void test_DevCom_10116361()
     alignas(string) unsigned char space[sizeof(string)];
     memset(space, 0xff, sizeof(space));
 
-    string &s1 = *::new (&space) string{s0};
+    string& s1 = *::new (&space) string{s0};
     assert(s1.c_str()[n] == '\0');
 
     s1.~string();
 }
 
-void test_DevCom_10109507()
-{
+void test_DevCom_10109507() {
     // replace failed to correctly munge asan annotations while working
     string s("abcd");
     s.replace(0, 1, "ef", 2);
@@ -2010,8 +1919,7 @@ void test_DevCom_10109507()
     assert(s == "xyefbcd");
 }
 
-int main()
-{
+int main() {
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
     run_allocator_matrix<char8_t>();
