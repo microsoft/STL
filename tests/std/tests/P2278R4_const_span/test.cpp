@@ -5,6 +5,7 @@
 #include <concepts>
 #include <iterator>
 #include <span>
+#include <type_traits>
 #include <utility>
 
 using namespace std;
