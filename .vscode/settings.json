@@ -21,6 +21,11 @@
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
+    "git.ignoredRepositories": [
+        "benchmarks/google-benchmark",
+        "llvm-project",
+        "boost-math"
+    ],
     "python.analysis.extraPaths": [
         "./llvm-project/libcxx/utils",
         "./llvm-project/llvm/utils/lit",
