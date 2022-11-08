@@ -2570,35 +2570,48 @@ private:
         const void* const _Old_last = _First + _Old_size + 1;
         const void* const _New_last = _First + _New_size + 1;
 
+        _Asan_aligned_pointers _Aligned;
+
         constexpr bool _Large_string_always_asan_aligned =
             (_Container_allocation_minimum_asan_alignment<basic_string>) >= _Asan_granularity;
-        if constexpr (_Large_string_always_asan_aligned && _Small_string_always_asan_aligned()) {
-            // old state:
-            //   [_First, _Old_last) valid
-            //   [_Old_last, _End) poison
-            // new state:
-            //   [_First, _New_last) valid
-            //   [_New_last, asan_aligned_after(_End)) poison
-            _CSTD __sanitizer_annotate_contiguous_container(
-                _First, _STD _Get_asan_aligned_after(_End), _Old_last, _New_last);
+
+        // for the non-aligned buffer options, the buffer must always have size >= 9 bytes,
+        // so it will always end at least one shadow memory section.
+
+        if (_Capacity == _BUF_SIZE - 1) {
+            if constexpr (_Small_string_always_asan_aligned()) {
+                _Aligned = {_First, _STD _Get_asan_aligned_after(_End)};
+            } else {
+                _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
+            }
         } else {
-            const auto _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
-            // The buffer must always have size >= 9 bytes, so it will always end at least one shadow memory section.
-
-            // last must be <= than end, so fix up when `_Aligned._End < _*_last`
-            const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
-            const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
-
-            // old state:
-            //   [_Aligned._First, _Old_fixed) valid
-            //   [_Old_fixed, _Aligned._End) poison
-            //   [_Aligned._End, _End) valid
-            // new state:
-            //   [_Aligned._First, _New_fixed) valid
-            //   [_New_fixed, _Aligned._End) poison
-            //   [_Aligned._End, _End) valid
-            _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
+            if constexpr (_Large_string_always_asan_aligned) {
+                _Aligned = {_First, _STD _Get_asan_aligned_after(_End)};
+            } else {
+                _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
+            }
         }
+        const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
+        const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
+
+        // --- always aligned case ---
+        // old state:
+        //   [_First, _Old_last) valid
+        //   [_Old_last, asan_aligned_after(_End)) poison
+        // new state:
+        //   [_First, _New_last) valid
+        //   [_New_last, asan_aligned_after(_End)) poison
+
+        // --- sometimes non-aligned case ---
+        // old state:
+        //   [_Aligned._First, _Old_fixed) valid
+        //   [_Old_fixed, _Aligned._End) poison
+        //   [_Aligned._End, _End) valid
+        // new state:
+        //   [_Aligned._First, _New_fixed) valid
+        //   [_New_fixed, _Aligned._End) poison
+        //   [_Aligned._End, _End) valid
+        _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
     }
 
 #define _ASAN_STRING_REMOVE(_Str)                       (_Str)._Remove_annotation()
@@ -2615,8 +2628,8 @@ private:
 #endif // !_INSERT_STRING_ANNOTATION
 
 public:
-    _CONSTEXPR20 basic_string() noexcept(is_nothrow_default_constructible_v<_Alty>)
-        : _Mypair(_Zero_then_variadic_args_t{}) {
+    _CONSTEXPR20
+    basic_string() noexcept(is_nothrow_default_constructible_v<_Alty>) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Tidy_init();
     }
@@ -4604,7 +4617,8 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_of(
-        _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept /* strengthened */ {
+        _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept
+    /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
         return static_cast<size_type>(_Traits_find_first_of<_Traits>(
             _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
@@ -4679,7 +4693,8 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_not_of(
-        _In_z_ const _Elem* const _Ptr, size_type _Off = 0) const noexcept /* strengthened */ {
+        _In_z_ const _Elem* const _Ptr, size_type _Off = 0) const noexcept
+    /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
         return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(
             _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
