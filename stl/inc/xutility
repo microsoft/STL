@@ -2451,7 +2451,7 @@ namespace ranges {
     struct _Cbegin_fn {
 #if _HAS_CXX23
         template <_Should_range_access _Ty,
-            class _Uty = decltype(_RANGES begin(_RANGES _Possibly_const_range(declval<_Ty&>())))>
+            class _Uty = decltype(_RANGES begin(_RANGES _Possibly_const_range(_STD declval<_Ty&>())))>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
             noexcept(noexcept(const_iterator<_Uty>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}))
             requires requires { const_iterator<_Uty>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}; }
@@ -2476,7 +2476,7 @@ namespace ranges {
     struct _Cend_fn {
 #if _HAS_CXX23
         template <_Should_range_access _Ty,
-            class _Uty = decltype(_RANGES end(_RANGES _Possibly_const_range(declval<_Ty&>())))>
+            class _Uty = decltype(_RANGES end(_RANGES _Possibly_const_range(_STD declval<_Ty&>())))>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
             noexcept(noexcept(const_sentinel<_Uty>{_RANGES end(_RANGES _Possibly_const_range(_Val))}))
             requires requires { const_sentinel<_Uty>{_RANGES end(_RANGES _Possibly_const_range(_Val))}; }
@@ -2636,7 +2636,7 @@ namespace ranges {
     struct _Crbegin_fn {
 #if _HAS_CXX23
         template <_Should_range_access _Ty,
-            class _Uty = decltype(_RANGES rbegin(_RANGES _Possibly_const_range(declval<_Ty&>())))>
+            class _Uty = decltype(_RANGES rbegin(_RANGES _Possibly_const_range(_STD declval<_Ty&>())))>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
             noexcept(noexcept(const_iterator<_Uty>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}))
             requires requires { const_iterator<_Uty>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}; }
@@ -2661,7 +2661,7 @@ namespace ranges {
     struct _Crend_fn {
 #if _HAS_CXX23
         template <_Should_range_access _Ty,
-            class _Uty = decltype(_RANGES rend(_RANGES _Possibly_const_range(declval<_Ty&>())))>
+            class _Uty = decltype(_RANGES rend(_RANGES _Possibly_const_range(_STD declval<_Ty&>())))>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
             noexcept(noexcept(const_sentinel<_Uty>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}))
             requires requires { const_sentinel<_Uty>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}; }
