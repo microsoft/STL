@@ -3969,8 +3969,9 @@ public:
         if (_Count < _Nx || _Count - _Nx <= _Mypair._Myval2._Myres - _Old_size) {
             // either we are shrinking, or the growth fits
             // may temporarily overflow; OK because size_type must be unsigned
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count - _Nx);
-            _Mypair._Myval2._Mysize = _Old_size + _Count - _Nx;
+            const auto _New_size = _Old_size + _Count - _Nx;
+            _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
+            _Mypair._Myval2._Mysize = _New_size;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
             _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, _Old_size - _Nx - _Off + 1);
