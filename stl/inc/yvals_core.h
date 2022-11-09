@@ -1542,9 +1542,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
 
-#if defined(__cpp_impl_coroutine) && !defined(_M_CEE) // TRANSITION, VSO-1663233
+#ifdef __cpp_impl_coroutine
 #define __cpp_lib_coroutine 201902L
-#endif // defined(__cpp_impl_coroutine) && !defined(_M_CEE)
+#endif // __cpp_impl_coroutine
 
 #if _HAS_CXX20
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, GH-395
