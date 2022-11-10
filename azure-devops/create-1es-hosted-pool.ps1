@@ -132,13 +132,9 @@ Display-ProgressBar -Status 'Creating resource group'
 
 $ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 
-# TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
-$SimplySecureV2OptInTag = @{ 'NRMSV2OptIn' = $CurrentDate.ToString('yyyyMMdd'); }
-
 New-AzResourceGroup `
   -Name $ResourceGroupName `
-  -Location $Location `
-  -Tag $SimplySecureV2OptInTag | Out-Null
+  -Location $Location | Out-Null
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating credentials'

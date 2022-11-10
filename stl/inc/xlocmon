@@ -777,7 +777,7 @@ private:
 
             case money_base::space: // count space size
                 ++_Fillcount; // at least one space
-                // fall through
+                _FALLTHROUGH;
 
             case money_base::none: // count space size
                 if (_Off != 3) {
@@ -831,7 +831,7 @@ private:
 
             case money_base::space: // put any internal fill
                 _Dest = _Rep(_Dest, _Fill, 1);
-                // fall through
+                _FALLTHROUGH;
 
             case money_base::none: // put any internal fill
                 if (_Afl == ios_base::internal) { // put internal fill

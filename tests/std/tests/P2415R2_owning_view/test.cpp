@@ -204,9 +204,8 @@ struct instantiator {
                     const owning_view<R> test_view{R{input}};
                     assert(test_view.front() == input[0]);
 
-                    STATIC_ASSERT(
-                        CanMemberBack<
-                            const owning_view<R>> == (bidirectional_range<const R> && common_range<const R>) );
+                    STATIC_ASSERT(CanMemberBack<const owning_view<R>>
+                                  == (bidirectional_range<const R> && common_range<const R>) );
                     if constexpr (bidirectional_range<const R> && common_range<const R>) {
                         assert(test_view.back() == input[2]);
                     }

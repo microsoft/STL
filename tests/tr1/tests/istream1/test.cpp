@@ -33,11 +33,11 @@ STD istream& operator>>(STD istream& istr, Boolx& b) { // extract a Boolx
     if (ok) { // state okay, extract Y or N
         const int c = istr.rdbuf()->sbumpc();
 
-        if (c == 'Y')
+        if (c == 'Y') {
             b.value(1);
-        else if (c == 'N')
+        } else if (c == 'N') {
             b.value(0);
-        else { // report failure
+        } else { // report failure
             istr.rdbuf()->sputbackc((char) c);
             state = STD ios::failbit;
         }

@@ -922,7 +922,7 @@ _NODISCARD bool operator!=(const unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, 
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD unordered_map;
     using _STD unordered_multimap;
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 #endif // _HAS_TR1_NAMESPACE
 
 #if _HAS_CXX17

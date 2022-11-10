@@ -301,7 +301,6 @@ namespace test_same_as {
     STATIC_ASSERT(same_as<void() const, void() const>);
     STATIC_ASSERT(same_as<void() &, void() &>);
 
-    // clang-format off
     // Verify that `same_as<T, U>` subsumes `same_as<U, T>` (note reversed argument order)
     template <class T, class U>
         requires same_as<U, T>
@@ -314,7 +313,6 @@ namespace test_same_as {
     constexpr bool f() {
         return true;
     }
-    // clang-format on
 
     STATIC_ASSERT(!f<int*, int*>());
     STATIC_ASSERT(!f<void, void>());
@@ -810,7 +808,7 @@ namespace test_integral_concepts {
         enum class is { not_integral, integral, signed_integral, unsigned_integral, ull };
 
         template <class T>
-        constexpr is f(T&&) {
+        constexpr is f(T) {
             return is::not_integral;
         }
         template <integral T>
@@ -1625,7 +1623,6 @@ namespace test_move_constructible {
 namespace test_ranges_swap {
     namespace ranges = std::ranges;
 
-    // clang-format off
     template <class T, class U = T>
     constexpr bool can_swap = false;
     template <class T, class U>
@@ -1637,7 +1634,6 @@ namespace test_ranges_swap {
     template <class T, class U>
         requires can_swap<T, U>
     constexpr bool can_nothrow_swap<T, U> = noexcept(ranges::swap(std::declval<T>(), std::declval<U>()));
-    // clang-format on
 
     STATIC_ASSERT(!can_swap<void>);
     STATIC_ASSERT(!can_swap<void const>);
@@ -2680,8 +2676,8 @@ namespace test_totally_ordered_with {
             STATIC_ASSERT(totally_ordered_with<T, U const&&> == result);
         }
 
-        if constexpr (!std::is_same_v<T,
-                          std::add_lvalue_reference_t<T>> && !std::is_same_v<U, std::add_lvalue_reference_t<U>>) {
+        if constexpr (!std::is_same_v<T, std::add_lvalue_reference_t<T>>
+                      && !std::is_same_v<U, std::add_lvalue_reference_t<U>>) {
             STATIC_ASSERT(totally_ordered_with<T&, U&> == result);
             STATIC_ASSERT(totally_ordered_with<T const&, U&> == result);
             STATIC_ASSERT(totally_ordered_with<T&&, U&> == result);
@@ -2870,10 +2866,12 @@ namespace test_invocable_concepts {
 #define MCALLCONV __cdecl
 #include "invocable_cc.hpp"
 
+#ifndef _M_CEE // avoid warning C4561: '__fastcall' incompatible with the '/clr' option: converting to '__stdcall'
 #define NAME      test_fast_fast
 #define CALLCONV  __fastcall
 #define MCALLCONV __fastcall
 #include "invocable_cc.hpp"
+#endif // _M_CEE
 
 #define NAME      test_std_std
 #define CALLCONV  __stdcall
@@ -2885,12 +2883,14 @@ namespace test_invocable_concepts {
 #define MCALLCONV __thiscall
 #include "invocable_cc.hpp"
 
+#ifndef _M_CEE // avoid warning C4575: '__vectorcall' incompatible with the '/clr' option: converting to '__stdcall'
 #if !defined(_M_ARM) && !defined(_M_ARM64)
 #define NAME      test_vector_vector
 #define CALLCONV  __vectorcall
 #define MCALLCONV __vectorcall
 #include "invocable_cc.hpp"
 #endif // ^^^ !ARM && !ARM64 ^^^
+#endif // _M_CEE
 
 } // namespace test_invocable_concepts
 
@@ -3348,11 +3348,9 @@ namespace test_relation {
 
     template <unsigned int>
     struct A {};
-    // clang-format off
     template <unsigned int U>
         requires (0 < U)
     Bool operator==(A<U>, A<U>); // A<0> == A<0> is invalid
-    // clang-format on
     STATIC_ASSERT(!test<Equivalent, A<0>>());
     STATIC_ASSERT(test<Equivalent, A<1>>());
 
@@ -3383,11 +3381,9 @@ namespace test_relation {
     struct C {};
     enum E : bool { No, Yes };
     E operator==(C<0>&, C<0>&); // const C<0> == const C<0> is invalid
-    // clang-format off
     template <unsigned int I>
         requires (0 != I)
     E operator==(C<I>, C<I>);
-    // clang-format on
 
     STATIC_ASSERT(!test<Equivalent, const C<0>>());
     STATIC_ASSERT(test<Equivalent, const C<1>>());

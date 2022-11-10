@@ -84,7 +84,7 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _CSTD intptr_t;
     using _CSTD uintmax_t;
     using _CSTD uintptr_t;
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 #endif // _HAS_TR1_NAMESPACE
 _STD_END
 

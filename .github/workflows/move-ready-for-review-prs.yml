@@ -1,0 +1,68 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+name: Move PR To Initial Review
+on:
+  issue_comment:
+    types: [created]
+    branch:
+      - main
+
+jobs:
+  move-pr-to-initial-review:
+    if: >
+      github.event.issue.pull_request
+      && github.event.comment.user.login == github.event.issue.user.login
+      && contains(github.event.comment.body, '/pr review')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move To Initial Review
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Find "Code Reviews" project manually by name matching
+            // This avoids hardcoding the project ID
+            const projects = await github.paginate(github.rest.projects.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const code_reviews = projects.find(project => project.name === 'Code Reviews');
+            if (!code_reviews) {
+              console.error("'Code Reviews' project not found!");
+              return;
+            }
+
+            // Find "Initial Review" column manually by name matching
+            // This assumes the card is in "Work In Progress" column
+            // This avoids hardcoding the column ID and card ID
+            const columns = await github.paginate(github.rest.projects.listColumns, {
+              project_id: code_reviews.id,
+            });
+
+            const work_in_progress = columns.find(column => column.name === 'Work In Progress');
+            if (!work_in_progress) {
+              console.error("'Work In Progress' column not found!");
+              return;
+            }
+
+            const initial_review = columns.find(column => column.name === 'Initial Review');
+            if (!initial_review) {
+              console.error("'Initial Review' column not found!");
+              return;
+            }
+
+            const pr_card = await github.paginate(github.rest.projects.listCards, {
+              column_id: work_in_progress.id,
+            }).then(cards => cards.find(card => card.content_url === context.payload.issue.url));
+            if (!pr_card) {
+              console.error("Corresponding card for PR not found!");
+              return;
+            }
+
+            github.rest.projects.moveCard({
+              card_id: pr_card.id,
+              position: 'bottom',
+              column_id: initial_review.id,
+            }).catch(error => {
+              console.error(`Error occurred while moving card to 'Initial Review': ${error}`);
+            });

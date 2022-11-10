@@ -134,6 +134,18 @@ struct instantiator {
             assert(ranges::is_permutation(
                 r1, r2, {}, [](int n) { return n + 1; }, [](int n) { return n - 1; }));
         }
+        { // Test GH-2888: `<algorithm>`: `ranges::is_permutation`'s helper lambda does not specify return type
+            struct NonCopyableBool {
+                constexpr operator bool() {
+                    return true;
+                }
+
+                NonCopyableBool()                       = default;
+                NonCopyableBool(const NonCopyableBool&) = delete;
+            };
+            NonCopyableBool b;
+            assert(ranges::is_permutation(range2, range2, [&](auto, auto) -> NonCopyableBool& { return b; }));
+        }
     }
 };
 

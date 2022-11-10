@@ -66,7 +66,7 @@ STATIC_ASSERT(__cpp_lib_allocate_at_least == 202106L);
 STATIC_ASSERT(__cpp_lib_allocator_traits_is_always_equal == 201411L);
 #endif
 
-#if _HAS_CXX17
+#if _HAS_CXX17 && _HAS_STATIC_RTTI
 #ifndef __cpp_lib_any
 #error __cpp_lib_any is not defined
 #elif __cpp_lib_any != 201606L
@@ -704,7 +704,7 @@ STATIC_ASSERT(__cpp_lib_containers_ranges == 202202L);
 #endif
 #endif
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(_M_CEE) // TRANSITION, VSO-1663233
 #ifndef __cpp_lib_coroutine
 #error __cpp_lib_coroutine is not defined
 #elif __cpp_lib_coroutine != 201902L
@@ -776,7 +776,7 @@ STATIC_ASSERT(__cpp_lib_erase_if == 202002L);
 STATIC_ASSERT(__cpp_lib_exchange_function == 201304L);
 #endif
 
-#if _HAS_CXX20 && !defined(_M_CEE)
+#if _HAS_CXX20 && !defined(_M_CEE_PURE)
 #ifndef __cpp_lib_execution
 #error __cpp_lib_execution is not defined
 #elif __cpp_lib_execution != 201902L
@@ -784,7 +784,7 @@ STATIC_ASSERT(__cpp_lib_exchange_function == 201304L);
 #else
 STATIC_ASSERT(__cpp_lib_execution == 201902L);
 #endif
-#elif _HAS_CXX17 && !defined(_M_CEE)
+#elif _HAS_CXX17 && !defined(_M_CEE_PURE)
 #ifndef __cpp_lib_execution
 #error __cpp_lib_execution is not defined
 #elif __cpp_lib_execution != 201603L
@@ -1460,7 +1460,7 @@ STATIC_ASSERT(__cpp_lib_out_ptr == 202106L);
 #endif
 #endif
 
-#if _HAS_CXX17 && !defined(_M_CEE)
+#if _HAS_CXX17 && !defined(_M_CEE_PURE)
 #ifndef __cpp_lib_parallel_algorithm
 #error __cpp_lib_parallel_algorithm is not defined
 #elif __cpp_lib_parallel_algorithm != 201603L
@@ -1571,6 +1571,20 @@ STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
 #else
 #ifdef __cpp_lib_ranges_contains
 #error __cpp_lib_ranges_contains is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_fold
+#error __cpp_lib_ranges_fold is not defined
+#elif __cpp_lib_ranges_fold != 202207L
+#error __cpp_lib_ranges_fold is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_fold == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_fold
+#error __cpp_lib_ranges_fold is defined
 #endif
 #endif
 
@@ -1782,7 +1796,7 @@ STATIC_ASSERT(__cpp_lib_shared_ptr_weak_type == 201606L);
 #endif
 #endif
 
-#ifdef _M_CEE
+#ifdef _M_CEE_PURE
 #ifdef __cpp_lib_shared_timed_mutex
 #error __cpp_lib_shared_timed_mutex is defined
 #endif

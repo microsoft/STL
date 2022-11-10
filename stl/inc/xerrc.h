@@ -1,4 +1,4 @@
-// xerrc.h internal header
+// xerrc.h internal header (core)
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -6,7 +6,7 @@
 #pragma once
 #ifndef _XERRC_H
 #define _XERRC_H
-#include <yvals.h>
+#include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
 #pragma pack(push, _CRT_PACKING)

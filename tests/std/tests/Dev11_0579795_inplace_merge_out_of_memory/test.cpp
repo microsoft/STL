@@ -9,15 +9,9 @@
 #include <limits>
 #include <new>
 
-#if _HAS_CXX17 && !defined(_M_CEE)
-#define HAS_PARALLEL_ALGORITHMS 1
-#else
-#define HAS_PARALLEL_ALGORITHMS 0
-#endif // _HAS_CXX17 && !defined(_M_CEE)
-
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
 #include <execution>
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 
 using namespace std;
 
@@ -141,7 +135,7 @@ void test_stability() {
             75, 19, 35, 65, 99, 42, 39, 80, 66, 18, 87, 64, 76, 33, 96, 55, 26, 98, 63, 95, 40, 65, 79, 16, 63, 68, 55,
             27, 99, 55, 77, 59, 77, 11, 77, 92, 77, 16, 28, 83, 74, 77, 21, 55, 50, 73, 65, 81, 53, 68, 82, 72, 92, 64,
             30, 94, 80, 86, 21, 37, 20, 90, 56, 71, 41, 15, 42, 70, 50, 90, 26, 72, 47, 41, 46, 41, 58, 94}};
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
         auto b = a;
 #endif
 
@@ -155,7 +149,7 @@ void test_stability() {
 
         assert(a == correct);
 
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
         stable_sort(execution::par, b.begin(), b.end(), comp);
 
         assert(b == correct);

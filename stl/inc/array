@@ -882,7 +882,7 @@ _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept {
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD array;
     using _STD get;
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 #endif // _HAS_TR1_NAMESPACE
 _STD_END
 

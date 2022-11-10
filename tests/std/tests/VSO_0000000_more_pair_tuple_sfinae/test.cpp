@@ -3,9 +3,9 @@
 
 #include <cassert>
 #include <memory>
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #include <mutex>
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 #include <new>
 #include <string>
 #include <tuple>
@@ -56,7 +56,7 @@ struct ExplicitDefault {
 };
 
 template <typename T>
-constexpr bool OrdinaryDC = is_default_constructible_v<T>&& IsImplicitlyDefaultConstructible<T>::value;
+constexpr bool OrdinaryDC = is_default_constructible_v<T> && IsImplicitlyDefaultConstructible<T>::value;
 
 template <typename T>
 constexpr bool ExplicitDC = is_default_constructible_v<T> && !IsImplicitlyDefaultConstructible<T>::value;
@@ -70,11 +70,11 @@ STATIC_ASSERT(ExplicitDC<ExplicitDefault>);
 STATIC_ASSERT(ExplicitDC<nothrow_t>);
 STATIC_ASSERT(ExplicitDC<piecewise_construct_t>);
 STATIC_ASSERT(ExplicitDC<allocator_arg_t>);
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 STATIC_ASSERT(ExplicitDC<defer_lock_t>);
 STATIC_ASSERT(ExplicitDC<try_to_lock_t>);
 STATIC_ASSERT(ExplicitDC<adopt_lock_t>);
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 using Expl = ExplicitDefault;
 using NOPE = NoDefault;

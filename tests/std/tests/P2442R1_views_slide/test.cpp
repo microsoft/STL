@@ -14,9 +14,7 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewSlide = requires(Rng&& r) {
-    views::slide(forward<Rng>(r), 4);
-};
+concept CanViewSlide = requires(Rng&& r) { views::slide(forward<Rng>(r), 4); };
 
 constexpr auto equal_ranges = [](auto&& left, auto&& right) { return ranges::equal(left, right); };
 

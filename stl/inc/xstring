@@ -376,7 +376,7 @@ public:
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
 #if _HAS_CXX17
-#if _HAS_CXX20 && defined(__EDG__) // TRANSITION, VSO-1601168
+#if _HAS_CXX20 && defined(__EDG__) // TRANSITION, VSO-1641993
         if (_STD is_constant_evaluated()) {
             for (size_t _Idx = 0; _Idx != _Count; ++_Idx) {
                 if (static_cast<unsigned char>(_First1[_Idx]) < static_cast<unsigned char>(_First2[_Idx])) {
@@ -1260,12 +1260,10 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    // clang-format off
     template <contiguous_iterator _Iter, sized_sentinel_for<_Iter> _Sent>
         requires (is_same_v<iter_value_t<_Iter>, _Elem> && !is_convertible_v<_Sent, size_type>)
     constexpr basic_string_view(_Iter _First, _Sent _Last) noexcept(noexcept(_Last - _First)) // strengthened
         : _Mydata(_STD to_address(_First)), _Mysize(static_cast<size_type>(_Last - _First)) {}
-    // clang-format on
 
 #if _HAS_CXX23
     // clang-format off
@@ -2424,8 +2422,8 @@ extern const bool _Asan_string_should_annotate;
 #endif // ^^^ unknown architecture ^^^
 
 template <class _String, class = void>
-_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string = alignof(typename _String::value_type)
-                                                                   >= _Asan_granularity;
+_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string =
+    alignof(typename _String::value_type) >= _Asan_granularity;
 
 template <class _String>
 _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string<_String,
@@ -2438,7 +2436,7 @@ _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string<_String,
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 template <class _Rng, class _Ty>
 concept _Contiguous_range_of =
-    _RANGES contiguous_range<_Rng> && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
+    (_RANGES contiguous_range<_Rng>) && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
@@ -2650,13 +2648,13 @@ public:
 #if _HAS_CXX23
     constexpr basic_string(basic_string&& _Right, const size_type _Roff, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, <end>), potentially move
-        _Move_construct_from_substr(_Right, _Roff, npos, _Al);
+        _Move_construct_from_substr(_Right, _Roff, npos);
     }
 
     constexpr basic_string(
         basic_string&& _Right, const size_type _Roff, const size_type _Count, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, _Roff + _Count), potentially move
-        _Move_construct_from_substr(_Right, _Roff, _Count, _Al);
+        _Move_construct_from_substr(_Right, _Roff, _Count);
     }
 #endif // _HAS_CXX23
 
@@ -3197,20 +3195,20 @@ private:
     }
 
 #if _HAS_CXX23
-    constexpr void _Move_construct_from_substr(
-        basic_string& _Right, const size_type _Roff, const size_type _Size_max, const _Alloc& _Al) {
+    constexpr void _Move_construct_from_substr(basic_string& _Right, const size_type _Roff, const size_type _Size_max) {
         auto& _Right_data = _Right._Mypair._Myval2;
         _Right_data._Check_offset(_Roff);
 
         const auto _Result_size = _Right_data._Clamp_suffix_size(_Roff, _Size_max);
         const auto _Right_ptr   = _Right_data._Myptr();
+        auto& _Al               = _Getal();
         if (_Allocators_equal(_Al, _Right._Getal()) && _Result_size >= _BUF_SIZE) {
             if (_Roff != 0) {
                 _Traits::move(_Right_ptr, _Right_ptr + _Roff, _Result_size);
             }
             _Right._Eos(_Result_size);
 
-            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
+            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al));
             _Take_contents(_Right);
         } else {
             _Construct<_Construct_strategy::_From_ptr>(_Right_ptr + _Roff, _Result_size);
@@ -4306,7 +4304,9 @@ public:
                 });
         }
 
-        const auto _Result_size = _STD move(_Op)(_Mypair._Myval2._Myptr(), _New_size);
+        auto _Arg_ptr           = _Mypair._Myval2._Myptr();
+        auto _Arg_size          = _New_size;
+        const auto _Result_size = _STD move(_Op)(_Arg_ptr, _Arg_size);
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
         _STL_VERIFY(_Result_size <= _New_size, "the returned size can't be greater than the passed size");

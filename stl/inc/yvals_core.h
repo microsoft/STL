@@ -319,13 +319,18 @@
 // P1989R2 Range Constructor For string_view
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
 // P2136R3 invoke_r()
+// P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
+//     (changes to views::zip only)
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
+// P2278R4 cbegin Should Always Return A Constant Iterator
+//     ("Iterators" section from the paper only)
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
-//     (changes to pair, tuple, and vector<bool>::reference only)
+//     (missing views::zip_transform, views::adjacent, and views::adjacent_transform)
+// P2322R6 ranges::fold_left, ranges::fold_right, Etc.
 // P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2417R2 More constexpr bitset
 // P2438R2 string::substr() &&
@@ -450,14 +455,12 @@
 #define _STL_PRAGMA_MESSAGE(MESSAGE) _STL_PRAGMA(message(MESSAGE))
 #define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _CRT_STRINGIZE(__LINE__) "): " MESSAGE)
 
-// clang-format off
-#define _EMIT_STL_WARNING(NUMBER, MESSAGE) \
+#define _EMIT_STL_WARNING(NUMBER, MESSAGE)             \
     _EMIT_STL_MESSAGE("warning " #NUMBER ": " MESSAGE) \
     static_assert(true, "")
-#define _EMIT_STL_ERROR(NUMBER, MESSAGE) \
+#define _EMIT_STL_ERROR(NUMBER, MESSAGE)             \
     _EMIT_STL_MESSAGE("error " #NUMBER ": " MESSAGE) \
     static_assert(false, "Error in C++ Standard Library usage.")
-// clang-format on
 
 #ifndef _STL_WARNING_LEVEL
 #if defined(_MSVC_WARNING_LEVEL) && _MSVC_WARNING_LEVEL >= 4
@@ -474,6 +477,14 @@
 #if _STL_WARNING_LEVEL > 4
 #error _STL_WARNING_LEVEL cannot be greater than 4.
 #endif // _STL_WARNING_LEVEL > 4
+
+#ifndef __has_cpp_attribute
+#define _FALLTHROUGH
+#elif __has_cpp_attribute(fallthrough) >= 201603L
+#define _FALLTHROUGH [[fallthrough]]
+#else
+#define _FALLTHROUGH
+#endif
 
 // _HAS_NODISCARD (in vcruntime.h) controls:
 // [[nodiscard]] attributes on STL functions
@@ -612,9 +623,11 @@
 #pragma push_macro("msvc")
 #pragma push_macro("known_semantics")
 #pragma push_macro("noop_dtor")
+#pragma push_macro("intrinsic")
 #undef msvc
 #undef known_semantics
 #undef noop_dtor
+#undef intrinsic
 
 #ifndef __has_cpp_attribute
 #define _HAS_MSVC_ATTRIBUTE(x) 0
@@ -640,7 +653,16 @@
 #define _MSVC_NOOP_DTOR
 #endif
 
+// Should we use [[msvc::intrinsic]] allowing the compiler to implement the
+// behavior of certain trivial functions?
+#if _HAS_MSVC_ATTRIBUTE(intrinsic)
+#define _MSVC_INTRINSIC [[msvc::intrinsic]]
+#else
+#define _MSVC_INTRINSIC
+#endif
+
 #undef _HAS_MSVC_ATTRIBUTE
+#pragma pop_macro("intrinsic")
 #pragma pop_macro("noop_dtor")
 #pragma pop_macro("known_semantics")
 #pragma pop_macro("msvc")
@@ -772,7 +794,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202209L
+#define _MSVC_STL_UPDATE  202210L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -782,8 +804,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or new
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 14
-_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 14.0.0 or newer.");
+#if __clang_major__ < 15
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 15.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1934 // Coarse-grained, not inspecting _MSC_FULL_VER
@@ -1358,7 +1380,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4039 is used to warn that "The contents of <coroutine> are not available with /await."
 
-// next warning number: STL4040
+// STL4040 is used to warn that "The contents of <any> require static RTTI."
+
+// next warning number: STL4041
 
 // next error number: STL1006
 
@@ -1450,9 +1474,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_quoted_string_io            201304L
 #define __cpp_lib_result_of_sfinae            201210L
 #define __cpp_lib_robust_nonmodifying_seq_ops 201304L
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #define __cpp_lib_shared_timed_mutex 201402L
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 #define __cpp_lib_string_udls                  201304L
 #define __cpp_lib_transformation_trait_aliases 201304L
 #define __cpp_lib_tuple_element_t              201402L
@@ -1477,7 +1501,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_void_t                           201411L
 
 #if _HAS_CXX17
-#define __cpp_lib_any                        201606L
+#if _HAS_STATIC_RTTI
+#define __cpp_lib_any 201606L
+#endif // _HAS_STATIC_RTTI
 #define __cpp_lib_apply                      201603L
 #define __cpp_lib_atomic_is_always_lock_free 201603L
 #define __cpp_lib_boyer_moore_searcher       201603L
@@ -1499,9 +1525,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_memory_resource                   201603L
 #define __cpp_lib_node_extract                      201606L
 #define __cpp_lib_not_fn                            201603L
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #define __cpp_lib_parallel_algorithm 201603L
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 #define __cpp_lib_raw_memory_algorithms 201606L
 #define __cpp_lib_sample                201603L
 #define __cpp_lib_scoped_lock           201703L
@@ -1517,9 +1543,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(_M_CEE) // TRANSITION, VSO-1663233
 #define __cpp_lib_coroutine 201902L
-#endif // __cpp_impl_coroutine
+#endif // defined(__cpp_impl_coroutine) && !defined(_M_CEE)
 
 #if _HAS_CXX20
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, GH-395
@@ -1651,6 +1677,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
 #define __cpp_lib_ranges_contains         202207L
+#define __cpp_lib_ranges_fold             202207L
 #define __cpp_lib_ranges_iota             202202L
 #define __cpp_lib_ranges_join_with        202202L
 #define __cpp_lib_ranges_slide            202202L
@@ -1689,13 +1716,13 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_constexpr_memory 201811L // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 #endif // _HAS_CXX20
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #if _HAS_CXX20
 #define __cpp_lib_execution 201902L // P1001R2 execution::unseq
 #elif _HAS_CXX17
 #define __cpp_lib_execution 201603L // P0024R2 Parallel Algorithms
 #endif // language mode
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional

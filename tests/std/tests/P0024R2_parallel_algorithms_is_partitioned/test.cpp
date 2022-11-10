@@ -35,7 +35,7 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
         assert(!is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
         *first = true;
         if (--remainingAttempts == 0) {
-            std::advance(first, static_cast<ptrdiff_t>(testSize - 1 - i));
+            advance(first, static_cast<ptrdiff_t>(testSize - 1 - i));
             break;
         }
     }
@@ -51,7 +51,7 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
         *first = false;
         assert(!is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
         if (--remainingAttempts == 0) {
-            first = std::fill_n(first, static_cast<ptrdiff_t>(testSize - 1 - i), '\0');
+            first = fill_n(first, static_cast<ptrdiff_t>(testSize - 1 - i), '\0');
             break;
         }
     }
@@ -60,8 +60,8 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
     // contains all F
     assert(is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
 
-    // test cases for sizes 1 and 2 are exhausted at this point
-    if (testSize <= 2) {
+    // test cases for sizes 0, 1, and 2 are exhausted at this point
+    if (testSize < 3) {
         return;
     }
 
@@ -90,22 +90,24 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
         *first = true;
         assert(is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
         if (--remainingAttempts == 0) {
-            std::fill(first, c.end(), '\x01');
+            fill(first, c.end(), '\x01');
             break;
         }
     }
 
-    // testing with 2 partition points (T F T ... T F T ... T), where the F at index 1 is fixed and the second F is
-    // tried at each index
-    remainingAttempts = quadratic_complexity_case_limit;
-    first             = next(c.begin());
-    *first            = false;
-    while (++first != c.end()) {
-        *first = false;
-        assert(!is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
-        *first = true;
-        if (--remainingAttempts == 0) {
-            break;
+    if (testSize >= 4) {
+        // testing with 2 partition points (T F T ... T F T ... T), where the F at index 1 is fixed and the second F is
+        // tried at each index
+        remainingAttempts = quadratic_complexity_case_limit;
+        first             = next(c.begin());
+        *first            = false;
+        while (++first != c.end()) {
+            *first = false;
+            assert(!is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
+            *first = true;
+            if (--remainingAttempts == 0) {
+                break;
+            }
         }
     }
 

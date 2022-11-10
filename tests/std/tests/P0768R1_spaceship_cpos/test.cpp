@@ -24,11 +24,9 @@ struct CpoResultImpl {
     using type = IllFormed;
 };
 
-// clang-format off
 template <const auto& CPO, typename E, typename F>
     requires requires { CPO(declval<E>(), declval<F>()); }
 struct CpoResultImpl<CPO, E, F> {
-    // clang-format on
     using type = decltype(CPO(declval<E>(), declval<F>()));
 };
 
@@ -444,9 +442,11 @@ template <typename Floating>
 constexpr void test_floating() {
     if constexpr (is_same_v<Floating, float>) {
         const pair<int, float> rank_value_pairs[]{
+#ifndef _M_CEE // TRANSITION, VSO-1666161
             {10, bit_cast<float>(0xFFFFFFFFu)}, // negative quiet NaN, all payload bits set
             {10, bit_cast<float>(0xFFC01234u)}, // negative quiet NaN, some payload bits set
             {10, bit_cast<float>(0xFFC00000u)}, // negative quiet NaN, no payload bits set
+#endif // _M_CEE
 #ifdef __clang__ // TRANSITION, MSVC "quiets" signaling NaNs into quiet NaNs when constant evaluated
             {10, bit_cast<float>(0xFFBFFFFFu)}, // negative signaling NaN, all payload bits set
             {10, bit_cast<float>(0xFF801234u)}, // negative signaling NaN, some payload bits set
@@ -469,9 +469,11 @@ constexpr void test_floating() {
             {90, bit_cast<float>(0x7F801234u)}, // signaling NaN, some payload bits set
             {90, bit_cast<float>(0x7FBFFFFFu)}, // signaling NaN, all payload bits set
 #endif // defined(__clang__)
+#ifndef _M_CEE // TRANSITION, VSO-1666161
             {90, bit_cast<float>(0x7FC00000u)}, // quiet NaN, no payload bits set
             {90, bit_cast<float>(0x7FC01234u)}, // quiet NaN, some payload bits set
             {90, bit_cast<float>(0x7FFFFFFFu)}, // quiet NaN, all payload bits set
+#endif // _M_CEE
         };
 
         test_ranked_values(rank_value_pairs);

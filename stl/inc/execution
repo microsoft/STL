@@ -269,7 +269,7 @@ struct _Parallelism_allocate_traits {
 
 #ifdef __cpp_aligned_new
     __declspec(allocator) static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
-        void* _Result = ::operator new (_Bytes, align_val_t{_Align}, nothrow);
+        void* _Result = ::operator new(_Bytes, align_val_t{_Align}, nothrow);
         if (!_Result) {
             _Throw_parallelism_resources_exhausted();
         }
@@ -830,8 +830,9 @@ template <class _RanIt, class _Diff>
 struct _Static_partition_range<_RanIt, _Diff, true> {
     using _Target_diff = _Iter_diff_t<_RanIt>;
     using _URanIt      = _Unwrapped_t<const _RanIt&>;
+    using _Chunk_type  = _Iterator_range<_URanIt>;
+
     _URanIt _Start_at;
-    using _Chunk_type = _Iterator_range<_URanIt>;
 
     _RanIt _Populate(const _Static_partition_team<_Diff>& _Team, _RanIt _First) {
         // statically partition a random-access iterator range and return next(_First, _Team._Count)
@@ -866,8 +867,9 @@ template <class _FwdIt, class _Diff>
 struct _Static_partition_range<_FwdIt, _Diff, false> {
     using _Target_diff = _Iter_diff_t<_FwdIt>;
     using _UFwdIt      = _Unwrapped_t<const _FwdIt&>;
+    using _Chunk_type  = _Iterator_range<_UFwdIt>;
+
     _Parallel_vector<_UFwdIt> _Division_points;
-    using _Chunk_type = _Iterator_range<_UFwdIt>;
 
     _FwdIt _Populate(const _Static_partition_team<_Diff>& _Team, _FwdIt _First) {
         // statically partition a forward iterator range and return next(_First, _Team._Count)
@@ -949,8 +951,9 @@ struct _Static_partition_range_backward;
 template <class _RanIt, class _Diff>
 struct _Static_partition_range_backward<_RanIt, _Diff, true> {
     using _Target_diff = _Iter_diff_t<_RanIt>;
+    using _Chunk_type  = _Iterator_range<_Unwrapped_t<const _RanIt&>>;
+
     _Unwrapped_t<const _RanIt&> _Start_at;
-    using _Chunk_type = _Iterator_range<_Unwrapped_t<const _RanIt&>>;
 
     void _Populate(const _Static_partition_team<_Diff>& _Team, _RanIt _Last) {
         // statically partition a random-access iterator range ending at _Last
@@ -969,8 +972,9 @@ struct _Static_partition_range_backward<_RanIt, _Diff, true> {
 template <class _BidIt, class _Diff>
 struct _Static_partition_range_backward<_BidIt, _Diff, false> {
     using _Target_diff = _Iter_diff_t<_BidIt>;
+    using _Chunk_type  = _Iterator_range<_Unwrapped_t<const _BidIt&>>;
+
     _Parallel_vector<_Unwrapped_t<const _BidIt&>> _Division_points;
-    using _Chunk_type = _Iterator_range<_Unwrapped_t<const _BidIt&>>;
 
     void _Populate(const _Static_partition_team<_Diff>& _Team, _BidIt _Last) {
         // statically partition a bidirectional iterator range ending at _Last
@@ -4187,10 +4191,11 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt
                     while (const auto _Stolen_key = _Operation._Team._Get_next_key()) {
                         const auto _Chunk_number = _Stolen_key._Chunk_number;
                         const auto _Chunk1       = _Operation._Basis1._Get_chunk(_Stolen_key);
-                        _Val                     = _STD transform_reduce(_Chunk1._First, _Chunk1._Last,
-                                                _Operation._Basis2._Get_first(
-                                                    _Chunk_number, _Operation._Team._Get_chunk_offset(_Chunk_number)),
-                                                _STD move(_Val), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op));
+
+                        _Val = _STD transform_reduce(_Chunk1._First, _Chunk1._Last,
+                            _Operation._Basis2._Get_first(
+                                _Chunk_number, _Operation._Team._Get_chunk_offset(_Chunk_number)),
+                            _STD move(_Val), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op));
                     }
                 } // join with _Work_ptr threads
 

@@ -49,13 +49,11 @@ class unexpected {
 public:
     // [expected.un.ctor]
 
-    // clang-format off
     template <class _UError = _Err>
         requires (!is_same_v<remove_cvref_t<_UError>, unexpected> && !is_same_v<remove_cvref_t<_UError>, in_place_t>
-                 && is_constructible_v<_Err, _UError>)
+                  && is_constructible_v<_Err, _UError>)
     constexpr explicit unexpected(_UError&& _Unex) noexcept(is_nothrow_constructible_v<_Err, _UError>) // strengthened
         : _Unexpected(_STD forward<_UError>(_Unex)) {}
-    // clang-format on
 
     template <class... _Args>
         requires is_constructible_v<_Err, _Args...>
@@ -63,13 +61,11 @@ public:
         is_nothrow_constructible_v<_Err, _Args...>) // strengthened
         : _Unexpected(_STD forward<_Args>(_Vals)...) {}
 
-    // clang-format off
     template <class _Uty, class... _Args>
         requires is_constructible_v<_Err, initializer_list<_Uty>&, _Args...>
     constexpr explicit unexpected(in_place_t, initializer_list<_Uty> _Ilist, _Args&&... _Vals) noexcept(
-               is_nothrow_constructible_v<_Err, initializer_list<_Uty>&, _Args...>) // strengthened
+        is_nothrow_constructible_v<_Err, initializer_list<_Uty>&, _Args...>) // strengthened
         : _Unexpected(_Ilist, _STD forward<_Args>(_Vals)...) {}
-    // clang-format on
 
     // [expected.un.obs]
     _NODISCARD constexpr const _Err& error() const& noexcept {
@@ -91,14 +87,15 @@ public:
         _Swap_adl(_Unexpected, _Other._Unexpected);
     }
 
-    friend constexpr void swap(unexpected& _Left, unexpected& _Right) noexcept(is_nothrow_swappable_v<_Err>) //
-        requires is_swappable_v<_Err> {
+    friend constexpr void swap(unexpected& _Left, unexpected& _Right) noexcept(is_nothrow_swappable_v<_Err>)
+        requires is_swappable_v<_Err>
+    {
         _Left.swap(_Right);
     }
 
     // [expected.un.eq]
     template <class _UErr>
-    _NODISCARD_FRIEND constexpr bool operator==(const unexpected& _Left, const unexpected<_UErr>& _Right) noexcept( //
+    _NODISCARD_FRIEND constexpr bool operator==(const unexpected& _Left, const unexpected<_UErr>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
         return _Left._Unexpected == _Right.error();
     }
@@ -157,7 +154,9 @@ private:
     _Err _Unexpected;
 };
 
-_EXPORT_STD struct unexpect_t { explicit unexpect_t() = default; };
+_EXPORT_STD struct unexpect_t {
+    explicit unexpect_t() = default;
+};
 
 _EXPORT_STD inline constexpr unexpect_t unexpect{};
 
@@ -187,16 +186,14 @@ public:
 
     // [expected.object.ctor]
     constexpr expected() noexcept(is_nothrow_default_constructible_v<_Ty>) // strengthened
-        requires is_default_constructible_v<_Ty> //
+        requires is_default_constructible_v<_Ty>
         : _Value(), _Has_value(true) {}
 
-    // clang-format off
     constexpr expected(const expected& _Other) noexcept(
         is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_constructible_v<_Err>) // strengthened
         requires (!(is_trivially_copy_constructible_v<_Ty> && is_trivially_copy_constructible_v<_Err>)
-                 && is_copy_constructible_v<_Ty> && is_copy_constructible_v<_Err>)
+                  && is_copy_constructible_v<_Ty> && is_copy_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
-        // clang-format on
         if (_Has_value) {
             _STD construct_at(_STD addressof(_Value), _Other._Value);
         } else {
@@ -207,13 +204,13 @@ public:
     // clang-format off
     expected(const expected&) requires
         is_trivially_copy_constructible_v<_Ty> && is_trivially_copy_constructible_v<_Err> = default;
+    // clang-format on
 
     constexpr expected(expected&& _Other) noexcept(
         is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_constructible_v<_Err>)
         requires (!(is_trivially_move_constructible_v<_Ty> && is_trivially_move_constructible_v<_Err>)
-                 && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err>)
+                  && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
-        // clang-format on
         if (_Has_value) {
             _STD construct_at(_STD addressof(_Value), _STD move(_Other._Value));
         } else {
@@ -241,8 +238,8 @@ public:
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>>;
 
     template <class _Uty, class _UErr>
-        requires is_constructible_v<_Ty, const _Uty&> && is_constructible_v<_Err, const _UErr&> //
-            && _Allow_unwrapping<_Uty, _UErr>
+        requires is_constructible_v<_Ty, const _Uty&> && is_constructible_v<_Err, const _UErr&>
+              && _Allow_unwrapping<_Uty, _UErr>
     constexpr explicit(!is_convertible_v<const _Uty&, _Ty> || !is_convertible_v<const _UErr&, _Err>)
         expected(const expected<_Uty, _UErr>& _Other) noexcept(is_nothrow_constructible_v<_Ty, const _Uty&> //
                 && is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
@@ -267,14 +264,12 @@ public:
         }
     }
 
-    // clang-format off
     template <class _Uty = _Ty>
         requires (!is_same_v<remove_cvref_t<_Uty>, in_place_t> && !is_same_v<remove_cvref_t<_Uty>, expected>
-                 && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected> && is_constructible_v<_Ty, _Uty>)
+                     && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected> && is_constructible_v<_Ty, _Uty>)
     constexpr explicit(!is_convertible_v<_Uty, _Ty>)
         expected(_Uty&& _Other) noexcept(is_nothrow_constructible_v<_Ty, _Uty>) // strengthened
         : _Value(_STD forward<_Uty>(_Other)), _Has_value(true) {}
-    // clang-format on
 
     template <class _UErr>
         requires is_constructible_v<_Err, const _UErr&>
@@ -294,13 +289,11 @@ public:
         is_nothrow_constructible_v<_Ty, _Args...>) // strengthened
         : _Value(_STD forward<_Args>(_Vals)...), _Has_value(true) {}
 
-    // clang-format off
     template <class _Uty, class... _Args>
         requires is_constructible_v<_Ty, initializer_list<_Uty>&, _Args...>
     constexpr explicit expected(in_place_t, initializer_list<_Uty> _Ilist, _Args&&... _Vals) noexcept(
         is_nothrow_constructible_v<_Ty, initializer_list<_Uty>&, _Args...>) // strengthened
         : _Value(_Ilist, _STD forward<_Args>(_Vals)...), _Has_value(true) {}
-    // clang-format on
 
     template <class... _Args>
         requires is_constructible_v<_Err, _Args...>
@@ -308,13 +301,11 @@ public:
         is_nothrow_constructible_v<_Err, _Args...>) // strengthened
         : _Unexpected(_STD forward<_Args>(_Vals)...), _Has_value(false) {}
 
-    // clang-format off
     template <class _Uty, class... _Args>
         requires is_constructible_v<_Err, initializer_list<_Uty>&, _Args...>
     constexpr explicit expected(unexpect_t, initializer_list<_Uty> _Ilist, _Args&&... _Vals) noexcept(
         is_nothrow_constructible_v<_Err, initializer_list<_Uty>&, _Args...>) // strengthened
         : _Unexpected(_Ilist, _STD forward<_Args>(_Vals)...), _Has_value(false) {}
-    // clang-format on
 
     // [expected.object.dtor]
     constexpr ~expected() noexcept {
@@ -330,7 +321,6 @@ public:
     }
 
     // clang-format off
-    // TRANSITION, LLVM-46269, destructor order is significant
     ~expected() requires is_trivially_destructible_v<_Ty> && is_trivially_destructible_v<_Err> = default;
     // clang-format on
 
@@ -379,8 +369,9 @@ public:
         is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_constructible_v<_Err> //
             && is_nothrow_copy_assignable_v<_Ty>&& is_nothrow_copy_assignable_v<_Err>) // strengthened
         requires is_copy_assignable_v<_Ty> && is_copy_constructible_v<_Ty> //
-        && is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err> //
-        &&(is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>) {
+              && is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err> //
+              && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
+    {
         if (_Has_value && _Other._Has_value) {
             _Value = _Other._Value;
         } else if (_Has_value) {
@@ -399,8 +390,9 @@ public:
         is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_constructible_v<_Err> //
             && is_nothrow_move_assignable_v<_Ty>&& is_nothrow_move_assignable_v<_Err>) //
         requires is_move_assignable_v<_Ty> && is_move_constructible_v<_Ty> //
-        && is_move_assignable_v<_Err> && is_move_constructible_v<_Err> //
-        &&(is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>) {
+              && is_move_assignable_v<_Err> && is_move_constructible_v<_Err> //
+              && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
+    {
         if (_Has_value && _Other._Has_value) {
             _Value = _STD move(_Other._Value);
         } else if (_Has_value) {
@@ -415,14 +407,13 @@ public:
         return *this;
     }
 
-    // clang-format off
     template <class _Uty = _Ty>
         requires (!is_same_v<remove_cvref_t<_Uty>, expected> && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
-        && is_constructible_v<_Ty, _Uty> && is_assignable_v<_Ty&, _Uty> && (is_nothrow_constructible_v<_Ty, _Uty>
-        || is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>))
+                  && is_constructible_v<_Ty, _Uty> && is_assignable_v<_Ty&, _Uty>
+                  && (is_nothrow_constructible_v<_Ty, _Uty> || is_nothrow_move_constructible_v<_Ty>
+                      || is_nothrow_move_constructible_v<_Err>) )
     constexpr expected& operator=(_Uty&& _Other) noexcept(
         is_nothrow_constructible_v<_Ty, _Uty>&& is_nothrow_assignable_v<_Ty&, _Uty>) { // strengthened
-        // clang-format on
         if (_Has_value) {
             _Value = _STD forward<_Uty>(_Other);
         } else {
@@ -433,14 +424,12 @@ public:
         return *this;
     }
 
-    // clang-format off
     template <class _UErr>
-        requires (is_constructible_v<_Err, const _UErr&>&& is_assignable_v<_Err&, const _UErr&>
-                 && (is_nothrow_constructible_v<_Err, const _UErr&> || is_nothrow_move_constructible_v<_Ty>
-                     || is_nothrow_move_constructible_v<_Err>) )
+        requires (is_constructible_v<_Err, const _UErr&> && is_assignable_v<_Err&, const _UErr&>
+                  && (is_nothrow_constructible_v<_Err, const _UErr&> || is_nothrow_move_constructible_v<_Ty>
+                      || is_nothrow_move_constructible_v<_Err>) )
     constexpr expected& operator=(const unexpected<_UErr>& _Other) noexcept(
         is_nothrow_constructible_v<_Err, const _UErr&>&& is_nothrow_assignable_v<_Err&, const _UErr&>) { // strengthened
-        // clang-format on
         if (_Has_value) {
             _Reinit_expected(_Unexpected, _Value, _Other._Unexpected);
             _Has_value = false;
@@ -451,14 +440,12 @@ public:
         return *this;
     }
 
-    // clang-format off
     template <class _UErr>
-        requires (is_constructible_v<_Err, _UErr>&& is_assignable_v<_Err&, _UErr>
-                 && (is_nothrow_constructible_v<_Err, _UErr> || is_nothrow_move_constructible_v<_Ty>
-                     || is_nothrow_move_constructible_v<_Err>) )
+        requires (is_constructible_v<_Err, _UErr> && is_assignable_v<_Err&, _UErr>
+                  && (is_nothrow_constructible_v<_Err, _UErr> || is_nothrow_move_constructible_v<_Ty>
+                      || is_nothrow_move_constructible_v<_Err>) )
     constexpr expected& operator=(unexpected<_UErr>&& _Other) noexcept(
         is_nothrow_constructible_v<_Err, _UErr>&& is_nothrow_assignable_v<_Err&, _UErr>) { // strengthened
-        // clang-format on
         if (_Has_value) {
             _Reinit_expected(_Unexpected, _Value, _STD move(_Other._Unexpected));
             _Has_value = false;
@@ -486,11 +473,9 @@ public:
         return *_STD construct_at(_STD addressof(_Value), _STD forward<_Args>(_Vals)...);
     }
 
-    // clang-format off
     template <class _Uty, class... _Args>
         requires is_nothrow_constructible_v<_Ty, initializer_list<_Uty>&, _Args...>
     constexpr _Ty& emplace(initializer_list<_Uty> _Ilist, _Args&&... _Vals) noexcept {
-        // clang-format on
         if (_Has_value) {
             if constexpr (!is_trivially_destructible_v<_Ty>) {
                 _Value.~_Ty();
@@ -509,8 +494,9 @@ public:
     constexpr void swap(expected& _Other) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_swappable_v<_Ty>&&
             is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>) //
         requires is_swappable_v<_Ty> && is_swappable_v<_Err> //
-        && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err> //
-        &&(is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>) {
+              && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err> //
+              && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
+    {
         if (_Has_value && _Other._Has_value) {
             _Swap_adl(_Value, _Other._Value);
         } else if (_Has_value) {
@@ -560,8 +546,9 @@ public:
     friend constexpr void swap(expected& _Lhs, expected& _Rhs) noexcept(is_nothrow_move_constructible_v<_Ty>&&
             is_nothrow_swappable_v<_Ty>&& is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>) //
         requires is_swappable_v<_Ty> && is_swappable_v<_Err> //
-        && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err> //
-        &&(is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>) {
+              && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err> //
+              && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
+    {
         _Lhs.swap(_Rhs);
     }
 
@@ -696,13 +683,11 @@ public:
 
     // [expected.object.eq]
 
-    // clang-format off
     template <class _Uty, class _UErr>
         requires (!is_void_v<_Uty>)
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Value == *_Right)) && noexcept(
             _Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
-        // clang-format on
         if (_Left._Has_value != _Right.has_value()) {
             return false;
         } else if (_Left._Has_value) {
@@ -772,7 +757,6 @@ public:
     // [expected.void.ctor]
     constexpr expected() noexcept : _Has_value(true) {}
 
-    // clang-format off
     constexpr expected(const expected& _Other) noexcept(is_nothrow_copy_constructible_v<_Err>) // strengthened
         requires (!is_trivially_copy_constructible_v<_Err> && is_copy_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
@@ -781,7 +765,9 @@ public:
         }
     }
 
+    // clang-format off
     expected(const expected&) requires is_trivially_copy_constructible_v<_Err> = default;
+    // clang-format on
 
     constexpr expected(expected&& _Other) noexcept(is_nothrow_move_constructible_v<_Err>)
         requires (!is_trivially_move_constructible_v<_Err> && is_move_constructible_v<_Err>)
@@ -791,13 +777,14 @@ public:
         }
     }
 
+    // clang-format off
     expected(expected&&) requires is_trivially_move_constructible_v<_Err> = default;
     // clang-format on
 
     template <class _Uty, class _UErr>
-    static constexpr bool _Allow_unwrapping = !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>&> //
-                                           && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>> //
-                                           && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>&> //
+    static constexpr bool _Allow_unwrapping = !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>&>
+                                           && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>>
+                                           && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>&>
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>>;
 
     template <class _Uty, class _UErr>
@@ -840,13 +827,11 @@ public:
         is_nothrow_constructible_v<_Err, _Args...>) // strengthened
         : _Unexpected(_STD forward<_Args>(_Vals)...), _Has_value(false) {}
 
-    // clang-format off
     template <class _Uty, class... _Args>
         requires is_constructible_v<_Err, initializer_list<_Uty>&, _Args...>
     constexpr explicit expected(unexpect_t, initializer_list<_Uty> _Ilist, _Args&&... _Vals) noexcept(
         is_nothrow_constructible_v<_Err, initializer_list<_Uty>&, _Args...>) // strengthened
         : _Unexpected(_Ilist, _STD forward<_Args>(_Vals)...), _Has_value(false) {}
-    // clang-format on
 
     // [expected.void.dtor]
     constexpr ~expected() noexcept {
@@ -856,14 +841,14 @@ public:
     }
 
     // clang-format off
-    // TRANSITION, LLVM-46269, destructor order is significant
     ~expected() requires is_trivially_destructible_v<_Err> = default;
     // clang-format on
 
     // [expected.void.assign]
     constexpr expected& operator=(const expected& _Other) noexcept(
         is_nothrow_copy_constructible_v<_Err>&& is_nothrow_copy_assignable_v<_Err>) // strengthened
-        requires is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err> {
+        requires is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err>
+    {
         if (_Has_value && _Other._Has_value) {
             // nothing to do
         } else if (_Has_value) {
@@ -882,8 +867,9 @@ public:
     }
 
     constexpr expected& operator=(expected&& _Other) noexcept(
-        is_nothrow_move_constructible_v<_Err>&& is_nothrow_move_assignable_v<_Err>) //
-        requires is_move_assignable_v<_Err> && is_move_constructible_v<_Err> {
+        is_nothrow_move_constructible_v<_Err>&& is_nothrow_move_assignable_v<_Err>)
+        requires is_move_assignable_v<_Err> && is_move_constructible_v<_Err>
+    {
         if (_Has_value && _Other._Has_value) {
             // nothing to do
         } else if (_Has_value) {
@@ -941,7 +927,8 @@ public:
     // [expected.void.swap]
     constexpr void swap(expected& _Other) noexcept(
         is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>) //
-        requires is_swappable_v<_Err> && is_move_constructible_v<_Err> {
+        requires is_swappable_v<_Err> && is_move_constructible_v<_Err>
+    {
         if (_Has_value && _Other._Has_value) {
             // nothing
         } else if (_Has_value) {
@@ -964,8 +951,9 @@ public:
     }
 
     friend constexpr void swap(expected& _Left, expected& _Right) noexcept(
-        is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>) //
-        requires is_swappable_v<_Err> && is_move_constructible_v<_Err> {
+        is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>)
+        requires is_swappable_v<_Err> && is_move_constructible_v<_Err>
+    {
         if (_Left._Has_value && _Right._Has_value) {
             // nothing
         } else if (_Left._Has_value) {
@@ -1038,12 +1026,10 @@ public:
     }
 
     // [expected.void.eq]
-    // clang-format off
     template <class _Uty, class _UErr>
         requires is_void_v<_Uty>
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
         noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
-        // clang-format on
         if (_Left._Has_value != _Right.has_value()) {
             return false;
         } else {

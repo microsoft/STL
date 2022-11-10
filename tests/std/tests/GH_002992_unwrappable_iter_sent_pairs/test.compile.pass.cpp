@@ -45,9 +45,7 @@ void test_unwrappable_range() {
     using It = ranges::iterator_t<Rng>;
     using Se = ranges::sentinel_t<Rng>;
 
-    constexpr bool is_const_unwrappable = requires(const It& ci) {
-        ci._Unwrapped();
-    };
+    constexpr bool is_const_unwrappable = requires(const It& ci) { ci._Unwrapped(); };
 
     if constexpr (is_const_unwrappable) {
         STATIC_ASSERT(same_as<decltype(declval<It>()._Unwrapped()), decltype(declval<const It&>()._Unwrapped())>);

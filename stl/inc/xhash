@@ -118,8 +118,8 @@ struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq,
 #endif // _HAS_CXX20
 
 template <class _Hasher, class _Kty>
-_INLINE_VAR constexpr bool _Nothrow_hash = noexcept(
-    static_cast<size_t>(_STD declval<const _Hasher&>()(_STD declval<const _Kty&>())));
+_INLINE_VAR constexpr bool _Nothrow_hash =
+    noexcept(static_cast<size_t>(_STD declval<const _Hasher&>()(_STD declval<const _Kty&>())));
 
 template <class _Kty, class _Hasher, class _Keyeq>
 class _Uhash_compare
@@ -1096,7 +1096,7 @@ private:
 
     template <class _Kx>
     static constexpr bool _Noexcept_heterogeneous_erasure() {
-        return _Nothrow_hash<_Traits, _Kx> //
+        return _Nothrow_hash<_Traits, _Kx>
             && (!_Multi || (_Nothrow_compare<_Traits, key_type, _Kx> && _Nothrow_compare<_Traits, _Kx, key_type>) );
     }
 
