@@ -341,6 +341,7 @@
 // P2445R1 forward_like()
 // P2446R2 views::as_rvalue
 // P2465R3 Standard Library Modules std And std.compat
+// P2467R1 ios_base::noreplace: Exclusive Mode For fstreams
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2549R1 unexpected<E>::error()
@@ -1661,6 +1662,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #define __cpp_lib_forward_like   202207L
 #define __cpp_lib_invoke_r       202106L
+#define __cpp_lib_ios_noreplace  202207L
 #define __cpp_lib_is_scoped_enum 202011L
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules

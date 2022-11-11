@@ -574,6 +574,7 @@ tests\P2443R1_views_chunk_by_death
 tests\P2445R1_forward_like
 tests\P2446R2_views_as_rvalue
 tests\P2465R3_standard_library_modules
+tests\P2467R1_exclusive_mode_fstreams
 tests\P2494R2_move_only_range_adaptors
 tests\P2517R1_apply_conditional_noexcept
 tests\VSO_0000000_allocator_propagation
