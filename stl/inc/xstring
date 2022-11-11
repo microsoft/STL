@@ -376,7 +376,24 @@ public:
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
 #if _HAS_CXX17
+#if _HAS_CXX20 && defined(__EDG__) // TRANSITION, VSO-1675318
+        if (_STD is_constant_evaluated()) {
+            for (size_t _Idx = 0; _Idx != _Count; ++_Idx) {
+                if (static_cast<unsigned char>(_First1[_Idx]) < static_cast<unsigned char>(_First2[_Idx])) {
+                    return -1;
+                }
+
+                if (static_cast<unsigned char>(_First2[_Idx]) < static_cast<unsigned char>(_First1[_Idx])) {
+                    return 1;
+                }
+            }
+            return 0;
+        } else {
+            return _CSTD memcmp(_First1, _First2, _Count);
+        }
+#else // ^^^ workaround for EDG / no workaround needed for MSVC and Clang vvv
         return __builtin_memcmp(_First1, _First2, _Count);
+#endif // ^^^ no workaround needed for MSVC and Clang ^^^
 #else // _HAS_CXX17
         return _CSTD memcmp(_First1, _First2, _Count);
 #endif // _HAS_CXX17
