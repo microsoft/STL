@@ -325,7 +325,7 @@
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
 // P2278R4 cbegin Should Always Return A Constant Iterator
-//     ("Iterators" section from the paper only)
+//     (missing views::as_const)
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
