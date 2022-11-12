@@ -131,7 +131,7 @@ constexpr void lambda_test() {
     assert(x2.line() == __LINE__ - 2);
 #ifndef _M_CEE // TRANSITION, VSO-1665663
     assert(x1.column() == 52);
-#endif
+#endif // M_CEE
     assert(x2.column() == 50);
 #ifdef __clang__ // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x1.function_name() == "lambda_test"sv);
