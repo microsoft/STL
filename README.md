@@ -31,8 +31,7 @@ We're in the process of moving all of our work on the STL to GitHub. Current sta
 * Build System: **In progress.** We're working on a CMake build system, which is currently capable of building one
 flavor of the STL (native desktop). We need to extend this to build all of the flavors required for the MSVC toolset
 (e.g. `/clr`, `/clr:pure`, OneCore, Spectre). Until that's done, we're keeping our legacy build system around in the
-`stl/msbuild` subdirectory. (We're keeping those files in this repo, even though they're unusable outside of Microsoft,
-because they need to be updated whenever source files are added/renamed/deleted. We'll delete the legacy machinery as
+`stl/msbuild` subdirectory. (We're keeping those files in this repo, even though they're unusable outside of Microsoft because they need to be updated whenever source files are added/renamed/deleted. We'll delete the legacy machinery as
 soon as possible.)
 
 * Tests: **In progress.** We rely on three test suites: std, tr1, and [libcxx][]. We've partially ported std and tr1,
@@ -50,7 +49,7 @@ libraries.)
 
 * Issues: **In progress.** We're going to use GitHub issues to track all of the things that we need to work on. This
 includes C++20 features, [LWG issues][], conformance bugs, performance improvements, and other todos. There are
-approximately 200 active bugs in the STL's Microsoft-internal database; we need to manually replicate all of them to
+approximately 200 active bugs in the STL's Microsoft internal database; we need to manually replicate all of them to
 GitHub issues. Currently, the [cxx20 tag][] and [LWG tag][] are done; every remaining work item is tracked by a GitHub
 issue. The [bug tag][] and [enhancement tag][] are being populated.
 
@@ -68,10 +67,10 @@ expression specifications.)
 Our primary goals are conformance, performance, usability, and compatibility.
 
 * Conformance: The Working Paper is a moving target; as features and LWG issue resolutions are added, we need to
-implement them. That can involve a lot of work, because the STL is required to behave in very specific ways and to
+implement them. That can involve a lot of work because the STL is required to behave in very specific ways and to
 handle users doing very unusual things.
 
-* Performance: The STL needs to be extremely fast at runtime; speed is one of C++'s core strengths, and most C++
+* Performance: The STL needs to be extremely fast at runtime; speed is one of C++'s core strengths and most C++
 programs use the STL extensively. As a result, we spend more time on optimization than most general-purpose libraries.
 (However, we're wary of changes that improve some scenarios at the expense of others, or changes that make code
 significantly more complicated and fragile. That is, there's a "complexity budget" that must be spent carefully.)
@@ -88,13 +87,13 @@ then the feature is significantly changed before the International Standard is f
 binary compatibility because `/std:c++latest` offers an experimental preview of such features), binary compatibility
 generally overrides all other considerations, even conformance. Source compatibility refers to being able to
 successfully recompile user code without changes. We consider source compatibility to be important, but not
-all-important; breaking source compatibility can be an acceptable cost, if done for the right reasons in the right way
+all-important; breaking source compatibility can be an acceptable cost if done for the right reasons in the right way
 (e.g. in a controlled manner with escape hatches).
 
 # Non-Goals
 
 There are things that we aren't interested in doing with this project, for various reasons (most importantly, we need to
-focus development effort on our goals). Some examples:
+focus development efforts on our goals). Some examples:
 
 * Non-goal: Porting to other platforms.
 
@@ -104,7 +103,7 @@ focus development effort on our goals). Some examples:
 might implement some or all of a TS, often when we're working on the specification itself.)
 
 If you're proposing a feature to WG21 (the C++ Standardization Committee), you're welcome (and encouraged!) to use our
-code as a base for a proof-of-concept implementation. These non-goals simply mean that we're unable to consider pull
+code as a base for proof-of-concept implementation. These non-goals simply mean that we're unable to consider pull
 requests for a proposed feature until it has been voted into a Working Paper. After that happens, we'll be delighted to
 review a production-ready pull request.
 
@@ -115,7 +114,7 @@ You can report STL bugs here, where they'll be directly reviewed by maintainers.
 
 **Please help us** efficiently process bug reports by following these rules:
 
-* Only STL bugs should be reported here. If it's a bug in the compiler, CRT, or IDE, please report it through Developer
+* Only STL bugs should be reported here. If it's a bug in the compiler, CRT, or IDE, please report it through the Developer
 Community or Report A Problem. If it's a bug in the Windows SDK, please report it through the [Feedback Hub][hub] app.
 If you aren't sure, try to reduce your test case and see if you can eliminate the STL's involvement while still
 reproducing the bug.
@@ -136,7 +135,7 @@ time-consuming for us to reduce.)
 * A good title is helpful. We prefer "`<header_name>`: Short description of your issue". You don't usually need to
 mention `std::` or C++. For example, "`<type_traits>`: `is_cute` should be true for `enum class FluffyKittens`".
 
-It's okay if you report an apparent STL bug that turns out to be a compiler bug, or surprising-yet-Standard behavior.
+It's okay if you report an apparent STL bug that turns out to be a compiler bug or surprising-yet-Standard behavior.
 Just try to follow these rules, so we can spend more time fixing bugs and implementing features.
 
 # How To Build With The Visual Studio IDE
@@ -187,13 +186,13 @@ To build the x64 target (recommended):
 Consumption of the built library is largely based on the build system you're using. There are at least 2 directories
 you need to hook up. Assuming you built the x64 target with the Visual Studio IDE, with the STL repository cloned to
 `C:\Dev\STL`, build outputs will end up at `C:\Dev\STL\out\build\x64\out`. Ensure that the `inc` directory is searched
-for headers, and that `lib\{architecture}` is searched for link libraries, before any defaults supplied by MSVC. The
+for headers and that `lib\{architecture}` is searched for link libraries, before any defaults supplied by MSVC. The
 names of the import and static libraries are the same as those that ship with MSVC. As a result, the compiler `/MD`,
 `/MDd`, `/MT`, or `/MTd` switches will work without modification of your build scripts or command-line muscle memory.
 
 Should you choose to use the DLL flavors, the DLLs to deploy are built to `bin\{architecture}`. Note that the DLLs
 generated by the CMake build system here have a suffix, defaulting to `_oss`, which distinguishes them from the binaries
-that ship with MSVC. That avoids any conflict with the DLLs installed by the [redistributables][] into System32, and
+that ship with MSVC. That avoids any conflict with the DLLs installed by the [redistributables][] into System32 and
 ensures that other components wanting to be a "guest in your process", like print drivers and shell extensions, see the
 export surface of the STL they were built with. Otherwise, the "`msvcp140.dll`" you deployed in the same directory as
 your .exe would "win" over the versions in System32.
@@ -247,15 +246,15 @@ CTest will only display the standard error output of tests that failed. In order
 
 ## Running A Subset Of The Tests
 
-`${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` can be invoked on a subdirectory of a testsuite and will execute
-all the tests under that subdirectory. This can mean executing the entirety of a single testsuite, running all tests
+`${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` can be invoked on a subdirectory of a test suite and will execute
+all the tests under that subdirectory. This can mean executing the entirety of a single test suite, running all tests
 under a category in libcxx, or running a single test in `std` and `tr1`.
 
 ## Examples
 
 These examples assume that your current directory is `C:\Dev\STL\out\build\x64`.
 
-* This command will run all of the testsuites with verbose output.
+* This command will run all of the test suites with verbose output.
   + `ctest -V`
 * This command will also run all of the testsuites.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test ..\..\..\tests\std ..\..\..\tests\tr1`
@@ -277,7 +276,7 @@ testsuite fails, CTest will simply report that the `stl` test failed.
 
 Example:
 ```
-0% tests passed, 1 tests failed out of 1
+0% of tests passed, 1 test failed out of 1
 
 Total Test time (real) = 2441.55 sec
 
@@ -287,7 +286,7 @@ The following tests FAILED:
 
 The primary utility of CTest in this case is to conveniently invoke `stl-lit.py` with the correct set of arguments.
 
-CTest will output everything that was sent to stderr for each of the failed testsuites, which can be used to identify
+CTest will output everything that was sent to stderr for each of the failed test suites, which can be used to identify
 which individual test within the testsuite failed. It can sometimes be helpful to run CTest with the `-V` option in
 order to see the stdout of the tests.
 
@@ -333,7 +332,7 @@ Testing Time: 3.96s
   Unsupported Tests  : 5
 ```
 
-In the above example we see that 23 tests succeeded and 5 were unsupported.
+In the above example, we see that 23 tests succeeded and 5 were unsupported.
 
 ### Result Code Values
 
@@ -351,7 +350,7 @@ expect to fail) for features they have added tests for but have yet to implement
 those features first the tests will begin passing unexpectedly for us and return `XPASS` results. In order to resolve
 this it is necessary to add a `PASS` entry to the `expected_results.txt` of the testsuite in question.
 
-The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently
+The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently,
 all tests which use the `/clr` or `/clr:pure` options are unsupported. Also, the `/BE` option is unsupported for x86.
 
 The `SKIPPED` result code indicates that a given test was explicitly skipped by adding a `SKIPPED` entry to the
@@ -428,7 +427,7 @@ You can then run your benchmark with:
 out\benchmark\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
 ```
 
-And then you can copy this csv file into Excel, or another spreadsheet program. For example:
+And then you can copy this CSV file into Excel, or another spreadsheet program. For example:
 
 ```cmd
 out\bench\benchmarks\benchmark-std_copy --benchmark_out=benchmark-std_copy-results.csv --benchmark_out_format=csv
@@ -449,7 +448,7 @@ on how to modify this file, check the [natvis documentation][].
 
 ### Test Your Changes
 
-You can add the natvis file to any Visual Studio C++ project if you right click your project > Add > Existing Item and
+You can add the natvis file to any Visual Studio C++ project if you right-click your project > Add > Existing Item and
 select the STL.natvis file. After doing this you should be able to see your changes in a Visual Studio debugging
 session.
 
