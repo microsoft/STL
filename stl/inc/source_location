@@ -27,7 +27,7 @@ _EXPORT_STD struct source_location {
         const uint_least32_t _Column_ = __builtin_COLUMN(), const char* const _File_ = __builtin_FILE(),
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
         const char* const _Function_ = __builtin_FUNCTION()) noexcept {
-#else // ^^^ workaround no workaround vvv
+#else // ^^^ workaround / no workaround vvv
         const char* const _Function_ = __builtin_FUNCSIG()) noexcept {
 #endif // TRANSITION, DevCom-10199227 and LLVM-58951
         source_location _Result{};

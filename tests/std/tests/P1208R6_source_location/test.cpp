@@ -52,7 +52,7 @@ constexpr void local_test() {
     assert(x.column() == 37);
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.function_name() == "local_test"sv);
-#else // ^^^ workaround // workaround vvv
+#else // ^^^ workaround / no workaround vvv
     assert(x.function_name() == "void __cdecl local_test(void)"sv);
 #endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{x.file_name()}.ends_with(test_cpp));
@@ -64,7 +64,7 @@ constexpr void argument_test(
     assert(x.column() == column);
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.function_name() == "test"sv);
-#else // ^^^ workaround // workaround vvv
+#else // ^^^ workaround / no workaround vvv
     assert(x.function_name() == "bool __cdecl test(void)"sv);
 #endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{x.file_name()}.ends_with(test_cpp));
@@ -79,7 +79,7 @@ constexpr void sloc_constructor_test() {
     } else {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
         assert(x.loc.function_name() == "sloc_constructor_test"sv);
-#else // ^^^ workaround // workaround vvv
+#else // ^^^ workaround / no workaround vvv
         assert(x.loc.function_name() == "void __cdecl sloc_constructor_test(void)"sv);
 #endif // TRANSITION, DevCom-10199227 and LLVM-58951
     }
@@ -92,7 +92,7 @@ constexpr void different_constructor_test() {
     assert(x.loc.column() == 5);
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.loc.function_name() == "s"sv);
-#elif defined(_M_IX86) // ^^^ workaround // workaround vvv
+#elif defined(_M_IX86) // ^^^ workaround / no workaround vvv
     assert(x.loc.function_name() == "__thiscall s::s(int)"sv);
 #else // _M_IX86
     assert(x.loc.function_name() == "__cdecl s::s(int)"sv);
@@ -109,7 +109,7 @@ constexpr void sub_member_test() {
     } else {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
         assert(s.x.loc.function_name() == "sub_member_test"sv);
-#else // ^^^ workaround // workaround vvv
+#else // ^^^ workaround / no workaround vvv
         assert(s.x.loc.function_name() == "void __cdecl sub_member_test(void)"sv);
 #endif // TRANSITION, DevCom-10199227 and LLVM-58951
     }
@@ -120,7 +120,7 @@ constexpr void sub_member_test() {
     assert(s_i.x.loc.column() == 5);
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(s_i.x.loc.function_name() == "s2"sv);
-#elif defined(_M_IX86) // ^^^ workaround // workaround vvv
+#elif defined(_M_IX86) // ^^^ workaround / no workaround vvv
     assert(s_i.x.loc.function_name() == "__thiscall s2::s2(int)"sv);
 #else // _M_IX86
     assert(s_i.x.loc.function_name() == "__cdecl s2::s2(int)"sv);
@@ -140,7 +140,7 @@ constexpr void lambda_test() {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x1.function_name() == "lambda_test"sv);
     assert(x2.function_name() == "operator()"sv);
-#elif defined(_M_IX86) // ^^^ workaround // workaround vvv
+#elif defined(_M_IX86) // ^^^ workaround / no workaround vvv
     assert(x1.function_name() == "void __cdecl lambda_test(void)"sv);
     assert(
         string_view{x2.function_name()}.starts_with("struct std::source_location __thiscall lambda_test::<lambda_"sv));
@@ -165,7 +165,7 @@ constexpr void function_template_test() {
     assert(x1.column() == 29);
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x1.function_name() == "function_template"sv);
-#else // ^^^ workaround // workaround vvv
+#else // ^^^ workaround / no workaround vvv
     assert(x1.function_name() == "struct std::source_location __cdecl function_template<void>(void)"sv);
 #endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{x1.file_name()}.ends_with(test_cpp));
@@ -175,7 +175,7 @@ constexpr void function_template_test() {
     assert(x1.column() == x2.column());
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x2.function_name() == "function_template"sv);
-#else // ^^^ workaround // workaround vvv
+#else // ^^^ workaround / no workaround vvv
     assert(x2.function_name() == "struct std::source_location __cdecl function_template<int>(void)"sv);
 #endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{x1.file_name()} == string_view{x2.file_name()});
