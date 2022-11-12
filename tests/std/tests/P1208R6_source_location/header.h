@@ -11,10 +11,10 @@ constexpr void header_test() {
     const auto x = source_location::current();
     assert(x.line() == __LINE__ - 1);
     assert(x.column() == 37);
-#ifdef __clang__
+#ifdef __clang__ // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.function_name() == "header_test"sv);
-#else
+#else // ^^^ workaround no workaround vvv
     assert(x.function_name() == "void __cdecl header_test(void)"sv);
-#endif
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{x.file_name()}.ends_with("header.h"sv));
 }
