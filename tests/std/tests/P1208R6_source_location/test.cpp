@@ -92,7 +92,9 @@ constexpr void different_constructor_test() {
     assert(x.loc.column() == 5);
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.loc.function_name() == "s"sv);
-#else // ^^^ workaround // workaround vvv
+#elif defined(_M_IX86) // ^^^ workaround // workaround vvv
+    assert(x.loc.function_name() == "__thiscall s::s(int)"sv);
+#else // _M_IX86
     assert(x.loc.function_name() == "__cdecl s::s(int)"sv);
 #endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{x.loc.file_name()}.ends_with(test_cpp));
@@ -118,7 +120,9 @@ constexpr void sub_member_test() {
     assert(s_i.x.loc.column() == 5);
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(s_i.x.loc.function_name() == "s2"sv);
-#else
+#elif defined(_M_IX86) // ^^^ workaround // workaround vvv
+    assert(s_i.x.loc.function_name() == "__thiscall s2::s2(int)"sv);
+#else // _M_IX86
     assert(s_i.x.loc.function_name() == "__cdecl s2::s2(int)"sv);
 #endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{s_i.x.loc.file_name()}.ends_with(test_cpp));
@@ -136,7 +140,11 @@ constexpr void lambda_test() {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x1.function_name() == "lambda_test"sv);
     assert(x2.function_name() == "operator()"sv);
-#else // ^^^ workaround // workaround vvv
+#elif defined(_M_IX86) // ^^^ workaround // workaround vvv
+    assert(x1.function_name() == "void __cdecl lambda_test(void)"sv);
+    assert(string_view{x2.function_name()}.starts_with("struct std::source_location __thiscall lambda_test::<lambda_"sv));
+    assert(string_view{x2.function_name()}.ends_with("::operator ()(void) const"sv));
+#else // _M_IX86
     assert(x1.function_name() == "void __cdecl lambda_test(void)"sv);
     assert(string_view{x2.function_name()}.starts_with("struct std::source_location __cdecl lambda_test::<lambda_"sv));
     assert(string_view{x2.function_name()}.ends_with("::operator ()(void) const"sv));
