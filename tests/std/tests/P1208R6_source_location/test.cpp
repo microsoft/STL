@@ -50,7 +50,7 @@ constexpr void local_test() {
     const auto x = source_location::current();
     assert(x.line() == __LINE__ - 1);
     assert(x.column() == 37);
-#ifdef __clang__ // TRANSITION, DevCom-10199227 and LLVM-58951
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.function_name() == "local_test"sv);
 #else // ^^^ workaround // workaround vvv
     assert(x.function_name() == "void __cdecl local_test(void)"sv);
@@ -62,7 +62,7 @@ constexpr void argument_test(
     const unsigned int line, const unsigned int column, const source_location x = source_location::current()) {
     assert(x.line() == line);
     assert(x.column() == column);
-#ifdef __clang__ // TRANSITION, DevCom-10199227 and LLVM-58951
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.function_name() == "test"sv);
 #else // ^^^ workaround // workaround vvv
     assert(x.function_name() == "bool __cdecl test(void)"sv);
@@ -77,7 +77,7 @@ constexpr void sloc_constructor_test() {
     if (is_constant_evaluated()) {
         assert(x.loc.function_name() == "int __cdecl main(void)"sv); // TRANSITION, VSO-1285783
     } else {
-#ifdef __clang__ // TRANSITION, DevCom-10199227 and LLVM-58951
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
         assert(x.loc.function_name() == "sloc_constructor_test"sv);
 #else // ^^^ workaround // workaround vvv
         assert(x.loc.function_name() == "void __cdecl sloc_constructor_test(void)"sv);
@@ -90,7 +90,7 @@ constexpr void different_constructor_test() {
     const s x{1};
     assert(x.loc.line() == s_int_line);
     assert(x.loc.column() == 5);
-#ifdef __clang__ // TRANSITION, DevCom-10199227 and LLVM-58951
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.loc.function_name() == "s"sv);
 #else // ^^^ workaround // workaround vvv
     assert(x.loc.function_name() == "__cdecl s::s(int)"sv);
@@ -105,7 +105,7 @@ constexpr void sub_member_test() {
     if (is_constant_evaluated()) {
         assert(s.x.loc.function_name() == "int __cdecl main(void)"sv); // TRANSITION, VSO-1285783
     } else {
-#ifdef __clang__ // TRANSITION, DevCom-10199227 and LLVM-58951
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
         assert(s.x.loc.function_name() == "sub_member_test"sv);
 #else // ^^^ workaround // workaround vvv
         assert(s.x.loc.function_name() == "void __cdecl sub_member_test(void)"sv);
@@ -116,7 +116,7 @@ constexpr void sub_member_test() {
     const s2 s_i{1};
     assert(s_i.x.loc.line() == s2_int_line);
     assert(s_i.x.loc.column() == 5);
-#ifdef __clang__ // TRANSITION, DevCom-10199227 and LLVM-58951
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(s_i.x.loc.function_name() == "s2"sv);
 #else
     assert(s_i.x.loc.function_name() == "__cdecl s2::s2(int)"sv);
@@ -133,7 +133,7 @@ constexpr void lambda_test() {
     assert(x1.column() == 52);
 #endif // M_CEE
     assert(x2.column() == 50);
-#ifdef __clang__ // TRANSITION, DevCom-10199227 and LLVM-58951
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x1.function_name() == "lambda_test"sv);
     assert(x2.function_name() == "operator()"sv);
 #else // ^^^ workaround // workaround vvv
@@ -154,7 +154,7 @@ constexpr void function_template_test() {
     const auto x1 = function_template<void>();
     assert(x1.line() == __LINE__ - 5);
     assert(x1.column() == 29);
-#ifdef __clang__ // TRANSITION, DevCom-10199227 and LLVM-58951
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x1.function_name() == "function_template"sv);
 #else // ^^^ workaround // workaround vvv
     assert(x1.function_name() == "struct std::source_location __cdecl function_template<void>(void)"sv);
@@ -164,7 +164,7 @@ constexpr void function_template_test() {
     const auto x2 = function_template<int>();
     assert(x1.line() == x2.line());
     assert(x1.column() == x2.column());
-#ifdef __clang__ // TRANSITION, DevCom-10199227 and LLVM-58951
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x2.function_name() == "function_template"sv);
 #else // ^^^ workaround // workaround vvv
     assert(x2.function_name() == "struct std::source_location __cdecl function_template<int>(void)"sv);

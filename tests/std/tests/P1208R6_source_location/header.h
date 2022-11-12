@@ -11,7 +11,7 @@ constexpr void header_test() {
     const auto x = source_location::current();
     assert(x.line() == __LINE__ - 1);
     assert(x.column() == 37);
-#ifdef __clang__ // TRANSITION, DevCom-10199227 and LLVM-58951
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.function_name() == "header_test"sv);
 #else // ^^^ workaround no workaround vvv
     assert(x.function_name() == "void __cdecl header_test(void)"sv);
