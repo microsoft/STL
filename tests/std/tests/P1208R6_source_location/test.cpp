@@ -142,7 +142,8 @@ constexpr void lambda_test() {
     assert(x2.function_name() == "operator()"sv);
 #elif defined(_M_IX86) // ^^^ workaround // workaround vvv
     assert(x1.function_name() == "void __cdecl lambda_test(void)"sv);
-    assert(string_view{x2.function_name()}.starts_with("struct std::source_location __thiscall lambda_test::<lambda_"sv));
+    assert(
+        string_view{x2.function_name()}.starts_with("struct std::source_location __thiscall lambda_test::<lambda_"sv));
     assert(string_view{x2.function_name()}.ends_with("::operator ()(void) const"sv));
 #else // _M_IX86
     assert(x1.function_name() == "void __cdecl lambda_test(void)"sv);
