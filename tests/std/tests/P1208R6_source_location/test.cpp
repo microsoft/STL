@@ -104,7 +104,9 @@ constexpr void lambda_test() {
     const auto l = [loc = source_location::current()] { return loc; };
     const auto x = l();
     assert(x.line() == __LINE__ - 2);
+#ifndef _M_CEE // TRANSITION, VSO-1665663
     assert(x.column() == 51);
+#endif // _M_CEE
     assert(x.function_name() == "lambda_test"sv);
     assert(string_view{x.file_name()}.ends_with(test_cpp));
 }

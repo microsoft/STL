@@ -12,6 +12,10 @@
 #include <type_traits>
 #include <utility>
 
+#ifdef _M_CEE // TRANSITION, VSO-1659408
+#include <memory>
+#endif // ^^^ workaround ^^^
+
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 namespace ranges = std::ranges;
@@ -62,6 +66,27 @@ struct boolish {
     [[nodiscard]] constexpr boolish operator!() const noexcept {
         return {!value_};
     }
+};
+
+template <class T, size_t N>
+struct holder {
+    STATIC_ASSERT(N < ~size_t{0} / sizeof(T));
+
+#ifdef _M_CEE // TRANSITION, VSO-1659408
+    unsigned char space[(N + 1) * sizeof(T)];
+
+    auto as_span() {
+        void* buffer_ptr  = space;
+        size_t buffer_len = sizeof(space);
+        return std::span<T, N>{static_cast<T*>(std::align(alignof(T), sizeof(T), buffer_ptr, buffer_len)), N};
+    }
+#else // ^^^ workaround / no workaround vvv
+    alignas(T) unsigned char space[N * sizeof(T)];
+
+    auto as_span() {
+        return std::span<T, N>{reinterpret_cast<T*>(space + 0), N};
+    }
+#endif // ^^^ no workaround ^^^
 };
 
 namespace test {
@@ -1459,7 +1484,12 @@ concept CanMemberEnd = requires(R&& r) { std::forward<R>(r).end(); };
 template <class R>
 concept CanCBegin = requires(R&& r) { ranges::cbegin(std::forward<R>(r)); };
 template <class R>
+concept CanMemberCBegin = requires(R&& r) { std::forward<R>(r).cbegin(); };
+
+template <class R>
 concept CanCEnd = requires(R&& r) { ranges::cend(std::forward<R>(r)); };
+template <class R>
+concept CanMemberCEnd = requires(R&& r) { std::forward<R>(r).cend(); };
 
 template <class R>
 concept CanRBegin = requires(R&& r) { ranges::rbegin(std::forward<R>(r)); };

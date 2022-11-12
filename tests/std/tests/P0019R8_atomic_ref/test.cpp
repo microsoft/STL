@@ -37,6 +37,7 @@ struct int128 {
 
 template <bool AddViaCas, typename ValueType>
 void test_ops() {
+#ifndef _M_CEE // TRANSITION, VSO-1659408
     constexpr std::size_t unique      = 80; // small to avoid overflow even for char
     constexpr std::size_t repetitions = 8000;
     constexpr std::size_t total       = unique * repetitions;
@@ -83,6 +84,7 @@ void test_ops() {
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == range * repetitions * 2);
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, xchg0) == range * 2);
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == 0);
+#endif // _M_CEE
 }
 
 template <class Integer>
