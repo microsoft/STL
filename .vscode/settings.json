@@ -14,13 +14,18 @@
     "files.eol": "\r\n",
     "files.exclude": {
         "benchmarks/google-benchmark": true,
+        "boost-math": true,
         "llvm-project": true,
-        "stl/msbuild": true,
-        "boost-math": true
+        "stl/msbuild": true
     },
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
+    "git.ignoredRepositories": [
+        "benchmarks/google-benchmark",
+        "boost-math",
+        "llvm-project"
+    ],
     "python.analysis.extraPaths": [
         "./llvm-project/libcxx/utils",
         "./llvm-project/llvm/utils/lit",

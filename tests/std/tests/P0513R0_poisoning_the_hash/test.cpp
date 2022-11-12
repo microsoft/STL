@@ -19,9 +19,9 @@
 #include <variant>
 #include <vector>
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #include <thread>
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 using namespace std;
 
@@ -93,9 +93,9 @@ STATIC_ASSERT(standard_hash_enabled<error_condition>());
 STATIC_ASSERT(standard_hash_enabled<type_index>());
 STATIC_ASSERT(standard_hash_enabled<vector<bool>>());
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 STATIC_ASSERT(standard_hash_enabled<thread::id>());
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 struct NotHashable {};
 

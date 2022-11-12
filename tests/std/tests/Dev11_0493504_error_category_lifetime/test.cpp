@@ -6,9 +6,9 @@
 #include <ios>
 #include <system_error>
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #include <future>
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 #include <Windows.h>
 
@@ -20,9 +20,9 @@ struct Global {
         (void) iostream_category().name();
         (void) system_category().name();
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
         (void) future_category().name();
-#endif // _M_CEE
+#endif // _M_CEE_PURE
     }
 };
 

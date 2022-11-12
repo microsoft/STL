@@ -142,19 +142,16 @@
 #include <__msvc_cxx_stdatomic.hpp>
 #include <atomic>
 #include <barrier>
-#include <latch>
-#include <semaphore>
-#include <stop_token>
-#endif // _M_CEE_PURE
-
-#ifndef _M_CEE
 #include <condition_variable>
 #include <execution>
 #include <future>
+#include <latch>
 #include <mutex>
+#include <semaphore>
 #include <shared_mutex>
+#include <stop_token>
 #include <thread>
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 // Non-Core C Wrapper Headers
 #include <ccomplex>

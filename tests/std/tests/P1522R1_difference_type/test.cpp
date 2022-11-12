@@ -1174,7 +1174,7 @@ constexpr bool test_cross() {
         x = -26;
         TEST(u *= 2, x);
         y = 12;
-#ifdef _M_CEE // TRANSITION, silent bad codegen, not yet reported
+#ifdef _M_CEE // TRANSITION, VSO-1658184 (/clr silent bad codegen)
         i = 12;
 #else // ^^^ workaround / no workaround vvv
         TEST(i *= -2, y);

@@ -43,16 +43,6 @@ struct int_wrapper {
 };
 STATIC_ASSERT(default_initializable<int_wrapper>);
 
-template <class T, size_t N>
-struct holder {
-    STATIC_ASSERT(N < ~size_t{0} / sizeof(T));
-    alignas(T) unsigned char space[N * sizeof(T)];
-
-    auto as_span() {
-        return span<T, N>{reinterpret_cast<T*>(space + 0), N};
-    }
-};
-
 struct instantiator {
     template <ranges::forward_range Write>
     static void call() {

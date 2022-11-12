@@ -58,6 +58,14 @@ strings\basic.string\string.nonmembers\string_op+\allocator_propagation.pass.cpp
 # libc++ hasn't updated move_iterator for P2520R0
 iterators\predef.iterators\move.iterators\move.iterator\types.pass.cpp
 
+# libc++ has not implemented P2278R4: "cbegin should always return a constant iterator"
+containers\views\views.span\types.pass.cpp
+ranges\range.access\begin.pass.cpp
+ranges\range.access\data.pass.cpp
+ranges\range.access\end.pass.cpp
+ranges\range.access\rbegin.pass.cpp
+ranges\range.access\rend.pass.cpp
+
 # libc++ doesn't implement LWG-3692: "zip_view::iterator's operator<=> is overconstrained"
 ranges\range.adaptors\range.zip\iterator\compare.pass.cpp
 

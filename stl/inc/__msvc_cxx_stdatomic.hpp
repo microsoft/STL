@@ -12,7 +12,7 @@
 
 // provide a specific error message for C compilers, before the general error message in yvals_core.h
 #ifndef __cplusplus
-#error <stdatomic.h> is not yet supported when compiling as C, but this is planned for a future release.
+#error <__msvc_cxx_stdatomic.hpp> is an internal header. It is incompatible with C and should not be directly included.
 #endif // __cplusplus
 
 #include <yvals.h>
