@@ -70,7 +70,7 @@ int main() {
     STATIC_ASSERT((test_in_fwd<instantiator, const P, const int>(), true));
     test_in_fwd<instantiator, const P, const int>();
 }
-#else // ^^^ test all range combinations // test only interesting range combos vvv
+#else // ^^^ test all range combinations / test only interesting range combos vvv
 constexpr bool run_tests() {
     // The algorithm is oblivious to anything except maybe proxies so take the bare minimum input/forward range
     using in_test_range  = test::range<input_iterator_tag, const P, test::Sized::no, test::CanDifference::no,

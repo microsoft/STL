@@ -8123,7 +8123,7 @@ namespace ranges {
                 // divide and conquer by quicksort
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
                 auto [_Mid_first, _Mid_last] = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
-#else // ^^^ no workaround // workaround vvv
+#else // ^^^ no workaround / workaround vvv
                 auto _Mid       = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
                 auto _Mid_first = _Mid.begin();
                 auto _Mid_last  = _Mid.end();

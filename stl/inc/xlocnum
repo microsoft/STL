@@ -626,7 +626,7 @@ protected:
             char* _Ep;
 #ifdef _WIN64
             _Val = reinterpret_cast<void*>(_CSTD _Stoullx(_Ac, &_Ep, _Base, &_Errno));
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else // ^^^ _WIN64 ^^^ / vvv !_WIN64 vvv
             _Val = reinterpret_cast<void*>(_CSTD _Stoulx(_Ac, &_Ep, _Base, &_Errno));
 #endif // _WIN64
             if (_Ep == _Ac || _Errno != 0) {

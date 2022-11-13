@@ -253,7 +253,7 @@ _NODISCARD constexpr void* _Voidify_iter(_Iter _It) noexcept {
 #ifdef __EDG__ // TRANSITION, DevCom-1691516
 _EXPORT_STD template <class _Ty, class... _Types,
     class = void_t<decltype(::new(_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>>
-#else // ^^^ no workaround // workaround vvv
+#else // ^^^ no workaround / workaround vvv
 _EXPORT_STD template <class _Ty, class... _Types,
     void_t<decltype(::new(_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>* = nullptr>
 #endif // TRANSITION, DevCom-1691516

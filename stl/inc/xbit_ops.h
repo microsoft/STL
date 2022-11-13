@@ -36,7 +36,7 @@ _NODISCARD inline unsigned long _Floor_of_log_2(size_t _Value) noexcept { // ret
         --_Result;
     }
 
-#else // ^^^ _M_CEE_PURE ^^^ // vvv !_M_CEE_PURE vvv
+#else // ^^^ _M_CEE_PURE ^^^ / vvv !_M_CEE_PURE vvv
 #ifdef _WIN64
     _BitScanReverse64(&_Result, _Value);
 #else // ^^^ 64-bit ^^^ / vvv 32-bit vvv

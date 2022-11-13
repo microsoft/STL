@@ -965,7 +965,7 @@ private:
 #if _ITERATOR_DEBUG_LEVEL >= 1
     constexpr _String_view_iterator(const pointer _Data, const size_t _Size, const size_t _Off) noexcept
         : _Mydata(_Data), _Mysize(_Size), _Myoff(_Off) {}
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
     constexpr explicit _String_view_iterator(const pointer _Ptr) noexcept : _Myptr(_Ptr) {}
 #endif // _ITERATOR_DEBUG_LEVEL
 
@@ -975,7 +975,7 @@ public:
         _STL_VERIFY(_Mydata, "cannot dereference value-initialized string_view iterator");
         _STL_VERIFY(_Myoff < _Mysize, "cannot dereference end string_view iterator");
         return _Mydata[_Myoff];
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         return *_Myptr;
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -985,7 +985,7 @@ public:
         _STL_VERIFY(_Mydata, "cannot dereference value-initialized string_view iterator");
         _STL_VERIFY(_Myoff < _Mysize, "cannot dereference end string_view iterator");
         return _Mydata + _Myoff;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         return _Myptr;
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -995,7 +995,7 @@ public:
         _STL_VERIFY(_Mydata, "cannot increment value-initialized string_view iterator");
         _STL_VERIFY(_Myoff < _Mysize, "cannot increment string_view iterator past end");
         ++_Myoff;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         ++_Myptr;
 #endif // _ITERATOR_DEBUG_LEVEL
         return *this;
@@ -1012,7 +1012,7 @@ public:
         _STL_VERIFY(_Mydata, "cannot decrement value-initialized string_view iterator");
         _STL_VERIFY(_Myoff != 0, "cannot decrement string_view iterator before begin");
         --_Myoff;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         --_Myptr;
 #endif // _ITERATOR_DEBUG_LEVEL
         return *this;
@@ -1038,7 +1038,7 @@ public:
         if (_Off > 0) {
             _STL_VERIFY(_Mysize - _Myoff >= static_cast<size_t>(_Off), "cannot seek string_view iterator after end");
         }
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         (void) _Off;
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
     }
@@ -1047,7 +1047,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _Verify_offset(_Off);
         _Myoff += static_cast<size_t>(_Off);
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         _Myptr += _Off;
 #endif // _ITERATOR_DEBUG_LEVEL
 
@@ -1082,7 +1082,7 @@ public:
         }
 
         _Myoff -= static_cast<size_t>(_Off);
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         _Myptr -= _Off;
 #endif // _ITERATOR_DEBUG_LEVEL
 
@@ -1100,7 +1100,7 @@ public:
         _STL_VERIFY(_Mydata == _Right._Mydata && _Mysize == _Right._Mysize,
             "cannot subtract incompatible string_view iterators");
         return static_cast<difference_type>(_Myoff - _Right._Myoff);
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         return _Myptr - _Right._Myptr;
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -1114,7 +1114,7 @@ public:
         _STL_VERIFY(_Mydata == _Right._Mydata && _Mysize == _Right._Mysize,
             "cannot compare incompatible string_view iterators for equality");
         return _Myoff == _Right._Myoff;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         return _Myptr == _Right._Myptr;
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -1125,7 +1125,7 @@ public:
         _STL_VERIFY(_Mydata == _Right._Mydata && _Mysize == _Right._Mysize,
             "cannot compare incompatible string_view iterators");
         return _Myoff <=> _Right._Myoff;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         return _Myptr <=> _Right._Myptr;
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -1139,7 +1139,7 @@ public:
         _STL_VERIFY(_Mydata == _Right._Mydata && _Mysize == _Right._Mysize,
             "cannot compare incompatible string_view iterators");
         return _Myoff < _Right._Myoff;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         return _Myptr < _Right._Myptr;
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -1170,7 +1170,7 @@ public:
     _NODISCARD constexpr pointer _Unwrapped() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         return _Mydata + _Myoff;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         return _Myptr;
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -1180,7 +1180,7 @@ public:
     constexpr void _Seek_to(pointer _It) noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _Myoff = static_cast<size_t>(_It - _Mydata);
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         _Myptr = _It;
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -1190,7 +1190,7 @@ private:
     pointer _Mydata = nullptr;
     size_t _Mysize  = 0;
     size_t _Myoff   = 0;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
     pointer _Myptr = nullptr;
 #endif // _ITERATOR_DEBUG_LEVEL
 };
@@ -1289,7 +1289,7 @@ public:
     _NODISCARD constexpr const_iterator begin() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         return const_iterator(_Mydata, _Mysize, 0);
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         return const_iterator(_Mydata);
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -1297,7 +1297,7 @@ public:
     _NODISCARD constexpr const_iterator end() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         return const_iterator(_Mydata, _Mysize, _Mysize);
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         return const_iterator(_Mydata + _Mysize);
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -1989,7 +1989,7 @@ public:
             const auto _Left = _Mycont->_Mysize - static_cast<_Size_type>(_Rawptr - _Contptr);
             _STL_VERIFY(static_cast<_Size_type>(_Off) <= _Left, "cannot seek string iterator after end");
         }
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         (void) _Off;
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
     }
@@ -2071,7 +2071,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "string iterators incompatible (e.g."
                                                            " point to different string instances)");
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         (void) _Right;
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -2371,13 +2371,13 @@ struct _String_constructor_rvalue_allocator_tag {
 #if defined(__SANITIZE_ADDRESS__)
 #define _ACTIVATE_STRING_ANNOTATION
 #define _INSERT_STRING_ANNOTATION
-#elif defined(__clang__) && defined(__has_feature) // ^^^ __SANITIZE_ADDRESS__ ^^^ // vvv __clang__ vvv
+#elif defined(__clang__) && defined(__has_feature) // ^^^ __SANITIZE_ADDRESS__ ^^^ / vvv __clang__ vvv
 #if __has_feature(address_sanitizer)
 #define _ACTIVATE_STRING_ANNOTATION
 #define _INSERT_STRING_ANNOTATION
 #pragma comment(linker, "/INFERASANLIBS")
 #endif // __has_feature(address_sanitizer)
-#elif defined(_ANNOTATE_STRING) // ^^^ __clang__ ^^^ // vvv _ANNOTATE_STRING vvv
+#elif defined(_ANNOTATE_STRING) // ^^^ __clang__ ^^^ / vvv _ANNOTATE_STRING vvv
 #define _INSERT_STRING_ANNOTATION
 #endif // _ANNOTATE_STRING
 #endif // !_M_CEE_PURE && !_DISABLE_STRING_ANNOTATION
@@ -2429,7 +2429,7 @@ template <class _String>
 _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string<_String,
     void_t<decltype(_String::allocator_type::_Minimum_allocation_alignment)>> =
     _String::allocator_type::_Minimum_allocation_alignment >= _Asan_granularity;
-#else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
+#else // ^^^ _INSERT_STRING_ANNOTATION ^^^ / vvv !_INSERT_STRING_ANNOTATION vvv
 #pragma detect_mismatch("annotate_string", "0")
 #endif // !_INSERT_STRING_ANNOTATION
 
@@ -2602,7 +2602,7 @@ private:
 #define _ASAN_STRING_MODIFY(n)    _Modify_annotation((n))
 #define _ASAN_STRING_REMOVE(_Str) (_Str)._Remove_annotation()
 #define _ASAN_STRING_CREATE(_Str) (_Str)._Create_annotation()
-#else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
+#else // ^^^ _INSERT_STRING_ANNOTATION ^^^ / vvv !_INSERT_STRING_ANNOTATION vvv
 #define _ASAN_STRING_MODIFY(n)
 #define _ASAN_STRING_REMOVE(_Str)
 #define _ASAN_STRING_CREATE(_Str)
@@ -2753,7 +2753,7 @@ private:
             } else { // _Strat == _Construct_strategy::_From_string
 #ifdef _INSERT_STRING_ANNOTATION
                 _Traits::move(_My_data._Bx._Buf, _Arg, _Count);
-#else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
+#else // ^^^ _INSERT_STRING_ANNOTATION ^^^ / vvv !_INSERT_STRING_ANNOTATION vvv
                 _Traits::move(_My_data._Bx._Buf, _Arg, _BUF_SIZE);
 #endif // !_INSERT_STRING_ANNOTATION
             }

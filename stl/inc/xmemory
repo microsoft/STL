@@ -119,7 +119,7 @@ _INLINE_VAR constexpr size_t _Non_user_size           = sizeof(void*) + _Big_all
 
 #ifdef _WIN64
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else // ^^^ _WIN64 ^^^ / vvv !_WIN64 vvv
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
 #endif // _WIN64
 
@@ -157,7 +157,7 @@ inline void _Adjust_manually_vector_aligned(void*& _Ptr, size_t& _Bytes) {
     // in range [_Min_back_shift, _Non_user_size]
 #ifdef _DEBUG
     constexpr uintptr_t _Min_back_shift = 2 * sizeof(void*);
-#else // ^^^ _DEBUG ^^^ // vvv !_DEBUG vvv
+#else // ^^^ _DEBUG ^^^ / vvv !_DEBUG vvv
     constexpr uintptr_t _Min_back_shift = sizeof(void*);
 #endif // _DEBUG
     const uintptr_t _Back_shift = reinterpret_cast<uintptr_t>(_Ptr) - _Ptr_container;

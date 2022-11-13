@@ -606,7 +606,7 @@ public:
     _NODISCARD constexpr iterator begin() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         return {_Mydata, _Mydata, _Mydata + _Mysize};
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         return {_Mydata};
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -615,7 +615,7 @@ public:
         const auto _End = _Mydata + _Mysize;
 #if _ITERATOR_DEBUG_LEVEL >= 1
         return {_End, _Mydata, _End};
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         return {_End};
 #endif // _ITERATOR_DEBUG_LEVEL
     }

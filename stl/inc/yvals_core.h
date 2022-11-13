@@ -1818,7 +1818,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
 // The first ARM or OneCore or App Windows was Windows 8
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
-#else // ^^^ default to Win8 // default to Win7 vvv
+#else // ^^^ default to Win8 / default to Win7 vvv
 // The earliest Windows supported by this implementation is Windows 7
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN7
 #endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
@@ -1838,7 +1838,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
 #define _STL_INTERNAL_STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-#else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
+#else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ / vvv !_ENABLE_STL_INTERNAL_CHECK vvv
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
 
