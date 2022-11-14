@@ -3169,6 +3169,7 @@ private:
         auto& _My_data    = _Mypair._Myval2;
         auto& _Right_data = _Right._Mypair._Myval2;
 
+#if !defined(_INSERT_STRING_ANNOTATION)
         if constexpr (_Can_memcpy_val) {
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
@@ -3183,24 +3184,12 @@ private:
                 }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-#ifdef _INSERT_STRING_ANNOTATION
-                if (!_Right_data._Large_string_engaged()) {
-                    _ASAN_STRING_REMOVE(_Right);
-                }
-#endif // _INSERT_STRING_ANNOTATION
-
                 _Memcpy_val_from(_Right);
-
-#ifdef _INSERT_STRING_ANNOTATION
-                if (!_Right_data._Large_string_engaged()) {
-                    _ASAN_STRING_CREATE(*this);
-                }
-#endif // _INSERT_STRING_ANNOTATION
-
                 _Right._Tidy_init();
                 return;
             }
         }
+#endif // !defined(_INSERT_STRING_ANNOTATION)
 
         if (_Right_data._Large_string_engaged()) { // steal buffer
             _Construct_in_place(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
@@ -3304,6 +3293,7 @@ private:
     _CONSTEXPR20 void _Copy_assign_val_from_small(const basic_string& _Right) {
         // TRANSITION, VSO-761321; inline into only caller when that's fixed
         _Tidy_deallocate();
+#if !defined(_INSERT_STRING_ANNOTATION)
         if constexpr (_Can_memcpy_val) {
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
@@ -3313,6 +3303,7 @@ private:
                 return;
             }
         }
+#endif // !defined(_INSERT_STRING_ANNOTATION)
 
         auto& _My_data    = _Mypair._Myval2;
         auto& _Right_data = _Right._Mypair._Myval2;
