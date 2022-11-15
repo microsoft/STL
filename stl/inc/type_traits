@@ -615,11 +615,22 @@ struct has_unique_object_representations : bool_constant<__has_unique_object_rep
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool has_unique_object_representations_v = __has_unique_object_representations(_Ty);
 
+#if 1 // TRANSITION, DevCom-10201896, LLVM-59002, EDG's __is_aggregate isn't suitable for LWG-3823
+template <class _Ty>
+struct _Is_aggregate_impl : bool_constant<__is_aggregate(_Ty)> {};
+
+_EXPORT_STD template <class _Ty>
+_INLINE_VAR constexpr bool is_aggregate_v = disjunction_v<is_array<_Ty>, _Is_aggregate_impl<_Ty>>;
+
+_EXPORT_STD template <class _Ty>
+struct is_aggregate : bool_constant<is_aggregate_v<_Ty>> {}; // determine whether _Ty is an aggregate
+#else // ^^^ workaround / no workaround vvv
 _EXPORT_STD template <class _Ty>
 struct is_aggregate : bool_constant<__is_aggregate(_Ty)> {}; // determine whether _Ty is an aggregate
 
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_aggregate_v = __is_aggregate(_Ty);
+#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _Ty, class... _Args>
