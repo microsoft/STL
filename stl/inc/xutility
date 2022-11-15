@@ -407,7 +407,7 @@ namespace ranges {
         // clang-format off
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty&& __t) {
-            iter_move(static_cast<_Ty&&>(__t));
+            iter_move(static_cast<_Ty&&>(__t)); // intentional ADL
         };
 
         template <class _Ty>
@@ -423,7 +423,7 @@ namespace ranges {
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 if constexpr (_Has_ADL<_Ty>) {
-                    return {_St::_Custom, noexcept(iter_move(_STD declval<_Ty>()))};
+                    return {_St::_Custom, noexcept(iter_move(_STD declval<_Ty>()))}; // intentional ADL
                 } else if constexpr (_Can_deref<_Ty>) {
                     return {_St::_Fallback, noexcept(*_STD declval<_Ty>())};
                 } else {
@@ -441,7 +441,7 @@ namespace ranges {
                 constexpr _St _Strat = _Choice<_Ty>._Strategy;
 
                 if constexpr (_Strat == _St::_Custom) {
-                    return iter_move(static_cast<_Ty&&>(_Val));
+                    return iter_move(static_cast<_Ty&&>(_Val)); // intentional ADL
                 } else if constexpr (_Strat == _St::_Fallback) {
                     using _Ref = decltype(*static_cast<_Ty&&>(_Val));
                     if constexpr (is_lvalue_reference_v<_Ref>) {
@@ -723,7 +723,7 @@ namespace ranges {
         template <class _Ty1, class _Ty2>
         concept _Has_ADL = (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>)
             && requires(_Ty1&& __t1, _Ty2&& __t2) {
-                iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2));
+                iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2)); // intentional ADL
             };
 
         template <class _Ty1, class _Ty2>
@@ -752,12 +752,13 @@ namespace ranges {
             template <class _Ty1, class _Ty2>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 if constexpr (_Has_ADL<_Ty1, _Ty2>) {
-                    return {_St::_Custom, noexcept(iter_swap(_STD declval<_Ty1>(), _STD declval<_Ty2>()))};
+                    return {_St::_Custom,
+                        noexcept(iter_swap(_STD declval<_Ty1>(), _STD declval<_Ty2>()))}; // intentional ADL
                 } else if constexpr (_Can_swap_references<_Ty1, _Ty2>) {
                     return {_St::_Swap, noexcept(_RANGES swap(*_STD declval<_Ty1>(), *_STD declval<_Ty2>()))};
                 } else if constexpr (_Symmetric_indirectly_movable_storable<_Ty1, _Ty2>) {
-                    constexpr auto _Nothrow = noexcept(
-                        *_STD declval<_Ty1>() = _Iter_exchange_move(_STD declval<_Ty2>(), _STD declval<_Ty1>()));
+                    constexpr auto _Nothrow = noexcept(*_STD declval<_Ty1>() = _Iter_swap::_Iter_exchange_move(
+                                                           _STD declval<_Ty2>(), _STD declval<_Ty1>()));
                     return {_St::_Exchange, _Nothrow};
                 } else {
                     return {_St::_None};
@@ -774,12 +775,12 @@ namespace ranges {
                 constexpr _St _Strat = _Choice<_Ty1, _Ty2>._Strategy;
 
                 if constexpr (_Strat == _St::_Custom) {
-                    (void) iter_swap(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
+                    (void) iter_swap(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2)); // intentional ADL
                 } else if constexpr (_Strat == _St::_Swap) {
                     _RANGES swap(*static_cast<_Ty1&&>(_Val1), *static_cast<_Ty2&&>(_Val2));
                 } else if constexpr (_Strat == _St::_Exchange) {
                     *static_cast<_Ty1&&>(_Val1) =
-                        _Iter_exchange_move(static_cast<_Ty2&&>(_Val2), static_cast<_Ty1&&>(_Val1));
+                        _Iter_swap::_Iter_exchange_move(static_cast<_Ty2&&>(_Val2), static_cast<_Ty1&&>(_Val1));
                 } else {
                     static_assert(_Always_false<_Ty1>, "should be unreachable");
                 }
@@ -2088,10 +2089,7 @@ namespace ranges {
     concept _Should_range_access = is_lvalue_reference_v<_Rng> || enable_borrowed_range<remove_cvref_t<_Rng>>;
 
     namespace _Begin {
-        template <class _Ty>
-        void begin(_Ty&) = delete;
-        template <class _Ty>
-        void begin(const _Ty&) = delete;
+        void begin(); // Block unqualified name lookup
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
@@ -2101,7 +2099,7 @@ namespace ranges {
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> //
                         && requires(_Ty __t) {
-                               { _Fake_copy_init(begin(__t)) } -> input_or_output_iterator;
+                               { _Fake_copy_init(begin(__t)) } -> input_or_output_iterator; // intentional ADL
                            };
 
         class _Cpo {
@@ -2120,7 +2118,7 @@ namespace ranges {
                 } else if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().begin()))};
                 } else if constexpr (_Has_ADL<_Ty>) {
-                    return {_St::_Non_member, noexcept(_Fake_copy_init(begin(_STD declval<_Ty>())))};
+                    return {_St::_Non_member, noexcept(_Fake_copy_init(begin(_STD declval<_Ty>())))}; // intentional ADL
                 } else {
                     return {_St::_None};
                 }
@@ -2140,7 +2138,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Member) {
                     return _Val.begin();
                 } else if constexpr (_Strat == _St::_Non_member) {
-                    return begin(_Val);
+                    return begin(_Val); // intentional ADL
                 } else {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
                 }
@@ -2156,10 +2154,7 @@ namespace ranges {
     using iterator_t = decltype(_RANGES begin(_STD declval<_Ty&>()));
 
     namespace _End {
-        template <class _Ty>
-        void end(_Ty&) = delete;
-        template <class _Ty>
-        void end(const _Ty&) = delete;
+        void end(); // Block unqualified name lookup
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
@@ -2169,7 +2164,7 @@ namespace ranges {
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> //
                         && requires(_Ty __t) {
-                               { _Fake_copy_init(end(__t)) } -> sentinel_for<iterator_t<_Ty>>;
+                               { _Fake_copy_init(end(__t)) } -> sentinel_for<iterator_t<_Ty>>; // intentional ADL
                            };
 
         class _Cpo {
@@ -2194,7 +2189,7 @@ namespace ranges {
                 } else if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().end()))};
                 } else if constexpr (_Has_ADL<_Ty>) {
-                    return {_St::_Non_member, noexcept(_Fake_copy_init(end(_STD declval<_Ty>())))};
+                    return {_St::_Non_member, noexcept(_Fake_copy_init(end(_STD declval<_Ty>())))}; // intentional ADL
                 } else {
                     return {_St::_None};
                 }
@@ -2215,7 +2210,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Member) {
                     return _Val.end();
                 } else if constexpr (_Strat == _St::_Non_member) {
-                    return end(_Val);
+                    return end(_Val); // intentional ADL
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
@@ -2499,10 +2494,7 @@ namespace ranges {
     }
 
     namespace _Rbegin {
-        template <class _Ty>
-        void rbegin(_Ty&) = delete;
-        template <class _Ty>
-        void rbegin(const _Ty&) = delete;
+        void rbegin(); // Block unqualified name lookup
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
@@ -2512,7 +2504,7 @@ namespace ranges {
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> //
                         && requires(_Ty __t) {
-                               { _Fake_copy_init(rbegin(__t)) } -> input_or_output_iterator;
+                               { _Fake_copy_init(rbegin(__t)) } -> input_or_output_iterator; // intentional ADL
                            };
 
         template <class _Ty>
@@ -2531,7 +2523,8 @@ namespace ranges {
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().rbegin()))};
                 } else if constexpr (_Has_ADL<_Ty>) {
-                    return {_St::_Non_member, noexcept(_Fake_copy_init(rbegin(_STD declval<_Ty>())))};
+                    return {
+                        _St::_Non_member, noexcept(_Fake_copy_init(rbegin(_STD declval<_Ty>())))}; // intentional ADL
                 } else if constexpr (_Can_make_reverse<_Ty>) {
                     return {_St::_Make_reverse, noexcept(_STD make_reverse_iterator(_RANGES end(_STD declval<_Ty>())))};
                 } else {
@@ -2551,7 +2544,7 @@ namespace ranges {
                 if constexpr (_Strat == _St::_Member) {
                     return _Val.rbegin();
                 } else if constexpr (_Strat == _St::_Non_member) {
-                    return rbegin(_Val);
+                    return rbegin(_Val); // intentional ADL
                 } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES end(_Val));
                 } else {
@@ -2566,10 +2559,7 @@ namespace ranges {
     }
 
     namespace _Rend {
-        template <class _Ty>
-        void rend(_Ty&) = delete;
-        template <class _Ty>
-        void rend(const _Ty&) = delete;
+        void rend(); // Block unqualified name lookup
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
@@ -2579,6 +2569,7 @@ namespace ranges {
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> //
                         && requires(_Ty __t) {
+                               // intentional ADL
                                { _Fake_copy_init(rend(__t)) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
                            };
 
@@ -2598,7 +2589,7 @@ namespace ranges {
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().rend()))};
                 } else if constexpr (_Has_ADL<_Ty>) {
-                    return {_St::_Non_member, noexcept(_Fake_copy_init(rend(_STD declval<_Ty>())))};
+                    return {_St::_Non_member, noexcept(_Fake_copy_init(rend(_STD declval<_Ty>())))}; // intentional ADL
                 } else if constexpr (_Can_make_reverse<_Ty>) {
                     return {
                         _St::_Make_reverse, noexcept(_STD make_reverse_iterator(_RANGES begin(_STD declval<_Ty>())))};
@@ -2619,7 +2610,7 @@ namespace ranges {
                 if constexpr (_Strat == _St::_Member) {
                     return _Val.rend();
                 } else if constexpr (_Strat == _St::_Non_member) {
-                    return rend(_Val);
+                    return rend(_Val); // intentional ADL
                 } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES begin(_Val));
                 } else {
@@ -2687,10 +2678,7 @@ namespace ranges {
     inline constexpr bool disable_sized_range = false;
 
     namespace _Size {
-        template <class _Ty>
-        void size(_Ty&) = delete;
-        template <class _Ty>
-        void size(const _Ty&) = delete;
+        void size(); // Block unqualified name lookup
 
         template <class _Ty, class _UnCV>
         concept _Has_member = (!disable_sized_range<_UnCV>) //
@@ -2701,7 +2689,7 @@ namespace ranges {
         template <class _Ty, class _UnCV>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && (!disable_sized_range<_UnCV>) //
                         && requires(_Ty __t) {
-                               { _Fake_copy_init(size(__t)) } -> _Integer_like;
+                               { _Fake_copy_init(size(__t)) } -> _Integer_like; // intentional ADL
                            };
 
         template <class _Ty>
@@ -2728,7 +2716,7 @@ namespace ranges {
                 } else if constexpr (_Has_member<_Ty, _UnCV>) {
                     return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().size()))};
                 } else if constexpr (_Has_ADL<_Ty, _UnCV>) {
-                    return {_St::_Non_member, noexcept(_Fake_copy_init(size(_STD declval<_Ty>())))};
+                    return {_St::_Non_member, noexcept(_Fake_copy_init(size(_STD declval<_Ty>())))}; // intentional ADL
                 } else if constexpr (_Can_difference<_Ty>) {
                     return {_St::_Subtract,
                         noexcept(_RANGES end(_STD declval<_Ty>()) - _RANGES begin(_STD declval<_Ty>()))};
@@ -2752,7 +2740,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Member) {
                     return _Val.size();
                 } else if constexpr (_Strat == _St::_Non_member) {
-                    return size(_Val);
+                    return size(_Val); // intentional ADL
                 } else if constexpr (_Strat == _St::_Subtract) {
                     const auto _Delta = _RANGES end(_Val) - _RANGES begin(_Val);
                     return static_cast<_Make_unsigned_like_t<remove_cv_t<decltype(_Delta)>>>(_Delta);

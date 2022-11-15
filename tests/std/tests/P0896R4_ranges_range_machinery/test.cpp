@@ -34,7 +34,7 @@ STATIC_ASSERT(std::same_as<std::make_unsigned_t<std::ptrdiff_t>, std::size_t>);
 
 // GH-2358: <filesystem>: path's comparison operators are IF-NDR
 static_assert(ranges::range<std::filesystem::path>);
-static_assert(ranges::range<const std::filesystem::path>);
+static_assert(ranges::range<std::filesystem::path const>);
 
 template <class T>
 concept Decayed = std::same_as<std::decay_t<T>, T>;
@@ -1088,7 +1088,7 @@ STATIC_ASSERT(test_cdata<std::span<int> const&, int*>());
 #endif // C++20
 
 using valarray_int_iterator       = decltype(std::begin(std::declval<std::valarray<int>&>()));
-using const_valarray_int_iterator = decltype(std::begin(std::declval<const std::valarray<int>&>()));
+using const_valarray_int_iterator = decltype(std::begin(std::declval<std::valarray<int> const&>()));
 STATIC_ASSERT(test_begin<std::valarray<int>>());
 STATIC_ASSERT(test_end<std::valarray<int>>());
 STATIC_ASSERT(test_cbegin<std::valarray<int>>());
@@ -1631,7 +1631,7 @@ struct badsized_range : Base { // size() launches the missiles.
         static_assert(always_false<Base>);
     }
 
-    [[noreturn]] friend int size(const badsized_range&) {
+    [[noreturn]] friend int size(badsized_range const&) {
         static_assert(always_false<Base>);
     }
 };
@@ -1670,9 +1670,9 @@ STATIC_ASSERT(!std::is_base_of_v<std::ranges::view_base, ranges::view_interface<
 // Verify that enable_view<T&> or enable_view<T&&> is never true
 STATIC_ASSERT(ranges::enable_view<strange_view4>);
 STATIC_ASSERT(!ranges::enable_view<strange_view4&>);
-STATIC_ASSERT(!ranges::enable_view<const strange_view4&>);
+STATIC_ASSERT(!ranges::enable_view<strange_view4 const&>);
 STATIC_ASSERT(!ranges::enable_view<strange_view4&&>);
-STATIC_ASSERT(!ranges::enable_view<const strange_view4&&>);
+STATIC_ASSERT(!ranges::enable_view<strange_view4 const&&>);
 
 // Verify that the derived-from-view_interface mechanism can handle uses of incomplete types whenever possible
 struct incomplet;
@@ -1852,7 +1852,7 @@ constexpr bool complicated_algorithm_test() {
 
 // Regression test for DevCom-739010 (aka VSO-985597)
 // https://developercommunity.visualstudio.com/content/problem/739010/meow.html
-// which allows overload resolution to prefer a hidden friend `const T&` overload of `begin`
+// which allows overload resolution to prefer a hidden friend `T const&` overload of `begin`
 // for an rvalue `T` over the deleted `begin(T&&)` instantiated from the poison pill.
 template <class T>
 struct bad_string_view {
@@ -1886,62 +1886,64 @@ STATIC_ASSERT(ranges::viewable_range<std::span<int>>);
 STATIC_ASSERT(ranges::viewable_range<std::span<int> const>);
 
 namespace poison_pill_test {
+    static int some_int = 42;
+
     template <class T>
-    auto begin(T&) {
-        STATIC_ASSERT(always_false<T>);
+    int* begin(T&) {
+        return &some_int;
     }
     template <class T>
-    auto begin(const T&) {
-        STATIC_ASSERT(always_false<T>);
+    int const* begin(T const&) {
+        return &some_int;
     }
     template <class T>
-    auto end(T&) {
-        STATIC_ASSERT(always_false<T>);
+    int* end(T&) {
+        return &some_int + 1;
     }
     template <class T>
-    auto end(const T&) {
-        STATIC_ASSERT(always_false<T>);
+    int const* end(T const&) {
+        return &some_int + 1;
     }
     template <class T>
     auto rbegin(T&) {
-        STATIC_ASSERT(always_false<T>);
+        return std::reverse_iterator<int*>{&some_int + 1};
     }
     template <class T>
-    auto rbegin(const T&) {
-        STATIC_ASSERT(always_false<T>);
+    auto rbegin(T const&) {
+        return std::reverse_iterator<int*>{&some_int + 1};
     }
     template <class T>
     auto rend(T&) {
-        STATIC_ASSERT(always_false<T>);
+        return std::reverse_iterator<int*>{&some_int};
     }
     template <class T>
-    auto rend(const T&) {
-        STATIC_ASSERT(always_false<T>);
+    auto rend(T const&) {
+        return std::reverse_iterator<int*>{&some_int};
     }
     template <class T>
     auto size(T&) {
-        STATIC_ASSERT(always_false<T>);
+        return std::size_t{1};
     }
     template <class T>
-    auto size(const T&) {
-        STATIC_ASSERT(always_false<T>);
+    auto size(T const&) {
+        return std::size_t{1};
     }
 
     struct some_type {};
 
-    // The above underconstrained templates should be blocked by the poison pills for the ranges CPOs tested below;
-    // that is not the case in N4849, which P2091 will fix.
+    // The above underconstrained templates were blocked by the poison pills for the ranges CPOs
+    // until P2602R2 removed them.
 
-    STATIC_ASSERT(!CanBegin<some_type&>);
-    STATIC_ASSERT(!CanBegin<some_type const&>);
-    STATIC_ASSERT(!CanEnd<some_type&>);
-    STATIC_ASSERT(!CanEnd<some_type const&>);
-    STATIC_ASSERT(!CanRBegin<some_type&>);
-    STATIC_ASSERT(!CanRBegin<some_type const&>);
-    STATIC_ASSERT(!CanREnd<some_type&>);
-    STATIC_ASSERT(!CanREnd<some_type const&>);
-    STATIC_ASSERT(!CanSize<some_type&>);
-    STATIC_ASSERT(!CanSize<some_type const&>);
+    STATIC_ASSERT(CanBegin<some_type&>);
+    STATIC_ASSERT(CanBegin<some_type const&>);
+    STATIC_ASSERT(CanEnd<some_type&>);
+    STATIC_ASSERT(CanEnd<some_type const&>);
+    STATIC_ASSERT(CanRBegin<some_type&>);
+    STATIC_ASSERT(CanRBegin<some_type const&>);
+    STATIC_ASSERT(CanREnd<some_type&>);
+    STATIC_ASSERT(CanREnd<some_type const&>);
+    STATIC_ASSERT(CanSize<some_type&>);
+    STATIC_ASSERT(CanSize<some_type const&>);
 } // namespace poison_pill_test
 
 namespace unwrapped_begin_end {
@@ -2013,13 +2015,13 @@ namespace closure {
         constexpr arg(arg&) {
             static_assert(Allowed == GLValueKind::lvalue);
         }
-        constexpr arg(const arg&) {
+        constexpr arg(arg const&) {
             static_assert(Allowed == GLValueKind::const_lvalue);
         }
         constexpr arg(arg&&) {
             static_assert(Allowed == GLValueKind::xvalue);
         }
-        constexpr arg(const arg&&) {
+        constexpr arg(arg const&&) {
             static_assert(Allowed == GLValueKind::const_xvalue);
         }
 
