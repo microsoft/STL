@@ -3328,7 +3328,9 @@ namespace ranges {
             static constexpr bool _Deref_is_glvalue = is_reference_v<_InnerRng<_Const>>;
 
             /* [[no_unique_address]] */ _OuterIter _Outer{};
-            /* [[no_unique_address]] */ _Defaultabox<_InnerIter> _Inner{}; // per LWG-3569
+            /* [[no_unique_address]] */ _Defaultabox<_InnerIter> _Inner{}; // Non-standard extension: when _Inner_iter
+                                                                           // is default-constructible, we don't wrap in
+                                                                           // an optional-like.
             _Parent_t* _Parent{};
 
             constexpr auto&& _Update_inner() {
@@ -3383,7 +3385,7 @@ namespace ranges {
             using difference_type = common_type_t<range_difference_t<_Base>, range_difference_t<_InnerRng<_Const>>>;
 
             // clang-format off
-            _Iterator() requires default_initializable<_OuterIter> = default; // per LWG-3569
+            _Iterator() requires default_initializable<_OuterIter> = default;
             // clang-format on
 
             constexpr _Iterator(_Parent_t& _Parent_, _OuterIter _Outer_)
