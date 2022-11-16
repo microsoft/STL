@@ -2335,8 +2335,9 @@ public:
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
+        // This constructor previously initialized _Ptr. Don't rely on the new behavior without
+        // renaming `_String_val` (and fixing the visualizer).
         _CONSTEXPR20 _Bxty() noexcept : _Buf() {} // user-provided, for fancy pointers
-
         _CONSTEXPR20 ~_Bxty() noexcept {} // user-provided, for fancy pointers
 
         value_type _Buf[_BUF_SIZE];
@@ -2723,11 +2724,11 @@ public:
 
 private:
     enum class _Construct_strategy : uint8_t { _From_char, _From_ptr, _From_string };
+
     template <_Construct_strategy _Strat, class _Char_or_ptr>
     _CONSTEXPR20 void _Construct(const _Char_or_ptr _Arg, _CRT_GUARDOVERFLOW const size_type _Count) {
         auto& _My_data = _Mypair._Myval2;
         _STL_INTERNAL_CHECK(!_My_data._Large_string_engaged());
-        _STL_INTERNAL_CHECK(_STD count(_My_data._Bx._Buf, _My_data._Bx._Buf + _BUF_SIZE, _Elem()) == _BUF_SIZE);
 
         if constexpr (_Strat == _Construct_strategy::_From_char) {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Char_or_ptr, _Elem>);
@@ -2748,11 +2749,13 @@ private:
             _My_data._Myres  = _BUF_SIZE - 1;
             if constexpr (_Strat == _Construct_strategy::_From_char) {
                 _Traits::assign(_My_data._Bx._Buf, _Count, _Arg);
+                _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
             } else if constexpr (_Strat == _Construct_strategy::_From_ptr) {
                 _Traits::move(_My_data._Bx._Buf, _Arg, _Count);
+                _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
             } else { // _Strat == _Construct_strategy::_From_string
 #ifdef _INSERT_STRING_ANNOTATION
-                _Traits::move(_My_data._Bx._Buf, _Arg, _Count);
+                _Traits::move(_My_data._Bx._Buf, _Arg, _Count + 1);
 #else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
                 _Traits::move(_My_data._Bx._Buf, _Arg, _BUF_SIZE);
 #endif // !_INSERT_STRING_ANNOTATION
