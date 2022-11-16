@@ -339,7 +339,8 @@ _NODISCARD string to_string(const basic_stacktrace<_Alloc>& _St) {
     return _Result;
 }
 
-_EXPORT_STD ostream& operator<<(ostream& _Os, const stacktrace_entry& _Fx) {
+_EXPORT_STD template <int = 0>
+ostream& operator<<(ostream& _Os, const stacktrace_entry& _Fx) {
     return _Os << _STD to_string(_Fx);
 }
 
