@@ -253,6 +253,7 @@ void test_codecvt_encoding(const codecvt<wchar_t, char, mbstate_t>& f) {
 }
 
 int main() {
+#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
     try {
         locale loc("en-US.UTF-8");
         test_fstream(loc);
@@ -262,4 +263,5 @@ int main() {
         puts(ex.what());
         assert(false);
     }
+#endif // _MSVC_INTERNAL_TESTING
 }
