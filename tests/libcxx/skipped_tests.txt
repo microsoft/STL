@@ -1596,6 +1596,7 @@ thread\thread.condition\thread.condition.condvarany\wait_terminates.sh.cpp
 utilities\format\format.arguments\format.arg.store\make_format_args.sh.cpp
 
 # REQUIRES: locale.en_US.UTF-8
+# (The Windows version on Contest VMs doesn't always understand ".UTF-8".)
 input.output\iostream.format\ext.manip\get_time.pass.cpp
 input.output\iostream.format\ext.manip\put_time.pass.cpp
 localization\locale.categories\category.collate\locale.collate.byname\compare.pass.cpp
