@@ -360,7 +360,11 @@ using _Synth_three_way_result = decltype(_Synth_three_way{}(_STD declval<_Ty1&>(
 // Note: The following CPOs are passing arguments as lvalues; see GH-1374.
 
 namespace _Strong_order {
-    void strong_order(); // Block unqualified name lookup; see GH-1374.
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+    void strong_order() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+    void strong_order();
+#endif // ^^^ workaround ^^^
 
     template <class _Ty1, class _Ty2>
     concept _Has_ADL = requires(_Ty1& _Left, _Ty2& _Right) {
@@ -452,7 +456,11 @@ inline namespace _Cpos {
 }
 
 namespace _Weak_order {
-    void weak_order(); // Block unqualified name lookup; see GH-1374.
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+    void weak_order() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+    void weak_order();
+#endif // ^^^ workaround ^^^
 
     template <class _Ty1, class _Ty2>
     concept _Has_ADL = requires(_Ty1& _Left, _Ty2& _Right) {
@@ -464,7 +472,11 @@ namespace _Weak_order {
         requires(_Ty1& _Left, _Ty2& _Right) { static_cast<weak_ordering>(compare_three_way{}(_Left, _Right)); };
 
     // Throughput optimization: attempting to use _STD strong_order will always select ADL strong_order here.
-    void strong_order(); // Block unqualified name lookup; see GH-1374.
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+    void strong_order() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+    void strong_order();
+#endif // ^^^ workaround ^^^
 
     class _Cpo {
     private:
@@ -483,6 +495,7 @@ namespace _Weak_order {
                 return {_St::_Three, noexcept(static_cast<weak_ordering>(
                                          compare_three_way{}(_STD declval<_Ty1&>(), _STD declval<_Ty2&>())))};
             } else if constexpr (_Strong_order::_Has_ADL<_Ty1, _Ty2>) {
+                // throughput optimization (see above):
                 return {_St::_Strong, noexcept(static_cast<weak_ordering>(static_cast<strong_ordering>(strong_order(
                                           _STD declval<_Ty1&>(), _STD declval<_Ty2&>()))))}; // intentional ADL
             } else {
@@ -554,6 +567,7 @@ namespace _Weak_order {
             } else if constexpr (_Strat == _St::_Three) {
                 return static_cast<weak_ordering>(compare_three_way{}(_Left, _Right));
             } else if constexpr (_Strat == _St::_Strong) {
+                // throughput optimization (see above):
                 return static_cast<weak_ordering>(
                     static_cast<strong_ordering>(strong_order(_Left, _Right))); // intentional ADL
             } else {
@@ -568,7 +582,11 @@ inline namespace _Cpos {
 }
 
 namespace _Partial_order {
-    void partial_order(); // Block unqualified name lookup; see GH-1374.
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+    void partial_order() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+    void partial_order();
+#endif // ^^^ workaround ^^^
 
     template <class _Ty1, class _Ty2>
     concept _Has_ADL = requires(_Ty1& _Left, _Ty2& _Right) {
@@ -581,8 +599,13 @@ namespace _Partial_order {
 
     // Throughput optimization: attempting to use _STD weak_order
     // will attempt to select ADL weak_order, followed by ADL strong_order, here.
-    void weak_order(); // Block unqualified name lookup; see GH-1374.
-    void strong_order(); // Block unqualified name lookup; see GH-1374.
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+    void weak_order()   = delete; // Block unqualified name lookup
+    void strong_order() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+    void weak_order();
+    void strong_order();
+#endif // ^^^ workaround ^^^
 
     class _Cpo {
     private:
@@ -599,9 +622,11 @@ namespace _Partial_order {
                 return {_St::_Three, noexcept(static_cast<partial_ordering>(
                                          compare_three_way{}(_STD declval<_Ty1&>(), _STD declval<_Ty2&>())))};
             } else if constexpr (_Weak_order::_Has_ADL<_Ty1, _Ty2>) {
+                // throughput optimization (see above):
                 return {_St::_Weak, noexcept(static_cast<partial_ordering>(static_cast<weak_ordering>(
                                         weak_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()))))}; // intentional ADL
             } else if constexpr (_Strong_order::_Has_ADL<_Ty1, _Ty2>) {
+                // throughput optimization (see above):
                 return {_St::_Strong, noexcept(static_cast<partial_ordering>(static_cast<strong_ordering>(strong_order(
                                           _STD declval<_Ty1&>(), _STD declval<_Ty2&>()))))}; // intentional ADL
             } else {
@@ -623,9 +648,11 @@ namespace _Partial_order {
             } else if constexpr (_Strat == _St::_Three) {
                 return static_cast<partial_ordering>(compare_three_way{}(_Left, _Right));
             } else if constexpr (_Strat == _St::_Weak) {
+                // throughput optimization (see above):
                 return static_cast<partial_ordering>(
                     static_cast<weak_ordering>(weak_order(_Left, _Right))); // intentional ADL
             } else if constexpr (_Strat == _St::_Strong) {
+                // throughput optimization (see above):
                 return static_cast<partial_ordering>(
                     static_cast<strong_ordering>(strong_order(_Left, _Right))); // intentional ADL
             } else {

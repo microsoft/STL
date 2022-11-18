@@ -1886,48 +1886,26 @@ STATIC_ASSERT(ranges::viewable_range<std::span<int>>);
 STATIC_ASSERT(ranges::viewable_range<std::span<int> const>);
 
 namespace poison_pill_test {
-    static int some_int = 42;
-
     template <class T>
-    int* begin(T&) {
-        return &some_int;
-    }
+    int* begin(T&);
     template <class T>
-    int const* begin(T const&) {
-        return &some_int;
-    }
+    int const* begin(T const&);
     template <class T>
-    int* end(T&) {
-        return &some_int + 1;
-    }
+    int* end(T&);
     template <class T>
-    int const* end(T const&) {
-        return &some_int + 1;
-    }
+    int const* end(T const&);
     template <class T>
-    auto rbegin(T&) {
-        return std::reverse_iterator<int*>{&some_int + 1};
-    }
+    std::reverse_iterator<int*> rbegin(T&);
     template <class T>
-    auto rbegin(T const&) {
-        return std::reverse_iterator<int*>{&some_int + 1};
-    }
+    std::reverse_iterator<int const*> rbegin(T const&);
     template <class T>
-    auto rend(T&) {
-        return std::reverse_iterator<int*>{&some_int};
-    }
+    std::reverse_iterator<int*> rend(T&);
     template <class T>
-    auto rend(T const&) {
-        return std::reverse_iterator<int*>{&some_int};
-    }
+    std::reverse_iterator<int const*> rend(T const&);
     template <class T>
-    auto size(T&) {
-        return std::size_t{1};
-    }
+    std::size_t size(T&);
     template <class T>
-    auto size(T const&) {
-        return std::size_t{1};
-    }
+    std::size_t size(T const&);
 
     struct some_type {};
 
