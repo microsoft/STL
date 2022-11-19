@@ -5120,7 +5120,13 @@ namespace ranges {
 
         class _As_const_fn : public _Pipe::_Base<_As_const_fn> {
         private:
-            enum class _St { _None, _All, _Span, _Ref, _As_const };
+            enum class _St { _None, _All, _Reconstruct_span, _Reconstruct_ref, _Ref, _As_const };
+
+            template <class>
+            static constexpr bool _Can_reconstruct_ref_view_v = false;
+
+            template <class _Ty>
+            static constexpr bool _Can_reconstruct_ref_view_v<ref_view<_Ty>> = constant_range<const _Ty>;
 
             template <class _Rng>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
@@ -5129,10 +5135,11 @@ namespace ranges {
                 if constexpr (constant_range<views::all_t<_Rng>>) {
                     return {_St::_All, noexcept(views::all(_STD declval<_Rng>()))};
                 } else if constexpr (_Is_span_v<_Ty>) {
-                    using _Element_type = typename _Ty::element_type;
-                    return {_St::_Span, noexcept(span<const _Element_type, _Ty::extent>{_STD declval<_Rng>()})};
+                    return {_St::_Reconstruct_span, true};
+                } else if constexpr (_Can_reconstruct_ref_view_v<_Ty>) {
+                    return {_St::_Reconstruct_ref, noexcept(ref_view{_STD as_const(_STD declval<_Rng>().base())})};
                 } else if constexpr (is_lvalue_reference_v<_Rng> && constant_range<const _Ty> && !view<_Ty>) {
-                    return {_St::_Ref, noexcept(ref_view{static_cast<const _Ty&>(_STD declval<_Rng>())})};
+                    return {_St::_Ref, noexcept(ref_view{_STD as_const(_STD declval<_Rng>())})};
                 } else if constexpr (_Can_as_const<_Rng>) {
                     return {_St::_As_const, noexcept(as_const_view{_STD declval<_Rng>()})};
                 } else {
@@ -5152,11 +5159,12 @@ namespace ranges {
 
                 if constexpr (_Strat == _St::_All) {
                     return views::all(_STD forward<_Rng>(_Range));
-                } else if constexpr (_Strat == _St::_Span) {
-                    using _Element_type = typename _Ty::element_type;
-                    return span<const _Element_type, _Ty::extent>{_STD forward<_Rng>(_Range)};
+                } else if constexpr (_Strat == _St::_Reconstruct_span) {
+                    return span<const typename _Ty::element_type, _Ty::extent>{_STD forward<_Rng>(_Range)};
+                } else if constexpr (_Strat == _St::_Reconstruct_ref) {
+                    return ref_view{_STD as_const(_STD forward<_Rng>(_Range).base())};
                 } else if constexpr (_Strat == _St::_Ref) {
-                    return ref_view{static_cast<const _Ty&>(_STD forward<_Rng>(_Range))};
+                    return ref_view{_STD as_const(_STD forward<_Rng>(_Range))};
                 } else if constexpr (_Strat == _St::_As_const) {
                     return as_const_view{_STD forward<_Rng>(_Range)};
                 } else {
