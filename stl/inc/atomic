@@ -2626,46 +2626,44 @@ _Ty atomic_fetch_xor_explicit(
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty>
-void atomic_wait(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept
-/* strengthened */ {
+void atomic_wait(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept {
     _Mem->wait(_Expected);
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_wait(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept
-/* strengthened */ {
+void atomic_wait(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept {
     _Mem->wait(_Expected);
 }
 
 _EXPORT_STD template <class _Ty>
 void atomic_wait_explicit(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected,
-    const memory_order _Order) noexcept /* strengthened */ {
+    const memory_order _Order) noexcept {
     _Mem->wait(_Expected, _Order);
 }
 
 _EXPORT_STD template <class _Ty>
 void atomic_wait_explicit(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected,
-    const memory_order _Order) noexcept /* strengthened */ {
+    const memory_order _Order) noexcept {
     _Mem->wait(_Expected, _Order);
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_notify_one(volatile atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
+void atomic_notify_one(volatile atomic<_Ty>* const _Mem) noexcept {
     _Mem->notify_one();
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_notify_one(atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
+void atomic_notify_one(atomic<_Ty>* const _Mem) noexcept {
     _Mem->notify_one();
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_notify_all(volatile atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
+void atomic_notify_all(volatile atomic<_Ty>* const _Mem) noexcept {
     _Mem->notify_all();
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_notify_all(atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
+void atomic_notify_all(atomic<_Ty>* const _Mem) noexcept {
     _Mem->notify_all();
 }
 #endif // _HAS_CXX20

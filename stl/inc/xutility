@@ -3319,10 +3319,10 @@ namespace ranges {
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
         _NODISCARD constexpr auto cbegin()
-            requires input_range<_Dx> // Per LWG-3766
+            requires input_range<_Dx>
 #else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr auto cbegin()
-            requires input_range<_Derived> // Per LWG-3766
+            requires input_range<_Derived>
 #endif // TRANSITION, LLVM-44833
         {
             return _RANGES cbegin(_Cast());
@@ -3331,10 +3331,10 @@ namespace ranges {
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
         _NODISCARD constexpr auto cbegin() const
-            requires input_range<const _Dx> // Per LWG-3766
+            requires input_range<const _Dx>
 #else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr auto cbegin() const
-            requires input_range<const _Derived> // Per LWG-3766
+            requires input_range<const _Derived>
 #endif // TRANSITION, LLVM-44833
         {
             return _RANGES cbegin(_Cast());
@@ -3343,10 +3343,10 @@ namespace ranges {
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
         _NODISCARD constexpr auto cend()
-            requires input_range<_Dx> // Per LWG-3766
+            requires input_range<_Dx>
 #else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr auto cend()
-            requires input_range<_Derived> // Per LWG-3766
+            requires input_range<_Derived>
 #endif // TRANSITION, LLVM-44833
         {
             return _RANGES cend(_Cast());
@@ -3355,10 +3355,10 @@ namespace ranges {
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
         _NODISCARD constexpr auto cend() const
-            requires input_range<const _Dx> // Per LWG-3766
+            requires input_range<const _Dx>
 #else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr auto cend() const
-            requires input_range<const _Derived> // Per LWG-3766
+            requires input_range<const _Derived>
 #endif // TRANSITION, LLVM-44833
         {
             return _RANGES cend(_Cast());

@@ -92,7 +92,7 @@ int main() {
         assert(!worker_b.joinable());
     }
 
-    { // self move assign, as of LWG-3788 defined to not do anything
+    { // self move assign, defined to have no effects
         jthread worker{[] {}};
         auto old_id = worker.get_id();
         assert(old_id != jthread::id{});
