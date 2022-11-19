@@ -335,8 +335,10 @@ function load_charts() {
             type: 'time' as const,
             min: timeframe.min,
             max: daily_table[daily_table.length - 1].date,
+            border: {
+                color: get_css_property('--color-border-default'),
+            },
             grid: {
-                borderColor: get_css_property('--color-border-default'),
                 color: get_css_property('--color-border-default'),
                 offset: false,
             },
@@ -370,8 +372,10 @@ function load_charts() {
             },
             min: min,
             max: max,
+            border: {
+                color: get_css_property('--color-border-default'),
+            },
             grid: {
-                borderColor: get_css_property('--color-border-default'),
                 color: get_css_property('--color-border-default'),
             },
             ticks: {
@@ -451,14 +455,18 @@ function load_charts() {
             chart.options.plugins.legend.labels.color = color_fg_default;
 
             for (const [scaleId, scale] of Object.entries(chart.options.scales)) {
-                if (scale?.title === undefined || scale?.ticks === undefined || scale?.grid === undefined) {
+                if (scale === undefined || scale.title === undefined || scale.ticks === undefined) {
                     throw new Error(`update_dark_mode() was surprised by chart.options.scales[${scaleId}].`);
                 }
 
                 scale.title.color = color_fg_default;
                 scale.ticks.color = color_fg_default;
 
-                scale.grid.borderColor = color_border_default;
+                if (scale.border === undefined || scale.grid === undefined) {
+                    throw new Error(`update_dark_mode() was surprised by chart.options.scales[${scaleId}].`);
+                }
+
+                scale.border.color = color_border_default;
                 scale.grid.color = color_border_default;
             }
 
