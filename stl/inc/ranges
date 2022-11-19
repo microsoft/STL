@@ -5126,7 +5126,8 @@ namespace ranges {
             static constexpr bool _Can_reconstruct_ref_view_v = false;
 
             template <class _Ty>
-            static constexpr bool _Can_reconstruct_ref_view_v<ref_view<_Ty>> = constant_range<const _Ty>;
+                requires constant_range<const _Ty>
+            static constexpr bool _Can_reconstruct_ref_view_v<ref_view<_Ty>> = true;
 
             template <class _Rng>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
