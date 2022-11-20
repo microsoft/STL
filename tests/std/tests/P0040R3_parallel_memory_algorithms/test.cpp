@@ -151,7 +151,7 @@ struct test_case_uninitialized_copy_n_parallel {
         const auto end_it   = begin_it + testSize;
 
         iota(begin_it, end_it, 42);
-        
+
         const auto begin_it2 = buffer2.get();
         const auto end_it2   = begin_it2 + testSize;
 
