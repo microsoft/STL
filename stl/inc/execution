@@ -5056,10 +5056,21 @@ void destroy(_ExPo&& _Exec, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Las
     }
 }
 
+_EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+void destroy(_ExPo&& _Exec, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept /* terminates */ {
+    // destroy all elements in [_First, _Last)
+    _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_NoThrowFwdIt);
+    using _Ty = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
+    _STD _Adl_verify_range(_First, _Last);
+    if constexpr (!is_trivially_destructible_v<_Ty>) {
+        _STD for_each(_STD forward<_ExPo>(_Exec), _First, _Last, [](_Ty& _Obj) { _STD _Destroy_in_place(_Obj); });
+    }
+}
+
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, const _Diff _Count_raw) noexcept /* terminates */ {
     // destroy all elements in [_First, _First + _Count)
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_NoThrowFwdIt);
     using _Ty                      = _Iter_value_t<_NoThrowFwdIt>;
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
@@ -5070,7 +5081,8 @@ _NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, const _Diff _Count_
         _STD advance(_First, _Count);
         return _First;
     } else {
-        return _STD for_each_n(_STD forward<_ExPo>(_Exec), _First, _Count, [](_Ty& _Obj) { _Destroy_in_place(_Obj); });
+        return _STD for_each_n(
+            _STD forward<_ExPo>(_Exec), _First, _Count, [](_Ty& _Obj) { _STD _Destroy_in_place(_Obj); });
     }
 }
 
@@ -5078,11 +5090,12 @@ _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_pol
 void uninitialized_default_construct(_ExPo&& _Exec, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept
 /* terminates */ {
     // default-initialize all elements in [_First, _Last)
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_NoThrowFwdIt);
     using _Ty = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
-    _Adl_verify_range(_First, _Last);
+    _STD _Adl_verify_range(_First, _Last);
     if constexpr (!is_trivially_default_constructible_v<_Ty>) {
-        _STD for_each(_STD forward<_ExPo>(_Exec), _First, _Last, [](_Ty& _Obj) { _Default_construct_in_place(_Obj); });
+        _STD for_each(
+            _STD forward<_ExPo>(_Exec), _First, _Last, [](_Ty& _Obj) { _STD _Default_construct_in_place(_Obj); });
     }
 }
 
@@ -5090,7 +5103,7 @@ _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_
 _NoThrowFwdIt uninitialized_default_construct_n(_ExPo&& _Exec, _NoThrowFwdIt _First, const _Diff _Count_raw) noexcept
 /* terminates */ {
     // default-initialize all elements in [_First, _First + _Count_raw)
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_NoThrowFwdIt);
     using _Ty                      = _Iter_value_t<_NoThrowFwdIt>;
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
@@ -5102,43 +5115,32 @@ _NoThrowFwdIt uninitialized_default_construct_n(_ExPo&& _Exec, _NoThrowFwdIt _Fi
         return _First;
     } else {
         return _STD for_each_n(
-            _STD forward<_ExPo>(_Exec), _First, _Count, [](_Ty& _Obj) { _Default_construct_in_place(_Obj); });
-    }
-}
-
-template <class _UnwrappedNoThrowFwdIt>
-void _Uninitialized_value_construct_ivdep(_UnwrappedNoThrowFwdIt _UFirst, const _UnwrappedNoThrowFwdIt _ULast) {
-    // value-initialize all elements in [_First, _Last) assuming independent loop bodies
-    if constexpr (_Use_memset_value_construct_v<_UnwrappedNoThrowFwdIt>) {
-        _Zero_range(_UFirst, _ULast);
-    } else {
-#pragma loop(ivdep)
-        for (; _UFirst != _ULast; ++_UFirst) {
-            _Construct_in_place(*_UFirst);
-        }
+            _STD forward<_ExPo>(_Exec), _First, _Count, [](_Ty& _Obj) { _STD _Default_construct_in_place(_Obj); });
     }
 }
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept /* terminates */ {
     // value-initialize all elements in [_First, _Last)
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_NoThrowFwdIt);
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_NoThrowFwdIt);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
 
     using _UnwrappedNoThrowFwdIt = _Unwrapped_t<const _NoThrowFwdIt&>;
-    auto _Ctor_fn                = [](decltype(*_UFirst) _Obj) { _Construct_in_place(_Obj); };
-    if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+    if constexpr (_Use_memset_value_construct_v<_UnwrappedNoThrowFwdIt>) {
+        _STD _Zero_range(_UFirst, _ULast);
+    } else if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
+        const size_t _Hw_threads = _CSTD __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines...
             auto _Count = _STD distance(_UFirst, _ULast);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
+                auto _Ctor_fn = [](decltype(*_UFirst) _Obj) { _STD _Construct_in_place(_Obj); };
                 _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), decltype(_Ctor_fn)> _Operation{
                     _Hw_threads, _Count, _Ctor_fn};
                 _Operation._Basis._Populate(_Operation._Team, _UFirst);
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return;
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
@@ -5146,74 +5148,70 @@ void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt 
             }
         }
 
-        _Uninitialized_value_construct_ivdep(_UFirst, _ULast);
-    } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
-        _Uninitialized_value_construct_ivdep(_UFirst, _ULast);
-    } else {
-        if constexpr (_Use_memset_value_construct_v<_UnwrappedNoThrowFwdIt>) {
-            _Zero_range(_UFirst, _ULast);
-        } else {
-            for (; _First != _Last; ++_First) {
-                _Construct_in_place(*_UFirst);
-            }
-        }
-    }
-}
-
-template <class _UnwrappedNoThrowFwdIt, class _Diff>
-_UnwrappedNoThrowFwdIt _Uninitialized_value_construct_n_ivdep(_UnwrappedNoThrowFwdIt _UFirst, _Diff _Count) {
-    // value-initialize all elements in [_First, _First + _Count) assuming independent loop bodies
-    if constexpr (_Use_memset_value_construct_v<_UnwrappedNoThrowFwdIt>) {
-        _Zero_range(_UFirst, _UFirst + _Count);
-    } else {
 #pragma loop(ivdep)
-        for (; _Count > 0; --_Count, (void) ++_UFirst) {
-            _Construct_in_place(*_UFirst);
+        for (; _UFirst != _ULast; ++_UFirst) {
+            _STD _Construct_in_place(*_UFirst);
+        }
+    } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
+#pragma loop(ivdep)
+        for (; _UFirst != _ULast; ++_UFirst) {
+            _STD _Construct_in_place(*_UFirst);
+        }
+    } else {
+        for (; _First != _Last; ++_First) {
+            _STD _Construct_in_place(*_UFirst);
         }
     }
-
-    return _UFirst;
 }
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NoThrowFwdIt uninitialized_value_construct_n(_ExPo&&, _NoThrowFwdIt _First, const _Diff _Count_raw) noexcept
 /* terminates */ {
     // value-initialize all elements in [_First, _First + _Count_raw)
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_NoThrowFwdIt);
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
 
+    if (_Count <= 0) {
+        return _First;
+    }
+
     using _UnwrappedNoThrowFwdIt = _Unwrapped_t<const _NoThrowFwdIt&>;
-    auto _UFirst                 = _Get_unwrapped_n(_First, _Count);
-    auto _Ctor_fn                = [](decltype(*_UFirst) _Obj) { _Construct_in_place(_Obj); };
-    if (_Count > 0) {
-        if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-            const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
-            if (_Hw_threads > 1 && _Count >= 2) { // parallelize on multiprocessor machines with at least 2 elements
-                _TRY_BEGIN
-                _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), decltype(_Ctor_fn)> _Operation{
-                    _Hw_threads, _Count, _Ctor_fn};
-                _Seek_wrapped(_First, _Operation._Basis._Populate(_Operation._Team, _UFirst));
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
-                return _First;
-                _CATCH(const _Parallelism_resources_exhausted&)
-                // fall through to serial case below
-                _CATCH_END
-            }
+    auto _UFirst                 = _STD _Get_unwrapped_n(_First, _Count);
 
-            _Seek_wrapped(_First, _Uninitialized_value_construct_n_ivdep(_UFirst, _Count));
-        } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
-            _Seek_wrapped(_First, _Uninitialized_value_construct_n_ivdep(_UFirst, _Count));
-        } else {
-            if constexpr (_Use_memset_value_construct_v<_UnwrappedNoThrowFwdIt>) {
-                _Zero_range(_UFirst, _UFirst + _Count);
-            } else {
-                for (; _Count > 0; --_Count, (void) ++_UFirst) {
-                    _Construct_in_place(*_UFirst);
-                }
-            }
-
-            _Seek_wrapped(_First, _UFirst);
+    if constexpr (_Use_memset_value_construct_v<_UnwrappedNoThrowFwdIt>) {
+        _STD _Zero_range(_UFirst, _UFirst + _Count);
+        _STD _Seek_wrapped(_First, _UFirst + _Count);
+    } else if constexpr(remove_reference_t<_ExPo>::_Parallelize) {
+        const size_t _Hw_threads = _CSTD __std_parallel_algorithms_hw_threads();
+        if (_Hw_threads > 1 && _Count >= 2) { // parallelize on multiprocessor machines with at least 2 elements
+            _TRY_BEGIN
+            auto _Ctor_fn = [](decltype(*_UFirst) _Obj) { _STD _Construct_in_place(_Obj); };
+            _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), decltype(_Ctor_fn)> _Operation{
+                _Hw_threads, _Count, _Ctor_fn};
+            _STD _Seek_wrapped(_First, _Operation._Basis._Populate(_Operation._Team, _UFirst));
+            _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
+            return _First;
+            _CATCH(const _Parallelism_resources_exhausted&)
+            // fall through to serial case below
+            _CATCH_END
         }
+
+#pragma loop(ivdep)
+        for (; _Count > 0; --_Count, (void) ++_UFirst) {
+            _STD _Construct_in_place(*_UFirst);
+        }
+        _STD _Seek_wrapped(_First, _UFirst);
+    } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
+#pragma loop(ivdep)
+        for (; _Count > 0; --_Count, (void) ++_UFirst) {
+            _STD _Construct_in_place(*_UFirst);
+        }
+        _STD _Seek_wrapped(_First, _UFirst);
+    } else {
+        for (; _Count > 0; --_Count, (void) ++_UFirst) {
+            _STD _Construct_in_place(*_UFirst);
+        }
+        _STD _Seek_wrapped(_First, _UFirst);
     }
 
     return _First;
