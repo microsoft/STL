@@ -27,13 +27,18 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 #if _HAS_CXX17
+#define _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_Iter)                                                               \
+    static_assert(_Is_cpp17_fwd_iter_v<_Iter> && is_lvalue_reference_v<_Iter_ref_t<_Iter>>,                         \
+        "Specialized <memory> algorithms require that mutable iterators are Cpp17ForwardIterators or stronger and " \
+        "deference to lvalues.")
+
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NoThrowFwdIt uninitialized_copy(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _NoThrowFwdIt _Dest) noexcept
 /* terminates */ {
     // copy [_First, _Last) to raw [_Dest, ...)
     // not parallelized at present
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_NoThrowFwdIt);
 
     return _STD uninitialized_copy(_First, _Last, _Dest);
 }
@@ -154,7 +159,7 @@ _NoThrowFwdIt uninitialized_copy_n(_ExPo&&, const _FwdIt _First, const _Diff _Co
     // copy [_First, _First + _Count) to raw [_Dest, ...)
     // not parallelized at present
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_NoThrowFwdIt);
 
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     return _STD uninitialized_copy_n(_First, _Count, _Dest);
@@ -234,7 +239,7 @@ _NoThrowFwdIt uninitialized_move(_ExPo&&, const _FwdIt _First, const _FwdIt _Las
     // move [_First, _Last) to raw [_Dest, ...)
     // not parallelized at present
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_NoThrowFwdIt);
 
     return _STD uninitialized_move(_First, _Last, _Dest);
 }
@@ -316,7 +321,7 @@ pair<_FwdIt, _NoThrowFwdIt> uninitialized_move_n(
     // move [_First, _First + _Count) to raw [_Dest, ...)
     // not parallelized at present
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_NoThrowFwdIt);
 
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     return _STD uninitialized_move_n(_First, _Count, _Dest);
@@ -327,7 +332,7 @@ void uninitialized_fill(_ExPo&&, const _NoThrowFwdIt _First, const _NoThrowFwdIt
 /* terminates */ {
     // copy _Val throughout raw [_First, _Last)
     // not parallelized at present
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_NoThrowFwdIt);
 
     _STD uninitialized_fill(_First, _Last, _Val);
 }
@@ -487,7 +492,7 @@ _NoThrowFwdIt uninitialized_fill_n(_ExPo&&, _NoThrowFwdIt _First, const _Diff _C
 /* terminates */ {
     // copy _Count copies of _Val to raw _First
     // not parallelized at present
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_CPP17_MUTABLE_LVALUE_ITERATOR(_NoThrowFwdIt);
 
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     return _STD uninitialized_fill_n(_First, _Count, _Val);
