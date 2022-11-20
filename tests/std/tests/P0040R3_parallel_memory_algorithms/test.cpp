@@ -28,6 +28,8 @@ static_assert(sizeof(wrap_uchar) == 1);
 
 const auto expectation = [](const wrap_uchar& x) { return x.is_expected(); };
 
+const auto expectation_zero = [](int n) { return n == 0; };
+
 struct test_case_uninitialized_default_construct_parallel {
     template <typename ExecutionPolicy>
     void operator()(const size_t testSize, const ExecutionPolicy& exec) {
@@ -70,6 +72,29 @@ struct test_case_uninitialized_value_construct_n_parallel {
         const auto end_it    = begin_it + testSize;
         const auto result_it = uninitialized_value_construct_n(exec, begin_it, testSize);
         assert(all_of(begin_it, end_it, expectation));
+        assert(end_it == result_it);
+    }
+};
+
+struct test_case_uninitialized_value_construct_memset_parallel {
+    template <typename ExecutionPolicy>
+    void operator()(const size_t testSize, const ExecutionPolicy& exec) {
+        auto buffer         = unique_ptr<int>(new int[testSize]);
+        const auto begin_it = buffer.get();
+        const auto end_it   = begin_it + testSize;
+        uninitialized_value_construct(exec, begin_it, end_it);
+        assert(all_of(begin_it, end_it, expectation_zero));
+    }
+};
+
+struct test_case_uninitialized_value_construct_n_memset_parallel {
+    template <typename ExecutionPolicy>
+    void operator()(const size_t testSize, const ExecutionPolicy& exec) {
+        auto buffer          = unique_ptr<int>(new int[testSize]);
+        const auto begin_it  = buffer.get();
+        const auto end_it    = begin_it + testSize;
+        const auto result_it = uninitialized_value_construct_n(exec, begin_it, testSize);
+        assert(all_of(begin_it, end_it, expectation_zero));
         assert(end_it == result_it);
     }
 };
@@ -126,12 +151,13 @@ struct test_case_uninitialized_copy_n_parallel {
         const auto end_it   = begin_it + testSize;
 
         iota(begin_it, end_it, 42);
-
+        
         const auto begin_it2 = buffer2.get();
         const auto end_it2   = begin_it2 + testSize;
 
-        uninitialized_copy_n(exec, begin_it, testSize, begin_it2);
+        const auto result_it = uninitialized_copy_n(exec, begin_it, testSize, begin_it2);
         assert(equal(begin_it, end_it, begin_it2, end_it2));
+        assert(end_it2 == result_it);
     }
 };
 
@@ -166,8 +192,9 @@ struct test_case_uninitialized_move_n_parallel {
         const auto begin_it2 = buffer2.get();
         const auto end_it2   = begin_it2 + testSize;
 
-        uninitialized_move_n(exec, begin_it, testSize, begin_it2);
+        const auto result_pair = uninitialized_move_n(exec, begin_it, testSize, begin_it2);
         assert(equal(begin_it, end_it, begin_it2, end_it2));
+        assert(end_it == result_pair.first && end_it2 == result_pair.second);
     }
 };
 
@@ -190,8 +217,9 @@ struct test_case_uninitialized_fill_n_parallel {
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
-        uninitialized_fill_n(exec, begin_it, testSize, 42);
+        const auto result_it = uninitialized_fill_n(exec, begin_it, testSize, 42);
         assert(all_of(begin_it, end_it, [](int n) { return n == 42; }));
+        assert(end_it == result_it);
     }
 };
 
@@ -200,6 +228,8 @@ int main() {
     parallel_test_case(test_case_uninitialized_default_construct_n_parallel{}, par);
     parallel_test_case(test_case_uninitialized_value_construct_parallel{}, par);
     parallel_test_case(test_case_uninitialized_value_construct_n_parallel{}, par);
+    parallel_test_case(test_case_uninitialized_value_construct_memset_parallel{}, par);
+    parallel_test_case(test_case_uninitialized_value_construct_n_memset_parallel{}, par);
     parallel_test_case(test_case_destroy_parallel{}, par);
     parallel_test_case(test_case_destroy_n_parallel{}, par);
 
@@ -215,6 +245,8 @@ int main() {
     parallel_test_case(test_case_uninitialized_default_construct_n_parallel{}, unseq);
     parallel_test_case(test_case_uninitialized_value_construct_parallel{}, unseq);
     parallel_test_case(test_case_uninitialized_value_construct_n_parallel{}, unseq);
+    parallel_test_case(test_case_uninitialized_value_construct_memset_parallel{}, unseq);
+    parallel_test_case(test_case_uninitialized_value_construct_n_memset_parallel{}, unseq);
     parallel_test_case(test_case_destroy_parallel{}, unseq);
     parallel_test_case(test_case_destroy_n_parallel{}, unseq);
 
