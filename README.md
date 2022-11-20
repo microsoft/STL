@@ -122,7 +122,7 @@ reproducing the bug.
 
 * You should be reasonably confident that you're looking at an actual implementation bug, instead of undefined behavior
 or surprising-yet-Standard behavior. Comparing against other implementations can help (but remember that implementations
-can differ while conforming to the Standard); try Godbolt's [Compiler Explorer][]. If you still aren't
+can differ while conforming to the Standard); try [Compiler Explorer][]. If you still aren't
 sure, ask the nearest C++ expert.
 
 * You should prepare a self-contained command-line test case, ideally as small as possible. We need a source file, a
@@ -141,7 +141,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.4 Preview 2 or later.
+1. Install Visual Studio 2022 17.5 Preview 1 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
@@ -157,7 +157,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.4 Preview 2 or later.
+1. Install Visual Studio 2022 17.5 Preview 1 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
@@ -413,17 +413,19 @@ You may also modify an existing benchmark file. We use Google's [Benchmark][gben
 so you may find [their documentation][gbenchmark:docs] helpful, and you can also read the existing code
 for how _we_ use it.
 
-To run benchmarks, you'll need to configure the STL with the `-DSTL_BUILD_BENCHMARKING=ON` option:
+To run benchmarks, you'll need to first build the STL, then build the benchmarks:
 
 ```cmd
-cmake -B out\bench -S . -G Ninja -DSTL_BUILD_BENCHMARKING=ON
-cmake --build out\bench
+cmake -B out\x64 -S . -G Ninja
+cmake --build out\x64
+cmake -B out\benchmark -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\x64
+cmake --build out\benchmark
 ```
 
 You can then run your benchmark with:
 
 ```cmd
-out\bench\benchmarks\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
+out\benchmark\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
 ```
 
 And then you can copy this csv file into Excel, or another spreadsheet program. For example:

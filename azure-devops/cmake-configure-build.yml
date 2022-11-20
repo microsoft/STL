@@ -11,9 +11,9 @@ parameters:
 - name: buildOutputLocationVar
   type: string
   default: buildOutputLocation
-- name: buildBenchmarking
+- name: benchmarkBuildOutputLocationVar
   type: string
-  default: 'ON'
+  default: benchmarkBuildOutputLocation
 - name: cmakeAdditionalFlags
   type: string
   default: ''
@@ -35,7 +35,6 @@ steps:
     cmake ${{ parameters.cmakeAdditionalFlags}} -G Ninja ^
     -DCMAKE_CXX_COMPILER=cl ^
     -DCMAKE_BUILD_TYPE=Release ^
-    -DSTL_BUILD_BENCHMARKING=${{ parameters.buildBenchmarking }} ^
     -DLIT_FLAGS=$(litFlags) ^
     -DSTL_USE_ANALYZE=ON ^
     -S $(Build.SourcesDirectory) -B $(${{ parameters.buildOutputLocationVar }})
@@ -49,3 +48,26 @@ steps:
   displayName: 'Build the STL'
   timeoutInMinutes: 10
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+- script: |
+    if exist "$(${{ parameters.benchmarkBuildOutputLocationVar }})" (
+      rmdir /S /Q "$(${{ parameters.benchmarkBuildOutputLocationVar }})"
+    )
+    call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+    -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    cmake ${{ parameters.cmakeAdditionalFlags}} -G Ninja ^
+    -DCMAKE_CXX_COMPILER=cl ^
+    -DCMAKE_BUILD_TYPE=Release ^
+    -DSTL_BINARY_DIR=$(${{ parameters.buildOutputLocationVar }}) ^
+    -S $(Build.SourcesDirectory)/benchmarks -B $(${{ parameters.benchmarkBuildOutputLocationVar }})
+  displayName: 'Configure the benchmarks'
+  timeoutInMinutes: 2
+  env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+  condition: ne('${{ parameters.benchmarkBuildOutputLocationVar }}', '')
+- script: |
+    call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+    -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    cmake --build $(${{ parameters.benchmarkBuildOutputLocationVar }})
+  displayName: 'Build the benchmarks'
+  timeoutInMinutes: 10
+  env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+  condition: ne('${{ parameters.benchmarkBuildOutputLocationVar }}', '')

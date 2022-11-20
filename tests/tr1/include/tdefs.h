@@ -100,15 +100,17 @@ int verbose = 0;
 int check_one(int ok, unsigned int ch, const char* label, const char* file_name, int line_number,
     int test) { // accumulate and maybe display failures
     if (test != 0) { // succeeded, display if verbose
-        if (verbose)
+        if (verbose) {
             CSTD printf(" PASS test %.3d at line %.3d in %s for %#.2x: %s\n", total_pass + total_fail + 1, line_number,
                 file_name, ch, label);
+        }
     } else { // failed, accumulate and maybe display
         ++total_fail;
         ok = 0;
-        if (!terse)
+        if (!terse) {
             CSTD printf(" FAIL test %.3d at line %.3d in %s for %#.2x: %s\n", total_pass + total_fail + 1, line_number,
                 file_name, ch, label);
+        }
     }
     return ok;
 }
@@ -116,9 +118,10 @@ int check_one(int ok, unsigned int ch, const char* label, const char* file_name,
 void results(const char* label, const char* file_name, int line_number, int test) { // display results
     if (test != 0) { // pass, count and maybe display
         ++total_pass;
-        if (verbose)
+        if (verbose) {
             CSTD printf(
                 " PASS test %.3d at line %.3d in %s: %s\n", total_pass + total_fail, line_number, file_name, label);
+        }
     } else { // fail, count and display
         ++total_fail;
         CSTD printf(" FAIL test %.3d at line %.3d in %s: %s\n", total_pass + total_fail, line_number, file_name, label);
@@ -128,16 +131,18 @@ void results(const char* label, const char* file_name, int line_number, int test
 void check_int(const char* label, const char* file_name, int line_number, int left, int right) {
     int ans = left == right;
 
-    if (!terse && !ans)
+    if (!terse && !ans) {
         CSTD printf(" GOT %d != %d\n", left, right);
+    }
     results(label, file_name, line_number, ans);
 }
 
 void check_size_t(const char* label, const char* file_name, int line_number, size_t left, size_t right) {
     int ans = left == right;
 
-    if (!terse && !ans)
+    if (!terse && !ans) {
         CSTD printf(" GOT %zu != %zu\n", left, right);
+    }
     results(label, file_name, line_number, ans);
 }
 
@@ -148,17 +153,23 @@ void check_mem(const char* label, const char* file_name, int line_number, const 
     const char* s1 = (const char*) left;
     const char* s2 = (const char*) right;
 
-    for (; 0 <= --n && *s1 == *s2; ++s1, ++s2)
+    for (; 0 <= --n && *s1 == *s2; ++s1, ++s2) {
         ;
-    if (n <= 0)
+    }
+
+    if (n <= 0) {
         ans = 1;
+    }
+
     if (!terse && !ans) { // put differing strings
         CSTD printf(" GOT \"");
-        for (n = length, s1 = (const char*) left; 0 <= --n; ++s1)
+        for (n = length, s1 = (const char*) left; 0 <= --n; ++s1) {
             CSTD printf("%c", *s1);
+        }
         CSTD printf("\" != \"");
-        for (n = length, s2 = (const char*) right; 0 <= --n; ++s2)
+        for (n = length, s2 = (const char*) right; 0 <= --n; ++s2) {
             CSTD printf("%c", *s2);
+        }
         CSTD printf("\"\n");
     }
     results(label, file_name, line_number, ans);
@@ -168,8 +179,9 @@ void check_ptr(const char* label, const char* file_name, int line_number, const 
     const void* right) { // check for pointer equality
     int ans = left == right;
 
-    if (!terse && !ans)
+    if (!terse && !ans) {
         CSTD printf(" GOT %p != %p\n", left, right);
+    }
     results(label, file_name, line_number, ans);
 }
 
@@ -179,13 +191,15 @@ void check_str(const char* label, const char* file_name, int line_number, const 
     const char* s1 = left;
     const char* s2 = right;
 
-    for (; *s1 == *s2; ++s1, ++s2)
+    for (; *s1 == *s2; ++s1, ++s2) {
         if (*s1 == '\0') { // equal through NUL terminator
             ans = 1;
             break;
         }
-    if (!terse && !ans)
+    }
+    if (!terse && !ans) {
         CSTD printf(" GOT \"%s\" != \"%s\"\n", left, right);
+    }
     results(label, file_name, line_number, ans);
 }
 
@@ -196,17 +210,23 @@ void check_wmem(const char* label, const char* file_name, int line_number, const
     const wchar_t* s1 = left;
     const wchar_t* s2 = right;
 
-    for (; 0 <= --n && *s1 == *s2; ++s1, ++s2)
+    for (; 0 <= --n && *s1 == *s2; ++s1, ++s2) {
         ;
-    if (n <= 0)
+    }
+
+    if (n <= 0) {
         ans = 1;
+    }
+
     if (!terse && !ans) { // put differing strings
         CSTD printf(" GOT L\"");
-        for (n = length; 0 <= --n; ++left)
+        for (n = length; 0 <= --n; ++left) {
             CSTD printf("%c", (char) *left);
+        }
         CSTD printf("\" != \"");
-        for (n = length; 0 <= --n; ++right)
+        for (n = length; 0 <= --n; ++right) {
             CSTD printf("%c", (char) *right);
+        }
         CSTD printf("\"\n");
     }
     results(label, file_name, line_number, ans);
@@ -218,18 +238,21 @@ void check_wstr(const char* label, const char* file_name, int line_number, const
     const wchar_t* s1 = left;
     const wchar_t* s2 = right;
 
-    for (; *s1 == *s2; ++s1, ++s2)
+    for (; *s1 == *s2; ++s1, ++s2) {
         if (*s1 == L'\0') { // equal through NUL terminator
             ans = 1;
             break;
         }
+    }
     if (!terse && !ans) { // failure, print wide strings
         CSTD printf(" GOT L\"");
-        for (; *left != L'\0'; ++left)
+        for (; *left != L'\0'; ++left) {
             CSTD printf("%c", (char) *left);
+        }
         CSTD printf("\" != L\"");
-        for (; *right != L'\0'; ++right)
+        for (; *right != L'\0'; ++right) {
             CSTD printf("%c", (char) *right);
+        }
         CSTD printf("\"\n");
     }
     results(label, file_name, line_number, ans);
@@ -242,8 +265,9 @@ void check_type(const char* label, const char* file_name, int line_number, const
     const STD type_info& right) { // check for int equality
     int ans = left == right;
 
-    if (!terse && !ans)
+    if (!terse && !ans) {
         CSTD printf(" GOT %s != %s\n", left.name(), right.name());
+    }
     results(label, file_name, line_number, ans);
 }
 #endif // __cplusplus
@@ -252,24 +276,29 @@ void check_double(const char* label, const char* file_name, int line_number, dou
     int ans = left == right;
 
     if (!terse && !ans) { // print hex or decimal floating-point
-        if (afmt)
+        if (afmt) {
             CSTD printf(" GOT %a != %a\n", left, right);
-        else
+        } else {
             CSTD printf(" GOT %f != %f\n", left, right);
+        }
     }
     results(label, file_name, line_number, ans);
 }
 
 int leave_chk(const char* file_name) { // print summary on exit
-    if (!terse || 0 < total_fail)
+    if (!terse || 0 < total_fail) {
         CSTD printf("***** %d erroneous test cases in %s *****\n", total_fail, file_name);
-    if (!terse)
-        CSTD printf("***** %d successful test cases in %s *****\n", total_pass, file_name);
+    }
 
-    if (0 < total_fail)
+    if (!terse) {
+        CSTD printf("***** %d successful test cases in %s *****\n", total_pass, file_name);
+    }
+
+    if (0 < total_fail) {
         CSTD printf("#FAILED: %s\n", file_name);
-    else
+    } else {
         CSTD printf("#PASSED: %s\n", file_name);
+    }
 
     return EXIT_STATUS;
 }
@@ -343,10 +372,13 @@ int approx2(Float_type d1, Float_type d2, Float_type sensitivity) { // test for 
 #if 199901L <= __STDC_VERSION__
     if (isunordered(d1, d2)) { // at least one NaN
         if (!terse) { // report NaNs
-            if (isnan(d1))
+            if (isnan(d1)) {
                 CSTD printf("approx(x, y): x is a NaN\n");
-            if (isnan(d2))
+            }
+
+            if (isnan(d2)) {
                 CSTD printf("approx(x, y): y is a NaN\n");
+            }
         }
         return 0;
     } else
@@ -354,25 +386,30 @@ int approx2(Float_type d1, Float_type d2, Float_type sensitivity) { // test for 
     { // compare finite values
         Float_type err;
 
-        if (d2 != (Float_type) 0)
+        if (d2 != (Float_type) 0) {
             err = (d2 - d1) / d2;
-        else
+        } else {
             err = d1;
-        if (err < (Float_type) 0)
+        }
+
+        if (err < (Float_type) 0) {
             err = -err;
+        }
 
         sensitivity += static_cast<Float_type>(ulp);
         if (err <= sensitivity * eps0) { // close enough, maybe display then succeed
-            if (verbose)
+            if (verbose) {
                 CSTD printf("difference is %.2g ulp (<= %.2g ulp)"
                             " for %.5Lg vs. %.5Lg\n",
                     (double) (err / eps0), (double) sensitivity, (long double) d1, (long double) d2);
+            }
             return 1;
         } else { // too different, maybe display then fail
-            if (!terse)
+            if (!terse) {
                 CSTD printf("difference is %.2g ulp (> %.2g ulp)"
                             " for %.5Lg vs. %.5Lg\n",
                     (double) (err / eps0), (double) sensitivity, (long double) d1, (long double) d2);
+            }
             return 0;
         }
     }
@@ -537,13 +574,15 @@ int main(int argc, char** argv) { // call test, print summary, return
     int nextarg;
     CSTD setvbuf(stdout, nullptr, _IONBF, 0); // disable output buffering
 
-    for (nextarg = 1; nextarg < argc; ++nextarg)
-        if (strcmp(argv[nextarg], "-v") == 0)
+    for (nextarg = 1; nextarg < argc; ++nextarg) {
+        if (strcmp(argv[nextarg], "-v") == 0) {
             verbose = 1;
-        else if (strcmp(argv[nextarg], "-t") == 0)
+        } else if (strcmp(argv[nextarg], "-t") == 0) {
             terse = 1;
-        else
+        } else {
             printf("UNEXPECTED argument: %s\n", argv[nextarg]);
+        }
+    }
 
 #ifndef __cplusplus
     test_main(); // call C test function

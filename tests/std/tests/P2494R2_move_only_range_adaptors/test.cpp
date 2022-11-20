@@ -29,21 +29,19 @@ template <SmfKind CCtor, SmfKind MCtor, SmfKind CAssign, SmfKind MAssign>
 struct Transform : BaseTransform {
     using BaseTransform::BaseTransform;
 
-    Transform(const Transform&) noexcept(CCtor == Nothrow) //
-        requires(CCtor != Deleted)                         = default;
-    Transform(const Transform&) requires(CCtor == Deleted) = delete;
+    // clang-format off
+    Transform(const Transform&) noexcept(CCtor == Nothrow) requires (CCtor != Deleted) = default;
+    Transform(const Transform&) requires (CCtor == Deleted) = delete;
 
-    Transform(Transform&&) noexcept(MCtor == Nothrow) //
-        requires(MCtor != Deleted)                    = default;
-    Transform(Transform&&) requires(MCtor == Deleted) = delete;
+    Transform(Transform&&) noexcept(MCtor == Nothrow) requires (MCtor != Deleted) = default;
+    Transform(Transform&&) requires (MCtor == Deleted) = delete;
 
-    Transform& operator=(const Transform&) noexcept(CAssign == Nothrow) //
-        requires(CAssign != Deleted)                                    = default;
-    Transform& operator=(const Transform&) requires(CAssign == Deleted) = delete;
+    Transform& operator=(const Transform&) noexcept(CAssign == Nothrow) requires (CAssign != Deleted) = default;
+    Transform& operator=(const Transform&) requires (CAssign == Deleted) = delete;
 
-    Transform& operator=(Transform&&) noexcept(MAssign == Nothrow) //
-        requires(MAssign != Deleted)                               = default;
-    Transform& operator=(Transform&&) requires(MAssign == Deleted) = delete;
+    Transform& operator=(Transform&&) noexcept(MAssign == Nothrow) requires (MAssign != Deleted) = default;
+    Transform& operator=(Transform&&) requires (MAssign == Deleted) = delete;
+    // clang-format on
 };
 
 template <SmfKind CCtor, SmfKind MCtor, SmfKind CAssign, SmfKind MAssign>
@@ -60,9 +58,23 @@ void test_transform() {
                       : movable<T> || is_nothrow_move_constructible_v<T>) {
         static_assert(sizeof(ranges::_Movable_box<T>) == sizeof(T));
     } else {
-        static_assert(sizeof(ranges::_Movable_box<T>) > sizeof(T));
+        static_assert(sizeof(ranges::_Movable_box<T>) == sizeof(T) + alignof(T));
     }
 }
+
+// Test that _Movable_box's copy operations are properly constrained
+template <bool CanDefault>
+struct move_construct_only {
+    move_construct_only()
+        requires CanDefault;
+    move_construct_only(move_construct_only&&);
+};
+static_assert(copy_constructible<ranges::_Movable_box<int>>);
+static_assert(copyable<ranges::_Movable_box<int>>);
+static_assert(!copy_constructible<ranges::_Movable_box<move_construct_only<true>>>);
+static_assert(!copyable<ranges::_Movable_box<move_construct_only<true>>>);
+static_assert(!copy_constructible<ranges::_Movable_box<move_construct_only<false>>>);
+static_assert(!copyable<ranges::_Movable_box<move_construct_only<false>>>);
 
 int main() {
     test_transform<Nothrow, Nothrow, Nothrow, Nothrow>();

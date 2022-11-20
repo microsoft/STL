@@ -43,9 +43,7 @@
 #include <vector>
 
 template <class T, class U>
-concept HasSpaceshipWith = requires {
-    std::declval<T>() <=> std::declval<U>();
-};
+concept HasSpaceshipWith = requires { std::declval<T>() <=> std::declval<U>(); };
 
 using PartiallyOrdered = double;
 

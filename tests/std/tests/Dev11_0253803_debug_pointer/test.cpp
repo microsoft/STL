@@ -11,15 +11,9 @@
 #include <numeric>
 #include <random>
 
-#if _HAS_CXX17 && !defined(_M_CEE)
-#define HAS_PARALLEL_ALGORITHMS 1
-#else
-#define HAS_PARALLEL_ALGORITHMS 0
-#endif // _HAS_CXX17 && !defined(_M_CEE)
-
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
 #include <execution>
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 
 using namespace std;
 
@@ -277,7 +271,7 @@ int main() {
     uninitialized_fill(nil, nil, 1729);
     uninitialized_fill_n(nil, zero, 1729);
 
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
     using namespace std::execution;
     (void) all_of(par, nil, nil, pred);
     (void) any_of(par, nil, nil, pred);
@@ -426,5 +420,5 @@ int main() {
 
     adjacent_difference(par, nil, nil, nil);
     adjacent_difference(par, nil, nil, nil, binop);
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 }

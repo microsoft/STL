@@ -142,7 +142,8 @@ struct instantiator {
 
                 NonCopyableBool()                       = default;
                 NonCopyableBool(const NonCopyableBool&) = delete;
-            } b;
+            };
+            NonCopyableBool b;
             assert(ranges::is_permutation(range2, range2, [&](auto, auto) -> NonCopyableBool& { return b; }));
         }
     }

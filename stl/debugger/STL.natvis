@@ -1404,6 +1404,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
+  <Type Name="std::basic_const_iterator&lt;*&gt;">
+      <DisplayString>basic_const_iterator {_Current}</DisplayString>
+      <Expand>
+        <Item Name="current">_Current</Item>
+      </Expand>
+  </Type>
+
+
   <Type Name="std::complex&lt;*&gt;">
       <DisplayString Condition="(_Val[1] &lt; 0) &amp;&amp; (_Val[0] == 0)">-i*{-_Val[1]}</DisplayString>
       <DisplayString Condition="(_Val[1] &lt; 0) &amp;&amp; (_Val[0] != 0)">{_Val[0]}-i*{-_Val[1]}</DisplayString>

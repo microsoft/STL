@@ -168,6 +168,7 @@ namespace {
             } else {
                 result = std::malloc(bytes);
             }
+
             if (result) {
                 return result;
             }
@@ -199,15 +200,17 @@ namespace {
             } else {
                 bytes_ = bytes;
             }
+
             if (align_ != 0) {
                 CHECK(align == align_);
             } else {
                 align_ = align;
             }
+
             if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 return ptr_ = ::operator new(bytes);
             } else {
-                return ptr_ = ::operator new (bytes, std::align_val_t{align});
+                return ptr_ = ::operator new(bytes, std::align_val_t{align});
             }
         }
 
@@ -219,6 +222,7 @@ namespace {
                 } else {
                     bytes_ = bytes;
                 }
+
                 if (align_ != 0) {
                     CHECK(align == align_);
                 } else {
@@ -228,14 +232,16 @@ namespace {
                 if (bytes_ != 0) {
                     CHECK(bytes == bytes_);
                 }
+
                 if (align_ != 0) {
                     CHECK(align == align_);
                 }
             }
+
             if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 ::operator delete(ptr, bytes);
             } else {
-                ::operator delete (ptr, bytes, std::align_val_t{align});
+                ::operator delete(ptr, bytes, std::align_val_t{align});
             }
         }
 
@@ -353,7 +359,7 @@ namespace {
                             if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                                 ::operator delete(ptr, size);
                             } else {
-                                ::operator delete (ptr, size, std::align_val_t{align});
+                                ::operator delete(ptr, size, std::align_val_t{align});
                             }
                         }
                     }
@@ -366,7 +372,7 @@ namespace {
                         for (auto align = 1_zu; align <= 512_zu && size % align == 0_zu; align *= 2_zu) {
                             auto ptr = (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__)
                                          ? ::operator new(size)
-                                         : ::operator new (size, std::align_val_t{align});
+                                         : ::operator new(size, std::align_val_t{align});
                             ndr.deallocate(ptr, size, align);
                         }
                     }
@@ -407,12 +413,12 @@ namespace {
                         for (auto align = 1_zu; align <= 512_zu && size % align == 0_zu; align *= 2_zu) {
                             void* ptr = align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__
                                           ? ::operator new(size)
-                                          : ::operator new (size, std::align_val_t{align});
+                                          : ::operator new(size, std::align_val_t{align});
                             nmr.deallocate(ptr, size, align);
                             if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                                 ::operator delete(ptr, size);
                             } else {
-                                ::operator delete (ptr, size, std::align_val_t{align});
+                                ::operator delete(ptr, size, std::align_val_t{align});
                             }
                         }
                     }
@@ -1244,13 +1250,11 @@ namespace {
                     std::pmr::unsynchronized_pool_resource upr{{0_zu, 64_zu}, &rr};
                     lambda(&upr);
                 }
-#ifndef _M_CEE
                 {
                     recording_resource rr;
                     std::pmr::synchronized_pool_resource upr{{0_zu, 64_zu}, &rr};
                     lambda(&upr);
                 }
-#endif // _M_CEE
             }
 
             void test_medium_allocation() {
@@ -1342,7 +1346,7 @@ namespace {
         } // namespace allocate_deallocate
 
         namespace release {
-            void test() { //
+            void test() {
                 recording_resource rr;
                 std::pmr::unsynchronized_pool_resource upr{{0_zu, sizeof(void*) << 8}, &rr};
 
@@ -1452,9 +1456,7 @@ namespace {
 
             void test() {
                 test_is_equal<std::pmr::unsynchronized_pool_resource>();
-#ifndef _M_CEE
                 test_is_equal<std::pmr::synchronized_pool_resource>();
-#endif // _M_CEE
             }
         } // namespace is_equal
     } // namespace pool

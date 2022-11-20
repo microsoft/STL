@@ -9,9 +9,9 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#ifdef _M_CEE
-#error <future> is not supported when compiling with /clr or /clr:pure.
-#endif // _M_CEE
+#ifdef _M_CEE_PURE
+#error <future> is not supported when compiling with /clr:pure.
+#endif // _M_CEE_PURE
 
 #ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
 #include <experimental/resumable>

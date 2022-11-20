@@ -216,6 +216,7 @@ tests\GH_002989_nothrow_unwrappable
 tests\GH_002992_unwrappable_iter_sent_pairs
 tests\GH_003022_substr_allocator
 tests\GH_003105_piecewise_densities
+tests\GH_003119_error_category_ctor
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\LWG3121_constrained_tuple_forwarding_ctor
@@ -275,6 +276,7 @@ tests\P0220R1_polymorphic_memory_resources
 tests\P0220R1_sample
 tests\P0220R1_searchers
 tests\P0220R1_string_view
+tests\P0226R1_math_special_functions
 tests\P0288R9_move_only_function
 tests\P0295R0_gcd_lcm
 tests\P0323R12_expected
@@ -546,9 +548,15 @@ tests\P2136R3_invoke_r
 tests\P2162R2_std_visit_for_derived_classes_from_variant
 tests\P2231R1_complete_constexpr_optional_variant
 tests\P2273R3_constexpr_unique_ptr
+tests\P2278R4_basic_const_iterator
+tests\P2278R4_const_span
+tests\P2278R4_ranges_const_iterator_machinery
+tests\P2278R4_ranges_const_range_machinery
 tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference
+tests\P2321R2_views_zip
+tests\P2322R6_ranges_alg_fold
 tests\P2387R3_bind_back
 tests\P2387R3_pipe_support_for_user_defined_range_adaptors
 tests\P2401R0_conditional_noexcept_for_exchange
@@ -569,6 +577,7 @@ tests\P2443R1_views_chunk_by_death
 tests\P2445R1_forward_like
 tests\P2446R2_views_as_rvalue
 tests\P2465R3_standard_library_modules
+tests\P2467R1_exclusive_mode_fstreams
 tests\P2494R2_move_only_range_adaptors
 tests\P2517R1_apply_conditional_noexcept
 tests\VSO_0000000_allocator_propagation

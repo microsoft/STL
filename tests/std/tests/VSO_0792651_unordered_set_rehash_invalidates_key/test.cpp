@@ -21,6 +21,7 @@ struct eq {
         if (p == nullptr) {
             return q == nullptr;
         }
+
         if (q == nullptr) {
             return false;
         }

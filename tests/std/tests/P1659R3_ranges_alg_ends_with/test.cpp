@@ -12,10 +12,10 @@
 
 using namespace std;
 
-// clang-format off
 template <class T>
 concept testable_range = ranges::input_range<T> && (ranges::forward_range<T> || ranges::sized_range<T>);
 
+// clang-format off
 template <class T>
 concept testable_sentinel = ranges::input_range<T>
     && (ranges::forward_range<T> || sized_sentinel_for<ranges::sentinel_t<T>, ranges::iterator_t<T>>);

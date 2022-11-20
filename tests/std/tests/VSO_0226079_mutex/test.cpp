@@ -79,7 +79,8 @@ class other_mutex_thread {
                 break;
             case message::unlockDelayed:
                 this_thread::sleep_for(50ms);
-                // fallthrough
+                mtx.unlock();
+                break;
             case message::unlock:
                 mtx.unlock();
                 break;

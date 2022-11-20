@@ -192,8 +192,9 @@ namespace stdext {
                 case 3: // put third of three bytes
                     *_Pstate = 0;
                     *_Mid2++ = 'B';
+                    _FALLTHROUGH;
 
-                case 0: // fall through
+                case 0:
                     return _Mybase::ok;
                 }
                 return _Mybase::partial;

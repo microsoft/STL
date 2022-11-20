@@ -16,7 +16,7 @@
 
 #if _HAS_CXX20
 #include <atomic>
-#endif
+#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -53,12 +53,10 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
             _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
         uninitialized_copy_result<_It, _Out> operator()(_It _First1, _Se _Last1, _Out _First2, _OSe _Last2) const {
-            // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             auto _UResult = _Uninitialized_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First1)),
@@ -70,12 +68,10 @@ namespace ranges {
             return {_STD move(_First1), _STD move(_First2)};
         }
 
-        // clang-format off
         template <input_range _Rng1, _No_throw_forward_range _Rng2>
             requires constructible_from<range_value_t<_Rng2>, range_reference_t<_Rng1>>
         uninitialized_copy_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2) const {
-            // clang-format on
             auto _First1  = _RANGES begin(_Range1);
             auto _UResult = _Uninitialized_copy_unchecked(
                 _Unwrap_range_iter<_Rng1>(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
@@ -175,12 +171,10 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
         uninitialized_copy_n_result<_It, _Out> operator()(
             _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) const {
-            // clang-format on
             if (_Count <= 0) {
                 return {_STD move(_First1), _STD move(_First2)};
             }
@@ -250,12 +244,10 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
             _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
         uninitialized_move_result<_It, _Out> operator()(_It _First1, _Se _Last1, _Out _First2, _OSe _Last2) const {
-            // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             auto _UResult = _RANGES _Uninitialized_move_unchecked(_Unwrap_iter<_Se>(_STD move(_First1)),
@@ -267,12 +259,10 @@ namespace ranges {
             return {_STD move(_First1), _STD move(_First2)};
         }
 
-        // clang-format off
         template <input_range _Rng1, _No_throw_forward_range _Rng2>
             requires constructible_from<range_value_t<_Rng2>, range_rvalue_reference_t<_Rng1>>
         uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2) const {
-            // clang-format on
             auto _First1  = _RANGES begin(_Range1);
             auto _UResult = _RANGES _Uninitialized_move_unchecked(
                 _Unwrap_range_iter<_Rng1>(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
@@ -347,12 +337,10 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
         uninitialized_move_n_result<_It, _Out> operator()(
             _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) const {
-            // clang-format on
             if (_Count <= 0) {
                 return {_STD move(_First1), _STD move(_First2)};
             }
@@ -395,11 +383,9 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
         _It operator()(_It _First, _Se _Last, const _Ty& _Val) const {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_fill_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _Val);
@@ -408,11 +394,9 @@ namespace ranges {
             return _First;
         }
 
-        // clang-format off
         template <_No_throw_forward_range _Rng, class _Ty>
             requires constructible_from<range_value_t<_Rng>, const _Ty&>
         borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val) const {
-            // clang-format on
             return _Rewrap_iterator(_Range, _Uninitialized_fill_unchecked(_Ubegin(_Range), _Uend(_Range), _Val));
         }
 
@@ -505,11 +489,9 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <_No_throw_forward_iterator _It, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
         _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Val) const {
-            // clang-format on
             if (_Count <= 0) {
                 return _First;
             }
@@ -561,11 +543,9 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Construct_at_fn construct_at{_Not_quite_object::_Construct_tag{}};
 
-    // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
     _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept;
-    // clang-format on
 
     class _Destroy_at_fn : private _Not_quite_object {
     public:
@@ -598,11 +578,9 @@ void destroy(_ExPo&& _Exec, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Las
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
     _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept {
-        // clang-format on
         if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
             _RANGES advance(_First, _STD move(_Last));
         } else {
@@ -618,22 +596,18 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires destructible<iter_value_t<_It>>
         constexpr _It operator()(_It _First, _Se _Last) const noexcept {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             _Seek_wrapped(_First,
                 _RANGES _Destroy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last))));
             return _First;
         }
 
-        // clang-format off
         template <_No_throw_input_range _Rng>
             requires destructible<range_value_t<_Rng>>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
-            // clang-format on
             auto _First = _RANGES begin(_Range);
             _Seek_wrapped(
                 _First, _RANGES _Destroy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range)));
@@ -675,11 +649,9 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
         constexpr _It operator()(_It _First, const iter_difference_t<_It> _Count_raw) const noexcept {
-            // clang-format on
             _Algorithm_int_t<iter_difference_t<_It>> _Count = _Count_raw;
             if (_Count <= 0) {
                 return _First;
@@ -731,11 +703,9 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires default_initializable<iter_value_t<_It>>
         _It operator()(_It _First, _Se _Last) const {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_default_construct_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)));
@@ -744,11 +714,9 @@ namespace ranges {
             return _First;
         }
 
-        // clang-format off
         template <_No_throw_forward_range _Rng>
             requires default_initializable<range_value_t<_Rng>>
         borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
-            // clang-format on
             auto _UResult = _Uninitialized_default_construct_unchecked(_Ubegin(_Range), _Uend(_Range));
 
             return _Rewrap_iterator(_Range, _STD move(_UResult));
@@ -815,11 +783,9 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
         _It operator()(_It _First, iter_difference_t<_It> _Count) const {
-            // clang-format on
             if (_Count <= 0) {
                 return _First;
             }
@@ -873,11 +839,9 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires default_initializable<iter_value_t<_It>>
         _It operator()(_It _First, _Se _Last) const {
-            // clang-format on
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_value_construct_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)));
@@ -886,11 +850,9 @@ namespace ranges {
             return _First;
         }
 
-        // clang-format off
         template <_No_throw_forward_range _Rng>
             requires default_initializable<range_value_t<_Rng>>
         borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
-            // clang-format on
             auto _UResult = _Uninitialized_value_construct_unchecked(_Ubegin(_Range), _Uend(_Range));
 
             return _Rewrap_iterator(_Range, _STD move(_UResult));
@@ -944,11 +906,9 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
         _It operator()(_It _First, iter_difference_t<_It> _Count) const {
-            // clang-format on
             if (_Count <= 0) {
                 return _First;
             }
@@ -2203,7 +2163,7 @@ _NODISCARD _Refc* _Allocate_flexible_array(const size_t _Count) {
 #ifdef __cpp_aligned_new
     constexpr size_t _Align = alignof(_Refc);
     if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        return static_cast<_Refc*>(::operator new (_Bytes, align_val_t{_Align}));
+        return static_cast<_Refc*>(::operator new(_Bytes, align_val_t{_Align}));
     } else
 #endif // __cpp_aligned_new
     {
@@ -2216,7 +2176,7 @@ void _Deallocate_flexible_array(_Refc* const _Ptr) noexcept {
 #ifdef __cpp_aligned_new
     constexpr size_t _Align = alignof(_Refc);
     if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        ::operator delete (static_cast<void*>(_Ptr), align_val_t{_Align});
+        ::operator delete(static_cast<void*>(_Ptr), align_val_t{_Align});
     } else
 #endif // __cpp_aligned_new
     {
@@ -2659,8 +2619,8 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
         _Fill_memset(_Out, _Val, _Size);
     } else {
-        if constexpr (_Fill_zero_memset_is_safe<_Ty*,
-                          _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
+        if constexpr (_Fill_zero_memset_is_safe<_Ty*, _Ty>
+                      && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
             if (_Is_all_bits_zero(_Val)) {
                 _Fill_zero_memset(_Out, _Size);
                 return;
@@ -3679,12 +3639,10 @@ _NODISCARD _CONSTEXPR23 bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _
 }
 
 #ifdef __cpp_lib_concepts
-// clang-format off
 _EXPORT_STD template <class _Ty, class _Dx>
     requires three_way_comparable<typename unique_ptr<_Ty, _Dx>::pointer>
 _NODISCARD _CONSTEXPR23 compare_three_way_result_t<typename unique_ptr<_Ty, _Dx>::pointer> operator<=>(
     const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
-    // clang-format on
     return _Left.get() <=> static_cast<typename unique_ptr<_Ty, _Dx>::pointer>(nullptr);
 }
 #endif // __cpp_lib_concepts
@@ -4203,13 +4161,13 @@ struct _Pointer_of_helper<_Ty> {
     using type = typename _Ty::pointer;
 };
 
-// clang-format off
 template <_Has_member_element_type _Ty>
     requires (!_Has_member_pointer<_Ty>)
 struct _Pointer_of_helper<_Ty> {
     using type = typename _Ty::element_type*;
 };
 
+// clang-format off
 template <class _Ty>
     requires (!_Has_member_element_type<_Ty> && !_Has_member_pointer<_Ty>
         && _Has_member_element_type<pointer_traits<_Ty>>)
@@ -4226,13 +4184,11 @@ struct _Pointer_of_or_helper {
     using type = _Uty;
 };
 
-// clang-format off
 template <class _Ty, class _Uty>
     requires requires { typename _Pointer_of<_Ty>; }
 struct _Pointer_of_or_helper<_Ty, _Uty> {
     using type = _Pointer_of<_Ty>;
 };
-// clang-format on
 
 template <class _Ty, class _Uty>
 using _Pointer_of_or = typename _Pointer_of_or_helper<_Ty, _Uty>::type;
@@ -4240,8 +4196,8 @@ using _Pointer_of_or = typename _Pointer_of_or_helper<_Ty, _Uty>::type;
 // TRANSITION, requires expression support
 template <class _SmartPtr, class _Sp, class _Pointer, class... _ArgsT>
 concept _Resettable_pointer = requires(_SmartPtr& _Smart_ptr, _Pointer _Ptr, _ArgsT&&... _Args) {
-    _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args)...);
-};
+                                  _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args)...);
+                              };
 
 _EXPORT_STD template <class _SmartPtr, class _Pointer, class... _ArgsT>
 class out_ptr_t {
@@ -4278,18 +4234,18 @@ public:
         return _STD addressof(_Get_ptr());
     }
 
-    operator void**() const noexcept requires(!is_same_v<_Pointer, void*>) {
+    operator void**() const noexcept
+        requires (!is_same_v<_Pointer, void*>)
+    {
         static_assert(is_pointer_v<_Pointer>, "conversion of out_ptr_t<Smart, Pointer, Args...> to void** requires "
                                               "Pointer to be a raw pointer (N4892 [out.ptr.t]/13)");
         return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
     }
 
-    // clang-format off
 private:
     _NODISCARD _Pointer& _Get_ptr() const noexcept {
         return const_cast<_Pointer&>(_Mypair._Myval2);
     }
-    // clang-format on
 
     _NODISCARD tuple<_ArgsT...>& _Get_args() noexcept {
         return _Mypair._Get_first();
@@ -4314,7 +4270,9 @@ class inout_ptr_t {
         "inout_ptr_t doesn't work with shared_ptr (N4892 [inout.ptr.t]/3)");
 
 private:
-    _NODISCARD static auto _Get_ptr_from_smart(_SmartPtr& _Smart_ptr) noexcept requires is_pointer_v<_SmartPtr> {
+    _NODISCARD static auto _Get_ptr_from_smart(_SmartPtr& _Smart_ptr) noexcept
+        requires is_pointer_v<_SmartPtr>
+    {
         return _Smart_ptr;
     }
 
@@ -4358,18 +4316,18 @@ public:
         return _STD addressof(_Get_ptr());
     }
 
-    operator void**() const noexcept requires(!is_same_v<_Pointer, void*>) {
+    operator void**() const noexcept
+        requires (!is_same_v<_Pointer, void*>)
+    {
         static_assert(is_pointer_v<_Pointer>, "conversion of inout_ptr_t<Smart, Pointer, Args...> to void** requires "
                                               "Pointer to be a raw pointer (N4892 [inout.ptr.t]/15)");
         return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
     }
 
-    // clang-format off
 private:
     _NODISCARD _Pointer& _Get_ptr() const noexcept {
         return const_cast<_Pointer&>(_Mypair._Myval2);
     }
-    // clang-format on
 
     _NODISCARD tuple<_ArgsT...>& _Get_args() noexcept {
         return _Mypair._Get_first();
@@ -4402,7 +4360,7 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD static_pointer_cast;
     using _STD swap;
     using _STD weak_ptr;
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 #endif // _HAS_TR1_NAMESPACE
 
 _STD_END

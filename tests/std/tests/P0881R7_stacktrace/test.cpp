@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <filesystem>
 #include <iterator>
+#include <memory_resource>
+#include <ostream>
 #include <sstream>
 #include <stacktrace>
 #include <stdexcept>
@@ -19,6 +22,34 @@
 #endif // ^^^ !HAS_EXPORT ^^^
 
 using namespace std;
+
+#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <class Ostream, class Alloc = allocator<stacktrace_entry>>
+concept CanPrintStacktrace =
+    requires(Ostream& os, const stacktrace_entry& f, const basic_stacktrace<Alloc>& st) {
+        { os << f } -> same_as<basic_ostream<typename Ostream::char_type, typename Ostream::traits_type>&>;
+        { os << st } -> same_as<basic_ostream<typename Ostream::char_type, typename Ostream::traits_type>&>;
+    };
+
+template <class CharT>
+struct FancyCharTraits : char_traits<CharT> {};
+
+static_assert(CanPrintStacktrace<ostream>);
+static_assert(CanPrintStacktrace<ostringstream>);
+static_assert(CanPrintStacktrace<ostream, pmr::polymorphic_allocator<stacktrace_entry>>);
+
+static_assert(!CanPrintStacktrace<wostream>);
+static_assert(!CanPrintStacktrace<wostringstream>);
+static_assert(!CanPrintStacktrace<wostream, pmr::polymorphic_allocator<stacktrace_entry>>);
+
+using FancyCharStream = basic_ostream<char, FancyCharTraits<char>>;
+static_assert(!CanPrintStacktrace<FancyCharStream>);
+static_assert(!CanPrintStacktrace<FancyCharStream, pmr::polymorphic_allocator<stacktrace_entry>>);
+
+using FancyWcharStream = basic_ostream<wchar_t, FancyCharTraits<wchar_t>>;
+static_assert(!CanPrintStacktrace<FancyWcharStream>);
+static_assert(!CanPrintStacktrace<FancyWcharStream, pmr::polymorphic_allocator<stacktrace_entry>>);
+#endif // defined(__cpp_lib_concepts)
 
 [[maybe_unused]] const int base_line = __LINE__;
 

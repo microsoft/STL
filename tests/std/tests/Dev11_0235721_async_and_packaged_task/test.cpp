@@ -266,6 +266,7 @@ void test_shared_future_noexcept_copy() {
     test_shared_future_noexcept_copy_impl<void>();
 }
 
+#ifndef _M_CEE // TRANSITION, VSO-1659511
 struct use_async_in_a_global_tester {
     use_async_in_a_global_tester() {
         assert(async([] { return 42; }).get() == 42);
@@ -274,6 +275,7 @@ struct use_async_in_a_global_tester {
         (void) async([] { return 1729; }).get();
     }
 } use_async_in_a_global_instance;
+#endif // _M_CEE
 
 int main() {
     test_DevDiv_235721();

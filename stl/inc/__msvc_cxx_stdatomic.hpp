@@ -1,18 +1,18 @@
-// stdatomic.h standard header
+// __msvc_cxx_stdatomic.hpp internal header
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
-#ifndef _STDATOMIC_H_
-#define _STDATOMIC_H_
+#ifndef __MSVC_CXX_STDATOMIC_HPP
+#define __MSVC_CXX_STDATOMIC_HPP
 
 // see _STL_COMPILER_PREPROCESSOR in yvals_core.h
 #if !defined(RC_INVOKED) && !defined(Q_MOC_RUN) && !defined(__midl)
 
 // provide a specific error message for C compilers, before the general error message in yvals_core.h
 #ifndef __cplusplus
-#error <stdatomic.h> is not yet supported when compiling as C, but this is planned for a future release.
+#error <__msvc_cxx_stdatomic.hpp> is an internal header. It is incompatible with C and should not be directly included.
 #endif // __cplusplus
 
 #include <yvals.h>
@@ -136,4 +136,4 @@ _STL_RESTORE_CLANG_WARNINGS
 #endif // ^^^ _HAS_CXX23 ^^^
 
 #endif // !defined(RC_INVOKED) && !defined(Q_MOC_RUN) && !defined(__midl)
-#endif // _STDATOMIC_H_
+#endif // __MSVC_CXX_STDATOMIC_HPP
