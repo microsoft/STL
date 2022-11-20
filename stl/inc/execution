@@ -5186,7 +5186,7 @@ _NoThrowFwdIt uninitialized_value_construct_n(_ExPo&&, _NoThrowFwdIt _First, con
     if constexpr (_Use_memset_value_construct_v<_UnwrappedNoThrowFwdIt>) {
         _STD _Zero_range(_UFirst, _UFirst + _Count);
         _STD _Seek_wrapped(_First, _UFirst + _Count);
-    } else if constexpr(remove_reference_t<_ExPo>::_Parallelize) {
+    } else if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = _CSTD __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1 && _Count >= 2) { // parallelize on multiprocessor machines with at least 2 elements
             _TRY_BEGIN
