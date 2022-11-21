@@ -3197,17 +3197,24 @@ private:
         if (_Right_data._Large_string_engaged()) { // steal buffer
             _Construct_in_place(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
             _Right_data._Bx._Ptr = nullptr;
+
+            _My_data._Myres  = _Right_data._Myres;
+            _My_data._Mysize = _Right_data._Mysize;
+
             _Swap_proxy_and_iterators(_Right);
         } else { // copy small string buffer
             _ASAN_STRING_REMOVE_SSO_ANNOTATION(_My_data);
             _My_data._Activate_SSO_buffer();
+
             _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
+            _My_data._Myres  = _Right_data._Myres;
+            _My_data._Mysize = _Right_data._Mysize;
+            _ASAN_STRING_CREATE(*this);
+
             _Right_data._Orphan_all();
         }
 
-        _My_data._Mysize = _Right_data._Mysize;
-        _My_data._Myres  = _Right_data._Myres;
-        _ASAN_STRING_CREATE(*this);
+        _ASAN_STRING_REMOVE_SSO_ANNOTATION(_Right_data);
         _Right._Tidy_init();
     }
 
@@ -5010,7 +5017,9 @@ private:
         _Traits::assign(_Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize = _New_size], _Elem());
     }
 
-    _CONSTEXPR20 void _Tidy_init() noexcept { // initialize basic_string data members
+    _CONSTEXPR20 void _Tidy_init() noexcept {
+        // initialize basic_string data members
+        // pre: *this's SSO buffer is not annotated with ASan data.
         auto& _My_data   = _Mypair._Myval2;
         _My_data._Mysize = 0;
         _My_data._Myres  = _BUF_SIZE - 1;
