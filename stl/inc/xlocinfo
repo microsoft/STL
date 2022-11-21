@@ -227,10 +227,9 @@ public:
     static _Locinfo& __CLRCALL_PURE_OR_CDECL _Locinfo_Addcats(_Locinfo*, int, const char*);
 
     __CLR_OR_THIS_CALL _Locinfo(const char* _Pch = "C")
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
         : _Lock(_LOCK_LOCALE)
-#endif // _M_CEE
-
+#endif // _M_CEE_PURE
     {
         if (_Pch) {
             _Locinfo_ctor(this, _Pch);
@@ -241,10 +240,9 @@ public:
     }
 
     __CLR_OR_THIS_CALL _Locinfo(int _Cat, const char* _Pch)
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
         : _Lock(_LOCK_LOCALE)
-#endif // _M_CEE
-
+#endif // _M_CEE_PURE
     {
         if (_Pch) {
             _Locinfo_ctor(this, _Cat, _Pch);
@@ -373,12 +371,11 @@ public:
     _Locinfo& operator=(const _Locinfo&) = delete;
 
 private:
-#ifdef _M_CEE
+#ifdef _M_CEE_PURE
     _EmptyLockit _Empty_lock; // to maintain same size
-
-#else // _M_CEE
+#else // _M_CEE_PURE
     _Lockit _Lock; // thread lock, because global locale is altered
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
     _Yarn<char> _Days; // weekday names
     _Yarn<char> _Months; // month names

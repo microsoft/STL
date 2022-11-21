@@ -385,12 +385,14 @@ private:
     int _Locktype;
 };
 
-#ifdef _M_CEE
+#ifdef _M_CEE_PURE
 class _CRTIMP2_PURE_IMPORT _EmptyLockit { // empty lock class used for bin compat
 private:
     int _Locktype;
 };
+#endif // _M_CEE_PURE
 
+#ifdef _M_CEE
 #ifndef _PREPARE_CONSTRAINED_REGIONS
 #ifdef _M_CEE_PURE
 #define _PREPARE_CONSTRAINED_REGIONS 1
@@ -437,11 +439,6 @@ private:
 
 #define _END_LOCINFO() _END_LOCK()
 
-#define _RELIABILITY_CONTRACT                                                    \
-    [System::Runtime::ConstrainedExecution::ReliabilityContract(                 \
-        System::Runtime::ConstrainedExecution::Consistency::WillNotCorruptState, \
-        System::Runtime::ConstrainedExecution::Cer::Success)]
-
 #else // _M_CEE
 #define _BEGIN_LOCK(_Kind) \
     {                      \
@@ -454,31 +451,19 @@ private:
         _Locinfo _VarName;
 
 #define _END_LOCINFO() }
-
-#define _RELIABILITY_CONTRACT
 #endif // _M_CEE
 
 #ifdef _CRTBLD
-class _CRTIMP2_PURE_IMPORT _Init_locks { // initialize mutexes
-public:
-#ifdef _M_CEE_PURE
-    __CLR_OR_THIS_CALL _Init_locks() noexcept {
-        _Init_locks_ctor(this);
-    }
 
-    __CLR_OR_THIS_CALL ~_Init_locks() noexcept {
-        _Init_locks_dtor(this);
-    }
+#ifdef _M_CEE
+#define _RELIABILITY_CONTRACT                                                    \
+    [System::Runtime::ConstrainedExecution::ReliabilityContract(                 \
+        System::Runtime::ConstrainedExecution::Consistency::WillNotCorruptState, \
+        System::Runtime::ConstrainedExecution::Cer::Success)]
+#else // _M_CEE
+#define _RELIABILITY_CONTRACT
+#endif // _M_CEE
 
-#else // _M_CEE_PURE
-    __thiscall _Init_locks() noexcept;
-    __thiscall ~_Init_locks() noexcept;
-#endif // _M_CEE_PURE
-
-private:
-    static void __cdecl _Init_locks_ctor(_Init_locks*) noexcept;
-    static void __cdecl _Init_locks_dtor(_Init_locks*) noexcept;
-};
 #endif // _CRTBLD
 
 #if _HAS_EXCEPTIONS
@@ -518,10 +503,6 @@ private:
 #define _THROW(x) x._Raise()
 #endif // _HAS_EXCEPTIONS
 _STD_END
-
-#ifndef _RELIABILITY_CONTRACT
-#define _RELIABILITY_CONTRACT
-#endif // _RELIABILITY_CONTRACT
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

@@ -1355,9 +1355,15 @@ public:
         _RANGES iter_swap(_Left._Current, _Right.base());
     }
 
+#if _ITERATOR_DEBUG_LEVEL != 0
     template <common_with<_Iter> _Other>
     friend constexpr void _Same_sequence(
         const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept {
+#ifdef _M_CEE // TRANSITION, VSO-1665606
+        (void) _Left;
+        (void) _Right;
+#else // ^^^ workaround / no workaround vvv
+
         // Per N4901 [counted.iterator]/3, two counted_iterators x and y refer to elements of the same sequence iff
         // for some integer n, next(x.base(), x.count() + n) and next(y.base(), y.count() + n)
         // "refer to the same (possibly past-the-end) element".
@@ -1377,7 +1383,9 @@ public:
                     "counted_iterators are from different ranges");
             }
         }
+#endif // ^^^ no workaround ^^^
     }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
     template <common_with<_Iter> _Other>
     friend constexpr void _Verify_range(const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {

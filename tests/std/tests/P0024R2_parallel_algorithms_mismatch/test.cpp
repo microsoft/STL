@@ -77,6 +77,7 @@ void test_case_mismatch_lengths(const size_t testSize) {
 }
 
 int main() {
+#ifndef _M_CEE // TRANSITION, VSO-1659489
     parallel_test_case(test_case_mismatch_signatures<forward_list>);
     parallel_test_case(test_case_mismatch_signatures<list>);
     parallel_test_case(test_case_mismatch_signatures<vector>);
@@ -85,4 +86,5 @@ int main() {
     parallel_test_case(test_case_mismatch_lengths<list, list>);
     parallel_test_case(test_case_mismatch_lengths<list, vector>);
     parallel_test_case(test_case_mismatch_lengths<vector, list>);
+#endif // _M_CEE
 }

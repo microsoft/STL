@@ -13,11 +13,9 @@
 #error <shared_mutex> is not supported when compiling with /clr:pure.
 #endif // _M_CEE_PURE
 
+#include <condition_variable>
 #include <mutex>
 #include <xthreads.h>
-#ifndef _M_CEE
-#include <condition_variable>
-#endif // _M_CEE
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -71,8 +69,6 @@ private:
     _Smtx_t _Myhandle;
 };
 
-// shared_timed_mutex is not supported under /clr
-#ifndef _M_CEE
 _EXPORT_STD class shared_timed_mutex { // class for mutual exclusion shared across threads
 private:
     using _Read_cnt_t = unsigned int;
@@ -230,7 +226,6 @@ private:
     _Read_cnt_t _Readers;
     bool _Writing;
 };
-#endif // _M_CEE
 
 _EXPORT_STD template <class _Mutex>
 class shared_lock { // shareable lock

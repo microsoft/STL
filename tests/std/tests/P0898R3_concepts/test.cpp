@@ -2866,10 +2866,12 @@ namespace test_invocable_concepts {
 #define MCALLCONV __cdecl
 #include "invocable_cc.hpp"
 
+#ifndef _M_CEE // avoid warning C4561: '__fastcall' incompatible with the '/clr' option: converting to '__stdcall'
 #define NAME      test_fast_fast
 #define CALLCONV  __fastcall
 #define MCALLCONV __fastcall
 #include "invocable_cc.hpp"
+#endif // _M_CEE
 
 #define NAME      test_std_std
 #define CALLCONV  __stdcall
@@ -2881,12 +2883,14 @@ namespace test_invocable_concepts {
 #define MCALLCONV __thiscall
 #include "invocable_cc.hpp"
 
+#ifndef _M_CEE // avoid warning C4575: '__vectorcall' incompatible with the '/clr' option: converting to '__stdcall'
 #if !defined(_M_ARM) && !defined(_M_ARM64)
 #define NAME      test_vector_vector
 #define CALLCONV  __vectorcall
 #define MCALLCONV __vectorcall
 #include "invocable_cc.hpp"
 #endif // ^^^ !ARM && !ARM64 ^^^
+#endif // _M_CEE
 
 } // namespace test_invocable_concepts
 

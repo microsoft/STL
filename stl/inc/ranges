@@ -33,6 +33,17 @@ namespace ranges {
     template <class _Ty>
     inline constexpr bool _Is_initializer_list = _Is_specialization_v<remove_cvref_t<_Ty>, initializer_list>;
 
+#if _HAS_CXX23
+    _EXPORT_STD template <range _Rng>
+    using const_iterator_t = const_iterator<iterator_t<_Rng>>;
+
+    _EXPORT_STD template <range _Rng>
+    using const_sentinel_t = const_sentinel<sentinel_t<_Rng>>;
+
+    _EXPORT_STD template <range _Rng>
+    using range_const_reference_t = iter_const_reference_t<iterator_t<_Rng>>;
+#endif // _HAS_CXX23
+
     // clang-format off
     _EXPORT_STD template <class _Rng>
     concept viewable_range = range<_Rng>
@@ -45,20 +56,19 @@ namespace ranges {
     concept _Simple_view = view<_Rng> && range<const _Rng>
         && same_as<iterator_t<_Rng>, iterator_t<const _Rng>>
         && same_as<sentinel_t<_Rng>, sentinel_t<const _Rng>>;
+    // clang-format on
 
     template <class _Ty>
     concept _Valid_movable_box_object =
 #if _HAS_CXX23
-    move_constructible<_Ty>
+        move_constructible<_Ty>
 #else // ^^^ C++23 / C++20 vvv
-    copy_constructible<_Ty>
+        copy_constructible<_Ty>
 #endif // C++20
-    && _Destructible_object<_Ty>;
+        && _Destructible_object<_Ty>;
 
     template <class _It>
-    concept _Has_arrow = input_iterator<_It>
-        && (is_pointer_v<_It> || _Has_member_arrow<_It&>);
-    // clang-format on
+    concept _Has_arrow = input_iterator<_It> && (is_pointer_v<_It> || _Has_member_arrow<_It&>);
 
     template <bool _IsConst, class _Ty>
     using _Maybe_const = conditional_t<_IsConst, const _Ty, _Ty>;
@@ -3318,7 +3328,9 @@ namespace ranges {
             static constexpr bool _Deref_is_glvalue = is_reference_v<_InnerRng<_Const>>;
 
             /* [[no_unique_address]] */ _OuterIter _Outer{};
-            /* [[no_unique_address]] */ _Defaultabox<_InnerIter> _Inner{}; // per LWG-3569
+            /* [[no_unique_address]] */ _Defaultabox<_InnerIter> _Inner{}; // Non-standard extension: when _Inner_iter
+                                                                           // is default-constructible, we don't wrap in
+                                                                           // an optional-like.
             _Parent_t* _Parent{};
 
             constexpr auto&& _Update_inner() {
@@ -3373,7 +3385,7 @@ namespace ranges {
             using difference_type = common_type_t<range_difference_t<_Base>, range_difference_t<_InnerRng<_Const>>>;
 
             // clang-format off
-            _Iterator() requires default_initializable<_OuterIter> = default; // per LWG-3569
+            _Iterator() requires default_initializable<_OuterIter> = default;
             // clang-format on
 
             constexpr _Iterator(_Parent_t& _Parent_, _OuterIter _Outer_)

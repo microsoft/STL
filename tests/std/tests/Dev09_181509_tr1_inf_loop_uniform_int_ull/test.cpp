@@ -121,6 +121,7 @@ private:
 };
 
 int main() {
+#ifndef _M_CEE // TRANSITION, VSO-1659695
     vector<fp_t> tests;
 
     add_tests<mt19937>(tests);
@@ -128,4 +129,5 @@ int main() {
     add_tests<Wacky>(tests);
 
     for_each(par, tests.begin(), tests.end(), [](fp_t fn) { fn(); });
+#endif // _M_CEE
 }

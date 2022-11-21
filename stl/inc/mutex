@@ -28,8 +28,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// mutex and recursive_mutex are not supported under /clr
-#ifndef _M_CEE
 _EXPORT_STD class condition_variable;
 _EXPORT_STD class condition_variable_any;
 
@@ -103,7 +101,6 @@ public:
     recursive_mutex(const recursive_mutex&)            = delete;
     recursive_mutex& operator=(const recursive_mutex&) = delete;
 };
-#endif // _M_CEE
 
 _EXPORT_STD struct adopt_lock_t { // indicates adopt lock
     explicit adopt_lock_t() = default;
@@ -563,8 +560,6 @@ void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) noexcept(
 #undef _WINDOWS_API
 #undef _RENAME_WINDOWS_API
 
-// condition_variable, timed_mutex, and recursive_timed_mutex are not supported under /clr
-#ifndef _M_CEE
 _EXPORT_STD enum class cv_status { // names for wait returns
     no_timeout,
     timeout
@@ -930,7 +925,6 @@ private:
     unsigned int _My_locked;
     thread::id _My_owner;
 };
-#endif // _M_CEE
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

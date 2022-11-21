@@ -54,7 +54,7 @@ struct uninitialized_fixture {
 
 template <typename T, size_t Count>
 struct uninitialized_storage {
-#ifdef _M_CEE
+#ifdef _M_CEE // TRANSITION, VSO-1659408
     char storage[sizeof(T) * Count + sizeof(T)];
 
     T* begin() {

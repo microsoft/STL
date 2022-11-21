@@ -13,12 +13,7 @@ using namespace std;
 
 // LOCK ORDERING: g_coutMutex is locked after all other locks and synchronizes
 // access to cout.
-#ifdef _M_CEE
-#include <shared_mutex>
-using TestMutex = shared_mutex;
-#else // ^^^ _M_CEE ^^^ // vvv !_M_CEE vvv //
 using TestMutex = mutex;
-#endif // _M_CEE
 
 TestMutex g_coutMutex;
 
