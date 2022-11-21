@@ -211,16 +211,6 @@ struct _Replace_first_parameter<_Newfirst, _Ty<_First, _Rest...>> { // given _Ty
 };
 
 template <class _Ty, class = void>
-struct _Get_element_type {
-    using type = typename _Get_first_parameter<_Ty>::type;
-};
-
-template <class _Ty>
-struct _Get_element_type<_Ty, void_t<typename _Ty::element_type>> {
-    using type = typename _Ty::element_type;
-};
-
-template <class _Ty, class = void>
 struct _Get_ptr_difference_type {
     using type = ptrdiff_t;
 };
@@ -281,22 +271,36 @@ void _Default_construct_in_place(_Ty& _Obj) noexcept(is_nothrow_default_construc
     ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty;
 }
 
-_EXPORT_STD template <class _Ty>
-struct pointer_traits {
+template <class _Ty, class _Elem>
+struct _Ptr_traits_base {
     using pointer         = _Ty;
-    using element_type    = typename _Get_element_type<_Ty>::type;
+    using element_type    = _Elem;
     using difference_type = typename _Get_ptr_difference_type<_Ty>::type;
 
     template <class _Other>
     using rebind = typename _Get_rebind_alias<_Ty, _Other>::type;
 
-    using _Reftype = conditional_t<is_void_v<element_type>, char, element_type>&;
+    using _Reftype = conditional_t<is_void_v<_Elem>, char, _Elem>&;
 
     _NODISCARD static _CONSTEXPR20 pointer pointer_to(_Reftype _Val) noexcept(
         noexcept(_Ty::pointer_to(_Val))) /* strengthened */ { // Per LWG-3454
         return _Ty::pointer_to(_Val);
     }
 };
+
+template <class, class = void, class = void>
+struct _Ptr_traits_sfinae_layer {};
+
+template <class _Ty, class _Uty>
+struct _Ptr_traits_sfinae_layer<_Ty, _Uty, void_t<typename _Get_first_parameter<_Ty>::type>>
+    : _Ptr_traits_base<_Ty, typename _Get_first_parameter<_Ty>::type> {};
+
+template <class _Ty>
+struct _Ptr_traits_sfinae_layer<_Ty, void_t<typename _Ty::element_type>, void>
+    : _Ptr_traits_base<_Ty, typename _Ty::element_type> {};
+
+_EXPORT_STD template <class _Ty>
+struct pointer_traits : _Ptr_traits_sfinae_layer<_Ty> {};
 
 template <class _Ty>
 struct pointer_traits<_Ty*> {
