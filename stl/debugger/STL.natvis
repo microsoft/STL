@@ -105,7 +105,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <Type Name="std::optional&lt;*&gt;">
       <DisplayString Condition="!_Has_value">nullopt</DisplayString>
-      <DisplayString Condition="_Has_value">some {_Value}</DisplayString>
+      <DisplayString Condition="_Has_value">{_Value}</DisplayString>
       <Expand>
           <Item Condition="_Has_value" Name="value">_Value</Item>
       </Expand>
