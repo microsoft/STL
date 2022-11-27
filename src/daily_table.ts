@@ -1196,5 +1196,6 @@ export const daily_table: DailyRow[] = [
     { date: '2022-11-23', merged: 24.56, pr: 21, cxx20: null, cxx23: 22, lwg: 17, issue: 390, bug: 131, video: 24, avg_age: 188.11, avg_wait: 119.28, sum_age: 131.67, sum_wait: 83.50, },
     { date: '2022-11-24', merged: 23.56, pr: 21, cxx20: null, cxx23: 22, lwg: 17, issue: 390, bug: 131, video: 24, avg_age: 189.11, avg_wait: 120.28, sum_age: 132.37, sum_wait: 84.20, },
     { date: '2022-11-25', merged: 22.56, pr: 21, cxx20: null, cxx23: 22, lwg: 17, issue: 390, bug: 131, video: 24, avg_age: 190.11, avg_wait: 121.28, sum_age: 133.07, sum_wait: 84.90, },
+    { date: '2022-11-26', merged: 21.56, pr: 21, cxx20: null, cxx23: 22, lwg: 17, issue: 390, bug: 131, video: 24, avg_age: 191.11, avg_wait: 122.28, sum_age: 133.77, sum_wait: 85.60, },
 ];
 // Generated file - DO NOT EDIT manually!
