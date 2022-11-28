@@ -6,6 +6,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "init_locks.hpp"
+
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)
 static std::_Init_locks initlocks;

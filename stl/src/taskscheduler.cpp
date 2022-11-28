@@ -9,6 +9,7 @@
 #include <Windows.h>
 
 #include "awint.hpp"
+#include "init_locks.hpp"
 
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)

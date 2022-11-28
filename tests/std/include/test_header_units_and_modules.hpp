@@ -1004,6 +1004,41 @@ void test_version() {
 #endif // ^^^ named modules ^^^
 }
 
+// VSO-1593165 "Standard Library Modules: time_put<wchar_t> emits bogus error LNK2019: unresolved external symbol"
+void test_VSO_1593165() {
+    using namespace std;
+    puts("Testing VSO-1593165.");
+
+    // Originally from the Dev11_0494593_time_put_wchar_t test:
+    using Facet = time_put<wchar_t, wstring::iterator>;
+
+    const tm t = [] {
+        tm ret{};
+
+        ret.tm_sec   = 57;
+        ret.tm_min   = 42;
+        ret.tm_hour  = 20;
+        ret.tm_mday  = 28;
+        ret.tm_mon   = 3;
+        ret.tm_year  = 108;
+        ret.tm_wday  = 1;
+        ret.tm_yday  = 118;
+        ret.tm_isdst = 0;
+
+        return ret;
+    }();
+
+    const locale l;
+    wstring s(15, L'x');
+    wstringstream stream;
+    const wchar_t fill          = L' ';
+    const wchar_t pattern[]     = L"%Y.%m.%d";
+    const wstring::iterator ret = use_facet<Facet>(l).put(s.begin(), stream, fill, &t, begin(pattern), end(pattern));
+    assert(ret == s.begin() + 11);
+    const wstring correct(L"2008.04.28\0xxxx", 15);
+    assert(s == correct);
+}
+
 void all_cpp_header_tests() {
     test_algorithm();
     test_any();
@@ -1085,4 +1120,6 @@ void all_cpp_header_tests() {
     test_variant();
     test_vector();
     test_version();
+
+    test_VSO_1593165();
 }

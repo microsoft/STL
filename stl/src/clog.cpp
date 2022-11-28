@@ -6,6 +6,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "init_locks.hpp"
+
 #ifndef MRTDLL
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)
