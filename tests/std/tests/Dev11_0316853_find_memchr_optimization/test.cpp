@@ -27,6 +27,7 @@ using namespace std;
 
 constexpr auto long_min = numeric_limits<long>::min();
 constexpr auto long_max = numeric_limits<long>::max();
+constexpr auto uint_max = numeric_limits<unsigned int>::max();
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -91,6 +92,23 @@ void test_limit_check_elements_impl() {
         assert(find(begin(uc), end(uc), ValueType{2}) == begin(uc) + 3);
         assert(find(begin(uc), end(uc), ValueType{6}) == end(uc));
 
+        if constexpr (is_signed_v<ValueType>) {
+            if constexpr (ValueType{-1} == max_val) {
+                // ugly promotions :(
+                assert(find(begin(uc), end(uc), ValueType{-1}) == begin(uc) + 6);
+                assert(find(begin(uc), end(uc), ValueType{-2}) == begin(uc) + 5);
+
+                assert(count(begin(uc), end(uc), ValueType{-1}) == 1);
+                assert(count(begin(uc), end(uc), ValueType{-2}) == 1);
+            } else {
+                assert(find(begin(uc), end(uc), ValueType{-1}) == end(uc));
+                assert(find(begin(uc), end(uc), ValueType{-2}) == end(uc));
+
+                assert(count(begin(uc), end(uc), ValueType{-1}) == 0);
+                assert(count(begin(uc), end(uc), ValueType{-2}) == 0);
+            }
+        }
+
         if constexpr (max_val <= max_vt) {
             assert(find(begin(uc), end(uc), ValueType{max_val - 3}) == end(uc));
             assert(find(begin(uc), end(uc), ValueType{max_val - 2}) == begin(uc) + 4);
@@ -133,6 +151,7 @@ int main() {
 #ifdef __cpp_lib_concepts
         static_assert(_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype(33)>, "should optimize");
 #endif // __cpp_lib_concepts
+        static_assert(_Within_limits<signed char*>(33), "should be within limits");
 
         assert(find(v.begin(), v.end(), 33) - v.begin() == 1);
         assert(find(v.begin(), v.end(), -1) - v.begin() == 2);
@@ -412,6 +431,15 @@ int main() {
         assert(find(begin(sl), end(sl), 0xFFFFFFFF7FFFFFFFULL) == end(sl));
         assert(find(begin(sl), end(sl), 0xFFFFFFFF00000000ULL) == end(sl));
     }
+    { // unsigned == int, weird conversions yay! (#3244)
+        const unsigned ui[] = {0, 1, 2, uint_max - 2, uint_max - 1, uint_max};
+
+        assert(find(begin(ui), end(ui), 0) == begin(ui));
+        assert(find(begin(ui), end(ui), 2) == begin(ui) + 2);
+        assert(find(begin(ui), end(ui), 3) == end(ui));
+        assert(find(begin(ui), end(ui), -2) == begin(ui) + 4);
+        assert(find(begin(ui), end(ui), -1) == begin(ui) + 5);
+    }
 
     { // Test bools
         const bool arr[]{true, true, true, false, true, false};
@@ -429,16 +457,21 @@ int main() {
 
     { // Test pointers
         const char* s = "xxxyyy";
-        const char* arr[]{s, s + 1, s + 1, s + 5, s, s + 4};
+        const char* arr[]{s, s + 1, s + 1, s + 5, s, s + 4, nullptr};
 
         static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr)), decltype(s + 1)>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr)), nullptr_t>, "should optimize");
 
         assert(find(begin(arr), end(arr), s) == begin(arr));
         assert(find(begin(arr), end(arr), s + 1) == begin(arr) + 1);
         assert(find(begin(arr), end(arr), s + 3) == end(arr));
+        assert(find(begin(arr), end(arr), static_cast<const char*>(nullptr)) == begin(arr) + 6);
+        assert(find(begin(arr), end(arr), nullptr) == begin(arr) + 6);
 
         assert(count(begin(arr), end(arr), s + 1) == 2);
         assert(count(begin(arr), end(arr), s + 5) == 1);
         assert(count(begin(arr), end(arr), s + 3) == 0);
+        assert(count(begin(arr), end(arr), static_cast<const char*>(nullptr)) == 1);
+        assert(count(begin(arr), end(arr), nullptr) == 1);
     }
 }
