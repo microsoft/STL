@@ -129,10 +129,12 @@ constexpr void sub_member_test() {
 }
 
 constexpr void lambda_test() {
-    const auto x1 = [loc = source_location::current()] { return loc; }();
-    const auto x2 = [] { return source_location::current(); }();
-    assert(x1.line() == __LINE__ - 2);
-    assert(x2.line() == __LINE__ - 2);
+    const auto l1 = [loc = source_location::current()] { return loc; };
+    const auto l2 = [] { return source_location::current(); };
+    const auto x1 = l1();
+    const auto x2 = l2();
+    assert(x1.line() == __LINE__ - 4);
+    assert(x2.line() == __LINE__ - 4);
 #ifndef _M_CEE // TRANSITION, VSO-1665663
     assert(x1.column() == 52);
 #endif // !_M_CEE
