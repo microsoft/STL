@@ -34,7 +34,7 @@ STATIC_ASSERT(std::same_as<std::make_unsigned_t<std::ptrdiff_t>, std::size_t>);
 
 // GH-2358: <filesystem>: path's comparison operators are IF-NDR
 static_assert(ranges::range<std::filesystem::path>);
-static_assert(ranges::range<std::filesystem::path const>);
+static_assert(ranges::range<const std::filesystem::path>);
 
 template <class T>
 concept Decayed = std::same_as<std::decay_t<T>, T>;
@@ -1088,7 +1088,7 @@ STATIC_ASSERT(test_cdata<std::span<int> const&, int*>());
 #endif // C++20
 
 using valarray_int_iterator       = decltype(std::begin(std::declval<std::valarray<int>&>()));
-using const_valarray_int_iterator = decltype(std::begin(std::declval<std::valarray<int> const&>()));
+using const_valarray_int_iterator = decltype(std::begin(std::declval<const std::valarray<int>&>()));
 STATIC_ASSERT(test_begin<std::valarray<int>>());
 STATIC_ASSERT(test_end<std::valarray<int>>());
 STATIC_ASSERT(test_cbegin<std::valarray<int>>());
@@ -1631,7 +1631,7 @@ struct badsized_range : Base { // size() launches the missiles.
         static_assert(always_false<Base>);
     }
 
-    [[noreturn]] friend int size(badsized_range const&) {
+    [[noreturn]] friend int size(const badsized_range&) {
         static_assert(always_false<Base>);
     }
 };
@@ -1670,9 +1670,9 @@ STATIC_ASSERT(!std::is_base_of_v<std::ranges::view_base, ranges::view_interface<
 // Verify that enable_view<T&> or enable_view<T&&> is never true
 STATIC_ASSERT(ranges::enable_view<strange_view4>);
 STATIC_ASSERT(!ranges::enable_view<strange_view4&>);
-STATIC_ASSERT(!ranges::enable_view<strange_view4 const&>);
+STATIC_ASSERT(!ranges::enable_view<const strange_view4&>);
 STATIC_ASSERT(!ranges::enable_view<strange_view4&&>);
-STATIC_ASSERT(!ranges::enable_view<strange_view4 const&&>);
+STATIC_ASSERT(!ranges::enable_view<const strange_view4&&>);
 
 // Verify that the derived-from-view_interface mechanism can handle uses of incomplete types whenever possible
 struct incomplet;
@@ -1852,7 +1852,7 @@ constexpr bool complicated_algorithm_test() {
 
 // Regression test for DevCom-739010 (aka VSO-985597)
 // https://developercommunity.visualstudio.com/content/problem/739010/meow.html
-// which allows overload resolution to prefer a hidden friend `T const&` overload of `begin`
+// which allows overload resolution to prefer a hidden friend `const T&` overload of `begin`
 // for an rvalue `T` over the deleted `begin(T&&)` instantiated from the poison pill.
 template <class T>
 struct bad_string_view {
@@ -1993,13 +1993,13 @@ namespace closure {
         constexpr arg(arg&) {
             static_assert(Allowed == GLValueKind::lvalue);
         }
-        constexpr arg(arg const&) {
+        constexpr arg(const arg&) {
             static_assert(Allowed == GLValueKind::const_lvalue);
         }
         constexpr arg(arg&&) {
             static_assert(Allowed == GLValueKind::xvalue);
         }
-        constexpr arg(arg const&&) {
+        constexpr arg(const arg&&) {
             static_assert(Allowed == GLValueKind::const_xvalue);
         }
 
