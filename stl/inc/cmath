@@ -620,8 +620,7 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
     template <class _Ty1, class _Ty2,                                                                            \
         _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>                     \
     _NODISCARD _STD _Common_float_type_t<_Ty1, _Ty2> NAME(_Ty1 _Left, _Ty2 _Right) noexcept /* strengthened */ { \
-        using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;                                                   \
-        return FUN(static_cast<_Common>(_Left), static_cast<_Common>(_Right));                                   \
+        return FUN(static_cast<double>(_Left), static_cast<double>(_Right));                                     \
     }
 
 #define _GENERIC_MATH2(FUN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
