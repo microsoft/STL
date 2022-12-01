@@ -4233,7 +4233,7 @@ _NODISCARD constexpr auto _To_address(const _Iter& _Val) noexcept {
     _STL_INTERNAL_STATIC_ASSERT(contiguous_iterator<_Iter>);
     return _STD to_address(_Val);
 }
-#else // ^^^ defined(__cpp_lib_concepts) ^^^ / vvv !defined(__cpp_lib_concepts) vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 // When concepts aren't available, we can detect pointers. (Iterators should be unwrapped before using this.)
 template <class _Iter>
 _INLINE_VAR constexpr bool _Iterator_is_contiguous = is_pointer_v<_Iter>;
@@ -5620,7 +5620,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
             } else {
                 return _First + (_Result - _First_ptr);
             }
-#else // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^ / vvv not _USE_STD_VECTOR_ALGORITHMS vvv
+#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / not _USE_STD_VECTOR_ALGORITHMS vvv
             if constexpr (sizeof(_Iter_value_t<_InIt>) == 1) {
                 const auto _First_ptr = _To_address(_First);
                 const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_InIt>>*>(
@@ -5706,7 +5706,7 @@ namespace ranges {
                 } else {
                     return _RANGES next(_STD move(_First), _Result - _First_ptr);
                 }
-#else // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^ / vvv not _USE_STD_VECTOR_ALGORITHMS vvv
+#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / not _USE_STD_VECTOR_ALGORITHMS vvv
                 if constexpr (sizeof(_Iter_value_t<_It>) == 1 && _Is_sized /* TRANSITION, DevCom-1615707 */) {
                     size_t _Count;
                     if constexpr (_Is_sized) {

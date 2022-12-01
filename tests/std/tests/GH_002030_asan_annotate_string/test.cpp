@@ -193,7 +193,7 @@ bool verify_string(basic_string<CharType, char_traits<CharType>, Alloc>& str) {
     const void* aligned_mid = mid > aligned_start ? mid : aligned_start;
 
     return __sanitizer_verify_contiguous_container(aligned_start, aligned_mid, end) != 0;
-#else // ^^^ ASan instrumentation enabled ^^^ / vvv ASan instrumentation disabled vvv
+#else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
     (void) str;
     return true;
 #endif // ASan instrumentation disabled

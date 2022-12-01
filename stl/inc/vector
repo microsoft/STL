@@ -101,7 +101,7 @@ public:
     _CONSTEXPR20 void _Verify_offset(const difference_type _Off) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Off;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
         _STL_VERIFY(_Off == 0 || _Ptr, "cannot seek value-initialized vector iterator");
         if (_Off < 0) {
@@ -161,7 +161,7 @@ public:
         _Compat(_Right);
         return _Unfancy(_Ptr) <=> _Unfancy(_Right._Ptr);
     }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Vector_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -188,7 +188,7 @@ public:
         // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "vector iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL == 0
     }
@@ -430,13 +430,13 @@ constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain
 #if defined(__SANITIZE_ADDRESS__)
 #define _ACTIVATE_VECTOR_ANNOTATION
 #define _INSERT_VECTOR_ANNOTATION
-#elif defined(__clang__) && defined(__has_feature) // ^^^ __SANITIZE_ADDRESS__ ^^^ / vvv __clang__ vvv
+#elif defined(__clang__) && defined(__has_feature) // ^^^ __SANITIZE_ADDRESS__ / __clang__ vvv
 #if __has_feature(address_sanitizer)
 #define _ACTIVATE_VECTOR_ANNOTATION
 #define _INSERT_VECTOR_ANNOTATION
 #pragma comment(linker, "/INFERASANLIBS")
 #endif // __has_feature(address_sanitizer)
-#elif defined(_ANNOTATE_VECTOR) // ^^^ __clang__ ^^^ / vvv _ANNOTATE_VECTOR vvv
+#elif defined(_ANNOTATE_VECTOR) // ^^^ __clang__ / _ANNOTATE_VECTOR vvv
 #define _INSERT_VECTOR_ANNOTATION
 #endif // _ANNOTATE_VECTOR
 #endif // !_M_CEE_PURE && !_DISABLE_VECTOR_ANNOTATION
@@ -486,7 +486,7 @@ template <class _Vec>
 _INLINE_VAR constexpr bool
     _Has_minimum_allocation_alignment<_Vec, void_t<decltype(_Vec::allocator_type::_Minimum_allocation_alignment)>> =
         _Vec::allocator_type::_Minimum_allocation_alignment >= _Asan_granularity;
-#else // ^^^ _INSERT_VECTOR_ANNOTATION ^^^ / vvv !_INSERT_VECTOR_ANNOTATION vvv
+#else // ^^^ _INSERT_VECTOR_ANNOTATION / !_INSERT_VECTOR_ANNOTATION vvv
 #pragma detect_mismatch("annotate_vector", "0")
 #endif // !_INSERT_VECTOR_ANNOTATION
 
@@ -652,7 +652,7 @@ private:
 #define _ASAN_VECTOR_CREATE_GUARD    _Asan_create_guard _Annotator(*this)
 #define _ASAN_VECTOR_EXTEND_GUARD(n) _Asan_extend_guard _Annotator(this, (n))
 #define _ASAN_VECTOR_RELEASE_GUARD   _Annotator._Release()
-#else // ^^^ _INSERT_VECTOR_ANNOTATION ^^^ / vvv !_INSERT_VECTOR_ANNOTATION vvv
+#else // ^^^ _INSERT_VECTOR_ANNOTATION / !_INSERT_VECTOR_ANNOTATION vvv
 #define _ASAN_VECTOR_MODIFY(n)
 #define _ASAN_VECTOR_REMOVE
 #define _ASAN_VECTOR_CREATE
@@ -927,7 +927,7 @@ public:
         _Ty& _Result = _Emplace_one_at_back(_STD forward<_Valty>(_Val)...);
 #if _HAS_CXX17
         return _Result;
-#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         (void) _Result;
 #endif // _HAS_CXX17
     }
@@ -2236,7 +2236,7 @@ private:
             _Orphan_range_locked(_First, _Last);
         }
     }
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
     _CONSTEXPR20 void _Orphan_range(pointer, pointer) const {}
 #endif // _ITERATOR_DEBUG_LEVEL != 2
 
@@ -2668,7 +2668,7 @@ public:
         }
         return this->_Myoff <=> _Right._Myoff;
     }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Vb_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -3005,7 +3005,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL == 0
         this->_Myvec  = _STD move(_Right._Myvec);
         this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         this->_Orphan_all();
         auto& _Al = this->_Getal();
         auto& _Right_al = _Right._Getal();
@@ -3088,7 +3088,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL == 0
         this->_Myvec  = _Right._Myvec;
         this->_Mysize = _Right._Mysize;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         this->_Orphan_all();
         auto& _Al = this->_Getal();
         auto& _Right_al = _Right._Getal();

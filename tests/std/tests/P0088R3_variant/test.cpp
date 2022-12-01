@@ -7917,6 +7917,6 @@ int main() {
     msvc::DevCom1031281::run_test();
     msvc::gh2770::run_test();
 }
-#else // ^^^ not x86 or not /analyze ^^^ / vvv x86 /analyze vvv
+#else // ^^^ not x86 or not /analyze / x86 /analyze vvv
 int main() {}
 #endif // !defined(_PREFAST_) || !defined(_M_IX86)

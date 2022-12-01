@@ -513,7 +513,7 @@
 
 #if defined(__CUDACC__) && !defined(__clang__) // TRANSITION, VSO-568006
 #define _NODISCARD_FRIEND friend
-#else // ^^^ workaround ^^^ / vvv no workaround vvv
+#else // ^^^ workaround / no workaround vvv
 #define _NODISCARD_FRIEND _NODISCARD friend
 #endif // TRANSITION, VSO-568006
 
@@ -588,7 +588,7 @@
 #define _NODISCARD_LOCK
 #define _NODISCARD_CTOR_LOCK
 
-#else // ^^^ defined(_SILENCE_NODISCARD_LOCK_WARNINGS) ^^^ / vvv !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) vvv
+#else // ^^^ defined(_SILENCE_NODISCARD_LOCK_WARNINGS) / !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) vvv
 
 #define _NODISCARD_LOCK                                                                                                \
     _NODISCARD_MSG("A lock should be stored in a variable to protect the scope. If you're intentionally constructing " \
@@ -1832,13 +1832,13 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 
 #ifdef __clang__
 #define _STL_UNREACHABLE __builtin_unreachable()
-#else // ^^^ clang ^^^ / vvv other vvv
+#else // ^^^ clang / other vvv
 #define _STL_UNREACHABLE __assume(false)
 #endif // __clang__
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
 #define _STL_INTERNAL_STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-#else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ / vvv !_ENABLE_STL_INTERNAL_CHECK vvv
+#else // ^^^ _ENABLE_STL_INTERNAL_CHECK / !_ENABLE_STL_INTERNAL_CHECK vvv
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
 
