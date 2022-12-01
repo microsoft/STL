@@ -616,6 +616,9 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
         return _CSTD FUN(static_cast<double>(_Left), _Arg2);                   \
     }
 
+// The templates generated from this macro are only selected by overload resolution when both
+// arguments have integral type or the types of the two arguments differ, in which case
+// _Common_float_type_t is either double or long double.
 #define _GENERIC_MATH2_BASE(NAME, FUN)                                                                           \
     template <class _Ty1, class _Ty2,                                                                            \
         _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>                     \
