@@ -41,6 +41,12 @@ namespace ordtest {
 #define CONSTEVAL constexpr
 #endif // ^^^ !_HAS_CXX20 ^^^
 
+#if _HAS_CXX20 && !defined(__clang__) // TRANSITION, LLVM-51840
+#define CONSTEVAL_CLANG_WORKAROUND consteval
+#else // ^^^ _HAS_CXX20 && !defined(__clang__) / !_HAS_CXX20 || defined(__clang__) vvv
+#define CONSTEVAL_CLANG_WORKAROUND constexpr
+#endif // ^^^ !_HAS_CXX20 || defined(__clang__) ^^^
+
 #if _HAS_CXX17
 #define NODISCARD [[nodiscard]]
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
@@ -60,7 +66,7 @@ namespace i128_literals {
             std::_Unsigned128 value;
         };
 
-        NODISCARD CONSTEVAL unsigned int char_to_digit(const char c) noexcept {
+        NODISCARD CONSTEVAL_CLANG_WORKAROUND unsigned int char_to_digit(const char c) noexcept {
             if (c >= '0' && c <= '9') {
                 return static_cast<unsigned int>(c - '0');
             }
@@ -79,31 +85,34 @@ namespace i128_literals {
         template <unsigned int Base, char... Chars>
         struct parse_u128_impl {
             NODISCARD static CONSTEVAL u128_parse_result parse() noexcept {
-                if constexpr (sizeof...(Chars) == 0) {
-                    return {u128_parse_status::valid, 0};
-                } else {
-                    constexpr char char_seq[]{Chars...};
-                    constexpr auto u128_max = std::numeric_limits<std::_Unsigned128>::max();
+                constexpr char char_seq[]{Chars...};
+                constexpr auto u128_max = std::numeric_limits<std::_Unsigned128>::max();
 
-                    std::_Unsigned128 val{};
-                    for (const char c : char_seq) {
-                        if (c == '\'') {
-                            continue;
-                        }
-
-                        const unsigned int digit = char_to_digit(c);
-                        if (digit == static_cast<unsigned int>(-1)) {
-                            return {u128_parse_status::invalid, std::_Unsigned128{}};
-                        }
-
-                        if (val > u128_max / Base || Base * val > u128_max - digit) {
-                            return {u128_parse_status::overflow, std::_Unsigned128{}};
-                        }
-
-                        val = Base * val + digit;
+                std::_Unsigned128 val{};
+                for (const char c : char_seq) {
+                    if (c == '\'') {
+                        continue;
                     }
-                    return {u128_parse_status::valid, val};
+
+                    const unsigned int digit = char_to_digit(c);
+                    if (digit == static_cast<unsigned int>(-1)) {
+                        return {u128_parse_status::invalid, std::_Unsigned128{}};
+                    }
+
+                    if (val > u128_max / Base || Base * val > u128_max - digit) {
+                        return {u128_parse_status::overflow, std::_Unsigned128{}};
+                    }
+
+                    val = Base * val + digit;
                 }
+                return {u128_parse_status::valid, val};
+            }
+        };
+
+        template <unsigned int Base>
+        struct parse_u128_impl<Base> {
+            NODISCARD static CONSTEVAL u128_parse_result parse() noexcept {
+                return {u128_parse_status::valid, 0};
             }
         };
 
