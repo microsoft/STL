@@ -47,121 +47,110 @@ namespace ordtest {
 #define CONSTEVAL_CLANG_WORKAROUND constexpr
 #endif // ^^^ !_HAS_CXX20 || defined(__clang__) ^^^
 
-#if _HAS_CXX17
-#define NODISCARD [[nodiscard]]
-#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
-#define NODISCARD
-#endif // ^^^ !_HAS_CXX17 ^^^
-
-namespace i128_literals {
-    namespace i128_udl_detail {
-        enum class u128_parse_status : unsigned char {
-            valid,
-            overflow,
-            invalid,
-        };
-
-        struct u128_parse_result {
-            u128_parse_status status_code;
-            std::_Unsigned128 value;
-        };
-
-        NODISCARD CONSTEVAL_CLANG_WORKAROUND unsigned int char_to_digit(const char c) noexcept {
-            if (c >= '0' && c <= '9') {
-                return static_cast<unsigned int>(c - '0');
-            }
-
-            if (c >= 'A' && c <= 'F') {
-                return static_cast<unsigned int>(c - 'A' + 10);
-            }
-
-            if (c >= 'a' && c <= 'f') {
-                return static_cast<unsigned int>(c - 'a' + 10);
-            }
-
-            return static_cast<unsigned int>(-1);
-        }
-
-        template <unsigned int Base, char... Chars>
-        struct parse_u128_impl {
-            NODISCARD static CONSTEVAL u128_parse_result parse() noexcept {
-                constexpr char char_seq[]{Chars...};
-                constexpr auto u128_max = std::numeric_limits<std::_Unsigned128>::max();
-
-                std::_Unsigned128 val{};
-                for (const char c : char_seq) {
-                    if (c == '\'') {
-                        continue;
-                    }
-
-                    const unsigned int digit = char_to_digit(c);
-                    if (digit == static_cast<unsigned int>(-1)) {
-                        return {u128_parse_status::invalid, std::_Unsigned128{}};
-                    }
-
-                    if (val > u128_max / Base || Base * val > u128_max - digit) {
-                        return {u128_parse_status::overflow, std::_Unsigned128{}};
-                    }
-
-                    val = Base * val + digit;
-                }
-                return {u128_parse_status::valid, val};
-            }
-        };
-
-        template <unsigned int Base>
-        struct parse_u128_impl<Base> {
-            NODISCARD static CONSTEVAL u128_parse_result parse() noexcept {
-                return {u128_parse_status::valid, 0};
-            }
-        };
-
-        template <char... Chars>
-        struct parse_u128 : parse_u128_impl<10, Chars...> {};
-
-        template <char... Chars>
-        struct parse_u128<'0', 'X', Chars...> : parse_u128_impl<16, Chars...> {};
-
-        template <char... Chars>
-        struct parse_u128<'0', 'x', Chars...> : parse_u128_impl<16, Chars...> {};
-
-        template <char... Chars>
-        struct parse_u128<'0', 'B', Chars...> : parse_u128_impl<2, Chars...> {};
-
-        template <char... Chars>
-        struct parse_u128<'0', 'b', Chars...> : parse_u128_impl<2, Chars...> {};
-
-        template <char... Chars>
-        struct parse_u128<'0', Chars...> : parse_u128_impl<8, Chars...> {};
-    } // namespace i128_udl_detail
-
-    template <char... Chars>
-    NODISCARD CONSTEVAL std::_Unsigned128 operator"" _u128() noexcept {
-        constexpr auto parsed_result = i128_udl_detail::parse_u128<Chars...>::parse();
-        static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::invalid,
-            "Invalid characters in the integer literal");
-        static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::overflow,
-            "The integer literal is too large for an unsigned 128-bit number");
-        return parsed_result.value;
-    }
-
-    template <char... Chars>
-    NODISCARD CONSTEVAL std::_Signed128 operator"" _i128() noexcept {
-        constexpr auto parsed_result = i128_udl_detail::parse_u128<Chars...>::parse();
-        static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::invalid,
-            "Invalid characters in the integer literal");
-        static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::overflow
-                          && parsed_result.value._Word[1] < (static_cast<std::uint64_t>(1) << 63),
-            "The integer literal is too large for a signed 128-bit number");
-        return static_cast<std::_Signed128>(parsed_result.value);
-    }
-} // namespace i128_literals
-
 using std::_Signed128;
 using std::_Unsigned128;
 
-using i128_literals::operator""_i128;
-using i128_literals::operator""_u128;
+namespace i128_udl_detail {
+    enum class u128_parse_status : unsigned char {
+        valid,
+        overflow,
+        invalid,
+    };
+
+    struct u128_parse_result {
+        u128_parse_status status_code;
+        _Unsigned128 value;
+    };
+
+    [[nodiscard]] CONSTEVAL_CLANG_WORKAROUND unsigned int char_to_digit(const char c) noexcept {
+        if (c >= '0' && c <= '9') {
+            return static_cast<unsigned int>(c - '0');
+        }
+
+        if (c >= 'A' && c <= 'F') {
+            return static_cast<unsigned int>(c - 'A' + 10);
+        }
+
+        if (c >= 'a' && c <= 'f') {
+            return static_cast<unsigned int>(c - 'a' + 10);
+        }
+
+        return static_cast<unsigned int>(-1);
+    }
+
+    template <unsigned int Base, char... Chars>
+    struct parse_u128_impl {
+        [[nodiscard]] static CONSTEVAL u128_parse_result parse() noexcept {
+            constexpr char char_seq[]{Chars...};
+            constexpr auto u128_max = std::numeric_limits<_Unsigned128>::max();
+
+            _Unsigned128 val{};
+            for (const char c : char_seq) {
+                if (c == '\'') {
+                    continue;
+                }
+
+                const unsigned int digit = char_to_digit(c);
+                if (digit == static_cast<unsigned int>(-1)) {
+                    return {u128_parse_status::invalid, _Unsigned128{}};
+                }
+
+                if (val > u128_max / Base || Base * val > u128_max - digit) {
+                    return {u128_parse_status::overflow, _Unsigned128{}};
+                }
+
+                val = Base * val + digit;
+            }
+            return {u128_parse_status::valid, val};
+        }
+    };
+
+    template <unsigned int Base>
+    struct parse_u128_impl<Base> {
+        [[nodiscard]] static CONSTEVAL u128_parse_result parse() noexcept {
+            return {u128_parse_status::valid, 0};
+        }
+    };
+
+    template <char... Chars>
+    struct parse_u128 : parse_u128_impl<10, Chars...> {};
+
+    template <char... Chars>
+    struct parse_u128<'0', 'X', Chars...> : parse_u128_impl<16, Chars...> {};
+
+    template <char... Chars>
+    struct parse_u128<'0', 'x', Chars...> : parse_u128_impl<16, Chars...> {};
+
+    template <char... Chars>
+    struct parse_u128<'0', 'B', Chars...> : parse_u128_impl<2, Chars...> {};
+
+    template <char... Chars>
+    struct parse_u128<'0', 'b', Chars...> : parse_u128_impl<2, Chars...> {};
+
+    template <char... Chars>
+    struct parse_u128<'0', Chars...> : parse_u128_impl<8, Chars...> {};
+} // namespace i128_udl_detail
+
+template <char... Chars>
+[[nodiscard]] CONSTEVAL _Unsigned128 operator"" _u128() noexcept {
+    constexpr auto parsed_result = i128_udl_detail::parse_u128<Chars...>::parse();
+    static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::invalid,
+        "Invalid characters in the integer literal");
+    static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::overflow,
+        "The integer literal is too large for an unsigned 128-bit number");
+    return parsed_result.value;
+}
+
+template <char... Chars>
+[[nodiscard]] CONSTEVAL _Signed128 operator"" _i128() noexcept {
+    constexpr auto parsed_result = i128_udl_detail::parse_u128<Chars...>::parse();
+    static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::invalid,
+        "Invalid characters in the integer literal");
+    static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::overflow
+                      && parsed_result.value._Word[1] < (static_cast<std::uint64_t>(1) << 63),
+        "The integer literal is too large for a signed 128-bit number");
+    return static_cast<_Signed128>(parsed_result.value);
+}
 
 template <class I>
 constexpr void check_equal(const I& x) {
