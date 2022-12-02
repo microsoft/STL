@@ -303,10 +303,12 @@ struct _Parallelism_allocator {
         return true;
     }
 
+#if !_HAS_CXX20
     template <class _Other>
     bool operator!=(const _Parallelism_allocator<_Other>&) const noexcept {
         return false;
     }
+#endif // !_HAS_CXX20
 };
 
 template <class _Ty>
