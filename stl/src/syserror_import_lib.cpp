@@ -57,6 +57,7 @@ _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
     if (_Chars == 0 && _Lang_id != 0) {
         const DWORD _Last_error = GetLastError();
         if (_Last_error == ERROR_MUI_FILE_NOT_FOUND || _Last_error == ERROR_RESOURCE_LANG_NOT_FOUND) {
+            LocalFree(*_Ptr_str);
             _Chars = FormatMessageA(
                 FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
                 _Message_id, 0, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
