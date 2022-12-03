@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
         <TargetNetFx Condition="'$(MsvcpFlavor)' == 'netfx'">true</TargetNetFx>
 
-        <TargetType>DYNLINK</TargetType>
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
     </PropertyGroup>
 
     <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\crt_build.settings.targets"/>

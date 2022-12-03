@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <PropertyGroup>
         <FinalBinary>p_stl_asan</FinalBinary>
-        <TargetType>LIBRARY</TargetType>
+        <ConfigurationType>StaticLibrary</ConfigurationType>
         <Arm64CombinedPdb>true</Arm64CombinedPdb>
     </PropertyGroup>
 

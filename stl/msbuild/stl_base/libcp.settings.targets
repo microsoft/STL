@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <PropertyGroup>
         <FinalBinary>p</FinalBinary>
-        <TargetType>LIBRARY</TargetType>
+        <ConfigurationType>StaticLibrary</ConfigurationType>
         <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
         <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
         <DependsOnConcRT Condition="'$(MsvcpFlavor)' == 'kernel32'">true</DependsOnConcRT>
