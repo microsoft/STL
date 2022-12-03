@@ -3423,7 +3423,7 @@ namespace ranges {
 #endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
-            return _RANGES end(_Self) - _RANGES begin(_Self);
+            return _STD _To_unsigned_like(_RANGES end(_Self) - _RANGES begin(_Self));
         }
 
 #ifdef __clang__ // TRANSITION, LLVM-44833
@@ -3437,7 +3437,7 @@ namespace ranges {
 #endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
-            return _RANGES end(_Self) - _RANGES begin(_Self);
+            return _STD _To_unsigned_like(_RANGES end(_Self) - _RANGES begin(_Self));
         }
 
 #ifdef __clang__ // TRANSITION, LLVM-44833
