@@ -704,7 +704,7 @@ STATIC_ASSERT(__cpp_lib_containers_ranges == 202202L);
 #endif
 #endif
 
-#if defined(__cpp_impl_coroutine) && !defined(_M_CEE) // TRANSITION, VSO-1663233
+#ifdef __cpp_impl_coroutine
 #ifndef __cpp_lib_coroutine
 #error __cpp_lib_coroutine is not defined
 #elif __cpp_lib_coroutine != 201902L
