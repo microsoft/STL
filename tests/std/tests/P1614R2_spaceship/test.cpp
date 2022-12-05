@@ -320,6 +320,7 @@ constexpr bool optional_test() {
 
         static_assert(!std::three_way_comparable<derived_optional<decltype(SmallVal)>>);
 
+        assert(spaceship_test<ReturnType>(o1, EqualVal, LargeVal));
         assert(spaceship_test<ReturnType>(o1, derived1, derived2));
     }
     {
