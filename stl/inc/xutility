@@ -404,9 +404,10 @@ template <template <class...> class _Template, class... _Args>
 void _Derived_from_specialization_impl(const _Template<_Args...>&);
 
 template <class _Ty, template <class...> class _Template>
-concept _Derived_from_specialization_of = requires(const _Ty& _Obj) {
-    _STD _Derived_from_specialization_impl<_Template>(_Obj); // qualified: avoid ADL, handle incomplete types
-};
+concept _Derived_from_specialization_of =
+    requires(const _Ty& _Obj) {
+        _STD _Derived_from_specialization_impl<_Template>(_Obj); // qualified: avoid ADL, handle incomplete types
+    };
 
 namespace ranges {
     namespace _Iter_move {
