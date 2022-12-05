@@ -291,7 +291,9 @@ constexpr bool tuple_like_test() {
 }
 
 template <class T>
-struct derived_optional : std::optional<T> {};
+struct derived_optional : std::optional<T> {
+    friend bool operator==(const derived_optional&, const derived_optional&) = default;
+};
 
 template <auto SmallVal, decltype(SmallVal) EqualVal, decltype(EqualVal) LargeVal>
 constexpr bool optional_test() {
@@ -313,13 +315,10 @@ constexpr bool optional_test() {
     }
     {
         constexpr std::optional o1(SmallVal);
-
-        assert(spaceship_test<ReturnType>(o1, EqualVal, LargeVal));
-    }
-    {
-        constexpr std::optional o1(SmallVal);
         constexpr derived_optional<decltype(SmallVal)> derived1{std::optional(SmallVal)};
         constexpr derived_optional<decltype(SmallVal)> derived2{std::optional(LargeVal)};
+
+        static_assert(!std::three_way_comparable<derived_optional<decltype(SmallVal)>>);
 
         assert(spaceship_test<ReturnType>(o1, derived1, derived2));
     }
