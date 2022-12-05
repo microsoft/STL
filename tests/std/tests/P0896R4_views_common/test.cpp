@@ -389,13 +389,13 @@ struct instantiator {
 
 template <class T>
 struct difference_type_only_iterator {
-    static_assert(std::is_object_v<T>);
+    static_assert(is_object_v<T>);
 
     friend constexpr bool operator==(difference_type_only_iterator, difference_type_only_iterator)  = default;
     friend constexpr auto operator<=>(difference_type_only_iterator, difference_type_only_iterator) = default;
 
-    using iterator_concept = std::contiguous_iterator_tag;
-    using value_type       = std::remove_cvref_t<T>;
+    using iterator_concept = contiguous_iterator_tag;
+    using value_type       = remove_cvref_t<T>;
 
     constexpr T& operator*() const noexcept {
         return *ptr_;
@@ -427,40 +427,39 @@ struct difference_type_only_iterator {
         return result;
     }
 
-    constexpr difference_type_only_iterator& operator+=(std::same_as<std::ptrdiff_t> auto n) noexcept {
+    constexpr difference_type_only_iterator& operator+=(same_as<ptrdiff_t> auto n) noexcept {
         ptr_ += n;
         return *this;
     }
 
-    constexpr difference_type_only_iterator& operator-=(std::same_as<std::ptrdiff_t> auto n) noexcept {
+    constexpr difference_type_only_iterator& operator-=(same_as<ptrdiff_t> auto n) noexcept {
         ptr_ -= n;
         return *this;
     }
 
     friend constexpr difference_type_only_iterator operator+(
-        difference_type_only_iterator i, std::same_as<std::ptrdiff_t> auto n) noexcept {
+        difference_type_only_iterator i, same_as<ptrdiff_t> auto n) noexcept {
         i += n;
         return i;
     }
 
     friend constexpr difference_type_only_iterator operator+(
-        std::same_as<std::ptrdiff_t> auto n, difference_type_only_iterator i) noexcept {
+        same_as<ptrdiff_t> auto n, difference_type_only_iterator i) noexcept {
         i += n;
         return i;
     }
 
     friend constexpr difference_type_only_iterator operator-(
-        difference_type_only_iterator i, std::same_as<std::ptrdiff_t> auto n) noexcept {
+        difference_type_only_iterator i, same_as<ptrdiff_t> auto n) noexcept {
         i -= n;
         return i;
     }
 
-    friend constexpr std::ptrdiff_t operator-(
-        difference_type_only_iterator i, difference_type_only_iterator j) noexcept {
+    friend constexpr ptrdiff_t operator-(difference_type_only_iterator i, difference_type_only_iterator j) noexcept {
         return i.ptr_ - j.ptr_;
     }
 
-    constexpr T& operator[](std::same_as<std::ptrdiff_t> auto n) const noexcept {
+    constexpr T& operator[](same_as<ptrdiff_t> auto n) const noexcept {
         return ptr_[n];
     }
 
@@ -469,19 +468,17 @@ struct difference_type_only_iterator {
 
 template <class T>
 struct difference_type_only_sentinel {
-    static_assert(std::is_object_v<T>);
+    static_assert(is_object_v<T>);
 
     friend constexpr bool operator==(difference_type_only_iterator<T> i, difference_type_only_sentinel s) noexcept {
         return i.ptr_ == s.ptr_end_;
     }
 
-    friend constexpr std::ptrdiff_t operator-(
-        difference_type_only_iterator<T> i, difference_type_only_sentinel s) noexcept {
+    friend constexpr ptrdiff_t operator-(difference_type_only_iterator<T> i, difference_type_only_sentinel s) noexcept {
         return i.ptr_ - s.ptr_end_;
     }
 
-    friend constexpr std::ptrdiff_t operator-(
-        difference_type_only_sentinel s, difference_type_only_iterator<T> i) noexcept {
+    friend constexpr ptrdiff_t operator-(difference_type_only_sentinel s, difference_type_only_iterator<T> i) noexcept {
         return s.ptr_end_ - i.ptr_;
     }
 
@@ -490,17 +487,16 @@ struct difference_type_only_sentinel {
 
 template <class T>
 constexpr bool test_lwg3717() {
-    std::remove_cv_t<T> x{};
+    remove_cv_t<T> x{};
 
-    auto cmv_sr =
-        std::ranges::subrange(difference_type_only_iterator<T>{&x}, difference_type_only_sentinel<T>{&x + 1})
-        | std::views::common;
+    auto cmv_sr = ranges::subrange(difference_type_only_iterator<T>{&x}, difference_type_only_sentinel<T>{&x + 1})
+                | views::common;
 
-    static_assert(std::ranges::contiguous_range<decltype(cmv_sr)>);
-    static_assert(std::ranges::contiguous_range<const decltype(cmv_sr)>);
+    static_assert(ranges::contiguous_range<decltype(cmv_sr)>);
+    static_assert(ranges::contiguous_range<const decltype(cmv_sr)>);
 
-    assert(std::ranges::end(cmv_sr) == std::ranges::begin(cmv_sr) + std::ptrdiff_t{1});
-    assert(std::ranges::end(std::as_const(cmv_sr)) == std::ranges::begin(std::as_const(cmv_sr)) + std::ptrdiff_t{1});
+    assert(ranges::end(cmv_sr) == ranges::begin(cmv_sr) + ptrdiff_t{1});
+    assert(ranges::end(as_const(cmv_sr)) == ranges::begin(as_const(cmv_sr)) + ptrdiff_t{1});
 
     return true;
 }
