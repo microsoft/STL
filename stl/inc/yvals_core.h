@@ -345,6 +345,7 @@
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2549R1 unexpected<E>::error()
+// P2602R2 Poison Pills Are Too Toxic
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1734,7 +1735,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #if _HAS_CXX23
-#define __cpp_lib_ranges 202207L // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
+#define __cpp_lib_ranges 202211L // P2602R2 Poison Pills Are Too Toxic
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_ranges 202110L // P2415R2 What Is A view?
 #endif // _HAS_CXX20
