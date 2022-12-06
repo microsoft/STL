@@ -22,6 +22,26 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
+  <Type Name="std::error_category">
+      <DisplayString>[{name(),sb}]</DisplayString>
+      <Expand>
+      <Synthetic Name="hint">
+          <DisplayString>Enable "Allow Function Calls In Value Formatting" if you see "???" here</DisplayString>
+      </Synthetic>
+      </Expand>
+  </Type>
+
+  <Type Name="std::error_code">
+    <DisplayString>{{ value={_Myval}, category={*_Mycat} }}</DisplayString>
+    <Expand>
+      <Synthetic Name="hint">
+        <DisplayString>Enable "Allow Function Calls In Value Formatting" if you see "???" here</DisplayString>
+      </Synthetic>
+      <Item Name="[value]">_Myval</Item>
+      <Item Name="[category]">_Mycat</Item>
+    </Expand>
+  </Type>
+
   <Type Name="std::exception_ptr">
       <CustomVisualizer Condition="_Data1 != 0" VisualizerId="CEB58A03-E78D-4D19-9AE7-4738E200649E" />
       <DisplayString Condition="_Data1 == 0">null</DisplayString>
