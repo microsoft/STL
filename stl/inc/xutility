@@ -5544,50 +5544,6 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
 }
 #endif // __cpp_lib_concepts
 
-template <class _InIt, class _Ty>
-_NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
-    // check whether _Val is within the limits of _Elem
-    if constexpr (disjunction_v<
-#ifdef __cpp_lib_byte
-                      is_same<_Ty, byte>,
-#endif // __cpp_lib_byte
-                      is_same<_Ty, bool>, is_pointer<_Ty>, is_null_pointer<_Ty>>) {
-        return true;
-    } else {
-        using _Elem = _Iter_value_t<_InIt>;
-        if constexpr (is_same_v<_Elem, bool>) {
-            return _Val == true || _Val == false;
-        } else if constexpr (is_signed_v<_Elem>) {
-            // use instead of numeric_limits::min/max; avoid <limits> dependency
-            constexpr _Elem _Min = static_cast<_Elem>(_Elem{1} << (sizeof(_Elem) * CHAR_BIT - 1));
-            constexpr _Elem _Max = static_cast<_Elem>(~_Min);
-
-            if constexpr (is_signed_v<_Ty>) {
-                // signed _Elem, signed _Ty
-                return _Min <= _Val && _Val <= _Max;
-            } else {
-                if constexpr (-1 == static_cast<_Ty>(-1)) {
-                    // signed _Elem, unsigned _Ty, -1 == static_cast<_Ty>(-1)
-                    return _Val <= _Max || static_cast<_Ty>(_Min) <= _Val;
-                } else {
-                    // signed _Elem, unsigned _Ty, -1 != static_cast<_Ty>(-1)
-                    return _Val <= _Max;
-                }
-            }
-        } else {
-            constexpr _Elem _Max = static_cast<_Elem>(~_Elem{0});
-
-            if constexpr (is_signed_v<_Ty>) {
-                // unsigned _Elem, signed _Ty
-                return 0 <= _Val && static_cast<make_unsigned_t<_Ty>>(_Val) <= _Max;
-            } else {
-                // unsigned _Elem, unsigned _Ty
-                return _Val <= _Max;
-            }
-        }
-    }
-}
-
 template <class _Iter, class _Ty, class _Elem = _Iter_value_t<_Iter>>
 _INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe = // Can we activate the vector algorithms for find/count?
     _Iterator_is_contiguous<_Iter> // The iterator must be contiguous so we can get raw pointers.
@@ -5601,6 +5557,61 @@ _INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe = // Can we activate the 
         conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>>; // We're finding a U* in a range of U* (identical types).
 
 template <class _InIt, class _Ty>
+_NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
+    // check whether _Val is within the limits of _Elem
+    _STL_INTERNAL_STATIC_ASSERT(_Vector_alg_in_find_is_safe<_InIt, _Ty>);
+
+    if constexpr (disjunction_v<
+#ifdef __cpp_lib_byte
+                      is_same<_Ty, byte>,
+#endif // __cpp_lib_byte
+                      is_same<_Ty, bool>, is_pointer<_Ty>>) {
+        return true;
+    } else {
+        using _Elem = _Iter_value_t<_InIt>;
+        _STL_INTERNAL_STATIC_ASSERT(is_integral_v<_Elem> && is_integral_v<_Ty>);
+
+        if constexpr (is_same_v<_Elem, bool>) {
+            return _Val == true || _Val == false;
+        } else if constexpr (is_signed_v<_Elem>) {
+            // use instead of numeric_limits::min/max; avoid <limits> dependency
+            constexpr _Elem _Min = static_cast<_Elem>(_Elem{1} << (sizeof(_Elem) * CHAR_BIT - 1));
+            constexpr _Elem _Max = static_cast<_Elem>(~_Min);
+
+            if constexpr (is_signed_v<_Ty>) {
+                // signed _Elem, signed _Ty
+                return _Min <= _Val && _Val <= _Max;
+            } else {
+                // signed _Elem, unsigned _Ty
+                if constexpr (_Elem{-1} == static_cast<_Ty>(-1)) {
+                    // negative values of _Elem can compare equal to values of _Ty
+                    return _Val <= _Max || static_cast<_Ty>(_Min) <= _Val;
+                } else {
+                    // negative values of _Elem cannot compare equal to values of _Ty
+                    return _Val <= _Max;
+                }
+            }
+        } else {
+            constexpr _Elem _Max = static_cast<_Elem>(~_Elem{0});
+
+            if constexpr (is_unsigned_v<_Ty>) {
+                // unsigned _Elem, unsigned _Ty
+                return _Val <= _Max;
+            } else {
+                // unsigned _Elem, signed _Ty
+                if constexpr (_Ty{-1} == static_cast<_Elem>(-1)) {
+                    // negative values of _Ty can compare equal to values of _Elem
+                    return _Val <= _Max;
+                } else {
+                    // negative values of _Ty cannot compare equal to values of _Elem
+                    return 0 <= _Val && _Val <= _Max;
+                }
+            }
+        }
+    }
+}
+
+template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
     // find first matching _Val; choose optimization
     // activate optimization for contiguous iterators to most scalar types (possibly const-qualified)
@@ -5609,7 +5620,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            if (!_Within_limits(_First, _Val)) {
+            if (!_STD _Could_compare_equal_to_value_type<_InIt>(_Val)) {
                 return _Last;
             }
 #if _USE_STD_VECTOR_ALGORITHMS
@@ -5678,7 +5689,7 @@ namespace ranges {
         if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && _Sized_or_unreachable_sentinel_for<_Se, _It>
                       && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
-                if (!_Within_limits(_First, _Val)) {
+                if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
                     if constexpr (_Is_sized) {
                         return _RANGES next(_STD move(_First), _Last);
                     } else {
@@ -5792,7 +5803,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
             if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
             {
-                if (!_Within_limits(_UFirst, _Val)) {
+                if (!_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Val)) {
                     return 0;
                 }
 
