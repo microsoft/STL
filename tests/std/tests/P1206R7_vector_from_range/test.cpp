@@ -163,7 +163,7 @@ void test_vso1591034() {
 
 void test_LWG_3743() { // COMPILE-ONLY
     auto r                  = ranges::subrange(views::iota(0ULL) | views::take(5), 5);
-    [[maybe_unused]] auto v = r | ranges::to<vector<unsigned long long>>(0ULL);
+    [[maybe_unused]] auto v = r | ranges::to<vector<unsigned long long>>(0u);
 }
 
 int main() {
