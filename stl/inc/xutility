@@ -5814,7 +5814,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
         const auto _ULast = _Get_unwrapped(_Last);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Vector_alg_in_find_is_safe<_InIt, _Ty>) {
+        if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>) {
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
