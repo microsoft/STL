@@ -5563,6 +5563,12 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
 }
 #endif // __cpp_lib_concepts
 
+template <class _Ty, class _Elem>
+struct _Vector_alg_in_find_is_safe_object_pointers : false_type {};
+template <class _T1, class _T2>
+struct _Vector_alg_in_find_is_safe_object_pointers<_T1*, _T2*>
+    : disjunction<is_same<remove_cv_t<_T1>, remove_cv_t<_T2>>, is_void<_T1>, is_void<_T2>> {};
+
 template <class _Iter, class _Ty, class _Elem = _Iter_value_t<_Iter>>
 _INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe = // Can we activate the vector algorithms for find/count?
     _Iterator_is_contiguous<_Iter> // The iterator must be contiguous so we can get raw pointers.
@@ -5573,7 +5579,15 @@ _INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe = // Can we activate the 
 #endif // __cpp_lib_byte
         conjunction<is_integral<_Ty>, is_integral<_Elem>>, // We're finding an integer in a range of integers.
         // The integer types can be different, which requires careful handling.
-        conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>>; // We're finding a U* in a range of U* (identical types).
+        conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>,
+        // We're finding a pointer in a range of pointers of the same type (U* or U(*)(Ts...)).
+        conjunction<is_same<_Ty, nullptr_t>, is_pointer<_Elem>>,
+        // We're finding a nullptr in a range of pointers (U* or U(*)(Ts...)).
+        conjunction<_Vector_alg_in_find_is_safe_object_pointers<_Ty, _Elem>>
+        // We're finding an object pointer in a range of object pointers, and:
+        // - One of the pointers is a cv void*.
+        // - One of the pointers is a cv1 U* and the other is a cv2 U*.
+        >;
 
 template <class _InIt, class _Ty>
 _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
@@ -5584,7 +5598,7 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
 #ifdef __cpp_lib_byte
                       is_same<_Ty, byte>,
 #endif // __cpp_lib_byte
-                      is_same<_Ty, bool>, is_pointer<_Ty>>) {
+                      is_same<_Ty, bool>, is_pointer<_Ty>, is_same<_Ty, nullptr_t>>) {
         return true;
     } else {
         using _Elem = _Iter_value_t<_InIt>;
