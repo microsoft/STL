@@ -778,13 +778,13 @@ constexpr bool instantiation_test() {
 
 #if defined(TEST_INPUT)
     return instantiation_test_for_category<input_iterator_tag, InstantiatorType>();
-#elif defined(TEST_FORWARD) // ^^^ TEST_INPUT ^^^ / vvv TEST_FORWARD vvv
+#elif defined(TEST_FORWARD) // ^^^ TEST_INPUT / TEST_FORWARD vvv
     return instantiation_test_for_category<forward_iterator_tag, InstantiatorType>();
-#elif defined(TEST_BIDIRECTIONAL) // ^^^ TEST_FORWARD ^^^ / vvv TEST_BIDIRECTIONAL vvv
+#elif defined(TEST_BIDIRECTIONAL) // ^^^ TEST_FORWARD / TEST_BIDIRECTIONAL vvv
     return instantiation_test_for_category<bidirectional_iterator_tag, InstantiatorType>();
-#elif defined(TEST_RANDOM) // ^^^ TEST_BIDIRECTIONAL ^^^ / vvv TEST_RANDOM vvv
+#elif defined(TEST_RANDOM) // ^^^ TEST_BIDIRECTIONAL / TEST_RANDOM vvv
     return instantiation_test_for_category<random_access_iterator_tag, InstantiatorType>();
-#else // ^^^ TEST_RANDOM ^^^ / vvv UNKNOWN vvv
+#else // ^^^ TEST_RANDOM / UNKNOWN vvv
     static_assert(false, "ERROR: A defined test macro was never specified when executing test P2321R2_views_zip!");
     return false;
 #endif // ^^^ UNKNOWN ^^^

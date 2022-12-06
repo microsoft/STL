@@ -120,7 +120,7 @@ int main() {
     // No constexpr test here; the test_fwd_fwd call exceeds the maximum number of steps in a constexpr computation.
     test_fwd_fwd<instantiator, Elem1, Elem2>();
 }
-#else // ^^^ test all range combinations // test only interesting range combos vvv
+#else // ^^^ test all range combinations / test only interesting range combos vvv
 template <class Elem, test::Sized IsSized>
 using fwd_test_range = test::range<forward_iterator_tag, Elem, IsSized, test::CanDifference::no, test::Common::no,
     test::CanCompare::yes, test::ProxyRef::yes>;

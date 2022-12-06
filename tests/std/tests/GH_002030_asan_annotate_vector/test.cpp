@@ -178,7 +178,7 @@ bool verify_vector(vector<T, Alloc>& vec) {
     __asan_describe_address(bad_address);
 
     return false;
-#else // ^^^ ASan instrumentation enabled ^^^ // vvv ASan instrumentation disabled vvv
+#else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
     (void) vec;
     return true;
 #endif // Asan instrumentation disabled
