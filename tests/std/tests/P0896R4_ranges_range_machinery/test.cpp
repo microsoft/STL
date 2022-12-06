@@ -1711,7 +1711,6 @@ namespace exhaustive_size_and_view_test {
 
     using I  = int*;
     using CI = int const*;
-    using D  = std::ptrdiff_t;
     using S  = std::size_t;
     using UC = unsigned char;
 
@@ -1775,10 +1774,10 @@ namespace exhaustive_size_and_view_test {
     STATIC_ASSERT(test<strange_view3 const, false, CI, S>());
     STATIC_ASSERT(test<strange_view3 const&, false, CI, S>());
 
-    STATIC_ASSERT(test<strange_view4, true, I, D>());
-    STATIC_ASSERT(test<strange_view4&, false, I, D>());
-    STATIC_ASSERT(test<strange_view4 const, false, CI, D>());
-    STATIC_ASSERT(test<strange_view4 const&, false, CI, D>());
+    STATIC_ASSERT(test<strange_view4, true, I, S>());
+    STATIC_ASSERT(test<strange_view4&, false, I, S>());
+    STATIC_ASSERT(test<strange_view4 const, false, CI, S>());
+    STATIC_ASSERT(test<strange_view4 const&, false, CI, S>());
 
     template <class = void>
     constexpr bool strict_test_case() {
