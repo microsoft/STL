@@ -265,6 +265,7 @@
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
+// P2167R3 Improving boolean-testable Usage
 // P2210R2 Superior String Splitting
 // P2216R3 std::format Improvements
 // P2231R1 Completing constexpr In optional And variant
@@ -345,6 +346,7 @@
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2549R1 unexpected<E>::error()
+// P2602R2 Poison Pills Are Too Toxic
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -513,7 +515,7 @@
 
 #if defined(__CUDACC__) && !defined(__clang__) // TRANSITION, VSO-568006
 #define _NODISCARD_FRIEND friend
-#else // ^^^ workaround ^^^ / vvv no workaround vvv
+#else // ^^^ workaround / no workaround vvv
 #define _NODISCARD_FRIEND _NODISCARD friend
 #endif // TRANSITION, VSO-568006
 
@@ -588,7 +590,7 @@
 #define _NODISCARD_LOCK
 #define _NODISCARD_CTOR_LOCK
 
-#else // ^^^ defined(_SILENCE_NODISCARD_LOCK_WARNINGS) ^^^ / vvv !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) vvv
+#else // ^^^ defined(_SILENCE_NODISCARD_LOCK_WARNINGS) / !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) vvv
 
 #define _NODISCARD_LOCK                                                                                                \
     _NODISCARD_MSG("A lock should be stored in a variable to protect the scope. If you're intentionally constructing " \
@@ -794,7 +796,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202211L
+#define _MSVC_STL_UPDATE  202212L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1543,9 +1545,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
 
-#if defined(__cpp_impl_coroutine) && !defined(_M_CEE) // TRANSITION, VSO-1663233
+#ifdef __cpp_impl_coroutine
 #define __cpp_lib_coroutine 201902L
-#endif // defined(__cpp_impl_coroutine) && !defined(_M_CEE)
+#endif // __cpp_impl_coroutine
 
 #if _HAS_CXX20
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, GH-395
@@ -1734,7 +1736,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #if _HAS_CXX23
-#define __cpp_lib_ranges 202207L // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
+#define __cpp_lib_ranges 202211L // P2602R2 Poison Pills Are Too Toxic
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_ranges 202110L // P2415R2 What Is A view?
 #endif // _HAS_CXX20
@@ -1818,7 +1820,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
 // The first ARM or OneCore or App Windows was Windows 8
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
-#else // ^^^ default to Win8 // default to Win7 vvv
+#else // ^^^ default to Win8 / default to Win7 vvv
 // The earliest Windows supported by this implementation is Windows 7
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN7
 #endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
@@ -1832,13 +1834,13 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 
 #ifdef __clang__
 #define _STL_UNREACHABLE __builtin_unreachable()
-#else // ^^^ clang ^^^ / vvv other vvv
+#else // ^^^ clang / other vvv
 #define _STL_UNREACHABLE __assume(false)
 #endif // __clang__
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
 #define _STL_INTERNAL_STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-#else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
+#else // ^^^ _ENABLE_STL_INTERNAL_CHECK / !_ENABLE_STL_INTERNAL_CHECK vvv
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
 

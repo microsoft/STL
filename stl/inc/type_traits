@@ -448,7 +448,7 @@ _NON_MEMBER_CALL(_IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES, , , noexcept)
 #ifdef __clang__
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_member_function_pointer_v = __is_member_function_pointer(_Ty);
-#else // ^^^ Clang ^^^ / vvv Other vvv
+#else // ^^^ Clang / Other vvv
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_member_function_pointer_v = _Is_memfunptr<remove_cv_t<_Ty>>::_Bool_type::value;
 #endif // ^^^ Other ^^^
@@ -2052,7 +2052,11 @@ inline constexpr bool is_nothrow_swappable_v = _Is_nothrow_swappable<_Ty>::value
 #endif // _HAS_CXX17
 
 namespace _Has_ADL_swap_detail {
-    void swap(); // undefined (deliberate shadowing)
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+    void swap() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+    void swap();
+#endif // ^^^ workaround ^^^
 
     template <class, class = void>
     struct _Has_ADL_swap : false_type {};

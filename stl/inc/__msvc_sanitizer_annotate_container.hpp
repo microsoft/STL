@@ -25,7 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _ACTIVATE_VECTOR_ANNOTATION
 #define _INSERT_VECTOR_ANNOTATION
 
-#elif defined(__clang__) && defined(__has_feature) // ^^^ __SANITIZE_ADDRESS__ ^^^ // vvv __clang__ vvv
+#elif defined(__clang__) && defined(__has_feature) // ^^^ __SANITIZE_ADDRESS__ / __clang__ vvv
 
 #if __has_feature(address_sanitizer)
 #define _ACTIVATE_STRING_ANNOTATION
@@ -35,7 +35,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma comment(linker, "/INFERASANLIBS")
 #endif // __has_feature(address_sanitizer)
 
-#else // ^^^ __clang__ ^^^ // vvv !__clang__ && !__SANITIZE_ADDRESS__ vvv
+#else // ^^^ __clang__ / !__clang__ && !__SANITIZE_ADDRESS__ vvv
 
 #ifdef _ANNOTATE_STRING
 #define _INSERT_STRING_ANNOTATION

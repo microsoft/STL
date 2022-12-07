@@ -203,7 +203,7 @@ bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& s
     const void* const fixed_mid = aligned._Clamp_to_end(mid);
 
     return __sanitizer_verify_contiguous_container(aligned._First, fixed_mid, aligned._End) != 0;
-#else // ^^^ ASan instrumentation enabled ^^^ // vvv ASan instrumentation disabled vvv
+#else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
     (void) str;
     return true;
 #endif // ASan instrumentation disabled

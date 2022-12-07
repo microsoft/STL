@@ -13,7 +13,7 @@
 _EMIT_STL_WARNING(STL4039, "The contents of <coroutine> are not available with /await. "
                            "Remove /await or use /await:strict for standard coroutines. "
                            "Use <experimental/coroutine> for legacy /await support.");
-#else // ^^^ /await ^^^ / vvv no /await vvv
+#else // ^^^ /await / no /await vvv
 #ifndef __cpp_lib_coroutine
 _EMIT_STL_WARNING(STL4038, "The contents of <coroutine> are available only with C++20 or later or /await:strict.");
 #else // ^^^ <coroutine> is not available / <coroutine> is available vvv

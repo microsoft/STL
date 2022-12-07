@@ -450,7 +450,7 @@ namespace ranges {
             if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty>
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
-                    if (!_Within_limits(_First, _Val)) {
+                    if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
                         return 0;
                     }
 
@@ -8123,7 +8123,7 @@ namespace ranges {
                 // divide and conquer by quicksort
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
                 auto [_Mid_first, _Mid_last] = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
-#else // ^^^ no workaround // workaround vvv
+#else // ^^^ no workaround / workaround vvv
                 auto _Mid       = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
                 auto _Mid_first = _Mid.begin();
                 auto _Mid_last  = _Mid.end();

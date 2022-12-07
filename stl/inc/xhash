@@ -999,7 +999,7 @@ private:
         _Mylist& _List;
         const _Nodeptr _First;
         _Nodeptr _Next;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 // _ITERATOR_DEBUG_LEVEL != 2 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
       // Destroy the nodes as we encounter them to avoid a second traversal of the linked list.
         _Range_eraser(_Mylist& _List_, const _Nodeptr _First_) noexcept
             : _List(_List_), _Predecessor(_First_->_Prev), _Next(_First_) {}

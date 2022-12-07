@@ -127,15 +127,15 @@ namespace ranges {
         template <class _Ty1, class _Ty2>
         concept _Use_ADL_swap = (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>)
             && requires(_Ty1&& __t, _Ty2&& __u) {
-                swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u));
+                swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u)); // intentional ADL
             };
 
         struct _Cpo {
             template <class _Ty1, class _Ty2>
                 requires _Use_ADL_swap<_Ty1, _Ty2>
             constexpr void operator()(_Ty1&& __t, _Ty2&& __u) const
-                noexcept(noexcept(swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u)))) {
-                swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u));
+                noexcept(noexcept(swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u)))) { // intentional ADL
+                swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u)); // intentional ADL
             }
 
             template <class _Ty>
