@@ -162,9 +162,8 @@ void test_vso1591034() {
 }
 
 void test_LWG_3743() { // COMPILE-ONLY
-    ranges::take_view t       = views::iota(0ULL) | views::take(5);
-    ranges::subrange r        = ranges::subrange(t, 5);
-    [[maybe_unused]] vector v = r | ranges::to<vector<unsigned long long>>(size_t{0});
+    ranges::subrange r(views::iota(0ULL) | views::take(5), 5);
+    (void)ranges::to<vector<unsigned long long>>(r, size_t{0});
 }
 
 int main() {
