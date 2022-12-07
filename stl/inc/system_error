@@ -170,7 +170,7 @@ public:
     template <class _Enum, enable_if_t<is_error_code_enum_v<_Enum>, int> = 0>
     error_code(_Enum _Errcode) noexcept : _Myval(0), _Mycat(nullptr) {
         using _Ensure_adl::make_error_code;
-        *this = make_error_code(_Errcode); // using ADL
+        *this = make_error_code(_Errcode); // intentional ADL
     }
 
     void assign(int _Val, const error_category& _Cat) noexcept {
@@ -181,7 +181,7 @@ public:
     template <class _Enum, enable_if_t<is_error_code_enum_v<_Enum>, int> = 0>
     error_code& operator=(_Enum _Errcode) noexcept {
         using _Ensure_adl::make_error_code;
-        *this = make_error_code(_Errcode); // using ADL
+        *this = make_error_code(_Errcode); // intentional ADL
         return *this;
     }
 
@@ -263,7 +263,7 @@ public:
     template <class _Enum, enable_if_t<is_error_condition_enum_v<_Enum>, int> = 0>
     error_condition(_Enum _Errcode) noexcept : _Myval(0), _Mycat(nullptr) {
         using _Ensure_adl::make_error_condition;
-        *this = make_error_condition(_Errcode); // using ADL
+        *this = make_error_condition(_Errcode); // intentional ADL
     }
 
     void assign(int _Val, const error_category& _Cat) noexcept {
@@ -274,7 +274,7 @@ public:
     template <class _Enum, enable_if_t<is_error_condition_enum_v<_Enum>, int> = 0>
     error_condition& operator=(_Enum _Errcode) noexcept {
         using _Ensure_adl::make_error_condition;
-        *this = make_error_condition(_Errcode); // using ADL
+        *this = make_error_condition(_Errcode); // intentional ADL
         return *this;
     }
 

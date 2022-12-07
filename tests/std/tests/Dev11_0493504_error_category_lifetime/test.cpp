@@ -90,13 +90,13 @@ namespace test_ns {
         }
     };
 
-    struct converted_errc : enable_if<false> {
+    struct converted_errc : enable_if<false> { // std is an associated namespace of this type
         operator errc() const {
             return errc{};
         }
     };
 
-    struct converted_io_errc : enable_if<false> {
+    struct converted_io_errc : enable_if<false> { // std is an associated namespace of this type
         operator io_errc() const {
             return io_errc{};
         }
