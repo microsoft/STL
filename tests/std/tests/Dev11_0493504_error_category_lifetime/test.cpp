@@ -1,6 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// Intentially declare variables of these names before the inclusion of standard headers. See LWG-3629.
+struct InvalidFunctor {
+    template <class T>
+    void operator()(T&&) = delete;
+};
+
+constexpr InvalidFunctor make_error_code{};
+constexpr InvalidFunctor make_error_condition{};
+
 #include <cassert>
 #include <cctype>
 #include <ios>
@@ -62,6 +71,63 @@ void test_gh_2893() {
         (make_error_condition(errc::no_such_file_or_directory) == error_code{ERROR_BAD_NET_NAME, system_category()}));
 }
 
+// Also test LWG-3629 make_error_code and make_error_condition are customization points
+namespace test_ns {
+    struct friendly_error {
+        friend std::error_code make_error_code(friendly_error) {
+            return std::error_code{};
+        }
+
+        friend std::error_condition make_error_condition(friendly_error) {
+            return std::error_condition{};
+        }
+    };
+
+    struct converted_errc : std::enable_if<false> {
+        operator std::errc() const {
+            return std::errc{};
+        }
+    };
+
+    struct converted_io_errc : std::enable_if<false> {
+        operator std::io_errc() const {
+            return std::io_errc{};
+        }
+    };
+} // namespace test_ns
+
+template <>
+struct std::is_error_code_enum<test_ns::friendly_error> : std::true_type {};
+
+template <>
+struct std::is_error_code_enum<test_ns::converted_io_errc> : std::true_type {};
+
+template <>
+struct std::is_error_condition_enum<test_ns::friendly_error> : std::true_type {};
+
+template <>
+struct std::is_error_condition_enum<test_ns::converted_errc> : std::true_type {};
+
+void test_lwg_3629() {
+#ifndef _M_CEE_PURE
+    std::error_code err_future{std::future_errc{}};
+    (void) err_future;
+#endif // _M_CEE_PURE
+    std::error_code err_io{std::io_errc{}};
+    (void) err_io;
+    std::error_condition errcond{std::errc{}};
+    (void) errcond;
+
+    std::error_code ec_friendly{test_ns::friendly_error{}};
+    (void) ec_friendly;
+    std::error_code ec_converted_io{test_ns::converted_io_errc{}};
+    (void) ec_converted_io;
+    std::error_condition econd_friendly{test_ns::friendly_error{}};
+    (void) econd_friendly;
+    std::error_condition econd_converted{test_ns::converted_errc{}};
+    (void) econd_converted;
+}
+
 int main() {
     // Also test DevDiv-781294 "<system_error>: Visual C++ 2013 RC system_category().equivalent function does not work".
     const error_code code(ERROR_NOT_ENOUGH_MEMORY, system_category());
@@ -80,6 +146,7 @@ int main() {
     assert(!msg.empty() && msg.back() != '\0' && !isspace(static_cast<unsigned char>(msg.back())));
 
     test_lwg_3598();
+    test_lwg_3629();
 
     test_gh_2572();
     test_gh_2893();
