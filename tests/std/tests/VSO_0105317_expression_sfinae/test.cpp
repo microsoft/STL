@@ -519,7 +519,7 @@ using FP_noexcept                                 = int (*)(int) noexcept;
 using FR_noexcept                                 = int (&)(int) noexcept;
 using PMF_noexcept                                = int (X::*)(int) noexcept;
 inline constexpr bool noexcept_in_the_type_system = true;
-#else // ^^^ __cpp_noexcept_function_type // !__cpp_noexcept_function_type vvv
+#else // ^^^ __cpp_noexcept_function_type / !__cpp_noexcept_function_type vvv
 using FP_noexcept                                 = int (*)(int);
 using FR_noexcept                                 = int (&)(int);
 using PMF_noexcept                                = int (X::*)(int);

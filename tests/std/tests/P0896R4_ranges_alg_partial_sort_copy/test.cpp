@@ -101,7 +101,7 @@ int main() {
     test_in_random<instantiator1, const P, P>();
     test_in_random<instantiator2, const P, P>();
 }
-#else // ^^^ test all range combinations // test only interesting range combos vvv
+#else // ^^^ test all range combinations / test only interesting range combos vvv
 constexpr void run_tests() {
     using namespace test;
     using test::iterator, test::range;

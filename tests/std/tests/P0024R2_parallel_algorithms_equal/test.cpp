@@ -68,7 +68,7 @@ void test_case_equal_parallel(const size_t testSize) {
             assert(!equal(par, defaults.begin(), defaults.end(), tmp.begin(), tmp.end()));
             b = {};
         }
-#else // ^^^ EXHAUSTIVE ^^^ // vvv !EXHAUSTIVE vvv
+#else // ^^^ EXHAUSTIVE / !EXHAUSTIVE vvv
         if (testSize != 0) {
             auto middle = tmp.begin();
             advance(middle, static_cast<ptrdiff_t>(testSize / 2));

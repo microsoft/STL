@@ -624,7 +624,7 @@ void test_algorithms(EqualFn equal_fn) {
 
 #if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1535084
 #define assert2(x)
-#else // ^^^ ICE ^^^ / vvv no ICE vvv
+#else // ^^^ ICE / no ICE vvv
 #define assert2 assert
 #endif // ^^^ no ICE ^^^
 

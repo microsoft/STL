@@ -62,7 +62,7 @@ public:
         _Mystate = _State;
     }
 
-    operator streamoff() const {
+    operator streamoff() const noexcept /* strengthened */ {
         // TRANSITION, ABI: We currently always set _Fpos to 0 but older .objs containing old
         // basic_filebuf would set _Fpos.
         return _Myoff + _Fpos;
@@ -74,16 +74,16 @@ public:
     }
 #endif // _REMOVE_FPOS_SEEKPOS
 
-    _NODISCARD streamoff operator-(const fpos& _Right) const {
+    _NODISCARD streamoff operator-(const fpos& _Right) const noexcept /* strengthened */ {
         return static_cast<streamoff>(*this) - static_cast<streamoff>(_Right);
     }
 
-    fpos& operator+=(streamoff _Off) { // add offset
+    fpos& operator+=(streamoff _Off) noexcept /* strengthened */ { // add offset
         _Myoff += _Off;
         return *this;
     }
 
-    fpos& operator-=(streamoff _Off) { // subtract offset
+    fpos& operator-=(streamoff _Off) noexcept /* strengthened */ { // subtract offset
         _Myoff -= _Off;
         return *this;
     }
@@ -100,33 +100,35 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD bool operator==(const fpos& _Right) const {
+    _NODISCARD bool operator==(const fpos& _Right) const noexcept /* strengthened */ {
         return static_cast<streamoff>(*this) == static_cast<streamoff>(_Right);
     }
 
     template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
-    _NODISCARD_FRIEND bool operator==(const fpos& _Left, const _Int _Right) {
+    _NODISCARD_FRIEND bool operator==(const fpos& _Left, const _Int _Right) noexcept /* strengthened */ {
         return static_cast<streamoff>(_Left) == _Right;
     }
 
+#if !_HAS_CXX20
     template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
-    _NODISCARD_FRIEND bool operator==(const _Int _Left, const fpos& _Right) {
+    _NODISCARD_FRIEND bool operator==(const _Int _Left, const fpos& _Right) noexcept /* strengthened */ {
         return _Left == static_cast<streamoff>(_Right);
     }
 
-    _NODISCARD bool operator!=(const fpos& _Right) const {
+    _NODISCARD bool operator!=(const fpos& _Right) const noexcept /* strengthened */ {
         return static_cast<streamoff>(*this) != static_cast<streamoff>(_Right);
     }
 
     template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
-    _NODISCARD_FRIEND bool operator!=(const fpos& _Left, const _Int _Right) {
+    _NODISCARD_FRIEND bool operator!=(const fpos& _Left, const _Int _Right) noexcept /* strengthened */ {
         return static_cast<streamoff>(_Left) != _Right;
     }
 
     template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
-    _NODISCARD_FRIEND bool operator!=(const _Int _Left, const fpos& _Right) {
+    _NODISCARD_FRIEND bool operator!=(const _Int _Left, const fpos& _Right) noexcept /* strengthened */ {
         return _Left != static_cast<streamoff>(_Right);
     }
+#endif // !_HAS_CXX20
 
 private:
     streamoff _Myoff; // stream offset

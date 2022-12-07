@@ -118,7 +118,7 @@ public:
     _NODISCARD strong_ordering operator<=>(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return _Myoff <=> _Right._Myoff;
     }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -363,7 +363,7 @@ public:
         _Compat(_Right);
         return this->_Myoff <=> _Right._Myoff;
     }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Deque_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -407,7 +407,7 @@ public:
     void _Verify_offset(const difference_type _Off) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Off;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         if (_Off != 0) {
             const auto _Mycont = static_cast<const _Mydeque*>(this->_Getcont());
             _STL_VERIFY(_Mycont, "cannot use value-initialized deque iterator");

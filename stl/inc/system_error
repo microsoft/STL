@@ -339,7 +339,7 @@ private:
 _NODISCARD inline bool _System_error_equal(const error_code& _Left, const error_condition& _Right) noexcept {
     return _Left.category().equivalent(_Left.value(), _Right) || _Right.category().equivalent(_Left, _Right.value());
 }
-#else // ^^^ _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS // !_STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS vvv
+#else // ^^^ _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS / !_STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS vvv
 _EXPORT_STD _NODISCARD inline bool operator==(const error_code& _Left, const error_code& _Right) noexcept {
     return _Left.category() == _Right.category() && _Left.value() == _Right.value();
 }

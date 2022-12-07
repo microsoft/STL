@@ -157,7 +157,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _CONTAINER_DEBUG_LEVEL
 #if _ITERATOR_DEBUG_LEVEL == 0
 #define _CONTAINER_DEBUG_LEVEL 0
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 // _ITERATOR_DEBUG_LEVEL != 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
 #define _CONTAINER_DEBUG_LEVEL 1
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 #endif // _CONTAINER_DEBUG_LEVEL
@@ -194,7 +194,7 @@ _STL_DISABLE_CLANG_WARNINGS
     }                                                                                      \
     while (false)                                                                          \
     _Pragma("clang diagnostic pop")
-#else // ^^^ Clang // MSVC vvv
+#else // ^^^ Clang / MSVC vvv
 #define _STL_VERIFY(cond, mesg)                                     \
     do {                                                            \
         if (cond) { /* contextually convertible to bool paranoia */ \
@@ -208,20 +208,20 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifdef _DEBUG
 #define _STL_ASSERT(cond, mesg) _STL_VERIFY(cond, mesg)
-#else // ^^^ _DEBUG ^^^ // vvv !_DEBUG vvv
+#else // ^^^ _DEBUG / !_DEBUG vvv
 #define _STL_ASSERT(cond, mesg) _Analysis_assume_(cond)
 #endif // _DEBUG
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
 #define _STL_INTERNAL_CHECK(...) _STL_VERIFY(__VA_ARGS__, "STL internal check: " #__VA_ARGS__)
-#else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
+#else // ^^^ _ENABLE_STL_INTERNAL_CHECK / !_ENABLE_STL_INTERNAL_CHECK vvv
 #define _STL_INTERNAL_CHECK(...) _Analysis_assume_(__VA_ARGS__)
 #endif // _ENABLE_STL_INTERNAL_CHECK
 
 #ifndef _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
 #ifdef _DEBUG
 #define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 1
-#else // ^^^ _DEBUG ^^^ // vvv !_DEBUG vvv
+#else // ^^^ _DEBUG / !_DEBUG vvv
 #define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 0
 #endif // _DEBUG
 #endif // _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
@@ -330,7 +330,7 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #ifndef _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B
 #if _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WINBLUE && defined(_WIN64)
 #define _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B 1
-#else // ^^^ modern 64-bit // less modern or 32-bit vvv
+#else // ^^^ modern 64-bit / less modern or 32-bit vvv
 #define _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B 0
 #endif // _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WINBLUE && defined(_WIN64)
 #endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B

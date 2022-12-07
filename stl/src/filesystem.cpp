@@ -34,7 +34,7 @@ namespace {
         return 0;
     }
 #define __vcrt_CreateSymbolicLinkW _Not_supported_CreateSymbolicLinkW
-#else // ^^^ _CRT_APP ^^^ // vvv !_CRT_APP vvv
+#else // ^^^ _CRT_APP / !_CRT_APP vvv
 #define __vcrt_CreateSymbolicLinkW CreateSymbolicLinkW
 #endif // _CRT_APP
 
@@ -51,7 +51,7 @@ namespace {
         _Create_file_parameters.hTemplateFile        = _Template_file;
         return CreateFile2(_File_name, _Desired_access, _Share, _Creation_disposition, &_Create_file_parameters);
     }
-#else // ^^^ _CRT_APP ^^^ // vvv !_CRT_APP vvv
+#else // ^^^ _CRT_APP / !_CRT_APP vvv
 #define __vcp_CreateFile CreateFileW
 #endif // _CRT_APP
 
@@ -77,7 +77,7 @@ namespace {
 
         // take lower bits to undo HRESULT_FROM_WIN32
         return {false, __std_win_error{_Copy_result & 0x0000FFFFU}};
-#else // ^^^ defined(_CRT_APP) ^^^ // vvv !defined(_CRT_APP) vvv
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
         if (CopyFileW(_Source, _Target, _Fail_if_exists)) {
             return {true, __std_win_error::_Success};
         }
@@ -463,7 +463,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     (void) _File_name;
     (void) _Existing_file_name;
     return __std_win_error::_Not_supported;
-#else // ^^^ defined(_CRT_APP) ^^^ // vvv !defined(_CRT_APP) vvv
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     if (CreateHardLinkW(_File_name, _Existing_file_name, nullptr)) {
         return __std_win_error::_Success;
     }
@@ -997,7 +997,7 @@ namespace {
 #if defined(_CRT_APP)
     (void) _Template_directory;
     return __std_fs_create_directory(_New_directory);
-#else // ^^^ defined(_CRT_APP) ^^^ // vvv !defined(_CRT_APP) vvv
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     if (CreateDirectoryExW(_Template_directory, _New_directory, nullptr)) {
         return {true, __std_win_error::_Success};
     }

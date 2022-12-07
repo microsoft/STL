@@ -30,7 +30,7 @@ STATIC_ASSERT(__cpp_lib_adaptor_iterator_pair_constructor == 202106L);
 STATIC_ASSERT(__cpp_lib_addressof_constexpr == 201603L);
 #endif
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_algorithm_iterator_requirements
 #error __cpp_lib_algorithm_iterator_requirements is not defined
 #elif __cpp_lib_algorithm_iterator_requirements != 202207L
@@ -1499,12 +1499,12 @@ STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
-#elif __cpp_lib_ranges != 202207L
-#error __cpp_lib_ranges is not 202207L
+#elif __cpp_lib_ranges != 202211L
+#error __cpp_lib_ranges is not 202211L
 #else
-STATIC_ASSERT(__cpp_lib_ranges == 202207L);
+STATIC_ASSERT(__cpp_lib_ranges == 202211L);
 #endif
-#elif defined(__cpp_lib_concepts)
+#elif _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
 #elif __cpp_lib_ranges != 202110L

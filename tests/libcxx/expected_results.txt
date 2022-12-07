@@ -633,6 +633,13 @@ std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
 # libc++ is missing a requires-clause on variant's operator<=> (llvm/llvm-project#58192)
 std/utilities/variant/variant.relops/three_way.pass.cpp FAIL
 
+# libc++ doesn't yet implement P2602R2 "Poison Pills Are Too Toxic"
+std/ranges/range.access/begin.pass.cpp FAIL
+std/ranges/range.access/end.pass.cpp FAIL
+std/ranges/range.access/rbegin.pass.cpp FAIL
+std/ranges/range.access/rend.pass.cpp FAIL
+std/ranges/range.access/size.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Various assertions.
