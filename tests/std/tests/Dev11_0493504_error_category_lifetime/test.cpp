@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// Intentially declare variables of these names before the inclusion of standard headers. See LWG-3629.
+// Intentionally declare variables of these names before the inclusion of standard headers. See LWG-3629.
 struct InvalidFunctor {
     template <class T>
     void operator()(T&&) const = delete;
@@ -14,6 +14,7 @@ InvalidFunctor make_error_condition{};
 #include <cctype>
 #include <ios>
 #include <system_error>
+#include <type_traits>
 
 #ifndef _M_CEE_PURE
 #include <future>
