@@ -2450,25 +2450,6 @@ private:
 #endif // _HAS_CXX17
 
 #ifdef _INSERT_STRING_ANNOTATION
-    // this is a function so we can get the alignment of the class while defining it.
-    _NODISCARD static constexpr bool _Small_string_always_asan_aligned() noexcept {
-        constexpr bool _Aligned_first =
-            // The offset of the buffer is a multiple of 8 bytes from the front of the object, and
-            _Memcpy_val_offset % _Asan_granularity == 0
-            // the front of the object is always on an 8-byte boundary.
-            && alignof(basic_string) >= _Asan_granularity;
-
-        constexpr bool _Aligned_end =
-            // The size of the buffer is a multiple of 8 bytes, or
-            sizeof(value_type[_BUF_SIZE]) % _Asan_granularity == 0
-            // even though the size of the buffer is not a multiple of 8 bytes,
-            // _Mysize must be aligned on an 8-byte boundary,
-            // so there's padding between the end of _Bx._Buf and _Mysize.
-            || alignof(size_type) >= _Asan_granularity;
-
-        return _Aligned_first && _Aligned_end;
-    }
-
     _CONSTEXPR20 void _Create_annotation() const noexcept {
         // Annotates the valid range with shadow memory
         auto& _My_data = _Mypair._Myval2;
@@ -2490,70 +2471,6 @@ private:
         _Apply_annotation(_My_data._Myptr(), _My_data._Myres, _Old_size, _New_size);
     }
 
-    _CONSTEXPR20 static void _Remove_sso_annotation(const _Scary_val& _My_data) noexcept {
-        // Removes annotation of the SSO buffer with shadow memory.
-        // This results in the ability to copy into the SSO buffer without worrying.
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return;
-        }
-#endif // _HAS_CXX20
-        const void* const _My_buf = _My_data._Bx._Buf;
-        const void* const _End    = _My_data._Bx._Buf + _BUF_SIZE;
-
-        if constexpr (_Small_string_always_asan_aligned()) {
-            // old state:
-            //   [_My_buf, _End) unknown
-            // new state:
-            //   [_My_buf, _End) valid
-            //   [_End, asan_aligned_after(_End)) poison
-            _CSTD __sanitizer_annotate_contiguous_container(_My_buf, _STD _Get_asan_aligned_after(_End), _My_buf, _End);
-        } else {
-            const auto _Aligned = _STD _Get_asan_aligned_first_end(_My_buf, _End);
-            // old state:
-            //   [_Aligned._First, _My_buf) valid
-            //   [_My_buf, _Aligned._End) unknown
-            //   [_Aligned._End, _End) valid
-            // new state:
-            //   [_Aligned._First, _End) valid
-            _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _My_buf, _Aligned._End);
-        }
-    }
-
-    _CONSTEXPR20 static void _Annotate_switch_to_large(const _Scary_val& _My_data) noexcept {
-        // annotates exactly the pointer as valid
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return;
-        }
-#endif // _HAS_CXX20
-
-        _Remove_sso_annotation(_My_data);
-
-        const void* const _My_buf   = _My_data._Bx._Buf;
-        const void* const _Ptr_last = _STD addressof(_My_data._Bx._Ptr) + 1;
-        const void* const _End      = _My_data._Bx._Buf + _BUF_SIZE;
-
-        if constexpr (_Small_string_always_asan_aligned()) {
-            // old state:
-            //   [_My_buf, _End) valid (from _Remove_sso_annotation)
-            // new state:
-            //   [_My_buf, _Ptr_last) valid
-            //   [_Ptr_last, asan_aligned_after(_End)) poison
-            _CSTD __sanitizer_annotate_contiguous_container(
-                _My_buf, _STD _Get_asan_aligned_after(_End), _End, _Ptr_last);
-        } else {
-            const auto _Aligned = _STD _Get_asan_aligned_first_end(_My_buf, _End);
-            // old state:
-            //   [_Aligned._First, _End) valid (from _Remove_sso_annotation)
-            // new state:
-            //   [_Aligned._First, _Ptr_last) valid
-            //   [_Ptr_last, _Aligned._End) poison
-            //   [_Aligned._End, _End) valid
-            _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Aligned._End, _Ptr_last);
-        }
-    }
-
     static _CONSTEXPR20 void _Apply_annotation(const value_type* const _First, const size_type _Capacity,
         const size_type _Old_size, const size_type _New_size) noexcept {
 #if _HAS_CXX20
@@ -2561,6 +2478,10 @@ private:
             return;
         }
 #endif // _HAS_CXX20
+       // Don't annotate small strings; only annotate on the heap.
+        if (_Capacity == _BUF_SIZE - 1) {
+            return;
+        }
 
         if (!_Asan_string_should_annotate) {
             return;
@@ -2571,26 +2492,17 @@ private:
         const void* const _Old_last = _First + _Old_size + 1;
         const void* const _New_last = _First + _New_size + 1;
 
-        _Asan_aligned_pointers _Aligned;
-
         constexpr bool _Large_string_always_asan_aligned =
             (_Container_allocation_minimum_asan_alignment<basic_string>) >= _Asan_granularity;
 
         // for the non-aligned buffer options, the buffer must always have size >= 9 bytes,
         // so it will always end at least one shadow memory section.
 
-        if (_Capacity == _BUF_SIZE - 1) {
-            if constexpr (_Small_string_always_asan_aligned()) {
-                _Aligned = {_First, _STD _Get_asan_aligned_after(_End)};
-            } else {
-                _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
-            }
+        _Asan_aligned_pointers _Aligned;
+        if constexpr (_Large_string_always_asan_aligned) {
+            _Aligned = {_First, _STD _Get_asan_aligned_after(_End)};
         } else {
-            if constexpr (_Large_string_always_asan_aligned) {
-                _Aligned = {_First, _STD _Get_asan_aligned_after(_End)};
-            } else {
-                _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
-            }
+            _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
         }
         const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
         const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
@@ -2618,14 +2530,10 @@ private:
 #define _ASAN_STRING_REMOVE(_Str)                       (_Str)._Remove_annotation()
 #define _ASAN_STRING_CREATE(_Str)                       (_Str)._Create_annotation()
 #define _ASAN_STRING_MODIFY(_Str, _Old_size, _New_size) (_Str)._Modify_annotation(_Old_size, _New_size)
-#define _ASAN_STRING_SWITCH_TO_LARGE(_Scary)            _Annotate_switch_to_large(_Scary)
-#define _ASAN_STRING_REMOVE_SSO_ANNOTATION(_Scary)      _Remove_sso_annotation(_Scary)
 #else // ^^^ _INSERT_STRING_ANNOTATION / !_INSERT_STRING_ANNOTATION vvv
 #define _ASAN_STRING_REMOVE(_Str)
 #define _ASAN_STRING_CREATE(_Str)
 #define _ASAN_STRING_MODIFY(_Str, _Old_size, _New_size)
-#define _ASAN_STRING_SWITCH_TO_LARGE(_Scary)
-#define _ASAN_STRING_REMOVE_SSO_ANNOTATION(_Scary)
 #endif // !_INSERT_STRING_ANNOTATION
 
 public:
@@ -2764,10 +2672,8 @@ private:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
         if (_Count < _BUF_SIZE) {
-            _My_data._Myres = _BUF_SIZE - 1;
-
             _My_data._Mysize = _Count;
-            _ASAN_STRING_CREATE(*this);
+            _My_data._Myres  = _BUF_SIZE - 1;
 
             if constexpr (_Strat == _Construct_strategy::_From_char) {
                 _Traits::assign(_My_data._Bx._Buf, _Count, _Arg);
@@ -2848,8 +2754,6 @@ private:
             }
         }
 
-        _ASAN_STRING_REMOVE(*this);
-
         _Tidy_deallocate_guard<basic_string> _Guard{this};
         for (; _First != _Last; ++_First) {
             if constexpr (!is_same_v<_Size, size_type>) {
@@ -2872,7 +2776,6 @@ private:
                         _Al.deallocate(_My_data._Bx._Ptr, _My_data._Myres + 1);
                         _My_data._Bx._Ptr = _New_ptr;
                     } else {
-                        _ASAN_STRING_SWITCH_TO_LARGE(_My_data);
                         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
                     }
                     _My_data._Myres = _New_capacity;
@@ -3083,7 +2986,6 @@ public:
             _My_data._Myres  = _Res - 1;
             _ASAN_STRING_CREATE(*this);
         } else {
-            _ASAN_STRING_MODIFY(*this, _My_data._Mysize, _Size);
             _Traits::copy(_My_data._Bx._Buf, _Right, _Res);
             _My_data._Mysize = _Size;
             _My_data._Myres  = _BUF_SIZE - 1;
@@ -3203,18 +3105,15 @@ private:
 
             _Swap_proxy_and_iterators(_Right);
         } else { // copy small string buffer
-            _ASAN_STRING_REMOVE_SSO_ANNOTATION(_My_data);
             _My_data._Activate_SSO_buffer();
 
             _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
-            _My_data._Myres  = _Right_data._Myres;
+            _My_data._Myres  = _BUF_SIZE - 1;
             _My_data._Mysize = _Right_data._Mysize;
-            _ASAN_STRING_CREATE(*this);
 
             _Right_data._Orphan_all();
         }
 
-        _ASAN_STRING_REMOVE_SSO_ANNOTATION(_Right_data);
         _Right._Tidy_init();
     }
 
@@ -3321,7 +3220,6 @@ private:
         _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
         _My_data._Mysize = _Right_data._Mysize;
         _My_data._Myres  = _Right_data._Myres;
-        _ASAN_STRING_CREATE(*this);
     }
 
 public:
@@ -4433,11 +4331,9 @@ public:
         const pointer _Ptr = _Starts_large._Bx._Ptr;
         _Destroy_in_place(_Starts_large._Bx._Ptr);
 
-        _ASAN_STRING_REMOVE_SSO_ANNOTATION(_Starts_large);
         _Starts_large._Activate_SSO_buffer();
         _Traits::copy(_Starts_large._Bx._Buf, _Starts_small._Bx._Buf, _Starts_small._Mysize + 1);
 
-        _ASAN_STRING_SWITCH_TO_LARGE(_Starts_small);
         _Construct_in_place(_Starts_small._Bx._Ptr, _Ptr);
     }
 
@@ -4475,8 +4371,6 @@ public:
         } else if (_Right_large) { // swap small with large
             _Swap_bx_large_with_small(_Right_data, _My_data);
         } else {
-            _ASAN_STRING_REMOVE(*this);
-            _ASAN_STRING_REMOVE(_Right);
             _Elem _Temp_buf[_BUF_SIZE];
             _Traits::copy(_Temp_buf, _My_data._Bx._Buf, _My_data._Mysize + 1);
             _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
@@ -4485,15 +4379,6 @@ public:
 
         _STD swap(_My_data._Mysize, _Right_data._Mysize);
         _STD swap(_My_data._Myres, _Right_data._Myres);
-
-        // intentionally swapped, since if `_Right_large` before, now `*this` is large (and vice versa).
-        if (!_Right_large) {
-            _ASAN_STRING_CREATE(*this);
-        }
-
-        if (!_My_large) {
-            _ASAN_STRING_CREATE(_Right);
-        }
     }
 
     _CONSTEXPR20 void swap(basic_string& _Right) noexcept /* strengthened */ {
@@ -5004,12 +4889,10 @@ private:
         const pointer _Ptr = _My_data._Bx._Ptr;
         auto& _Al          = _Getal();
         _Destroy_in_place(_My_data._Bx._Ptr);
-        _ASAN_STRING_REMOVE_SSO_ANNOTATION(_My_data);
         _My_data._Activate_SSO_buffer();
         _Traits::copy(_My_data._Bx._Buf, _Unfancy(_Ptr), _My_data._Mysize + 1);
         _Al.deallocate(_Ptr, _My_data._Myres + 1);
         _My_data._Myres = _BUF_SIZE - 1;
-        _ASAN_STRING_CREATE(*this);
     }
 
     _CONSTEXPR20 void _Eos(const size_type _New_size) { // set new length and null terminator
@@ -5019,7 +4902,6 @@ private:
 
     _CONSTEXPR20 void _Tidy_init() noexcept {
         // initialize basic_string data members
-        // pre: *this's SSO buffer is not annotated with ASan data.
         auto& _My_data   = _Mypair._Myval2;
         _My_data._Mysize = 0;
         _My_data._Myres  = _BUF_SIZE - 1;
@@ -5027,18 +4909,16 @@ private:
 
         // the _Traits::assign is last so the codegen doesn't think the char write can alias this
         _Traits::assign(_My_data._Bx._Buf[0], _Elem());
-        _ASAN_STRING_CREATE(*this);
     }
 
     _CONSTEXPR20 void _Tidy_deallocate() noexcept { // initialize buffer, deallocating any storage
         auto& _My_data = _Mypair._Myval2;
         _My_data._Orphan_all();
-        _ASAN_STRING_REMOVE(*this);
         if (_My_data._Large_string_engaged()) {
+            _ASAN_STRING_REMOVE(*this);
             const pointer _Ptr = _My_data._Bx._Ptr;
             auto& _Al          = _Getal();
             _Destroy_in_place(_My_data._Bx._Ptr);
-            _ASAN_STRING_REMOVE_SSO_ANNOTATION(_My_data);
             _My_data._Activate_SSO_buffer();
             _Al.deallocate(_Ptr, _My_data._Myres + 1);
         }

@@ -175,27 +175,21 @@ public:
 template <class CharType, class Alloc>
 bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& str) {
 #ifdef __SANITIZE_ADDRESS__
+    if (str.capacity() == max_sso_size<CharType>) {
+        return true;
+    }
+
     const void* const buffer  = str.data();
     const void* const buf_end = str.data() + str.capacity() + 1;
 
-    _Asan_aligned_pointers aligned;
     constexpr bool _Large_string_always_aligned =
         (_Container_allocation_minimum_asan_alignment<decay_t<decltype(str)>>) >= 8;
-    constexpr bool _Small_string_always_aligned = alignof(CharType*) >= 8 || alignof(CharType) >= 8;
 
-    if (str.capacity() == max_sso_size<CharType>) {
-        // SSO
-        if constexpr (_Small_string_always_aligned) {
-            aligned = {buffer, _Get_asan_aligned_after(buf_end)};
-        } else {
-            aligned = _Get_asan_aligned_first_end(buffer, buf_end);
-        }
+    _Asan_aligned_pointers aligned;
+    if constexpr (_Large_string_always_aligned) {
+        aligned = {buffer, _Get_asan_aligned_after(buf_end)};
     } else {
-        if constexpr (_Large_string_always_aligned) {
-            aligned = {buffer, _Get_asan_aligned_after(buf_end)};
-        } else {
-            aligned = _Get_asan_aligned_first_end(buffer, buf_end);
-        }
+        aligned = _Get_asan_aligned_first_end(buffer, buf_end);
     }
     assert(aligned._First != aligned._End);
 
