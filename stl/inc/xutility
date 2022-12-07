@@ -3617,10 +3617,10 @@ namespace ranges {
         constexpr explicit _Subrange_base(const _Size_type&) noexcept {}
     };
 
-#if 1 // TRANSITION, VSO-1694918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
+#if 1 // TRANSITION, VSO-1695918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-#endif // TRANSITION, VSO-1694918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
+#endif // TRANSITION, VSO-1695918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
     _EXPORT_STD template <input_or_output_iterator _It, sentinel_for<_It> _Se, subrange_kind _Ki>
         requires (_Ki == subrange_kind::sized || !sized_sentinel_for<_Se, _It>)
     class subrange : public _Subrange_base<_It, _Se, _Ki> {
@@ -3783,9 +3783,9 @@ namespace ranges {
             return *this;
         }
     };
-#if 1 // TRANSITION, VSO-1694918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
+#if 1 // TRANSITION, VSO-1695918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
 #pragma warning(pop)
-#endif // TRANSITION, VSO-1694918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
+#endif // TRANSITION, VSO-1695918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
 
     template <input_or_output_iterator _It, sentinel_for<_It> _Se>
     subrange(_It, _Se) -> subrange<_It, _Se>;
