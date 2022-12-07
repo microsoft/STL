@@ -162,8 +162,9 @@ void test_vso1591034() {
 }
 
 void test_LWG_3743() { // COMPILE-ONLY
-    auto r                  = ranges::subrange(views::iota(0ULL) | views::take(5), 5);
-    [[maybe_unused]] auto v = r | ranges::to<vector<unsigned long long>>(0u);
+    ranges::take_view t       = views::iota(0ULL) | views::take(5);
+    ranges::subrange r        = ranges::subrange(t, 5);
+    [[maybe_unused]] vector v = r | ranges::to<vector<unsigned long long>>(size_t{0});
 }
 
 int main() {
