@@ -4,11 +4,11 @@
 // Intentially declare variables of these names before the inclusion of standard headers. See LWG-3629.
 struct InvalidFunctor {
     template <class T>
-    void operator()(T&&) = delete;
+    void operator()(T&&) const = delete;
 };
 
-constexpr InvalidFunctor make_error_code{};
-constexpr InvalidFunctor make_error_condition{};
+InvalidFunctor make_error_code{};
+InvalidFunctor make_error_condition{};
 
 #include <cassert>
 #include <cctype>
@@ -50,6 +50,9 @@ void test_lwg_3598() {
 
 // Also test GH-2572: WAIT_TIMEOUT is not matched against by std::errc::timed_out
 void test_gh_2572() {
+    using std::make_error_code;
+    using std::make_error_condition;
+
     assert((errc::timed_out == error_code{WAIT_TIMEOUT, system_category()}));
     assert((make_error_condition(errc::timed_out) == error_code{WAIT_TIMEOUT, system_category()}));
 
@@ -62,6 +65,9 @@ void test_gh_2572() {
 
 // Also test GH-2893 <system_error>: Several Windows system errors are not mapped
 void test_gh_2893() {
+    using std::make_error_code;
+    using std::make_error_condition;
+
     assert((errc::filename_too_long == error_code{ERROR_FILENAME_EXCED_RANGE, system_category()}));
     assert(
         (make_error_condition(errc::filename_too_long) == error_code{ERROR_FILENAME_EXCED_RANGE, system_category()}));
@@ -74,61 +80,64 @@ void test_gh_2893() {
 // Also test LWG-3629 make_error_code and make_error_condition are customization points
 namespace test_ns {
     struct friendly_error {
-        friend std::error_code make_error_code(friendly_error) {
-            return std::error_code{};
+        friend error_code make_error_code(friendly_error) {
+            return error_code{};
         }
 
-        friend std::error_condition make_error_condition(friendly_error) {
-            return std::error_condition{};
-        }
-    };
-
-    struct converted_errc : std::enable_if<false> {
-        operator std::errc() const {
-            return std::errc{};
+        friend error_condition make_error_condition(friendly_error) {
+            return error_condition{};
         }
     };
 
-    struct converted_io_errc : std::enable_if<false> {
-        operator std::io_errc() const {
-            return std::io_errc{};
+    struct converted_errc : enable_if<false> {
+        operator errc() const {
+            return errc{};
+        }
+    };
+
+    struct converted_io_errc : enable_if<false> {
+        operator io_errc() const {
+            return io_errc{};
         }
     };
 } // namespace test_ns
 
 template <>
-struct std::is_error_code_enum<test_ns::friendly_error> : std::true_type {};
+struct is_error_code_enum<test_ns::friendly_error> : true_type {};
 
 template <>
-struct std::is_error_code_enum<test_ns::converted_io_errc> : std::true_type {};
+struct is_error_code_enum<test_ns::converted_io_errc> : true_type {};
 
 template <>
-struct std::is_error_condition_enum<test_ns::friendly_error> : std::true_type {};
+struct is_error_condition_enum<test_ns::friendly_error> : true_type {};
 
 template <>
-struct std::is_error_condition_enum<test_ns::converted_errc> : std::true_type {};
+struct is_error_condition_enum<test_ns::converted_errc> : true_type {};
 
 void test_lwg_3629() {
 #ifndef _M_CEE_PURE
-    std::error_code err_future{std::future_errc{}};
+    error_code err_future{future_errc{}};
     (void) err_future;
 #endif // _M_CEE_PURE
-    std::error_code err_io{std::io_errc{}};
+    error_code err_io{io_errc{}};
     (void) err_io;
-    std::error_condition errcond{std::errc{}};
+    error_condition errcond{errc{}};
     (void) errcond;
 
-    std::error_code ec_friendly{test_ns::friendly_error{}};
+    error_code ec_friendly{test_ns::friendly_error{}};
     (void) ec_friendly;
-    std::error_code ec_converted_io{test_ns::converted_io_errc{}};
+    error_code ec_converted_io{test_ns::converted_io_errc{}};
     (void) ec_converted_io;
-    std::error_condition econd_friendly{test_ns::friendly_error{}};
+    error_condition econd_friendly{test_ns::friendly_error{}};
     (void) econd_friendly;
-    std::error_condition econd_converted{test_ns::converted_errc{}};
+    error_condition econd_converted{test_ns::converted_errc{}};
     (void) econd_converted;
 }
 
 int main() {
+    using std::make_error_code;
+    using std::make_error_condition;
+
     // Also test DevDiv-781294 "<system_error>: Visual C++ 2013 RC system_category().equivalent function does not work".
     const error_code code(ERROR_NOT_ENOUGH_MEMORY, system_category());
 
