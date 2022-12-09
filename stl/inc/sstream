@@ -72,7 +72,7 @@ public:
     }
 #endif // _HAS_CXX20
 
-    basic_stringbuf(basic_stringbuf&& _Right) : _Mystate(0) {
+    basic_stringbuf(basic_stringbuf&& _Right) noexcept : _Mystate(0) {
         _Assign_rv(_STD move(_Right));
     }
 
@@ -584,7 +584,7 @@ public:
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::in) {}
 #endif // _HAS_CXX20
 
-    basic_istringstream(basic_istringstream&& _Right) : _Mybase(_STD addressof(_Stringbuffer)) {
+    basic_istringstream(basic_istringstream&& _Right) noexcept : _Mybase(_STD addressof(_Stringbuffer)) {
         _Assign_rv(_STD move(_Right));
     }
 
@@ -704,7 +704,7 @@ public:
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::out) {}
 #endif // _HAS_CXX20
 
-    basic_ostringstream(basic_ostringstream&& _Right) : _Mybase(_STD addressof(_Stringbuffer)) {
+    basic_ostringstream(basic_ostringstream&& _Right) noexcept : _Mybase(_STD addressof(_Stringbuffer)) {
         _Assign_rv(_STD move(_Right));
     }
 
@@ -830,7 +830,7 @@ public:
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode) {}
 #endif // _HAS_CXX20
 
-    basic_stringstream(basic_stringstream&& _Right) : _Mybase(_STD addressof(_Stringbuffer)) {
+    basic_stringstream(basic_stringstream&& _Right) noexcept : _Mybase(_STD addressof(_Stringbuffer)) {
         _Assign_rv(_STD move(_Right));
     }
 

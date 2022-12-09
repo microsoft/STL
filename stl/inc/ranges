@@ -298,7 +298,7 @@ namespace ranges {
         _Movable_box(_Movable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Movable_box(_Movable_box&& _That) : _Engaged{_That._Engaged} {
+        constexpr _Movable_box(_Movable_box&& _That) noexcept : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _STD move(_That._Val));
             }
@@ -515,7 +515,7 @@ namespace ranges {
         _Defaultabox(_Defaultabox&&) requires is_trivially_move_constructible_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Defaultabox(_Defaultabox&& _That) : _Engaged{_That._Engaged} {
+        constexpr _Defaultabox(_Defaultabox&& _That) noexcept : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _STD move(_That._Val));
             }

@@ -170,7 +170,7 @@ namespace stdext {
             return *this;
         }
 
-        hash_map(hash_map&& _Right) : _Mybase(_STD move(_Right)) {}
+        hash_map(hash_map&& _Right) noexcept : _Mybase(_STD move(_Right)) {}
 
         hash_map(hash_map&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
@@ -356,7 +356,7 @@ namespace stdext {
             return *this;
         }
 
-        hash_multimap(hash_multimap&& _Right) : _Mybase(_STD move(_Right)) {}
+        hash_multimap(hash_multimap&& _Right) noexcept : _Mybase(_STD move(_Right)) {}
 
         hash_multimap(hash_multimap&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
