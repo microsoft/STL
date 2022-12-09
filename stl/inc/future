@@ -1434,7 +1434,7 @@ public:
         _STD terminate(); // Very Bad Things
     }
 
-    _Fake_no_copy_callable_adapter(_Fake_no_copy_callable_adapter&& _Other)          = default;
+    _Fake_no_copy_callable_adapter(_Fake_no_copy_callable_adapter&& _Other) = default;
     _Fake_no_copy_callable_adapter& operator=(const _Fake_no_copy_callable_adapter&) = delete;
     _Fake_no_copy_callable_adapter& operator=(_Fake_no_copy_callable_adapter&&)      = delete;
 

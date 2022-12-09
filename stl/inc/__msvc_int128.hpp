@@ -319,7 +319,7 @@ struct
     }
 
 #if _HAS_CXX20
-    _NODISCARD_FRIEND constexpr bool operator==(const _Base128&, const _Base128&) noexcept = default;
+    _NODISCARD_FRIEND constexpr bool operator==(const _Base128&, const _Base128&) = default;
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD_FRIEND constexpr bool operator==(const _Base128& _Left, const _Base128& _Right) noexcept {
         return _Left._Word[0] == _Right._Word[0] && _Left._Word[1] == _Right._Word[1];

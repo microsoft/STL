@@ -80,10 +80,10 @@ struct _Scoped_base<_Outer, _Inner0, _Inner...> : _Outer { // nest of allocators
         // also handles rebinding
     }
 
-    _Scoped_base(const _Scoped_base&)            = default;
-    _Scoped_base(_Scoped_base&&)                 = default;
-    _Scoped_base& operator=(const _Scoped_base&) = default;
-    _Scoped_base& operator=(_Scoped_base&&)      = default;
+    _Scoped_base(const _Scoped_base&)                = default;
+    _Scoped_base(_Scoped_base&&) noexcept            = default;
+    _Scoped_base& operator=(const _Scoped_base&)     = default;
+    _Scoped_base& operator=(_Scoped_base&&) = default;
 
     _NODISCARD _Myadaptor select_on_container_copy_construction() const { // make new adaptor
         return _Myadaptor(_Secret_scoped_allocator_construct_tag{},
@@ -110,10 +110,10 @@ struct _Scoped_base<_Outer> : _Outer { // nest of allocators, one deep
     template <class _Other1, enable_if_t<!is_base_of_v<_Scoped_base, decay_t<_Other1>>, int> = 0>
     _Scoped_base(_Other1&& _Outer_arg) : _Outer(_STD forward<_Other1>(_Outer_arg)) {} // also handles rebinding
 
-    _Scoped_base(const _Scoped_base&)            = default;
-    _Scoped_base(_Scoped_base&&)                 = default;
-    _Scoped_base& operator=(const _Scoped_base&) = default;
-    _Scoped_base& operator=(_Scoped_base&&)      = default;
+    _Scoped_base(const _Scoped_base&)                = default;
+    _Scoped_base(_Scoped_base&&) noexcept            = default;
+    _Scoped_base& operator=(const _Scoped_base&)     = default;
+    _Scoped_base& operator=(_Scoped_base&&) = default;
 
     _NODISCARD _Myadaptor select_on_container_copy_construction() const { // make new adaptor
         return _Myadaptor(
@@ -187,8 +187,8 @@ public:
         const inner_allocator_type& _Inner_arg) noexcept
         : _Mybase(_Outer_arg, _Inner_arg) {}
 
-    scoped_allocator_adaptor& operator=(const scoped_allocator_adaptor&) = default;
-    scoped_allocator_adaptor& operator=(scoped_allocator_adaptor&&)      = default;
+    scoped_allocator_adaptor& operator=(const scoped_allocator_adaptor&)     = default;
+    scoped_allocator_adaptor& operator=(scoped_allocator_adaptor&&) = default;
 
     _NODISCARD inner_allocator_type& inner_allocator() noexcept { // get reference to inner allocator
         return this->_Get_inner_object(*this);

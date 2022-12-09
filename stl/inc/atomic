@@ -2357,7 +2357,7 @@ public:
         }
     }
 
-    atomic_ref(const atomic_ref&) noexcept = default;
+    atomic_ref(const atomic_ref&) = default;
 
     atomic_ref& operator=(const atomic_ref&) = delete;
 
@@ -2848,7 +2848,7 @@ _EXPORT_STD struct atomic_flag { // flag with test-and-set semantics
         _Storage.store(false, _Order);
     }
 
-    constexpr atomic_flag() noexcept = default;
+    constexpr atomic_flag() = default;
 
 #if _HAS_CXX20
     void wait(const bool _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {

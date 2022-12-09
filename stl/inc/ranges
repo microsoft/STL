@@ -295,10 +295,10 @@ namespace ranges {
         }
 
         // clang-format off
-        _Movable_box(_Movable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
+        _Movable_box(_Movable_box&&)  noexcept requires is_trivially_move_constructible_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Movable_box(_Movable_box&& _That) : _Engaged{_That._Engaged} {
+        constexpr _Movable_box(_Movable_box&& _That) noexcept : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _STD move(_That._Val));
             }
@@ -442,12 +442,12 @@ namespace ranges {
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
             : _Val(_STD forward<_Types>(_Args)...) {}
 
-        _Movable_box(const _Movable_box&) = default;
-        _Movable_box(_Movable_box&&)      = default;
+        _Movable_box(const _Movable_box&)     = default;
+        _Movable_box(_Movable_box&&) = default;
 
         // clang-format off
         _Movable_box& operator=(const _Movable_box&) requires copyable<_Ty> = default;
-        _Movable_box& operator=(_Movable_box&&) requires movable<_Ty> = default;
+        _Movable_box& operator=(_Movable_box&&)  noexcept requires movable<_Ty> = default;
         // clang-format on
 
         constexpr _Movable_box& operator=(const _Movable_box& _That) noexcept
@@ -512,10 +512,10 @@ namespace ranges {
         }
 
         // clang-format off
-        _Defaultabox(_Defaultabox&&) requires is_trivially_move_constructible_v<_Ty> = default;
+        _Defaultabox(_Defaultabox&&)  noexcept requires is_trivially_move_constructible_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Defaultabox(_Defaultabox&& _That) : _Engaged{_That._Engaged} {
+        constexpr _Defaultabox(_Defaultabox&& _That) noexcept : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _STD move(_That._Val));
             }
@@ -1651,11 +1651,11 @@ namespace ranges {
 
             constexpr explicit _Iterator(basic_istream_view& _Parent_) noexcept : _Parent{_STD addressof(_Parent_)} {}
 
-            _Iterator(const _Iterator&) = delete;
-            _Iterator(_Iterator&&)      = default;
+            _Iterator(const _Iterator&)     = delete;
+            _Iterator(_Iterator&&) = default;
 
-            _Iterator& operator=(const _Iterator&) = delete;
-            _Iterator& operator=(_Iterator&&)      = default;
+            _Iterator& operator=(const _Iterator&)     = delete;
+            _Iterator& operator=(_Iterator&&) = default;
 
             _Iterator& operator++() {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -1809,7 +1809,7 @@ namespace ranges {
         constexpr owning_view(_Rng&& _Range_) noexcept(is_nothrow_move_constructible_v<_Rng>) // strengthened
             : _Range(_STD move(_Range_)) {}
 
-        owning_view(owning_view&&)            = default;
+        owning_view(owning_view&&) noexcept            = default;
         owning_view& operator=(owning_view&&) = default;
 
         _NODISCARD constexpr _Rng& base() & noexcept {
@@ -6364,7 +6364,7 @@ namespace ranges {
             using difference_type  = range_difference_t<_Vw>;
             using value_type       = range_value_t<_Vw>;
 
-            _Inner_iterator(_Inner_iterator&&)            = default;
+            _Inner_iterator(_Inner_iterator&&) noexcept            = default;
             _Inner_iterator& operator=(_Inner_iterator&&) = default;
 
             _NODISCARD constexpr const iterator_t<_Vw>& base() const& noexcept /* strengthened */ {
@@ -6489,7 +6489,7 @@ namespace ranges {
                 }
             };
 
-            _Outer_iterator(_Outer_iterator&&)            = default;
+            _Outer_iterator(_Outer_iterator&&) noexcept            = default;
             _Outer_iterator& operator=(_Outer_iterator&&) = default;
 
             _NODISCARD constexpr value_type operator*() const noexcept /* strengthened */ {

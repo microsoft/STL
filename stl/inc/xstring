@@ -942,7 +942,7 @@ public:
     using pointer           = const value_type*;
     using reference         = const value_type&;
 
-    constexpr _String_view_iterator() noexcept = default;
+    constexpr _String_view_iterator() = default;
 
 private:
     friend basic_string_view<value_type, _Traits>;
@@ -1227,7 +1227,7 @@ public:
     constexpr basic_string_view() noexcept : _Mydata(), _Mysize(0) {}
 
     constexpr basic_string_view(const basic_string_view&) noexcept            = default;
-    constexpr basic_string_view& operator=(const basic_string_view&) noexcept = default;
+    constexpr basic_string_view& operator=(const basic_string_view&) = default;
 
     /* implicit */ constexpr basic_string_view(_In_z_ const const_pointer _Ntcts) noexcept // strengthened
         : _Mydata(_Ntcts), _Mysize(_Traits::length(_Ntcts)) {}

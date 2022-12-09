@@ -201,7 +201,7 @@ template <class _Ty, size_t _Extent>
 struct _Span_extent_type {
     using pointer = _Ty*;
 
-    constexpr _Span_extent_type() noexcept = default;
+    constexpr _Span_extent_type() = default;
 
     constexpr explicit _Span_extent_type(const pointer _Data, size_t) noexcept : _Mydata{_Data} {}
 
@@ -213,7 +213,7 @@ template <class _Ty>
 struct _Span_extent_type<_Ty, dynamic_extent> {
     using pointer = _Ty*;
 
-    constexpr _Span_extent_type() noexcept = default;
+    constexpr _Span_extent_type() = default;
 
     constexpr explicit _Span_extent_type(const pointer _Data, const size_t _Size) noexcept
         : _Mydata{_Data}, _Mysize{_Size} {}

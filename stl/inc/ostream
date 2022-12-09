@@ -865,7 +865,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
         if (_State == ios_base::goodbit && _Ostr.rdbuf()->sputn(_Val, _Count) != _Count) {
             _State |= ios_base::badbit;
         }
-
         if (_State == ios_base::goodbit) {
             for (; 0 < _Pad; --_Pad) { // pad on right
                 if (_Traits::eq_int_type(_Traits::eof(), _Ostr.rdbuf()->sputc(_Ostr.fill()))) {

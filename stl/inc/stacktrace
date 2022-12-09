@@ -79,7 +79,7 @@ public:
 
     constexpr stacktrace_entry() noexcept                                   = default;
     constexpr stacktrace_entry(const stacktrace_entry&) noexcept            = default;
-    constexpr stacktrace_entry& operator=(const stacktrace_entry&) noexcept = default;
+    constexpr stacktrace_entry& operator=(const stacktrace_entry&) = default;
 
     ~stacktrace_entry() = default;
 
@@ -107,10 +107,10 @@ public:
         return __std_stacktrace_source_line(_Address);
     }
 
-    _NODISCARD_FRIEND constexpr bool operator==(const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
+    _NODISCARD_FRIEND constexpr bool operator==(const stacktrace_entry&, const stacktrace_entry&) = default;
 
     _NODISCARD_FRIEND constexpr strong_ordering operator<=>(
-        const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
+        const stacktrace_entry&, const stacktrace_entry&) = default;
 
 private:
     void* _Address = nullptr;
@@ -184,7 +184,7 @@ public:
     explicit basic_stacktrace(const allocator_type& _Al) noexcept : _Frames(_Al) {}
 
     basic_stacktrace(const basic_stacktrace&)     = default;
-    basic_stacktrace(basic_stacktrace&&) noexcept = default;
+    basic_stacktrace(basic_stacktrace&&) = default;
     basic_stacktrace(const basic_stacktrace& _Other, const allocator_type& _Al)
         : _Frames(_Other._Frames, _Al), _Hash(_Other._Hash) {}
 
@@ -306,7 +306,7 @@ private:
                                     || allocator_traits<_Alloc>::is_always_equal::value;
 
     struct _Internal_t {
-        explicit _Internal_t() noexcept = default;
+        explicit _Internal_t() = default;
     };
 
     basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Al) : _Frames(_Max_depth, _Al) {}

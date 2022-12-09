@@ -901,7 +901,7 @@ public:
         _Proxy._Release();
     }
 
-    _Tree(_Tree&& _Right)
+    _Tree(_Tree&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), // intentionally copy comparator, see LWG-2227
             _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();

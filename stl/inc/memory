@@ -1128,7 +1128,7 @@ private:
     _Atomic_counter_t _Weaks = 1;
 
 protected:
-    constexpr _Ref_count_base() noexcept = default; // non-atomic initializations
+    constexpr _Ref_count_base() = default; // non-atomic initializations
 
 public:
     _Ref_count_base(const _Ref_count_base&)            = delete;
@@ -1325,7 +1325,7 @@ protected:
         return _Ptr;
     }
 
-    constexpr _Ptr_base() noexcept = default;
+    constexpr _Ptr_base() = default;
 
     ~_Ptr_base() = default;
 
@@ -1560,7 +1560,7 @@ public:
     using weak_type = weak_ptr<_Ty>;
 #endif // _HAS_CXX17
 
-    constexpr shared_ptr() noexcept = default;
+    constexpr shared_ptr() = default;
 
     constexpr shared_ptr(nullptr_t) noexcept {} // construct empty shared_ptr
 
@@ -3153,7 +3153,7 @@ private:
 
 _EXPORT_STD template <class _Ty>
 struct default_delete { // default deleter for unique_ptr
-    constexpr default_delete() noexcept = default;
+    constexpr default_delete() = default;
 
     template <class _Ty2, enable_if_t<is_convertible_v<_Ty2*, _Ty*>, int> = 0>
     _CONSTEXPR23 default_delete(const default_delete<_Ty2>&) noexcept {}
@@ -3166,7 +3166,7 @@ struct default_delete { // default deleter for unique_ptr
 
 template <class _Ty>
 struct default_delete<_Ty[]> { // default deleter for unique_ptr to array of unknown size
-    constexpr default_delete() noexcept = default;
+    constexpr default_delete() = default;
 
     template <class _Uty, enable_if_t<is_convertible_v<_Uty (*)[], _Ty (*)[]>, int> = 0>
     _CONSTEXPR23 default_delete(const default_delete<_Uty[]>&) noexcept {}
@@ -3850,7 +3850,7 @@ template <class _Ty>
 class alignas(2 * sizeof(void*)) _Atomic_ptr_base {
     // overalignment is to allow potential future use of cmpxchg16b
 protected:
-    constexpr _Atomic_ptr_base() noexcept = default;
+    constexpr _Atomic_ptr_base() = default;
 
     _Atomic_ptr_base(remove_extent_t<_Ty>* const _Px, _Ref_count_base* const _Ref) noexcept
         : _Ptr(_Px), _Repptr(_Ref) {}
@@ -3975,7 +3975,7 @@ public:
     using _Base::notify_all;
     using _Base::notify_one;
 
-    constexpr atomic() noexcept = default;
+    constexpr atomic() = default;
 
     constexpr atomic(nullptr_t) noexcept : atomic() {}
 
@@ -4094,7 +4094,7 @@ public:
     using _Base::notify_all;
     using _Base::notify_one;
 
-    constexpr atomic() noexcept = default;
+    constexpr atomic() = default;
 
     atomic(const weak_ptr<_Ty> _Value) noexcept : _Base(_Value._Ptr, _Value._Rep) {
         _Value._Incwref();

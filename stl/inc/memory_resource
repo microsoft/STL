@@ -164,7 +164,7 @@ namespace pmr {
 
         _STL_INTERNAL_STATIC_ASSERT(is_base_of_v<_Link_type, _Ty>);
 
-        constexpr _Intrusive_stack() noexcept = default;
+        constexpr _Intrusive_stack() = default;
         constexpr _Intrusive_stack(_Intrusive_stack&& _That) noexcept : _Head{_That._Head} {
             _That._Head = nullptr;
         }

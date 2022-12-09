@@ -225,7 +225,7 @@ class shared_lock { // shareable lock
 public:
     using mutex_type = _Mutex;
 
-    shared_lock() noexcept = default;
+    shared_lock() = default;
 
     _NODISCARD_CTOR_LOCK explicit shared_lock(mutex_type& _Mtx)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) { // construct with mutex and lock shared

@@ -172,7 +172,7 @@ class unique_lock { // whizzy class with destructor that unlocks mutex
 public:
     using mutex_type = _Mutex;
 
-    unique_lock() noexcept = default;
+    unique_lock() = default;
 
     _NODISCARD_CTOR_LOCK explicit unique_lock(_Mutex& _Mtx)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) { // construct and lock

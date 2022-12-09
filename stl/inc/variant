@@ -433,10 +433,10 @@ public:
         is_nothrow_constructible_v<_Variant_storage<_Rest...>, integral_constant<size_t, _Idx - 1>, _Types...>)
         : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) {} // initialize _Tail (recurse)
 
-    _Variant_storage_(_Variant_storage_&&)                 = default;
-    _Variant_storage_(const _Variant_storage_&)            = default;
-    _Variant_storage_& operator=(_Variant_storage_&&)      = default;
-    _Variant_storage_& operator=(const _Variant_storage_&) = default;
+    _Variant_storage_(_Variant_storage_&&) noexcept            = default;
+    _Variant_storage_(const _Variant_storage_&)                = default;
+    _Variant_storage_& operator=(_Variant_storage_&&) = default;
+    _Variant_storage_& operator=(const _Variant_storage_&)     = default;
 
     _NODISCARD constexpr _First& _Get() & noexcept {
         return _Head;
@@ -874,11 +874,11 @@ struct _Variant_destroy_layer_ : _Variant_base<_Types...> { // destruction behav
         this->_Destroy();
     }
 
-    _Variant_destroy_layer_()                                          = default;
-    _Variant_destroy_layer_(const _Variant_destroy_layer_&)            = default;
-    _Variant_destroy_layer_(_Variant_destroy_layer_&&)                 = default;
-    _Variant_destroy_layer_& operator=(const _Variant_destroy_layer_&) = default;
-    _Variant_destroy_layer_& operator=(_Variant_destroy_layer_&&)      = default;
+    _Variant_destroy_layer_()                                              = default;
+    _Variant_destroy_layer_(const _Variant_destroy_layer_&)                = default;
+    _Variant_destroy_layer_(_Variant_destroy_layer_&&) noexcept            = default;
+    _Variant_destroy_layer_& operator=(const _Variant_destroy_layer_&)     = default;
+    _Variant_destroy_layer_& operator=(_Variant_destroy_layer_&&) = default;
 };
 
 template <class... _Types>

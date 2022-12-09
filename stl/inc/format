@@ -376,7 +376,7 @@ private:
     _State_t _State = _Start;
 
 public:
-    _NODISCARD constexpr bool operator==(const _GB11_LeftHand_regex&) const noexcept = default;
+    _NODISCARD constexpr bool operator==(const _GB11_LeftHand_regex&) const = default;
 
     _NODISCARD constexpr bool _Match(
         const _Grapheme_Break_property_values _Left_gbp, _Extended_Pictographic_property_values _Left_ExtPic) noexcept {
@@ -415,7 +415,7 @@ public:
         return _WrappedIter == default_sentinel;
     }
 
-    _NODISCARD constexpr bool operator==(const _Grapheme_break_property_iterator&) const noexcept = default;
+    _NODISCARD constexpr bool operator==(const _Grapheme_break_property_iterator&) const = default;
 
     using difference_type = ptrdiff_t;
     using value_type      = iter_value_t<_Wrapped_iter_type>;
@@ -1906,7 +1906,7 @@ class _Format_arg_store<_Context> {};
 _EXPORT_STD template <class _Context>
 class basic_format_args {
 public:
-    basic_format_args() noexcept = default;
+    basic_format_args() = default;
 
     basic_format_args(const _Format_arg_store<_Context>&) noexcept {}
 
@@ -2981,7 +2981,7 @@ private:
     _Grapheme_break_property_iterator<_CharT> _WrappedIter;
 
 public:
-    _NODISCARD constexpr bool operator==(const _Measure_string_prefix_iterator_utf&) const noexcept = default;
+    _NODISCARD constexpr bool operator==(const _Measure_string_prefix_iterator_utf&) const = default;
 
     _NODISCARD constexpr bool operator==(default_sentinel_t) const noexcept {
         return _WrappedIter == default_sentinel;

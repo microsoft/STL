@@ -129,7 +129,7 @@ void _Uses_alloc_construct_pair(_CvPair* const _Ptr, _Outer_alloc& _Outer, _Inne
 namespace pmr {
     _EXPORT_STD class __declspec(novtable) memory_resource {
     public:
-        virtual ~memory_resource() noexcept = default;
+        virtual ~memory_resource() = default;
 
         _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) void* allocate(_CRT_GUARDOVERFLOW const size_t _Bytes,
             const size_t _Align = alignof(max_align_t)) { // allocate _Bytes bytes of memory with alignment _Align
@@ -206,7 +206,7 @@ namespace pmr {
 
         using value_type = _Ty;
 
-        polymorphic_allocator() noexcept = default;
+        polymorphic_allocator() = default;
 
         /* implicit */ polymorphic_allocator(memory_resource* const _Resource_) noexcept // strengthened
             : _Resource{_Resource_} { // initialize with _Resource_

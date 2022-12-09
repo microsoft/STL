@@ -946,7 +946,7 @@ public:
 
     constexpr allocator() noexcept {}
 
-    constexpr allocator(const allocator&) noexcept = default;
+    constexpr allocator(const allocator&) = default;
     template <class _Other>
     constexpr allocator(const allocator<_Other>&) noexcept {}
     _CONSTEXPR20 ~allocator()                           = default;
@@ -1171,7 +1171,7 @@ struct _Iterator_base0 {
 
 struct _Container_base12;
 struct _Container_proxy { // store head of iterator chain and back pointer
-    _CONSTEXPR20 _Container_proxy() noexcept = default;
+    _CONSTEXPR20 _Container_proxy() = default;
     _CONSTEXPR20 _Container_proxy(_Container_base12* _Mycont_) noexcept : _Mycont(_Mycont_) {}
 
     const _Container_base12* _Mycont       = nullptr;
@@ -1180,7 +1180,7 @@ struct _Container_proxy { // store head of iterator chain and back pointer
 
 struct _Container_base12 {
 public:
-    _CONSTEXPR20 _Container_base12() noexcept = default;
+    _CONSTEXPR20 _Container_base12() = default;
 
     _Container_base12(const _Container_base12&)            = delete;
     _Container_base12& operator=(const _Container_base12&) = delete;
@@ -1224,7 +1224,7 @@ private:
 
 struct _Iterator_base12 { // store links to container proxy, next iterator
 public:
-    _CONSTEXPR20 _Iterator_base12() noexcept = default; // construct orphaned iterator
+    _CONSTEXPR20 _Iterator_base12() = default; // construct orphaned iterator
 
     _CONSTEXPR20 _Iterator_base12(const _Iterator_base12& _Right) noexcept {
         *this = _Right;

@@ -247,8 +247,8 @@ struct pair { // store a pair of values
         : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {
     }
 
-    pair(const pair&) = default;
-    pair(pair&&)      = default;
+    pair(const pair&)     = default;
+    pair(pair&&) = default;
 
 #if _HAS_CXX23
     template <class _Other1, class _Other2,

@@ -29,9 +29,9 @@ struct _Non_trivial_copy : _Base { // non-trivial copy construction facade
         noexcept(_Base::_Construct_from(static_cast<const _Base&>(_That)))) {
         _Base::_Construct_from(static_cast<const _Base&>(_That));
     }
-    _Non_trivial_copy(_Non_trivial_copy&&)                 = default;
-    _Non_trivial_copy& operator=(const _Non_trivial_copy&) = default;
-    _Non_trivial_copy& operator=(_Non_trivial_copy&&)      = default;
+    _Non_trivial_copy(_Non_trivial_copy&&) noexcept            = default;
+    _Non_trivial_copy& operator=(const _Non_trivial_copy&)     = default;
+    _Non_trivial_copy& operator=(_Non_trivial_copy&&) = default;
 };
 
 template <class _Base, class... _Types>
@@ -50,8 +50,8 @@ struct _Non_trivial_move : _SMF_control_copy<_Base, _Types...> { // non-trivial 
         noexcept(_Mybase::_Construct_from(static_cast<_Base&&>(_That)))) {
         _Mybase::_Construct_from(static_cast<_Base&&>(_That));
     }
-    _Non_trivial_move& operator=(const _Non_trivial_move&) = default;
-    _Non_trivial_move& operator=(_Non_trivial_move&&)      = default;
+    _Non_trivial_move& operator=(const _Non_trivial_move&)     = default;
+    _Non_trivial_move& operator=(_Non_trivial_move&&) = default;
 };
 
 template <class _Base, class... _Types>
@@ -64,9 +64,9 @@ struct _Non_trivial_copy_assign : _SMF_control_move<_Base, _Types...> { // non-t
     using _Mybase = _SMF_control_move<_Base, _Types...>;
     using _Mybase::_Mybase;
 
-    _Non_trivial_copy_assign()                                = default;
-    _Non_trivial_copy_assign(const _Non_trivial_copy_assign&) = default;
-    _Non_trivial_copy_assign(_Non_trivial_copy_assign&&)      = default;
+    _Non_trivial_copy_assign()                                    = default;
+    _Non_trivial_copy_assign(const _Non_trivial_copy_assign&)     = default;
+    _Non_trivial_copy_assign(_Non_trivial_copy_assign&&) = default;
 
     _CONSTEXPR20 _Non_trivial_copy_assign& operator=(const _Non_trivial_copy_assign& _That) noexcept(
         noexcept(_Mybase::_Assign_from(static_cast<const _Base&>(_That)))) {
@@ -81,11 +81,11 @@ struct _Deleted_copy_assign : _SMF_control_move<_Base, _Types...> { // deleted c
     using _Mybase = _SMF_control_move<_Base, _Types...>;
     using _Mybase::_Mybase;
 
-    _Deleted_copy_assign()                                       = default;
-    _Deleted_copy_assign(const _Deleted_copy_assign&)            = default;
-    _Deleted_copy_assign(_Deleted_copy_assign&&)                 = default;
-    _Deleted_copy_assign& operator=(const _Deleted_copy_assign&) = delete;
-    _Deleted_copy_assign& operator=(_Deleted_copy_assign&&)      = default;
+    _Deleted_copy_assign()                                           = default;
+    _Deleted_copy_assign(const _Deleted_copy_assign&)                = default;
+    _Deleted_copy_assign(_Deleted_copy_assign&&) noexcept            = default;
+    _Deleted_copy_assign& operator=(const _Deleted_copy_assign&)     = delete;
+    _Deleted_copy_assign& operator=(_Deleted_copy_assign&&) = default;
 };
 
 template <class _Base, class... _Types>
@@ -103,7 +103,7 @@ struct _Non_trivial_move_assign : _SMF_control_copy_assign<_Base, _Types...> { /
 
     _Non_trivial_move_assign()                                           = default;
     _Non_trivial_move_assign(const _Non_trivial_move_assign&)            = default;
-    _Non_trivial_move_assign(_Non_trivial_move_assign&&)                 = default;
+    _Non_trivial_move_assign(_Non_trivial_move_assign&&) noexcept        = default;
     _Non_trivial_move_assign& operator=(const _Non_trivial_move_assign&) = default;
 
     _CONSTEXPR20 _Non_trivial_move_assign& operator=(_Non_trivial_move_assign&& _That) noexcept(
@@ -120,7 +120,7 @@ struct _Deleted_move_assign : _SMF_control_copy_assign<_Base, _Types...> { // de
 
     _Deleted_move_assign()                                       = default;
     _Deleted_move_assign(const _Deleted_move_assign&)            = default;
-    _Deleted_move_assign(_Deleted_move_assign&&)                 = default;
+    _Deleted_move_assign(_Deleted_move_assign&&) noexcept        = default;
     _Deleted_move_assign& operator=(const _Deleted_move_assign&) = default;
     _Deleted_move_assign& operator=(_Deleted_move_assign&&)      = delete;
 };

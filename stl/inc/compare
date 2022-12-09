@@ -45,7 +45,7 @@ _EXPORT_STD struct partial_ordering {
         return _Val._Value == 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator==(partial_ordering, partial_ordering) noexcept = default;
+    _NODISCARD_FRIEND constexpr bool operator==(partial_ordering, partial_ordering) = default;
 
     _NODISCARD_FRIEND constexpr bool operator<(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value == static_cast<_Compare_t>(_Compare_ord::less);
@@ -114,7 +114,7 @@ _EXPORT_STD struct weak_ordering {
         return _Val._Value == 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator==(weak_ordering, weak_ordering) noexcept = default;
+    _NODISCARD_FRIEND constexpr bool operator==(weak_ordering, weak_ordering) = default;
 
     _NODISCARD_FRIEND constexpr bool operator<(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value < 0;
@@ -181,7 +181,7 @@ _EXPORT_STD struct strong_ordering {
         return _Val._Value == 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator==(strong_ordering, strong_ordering) noexcept = default;
+    _NODISCARD_FRIEND constexpr bool operator==(strong_ordering, strong_ordering) = default;
 
     _NODISCARD_FRIEND constexpr bool operator<(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value < 0;

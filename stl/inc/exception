@@ -336,7 +336,7 @@ public:
     nested_exception() noexcept : _Exc(_STD current_exception()) {}
 
     nested_exception(const nested_exception&) noexcept            = default;
-    nested_exception& operator=(const nested_exception&) noexcept = default;
+    nested_exception& operator=(const nested_exception&) = default;
     virtual ~nested_exception() noexcept {}
 
     [[noreturn]] void rethrow_nested() const { // throw wrapped exception_ptr
@@ -399,7 +399,7 @@ void rethrow_if_nested(const _Ty&) = delete; // requires /GR option
 _EXPORT_STD class bad_variant_access
     : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
 public:
-    bad_variant_access() noexcept = default;
+    bad_variant_access() = default;
 
     _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "bad variant access";

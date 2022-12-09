@@ -79,7 +79,7 @@ public:
 #pragma warning(pop)
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
-    _CONSTEXPR20 virtual ~error_category() noexcept = default;
+    _CONSTEXPR20 virtual ~error_category() = default;
 
     _NODISCARD virtual const char* name() const noexcept = 0;
 

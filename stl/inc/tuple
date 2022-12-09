@@ -219,7 +219,7 @@ using _Three_way_comparison_result_with_tuple_like_t =
 template <>
 class tuple<> { // empty tuple
 public:
-    constexpr tuple() noexcept = default; /* strengthened */
+    constexpr tuple() = default; /* strengthened */
 
     constexpr tuple(const tuple&) noexcept /* strengthened */ {} // TRANSITION, ABI: should be defaulted
 

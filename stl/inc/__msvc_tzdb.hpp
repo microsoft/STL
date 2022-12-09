@@ -125,9 +125,9 @@ public:
     using propagate_on_container_move_assignment = true_type;
     using is_always_equal                        = true_type;
 
-    constexpr _Crt_allocator() noexcept = default;
+    constexpr _Crt_allocator() = default;
 
-    constexpr _Crt_allocator(const _Crt_allocator&) noexcept = default;
+    constexpr _Crt_allocator(const _Crt_allocator&) = default;
     template <class _Other>
     constexpr _Crt_allocator(const _Crt_allocator<_Other>&) noexcept {}
 

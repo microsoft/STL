@@ -1367,7 +1367,7 @@ public:
 
     _Move_only_function_data _Data;
 
-    _Move_only_function_base() noexcept = default; // leaves fields uninitialized
+    _Move_only_function_base() = default; // leaves fields uninitialized
 
     _Move_only_function_base(_Move_only_function_base&& _Other) noexcept {
         _Checked_move(_Data, _Other._Data);
@@ -1768,7 +1768,7 @@ public:
         this->_Construct_with_null();
     }
 
-    move_only_function(move_only_function&&) noexcept = default;
+    move_only_function(move_only_function&&) = default;
 
     template <class _Fn, enable_if_t<_Enable_one_arg_constructor<_Fn>, int> = 0>
     move_only_function(_Fn&& _Callable) {
@@ -1818,7 +1818,7 @@ public:
         return *this;
     }
 
-    move_only_function& operator=(move_only_function&& _Other) {
+    move_only_function& operator=(move_only_function&& _Other) noexcept(false) {
         if (this != _STD addressof(_Other)) {
             this->_Move_assign(_STD move(_Other));
         }
