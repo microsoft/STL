@@ -161,7 +161,7 @@ public:
         return *this;
     }
 
-    map(map&& _Right) : _Mybase(_STD move(_Right)) {}
+    map(map&& _Right) noexcept : _Mybase(_STD move(_Right)) {}
 
     map(map&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
@@ -539,7 +539,7 @@ public:
         return *this;
     }
 
-    multimap(multimap&& _Right) : _Mybase(_STD move(_Right)) {}
+    multimap(multimap&& _Right) noexcept : _Mybase(_STD move(_Right)) {}
 
     multimap(multimap&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 

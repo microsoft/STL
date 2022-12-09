@@ -712,7 +712,7 @@ private:
     }
 
 public:
-    deque(deque&& _Right) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
+    deque(deque&& _Right) noexcept : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Get_data()._Alloc_proxy(static_cast<_Alproxy_ty>(_Getal()));
         _Take_contents(_Right);
     }

@@ -39,12 +39,12 @@ public:
     }
 
 protected:
-    __CLR_OR_THIS_CALL basic_ostream(basic_ostream&& _Right) {
+    __CLR_OR_THIS_CALL basic_ostream(basic_ostream&& _Right) noexcept {
         _Myios::init();
         _Myios::move(_STD move(_Right));
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL operator=(basic_ostream&& _Right) {
+    basic_ostream& __CLR_OR_THIS_CALL operator=(basic_ostream&& _Right) noexcept {
         this->swap(_Right);
         return *this;
     }

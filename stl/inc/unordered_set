@@ -244,7 +244,7 @@ public:
         return *this;
     }
 
-    unordered_set(unordered_set&& _Right) : _Mybase(_STD move(_Right)) {}
+    unordered_set(unordered_set&& _Right) noexcept : _Mybase(_STD move(_Right)) {}
 
     unordered_set(unordered_set&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
@@ -528,7 +528,7 @@ public:
         return *this;
     }
 
-    unordered_multiset(unordered_multiset&& _Right) : _Mybase(_STD move(_Right)) {}
+    unordered_multiset(unordered_multiset&& _Right) noexcept : _Mybase(_STD move(_Right)) {}
 
     unordered_multiset(unordered_multiset&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 

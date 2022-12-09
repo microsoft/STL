@@ -52,7 +52,7 @@ protected:
 
     _Basic_syncbuf_impl() = default;
 
-    _Basic_syncbuf_impl(_Basic_syncbuf_impl&& _Right) {
+    _Basic_syncbuf_impl(_Basic_syncbuf_impl&& _Right) noexcept {
         _Swap(_Right);
     }
 
@@ -97,7 +97,8 @@ public:
         _Init();
     }
 
-    basic_syncbuf(basic_syncbuf&& _Right) : _Mypair{_One_then_variadic_args_t{}, _STD move(_Right._Getal()), nullptr} {
+    basic_syncbuf(basic_syncbuf&& _Right) noexcept
+        : _Mypair{_One_then_variadic_args_t{}, _STD move(_Right._Getal()), nullptr} {
         _Swap_except_al(_Right);
     }
 
@@ -106,7 +107,7 @@ public:
         _Tidy();
     }
 
-    basic_syncbuf& operator=(basic_syncbuf&& _Right) {
+    basic_syncbuf& operator=(basic_syncbuf&& _Right) noexcept {
         emit();
 
         if (this == _STD addressof(_Right)) {

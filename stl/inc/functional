@@ -601,8 +601,8 @@ public:
         is_nothrow_constructible_v<_Decayed, _Callable>) // strengthened
         : _Mybase(_STD forward<_Callable>(_Obj)) {} // store a callable object
 
-    constexpr _Not_fn(const _Not_fn&) = default;
-    constexpr _Not_fn(_Not_fn&&)      = default;
+    constexpr _Not_fn(const _Not_fn&)     = default;
+    constexpr _Not_fn(_Not_fn&&) noexcept = default;
 
     template <class... _Types>
     _CONSTEXPR20 auto operator()(_Types&&... _Args) & noexcept(
@@ -1831,7 +1831,7 @@ public:
         return *this;
     }
 
-    move_only_function& operator=(move_only_function&& _Other) {
+    move_only_function& operator=(move_only_function&& _Other) noexcept {
         if (this != _STD addressof(_Other)) {
             this->_Move_assign(_STD move(_Other));
         }

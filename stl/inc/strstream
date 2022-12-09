@@ -68,12 +68,12 @@ public:
         _Init(_Count, const_cast<char*>(reinterpret_cast<const char*>(_Getptr)), nullptr, _Constant);
     }
 
-    __CLR_OR_THIS_CALL strstreambuf(strstreambuf&& _Right) {
+    __CLR_OR_THIS_CALL strstreambuf(strstreambuf&& _Right) noexcept {
         _Init();
         _Assign_rv(_STD move(_Right));
     }
 
-    strstreambuf& __CLR_OR_THIS_CALL operator=(strstreambuf&& _Right) {
+    strstreambuf& __CLR_OR_THIS_CALL operator=(strstreambuf&& _Right) noexcept {
         _Assign_rv(_STD move(_Right));
         return *this;
     }
@@ -444,11 +444,11 @@ public:
         // construct with [_Ptr, _Ptr + _Count)
     }
 
-    __CLR_OR_THIS_CALL istrstream(istrstream&& _Right) : _Mybase(&_Strbuffer) {
+    __CLR_OR_THIS_CALL istrstream(istrstream&& _Right) noexcept : _Mybase(&_Strbuffer) {
         _Assign_rv(_STD move(_Right));
     }
 
-    istrstream& __CLR_OR_THIS_CALL operator=(istrstream&& _Right) {
+    istrstream& __CLR_OR_THIS_CALL operator=(istrstream&& _Right) noexcept {
         _Assign_rv(_STD move(_Right));
         return *this;
     }
@@ -499,11 +499,11 @@ public:
         // construct with [_Ptr, _Ptr + _Count)
     }
 
-    __CLR_OR_THIS_CALL ostrstream(ostrstream&& _Right) : _Mybase(&_Strbuffer) {
+    __CLR_OR_THIS_CALL ostrstream(ostrstream&& _Right) noexcept : _Mybase(&_Strbuffer) {
         _Assign_rv(_STD move(_Right));
     }
 
-    ostrstream& __CLR_OR_THIS_CALL operator=(ostrstream&& _Right) {
+    ostrstream& __CLR_OR_THIS_CALL operator=(ostrstream&& _Right) noexcept {
         _Assign_rv(_STD move(_Right));
         return *this;
     }
@@ -567,11 +567,11 @@ public:
         // construct with [_Ptr, _Ptr + _Count)
     }
 
-    __CLR_OR_THIS_CALL strstream(strstream&& _Right) : _Mybase(&_Strbuffer) {
+    __CLR_OR_THIS_CALL strstream(strstream&& _Right) noexcept : _Mybase(&_Strbuffer) {
         _Assign_rv(_STD move(_Right));
     }
 
-    strstream& __CLR_OR_THIS_CALL operator=(strstream&& _Right) {
+    strstream& __CLR_OR_THIS_CALL operator=(strstream&& _Right) noexcept {
         _Assign_rv(_STD move(_Right));
         return *this;
     }

@@ -1476,8 +1476,8 @@ public:
     _Directory_iterator(const _Directory_iterator&)            = default;
     _Directory_iterator& operator=(const _Directory_iterator&) = default;
 
-    _Directory_iterator(_Directory_iterator&&)            = default;
-    _Directory_iterator& operator=(_Directory_iterator&&) = default;
+    _Directory_iterator(_Directory_iterator&&) noexcept            = default;
+    _Directory_iterator& operator=(_Directory_iterator&&) noexcept = default;
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0

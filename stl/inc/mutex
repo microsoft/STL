@@ -163,7 +163,7 @@ public:
         _Other._Owns = false;
     }
 
-    unique_lock& operator=(unique_lock&& _Other) {
+    unique_lock& operator=(unique_lock&& _Other) noexcept {
         if (this != _STD addressof(_Other)) {
             if (_Owns) {
                 _Pmtx->unlock();

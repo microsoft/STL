@@ -55,7 +55,7 @@ public:
     }
 
     basic_spanbuf(const basic_spanbuf&) = delete;
-    basic_spanbuf(basic_spanbuf&& _Right)
+    basic_spanbuf(basic_spanbuf&& _Right) noexcept
         : _Mysb(_STD move(_Right)), _Mode(_STD move(_Right._Mode)), _Buf(_STD exchange(_Right._Buf, {})) {
         _Right.setp(nullptr, nullptr, nullptr);
         _Right.setg(nullptr, nullptr, nullptr);
@@ -64,7 +64,7 @@ public:
     // N4892 [spanbuf.assign], assignment and swap
     basic_spanbuf& operator=(const basic_spanbuf&) = delete;
 
-    basic_spanbuf& operator=(basic_spanbuf&& _Right) {
+    basic_spanbuf& operator=(basic_spanbuf&& _Right) noexcept {
         basic_spanbuf _Tmp{_STD move(_Right)};
         this->swap(_Tmp);
         return *this;
@@ -208,7 +208,7 @@ public:
 
     basic_ispanstream(const basic_ispanstream&) = delete;
 
-    basic_ispanstream(basic_ispanstream&& _Right) : _Mybase(_STD move(_Right)), _Buf(_STD move(_Right._Buf)) {
+    basic_ispanstream(basic_ispanstream&& _Right) noexcept : _Mybase(_STD move(_Right)), _Buf(_STD move(_Right._Buf)) {
         _Mybase::set_rdbuf(_STD addressof(_Buf));
     }
 
@@ -226,7 +226,7 @@ public:
     // N4892 [ispanstream.assign], assignment and swap
     basic_ispanstream& operator=(const basic_ispanstream&) = delete;
 
-    basic_ispanstream& operator=(basic_ispanstream&& _Right) {
+    basic_ispanstream& operator=(basic_ispanstream&& _Right) noexcept {
         _Mybase::swap(_Right);
         _Buf.swap(_Right._Buf);
         return *this;
@@ -290,14 +290,14 @@ public:
 
     basic_ospanstream(const basic_ospanstream&) = delete;
 
-    basic_ospanstream(basic_ospanstream&& _Right) : _Mybase(_STD move(_Right)), _Buf(_STD move(_Right._Buf)) {
+    basic_ospanstream(basic_ospanstream&& _Right) noexcept : _Mybase(_STD move(_Right)), _Buf(_STD move(_Right._Buf)) {
         _Mybase::set_rdbuf(_STD addressof(_Buf));
     }
 
     // N4892 [ospanstream.assign], assignment and swap
     basic_ospanstream& operator=(const basic_ospanstream&) = delete;
 
-    basic_ospanstream& operator=(basic_ospanstream&& _Right) {
+    basic_ospanstream& operator=(basic_ospanstream&& _Right) noexcept {
         _Mybase::swap(_Right);
         _Buf.swap(_Right._Buf);
         return *this;
@@ -349,14 +349,14 @@ public:
 
     basic_spanstream(const basic_spanstream&) = delete;
 
-    basic_spanstream(basic_spanstream&& _Right) : _Mybase(_STD move(_Right)), _Buf(_STD move(_Right._Buf)) {
+    basic_spanstream(basic_spanstream&& _Right) noexcept : _Mybase(_STD move(_Right)), _Buf(_STD move(_Right._Buf)) {
         _Mybase::set_rdbuf(_STD addressof(_Buf));
     }
 
     // N4892 [spanstream.assign], assignment and swap
     basic_spanstream& operator=(const basic_spanstream&) = delete;
 
-    basic_spanstream& operator=(basic_spanstream&& _Right) {
+    basic_spanstream& operator=(basic_spanstream&& _Right) noexcept {
         _Mybase::swap(_Right);
         _Buf.swap(_Right._Buf);
         return *this;

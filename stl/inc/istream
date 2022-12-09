@@ -48,13 +48,13 @@ public:
     }
 
 protected:
-    __CLR_OR_THIS_CALL basic_istream(basic_istream&& _Right) : _Chcount(_Right._Chcount) {
+    __CLR_OR_THIS_CALL basic_istream(basic_istream&& _Right) noexcept : _Chcount(_Right._Chcount) {
         _Myios::init();
         _Myios::move(_STD move(_Right));
         _Right._Chcount = 0;
     }
 
-    basic_istream& __CLR_OR_THIS_CALL operator=(basic_istream&& _Right) {
+    basic_istream& __CLR_OR_THIS_CALL operator=(basic_istream&& _Right) noexcept {
         this->swap(_Right);
         return *this;
     }
@@ -738,12 +738,13 @@ public:
         : _Myis(_Strbuf, false), _Myos(_Noinit, false) {}
 
 protected:
-    __CLR_OR_THIS_CALL basic_iostream(basic_iostream&& _Right) : _Myis(_Right.rdbuf(), false), _Myos(_Noinit, false) {
+    __CLR_OR_THIS_CALL basic_iostream(basic_iostream&& _Right) noexcept
+        : _Myis(_Right.rdbuf(), false), _Myos(_Noinit, false) {
         _Myios::init();
         _Myios::move(_STD move(_Right));
     }
 
-    basic_iostream& __CLR_OR_THIS_CALL operator=(basic_iostream&& _Right) {
+    basic_iostream& __CLR_OR_THIS_CALL operator=(basic_iostream&& _Right) noexcept {
         this->swap(_Right);
         return *this;
     }
