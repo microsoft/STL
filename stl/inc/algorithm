@@ -2807,25 +2807,19 @@ namespace ranges {
         _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Sent, const _Ty& _Value, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Sent);
 
-            auto [_UFirst, _ULast] = _Find_last_unchecked(
+            auto _UResult = _Find_last_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Sent)), _Value, _Pass_fn(_Proj));
-            _It _Last{};
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            _Seek_wrapped(_Last, _STD move(_ULast));
-            return {_STD move(_First), _STD move(_Last)};
+            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
         template <forward_range _Rng, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
         _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Value, _Pj _Proj = {}) const {
-            auto _First            = _RANGES begin(_Range);
-            auto [_UFirst, _ULast] = _Find_last_unchecked(
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Find_last_unchecked(
                 _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Value, _Pass_fn(_Proj));
-            iterator_t<_Rng> _Last{};
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            _Seek_wrapped(_Last, _STD move(_ULast));
-            return {_STD move(_First), _STD move(_Last)};
+            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_First, _STD move(_UResult));
         }
 
     private:
@@ -2881,23 +2875,17 @@ namespace ranges {
         _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Sent, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Sent);
 
-            auto [_UFirst, _ULast] = _Find_last_if_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
+            auto _UResult = _Find_last_if_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
                 _Unwrap_sent<_It>(_STD move(_Sent)), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _It _Last{};
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            _Seek_wrapped(_Last, _STD move(_ULast));
-            return {_STD move(_First), _STD move(_Last)};
+            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
         template <forward_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            auto _First            = _RANGES begin(_Range);
-            auto [_UFirst, _ULast] = _Find_last_if_unchecked(
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Find_last_if_unchecked(
                 _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            iterator_t<_Rng> _Last{};
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            _Seek_wrapped(_Last, _STD move(_ULast));
-            return {_STD move(_First), _STD move(_Last)};
+            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_First, _STD move(_UResult));
         }
 
     private:
@@ -2951,23 +2939,17 @@ namespace ranges {
         _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Sent, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Sent);
 
-            auto [_UFirst, _ULast] = _Find_last_if_not_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
+            auto _UResult = _Find_last_if_not_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
                 _Unwrap_sent<_It>(_STD move(_Sent)), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _It _Last{};
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            _Seek_wrapped(_Last, _STD move(_ULast));
-            return {_STD move(_First), _STD move(_Last)};
+            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
         template <forward_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            auto _First            = _RANGES begin(_Range);
-            auto [_UFirst, _ULast] = _Find_last_if_not_unchecked(
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Find_last_if_not_unchecked(
                 _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            iterator_t<_Rng> _Last{};
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            _Seek_wrapped(_Last, _STD move(_ULast));
-            return {_STD move(_First), _STD move(_Last)};
+            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_First, _STD move(_UResult));
         }
 
     private:
