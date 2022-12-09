@@ -1077,7 +1077,7 @@ public:
     }
 
     _NODISCARD path root_path() const {
-        return path(_Mystr.c_str(), _Mystr.c_str() + _Root_end());
+        return {_Mystr.c_str(), _Mystr.c_str() + _Root_end()};
     }
 
     _NODISCARD path relative_path() const {
@@ -2155,7 +2155,7 @@ _NODISCARD inline path current_path(error_code& _Code) {
         _Code = make_error_code(errc::operation_not_permitted);
         return {};
     }
-    return path(_Dest);
+    return {_Dest};
 }
 
 inline void current_path(const path& _Path) { // set current working directory
@@ -2457,7 +2457,7 @@ _NODISCARD inline path read_symlink(const path& _Path,
         return {};
     }
     _Pchar _Dest[_MAX_FILESYS_NAME];
-    return path(_Symlink_get(_Dest, _Path.c_str()));
+    return {_Symlink_get(_Dest, _Path.c_str())};
 }
 
 inline bool remove(const path& _Path) { // remove a file
