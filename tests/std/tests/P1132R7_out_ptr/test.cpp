@@ -119,7 +119,7 @@ void test_smart_ptr(Args&&... args) {
         assert(*int_ptr == 19);
     }
 
-    // LWG_3594
+    // LWG-3594 inout_ptr - inconsistent release() in destructor
     {
         const auto f = [](int** ptr) {
             delete *ptr;
