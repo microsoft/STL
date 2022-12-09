@@ -2857,6 +2857,7 @@ namespace ranges {
                     if (_STD invoke(_Proj, *_First) == _Value) {
                         _Result = _First;
                     }
+
                     if (++_First == _Last) {
                         if (_Result == _It{}) {
                             _Result = _First;
@@ -2889,7 +2890,7 @@ namespace ranges {
         }
         template <forward_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
-        constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
             auto _First            = _RANGES begin(_Range);
             auto [_UFirst, _ULast] = _Find_last_if_unchecked(
                 _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
@@ -2959,7 +2960,7 @@ namespace ranges {
         }
         template <forward_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
-        constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
             auto _First            = _RANGES begin(_Range);
             auto [_UFirst, _ULast] = _Find_last_if_not_unchecked(
                 _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));

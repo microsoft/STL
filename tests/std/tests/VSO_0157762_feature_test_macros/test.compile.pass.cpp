@@ -1578,7 +1578,7 @@ STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
 #ifndef __cpp_lib_ranges_find_last // per LWG-3807
 #error __cpp_lib_ranges_find_last is not defined
 #elif __cpp_lib_ranges_find_last != 202207L
-#error __cpp_lib_ranges_find_last is not 201703L
+#error __cpp_lib_ranges_find_last is not 202207L
 #else
 STATIC_ASSERT(__cpp_lib_ranges_find_last == 202207L);
 #endif
