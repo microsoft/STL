@@ -33,7 +33,7 @@ _EXTERN_C
 using __std_TP_WORK              = void;
 using __std_TP_CALLBACK_INSTANCE = void;
 using __std_TP_CALLBACK_ENVIRON  = void;
-#else // ^^^ _M_CEE ^^^ // vvv !_M_CEE vvv
+#else // ^^^ _M_CEE / !_M_CEE vvv
 struct __std_TP_WORK; // not defined
 struct __std_TP_CALLBACK_INSTANCE; // not defined
 struct __std_TP_CALLBACK_ENVIRON; // not defined
@@ -304,10 +304,12 @@ struct _Parallelism_allocator {
         return true;
     }
 
+#if !_HAS_CXX20
     template <class _Other>
     bool operator!=(const _Parallelism_allocator<_Other>&) const noexcept {
         return false;
     }
+#endif // !_HAS_CXX20
 };
 
 template <class _Ty>
@@ -2812,7 +2814,7 @@ inline size_t _Get_stable_sort_tree_height(const size_t _Count, const size_t _Hw
     const size_t _Log_ideal_chunks     = _Floor_of_log_2(_Ideal_chunks);
 #ifdef _WIN64
     const size_t _Max_tree_height      = 62; // to avoid ptrdiff_t overflow
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else // ^^^ _WIN64 / !_WIN64 vvv
     const size_t _Max_tree_height = 30;
 #endif // _WIN64
     const size_t _Clamped_ideal_chunks = (_STD min)(_Max_tree_height, _Log_ideal_chunks);

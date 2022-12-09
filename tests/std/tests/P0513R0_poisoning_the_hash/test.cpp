@@ -173,7 +173,7 @@ void test_string_T_hash_invariants(const CharT* const exampleStr) {
     hash<basic_string<CharT>> hString;
     hash<basic_string_view<CharT>> hStringView;
     assert(hString(exampleStr) == hStringView(exampleStr));
-#else // ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
     (void) exampleStr;
 #endif // _HAS_CXX17
 }

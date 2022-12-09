@@ -380,12 +380,12 @@ public:
         return nullptr; // no entry in current locale
     }
 
-    _NODISCARD bool operator==(const locale& _Loc) const { // compare locales for equality
-        return _Ptr == _Loc._Ptr || (name().compare("*") != 0 && name().compare(_Loc.name()) == 0);
+    _NODISCARD bool operator==(const locale& _Loc) const noexcept /* strengthened */ { // compare locales for equality
+        return _Ptr == _Loc._Ptr || (_CSTD strcmp(_C_str(), "*") != 0 && _CSTD strcmp(_C_str(), _Loc._C_str()) == 0);
     }
 
 #if !_HAS_CXX20
-    _NODISCARD bool operator!=(const locale& _Right) const {
+    _NODISCARD bool operator!=(const locale& _Right) const noexcept /* strengthened */ {
         return !(*this == _Right);
     }
 #endif // !_HAS_CXX20

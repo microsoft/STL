@@ -17,7 +17,7 @@
 
 #ifdef HAS_EXPORT
 #define MAYBE_EXPORT __declspec(dllexport)
-#else // ^^^ HAS_EXPORT ^^^ / vvv !HAS_EXPORT vvv
+#else // ^^^ HAS_EXPORT / !HAS_EXPORT vvv
 #define MAYBE_EXPORT
 #endif // ^^^ !HAS_EXPORT ^^^
 
@@ -175,7 +175,7 @@ void test_impl() {
     assert(all.at(1).source_line() == base_line + 9);
     assert(all.at(2).source_line() == base_line + 13);
     assert(all.at(3).source_line() == base_line + 17);
-#else // ^^^ HAS_DEBUG_INFO ^^^ / vvv !HAS_DEBUG_INFO vvv
+#else // ^^^ HAS_DEBUG_INFO / !HAS_DEBUG_INFO vvv
     assert(filesystem::path(all.at(0).source_file()).filename() == ""sv);
     assert(filesystem::path(all.at(1).source_file()).filename() == ""sv);
     assert(filesystem::path(all.at(2).source_file()).filename() == ""sv);
@@ -192,7 +192,7 @@ void test_impl() {
     assert(trim_past_plus(all.at(1).description()) == "P0881R7_stacktrace!all_inner"sv);
     assert(trim_past_plus(all.at(2).description()) == "P0881R7_stacktrace!all_outer"sv);
     assert(trim_past_plus(all.at(3).description()) == "P0881R7_stacktrace!all_outermost"sv);
-#else // ^^^ HAS_NAMES ^^^ / vvv !HAS_NAMES vvv
+#else // ^^^ HAS_NAMES / !HAS_NAMES vvv
     assert(trim_past_plus(all.at(0).description()) == "P0881R7_stacktrace"sv);
     assert(trim_past_plus(all.at(1).description()) == "P0881R7_stacktrace"sv);
     assert(trim_past_plus(all.at(2).description()) == "P0881R7_stacktrace"sv);
@@ -210,7 +210,7 @@ void test_impl() {
     assert(all_but_top[0].source_line() == base_line + 25);
     assert(all_but_top[1].source_line() == base_line + 29);
     assert(all_but_top[2].source_line() == base_line + 33);
-#else // ^^^ HAS_DEBUG_INFO ^^^ / vvv !HAS_DEBUG_INFO vvv
+#else // ^^^ HAS_DEBUG_INFO / !HAS_DEBUG_INFO vvv
     assert(filesystem::path(all_but_top[0].source_file()).filename() == ""sv);
     assert(filesystem::path(all_but_top[1].source_file()).filename() == ""sv);
     assert(filesystem::path(all_but_top[2].source_file()).filename() == ""sv);
@@ -224,7 +224,7 @@ void test_impl() {
     assert(trim_past_plus(all_but_top[0].description()) == "P0881R7_stacktrace!all_but_top_inner"sv);
     assert(trim_past_plus(all_but_top[1].description()) == "P0881R7_stacktrace!all_but_top_outer"sv);
     assert(trim_past_plus(all_but_top[2].description()) == "P0881R7_stacktrace!all_but_top_outermost"sv);
-#else // ^^^ HAS_NAMES ^^^ / vvv !HAS_NAMES vvv
+#else // ^^^ HAS_NAMES / !HAS_NAMES vvv
     assert(trim_past_plus(all_but_top[0].description()) == "P0881R7_stacktrace"sv);
     assert(trim_past_plus(all_but_top[1].description()) == "P0881R7_stacktrace"sv);
     assert(trim_past_plus(all_but_top[2].description()) == "P0881R7_stacktrace"sv);
@@ -240,7 +240,7 @@ void test_impl() {
     assert(three_excluding_top[0].source_line() == base_line + 41);
     assert(three_excluding_top[1].source_line() == base_line + 45);
     assert(three_excluding_top[2].source_line() == base_line + 49);
-#else // ^^^ HAS_DEBUG_INFO ^^^ / vvv !HAS_DEBUG_INFO vvv
+#else // ^^^ HAS_DEBUG_INFO / !HAS_DEBUG_INFO vvv
     assert(filesystem::path(three_excluding_top[0].source_file()).filename() == ""sv);
     assert(filesystem::path(three_excluding_top[1].source_file()).filename() == ""sv);
     assert(filesystem::path(three_excluding_top[2].source_file()).filename() == ""sv);
@@ -255,7 +255,7 @@ void test_impl() {
     assert(trim_past_plus(three_excluding_top[1].description()) == "P0881R7_stacktrace!three_excluding_top_outer"sv);
     assert(
         trim_past_plus(three_excluding_top[2].description()) == "P0881R7_stacktrace!three_excluding_top_outermost"sv);
-#else // ^^^ HAS_NAMES ^^^ / vvv !HAS_NAMES vvv
+#else // ^^^ HAS_NAMES / !HAS_NAMES vvv
     assert(trim_past_plus(three_excluding_top[0].description()) == "P0881R7_stacktrace"sv);
     assert(trim_past_plus(three_excluding_top[1].description()) == "P0881R7_stacktrace"sv);
     assert(trim_past_plus(three_excluding_top[2].description()) == "P0881R7_stacktrace"sv);

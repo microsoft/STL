@@ -141,7 +141,7 @@ struct throwing_merge_fixture {
 #if _ITERATOR_DEBUG_LEVEL == 0
     static constexpr size_t ensureOrderedF1Size = 0;
     static constexpr size_t ensureOrderedF2Size = 0;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 // _ITERATOR_DEBUG_LEVEL != 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
     static constexpr size_t ensureOrderedF1Size = startF1Size - 1;
     static constexpr size_t ensureOrderedF2Size = startF2Size - 1;
 #endif // _ITERATOR_DEBUG_LEVEL == 0
