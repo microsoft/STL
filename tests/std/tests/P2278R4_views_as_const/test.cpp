@@ -21,9 +21,9 @@ concept CanViewAsConst = requires(Rng&& r) { views::as_const(forward<Rng>(r)); }
 template <class>
 struct RefViewUnderlyingType {};
 
-template <class _Ty>
-struct RefViewUnderlyingType<ranges::ref_view<_Ty>> {
-    using type = _Ty;
+template <class T>
+struct RefViewUnderlyingType<ranges::ref_view<T>> {
+    using type = T;
 };
 
 template <class>
