@@ -27,10 +27,10 @@ struct RefViewUnderlyingType<ranges::ref_view<T>> {
 };
 
 template <class>
-static constexpr bool CanReconstructRefView = false;
+constexpr bool CanReconstructRefView = false;
 
 template <class T>
-static constexpr bool CanReconstructRefView<ranges::ref_view<T>> = ranges::constant_range<const T>;
+constexpr bool CanReconstructRefView<ranges::ref_view<T>> = ranges::constant_range<const T>;
 
 template <ranges::input_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
