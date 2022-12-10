@@ -5,6 +5,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -60,6 +61,13 @@ struct instantiator {
             STATIC_ASSERT(same_as<iterator_t<decltype(result)>, iterator_t<Read>>);
             STATIC_ASSERT(common_range<decltype(result)>);
             assert(result.begin() == wrapped_input.end());
+        }
+        { // Validate empty range
+            Read wrapped_empty{span<P, 0>{}};
+            auto iter_result  = find_last(wrapped_empty.begin(), wrapped_empty.end(), 0, get_first);
+            auto range_result = find_last(wrapped_empty, 0, get_first);
+            assert(iter_result.begin() == wrapped_empty.end());
+            assert(range_result.begin() == wrapped_empty.end());
         }
     }
 };

@@ -2858,17 +2858,18 @@ namespace ranges {
                 }
                 return {_STD move(_Result), _STD move(_Last)};
             } else {
-                _It _Result{};
-                for (;;) {
-                    if (_STD invoke(_Proj, *_First) == _Value) {
-                        _Result = _First;
-                    }
-
-                    if (++_First == _Last) {
-                        if (_Result == _It{}) {
+                _It _Result = _First;
+                bool _Found = false;
+                for (;; ++_First) {
+                    if (_First == _Last) {
+                        if (!_Found) {
                             _Result = _First;
                         }
                         break;
+                    }
+                    if (_STD invoke(_Proj, *_First) == _Value) {
+                        _Result = _First;
+                        _Found  = true;
                     }
                 }
                 return {_STD move(_Result), _STD move(_First)};
@@ -2938,16 +2939,18 @@ namespace ranges {
                 }
                 return {_STD move(_Result), _STD move(_Last)};
             } else {
-                _It _Result{};
-                for (;;) {
-                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                        _Result = _First;
-                    }
-                    if (++_First == _Last) {
-                        if (_Result == _It{}) {
+                _It _Result = _First;
+                bool _Found = false;
+                for (;; ++_First) {
+                    if (_First == _Last) {
+                        if (!_Found) {
                             _Result = _First;
                         }
                         break;
+                    }
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                        _Result = _First;
+                        _Found  = true;
                     }
                 }
                 return {_STD move(_Result), _STD move(_First)};
@@ -3018,16 +3021,18 @@ namespace ranges {
                 }
                 return {_STD move(_Result), _STD move(_Last)};
             } else {
-                _It _Result{};
-                for (;;) {
-                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                        _Result = _First;
-                    }
-                    if (++_First == _Last) {
-                        if (_Result == _It{}) {
+                _It _Result = _First;
+                bool _Found = false;
+                for (;; ++_First) {
+                    if (_First == _Last) {
+                        if (!_Found) {
                             _Result = _First;
                         }
                         break;
+                    }
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                        _Result = _First;
+                        _Found  = true;
                     }
                 }
                 return {_STD move(_Result), _STD move(_First)};
