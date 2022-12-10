@@ -4190,7 +4190,6 @@ public:
     inout_ptr_t(const inout_ptr_t&) = delete;
 
     ~inout_ptr_t() {
-        using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
         if constexpr (!is_pointer_v<_SmartPtr>) {
             _Smart_ptr.release();
         }
@@ -4201,6 +4200,7 @@ public:
 
         _STD apply(
             [this](auto&&... _Args_) {
+                using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
                 if constexpr (is_pointer_v<_SmartPtr>) {
                     _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 } else if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
