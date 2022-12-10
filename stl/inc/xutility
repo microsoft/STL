@@ -5565,9 +5565,15 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
 
 template <class _Ty, class _Elem>
 struct _Vector_alg_in_find_is_safe_object_pointers : false_type {};
-template <class _T1, class _T2>
-struct _Vector_alg_in_find_is_safe_object_pointers<_T1*, _T2*>
-    : disjunction<is_same<remove_cv_t<_T1>, remove_cv_t<_T2>>, is_void<_T1>, is_void<_T2>> {};
+template <class _Ty1, class _Ty2>
+struct _Vector_alg_in_find_is_safe_object_pointers<_Ty1*, _Ty2*>
+    : conjunction<
+          // _Ty1* is an object pointer type
+          disjunction<is_object<_Ty1>, is_void<_Ty1>>,
+          // _Ty2* is an object pointer type
+          disjunction<is_object<_Ty2>, is_void<_Ty2>>,
+          // either _Ty1 is the same as _Ty2, or one of the two is void
+          disjunction<is_same<remove_cv_t<_Ty1>, remove_cv_t<_Ty2>>, is_void<_Ty1>, is_void<_Ty2>>> {};
 
 // Can we activate the vector algorithms for find/count?
 template <class _Iter, class _Ty, class _Elem = _Iter_value_t<_Iter>>
