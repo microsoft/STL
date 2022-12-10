@@ -527,7 +527,7 @@ int main() {
         STATIC_ASSERT(test_one(some_ints, some_ints));
         test_one(some_ints, some_ints);
 
-        // Test with lvalue, rvalue and wrapped in ref_view non-views
+        // Test with lvalue, rvalue, and wrapped in ref_view non-views
         auto vec = some_ints | ranges::to<vector>();
         test_one(vec, some_ints);
         test_one(ranges::ref_view{vec}, some_ints);
