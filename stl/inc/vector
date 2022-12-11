@@ -269,6 +269,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
         _STL_VERIFY(this->_Ptr, "can't dereference value-initialized vector iterator");
+        _STL_VERIFY(_Mycont, "can't dereference invalidated vector iterator");
         _STL_VERIFY(_Mycont->_Myfirst <= this->_Ptr && this->_Ptr < _Mycont->_Mylast,
             "can't dereference out of range vector iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
