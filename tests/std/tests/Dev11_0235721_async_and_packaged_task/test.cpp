@@ -283,6 +283,35 @@ void test_shared_future_noexcept() {
     test_shared_future_noexcept_copy_impl<void>();
 }
 
+// Also test the non-constructibility of future from (future {}) and (shared_future, {})
+template <typename Void, typename T, typename... Args>
+constexpr bool is_constructible_with_trailing_empty_brace_impl = false;
+
+template <typename T, typename... Args>
+constexpr bool
+    is_constructible_with_trailing_empty_brace_impl<void_t<decltype(T(declval<Args>()..., {}))>, T, Args...> = true;
+
+template <typename T, typename... Args>
+constexpr bool is_constructible_with_trailing_empty_brace =
+    is_constructible_with_trailing_empty_brace_impl<void, T, Args...>;
+
+STATIC_ASSERT(is_constructible_with_trailing_empty_brace<pair<int, int>, int>);
+STATIC_ASSERT(is_constructible_with_trailing_empty_brace<pair<int, int>, const int&>);
+
+template <typename T>
+void test_no_implicit_brace_construction_impl() {
+    STATIC_ASSERT(!is_constructible_with_trailing_empty_brace<future<T>, future<T>>);
+    STATIC_ASSERT(!is_constructible_with_trailing_empty_brace<future<T>, const future<T>&>);
+    STATIC_ASSERT(!is_constructible_with_trailing_empty_brace<future<T>, shared_future<T>>);
+    STATIC_ASSERT(!is_constructible_with_trailing_empty_brace<future<T>, const shared_future<T>&>);
+}
+
+void test_no_implicit_brace_construction() {
+    test_no_implicit_brace_construction_impl<int>();
+    test_no_implicit_brace_construction_impl<int&>();
+    test_no_implicit_brace_construction_impl<void>();
+}
+
 #ifndef _M_CEE // TRANSITION, VSO-1659511
 struct use_async_in_a_global_tester {
     use_async_in_a_global_tester() {
@@ -303,4 +332,5 @@ int main() {
     test_VSO_115515();
     test_VSO_272761();
     test_shared_future_noexcept();
+    test_no_implicit_brace_construction();
 }
