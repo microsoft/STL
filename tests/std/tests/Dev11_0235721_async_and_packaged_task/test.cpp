@@ -246,6 +246,19 @@ void test_VSO_272761() {
     test_VSO_272761_ref();
 }
 
+template <typename T>
+void test_future_shared_future_noexcept_impl() {
+    STATIC_ASSERT(is_nothrow_default_constructible_v<future<T>>);
+    STATIC_ASSERT(is_nothrow_move_constructible_v<future<T>>);
+    STATIC_ASSERT(is_nothrow_move_assignable_v<future<T>>);
+    STATIC_ASSERT(is_nothrow_destructible_v<future<T>>);
+
+    STATIC_ASSERT(is_nothrow_default_constructible_v<shared_future<T>>);
+    STATIC_ASSERT(is_nothrow_move_constructible_v<shared_future<T>>);
+    STATIC_ASSERT(is_nothrow_move_assignable_v<shared_future<T>>);
+    STATIC_ASSERT(is_nothrow_destructible_v<shared_future<T>>);
+}
+
 // P0516R0 "Marking shared_future Copying As noexcept"
 template <typename T>
 void test_shared_future_noexcept_copy_impl() {
@@ -260,7 +273,11 @@ void test_shared_future_noexcept_copy_impl() {
     assert(!copyCtord.valid());
 }
 
-void test_shared_future_noexcept_copy() {
+void test_shared_future_noexcept() {
+    test_future_shared_future_noexcept_impl<int>();
+    test_future_shared_future_noexcept_impl<int&>();
+    test_future_shared_future_noexcept_impl<void>();
+
     test_shared_future_noexcept_copy_impl<int>();
     test_shared_future_noexcept_copy_impl<int&>();
     test_shared_future_noexcept_copy_impl<void>();
@@ -285,5 +302,5 @@ int main() {
     test_VSO_112570();
     test_VSO_115515();
     test_VSO_272761();
-    test_shared_future_noexcept_copy();
+    test_shared_future_noexcept();
 }
