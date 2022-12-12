@@ -13,7 +13,7 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <charconv> are available only with C++17 or later.");
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <cstring>
-#include <intrin0.h>
+#include _STL_INTRIN_HEADER
 #include <xbit_ops.h>
 #include <xcharconv.h>
 #include <xcharconv_ryu.h>

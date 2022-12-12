@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <exception>
 #include <functional>
-#include <intrin0.h>
+#include <intrin.h>
 #include <mutex>
 #include <stdexcept>
 #include <string>

@@ -15,7 +15,7 @@
 #include <cstdint>
 #include <emmintrin.h>
 #include <immintrin.h>
-#include <intrin0.h>
+#include <intrin.h>
 #include <isa_availability.h>
 
 extern "C" long __isa_enabled;

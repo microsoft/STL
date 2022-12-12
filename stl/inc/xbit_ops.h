@@ -10,7 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <cstdint>
-#include <intrin0.h>
+#include _STL_INTRIN_HEADER
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
