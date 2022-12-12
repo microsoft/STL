@@ -58,7 +58,9 @@ _NODISCARD _Unique_ptr_alloc<_Alloc> _Make_unique_alloc(_Alloc& _Al, _Args&&... 
     return _Unique_ptr_alloc<_Alloc>(_Constructor._Release(), _Allocator_deleter<_Alloc>{_Al});
 }
 
-struct _Nil {}; // empty struct, for unused argument types
+struct _From_raw_state_tag { // internal tag type for constructing a future from a raw state
+    explicit _From_raw_state_tag() = default;
+};
 
 _EXPORT_STD enum class future_errc { // names for futures errors
     broken_promise = 1,
@@ -899,7 +901,7 @@ public:
 
     future& operator=(future&&) = default;
 
-    future(const _Mybase& _State, _Nil) noexcept : _Mybase(_State, true) {}
+    future(_From_raw_state_tag, const _Mybase& _State) noexcept : _Mybase(_State, true) {}
 
     _Ty get() {
         // block until ready then return the stored result or throw the stored exception
@@ -928,7 +930,7 @@ public:
 
     future& operator=(future&&) = default;
 
-    future(const _Mybase& _State, _Nil) noexcept : _Mybase(_State, true) {}
+    future(_From_raw_state_tag, const _Mybase& _State) noexcept : _Mybase(_State, true) {}
 
     _Ty& get() {
         // block until ready then return the stored result or throw the stored exception
@@ -957,7 +959,7 @@ public:
 
     future& operator=(future&&) = default;
 
-    future(const _Mybase& _State, _Nil) noexcept : _Mybase(_State, true) {}
+    future(_From_raw_state_tag, const _Mybase& _State) noexcept : _Mybase(_State, true) {}
 
     void get() {
         // block until ready then return or throw the stored exception
@@ -1151,7 +1153,7 @@ public:
     }
 
     _NODISCARD_GET_FUTURE future<_Ty> get_future() {
-        return future<_Ty>(_MyPromise._Get_state_for_future(), _Nil{});
+        return future<_Ty>(_From_raw_state_tag{}, _MyPromise._Get_state_for_future());
     }
 
     void set_value(const _Ty& _Val) {
@@ -1213,7 +1215,7 @@ public:
     }
 
     _NODISCARD_GET_FUTURE future<_Ty&> get_future() {
-        return future<_Ty&>(_MyPromise._Get_state_for_future(), _Nil{});
+        return future<_Ty&>(_From_raw_state_tag{}, _MyPromise._Get_state_for_future());
     }
 
     void set_value(_Ty& _Val) {
@@ -1267,7 +1269,7 @@ public:
     }
 
     _NODISCARD_GET_FUTURE future<void> get_future() {
-        return future<void>(_MyPromise._Get_state_for_future(), _Nil{});
+        return future<void>(_From_raw_state_tag{}, _MyPromise._Get_state_for_future());
     }
 
     void set_value() {
@@ -1359,7 +1361,7 @@ public:
     }
 
     _NODISCARD_GET_FUTURE future<_Ret> get_future() {
-        return future<_Ret>(_MyPromise._Get_state_for_future(), _Nil{});
+        return future<_Ret>(_From_raw_state_tag{}, _MyPromise._Get_state_for_future());
     }
 
     void operator()(_ArgTypes... _Args) {
@@ -1489,7 +1491,7 @@ _NODISCARD_ASYNC future<_Invoke_result_t<decay_t<_Fty>, decay_t<_ArgTypes>...>> 
         _Get_associated_state<_Ret>(_Policy, _Fake_no_copy_callable_adapter<_Fty, _ArgTypes...>(
                                                  _STD forward<_Fty>(_Fnarg), _STD forward<_ArgTypes>(_Args)...)));
 
-    return future<_Ret>(_Pr._Get_state_for_future(), _Nil{});
+    return future<_Ret>(_From_raw_state_tag{}, _Pr._Get_state_for_future());
 }
 
 _EXPORT_STD template <class _Fty, class... _ArgTypes>
