@@ -12,6 +12,7 @@
 // clang-format off
 #include <initguid.h> // should be before any header that includes <guiddef.h>
 #include <DbgEng.h>
+#include <DbgHelp.h>
 #include <Shlwapi.h>
 // clang-format on
 
@@ -104,23 +105,15 @@ namespace {
                             (void) debug_control->WaitForEvent(0, INFINITE);
                         }
 
-                        constexpr ULONG add_options = 0x1 /* SYMOPT_CASE_INSENSITIVE */
-                                                    | 0x2 /* SYMOPT_UNDNAME */
-                                                    | 0x4 /* SYMOPT_DEFERRED_LOADS */
-                                                    | 0x10 /* SYMOPT_LOAD_LINES */
-                                                    | 0x20 /* SYMOPT_OMAP_FIND_NEAREST */
-                                                    | 0x100 /* SYMOPT_FAIL_CRITICAL_ERRORS */
-                                                    | 0x10000 /* SYMOPT_AUTO_PUBLICS */
-                                                    | 0x80000 /* SYMOPT_NO_PROMPTS */;
+                        constexpr ULONG add_options = SYMOPT_CASE_INSENSITIVE | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS
+                                                    | SYMOPT_LOAD_LINES | SYMOPT_OMAP_FIND_NEAREST
+                                                    | SYMOPT_FAIL_CRITICAL_ERRORS | SYMOPT_AUTO_PUBLICS
+                                                    | SYMOPT_NO_PROMPTS;
 
-                        constexpr ULONG remove_options = 0x8 /* SYMOPT_NO_CPP */
-                                                       | 0x40 /* SYMOPT_LOAD_ANYTHING */
-                                                       | 0x100 /* SYMOPT_NO_UNQUALIFIED_LOADS */
-                                                       | 0x400 /* SYMOPT_EXACT_SYMBOLS */
-                                                       | 0x1000 /* SYMOPT_IGNORE_NT_SYMPATH */
-                                                       | 0x4000 /* SYMOPT_PUBLICS_ONLY */
-                                                       | 0x8000 /* SYMOPT_NO_PUBLICS */
-                                                       | 0x20000 /* SYMOPT_NO_IMAGE_SEARCH */;
+                        constexpr ULONG remove_options = SYMOPT_NO_CPP | SYMOPT_LOAD_ANYTHING
+                                                       | SYMOPT_NO_UNQUALIFIED_LOADS | SYMOPT_EXACT_SYMBOLS
+                                                       | SYMOPT_IGNORE_NT_SYMPATH | SYMOPT_PUBLICS_ONLY
+                                                       | SYMOPT_NO_PUBLICS | SYMOPT_NO_IMAGE_SEARCH;
 
                         (void) debug_symbols->AddSymbolOptions(add_options);
                         (void) debug_symbols->RemoveSymbolOptions(remove_options);
