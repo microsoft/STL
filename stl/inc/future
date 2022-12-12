@@ -172,7 +172,7 @@ class _Associated_state;
 
 template <class _Ty>
 struct __declspec(novtable) _Deleter_base { // abstract base class for managing deletion of state objects
-    virtual void _Delete(_Associated_state<_Ty>*) = 0;
+    virtual void _Delete(_Associated_state<_Ty>*) noexcept = 0;
     virtual ~_Deleter_base() noexcept {}
 };
 
@@ -183,7 +183,7 @@ struct _State_deleter : _Deleter_base<_Ty> { // manage allocator and deletion st
     _State_deleter(const _State_deleter&)            = delete;
     _State_deleter& operator=(const _State_deleter&) = delete;
 
-    void _Delete(_Associated_state<_Ty>* _State) override;
+    void _Delete(_Associated_state<_Ty>* _State) noexcept override;
 
     _Alloc _My_alloc;
 };
@@ -220,11 +220,11 @@ public:
         }
     }
 
-    void _Retain() { // increment reference count
+    void _Retain() noexcept { // increment reference count
         _MT_INCR(_Refs);
     }
 
-    void _Release() { // decrement reference count and destroy when zero
+    void _Release() noexcept { // decrement reference count and destroy when zero
         if (_MT_DECR(_Refs) == 0) {
             _Delete_this();
         }
@@ -456,7 +456,7 @@ public:
 };
 
 template <class _Ty, class _Derived, class _Alloc>
-void _State_deleter<_Ty, _Derived, _Alloc>::_Delete(_Associated_state<_Ty>* _State) {
+void _State_deleter<_Ty, _Derived, _Alloc>::_Delete(_Associated_state<_Ty>* _State) noexcept {
     // delete _State and this using stored allocator
     using _State_allocator = _Rebind_alloc_t<_Alloc, _Derived>;
     _State_allocator _St_alloc(_My_alloc);
