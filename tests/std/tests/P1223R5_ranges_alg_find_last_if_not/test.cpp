@@ -78,7 +78,6 @@ struct instantiator {
 };
 
 int main() {
-    // causes ICE
-    // STATIC_ASSERT((test_fwd<instantiator, const P>(), true));
+    STATIC_ASSERT((test_fwd<instantiator, const P>(), true));
     test_fwd<instantiator, const P>();
 }
