@@ -18,14 +18,14 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #if !defined(_M_CEE_PURE) && !(defined(_DISABLE_STRING_ANNOTATION) && defined(_DISABLE_VECTOR_ANNOTATION))
 
-#if defined(__SANITIZE_ADDRESS__)
+#ifdef __SANITIZE_ADDRESS__
 
 #define _ACTIVATE_STRING_ANNOTATION
 #define _INSERT_STRING_ANNOTATION
 #define _ACTIVATE_VECTOR_ANNOTATION
 #define _INSERT_VECTOR_ANNOTATION
 
-#elif defined(__clang__) && defined(__has_feature) // ^^^ __SANITIZE_ADDRESS__ / __clang__ vvv
+#elif defined(__clang__) // ^^^ __SANITIZE_ADDRESS__ / __clang__ vvv
 
 #if __has_feature(address_sanitizer)
 #define _ACTIVATE_STRING_ANNOTATION
@@ -46,19 +46,19 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #endif // __SANITIZE_ADDRESS__
 
-#if defined(_DISABLE_STRING_ANNOTATION)
+#ifdef _DISABLE_STRING_ANNOTATION
 #undef _ACTIVATE_STRING_ANNOTATION
 #undef _INSERT_STRING_ANNOTATION
 #endif // _DISABLE_STRING_ANNOTATION
-#if defined(_DISABLE_VECTOR_ANNOTATION)
+#ifdef _DISABLE_VECTOR_ANNOTATION
 #undef _ACTIVATE_VECTOR_ANNOTATION
 #undef _INSERT_VECTOR_ANNOTATION
 #endif // _DISABLE_VECTOR_ANNOTATION
 
-#if !defined(_INSERT_STRING_ANNOTATION)
+#ifndef _INSERT_STRING_ANNOTATION
 #pragma detect_mismatch("annotate_string", "0")
 #endif // !_INSERT_STRING_ANNOTATION
-#if !defined(_INSERT_VECTOR_ANNOTATION)
+#ifndef _INSERT_VECTOR_ANNOTATION
 #pragma detect_mismatch("annotate_vector", "0")
 #endif // !_INSERT_VECTOR_ANNOTATION
 
@@ -71,7 +71,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma detect_mismatch("annotate_vector", "1")
 #endif // _ACTIVATE_VECTOR_ANNOTATION
 
-// only _INSERT_*_ANNOTATION should be used from here on
 #undef _ACTIVATE_STRING_ANNOTATION
 #undef _ACTIVATE_VECTOR_ANNOTATION
 
@@ -91,7 +90,7 @@ void __cdecl __sanitizer_annotate_contiguous_container(
     const void* _First, const void* _End, const void* _Old_last, const void* _New_last);
 }
 
-#if defined(_M_ARM64EC)
+#ifdef _M_ARM64EC
 #pragma comment(linker, \
     "/alternatename:#__sanitizer_annotate_contiguous_container=#__sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, \

@@ -2479,11 +2479,7 @@ private:
         }
 #endif // _HAS_CXX20
        // Don't annotate small strings; only annotate on the heap.
-        if (_Capacity == _BUF_SIZE - 1) {
-            return;
-        }
-
-        if (!_Asan_string_should_annotate) {
+        if (_Capacity == _BUF_SIZE - 1 || !_Asan_string_should_annotate) {
             return;
         }
 
@@ -3099,20 +3095,16 @@ private:
         if (_Right_data._Large_string_engaged()) { // steal buffer
             _Construct_in_place(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
             _Right_data._Bx._Ptr = nullptr;
-
-            _My_data._Myres  = _Right_data._Myres;
-            _My_data._Mysize = _Right_data._Mysize;
-
             _Swap_proxy_and_iterators(_Right);
         } else { // copy small string buffer
             _My_data._Activate_SSO_buffer();
-
             _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
-            _My_data._Myres  = _BUF_SIZE - 1;
-            _My_data._Mysize = _Right_data._Mysize;
-
             _Right_data._Orphan_all();
         }
+
+        _My_data._Myres  = _Right_data._Myres;
+        _My_data._Mysize = _Right_data._Mysize;
+
 
         _Right._Tidy_init();
     }
@@ -4332,7 +4324,7 @@ public:
         _Destroy_in_place(_Starts_large._Bx._Ptr);
 
         _Starts_large._Activate_SSO_buffer();
-        _Traits::copy(_Starts_large._Bx._Buf, _Starts_small._Bx._Buf, _Starts_small._Mysize + 1);
+        _Traits::copy(_Starts_large._Bx._Buf, _Starts_small._Bx._Buf, _BUF_SIZE);
 
         _Construct_in_place(_Starts_small._Bx._Ptr, _Ptr);
     }
