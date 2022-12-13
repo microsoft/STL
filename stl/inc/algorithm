@@ -2867,6 +2867,7 @@ namespace ranges {
                         }
                         break;
                     }
+
                     if (_STD invoke(_Proj, *_First) == _Value) {
                         _Result = _First;
                         _Found  = true;
@@ -2948,6 +2949,7 @@ namespace ranges {
                         }
                         break;
                     }
+
                     if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
                         _Result = _First;
                         _Found  = true;
@@ -3030,6 +3032,7 @@ namespace ranges {
                         }
                         break;
                     }
+
                     if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
                         _Result = _First;
                         _Found  = true;
