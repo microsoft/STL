@@ -20,13 +20,15 @@ template <class T, class U>
 constexpr void check_value(const T& found, const U& value) {
     if constexpr (same_as<T, P>) {
         assert(found.first == value);
+        assert(found.second == 1729);
     } else {
         assert(found.peek().first == value);
+        assert(found.peek().second == 1729);
     }
 }
 
 struct instantiator {
-    static constexpr P haystack[3] = {{0, 42}, {2, 42}, {4, 42}};
+    static constexpr P haystack[6] = {{0, 42}, {2, 42}, {4, 42}, {0, 1729}, {2, 1729}, {4, 1729}};
 
     template <ranges::forward_range Read>
     static constexpr void call() {
