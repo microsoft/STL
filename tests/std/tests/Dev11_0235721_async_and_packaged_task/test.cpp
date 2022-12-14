@@ -283,7 +283,7 @@ void test_shared_future_noexcept() {
     test_shared_future_noexcept_copy_impl<void>();
 }
 
-// Also test the non-constructibility of future from (future {}) and (shared_future, {})
+// Also test the non-constructibility of future from (future, {}) and (shared_future, {})
 template <typename Void, typename T, typename... Args>
 constexpr bool is_constructible_with_trailing_empty_brace_impl = false;
 
@@ -294,9 +294,6 @@ constexpr bool
 template <typename T, typename... Args>
 constexpr bool is_constructible_with_trailing_empty_brace =
     is_constructible_with_trailing_empty_brace_impl<void, T, Args...>;
-
-STATIC_ASSERT(is_constructible_with_trailing_empty_brace<pair<int, int>, int>);
-STATIC_ASSERT(is_constructible_with_trailing_empty_brace<pair<int, int>, const int&>);
 
 template <typename T>
 void test_no_implicit_brace_construction_impl() {
