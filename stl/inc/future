@@ -727,21 +727,20 @@ template <class _Ty>
 class _State_manager {
     // class for managing possibly non-existent associated asynchronous state object
 public:
-    _State_manager() noexcept
-        : _Assoc_state(nullptr), _Get_only_once(false) {} // construct with no associated asynchronous state object
+    _State_manager() = default; // construct with no associated asynchronous state object
 
     _State_manager(_Associated_state<_Ty>* _New_state, bool _Get_once) noexcept
         : _Assoc_state(_New_state), _Get_only_once(_Get_once) {} // construct with _New_state
 
-    _State_manager(const _State_manager& _Other, bool _Get_once = false) noexcept : _Assoc_state(nullptr) {
-        _Copy_from(_Other);
-        _Get_only_once = _Get_once;
+    _State_manager(const _State_manager& _Other, bool _Get_once = false) noexcept
+        : _Assoc_state(_Other._Assoc_state), _Get_only_once(_Get_once) {
+        if (_Assoc_state) { // do the copy
+            _Assoc_state->_Retain();
+        }
     }
 
-    _State_manager(_State_manager&& _Other, bool _Get_once = false) noexcept : _Assoc_state(nullptr) {
-        _Move_from(_Other);
-        _Get_only_once = _Get_once;
-    }
+    _State_manager(_State_manager&& _Other, bool _Get_once = false) noexcept
+        : _Assoc_state(_STD exchange(_Other._Assoc_state, nullptr)), _Get_only_once(_Get_once) {}
 
     ~_State_manager() noexcept {
         if (_Assoc_state) {
@@ -750,12 +749,34 @@ public:
     }
 
     _State_manager& operator=(const _State_manager& _Other) noexcept {
-        _Copy_from(_Other);
+        // copy stored associated asynchronous state object from _Other
+        if (this != _STD addressof(_Other)) {
+            if (_Assoc_state) {
+                _Assoc_state->_Release();
+            }
+
+            if (_Other._Assoc_state) { // do the copy
+                _Other._Assoc_state->_Retain();
+                _Assoc_state   = _Other._Assoc_state;
+                _Get_only_once = _Other._Get_only_once;
+            } else {
+                _Assoc_state = nullptr;
+            }
+        }
         return *this;
     }
 
     _State_manager& operator=(_State_manager&& _Other) noexcept {
-        _Move_from(_Other);
+        // move stored associated asynchronous state object from _Other
+        if (this != _STD addressof(_Other)) {
+            if (_Assoc_state) {
+                _Assoc_state->_Release();
+            }
+
+            _Assoc_state        = _Other._Assoc_state;
+            _Other._Assoc_state = nullptr;
+            _Get_only_once      = _Other._Get_only_once;
+        }
         return *this;
     }
 
@@ -838,35 +859,6 @@ public:
         return _Assoc_state;
     }
 
-    void _Copy_from(const _State_manager& _Other) noexcept {
-        // copy stored associated asynchronous state object from _Other
-        if (this != _STD addressof(_Other)) {
-            if (_Assoc_state) {
-                _Assoc_state->_Release();
-            }
-
-            if (_Other._Assoc_state) { // do the copy
-                _Other._Assoc_state->_Retain();
-                _Assoc_state   = _Other._Assoc_state;
-                _Get_only_once = _Other._Get_only_once;
-            } else {
-                _Assoc_state = nullptr;
-            }
-        }
-    }
-
-    void _Move_from(_State_manager& _Other) noexcept { // move stored associated asynchronous state object from _Other
-        if (this != _STD addressof(_Other)) {
-            if (_Assoc_state) {
-                _Assoc_state->_Release();
-            }
-
-            _Assoc_state        = _Other._Assoc_state;
-            _Other._Assoc_state = nullptr;
-            _Get_only_once      = _Other._Get_only_once;
-        }
-    }
-
     bool _Is_ready() const noexcept {
         return _Assoc_state && _Assoc_state->_Is_ready();
     }
@@ -876,8 +868,8 @@ public:
     }
 
 private:
-    _Associated_state<_Ty>* _Assoc_state;
-    bool _Get_only_once;
+    _Associated_state<_Ty>* _Assoc_state = nullptr;
+    bool _Get_only_once                  = false;
 };
 
 _EXPORT_STD template <class _Ty>
