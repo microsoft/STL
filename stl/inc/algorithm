@@ -2879,7 +2879,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Find_last_fn find_last{_Not_quite_object::_Construct_tag{}};
 
-    template <bool _If_not>
+    template <bool _Search_for>
     class _Find_last_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2926,8 +2926,7 @@ namespace ranges {
 
             if constexpr (_Bidi_common<_It, _Se>) {
                 for (auto _Result = _Last; _Result != _First;) {
-                    const bool _Pred_result = _STD invoke(_Pred, _STD invoke(_Proj, *--_Result));
-                    if (_Pred_result != _If_not) {
+                    if (_STD invoke_r<bool>(_Pred, _STD invoke(_Proj, *--_Result)) == _Search_for) {
                         return {_STD move(_Result), _STD move(_Last)};
                     }
                 }
@@ -2935,8 +2934,7 @@ namespace ranges {
             } else if constexpr (same_as<_It, _Se>) {
                 auto _Result = _Last;
                 for (; _First != _Last; ++_First) {
-                    const bool _Pred_result = _STD invoke(_Pred, _STD invoke(_Proj, *_First));
-                    if (_Pred_result != _If_not) {
+                    if (_STD invoke_r<bool>(_Pred, _STD invoke(_Proj, *_First)) == _Search_for) {
                         _Result = _First;
                     }
                 }
@@ -2952,8 +2950,7 @@ namespace ranges {
                         break;
                     }
 
-                    const bool _Pred_result = _STD invoke(_Pred, _STD invoke(_Proj, *_First));
-                    if (_Pred_result != _If_not) {
+                    if (_STD invoke_r<bool>(_Pred, _STD invoke(_Proj, *_First)) == _Search_for) {
                         _Result = _First;
                         _Found  = true;
                     }
@@ -2963,8 +2960,8 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Find_last_if_fn<false> find_last_if{_Not_quite_object::_Construct_tag{}};
-    _EXPORT_STD inline constexpr _Find_last_if_fn<true> find_last_if_not{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Find_last_if_fn<true> find_last_if{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Find_last_if_fn<false> find_last_if_not{_Not_quite_object::_Construct_tag{}};
 #endif // _HAS_CXX23
 } // namespace ranges
 #endif // __cpp_lib_concepts
