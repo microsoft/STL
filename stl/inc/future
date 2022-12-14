@@ -173,7 +173,7 @@ class _Associated_state;
 template <class _Ty>
 struct __declspec(novtable) _Deleter_base { // abstract base class for managing deletion of state objects
     virtual void _Delete(_Associated_state<_Ty>*) noexcept = 0;
-    virtual ~_Deleter_base()                               = default;
+    virtual ~_Deleter_base() = default; // TRANSITION, vNext (make non-virtual, never called polymorphically)
 };
 
 template <class _Ty, class _Derived, class _Alloc>
@@ -750,19 +750,16 @@ public:
 
     _State_manager& operator=(const _State_manager& _Other) noexcept {
         // copy stored associated asynchronous state object from _Other
-        if (this != _STD addressof(_Other)) {
-            if (_Assoc_state) {
-                _Assoc_state->_Release();
-            }
-
-            if (_Other._Assoc_state) { // do the copy
-                _Other._Assoc_state->_Retain();
-                _Assoc_state   = _Other._Assoc_state;
-                _Get_only_once = _Other._Get_only_once;
-            } else {
-                _Assoc_state = nullptr;
-            }
+        if (_Other._Assoc_state) {
+            _Other._Assoc_state->_Retain();
         }
+
+        if (_Assoc_state) {
+            _Assoc_state->_Release();
+        }
+
+        _Assoc_state   = _Other._Assoc_state;
+        _Get_only_once = _Other._Get_only_once;
         return *this;
     }
 
@@ -773,9 +770,8 @@ public:
                 _Assoc_state->_Release();
             }
 
-            _Assoc_state        = _Other._Assoc_state;
-            _Other._Assoc_state = nullptr;
-            _Get_only_once      = _Other._Get_only_once;
+            _Assoc_state   = _STD exchange(_Other._Assoc_state, nullptr);
+            _Get_only_once = _Other._Get_only_once;
         }
         return *this;
     }
