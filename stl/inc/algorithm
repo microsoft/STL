@@ -2807,13 +2807,12 @@ namespace ranges {
         _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Last, const _Ty& _Value, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
 
+            auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
             if constexpr (bidirectional_iterator<_It>) {
-                auto _UFirst  = _Unwrap_iter<_Se>(_STD move(_First));
                 auto _ULast   = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
                 auto _UResult = _Find_last_unchecked(_STD move(_UFirst), _STD move(_ULast), _Value, _Pass_fn(_Proj));
                 return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
             } else {
-                auto _UFirst  = _Unwrap_iter<_Se>(_STD move(_First));
                 auto _ULast   = _Unwrap_sent<_It>(_STD move(_Last));
                 auto _UResult = _Find_last_unchecked(_STD move(_UFirst), _STD move(_ULast), _Value, _Pass_fn(_Proj));
                 return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
@@ -2858,8 +2857,8 @@ namespace ranges {
                 }
                 return {_STD move(_Result), _STD move(_Last)};
             } else {
-                _It _Result = _First;
-                bool _Found = false;
+                auto _Result = _First;
+                bool _Found  = false;
                 for (;; ++_First) {
                     if (_First == _Last) {
                         if (!_Found) {
@@ -2880,6 +2879,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Find_last_fn find_last{_Not_quite_object::_Construct_tag{}};
 
+    template <bool _If_not>
     class _Find_last_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2889,20 +2889,20 @@ namespace ranges {
         _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
 
+            auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
             if constexpr (bidirectional_iterator<_It>) {
-                auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
-                auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+                auto _ULast = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
                 auto _UResult =
                     _Find_last_if_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
             } else {
-                auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
-                auto _ULast  = _Unwrap_sent<_It>(_STD move(_Last));
+                auto _ULast = _Unwrap_sent<_It>(_STD move(_Last));
                 auto _UResult =
                     _Find_last_if_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
             }
         }
+
         template <forward_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
@@ -2926,22 +2926,34 @@ namespace ranges {
 
             if constexpr (_Bidi_common<_It, _Se>) {
                 for (auto _Result = _Last; _Result != _First;) {
-                    if (_STD invoke(_Pred, _STD invoke(_Proj, *--_Result))) {
-                        return {_STD move(_Result), _STD move(_Last)};
+                    if constexpr (_If_not) {
+                        if (!_STD invoke(_Pred, _STD invoke(_Proj, *--_Result))) {
+                            return {_STD move(_Result), _STD move(_Last)};
+                        }
+                    } else {
+                        if (_STD invoke(_Pred, _STD invoke(_Proj, *--_Result))) {
+                            return {_STD move(_Result), _STD move(_Last)};
+                        }
                     }
                 }
                 return {_Last, _Last};
             } else if constexpr (same_as<_It, _Se>) {
                 auto _Result = _Last;
                 for (; _First != _Last; ++_First) {
-                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                        _Result = _First;
+                    if constexpr (_If_not) {
+                        if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                            _Result = _First;
+                        }
+                    } else {
+                        if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                            _Result = _First;
+                        }
                     }
                 }
                 return {_STD move(_Result), _STD move(_Last)};
             } else {
-                _It _Result = _First;
-                bool _Found = false;
+                auto _Result = _First;
+                bool _Found  = false;
                 for (;; ++_First) {
                     if (_First == _Last) {
                         if (!_Found) {
@@ -2950,92 +2962,16 @@ namespace ranges {
                         break;
                     }
 
-                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                        _Result = _First;
-                        _Found  = true;
-                    }
-                }
-                return {_STD move(_Result), _STD move(_First)};
-            }
-        }
-    };
-
-    _EXPORT_STD inline constexpr _Find_last_if_fn find_last_if{_Not_quite_object::_Construct_tag{}};
-
-    class _Find_last_if_not_fn : private _Not_quite_object {
-    public:
-        using _Not_quite_object::_Not_quite_object;
-
-        template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
-            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
-        _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-
-            if constexpr (bidirectional_iterator<_It>) {
-                auto _UFirst  = _Unwrap_iter<_Se>(_STD move(_First));
-                auto _ULast   = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
-                auto _UResult = _Find_last_if_not_unchecked(
-                    _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
-                return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
-            } else {
-                auto _UFirst  = _Unwrap_iter<_Se>(_STD move(_First));
-                auto _ULast   = _Unwrap_sent<_It>(_STD move(_Last));
-                auto _UResult = _Find_last_if_not_unchecked(
-                    _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
-                return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
-            }
-        }
-        template <forward_range _Rng, class _Pj = identity,
-            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
-        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            if constexpr (bidirectional_range<_Rng>) {
-                auto _UResult = _Find_last_if_not_unchecked(
-                    _Ubegin(_Range), _Get_final_iterator_unwrapped(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-                return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
-            } else {
-                auto _UResult =
-                    _Find_last_if_not_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-                return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
-            }
-        }
-
-    private:
-        template <class _It, class _Se, class _Pj, class _Pr>
-        _NODISCARD static constexpr subrange<_It> _Find_last_if_not_unchecked(
-            _It _First, _Se _Last, _Pr _Pred, _Pj _Proj) {
-            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
-            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
-
-            if constexpr (_Bidi_common<_It, _Se>) {
-                for (auto _Result = _Last; _Result != _First;) {
-                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *--_Result))) {
-                        return {_STD move(_Result), _STD move(_Last)};
-                    }
-                }
-                return {_Last, _Last};
-            } else if constexpr (same_as<_It, _Se>) {
-                auto _Result = _Last;
-                for (; _First != _Last; ++_First) {
-                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                        _Result = _First;
-                    }
-                }
-                return {_STD move(_Result), _STD move(_Last)};
-            } else {
-                _It _Result = _First;
-                bool _Found = false;
-                for (;; ++_First) {
-                    if (_First == _Last) {
-                        if (!_Found) {
+                    if constexpr (_If_not) {
+                        if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
                             _Result = _First;
+                            _Found  = true;
                         }
-                        break;
-                    }
-
-                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                        _Result = _First;
-                        _Found  = true;
+                    } else {
+                        if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                            _Result = _First;
+                            _Found  = true;
+                        }
                     }
                 }
                 return {_STD move(_Result), _STD move(_First)};
@@ -3043,7 +2979,8 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Find_last_if_not_fn find_last_if_not{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Find_last_if_fn<false> find_last_if{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Find_last_if_fn<true> find_last_if_not{_Not_quite_object::_Construct_tag{}};
 #endif // _HAS_CXX23
 } // namespace ranges
 #endif // __cpp_lib_concepts

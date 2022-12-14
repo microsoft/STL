@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <concepts>
 #include <ranges>
 #include <span>
 #include <utility>
@@ -40,16 +39,14 @@ struct instantiator {
         for (const auto& [value, _] : haystack) {
             { // Validate range overload [found case]
                 Read wrapped_input{haystack};
-                auto result = find_last_if(wrapped_input, equals(value), get_first);
-                STATIC_ASSERT(same_as<iterator_t<decltype(result)>, iterator_t<Read>>);
-                STATIC_ASSERT(common_range<decltype(result)>);
+                const auto result = find_last_if(wrapped_input, equals(value), get_first);
+                STATIC_ASSERT(same_as<decltype(result), const ranges::subrange<iterator_t<Read>>>);
                 check_value(result.front(), value);
             }
             { // Validate iterator + sentinel overload [found case]
                 Read wrapped_input{haystack};
-                auto result = find_last_if(wrapped_input.begin(), wrapped_input.end(), equals(value), get_first);
-                STATIC_ASSERT(same_as<iterator_t<decltype(result)>, iterator_t<Read>>);
-                STATIC_ASSERT(common_range<decltype(result)>);
+                const auto result = find_last_if(wrapped_input.begin(), wrapped_input.end(), equals(value), get_first);
+                STATIC_ASSERT(same_as<decltype(result), const ranges::subrange<iterator_t<Read>>>);
                 check_value(result.front(), value);
             }
         }
