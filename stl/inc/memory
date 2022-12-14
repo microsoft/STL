@@ -4162,7 +4162,7 @@ struct _Pointer_of_helper<_Ty> {
 };
 
 template <_Has_member_element_type _Ty>
-    requires(!_Has_member_pointer<_Ty>)
+    requires (!_Has_member_pointer<_Ty>)
 struct _Pointer_of_helper<_Ty> {
     using type = typename _Ty::element_type*;
 };
@@ -4235,7 +4235,7 @@ public:
     }
 
     operator void**() const noexcept
-        requires(!is_same_v<_Pointer, void*>)
+        requires (!is_same_v<_Pointer, void*>)
     {
         static_assert(is_pointer_v<_Pointer>, "conversion of out_ptr_t<Smart, Pointer, Args...> to void** requires "
                                               "Pointer to be a raw pointer (N4892 [out.ptr.t]/13)");
@@ -4317,7 +4317,7 @@ public:
     }
 
     operator void**() const noexcept
-        requires(!is_same_v<_Pointer, void*>)
+        requires (!is_same_v<_Pointer, void*>)
     {
         static_assert(is_pointer_v<_Pointer>, "conversion of inout_ptr_t<Smart, Pointer, Args...> to void** requires "
                                               "Pointer to be a raw pointer (N4892 [inout.ptr.t]/15)");
