@@ -2926,28 +2926,18 @@ namespace ranges {
 
             if constexpr (_Bidi_common<_It, _Se>) {
                 for (auto _Result = _Last; _Result != _First;) {
-                    if constexpr (_If_not) {
-                        if (!_STD invoke(_Pred, _STD invoke(_Proj, *--_Result))) {
-                            return {_STD move(_Result), _STD move(_Last)};
-                        }
-                    } else {
-                        if (_STD invoke(_Pred, _STD invoke(_Proj, *--_Result))) {
-                            return {_STD move(_Result), _STD move(_Last)};
-                        }
+                    const bool _Pred_result = _STD invoke(_Pred, _STD invoke(_Proj, *--_Result));
+                    if (_Pred_result != _If_not) {
+                        return {_STD move(_Result), _STD move(_Last)};
                     }
                 }
                 return {_Last, _Last};
             } else if constexpr (same_as<_It, _Se>) {
                 auto _Result = _Last;
                 for (; _First != _Last; ++_First) {
-                    if constexpr (_If_not) {
-                        if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                            _Result = _First;
-                        }
-                    } else {
-                        if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                            _Result = _First;
-                        }
+                    const bool _Pred_result = _STD invoke(_Pred, _STD invoke(_Proj, *_First));
+                    if (_Pred_result != _If_not) {
+                        _Result = _First;
                     }
                 }
                 return {_STD move(_Result), _STD move(_Last)};
@@ -2962,16 +2952,10 @@ namespace ranges {
                         break;
                     }
 
-                    if constexpr (_If_not) {
-                        if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                            _Result = _First;
-                            _Found  = true;
-                        }
-                    } else {
-                        if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                            _Result = _First;
-                            _Found  = true;
-                        }
+                    const bool _Pred_result = _STD invoke(_Pred, _STD invoke(_Proj, *_First));
+                    if (_Pred_result != _If_not) {
+                        _Result = _First;
+                        _Found  = true;
                     }
                 }
                 return {_STD move(_Result), _STD move(_First)};
