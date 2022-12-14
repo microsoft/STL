@@ -173,7 +173,7 @@ class _Associated_state;
 template <class _Ty>
 struct __declspec(novtable) _Deleter_base { // abstract base class for managing deletion of state objects
     virtual void _Delete(_Associated_state<_Ty>*) noexcept = 0;
-    virtual ~_Deleter_base() noexcept {}
+    virtual ~_Deleter_base()                               = default;
 };
 
 template <class _Ty, class _Derived, class _Alloc>
@@ -728,12 +728,10 @@ class _State_manager {
     // class for managing possibly non-existent associated asynchronous state object
 public:
     _State_manager() noexcept
-        : _Assoc_state(nullptr), _Get_only_once(false) { // construct with no associated asynchronous state object
-    }
+        : _Assoc_state(nullptr), _Get_only_once(false) {} // construct with no associated asynchronous state object
 
     _State_manager(_Associated_state<_Ty>* _New_state, bool _Get_once) noexcept
-        : _Assoc_state(_New_state), _Get_only_once(_Get_once) { // construct with _New_state
-    }
+        : _Assoc_state(_New_state), _Get_only_once(_Get_once) {} // construct with _New_state
 
     _State_manager(const _State_manager& _Other, bool _Get_once = false) noexcept : _Assoc_state(nullptr) {
         _Copy_from(_Other);
@@ -840,8 +838,8 @@ public:
         return _Assoc_state;
     }
 
-    void _Copy_from(
-        const _State_manager& _Other) noexcept { // copy stored associated asynchronous state object from _Other
+    void _Copy_from(const _State_manager& _Other) noexcept {
+        // copy stored associated asynchronous state object from _Other
         if (this != _STD addressof(_Other)) {
             if (_Assoc_state) {
                 _Assoc_state->_Release();
