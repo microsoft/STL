@@ -163,7 +163,7 @@ struct test_case_uninitialized_value_construct_n_parallel {
 struct test_case_uninitialized_value_construct_memset_parallel {
     template <class ExecutionPolicy>
     void operator()(const size_t testSize, const ExecutionPolicy& exec) {
-        auto buffer         = unique_ptr<int>(new int[testSize]);
+        auto buffer         = make_unique<int[]>(testSize);
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
@@ -177,7 +177,7 @@ struct test_case_uninitialized_value_construct_memset_parallel {
 struct test_case_uninitialized_value_construct_n_memset_parallel {
     template <class ExecutionPolicy>
     void operator()(const size_t testSize, const ExecutionPolicy& exec) {
-        auto buffer         = unique_ptr<int>(new int[testSize]);
+        auto buffer         = make_unique<int[]>(testSize);
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
