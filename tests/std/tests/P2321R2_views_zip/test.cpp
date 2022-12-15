@@ -301,21 +301,6 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         const auto const_tuple_element_arr = as_const(test_container).get_element_tuple_arr();
 
         // Validate zip_view::size()
-#if defined(_MSVC_INTERNAL_TESTING) && !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1655459
-        STATIC_ASSERT(CanMemberSize<ZipType> == (ranges::sized_range<AllView<RangeTypes>> && ...));
-        if constexpr (CanMemberSize<ZipType>) {
-            auto zip_size = zipped_range.size();
-
-            assert(zip_size == ranges::size(tuple_element_arr));
-        }
-
-        STATIC_ASSERT(CanMemberSize<const ZipType> == (ranges::sized_range<const AllView<RangeTypes>> && ...));
-        if constexpr (CanMemberSize<const ZipType>) {
-            auto zip_size = as_const(zipped_range).size();
-
-            assert(zip_size == ranges::size(tuple_element_arr));
-        }
-#else // ^^^ workaround / no workaround vvv
         STATIC_ASSERT(CanMemberSize<ZipType> == (ranges::sized_range<AllView<RangeTypes>> && ...));
         if constexpr (CanMemberSize<ZipType>) {
             using expected_size_type =
@@ -338,7 +323,6 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
                 noexcept(as_const(zipped_range).size())
                 == (noexcept(static_cast<expected_size_type>(declval<const AllView<RangeTypes>>().size())) && ...));
         }
-#endif // ^^^ no workaround ^^^
 
         const bool is_empty = ranges::empty(tuple_element_arr);
 
