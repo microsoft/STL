@@ -110,7 +110,7 @@ namespace execution {
         // indicates support by element access functions for weakly parallel forward progress guarantees, and for
         // executing interleaved on the same thread, and requests termination on exceptions
         //
-        // (at this time, equivalent to sequenced_policy except the for_each(_n), destroy(_n),
+        // (at this time, equivalent to sequenced_policy except for for_each(_n), destroy(_n),
         // uninitialized_default_construct(_n), and uninitialized_value_construct(_n))
     public:
         using _Standard_execution_policy   = int;
@@ -5123,6 +5123,7 @@ void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt 
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
 
+    using _Value_type = _Iter_value_t<_NoThrowFwdIt>;
     if constexpr (_Use_memset_value_construct_v<decltype(_UFirst)>) {
         _STD _Zero_range(_UFirst, _ULast);
     } else if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
@@ -5132,7 +5133,7 @@ void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt 
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
                 auto _Ctor_fn = [](decltype(*_UFirst) _Obj) {
-                    _STD _Construct_in_place(reinterpret_cast<_Iter_value_t<_NoThrowFwdIt>&>(_Obj));
+                    _STD _Construct_in_place(reinterpret_cast<_Value_type&>(_Obj));
                 };
                 _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), decltype(_Ctor_fn)> _Operation{
                     _Hw_threads, _Count, _Ctor_fn};
@@ -5147,16 +5148,16 @@ void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt 
 
 #pragma loop(ivdep)
         for (; _UFirst != _ULast; ++_UFirst) {
-            _STD _Construct_in_place(*_UFirst);
+            _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
         }
     } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
 #pragma loop(ivdep)
         for (; _UFirst != _ULast; ++_UFirst) {
-            _STD _Construct_in_place(*_UFirst);
+            _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
         }
     } else {
         for (; _First != _Last; ++_First) {
-            _STD _Construct_in_place(*_UFirst);
+            _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
         }
     }
 }
@@ -5172,7 +5173,8 @@ _NoThrowFwdIt uninitialized_value_construct_n(_ExPo&&, _NoThrowFwdIt _First, con
         return _First;
     }
 
-    auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
+    using _Value_type = _Iter_value_t<_NoThrowFwdIt>;
+    auto _UFirst      = _STD _Get_unwrapped_n(_First, _Count);
     if constexpr (_Use_memset_value_construct_v<decltype(_UFirst)>) {
         _STD _Zero_range(_UFirst, _UFirst + _Count);
         _STD _Seek_wrapped(_First, _UFirst + _Count);
@@ -5181,7 +5183,7 @@ _NoThrowFwdIt uninitialized_value_construct_n(_ExPo&&, _NoThrowFwdIt _First, con
         if (_Hw_threads > 1 && _Count >= 2) { // parallelize on multiprocessor machines with at least 2 elements
             _TRY_BEGIN
             auto _Ctor_fn = [](decltype(*_UFirst) _Obj) {
-                _STD _Construct_in_place(reinterpret_cast<_Iter_value_t<_NoThrowFwdIt>&>(_Obj));
+                _STD _Construct_in_place(reinterpret_cast<_Value_type&>(_Obj));
             };
             _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), decltype(_Ctor_fn)> _Operation{
                 _Hw_threads, _Count, _Ctor_fn};
@@ -5195,18 +5197,18 @@ _NoThrowFwdIt uninitialized_value_construct_n(_ExPo&&, _NoThrowFwdIt _First, con
 
 #pragma loop(ivdep)
         for (; _Count > 0; --_Count, (void) ++_UFirst) {
-            _STD _Construct_in_place(*_UFirst);
+            _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
         }
         _STD _Seek_wrapped(_First, _UFirst);
     } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
 #pragma loop(ivdep)
         for (; _Count > 0; --_Count, (void) ++_UFirst) {
-            _STD _Construct_in_place(*_UFirst);
+            _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
         }
         _STD _Seek_wrapped(_First, _UFirst);
     } else {
         for (; _Count > 0; --_Count, (void) ++_UFirst) {
-            _STD _Construct_in_place(*_UFirst);
+            _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
         }
         _STD _Seek_wrapped(_First, _UFirst);
     }
