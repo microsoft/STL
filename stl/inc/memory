@@ -190,7 +190,7 @@ _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrow
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     const auto _UDest  = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
-    _Seek_wrapped(_Dest, _Uninitialized_move_unchecked(_UFirst, _ULast, _UDest));
+    _Seek_wrapped(_Dest, _STD _Uninitialized_move_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
 

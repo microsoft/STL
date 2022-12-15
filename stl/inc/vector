@@ -1177,7 +1177,7 @@ private:
                 _RERAISE;
                 _CATCH_END
 
-                _Move_unchecked(_Whereptr + 2 * _Count, _Mylast, _Whereptr + _Count);
+                _STD _Move_unchecked(_Whereptr + 2 * _Count, _Mylast, _Whereptr + _Count);
                 _Destroy_range(_Oldlast, _Mylast, _Al);
                 _Mylast = _Oldlast;
                 _RERAISE;
@@ -1718,7 +1718,7 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         _Orphan_range(_Whereptr, _Mylast);
-        _Move_unchecked(_Whereptr + 1, _Mylast, _Whereptr);
+        _STD _Move_unchecked(_Whereptr + 1, _Mylast, _Whereptr);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
         _ASAN_VECTOR_MODIFY(-1);
         --_Mylast;
@@ -1741,7 +1741,7 @@ public:
         if (_Firstptr != _Lastptr) { // something to do, invalidate iterators
             _Orphan_range(_Firstptr, _Mylast);
 
-            const pointer _Newlast = _Move_unchecked(_Lastptr, _Mylast, _Firstptr);
+            const pointer _Newlast = _STD _Move_unchecked(_Lastptr, _Mylast, _Firstptr);
             _Destroy_range(_Newlast, _Mylast, _Getal());
             _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newlast - _Mylast)); // negative when destroying elements
             _Mylast = _Newlast;
@@ -2107,7 +2107,7 @@ private:
         const auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
         if (_Newsize > _Oldsize) {
             const pointer _Mid = _First + _Oldsize;
-            _Move_unchecked(_First, _Mid, _Myfirst);
+            _STD _Move_unchecked(_First, _Mid, _Myfirst);
 
             if constexpr (_Nothrow_construct) {
                 _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
@@ -2119,7 +2119,7 @@ private:
             }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
-            _Move_unchecked(_First, _Last, _Myfirst);
+            _STD _Move_unchecked(_First, _Last, _Myfirst);
             _Destroy_range(_Newlast, _Mylast, _Al);
             _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
@@ -3334,13 +3334,13 @@ public:
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
-            _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
+            _STD _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
 #ifdef __cpp_lib_concepts
         } else if constexpr (forward_iterator<_Iter>) {
             const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
-            _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
+            _STD _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
 #endif // __cpp_lib_concepts
         } else {
             const auto _Old_size = this->_Mysize;

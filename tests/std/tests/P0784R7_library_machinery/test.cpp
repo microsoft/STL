@@ -58,7 +58,7 @@ constexpr bool test() {
         int_wrapper_copy input[]   = {1, 2, 3, 4};
         int_wrapper_copy output[4] = {5, 6, 7, 8};
 
-        const auto result = _Copy_unchecked(begin(input), end(input), begin(output));
+        const auto result = _STD _Copy_unchecked(begin(input), end(input), begin(output));
         static_assert(is_same_v<remove_const_t<decltype(result)>, int_wrapper_copy*>);
         assert(result == end(output));
         assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
@@ -98,7 +98,7 @@ constexpr bool test() {
         int_wrapper_move input[]   = {1, 2, 3, 4};
         int_wrapper_move output[4] = {5, 6, 7, 8};
 
-        const auto result = _Move_unchecked(begin(input), end(input), begin(output));
+        const auto result = _STD _Move_unchecked(begin(input), end(input), begin(output));
         static_assert(is_same_v<remove_const_t<decltype(result)>, int_wrapper_move*>);
         assert(result == end(output));
         assert(equal(begin(expected_move), end(expected_move), begin(output), end(output)));
