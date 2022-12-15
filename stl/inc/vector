@@ -110,6 +110,7 @@ public:
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
         _STL_VERIFY(_Off == 0 || _Ptr, "cannot seek value-initialized vector iterator");
+        _STL_VERIFY(_Off == 0 || _Mycont, "cannot seek invalidated vector iterator");
         if (_Off < 0) {
             _STL_VERIFY(_Off >= _Mycont->_Myfirst - _Ptr, "cannot seek vector iterator before begin");
         }
