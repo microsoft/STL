@@ -8,12 +8,8 @@
 #define _UTILITY_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <type_traits>
+#include <__msvc_iter_core.hpp>
 #include <xstddef>
-
-#ifdef __cpp_lib_concepts
-#include <concepts>
-#endif // __cpp_lib_concepts
 
 #if _HAS_CXX20
 #include <compare>
@@ -137,8 +133,49 @@ _INLINE_VAR constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value
 _EXPORT_STD template <class...>
 class tuple;
 
+_EXPORT_STD template <class _Ty1, class _Ty2>
+struct pair;
+
+_EXPORT_STD template <class _Ty, size_t _Size>
+class array;
+
+_EXPORT_STD template <class _Ty>
+_INLINE_VAR constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
+
+_EXPORT_STD template <size_t _Index, class _Tuple>
+using tuple_element_t = typename tuple_element<_Index, _Tuple>::type;
+
 _EXPORT_STD /* TRANSITION, VSO-1538698 */ template <size_t _Index, class... _Types>
 _NODISCARD constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
+
+#ifdef __cpp_lib_concepts
+template <class _Ty1, class _Ty2>
+concept _Different_from = (!same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>);
+
+template <class>
+inline constexpr bool _Is_std_array_v = false;
+
+template <class _Ty, size_t _Size>
+inline constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
+
+template <class>
+inline constexpr bool _Is_subrange_v = false;
+
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+inline constexpr bool _Is_subrange_v<ranges::subrange<_It, _Se, _Ki>> = true;
+
+#if _HAS_CXX23
+template <class _Ty>
+inline constexpr bool _Tuple_like_impl =
+    _Is_specialization_v<_Ty, tuple> || _Is_specialization_v<_Ty, pair> || _Is_std_array_v<_Ty> || _Is_subrange_v<_Ty>;
+
+template <class _Ty>
+concept _Tuple_like = _Tuple_like_impl<remove_cvref_t<_Ty>>;
+
+template <class _Ty>
+concept _Pair_like = _Tuple_like<_Ty> && tuple_size_v<remove_cvref_t<_Ty>> == 2;
+#endif // _HAS_CXX23
+#endif // __cpp_lib_concepts
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct pair { // store a pair of values
@@ -469,9 +506,6 @@ namespace _CXX20_DEPRECATE_REL_OPS rel_ops {
     }
 } // namespace _CXX20_DEPRECATE_REL_OPS rel_ops
 
-_EXPORT_STD template <class _Tuple>
-struct tuple_size;
-
 template <class _Tuple, class = void>
 struct _Tuple_size_sfinae {}; // selected when tuple_size<_Tuple>::value isn't well-formed
 
@@ -487,12 +521,6 @@ struct _CXX20_DEPRECATE_VOLATILE tuple_size<volatile _Tuple> : _Tuple_size_sfina
 
 template <class _Tuple>
 struct _CXX20_DEPRECATE_VOLATILE tuple_size<const volatile _Tuple> : _Tuple_size_sfinae<_Tuple> {}; // ignore cv
-
-_EXPORT_STD template <class _Ty>
-_INLINE_VAR constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
-
-_EXPORT_STD template <size_t _Index, class _Tuple>
-struct tuple_element;
 
 template <size_t _Index, class _Tuple>
 struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, const _Tuple> : tuple_element<_Index, _Tuple> {
@@ -513,12 +541,6 @@ struct _CXX20_DEPRECATE_VOLATILE _MSVC_KNOWN_SEMANTICS tuple_element<_Index, con
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_cv_t<typename _Mybase::type>;
 };
-
-_EXPORT_STD template <size_t _Index, class _Tuple>
-using tuple_element_t = typename tuple_element<_Index, _Tuple>::type;
-
-_EXPORT_STD template <class _Ty, size_t _Size>
-class array;
 
 template <class _Ty, size_t _Size>
 struct tuple_size<array<_Ty, _Size>> : integral_constant<size_t, _Size> {}; // size of array
@@ -790,20 +812,6 @@ _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
 
     return true;
 }
-
-#ifdef __cpp_lib_concepts
-template <class _Ty>
-using _With_reference = _Ty&;
-
-template <class _Ty>
-concept _Can_reference = requires { typename _With_reference<_Ty>; };
-#else // __cpp_lib_concepts
-template <class _Ty, class = void>
-inline constexpr bool _Can_reference = false;
-
-template <class _Ty>
-inline constexpr bool _Can_reference<_Ty, void_t<_Ty&>> = true;
-#endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23

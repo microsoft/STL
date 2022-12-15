@@ -8,7 +8,11 @@
 #define __MSVC_ITER_CORE_HPP
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <utility>
+#include <type_traits>
+
+#ifdef __cpp_lib_concepts
+#include <concepts>
+#endif // __cpp_lib_concepts
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -28,6 +32,29 @@ _EXPORT_STD struct forward_iterator_tag : input_iterator_tag {};
 _EXPORT_STD struct bidirectional_iterator_tag : forward_iterator_tag {};
 
 _EXPORT_STD struct random_access_iterator_tag : bidirectional_iterator_tag {};
+
+// from <utility>
+_EXPORT_STD template <class _Tuple>
+struct tuple_size;
+
+_EXPORT_STD template <size_t _Index, class _Tuple>
+struct tuple_element;
+
+#if _HAS_CXX20
+#ifdef __cpp_lib_concepts
+template <class _Ty>
+using _With_reference = _Ty&;
+
+template <class _Ty>
+concept _Can_reference = requires { typename _With_reference<_Ty>; };
+#else // ^^^ __cpp_lib_concepts / vvv !__cpp_lib_concepts
+template <class _Ty, class = void>
+inline constexpr bool _Can_reference = false;
+
+template <class _Ty>
+inline constexpr bool _Can_reference<_Ty, void_t<_Ty&>> = true;
+#endif // !__cpp_lib_concepts
+#endif // _HAS_CXX20
 
 #ifdef __cpp_lib_concepts
 _EXPORT_STD struct contiguous_iterator_tag : random_access_iterator_tag {};
