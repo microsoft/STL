@@ -475,14 +475,31 @@ int main() {
     { // Test pointers
         const char* s = "xxxyyy";
         const char* arr[]{s, s + 1, s + 1, s + 5, s, s + 4, nullptr};
+        const void* arr_void[]{s, s + 1, s + 1, s + 5, s, s + 4, nullptr};
 
         static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr)), decltype(s + 1)>, "should optimize");
-        static_assert(!_Vector_alg_in_find_is_safe<decltype(begin(arr)), nullptr_t>, "should not optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr)), char*>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr)), void*>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr)), const volatile void*>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr)), nullptr_t>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr_void)), char*>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr_void)), const char*>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr_void)), void*>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr_void)), const void*>, "should optimize");
 
+        // const char pointer range
         assert(find(begin(arr), end(arr), s) == begin(arr));
+        assert(find(begin(arr), end(arr), const_cast<char*>(s)) == begin(arr));
+        assert(find(begin(arr), end(arr), const_cast<volatile char*>(s)) == begin(arr));
+
         assert(find(begin(arr), end(arr), s + 1) == begin(arr) + 1);
+        assert(find(begin(arr), end(arr), static_cast<const void*>(s + 1)) == begin(arr) + 1);
+
         assert(find(begin(arr), end(arr), s + 3) == end(arr));
+        assert(find(begin(arr), end(arr), static_cast<const void*>(s + 3)) == end(arr));
+
         assert(find(begin(arr), end(arr), static_cast<const char*>(nullptr)) == begin(arr) + 6);
+        assert(find(begin(arr), end(arr), static_cast<const void*>(nullptr)) == begin(arr) + 6);
         assert(find(begin(arr), end(arr), nullptr) == begin(arr) + 6);
 
         assert(count(begin(arr), end(arr), s + 1) == 2);
@@ -490,5 +507,35 @@ int main() {
         assert(count(begin(arr), end(arr), s + 3) == 0);
         assert(count(begin(arr), end(arr), static_cast<const char*>(nullptr)) == 1);
         assert(count(begin(arr), end(arr), nullptr) == 1);
+
+        // const void pointer range
+        assert(find(begin(arr_void), end(arr_void), s) == begin(arr_void));
+        assert(find(begin(arr_void), end(arr_void), const_cast<char*>(s)) == begin(arr_void));
+        assert(find(begin(arr_void), end(arr_void), const_cast<volatile char*>(s)) == begin(arr_void));
+
+        assert(find(begin(arr_void), end(arr_void), s + 1) == begin(arr_void) + 1);
+        assert(find(begin(arr_void), end(arr_void), static_cast<const void*>(s + 1)) == begin(arr_void) + 1);
+
+        assert(find(begin(arr_void), end(arr_void), s + 3) == end(arr_void));
+        assert(find(begin(arr_void), end(arr_void), static_cast<const void*>(s + 3)) == end(arr_void));
+
+        assert(find(begin(arr_void), end(arr_void), static_cast<const char*>(nullptr)) == begin(arr_void) + 6);
+        assert(find(begin(arr_void), end(arr_void), static_cast<const void*>(nullptr)) == begin(arr_void) + 6);
+        assert(find(begin(arr_void), end(arr_void), nullptr) == begin(arr_void) + 6);
+
+        assert(count(begin(arr_void), end(arr_void), s + 1) == 2);
+        assert(count(begin(arr_void), end(arr_void), s + 5) == 1);
+        assert(count(begin(arr_void), end(arr_void), s + 3) == 0);
+        assert(count(begin(arr_void), end(arr_void), static_cast<const char*>(nullptr)) == 1);
+        assert(count(begin(arr_void), end(arr_void), nullptr) == 1);
+    }
+
+    { // random other checks for _Vector_alg_in_find_is_safe
+        static_assert(!_Vector_alg_in_find_is_safe<void (**)(), void*>, "should not optimize");
+        static_assert(!_Vector_alg_in_find_is_safe<void**, void (*)()>, "should not optimize");
+        static_assert(_Vector_alg_in_find_is_safe<void (**)(), void (*)()>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<int (**)(int), int (*)(int)>, "should optimize");
+        static_assert(!_Vector_alg_in_find_is_safe<void (**)(int), int (*)(int)>, "should not optimize");
+        static_assert(!_Vector_alg_in_find_is_safe<int (**)(), int (*)(int)>, "should not optimize");
     }
 }
