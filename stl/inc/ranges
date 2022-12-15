@@ -5046,6 +5046,138 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Reverse_fn reverse;
     } // namespace views
 
+#if _HAS_CXX23
+    _EXPORT_STD template <view _Vw>
+        requires input_range<_Vw>
+    class as_const_view : public view_interface<as_const_view<_Vw>> {
+    private:
+        /* [[no_unique_address]] */ _Vw _Range{};
+
+    public:
+        // clang-format off
+        as_const_view() requires default_initializable<_Vw> = default;
+        // clang-format on
+
+        constexpr explicit as_const_view(_Vw _Range_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
+            : _Range(_STD move(_Range_)) {}
+
+        _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) // strengthened
+            requires copy_constructible<_Vw>
+        {
+            return _Range;
+        }
+
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Range);
+        }
+
+        _NODISCARD constexpr auto begin() noexcept(noexcept(_RANGES cbegin(_Range))) // strengthened
+            requires (!_Simple_view<_Vw>)
+        {
+            return _RANGES cbegin(_Range);
+        }
+
+        _NODISCARD constexpr auto begin() const noexcept(noexcept(_RANGES cbegin(_Range))) // strengthened
+            requires range<const _Vw>
+        {
+            return _RANGES cbegin(_Range);
+        }
+
+        _NODISCARD constexpr auto end() noexcept(noexcept(_RANGES cend(_Range))) // strengthened
+            requires (!_Simple_view<_Vw>)
+        {
+            return _RANGES cend(_Range);
+        }
+
+        _NODISCARD constexpr auto end() const noexcept(noexcept(_RANGES cend(_Range))) // strengthened
+            requires range<const _Vw>
+        {
+            return _RANGES cend(_Range);
+        }
+
+        _NODISCARD constexpr auto size() noexcept(noexcept(_RANGES size(_Range))) // strengthened
+            requires sized_range<_Vw>
+        {
+            return _RANGES size(_Range);
+        }
+
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_RANGES size(_Range))) // strengthened
+            requires sized_range<const _Vw>
+        {
+            return _RANGES size(_Range);
+        }
+    };
+
+    template <class _Rng>
+    as_const_view(_Rng&&) -> as_const_view<views::all_t<_Rng>>;
+
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<as_const_view<_Rng>> = enable_borrowed_range<_Rng>;
+
+    namespace views {
+        template <class _Rng>
+        concept _Can_as_const = requires(_Rng&& __r) { as_const_view{static_cast<_Rng&&>(__r)}; };
+
+        class _As_const_fn : public _Pipe::_Base<_As_const_fn> {
+        private:
+            enum class _St { _None, _All, _Reconstruct_span, _Reconstruct_ref, _Ref, _As_const };
+
+            template <class>
+            static constexpr bool _Can_reconstruct_ref_view_v = false;
+
+            template <class _Ty>
+                requires constant_range<const _Ty>
+            static constexpr bool _Can_reconstruct_ref_view_v<ref_view<_Ty>> = true;
+
+            template <class _Rng>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                using _Ty = remove_cvref_t<_Rng>;
+
+                if constexpr (constant_range<views::all_t<_Rng>>) {
+                    return {_St::_All, noexcept(views::all(_STD declval<_Rng>()))};
+                } else if constexpr (_Is_span_v<_Ty>) {
+                    return {_St::_Reconstruct_span, true};
+                } else if constexpr (_Can_reconstruct_ref_view_v<_Ty>) {
+                    return {_St::_Reconstruct_ref, noexcept(ref_view{_STD as_const(_STD declval<_Rng>().base())})};
+                } else if constexpr (is_lvalue_reference_v<_Rng> && constant_range<const _Ty> && !view<_Ty>) {
+                    return {_St::_Ref, noexcept(ref_view{_STD as_const(_STD declval<_Rng>())})};
+                } else if constexpr (_Can_as_const<_Rng>) {
+                    return {_St::_As_const, noexcept(as_const_view{_STD declval<_Rng>()})};
+                } else {
+                    return {_St::_None};
+                }
+            }
+
+            template <class _Rng>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
+
+        public:
+            template <viewable_range _Rng>
+                requires (_Choice<_Rng>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
+                using _Ty            = remove_cvref_t<_Rng>;
+                constexpr _St _Strat = _Choice<_Rng>._Strategy;
+
+                if constexpr (_Strat == _St::_All) {
+                    return views::all(_STD forward<_Rng>(_Range));
+                } else if constexpr (_Strat == _St::_Reconstruct_span) {
+                    return span<const typename _Ty::element_type, _Ty::extent>{_STD forward<_Rng>(_Range)};
+                } else if constexpr (_Strat == _St::_Reconstruct_ref) {
+                    return ref_view{_STD as_const(_STD forward<_Rng>(_Range).base())};
+                } else if constexpr (_Strat == _St::_Ref) {
+                    return ref_view{_STD as_const(_STD forward<_Rng>(_Range))};
+                } else if constexpr (_Strat == _St::_As_const) {
+                    return as_const_view{_STD forward<_Rng>(_Range)};
+                } else {
+                    static_assert(_Always_false<_Rng>, "Should be unreachable");
+                }
+            }
+        };
+
+        _EXPORT_STD inline constexpr _As_const_fn as_const;
+    } // namespace views
+#endif // _HAS_CXX23
+
     template <class _Tuple, size_t _Index>
     concept _Has_tuple_element = //
         requires(_Tuple __t) {
