@@ -30,6 +30,9 @@ const auto expectation = [](const wrap_uchar& x) { return x.is_expected(); };
 
 const auto expectation_zero = [](int n) { return n == 0; };
 
+constexpr auto bad_uchar = static_cast<unsigned char>(0xcd);
+constexpr auto bad_int   = static_cast<int>(0xdeadbeaf);
+
 struct resetting_guard {
     int* ptr_ = nullptr;
 
@@ -83,7 +86,7 @@ struct test_case_uninitialized_default_construct_parallel {
         const auto begin_it = reinterpret_cast<wrap_uchar*>(buffer.get());
         const auto end_it   = begin_it + testSize;
 
-        fill_n(buffer.get(), testSize, 0xcc);
+        fill_n(buffer.get(), testSize, bad_uchar);
 
         uninitialized_default_construct(exec, begin_it, end_it);
         assert(all_of(begin_it, end_it, expectation));
@@ -97,7 +100,7 @@ struct test_case_uninitialized_default_construct_n_parallel {
         const auto begin_it = reinterpret_cast<wrap_uchar*>(buffer.get());
         const auto end_it   = begin_it + testSize;
 
-        fill_n(buffer.get(), testSize, 0xcc);
+        fill_n(buffer.get(), testSize, bad_uchar);
 
         const auto result_it = uninitialized_default_construct_n(exec, begin_it, testSize);
         assert(all_of(begin_it, end_it, expectation));
@@ -135,7 +138,7 @@ struct test_case_uninitialized_value_construct_parallel {
         const auto begin_it = reinterpret_cast<wrap_uchar*>(buffer.get());
         const auto end_it   = begin_it + testSize;
 
-        fill_n(buffer.get(), testSize, 0xcc);
+        fill_n(buffer.get(), testSize, bad_uchar);
 
         uninitialized_value_construct(exec, begin_it, end_it);
         assert(all_of(begin_it, end_it, expectation));
@@ -149,7 +152,7 @@ struct test_case_uninitialized_value_construct_n_parallel {
         const auto begin_it = reinterpret_cast<wrap_uchar*>(buffer.get());
         const auto end_it   = begin_it + testSize;
 
-        fill_n(buffer.get(), testSize, 0xcc);
+        fill_n(buffer.get(), testSize, bad_uchar);
 
         const auto result_it = uninitialized_value_construct_n(exec, begin_it, testSize);
         assert(all_of(begin_it, end_it, expectation));
@@ -164,7 +167,7 @@ struct test_case_uninitialized_value_construct_memset_parallel {
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
-        fill_n(begin_it, testSize, static_cast<int>(0xdeadbeaf));
+        fill_n(begin_it, testSize, bad_int);
 
         uninitialized_value_construct(exec, begin_it, end_it);
         assert(all_of(begin_it, end_it, expectation_zero));
@@ -178,7 +181,7 @@ struct test_case_uninitialized_value_construct_n_memset_parallel {
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
-        fill_n(begin_it, testSize, static_cast<int>(0xdeadbeaf));
+        fill_n(begin_it, testSize, bad_int);
 
         const auto result_it = uninitialized_value_construct_n(exec, begin_it, testSize);
         assert(all_of(begin_it, end_it, expectation_zero));
@@ -193,7 +196,7 @@ struct test_case_destroy_parallel {
         const auto begin_it = reinterpret_cast<wrap_uchar*>(buffer.get());
         const auto end_it   = begin_it + testSize;
 
-        fill_n(buffer.get(), testSize, 0xcc);
+        fill_n(buffer.get(), testSize, bad_uchar);
 
         uninitialized_default_construct(exec, begin_it, end_it);
         destroy(exec, begin_it, end_it);
@@ -207,7 +210,7 @@ struct test_case_destroy_n_parallel {
         const auto begin_it = reinterpret_cast<wrap_uchar*>(buffer.get());
         const auto end_it   = begin_it + testSize;
 
-        fill_n(buffer.get(), testSize, 0xcc);
+        fill_n(buffer.get(), testSize, bad_uchar);
 
         uninitialized_default_construct_n(begin_it, testSize);
         const auto result_it = destroy_n(exec, begin_it, testSize);
@@ -226,7 +229,7 @@ struct test_case_destroy_nontrivial_parallel {
         const auto begin_it_validation = buffer_to_clear.get();
         const auto end_it_validation   = begin_it_validation + testSize;
 
-        fill(begin_it_validation, end_it_validation, static_cast<int>(0xdeadbeaf));
+        fill(begin_it_validation, end_it_validation, bad_int);
         auto it_guard = begin_it;
         for (auto it_int = begin_it_validation; it_int != end_it_validation; ++it_int) {
             it_guard->ptr_ = it_int;
@@ -249,7 +252,7 @@ struct test_case_destroy_n_nontrivial_parallel {
         const auto begin_it_validation = buffer_to_clear.get();
         const auto end_it_validation   = begin_it_validation + testSize;
 
-        fill_n(begin_it_validation, testSize, static_cast<int>(0xdeadbeaf));
+        fill_n(begin_it_validation, testSize, bad_int);
         auto it_guard = begin_it;
         for (auto it_int = begin_it_validation; it_int != end_it_validation; ++it_int) {
             it_guard->ptr_ = it_int;
@@ -270,7 +273,7 @@ struct test_case_uninitialized_copy_parallel {
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
-        fill_n(buffer2.get(), testSize, static_cast<int>(0xdeadbeaf));
+        fill_n(buffer2.get(), testSize, bad_int);
         iota(begin_it, end_it, 42);
 
         const auto begin_it2 = buffer2.get();
@@ -289,7 +292,7 @@ struct test_case_uninitialized_copy_n_parallel {
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
-        fill_n(buffer2.get(), testSize, static_cast<int>(0xdeadbeaf));
+        fill_n(buffer2.get(), testSize, bad_int);
         iota(begin_it, end_it, 42);
 
         const auto begin_it2 = buffer2.get();
@@ -309,7 +312,7 @@ struct test_case_uninitialized_move_parallel {
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
-        fill_n(buffer2.get(), testSize, static_cast<int>(0xdeadbeaf));
+        fill_n(buffer2.get(), testSize, bad_int);
         iota(begin_it, end_it, 42);
 
         const auto begin_it2 = buffer2.get();
@@ -328,7 +331,7 @@ struct test_case_uninitialized_move_n_parallel {
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
-        fill_n(buffer2.get(), testSize, static_cast<int>(0xdeadbeaf));
+        fill_n(buffer2.get(), testSize, bad_int);
         iota(begin_it, end_it, 42);
 
         const auto begin_it2 = buffer2.get();
@@ -347,7 +350,7 @@ struct test_case_uninitialized_fill_parallel {
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
-        fill(begin_it, end_it, static_cast<int>(0xdeadbeaf));
+        fill(begin_it, end_it, bad_int);
 
         uninitialized_fill(exec, begin_it, end_it, 42);
         assert(all_of(begin_it, end_it, [](int n) { return n == 42; }));
@@ -361,7 +364,7 @@ struct test_case_uninitialized_fill_n_parallel {
         const auto begin_it = buffer.get();
         const auto end_it   = begin_it + testSize;
 
-        fill_n(begin_it, testSize, static_cast<int>(0xdeadbeaf));
+        fill_n(begin_it, testSize, bad_int);
 
         const auto result_it = uninitialized_fill_n(exec, begin_it, testSize, 42);
         assert(all_of(begin_it, end_it, [](int n) { return n == 42; }));
