@@ -13,9 +13,7 @@
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_ARM64EC)
 
 #include <cstdint>
-#include <emmintrin.h>
-#include <immintrin.h>
-#include <intrin0.h>
+#include <intrin.h>
 #include <isa_availability.h>
 
 extern "C" long __isa_enabled;

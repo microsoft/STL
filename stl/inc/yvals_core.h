@@ -1835,9 +1835,11 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // __cpp_noexcept_function_type
 
 #ifdef __clang__
-#define _STL_UNREACHABLE __builtin_unreachable()
+#define _STL_INTRIN_HEADER <intrin.h>
+#define _STL_UNREACHABLE   __builtin_unreachable()
 #else // ^^^ clang / other vvv
-#define _STL_UNREACHABLE __assume(false)
+#define _STL_INTRIN_HEADER <intrin0.h>
+#define _STL_UNREACHABLE   __assume(false)
 #endif // __clang__
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK

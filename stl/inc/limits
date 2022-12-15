@@ -11,7 +11,7 @@
 #include <cfloat>
 #include <climits>
 #include <cwchar>
-#include <intrin0.h>
+#include _STL_INTRIN_HEADER
 #include <isa_availability.h>
 #include <xstddef>
 
