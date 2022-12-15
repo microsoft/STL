@@ -193,9 +193,15 @@ constexpr bool test_unsigned() {
     STATIC_ASSERT(std::three_way_comparable<_Unsigned128, ordtest::strong_ordering>);
 #endif // __cpp_lib_concepts
 
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::is_specialized);
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::is_exact);
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::is_integer);
+    STATIC_ASSERT(!std::numeric_limits<_Unsigned128>::is_signed);
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::is_bounded);
     STATIC_ASSERT(std::numeric_limits<_Unsigned128>::min() == 0);
     STATIC_ASSERT(std::numeric_limits<_Unsigned128>::max() == ~_Unsigned128{});
     STATIC_ASSERT(std::numeric_limits<_Unsigned128>::digits == 128);
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::radix == 2);
     STATIC_ASSERT(std::numeric_limits<_Unsigned128>::is_modulo);
 
     STATIC_ASSERT(SAME_AS<std::common_type_t<bool, _Unsigned128>, _Unsigned128>);
@@ -528,9 +534,15 @@ constexpr bool test_signed() {
     STATIC_ASSERT(std::three_way_comparable<_Signed128, ordtest::strong_ordering>);
 #endif // __cpp_lib_concepts
 
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::is_specialized);
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::is_exact);
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::is_integer);
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::is_signed);
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::is_bounded);
     STATIC_ASSERT(std::numeric_limits<_Signed128>::min() == _Signed128{0, 1ull << 63});
     STATIC_ASSERT(std::numeric_limits<_Signed128>::max() == _Signed128{~0ull, ~0ull >> 1});
     STATIC_ASSERT(std::numeric_limits<_Signed128>::digits == 127);
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::radix == 2);
     STATIC_ASSERT(!std::numeric_limits<_Signed128>::is_modulo);
 
     STATIC_ASSERT(SAME_AS<std::common_type_t<bool, _Signed128>, _Signed128>);
