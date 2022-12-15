@@ -387,7 +387,7 @@ public:
     void _Abandon() { // abandon shared state
         unique_lock<mutex> _Lock(_Mtx);
         if (!_Already_has_stored_result()) { // queue exception
-            future_error _Fut(make_error_code(future_errc::broken_promise));
+            future_error _Fut(_STD make_error_code(future_errc::broken_promise));
             _Set_exception_raw(_STD make_exception_ptr(_Fut), &_Lock, false);
         }
     }
@@ -1180,7 +1180,7 @@ public:
     ~promise() noexcept {
         if (_MyPromise._Is_valid() && !_MyPromise._Is_ready() && !_MyPromise._Is_ready_at_thread_exit()) {
             // exception if destroyed before function object returns
-            future_error _Fut(make_error_code(future_errc::broken_promise));
+            future_error _Fut(_STD make_error_code(future_errc::broken_promise));
             _MyPromise._Get_state()._Set_exception(_STD make_exception_ptr(_Fut), false);
         }
     }
@@ -1242,7 +1242,7 @@ public:
     ~promise() noexcept {
         if (_MyPromise._Is_valid() && !_MyPromise._Is_ready() && !_MyPromise._Is_ready_at_thread_exit()) {
             // exception if destroyed before function object returns
-            future_error _Fut(make_error_code(future_errc::broken_promise));
+            future_error _Fut(_STD make_error_code(future_errc::broken_promise));
             _MyPromise._Get_state()._Set_exception(_STD make_exception_ptr(_Fut), false);
         }
     }
@@ -1296,7 +1296,7 @@ public:
     ~promise() noexcept {
         if (_MyPromise._Is_valid() && !_MyPromise._Is_ready() && !_MyPromise._Is_ready_at_thread_exit()) {
             // exception if destroyed before function object returns
-            future_error _Fut(make_error_code(future_errc::broken_promise));
+            future_error _Fut(_STD make_error_code(future_errc::broken_promise));
             _MyPromise._Get_state()._Set_exception(_STD make_exception_ptr(_Fut), false);
         }
     }
