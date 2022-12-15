@@ -389,6 +389,19 @@ constexpr _Ref_fn<_Fn> _Pass_fn(_Fn& _Val) { // pass functor by "reference"
     return {_Val};
 }
 
+#if _HAS_CXX23
+_EXPORT_STD template <class _Result_type, class _Callable, class... _Types,
+    enable_if_t<is_invocable_r_v<_Result_type, _Callable, _Types...>, int> = 0>
+_NODISCARD constexpr _Result_type invoke_r(_Callable&& _Obj, _Types&&... _Args) noexcept(
+    is_nothrow_invocable_r_v<_Result_type, _Callable, _Types...>) {
+    if constexpr (is_void_v<_Result_type>) {
+        (void) _STD invoke(static_cast<_Callable&&>(_Obj), static_cast<_Types&&>(_Args)...);
+    } else {
+        return _STD invoke(static_cast<_Callable&&>(_Obj), static_cast<_Types&&>(_Args)...);
+    }
+}
+#endif // _HAS_CXX23
+
 struct _Unused_parameter { // generic unused parameter struct
     constexpr _Unused_parameter() noexcept = default;
     template <class _Ty>
