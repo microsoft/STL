@@ -295,6 +295,8 @@ template <typename T, typename... Args>
 constexpr bool is_constructible_with_trailing_empty_brace =
     is_constructible_with_trailing_empty_brace_impl<void, T, Args...>;
 
+STATIC_ASSERT(is_constructible_with_trailing_empty_brace<pair<double*, int>, double*>); // verify a true case
+
 template <typename T>
 void test_no_implicit_brace_construction_impl() {
     STATIC_ASSERT(!is_constructible_with_trailing_empty_brace<future<T>, future<T>>);
