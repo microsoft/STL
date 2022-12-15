@@ -50,7 +50,11 @@ constexpr void local_test() {
     const auto x = source_location::current();
     assert(x.line() == __LINE__ - 1);
     assert(x.column() == 37);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.function_name() == "local_test"sv);
+#else // ^^^ workaround / no workaround vvv
+    assert(x.function_name() == "void __cdecl local_test(void)"sv);
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{x.file_name()}.ends_with(test_cpp));
 }
 
@@ -58,7 +62,11 @@ constexpr void argument_test(
     const unsigned int line, const unsigned int column, const source_location x = source_location::current()) {
     assert(x.line() == line);
     assert(x.column() == column);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.function_name() == "test"sv);
+#else // ^^^ workaround / no workaround vvv
+    assert(x.function_name() == "bool __cdecl test(void)"sv);
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{x.file_name()}.ends_with(test_cpp));
 }
 
@@ -67,9 +75,13 @@ constexpr void sloc_constructor_test() {
     assert(x.loc.line() == __LINE__ - 1);
     assert(x.loc.column() == 13);
     if (is_constant_evaluated()) {
-        assert(x.loc.function_name() == "main"sv); // TRANSITION, VSO-1285783
+        assert(x.loc.function_name() == "int __cdecl main(void)"sv); // TRANSITION, VSO-1285783
     } else {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
         assert(x.loc.function_name() == "sloc_constructor_test"sv);
+#else // ^^^ workaround / no workaround vvv
+        assert(x.loc.function_name() == "void __cdecl sloc_constructor_test(void)"sv);
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     }
     assert(string_view{x.loc.file_name()}.ends_with(test_cpp));
 }
@@ -78,7 +90,13 @@ constexpr void different_constructor_test() {
     const s x{1};
     assert(x.loc.line() == s_int_line);
     assert(x.loc.column() == 5);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.loc.function_name() == "s"sv);
+#elif defined(_M_IX86) // ^^^ workaround / no workaround vvv
+    assert(x.loc.function_name() == "__thiscall s::s(int)"sv);
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
+    assert(x.loc.function_name() == "__cdecl s::s(int)"sv);
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{x.loc.file_name()}.ends_with(test_cpp));
 }
 
@@ -87,28 +105,55 @@ constexpr void sub_member_test() {
     assert(s.x.loc.line() == __LINE__ - 1);
     assert(s.x.loc.column() == 14);
     if (is_constant_evaluated()) {
-        assert(s.x.loc.function_name() == "main"sv); // TRANSITION, VSO-1285783
+        assert(s.x.loc.function_name() == "int __cdecl main(void)"sv); // TRANSITION, VSO-1285783
     } else {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
         assert(s.x.loc.function_name() == "sub_member_test"sv);
+#else // ^^^ workaround / no workaround vvv
+        assert(s.x.loc.function_name() == "void __cdecl sub_member_test(void)"sv);
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     }
     assert(string_view{s.x.loc.file_name()}.ends_with(test_cpp));
 
     const s2 s_i{1};
     assert(s_i.x.loc.line() == s2_int_line);
     assert(s_i.x.loc.column() == 5);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(s_i.x.loc.function_name() == "s2"sv);
+#elif defined(_M_IX86) // ^^^ workaround / no workaround vvv
+    assert(s_i.x.loc.function_name() == "__thiscall s2::s2(int)"sv);
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
+    assert(s_i.x.loc.function_name() == "__cdecl s2::s2(int)"sv);
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{s_i.x.loc.file_name()}.ends_with(test_cpp));
 }
 
 constexpr void lambda_test() {
-    const auto l = [loc = source_location::current()] { return loc; };
-    const auto x = l();
-    assert(x.line() == __LINE__ - 2);
+    const auto l1 = [loc = source_location::current()] { return loc; };
+    const auto l2 = [] { return source_location::current(); };
+    const auto x1 = l1();
+    const auto x2 = l2();
+    assert(x1.line() == __LINE__ - 4);
+    assert(x2.line() == __LINE__ - 4);
 #ifndef _M_CEE // TRANSITION, VSO-1665663
-    assert(x.column() == 51);
-#endif // _M_CEE
-    assert(x.function_name() == "lambda_test"sv);
-    assert(string_view{x.file_name()}.ends_with(test_cpp));
+    assert(x1.column() == 52);
+#endif // !_M_CEE
+    assert(x2.column() == 50);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
+    assert(x1.function_name() == "lambda_test"sv);
+    assert(x2.function_name() == "operator()"sv);
+#elif defined(_M_IX86) // ^^^ workaround / no workaround vvv
+    assert(x1.function_name() == "void __cdecl lambda_test(void)"sv);
+    assert(
+        string_view{x2.function_name()}.starts_with("struct std::source_location __thiscall lambda_test::<lambda_"sv));
+    assert(string_view{x2.function_name()}.ends_with("::operator ()(void) const"sv));
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
+    assert(x1.function_name() == "void __cdecl lambda_test(void)"sv);
+    assert(string_view{x2.function_name()}.starts_with("struct std::source_location __cdecl lambda_test::<lambda_"sv));
+    assert(string_view{x2.function_name()}.ends_with("::operator ()(void) const"sv));
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
+    assert(string_view{x1.file_name()}.ends_with(test_cpp));
+    assert(string_view{x2.file_name()}.ends_with(test_cpp));
 }
 
 template <class T>
@@ -120,13 +165,21 @@ constexpr void function_template_test() {
     const auto x1 = function_template<void>();
     assert(x1.line() == __LINE__ - 5);
     assert(x1.column() == 29);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x1.function_name() == "function_template"sv);
+#else // ^^^ workaround / no workaround vvv
+    assert(x1.function_name() == "struct std::source_location __cdecl function_template<void>(void)"sv);
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{x1.file_name()}.ends_with(test_cpp));
 
     const auto x2 = function_template<int>();
     assert(x1.line() == x2.line());
     assert(x1.column() == x2.column());
-    assert(string_view{x1.function_name()} == string_view{x2.function_name()});
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
+    assert(x2.function_name() == "function_template"sv);
+#else // ^^^ workaround / no workaround vvv
+    assert(x2.function_name() == "struct std::source_location __cdecl function_template<int>(void)"sv);
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{x1.file_name()} == string_view{x2.file_name()});
 }
 
