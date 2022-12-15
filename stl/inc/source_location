@@ -25,7 +25,12 @@ _STD_BEGIN
 _EXPORT_STD struct source_location {
     _NODISCARD static consteval source_location current(const uint_least32_t _Line_ = __builtin_LINE(),
         const uint_least32_t _Column_ = __builtin_COLUMN(), const char* const _File_ = __builtin_FILE(),
-        const char* const _Function_ = __builtin_FUNCTION()) noexcept {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
+        const char* const _Function_ = __builtin_FUNCTION()
+#else // ^^^ workaround / no workaround vvv
+        const char* const _Function_ = __builtin_FUNCSIG()
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
+            ) noexcept {
         source_location _Result{};
         _Result._Line     = _Line_;
         _Result._Column   = _Column_;
