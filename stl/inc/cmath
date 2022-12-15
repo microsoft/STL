@@ -20,7 +20,7 @@
 #endif // ^^^ intrinsics unavailable ^^^
 
 #if _HAS_CMATH_INTRINSICS
-#include <intrin0.h>
+#include _STL_INTRIN_HEADER
 #endif // _HAS_CMATH_INTRINSICS
 
 #if _HAS_CXX20

@@ -52,7 +52,7 @@
 #endif // ^^^ intrinsics unavailable ^^^
 
 #if _HAS_CHARCONV_INTRINSICS
-#include <intrin0.h> // for _umul128() and __shiftright128()
+#include _STL_INTRIN_HEADER // for _umul128() and __shiftright128()
 #endif // ^^^ intrinsics available ^^^
 
 #if !_HAS_CXX17
