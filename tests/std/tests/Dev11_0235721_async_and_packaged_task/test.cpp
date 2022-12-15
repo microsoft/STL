@@ -273,7 +273,7 @@ void test_shared_future_noexcept_copy_impl() {
     assert(!copyCtord.valid());
 }
 
-void test_shared_future_noexcept() {
+void test_future_shared_future_noexcept() {
     test_future_shared_future_noexcept_impl<int>();
     test_future_shared_future_noexcept_impl<int&>();
     test_future_shared_future_noexcept_impl<void>();
@@ -328,6 +328,6 @@ int main() {
     test_VSO_112570();
     test_VSO_115515();
     test_VSO_272761();
-    test_shared_future_noexcept();
+    test_future_shared_future_noexcept();
     test_no_implicit_brace_construction();
 }
