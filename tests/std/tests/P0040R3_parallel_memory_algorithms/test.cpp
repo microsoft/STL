@@ -93,9 +93,9 @@ struct test_case_uninitialized_default_construct_parallel {
 struct test_case_uninitialized_default_construct_n_parallel {
     template <class ExecutionPolicy>
     void operator()(const size_t testSize, const ExecutionPolicy& exec) {
-        auto buffer          = make_unique<unsigned char[]>(testSize);
-        const auto begin_it  = reinterpret_cast<wrap_uchar*>(buffer.get());
-        const auto end_it    = begin_it + testSize;
+        auto buffer         = make_unique<unsigned char[]>(testSize);
+        const auto begin_it = reinterpret_cast<wrap_uchar*>(buffer.get());
+        const auto end_it   = begin_it + testSize;
 
         fill_n(buffer.get(), testSize, 0xcc);
 
@@ -145,9 +145,9 @@ struct test_case_uninitialized_value_construct_parallel {
 struct test_case_uninitialized_value_construct_n_parallel {
     template <class ExecutionPolicy>
     void operator()(const size_t testSize, const ExecutionPolicy& exec) {
-        auto buffer          = make_unique<unsigned char[]>(testSize);
-        const auto begin_it  = reinterpret_cast<wrap_uchar*>(buffer.get());
-        const auto end_it    = begin_it + testSize;
+        auto buffer         = make_unique<unsigned char[]>(testSize);
+        const auto begin_it = reinterpret_cast<wrap_uchar*>(buffer.get());
+        const auto end_it   = begin_it + testSize;
 
         fill_n(buffer.get(), testSize, 0xcc);
 
@@ -174,9 +174,9 @@ struct test_case_uninitialized_value_construct_memset_parallel {
 struct test_case_uninitialized_value_construct_n_memset_parallel {
     template <class ExecutionPolicy>
     void operator()(const size_t testSize, const ExecutionPolicy& exec) {
-        auto buffer          = unique_ptr<int>(new int[testSize]);
-        const auto begin_it  = buffer.get();
-        const auto end_it    = begin_it + testSize;
+        auto buffer         = unique_ptr<int>(new int[testSize]);
+        const auto begin_it = buffer.get();
+        const auto end_it   = begin_it + testSize;
 
         fill_n(begin_it, testSize, static_cast<int>(0xdeadbeaf));
 
