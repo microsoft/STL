@@ -2156,6 +2156,20 @@ STATIC_ASSERT(__cpp_lib_transparent_operators == 201510L);
 STATIC_ASSERT(__cpp_lib_tuple_element_t == 201402L);
 #endif
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_tuple_like
+#error __cpp_lib_tuple_like is not defined
+#elif __cpp_lib_tuple_like != 202207L
+#error __cpp_lib_tuple_like is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_tuple_like == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_tuple_like
+#error __cpp_lib_tuple_like is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_tuples_by_type
 #error __cpp_lib_tuples_by_type is not defined
 #elif __cpp_lib_tuples_by_type != 201304L
