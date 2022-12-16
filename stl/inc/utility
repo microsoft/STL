@@ -244,6 +244,20 @@ struct pair { // store a pair of values
         pair(const pair<_Other1, _Other2>&& _Right) noexcept(is_nothrow_constructible_v<_Ty1, const _Other1>&&
                 is_nothrow_constructible_v<_Ty2, const _Other2>) // strengthened
         : first(_STD forward<const _Other1>(_Right.first)), second(_STD forward<const _Other2>(_Right.second)) {}
+
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    template <_Pair_like _Other>
+        requires conjunction_v<is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
+                               is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
+    constexpr explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
+                                      is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>)
+        pair(_Other&& _Right)
+            noexcept(is_nothrow_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))> &&
+                     is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
+        : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {}
+    // clang-format on
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
     template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>
@@ -355,6 +369,32 @@ struct pair { // store a pair of values
         second = _STD forward<_Other2>(_Right.second);
         return *this;
     }
+
+#ifdef __cpp_lib_concepts
+    template <_Pair_like _Other>
+        requires _Different_from<_Other, pair> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+              && is_assignable_v<_Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
+              && is_assignable_v<_Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>
+    constexpr pair& operator=(_Other&& _Right) noexcept(
+        is_nothrow_assignable_v<_Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>&&
+            is_nothrow_assignable_v<_Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>) /* strengthened */ {
+        first  = _STD get<0>(_STD forward<_Other>(_Right));
+        second = _STD get<1>(_STD forward<_Other>(_Right));
+        return *this;
+    }
+
+    template <_Pair_like _Other>
+        requires _Different_from<_Other, pair> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+              && is_assignable_v<const _Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
+              && is_assignable_v<const _Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>
+    constexpr pair& operator=(_Other&& _Right) const noexcept(
+        is_nothrow_assignable_v<const _Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>&&
+            is_nothrow_assignable_v<const _Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>) /* strengthened */ {
+        first  = _STD get<0>(_STD forward<_Other>(_Right));
+        second = _STD get<1>(_STD forward<_Other>(_Right));
+        return *this;
+    }
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(pair& _Right) noexcept(
