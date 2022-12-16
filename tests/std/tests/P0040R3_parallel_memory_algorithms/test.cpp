@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <atomic>
 #include <cassert>
 #include <execution>
-#include <iterator>
 #include <memory>
 #include <numeric>
 
@@ -31,10 +29,12 @@ const auto expectation = [](const wrap_uchar& x) { return x.is_expected(); };
 const auto expectation_zero = [](int n) { return n == 0; };
 
 constexpr auto bad_uchar = static_cast<unsigned char>(0xcd);
-constexpr auto bad_int   = static_cast<int>(0xdeadbeaf);
+constexpr auto bad_int   = static_cast<int>(0xdeadbeef);
 
 struct resetting_guard {
     int* ptr_ = nullptr;
+
+    resetting_guard() = default;
 
     ~resetting_guard() {
         if (ptr_) {
@@ -42,13 +42,13 @@ struct resetting_guard {
         }
     }
 
+    resetting_guard(const resetting_guard&)            = delete;
     resetting_guard& operator=(const resetting_guard&) = delete;
-    resetting_guard& operator=(resetting_guard&&)      = delete;
 };
 
 template <class T>
 struct deallocating_only_deleter {
-    size_t count_;
+    size_t count_ = 0;
 
     void operator()(T* ptr) const noexcept {
         allocator<T>{}.deallocate(ptr, count_);
@@ -62,7 +62,7 @@ unique_ptr<T, deallocating_only_deleter<T>> make_constructed_nondestroying_buffe
     }
 
     allocator<T> al;
-    auto up = unique_ptr<T, deallocating_only_deleter<T>>{al.allocate(n), deallocating_only_deleter<T>{n}};
+    unique_ptr<T, deallocating_only_deleter<T>> up{al.allocate(n), deallocating_only_deleter<T>{n}};
     for (size_t i = 0; i != n; ++i) {
         allocator_traits<allocator<T>>::construct(al, up.get() + i);
     }
