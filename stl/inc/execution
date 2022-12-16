@@ -5088,11 +5088,10 @@ void uninitialized_default_construct(_ExPo&& _Exec, const _NoThrowFwdIt _First, 
 /* terminates */ {
     // default-initialize all elements in [_First, _Last)
     _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
-    using _Value_type = _Iter_value_t<_NoThrowFwdIt>;
     _STD _Adl_verify_range(_First, _Last);
-    if constexpr (!is_trivially_default_constructible_v<_Value_type>) {
+    if constexpr (!is_trivially_default_constructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
         _STD for_each(_STD forward<_ExPo>(_Exec), _First, _Last,
-            [](auto& _Obj) { _STD _Default_construct_in_place(reinterpret_cast<_Value_type&>(_Obj)); });
+            [](_Iter_ref_t<_NoThrowFwdIt> _Obj) { _STD _Default_construct_in_place(_Obj); });
     }
 }
 
@@ -5101,18 +5100,17 @@ _NoThrowFwdIt uninitialized_default_construct_n(_ExPo&& _Exec, _NoThrowFwdIt _Fi
 /* terminates */ {
     // default-initialize all elements in [_First, _First + _Count_raw)
     _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
-    using _Value_type              = _Iter_value_t<_NoThrowFwdIt>;
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
         return _First;
     }
 
-    if constexpr (is_trivially_default_constructible_v<_Value_type>) {
+    if constexpr (is_trivially_default_constructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
         _STD advance(_First, _Count);
         return _First;
     } else {
         return _STD for_each_n(_STD forward<_ExPo>(_Exec), _First, _Count,
-            [](auto& _Obj) { _STD _Default_construct_in_place(reinterpret_cast<_Value_type&>(_Obj)); });
+            [](_Iter_ref_t<_NoThrowFwdIt> _Obj) { _STD _Default_construct_in_place(_Obj); });
     }
 }
 
@@ -5124,7 +5122,6 @@ void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt 
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
 
-    using _Value_type = _Iter_value_t<_NoThrowFwdIt>;
     if constexpr (_Use_memset_value_construct_v<decltype(_UFirst)>) {
         _STD _Zero_range(_UFirst, _ULast);
     } else if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
@@ -5133,9 +5130,7 @@ void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt 
             auto _Count = _STD distance(_UFirst, _ULast);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
-                auto _Ctor_fn = [](decltype(*_UFirst) _Obj) {
-                    _STD _Construct_in_place(reinterpret_cast<_Value_type&>(_Obj));
-                };
+                auto _Ctor_fn = [](decltype(*_UFirst) _Obj) { _STD _Construct_in_place(_Obj); };
                 _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), decltype(_Ctor_fn)> _Operation{
                     _Hw_threads, _Count, _Ctor_fn};
                 _Operation._Basis._Populate(_Operation._Team, _UFirst);
@@ -5149,16 +5144,16 @@ void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt 
 
 #pragma loop(ivdep)
         for (; _UFirst != _ULast; ++_UFirst) {
-            _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
+            _STD _Construct_in_place(*_UFirst);
         }
     } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
 #pragma loop(ivdep)
         for (; _UFirst != _ULast; ++_UFirst) {
-            _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
+            _STD _Construct_in_place(*_UFirst);
         }
     } else {
         for (; _UFirst != _ULast; ++_UFirst) {
-            _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
+            _STD _Construct_in_place(*_UFirst);
         }
     }
 }
@@ -5174,8 +5169,7 @@ _NoThrowFwdIt uninitialized_value_construct_n(_ExPo&&, _NoThrowFwdIt _First, con
         return _First;
     }
 
-    using _Value_type = _Iter_value_t<_NoThrowFwdIt>;
-    auto _UFirst      = _STD _Get_unwrapped_n(_First, _Count);
+    auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
     if constexpr (_Use_memset_value_construct_v<decltype(_UFirst)>) {
         _STD _Zero_range(_UFirst, _UFirst + _Count);
         _STD _Seek_wrapped(_First, _UFirst + _Count);
@@ -5183,9 +5177,7 @@ _NoThrowFwdIt uninitialized_value_construct_n(_ExPo&&, _NoThrowFwdIt _First, con
         const size_t _Hw_threads = _CSTD __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1 && _Count >= 2) { // parallelize on multiprocessor machines with at least 2 elements
             _TRY_BEGIN
-            auto _Ctor_fn = [](decltype(*_UFirst) _Obj) {
-                _STD _Construct_in_place(reinterpret_cast<_Value_type&>(_Obj));
-            };
+            auto _Ctor_fn = [](decltype(*_UFirst) _Obj) { _STD _Construct_in_place(_Obj); };
             _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), decltype(_Ctor_fn)> _Operation{
                 _Hw_threads, _Count, _Ctor_fn};
             _STD _Seek_wrapped(_First, _Operation._Basis._Populate(_Operation._Team, _UFirst));
@@ -5198,18 +5190,18 @@ _NoThrowFwdIt uninitialized_value_construct_n(_ExPo&&, _NoThrowFwdIt _First, con
 
 #pragma loop(ivdep)
         for (; _Count > 0; --_Count, (void) ++_UFirst) {
-            _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
+            _STD _Construct_in_place(*_UFirst);
         }
         _STD _Seek_wrapped(_First, _UFirst);
     } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
 #pragma loop(ivdep)
         for (; _Count > 0; --_Count, (void) ++_UFirst) {
-            _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
+            _STD _Construct_in_place(*_UFirst);
         }
         _STD _Seek_wrapped(_First, _UFirst);
     } else {
         for (; _Count > 0; --_Count, (void) ++_UFirst) {
-            _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
+            _STD _Construct_in_place(*_UFirst);
         }
         _STD _Seek_wrapped(_First, _UFirst);
     }
