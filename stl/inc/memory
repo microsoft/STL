@@ -575,7 +575,7 @@ _CONSTEXPR20 void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last)
 }
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
-void destroy(_ExPo&& _Exec, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept; // terminates
+void destroy(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept; // terminates
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
@@ -642,7 +642,7 @@ _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_ra
 }
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, const _Diff _Count_raw) noexcept; // terminates
+_NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) noexcept; // terminates
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
@@ -695,8 +695,7 @@ void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowF
 }
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
-void uninitialized_default_construct(
-    _ExPo&& _Exec, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept; // terminates
+void uninitialized_default_construct(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept; // terminates
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
@@ -776,7 +775,7 @@ _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Dif
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NoThrowFwdIt uninitialized_default_construct_n(
-    _ExPo&& _Exec, _NoThrowFwdIt _First, const _Diff _Count_raw) noexcept; // terminates
+    _ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) noexcept; // terminates
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
