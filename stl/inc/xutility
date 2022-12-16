@@ -1099,14 +1099,30 @@ struct _Is_allocator<_Ty, void_t<typename _Ty::value_type, decltype(_STD declval
 
 // deduction guide utilities (N4892 [associative.general]/2)
 template <class _Iter>
-using _Guide_key_t = remove_const_t<typename iterator_traits<_Iter>::value_type::first_type>;
+using _Guide_key_t =
+#if _HAS_CXX23
+    tuple_element_t<0, typename iterator_traits<_Iter>::value_type>;
+#else // ^^^ C++23 / C++20 vvv
+    remove_const_t<typename iterator_traits<_Iter>::value_type::first_type>;
+#endif // C++20
 
 template <class _Iter>
-using _Guide_val_t = typename iterator_traits<_Iter>::value_type::second_type;
+using _Guide_val_t =
+#if _HAS_CXX23
+    tuple_element_t<1, typename iterator_traits<_Iter>::value_type>;
+#else // ^^^ C++23 / C++20 vvv
+    typename iterator_traits<_Iter>::value_type::second_type;
+#endif // C++20
 
 template <class _Iter>
-using _Guide_pair_t = pair<add_const_t<typename iterator_traits<_Iter>::value_type::first_type>,
-    typename iterator_traits<_Iter>::value_type::second_type>;
+using _Guide_pair_t =
+#if _HAS_CXX23
+    pair<add_const_t<tuple_element_t<0, typename iterator_traits<_Iter>::value_type>>,
+        tuple_element_t<1, typename iterator_traits<_Iter>::value_type>>;
+#else // ^^^ C++23 / C++20 vvv
+    pair<add_const_t<typename iterator_traits<_Iter>::value_type::first_type>,
+        typename iterator_traits<_Iter>::value_type::second_type>;
+#endif // C++20
 
 _EXPORT_STD template <class _Ty>
 struct is_execution_policy : false_type {};
