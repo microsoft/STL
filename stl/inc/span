@@ -222,9 +222,6 @@ struct _Span_extent_type<_Ty, dynamic_extent> {
     size_t _Mysize{0};
 };
 
-_EXPORT_STD template <class _Ty, size_t _Size>
-class array;
-
 _EXPORT_STD template <class _Ty, size_t _Extent>
 class span;
 
