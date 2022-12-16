@@ -387,7 +387,7 @@ struct pair { // store a pair of values
         requires _Different_from<_Other, pair> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && is_assignable_v<const _Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
               && is_assignable_v<const _Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>
-    constexpr pair& operator=(_Other&& _Right) const noexcept(
+    constexpr const pair& operator=(_Other&& _Right) const noexcept(
         is_nothrow_assignable_v<const _Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>&&
             is_nothrow_assignable_v<const _Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>) /* strengthened */ {
         first  = _STD get<0>(_STD forward<_Other>(_Right));
