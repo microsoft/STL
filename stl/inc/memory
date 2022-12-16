@@ -27,7 +27,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 #if _HAS_CXX17
-#define _REQUIRE_PARELLEL_LVALUE_ITERATOR(_Iter)                                                                     \
+#define _REQUIRE_PARALLEL_LVALUE_ITERATOR(_Iter)                                                                     \
     static_assert(_Is_ranges_fwd_iter_v<_Iter> && is_lvalue_reference_v<_Iter_ref_t<_Iter>>,                         \
         "Parallel specialized <memory> algorithms require the iterator type to be forward iterator and dereference " \
         "to lvalues.")
@@ -38,7 +38,7 @@ _NoThrowFwdIt uninitialized_copy(_ExPo&&, const _FwdIt _First, const _FwdIt _Las
     // copy [_First, _Last) to raw [_Dest, ...)
     // not parallelized at present
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _REQUIRE_PARELLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
 
     return _STD uninitialized_copy(_First, _Last, _Dest);
 }
@@ -155,7 +155,7 @@ _NoThrowFwdIt uninitialized_copy_n(_ExPo&&, const _FwdIt _First, const _Diff _Co
     // copy [_First, _First + _Count) to raw [_Dest, ...)
     // not parallelized at present
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _REQUIRE_PARELLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
 
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     return _STD uninitialized_copy_n(_First, _Count, _Dest);
@@ -233,7 +233,7 @@ _NoThrowFwdIt uninitialized_move(_ExPo&&, const _FwdIt _First, const _FwdIt _Las
     // move [_First, _Last) to raw [_Dest, ...)
     // not parallelized at present
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _REQUIRE_PARELLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
 
     return _STD uninitialized_move(_First, _Last, _Dest);
 }
@@ -311,7 +311,7 @@ pair<_FwdIt, _NoThrowFwdIt> uninitialized_move_n(
     // move [_First, _First + _Count) to raw [_Dest, ...)
     // not parallelized at present
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _REQUIRE_PARELLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
 
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     return _STD uninitialized_move_n(_First, _Count, _Dest);
@@ -322,7 +322,7 @@ void uninitialized_fill(_ExPo&&, const _NoThrowFwdIt _First, const _NoThrowFwdIt
 /* terminates */ {
     // copy _Val throughout raw [_First, _Last)
     // not parallelized at present
-    _REQUIRE_PARELLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
 
     _STD uninitialized_fill(_First, _Last, _Val);
 }
@@ -472,11 +472,12 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, class _Tval,
     _Enable_if_execution_policy_t<_ExPo> = 0>
-_NoThrowFwdIt uninitialized_fill_n(_ExPo&&, _NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) noexcept
+_NoThrowFwdIt uninitialized_fill_n(
+    _ExPo&&, const _NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) noexcept
 /* terminates */ {
     // copy _Count copies of _Val to raw _First
     // not parallelized at present
-    _REQUIRE_PARELLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
 
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     return _STD uninitialized_fill_n(_First, _Count, _Val);
@@ -4162,7 +4163,7 @@ struct _Pointer_of_helper<_Ty> {
 };
 
 template <_Has_member_element_type _Ty>
-    requires (!_Has_member_pointer<_Ty>)
+    requires(!_Has_member_pointer<_Ty>)
 struct _Pointer_of_helper<_Ty> {
     using type = typename _Ty::element_type*;
 };
@@ -4235,7 +4236,7 @@ public:
     }
 
     operator void**() const noexcept
-        requires (!is_same_v<_Pointer, void*>)
+        requires(!is_same_v<_Pointer, void*>)
     {
         static_assert(is_pointer_v<_Pointer>, "conversion of out_ptr_t<Smart, Pointer, Args...> to void** requires "
                                               "Pointer to be a raw pointer (N4892 [out.ptr.t]/13)");
@@ -4317,7 +4318,7 @@ public:
     }
 
     operator void**() const noexcept
-        requires (!is_same_v<_Pointer, void*>)
+        requires(!is_same_v<_Pointer, void*>)
     {
         static_assert(is_pointer_v<_Pointer>, "conversion of inout_ptr_t<Smart, Pointer, Args...> to void** requires "
                                               "Pointer to be a raw pointer (N4892 [inout.ptr.t]/15)");

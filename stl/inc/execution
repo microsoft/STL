@@ -5055,30 +5055,31 @@ _FwdIt2 adjacent_difference(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void destroy(_ExPo&& _Exec, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept /* terminates */ {
     // destroy all elements in [_First, _Last)
-    _REQUIRE_PARELLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
-    using _Ty = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+    using _Value_type = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
     _STD _Adl_verify_range(_First, _Last);
-    if constexpr (!is_trivially_destructible_v<_Ty>) {
-        _STD for_each(_STD forward<_ExPo>(_Exec), _First, _Last, [](_Ty& _Obj) { _STD _Destroy_in_place(_Obj); });
+    if constexpr (!is_trivially_destructible_v<_Value_type>) {
+        _STD for_each(
+            _STD forward<_ExPo>(_Exec), _First, _Last, [](_Value_type& _Obj) { _STD _Destroy_in_place(_Obj); });
     }
 }
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, const _Diff _Count_raw) noexcept /* terminates */ {
     // destroy all elements in [_First, _First + _Count)
-    _REQUIRE_PARELLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
-    using _Ty                      = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+    using _Value_type              = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
         return _First;
     }
 
-    if constexpr (is_trivially_destructible_v<_Ty>) {
+    if constexpr (is_trivially_destructible_v<_Value_type>) {
         _STD advance(_First, _Count);
         return _First;
     } else {
         return _STD for_each_n(
-            _STD forward<_ExPo>(_Exec), _First, _Count, [](_Ty& _Obj) { _STD _Destroy_in_place(_Obj); });
+            _STD forward<_ExPo>(_Exec), _First, _Count, [](_Value_type& _Obj) { _STD _Destroy_in_place(_Obj); });
     }
 }
 
@@ -5086,12 +5087,12 @@ _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_pol
 void uninitialized_default_construct(_ExPo&& _Exec, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept
 /* terminates */ {
     // default-initialize all elements in [_First, _Last)
-    _REQUIRE_PARELLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
-    using _Ty = _Iter_value_t<_NoThrowFwdIt>;
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+    using _Value_type = _Iter_value_t<_NoThrowFwdIt>;
     _STD _Adl_verify_range(_First, _Last);
-    if constexpr (!is_trivially_default_constructible_v<_Ty>) {
+    if constexpr (!is_trivially_default_constructible_v<_Value_type>) {
         _STD for_each(_STD forward<_ExPo>(_Exec), _First, _Last,
-            [](auto& _Obj) { _STD _Default_construct_in_place(reinterpret_cast<_Ty&>(_Obj)); });
+            [](auto& _Obj) { _STD _Default_construct_in_place(reinterpret_cast<_Value_type&>(_Obj)); });
     }
 }
 
@@ -5099,26 +5100,26 @@ _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_
 _NoThrowFwdIt uninitialized_default_construct_n(_ExPo&& _Exec, _NoThrowFwdIt _First, const _Diff _Count_raw) noexcept
 /* terminates */ {
     // default-initialize all elements in [_First, _First + _Count_raw)
-    _REQUIRE_PARELLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
-    using _Ty                      = _Iter_value_t<_NoThrowFwdIt>;
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+    using _Value_type              = _Iter_value_t<_NoThrowFwdIt>;
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
         return _First;
     }
 
-    if constexpr (is_trivially_default_constructible_v<_Ty>) {
+    if constexpr (is_trivially_default_constructible_v<_Value_type>) {
         _STD advance(_First, _Count);
         return _First;
     } else {
         return _STD for_each_n(_STD forward<_ExPo>(_Exec), _First, _Count,
-            [](auto& _Obj) { _STD _Default_construct_in_place(reinterpret_cast<_Ty&>(_Obj)); });
+            [](auto& _Obj) { _STD _Default_construct_in_place(reinterpret_cast<_Value_type&>(_Obj)); });
     }
 }
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept /* terminates */ {
     // value-initialize all elements in [_First, _Last)
-    _REQUIRE_PARELLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
@@ -5156,7 +5157,7 @@ void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt 
             _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
         }
     } else {
-        for (; _First != _Last; ++_First) {
+        for (; _UFirst != _ULast; ++_UFirst) {
             _STD _Construct_in_place(reinterpret_cast<_Value_type&>(*_UFirst));
         }
     }
@@ -5166,7 +5167,7 @@ _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_
 _NoThrowFwdIt uninitialized_value_construct_n(_ExPo&&, _NoThrowFwdIt _First, const _Diff _Count_raw) noexcept
 /* terminates */ {
     // value-initialize all elements in [_First, _First + _Count_raw)
-    _REQUIRE_PARELLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
 
     if (_Count <= 0) {
