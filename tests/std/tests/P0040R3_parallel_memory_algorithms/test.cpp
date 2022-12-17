@@ -6,6 +6,7 @@
 #include <execution>
 #include <memory>
 #include <numeric>
+#include <vector>
 
 #include <parallel_algorithms_utilities.hpp>
 
@@ -182,6 +183,31 @@ struct test_case_uninitialized_value_construct_n_memset_parallel {
         const auto end_it   = begin_it + testSize;
 
         fill_n(begin_it, testSize, bad_int);
+
+        const auto result_it = uninitialized_value_construct_n(exec, begin_it, testSize);
+        assert(all_of(begin_it, end_it, expectation_zero));
+        assert(end_it == result_it);
+    }
+};
+
+struct test_case_uninitialized_value_construct_unwrap_parallel {
+    template <class ExecutionPolicy>
+    void operator()(const size_t testSize, const ExecutionPolicy& exec) {
+        auto vec            = vector<int>(testSize, bad_int);
+        const auto begin_it = vec.begin();
+        const auto end_it   = vec.end();
+
+        uninitialized_value_construct(exec, begin_it, end_it);
+        assert(all_of(begin_it, end_it, expectation_zero));
+    }
+};
+
+struct test_case_uninitialized_value_construct_n_unwrap_parallel {
+    template <class ExecutionPolicy>
+    void operator()(const size_t testSize, const ExecutionPolicy& exec) {
+        auto vec            = vector<int>(testSize, bad_int);
+        const auto begin_it = vec.begin();
+        const auto end_it   = vec.begin() + vec.size();
 
         const auto result_it = uninitialized_value_construct_n(exec, begin_it, testSize);
         assert(all_of(begin_it, end_it, expectation_zero));
@@ -381,6 +407,8 @@ int main() {
     parallel_test_case(test_case_uninitialized_value_construct_n_parallel{}, par);
     parallel_test_case(test_case_uninitialized_value_construct_memset_parallel{}, par);
     parallel_test_case(test_case_uninitialized_value_construct_n_memset_parallel{}, par);
+    parallel_test_case(test_case_uninitialized_value_construct_unwrap_parallel{}, par);
+    parallel_test_case(test_case_uninitialized_value_construct_n_unwrap_parallel{}, par);
     parallel_test_case(test_case_destroy_parallel{}, par);
     parallel_test_case(test_case_destroy_n_parallel{}, par);
     parallel_test_case(test_case_destroy_nontrivial_parallel{}, par);
@@ -402,6 +430,8 @@ int main() {
     parallel_test_case(test_case_uninitialized_value_construct_n_parallel{}, unseq);
     parallel_test_case(test_case_uninitialized_value_construct_memset_parallel{}, unseq);
     parallel_test_case(test_case_uninitialized_value_construct_n_memset_parallel{}, unseq);
+    parallel_test_case(test_case_uninitialized_value_construct_unwrap_parallel{}, unseq);
+    parallel_test_case(test_case_uninitialized_value_construct_n_unwrap_parallel{}, unseq);
     parallel_test_case(test_case_destroy_parallel{}, unseq);
     parallel_test_case(test_case_destroy_n_parallel{}, unseq);
     parallel_test_case(test_case_destroy_nontrivial_parallel{}, unseq);
