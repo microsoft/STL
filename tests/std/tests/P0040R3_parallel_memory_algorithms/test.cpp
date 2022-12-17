@@ -207,7 +207,7 @@ struct test_case_uninitialized_value_construct_n_unwrap_parallel {
     void operator()(const size_t testSize, const ExecutionPolicy& exec) {
         auto vec            = vector<int>(testSize, bad_int);
         const auto begin_it = vec.begin();
-        const auto end_it   = vec.begin() + vec.size();
+        const auto end_it   = vec.end();
 
         const auto result_it = uninitialized_value_construct_n(exec, begin_it, testSize);
         assert(all_of(begin_it, end_it, expectation_zero));
