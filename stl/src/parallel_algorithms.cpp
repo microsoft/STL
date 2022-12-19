@@ -7,20 +7,6 @@
 #include <thread>
 #include <xatomic_wait.h>
 
-namespace {
-    unsigned char _Atomic_load_uchar(const volatile unsigned char* _Ptr) noexcept {
-        // atomic load of unsigned char, copied from <atomic> except ARM and ARM64 bits
-        unsigned char _Value;
-#if defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
-        _Value = __iso_volatile_load8(reinterpret_cast<const volatile char*>(_Ptr));
-        _ReadWriteBarrier();
-#else
-#error Unsupported architecture
-#endif
-        return _Value;
-    }
-} // unnamed namespace
-
 extern "C" {
 
 _NODISCARD unsigned int __stdcall __std_parallel_algorithms_hw_threads() noexcept {

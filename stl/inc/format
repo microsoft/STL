@@ -2099,11 +2099,6 @@ public:
         _Size_ = 0;
     }
 
-    void _Try_resize(const size_t _Count) {
-        _Try_reserve(_Count);
-        _Size_ = _Count <= _Capacity_ ? _Count : _Capacity_;
-    }
-
     void _Try_reserve(const size_t _New_capacity) {
         if (_New_capacity > _Capacity_) {
             _Grow(_New_capacity);
