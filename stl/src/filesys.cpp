@@ -114,7 +114,7 @@ _FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(
     void* _Handle =
         FindFirstFileExW(_Wildname.c_str(), FindExInfoStandard, &_Dentry, FindExSearchNameMatch, nullptr, 0);
     if (_Handle == INVALID_HANDLE_VALUE) { // report failure
-        _Errno = ERROR_BAD_PATHNAME;
+        _Errno = GetLastError();
         *_Dest = L'\0';
         return nullptr;
     }
