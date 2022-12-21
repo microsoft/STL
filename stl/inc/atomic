@@ -1,3 +1,61 @@
+/*++
+
+Copyright (c) 1988-1992  Microsoft Corporation
+
+Module Name:
+
+    sql_atomic.h
+
+Abstract:
+
+    This is a private fork of the Microsoft Visual C++ team's <atomic> header.
+    On their explicit advice, we are forking in order to take advantage of
+    improved load acquire and store release intrinsics on newer arm64 hardware.
+
+    The github project is available at:
+
+    https://github.com/microsoft/STL
+
+    forked as of hash 65aab97
+
+    and this specific header is found at the relative path:
+
+    stl\inc\atomic
+
+    At this time, we are not changing the namespace, nor are we changing the
+    macros for multi-inclusion protection, to try to defend against inclusion of
+    both this header and the <atomic> header.
+
+    Ideally they fix their header but right now, @chbarto has advised this tack.
+
+Author:
+
+    Michael Grier (@micgrier) 10/6/2022
+
+Environment:
+
+    Visual C++
+
+Revision History:
+
+    October 6, 2022
+            Initial fork from GITHUB head version of the MSVC STL atomic header
+            hash 65aab97
+
+            Added use of SQL_ATOMIC just as a marker around places where our
+            customizations are present.
+
+            Change ARM64 load and store to use armv8.2+RCpc load acquire and
+            store release intrinsics.
+
+*/
+
+#if defined(_ATOMIC_)
+// We only get here because someone included a different header that defined _ATOMIC_ e.g.
+// the un-forked <atomic>.
+#pragma message("Please do not use the MSVC atomic header")
+#endif // defined(_ATOMIC_)
+
 // atomic standard header
 
 // Copyright (c) Microsoft Corporation.
@@ -8,6 +66,22 @@
 #define _ATOMIC_
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
+
+// SQL_ATOMIC doesn't really "do" anything, we use it as a marker in the rest of the
+// header.
+#define SQL_ATOMIC 1
+
+#if SQL_ATOMIC && (defined(_M_ARM64) || defined(_M_X64))
+#include <intrin.h>
+#endif // SQL_ATOMIC && defined(_M_ARM64)
+
+// SQL_ATOMIC_USE_ARMV8_2_RCpc is defined to 1 to use the ldapr instruction for load.acquire
+// instead of ldar.
+#define SQL_ATOMIC_USE_ARMV8_2_RCpc 1
+
+#if SQL_ATOMIC
+#define _EXPORT_STD
+#endif // SQL_ATOMIC
 
 #ifdef _M_CEE_PURE
 #error <atomic> is not supported when compiling with /clr:pure.
@@ -94,6 +168,22 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     }
 }
 
+#define _Compiler_barrier() _STL_DISABLE_DEPRECATED_WARNING _ReadWriteBarrier() _STL_RESTORE_DEPRECATED_WARNING
+
+#if SQL_ATOMIC
+#define _Compiler_acquire_barrier() _STL_DISABLE_DEPRECATED_WARNING _ReadBarrier() _STL_RESTORE_DEPRECATED_WARNING
+#endif
+
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#define _Memory_barrier()             __dmb(0xB) // inner shared data memory barrier
+#define _Compiler_or_memory_barrier() _Memory_barrier()
+#elif defined(_M_IX86) || defined(_M_X64)
+// x86/x64 hardware only emits memory barriers inside _Interlocked intrinsics
+#define _Compiler_or_memory_barrier() _Compiler_barrier()
+#else // ^^^ x86/x64 / unsupported hardware vvv
+#error Unsupported hardware
+#endif // hardware
+
 #if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
     _Check_memory_order(_Order);                                   \
@@ -124,6 +214,7 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
 // note: these macros are _not_ always safe to use with a trailing semicolon,
 // we avoid wrapping them in do {} while (0) because MSVC generates code for such loops
 // in debug mode.
+#if !SQL_ATOMIC || !defined(_M_ARM64)
 #define _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(_Order_var) \
     switch (_Order_var) {                            \
     case _Atomic_memory_order_relaxed:               \
@@ -139,6 +230,23 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
         _INVALID_MEMORY_ORDER;                       \
         break;                                       \
     }
+#else
+#define _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(_Order_var) \
+    switch (_Order_var) {                            \
+    case _Atomic_memory_order_relaxed:               \
+    case _Atomic_memory_order_consume:               \
+    case _Atomic_memory_order_acquire:               \
+    case _Atomic_memory_order_seq_cst:               \
+        break;                                       \
+    case _Atomic_memory_order_release:               \
+    case _Atomic_memory_order_acq_rel:               \
+    default:                                         \
+        _INVALID_MEMORY_ORDER;                       \
+        break;                                       \
+    }
+#endif // SQL_ATOMIC and hardware
+
+#if !SQL_ATOMIC || defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64EC)
 
 #define _ATOMIC_STORE_PREFIX(_Width, _Ptr, _Desired)      \
     case _Atomic_memory_order_relaxed:                    \
@@ -155,11 +263,236 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
         _INVALID_MEMORY_ORDER;                            \
         _FALLTHROUGH;
 
-
 #define _ATOMIC_STORE_SEQ_CST_ARM(_Width, _Ptr, _Desired) \
     _Memory_barrier();                                    \
     __iso_volatile_store##_Width((_Ptr), (_Desired));     \
     _Memory_barrier();
+
+#elif defined(_M_ARM64)
+
+// Ideally _Atomic_load_acquire is replaced by an "agile instrinsic" that the compiler back-end team
+// compiles to the most efficient load acquire instruction for the target architecture. For armv8.2 with
+// RCpc, this is the ldapr instruction but without that instruction, it's the ldar instruction which
+// is called "load acquire" but actually gives sequential consistency (oops!). Still, both are better
+// and using the "dmb ish" to force a barrier on the data space.
+
+#if SQL_ATOMIC_USE_ARMV8_2_RCpc
+
+inline unsigned __int8 _Atomic_load_acquire(volatile const unsigned __int8* _ptr) noexcept {
+    const auto retval = __ldapr8(const_cast<volatile unsigned __int8*>(_ptr));
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline __int8 _Atomic_load_acquire(volatile const __int8* _ptr) noexcept {
+    const auto retval = __ldapr8((volatile unsigned __int8*)_ptr);
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline unsigned __int16 _Atomic_load_acquire(volatile const unsigned __int16* _ptr) noexcept {
+    const auto retval = __ldapr16(const_cast<volatile unsigned __int16*>(_ptr));
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline __int16 _Atomic_load_acquire(volatile const __int16* _ptr) noexcept {
+    const auto retval = __ldapr16((volatile unsigned __int16*)_ptr);
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline unsigned __int32 _Atomic_load_acquire(volatile const unsigned __int32* _ptr) noexcept {
+    const auto retval = __ldapr32(const_cast<volatile unsigned __int32*>(_ptr));
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline __int32 _Atomic_load_acquire(volatile const __int32* _ptr) noexcept {
+    const auto retval = __ldapr32((volatile unsigned __int32*)_ptr);
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline unsigned __int64 _Atomic_load_acquire(volatile const unsigned __int64* _ptr) noexcept {
+    const auto retval = __ldapr64(const_cast<volatile unsigned __int64*>(_ptr));
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline __int64 _Atomic_load_acquire(volatile const __int64* _ptr) noexcept {
+    const auto retval = __ldapr64((volatile unsigned __int64*)_ptr);
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+#else
+
+inline unsigned __int8 _Atomic_load_acquire(volatile const unsigned __int8* _ptr) noexcept {
+    const auto retval = __ldar8(const_cast<volatile unsigned __int8*>(_ptr));
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline __int8 _Atomic_load_acquire(volatile const __int8* _ptr) noexcept {
+    const auto retval = __ldar8((volatile unsigned __int8*)_ptr);
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline unsigned __int16 _Atomic_load_acquire(volatile const unsigned __int16* _ptr) noexcept {
+    const auto retval = __ldar16(const_cast<volatile unsigned __int16*>(_ptr));
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline __int16 _Atomic_load_acquire(volatile const __int16* _ptr) noexcept {
+    const auto retval = __ldar16((volatile unsigned __int16*)_ptr);
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline unsigned __int32 _Atomic_load_acquire(volatile const unsigned __int32* _ptr) noexcept {
+    const auto retval = __ldar32(const_cast<volatile unsigned __int32*>(_ptr));
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline __int32 _Atomic_load_acquire(volatile const __int32* _ptr) noexcept {
+    const auto retval = __ldar32((volatile unsigned __int32*)_ptr);
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline unsigned __int64 _Atomic_load_acquire(volatile const unsigned __int64* _ptr) noexcept {
+    const auto retval = __ldar64(const_cast<volatile unsigned __int64*>(_ptr));
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+inline __int64 _Atomic_load_acquire(volatile const __int64* _ptr) noexcept {
+    const auto retval = __ldar64((volatile unsigned __int64*)_ptr);
+    _Compiler_acquire_barrier();
+    return retval;
+}
+
+
+#endif // SQL_ATOMIC_USE_ARMV8_2_RCpc
+
+inline unsigned __int8 _Atomic_load_seq_cst(volatile const unsigned __int8* _ptr) noexcept {
+    const auto retval = __ldar8(const_cast<volatile unsigned __int8*>(_ptr));
+    _Compiler_barrier();
+    return retval;
+}
+
+inline __int8 _Atomic_load_seq_cst(volatile const __int8* _ptr) noexcept {
+    const auto retval = __ldar8((volatile unsigned __int8*)_ptr);
+    _Compiler_barrier();
+    return retval;
+}
+
+inline unsigned __int16 _Atomic_load_seq_cst(volatile const unsigned __int16* _ptr) noexcept {
+    const auto retval = __ldar16(const_cast<volatile unsigned __int16*>(_ptr));
+    _Compiler_barrier();
+    return retval;
+}
+
+inline __int16 _Atomic_load_seq_cst(volatile const __int16* _ptr) noexcept {
+    const auto retval = __ldar16((volatile unsigned __int16*)_ptr);
+    _Compiler_barrier();
+    return retval;
+}
+
+inline unsigned __int32 _Atomic_load_seq_cst(volatile const unsigned __int32* _ptr) noexcept {
+    const auto retval = __ldar32(const_cast<volatile unsigned __int32*>(_ptr));
+    _Compiler_barrier();
+    return retval;
+}
+
+inline __int32 _Atomic_load_seq_cst(volatile const __int32* _ptr) noexcept {
+    const auto retval = __ldar32((volatile unsigned __int32*)_ptr);
+    _Compiler_barrier();
+    return retval;
+}
+
+inline unsigned __int64 _Atomic_load_seq_cst(volatile const unsigned __int64* _ptr) noexcept {
+    const auto retval = __ldar64(const_cast<volatile unsigned __int64*>(_ptr));
+    _Compiler_barrier();
+    return retval;
+}
+
+inline __int64 _Atomic_load_seq_cst(volatile const __int64* _ptr) noexcept {
+    const auto retval = __ldar64((volatile unsigned __int64*)_ptr);
+    _Compiler_barrier();
+    return retval;
+}
+
+// Ideally, _Atomic_store_releae is replaced by an "agile instrinsic" that the compiler back-end team
+// compiles to the most efficient store release instruction. At this time there aren't many options, it
+// seems to clearly be "stlr" but it would be better to be able to invoke "_store_release()" and let the
+// compiler worry about it instead of having to update headers if code generation needs to update.
+
+inline void _Atomic_store_release(volatile unsigned __int8* _ptr, unsigned __int8 _value) noexcept {
+    _Compiler_barrier();
+    __stlr8(_ptr, _value);
+}
+
+inline void _Atomic_store_release(volatile __int8* _ptr, __int8 _value) noexcept { 
+    _Compiler_barrier();
+    __stlr8((volatile unsigned __int8*) _ptr, static_cast<unsigned __int8>(_value));
+}
+
+inline void _Atomic_store_release(volatile unsigned __int16* _ptr, unsigned __int16 _value) noexcept {
+    _Compiler_barrier();
+    __stlr16(_ptr, _value);
+}
+
+inline void _Atomic_store_release(volatile __int16* _ptr, __int16 _value) noexcept { 
+    _Compiler_barrier();
+    __stlr16((volatile unsigned __int16*) _ptr, static_cast<unsigned __int16>(_value));
+}
+
+inline void _Atomic_store_release(volatile unsigned __int32* _ptr, unsigned __int32 _value) noexcept {
+    _Compiler_barrier();
+    __stlr32(_ptr, _value);
+}
+
+inline void _Atomic_store_release(volatile __int32* _ptr, __int32 _value) noexcept {
+    _Compiler_barrier();
+    __stlr32((volatile unsigned __int32*) _ptr, static_cast<unsigned __int32>(_value));
+}
+
+inline void _Atomic_store_release(volatile unsigned __int64* _ptr, unsigned __int64 _value) noexcept {
+    _Compiler_barrier();
+    __stlr64(_ptr, _value);
+}
+
+inline void _Atomic_store_release(volatile __int64* _ptr, __int64 _value) noexcept {
+    _Compiler_barrier();
+    __stlr64((volatile unsigned __int64*) _ptr, static_cast<unsigned __int64>(_value));
+}
+
+#define _ATOMIC_STORE_PREFIX(_Width, _Ptr, _Desired)      \
+    case _Atomic_memory_order_relaxed:                    \
+        __iso_volatile_store##_Width((_Ptr), (_Desired)); \
+        return;                                           \
+    case _Atomic_memory_order_release:                    \
+        _Atomic_store_release((_Ptr), (_Desired));        \
+        return;                                           \
+    default:                                              \
+    case _Atomic_memory_order_consume:                    \
+    case _Atomic_memory_order_acquire:                    \
+    case _Atomic_memory_order_acq_rel:                    \
+        _INVALID_MEMORY_ORDER;                            \
+        /* [[fallthrough]]; */
+
+// It's unobvious but seq cst stores on armv8.2 are releases, at least on clang and gcc @10/5/2022
+#define _ATOMIC_STORE_SEQ_CST_ARM(_Width, _Ptr, _Desired) _Atomic_store_release((_Ptr), (_Desired));
+
+#else
+#error unsupported hardware
+#endif // SQL_ATOMIC and hardware
+
 #define _ATOMIC_STORE_SEQ_CST_X86_X64(_Width, _Ptr, _Desired) (void) _InterlockedExchange##_Width((_Ptr), (_Desired));
 #define _ATOMIC_STORE_32_SEQ_CST_X86_X64(_Ptr, _Desired) \
     (void) _InterlockedExchange(reinterpret_cast<volatile long*>(_Ptr), static_cast<long>(_Desired));
@@ -715,6 +1048,12 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 
     _NODISCARD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<char>(_Storage);
+#if SQL_ATOMIC && defined(_M_ARM64)
+        if (_Order == memory_order_acquire) {
+            auto _As_bytes = _Atomic_load_acquire(_Mem);
+            return reinterpret_cast<_TVal&>(_As_bytes);
+        }
+#endif // SQL_ATOMIC && defined(_M_ARM64)
         char _As_bytes  = __iso_volatile_load8(_Mem);
         _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(static_cast<unsigned int>(_Order))
         return reinterpret_cast<_TVal&>(_As_bytes);
@@ -818,6 +1157,12 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
     _NODISCARD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<short>(_Storage);
+#if SQL_ATOMIC && defined(_M_ARM64)
+        if (_Order == memory_order_acquire) {
+            auto _As_bytes = _Atomic_load_acquire(_Mem);
+            return reinterpret_cast<_TVal&>(_As_bytes);
+        }
+#endif // SQL_ATOMIC && defined(_M_ARM64)
         short _As_bytes = __iso_volatile_load16(_Mem);
         _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(static_cast<unsigned int>(_Order))
         return reinterpret_cast<_TVal&>(_As_bytes);
@@ -920,6 +1265,12 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
     _NODISCARD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<int>(_Storage);
+#if SQL_ATOMIC && defined(_M_ARM64)
+        if (_Order == memory_order_acquire) {
+            auto _As_bytes = _Atomic_load_acquire(_Mem);
+            return reinterpret_cast<_TVal&>(_As_bytes);
+        }
+#endif // SQL_ATOMIC && defined(_M_ARM64)
         int _As_bytes   = __iso_volatile_load32(_Mem);
         _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(static_cast<unsigned int>(_Order))
         return reinterpret_cast<_TVal&>(_As_bytes);
@@ -1015,17 +1366,30 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
     _NODISCARD _TVal load() const noexcept { // load with sequential consistency
         const auto _Mem = _Atomic_address_as<long long>(_Storage);
+#if SQL_ATOMIC && defined(_M_ARM64)
+        long long _As_bytes = __iso_volatile_load64(_Mem);
+        // Even memory_order_seq_cst does not need a memory barrier.
+        _Compiler_barrier();
+#else
 #ifdef _M_ARM
         long long _As_bytes = __ldrexd(_Mem);
 #else
         long long _As_bytes = __iso_volatile_load64(_Mem);
 #endif
         _Compiler_or_memory_barrier();
+#endif // SQL_ATOMIC && defined(_M_ARM64)
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
     _NODISCARD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<long long>(_Storage);
+#if SQL_ATOMIC && defined(_M_ARM64)
+        if (_Order == memory_order_acquire) {
+            long long _As_bytes = _Atomic_load_acquire(_Mem);
+            return reinterpret_cast<_TVal&>(_As_bytes);
+        }
+#endif // SQL_ATOMIC && defined(_M_ARM64)
+
 #ifdef _M_ARM
         long long _As_bytes = __ldrexd(_Mem);
 #else
@@ -2952,6 +3316,227 @@ private:
 
 _STD_END
 
+#if SQL_ATOMIC
+
+// The sql::atomic types are here with extensions to the std::atomic types. The extensions fall into
+// two general categories:
+//
+//  1. Add the T& sql::atomic<T>::value() member
+//      this gives clients of sql::atomic<T> the ability to access the underlying storage
+//      of the atomic in any way that they want or need to. In general, this is unsafe but
+//      it also allows for provising missing primitive operations that a platform may
+//      provide, like, for example, interlocked bit test and set operations. This follows
+//      the design present in the Boost atomic<> core type.
+//
+//  2. Add interlocked bit test and set operations on the sql::atomic_uintptr_t type.
+//      Ideally this would be added to the base support for std::atomic<Integral> but
+//      that was turning into a major edit to the core code above. Instead, we really
+//      just wanted to take a pointer-sized integer and be able to perform atomic bit
+//      test and set/bit test and clear operations on it. Again, this is following an
+//      API already defined by the Boost <atomic> header.
+//
+// One may hope that these extensions are taken by the MSVC team into the core library and
+// these extensions are not needed which is why we keep them here in this header and follow
+// the MSVC coding style.
+namespace sql
+{
+    template <typename _Ty> class atomic : public std::atomic<_Ty>
+    {
+        using _Base = std::atomic<_Ty>;
+
+    public:
+        using _Base;
+
+        atomic(const atomic<_Ty>&) noexcept = delete;
+        atomic& operator=(const atomic<_Ty>&) noexcept = delete;
+
+        // This is an extension that Boost exposes, let's expose it also in sql::atomic
+        _Ty& value() noexcept
+        {
+            return *std::_Atomic_address_as<_Ty*>(this->_Storage);
+        }
+    };
+
+    // For unknown reasons, the _interlockedbittestandset family of intrinsics use the same type
+    // for the bit position as for the operand and return a char. Strange but true.
+    inline char _Atomic_interlocked_bit_test_and_set_relaxed(volatile uint64_t* _ptr, uint64_t _b)
+    {
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+        return _interlockedbittestandset64((int64_t*)_ptr, static_cast<int64_t>(_b));
+#elif defined(_M_ARM64)
+        return _interlockedbittestandset64_nf((int64_t*)_ptr, static_cast<int64_t>(_b));
+#endif // hardware
+    }
+
+    inline char _Atomic_interlocked_bit_test_and_set_acquire(volatile uint64_t* _ptr, uint64_t _b)
+    {
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+        return _interlockedbittestandset64((int64_t*)_ptr, static_cast<int64_t>(_b));
+#elif defined(_M_ARM64)
+        return _interlockedbittestandset64_acq((int64_t*)_ptr, static_cast<int64_t>(_b));
+#endif // hardware
+    }
+
+    inline char _Atomic_interlocked_bit_test_and_set_consume(volatile uint64_t* _ptr, uint64_t _b)
+    {
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+        return _interlockedbittestandset64((int64_t*)_ptr, static_cast<int64_t>(_b));
+#elif defined(_M_ARM64)
+        return _interlockedbittestandset64_acq((int64_t*)_ptr, static_cast<int64_t>(_b));
+#endif // hardware
+    }
+
+    inline char _Atomic_interlocked_bit_test_and_set_acq_rel(volatile uint64_t* _ptr, uint64_t _b)
+    {
+        std::memory_order();
+        return _Atomic_interlocked_bit_test_and_set_acq_rel(_ptr, _b);
+    }
+
+    inline char _Atomic_interlocked_bit_test_and_set_release(volatile uint64_t* _ptr, uint64_t _b)
+    {
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+        return _interlockedbittestandset64((int64_t*)_ptr, static_cast<int64_t>(_b));
+#elif defined(_M_ARM64)
+        return _interlockedbittestandset64_rel((int64_t*)_ptr, static_cast<int64_t>(_b));
+#endif // hardware
+    }
+
+    inline char _Atomic_interlocked_bit_test_and_set_seq_cst(volatile uint64_t* _ptr, uint64_t _b)
+    {
+        return _interlockedbittestandset64((int64_t*)_ptr, static_cast<int64_t>(_b));
+    }
+
+    inline char _Atomic_interlocked_bit_test_and_reset_relaxed(volatile uint64_t* _ptr, uint64_t _b)
+    {
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+        return _interlockedbittestandset64((int64_t*)_ptr, static_cast<int64_t>(_b));
+#elif defined(_M_ARM64)
+        return _interlockedbittestandset64_nf((int64_t*)_ptr, static_cast<int64_t>(_b));
+#endif // hardware
+    }
+
+    inline char _Atomic_interlocked_bit_test_and_reset_acquire(volatile uint64_t* _ptr, uint64_t _b)
+    {
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+        return _interlockedbittestandreset64((int64_t*)_ptr, static_cast<int64_t>(_b));
+#elif defined(_M_ARM64)
+        return _interlockedbittestandreset64_acq((int64_t*)_ptr, static_cast<int64_t>(_b));
+#endif // hardware
+    }
+
+    inline char _Atomic_interlocked_bit_test_and_reset_consume(volatile uint64_t* _ptr, uint64_t _b)
+    {
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+        return _interlockedbittestandreset64((int64_t*)_ptr, static_cast<int64_t>(_b));
+#elif defined(_M_ARM64)
+        return _interlockedbittestandreset64_acq((int64_t*)_ptr, static_cast<int64_t>(_b));
+#endif // hardware
+    }
+
+    inline char _Atomic_interlocked_bit_test_and_reset_acq_rel(volatile uint64_t* _ptr, uint64_t _b)
+    {
+        std::memory_order();
+        return _Atomic_interlocked_bit_test_and_reset_acq_rel(_ptr, _b);
+    }
+
+    inline char _Atomic_interlocked_bit_test_and_reset_release(volatile uint64_t* _ptr, uint64_t _b)
+    {
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+        return _interlockedbittestandreset64((int64_t*)_ptr, static_cast<int64_t>(_b));
+#elif defined(_M_ARM64)
+        return _interlockedbittestandreset64_rel((int64_t*)_ptr, static_cast<int64_t>(_b));
+#endif // hardware
+    }
+
+    inline char _Atomic_interlocked_bit_test_and_reset_seq_cst(volatile uint64_t* _ptr, uint64_t _b)
+    {
+        return _interlockedbittestandreset64((int64_t*)_ptr, static_cast<int64_t>(_b));
+    }
+
+    class atomic_uintptr_t : public std::atomic_uintptr_t
+    {
+        using _Base = std::atomic_uintptr_t;
+
+    public:
+        using _Base::_Base;
+
+        // Add operations for interlocked bit test and set
+        bool bit_test_and_set(unsigned int _n, std::memory_order _order = std::memory_order_seq_cst) noexcept {
+            char _Result;
+            volatile uint64_t* _Ptr = std::_Atomic_address_as<uint64_t>(_Storage);
+
+            switch (_order) {
+            case std::memory_order_relaxed:
+                _Result = _Atomic_interlocked_bit_test_and_set_relaxed(_Ptr, _n);
+                break;
+
+            case std::memory_order_acquire:
+                _Result = _Atomic_interlocked_bit_test_and_set_acquire(_Ptr, _n);
+                break;
+
+            case std::memory_order_consume:
+                _Result = _Atomic_interlocked_bit_test_and_set_consume(_Ptr, _n);
+                break;
+
+            case std::memory_order_acq_rel:
+                _Result = _Atomic_interlocked_bit_test_and_set_acq_rel(_Ptr, _n);
+                break;
+
+            case std::memory_order_release:
+                _Result = _Atomic_interlocked_bit_test_and_set_release(_Ptr, _n);
+                break;
+
+            default:
+                _INVALID_MEMORY_ORDER;
+                // fall through
+            case std::memory_order_seq_cst:
+                _Result = _Atomic_interlocked_bit_test_and_set_seq_cst(_Ptr, _n);
+                break;
+            }
+
+            return _Result != 0;
+        }
+
+        bool bit_test_and_clear(unsigned int _n, std::memory_order _order = std::memory_order_seq_cst) noexcept {
+            char _Result;
+            volatile uint64_t* _Ptr = std::_Atomic_address_as<uint64_t>(_Storage);
+
+            switch (_order) {
+            case std::memory_order_relaxed:
+                _Result = _Atomic_interlocked_bit_test_and_reset_relaxed(_Ptr, _n);
+                break;
+
+            case std::memory_order_acquire:
+                _Result = _Atomic_interlocked_bit_test_and_reset_acquire(_Ptr, _n);
+                break;
+
+            case std::memory_order_consume:
+                _Result = _Atomic_interlocked_bit_test_and_reset_consume(_Ptr, _n);
+                break;
+
+            case std::memory_order_acq_rel:
+                _Result = _Atomic_interlocked_bit_test_and_reset_acq_rel(_Ptr, _n);
+                break;
+
+            case std::memory_order_release:
+                _Result = _Atomic_interlocked_bit_test_and_reset_release(_Ptr, _n);
+                break;
+
+            default:
+                _INVALID_MEMORY_ORDER;
+                // fall through
+            case std::memory_order_seq_cst:
+                _Result = _Atomic_interlocked_bit_test_and_reset_seq_cst(_Ptr, _n);
+                break;
+            }
+
+            return _Result != 0;
+        }
+    };
+}
+
+#endif // SQL_ATOMIC
+
 #undef _CMPXCHG_MASK_OUT_PADDING_BITS
 
 #undef _ATOMIC_CHOOSE_INTRINSIC
@@ -2974,4 +3559,5 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 #endif // _STL_COMPILER_PREPROCESSOR
+
 #endif // _ATOMIC_
