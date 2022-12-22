@@ -434,7 +434,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t* _Fname, uintmax_t _Ne
 
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t* _Fname) { // unlink _Fname
-    return _wremove(_Fname) == 0 ? 0 : GetLastError();
+    return _wunlink(_Fname) == 0 ? 0 : GetLastError();
 }
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t* _Fname1, const wchar_t* _Fname2) {
