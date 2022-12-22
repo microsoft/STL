@@ -459,22 +459,20 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t* _Fname1, const wch
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t* _Fname, perms _Newmode) {
     // change file mode to _Newmode
-    WIN32_FILE_ATTRIBUTE_DATA _Data;
-
-    if (!GetFileAttributesExW(_Fname, GetFileExInfoStandard, &_Data)) {
+    DWORD _Oldmode = GetFileAttributesW(_Fname);
+    if (_Oldmode == INVALID_FILE_ATTRIBUTES) {
         return -1;
     }
 
     // got mode, alter readonly bit
-    DWORD _Oldmode = _Data.dwFileAttributes;
-    DWORD _Mode    = _Oldmode;
+    DWORD _Mode;
 
     constexpr perms _Write_perms = perms::owner_write | perms::group_write | perms::others_write;
 
     if ((_Newmode & _Write_perms) == perms::none) {
-        _Mode |= FILE_ATTRIBUTE_READONLY;
+        _Mode = _Oldmode | FILE_ATTRIBUTE_READONLY;
     } else {
-        _Mode &= ~FILE_ATTRIBUTE_READONLY;
+        _Mode = _Oldmode & ~FILE_ATTRIBUTE_READONLY;
     }
 
     return _Mode == _Oldmode || SetFileAttributesW(_Fname, _Mode) ? 0 : -1;
