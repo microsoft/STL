@@ -197,7 +197,7 @@ void test_comp_ellint_2() {
     static_assert(is_same_v<decltype(comp_ellint_2f(0)), float>);
     static_assert(is_same_v<decltype(comp_ellint_2l(0)), long double>);
     static_assert(is_same_v<decltype(comp_ellint_2(Ambiguous{})), Ambiguous>);
-    assert(comp_ellint_2(0) == acos(-1.0) / 2);
+    assert(expect_epsilons(comp_ellint_2(0), acos(-1.0) / 2, 2));
 }
 
 void test_comp_ellint_3() {
