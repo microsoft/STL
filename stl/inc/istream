@@ -54,12 +54,12 @@ protected:
         _Right._Chcount = 0;
     }
 
-    basic_istream& __CLR_OR_THIS_CALL operator=(basic_istream&& _Right) {
+    basic_istream& __CLR_OR_THIS_CALL operator=(basic_istream&& _Right) noexcept /* strengthened */ {
         this->swap(_Right);
         return *this;
     }
 
-    void __CLR_OR_THIS_CALL swap(basic_istream& _Right) {
+    void __CLR_OR_THIS_CALL swap(basic_istream& _Right) noexcept /* strengthened */ {
         _Myios::swap(_Right);
         _STD swap(_Chcount, _Right._Chcount);
     }
@@ -205,7 +205,7 @@ private:
     }
 
     template <class = void>
-    void _Increment_gcount() {
+    void _Increment_gcount() noexcept {
         if (_Chcount != (numeric_limits<streamsize>::max)()) {
             ++_Chcount;
         }
@@ -605,7 +605,8 @@ public:
         return *this;
     }
 
-    _NODISCARD streamsize __CLR_OR_THIS_CALL gcount() const { // get count from last extraction
+    _NODISCARD streamsize __CLR_OR_THIS_CALL gcount() const noexcept /* strengthened */ {
+        // get count from last extraction
         return _Chcount;
     }
 
@@ -743,12 +744,12 @@ protected:
         _Myios::move(_STD move(_Right));
     }
 
-    basic_iostream& __CLR_OR_THIS_CALL operator=(basic_iostream&& _Right) {
+    basic_iostream& __CLR_OR_THIS_CALL operator=(basic_iostream&& _Right) noexcept /* strengthened */ {
         this->swap(_Right);
         return *this;
     }
 
-    void __CLR_OR_THIS_CALL swap(basic_iostream& _Right) {
+    void __CLR_OR_THIS_CALL swap(basic_iostream& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Myios::swap(_Right);
         }

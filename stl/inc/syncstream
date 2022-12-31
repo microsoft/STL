@@ -56,7 +56,7 @@ protected:
         _Swap(_Right);
     }
 
-    void _Swap(_Basic_syncbuf_impl& _Right) {
+    void _Swap(_Basic_syncbuf_impl& _Right) noexcept {
         _Mysb::swap(_Right);
         _STD swap(_Emit_on_sync, _Right._Emit_on_sync);
         _STD swap(_Sync_recorded, _Right._Sync_recorded);
@@ -145,7 +145,7 @@ public:
         return *this;
     }
 
-    void swap(basic_syncbuf& _Right) {
+    void swap(basic_syncbuf& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
             _Swap_except_al(_Right);
@@ -255,7 +255,7 @@ private:
         }
     }
 
-    void _Swap_except_al(basic_syncbuf& _Right) {
+    void _Swap_except_al(basic_syncbuf& _Right) noexcept {
         _Mybase::_Swap(_Right);
         _STD swap(_Wrapped, _Right._Wrapped);
         _STD swap(_Get_mutex(), _Right._Get_mutex());
@@ -309,7 +309,8 @@ private:
 };
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) {
+void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     _Left.swap(_Right);
 }
 

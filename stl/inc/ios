@@ -47,8 +47,8 @@ public:
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 
-    void __CLR_OR_THIS_CALL setstate(
-        iostate _State, bool _Reraise = false) { // merge _State into state, possibly reraise exception
+    void __CLR_OR_THIS_CALL setstate(iostate _State, bool _Reraise = false) {
+        // merge _State into state, possibly reraise exception
         clear(rdstate() | _State, _Reraise);
     }
 
@@ -65,17 +65,17 @@ public:
         return *this;
     }
 
-    _Myos* __CLR_OR_THIS_CALL tie() const {
+    _Myos* __CLR_OR_THIS_CALL tie() const noexcept /* strengthened */ {
         return _Tiestr;
     }
 
-    _Myos* __CLR_OR_THIS_CALL tie(_Myos* _Newtie) { // set tie pointer
+    _Myos* __CLR_OR_THIS_CALL tie(_Myos* _Newtie) noexcept /* strengthened */ { // set tie pointer
         _Myos* _Oldtie = _Tiestr;
         _Tiestr        = _Newtie;
         return _Oldtie;
     }
 
-    _NODISCARD _Mysb* __CLR_OR_THIS_CALL rdbuf() const {
+    _NODISCARD _Mysb* __CLR_OR_THIS_CALL rdbuf() const noexcept /* strengthened */ {
         return _Mystrbuf;
     }
 
@@ -96,11 +96,11 @@ public:
         return _Oldlocale;
     }
 
-    _Elem __CLR_OR_THIS_CALL fill() const {
+    _Elem __CLR_OR_THIS_CALL fill() const noexcept /* strengthened */ {
         return _Fillch;
     }
 
-    _Elem __CLR_OR_THIS_CALL fill(_Elem _Newfill) { // set fill character
+    _Elem __CLR_OR_THIS_CALL fill(_Elem _Newfill) noexcept /* strengthened */ { // set fill character
         _Elem _Oldfill = _Fillch;
         _Fillch        = _Newfill;
         return _Oldfill;
@@ -114,7 +114,7 @@ public:
         return _STD use_facet<_Ctype>(getloc()).widen(_Byte);
     }
 
-    void __CLR_OR_THIS_CALL move(basic_ios& _Right) {
+    void __CLR_OR_THIS_CALL move(basic_ios& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Mystrbuf = nullptr;
             _Tiestr   = nullptr;
@@ -122,7 +122,7 @@ public:
         }
     }
 
-    void __CLR_OR_THIS_CALL move(basic_ios&& _Right) {
+    void __CLR_OR_THIS_CALL move(basic_ios&& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Mystrbuf = nullptr;
             _Tiestr   = nullptr;
@@ -136,13 +136,14 @@ public:
         _STD swap(_Tiestr, _Right._Tiestr);
     }
 
-    void __CLR_OR_THIS_CALL set_rdbuf(_Mysb* _Strbuf) { // set stream buffer pointer without changing state
+    void __CLR_OR_THIS_CALL set_rdbuf(_Mysb* _Strbuf) noexcept /* strengthened */ {
+        // set stream buffer pointer without changing state
         _Mystrbuf = _Strbuf;
     }
 
 protected:
-    void __CLR_OR_THIS_CALL init(_Mysb* _Strbuf = nullptr,
-        bool _Isstd                             = false) { // initialize with stream buffer pointer
+    void __CLR_OR_THIS_CALL init(_Mysb* _Strbuf = nullptr, bool _Isstd = false) {
+        // initialize with stream buffer pointer
         _Init(); // initialize ios_base
         _Mystrbuf = _Strbuf;
         _Tiestr   = nullptr;
