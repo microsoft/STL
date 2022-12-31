@@ -4,6 +4,7 @@
 #include <cassert>
 #include <fstream>
 #include <ios>
+#include <iostream>
 #include <istream>
 #include <ostream>
 #include <sstream>
@@ -19,7 +20,7 @@
 #include <spanstream>
 #endif // _HAS_CXX23
 
-#define STATIC_ASSERT(...) static_assert(#__VA_ARGS__)
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 using namespace std;
 
@@ -342,7 +343,6 @@ STATIC_ASSERT(is_nothrow_move_assignable_v<strstream>);
 STATIC_ASSERT(noexcept(declval<strstreambuf&>().clear()));
 
 STATIC_ASSERT(noexcept(declval<strstreambuf&>().freeze()));
-STATIC_ASSERT(noexcept(declval<istrstream&>().freeze()));
 STATIC_ASSERT(noexcept(declval<ostrstream&>().freeze()));
 STATIC_ASSERT(noexcept(declval<strstream&>().freeze()));
 
@@ -352,7 +352,6 @@ STATIC_ASSERT(noexcept(declval<ostrstream&>().str()));
 STATIC_ASSERT(noexcept(declval<strstream&>().str()));
 
 STATIC_ASSERT(noexcept(declval<strstreambuf&>().pcount()));
-STATIC_ASSERT(noexcept(declval<istrstream&>().pcount()));
 STATIC_ASSERT(noexcept(declval<ostrstream&>().pcount()));
 STATIC_ASSERT(noexcept(declval<strstream&>().pcount()));
 
