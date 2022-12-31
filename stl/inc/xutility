@@ -2483,13 +2483,15 @@ namespace ranges {
 
     struct _Cbegin_fn {
 #if _HAS_CXX23
-        template <_Should_range_access _Ty,
-            class _Uty = decltype(_RANGES begin(_RANGES _Possibly_const_range(_STD declval<_Ty&>())))>
+        template <class _Ty>
+        using _Adapted = decltype(_RANGES begin(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
+
+        template <_Should_range_access _Ty>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(const_iterator<_Uty>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}))
-            requires requires { const_iterator<_Uty>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}; }
+            noexcept(noexcept(const_iterator<_Adapted<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}))
+            requires requires { const_iterator<_Adapted<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}; }
         {
-            return const_iterator<_Uty>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
+            return const_iterator<_Adapted<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
@@ -2508,13 +2510,15 @@ namespace ranges {
 
     struct _Cend_fn {
 #if _HAS_CXX23
-        template <_Should_range_access _Ty,
-            class _Uty = decltype(_RANGES end(_RANGES _Possibly_const_range(_STD declval<_Ty&>())))>
+        template <class _Ty>
+        using _Adapted = decltype(_RANGES end(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
+
+        template <_Should_range_access _Ty>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(const_sentinel<_Uty>{_RANGES end(_RANGES _Possibly_const_range(_Val))}))
-            requires requires { const_sentinel<_Uty>{_RANGES end(_RANGES _Possibly_const_range(_Val))}; }
+            noexcept(noexcept(const_sentinel<_Adapted<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))}))
+            requires requires { const_sentinel<_Adapted<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))}; }
         {
-            return const_sentinel<_Uty>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
+            return const_sentinel<_Adapted<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
@@ -2672,13 +2676,15 @@ namespace ranges {
 
     struct _Crbegin_fn {
 #if _HAS_CXX23
-        template <_Should_range_access _Ty,
-            class _Uty = decltype(_RANGES rbegin(_RANGES _Possibly_const_range(_STD declval<_Ty&>())))>
+        template <class _Ty>
+        using _Adapted = decltype(_RANGES rbegin(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
+
+        template <_Should_range_access _Ty>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(const_iterator<_Uty>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}))
-            requires requires { const_iterator<_Uty>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}; }
+            noexcept(noexcept(const_iterator<_Adapted<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}))
+            requires requires { const_iterator<_Adapted<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}; }
         {
-            return const_iterator<_Uty>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
+            return const_iterator<_Adapted<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
@@ -2697,13 +2703,15 @@ namespace ranges {
 
     struct _Crend_fn {
 #if _HAS_CXX23
-        template <_Should_range_access _Ty,
-            class _Uty = decltype(_RANGES rend(_RANGES _Possibly_const_range(_STD declval<_Ty&>())))>
+        template <class _Ty>
+        using _Adapted = decltype(_RANGES rend(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
+
+        template <_Should_range_access _Ty>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(const_sentinel<_Uty>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}))
-            requires requires { const_sentinel<_Uty>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}; }
+            noexcept(noexcept(const_sentinel<_Adapted<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}))
+            requires requires { const_sentinel<_Adapted<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}; }
         {
-            return const_sentinel<_Uty>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
+            return const_sentinel<_Adapted<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
