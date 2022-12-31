@@ -585,7 +585,7 @@ public:
     void _Assign_rv(basic_istringstream&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
             _Mybase::swap(_Right);
-            _Stringbuffer._Assign_rv(_STD move(_Right));
+            _Stringbuffer._Assign_rv(_STD move(_Right._Stringbuffer));
         }
     }
 
@@ -705,7 +705,7 @@ public:
     void _Assign_rv(basic_ostringstream&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
             _Mybase::swap(_Right);
-            _Stringbuffer._Assign_rv(_STD move(_Right));
+            _Stringbuffer._Assign_rv(_STD move(_Right._Stringbuffer));
         }
     }
 
@@ -831,7 +831,7 @@ public:
     void _Assign_rv(basic_stringstream&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
             _Mybase::swap(_Right);
-            _Stringbuffer._Assign_rv(_STD move(_Right));
+            _Stringbuffer._Assign_rv(_STD move(_Right._Stringbuffer));
         }
     }
 
