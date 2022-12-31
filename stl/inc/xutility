@@ -2504,9 +2504,8 @@ namespace ranges {
     struct _Cbegin_fn {
 #if _HAS_CXX23
         template <_Range_accessible_and_begin_adaptable _Ty>
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(const_iterator<_Begin_adapted<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}))
-        {
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(
+            noexcept(const_iterator<_Begin_adapted<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))})) {
             return const_iterator<_Begin_adapted<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
@@ -2528,8 +2527,7 @@ namespace ranges {
 #if _HAS_CXX23
         template <_Range_accessible_and_end_adaptable _Ty>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(const_sentinel<_End_adapted<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))}))
-        {
+            noexcept(noexcept(const_sentinel<_End_adapted<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))})) {
             return const_sentinel<_End_adapted<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
@@ -2712,8 +2710,7 @@ namespace ranges {
 #if _HAS_CXX23
         template <_Range_accessible_and_rbegin_adaptable _Ty>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(
-            noexcept(const_iterator<_Rbegin_adapted<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}))
-        {
+            noexcept(const_iterator<_Rbegin_adapted<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))})) {
             return const_iterator<_Rbegin_adapted<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
@@ -2735,8 +2732,7 @@ namespace ranges {
 #if _HAS_CXX23
         template <_Range_accessible_and_rend_adaptable _Ty>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(const_sentinel<_Rend_adapted<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}))
-        {
+            noexcept(noexcept(const_sentinel<_Rend_adapted<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))})) {
             return const_sentinel<_Rend_adapted<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
