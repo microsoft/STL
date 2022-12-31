@@ -283,7 +283,7 @@ void test_future_shared_future_noexcept() {
     test_shared_future_noexcept_copy_impl<void>();
 }
 
-// Also test the exception specifications of move functions of promise
+// Also test the exception specifications of move functions of promise and packaged_task
 template <typename T>
 void test_promise_noexcept_impl() {
     STATIC_ASSERT(is_nothrow_move_constructible_v<promise<T>>);
@@ -295,6 +295,24 @@ void test_promise_noexcept() {
     test_promise_noexcept_impl<int>();
     test_promise_noexcept_impl<int&>();
     test_promise_noexcept_impl<void>();
+}
+
+template <typename F>
+void test_packaged_task_noexcept_impl() {
+    STATIC_ASSERT(is_nothrow_default_constructible_v<packaged_task<F>>);
+    STATIC_ASSERT(is_nothrow_move_constructible_v<packaged_task<F>>);
+    STATIC_ASSERT(is_nothrow_move_assignable_v<packaged_task<F>>);
+    STATIC_ASSERT(is_nothrow_destructible_v<packaged_task<F>>);
+}
+
+void test_packaged_task_noexcept() {
+    test_packaged_task_noexcept_impl<int()>();
+    test_packaged_task_noexcept_impl<int&()>();
+    test_packaged_task_noexcept_impl<void()>();
+
+    test_packaged_task_noexcept_impl<int(int)>();
+    test_packaged_task_noexcept_impl<int&(int)>();
+    test_packaged_task_noexcept_impl<void(int)>();
 }
 
 // Also test the non-constructibility of future from (future, {}) and (shared_future, {})
@@ -346,5 +364,6 @@ int main() {
     test_VSO_272761();
     test_future_shared_future_noexcept();
     test_promise_noexcept();
+    test_packaged_task_noexcept();
     test_no_implicit_brace_construction();
 }
