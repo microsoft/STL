@@ -7668,7 +7668,8 @@ namespace ranges {
     // clang-format on
 
     template <class _Rng, class _Container>
-    concept _Ref_converts = convertible_to<range_reference_t<_Rng>, range_value_t<_Container>>;
+    concept _Ref_converts =
+        (!input_range<_Container>) || convertible_to<range_reference_t<_Rng>, range_value_t<_Container>>;
 
     template <class _Rng, class _Container, class... _Types>
     concept _Converts_direct_constructible = _Ref_converts<_Rng, _Container> //
