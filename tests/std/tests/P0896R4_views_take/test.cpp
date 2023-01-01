@@ -534,7 +534,11 @@ void test_lwg3737() {
         is_same_v<ranges::iterator_t<const result_range>, counted_iterator<counted_iterator<istream_iterator<int>>>>);
     static_assert(is_same_v<ranges::sentinel_t<const result_range>, default_sentinel_t>);
 
-    vector<int> vec{from_range, rng};
+    vector<int> vec{};
+    for (const int elem : rng) {
+        vec.push_back(elem);
+    }
+
     assert(ranges::size(vec) == 2);
     assert((vec == vector<int>{0, 1}));
 }
