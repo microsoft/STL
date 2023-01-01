@@ -2486,9 +2486,8 @@ namespace ranges {
     template <class _Ty>
     concept _Range_accessible_and_begin_adaptable =
         _Should_range_access<_Ty>
-        && requires {
-               const_iterator<_Begin_adapted<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_STD declval<_Ty&>()))};
-           };
+        && requires(
+            _Ty& _Val) { const_iterator<_Begin_adapted<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}; };
 
     template <class _Ty>
     using _End_adapted = decltype(_RANGES end(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
@@ -2496,9 +2495,7 @@ namespace ranges {
     template <class _Ty>
     concept _Range_accessible_and_end_adaptable =
         _Should_range_access<_Ty>
-        && requires {
-               const_sentinel<_End_adapted<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_STD declval<_Ty&>()))};
-           };
+        && requires(_Ty& _Val) { const_sentinel<_End_adapted<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))}; };
 #endif // _HAS_CXX23
 
     struct _Cbegin_fn {
@@ -2690,10 +2687,9 @@ namespace ranges {
 
     template <class _Ty>
     concept _Range_accessible_and_rbegin_adaptable =
-        _Should_range_access<_Ty> && requires {
-                                         const_iterator<_Rbegin_adapted<_Ty>>{
-                                             _RANGES rbegin(_RANGES _Possibly_const_range(_STD declval<_Ty&>()))};
-                                     };
+        _Should_range_access<_Ty>
+        && requires(
+            _Ty& _Val) { const_iterator<_Rbegin_adapted<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}; };
 
     template <class _Ty>
     using _Rend_adapted = decltype(_RANGES rend(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
@@ -2701,9 +2697,8 @@ namespace ranges {
     template <class _Ty>
     concept _Range_accessible_and_rend_adaptable =
         _Should_range_access<_Ty>
-        && requires {
-               const_sentinel<_Rend_adapted<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_STD declval<_Ty&>()))};
-           };
+        && requires(
+            _Ty& _Val) { const_sentinel<_Rend_adapted<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}; };
 #endif // _HAS_CXX23
 
     struct _Crbegin_fn {
@@ -2952,13 +2947,18 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Data::_Cpo data;
     }
 
+#if _HAS_CXX23
+    template <class _Ty>
+    concept _Range_accessible_and_data_adaptable =
+        _Should_range_access<_Ty>
+        && requires(_Ty& _Val) { _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val))); };
+#endif // _HAS_CXX23
+
     struct _Cdata_fn {
 #if _HAS_CXX23
-        template <_Should_range_access _Ty>
+        template <_Range_accessible_and_data_adaptable _Ty>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(_RANGES data(_RANGES _Possibly_const_range(_Val))))
-            requires requires { _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val))); }
-        {
+            noexcept(noexcept(_RANGES data(_RANGES _Possibly_const_range(_Val)))) {
             return _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
         }
 #else // ^^^ C++23 / C++20 vvv
