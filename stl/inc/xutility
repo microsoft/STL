@@ -2497,7 +2497,7 @@ namespace ranges {
     concept _Range_accessible_and_end_adaptable =
         _Should_range_access<_Ty>
         && requires {
-               const_iterator<_End_adapted<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_STD declval<_Ty&>()))};
+               const_sentinel<_End_adapted<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_STD declval<_Ty&>()))};
            };
 #endif // _HAS_CXX23
 
@@ -2702,7 +2702,7 @@ namespace ranges {
     concept _Range_accessible_and_rend_adaptable =
         _Should_range_access<_Ty>
         && requires {
-               const_iterator<_Begin_adapted<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_STD declval<_Ty&>()))};
+               const_sentinel<_Begin_adapted<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_STD declval<_Ty&>()))};
            };
 #endif // _HAS_CXX23
 
