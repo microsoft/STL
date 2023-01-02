@@ -60,7 +60,7 @@ public:
         }
     }
 
-    void unlock() {
+    void unlock() noexcept /* strengthened */ {
         _Mtx_unlock(_Mymtx());
     }
 
@@ -163,7 +163,7 @@ public:
         _Other._Owns = false;
     }
 
-    unique_lock& operator=(unique_lock&& _Other) {
+    unique_lock& operator=(unique_lock&& _Other) noexcept /* strengthened */ {
         if (this != _STD addressof(_Other)) {
             if (_Owns) {
                 _Pmtx->unlock();
@@ -299,22 +299,56 @@ void _Unlock_locks(const int _First, const int _Last, index_sequence<_Indices...
     (void) _Ignored;
 }
 
+template <class _Fn>
+struct _Unlock_functor_guard {
+    static_assert(is_trivially_copyable_v<_Fn>, "This scope guard is only used for trivially copyable functors.");
+
+    _Unlock_functor_guard(const _Fn& _Functor) noexcept : _Ftor(_Functor) {}
+
+    ~_Unlock_functor_guard() noexcept {
+        if (_Valid) {
+            _Ftor();
+        }
+    }
+
+    _Unlock_functor_guard(const _Unlock_functor_guard&)            = delete;
+    _Unlock_functor_guard& operator=(const _Unlock_functor_guard&) = delete;
+
+    _Fn _Ftor;
+    bool _Valid = true;
+};
+
+template <class _Lock>
+struct _Unlock_one_guard {
+    _Unlock_one_guard(_Lock& _Lk) noexcept : _Lk_ptr(_STD addressof(_Lk)) {}
+
+    ~_Unlock_one_guard() noexcept {
+        if (_Lk_ptr) {
+            _Lk_ptr->unlock();
+        }
+    }
+
+    _Unlock_one_guard(const _Unlock_one_guard&)            = delete;
+    _Unlock_one_guard& operator=(const _Unlock_one_guard&) = delete;
+
+    _Lock* _Lk_ptr;
+};
+
 template <class... _LockN>
 int _Try_lock_range(const int _First, const int _Last, _LockN&... _LkN) {
     using _Indices = index_sequence_for<_LockN...>;
     int _Next      = _First;
-    _TRY_BEGIN
+
+    auto _Unlocker = [_First, &_Next, &_LkN...]() noexcept { _STD _Unlock_locks(_First, _Next, _Indices{}, _LkN...); };
+    _Unlock_functor_guard<decltype(_Unlocker)> _Guard{_Unlocker};
+
     for (; _Next != _Last; ++_Next) {
-        if (!_Try_lock_from_locks(_Next, _Indices{}, _LkN...)) { // try_lock failed, backout
-            _Unlock_locks(_First, _Next, _Indices{}, _LkN...);
+        if (!_STD _Try_lock_from_locks(_Next, _Indices{}, _LkN...)) { // try_lock failed, backout
             return _Next;
         }
     }
-    _CATCH_ALL
-    _Unlock_locks(_First, _Next, _Indices{}, _LkN...);
-    _RERAISE;
-    _CATCH_END
 
+    _Guard._Valid = false;
     return -1;
 }
 
@@ -330,16 +364,12 @@ int _Try_lock1(_Lock0& _Lk0, _Lock1& _Lk1) {
         return 0;
     }
 
-    _TRY_BEGIN
+    _Unlock_one_guard<_Lock0> _Guard{_Lk0};
     if (!_Lk1.try_lock()) {
-        _Lk0.unlock();
         return 1;
     }
-    _CATCH_ALL
-    _Lk0.unlock();
-    _RERAISE;
-    _CATCH_END
 
+    _Guard._Lk_ptr = nullptr;
     return -1;
 }
 
@@ -356,22 +386,24 @@ int _Lock_attempt(const int _Hard_lock, _LockN&... _LkN) {
     int _Failed        = -1;
     int _Backout_start = _Hard_lock; // that is, unlock _Hard_lock
 
-    _TRY_BEGIN
-    _Failed = _Try_lock_range(0, _Hard_lock, _LkN...);
-    if (_Failed == -1) {
-        _Backout_start = 0; // that is, unlock [0, _Hard_lock] if the next throws
-        _Failed        = _Try_lock_range(_Hard_lock + 1, sizeof...(_LockN), _LkN...);
-        if (_Failed == -1) { // we got all the locks
-            return -1;
-        }
-    }
-    _CATCH_ALL
-    _Unlock_locks(_Backout_start, _Hard_lock + 1, _Indices{}, _LkN...);
-    _RERAISE;
-    _CATCH_END
+    {
+        auto _Unlocker = [&_Backout_start, _Hard_lock, &_LkN...]() noexcept {
+            _STD _Unlock_locks(_Backout_start, _Hard_lock + 1, _Indices{}, _LkN...);
+        };
+        _Unlock_functor_guard<decltype(_Unlocker)> _Guard{_Unlocker};
 
-    // we didn't get all the locks, backout
-    _Unlock_locks(_Backout_start, _Hard_lock + 1, _Indices{}, _LkN...);
+        _Failed = _STD _Try_lock_range(0, _Hard_lock, _LkN...);
+        if (_Failed == -1) {
+            _Backout_start = 0; // that is, unlock [0, _Hard_lock] if the next throws
+            _Failed        = _STD _Try_lock_range(_Hard_lock + 1, sizeof...(_LockN), _LkN...);
+            if (_Failed == -1) { // we got all the locks
+                _Guard._Valid = false;
+                return -1;
+            }
+        }
+        // we didn't get all the locks, backout with the scope guard
+    }
+
     _STD this_thread::yield();
     return _Failed;
 }
@@ -389,16 +421,14 @@ template <class _Lock0, class _Lock1>
 bool _Lock_attempt_small(_Lock0& _Lk0, _Lock1& _Lk1) {
     // attempt to lock 2 locks, by first locking _Lk0, and then trying to lock _Lk1 returns whether to try again
     _Lk0.lock();
-    _TRY_BEGIN
-    if (_Lk1.try_lock()) {
-        return false;
+    {
+        _Unlock_one_guard<_Lock0> _Guard{_Lk0};
+        if (_Lk1.try_lock()) {
+            _Guard._Lk_ptr = nullptr;
+            return false;
+        }
     }
-    _CATCH_ALL
-    _Lk0.unlock();
-    _RERAISE;
-    _CATCH_END
 
-    _Lk0.unlock();
     _STD this_thread::yield();
     return true;
 }
