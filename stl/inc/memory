@@ -190,7 +190,7 @@ _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrow
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     const auto _UDest  = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
-    _Seek_wrapped(_Dest, _Uninitialized_move_unchecked(_UFirst, _ULast, _UDest));
+    _Seek_wrapped(_Dest, _STD _Uninitialized_move_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
 
@@ -4190,6 +4190,10 @@ public:
     inout_ptr_t(const inout_ptr_t&) = delete;
 
     ~inout_ptr_t() {
+        if constexpr (!is_pointer_v<_SmartPtr>) {
+            _Smart_ptr.release();
+        }
+
         if (!_Get_ptr()) {
             return;
         }
@@ -4200,11 +4204,9 @@ public:
                 if constexpr (is_pointer_v<_SmartPtr>) {
                     _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 } else if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
-                    _Smart_ptr.release();
                     _Smart_ptr.reset(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 } else {
                     static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4892 [inout.ptr.t]/11.4)");
-                    _Smart_ptr.release();
                     _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 }
             },

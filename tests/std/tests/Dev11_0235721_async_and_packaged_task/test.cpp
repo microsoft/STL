@@ -246,6 +246,19 @@ void test_VSO_272761() {
     test_VSO_272761_ref();
 }
 
+template <typename T>
+void test_future_shared_future_noexcept_impl() {
+    STATIC_ASSERT(is_nothrow_default_constructible_v<future<T>>);
+    STATIC_ASSERT(is_nothrow_move_constructible_v<future<T>>);
+    STATIC_ASSERT(is_nothrow_move_assignable_v<future<T>>);
+    STATIC_ASSERT(is_nothrow_destructible_v<future<T>>);
+
+    STATIC_ASSERT(is_nothrow_default_constructible_v<shared_future<T>>);
+    STATIC_ASSERT(is_nothrow_move_constructible_v<shared_future<T>>);
+    STATIC_ASSERT(is_nothrow_move_assignable_v<shared_future<T>>);
+    STATIC_ASSERT(is_nothrow_destructible_v<shared_future<T>>);
+}
+
 // P0516R0 "Marking shared_future Copying As noexcept"
 template <typename T>
 void test_shared_future_noexcept_copy_impl() {
@@ -260,12 +273,45 @@ void test_shared_future_noexcept_copy_impl() {
     assert(!copyCtord.valid());
 }
 
-void test_shared_future_noexcept_copy() {
+void test_future_shared_future_noexcept() {
+    test_future_shared_future_noexcept_impl<int>();
+    test_future_shared_future_noexcept_impl<int&>();
+    test_future_shared_future_noexcept_impl<void>();
+
     test_shared_future_noexcept_copy_impl<int>();
     test_shared_future_noexcept_copy_impl<int&>();
     test_shared_future_noexcept_copy_impl<void>();
 }
 
+// Also test the non-constructibility of future from (future, {}) and (shared_future, {})
+template <typename Void, typename T, typename... Args>
+constexpr bool is_constructible_with_trailing_empty_brace_impl = false;
+
+template <typename T, typename... Args>
+constexpr bool
+    is_constructible_with_trailing_empty_brace_impl<void_t<decltype(T(declval<Args>()..., {}))>, T, Args...> = true;
+
+template <typename T, typename... Args>
+constexpr bool is_constructible_with_trailing_empty_brace =
+    is_constructible_with_trailing_empty_brace_impl<void, T, Args...>;
+
+STATIC_ASSERT(is_constructible_with_trailing_empty_brace<pair<double*, int>, double*>); // verify a true case
+
+template <typename T>
+void test_no_implicit_brace_construction_impl() {
+    STATIC_ASSERT(!is_constructible_with_trailing_empty_brace<future<T>, future<T>>);
+    STATIC_ASSERT(!is_constructible_with_trailing_empty_brace<future<T>, const future<T>&>);
+    STATIC_ASSERT(!is_constructible_with_trailing_empty_brace<future<T>, shared_future<T>>);
+    STATIC_ASSERT(!is_constructible_with_trailing_empty_brace<future<T>, const shared_future<T>&>);
+}
+
+void test_no_implicit_brace_construction() {
+    test_no_implicit_brace_construction_impl<int>();
+    test_no_implicit_brace_construction_impl<int&>();
+    test_no_implicit_brace_construction_impl<void>();
+}
+
+#ifndef _M_CEE // TRANSITION, VSO-1659511
 struct use_async_in_a_global_tester {
     use_async_in_a_global_tester() {
         assert(async([] { return 42; }).get() == 42);
@@ -274,6 +320,7 @@ struct use_async_in_a_global_tester {
         (void) async([] { return 1729; }).get();
     }
 } use_async_in_a_global_instance;
+#endif // _M_CEE
 
 int main() {
     test_DevDiv_235721();
@@ -283,5 +330,6 @@ int main() {
     test_VSO_112570();
     test_VSO_115515();
     test_VSO_272761();
-    test_shared_future_noexcept_copy();
+    test_future_shared_future_noexcept();
+    test_no_implicit_brace_construction();
 }

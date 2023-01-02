@@ -93,16 +93,12 @@
 // Headers not allowed with /clr:pure
 #ifndef _M_CEE_PURE
 #include <atomic>
-#endif // _M_CEE_PURE
-
-// Headers not allowed to be used with /clr
-#ifndef _M_CEE
 #include <condition_variable>
 #include <future>
 #include <mutex>
 #include <shared_mutex>
 #include <thread>
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 #include <experimental/filesystem>
 
@@ -296,7 +292,7 @@ void chrono_test() {
     (void) (ceil<duration<float>>(time_pt));
 }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 template <typename ConditionVariable>
 void condition_variable_test_impl() {
     ConditionVariable cv{};
@@ -316,7 +312,7 @@ void condition_variable_test_impl() {
 void condition_variable_test() {
     condition_variable_test_impl<condition_variable_any>();
 }
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 void check_nested_exception_impl(const exception& ex) { // unroll nested exceptions
     try {
@@ -520,7 +516,7 @@ void functional_test() {
     // volatile binder calls not supported
 }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 template <typename Future>
 void future_test_impl(Future& f) {
     using namespace chrono;
@@ -575,7 +571,7 @@ void future_test() {
     TRAIT_V(uses_allocator, packaged_task<void()>, allocator<double>);
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 }
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 template <typename IoManipIn, typename IoManipOut>
 void iomanip_test_impl(IoManipIn in, IoManipOut out) {
@@ -972,7 +968,7 @@ void memory_test() {
     owner_less_test_impl(owner_less<void>{}, sptr, wptr);
 }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 template <typename Mutex>
 void timed_mutex_test_impl() {
     Mutex mtx{};
@@ -1002,7 +998,7 @@ void mutex_test() {
     timed_mutex_test_impl<timed_mutex>();
     timed_mutex_test_impl<recursive_timed_mutex>();
 }
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 void ostream_test() {
     stringstream ss{};
@@ -1404,7 +1400,7 @@ void scoped_allocator_test() {
     equality_test(saa1, saa7);
 }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 void shared_mutex_test() {
     using namespace chrono;
 
@@ -1421,7 +1417,7 @@ void shared_mutex_test() {
     (void) sl2.try_lock_until(system_clock::now());
     swap_test(sl1);
 }
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 template <typename T>
 void sstream_test_impl() {
@@ -1452,7 +1448,7 @@ void streambuf_test() {
     // istreambuf_iterator and ostreambuf_iterator covered in iterators test
 }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 void thread_test() {
     using namespace chrono;
 
@@ -1466,7 +1462,7 @@ void thread_test() {
     cout << thr_id;
     hash_test(thr_id);
 }
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 void tuple_test() {
     allocator<double> my_alloc{};

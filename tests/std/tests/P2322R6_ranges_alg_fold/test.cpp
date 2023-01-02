@@ -20,8 +20,7 @@ struct instantiator {
     static constexpr double left_difference = 0.1 - 0.2 - 0.3;
     static constexpr double right_product   = 0.1 * (0.2 * 0.3);
 
-    template <ranges::input_range Rng>
-    static constexpr void call() {
+    static constexpr bool non_dependent() {
         using ranges::fold_left, ranges::fold_left_first, ranges::fold_left_with_iter,
             ranges::fold_left_first_with_iter, ranges::fold_right, ranges::fold_right_last,
             ranges::fold_left_with_iter_result, ranges::fold_left_first_with_iter_result, ranges::begin, ranges::end;
@@ -30,10 +29,6 @@ struct instantiator {
         const auto vec_of_doubles = some_doubles | ranges::to<vector>();
 
         { // Validate fold_left iterator+sentinel overload
-            const Rng wrapped{some_doubles};
-            const same_as<double> auto sum1 = fold_left(begin(wrapped), end(wrapped), 0.0, plus{});
-            assert(sum1 == left_sum);
-
             const same_as<double> auto sum2 = fold_left(begin(vec_of_doubles), end(vec_of_doubles), 0.0, plus{});
             assert(sum2 == left_sum);
 
@@ -43,9 +38,6 @@ struct instantiator {
         }
 
         { // Validate fold_left range overload
-            const same_as<double> auto sum1 = fold_left(Rng{some_doubles}, 0.0, plus{});
-            assert(sum1 == left_sum);
-
             const same_as<double> auto sum2 = fold_left(vec_of_doubles, 0.0, plus{});
             assert(sum2 == left_sum);
 
@@ -55,10 +47,6 @@ struct instantiator {
         }
 
         { // Validate fold_left_first iterator+sentinel overload
-            const Rng wrapped{some_doubles};
-            const same_as<optional<double>> auto diff1 = fold_left_first(begin(wrapped), end(wrapped), minus<double>{});
-            assert(diff1 == left_difference);
-
             const same_as<optional<double>> auto diff2 =
                 fold_left_first(begin(vec_of_doubles), end(vec_of_doubles), minus<double>{});
             assert(diff2 == left_difference);
@@ -69,9 +57,6 @@ struct instantiator {
         }
 
         { // Validate fold_left_first range overload
-            const same_as<optional<double>> auto diff1 = fold_left_first(Rng{some_doubles}, minus<double>{});
-            assert(diff1 == left_difference);
-
             const same_as<optional<double>> auto diff2 = fold_left_first(vec_of_doubles, minus<double>{});
             assert(diff2 == left_difference);
 
@@ -80,12 +65,6 @@ struct instantiator {
         }
 
         { // Validate fold_left_with_iter iterator+sentinel overload
-            const Rng wrapped{some_doubles};
-            const same_as<fold_left_with_iter_result<ranges::iterator_t<Rng>, double>> auto sum1 =
-                fold_left_with_iter(begin(wrapped), end(wrapped), 0.0, plus{});
-            assert(sum1.in == end(wrapped));
-            assert(sum1.value == left_sum);
-
             const same_as<fold_left_with_iter_result<vector<double>::const_iterator, double>> auto sum2 =
                 fold_left_with_iter(begin(vec_of_doubles), end(vec_of_doubles), 0.0, plus{});
             assert(sum2.in == end(vec_of_doubles));
@@ -99,12 +78,6 @@ struct instantiator {
         }
 
         { // Validate fold_left_with_iter range overload
-            const Rng wrapped{some_doubles};
-            const same_as<fold_left_with_iter_result<ranges::iterator_t<Rng>, double>> auto sum1 =
-                fold_left_with_iter(wrapped, 0.0, plus{});
-            assert(sum1.in == end(wrapped));
-            assert(sum1.value == left_sum);
-
             const same_as<fold_left_with_iter_result<vector<double>::const_iterator, double>> auto sum2 =
                 fold_left_with_iter(vec_of_doubles, 0.0, plus{});
             assert(sum2.in == end(vec_of_doubles));
@@ -122,12 +95,6 @@ struct instantiator {
         }
 
         { // Validate fold_left_first_with_iter iterator+sentinel overload
-            const Rng wrapped{some_doubles};
-            const same_as<fold_left_first_with_iter_result<ranges::iterator_t<Rng>, optional<double>>> auto diff1 =
-                fold_left_first_with_iter(begin(wrapped), end(wrapped), minus<double>{});
-            assert(diff1.in == end(wrapped));
-            assert(diff1.value == left_difference);
-
             const same_as<fold_left_first_with_iter_result<vector<double>::const_iterator, optional<double>>> auto
                 diff2 = fold_left_first_with_iter(begin(vec_of_doubles), end(vec_of_doubles), minus<double>{});
             assert(diff2.in == end(vec_of_doubles));
@@ -140,12 +107,6 @@ struct instantiator {
         }
 
         { // Validate fold_left_first_with_iter range overload
-            const Rng wrapped{some_doubles};
-            const same_as<fold_left_first_with_iter_result<ranges::iterator_t<Rng>, optional<double>>> auto diff1 =
-                fold_left_first_with_iter(wrapped, minus<double>{});
-            assert(diff1.in == end(wrapped));
-            assert(diff1.value == left_difference);
-
             const same_as<fold_left_first_with_iter_result<vector<double>::const_iterator, optional<double>>> auto
                 diff2 = fold_left_first_with_iter(vec_of_doubles, minus<double>{});
             assert(diff2.in == end(vec_of_doubles));
@@ -161,32 +122,116 @@ struct instantiator {
             assert(diff4.value == left_difference);
         }
 
+        { // Validate fold_right iterator+sentinel overload
+            const same_as<double> auto prod2 =
+                fold_right(begin(vec_of_doubles), end(vec_of_doubles), 1.0, multiplies{});
+            assert(prod2 == right_product);
+
+            const double single_value        = 3.14;
+            const same_as<double> auto prod3 = fold_right(begin(empty_rng), end(empty_rng), single_value, multiplies{});
+            assert(prod3 == single_value);
+        }
+
+        { // Validate fold_right range overload
+            const same_as<double> auto prod2 = fold_right(vec_of_doubles, 1.0, multiplies{});
+            assert(prod2 == right_product);
+
+            const double single_value        = 3.14;
+            const same_as<double> auto prod3 = fold_right(empty_rng, single_value, multiplies{});
+            assert(prod3 == single_value);
+        }
+
+        { // Validate fold_right_last iterator+sentinel overload
+            const same_as<optional<double>> auto prod2 =
+                fold_right_last(begin(vec_of_doubles), end(vec_of_doubles), multiplies{});
+            assert(prod2 == right_product);
+
+            const same_as<optional<double>> auto prod3 =
+                fold_right_last(begin(empty_rng), end(empty_rng), multiplies{});
+            assert(prod3 == nullopt);
+        }
+
+        { // Validate fold_right_last range overload
+            const same_as<optional<double>> auto prod2 = fold_right_last(vec_of_doubles, multiplies{});
+            assert(prod2 == right_product);
+
+            const same_as<optional<double>> auto prod3 = fold_right_last(empty_rng, multiplies{});
+            assert(prod3 == nullopt);
+        }
+
+        return true;
+    }
+
+    template <ranges::input_range Rng>
+    static constexpr void call() {
+        using ranges::fold_left, ranges::fold_left_first, ranges::fold_left_with_iter,
+            ranges::fold_left_first_with_iter, ranges::fold_right, ranges::fold_right_last,
+            ranges::fold_left_with_iter_result, ranges::fold_left_first_with_iter_result, ranges::begin, ranges::end;
+
+        { // Validate fold_left iterator+sentinel overload
+            const Rng wrapped{some_doubles};
+            const same_as<double> auto sum1 = fold_left(begin(wrapped), end(wrapped), 0.0, plus{});
+            assert(sum1 == left_sum);
+        }
+
+        { // Validate fold_left range overload
+            const same_as<double> auto sum1 = fold_left(Rng{some_doubles}, 0.0, plus{});
+            assert(sum1 == left_sum);
+        }
+
+        { // Validate fold_left_first iterator+sentinel overload
+            const Rng wrapped{some_doubles};
+            const same_as<optional<double>> auto diff1 = fold_left_first(begin(wrapped), end(wrapped), minus<double>{});
+            assert(diff1 == left_difference);
+        }
+
+        { // Validate fold_left_first range overload
+            const same_as<optional<double>> auto diff1 = fold_left_first(Rng{some_doubles}, minus<double>{});
+            assert(diff1 == left_difference);
+        }
+
+        { // Validate fold_left_with_iter iterator+sentinel overload
+            const Rng wrapped{some_doubles};
+            const same_as<fold_left_with_iter_result<ranges::iterator_t<Rng>, double>> auto sum1 =
+                fold_left_with_iter(begin(wrapped), end(wrapped), 0.0, plus{});
+            assert(sum1.in == end(wrapped));
+            assert(sum1.value == left_sum);
+        }
+
+        { // Validate fold_left_with_iter range overload
+            const Rng wrapped{some_doubles};
+            const same_as<fold_left_with_iter_result<ranges::iterator_t<Rng>, double>> auto sum1 =
+                fold_left_with_iter(wrapped, 0.0, plus{});
+            assert(sum1.in == end(wrapped));
+            assert(sum1.value == left_sum);
+        }
+
+        { // Validate fold_left_first_with_iter iterator+sentinel overload
+            const Rng wrapped{some_doubles};
+            const same_as<fold_left_first_with_iter_result<ranges::iterator_t<Rng>, optional<double>>> auto diff1 =
+                fold_left_first_with_iter(begin(wrapped), end(wrapped), minus<double>{});
+            assert(diff1.in == end(wrapped));
+            assert(diff1.value == left_difference);
+        }
+
+        { // Validate fold_left_first_with_iter range overload
+            const Rng wrapped{some_doubles};
+            const same_as<fold_left_first_with_iter_result<ranges::iterator_t<Rng>, optional<double>>> auto diff1 =
+                fold_left_first_with_iter(wrapped, minus<double>{});
+            assert(diff1.in == end(wrapped));
+            assert(diff1.value == left_difference);
+        }
+
         if constexpr (ranges::bidirectional_range<Rng>) {
             { // Validate fold_right iterator+sentinel overload
                 const Rng wrapped{some_doubles};
                 const same_as<double> auto prod1 = fold_right(begin(wrapped), end(wrapped), 1.0, multiplies{});
                 assert(prod1 == right_product);
-
-                const same_as<double> auto prod2 =
-                    fold_right(begin(vec_of_doubles), end(vec_of_doubles), 1.0, multiplies{});
-                assert(prod2 == right_product);
-
-                const double single_value = 3.14;
-                const same_as<double> auto prod3 =
-                    fold_right(begin(empty_rng), end(empty_rng), single_value, multiplies{});
-                assert(prod3 == single_value);
             }
 
             { // Validate fold_right range overload
                 const same_as<double> auto prod1 = fold_right(Rng{some_doubles}, 1.0, multiplies{});
                 assert(prod1 == right_product);
-
-                const same_as<double> auto prod2 = fold_right(vec_of_doubles, 1.0, multiplies{});
-                assert(prod2 == right_product);
-
-                const double single_value        = 3.14;
-                const same_as<double> auto prod3 = fold_right(empty_rng, single_value, multiplies{});
-                assert(prod3 == single_value);
             }
 
             { // Validate fold_right_last iterator+sentinel overload
@@ -194,25 +239,11 @@ struct instantiator {
                 const same_as<optional<double>> auto prod1 =
                     fold_right_last(begin(wrapped), end(wrapped), multiplies{});
                 assert(prod1 == right_product);
-
-                const same_as<optional<double>> auto prod2 =
-                    fold_right_last(begin(vec_of_doubles), end(vec_of_doubles), multiplies{});
-                assert(prod2 == right_product);
-
-                const same_as<optional<double>> auto prod3 =
-                    fold_right_last(begin(empty_rng), end(empty_rng), multiplies{});
-                assert(prod3 == nullopt);
             }
 
             { // Validate fold_right_last range overload
                 const same_as<optional<double>> auto prod1 = fold_right_last(Rng{some_doubles}, multiplies{});
                 assert(prod1 == right_product);
-
-                const same_as<optional<double>> auto prod2 = fold_right_last(vec_of_doubles, multiplies{});
-                assert(prod2 == right_product);
-
-                const same_as<optional<double>> auto prod3 = fold_right_last(empty_rng, multiplies{});
-                assert(prod3 == nullopt);
             }
         }
     }
@@ -251,6 +282,9 @@ int main() {
 
     STATIC_ASSERT((test_bidi<instantiator, const double>(), true));
     test_bidi<instantiator, const double>();
+
+    STATIC_ASSERT(instantiator::non_dependent());
+    instantiator::non_dependent();
 
     STATIC_ASSERT(test_in_value_result());
     assert(test_in_value_result());

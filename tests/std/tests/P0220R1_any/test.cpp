@@ -2605,7 +2605,6 @@ namespace msvc {
     namespace overaligned {
         template <std::size_t shift>
         void test_one_alignment() {
-#ifndef _M_CEE // If alignas doesn't work, we don't need to support overaligned types.
             constexpr std::size_t align = __STDCPP_DEFAULT_NEW_ALIGNMENT__ << (1 + shift);
 
             struct aligned_type {
@@ -2634,7 +2633,6 @@ namespace msvc {
                 assert(static_cast<std::size_t>(globalMemCounter.aligned_delete_called) == i + 1);
                 assert(globalMemCounter.last_delete_align == alignof(aligned_type));
             }
-#endif // !_M_CEE
         }
 
         void run_test() {

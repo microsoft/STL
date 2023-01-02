@@ -23,9 +23,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#ifdef _M_CEE
-#error <condition_variable> is not supported when compiling with /clr or /clr:pure.
-#endif // _M_CEE
+#ifdef _M_CEE_PURE
+#error <condition_variable> is not supported when compiling with /clr:pure.
+#endif // _M_CEE_PURE
 
 _STD_BEGIN
 template <class _Lock>

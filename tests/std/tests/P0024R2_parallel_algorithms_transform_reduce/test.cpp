@@ -145,6 +145,7 @@ void test_case_incorrect_special_case_reasoning() {
 }
 
 int main() {
+#ifndef _M_CEE // TRANSITION, VSO-1659695
     mt19937 gen(1729);
     parallel_test_case(test_case_transform_reduce_binary, gen);
     parallel_test_case(test_case_transform_reduce, gen);
@@ -153,4 +154,5 @@ int main() {
     parallel_test_case([](const size_t testSize) { test_case_move_only(seq, testSize); });
     parallel_test_case([](const size_t testSize) { test_case_move_only(par, testSize); });
     test_case_incorrect_special_case_reasoning();
+#endif // _M_CEE
 }

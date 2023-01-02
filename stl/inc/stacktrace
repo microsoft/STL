@@ -267,7 +267,7 @@ public:
 
 #ifdef __cpp_lib_concepts
         return _STD lexicographical_compare_three_way(_Lhs.begin(), _Lhs.end(), _Rhs.begin(), _Rhs.end());
-#else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
         for (size_t _Ix = 0, _Mx = _Lhs._Frames.size(); _Ix != _Mx; ++_Ix) {
             if (_Lhs._Frames[_Ix] != _Rhs._Frames[_Ix]) {
                 return _Lhs._Frames[_Ix] <=> _Rhs._Frames[_Ix];
@@ -339,13 +339,13 @@ _NODISCARD string to_string(const basic_stacktrace<_Alloc>& _St) {
     return _Result;
 }
 
-_EXPORT_STD template <class _CharT, class _Traits>
-basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const stacktrace_entry& _Fx) {
+_EXPORT_STD template <int = 0>
+ostream& operator<<(ostream& _Os, const stacktrace_entry& _Fx) {
     return _Os << _STD to_string(_Fx);
 }
 
-_EXPORT_STD template <class _CharT, class _Traits, class _Alloc>
-basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const basic_stacktrace<_Alloc>& _St) {
+_EXPORT_STD template <class _Alloc>
+ostream& operator<<(ostream& _Os, const basic_stacktrace<_Alloc>& _St) {
     return _Os << _STD to_string(_St);
 }
 

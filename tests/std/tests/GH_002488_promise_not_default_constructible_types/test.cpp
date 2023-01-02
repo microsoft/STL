@@ -127,6 +127,7 @@ void run_tests() {
         }
     }
 
+#ifndef _M_CEE // TRANSITION, VSO-1659383
     {
         Promise p;
         Future f = p.get_future();
@@ -153,6 +154,7 @@ void run_tests() {
         assert(failures == 7);
         assert(succeeded != -1 && f.get().x == succeeded);
     }
+#endif // _M_CEE
 
     {
         (void) std::async(std::launch::async, [] { return T(16); });

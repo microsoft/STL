@@ -161,6 +161,11 @@ void test_vso1591034() {
     assert(counted_item::count == 6);
 }
 
+void test_LWG_3743() { // COMPILE-ONLY
+    ranges::subrange r(views::iota(0ULL) | views::take(5), 5);
+    (void) ranges::to<vector<unsigned long long>>(r, size_t{0});
+}
+
 int main() {
     // Validate views
     test_copyable_views();

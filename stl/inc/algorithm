@@ -450,7 +450,7 @@ namespace ranges {
             if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty>
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
-                    if (!_Within_limits(_First, _Val)) {
+                    if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
                         return 0;
                     }
 
@@ -705,8 +705,8 @@ namespace ranges {
                     return false;
                 }
 
-                return _Equal_count(_STD move(_UFirst1), _STD move(_UFirst2), _Count, _Pass_fn(_Pred), _Pass_fn(_Proj1),
-                    _Pass_fn(_Proj2));
+                return _RANGES _Equal_count(_STD move(_UFirst1), _STD move(_UFirst2), _Count, _Pass_fn(_Pred),
+                    _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             } else {
                 return _Equal_4(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2), _STD move(_ULast2),
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
@@ -725,7 +725,7 @@ namespace ranges {
                 if (_Count != static_cast<_Size2>(_RANGES size(_Range2))) {
                     return false;
                 }
-                return _Equal_count(
+                return _RANGES _Equal_count(
                     _Ubegin(_Range1), _Ubegin(_Range2), _Count, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             } else {
                 return _Equal_4(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred),
@@ -932,10 +932,17 @@ namespace ranges {
                 // We've trimmed matching prefixes and matching suffixes.
                 // Now we need to compare each range's prefix to the other range's suffix.
 
+#ifdef _M_CEE // TRANSITION, VSO-1663257
+                const auto _ProjectedPred = [&](auto&& _Left, auto&& _Right) -> bool {
+                    return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<decltype(_Left)>(_Left)),
+                        _STD invoke(_Proj2, _STD forward<decltype(_Right)>(_Right)));
+                };
+#else // ^^^ workaround / no workaround vvv
                 const auto _ProjectedPred = [&]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) -> bool {
                     return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<_Ty1>(_Left)),
                         _STD invoke(_Proj2, _STD forward<_Ty2>(_Right)));
                 };
+#endif // ^^^ no workaround ^^^
 
                 const _TrimResult _Res = _Trim_completely(_First1, _Final1, _First2, _Final2, _ProjectedPred);
 
@@ -1021,10 +1028,17 @@ namespace ranges {
                 // We've trimmed matching prefixes and matching suffixes.
                 // Now we need to compare each range's prefix to the other range's suffix.
 
+#ifdef _M_CEE // TRANSITION, VSO-1663257
+                const auto _ProjectedPred = [&](auto&& _Left, auto&& _Right) -> bool {
+                    return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<decltype(_Left)>(_Left)),
+                        _STD invoke(_Proj2, _STD forward<decltype(_Right)>(_Right)));
+                };
+#else // ^^^ workaround / no workaround vvv
                 const auto _ProjectedPred = [&]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) -> bool {
                     return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<_Ty1>(_Left)),
                         _STD invoke(_Proj2, _STD forward<_Ty2>(_Right)));
                 };
+#endif // ^^^ no workaround ^^^
 
                 const _TrimResult _Res = _Trim_completely(_First1, _Final1, _First2, _Final2, _ProjectedPred);
 
@@ -1579,7 +1593,7 @@ namespace ranges {
             auto _UFirst = _Unwrap_iter<_Se1>(_STD move(_First));
             auto _ULast  = _Get_final_iterator_unwrapped<_It1>(_UFirst, _STD move(_Last));
             _Seek_wrapped(_First, _ULast);
-            _Result = _Move_backward_common(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
+            _Result = _RANGES _Move_backward_common(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
             return {_STD move(_First), _STD move(_Result)};
         }
 
@@ -1587,7 +1601,7 @@ namespace ranges {
             requires indirectly_movable<iterator_t<_Rng>, _It>
         constexpr move_backward_result<borrowed_iterator_t<_Rng>, _It> operator()(_Rng&& _Range, _It _Result) const {
             auto _ULast = _Get_final_iterator_unwrapped(_Range);
-            _Result     = _Move_backward_common(_Ubegin(_Range), _ULast, _STD move(_Result));
+            _Result     = _RANGES _Move_backward_common(_Ubegin(_Range), _ULast, _STD move(_Result));
             return {_Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
         }
     };
@@ -2731,13 +2745,13 @@ namespace ranges {
             _Indirectly_binary_right_foldable<_Ty, _It> _Fn>
         _NODISCARD constexpr auto operator()(_It _First, _Se _Last, _Ty _Init, _Fn _Func) const {
             _Adl_verify_range(_First, _Last);
-            return _Fold_right_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)),
-                _STD move(_Init), _Pass_fn(_Func));
+            return _RANGES _Fold_right_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
+                _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Init), _Pass_fn(_Func));
         }
 
         template <bidirectional_range _Rng, class _Ty, _Indirectly_binary_right_foldable<_Ty, iterator_t<_Rng>> _Fn>
         _NODISCARD constexpr auto operator()(_Rng&& _Range, _Ty _Init, _Fn _Func) const {
-            return _Fold_right_unchecked(_Ubegin(_Range), _Uend(_Range), _STD move(_Init), _Pass_fn(_Func));
+            return _RANGES _Fold_right_unchecked(_Ubegin(_Range), _Uend(_Range), _STD move(_Init), _Pass_fn(_Func));
         }
     };
 
@@ -2783,6 +2797,171 @@ namespace ranges {
     };
 
     _EXPORT_STD inline constexpr _Fold_right_last_fn fold_right_last{_Not_quite_object::_Construct_tag{}};
+
+    class _Find_last_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
+            requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
+        _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Last, const _Ty& _Value, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+
+            auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
+            if constexpr (bidirectional_iterator<_It>) {
+                auto _ULast   = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+                auto _UResult = _Find_last_unchecked(_STD move(_UFirst), _STD move(_ULast), _Value, _Pass_fn(_Proj));
+                return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+            } else {
+                auto _ULast   = _Unwrap_sent<_It>(_STD move(_Last));
+                auto _UResult = _Find_last_unchecked(_STD move(_UFirst), _STD move(_ULast), _Value, _Pass_fn(_Proj));
+                return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+            }
+        }
+
+        template <forward_range _Rng, class _Ty, class _Pj = identity>
+            requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty& _Value, _Pj _Proj = {}) const {
+            if constexpr (bidirectional_range<_Rng>) {
+                auto _UResult = _Find_last_unchecked(
+                    _Ubegin(_Range), _Get_final_iterator_unwrapped(_Range), _Value, _Pass_fn(_Proj));
+                return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+            } else {
+                auto _UResult = _Find_last_unchecked(_Ubegin(_Range), _Uend(_Range), _Value, _Pass_fn(_Proj));
+                return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+            }
+        }
+
+    private:
+        template <class _It, class _Se, class _Ty, class _Pj>
+        _NODISCARD static constexpr subrange<_It> _Find_last_unchecked(
+            _It _First, _Se _Last, const _Ty& _Value, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
+
+            if constexpr (_Bidi_common<_It, _Se>) {
+                for (auto _Result = _Last; _Result != _First;) {
+                    if (_STD invoke(_Proj, *--_Result) == _Value) {
+                        return {_STD move(_Result), _STD move(_Last)};
+                    }
+                }
+                return {_Last, _Last};
+            } else if constexpr (same_as<_It, _Se>) {
+                auto _Result = _Last;
+                for (; _First != _Last; ++_First) {
+                    if (_STD invoke(_Proj, *_First) == _Value) {
+                        _Result = _First;
+                    }
+                }
+                return {_STD move(_Result), _STD move(_Last)};
+            } else {
+                auto _Result = _First;
+                bool _Found  = false;
+                for (;; ++_First) {
+                    if (_First == _Last) {
+                        if (!_Found) {
+                            _Result = _First;
+                        }
+                        break;
+                    }
+
+                    if (_STD invoke(_Proj, *_First) == _Value) {
+                        _Result = _First;
+                        _Found  = true;
+                    }
+                }
+                return {_STD move(_Result), _STD move(_First)};
+            }
+        }
+    };
+
+    _EXPORT_STD inline constexpr _Find_last_fn find_last{_Not_quite_object::_Construct_tag{}};
+
+    template <bool _Search_for>
+    class _Find_last_if_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+
+            auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
+            if constexpr (bidirectional_iterator<_It>) {
+                auto _ULast = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+                auto _UResult =
+                    _Find_last_if_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+            } else {
+                auto _ULast = _Unwrap_sent<_It>(_STD move(_Last));
+                auto _UResult =
+                    _Find_last_if_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+            }
+        }
+
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            if constexpr (bidirectional_range<_Rng>) {
+                auto _UResult = _Find_last_if_unchecked(
+                    _Ubegin(_Range), _Get_final_iterator_unwrapped(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+            } else {
+                auto _UResult =
+                    _Find_last_if_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+            }
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr subrange<_It> _Find_last_if_unchecked(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            if constexpr (_Bidi_common<_It, _Se>) {
+                for (auto _Result = _Last; _Result != _First;) {
+                    if (_STD invoke_r<bool>(_Pred, _STD invoke(_Proj, *--_Result)) == _Search_for) {
+                        return {_STD move(_Result), _STD move(_Last)};
+                    }
+                }
+                return {_Last, _Last};
+            } else if constexpr (same_as<_It, _Se>) {
+                auto _Result = _Last;
+                for (; _First != _Last; ++_First) {
+                    if (_STD invoke_r<bool>(_Pred, _STD invoke(_Proj, *_First)) == _Search_for) {
+                        _Result = _First;
+                    }
+                }
+                return {_STD move(_Result), _STD move(_Last)};
+            } else {
+                auto _Result = _First;
+                bool _Found  = false;
+                for (;; ++_First) {
+                    if (_First == _Last) {
+                        if (!_Found) {
+                            _Result = _First;
+                        }
+                        break;
+                    }
+
+                    if (_STD invoke_r<bool>(_Pred, _STD invoke(_Proj, *_First)) == _Search_for) {
+                        _Result = _First;
+                        _Found  = true;
+                    }
+                }
+                return {_STD move(_Result), _STD move(_First)};
+            }
+        }
+    };
+
+    _EXPORT_STD inline constexpr _Find_last_if_fn<true> find_last_if{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Find_last_if_fn<false> find_last_if_not{_Not_quite_object::_Construct_tag{}};
 #endif // _HAS_CXX23
 } // namespace ranges
 #endif // __cpp_lib_concepts
@@ -2906,7 +3085,7 @@ namespace ranges {
 
                 for (auto _Candidate = _First1 + (_Count1 - _Count2_as1);; --_Candidate) {
                     auto [_Match, _Mid1] =
-                        _Equal_rev_pred(_Candidate, _First2, _First2 + _Count2, _Pred, _Proj1, _Proj2);
+                        _RANGES _Equal_rev_pred(_Candidate, _First2, _First2 + _Count2, _Pred, _Proj1, _Proj2);
                     if (_Match) {
                         return {_STD move(_Candidate), _STD move(_Mid1)};
                     }
@@ -4840,8 +5019,8 @@ _CONSTEXPR20 _OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt
     const auto _UMid   = _Get_unwrapped(_Mid);
     const auto _ULast  = _Get_unwrapped(_Last);
     auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt>(_UFirst, _ULast));
-    _UDest             = _Copy_unchecked(_UMid, _ULast, _UDest);
-    _Seek_wrapped(_Dest, _Copy_unchecked(_UFirst, _UMid, _UDest));
+    _UDest             = _STD _Copy_unchecked(_UMid, _ULast, _UDest);
+    _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst, _UMid, _UDest));
     return _Dest;
 }
 
@@ -5319,7 +5498,7 @@ constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fwd
         }
     }
 
-    _Seek_wrapped(_First, _Move_unchecked(_Start_at, _ULast, _UFirst));
+    _Seek_wrapped(_First, _STD _Move_unchecked(_Start_at, _ULast, _UFirst));
     return _First;
 }
 
@@ -5379,7 +5558,7 @@ constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fw
 
         for (; _Trail != _UResult; ++_Trail, (void) ++_Lead) {
             if (_Lead == _ULast) {
-                _Move_unchecked(_UFirst, _Trail, _UResult);
+                _STD _Move_unchecked(_UFirst, _Trail, _UResult);
 
                 return _First;
             }
@@ -5393,8 +5572,8 @@ constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fw
             // advancing _Trail and _Lead by _Pos_to_shift
             for (auto _Mid = _UFirst; _Mid != _UResult; ++_Mid, (void) ++_Trail, ++_Lead) {
                 if (_Lead == _ULast) {
-                    _Trail = _Move_unchecked(_Mid, _UResult, _Trail);
-                    _Move_unchecked(_UFirst, _Mid, _Trail);
+                    _Trail = _STD _Move_unchecked(_Mid, _UResult, _Trail);
+                    _STD _Move_unchecked(_UFirst, _Mid, _Trail);
 
                     return _First;
                 }
@@ -5801,17 +5980,17 @@ _BidIt _Buffered_rotate_unchecked(const _BidIt _First, const _BidIt _Mid, const 
 
     if (_Count1 <= _Count2 && _Count1 <= _Capacity) { // buffer left range, then copy parts
         _Uninitialized_backout<_Iter_value_t<_BidIt>*> _Backout{
-            _Temp_ptr, _Uninitialized_move_unchecked(_First, _Mid, _Temp_ptr)};
-        const _BidIt _New_mid = _Move_unchecked(_Mid, _Last, _First);
-        _Move_unchecked(_Backout._First, _Backout._Last, _New_mid);
+            _Temp_ptr, _STD _Uninitialized_move_unchecked(_First, _Mid, _Temp_ptr)};
+        const _BidIt _New_mid = _STD _Move_unchecked(_Mid, _Last, _First);
+        _STD _Move_unchecked(_Backout._First, _Backout._Last, _New_mid);
         return _New_mid; // _Backout destroys elements in temporary buffer
     }
 
     if (_Count2 <= _Capacity) { // buffer right range, then copy parts
         _Uninitialized_backout<_Iter_value_t<_BidIt>*> _Backout{
-            _Temp_ptr, _Uninitialized_move_unchecked(_Mid, _Last, _Temp_ptr)};
+            _Temp_ptr, _STD _Uninitialized_move_unchecked(_Mid, _Last, _Temp_ptr)};
         _Move_backward_unchecked(_First, _Mid, _Last);
-        return _Move_unchecked(_Backout._First, _Backout._Last, _First); // ditto _Backout destroys elements
+        return _STD _Move_unchecked(_Backout._First, _Backout._Last, _First); // ditto _Backout destroys elements
     }
 
     // buffer too small, rotate in place
@@ -5845,7 +6024,7 @@ pair<_BidIt, _Iter_diff_t<_BidIt>> _Stable_partition_unchecked1(_BidIt _First, _
         // move the last true element, *_Last, to the end of the true range
         *_Next = _STD move(*_Last);
         ++_Next;
-        _Move_unchecked(_Backout._First, _Backout._Last, _Next); // copy back the false range
+        _STD _Move_unchecked(_Backout._First, _Backout._Last, _Next); // copy back the false range
         _Diff _True_distance = static_cast<_Diff>(_Count - static_cast<_Diff>(_Backout._Last - _Backout._First));
         return pair<_BidIt, _Diff>(_Next, _True_distance); // _Backout destroys elements
     }
@@ -6179,7 +6358,7 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     _Diff _Count       = _ULast - _UFirst;
     if (2 <= _Count) {
         _Iter_value_t<_RanIt> _Val = _STD move(*--_ULast);
-        _Push_heap_by_index(_UFirst, --_Count, _Diff(0), _STD move(_Val), _Pass_fn(_Pred));
+        _STD _Push_heap_by_index(_UFirst, --_Count, _Diff(0), _STD move(_Val), _Pass_fn(_Pred));
     }
 }
 
@@ -6288,7 +6467,7 @@ _CONSTEXPR20 void _Pop_heap_hole_by_index(
         _Hole             = _Bottom - 1;
     }
 
-    _Push_heap_by_index(_First, _Hole, _Top, _STD forward<_Ty>(_Val), _Pred);
+    _STD _Push_heap_by_index(_First, _Hole, _Top, _STD forward<_Ty>(_Val), _Pred);
 }
 
 template <class _RanIt, class _Ty, class _Pr>
@@ -6298,7 +6477,7 @@ _CONSTEXPR20 void _Pop_heap_hole_unchecked(_RanIt _First, _RanIt _Last, _RanIt _
     // precondition: _First != _Dest
     *_Dest      = _STD move(*_First);
     using _Diff = _Iter_diff_t<_RanIt>;
-    _Pop_heap_hole_by_index(
+    _STD _Pop_heap_hole_by_index(
         _First, static_cast<_Diff>(0), static_cast<_Diff>(_Last - _First), _STD forward<_Ty>(_Val), _Pred);
 }
 
@@ -6308,7 +6487,7 @@ _CONSTEXPR20 void _Pop_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     if (2 <= _Last - _First) {
         --_Last;
         _Iter_value_t<_RanIt> _Val = _STD move(*_Last);
-        _Pop_heap_hole_unchecked(_First, _Last, _Last, _STD move(_Val), _Pred);
+        _STD _Pop_heap_hole_unchecked(_First, _Last, _Last, _STD move(_Val), _Pred);
     }
 }
 
@@ -6316,7 +6495,7 @@ _EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // pop *_First to *(_Last - 1) and reheap
     _Adl_verify_range(_First, _Last);
-    _Pop_heap_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred));
+    _STD _Pop_heap_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _RanIt>
@@ -6432,7 +6611,7 @@ _CONSTEXPR20 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
         // reheap top half, bottom to top
         --_Hole;
         _Iter_value_t<_RanIt> _Val = _STD move(*(_First + _Hole));
-        _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred);
+        _STD _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred);
     }
 }
 
@@ -6515,7 +6694,8 @@ _EXPORT_STD template <class _RanIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _RanIt is_heap_until(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // find extent of range that is a heap
     _Adl_verify_range(_First, _Last);
-    _Seek_wrapped(_First, _Is_heap_until_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred)));
+    _Seek_wrapped(
+        _First, _STD _Is_heap_until_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred)));
     return _First;
 }
 
@@ -6525,7 +6705,7 @@ _NODISCARD _CONSTEXPR20 bool is_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
-    return _Is_heap_until_unchecked(_UFirst, _ULast, _Pass_fn(_Pred)) == _ULast;
+    return _STD _Is_heap_until_unchecked(_UFirst, _ULast, _Pass_fn(_Pred)) == _ULast;
 }
 
 _EXPORT_STD template <class _RanIt>
@@ -6649,7 +6829,7 @@ template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Sort_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // order heap by repeatedly popping
     for (; _Last - _First >= 2; --_Last) {
-        _Pop_heap_unchecked(_First, _Last, _Pred);
+        _STD _Pop_heap_unchecked(_First, _Last, _Pred);
     }
 }
 
@@ -6659,7 +6839,7 @@ _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // order h
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
 #if _ITERATOR_DEBUG_LEVEL == 2
-    const auto _Counterexample = _Is_heap_until_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
+    const auto _Counterexample = _STD _Is_heap_until_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
     if (_Counterexample != _ULast) {
         _STL_REPORT_ERROR("invalid heap in sort_heap()");
     }
@@ -6803,7 +6983,8 @@ namespace ranges {
             _Adl_verify_range(_First, _Last);
             auto _UFirst      = _Unwrap_iter<_Se>(_STD move(_First));
             const auto _Count = _RANGES distance(_UFirst, _Unwrap_sent<_It>(_STD move(_Last)));
-            _UFirst = _Upper_bound_unchecked(_STD move(_UFirst), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _UFirst =
+                _RANGES _Upper_bound_unchecked(_STD move(_UFirst), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
             _Seek_wrapped(_First, _STD move(_UFirst));
             return _First;
         }
@@ -6813,8 +6994,9 @@ namespace ranges {
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             const auto _Count = _RANGES distance(_Range);
-            auto _UResult     = _Upper_bound_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            auto _Result      = _RANGES begin(_Range);
+            auto _UResult =
+                _RANGES _Upper_bound_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _Result = _RANGES begin(_Range);
             _Seek_wrapped(_Result, _STD move(_UResult));
             return _Result;
         }
@@ -7034,8 +7216,8 @@ _CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 
         }
     }
 
-    _UDest = _Copy_unchecked(_UFirst1, _ULast1, _UDest); // copy any tail
-    _Seek_wrapped(_Dest, _Copy_unchecked(_UFirst2, _ULast2, _UDest));
+    _UDest = _STD _Copy_unchecked(_UFirst1, _ULast1, _UDest); // copy any tail
+    _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst2, _ULast2, _UDest));
     return _Dest;
 }
 
@@ -7172,7 +7354,7 @@ void _Rotate_one_left(_BidIt _First, _BidIt _Mid, _BidIt _Last) {
     // exchanges the range [_First, _Mid) with [_Mid, _Last)
     // pre: distance(_First, _Mid) is 1
     _Iter_value_t<_BidIt> _Temp(_STD move(*_First));
-    *_Move_unchecked(_Mid, _Last, _First) = _STD move(_Temp);
+    *_STD _Move_unchecked(_Mid, _Last, _First) = _STD move(_Temp);
 }
 
 template <class _BidIt, class _Pr>
@@ -7181,7 +7363,7 @@ void _Inplace_merge_buffer_left(
     // move the range [_First, _Mid) to _Temp_ptr, and merge it with [_Mid, _Last) to _First
     // usual invariants apply
     using _Ptr_ty = _Iter_value_t<_BidIt>*;
-    _Uninitialized_backout<_Ptr_ty> _Backout{_Temp_ptr, _Uninitialized_move_unchecked(_First, _Mid, _Temp_ptr)};
+    _Uninitialized_backout<_Ptr_ty> _Backout{_Temp_ptr, _STD _Uninitialized_move_unchecked(_First, _Mid, _Temp_ptr)};
     _Ptr_ty _Left_first      = _Temp_ptr;
     const _Ptr_ty _Left_last = _Backout._Last - 1; // avoid a compare with the highest element
     *_First                  = _STD move(*_Mid); // the lowest element is now in position
@@ -7193,7 +7375,7 @@ void _Inplace_merge_buffer_left(
             ++_First;
             ++_Mid;
             if (_Mid == _Last) {
-                _Move_unchecked(_Left_first, _Backout._Last, _First); // move any tail (and the highest element)
+                _STD _Move_unchecked(_Left_first, _Backout._Last, _First); // move any tail (and the highest element)
                 return;
             }
         } else { // take element from the left partition
@@ -7202,7 +7384,7 @@ void _Inplace_merge_buffer_left(
             ++_Left_first;
             if (_Left_first == _Left_last) {
                 // move the remaining right partition and highest element, since *_Left_first is highest
-                *_Move_unchecked(_Mid, _Last, _First) = _STD move(*_Left_last);
+                *_STD _Move_unchecked(_Mid, _Last, _First) = _STD move(*_Left_last);
                 return;
             }
         }
@@ -7215,7 +7397,7 @@ void _Inplace_merge_buffer_right(
     // move the range [_Mid, _Last) to _Temp_ptr, and merge it with [_First, _Mid) to _Last
     // usual invariants apply
     using _Ptr_ty = _Iter_value_t<_BidIt>*;
-    _Uninitialized_backout<_Ptr_ty> _Backout{_Temp_ptr, _Uninitialized_move_unchecked(_Mid, _Last, _Temp_ptr)};
+    _Uninitialized_backout<_Ptr_ty> _Backout{_Temp_ptr, _STD _Uninitialized_move_unchecked(_Mid, _Last, _Temp_ptr)};
     *--_Last                   = _STD move(*--_Mid); // move the highest element into position
     const _Ptr_ty _Right_first = _Temp_ptr;
     _Ptr_ty _Right_last        = _Backout._Last - 1;
@@ -7271,14 +7453,14 @@ void _Buffered_inplace_merge_divide_and_conquer(_BidIt _First, _BidIt _Mid, _Bid
         const _Diff _Count1n = _Count1 >> 1; // shift for codegen
         const _BidIt _Firstn = _STD next(_First, _Count1n);
         const _BidIt _Lastn  = _STD lower_bound(_Mid, _Last, *_Firstn, _Pred);
-        _Buffered_inplace_merge_divide_and_conquer2(_First, _Mid, _Last, _Count1, _Count2, _Temp_ptr, _Capacity, _Pred,
-            _Firstn, _Lastn, _Count1n, _STD distance(_Mid, _Lastn));
+        _STD _Buffered_inplace_merge_divide_and_conquer2(_First, _Mid, _Last, _Count1, _Count2, _Temp_ptr, _Capacity,
+            _Pred, _Firstn, _Lastn, _Count1n, _STD distance(_Mid, _Lastn));
     } else {
         const _Diff _Count2n = _Count2 >> 1; // shift for codegen
         const _BidIt _Lastn  = _STD next(_Mid, _Count2n);
         const _BidIt _Firstn = _STD upper_bound(_First, _Mid, *_Lastn, _Pred);
-        _Buffered_inplace_merge_divide_and_conquer2(_First, _Mid, _Last, _Count1, _Count2, _Temp_ptr, _Capacity, _Pred,
-            _Firstn, _Lastn, _STD distance(_First, _Firstn), _Count2n);
+        _STD _Buffered_inplace_merge_divide_and_conquer2(_First, _Mid, _Last, _Count1, _Count2, _Temp_ptr, _Capacity,
+            _Pred, _Firstn, _Lastn, _STD distance(_First, _Firstn), _Count2n);
     }
 }
 
@@ -7288,11 +7470,12 @@ void _Buffered_inplace_merge_unchecked_impl(_BidIt _First, _BidIt _Mid, _BidIt _
     // merge sorted [_First, _Mid) with sorted [_Mid, _Last)
     // usual invariants apply
     if (_Count1 <= _Count2 && _Count1 <= _Capacity) {
-        _Inplace_merge_buffer_left(_First, _Mid, _Last, _Temp_ptr, _Pred);
+        _STD _Inplace_merge_buffer_left(_First, _Mid, _Last, _Temp_ptr, _Pred);
     } else if (_Count2 <= _Capacity) {
-        _Inplace_merge_buffer_right(_First, _Mid, _Last, _Temp_ptr, _Pred);
+        _STD _Inplace_merge_buffer_right(_First, _Mid, _Last, _Temp_ptr, _Pred);
     } else {
-        _Buffered_inplace_merge_divide_and_conquer(_First, _Mid, _Last, _Count1, _Count2, _Temp_ptr, _Capacity, _Pred);
+        _STD _Buffered_inplace_merge_divide_and_conquer(
+            _First, _Mid, _Last, _Count1, _Count2, _Temp_ptr, _Capacity, _Pred);
     }
 }
 
@@ -7324,7 +7507,7 @@ void _Buffered_inplace_merge_unchecked(_BidIt _First, _BidIt _Mid, _BidIt _Last,
         --_Last;
         --_Count2;
         if (_Mid == _Last) {
-            _Rotate_one_right(_First, _Mid, ++_Last);
+            _STD _Rotate_one_right(_First, _Mid, ++_Last);
             return;
         }
     } while (!_Pred(*_Last, *_Highest));
@@ -7333,7 +7516,7 @@ void _Buffered_inplace_merge_unchecked(_BidIt _First, _BidIt _Mid, _BidIt _Last,
     ++_Count2;
 
     if (_Count1 == 1) {
-        _Rotate_one_left(_First, _Mid, _Last);
+        _STD _Rotate_one_left(_First, _Mid, _Last);
         return;
     }
 
@@ -7371,7 +7554,7 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
     do {
         --_ULast;
         if (_UMid == _ULast) { // rotate only element remaining in right partition to the beginning, without allocating
-            _Rotate_one_right(_UFirst, _UMid, ++_ULast);
+            _STD _Rotate_one_right(_UFirst, _UMid, ++_ULast);
             return;
         }
     } while (!_Pred(*_ULast, *_Highest)); // found that *_Highest goes in *_ULast's position
@@ -7381,7 +7564,7 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
     using _Diff         = _Iter_diff_t<_BidIt>;
     const _Diff _Count1 = _STD distance(_UFirst, _UMid);
     if (_Count1 == 1) { // rotate only element remaining in left partition to the end, without allocating
-        _Rotate_one_left(_UFirst, _UMid, _ULast);
+        _STD _Rotate_one_left(_UFirst, _UMid, _ULast);
         return;
     }
 
@@ -8096,7 +8279,7 @@ namespace ranges {
 
             for (;;) {
                 if (_Last - _First <= _ISORT_MAX) { // small
-                    _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
+                    _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
                     return;
                 }
 
@@ -8109,7 +8292,7 @@ namespace ranges {
                 // divide and conquer by quicksort
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
                 auto [_Mid_first, _Mid_last] = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
-#else // ^^^ no workaround // workaround vvv
+#else // ^^^ no workaround / workaround vvv
                 auto _Mid       = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
                 auto _Mid_first = _Mid.begin();
                 auto _Mid_last  = _Mid.end();
@@ -8144,7 +8327,7 @@ _Ty* _Uninitialized_merge_move(_FwdIt _First, const _FwdIt _Mid, const _FwdIt _L
             ++_Next;
 
             if (_Next == _Last) {
-                _Backout._Last = _Uninitialized_move_unchecked(_First, _Mid, _Backout._Last);
+                _Backout._Last = _STD _Uninitialized_move_unchecked(_First, _Mid, _Backout._Last);
                 return _Backout._Release();
             }
         } else {
@@ -8152,7 +8335,7 @@ _Ty* _Uninitialized_merge_move(_FwdIt _First, const _FwdIt _Mid, const _FwdIt _L
             ++_First;
 
             if (_First == _Mid) {
-                _Backout._Last = _Uninitialized_move_unchecked(_Next, _Last, _Backout._Last);
+                _Backout._Last = _STD _Uninitialized_move_unchecked(_Next, _Last, _Backout._Last);
                 return _Backout._Release();
             }
         }
@@ -8171,7 +8354,7 @@ _OutIt _Merge_move(_InIt _First, const _InIt _Mid, const _InIt _Last, _OutIt _De
             ++_Next;
 
             if (_Next == _Last) {
-                return _Move_unchecked(_First, _Mid, _Dest);
+                return _STD _Move_unchecked(_First, _Mid, _Dest);
             }
         } else {
             *_Dest = _STD move(*_First);
@@ -8179,7 +8362,7 @@ _OutIt _Merge_move(_InIt _First, const _InIt _Mid, const _InIt _Last, _OutIt _De
             ++_First;
 
             if (_First == _Mid) {
-                return _Move_unchecked(_Next, _Last, _Dest);
+                return _STD _Move_unchecked(_Next, _Last, _Dest);
             }
         }
     }
@@ -8202,7 +8385,7 @@ void _Uninitialized_chunked_merge_unchecked2(
         _First             = _Mid2;
     }
 
-    _Uninitialized_move_unchecked(_First, _Last, _Backout._Last); // copy partial last chunk
+    _STD _Uninitialized_move_unchecked(_First, _Last, _Backout._Last); // copy partial last chunk
     _Backout._Release();
 }
 
@@ -8222,7 +8405,7 @@ void _Chunked_merge_unchecked(_BidIt _First, const _BidIt _Last, _OutIt _Dest, c
         _First             = _Mid2;
     }
 
-    _Move_unchecked(_First, _Last, _Dest); // copy partial last chunk
+    _STD _Move_unchecked(_First, _Last, _Dest); // copy partial last chunk
 }
 
 template <class _BidIt, class _Pr>
@@ -8595,7 +8778,7 @@ _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pr
     for (auto _UNext = _UMid; _UNext < _ULast; ++_UNext) {
         if (_DEBUG_LT_PRED(_Pred, *_UNext, *_UFirst)) { // replace top with new largest
             _Iter_value_t<_RanIt> _Val = _STD move(*_UNext);
-            _Pop_heap_hole_unchecked(_UFirst, _UMid, _UNext, _STD move(_Val), _Pass_fn(_Pred));
+            _STD _Pop_heap_hole_unchecked(_UFirst, _UMid, _UNext, _STD move(_Val), _Pass_fn(_Pred));
         }
     }
 
@@ -8718,7 +8901,7 @@ _CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First
             if (_DEBUG_LT_PRED(_Pred, *_UFirst1, *_UFirst2)) {
                 // replace top with new largest:
                 using _Diff = _Iter_diff_t<_RanIt>;
-                _Pop_heap_hole_by_index(
+                _STD _Pop_heap_hole_by_index(
                     _UFirst2, static_cast<_Diff>(0), static_cast<_Diff>(_UMid2 - _UFirst2), *_UFirst1, _Pass_fn(_Pred));
             }
         }
@@ -8959,7 +9142,7 @@ namespace ranges {
             }
 
             // sort any remainder
-            _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
+            _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
         }
     };
 
@@ -9118,8 +9301,8 @@ _CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _In
         }
     }
 
-    _UDest = _Copy_unchecked(_UFirst1, _ULast1, _UDest);
-    _Seek_wrapped(_Dest, _Copy_unchecked(_UFirst2, _ULast2, _UDest));
+    _UDest = _STD _Copy_unchecked(_UFirst1, _ULast1, _UDest);
+    _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst2, _ULast2, _UDest));
     return _Dest;
 }
 
@@ -9391,7 +9574,7 @@ _CONSTEXPR20 _OutIt set_difference(
         }
     }
 
-    _Seek_wrapped(_Dest, _Copy_unchecked(_UFirst1, _ULast1, _UDest));
+    _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst1, _ULast1, _UDest));
     return _Dest;
 }
 
@@ -9522,8 +9705,8 @@ _CONSTEXPR20 _OutIt set_symmetric_difference(
         }
     }
 
-    _UDest = _Copy_unchecked(_UFirst1, _ULast1, _UDest);
-    _Seek_wrapped(_Dest, _Copy_unchecked(_UFirst2, _ULast2, _UDest));
+    _UDest = _STD _Copy_unchecked(_UFirst1, _ULast1, _UDest);
+    _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst2, _ULast2, _UDest));
     return _Dest;
 }
 
@@ -9705,7 +9888,7 @@ _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD constexpr pair<_FwdIt, _FwdIt> minmax_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find smallest and largest elements
     _Adl_verify_range(_First, _Last);
-    const auto _Result = _Minmax_element_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred));
+    const auto _Result = _STD _Minmax_element_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred));
     _Seek_wrapped(_Last, _Result.second);
     _Seek_wrapped(_First, _Result.first);
     return {_First, _Last};
@@ -9852,7 +10035,7 @@ _NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left, const
 _EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return {leftmost/smallest, rightmost/largest}
-    pair<const _Ty*, const _Ty*> _Res = _Minmax_element_unchecked(_Ilist.begin(), _Ilist.end(), _Pass_fn(_Pred));
+    pair<const _Ty*, const _Ty*> _Res = _STD _Minmax_element_unchecked(_Ilist.begin(), _Ilist.end(), _Pass_fn(_Pred));
     return pair<_Ty, _Ty>(*_Res.first, *_Res.second);
 }
 
@@ -10248,7 +10431,7 @@ namespace ranges {
         _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             const auto _ULast  = _Unwrap_sent<_It>(_STD move(_Last));
-            const auto _UFirst = _Is_sorted_until_unchecked(
+            const auto _UFirst = _RANGES _Is_sorted_until_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
             return _UFirst == _ULast;
         }
@@ -10256,8 +10439,9 @@ namespace ranges {
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            const auto _ULast  = _Uend(_Range);
-            const auto _UFirst = _Is_sorted_until_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            const auto _ULast = _Uend(_Range);
+            const auto _UFirst =
+                _RANGES _Is_sorted_until_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
             return _UFirst == _ULast;
         }
     };
@@ -10272,7 +10456,7 @@ namespace ranges {
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst = _Is_sorted_until_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
+            auto _UFirst = _RANGES _Is_sorted_until_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
                 _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
             _Seek_wrapped(_First, _STD move(_UFirst));
             return _First;
@@ -10282,7 +10466,7 @@ namespace ranges {
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _First  = _RANGES begin(_Range);
-            auto _UFirst = _Is_sorted_until_unchecked(
+            auto _UFirst = _RANGES _Is_sorted_until_unchecked(
                 _Unwrap_range_iter<_Rng>(_First), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
             _Seek_wrapped(_First, _STD move(_UFirst));
             return _First;

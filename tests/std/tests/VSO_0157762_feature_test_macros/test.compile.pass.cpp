@@ -30,7 +30,7 @@ STATIC_ASSERT(__cpp_lib_adaptor_iterator_pair_constructor == 202106L);
 STATIC_ASSERT(__cpp_lib_addressof_constexpr == 201603L);
 #endif
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_algorithm_iterator_requirements
 #error __cpp_lib_algorithm_iterator_requirements is not defined
 #elif __cpp_lib_algorithm_iterator_requirements != 202207L
@@ -776,7 +776,7 @@ STATIC_ASSERT(__cpp_lib_erase_if == 202002L);
 STATIC_ASSERT(__cpp_lib_exchange_function == 201304L);
 #endif
 
-#if _HAS_CXX20 && !defined(_M_CEE)
+#if _HAS_CXX20 && !defined(_M_CEE_PURE)
 #ifndef __cpp_lib_execution
 #error __cpp_lib_execution is not defined
 #elif __cpp_lib_execution != 201902L
@@ -784,7 +784,7 @@ STATIC_ASSERT(__cpp_lib_exchange_function == 201304L);
 #else
 STATIC_ASSERT(__cpp_lib_execution == 201902L);
 #endif
-#elif _HAS_CXX17 && !defined(_M_CEE)
+#elif _HAS_CXX17 && !defined(_M_CEE_PURE)
 #ifndef __cpp_lib_execution
 #error __cpp_lib_execution is not defined
 #elif __cpp_lib_execution != 201603L
@@ -1033,6 +1033,20 @@ STATIC_ASSERT(__cpp_lib_invoke_r == 202106L);
 #else
 #ifdef __cpp_lib_invoke_r
 #error __cpp_lib_invoke_r is defined
+#endif
+#endif
+
+#if _HAS_CXX23
+#ifndef __cpp_lib_ios_noreplace
+#error __cpp_lib_ios_noreplace is not defined
+#elif __cpp_lib_ios_noreplace != 202207L
+#error __cpp_lib_ios_noreplace is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ios_noreplace == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ios_noreplace
+#error __cpp_lib_ios_noreplace is defined
 #endif
 #endif
 
@@ -1446,7 +1460,7 @@ STATIC_ASSERT(__cpp_lib_out_ptr == 202106L);
 #endif
 #endif
 
-#if _HAS_CXX17 && !defined(_M_CEE)
+#if _HAS_CXX17 && !defined(_M_CEE_PURE)
 #ifndef __cpp_lib_parallel_algorithm
 #error __cpp_lib_parallel_algorithm is not defined
 #elif __cpp_lib_parallel_algorithm != 201603L
@@ -1485,12 +1499,12 @@ STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
-#elif __cpp_lib_ranges != 202207L
-#error __cpp_lib_ranges is not 202207L
+#elif __cpp_lib_ranges != 202211L
+#error __cpp_lib_ranges is not 202211L
 #else
-STATIC_ASSERT(__cpp_lib_ranges == 202207L);
+STATIC_ASSERT(__cpp_lib_ranges == 202211L);
 #endif
-#elif defined(__cpp_lib_concepts)
+#elif _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
 #elif __cpp_lib_ranges != 202110L
@@ -1501,6 +1515,20 @@ STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #else
 #ifdef __cpp_lib_ranges
 #error __cpp_lib_ranges is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_as_const
+#error __cpp_lib_ranges_as_const is not defined
+#elif __cpp_lib_ranges_as_const != 202207L
+#error __cpp_lib_ranges_as_const is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_as_const == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_as_const
+#error __cpp_lib_ranges_as_const is defined
 #endif
 #endif
 
@@ -1557,6 +1585,20 @@ STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
 #else
 #ifdef __cpp_lib_ranges_contains
 #error __cpp_lib_ranges_contains is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_find_last // per LWG-3807
+#error __cpp_lib_ranges_find_last is not defined
+#elif __cpp_lib_ranges_find_last != 202207L
+#error __cpp_lib_ranges_find_last is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_find_last == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_find_last
+#error __cpp_lib_ranges_find_last is defined
 #endif
 #endif
 
@@ -1782,7 +1824,7 @@ STATIC_ASSERT(__cpp_lib_shared_ptr_weak_type == 201606L);
 #endif
 #endif
 
-#ifdef _M_CEE
+#ifdef _M_CEE_PURE
 #ifdef __cpp_lib_shared_timed_mutex
 #error __cpp_lib_shared_timed_mutex is defined
 #endif

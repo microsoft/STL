@@ -12,16 +12,16 @@
 
 using namespace std;
 
-template <typename It>
+template <class It>
 concept CanIterConstRef = requires { typename iter_const_reference_t<It>; };
 
-template <typename It>
+template <class It>
 concept CanConstIterator = requires(It it) {
                                typename const_iterator<It>;
                                { make_const_iterator(move(it)) } -> same_as<const_iterator<It>>;
                            };
 
-template <typename Se>
+template <class Se>
 concept CanConstSentinel = requires(Se se) {
                                typename const_sentinel<Se>;
                                { make_const_sentinel(move(se)) } -> same_as<const_sentinel<Se>>;

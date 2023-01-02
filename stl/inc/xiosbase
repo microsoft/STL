@@ -73,6 +73,9 @@ public:
     static constexpr _Openmode _Nocreate  = static_cast<_Openmode>(0x40);
     static constexpr _Openmode _Noreplace = static_cast<_Openmode>(0x80);
     static constexpr _Openmode binary     = static_cast<_Openmode>(0x20);
+#if _HAS_CXX23
+    static constexpr _Openmode noreplace = _Noreplace;
+#endif
 
     enum _Seekdir { // constants for file positioning options
         _Seekbeg,
@@ -195,10 +198,10 @@ public:
 
     class failure : public system_error { // base of all iostreams exceptions
     public:
-        explicit failure(const string& _Message, const error_code& _Errcode = make_error_code(io_errc::stream))
+        explicit failure(const string& _Message, const error_code& _Errcode = _STD make_error_code(io_errc::stream))
             : system_error(_Errcode, _Message) {} // construct with message
 
-        explicit failure(const char* _Message, const error_code& _Errcode = make_error_code(io_errc::stream))
+        explicit failure(const char* _Message, const error_code& _Errcode = _STD make_error_code(io_errc::stream))
             : system_error(_Errcode, _Message) {} // construct with message
 
 #if !_HAS_EXCEPTIONS

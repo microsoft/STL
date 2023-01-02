@@ -16,7 +16,7 @@ using namespace std;
 
 #ifdef _WIN64
 const size_t bad_size = 0xCCCC'CCCC'CCCC'CCCCULL;
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else // ^^^ _WIN64 / !_WIN64 vvv
 const size_t bad_size = 0xCCCC'CCCCUL;
 #endif // _WIN64
 const unsigned long long default_state = 0xB01DFACEDEBAC1EULL;

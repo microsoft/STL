@@ -217,6 +217,7 @@ tests\GH_002992_unwrappable_iter_sent_pairs
 tests\GH_003022_substr_allocator
 tests\GH_003105_piecewise_densities
 tests\GH_003119_error_category_ctor
+tests\GH_003246_cmath_narrowing
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\LWG3121_constrained_tuple_forwarding_ctor
@@ -224,6 +225,7 @@ tests\LWG3146_excessive_unwrapping_ref_cref
 tests\LWG3234_math_special_overloads
 tests\LWG3422_seed_seq_ctors
 tests\LWG3480_directory_iterator_range
+tests\LWG3545_pointer_traits_sfinae
 tests\LWG3610_iota_view_size_and_integer_class
 tests\P0019R8_atomic_ref
 tests\P0024R2_parallel_algorithms_adjacent_difference
@@ -529,6 +531,9 @@ tests\P1206R7_vector_assign_range
 tests\P1206R7_vector_from_range
 tests\P1206R7_vector_insert_range
 tests\P1208R6_source_location
+tests\P1223R5_ranges_alg_find_last
+tests\P1223R5_ranges_alg_find_last_if
+tests\P1223R5_ranges_alg_find_last_if_not
 tests\P1272R4_byteswap
 tests\P1423R3_char8_t_remediation
 tests\P1425R4_queue_stack_constructors
@@ -548,7 +553,10 @@ tests\P2162R2_std_visit_for_derived_classes_from_variant
 tests\P2231R1_complete_constexpr_optional_variant
 tests\P2273R3_constexpr_unique_ptr
 tests\P2278R4_basic_const_iterator
+tests\P2278R4_const_span
 tests\P2278R4_ranges_const_iterator_machinery
+tests\P2278R4_ranges_const_range_machinery
+tests\P2278R4_views_as_const
 tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference
@@ -574,6 +582,7 @@ tests\P2443R1_views_chunk_by_death
 tests\P2445R1_forward_like
 tests\P2446R2_views_as_rvalue
 tests\P2465R3_standard_library_modules
+tests\P2467R1_exclusive_mode_fstreams
 tests\P2494R2_move_only_range_adaptors
 tests\P2517R1_apply_conditional_noexcept
 tests\VSO_0000000_allocator_propagation

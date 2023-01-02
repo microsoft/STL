@@ -119,7 +119,7 @@ _INLINE_VAR constexpr size_t _Non_user_size           = sizeof(void*) + _Big_all
 
 #ifdef _WIN64
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else // ^^^ _WIN64 / !_WIN64 vvv
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
 #endif // _WIN64
 
@@ -157,7 +157,7 @@ inline void _Adjust_manually_vector_aligned(void*& _Ptr, size_t& _Bytes) {
     // in range [_Min_back_shift, _Non_user_size]
 #ifdef _DEBUG
     constexpr uintptr_t _Min_back_shift = 2 * sizeof(void*);
-#else // ^^^ _DEBUG ^^^ // vvv !_DEBUG vvv
+#else // ^^^ _DEBUG / !_DEBUG vvv
     constexpr uintptr_t _Min_back_shift = sizeof(void*);
 #endif // _DEBUG
     const uintptr_t _Back_shift = reinterpret_cast<uintptr_t>(_Ptr) - _Ptr_container;
@@ -212,7 +212,7 @@ _CONSTEXPR20 void _Deallocate(void* _Ptr, const size_t _Bytes) noexcept {
 }
 
 #define _HAS_ALIGNED_NEW 1
-#else // ^^^ __cpp_aligned_new ^^^ / vvv !__cpp_aligned_new vvv
+#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
 #define _HAS_ALIGNED_NEW 0
 #endif // __cpp_aligned_new
 
@@ -774,7 +774,127 @@ _NODISCARD constexpr allocation_result<typename allocator_traits<_Alloc>::pointe
 #endif // _HAS_CXX23
 
 // The number of user bytes a single byte of ASAN shadow memory can track.
-_INLINE_VAR constexpr size_t _Asan_granularity = 8;
+_INLINE_VAR constexpr size_t _Asan_granularity      = 8;
+_INLINE_VAR constexpr size_t _Asan_granularity_mask = _Asan_granularity - 1;
+
+struct _Asan_aligned_pointers {
+    const void* _First;
+    const void* _End;
+
+    _NODISCARD constexpr const void* _Clamp_to_end(const void* _Mid) const noexcept {
+        _STL_INTERNAL_CHECK(_Mid >= _First);
+        if (_Mid > _End) {
+            return _End;
+        } else {
+            return _Mid;
+        }
+    }
+};
+
+// The way that ASan shadow memory works, each eight byte block of memory ("shadow memory section")
+// has a single byte to mark it as either poison or valid.
+// Each section has 0 to 8 "valid" bytes followed by poison bytes, so:
+// ```
+//   [ v v v p p p p p ]
+// ```
+// or
+// ```
+//   [ v v v v v v v v ]
+// ```
+// are okay, but
+// ```
+//   [ p p p p v v v v ]
+// ```
+// is not.
+//
+// This function exists to fix up `first` and `end` pointers so that one can call
+// `__sanitizer_annotate_contiguous_container`:
+//
+//   - `__sanitizer_annotate_contiguous_container` checks that `first` is aligned to an 8-byte boundary
+//   - if `end` is not aligned to an 8-byte boundary, `__sanitizer_annotate_contiguous_container` still poisons the
+//     remaining bytes in the shadow memory section.
+//
+// Because of the second property, we can only mark poison up to the final aligned address before the true `last`.
+// Otherwise, we'd poison the memory _after_ `last` as well.
+// For the first property, we can assume that everything before `first` in the shadow memory section is valid
+// (since otherwise we couldn't mark `first` valid), and so we just return back the first address in
+// `first`'s shadow memory section.
+//
+// ### Example
+//
+// ```cpp
+// struct alignas(8) cat {
+//     int meow; // bytes [0, 4)
+//     char buffer[16]; // bytes [4, 20)
+//     int purr; // bytes [20, 24)
+// };
+// ```
+//
+// First, `meow` and `purr` are just regular data members, not container buffers, so they _must_ be valid.
+// Then, assume we want to poison all of `buffer`.
+// This would mean that, in a perfect world, we want something like:
+//
+// ```
+//    |  meow |               buffer                | purr  |
+//   [ v v v v p p p p ][ p p p p p p p p ][ p p p p v v v v ]
+//           sm1                sm2                sm3
+// ```
+//
+// However, note that by the rules above, `sm3` is not a valid shadow memory section; we always need
+// the valid bytes to come before the poison bytes. Thus, the closest we can actually get to it is:
+//
+// ```
+//    |  meow |               buffer                | purr  |
+//   [ v v v v p p p p ][ p p p p p p p p ][ v v v v v v v v ]
+//           sm1                sm2                sm3
+// ```
+//
+// We call `aligned = _Get_asan_aligned_first_end(cat.buffer, cat.buffer + 16);`, and we get back
+//
+// ```cpp
+// aligned = {
+//     ._First = &cat.meow,
+//     ._End = cat.buffer + 12,
+// };
+// ```
+//
+// Then, we poison as much of buffer as we can via
+//
+// ```cpp
+// __sanitizer_annotate_contiguous_container(
+//     aligned._First,
+//     aligned._End,
+//     cat.buffer,
+//     aligned._Clamp_to_end(cat.buffer + 16));
+// ```
+//
+// We are allowed to assume that `&cat.meow` is valid, since otherwise `cat.buffer + [0, 4)` could not be valid.
+// We cannot poison up to `cat.buffer + 16`, since then `&purr` could not be valid.
+// Thus, this results in the shadow memory state from the second example.
+_NODISCARD inline _Asan_aligned_pointers _Get_asan_aligned_first_end(
+    const void* const _First, const void* const _End) noexcept {
+    return {
+        reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(_First) & ~_Asan_granularity_mask),
+        reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(_End) & ~_Asan_granularity_mask),
+    };
+}
+
+// When we can assume that the allocator we are using will always align allocations to the 8-byte,
+// we can simply push the `_End` pointer to the end of the shadow memory section.
+// This is _not_ safe in general (see _Get_asan_aligned_first_end's comment for why).
+_NODISCARD inline const void* _Get_asan_aligned_after(const void* const _End) noexcept {
+    return reinterpret_cast<const void*>(
+        (reinterpret_cast<uintptr_t>(_End) + _Asan_granularity_mask) & ~_Asan_granularity_mask);
+}
+
+template <class _Container, class = void>
+_INLINE_VAR constexpr size_t _Container_allocation_minimum_asan_alignment = alignof(typename _Container::value_type);
+
+template <class _Container>
+_INLINE_VAR constexpr size_t _Container_allocation_minimum_asan_alignment<_Container,
+    void_t<decltype(_Container::allocator_type::_Minimum_asan_allocation_alignment)>> =
+    (_STD max)(
+        alignof(typename _Container::value_type), _Container::allocator_type::_Minimum_asan_allocation_alignment);
 
 _EXPORT_STD template <class _Ty>
 class allocator {
@@ -862,7 +982,7 @@ public:
     }
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
-    static constexpr size_t _Minimum_allocation_alignment = _Asan_granularity;
+    static constexpr size_t _Minimum_asan_allocation_alignment = _Asan_granularity;
 };
 
 #if _HAS_DEPRECATED_ALLOCATOR_VOID || _HAS_DEPRECATED_ALLOCATOR_MEMBERS
@@ -1111,7 +1231,7 @@ public:
         {
             _Assign_locked(_Right);
         }
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
         _Myproxy = _Right._Myproxy;
 #endif // _ITERATOR_DEBUG_LEVEL != 2
         return *this;
@@ -1139,7 +1259,7 @@ public:
             _Adopt_locked(_Parent);
         }
     }
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
     _CONSTEXPR20 void _Adopt(const _Container_base12* _Parent) noexcept {
         if (_Parent) { // have a parent, do adoption
             _Myproxy = _Parent->_Myproxy;
@@ -1270,7 +1390,7 @@ _CONSTEXPR20 void _Container_base12::_Swap_proxy_and_iterators(_Container_base12
     {
         _Swap_proxy_and_iterators_locked(_Right);
     }
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
     _Swap_proxy_and_iterators_unlocked(_Right);
 #endif // _ITERATOR_DEBUG_LEVEL != 2
 }
@@ -1999,7 +2119,7 @@ struct _Alloc_temporary2 {
     _NODISCARD _CONSTEXPR20 const value_type& _Get_value() const noexcept {
         return _Storage._Value;
     }
-#else // ^^^ workaround for VSO-586813 "T^ is not allowed in a union" ^^^ / vvv no workaround vvv
+#else // ^^^ workaround for VSO-586813 "T^ is not allowed in a union" / no workaround vvv
     union {
         value_type _Value;
     };
@@ -2043,7 +2163,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    _UFirst           = _Find_unchecked(_UFirst, _ULast, _Val);
+    _UFirst           = _STD _Find_unchecked(_UFirst, _ULast, _Val);
     auto _UNext       = _UFirst;
     if (_UFirst != _ULast) {
         while (++_UFirst != _ULast) {

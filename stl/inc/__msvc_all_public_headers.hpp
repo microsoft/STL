@@ -139,24 +139,19 @@
 #include <vector>
 
 #ifndef _M_CEE_PURE
+#include <__msvc_cxx_stdatomic.hpp>
 #include <atomic>
 #include <barrier>
-#include <latch>
-#include <semaphore>
-#ifndef __clang__ // TRANSITION, GH-2862
-#include <stdatomic.h>
-#endif // TRANSITION, GH-2862
-#include <stop_token>
-#endif // _M_CEE_PURE
-
-#ifndef _M_CEE
 #include <condition_variable>
 #include <execution>
 #include <future>
+#include <latch>
 #include <mutex>
+#include <semaphore>
 #include <shared_mutex>
+#include <stop_token>
 #include <thread>
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 // Non-Core C Wrapper Headers
 #include <ccomplex>

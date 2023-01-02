@@ -4,6 +4,7 @@
 #include <atomic>
 #include <cassert>
 #include <chrono>
+#include <condition_variable>
 #include <mutex>
 #include <shared_mutex>
 #include <thread>
@@ -12,22 +13,15 @@
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-#ifndef _M_CEE
-#include <condition_variable>
-#endif // _M_CEE
 using namespace std;
 
-#ifndef _M_CEE
 STATIC_ASSERT(is_standard_layout_v<mutex>); // N4296 30.4.1.2.1 [thread.mutex.class]/3
 STATIC_ASSERT(is_standard_layout_v<recursive_mutex>); // N4296 30.4.1.2.2 [thread.mutex.recursive]/2
 STATIC_ASSERT(is_standard_layout_v<timed_mutex>); // N4296 30.4.1.3.1 [thread.timedmutex.class]/2
 STATIC_ASSERT(is_standard_layout_v<recursive_timed_mutex>); // N4296 30.4.1.3.2 [thread.timedmutex.recursive]/2
-#endif // _M_CEE
 STATIC_ASSERT(is_standard_layout_v<shared_mutex>); // N4527 30.4.1.4.1 [thread.sharedmutex.class]/2
-#ifndef _M_CEE
 STATIC_ASSERT(is_standard_layout_v<shared_timed_mutex>); // N4296 30.4.1.4.1 [thread.sharedtimedmutex.class]/2
 STATIC_ASSERT(is_standard_layout_v<condition_variable>); // N4296 30.5.1 [thread.condition.condvar]/1
-#endif // _M_CEE
 
 void join_and_clear(vector<thread>& threads) {
     for (auto& t : threads) {
@@ -187,7 +181,6 @@ void test_try_lock_and_try_lock_shared() {
     }
 }
 
-#ifndef _M_CEE
 void test_timed_behavior() {
     { // Test try_lock_for() and try_lock_shared_for(). No timing assumptions.
         shared_timed_mutex stm;
@@ -331,7 +324,6 @@ void test_timed_behavior() {
         assert(readers == 4);
     }
 }
-#endif // _M_CEE
 
 int main() {
     test_one_writer<shared_mutex>();
@@ -340,7 +332,6 @@ int main() {
     test_readers_blocking_writer<shared_mutex>();
     test_try_lock_and_try_lock_shared<shared_mutex>();
 
-#ifndef _M_CEE
     test_one_writer<shared_timed_mutex>();
     test_multiple_readers<shared_timed_mutex>();
     test_writer_blocking_readers<shared_timed_mutex>();
@@ -348,5 +339,4 @@ int main() {
     test_try_lock_and_try_lock_shared<shared_timed_mutex>();
 
     test_timed_behavior();
-#endif // _M_CEE
 }

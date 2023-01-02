@@ -69,6 +69,7 @@ struct test_case_for_each_n_parallel {
 };
 
 int main() {
+#ifndef _M_CEE // TRANSITION, VSO-1659695
     test_case_for_each_n();
     parallel_test_case(test_case_for_each_parallel<forward_list>{}, par);
     parallel_test_case(test_case_for_each_parallel<list>{}, par);
@@ -84,4 +85,5 @@ int main() {
     parallel_test_case(test_case_for_each_n_parallel<list>{}, unseq);
     parallel_test_case(test_case_for_each_n_parallel<vector>{}, unseq);
 #endif // _HAS_CXX20
+#endif // _M_CEE
 }

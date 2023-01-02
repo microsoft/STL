@@ -104,7 +104,7 @@ public:
     _NODISCARD constexpr strong_ordering operator<=>(const _Array_const_iterator& _Right) const noexcept {
         return _Ptr <=> _Right._Ptr;
     }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD _CONSTEXPR17 bool operator<(const _Array_const_iterator& _Right) const noexcept {
         return _Ptr < _Right._Ptr;
     }
@@ -209,7 +209,7 @@ private:
         _Compat(_Right);
         return _Idx <=> _Right._Idx;
     }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD _CONSTEXPR17 bool operator<(const _Array_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Idx < _Right._Idx;

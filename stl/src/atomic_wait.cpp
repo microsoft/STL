@@ -92,7 +92,7 @@ namespace {
 #ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 #if _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WIN8
 #define _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE 1
-#else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WIN8 // _STL_WIN32_WINNT < _STL_WIN32_WINNT_WIN8 vvv
+#else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _STL_WIN32_WINNT_WIN8 vvv
 #define _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE 0
 #endif // ^^^ _STL_WIN32_WINNT < _STL_WIN32_WINNT_WIN8 ^^^
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
@@ -360,7 +360,7 @@ __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_lev
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     (void) _Requested_api_level;
     return __std_atomic_api_level::__has_wait_on_address;
-#else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
+#else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE / !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
     switch (_Requested_api_level) {
     case __std_atomic_api_level::__not_set:
     case __std_atomic_api_level::__detecting:
@@ -404,7 +404,7 @@ _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_byte
     return __std_atomic_compare_exchange_128_fallback(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
 #elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
     return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
+#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 / _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
     if (__std_atomic_has_cmpxchg16b()) {
         return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
     }
@@ -418,7 +418,7 @@ _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept {
     return false;
 #elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
     return true;
-#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
+#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 / _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
     constexpr char _Cmpxchg_Absent  = 0;
     constexpr char _Cmpxchg_Present = 1;
     constexpr char _Cmpxchg_Unknown = 2;

@@ -58,6 +58,14 @@ std/strings/basic.string/string.nonmembers/string_op+/allocator_propagation.pass
 # libc++ hasn't updated move_iterator for P2520R0
 std/iterators/predef.iterators/move.iterators/move.iterator/types.pass.cpp FAIL
 
+# libc++ has not implemented P2278R4: "cbegin should always return a constant iterator"
+std/containers/views/views.span/types.pass.cpp FAIL
+std/ranges/range.access/begin.pass.cpp FAIL
+std/ranges/range.access/data.pass.cpp FAIL
+std/ranges/range.access/end.pass.cpp FAIL
+std/ranges/range.access/rbegin.pass.cpp FAIL
+std/ranges/range.access/rend.pass.cpp FAIL
+
 # libc++ doesn't implement LWG-3692: "zip_view::iterator's operator<=> is overconstrained"
 std/ranges/range.adaptors/range.zip/iterator/compare.pass.cpp FAIL
 
@@ -625,6 +633,13 @@ std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
 # libc++ is missing a requires-clause on variant's operator<=> (llvm/llvm-project#58192)
 std/utilities/variant/variant.relops/three_way.pass.cpp FAIL
 
+# libc++ doesn't yet implement P2602R2 "Poison Pills Are Too Toxic"
+std/ranges/range.access/begin.pass.cpp FAIL
+std/ranges/range.access/end.pass.cpp FAIL
+std/ranges/range.access/rbegin.pass.cpp FAIL
+std/ranges/range.access/rend.pass.cpp FAIL
+std/ranges/range.access/size.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Various assertions.
@@ -1037,6 +1052,10 @@ std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_move_assignable.pass.cpp:0 FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
+
+# Not yet analyzed, possible path length issue. With a repo root of D:\GitHub\STL (13 characters), fails with:
+# "error RC2136 : missing '=' in EXSTYLE=<flags>" followed by "LINK : fatal error LNK1327: failure during running rc.exe"
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_until_deadlock_bug.pass.cpp SKIPPED
 
 
 # *** XFAILs WHICH PASS ***

@@ -5358,7 +5358,13 @@ namespace chrono {
 
             const _Allowed_bit _Mod = _Modifier == 'E' ? _E_mod : _O_mod;
 
-            if (auto _It = _RANGES find(_Table, _Type, &_Table_entry::_Type); _It != _STD end(_Table)) {
+#ifdef _M_CEE // TRANSITION, VSO-1664341
+            constexpr auto _Get_table_entry_type = [](const _Table_entry& _Entry) { return _Entry._Type; };
+#else // ^^^ workaround / no workaround vvv
+            constexpr auto _Get_table_entry_type = &_Table_entry::_Type;
+#endif // ^^^ no workaround ^^^
+
+            if (auto _It = _RANGES find(_Table, _Type, _Get_table_entry_type); _It != _STD end(_Table)) {
                 if (_It->_Allowed & _Mod) {
                     return;
                 }
@@ -5679,10 +5685,10 @@ namespace chrono {
                 return;
             }
 
-            constexpr bool _Is_ymd =
-                _Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday, year_month_weekday_last>;
-
             const auto _Validate = [&] {
+                constexpr bool _Is_ymd =
+                    _Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday, year_month_weekday_last>;
+
                 switch (_Spec._Type) {
                 case 'a':
                 case 'A':

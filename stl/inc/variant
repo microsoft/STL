@@ -374,7 +374,7 @@ struct variant_alternative<_Idx, variant<_Types...>> {
 
 #ifdef __clang__
     using type = __type_pack_element<_Idx, _Types...>;
-#else // ^^^ __clang__ ^^^ / vvv !__clang__ vvv
+#else // ^^^ __clang__ / !__clang__ vvv
     using type = _Meta_at_c<variant<_Types...>, _Idx>;
 #endif // __clang__
 };
@@ -1121,7 +1121,7 @@ public:
                             constexpr size_t _That_idx = decltype(_That_ref)::_Idx;
 #ifdef __EDG__ // TRANSITION, VSO-657455
                             constexpr size_t _My_idx   = decltype(_My_ref)::_Idx + 0 * _That_idx;
-#else // ^^^ workaround ^^^ / vvv no workaround vvv
+#else // ^^^ workaround / no workaround vvv
                             constexpr size_t _My_idx = decltype(_My_ref)::_Idx;
 #endif // TRANSITION, VSO-657455
                             if constexpr (_My_idx == _That_idx) { // Same alternatives...
@@ -1139,7 +1139,7 @@ public:
 #ifdef __EDG__ // TRANSITION, VSO-657455
                                 using _Workaround = enable_if_t<_That_idx != variant_npos, decltype(_My_ref._Val)>;
                                 auto _Tmp         = _STD move(static_cast<_Workaround>(_My_ref._Val));
-#else // ^^^ workaround ^^^ / vvv no workaround vvv
+#else // ^^^ workaround / no workaround vvv
                                 auto _Tmp = _STD move(_My_ref._Val);
 #endif // TRANSITION, VSO-657455
                                 this->template _Reset<_My_idx>();

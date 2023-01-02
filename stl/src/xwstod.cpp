@@ -12,9 +12,11 @@
 
 _EXTERN_C_UNLESS_PURE
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL _WStodx(const CTYPE* s, CTYPE** endptr, long pten, int* perr)
 #include "xxstod.hpp"
 
+    // TRANSITION, ABI: preserved for binary compatibility
     _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL
     _WStod(const CTYPE* s, CTYPE** endptr, long pten) { // convert string, discard error code
     return _WStodx(s, endptr, pten, nullptr);

@@ -321,7 +321,6 @@ public:
     }
 
     // clang-format off
-    // TRANSITION, LLVM-46269, destructor order is significant
     ~expected() requires is_trivially_destructible_v<_Ty> && is_trivially_destructible_v<_Err> = default;
     // clang-format on
 
@@ -842,7 +841,6 @@ public:
     }
 
     // clang-format off
-    // TRANSITION, LLVM-46269, destructor order is significant
     ~expected() requires is_trivially_destructible_v<_Err> = default;
     // clang-format on
 

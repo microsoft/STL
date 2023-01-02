@@ -247,9 +247,7 @@ namespace test_expected {
 
         { // Check payload type
             using Expected = expected<payload_copy_constructor, int>;
-#ifndef __clang__ // TRANSITION, LLVM-46269
             static_assert(is_trivially_copy_constructible_v<Expected> == should_be_trivial);
-#endif // !__clang__
             static_assert(is_copy_constructible_v<Expected>);
 
             const Expected with_value{in_place};
@@ -267,9 +265,7 @@ namespace test_expected {
 
         { // Check error type
             using Expected = expected<int, payload_copy_constructor>;
-#ifndef __clang__ // TRANSITION, LLVM-46269
             static_assert(is_trivially_copy_constructible_v<Expected> == should_be_trivial);
-#endif // !__clang__
             static_assert(is_copy_constructible_v<Expected>);
 
             const Expected with_value{in_place};
@@ -287,9 +283,7 @@ namespace test_expected {
 
         { // Check void payload
             using Expected = expected<void, payload_copy_constructor>;
-#ifndef __clang__ // TRANSITION, LLVM-46269
             static_assert(is_trivially_copy_constructible_v<Expected> == should_be_trivial);
-#endif // !__clang__
             static_assert(is_copy_constructible_v<Expected>);
 
             const Expected with_value{in_place};
@@ -339,9 +333,7 @@ namespace test_expected {
 
         { // Check payload type
             using Expected = expected<payload_move_constructor, int>;
-#ifndef __clang__ // TRANSITION, LLVM-46269
             static_assert(is_trivially_move_constructible_v<Expected> == should_be_trivial);
-#endif // !__clang__
             static_assert(is_move_constructible_v<Expected>);
 
             Expected value_input{in_place};
@@ -359,9 +351,7 @@ namespace test_expected {
 
         { // Check error type
             using Expected = expected<int, payload_move_constructor>;
-#ifndef __clang__ // TRANSITION, LLVM-46269
             static_assert(is_trivially_move_constructible_v<Expected> == should_be_trivial);
-#endif // !__clang__
             static_assert(is_move_constructible_v<Expected>);
 
             Expected value_input{in_place};
@@ -379,9 +369,7 @@ namespace test_expected {
 
         { // Check void payload
             using Expected = expected<void, payload_move_constructor>;
-#ifndef __clang__ // TRANSITION, LLVM-46269
             static_assert(is_trivially_move_constructible_v<Expected> == should_be_trivial);
-#endif // !__clang__
             static_assert(is_move_constructible_v<Expected>);
 
             Expected value_input{in_place};
@@ -410,15 +398,12 @@ namespace test_expected {
     template <IsTriviallyDestructible triviallyDestructible>
     struct payload_destructor {
         constexpr payload_destructor(bool& destructor_called) : _destructor_called(destructor_called) {}
-        bool& _destructor_called;
-    };
-    template <> // TRANSITION, LLVM-46269
-    struct payload_destructor<IsTriviallyDestructible::Not> {
-        constexpr payload_destructor(bool& destructor_called) : _destructor_called(destructor_called) {}
-        payload_destructor(const payload_destructor&) = default;
+        // clang-format off
+        constexpr ~payload_destructor() requires (IsYes(triviallyDestructible)) = default;
+        // clang-format on
         constexpr ~payload_destructor() {
             _destructor_called = true;
-        };
+        }
 
         bool& _destructor_called;
     };
@@ -428,9 +413,7 @@ namespace test_expected {
         bool destructor_called    = false;
         { // Check payload
             using Expected = expected<payload_destructor<triviallyDestructible>, int>;
-#ifndef __clang__ // TRANSITION, LLVM-46269
             static_assert(is_trivially_destructible_v<Expected> == is_trivial);
-#endif // !__clang__
 
             Expected val{in_place, destructor_called};
         }
@@ -439,9 +422,7 @@ namespace test_expected {
 
         { // Check error
             using Expected = expected<int, payload_destructor<triviallyDestructible>>;
-#ifndef __clang__ // TRANSITION, LLVM-46269
             static_assert(is_trivially_destructible_v<Expected> == is_trivial);
-#endif // !__clang__
 
             Expected err{unexpect, destructor_called};
         }
@@ -450,9 +431,7 @@ namespace test_expected {
 
         { // Check void error
             using Expected = expected<void, payload_destructor<triviallyDestructible>>;
-#ifndef __clang__ // TRANSITION, LLVM-46269
             static_assert(is_trivially_destructible_v<Expected> == is_trivial);
-#endif // !__clang__
 
             Expected err{unexpect, destructor_called};
         }

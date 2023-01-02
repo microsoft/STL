@@ -122,7 +122,7 @@ reproducing the bug.
 
 * You should be reasonably confident that you're looking at an actual implementation bug, instead of undefined behavior
 or surprising-yet-Standard behavior. Comparing against other implementations can help (but remember that implementations
-can differ while conforming to the Standard); try Godbolt's [Compiler Explorer][]. If you still aren't
+can differ while conforming to the Standard); try [Compiler Explorer][]. If you still aren't
 sure, ask the nearest C++ expert.
 
 * You should prepare a self-contained command-line test case, ideally as small as possible. We need a source file, a
@@ -141,11 +141,11 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.4 Preview 3 or later.
+1. Install Visual Studio 2022 17.5 Preview 2 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.24 or later, and [Ninja][] 1.11.0 or later.
+    * Otherwise, install [CMake][] 3.25 or later, and [Ninja][] 1.11.0 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
@@ -157,11 +157,11 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.4 Preview 3 or later.
+1. Install Visual Studio 2022 17.5 Preview 2 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.24 or later, and [Ninja][] 1.11.0 or later.
+    * Otherwise, install [CMake][] 3.25 or later, and [Ninja][] 1.11.0 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open a command prompt.

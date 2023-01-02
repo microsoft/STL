@@ -55,6 +55,7 @@ struct cb_destroying_functor {
 };
 
 int main() noexcept {
+#ifndef _M_CEE // TRANSITION, VSO-1659408
     reset_new_counters(0);
     { // all the following must not allocate, and must work with a nostopstate source; in rough synopsis order
         stop_token token;
@@ -415,4 +416,5 @@ int main() noexcept {
     reset_new_counters(0);
 
     puts("pass");
+#endif // _M_CEE
 }

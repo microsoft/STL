@@ -448,7 +448,7 @@ _NON_MEMBER_CALL(_IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES, , , noexcept)
 #ifdef __clang__
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_member_function_pointer_v = __is_member_function_pointer(_Ty);
-#else // ^^^ Clang ^^^ / vvv Other vvv
+#else // ^^^ Clang / Other vvv
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_member_function_pointer_v = _Is_memfunptr<remove_cv_t<_Ty>>::_Bool_type::value;
 #endif // ^^^ Other ^^^
@@ -615,11 +615,22 @@ struct has_unique_object_representations : bool_constant<__has_unique_object_rep
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool has_unique_object_representations_v = __has_unique_object_representations(_Ty);
 
+#if 1 // TRANSITION, DevCom-10201896 and LLVM-59002
+template <class _Ty>
+struct _Is_aggregate_impl : bool_constant<__is_aggregate(_Ty)> {};
+
 _EXPORT_STD template <class _Ty>
-struct is_aggregate : bool_constant<__is_aggregate(_Ty)> {}; // determine whether _Ty is an aggregate
+_INLINE_VAR constexpr bool is_aggregate_v = disjunction_v<is_array<_Ty>, _Is_aggregate_impl<_Ty>>;
+
+_EXPORT_STD template <class _Ty>
+struct is_aggregate : bool_constant<is_aggregate_v<_Ty>> {};
+#else // ^^^ workaround / no workaround vvv
+_EXPORT_STD template <class _Ty>
+struct is_aggregate : bool_constant<__is_aggregate(_Ty)> {};
 
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_aggregate_v = __is_aggregate(_Ty);
+#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _Ty, class... _Args>
@@ -1423,26 +1434,25 @@ template <class _Type, template <class...> class _Template>
 struct _Is_specialization : bool_constant<_Is_specialization_v<_Type, _Template>> {};
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr _Ty&& forward(
-    remove_reference_t<_Ty>& _Arg) noexcept { // forward an lvalue as either an lvalue or an rvalue
+_NODISCARD _MSVC_INTRINSIC constexpr _Ty&& forward(remove_reference_t<_Ty>& _Arg) noexcept {
     return static_cast<_Ty&&>(_Arg);
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr _Ty&& forward(remove_reference_t<_Ty>&& _Arg) noexcept { // forward an rvalue as an rvalue
+_NODISCARD _MSVC_INTRINSIC constexpr _Ty&& forward(remove_reference_t<_Ty>&& _Arg) noexcept {
     static_assert(!is_lvalue_reference_v<_Ty>, "bad forward call");
     return static_cast<_Ty&&>(_Arg);
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr remove_reference_t<_Ty>&& move(_Ty&& _Arg) noexcept { // forward _Arg as movable
+_NODISCARD _MSVC_INTRINSIC constexpr remove_reference_t<_Ty>&& move(_Ty&& _Arg) noexcept {
     return static_cast<remove_reference_t<_Ty>&&>(_Arg);
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_copy_constructible_v<_Ty>, const _Ty&,
-    _Ty&&>
-    move_if_noexcept(_Ty& _Arg) noexcept { // forward _Arg as movable, sometimes
+_NODISCARD _MSVC_INTRINSIC constexpr //
+    conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_copy_constructible_v<_Ty>, const _Ty&, _Ty&&>
+    move_if_noexcept(_Ty& _Arg) noexcept {
     return _STD move(_Arg);
 }
 
@@ -1895,8 +1905,8 @@ private:
 public:
     template <class... _Types>
     _CONSTEXPR20 auto operator()(_Types&&... _Args) const
-        noexcept(noexcept(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...))) // strengthened
-        -> decltype(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)) {
+        noexcept(noexcept(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)))
+            -> decltype(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)) {
         return _STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...);
     }
 };
@@ -2042,7 +2052,11 @@ inline constexpr bool is_nothrow_swappable_v = _Is_nothrow_swappable<_Ty>::value
 #endif // _HAS_CXX17
 
 namespace _Has_ADL_swap_detail {
-    void swap(); // undefined (deliberate shadowing)
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+    void swap() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+    void swap();
+#endif // ^^^ workaround ^^^
 
     template <class, class = void>
     struct _Has_ADL_swap : false_type {};

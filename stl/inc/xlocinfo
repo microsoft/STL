@@ -60,10 +60,6 @@ _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
     _When_(_Max_multibyte != 0, _Out_) wchar_t*, const char*, size_t _Max_multibyte, mbstate_t*, const _Cvtvec*);
 #endif // _M_CEE_PURE
 
-_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _Stof(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long);
-_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Stod(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long);
-_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _Stold(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long);
-
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(const char*, const char*, const char*, const char*, const _Collvec*);
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(_Out_writes_(_End1 - _String1)
                                                           _Post_readable_size_(return) char* _String1,
@@ -105,14 +101,6 @@ _ACRTIMP void* __cdecl _W_Gettnames();
 _Success_(return > 0) _ACRTIMP size_t __cdecl _Wcsftime(
     _Out_writes_z_(_Maxsize) wchar_t*, _In_ size_t _Maxsize, _In_z_ const wchar_t*, _In_ const tm*, _In_opt_ void*);
 _END_EXTERN_C
-
-#ifdef _M_CEE_PURE
-[System::Runtime::InteropServices::DllImport(_CRT_MSVCP_CURRENT, EntryPoint = "_GetLocaleForCP",
-    CallingConvention = System::Runtime::InteropServices::CallingConvention::Cdecl)] extern "C" _locale_t
-    _GetLocaleForCP(unsigned int);
-#else // _M_CEE_PURE
-_MRTIMP2 _locale_t __cdecl _GetLocaleForCP(unsigned int);
-#endif // _M_CEE_PURE
 
 _STD_BEGIN
 extern "C++" class _CRTIMP2_PURE_IMPORT _Timevec { // smart pointer to information used by _Strftime
@@ -239,10 +227,9 @@ public:
     static _Locinfo& __CLRCALL_PURE_OR_CDECL _Locinfo_Addcats(_Locinfo*, int, const char*);
 
     __CLR_OR_THIS_CALL _Locinfo(const char* _Pch = "C")
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
         : _Lock(_LOCK_LOCALE)
-#endif // _M_CEE
-
+#endif // _M_CEE_PURE
     {
         if (_Pch) {
             _Locinfo_ctor(this, _Pch);
@@ -253,10 +240,9 @@ public:
     }
 
     __CLR_OR_THIS_CALL _Locinfo(int _Cat, const char* _Pch)
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
         : _Lock(_LOCK_LOCALE)
-#endif // _M_CEE
-
+#endif // _M_CEE_PURE
     {
         if (_Pch) {
             _Locinfo_ctor(this, _Cat, _Pch);
@@ -385,12 +371,11 @@ public:
     _Locinfo& operator=(const _Locinfo&) = delete;
 
 private:
-#ifdef _M_CEE
+#ifdef _M_CEE_PURE
     _EmptyLockit _Empty_lock; // to maintain same size
-
-#else // _M_CEE
+#else // _M_CEE_PURE
     _Lockit _Lock; // thread lock, because global locale is altered
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
     _Yarn<char> _Days; // weekday names
     _Yarn<char> _Months; // month names

@@ -103,7 +103,7 @@ int main() {
     // No constexpr test here; the test_in_in_write call exceeds the maximum number of steps in a constexpr computation.
     test_in_in_write<instantiator, Elem1, Elem2, Elem3>();
 }
-#else // ^^^ test all range combinations // test only interesting range combos vvv
+#else // ^^^ test all range combinations / test only interesting range combos vvv
 template <class Elem, test::Sized IsSized>
 using in_test_range = test::range<input_iterator_tag, Elem, IsSized, test::CanDifference::no, test::Common::no,
     test::CanCompare::yes, test::ProxyRef::yes>;

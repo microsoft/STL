@@ -69,21 +69,21 @@ _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 basic_istream<_Elem, _Traits>& getline(
     basic_istream<_Elem, _Traits>&& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str) {
     // get characters into string, discard newline
-    return getline(_Istr, _Str, _Istr.widen('\n'));
+    return _STD getline(_STD move(_Istr), _Str, _Istr.widen('\n'));
 }
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 basic_istream<_Elem, _Traits>& getline(
     basic_istream<_Elem, _Traits>& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str, const _Elem _Delim) {
     // get characters into string, discard delimiter
-    return getline(_STD move(_Istr), _Str, _Delim);
+    return _STD getline(_STD move(_Istr), _Str, _Delim);
 }
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 basic_istream<_Elem, _Traits>& getline(
     basic_istream<_Elem, _Traits>& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str) {
     // get characters into string, discard newline
-    return getline(_STD move(_Istr), _Str, _Istr.widen('\n'));
+    return _STD getline(_STD move(_Istr), _Str, _Istr.widen('\n'));
 }
 
 _EXPORT_STD _NODISCARD inline int stoi(const string& _Str, size_t* _Idx = nullptr, int _Base = 10) {
@@ -445,7 +445,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) {
 
 #ifdef _WIN64
     auto _UVal_trunc = _UVal;
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else // ^^^ _WIN64 / !_WIN64 vvv
 
     constexpr bool _Big_uty = sizeof(_UTy) > 4;
     if constexpr (_Big_uty) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.

@@ -310,7 +310,6 @@ public:
     jthread& operator=(const jthread&) = delete;
 
     jthread& operator=(jthread&& _Other) noexcept {
-        // Per LWG-3788
         if (this == _STD addressof(_Other)) {
             return *this;
         }

@@ -101,7 +101,7 @@ _NODISCARD_LAUNDER constexpr _Ty* launder(_Ty* _Ptr) noexcept {
 #if defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
 _EXPORT_STD inline constexpr size_t hardware_constructive_interference_size = 64;
 _EXPORT_STD inline constexpr size_t hardware_destructive_interference_size  = 64;
-#else // ^^^ supported hardware ^^^ // vvv unsupported hardware vvv
+#else // ^^^ supported hardware / unsupported hardware vvv
 #error Unsupported architecture
 #endif // hardware
 

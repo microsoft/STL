@@ -132,7 +132,7 @@ public:
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
     using _Wrapped_iter   = ranges::iterator_t<_Container>;
-#else // ^^^ implementing Ranges // no Ranges vvv
+#else // ^^^ implementing Ranges / no Ranges vvv
     using difference_type = void;
     using _Wrapped_iter   = typename _Container::iterator;
 #endif // __cpp_lib_concepts
@@ -571,14 +571,14 @@ public:
         : _First(_STD forward<_Types>(_Args)...), _Contains{_Variantish_state::_Holds_first} {}
 
     template <class... _Types>
-        requires _Not_same_as<_Ty1, _Ty2>
+        requires _Different_from<_Ty1, _Ty2>
     constexpr explicit _Variantish(in_place_type_t<_Ty2>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_Ty2, _Types...>)
         : _Second(_STD forward<_Types>(_Args)...), _Contains{_Variantish_state::_Holds_second} {}
 
     // clang-format off
     template <class _Uty1, class _Uty2>
-        requires _Not_same_as<_Variantish<_Uty1, _Uty2>, _Variantish>
+        requires _Different_from<_Variantish<_Uty1, _Uty2>, _Variantish>
     constexpr _Variantish(const _Variantish<_Uty1, _Uty2>& _That) noexcept(
         is_nothrow_constructible_v<_Ty1, const _Uty1&> && is_nothrow_constructible_v<_Ty2, const _Uty2&>)
         : _Contains{_That._Contains} {
@@ -639,7 +639,6 @@ public:
         _Raw_clear();
     }
 
-    // TRANSITION, LLVM-46269, destructor order is significant
     // clang-format off
     constexpr ~_Variantish() requires is_trivially_destructible_v<_Ty1> && is_trivially_destructible_v<_Ty2> = default;
 
@@ -734,7 +733,7 @@ public:
 
     // clang-format off
     template <class _Uty1, class _Uty2>
-        requires _Not_same_as<_Variantish<_Uty1, _Uty2>, _Variantish>
+        requires _Different_from<_Variantish<_Uty1, _Uty2>, _Variantish>
     constexpr _Variantish& operator=(const _Variantish<_Uty1, _Uty2>& _That) noexcept(
         is_nothrow_constructible_v<_Ty1, const _Uty1&> && is_nothrow_constructible_v<_Ty2, const _Uty2&>
             && is_nothrow_assignable_v<_Ty1&, const _Uty1&> && is_nothrow_assignable_v<_Ty2&, const _Uty2&>) {
@@ -1356,9 +1355,15 @@ public:
         _RANGES iter_swap(_Left._Current, _Right.base());
     }
 
+#if _ITERATOR_DEBUG_LEVEL != 0
     template <common_with<_Iter> _Other>
     friend constexpr void _Same_sequence(
         const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept {
+#ifdef _M_CEE // TRANSITION, VSO-1665606
+        (void) _Left;
+        (void) _Right;
+#else // ^^^ workaround / no workaround vvv
+
         // Per N4901 [counted.iterator]/3, two counted_iterators x and y refer to elements of the same sequence iff
         // for some integer n, next(x.base(), x.count() + n) and next(y.base(), y.count() + n)
         // "refer to the same (possibly past-the-end) element".
@@ -1378,7 +1383,9 @@ public:
                     "counted_iterators are from different ranges");
             }
         }
+#endif // ^^^ no workaround ^^^
     }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
     template <common_with<_Iter> _Other>
     friend constexpr void _Verify_range(const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
@@ -1583,7 +1590,7 @@ public:
             "cannot compare incompatible checked_array_iterators");
         return _Myindex <=> _Right._Myindex;
     }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD constexpr bool operator!=(const checked_array_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -1739,7 +1746,7 @@ public:
     _NODISCARD constexpr _STD strong_ordering operator<=>(const unchecked_array_iterator& _Right) const noexcept {
         return _Myptr <=> _Right._Myptr;
     }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD constexpr bool operator!=(const unchecked_array_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }

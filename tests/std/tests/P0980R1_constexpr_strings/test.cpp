@@ -170,7 +170,7 @@ template <class Range1, class Range2>
 constexpr bool equalRanges(const Range1& range1, const Range2& range2) noexcept {
 #ifdef __cpp_lib_concepts
     return ranges::equal(range1, range2);
-#else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
     return equal(begin(range1), end(range1), begin(range2), end(range2));
 #endif // !__cpp_lib_concepts
 }
@@ -238,7 +238,7 @@ template <class CharType>
 constexpr bool test_interface() {
     using str = basic_string<CharType>;
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // constructors
@@ -296,7 +296,7 @@ constexpr bool test_interface() {
         assert(equalRanges(conversion_start_length_constructed, "llo"sv));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // allocator constructors
@@ -347,7 +347,7 @@ constexpr bool test_interface() {
         assert(equalRanges(conversion_start_length_constructed, "llo"sv));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // assignment operator
@@ -380,7 +380,7 @@ constexpr bool test_interface() {
         assert(equalRanges(conversion_assigned, literal_constructed));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // assign
@@ -499,7 +499,7 @@ constexpr bool test_interface() {
         assert(char_traits<CharType>::length(cs) == literal_constructed.size());
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // iterators
@@ -623,7 +623,7 @@ constexpr bool test_interface() {
         assert(cleared.capacity() == str{get_literal_input<CharType>()}.capacity());
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // insert
@@ -703,7 +703,7 @@ constexpr bool test_interface() {
         assert(equalRanges(insert_iter_count_char, "Hellooooo fluffy kittens"sv));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // erase
@@ -752,7 +752,7 @@ constexpr bool test_interface() {
         assert(pushed.back() == CharType{'y'});
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // append
@@ -800,7 +800,7 @@ constexpr bool test_interface() {
         assert(equalRanges(append_conversion_start_length, "bbllo"sv));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // operator+=
@@ -828,9 +828,6 @@ constexpr bool test_interface() {
         assert(equalRanges(plus_conversion, "bbHello fluffy kittens"sv));
     }
 
-#ifdef __EDG__ // TRANSITION, VSO-1273296
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // compare
         const str first  = get_literal_input<CharType>();
         const str second = get_cat<CharType>();
@@ -945,9 +942,6 @@ constexpr bool test_interface() {
         assert(comp_pos_count_conversion_pos_count_greater == 1);
     }
 
-#ifdef __EDG__ // TRANSITION, VSO-1273296
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // starts_with
         const str starts            = get_literal_input<CharType>();
         const str input_string_true = starts.substr(0, 5);
@@ -963,9 +957,6 @@ constexpr bool test_interface() {
         assert(!input_string_false.starts_with(get_literal_input<CharType>()));
     }
 
-#ifdef __EDG__ // TRANSITION, VSO-1273296
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // ends_with
         const str ends              = get_literal_input<CharType>();
         const str input_string_true = ends.substr(5);
@@ -982,9 +973,6 @@ constexpr bool test_interface() {
     }
 
 #if _HAS_CXX23
-#ifdef __EDG__ // TRANSITION, VSO-1273296
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // contains
         const str hello_fluffy_kittens = get_literal_input<CharType>(); // "Hello fluffy kittens"
         constexpr auto kitten_ptr      = get_cat<CharType>(); // "kitten"
@@ -1000,7 +988,7 @@ constexpr bool test_interface() {
     }
 #endif // _HAS_CXX23
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // replace
@@ -1092,7 +1080,7 @@ constexpr bool test_interface() {
         assert(equalRanges(replaced_pos_count_conversion_pos_count, "dfluffy"sv));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // substr
@@ -1117,7 +1105,7 @@ constexpr bool test_interface() {
         assert(equalRanges(copy_count_pos, "fluffy"sv));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // resize
@@ -1134,9 +1122,6 @@ constexpr bool test_interface() {
     }
 
 #if _HAS_CXX23
-#ifdef __EDG__ // TRANSITION, VSO-1273296
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // resize_and_overwrite
         constexpr basic_string_view hello_fluffy_kittens = get_view_input<CharType>();
         constexpr basic_string_view hello                = hello_fluffy_kittens.substr(0, 5);
@@ -1253,9 +1238,6 @@ constexpr bool test_interface() {
         assert(equalRanges(first, expected_second));
     }
 
-#ifdef __EDG__ // TRANSITION, VSO-1273296
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // find
         const str input     = get_literal_input<CharType>();
         const str needle    = get_cat<CharType>();
@@ -1314,9 +1296,6 @@ constexpr bool test_interface() {
         assert(find_convertible_pos == str::npos);
     }
 
-#ifdef __EDG__ // TRANSITION, VSO-1273296
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // rfind
         const str input     = get_literal_input<CharType>();
         const str needle    = get_cat<CharType>();
@@ -1603,7 +1582,7 @@ constexpr bool test_interface() {
         assert(find_last_not_of_convertible_pos == str::npos);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // operator+
@@ -1647,9 +1626,6 @@ constexpr bool test_interface() {
         assert(equalRanges(op_char_rstr, "!dog"sv));
     }
 
-#ifdef __EDG__ // TRANSITION, VSO-1273296
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // comparison
         str first(get_view_input<CharType>());
         str second(get_view_input<CharType>());
@@ -1738,7 +1714,7 @@ constexpr bool test_interface() {
 }
 
 constexpr bool test_udls() {
-#ifdef __EDG__ // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (is_constant_evaluated()) {
         return true;
     }
@@ -1777,7 +1753,7 @@ constexpr bool test_iterators() {
         cit = cit2;
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // op->
@@ -1791,7 +1767,7 @@ constexpr bool test_iterators() {
         assert(cc == CharType{'x'});
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // increment
@@ -1806,7 +1782,7 @@ constexpr bool test_iterators() {
         assert(*cit == CharType{'l'});
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // advance
@@ -1825,7 +1801,7 @@ constexpr bool test_iterators() {
         assert(*cit == CharType{'f'});
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // decrement
@@ -1840,7 +1816,7 @@ constexpr bool test_iterators() {
         assert(*cit == CharType{'n'});
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // advance back
@@ -1885,7 +1861,7 @@ constexpr bool test_iterators() {
         assert((it3 <=> it1) == strong_ordering::greater);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // access
@@ -1943,7 +1919,7 @@ constexpr bool test_growth() {
         assert(v.capacity() == 1510);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     {
@@ -1960,7 +1936,7 @@ constexpr bool test_growth() {
         assert(v.capacity() == 1510);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     {
@@ -1981,7 +1957,7 @@ constexpr bool test_growth() {
         }
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     {
@@ -1996,7 +1972,7 @@ constexpr bool test_growth() {
         assert(v.capacity() == 1510);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     {
@@ -2020,7 +1996,7 @@ constexpr bool test_growth() {
 
 template <class CharType>
 constexpr void test_copy_ctor() {
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (is_constant_evaluated()) {
         return;
     }
@@ -2049,7 +2025,7 @@ constexpr void test_copy_ctor() {
 
 template <class CharType>
 constexpr void test_copy_alloc_ctor(const size_t id1, const size_t id2) {
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (is_constant_evaluated()) {
         return;
     }
@@ -2078,7 +2054,7 @@ constexpr void test_copy_alloc_ctor(const size_t id1, const size_t id2) {
 
 template <class CharType, class Alloc>
 constexpr void test_copy_assign(const size_t id1, const size_t id2, const size_t id3) {
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (is_constant_evaluated()) {
         return;
     }
@@ -2134,7 +2110,7 @@ constexpr void test_copy_assign(const size_t id1, const size_t id2, const size_t
 
 template <class CharType>
 constexpr void test_move_ctor() {
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (is_constant_evaluated()) {
         return;
     }
@@ -2168,7 +2144,7 @@ constexpr void test_move_ctor() {
 
 template <class CharType>
 constexpr void test_move_alloc_ctor(const size_t id1, const size_t id2) {
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (is_constant_evaluated()) {
         return;
     }
@@ -2202,7 +2178,7 @@ constexpr void test_move_alloc_ctor(const size_t id1, const size_t id2) {
 
 template <class CharType, class Alloc>
 constexpr void test_move_assign(const size_t id1, const size_t id2, const size_t id3) {
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (is_constant_evaluated()) {
         return;
     }
@@ -2306,7 +2282,7 @@ constexpr void test_swap(const size_t id1, const size_t id2) {
         assert(rhs.get_allocator().id() == id1);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // Allocated to Allocated

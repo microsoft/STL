@@ -212,7 +212,7 @@ public:
         _Nodeptr _Ptrsav = this->_Ptr;
         _Mybase::operator--();
         _STL_VERIFY(_Ptrsav != this->_Ptr, "cannot decrement begin map/set iterator");
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
         _Mybase::operator--();
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
@@ -725,7 +725,7 @@ public:
                 *_Pnext             = (*_Pnext)->_Mynextiter;
             }
         }
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
         (void) _Ptr;
 #endif // _ITERATOR_DEBUG_LEVEL == 2
     }

@@ -54,10 +54,11 @@ _INLINE_VAR constexpr bool is_error_condition_enum_v = is_error_condition_enum<_
 
 _EXPORT_STD class error_code;
 _EXPORT_STD class error_condition;
-_EXPORT_STD _NODISCARD error_code make_error_code(errc) noexcept;
-_EXPORT_STD _NODISCARD error_code make_error_code(io_errc) noexcept;
-_EXPORT_STD _NODISCARD error_condition make_error_condition(errc) noexcept;
-_EXPORT_STD _NODISCARD error_condition make_error_condition(io_errc) noexcept;
+
+namespace _Ensure_adl {
+    void make_error_code()      = delete;
+    void make_error_condition() = delete;
+} // namespace _Ensure_adl
 
 _EXPORT_STD class error_category;
 
@@ -67,16 +68,16 @@ _EXPORT_STD _NODISCARD const error_category& system_category() noexcept;
 
 _EXPORT_STD class __declspec(novtable) error_category { // categorize an error
 public:
-#ifndef _M_CEE_PURE
+#ifdef _M_CEE_PURE
+    /* constexpr */ error_category() noexcept { // TRANSITION, ABI
+        _Addr = reinterpret_cast<uintptr_t>(this);
+    }
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 #pragma warning(push)
 #pragma warning(disable : 4355) // 'this': used in base member initializer list
     constexpr error_category() noexcept : _Addr(this) {}
 #pragma warning(pop)
-#else // ^^^ !defined(_M_CEE_PURE) / defined(_M_CEE_PURE) vvv
-    /* constexpr */ error_category() noexcept { // TRANSITION, ABI
-        _Addr = reinterpret_cast<uintptr_t>(this);
-    }
-#endif // ^^^ defined(_M_CEE_PURE) ^^^
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     _CONSTEXPR20 virtual ~error_category() noexcept = default;
 
@@ -91,11 +92,11 @@ public:
     _NODISCARD virtual bool equivalent(const error_code& _Code, int _Errval) const noexcept;
 
     _NODISCARD bool operator==(const error_category& _Right) const noexcept {
-#ifndef _M_CEE_PURE
-        return _Bit_cast<uintptr_t>(_Addr) == _Bit_cast<uintptr_t>(_Right._Addr);
-#else // ^^^ !defined(_M_CEE_PURE) / defined(_M_CEE_PURE) vvv
+#ifdef _M_CEE_PURE
         return _Addr == _Right._Addr;
-#endif // ^^^ defined(_M_CEE_PURE) ^^^
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
+        return _Bit_cast<uintptr_t>(_Addr) == _Bit_cast<uintptr_t>(_Right._Addr);
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
     }
 
 #if !_HAS_CXX20
@@ -110,11 +111,11 @@ public:
     }
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     _NODISCARD bool operator<(const error_category& _Right) const noexcept {
-#ifndef _M_CEE_PURE
-        return _Bit_cast<uintptr_t>(_Addr) < _Bit_cast<uintptr_t>(_Right._Addr);
-#else // ^^^ !defined(_M_CEE_PURE) / defined(_M_CEE_PURE) vvv
+#ifdef _M_CEE_PURE
         return _Addr < _Right._Addr;
-#endif // ^^^ defined(_M_CEE_PURE) ^^^
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
+        return _Bit_cast<uintptr_t>(_Addr) < _Bit_cast<uintptr_t>(_Right._Addr);
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
     }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
@@ -122,7 +123,9 @@ public:
     error_category& operator=(const error_category&) = delete;
 
 protected:
-#ifndef _M_CEE_PURE
+#ifdef _M_CEE_PURE
+    uintptr_t _Addr;
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
     union _Addr_storage {
     private:
         uintptr_t _Num;
@@ -131,14 +134,18 @@ protected:
     public:
         constexpr explicit _Addr_storage(const uintptr_t _Addr_num) noexcept : _Num(_Addr_num) {}
         constexpr explicit _Addr_storage(error_category* const _Addr_ptr) noexcept : _Ptr(_Addr_ptr) {}
+
+        // TRANSITION: As of Boost 1.80.0, boost::system::detail::std_category assigns to _Addr.
+        constexpr _Addr_storage& operator=(const uintptr_t _Addr_num) noexcept {
+            _Num = _Addr_num;
+            return *this;
+        }
     };
-    static_assert(sizeof(_Addr_storage) == sizeof(uintptr_t) && alignof(_Addr_storage) == alignof(uintptr_t),
-        "Unsupported platform");
+    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Addr_storage) == sizeof(uintptr_t));
+    _STL_INTERNAL_STATIC_ASSERT(alignof(_Addr_storage) == alignof(uintptr_t));
 
     _Addr_storage _Addr;
-#else // ^^^ !defined(_M_CEE_PURE) / defined(_M_CEE_PURE) vvv
-    uintptr_t _Addr;
-#endif // ^^^ defined(_M_CEE_PURE) ^^^
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     constexpr explicit error_category(const uintptr_t _Addr_) noexcept : _Addr(_Addr_) {}
 
@@ -162,7 +169,8 @@ public:
 
     template <class _Enum, enable_if_t<is_error_code_enum_v<_Enum>, int> = 0>
     error_code(_Enum _Errcode) noexcept : _Myval(0), _Mycat(nullptr) {
-        *this = make_error_code(_Errcode); // using ADL
+        using _Ensure_adl::make_error_code;
+        *this = make_error_code(_Errcode); // intentional ADL
     }
 
     void assign(int _Val, const error_category& _Cat) noexcept {
@@ -172,7 +180,8 @@ public:
 
     template <class _Enum, enable_if_t<is_error_code_enum_v<_Enum>, int> = 0>
     error_code& operator=(_Enum _Errcode) noexcept {
-        *this = make_error_code(_Errcode); // using ADL
+        using _Ensure_adl::make_error_code;
+        *this = make_error_code(_Errcode); // intentional ADL
         return *this;
     }
 
@@ -253,7 +262,8 @@ public:
 
     template <class _Enum, enable_if_t<is_error_condition_enum_v<_Enum>, int> = 0>
     error_condition(_Enum _Errcode) noexcept : _Myval(0), _Mycat(nullptr) {
-        *this = make_error_condition(_Errcode); // using ADL
+        using _Ensure_adl::make_error_condition;
+        *this = make_error_condition(_Errcode); // intentional ADL
     }
 
     void assign(int _Val, const error_category& _Cat) noexcept {
@@ -263,7 +273,8 @@ public:
 
     template <class _Enum, enable_if_t<is_error_condition_enum_v<_Enum>, int> = 0>
     error_condition& operator=(_Enum _Errcode) noexcept {
-        *this = make_error_condition(_Errcode); // using ADL
+        using _Ensure_adl::make_error_condition;
+        *this = make_error_condition(_Errcode); // intentional ADL
         return *this;
     }
 
@@ -333,7 +344,7 @@ private:
 _NODISCARD inline bool _System_error_equal(const error_code& _Left, const error_condition& _Right) noexcept {
     return _Left.category().equivalent(_Left.value(), _Right) || _Right.category().equivalent(_Left, _Right.value());
 }
-#else // ^^^ _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS // !_STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS vvv
+#else // ^^^ _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS / !_STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS vvv
 _EXPORT_STD _NODISCARD inline bool operator==(const error_code& _Left, const error_code& _Right) noexcept {
     return _Left.category() == _Right.category() && _Left.value() == _Right.value();
 }

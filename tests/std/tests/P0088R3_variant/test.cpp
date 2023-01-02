@@ -6064,7 +6064,7 @@ template<class T> struct Holder { T t; };
 constexpr bool test(bool do_it)
 {
     if (do_it) {
-#ifndef _M_CEE
+#ifndef _M_CEE // TRANSITION, VSO-1659496
         std::variant<Holder<Incomplete>*, int> v = nullptr;
         std::visit([](auto){}, v);
         std::visit([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
@@ -7917,6 +7917,6 @@ int main() {
     msvc::DevCom1031281::run_test();
     msvc::gh2770::run_test();
 }
-#else // ^^^ not x86 or not /analyze ^^^ / vvv x86 /analyze vvv
+#else // ^^^ not x86 or not /analyze / x86 /analyze vvv
 int main() {}
 #endif // !defined(_PREFAST_) || !defined(_M_IX86)

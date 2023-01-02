@@ -16,6 +16,11 @@ struct meow_category : error_category {
     string message(int) const override {
         return "meow";
     }
+
+    // TRANSITION: As of Boost 1.80.0, boost::system::detail::std_category assigns to _Addr.
+    void test_workaround_for_non_standard_code(const unsigned int val) noexcept {
+        _Addr = val;
+    }
 };
 
 #if _HAS_CXX20

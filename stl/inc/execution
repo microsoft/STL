@@ -33,7 +33,7 @@ _EXTERN_C
 using __std_TP_WORK              = void;
 using __std_TP_CALLBACK_INSTANCE = void;
 using __std_TP_CALLBACK_ENVIRON  = void;
-#else // ^^^ _M_CEE ^^^ // vvv !_M_CEE vvv
+#else // ^^^ _M_CEE / !_M_CEE vvv
 struct __std_TP_WORK; // not defined
 struct __std_TP_CALLBACK_INSTANCE; // not defined
 struct __std_TP_CALLBACK_ENVIRON; // not defined
@@ -303,10 +303,12 @@ struct _Parallelism_allocator {
         return true;
     }
 
+#if !_HAS_CXX20
     template <class _Other>
     bool operator!=(const _Parallelism_allocator<_Other>&) const noexcept {
         return false;
     }
+#endif // !_HAS_CXX20
 };
 
 template <class _Ty>
@@ -830,8 +832,9 @@ template <class _RanIt, class _Diff>
 struct _Static_partition_range<_RanIt, _Diff, true> {
     using _Target_diff = _Iter_diff_t<_RanIt>;
     using _URanIt      = _Unwrapped_t<const _RanIt&>;
+    using _Chunk_type  = _Iterator_range<_URanIt>;
+
     _URanIt _Start_at;
-    using _Chunk_type = _Iterator_range<_URanIt>;
 
     _RanIt _Populate(const _Static_partition_team<_Diff>& _Team, _RanIt _First) {
         // statically partition a random-access iterator range and return next(_First, _Team._Count)
@@ -866,8 +869,9 @@ template <class _FwdIt, class _Diff>
 struct _Static_partition_range<_FwdIt, _Diff, false> {
     using _Target_diff = _Iter_diff_t<_FwdIt>;
     using _UFwdIt      = _Unwrapped_t<const _FwdIt&>;
+    using _Chunk_type  = _Iterator_range<_UFwdIt>;
+
     _Parallel_vector<_UFwdIt> _Division_points;
-    using _Chunk_type = _Iterator_range<_UFwdIt>;
 
     _FwdIt _Populate(const _Static_partition_team<_Diff>& _Team, _FwdIt _First) {
         // statically partition a forward iterator range and return next(_First, _Team._Count)
@@ -949,8 +953,9 @@ struct _Static_partition_range_backward;
 template <class _RanIt, class _Diff>
 struct _Static_partition_range_backward<_RanIt, _Diff, true> {
     using _Target_diff = _Iter_diff_t<_RanIt>;
+    using _Chunk_type  = _Iterator_range<_Unwrapped_t<const _RanIt&>>;
+
     _Unwrapped_t<const _RanIt&> _Start_at;
-    using _Chunk_type = _Iterator_range<_Unwrapped_t<const _RanIt&>>;
 
     void _Populate(const _Static_partition_team<_Diff>& _Team, _RanIt _Last) {
         // statically partition a random-access iterator range ending at _Last
@@ -969,8 +974,9 @@ struct _Static_partition_range_backward<_RanIt, _Diff, true> {
 template <class _BidIt, class _Diff>
 struct _Static_partition_range_backward<_BidIt, _Diff, false> {
     using _Target_diff = _Iter_diff_t<_BidIt>;
+    using _Chunk_type  = _Iterator_range<_Unwrapped_t<const _BidIt&>>;
+
     _Parallel_vector<_Unwrapped_t<const _BidIt&>> _Division_points;
-    using _Chunk_type = _Iterator_range<_Unwrapped_t<const _BidIt&>>;
 
     void _Populate(const _Static_partition_team<_Diff>& _Team, _BidIt _Last) {
         // statically partition a bidirectional iterator range ending at _Last
@@ -1342,7 +1348,7 @@ _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _
     _Adl_verify_range(_First, _Last);
     _Seek_wrapped(_First,
         _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _Get_unwrapped(_First), _Get_unwrapped(_Last),
-            [&](const _UFwdIt _LFirst, const _UFwdIt _LLast) { return _Find_unchecked(_LFirst, _LLast, _Val); }));
+            [&](const _UFwdIt _LFirst, const _UFwdIt _LLast) { return _STD _Find_unchecked(_LFirst, _LLast, _Val); }));
     return _First;
 }
 
@@ -2558,7 +2564,7 @@ struct _Static_partitioned_remove_if2 {
             if (_Results == _Merge_first) { // entire range up to now had no removals, don't bother moving
                 _Results = _Merge_new_end;
             } else {
-                _Results = _Move_unchecked(_Merge_first, _Merge_new_end, _Results);
+                _Results = _STD _Move_unchecked(_Merge_first, _Merge_new_end, _Results);
             }
 
             _Merge_chunk_data._State.store(_Chunk_state::_Done);
@@ -2807,7 +2813,7 @@ inline size_t _Get_stable_sort_tree_height(const size_t _Count, const size_t _Hw
     const size_t _Log_ideal_chunks     = _Floor_of_log_2(_Ideal_chunks);
 #ifdef _WIN64
     const size_t _Max_tree_height      = 62; // to avoid ptrdiff_t overflow
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else // ^^^ _WIN64 / !_WIN64 vvv
     const size_t _Max_tree_height = 30;
 #endif // _WIN64
     const size_t _Clamped_ideal_chunks = (_STD min)(_Max_tree_height, _Log_ideal_chunks);

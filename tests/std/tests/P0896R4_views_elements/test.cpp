@@ -394,10 +394,12 @@ int main() {
         instantiation_test();
     }
 
+#ifndef _M_CEE // TRANSITION, VSO-1666180
     { // Validate a view borrowed range
         constexpr auto v = views::iota(0ull, ranges::size(expected_keys))
                          | views::transform([](auto i) { return make_pair(expected_keys[i], expected_values[i]); });
         STATIC_ASSERT(test_one(v));
         test_one(v);
     }
+#endif // _M_CEE
 }
