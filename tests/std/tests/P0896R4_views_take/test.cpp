@@ -508,6 +508,7 @@ void test_DevCom_1397309() {
 
     assert(ranges::equal(values | ranges::views::take(2) | ranges::views::keys, expected));
 }
+
 struct read_some_int_range : ranges::subrange<counted_iterator<istream_iterator<int>>, default_sentinel_t> {
     using ranges::subrange<counted_iterator<istream_iterator<int>>, default_sentinel_t>::subrange;
 };
@@ -535,9 +536,7 @@ void test_lwg3737() {
     static_assert(is_same_v<ranges::sentinel_t<const result_range>, default_sentinel_t>);
 
     vector<int> vec{};
-    for (const int elem : rng) {
-        vec.push_back(elem);
-    }
+    ranges::copy(rng, back_inserter(vec));
 
     assert(ranges::size(vec) == 2);
     assert((vec == vector<int>{0, 1}));
