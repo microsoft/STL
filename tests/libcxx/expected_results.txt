@@ -34,7 +34,7 @@ std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
 
-# libcxx is incorrect on what the type passed to allocator::construct should be (https://reviews.llvm.org/D61364)
+# libcxx is incorrect on what the type passed to allocator::construct should be (LLVM-D61364)
 std/containers/associative/map/map.modifiers/insert_and_emplace_allocator_requirements.pass.cpp FAIL
 std/containers/associative/set/insert_and_emplace_allocator_requirements.pass.cpp FAIL
 std/containers/unord/unord.map/unord.map.modifiers/insert_and_emplace_allocator_requirements.pass.cpp FAIL
@@ -42,18 +42,6 @@ std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cp
 
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
-
-# Bogus test returns a non-const int& using a const iterator's member variable
-std/ranges/range.adaptors/range.zip/end.pass.cpp FAIL
-
-# libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
-std/utilities/format/format.functions/vformat_to.locale.pass.cpp FAIL
-std/utilities/format/format.functions/vformat_to.pass.cpp FAIL
-std/utilities/format/format.functions/vformat.locale.pass.cpp FAIL
-std/utilities/format/format.functions/vformat.pass.cpp FAIL
-
-# libc++ fix allocator in allocator_propagation test (LLVM-D131079)
-std/strings/basic.string/string.nonmembers/string_op+/allocator_propagation.pass.cpp FAIL
 
 # libc++ hasn't updated move_iterator for P2520R0
 std/iterators/predef.iterators/move.iterators/move.iterator/types.pass.cpp FAIL
@@ -66,20 +54,23 @@ std/ranges/range.access/end.pass.cpp FAIL
 std/ranges/range.access/rbegin.pass.cpp FAIL
 std/ranges/range.access/rend.pass.cpp FAIL
 
-# libc++ doesn't implement LWG-3692: "zip_view::iterator's operator<=> is overconstrained"
-std/ranges/range.adaptors/range.zip/iterator/compare.pass.cpp FAIL
+# Various bogosity (LLVM-D141004)
+std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_const_lvalue_pair.pass.cpp:0 FAIL
+std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_values.pass.cpp:0 FAIL
+std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/resource.pass.cpp FAIL
+std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/select_on_container_copy_construction.pass.cpp FAIL
+std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/ctor_does_not_allocate.pass.cpp FAIL
+std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/sync_with_default_resource.pass.cpp FAIL
+std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/unsync_with_default_resource.pass.cpp FAIL
+std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/sync_allocate.pass.cpp FAIL
+std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/sync_allocate_overaligned_request.pass.cpp FAIL
+std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/sync_deallocate_matches_allocate.pass.cpp FAIL
+std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_allocate.pass.cpp FAIL
+std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_allocate_overaligned_request.pass.cpp FAIL
+std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_deallocate_matches_allocate.pass.cpp FAIL
 
-# libc++ is incorrect on the constraints for constructors of zip_view::iterator and zip_view::sentinel
-std/ranges/range.adaptors/range.zip/begin.pass.cpp SKIPPED
-std/ranges/range.adaptors/range.zip/sentinel/ctor.default.pass.cpp SKIPPED
-
-# libc++ has not implemented P2165R4: "Compatibility between tuple, pair, and tuple-like objects"
-# for zip_view
-std/ranges/range.adaptors/range.zip/cpo.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/ctor.default.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/deref.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/member_types.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.zip/iterator/subscript.pass.cpp FAIL
+# Too many constexpr operations
+std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -215,12 +206,30 @@ std/utilities/tuple/tuple.tuple/tuple.cnstr/recursion_depth.pass.cpp SKIPPED
 
 
 # *** MISSING STL FEATURES ***
+# P1169R4 static operator()
+std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cpp FAIL
+
 # P2321R2 zip
 std/language.support/support.limits/support.limits.general/tuple.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/utility.version.compile.pass.cpp FAIL
 
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
+
+# P2286R8 Formatting Ranges
+std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtkind/format_kind.compile.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtkind/range_format.compile.pass.cpp FAIL
+std/utilities/format/format.tuple/format.functions.format.pass.cpp FAIL
+std/utilities/format/format.tuple/format.functions.vformat.pass.cpp FAIL
+std/utilities/format/format.tuple/format.pass.cpp FAIL
+std/utilities/format/format.tuple/parse.pass.cpp FAIL
+std/utilities/format/format.tuple/set_brackets.pass.cpp FAIL
+std/utilities/format/format.tuple/set_separator.pass.cpp FAIL
+
+# Missing mrbtoc8 and c8rtomb
+std/depr/depr.c.headers/uchar_h.compile.pass.cpp FAIL
+std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -239,6 +248,9 @@ std/thread/futures/futures.promise/set_rvalue_at_thread_exit.pass.cpp FAIL
 std/thread/futures/futures.promise/set_value_at_thread_exit_const.pass.cpp FAIL
 std/thread/futures/futures.promise/set_value_at_thread_exit_void.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.pass.cpp FAIL
+
+# LWG-3120 "Unclear behavior of monotonic_buffer_resource::release()" (vNext)
+std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/allocate_from_underaligned_buffer.pass.cpp FAIL
 
 # LWG-3633 "Atomics are copy constructible and copy assignable from volatile atomics" (Open)
 std/atomics/atomics.types.generic/copy_semantics_traits.pass.cpp FAIL
@@ -307,6 +319,10 @@ std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete14
 # Not yet analyzed. Clang apparently defines platform macros differently from C1XX.
 std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:1 FAIL
 
+# Not yet analyzed. Possibly C++20 equality operator rewrite issues.
+std/utilities/expected/expected.expected/equality/equality.other_expected.pass.cpp:1 FAIL
+std/utilities/expected/expected.void/equality/equality.other_expected.pass.cpp:1 FAIL
+
 
 # *** STL BUGS ***
 # GH-1112 <locale>: the enum value of std::money_base is not correct
@@ -369,6 +385,9 @@ std/numerics/c.math/cmath.pass.cpp FAIL
 
 # GH-1374: Spaceship CPO wording in [cmp.alg] needs an overhaul
 # (Technically an STL bug until the wording in the working draft is fixed to agree.)
+std/language.support/cmp/cmp.alg/compare_partial_order_fallback.pass.cpp FAIL
+std/language.support/cmp/cmp.alg/compare_strong_order_fallback.pass.cpp FAIL
+std/language.support/cmp/cmp.alg/compare_weak_order_fallback.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/partial_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/strong_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/weak_order.pass.cpp FAIL
@@ -379,6 +398,9 @@ std/strings/basic.string/string.modifiers/robust_against_adl.pass.cpp FAIL
 
 # GH-3100: <memory> etc.: ADL should be avoided when calling _Construct_in_place and its friends
 std/utilities/function.objects/func.wrap/func.wrap.func/robust_against_adl.pass.cpp FAIL
+
+# GH-3336: Failure to format basic_string_view with non-standard traits
+std/utilities/format/format.arguments/format.arg/visit_format_arg.pass.cpp FAIL
 
 
 # *** CRT BUGS ***
@@ -524,15 +546,6 @@ std/iterators/iterator.primitives/iterator.operations/robust_against_adl.pass.cp
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 std/input.output/filesystems/fs.filesystem.synopsis/file_time_type_resolution.compile.pass.cpp FAIL
 
-# Uses-allocator class constructor wants non-const allocator ref and mismatched piecewise_construct's value category
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct.pass.cpp FAIL
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair.pass.cpp FAIL
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_const_lvalue_pair.pass.cpp FAIL
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_piecewise.pass.cpp FAIL
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_rvalue.pass.cpp FAIL
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_values.pass.cpp FAIL
-std/utilities/allocator.adaptor/allocator.adaptor.members/construct_type.pass.cpp FAIL
-
 # Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
 std/language.support/support.limits/support.limits.general/algorithm.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/functional.version.compile.pass.cpp FAIL
@@ -565,20 +578,8 @@ std/utilities/format/format.formatter/format.formatter.spec/formatter.pointer.pa
 std/utilities/format/format.formatter/format.formatter.spec/formatter.signed_integral.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.string.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.unsigned_integral.pass.cpp FAIL
-std/utilities/format/format.formatter/format.formatter.spec/types.compile.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.char.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.floating_point.pass.cpp FAIL
-
-# Tests fail because -NaN is formatted differently (and other reasons).
-std/utilities/format/format.functions/format.pass.cpp FAIL
-std/utilities/format/format.functions/format.locale.pass.cpp FAIL
-std/utilities/format/format.functions/format_to.locale.pass.cpp FAIL
-std/utilities/format/format.functions/format_to.pass.cpp FAIL
-std/utilities/format/format.functions/format_to_n.pass.cpp FAIL
-std/utilities/format/format.functions/format_to_n.locale.pass.cpp FAIL
-std/utilities/format/format.functions/formatted_size.pass.cpp FAIL
-std/utilities/format/format.functions/formatted_size.locale.pass.cpp FAIL
-std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
 
 # libc++ chose option A for [time.clock.file.members], and we chose option B.
 std/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
@@ -593,7 +594,9 @@ std/language.support/support.limits/support.limits.general/ranges.version.compil
 std/containers/sequences/vector/vector.cons/assign_copy.pass.cpp FAIL
 
 # LIT's ADDITIONAL_COMPILE_FLAGS is problematic
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy_move.pass.cpp SKIPPED
+std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp SKIPPED
+std/utilities/format/format.functions/escaped_output.ascii.pass.cpp SKIPPED
+std/utilities/variant/variant.variant/implicit_ctad.pass.cpp SKIPPED
 
 # MoveOnlyForwardIterator (a misnomer) has mixed-type comparisons and conversions
 std/ranges/range.utility/range.subrange/primitives.pass.cpp:0 FAIL
@@ -630,7 +633,7 @@ std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
 
-# libc++ is missing a requires-clause on variant's operator<=> (llvm/llvm-project#58192)
+# libc++ is missing a requires-clause on variant's operator<=> (LLVM-58192)
 std/utilities/variant/variant.relops/three_way.pass.cpp FAIL
 
 # libc++ doesn't yet implement P2602R2 "Poison Pills Are Too Toxic"
@@ -639,6 +642,11 @@ std/ranges/range.access/end.pass.cpp FAIL
 std/ranges/range.access/rbegin.pass.cpp FAIL
 std/ranges/range.access/rend.pass.cpp FAIL
 std/ranges/range.access/size.pass.cpp FAIL
+
+# C5101: use of preprocessor directive in function-like macro argument list is undefined behavior
+std/time/time.syn/formatter.year_month.pass.cpp:0 FAIL
+std/time/time.syn/formatter.year_month_day_last.pass.cpp:0 FAIL
+std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -742,8 +750,9 @@ std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_encoding.pass.cpp FAIL
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_max_length.pass.cpp FAIL
 
-# Likely STL bug in <format>: we check argument ids at compiletime in next_arg_id
+# Likely STL bugs in <format>
 std/utilities/format/format.formatter/format.parse.ctx/next_arg_id.pass.cpp FAIL
+std/time/time.syn/formatter.month_day_last.pass.cpp FAIL
 
 # Likely STL bug in `bind_front`: we don't respect deletion of the target call operator
 std/utilities/function.objects/func.bind_front/bind_front.pass.cpp FAIL
@@ -756,6 +765,9 @@ std/ranges/range.adaptors/range.join.view/iterator/iter.swap.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.join.view/iterator/star.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.join.view/sentinel/ctor.parent.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp:1 FAIL
+
+# Our monotonic_buffer_resource takes "user" space for metadata, which it probably should not do.
+std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/allocate_with_initial_size.pass.cpp FAIL
 
 
 # *** NOT YET ANALYZED ***
@@ -787,7 +799,7 @@ std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:0 FAIL
 # Not yet analyzed. Frequent timeouts
 std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp SKIPPED
 
-# Not yet analyzed. Failing after https://reviews.llvm.org/D75622.
+# Not yet analyzed. Failing after LLVM-D75622.
 std/re/re.const/re.matchflag/match_prev_avail.pass.cpp FAIL
 
 # Not yet analyzed. Many diagnostics.
@@ -843,15 +855,6 @@ std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval_param.pas
 std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.bin/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.bin/eval.pass.cpp FAIL
 
-# Not yet analyzed
-# MSVC is saying "note: failure was caused by a read of a variable outside its lifetime"
-# for constant evaluation failure, which is buggy.
-# compare_strong_order_fallback.pass.cpp and compare_weak_order_fallback.pass.cpp are
-# using _VSTD, perhaps we should replace it with std, or some conditionally defined macro.
-std/language.support/cmp/cmp.alg/compare_partial_order_fallback.pass.cpp FAIL
-std/language.support/cmp/cmp.alg/compare_strong_order_fallback.pass.cpp FAIL
-std/language.support/cmp/cmp.alg/compare_weak_order_fallback.pass.cpp FAIL
-
 # Not yet analyzed. Runs forever
 std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp SKIPPED
 
@@ -875,7 +878,6 @@ std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.
 
 # Not yet analyzed. These tests use characters that cannot be represented in legacy character encodings
 std/utilities/format/format.functions/ascii.pass.cpp FAIL
-std/utilities/format/format.functions/unicode.pass.cpp:0 FAIL
 
 # Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
 std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp FAIL
@@ -918,10 +920,6 @@ std/algorithms/alg.sorting/alg.sort/partial.sort.copy/ranges_partial_sort_copy.p
 std/algorithms/algorithms.results/in_found_result.pass.cpp:0 FAIL
 std/algorithms/algorithms.results/min_max_result.pass.cpp:0 FAIL
 std/algorithms/ranges_robust_against_dangling.pass.cpp FAIL
-std/algorithms/ranges_robust_against_differing_projections.pass.cpp FAIL
-std/algorithms/ranges_robust_against_nonbool_predicates.pass.cpp FAIL
-std/algorithms/ranges_robust_against_omitting_invoke.pass.cpp FAIL
-std/algorithms/ranges_robust_against_proxy_iterators.pass.cpp FAIL
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
 std/concepts/concepts.lang/concept.default.init/default_initializable.compile.pass.cpp:0 FAIL
 std/containers/sequences/deque/abi.compile.pass.cpp FAIL
@@ -958,7 +956,6 @@ std/iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_con
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/new.version.compile.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_zh_CN.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.filter/iterator/arrow.pass.cpp FAIL
 std/ranges/range.adaptors/range.filter/iterator/base.pass.cpp FAIL
 std/ranges/range.adaptors/range.filter/iterator/compare.pass.cpp FAIL
@@ -1008,7 +1005,24 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer/types.compile.
 std/ranges/range.adaptors/range.lazy.split/view_interface.pass.cpp FAIL
 std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
 std/ranges/range.factories/range.single.view/cpo.pass.cpp FAIL
-std/strings/basic.string/string.cons/dtor.pass.cpp FAIL
+std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
+std/utilities/format/format.functions/escaped_output.ascii.pass.cpp FAIL
+std/utilities/format/format.functions/format.locale.pass.cpp FAIL
+std/utilities/format/format.functions/format.pass.cpp FAIL
+std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
+std/utilities/format/format.functions/vformat.locale.pass.cpp FAIL
+std/utilities/format/format.functions/vformat.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.inv/invoke.pass.cpp:0 FAIL
+std/utilities/function.objects/refwrap/refwrap.const/type_conv_ctor.pass.cpp:0 FAIL
+std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.create/allocate_shared.array.unbounded.pass.cpp FAIL
+std/utilities/meta/meta.logical/conjunction.compile.pass.cpp FAIL
+std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_move_assignable.pass.cpp:0 FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
+
+# Not yet analyzed, probably MSVC constexpr issue(s)
 std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_erase/iter_iter.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_insert/iter_iter_iter.pass.cpp:0 FAIL
@@ -1019,36 +1033,13 @@ std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer_size.
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_size_char.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:0 FAIL
-std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/addressof.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.alg/swap.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.cap/operator_bool.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy_assign.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/default.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/F.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/F_assign.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/F_incomplete.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/F_nullptr.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/nullptr_t.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/nullptr_t_assign.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.inv/invoke.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.mod/assign_F_alloc.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.mod/swap.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.nullptr/operator_==.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.targ/target.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.targ/target_type.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/types.pass.cpp:0 FAIL
-std/utilities/function.objects/refwrap/refwrap.const/type_conv_ctor.pass.cpp:0 FAIL
-std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.create/allocate_shared.array.unbounded.pass.cpp FAIL
-std/utilities/meta/meta.logical/conjunction.compile.pass.cpp FAIL
-std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_move_assignable.pass.cpp:0 FAIL
-std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
 
 # Not yet analyzed, possible path length issue. With a repo root of D:\GitHub\STL (13 characters), fails with:
 # "error RC2136 : missing '=' in EXSTYLE=<flags>" followed by "LINK : fatal error LNK1327: failure during running rc.exe"
 std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_until_deadlock_bug.pass.cpp SKIPPED
+
+# Not yet analyzed, possible bug in uses_allocator_construction_args
+std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_piecewise_pair_evil.pass.cpp FAIL
 
 
 # *** XFAILs WHICH PASS ***
