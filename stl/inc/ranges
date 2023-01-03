@@ -8018,21 +8018,18 @@ namespace ranges {
             static constexpr bool _Is_invocation_noexcept = []() noexcept {
                 if constexpr (sizeof...(_Types) == 0) {
                     using _Decayed_func = decay_t<_Func>;
-                    if constexpr (move_constructible<_Decayed_func> && regular_invocable<_Decayed_func>
-                                  && is_object_v<decay_t<invoke_result_t<_Decayed_func&>>>) {
-                        // NOTE: As of writing this, the MSVC hasn't implemented auto(x)/auto{x}
-                        // (see P0849R8). We need to thus manually describe the type instead of using
-                        // auto(std::views::empty<std::decay_t<std::invoke_result_t<_Decayed_func&>>>)
-                        // as the C++ standard proposes.
-                        //
-                        // (The alternative is to use the exposition-only function decay-copy, but this
-                        // isn't what's written in the standard anymore.)
-                        using _Empty_view_t = decltype(empty<decay_t<invoke_result_t<_Decayed_func&>>>);
-                        return noexcept(((void) _STD declval<_Func&>(),
-                            _Empty_view_t{empty<decay_t<invoke_result_t<_Decayed_func&>>>}));
-                    } else {
-                        return false;
-                    }
+
+                    // NOTE: As of writing this, the MSVC hasn't implemented auto(x)/auto{x}
+                    // (see P0849R8). We need to thus manually describe the type instead of using
+                    // auto(std::views::empty<std::decay_t<std::invoke_result_t<_Decayed_func&>>>)
+                    // as the C++ standard proposes.
+                    //
+                    // (The alternative is to use the exposition-only function decay-copy, but this
+                    // isn't what's written in the standard anymore.)
+                    using _Empty_view_t = decltype(empty<decay_t<invoke_result_t<_Decayed_func&>>>);
+
+                    return noexcept((
+                        (void) _STD declval<_Func&>(), _Empty_view_t{empty<decay_t<invoke_result_t<_Decayed_func&>>>}));
                 } else {
                     return noexcept(noexcept(zip_transform_view(_STD declval<_Func>(), _STD declval<_Types>()...)));
                 }
@@ -8045,10 +8042,8 @@ namespace ranges {
             {
                 if constexpr (sizeof...(_Types) == 0) {
                     using _Decayed_func = decay_t<decltype((_Function))>;
-                    static_assert(move_constructible<_Decayed_func> && regular_invocable<_Decayed_func>
-                                  && is_object_v<decay_t<invoke_result_t<_Decayed_func&>>>);
-
                     using _Empty_view_t = decltype(empty<decay_t<invoke_result_t<_Decayed_func&>>>);
+
                     return ((void) _Function, _Empty_view_t{empty<decay_t<invoke_result_t<_Decayed_func&>>>});
                 } else {
                     return zip_transform_view(_STD forward<_Func>(_Function), _STD forward<_Types>(_Args)...);
