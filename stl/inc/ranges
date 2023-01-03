@@ -7701,10 +7701,12 @@ namespace ranges {
                     return _Category_id::_Input_iterator;
                 } else {
                     constexpr auto _Check_tag_type_closure = []<typename _Tag_type>() noexcept {
-                        return (derived_from<typename iterator_traits<
-                                                 iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>::iterator_category,
-                                    _Tag_type>
-                                && ...);
+                        // clang-format off
+                        return (derived_from<typename
+                            iterator_traits<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>::iterator_category,
+                            _Tag_type>
+                        && ...);
+                        // clang-format on
                     };
 
                     if constexpr (_Check_tag_type_closure.template operator()<random_access_iterator_tag>()) {
@@ -7857,8 +7859,8 @@ namespace ranges {
             }
 
             // clang-format off
-            _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept(
-                noexcept(_Lhs._Inner - _Rhs._Inner)) // strengthened
+            _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Lhs, const _Iterator& _Rhs)
+                noexcept(noexcept(_Lhs._Inner - _Rhs._Inner)) // strengthened
                 requires sized_sentinel_for<_Ziperator<_IsConst>, _Ziperator<_IsConst>>
             {
                 // clang-format on
