@@ -8016,17 +8016,34 @@ namespace ranges {
                 if constexpr (sizeof...(_Types) == 0) {
                     using _Decayed_func = decay_t<_Func>;
 
-                    // NOTE: As of writing this, the MSVC hasn't implemented auto(x)/auto{x}
-                    // (see P0849R8). We need to thus manually describe the type instead of using
-                    // auto(std::views::empty<std::decay_t<std::invoke_result_t<_Decayed_func&>>>)
-                    // as the C++ standard proposes.
-                    //
-                    // (The alternative is to use the exposition-only function decay-copy, but this
-                    // isn't what's written in the standard anymore.)
-                    using _Empty_view_t = decltype(empty<decay_t<invoke_result_t<_Decayed_func&>>>);
+                    // We do the static_asserts here, rather than in the definition of operator(), so that they
+                    // show up earlier in compiler diagnostics.
+                    static_assert(move_constructible<_Decayed_func>,
+                        "ERROR: When using std::views::zip_transform without any views, the specified callable must "
+                        "be move constructible (see [range.zip.transform.overview]/2.1.1).");
 
-                    return noexcept((
-                        (void) _STD declval<_Func&>(), _Empty_view_t{empty<decay_t<invoke_result_t<_Decayed_func&>>>}));
+                    if constexpr (regular_invocable<_Decayed_func&>) {
+                        static_assert(is_object_v<decay_t<invoke_result_t<_Decayed_func&>>>,
+                            "ERROR: When using std::views::zip_transform without any views, the specified callable "
+                            "must return an object (see [range.zip.transform.overview]/2.1.1).");
+
+                        // NOTE: As of writing this, the MSVC hasn't implemented auto(x)/auto{x}
+                        // (see P0849R8). We need to thus manually describe the type instead of using
+                        // auto(std::views::empty<std::decay_t<std::invoke_result_t<_Decayed_func&>>>)
+                        // as the C++ standard proposes.
+                        //
+                        // (The alternative is to use the exposition-only function decay-copy, but this
+                        // isn't what's written in the standard anymore.)
+                        using _Empty_view_t = decltype(empty<decay_t<invoke_result_t<_Decayed_func&>>>);
+
+                        return noexcept(((void) _STD declval<_Func&>(),
+                            _Empty_view_t{empty<decay_t<invoke_result_t<_Decayed_func&>>>}));
+                    } else {
+                        static_assert(_Always_false<_Decayed_func>,
+                            "ERROR: When using std::views::zip_transform without any views, the specified callable "
+                            "must be invocable without any parameters (see [range.zip.transform.overview]/2.1.1).");
+                        return false;
+                    }
                 } else {
                     return noexcept(noexcept(zip_transform_view(_STD declval<_Func>(), _STD declval<_Types>()...)));
                 }
