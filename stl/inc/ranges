@@ -7680,11 +7680,6 @@ namespace ranges {
         using _Zentinel = sentinel_t<_Maybe_const<_IsConst, _Inner_view>>;
 
         template <bool _IsConst>
-        _NODISCARD static constexpr const auto& _Get_ziperator_tuple(const _Ziperator<_IsConst>& _Itr) noexcept {
-            return _Itr._Current;
-        }
-
-        template <bool _IsConst>
         struct _Category_base {};
 
         template <bool _IsConst>
@@ -7706,8 +7701,8 @@ namespace ranges {
                     return _Category_id::_Input_iterator;
                 } else {
                     constexpr auto _Check_tag_type_closure = []<typename _Tag_type>() noexcept {
-                        return (derived_from<
-                                    iterator_traits<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>::iterator_category,
+                        return (derived_from<typename iterator_traits<
+                                                 iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>::iterator_category,
                                     _Tag_type>
                                 && ...);
                     };
@@ -7761,8 +7756,8 @@ namespace ranges {
                 : _Parent(_Rhs._Parent), _Inner(_STD move(_Rhs._Inner)) {}
 
             _NODISCARD constexpr decltype(auto) operator*() const
-                noexcept(noexcept(_STD apply(_Dereference_closure(), _Get_ziperator_tuple<_IsConst>(_Inner)))) {
-                return _STD apply(_Dereference_closure(), _Get_ziperator_tuple<_IsConst>(_Inner));
+                noexcept(noexcept(_STD apply(_Dereference_closure(), _Inner._Current))) {
+                return _STD apply(_Dereference_closure(), _Inner._Current);
             }
 
             constexpr _Iterator& operator++() noexcept(noexcept(++_Inner)) // strengthened
@@ -7819,11 +7814,11 @@ namespace ranges {
                 return *this;
             }
 
-            _NODISCARD constexpr decltype(auto) operator[](const difference_type _Where) const noexcept(noexcept(
-                _STD apply(_Random_access_closure(_Where), _Get_ziperator_tuple<_IsConst>(_Inner)))) // strengthened
+            _NODISCARD constexpr decltype(auto) operator[](const difference_type _Where) const
+                noexcept(noexcept(_STD apply(_Random_access_closure(_Where), _Inner._Current))) // strengthened
                 requires random_access_range<_Base_t>
             {
-                return _STD apply(_Random_access_closure(_Where), _Get_ziperator_tuple<_IsConst>(_Inner));
+                return _STD apply(_Random_access_closure(_Where), _Inner._Current);
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept(
