@@ -148,6 +148,30 @@ using tuple_element_t = typename tuple_element<_Index, _Tuple>::type;
 _EXPORT_STD /* TRANSITION, VSO-1538698 */ template <size_t _Index, class... _Types>
 _NODISCARD constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
 
+_EXPORT_STD template <size_t _Index, class... _Types>
+_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept;
+
+_EXPORT_STD template <size_t _Index, class... _Types>
+_NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>& get(const tuple<_Types...>& _Tuple) noexcept;
+
+_EXPORT_STD template <size_t _Index, class... _Types>
+_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>&& get(tuple<_Types...>&& _Tuple) noexcept;
+
+_EXPORT_STD template <size_t _Index, class... _Types>
+_NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept;
+
+_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
+_NODISCARD constexpr _Ty& get(array<_Ty, _Size>& _Arr) noexcept;
+
+_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
+_NODISCARD constexpr const _Ty& get(const array<_Ty, _Size>& _Arr) noexcept;
+
+_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
+_NODISCARD constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept;
+
+_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
+_NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept;
+
 #ifdef __cpp_lib_concepts
 template <class _Ty1, class _Ty2>
 concept _Different_from = (!same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>);
