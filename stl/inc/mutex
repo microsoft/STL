@@ -300,21 +300,22 @@ void _Unlock_locks(const int _First, const int _Last, index_sequence<_Indices...
 }
 
 template <class _Fn>
-struct _Unlock_functor_guard {
-    static_assert(is_trivially_copyable_v<_Fn>, "This scope guard is only used for trivially copyable functors.");
+struct _Unlock_call_guard {
+    static_assert(
+        is_trivially_copyable_v<_Fn>, "This scope guard is only used for trivially copyable function objects.");
 
-    _Unlock_functor_guard(const _Fn& _Functor) noexcept : _Ftor(_Functor) {}
+    _Unlock_call_guard(const _Fn& _Fx) noexcept : _Func(_Fx) {}
 
-    ~_Unlock_functor_guard() noexcept {
+    ~_Unlock_call_guard() noexcept {
         if (_Valid) {
-            _Ftor();
+            _Func();
         }
     }
 
-    _Unlock_functor_guard(const _Unlock_functor_guard&)            = delete;
-    _Unlock_functor_guard& operator=(const _Unlock_functor_guard&) = delete;
+    _Unlock_call_guard(const _Unlock_call_guard&)            = delete;
+    _Unlock_call_guard& operator=(const _Unlock_call_guard&) = delete;
 
-    _Fn _Ftor;
+    _Fn _Func;
     bool _Valid = true;
 };
 
@@ -340,7 +341,7 @@ int _Try_lock_range(const int _First, const int _Last, _LockN&... _LkN) {
     int _Next      = _First;
 
     auto _Unlocker = [_First, &_Next, &_LkN...]() noexcept { _STD _Unlock_locks(_First, _Next, _Indices{}, _LkN...); };
-    _Unlock_functor_guard<decltype(_Unlocker)> _Guard{_Unlocker};
+    _Unlock_call_guard<decltype(_Unlocker)> _Guard{_Unlocker};
 
     for (; _Next != _Last; ++_Next) {
         if (!_STD _Try_lock_from_locks(_Next, _Indices{}, _LkN...)) { // try_lock failed, backout
@@ -390,7 +391,7 @@ int _Lock_attempt(const int _Hard_lock, _LockN&... _LkN) {
         auto _Unlocker = [&_Backout_start, _Hard_lock, &_LkN...]() noexcept {
             _STD _Unlock_locks(_Backout_start, _Hard_lock + 1, _Indices{}, _LkN...);
         };
-        _Unlock_functor_guard<decltype(_Unlocker)> _Guard{_Unlocker};
+        _Unlock_call_guard<decltype(_Unlocker)> _Guard{_Unlocker};
 
         _Failed = _STD _Try_lock_range(0, _Hard_lock, _LkN...);
         if (_Failed == -1) {
