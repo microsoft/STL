@@ -304,7 +304,7 @@ struct _Unlock_call_guard {
     static_assert(
         is_trivially_copyable_v<_Fn>, "This scope guard is only used for trivially copyable function objects.");
 
-    _Unlock_call_guard(const _Fn& _Fx) noexcept : _Func(_Fx) {}
+    explicit _Unlock_call_guard(const _Fn& _Fx) noexcept : _Func(_Fx) {}
 
     ~_Unlock_call_guard() noexcept {
         if (_Valid) {
@@ -321,7 +321,7 @@ struct _Unlock_call_guard {
 
 template <class _Lock>
 struct _Unlock_one_guard {
-    _Unlock_one_guard(_Lock& _Lk) noexcept : _Lk_ptr(_STD addressof(_Lk)) {}
+    explicit _Unlock_one_guard(_Lock& _Lk) noexcept : _Lk_ptr(_STD addressof(_Lk)) {}
 
     ~_Unlock_one_guard() noexcept {
         if (_Lk_ptr) {
