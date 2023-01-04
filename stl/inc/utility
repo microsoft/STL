@@ -198,6 +198,13 @@ concept _Tuple_like = _Tuple_like_impl<remove_cvref_t<_Ty>>;
 
 template <class _Ty>
 concept _Pair_like = _Tuple_like<_Ty> && tuple_size_v<remove_cvref_t<_Ty>> == 2;
+
+#ifdef __clang__ // TRANSITION, LLVM-59827
+template <class _PairLike, class _Ty1, class _Ty2>
+concept _Can_construct_from_pair_like =
+    _Pair_like<_PairLike> && is_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_PairLike>()))>
+    && is_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_PairLike>()))>;
+#endif // __clang__
 #endif // _HAS_CXX23
 #endif // __cpp_lib_concepts
 
@@ -270,17 +277,19 @@ struct pair { // store a pair of values
         : first(_STD forward<const _Other1>(_Right.first)), second(_STD forward<const _Other2>(_Right.second)) {}
 
 #ifdef __cpp_lib_concepts
-    // clang-format off
+#ifdef __clang__ // TRANSITION, LLVM-59827
+    template <class _Other, enable_if_t<_Can_construct_from_pair_like<_Other, _Ty1, _Ty2>, int> = 0>
+#else // ^^^ workaround / no workaround vvv
     template <_Pair_like _Other>
         requires conjunction_v<is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
-                               is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
+                     is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
+#endif // __clang__
     constexpr explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
-                                      is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>)
-        pair(_Other&& _Right)
-            noexcept(is_nothrow_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))> &&
-                     is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
-        : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {}
-    // clang-format on
+                       is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>)
+        pair(_Other&& _Right) noexcept(is_nothrow_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>&&
+                is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
+        : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {
+    }
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
