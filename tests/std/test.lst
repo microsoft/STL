@@ -550,6 +550,7 @@ tests\P1899R3_views_stride_death
 tests\P1951R1_default_arguments_pair_forward_ctor
 tests\P2136R3_invoke_r
 tests\P2162R2_std_visit_for_derived_classes_from_variant
+tests\P2165R4_tuple_like_pair
 tests\P2231R1_complete_constexpr_optional_variant
 tests\P2273R3_constexpr_unique_ptr
 tests\P2278R4_basic_const_iterator
