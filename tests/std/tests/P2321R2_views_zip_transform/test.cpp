@@ -41,15 +41,260 @@ template <class RangeType>
 concept HasIteratorCategory = requires() { typename ranges::iterator_t<RangeType>::iterator_category; };
 
 #pragma warning(push)
-#pragma warning(disable : 4100) // unreferenced formal parameter
+#pragma warning(disable : 4365) // conversion from 'std::array<int,8>::size_type' to 'int', signed/unsigned mismatch
+template <class TransformType, ranges::random_access_range TransformedElementsContainer, class LocalZipTransformType,
+    ranges::input_range... RangeTypes>
+constexpr bool validate_iterators_sentinels(
+    LocalZipTransformType& relevant_range, const TransformedElementsContainer& transformed_elements) {
+#pragma warning(pop)
+    constexpr bool is_const = same_as<LocalZipTransformType, add_const_t<LocalZipTransformType>>;
+
+    using InnerView            = ranges::zip_view<AllView<RangeTypes>...>;
+    using BaseType             = ranges::_Maybe_const<is_const, InnerView>;
+    using ZipIteratorTupleType = tuple<ranges::iterator_t<ranges::_Maybe_const<is_const, AllView<RangeTypes>>>...>;
+
+    // Validate iterator type aliases
+    {
+        // Validate iterator_category
+        if constexpr (ranges::forward_range<BaseType>) {
+            STATIC_ASSERT(HasIteratorCategory<LocalZipTransformType>);
+
+            using transform_result_t = TransformResultType<is_const, TransformType, RangeTypes...>;
+
+            if constexpr (!is_reference_v<transform_result_t>) {
+                STATIC_ASSERT(
+                    same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category, input_iterator_tag>);
+            } else {
+                constexpr auto check_iterator_tags_closure = []<class TagType>() {
+                    return (derived_from<typename iterator_traits<ranges::iterator_t<
+                                             ranges::_Maybe_const<is_const, RangeTypes>>>::iterator_category,
+                                TagType>
+                            && ...);
+                };
+
+                if constexpr (check_iterator_tags_closure.template operator()<random_access_iterator_tag>()) {
+                    STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
+                        random_access_iterator_tag>);
+                } else if constexpr (check_iterator_tags_closure.template operator()<bidirectional_iterator_tag>()) {
+                    STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
+                        bidirectional_iterator_tag>);
+                } else if constexpr (check_iterator_tags_closure.template operator()<forward_iterator_tag>()) {
+                    STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
+                        forward_iterator_tag>);
+                } else {
+                    STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
+                        input_iterator_tag>);
+                }
+            }
+        } else {
+            STATIC_ASSERT(!HasIteratorCategory<LocalZipTransformType>);
+        }
+
+        // Validate iterator_concept
+        STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_concept,
+            typename ranges::iterator_t<BaseType>::iterator_concept>);
+
+        // Validate value_type
+        STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::value_type,
+            remove_cvref_t<TransformResultType<is_const, TransformType, RangeTypes...>>>);
+
+        // Validate difference_type
+        STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::difference_type,
+            ranges::range_difference_t<BaseType>>);
+    }
+
+    // Validate iterator constructors
+    STATIC_ASSERT(is_default_constructible_v<ranges::iterator_t<LocalZipTransformType>>
+                  == is_default_constructible_v<ranges::iterator_t<BaseType>>);
+    STATIC_ASSERT(is_nothrow_default_constructible_v<ranges::iterator_t<LocalZipTransformType>>
+                  == is_nothrow_default_constructible_v<ranges::iterator_t<BaseType>>);
+
+    if constexpr (is_const && convertible_to<ranges::iterator_t<InnerView>, ranges::iterator_t<const InnerView>>) {
+        STATIC_ASSERT(noexcept(ranges::iterator_t<LocalZipTransformType>{
+                          declval<ranges::iterator_t<remove_const_t<LocalZipTransformType>>>()})
+                      == is_nothrow_convertible_v<ranges::iterator_t<InnerView>, ranges::iterator_t<const InnerView>>);
+    }
+
+    same_as<ranges::iterator_t<LocalZipTransformType>> auto itr = relevant_range.begin();
+
+    // Validate iterator operator overloads
+    {
+        const auto first_result = *itr;
+        assert(first_result == *ranges::begin(transformed_elements));
+
+        // NOTE: The actual noexcept specification for zip_transform_view::iterator::operator*() is as follows:
+        //
+        // Let Is be the pack 0, 1, ..., (sizeof...(Views)-1). The exception specification is equivalent to:
+        // noexcept(invoke(*parent_->fun_, *std::get<Is>(inner_.current_)...)).
+        //
+        // Notably, parent_t is a pointer and inner_.current_ is a tuple, and operator->() on a pointer and
+        // std::get(std::tuple<...>) are both noexcept. We thus simplify the noexcept check as follows:
+        STATIC_ASSERT(
+            noexcept(*itr)
+            == noexcept(invoke(*declval<const ranges::_Movable_box<TransformType>&>(),
+                *declval<const ranges::iterator_t<ranges::_Maybe_const<is_const, AllView<RangeTypes>>>&>()...)));
+    }
+
+    STATIC_ASSERT(noexcept(++itr) == noexcept(++declval<ranges::iterator_t<BaseType>&>()));
+
+    if constexpr (ranges::forward_range<BaseType>) {
+        same_as<ranges::iterator_t<LocalZipTransformType>> auto duplicate_itr = itr++;
+        assert(*duplicate_itr == *ranges::begin(transformed_elements));
+        STATIC_ASSERT(noexcept(itr++)
+                      == is_nothrow_copy_constructible_v<ranges::iterator_t<LocalZipTransformType>>&& noexcept(++itr));
+    } else {
+        itr++;
+        STATIC_ASSERT(noexcept(itr++) == noexcept(++itr));
+    }
+
+    assert(*++itr == transformed_elements[2]);
+
+    if constexpr (ranges::bidirectional_range<BaseType>) {
+        assert(*itr-- == transformed_elements[2]);
+        STATIC_ASSERT(noexcept(itr--)
+                      == is_nothrow_copy_constructible_v<ranges::iterator_t<LocalZipTransformType>>&& noexcept(--itr));
+
+        assert(*--itr == transformed_elements[0]);
+        STATIC_ASSERT(noexcept(--itr) == noexcept(--declval<ranges::iterator_t<BaseType>&>()));
+    }
+
+    if constexpr (ranges::random_access_range<BaseType>) {
+        itr += 2;
+        assert(*itr == transformed_elements[2]);
+        STATIC_ASSERT(noexcept(itr += 2) == noexcept(declval<ranges::iterator_t<BaseType>&>() += 2));
+
+        itr -= 2;
+        assert(*itr == transformed_elements[0]);
+        STATIC_ASSERT(noexcept(itr -= 2) == noexcept(declval<ranges::iterator_t<BaseType>&>() -= 2));
+
+        assert(itr[2] == transformed_elements[2]);
+        {
+            constexpr bool is_random_access_noexcept = noexcept(apply(
+                []<class... IteratorTypes>(const IteratorTypes&... itrs) noexcept(
+                    noexcept(invoke(*declval<const ranges::_Movable_box<TransformType>&>(),
+                        itrs[static_cast<iter_difference_t<IteratorTypes>>(2)]...))) -> decltype(auto) { return true; },
+                declval<const ZipIteratorTupleType&>()));
+            STATIC_ASSERT(noexcept(itr[2]) == is_random_access_noexcept);
+        }
+
+        const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr2 = (itr + 2);
+        assert(*itr2 == transformed_elements[2]);
+        STATIC_ASSERT(noexcept(itr + 2) == noexcept(declval<const ranges::iterator_t<BaseType>&>() + 2)
+                      && is_nothrow_move_constructible_v<ranges::iterator_t<BaseType>>);
+
+        const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr3 = (2 + itr);
+        assert(*itr3 == transformed_elements[2]);
+        STATIC_ASSERT(noexcept(2 + itr) == noexcept(declval<const ranges::iterator_t<BaseType>&>() + 2)
+                      && is_nothrow_move_constructible_v<ranges::iterator_t<BaseType>>);
+
+        const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr4 = (itr3 - 2);
+        assert(*itr4 == transformed_elements[0]);
+        STATIC_ASSERT(noexcept(itr3 - 2) == noexcept(declval<const ranges::iterator_t<BaseType>&>() - 2)
+                      && is_nothrow_move_constructible_v<ranges::iterator_t<BaseType>>);
+
+        using three_way_ordering_category = decltype(itr <=> itr2);
+
+        assert(itr <=> itr4 == three_way_ordering_category::equivalent);
+        assert(itr <=> itr2 == three_way_ordering_category::less);
+        assert(itr2 <=> itr == three_way_ordering_category::greater);
+
+        STATIC_ASSERT(noexcept(itr <=> itr2)
+                      == noexcept(declval<const ranges::iterator_t<BaseType>&>()
+                                  <=> declval<const ranges::iterator_t<BaseType>&>()));
+    }
+
+    if constexpr (equality_comparable<ranges::iterator_t<BaseType>>) {
+        same_as<ranges::iterator_t<LocalZipTransformType>> auto advanced_itr1 = relevant_range.begin();
+        ranges::advance(advanced_itr1, 2);
+
+        same_as<ranges::iterator_t<LocalZipTransformType>> auto advanced_itr2 = relevant_range.begin();
+        ranges::advance(advanced_itr2, 2);
+
+        assert(advanced_itr1 == advanced_itr2);
+        STATIC_ASSERT(noexcept(advanced_itr1 == advanced_itr2)
+                      == noexcept(declval<const ranges::iterator_t<BaseType>&>()
+                                  == declval<const ranges::iterator_t<BaseType>&>()));
+
+        assert(relevant_range.begin() != advanced_itr1);
+    }
+
+    if constexpr (!ranges::common_range<LocalZipTransformType>) {
+        // Validate sentinel constructors
+        STATIC_ASSERT(is_default_constructible_v<ranges::sentinel_t<LocalZipTransformType>>
+                      == is_default_constructible_v<ranges::sentinel_t<BaseType>>);
+        STATIC_ASSERT(is_nothrow_default_constructible_v<ranges::sentinel_t<LocalZipTransformType>>
+                      == is_nothrow_default_constructible_v<ranges::sentinel_t<BaseType>>);
+
+        if constexpr (is_const && convertible_to<ranges::sentinel_t<InnerView>, ranges::sentinel_t<const InnerView>>) {
+            STATIC_ASSERT(noexcept(ranges::sentinel_t<LocalZipTransformType>{
+                              declval<ranges::sentinel_t<remove_const_t<LocalZipTransformType>>>()})
+                          == is_nothrow_move_constructible_v<ranges::sentinel_t<BaseType>>);
+        }
+
+        const same_as<ranges::sentinel_t<LocalZipTransformType>> auto sentinel = relevant_range.end();
+
+        // Validate sentinel operator overloads
+        {
+            const auto validate_iterator_sentinel_equality_closure = [&]<bool IteratorConst>() {
+                using comparison_iterator_t = ranges::iterator_t<ranges::_Maybe_const<IteratorConst, InnerView>>;
+                using comparison_sentinel_t = ranges::sentinel_t<BaseType>;
+
+                if constexpr (sentinel_for<comparison_sentinel_t, comparison_iterator_t>) {
+                    auto end_iterator = relevant_range.begin();
+                    ranges::advance(end_iterator, ranges::size(transformed_elements));
+
+                    assert(end_iterator == sentinel);
+                    STATIC_ASSERT(noexcept(end_iterator == sentinel)
+                                  == noexcept(declval<const comparison_iterator_t&>()
+                                              == declval<const comparison_sentinel_t&>()));
+
+                    assert(itr != sentinel);
+                }
+            };
+
+            validate_iterator_sentinel_equality_closure.template operator()<false>();
+            validate_iterator_sentinel_equality_closure.template operator()<true>();
+        }
+
+        {
+            const auto validate_iterator_sentinel_difference_closure = [&]<bool IteratorConst>() {
+                using comparison_iterator_t = ranges::iterator_t<ranges::_Maybe_const<IteratorConst, InnerView>>;
+                using comparison_sentinel_t = ranges::sentinel_t<BaseType>;
+
+                if constexpr (sized_sentinel_for<comparison_sentinel_t, comparison_iterator_t>) {
+                    using difference_type = ranges::range_difference_t<ranges::_Maybe_const<IteratorConst, InnerView>>;
+
+                    const auto comparison_itr = maybe_as_const<IteratorConst>(relevant_range).begin();
+
+                    const same_as<difference_type> auto diff1 = (sentinel - comparison_itr);
+                    assert(diff1 == static_cast<difference_type>(ranges::size(transformed_elements)));
+                    STATIC_ASSERT(
+                        noexcept(sentinel - comparison_itr)
+                        == noexcept(declval<const comparison_sentinel_t&>() - declval<const comparison_iterator_t&>()));
+
+                    const same_as<difference_type> auto diff2 = (comparison_itr - sentinel);
+                    assert(diff2 == -static_cast<difference_type>(ranges::size(transformed_elements)));
+                    STATIC_ASSERT(
+                        noexcept(comparison_itr - sentinel)
+                        == noexcept(declval<const comparison_iterator_t&>() - declval<const comparison_sentinel_t&>()));
+                }
+            };
+
+            validate_iterator_sentinel_difference_closure.template operator()<false>();
+            validate_iterator_sentinel_difference_closure.template operator()<true>();
+        }
+    }
+
+    return true;
+}
 
 #pragma warning(push)
-#pragma warning(disable : 4365) // conversion from 'std::array<int,8>::size_type' to 'int', signed/unsigned mismatch
+#pragma warning(disable : 4100) // unreferenced formal parameter
+
 template <class TransformType_, ranges::random_access_range TransformedElementsContainer,
     ranges::input_range... RangeTypes>
 constexpr bool test_one(
     TransformType_&& transform, const TransformedElementsContainer& transformed_elements, RangeTypes&&... ranges) {
-#pragma warning(pop)
     // Ignore instances where one of the generated test ranges does not model
     // ranges::viewable_range.
     if constexpr ((ranges::viewable_range<RangeTypes> && ...)) {
@@ -324,268 +569,11 @@ constexpr bool test_one(
                     && is_nothrow_move_constructible_v<ranges::sentinel_t<const InnerView>>);
             }
 
-            const auto validate_iterators_closure = [&transformed_elements]<typename LocalZipTransformType>(
-                                                        LocalZipTransformType& relevant_range) {
-                constexpr bool is_const = same_as<LocalZipTransformType, add_const_t<LocalZipTransformType>>;
-                using BaseType          = ranges::_Maybe_const<is_const, InnerView>;
-                using ZipIteratorTupleType =
-                    tuple<ranges::iterator_t<ranges::_Maybe_const<is_const, AllView<RangeTypes>>>...>;
-
-                // Validate iterator type aliases
-                {
-                    // Validate iterator_category
-                    if constexpr (ranges::forward_range<BaseType>) {
-                        STATIC_ASSERT(HasIteratorCategory<LocalZipTransformType>);
-
-                        using transform_result_t = TransformResultType<is_const, TransformType, RangeTypes...>;
-
-                        if constexpr (!is_reference_v<transform_result_t>) {
-                            STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
-                                input_iterator_tag>);
-                        } else {
-                            constexpr auto check_iterator_tags_closure = []<class TagType>() {
-                                return (
-                                    derived_from<typename iterator_traits<ranges::iterator_t<
-                                                     ranges::_Maybe_const<is_const, RangeTypes>>>::iterator_category,
-                                        TagType>
-                                    && ...);
-                            };
-
-                            if constexpr (check_iterator_tags_closure
-                                              .template operator()<random_access_iterator_tag>()) {
-                                STATIC_ASSERT(
-                                    same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
-                                        random_access_iterator_tag>);
-                            } else if constexpr (check_iterator_tags_closure
-                                                     .template operator()<bidirectional_iterator_tag>()) {
-                                STATIC_ASSERT(
-                                    same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
-                                        bidirectional_iterator_tag>);
-                            } else if constexpr (check_iterator_tags_closure
-                                                     .template operator()<forward_iterator_tag>()) {
-                                STATIC_ASSERT(
-                                    same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
-                                        forward_iterator_tag>);
-                            } else {
-                                STATIC_ASSERT(
-                                    same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
-                                        input_iterator_tag>);
-                            }
-                        }
-                    } else {
-                        STATIC_ASSERT(!HasIteratorCategory<LocalZipTransformType>);
-                    }
-
-                    // Validate iterator_concept
-                    STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_concept,
-                        typename ranges::iterator_t<BaseType>::iterator_concept>);
-
-                    // Validate value_type
-                    STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::value_type,
-                        remove_cvref_t<TransformResultType<is_const, TransformType, RangeTypes...>>>);
-
-                    // Validate difference_type
-                    STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::difference_type,
-                        ranges::range_difference_t<BaseType>>);
-                }
-
-                // Validate iterator constructors
-                STATIC_ASSERT(is_default_constructible_v<ranges::iterator_t<LocalZipTransformType>>
-                              == is_default_constructible_v<ranges::iterator_t<BaseType>>);
-                STATIC_ASSERT(is_nothrow_default_constructible_v<ranges::iterator_t<LocalZipTransformType>>
-                              == is_nothrow_default_constructible_v<ranges::iterator_t<BaseType>>);
-
-                if constexpr (is_const
-                              && convertible_to<ranges::iterator_t<InnerView>, ranges::iterator_t<const InnerView>>) {
-                    STATIC_ASSERT(noexcept(ranges::iterator_t<LocalZipTransformType>{
-                                      declval<ranges::iterator_t<remove_const_t<LocalZipTransformType>>>()})
-                                  == is_nothrow_convertible_v<ranges::iterator_t<InnerView>,
-                                      ranges::iterator_t<const InnerView>>);
-                }
-
-                same_as<ranges::iterator_t<LocalZipTransformType>> auto itr = relevant_range.begin();
-
-                // Validate iterator operator overloads
-                {
-                    const auto first_result = *itr;
-                    assert(first_result == *ranges::begin(transformed_elements));
-
-                    // NOTE: The actual noexcept specification for zip_transform_view::iterator::operator*() is as
-                    // follows:
-                    //
-                    // Let Is be the pack 0, 1, ..., (sizeof...(Views)-1). The exception specification is equivalent to:
-                    // noexcept(invoke(*parent_->fun_, *std::get<Is>(inner_.current_)...)).
-                    //
-                    // Notably, parent_t is a pointer and inner_.current_ is a tuple, and operator->() on a pointer and
-                    // std::get(std::tuple<...>) are both noexcept. We thus simplify the noexcept check as follows:
-                    STATIC_ASSERT(
-                        noexcept(*itr)
-                        == noexcept(invoke(*declval<const ranges::_Movable_box<TransformType>&>(),
-                            *declval<
-                                const ranges::iterator_t<ranges::_Maybe_const<is_const, AllView<RangeTypes>>>&>()...)));
-                }
-
-                STATIC_ASSERT(noexcept(++itr) == noexcept(++declval<ranges::iterator_t<BaseType>&>()));
-
-                if constexpr (ranges::forward_range<BaseType>) {
-                    same_as<ranges::iterator_t<LocalZipTransformType>> auto duplicate_itr = itr++;
-                    assert(*duplicate_itr == *ranges::begin(transformed_elements));
-                    STATIC_ASSERT(
-                        noexcept(itr++)
-                        == is_nothrow_copy_constructible_v<ranges::iterator_t<LocalZipTransformType>>&& noexcept(
-                            ++itr));
-                } else {
-                    itr++;
-                    STATIC_ASSERT(noexcept(itr++) == noexcept(++itr));
-                }
-
-                assert(*++itr == transformed_elements[2]);
-
-                if constexpr (ranges::bidirectional_range<BaseType>) {
-                    assert(*itr-- == transformed_elements[2]);
-                    STATIC_ASSERT(
-                        noexcept(itr--)
-                        == is_nothrow_copy_constructible_v<ranges::iterator_t<LocalZipTransformType>>&& noexcept(
-                            --itr));
-
-                    assert(*--itr == transformed_elements[0]);
-                    STATIC_ASSERT(noexcept(--itr) == noexcept(--declval<ranges::iterator_t<BaseType>&>()));
-                }
-
-                if constexpr (ranges::random_access_range<BaseType>) {
-                    itr += 2;
-                    assert(*itr == transformed_elements[2]);
-                    STATIC_ASSERT(noexcept(itr += 2) == noexcept(declval<ranges::iterator_t<BaseType>&>() += 2));
-
-                    itr -= 2;
-                    assert(*itr == transformed_elements[0]);
-                    STATIC_ASSERT(noexcept(itr -= 2) == noexcept(declval<ranges::iterator_t<BaseType>&>() -= 2));
-
-                    assert(itr[2] == transformed_elements[2]);
-                    STATIC_ASSERT(
-                        noexcept(itr[2])
-                        == noexcept(apply([]<class... IteratorTypes>(const IteratorTypes&... itrs) noexcept(
-                                              noexcept(invoke(*declval<const ranges::_Movable_box<TransformType>&>(),
-                                                  itrs[static_cast<iter_difference_t<IteratorTypes>>(2)]...)))
-                                              -> decltype(auto) { return true; },
-                            declval<const ZipIteratorTupleType&>())));
-
-                    const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr2 = (itr + 2);
-                    assert(*itr2 == transformed_elements[2]);
-                    STATIC_ASSERT(noexcept(itr + 2) == noexcept(declval<const ranges::iterator_t<BaseType>&>() + 2)
-                                  && is_nothrow_move_constructible_v<ranges::iterator_t<BaseType>>);
-
-                    const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr3 = (2 + itr);
-                    assert(*itr3 == transformed_elements[2]);
-                    STATIC_ASSERT(noexcept(2 + itr) == noexcept(declval<const ranges::iterator_t<BaseType>&>() + 2)
-                                  && is_nothrow_move_constructible_v<ranges::iterator_t<BaseType>>);
-
-                    const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr4 = (itr3 - 2);
-                    assert(*itr4 == transformed_elements[0]);
-                    STATIC_ASSERT(noexcept(itr3 - 2) == noexcept(declval<const ranges::iterator_t<BaseType>&>() - 2)
-                                  && is_nothrow_move_constructible_v<ranges::iterator_t<BaseType>>);
-
-                    using three_way_ordering_category = decltype(itr <=> itr2);
-
-                    assert(itr <=> itr4 == three_way_ordering_category::equivalent);
-                    assert(itr <=> itr2 == three_way_ordering_category::less);
-                    assert(itr2 <=> itr == three_way_ordering_category::greater);
-
-                    STATIC_ASSERT(noexcept(itr <=> itr2)
-                                  == noexcept(declval<const ranges::iterator_t<BaseType>&>()
-                                              <=> declval<const ranges::iterator_t<BaseType>&>()));
-                }
-
-                if constexpr (equality_comparable<ranges::iterator_t<BaseType>>) {
-                    same_as<ranges::iterator_t<LocalZipTransformType>> auto advanced_itr1 = relevant_range.begin();
-                    ranges::advance(advanced_itr1, 2);
-
-                    same_as<ranges::iterator_t<LocalZipTransformType>> auto advanced_itr2 = relevant_range.begin();
-                    ranges::advance(advanced_itr2, 2);
-
-                    assert(advanced_itr1 == advanced_itr2);
-                    STATIC_ASSERT(noexcept(advanced_itr1 == advanced_itr2)
-                                  == noexcept(declval<const ranges::iterator_t<BaseType>&>()
-                                              == declval<const ranges::iterator_t<BaseType>&>()));
-
-                    assert(relevant_range.begin() != advanced_itr1);
-                }
-
-                if constexpr (!ranges::common_range<LocalZipTransformType>) {
-                    // Validate sentinel constructors
-                    STATIC_ASSERT(is_default_constructible_v<ranges::sentinel_t<LocalZipTransformType>>
-                                  == is_default_constructible_v<ranges::sentinel_t<BaseType>>);
-                    STATIC_ASSERT(is_nothrow_default_constructible_v<ranges::sentinel_t<LocalZipTransformType>>
-                                  == is_nothrow_default_constructible_v<ranges::sentinel_t<BaseType>>);
-
-                    if constexpr (is_const
-                                  && convertible_to<ranges::sentinel_t<InnerView>,
-                                      ranges::sentinel_t<const InnerView>>) {
-                        STATIC_ASSERT(noexcept(ranges::sentinel_t<LocalZipTransformType>{
-                                          declval<ranges::sentinel_t<remove_const_t<LocalZipTransformType>>>()})
-                                      == is_nothrow_move_constructible_v<ranges::sentinel_t<BaseType>>);
-                    }
-
-                    const same_as<ranges::sentinel_t<LocalZipTransformType>> auto sentinel = relevant_range.end();
-
-                    // Validate sentinel operator overloads
-                    {
-                        const auto validate_iterator_sentinel_equality_closure = [&]<bool IteratorConst>() {
-                            using comparison_iterator_t =
-                                ranges::iterator_t<ranges::_Maybe_const<IteratorConst, InnerView>>;
-                            using comparison_sentinel_t = ranges::sentinel_t<BaseType>;
-
-                            if constexpr (sentinel_for<comparison_sentinel_t, comparison_iterator_t>) {
-                                auto end_iterator = relevant_range.begin();
-                                ranges::advance(end_iterator, ranges::size(transformed_elements));
-
-                                assert(end_iterator == sentinel);
-                                STATIC_ASSERT(noexcept(end_iterator == sentinel)
-                                              == noexcept(declval<const comparison_iterator_t&>()
-                                                          == declval<const comparison_sentinel_t&>()));
-
-                                assert(itr != sentinel);
-                            }
-                        };
-
-                        validate_iterator_sentinel_equality_closure.template operator()<false>();
-                        validate_iterator_sentinel_equality_closure.template operator()<true>();
-                    }
-
-                    {
-                        const auto validate_iterator_sentinel_difference_closure = [&]<bool IteratorConst>() {
-                            using comparison_iterator_t =
-                                ranges::iterator_t<ranges::_Maybe_const<IteratorConst, InnerView>>;
-                            using comparison_sentinel_t = ranges::sentinel_t<BaseType>;
-
-                            if constexpr (sized_sentinel_for<comparison_sentinel_t, comparison_iterator_t>) {
-                                using difference_type =
-                                    ranges::range_difference_t<ranges::_Maybe_const<IteratorConst, InnerView>>;
-
-                                const auto comparison_itr = maybe_as_const<IteratorConst>(relevant_range).begin();
-
-                                const same_as<difference_type> auto diff1 = (sentinel - comparison_itr);
-                                assert(diff1 == static_cast<difference_type>(ranges::size(transformed_elements)));
-                                STATIC_ASSERT(noexcept(sentinel - comparison_itr)
-                                              == noexcept(declval<const comparison_sentinel_t&>()
-                                                          - declval<const comparison_iterator_t&>()));
-
-                                const same_as<difference_type> auto diff2 = (comparison_itr - sentinel);
-                                assert(diff2 == -static_cast<difference_type>(ranges::size(transformed_elements)));
-                                STATIC_ASSERT(noexcept(comparison_itr - sentinel)
-                                              == noexcept(declval<const comparison_iterator_t&>()
-                                                          - declval<const comparison_sentinel_t&>()));
-                            }
-                        };
-
-                        validate_iterator_sentinel_difference_closure.template operator()<false>();
-                        validate_iterator_sentinel_difference_closure.template operator()<true>();
-                    }
-                }
-            };
-
-            validate_iterators_closure(zipped_transformed_range);
-            validate_iterators_closure(as_const(zipped_transformed_range));
+            validate_iterators_sentinels<TransformType, TransformedElementsContainer,
+                decltype(zipped_transformed_range), RangeTypes...>(zipped_transformed_range, transformed_elements);
+            validate_iterators_sentinels<TransformType, TransformedElementsContainer,
+                decltype(as_const(zipped_transformed_range)), RangeTypes...>(
+                as_const(zipped_transformed_range), transformed_elements);
         }
     }
 
