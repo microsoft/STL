@@ -7685,20 +7685,12 @@ namespace ranges {
         template <bool _IsConst>
             requires forward_range<_Maybe_const<_IsConst, _Inner_view>>
         struct _Category_base<_IsConst> {
-        private:
-            enum class _Category_id {
-                _Random_access_iterator,
-                _Bidirectional_iterator,
-                _Forward_iterator,
-                _Input_iterator
-            };
-
-            static constexpr _Category_id _Curr_id = []() noexcept {
+            using iterator_category = decltype([]() noexcept {
                 using _Invoke_t = invoke_result_t<_Maybe_const<_IsConst, _Func>&,
                     range_reference_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
 
                 if constexpr (!is_reference_v<_Invoke_t>) {
-                    return _Category_id::_Input_iterator;
+                    return input_iterator_tag{};
                 } else {
                     constexpr auto _Check_tag_type_closure = []<typename _Tag_type>() noexcept {
                         // clang-format off
@@ -7710,23 +7702,16 @@ namespace ranges {
                     };
 
                     if constexpr (_Check_tag_type_closure.template operator()<random_access_iterator_tag>()) {
-                        return _Category_id::_Random_access_iterator;
+                        return random_access_iterator_tag{};
                     } else if constexpr (_Check_tag_type_closure.template operator()<bidirectional_iterator_tag>()) {
-                        return _Category_id::_Bidirectional_iterator;
+                        return bidirectional_iterator_tag{};
                     } else if constexpr (_Check_tag_type_closure.template operator()<forward_iterator_tag>()) {
-                        return _Category_id::_Forward_iterator;
+                        return forward_iterator_tag{};
                     } else {
-                        return _Category_id::_Input_iterator;
+                        return input_iterator_tag{};
                     }
                 }
-            }();
-
-        public:
-            using iterator_category =
-                conditional_t<_Curr_id == _Category_id::_Random_access_iterator, random_access_iterator_tag,
-                    conditional_t<_Curr_id == _Category_id::_Bidirectional_iterator, bidirectional_iterator_tag,
-                        conditional_t<_Curr_id == _Category_id::_Forward_iterator, forward_iterator_tag,
-                            input_iterator_tag>>>;
+            }());
         };
 
         template <bool _IsConst>
