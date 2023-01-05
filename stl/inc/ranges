@@ -7890,7 +7890,7 @@ namespace ranges {
 
             // So, here's an interesting MSVC bug: If we have _Sentinel::operator-() return
             // range_difference_t<_Maybe_const<_IteratorConst, _Inner_view>> directly as suggested
-            // in the C++ standard, ADL does not seem to find the function in the test suite, and the 
+            // in the C++ standard, ADL does not seem to find the function in the test suite, and the
             // program fails to compile. This does not seem to happen with Clang.
             template <bool _IteratorConst>
             using _Iterator_sentinel_difference_type = range_difference_t<_Maybe_const<_IteratorConst, _Inner_view>>;
