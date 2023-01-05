@@ -7750,7 +7750,7 @@ namespace ranges {
                 range_reference_t<_Maybe_const<_IsConst, _ViewTypes>>...>>;
             using difference_type  = range_difference_t<_Base_t>;
 
-            _Iterator() = default;
+            _Iterator() noexcept(is_nothrow_default_constructible_v<_Ziperator<_IsConst>>) = default;
 
             constexpr _Iterator(_Iterator<!_IsConst> _Rhs) noexcept(
                 is_nothrow_convertible_v<_Ziperator<false>, _Ziperator<_IsConst>>) // strengthened
@@ -7888,6 +7888,13 @@ namespace ranges {
         private:
             friend zip_transform_view;
 
+            // So, here's an interesting MSVC bug: If we have _Sentinel::operator-() return
+            // range_difference_t<_Maybe_const<_IteratorConst, _Inner_view>> directly as suggested
+            // in the C++ standard, ADL does not seem to find the function in the test suite, and the 
+            // program fails to compile. This does not seem to happen with Clang.
+            template <bool _IteratorConst>
+            using _Iterator_sentinel_difference_type = range_difference_t<_Maybe_const<_IteratorConst, _Inner_view>>;
+
             /* [[no_unique_address]] */ _Zentinel<_IsConst> _Inner;
 
             constexpr explicit _Sentinel(_Zentinel<_IsConst> _Inner_) noexcept(
@@ -7901,7 +7908,7 @@ namespace ranges {
             }
 
         public:
-            _Sentinel() = default;
+            _Sentinel() noexcept(is_nothrow_default_constructible_v<_Zentinel<_IsConst>>) = default;
 
             constexpr _Sentinel(_Sentinel<!_IsConst> _Rhs) noexcept(
                 is_nothrow_convertible_v<_Zentinel<false>, _Zentinel<_IsConst>>) // strengthened
@@ -7920,7 +7927,7 @@ namespace ranges {
 
             template <bool _IteratorConst>
                 requires sized_sentinel_for<_Zentinel<_IsConst>, _Ziperator<_IteratorConst>>
-            _NODISCARD_FRIEND constexpr range_difference_t<_Maybe_const<_IteratorConst, _Inner_view>>
+            _NODISCARD_FRIEND constexpr _Iterator_sentinel_difference_type<_IteratorConst>
                 // clang-format off
                 operator-(const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs)
                 noexcept(noexcept(_Get_iterator_ziperator(_Lhs) - _Rhs._Inner)) // strengthened
@@ -7931,7 +7938,7 @@ namespace ranges {
 
             template <bool _IteratorConst>
                 requires sized_sentinel_for<_Zentinel<_IsConst>, _Ziperator<_IteratorConst>>
-            _NODISCARD_FRIEND constexpr range_difference_t<_Maybe_const<_IteratorConst, _Inner_view>>
+            _NODISCARD_FRIEND constexpr _Iterator_sentinel_difference_type<_IteratorConst>
                 // clang-format off
                 operator-(const _Sentinel& _Lhs, const _Iterator<_IteratorConst>& _Rhs)
                 noexcept(noexcept(_Lhs._Inner - _Get_iterator_ziperator(_Rhs))) // strengthened
@@ -7955,7 +7962,9 @@ namespace ranges {
             (range<const _Inner_view> && regular_invocable<const _Func&, range_reference_t<const _ViewTypes>...>);
 
     public:
-        zip_transform_view() = default;
+        zip_transform_view() noexcept(
+            is_nothrow_default_constructible_v<_Movable_box<_Func>>&& is_nothrow_default_constructible_v<_Inner_view>) =
+            default;
 
         constexpr explicit zip_transform_view(_Func _Function_, _ViewTypes... _Views) noexcept(
             is_nothrow_move_constructible_v<_Movable_box<_Func>>&&
@@ -8045,7 +8054,7 @@ namespace ranges {
                         return false;
                     }
                 } else {
-                    return noexcept(noexcept(zip_transform_view(_STD declval<_Func>(), _STD declval<_Types>()...)));
+                    return noexcept(zip_transform_view(_STD declval<_Func>(), _STD declval<_Types>()...));
                 }
             }();
 
