@@ -8058,9 +8058,10 @@ namespace ranges {
             {
                 if constexpr (sizeof...(_Types) == 0) {
                     using _Decayed_func = decay_t<decltype((_Function))>;
-                    using _Empty_view_t = decltype(empty<decay_t<invoke_result_t<_Decayed_func&>>>);
 
-                    return ((void) _Function, _Empty_view_t{empty<decay_t<invoke_result_t<_Decayed_func&>>>});
+                    // equivalent to:
+                    // return ((void) _Function, auto(empty<decay_t<invoke_result_t<_Decayed_func&>>>));
+                    return empty_view<decay_t<invoke_result_t<_Decayed_func&>>>{};
                 } else {
                     return zip_transform_view(_STD forward<_Func>(_Function), _STD forward<_Types>(_Args)...);
                 }
