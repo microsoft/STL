@@ -11,8 +11,8 @@
 #ifdef __cpp_lib_concepts
 #include <compare>
 #endif // __cpp_lib_concepts
+#include <__msvc_iter_core.hpp>
 #include <type_traits>
-#include <utility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

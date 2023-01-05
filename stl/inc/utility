@@ -8,8 +8,12 @@
 #define _UTILITY_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <__msvc_iter_core.hpp>
+#include <type_traits>
 #include <xstddef>
+
+#ifdef __cpp_lib_concepts
+#include <concepts>
+#endif // __cpp_lib_concepts
 
 #if _HAS_CXX20
 #include <compare>
@@ -139,8 +143,14 @@ struct pair;
 _EXPORT_STD template <class _Ty, size_t _Size>
 class array;
 
+_EXPORT_STD template <class _Tuple>
+struct tuple_size;
+
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
+
+_EXPORT_STD template <size_t _Index, class _Tuple>
+struct tuple_element;
 
 _EXPORT_STD template <size_t _Index, class _Tuple>
 using tuple_element_t = typename tuple_element<_Index, _Tuple>::type;
@@ -184,9 +194,6 @@ inline constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
 
 template <class>
 inline constexpr bool _Is_subrange_v = false;
-
-template <class _It, class _Se, ranges::subrange_kind _Ki>
-inline constexpr bool _Is_subrange_v<ranges::subrange<_It, _Se, _Ki>> = true;
 
 #if _HAS_CXX23
 template <class _Ty>
@@ -885,6 +892,20 @@ _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
 
     return true;
 }
+
+#ifdef __cpp_lib_concepts
+template <class _Ty>
+using _With_reference = _Ty&;
+
+template <class _Ty>
+concept _Can_reference = requires { typename _With_reference<_Ty>; };
+#else // ^^^ __cpp_lib_concepts / vvv !__cpp_lib_concepts
+template <class _Ty, class = void>
+inline constexpr bool _Can_reference = false;
+
+template <class _Ty>
+inline constexpr bool _Can_reference<_Ty, void_t<_Ty&>> = true;
+#endif // !__cpp_lib_concepts
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23
