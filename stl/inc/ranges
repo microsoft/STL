@@ -8036,17 +8036,10 @@ namespace ranges {
                             "ERROR: When using std::views::zip_transform without any views, the specified callable "
                             "must return an object (see [range.zip.transform.overview]/2.1.1).");
 
-                        // NOTE: As of writing this, the MSVC hasn't implemented auto(x)/auto{x}
-                        // (see P0849R8). We need to thus manually describe the type instead of using
-                        // auto(std::views::empty<std::decay_t<std::invoke_result_t<_Decayed_func&>>>)
-                        // as the C++ standard proposes.
-                        //
-                        // (The alternative is to use the exposition-only function decay-copy, but this
-                        // isn't what's written in the standard anymore.)
-                        using _Empty_view_t = decltype(empty<decay_t<invoke_result_t<_Decayed_func&>>>);
-
-                        return noexcept(((void) _STD declval<_Func&>(),
-                            _Empty_view_t{empty<decay_t<invoke_result_t<_Decayed_func&>>>}));
+                        // equivalent to:
+                        // return noexcept(((void) _STD declval<_Func&>(),
+                        //     auto(empty<decay_t<invoke_result_t<_Decayed_func&>>>)));
+                        return noexcept(_STD declval<_Func&>());
                     } else {
                         static_assert(_Always_false<_Decayed_func>,
                             "ERROR: When using std::views::zip_transform without any views, the specified callable "
