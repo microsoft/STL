@@ -12,8 +12,10 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <print> are available only with C++23 or later.");
 #else // ^^^ !defined(__cpp_lib_print) / defined(__cpp_lib_print) vvv
 
+#include <chrono>
 #include <cstdio>
 #include <format>
+#include <string>
 #include <xprint.h>
 
 #pragma pack(push, _CRT_PACKING)
@@ -25,26 +27,120 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-template <class... _Types>
-_EXPORT_STD void print(const format_string<_Types...> _Fmt, _Types&&... _Args)
-{
-    print(stdout, _Fmt, _STD forward<_Types>(_Args)...);
+template <bool _Add_newline>
+void _Vprint_nonunicode_impl(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
+    const string _Output_str = [&]() {
+        if constexpr (_Add_newline) {
+            return _STD vformat(_Fmt_str, _Fmt_args) + '\n';
+        } else {
+            return _STD vformat(_Fmt_str, _Fmt_args);
+        }
+    }();
+
+    const bool _Was_write_successful = (_STD fputs(_Output_str.c_str(), _Stream) != EOF);
+
+    if (!_Was_write_successful) [[unlikely]] {
+        throw system_error{make_error_code(static_cast<errc>(errno))};
+    }
+}
+
+template <bool _Add_newline>
+void _Vprint_unicode_impl(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
+    const __std_file_stream_pointer _File_stream =
+        static_cast<__std_file_stream_pointer>(reinterpret_cast<underlying_type_t<__std_file_stream_pointer>>(_Stream));
+    const __std_unicode_console_detect_result _Unicode_console_detect_result{
+        __std_is_file_stream_unicode_console(_File_stream)};
+
+    switch (_Unicode_console_detect_result._Error) {
+    case __std_win_error::_Success:
+        [[likely]] break;
+
+    // If __std_win_error::_File_not_found is returned, then _File_stream does not actually
+    // have an associated output stream. In that case, we don't actually need to write anything
+    // out, and we're finished.
+    case __std_win_error::_File_not_found:
+        return;
+
+    default:
+        [[unlikely]] _STD _Throw_system_error_from_std_win_error(_Unicode_console_detect_result._Error);
+    }
+
+    if (_Unicode_console_detect_result._Is_unicode_console) {
+        const string _Output_str = [&]() {
+            if constexpr (_Add_newline) {
+                return _STD vformat(_Fmt_str, _Fmt_args) + '\n';
+            } else {
+                return _STD vformat(_Fmt_str, _Fmt_args);
+            }
+        }();
+
+        const __std_unicode_console_print_result _Console_print_result{
+            __std_print_to_unicode_console(_File_stream, _Output_str.c_str(), _Output_str.size())};
+
+        switch (_Console_print_result._Result_type) {
+        case __std_unicode_console_print_result_type::_Win_error:
+            [[unlikely]] _STD _Throw_system_error_from_std_win_error(_Console_print_result._Win_error);
+
+        case __std_unicode_console_print_result_type::_Posix_error:
+            [[unlikely]] throw system_error{
+                _STD make_error_code(static_cast<errc>(_Console_print_result._Posix_error))};
+
+        default:
+            [[likely]] break;
+        }
+    } else {
+        _STD _Vprint_nonunicode_impl<_Add_newline>(_Stream, _Fmt_str, _Fmt_args);
+    }
+}
+
+template <bool _Add_newline, class... _Types>
+void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    if constexpr (_Is_ordinary_literal_encoding_utf8) {
+        _STD _Vprint_unicode_impl<_Add_newline>(_Stream, _Fmt.get(), make_format_args(_STD forward<_Types>(_Args)...));
+    } else {
+        _STD _Vprint_nonunicode_impl<_Add_newline>(
+            _Stream, _Fmt.get(), make_format_args(_STD forward<_Types>(_Args)...));
+    }
 }
 
 template <class... _Types>
-_EXPORT_STD void print(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args);
+_EXPORT_STD void print(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    _STD _Print_impl<false>(_Stream, _Fmt, _STD forward<_Types>(_Args)...);
+}
 
 template <class... _Types>
-_EXPORT_STD void println(const format_string<_Types...> _Fmt, _Types&&... _Args);
+_EXPORT_STD void print(const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    _STD print(stdout, _Fmt, _STD forward<_Types>(_Args)...);
+}
 
 template <class... _Types>
-_EXPORT_STD void println(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args);
+_EXPORT_STD void println(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    // Equivalent to:
+    //
+    // std::print(_Stream, "{}\n", std::format(_Fmt, std::forward<_Types>(_Args)...));
+    _STD _Print_impl<true>(_Stream, _Fmt, _STD forward<_Types>(_Args)...);
+}
 
-_EXPORT_STD void vprint_unicode(const string_view _Fmt_str, const format_args _Fmt_args);
-_EXPORT_STD void vprint_unicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args);
+template <class... _Types>
+_EXPORT_STD void println(const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    _STD println(stdout, _Fmt, _STD forward<_Types>(_Args)...);
+}
 
-_EXPORT_STD void vprint_nonunicode(const string_view _Fmt_str, const format_args _Fmt_args);
-_EXPORT_STD void vprint_nonunicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args);
+_EXPORT_STD void vprint_unicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
+    _STD _Vprint_unicode_impl<false>(_Stream, _Fmt_str, _Fmt_args);
+}
+
+_EXPORT_STD void vprint_unicode(const string_view _Fmt_str, const format_args _Fmt_args) {
+    _STD vprint_unicode(stdout, _Fmt_str, _Fmt_args);
+}
+
+_EXPORT_STD void vprint_nonunicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
+    _STD _Vprint_nonunicode_impl<false>(_Stream, _Fmt_str, _Fmt_args);
+}
+
+_EXPORT_STD void vprint_nonunicode(const string_view _Fmt_str, const format_args _Fmt_args) {
+    _STD vprint_nonunicode(stdout, _Fmt_str, _Fmt_args);
+}
 
 _STD_END
 

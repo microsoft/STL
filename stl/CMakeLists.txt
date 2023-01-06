@@ -178,6 +178,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/numeric
     ${CMAKE_CURRENT_LIST_DIR}/inc/optional
     ${CMAKE_CURRENT_LIST_DIR}/inc/ostream
+    ${CMAKE_CURRENT_LIST_DIR}/inc/print
     ${CMAKE_CURRENT_LIST_DIR}/inc/queue
     ${CMAKE_CURRENT_LIST_DIR}/inc/random
     ${CMAKE_CURRENT_LIST_DIR}/inc/ranges

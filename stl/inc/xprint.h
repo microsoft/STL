@@ -20,7 +20,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C
 
-enum class __std_file_stream_pointer : intptr_t { _Invalid = 0 };
+enum class __std_file_stream_pointer : uintptr_t { _Invalid = 0 };
 
 struct __std_unicode_console_detect_result {
     bool _Is_unicode_console;
@@ -44,11 +44,6 @@ _NODISCARD _Success_(
     return._Result_type == __std_unicode_console_print_result_type::_Success) __std_unicode_console_print_result
     __stdcall __std_print_to_unicode_console(_In_ const __std_file_stream_pointer _Stream, _In_ const char* const _Str,
         _In_ const unsigned long long _Str_size) noexcept;
-
-_NODISCARD _Success_(
-    return._Result_type == __std_unicode_console_print_result_type::_Success) __std_unicode_console_print_result
-    __stdcall __std_println_to_unicode_console(_In_ const __std_file_stream_pointer _Stream,
-        _In_ const char* const _Str, _In_ const unsigned long long _Str_size) noexcept;
 
 _END_EXTERN_C
 
