@@ -756,6 +756,12 @@ constexpr bool validate_empty_ranges() {
     [[maybe_unused]] const auto useless_transform_view = views::zip_transform(dummy_function_closure);
     assert(!was_dummy_function_called);
 
+    // When no ranges are used with the std::views::zip_transform CPO, the decayed return type of
+    // the provided function must not be void.
+    STATIC_ASSERT(
+        CanZipTransform<decltype([]() noexcept -> const auto& { return single_range_transform_results_array; })>);
+    STATIC_ASSERT(!CanZipTransform<decltype([]() noexcept -> void {})>);
+
     return true;
 }
 

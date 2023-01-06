@@ -8019,22 +8019,26 @@ namespace ranges {
                 }
             }();
 
-            template <class _Decayed_func, class... _Types>
+            template <class _Func, class... _Types>
             static constexpr bool _Enable_cpo = []() noexcept {
                 if constexpr (sizeof...(_Types) == 0) {
+                    using _Decayed_func = decay_t<_Func>;
+
                     if constexpr (move_constructible<_Decayed_func> && regular_invocable<_Decayed_func&>) {
-                        return is_object_v<invoke_result_t<_Decayed_func&>>;
+                        return !is_void_v<invoke_result_t<_Decayed_func&>>;
                     } else {
                         return false;
                     }
                 } else {
-                    return true;
+                    return requires(_Func && _Function, _Types && ... _Args) {
+                               zip_transform_view(_STD forward<_Func>(_Function), _STD forward<_Types>(_Args)...);
+                           };
                 }
             }();
 
         public:
             template <class _Func, class... _Types>
-                requires _Enable_cpo<decay_t<_Func>, _Types...>
+                requires _Enable_cpo<_Func, _Types...>
             _NODISCARD constexpr auto operator()(_Func&& _Function, _Types&&... _Args) const
                 noexcept(_Is_invocation_noexcept<_Func, _Types...>) // strengthened
             {
