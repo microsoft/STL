@@ -8024,7 +8024,7 @@ namespace ranges {
                         // equivalent to:
                         // return noexcept(((void) _STD declval<_Func&>(),
                         //     auto(empty<decay_t<invoke_result_t<_Decayed_func&>>>)));
-                        return noexcept(_STD declval<_Func&>());
+                        return true;
                     } else {
                         static_assert(_Always_false<_Decayed_func>,
                             "ERROR: When using std::views::zip_transform without any views, the specified callable "
