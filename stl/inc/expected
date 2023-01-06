@@ -308,7 +308,7 @@ public:
         : _Unexpected(_Ilist, _STD forward<_Args>(_Vals)...), _Has_value(false) {}
 
     // [expected.object.dtor]
-    constexpr ~expected() noexcept {
+    constexpr ~expected() {
         if (_Has_value) {
             if constexpr (!is_trivially_destructible_v<_Ty>) {
                 _Value.~_Ty();
@@ -834,7 +834,7 @@ public:
         : _Unexpected(_Ilist, _STD forward<_Args>(_Vals)...), _Has_value(false) {}
 
     // [expected.void.dtor]
-    constexpr ~expected() noexcept {
+    constexpr ~expected() {
         if (!_Has_value) {
             _Unexpected.~_Err();
         }
