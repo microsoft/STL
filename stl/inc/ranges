@@ -2780,6 +2780,9 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Take_fn take;
     } // namespace views
 
+    template <class _Vw, class _Pr> // TRANSITION, LLVM-47414
+    concept _Can_take_while_const = range<const _Vw> && indirect_unary_predicate<const _Pr, iterator_t<const _Vw>>;
+
     _EXPORT_STD template <view _Vw, class _Pr>
         requires input_range<_Vw> && is_object_v<_Pr> && indirect_unary_predicate<const _Pr, iterator_t<_Vw>>
     class take_while_view : public view_interface<take_while_view<_Vw, _Pr>> {
@@ -2889,37 +2892,40 @@ namespace ranges {
             return *_Pred;
         }
 
-        // clang-format off
-        _NODISCARD constexpr auto begin() noexcept(
-            noexcept(_RANGES begin(_Range))) /* strengthened */ requires (!_Simple_view<_Vw>) {
-            // clang-format on
+        _NODISCARD constexpr auto begin() noexcept(noexcept(_RANGES begin(_Range))) /* strengthened */
+            requires (!_Simple_view<_Vw>)
+        {
             return _RANGES begin(_Range);
         }
 
-        // clang-format off
-        _NODISCARD constexpr auto begin() const noexcept(
-            noexcept(_RANGES begin(_Range))) /* strengthened */ requires range<const _Vw>
-            && indirect_unary_predicate<const _Pr, iterator_t<const _Vw>> {
-            // clang-format on
+        _NODISCARD constexpr auto begin() const noexcept(noexcept(_RANGES begin(_Range))) /* strengthened */
+#ifdef __clang__ // TRANSITION, LLVM-47414
+            requires _Can_take_while_const<_Vw, _Pr>
+#else // ^^^ workaround / no workaround vvv
+            requires range<const _Vw> && indirect_unary_predicate<const _Pr, iterator_t<const _Vw>>
+#endif // TRANSITION, LLVM-47414
+        {
             return _RANGES begin(_Range);
         }
 
-        // clang-format off
         _NODISCARD constexpr auto end() noexcept(
             noexcept(_RANGES end(_Range)) && is_nothrow_move_constructible_v<_Sentinel<false>>) /* strengthened */
-            requires (!_Simple_view<_Vw>) {
-            // clang-format on
+            requires (!_Simple_view<_Vw>)
+        {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "cannot call end on a take_while_view with no predicate");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             return _Sentinel<false>{_RANGES end(_Range), _STD addressof(*_Pred)};
         }
 
-        // clang-format off
         _NODISCARD constexpr auto end() const noexcept(
             noexcept(_RANGES end(_Range)) && is_nothrow_move_constructible_v<_Sentinel<true>>) /* strengthened */
-            requires range<const _Vw> && indirect_unary_predicate<const _Pr, iterator_t<const _Vw>> {
-            // clang-format on
+#ifdef __clang__ // TRANSITION, LLVM-47414
+            requires _Can_take_while_const<_Vw, _Pr>
+#else // ^^^ workaround / no workaround vvv
+            requires range<const _Vw> && indirect_unary_predicate<const _Pr, iterator_t<const _Vw>>
+#endif // TRANSITION, LLVM-47414
+        {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "cannot call end on a take_while_view with no predicate");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
