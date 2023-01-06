@@ -1,0 +1,58 @@
+// print standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _PRINT_
+#define _PRINT_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#ifndef __cpp_lib_print
+_EMIT_STL_WARNING(STL4038, "The contents of <print> are available only with C++23 or later.");
+#else // ^^^ !defined(__cpp_lib_print) / defined(__cpp_lib_print) vvv
+
+#include <cstdio>
+#include <format>
+#include <xprint.h>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+
+template <class... _Types>
+_EXPORT_STD void print(const format_string<_Types...> _Fmt, _Types&&... _Args)
+{
+    print(stdout, _Fmt, _STD forward<_Types>(_Args)...);
+}
+
+template <class... _Types>
+_EXPORT_STD void print(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args);
+
+template <class... _Types>
+_EXPORT_STD void println(const format_string<_Types...> _Fmt, _Types&&... _Args);
+
+template <class... _Types>
+_EXPORT_STD void println(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args);
+
+_EXPORT_STD void vprint_unicode(const string_view _Fmt_str, const format_args _Fmt_args);
+_EXPORT_STD void vprint_unicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args);
+
+_EXPORT_STD void vprint_nonunicode(const string_view _Fmt_str, const format_args _Fmt_args);
+_EXPORT_STD void vprint_nonunicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args);
+
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // __cpp_lib_print
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _PRINT_

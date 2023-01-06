@@ -148,6 +148,7 @@
         "xmemory",
         "xnode_handle.h",
         "xpolymorphic_allocator.h",
+        "xprint.h",
         "xsmf_control.h",
         "xstddef",
         "xstring",

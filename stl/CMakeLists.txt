@@ -238,6 +238,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xmemory
     ${CMAKE_CURRENT_LIST_DIR}/inc/xnode_handle.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xpolymorphic_allocator.h
+    ${CMAKE_CURRENT_LIST_DIR}/inc/xprint.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xsmf_control.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xstddef
     ${CMAKE_CURRENT_LIST_DIR}/inc/xstring
@@ -280,6 +281,7 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/format.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/locale0_implib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/nothrow.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/print.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/sharedmutex.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/stacktrace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
