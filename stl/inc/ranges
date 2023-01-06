@@ -8008,36 +8008,33 @@ namespace ranges {
             template <class _Func, class... _Types>
             static constexpr bool _Is_invocation_noexcept = []() noexcept {
                 if constexpr (sizeof...(_Types) == 0) {
-                    using _Decayed_func = decay_t<_Func>;
-
-                    // We do the static_asserts here, rather than in the definition of operator(), so that they
-                    // show up earlier in compiler diagnostics.
-                    static_assert(move_constructible<_Decayed_func>,
-                        "ERROR: When using std::views::zip_transform without any views, the specified callable must "
-                        "be move constructible (see [range.zip.transform.overview]/2.1.1).");
-
-                    if constexpr (regular_invocable<_Decayed_func&>) {
-                        static_assert(is_object_v<decay_t<invoke_result_t<_Decayed_func&>>>,
-                            "ERROR: When using std::views::zip_transform without any views, the specified callable "
-                            "must return an object (see [range.zip.transform.overview]/2.1.1).");
-
-                        // equivalent to:
-                        // return noexcept(((void) _STD declval<_Func&>(),
-                        //     auto(empty<decay_t<invoke_result_t<_Decayed_func&>>>)));
-                        return true;
-                    } else {
-                        static_assert(_Always_false<_Decayed_func>,
-                            "ERROR: When using std::views::zip_transform without any views, the specified callable "
-                            "must be invocable without any parameters (see [range.zip.transform.overview]/2.1.1).");
-                        return false;
-                    }
+                    // equivalent to:
+                    // using _Decayed_func = decay_t<_Func>;
+                    //
+                    // return noexcept(((void) _STD declval<_Func&>(),
+                    //     auto(empty<decay_t<invoke_result_t<_Decayed_func&>>>)));
+                    return true;
                 } else {
                     return noexcept(zip_transform_view(_STD declval<_Func>(), _STD declval<_Types>()...));
                 }
             }();
 
+            template <class _Decayed_func, class... _Types>
+            static constexpr bool _Enable_cpo = []() noexcept {
+                if constexpr (sizeof...(_Types) == 0) {
+                    if constexpr (move_constructible<_Decayed_func> && regular_invocable<_Decayed_func&>) {
+                        return is_object_v<invoke_result_t<_Decayed_func&>>;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return true;
+                }
+            }();
+
         public:
             template <class _Func, class... _Types>
+                requires _Enable_cpo<decay_t<_Func>, _Types...>
             _NODISCARD constexpr auto operator()(_Func&& _Function, _Types&&... _Args) const
                 noexcept(_Is_invocation_noexcept<_Func, _Types...>) // strengthened
             {
