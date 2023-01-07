@@ -282,7 +282,6 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/format.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/locale0_implib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/nothrow.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/print.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/sharedmutex.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/stacktrace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
@@ -452,12 +451,17 @@ set(SOURCES_SATELLITE_CODECVT_IDS
     ${CMAKE_CURRENT_LIST_DIR}/src/ulocale.cpp
 )
 
+set(SOURCES_SATELLITE_PRINT
+    ${CMAKE_CURRENT_LIST_DIR}/src/print.cpp
+)
+
 # Objs that exist only in libcpmt[d][01].lib.
 set(STATIC_SOURCES
     ${SOURCES_SATELLITE_1}
     ${SOURCES_SATELLITE_2}
     ${SOURCES_SATELLITE_ATOMIC_WAIT}
     ${SOURCES_SATELLITE_CODECVT_IDS}
+    ${SOURCES_SATELLITE_PRINT}
 )
 
 # Objs that exist in all satellite DLLs
@@ -514,6 +518,25 @@ function(target_stl_compile_options tgt rel_or_dbg)
     else()
         message(FATAL_ERROR "INTERNAL ERROR: unexpected value for rel_or_dbg: '${rel_or_dbg}'")
     endif()
+endfunction()
+
+function(generate_satellite_def SATELLITE_NAME D_SUFFIX)
+    set(full_satellite_name "msvcp140${D_SUFFIX}_${SATELLITE_NAME}${VCLIBS_SUFFIX}")
+    string(TOUPPER "${full_satellite_name}" upper_full_satellite_name)
+    set(satellite_src_def_file_path "${CMAKE_CURRENT_LIST_DIR}/src/msvcp_${SATELLITE_NAME}.src")
+    set(satellite_output_def_file_path "${CMAKE_BINARY_DIR}/msvcp_${SATELLITE_NAME}${D_SUFFIX}.def")
+
+    # We use the placeholder name "LIBRARYNAME" in the corresponding .def file of a satellite DLL
+    # (i.e., we write "LIBRARY LIBRARYNAME" as the first non-commented line in the file).
+    #
+    # Here, we dynamically replace this placeholder name with the name of the satellite DLL for
+    # the current build configuration. Then, we write out the new .def file to the binary output
+    # directory.
+    file(READ "${satellite_src_def_file_path}" satellite_def_file_contents)
+    string(REPLACE "LIBRARYNAME" "${upper_full_satellite_name}" satellite_def_file_contents "${satellite_def_file_contents}")
+    file(GENERATE OUTPUT "${satellite_output_def_file_path}" CONTENT "${satellite_def_file_contents}")
+
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${satellite_output_def_file_path}")
 endfunction()
 
 function(add_stl_dlls D_SUFFIX REL_OR_DBG)
@@ -591,20 +614,13 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
     target_stl_compile_options(msvcp${D_SUFFIX}_atomic_wait_objects ${REL_OR_DBG})
 
     # generate the .def for msvcp140_atomic_wait.dll
-    set(_ATOMIC_WAIT_OUTPUT_NAME "msvcp140${D_SUFFIX}_atomic_wait${VCLIBS_SUFFIX}")
-    string(TOUPPER "${_ATOMIC_WAIT_OUTPUT_NAME}" _ATOMIC_WAIT_OUTPUT_NAME_UPPER)
-    set(_ATOMIC_WAIT_DEF_NAME "${CMAKE_BINARY_DIR}/msvcp_atomic_wait${D_SUFFIX}.def")
-    set(_ATOMIC_WAIT_DEF_FILE_SRC "${CMAKE_CURRENT_LIST_DIR}/src/msvcp_atomic_wait.src")
-    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${_ATOMIC_WAIT_DEF_FILE_SRC}")
-    file(READ "${_ATOMIC_WAIT_DEF_FILE_SRC}" _ATOMIC_WAIT_SRC_CONTENTS)
-    string(REPLACE "LIBRARYNAME" "${_ATOMIC_WAIT_OUTPUT_NAME_UPPER}" _ATOMIC_WAIT_DEF_CONTENTS "${_ATOMIC_WAIT_SRC_CONTENTS}")
-    file(GENERATE OUTPUT "${_ATOMIC_WAIT_DEF_NAME}" CONTENT "${_ATOMIC_WAIT_DEF_CONTENTS}")
+    generate_satellite_def("atomic_wait" "${D_SUFFIX}")
 
-    add_library(msvcp${D_SUFFIX}_atomic_wait SHARED "${_ATOMIC_WAIT_DEF_NAME}")
+    add_library(msvcp${D_SUFFIX}_atomic_wait SHARED "${CMAKE_BINARY_DIR}/msvcp_atomic_wait${D_SUFFIX}.def")
     target_link_libraries(msvcp${D_SUFFIX}_atomic_wait PRIVATE msvcp${D_SUFFIX}_atomic_wait_objects msvcp${D_SUFFIX}_satellite_objects msvcp${D_SUFFIX}_implib_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib" "advapi32.lib")
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES ARCHIVE_OUTPUT_NAME "msvcp140_atomic_wait${D_SUFFIX}${VCLIBS_SUFFIX}")
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-    set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES OUTPUT_NAME "${_ATOMIC_WAIT_OUTPUT_NAME}")
+    set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_atomic_wait${VCLIBS_SUFFIX}")
     target_link_options(msvcp${D_SUFFIX}_atomic_wait PRIVATE ${link_options_${REL_OR_DBG}})
 
     # msvcp140_codecvt_ids.dll
@@ -620,11 +636,27 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
     set_target_properties(msvcp${D_SUFFIX}_codecvt_ids PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_codecvt_ids${VCLIBS_SUFFIX}")
     target_link_options(msvcp${D_SUFFIX}_codecvt_ids PRIVATE ${link_options_${REL_OR_DBG}})
 
+    # msvcp140_print.dll (the print satellite)
+    add_library(msvcp${D_SUFFIX}_print_objects OBJECT ${SOURCES_SATELLITE_PRINT})
+    target_compile_definitions(msvcp${D_SUFFIX}_print_objects PRIVATE _BUILDING_SATELLITE_PRINT _DLL)
+    target_compile_options(msvcp${D_SUFFIX}_print_objects PRIVATE ${gl_flag_${REL_OR_DBG}} /EHsc)
+    target_stl_compile_options(msvcp${D_SUFFIX}_print_objects ${REL_OR_DBG})
+
+    # generate the .def file for msvcp140_print.dll
+    generate_satellite_def("print" "${D_SUFFIX}")
+
+    add_library(msvcp${D_SUFFIX}_print SHARED "${CMAKE_BINARY_DIR}/msvcp_print${D_SUFFIX}.def")
+    target_link_libraries(msvcp${D_SUFFIX}_print PRIVATE msvcp${D_SUFFIX}_print_objects msvcp${D_SUFFIX}_satellite_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib")
+    set_target_properties(msvcp${D_SUFFIX}_print PROPERTIES ARCHIVE_OUTPUT_NAME "msvcp140_print${D_SUFFIX}${VCLIBS_SUFFIX}")
+    set_target_properties(msvcp${D_SUFFIX}_print PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    set_target_properties(msvcp${D_SUFFIX}_print PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_print${VCLIBS_SUFFIX}")
+    target_link_options(msvcp${D_SUFFIX}_print PRIVATE ${link_options_${REL_OR_DBG}})
+
     # import library
     add_library(msvcp${D_SUFFIX}_implib STATIC ${HEADERS})
     target_link_libraries(msvcp${D_SUFFIX}_implib stl_alias_objects msvcp${D_SUFFIX}_implib_objects)
-    add_dependencies(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX} msvcp_1${D_SUFFIX} msvcp_2${D_SUFFIX} msvcp${D_SUFFIX}_atomic_wait msvcp${D_SUFFIX}_codecvt_ids)
-    set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES STATIC_LIBRARY_OPTIONS "/NOLOGO;/NODEFAULTLIB;/IGNORE:4006;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_atomic_wait>")
+    add_dependencies(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX} msvcp_1${D_SUFFIX} msvcp_2${D_SUFFIX} msvcp${D_SUFFIX}_atomic_wait msvcp${D_SUFFIX}_codecvt_ids msvcp${D_SUFFIX}_print)
+    set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES STATIC_LIBRARY_OPTIONS "/NOLOGO;/NODEFAULTLIB;/IGNORE:4006;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_atomic_wait>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_print>")
     set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES ARCHIVE_OUTPUT_NAME "msvcprt${D_SUFFIX}")
 endfunction()
 

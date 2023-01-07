@@ -412,6 +412,9 @@ public:
         }
     }
 
+    template <class _Other_elem, class _Other_traits>
+    friend FILE* _Get_filebuf_file_stream(basic_filebuf<_Other_elem, _Other_traits>& _Filebuf) noexcept;
+
 protected:
     int_type __CLR_OR_THIS_CALL overflow(int_type _Meta = _Traits::eof()) override { // put an element to stream
         if (_Traits::eq_int_type(_Traits::eof(), _Meta)) {
@@ -797,6 +800,11 @@ private:
     _Elem* _Set_eback; // saves eback() during one-element putback
     _Elem* _Set_egptr; // saves egptr()
 };
+
+template <class _Other_elem, class _Other_traits>
+FILE* _Get_filebuf_file_stream(basic_filebuf<_Other_elem, _Other_traits>& _Filebuf) noexcept {
+    return _Filebuf._Myfile;
+}
 
 _EXPORT_STD template <class _Elem, class _Traits>
 void swap(basic_filebuf<_Elem, _Traits>& _Left, basic_filebuf<_Elem, _Traits>& _Right) {

@@ -10,6 +10,10 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <ios>
 
+#ifdef _HAS_CXX23
+#include <xprint.h>
+#endif
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -1076,6 +1080,11 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
     // display error code
     return _Ostr << _Errcode.category().name() << ':' << _Errcode.value();
 }
+
+#ifdef __cpp_lib_print
+
+#endif
+
 _STD_END
 
 #pragma pop_macro("new")

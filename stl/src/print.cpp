@@ -3,15 +3,12 @@
 
 // print.cpp -- C++23 <print> implementation
 
-// This must be as small as possible, because its contents are
-// injected into the msvcprt.lib and msvcprtd.lib import libraries.
-// Do not include or define anything else here.
-// In particular, basic_string must not be included here.
-
+#include <fstream>
 #include <cstdio>
 #include <cstring>
 #include <internal_shared.h>
 #include <io.h>
+#include <streambuf>
 #include <type_traits>
 #include <xprint.h>
 
@@ -194,7 +191,8 @@ _EXTERN_C
         return __std_unicode_console_print_result{};
     }
 
-    const _String_to_wide_string_results _Str_conversion_results{_String_to_wide_string(_Str, static_cast<size_t>(_Str_size))};
+    const _String_to_wide_string_results _Str_conversion_results{
+        _String_to_wide_string(_Str, static_cast<size_t>(_Str_size))};
 
     if (_Str_conversion_results._Error != __std_win_error::_Success) [[unlikely]] {
         return __std_unicode_console_print_result{._Result_type = __std_unicode_console_print_result_type::_Win_error,
@@ -203,6 +201,19 @@ _EXTERN_C
 
     return _Write_console(_Console_handle_retrieval_results._Console_handle, _Str_conversion_results._Wide_str.get(),
         _Str_conversion_results._Wide_str_size);
+}
+
+[[nodiscard]] __std_file_stream_pointer __stdcall __std_get_file_stream_from_streambuf(
+    _In_ const __std_streambuf_pointer _Streambuf) noexcept {
+    _STD streambuf* const _Stream_buffer = reinterpret_cast<_STD streambuf*>(_Streambuf);
+    _STD filebuf* const _File_buffer     = dynamic_cast<_STD filebuf*>(_Stream_buffer);
+
+    if (_File_buffer == nullptr) {
+        return __std_file_stream_pointer::_Invalid;
+    }
+
+    return static_cast<__std_file_stream_pointer>(
+        reinterpret_cast<_STD underlying_type_t<__std_file_stream_pointer>>(_STD _Get_filebuf_file_stream(*_File_buffer)));
 }
 
 _END_EXTERN_C

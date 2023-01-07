@@ -1,0 +1,12 @@
+; Copyright (c) Microsoft Corporation.
+; SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+; print satellite DLL definition
+
+; NOTE: "LIBRARYNAME" is just a placeholder. It gets dynamically replaced with the generated
+; DLL name during the CMake build.
+LIBRARY LIBRARYNAME
+
+EXPORTS
+	__std_is_file_stream_unicode_console
+	__std_print_to_unicode_console
