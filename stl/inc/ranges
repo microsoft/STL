@@ -7260,6 +7260,9 @@ namespace ranges {
         return _Evaluate_equality_closure(index_sequence_for<_LHSTupleTypes...>{});
     }
 
+    template <bool _IsConst, class... _ViewTypes> // TRANSITION, LLVM-47414
+    concept _Zip_const_converts = _IsConst && (convertible_to<iterator_t<_ViewTypes>, iterator_t<const _ViewTypes>> && ...);
+
     _EXPORT_STD template <input_range... _ViewTypes>
         requires (view<_ViewTypes> && ...) && (sizeof...(_ViewTypes) > 0)
     class zip_view : public view_interface<zip_view<_ViewTypes...>> {
@@ -7301,8 +7304,13 @@ namespace ranges {
 
             constexpr _Iterator(_Iterator<!_IsConst> _Rhs) noexcept(
                 (is_nothrow_convertible_v<iterator_t<_ViewTypes>, iterator_t<const _ViewTypes>> && ...)) // strengthened
+#ifdef __clang__ // TRANSITION, LLVM-47414
+                requires _Zip_const_converts<_IsConst, _ViewTypes...>
+#else // ^^^ workaround / no workaround vvv
                 requires (_IsConst && (convertible_to<iterator_t<_ViewTypes>, iterator_t<const _ViewTypes>> && ...))
-                : _Current(_STD move(_Rhs._Current)) {}
+#endif // __clang__
+                : _Current(_STD move(_Rhs._Current)) {
+            }
 
             _NODISCARD constexpr auto operator*() const
                 noexcept((noexcept(*(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>()))
