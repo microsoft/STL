@@ -143,22 +143,22 @@ constexpr bool test_pair_like_const_assignment() {
     std::vector<bool> bools = {false, true};
     PairLike<bool> a        = {true, false};
 
-    Pair p1{bools[0], bools[1]};
+    const Pair p1{bools[0], bools[1]};
     p1 = a;
     assert(p1.first == true && p1.second == false);
     bools = {false, true};
 
-    Pair p2{bools[0], bools[1]};
+    const Pair p2{bools[0], bools[1]};
     p2 = as_const(a);
     assert(p2.first == true && p2.second == false);
     bools = {false, true};
 
-    Pair p3{bools[0], bools[1]};
+    const Pair p3{bools[0], bools[1]};
     p3 = std::move(a);
     assert(p3.first == true && p3.second == false);
     bools = {false, true};
 
-    Pair p4{bools[0], bools[1]};
+    const Pair p4{bools[0], bools[1]};
     p4 = std::move(as_const(a));
     assert(p4.first == true && p4.second == false);
 
