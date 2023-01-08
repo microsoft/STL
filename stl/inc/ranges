@@ -7455,6 +7455,11 @@ namespace ranges {
             }
         }
 
+        static constexpr auto _Size_closure = [](auto... _Sizes) _STATIC_CALL_OPERATOR noexcept {
+            using _Common_unsigned_type = _Make_unsigned_like_t<common_type_t<decltype(_Sizes)...>>;
+            return (_RANGES min)({static_cast<_Common_unsigned_type>(_Sizes)...});
+        };
+
     public:
         zip_view() noexcept((is_nothrow_default_constructible_v<_ViewTypes> && ...)) = default;
 
@@ -7501,25 +7506,17 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto size() noexcept(
-            noexcept(_STD apply(_Size_closure(), _Tuple_transform(_RANGES size, _Views)))) // strengthened
+            noexcept(_STD apply(_Size_closure, _Tuple_transform(_RANGES size, _Views)))) // strengthened
             requires (sized_range<_ViewTypes> && ...)
         {
-            return _STD apply(_Size_closure(), _Tuple_transform(_RANGES size, _Views));
+            return _STD apply(_Size_closure, _Tuple_transform(_RANGES size, _Views));
         }
 
         _NODISCARD constexpr auto size() const
-            noexcept(noexcept(_STD apply(_Size_closure(), _Tuple_transform(_RANGES size, _Views)))) // strengthened
+            noexcept(noexcept(_STD apply(_Size_closure, _Tuple_transform(_RANGES size, _Views)))) // strengthened
             requires (sized_range<const _ViewTypes> && ...)
         {
-            return _STD apply(_Size_closure(), _Tuple_transform(_RANGES size, _Views));
-        }
-
-    private:
-        _NODISCARD static constexpr auto _Size_closure() noexcept {
-            return [](auto... _Sizes) _STATIC_CALL_OPERATOR noexcept {
-                using _Common_unsigned_type = _Make_unsigned_like_t<common_type_t<decltype(_Sizes)...>>;
-                return (_RANGES min)({static_cast<_Common_unsigned_type>(_Sizes)...});
-            };
+            return _STD apply(_Size_closure, _Tuple_transform(_RANGES size, _Views));
         }
     };
 
