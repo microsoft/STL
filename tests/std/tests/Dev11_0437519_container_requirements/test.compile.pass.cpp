@@ -3006,6 +3006,33 @@ DEFINE_TEST_SPECIALIZATION(
 //
 //
 
+// Adhoc tests for exception specifications of std::vector<bool, Alloc> (LWG-3778)
+template <class Alloc>
+void assert_vector_bool_noexcept_impl() {
+    using vec_bool = std::vector<bool, Alloc>;
+
+    constexpr bool nothrow_on_pocma = std::allocator_traits<Alloc>::propagate_on_container_move_assignment::value
+                                   || std::allocator_traits<Alloc>::is_always_equal::value;
+
+    STATIC_ASSERT(std::is_nothrow_default_constructible_v<vec_bool> == std::is_nothrow_default_constructible_v<Alloc>);
+    STATIC_ASSERT(std::is_nothrow_constructible_v<vec_bool, const Alloc&>);
+    STATIC_ASSERT(std::is_nothrow_move_constructible_v<vec_bool>);
+    STATIC_ASSERT(std::is_nothrow_move_assignable_v<vec_bool> == nothrow_on_pocma);
+    STATIC_ASSERT(std::is_nothrow_destructible_v<vec_bool>);
+
+    STATIC_ASSERT(noexcept(std::declval<vec_bool&>().swap(std::declval<vec_bool&>()))); // strengthened
+    STATIC_ASSERT(noexcept(std::swap(std::declval<vec_bool&>(), std::declval<vec_bool&>()))); // strengthened
+#if _HAS_CXX17
+    STATIC_ASSERT(std::is_nothrow_swappable_v<vec_bool>); // strengthened
+#endif // _HAS_CXX17
+}
+
+void assert_vector_bool_noexcept() {
+    assert_vector_bool_noexcept_impl<std::allocator<bool>>();
+    assert_vector_bool_noexcept_impl<pocma_allocator<bool>>();
+    assert_vector_bool_noexcept_impl<non_pocma_allocator<bool>>();
+}
+
 template <container_tag Tag>
 void assert_container() {
     check_all_container_requirements<Tag>();
