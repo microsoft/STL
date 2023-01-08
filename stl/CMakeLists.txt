@@ -225,6 +225,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_tables.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xerrc.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfacet
+    ${CMAKE_CURRENT_LIST_DIR}/inc/xfilebuf
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfilesystem_abi.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xhash
     ${CMAKE_CURRENT_LIST_DIR}/inc/xiosbase
@@ -525,8 +526,9 @@ function(generate_satellite_def SATELLITE_NAME D_SUFFIX)
     string(TOUPPER "${full_satellite_name}" upper_full_satellite_name)
     set(satellite_src_def_file_path "${CMAKE_CURRENT_LIST_DIR}/src/msvcp_${SATELLITE_NAME}.src")
     set(satellite_output_def_file_path "${CMAKE_BINARY_DIR}/msvcp_${SATELLITE_NAME}${D_SUFFIX}.def")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${satellite_output_def_file_path}")
 
-    # We use the placeholder name "LIBRARYNAME" in the corresponding .def file of a satellite DLL
+    # We use the placeholder name "LIBRARYNAME" in the corresponding .src file of a satellite DLL
     # (i.e., we write "LIBRARY LIBRARYNAME" as the first non-commented line in the file).
     #
     # Here, we dynamically replace this placeholder name with the name of the satellite DLL for
@@ -535,8 +537,6 @@ function(generate_satellite_def SATELLITE_NAME D_SUFFIX)
     file(READ "${satellite_src_def_file_path}" satellite_def_file_contents)
     string(REPLACE "LIBRARYNAME" "${upper_full_satellite_name}" satellite_def_file_contents "${satellite_def_file_contents}")
     file(GENERATE OUTPUT "${satellite_output_def_file_path}" CONTENT "${satellite_def_file_contents}")
-
-    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${satellite_output_def_file_path}")
 endfunction()
 
 function(add_stl_dlls D_SUFFIX REL_OR_DBG)

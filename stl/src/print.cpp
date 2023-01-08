@@ -3,71 +3,80 @@
 
 // print.cpp -- C++23 <print> implementation
 
-#include <fstream>
 #include <cstdio>
-#include <cstring>
+#include <expected>
 #include <internal_shared.h>
 #include <io.h>
-#include <streambuf>
+#include <limits>
+#include <stdexcept>
+#include <string>
+#include <string_view>
 #include <type_traits>
 #include <xprint.h>
 
 #include <Windows.h>
 
 namespace {
-    enum class _Console_handle_retrieval_result_type {
-        _Success                     = 0,
-        _No_associated_output_stream = 1,
-        _Invalid_handle_value        = 2,
-        _Unknown_error               = 3
-    };
-
-    struct _Console_handle_from_file_stream_results {
-        HANDLE _Console_handle;
-        _Console_handle_retrieval_result_type _Result_type;
-    };
-
-    [[nodiscard]] inline _Console_handle_from_file_stream_results __stdcall _Get_console_handle_from_file_stream(
+    [[nodiscard]] __std_unicode_console_retrieval_result __stdcall _Get_console_handle_from_file_stream(
         FILE* const _File_stream) noexcept {
         const int _Fd = _fileno(_File_stream);
 
         switch (_Fd) {
         // _fileno() returns -2 if _File_stream refers to either stdout or stderr and
-        // there is no associated output stream. In that case, there is also no
-        // associated console HANDLE.
+        // there is no associated output stream. In that case, there is also no associated
+        // console HANDLE. (This might happen, for instance, if a Win32 GUI application is
+        // being compiled with /SUBSYSTEM:WINDOWS.)
         case -2:
-            return _Console_handle_from_file_stream_results{
-                ._Result_type = _Console_handle_retrieval_result_type::_No_associated_output_stream};
+            return __std_unicode_console_retrieval_result{._Error = __std_win_error::_Not_supported};
 
         case -1:
-            [[unlikely]] return _Console_handle_from_file_stream_results{
-                ._Result_type = _Console_handle_retrieval_result_type::_Unknown_error};
+            [[unlikely]] return __std_unicode_console_retrieval_result{._Error = __std_win_error::_Invalid_parameter};
 
         default:
-            [[likely]] break;
+            break;
         }
 
         const HANDLE _Console_handle = reinterpret_cast<HANDLE>(_get_osfhandle(_Fd));
 
         if (_Console_handle == INVALID_HANDLE_VALUE) [[unlikely]] {
-            return _Console_handle_from_file_stream_results{
-                ._Result_type = _Console_handle_retrieval_result_type::_Invalid_handle_value};
+            return __std_unicode_console_retrieval_result{._Error = __std_win_error::_Invalid_parameter};
         }
 
-        return _Console_handle_from_file_stream_results{._Console_handle = _Console_handle};
+        // We can check if _Console_handle actually refers to a console or not by checking the
+        // return value of GetConsoleMode().
+        DWORD _Console_mode;
+        const bool _Is_unicode_console = (GetConsoleMode(_Console_handle, &_Console_mode) != 0);
+
+        if (!_Is_unicode_console) {
+            return __std_unicode_console_retrieval_result{._Error = __std_win_error::_File_not_found};
+        }
+
+        return __std_unicode_console_retrieval_result{
+            ._Console_handle = static_cast<__std_unicode_console_handle>(
+                reinterpret_cast<_STD underlying_type_t<__std_unicode_console_handle>>(_Console_handle))};
+    }
+} // unnamed namespace
+
+_EXTERN_C
+
+[[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_retrieval_result
+    __stdcall __std_get_unicode_console_handle_from_file_stream(_In_ const __std_file_stream_pointer _Stream) noexcept {
+    if (_Stream == __std_file_stream_pointer::_Invalid) [[unlikely]] {
+        return __std_unicode_console_retrieval_result{._Error = __std_win_error::_Invalid_parameter};
     }
 
-    struct _String_to_wide_string_results {
-        __crt_unique_heap_ptr<wchar_t> _Wide_str;
-        size_t _Wide_str_size;
-        __std_win_error _Error;
-    };
+    FILE* const _File_stream_ptr = reinterpret_cast<FILE*>(_Stream);
+    return _Get_console_handle_from_file_stream(_File_stream_ptr);
+}
 
-    [[nodiscard]] _String_to_wide_string_results __stdcall _String_to_wide_string(
+_END_EXTERN_C
+
+namespace {
+    [[nodiscard]] _STD expected<_STD wstring, __std_win_error> __stdcall _Transcode_utf8_string(
         const char* const _Str, const size_t _Str_size) noexcept {
         // MultiByteToWideChar() fails if strLength == 0.
         if (_Str_size == 0) [[unlikely]] {
-            return _String_to_wide_string_results{._Wide_str = __crt_unique_heap_ptr<wchar_t>{nullptr}};
+            return {};
         }
 
         // The C++ specifications for vprint_unicode() suggest that we replace invalid
@@ -77,143 +86,64 @@ namespace {
             MultiByteToWideChar(CP_UTF8, 0, _Str, static_cast<int>(_Str_size), nullptr, 0);
 
         if (_Num_chars_required == 0) [[unlikely]] {
-            return _String_to_wide_string_results{._Wide_str = __crt_unique_heap_ptr<wchar_t>{nullptr},
-                ._Error                                      = static_cast<__std_win_error>(GetLastError())};
+            return _STD unexpected{static_cast<__std_win_error>(GetLastError())};
         }
 
-        __crt_unique_heap_ptr<wchar_t> _Wide_str{_malloc_crt_t(wchar_t, _Num_chars_required)};
+        _STD wstring _Wide_str;
 
-        if (!_Wide_str) [[unlikely]] {
-            return _String_to_wide_string_results{
-                ._Wide_str = __crt_unique_heap_ptr<wchar_t>{nullptr}, ._Error = __std_win_error::_Not_enough_memory};
+        try {
+            _Wide_str = _STD wstring(static_cast<size_t>(_Num_chars_required), L'\0');
+        } catch (const _STD length_error&) {
+            return _STD unexpected{__std_win_error::_Insufficient_buffer};
+        } catch (...) {
+            return _STD unexpected{__std_win_error::_Not_enough_memory};
         }
 
         const int32_t _Num_chars_written = MultiByteToWideChar(
-            CP_UTF8, 0, _Str, static_cast<int>(_Str_size), _Wide_str.get(), static_cast<int>(_Num_chars_required));
+            CP_UTF8, 0, _Str, static_cast<int>(_Str_size), _Wide_str.data(), static_cast<int>(_Num_chars_required));
 
         if (_Num_chars_written == 0) [[unlikely]] {
-            return _String_to_wide_string_results{._Wide_str = __crt_unique_heap_ptr<wchar_t>{nullptr},
-                ._Error                                      = static_cast<__std_win_error>(GetLastError())};
+            return _STD unexpected{static_cast<__std_win_error>(GetLastError())};
         }
 
-        return _String_to_wide_string_results{
-            ._Wide_str = _STD move(_Wide_str), ._Wide_str_size = static_cast<size_t>(_Num_chars_required)};
+        return {_STD move(_Wide_str)};
     }
 
-    [[nodiscard]] __std_unicode_console_print_result _Write_console(
-        const HANDLE _Console_handle, const wchar_t* const _Wide_str, const size_t _Wide_str_size) noexcept {
+    [[nodiscard]] __std_win_error _Write_console(
+        const HANDLE _Console_handle, const _STD wstring_view _Wide_str) noexcept {
         const BOOL _Write_result =
-            WriteConsoleW(_Console_handle, _Wide_str, static_cast<DWORD>(_Wide_str_size), nullptr, nullptr);
+            WriteConsoleW(_Console_handle, _Wide_str.data(), static_cast<DWORD>(_Wide_str.size()), nullptr, nullptr);
 
         if (!_Write_result) [[unlikely]] {
-            return __std_unicode_console_print_result{
-                ._Result_type = __std_unicode_console_print_result_type::_Win_error,
-                ._Win_error   = static_cast<__std_win_error>(GetLastError())};
+            return static_cast<__std_win_error>(GetLastError());
         }
 
-        return __std_unicode_console_print_result{};
+        return __std_win_error::_Success;
     }
 } // unnamed namespace
 
 _EXTERN_C
 
-[[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_detect_result
-    __stdcall __std_is_file_stream_unicode_console(_In_ const __std_file_stream_pointer _Stream) noexcept {
-    if (_Stream == __std_file_stream_pointer::_Invalid) [[unlikely]] {
-        return __std_unicode_console_detect_result{._Error = __std_win_error::_Invalid_parameter};
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_print_to_unicode_console(_In_ const __std_unicode_console_handle _Console_handle,
+        _In_ const char* const _Str, _In_ const unsigned long long _Str_size) noexcept {
+    if (_Console_handle == __std_unicode_console_handle::_Invalid || _Str == nullptr) [[unlikely]] {
+        return __std_win_error::_Invalid_parameter;
     }
 
-    FILE* const _File_stream = reinterpret_cast<FILE*>(_Stream);
-
-    const _Console_handle_from_file_stream_results _Console_handle_retrieval_results{
-        _Get_console_handle_from_file_stream(_File_stream)};
-
-    switch (_Console_handle_retrieval_results._Result_type) {
-    case _Console_handle_retrieval_result_type::_Success:
-        break;
-
-    case _Console_handle_retrieval_result_type::_No_associated_output_stream:
-        return __std_unicode_console_detect_result{._Error = __std_win_error::_File_not_found};
-
-    default:
-        [[unlikely]] return __std_unicode_console_detect_result{._Error = __std_win_error::_Invalid_parameter};
+    // WriteConsoleW() takes a DWORD for the number of characters to write.
+    if (_Str_size > (_STD numeric_limits<DWORD>::max)()) [[unlikely]] {
+        return __std_win_error::_Insufficient_buffer;
     }
 
-    DWORD _Console_mode;
+    const HANDLE _Actual_console_handle = reinterpret_cast<HANDLE>(_Console_handle);
+    const _STD expected<_STD wstring, __std_win_error> _Transcoded_str{_Transcode_utf8_string(_Str, _Str_size)};
 
-    // If GetConsoleMode() returns a non-zero value, then _File_stream refers to a
-    // console. We can then use the WriteConsoleW() API to write unicode text to
-    // the console.
-    const bool _Is_console = (GetConsoleMode(_Console_handle_retrieval_results._Console_handle, &_Console_mode) != 0);
-
-    return __std_unicode_console_detect_result{._Is_unicode_console = _Is_console};
-}
-
-[[nodiscard]] _Success_(
-    return._Result_type == __std_unicode_console_print_result_type::_Success) __std_unicode_console_print_result
-    __stdcall __std_print_to_unicode_console(_In_ const __std_file_stream_pointer _Stream, _In_ const char* const _Str,
-        _In_ const unsigned long long _Str_size) noexcept {
-    if (_Stream == __std_file_stream_pointer::_Invalid || _Str == nullptr) [[unlikely]] {
-        return __std_unicode_console_print_result{._Result_type = __std_unicode_console_print_result_type::_Win_error,
-            ._Win_error                                         = __std_win_error::_Invalid_parameter};
+    if (!_Transcoded_str.has_value()) [[unlikely]] {
+        return _Transcoded_str.error();
     }
 
-    // WriteConsoleW() uses a DWORD to determine the number of characters to write.
-    if (_Str_size > UINT32_MAX) [[unlikely]] {
-        return __std_unicode_console_print_result{._Result_type = __std_unicode_console_print_result_type::_Win_error,
-            ._Win_error                                         = __std_win_error::_Insufficient_buffer};
-    }
-
-    FILE* const _File_stream = reinterpret_cast<FILE*>(_Stream);
-
-    // We always need to flush the stream before writing to the console. This is required by the C++
-    // standard.
-    const bool _Was_flush_successful = (_STD fflush(_File_stream) == 0);
-
-    if (!_Was_flush_successful) [[unlikely]] {
-        return __std_unicode_console_print_result{
-            ._Result_type = __std_unicode_console_print_result_type::_Posix_error, ._Posix_error = errno};
-    }
-
-    const _Console_handle_from_file_stream_results _Console_handle_retrieval_results{
-        _Get_console_handle_from_file_stream(_File_stream)};
-
-    if (_Console_handle_retrieval_results._Result_type != _Console_handle_retrieval_result_type::_Success)
-        [[unlikely]] {
-        return __std_unicode_console_print_result{._Result_type = __std_unicode_console_print_result_type::_Win_error,
-            ._Win_error                                         = __std_win_error::_Invalid_parameter};
-    }
-
-    // If the size of the string is set to zero, then we don't need to call _String_to_wide_string()
-    // to do any heap allocations. In fact, we can just exit immediately after flushing the stream if
-    // the string is empty and still comply with the C++ standard, thanks to the "as-if" rule.
-    if (_Str_size == 0) [[unlikely]] {
-        return __std_unicode_console_print_result{};
-    }
-
-    const _String_to_wide_string_results _Str_conversion_results{
-        _String_to_wide_string(_Str, static_cast<size_t>(_Str_size))};
-
-    if (_Str_conversion_results._Error != __std_win_error::_Success) [[unlikely]] {
-        return __std_unicode_console_print_result{._Result_type = __std_unicode_console_print_result_type::_Win_error,
-            ._Win_error                                         = _Str_conversion_results._Error};
-    }
-
-    return _Write_console(_Console_handle_retrieval_results._Console_handle, _Str_conversion_results._Wide_str.get(),
-        _Str_conversion_results._Wide_str_size);
-}
-
-[[nodiscard]] __std_file_stream_pointer __stdcall __std_get_file_stream_from_streambuf(
-    _In_ const __std_streambuf_pointer _Streambuf) noexcept {
-    _STD streambuf* const _Stream_buffer = reinterpret_cast<_STD streambuf*>(_Streambuf);
-    _STD filebuf* const _File_buffer     = dynamic_cast<_STD filebuf*>(_Stream_buffer);
-
-    if (_File_buffer == nullptr) {
-        return __std_file_stream_pointer::_Invalid;
-    }
-
-    return static_cast<__std_file_stream_pointer>(
-        reinterpret_cast<_STD underlying_type_t<__std_file_stream_pointer>>(_STD _Get_filebuf_file_stream(*_File_buffer)));
+    return _Write_console(_Actual_console_handle, _STD wstring_view{*_Transcoded_str});
 }
 
 _END_EXTERN_C

@@ -497,7 +497,7 @@ void test_print()
     using namespace std;
     puts("Testing <print>.");
     println("Hello, world!");
-    print("The answer to life, the universe, and everything: {}", 42);
+    println(cout, "The answer to life, the universe, and everything: {}", 42);
 }
 
 void test_queue() {

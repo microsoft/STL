@@ -3,6 +3,9 @@
 
 ; atomic wait satellite DLL definition
 
+; NOTE: "LIBRARYNAME" is just a placeholder. It gets dynamically replaced with the generated
+; DLL name during the CMake build. (See the generate_satellite_def() function in
+; stl\CMakeLists.txt.)
 LIBRARY LIBRARYNAME
 
 EXPORTS

@@ -135,6 +135,7 @@
         "xcharconv_tables.h",
         "xerrc.h",
         "xfacet",
+        "xfilebuf",
         "xfilesystem_abi.h",
         "xhash",
         "xiosbase",

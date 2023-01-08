@@ -1488,6 +1488,20 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_print
+#error __cpp_lib_print is not defined
+#elif __cpp_lib_print != 202207L
+#error __cpp_lib_print is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_print == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_print
+#error __cpp_lib_print is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_quoted_string_io
 #error __cpp_lib_quoted_string_io is not defined
 #elif __cpp_lib_quoted_string_io != 201304L

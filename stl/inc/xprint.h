@@ -21,59 +21,35 @@ _STL_DISABLE_CLANG_WARNINGS
 _EXTERN_C
 
 enum class __std_file_stream_pointer : uintptr_t { _Invalid = 0 };
-enum class __std_streambuf_pointer : uintptr_t { _Invalid = 0 };
-
 enum class __std_unicode_console_handle : intptr_t { _Invalid = -1 };
-
-// ================================================= v NEW API v ====================================================
 
 struct __std_unicode_console_retrieval_result
 {
     __std_unicode_console_handle _Console_handle;
+
+    // For this, we have a few potential return values:
+    //
+    //   - __std_win_error::_Success: The operation completed successfully. This is the only value for which the
+    //     _Console_handle field has a well-defined value.
+    //
+    //   - __std_win_error::_File_not_found: The FILE* provided is valid, but it is determined to not be associated 
+    //     with a unicode console. In this case, printing should fall back to vprint_nonunicode().
+    //
+    //   - __std_win_error::_Not_supported: The FILE* provided does not actually have an associated output stream. In 
+    //     this case, the entire print can safely be elided, thanks to the "as-if" rule.
+    //
+    //   - __std_win_error::_Invalid_parameter: The FILE* provided is invalid. A std::system_error exception should be 
+    //     thrown if this value is returned within the FILE* overload of vprint_unicode().
     __std_win_error _Error;
 };
 
 _NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_retrieval_result
     __stdcall __std_get_unicode_console_handle_from_file_stream(_In_ const __std_file_stream_pointer _Stream) noexcept;
 
-_NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_retrieval_result
-    __stdcall __std_get_unicode_console_handle_from_streambuf(
-        _In_ const __std_streambuf_pointer _Streambuf_ptr) noexcept;
-
-enum class __std_unicode_console_print_result_type : unsigned long { _Success = 0, _Win_error = 1, _Posix_error = 2 };
-
-struct __std_unicode_console_print_result {
-    __std_unicode_console_print_result_type _Result_type;
-    union {
-        __std_win_error _Win_error;
-        int _Posix_error;
-    };
-};
-
 _NODISCARD _Success_(
-    return._Result_type == __std_unicode_console_print_result_type::_Success) __std_unicode_console_print_result
+    return == __std_win_error::_Success) __std_win_error
     __stdcall __std_print_to_unicode_console(_In_ const __std_unicode_console_handle _Console_handle,
         _In_ const char* const _Str, _In_ const unsigned long long _Str_size) noexcept;
-
-// ============================================ ^ NEW API / OLD API v ===============================================
-
-struct __std_unicode_console_detect_result {
-    bool _Is_unicode_console;
-    __std_win_error _Error;
-};
-
-_NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_detect_result
-    __stdcall __std_is_file_stream_unicode_console(_In_ const __std_file_stream_pointer _Stream) noexcept;
-
-_NODISCARD _Success_(
-    return._Result_type == __std_unicode_console_print_result_type::_Success) __std_unicode_console_print_result
-    __stdcall __std_print_to_unicode_console(_In_ const __std_file_stream_pointer _Stream, _In_ const char* const _Str,
-        _In_ const unsigned long long _Str_size) noexcept;
-
-_NODISCARD __std_file_stream_pointer __stdcall __std_get_file_stream_from_streambuf(
-    _In_ const __std_streambuf_pointer _Streambuf) noexcept;
-
-// ================================================= ^ OLD API ^ ====================================================
 
 _END_EXTERN_C
 

@@ -320,6 +320,7 @@
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
+// P2093R14 Formatted Output
 // P2136R3 invoke_r()
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
 //     (changes to views::zip only)
@@ -345,6 +346,7 @@
 // P2467R1 ios_base::noreplace: Exclusive Mode For fstreams
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
+// P2539R4 Should the Output of std::print To A Terminal Be Synchronized With The Underlying Stream?
 // P2549R1 unexpected<E>::error()
 // P2602R2 Poison Pills Are Too Toxic
 
