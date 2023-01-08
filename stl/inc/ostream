@@ -1149,7 +1149,7 @@ inline ios_base::iostate _Print_noformat_unicode_impl(ostream& _Ostr, const stri
         return _State;
     }
 
-    FILE* const _File_stream = _Filebuf->_Myfile;
+    FILE* const _File_stream                         = _Filebuf->_Myfile;
     const __std_file_stream_pointer _File_stream_ptr = static_cast<__std_file_stream_pointer>(
         reinterpret_cast<underlying_type_t<__std_file_stream_pointer>>(_File_stream));
     const __std_unicode_console_retrieval_result _Unicode_console_retrieval_result{
@@ -1316,10 +1316,11 @@ _EXPORT_STD template <class... _Types>
 void print(ostream&, const format_string<_Types...>, _Types&&...) = delete; // requires /GR option
 
 _EXPORT_STD template <class... _Types>
-void println(ostream&, const format_string<_Types...>, _Types&&... ) = delete; // requires /GR option
+void println(ostream&, const format_string<_Types...>, _Types&&...) = delete; // requires /GR option
 
 _EXPORT_STD void vprint_unicode(ostream& _Ostr, const string_view, const format_args) = delete; // requires /GR option
-_EXPORT_STD void vprint_nonunicode(ostream& _Ostr, const string_view, const format_args) = delete; // requires /GR option
+_EXPORT_STD void vprint_nonunicode(
+    ostream& _Ostr, const string_view, const format_args) = delete; // requires /GR option
 #endif !_CPPRTTI
 #endif // __cpp_lib_print
 

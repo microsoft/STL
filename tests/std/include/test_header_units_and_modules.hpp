@@ -492,8 +492,7 @@ void test_ostream() {
     assert(os.rdbuf() == nullptr);
 }
 
-void test_print()
-{
+void test_print() {
     using namespace std;
     puts("Testing <print>.");
     println("Hello, world!");
