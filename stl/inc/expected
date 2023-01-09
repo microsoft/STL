@@ -309,7 +309,7 @@ public:
 
     // [expected.object.dtor]
     constexpr ~expected()
-#ifndef __clang__ // TRANSITION, llvm/llvm-project#59854
+#ifndef __clang__ // TRANSITION, LLVM-59854
         noexcept
 #endif // __clang__
     {
@@ -839,7 +839,7 @@ public:
 
     // [expected.void.dtor]
     constexpr ~expected()
-#ifndef __clang__ // TRANSITION, llvm/llvm-project#59854
+#ifndef __clang__ // TRANSITION, LLVM-59854
         noexcept
 #endif // __clang__
     {
