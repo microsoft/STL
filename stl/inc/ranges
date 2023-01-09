@@ -1465,11 +1465,21 @@ namespace ranges {
     using wistream_view = basic_istream_view<_Ty, wchar_t>;
 
     namespace views {
+        template <class _Elem, class _Stream, class _CharT, class _Traits>
+        concept _Istreamable_impl = derived_from<_Stream, basic_istream<_CharT, _Traits>>
+                                 && constructible_from<basic_istream_view<_Elem, _CharT, _Traits>, _Stream&>;
+        template <class _Elem, class _Stream>
+        concept _Istreamable =
+            requires {
+                typename _Stream::char_type;
+                typename _Stream::traits_type;
+                requires _Istreamable_impl<_Elem, _Stream, typename _Stream::char_type, typename _Stream::traits_type>;
+            };
+
         template <class _Ty>
         struct _Istream_fn {
             template <class _StreamTy>
-                requires derived_from<_StreamTy,
-                    basic_istream<typename _StreamTy::char_type, typename _StreamTy::traits_type>>
+                requires _Istreamable<_Ty, _StreamTy>
             _NODISCARD constexpr auto operator()(_StreamTy& _Stream) const
                 noexcept(is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {
                 return basic_istream_view<_Ty, typename _StreamTy::char_type, typename _StreamTy::traits_type>(_Stream);
