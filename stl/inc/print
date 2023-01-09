@@ -176,20 +176,24 @@ void println(const format_string<_Types...> _Fmt, _Types&&... _Args) {
     _STD println(stdout, _Fmt, _STD forward<_Types>(_Args)...);
 }
 
-_EXPORT_STD inline void vprint_unicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void vprint_unicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
     _STD _Vprint_unicode_impl<false>(_Stream, _Fmt_str, _Fmt_args);
 }
 
-_EXPORT_STD inline void vprint_unicode(const string_view _Fmt_str, const format_args _Fmt_args) {
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void vprint_unicode(const string_view _Fmt_str, const format_args _Fmt_args) {
     _STD vprint_unicode(stdout, _Fmt_str, _Fmt_args);
 }
 
-_EXPORT_STD inline void vprint_nonunicode(
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void vprint_nonunicode(
     FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
     _STD _Vprint_nonunicode_impl<false>(_Stream, _Fmt_str, _Fmt_args);
 }
 
-_EXPORT_STD inline void vprint_nonunicode(const string_view _Fmt_str, const format_args _Fmt_args) {
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void vprint_nonunicode(const string_view _Fmt_str, const format_args _Fmt_args) {
     _STD vprint_nonunicode(stdout, _Fmt_str, _Fmt_args);
 }
 
