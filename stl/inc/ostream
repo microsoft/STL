@@ -12,7 +12,7 @@
 
 #ifdef _HAS_CXX23
 #include <format>
-#include <xfilebuf>
+#include <xfilebuf.h>
 #include <xprint.h>
 #endif
 
@@ -1321,7 +1321,7 @@ void println(ostream&, const format_string<_Types...>, _Types&&...) = delete; //
 _EXPORT_STD void vprint_unicode(ostream& _Ostr, const string_view, const format_args) = delete; // requires /GR option
 _EXPORT_STD void vprint_nonunicode(
     ostream& _Ostr, const string_view, const format_args) = delete; // requires /GR option
-#endif !_CPPRTTI
+#endif // !_CPPRTTI
 #endif // __cpp_lib_print
 
 _STD_END

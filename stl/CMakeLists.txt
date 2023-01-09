@@ -225,7 +225,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_tables.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xerrc.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfacet
-    ${CMAKE_CURRENT_LIST_DIR}/inc/xfilebuf
+    ${CMAKE_CURRENT_LIST_DIR}/inc/xfilebuf.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfilesystem_abi.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xhash
     ${CMAKE_CURRENT_LIST_DIR}/inc/xiosbase

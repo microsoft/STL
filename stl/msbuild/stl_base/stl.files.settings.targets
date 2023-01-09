@@ -11,6 +11,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\atomic_wait.cpp;
             $(CrtRoot)\github\stl\src\memory_resource.cpp;
             $(CrtRoot)\github\stl\src\parallel_algorithms.cpp;
+			$(CrtRoot)\github\stl\src\print.cpp;
             $(CrtRoot)\github\stl\src\special_math.cpp;
             $(CrtRoot)\github\stl\src\syncstream.cpp;
             $(CrtRoot)\github\stl\src\tzdb.cpp;
