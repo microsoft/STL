@@ -93,7 +93,7 @@ public:
         if constexpr (sizeof...(_Types) > 0) {
             _Str_type = _Format_string_type::_Requires_formatting;
         } else {
-            const string_view _Fmt_str = _Get();
+            const basic_string_view<_CharT> _Fmt_str = _Get();
 
             if (_Fmt_str.empty()) {
                 _Str_type = _Format_string_type::_Directly_printable;
