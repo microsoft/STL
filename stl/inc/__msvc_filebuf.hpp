@@ -4,8 +4,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
-#ifndef _XFILEBUF_
-#define _XFILEBUF_
+#ifndef __MSVC_FILEBUF_HPP
+#define __MSVC_FILEBUF_HPP
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
@@ -16,9 +16,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#include <__msvc_print.hpp>
 #include <cstdio>
 #include <streambuf>
-#include <xprint.h>
 
 // TRANSITION, ABI: The _Path_ish functions accepting filesystem::path or experimental::filesystem::path are templates
 // which always use the same types as a workaround for user code deriving from iostreams types and
@@ -822,4 +822,4 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma pack(pop)
 
 #endif //_STL_COMPILER_PREPROCESSOR
-#endif // _XFILEBUF_
+#endif // __MSVC_FILEBUF_HPP

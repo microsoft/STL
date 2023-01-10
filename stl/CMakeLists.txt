@@ -5,9 +5,11 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_all_public_headers.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_chrono.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_cxx_stdatomic.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_filebuf.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_format_ucd_tables.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_int128.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_iter_core.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_print.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_sanitizer_annotate_container.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_tzdb.hpp
@@ -225,7 +227,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_tables.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xerrc.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfacet
-    ${CMAKE_CURRENT_LIST_DIR}/inc/xfilebuf.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfilesystem_abi.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xhash
     ${CMAKE_CURRENT_LIST_DIR}/inc/xiosbase
@@ -240,7 +241,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xmemory
     ${CMAKE_CURRENT_LIST_DIR}/inc/xnode_handle.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xpolymorphic_allocator.h
-    ${CMAKE_CURRENT_LIST_DIR}/inc/xprint.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xsmf_control.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xstddef
     ${CMAKE_CURRENT_LIST_DIR}/inc/xstring

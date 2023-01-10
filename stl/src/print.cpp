@@ -3,6 +3,7 @@
 
 // print.cpp -- C++23 <print> implementation
 
+#include <__msvc_print.hpp>
 #include <cstdio>
 #include <expected>
 #include <internal_shared.h>
@@ -12,7 +13,6 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
-#include <xprint.h>
 
 #include <Windows.h>
 
@@ -92,17 +92,19 @@ namespace {
         _STD wstring _Wide_str;
 
         try {
-            _Wide_str = _STD wstring(static_cast<size_t>(_Num_chars_required), L'\0');
+            _Wide_str.resize_and_overwrite(static_cast<size_t>(_Num_chars_required),
+                [&](wchar_t* const _Dst_buffer, const size_t _Buffer_size) noexcept {
+                    return MultiByteToWideChar(
+                        CP_UTF8, 0, _Str, static_cast<int>(_Str_size), _Dst_buffer, static_cast<int>(_Buffer_size));
+                });
         } catch (const _STD length_error&) {
             return _STD unexpected{__std_win_error::_Insufficient_buffer};
         } catch (...) {
             return _STD unexpected{__std_win_error::_Not_enough_memory};
         }
 
-        const int32_t _Num_chars_written = MultiByteToWideChar(
-            CP_UTF8, 0, _Str, static_cast<int>(_Str_size), _Wide_str.data(), static_cast<int>(_Num_chars_required));
-
-        if (_Num_chars_written == 0) [[unlikely]] {
+        // Did MultiByteToWideChar() return 0?
+        if (_Wide_str.empty()) [[unlikely]] {
             return _STD unexpected{static_cast<__std_win_error>(GetLastError())};
         }
 

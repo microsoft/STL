@@ -12,11 +12,11 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <print> are available only with C++23 or later.");
 #else // ^^^ !defined(__cpp_lib_print) / defined(__cpp_lib_print) vvv
 
+#include <__msvc_print.hpp>
 #include <chrono>
 #include <cstdio>
 #include <format>
 #include <string>
-#include <xprint.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -128,43 +128,56 @@ void _Print_noformat_nonunicode(FILE* const _Stream, const string_view _Str) {
 }
 
 template <bool _Add_newline, class... _Types>
-void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+void _Print_impl(FILE* const _Stream, const _Print_string<_Types...> _Fmt, _Types&&... _Args) {
     // We can expect the case of using std::print() or std::println() without any format
     // strings to be common enough to warrant optimization. We can actually check at compile
-    // time as to whether or not any formatting needs to be done by checking if
-    // sizeof...(_Types) == 0; in that case, we don't need to use std::format. This should lead
-    // to much better code generation.
-    constexpr bool _Requires_formatting = (sizeof...(_Types) > 0);
+    // time as to whether or not any formatting needs to be done by checking if both the
+    // string does not have any escaped brace characters (i.e., {{ or }}) and
+    // sizeof...(_Types) == 0; in that case, we don't need to use std::format. This should
+    // lead to much better code generation.
+    constexpr bool _Has_format_args = (sizeof...(_Types) > 0);
 
     if constexpr (_Is_ordinary_literal_encoding_utf8) {
-        if constexpr (_Requires_formatting) {
+        if constexpr (_Has_format_args) {
             _STD _Vprint_unicode_impl<_Add_newline>(
-                _Stream, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+                _Stream, _Fmt._Get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
         } else {
-            _STD _Print_noformat_unicode<_Add_newline>(_Stream, _Fmt.get());
+            const typename _Print_string<_Types...>::_Format_string_type _Str_type = _Fmt._Get_type();
+            if (_Str_type == _Print_string<_Types...>::_Format_string_type::_Requires_formatting) {
+                _STD _Vprint_unicode_impl<_Add_newline>(
+                    _Stream, _Fmt._Get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+            } else {
+                _STD _Print_noformat_unicode<_Add_newline>(_Stream, _Fmt._Get());
+            }
         }
     } else {
-        if constexpr (_Requires_formatting) {
+        if constexpr (_Has_format_args) {
             _STD _Vprint_nonunicode_impl<_Add_newline>(
-                _Stream, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+                _Stream, _Fmt._Get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
         } else {
-            _STD _Print_noformat_nonunicode<_Add_newline>(_Stream, _Fmt.get());
+            const typename _Print_string<_Types...>::_Format_string_type _Str_type = _Fmt._Get_type();
+            if (_Str_type == _Print_string<_Types...>::_Format_string_type::_Requires_formatting) {
+                _STD _Vprint_nonunicode_impl<_Add_newline>(
+                    _Stream, _Fmt._Get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+            } else {
+                _STD _Print_noformat_nonunicode<_Add_newline>(_Stream, _Fmt._Get());
+            }
         }
     }
 }
 
 _EXPORT_STD template <class... _Types>
-void print(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+void print(FILE* const _Stream, const _Print_string<_Types...> _Fmt, _Types&&... _Args) {
     _STD _Print_impl<false>(_Stream, _Fmt, _STD forward<_Types>(_Args)...);
 }
 
 _EXPORT_STD template <class... _Types>
-void print(const format_string<_Types...> _Fmt, _Types&&... _Args) {
+void print(const _Print_string<_Types...> _Fmt, _Types&&... _Args) {
     _STD print(stdout, _Fmt, _STD forward<_Types>(_Args)...);
 }
 
 _EXPORT_STD template <class... _Types>
-void println(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+void println(FILE* const _Stream, const _Print_string<_Types...> _Fmt, _Types&&... _Args) {
     // Equivalent to:
     //
     // std::print(_Stream, "{}\n", std::format(_Fmt, std::forward<_Types>(_Args)...));
@@ -172,7 +185,7 @@ void println(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&.
 }
 
 _EXPORT_STD template <class... _Types>
-void println(const format_string<_Types...> _Fmt, _Types&&... _Args) {
+void println(const _Print_string<_Types...> _Fmt, _Types&&... _Args) {
     _STD println(stdout, _Fmt, _STD forward<_Types>(_Args)...);
 }
 
@@ -187,8 +200,7 @@ void vprint_unicode(const string_view _Fmt_str, const format_args _Fmt_args) {
 }
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
-void vprint_nonunicode(
-    FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
+void vprint_nonunicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
     _STD _Vprint_nonunicode_impl<false>(_Stream, _Fmt_str, _Fmt_args);
 }
 
