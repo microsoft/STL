@@ -139,7 +139,8 @@ _EXTERN_C
     }
 
     const HANDLE _Actual_console_handle = reinterpret_cast<HANDLE>(_Console_handle);
-    const _STD expected<_STD wstring, __std_win_error> _Transcoded_str{_Transcode_utf8_string(_Str, _Str_size)};
+    const _STD expected<_STD wstring, __std_win_error> _Transcoded_str{
+        _Transcode_utf8_string(_Str, static_cast<size_t>(_Str_size))};
 
     if (!_Transcoded_str.has_value()) [[unlikely]] {
         return _Transcoded_str.error();
