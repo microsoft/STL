@@ -64,7 +64,11 @@ inline constexpr bool _Is_ordinary_literal_encoding_utf8 = []() {
     return (_MSVC_EXECUTION_CHARACTER_SET == 65001); // Unicode (UTF-8) == 65001
 #else
     constexpr unsigned char _Mystery_char[] = "\u00B5";
-    return (sizeof(_Mystery_char) == 3 && _Mystery_char[0] == 0xC2 && _Mystery_char[1] == 0xB5);
+
+    // Due to a weird MSVC bug, we need to cast the values to a std::byte before doing the
+    // comparison.
+    return (sizeof(_Mystery_char) == 3 && static_cast<byte>(_Mystery_char[0]) == static_cast<byte>(0xC2)
+            && static_cast<byte>(_Mystery_char[1]) == static_cast<byte>(0xB5));
 #endif
 }();
 
