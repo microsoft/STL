@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import { Chart, ChartEvent, LegendElement, LegendItem, TimeUnit, registerables } from 'chart.js';
+import { CartesianScaleOptions, Chart, ChartEvent, LegendElement, LegendItem, TimeUnit, registerables } from 'chart.js';
 Chart.register(...registerables);
 import 'chartjs-adapter-luxon';
 
@@ -454,7 +454,8 @@ function load_charts() {
 
             chart.options.plugins.legend.labels.color = color_fg_default;
 
-            for (const [scaleId, scale] of Object.entries(chart.options.scales)) {
+            for (const [scaleId, scale_core] of Object.entries(chart.options.scales)) {
+                const scale = scale_core as CartesianScaleOptions;
                 if (scale === undefined || scale.title === undefined || scale.ticks === undefined) {
                     throw new Error(`update_dark_mode() was surprised by chart.options.scales[${scaleId}].`);
                 }
