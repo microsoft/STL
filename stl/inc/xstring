@@ -2286,7 +2286,7 @@ public:
     }
 
     constexpr void _Activate_SSO_buffer() noexcept {
-        // begin the lifetime of the array elements (e.g., before copying into them)
+        // start the lifetime of the array elements
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             for (size_type _Idx = 0; _Idx < _BUF_SIZE; ++_Idx) {
@@ -2630,14 +2630,15 @@ public:
 
 private:
     static constexpr void _Start_element_lifetimes(_Elem* const _Ptr, const size_type _Size) {
+        // Start element lifetimes to avoid UB. This is a more general mechanism than _String_val::_Activate_SSO_buffer,
+        // but likely more impactful to throughput.
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
-            // Start element lifetimes to avoid UB
             for (size_type _Idx = 0; _Idx < _Size; ++_Idx) {
                 _STD construct_at(_Ptr + _Idx);
             }
         }
-#else
+#else // ^^^ C++20-or-later / pre-C++20 vvv
         (void) _Ptr;
         (void) _Size;
 #endif // _HAS_CXX20
