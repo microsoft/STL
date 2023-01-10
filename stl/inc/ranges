@@ -2060,8 +2060,10 @@ namespace ranges {
     } // namespace views
 
     // clang-format off
+#ifdef __clang__
     template <class _Rng, class _Fn> // TRANSITION, LLVM-47414
     concept _Can_const_transform = range<const _Rng> && regular_invocable<const _Fn&, range_reference_t<const _Rng>>;
+#endif // ^^^ workaround ^^^
 
     _EXPORT_STD template <input_range _Vw, _Valid_movable_box_object _Fn>
         requires view<_Vw>
@@ -2780,8 +2782,10 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Take_fn take;
     } // namespace views
 
+#ifdef __clang__
     template <class _Vw, class _Pr> // TRANSITION, LLVM-47414
     concept _Can_take_while_const = range<const _Vw> && indirect_unary_predicate<const _Pr, iterator_t<const _Vw>>;
+#endif // ^^^ workaround ^^^
 
     _EXPORT_STD template <view _Vw, class _Pr>
         requires input_range<_Vw> && is_object_v<_Pr> && indirect_unary_predicate<const _Pr, iterator_t<_Vw>>
@@ -3268,8 +3272,10 @@ namespace ranges {
         /* [[no_unique_address]] */ _Non_propagating_cache<_Cache_wrapper, false> _Inner{};
     };
 
+#ifdef __clang__
     template <class _Rng> // TRANSITION, LLVM-47414
     concept _Can_const_join = input_range<const _Rng> && is_reference_v<range_reference_t<const _Rng>>;
+#endif // ^^^ workaround ^^^
 
     // clang-format off
     template <class _Vw>
@@ -3645,9 +3651,11 @@ namespace ranges {
         && common_reference_with<range_reference_t<_Rng>, range_reference_t<_Pat>>
         && common_reference_with<range_rvalue_reference_t<_Rng>, range_rvalue_reference_t<_Pat>>;
 
+#ifdef __clang__
     template <class _Rng, class _Pat> // TRANSITION, LLVM-47414
     concept _Can_const_join_with =
         input_range<const _Rng> && forward_range<const _Pat> && is_reference_v<range_reference_t<const _Rng>>;
+#endif // ^^^ workaround ^^^
 
     _EXPORT_STD template <input_range _Vw, forward_range _Pat>
         requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat>
@@ -7260,6 +7268,7 @@ namespace ranges {
         return _Evaluate_equality_closure(index_sequence_for<_LHSTupleTypes...>{});
     }
 
+#ifdef __clang__
     template <bool _IsConst, class... _ViewTypes> // TRANSITION, LLVM-47414
     concept _Zip_iter_converts = _IsConst
                               && (convertible_to<iterator_t<_ViewTypes>, iterator_t<const _ViewTypes>> && ...);
@@ -7267,6 +7276,7 @@ namespace ranges {
     template <bool _IsConst, class... _ViewTypes> // TRANSITION, LLVM-47414
     concept _Zip_sent_converts = _IsConst
                               && (convertible_to<sentinel_t<_ViewTypes>, sentinel_t<const _ViewTypes>> && ...);
+#endif // ^^^ workaround ^^^
 
     _EXPORT_STD template <input_range... _ViewTypes>
         requires (view<_ViewTypes> && ...) && (sizeof...(_ViewTypes) > 0)
