@@ -300,7 +300,7 @@ void _Unlock_locks(const int _First, const int _Last, index_sequence<_Indices...
 }
 
 template <class _Fn>
-struct _Unlock_call_guard {
+struct _NODISCARD _Unlock_call_guard {
     static_assert(
         is_trivially_copyable_v<_Fn>, "This scope guard is only used for trivially copyable function objects.");
 
@@ -320,7 +320,7 @@ struct _Unlock_call_guard {
 };
 
 template <class _Lock>
-struct _Unlock_one_guard {
+struct _NODISCARD _Unlock_one_guard {
     explicit _Unlock_one_guard(_Lock& _Lk) noexcept : _Lk_ptr(_STD addressof(_Lk)) {}
 
     ~_Unlock_one_guard() noexcept {
