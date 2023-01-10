@@ -1332,9 +1332,8 @@ void print(ostream&, const format_string<_Types...>, _Types&&...) = delete; // r
 _EXPORT_STD template <class... _Types>
 void println(ostream&, const format_string<_Types...>, _Types&&...) = delete; // requires /GR option
 
-_EXPORT_STD void vprint_unicode(ostream& _Ostr, const string_view, const format_args) = delete; // requires /GR option
-_EXPORT_STD void vprint_nonunicode(
-    ostream& _Ostr, const string_view, const format_args) = delete; // requires /GR option
+_EXPORT_STD void vprint_unicode(ostream&, const string_view, const format_args)    = delete; // requires /GR option
+_EXPORT_STD void vprint_nonunicode(ostream&, const string_view, const format_args) = delete; // requires /GR option
 #endif // !_CPPRTTI
 #endif // __cpp_lib_print
 
