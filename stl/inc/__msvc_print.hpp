@@ -55,10 +55,9 @@ _END_EXTERN_C
 _STD_BEGIN
 
 inline constexpr bool _Is_ordinary_literal_encoding_utf8 = []() {
-// For the MSVC, we use the _MSVC_EXECUTION_CHARACTER_SET to get the ordinary literal encoding
-// exactly.
-//
-// For Clang, we use the hack suggested in P2093R14. Ideally, we would use a better solution.
+// We typically use the _MSVC_EXECUTION_CHARACTER_SET macro to get the ordinary literal encoding
+// exactly. In the unlikely event that we cannot get the encoding from that, we use the hack suggested 
+// in P2093R14.
 #ifdef _MSVC_EXECUTION_CHARACTER_SET
     // See: https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
     return (_MSVC_EXECUTION_CHARACTER_SET == 65001); // Unicode (UTF-8) == 65001
