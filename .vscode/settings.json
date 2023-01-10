@@ -6,6 +6,7 @@
     "[cpp]": {
         "editor.formatOnSave": true
     },
+    "editor.rulers": [120],
     "files.associations": {
         ".clang-format": "yaml",
         "header-units.json": "jsonc",
