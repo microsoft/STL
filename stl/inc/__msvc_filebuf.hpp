@@ -16,9 +16,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#include <__msvc_print.hpp>
 #include <cstdio>
 #include <streambuf>
-#include <xprint.h>
 
 // TRANSITION, ABI: The _Path_ish functions accepting filesystem::path or experimental::filesystem::path are templates
 // which always use the same types as a workaround for user code deriving from iostreams types and

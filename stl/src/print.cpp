@@ -3,6 +3,7 @@
 
 // print.cpp -- C++23 <print> implementation
 
+#include <__msvc_print.hpp>
 #include <cstdio>
 #include <expected>
 #include <internal_shared.h>
@@ -12,7 +13,6 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
-#include <xprint.h>
 
 #include <Windows.h>
 
