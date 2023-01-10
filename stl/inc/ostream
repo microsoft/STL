@@ -1140,8 +1140,8 @@ inline ios_base::iostate _Print_noformat_unicode_impl(ostream& _Ostr, const stri
     // is check if the underlying std::streambuf object of the std::ostream& actually refers to a std::filebuf
     // object. This requires the use of a dynamic_cast. (This is also why the std::ostream& overloads of
     // std::print() et al. are deleted when RTTI is disabled.)
-    _STD streambuf* const _Streambuf = _Ostr.rdbuf();
-    _STD filebuf* const _Filebuf     = dynamic_cast<_STD filebuf*>(_Streambuf);
+    streambuf* const _Streambuf = _Ostr.rdbuf();
+    const auto _Filebuf         = dynamic_cast<filebuf*>(_Streambuf);
 
     // If we got nullptr, then it probably isn't being used for a unicode console...
     if (_Filebuf == nullptr) {
