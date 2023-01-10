@@ -1270,7 +1270,7 @@ void _Print_impl(ostream& _Ostr, const _Print_string<_Types...> _Fmt, _Types&&..
     // strings to be common enough to warrant optimization. We can actually check at compile
     // time as to whether or not any formatting needs to be done by checking if both the
     // string does not have any escaped brace characters (i.e., {{ or }}) and
-    // sizeof...(_Types) == 0; in that case, we don't need to use std::format. This should 
+    // sizeof...(_Types) == 0; in that case, we don't need to use std::format. This should
     // lead to much better code generation.
     constexpr bool _Requires_formatting = (sizeof...(_Types) > 0);
 

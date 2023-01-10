@@ -4,8 +4,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
-#ifndef _XPRINT_H
-#define _XPRINT_H
+#ifndef __MSVC_PRINT_HPP
+#define __MSVC_PRINT_HPP
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
@@ -56,7 +56,7 @@ _STD_BEGIN
 
 inline constexpr bool _Is_ordinary_literal_encoding_utf8 = []() {
 // We typically use the _MSVC_EXECUTION_CHARACTER_SET macro to get the ordinary literal encoding
-// exactly. In the unlikely event that we cannot get the encoding from that, we use the hack suggested 
+// exactly. In the unlikely event that we cannot get the encoding from that, we use the hack suggested
 // in P2093R14.
 #ifdef _MSVC_EXECUTION_CHARACTER_SET
     // See: https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
@@ -74,21 +74,39 @@ inline constexpr bool _Is_ordinary_literal_encoding_utf8 = []() {
 template <class _CharT, class... _Types>
 struct _Basic_print_string : private basic_format_string<_CharT, _Types...> {
 public:
-    enum class _Format_string_type {_Directly_printable, _Requires_formatting};
+    enum class _Format_string_type { _Directly_printable, _Requires_formatting };
 
     template <class _Ty>
         requires convertible_to<const _Ty&, basic_string_view<_CharT>>
     consteval _Basic_print_string(const _Ty& _Str_val) : basic_format_string<_CharT, _Types...>(_Str_val) {
+        _Initialize_format_string_type();
+    }
+
+    constexpr _Basic_print_string(const basic_format_string<_CharT, _Types...> _Fmt_str)
+        : basic_format_string<_CharT, _Types...>(_Fmt_str) {
+        _Initialize_format_string_type();
+    }
+
+    _NODISCARD constexpr basic_string_view<_CharT> _Get() const noexcept {
+        return basic_format_string<_CharT, _Types...>::get();
+    }
+
+    _NODISCARD constexpr _Format_string_type _Get_type() const noexcept {
+        return _Str_type;
+    }
+
+private:
+    constexpr void _Initialize_format_string_type() noexcept {
         // We expect the case where std::print() is called with a string without
-        // formatting arguments present (e.g., std::print("Hello, world!"); to be common enough 
-        // to warrant some optimization. Specifically, if no formatting arguments are present, 
+        // formatting arguments present (e.g., std::print("Hello, world!")) to be common enough
+        // to warrant some optimization. Specifically, if no formatting arguments are present,
         // then we *may* not actually need to call std::vformat() at all.
         //
         // What we need to watch out for, however, are escaped brace characters (i.e., {{
         // and }}). If these are present, then we need to manually replace them with single
         // characters at runtime. Otherwise, we can just print the provided format string.
-        // We check for this special case at compile time. Future work might be to optimize the 
-        // string replacement to use a specialized function, rather than just deferring it to 
+        // We check for this special case at compile time. Future work might be to optimize the
+        // string replacement to use a specialized function, rather than just deferring it to
         // std::vformat().
         if constexpr (sizeof...(_Types) > 0) {
             _Str_type = _Format_string_type::_Requires_formatting;
@@ -113,15 +131,6 @@ public:
         }
     }
 
-    _NODISCARD constexpr basic_string_view<_CharT> _Get() const noexcept {
-        return basic_format_string<_CharT, _Types...>::get();
-    }
-
-    _NODISCARD constexpr _Format_string_type _Get_type() const noexcept {
-        return _Str_type;
-    }
-
-private:
     _Format_string_type _Str_type;
 };
 
@@ -135,4 +144,4 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 #endif // _STL_COMPILER_PREPROCESSOR
-#endif // _XPRINT_H
+#endif // __MSVC_PRINT_HPP

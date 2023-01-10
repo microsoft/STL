@@ -4,8 +4,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
-#ifndef _XFILEBUF_
-#define _XFILEBUF_
+#ifndef __MSVC_FILEBUF_HPP
+#define __MSVC_FILEBUF_HPP
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
@@ -822,4 +822,4 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma pack(pop)
 
 #endif //_STL_COMPILER_PREPROCESSOR
-#endif // _XFILEBUF_
+#endif // __MSVC_FILEBUF_HPP
