@@ -1,4 +1,4 @@
-// xprint.h internal header
+// __msvc_print.hpp internal header
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -82,8 +82,10 @@ public:
         _Initialize_format_string_type();
     }
 
-    constexpr _Basic_print_string(const basic_format_string<_CharT, _Types...> _Fmt_str)
-        : basic_format_string<_CharT, _Types...>(_Fmt_str) {
+    template <class _Ty>
+        requires (convertible_to<const _Ty&, basic_format_string<_CharT, _Types...>>
+                  && !convertible_to<const _Ty&, basic_string_view<_CharT>>)
+    constexpr _Basic_print_string(const _Ty& _Str_val) : basic_format_string<_CharT, _Types...>(_Str_val) {
         _Initialize_format_string_type();
     }
 

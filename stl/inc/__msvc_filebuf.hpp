@@ -1,4 +1,4 @@
-// xfilebuf internal header
+// __msvc_filebuf.hpp internal header
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
