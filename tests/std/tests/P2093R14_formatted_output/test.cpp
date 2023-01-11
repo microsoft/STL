@@ -92,15 +92,6 @@ void initialize_console() {
 }
 
 void test_print_optimizations() {
-    // The function signatures of std::print() and std::println() do not exactly match
-    // those specified in the C++ standard. Specifically, rather than taking a std::format_string,
-    // these functions take a std::_Print_string as a parameter which privately inherits from
-    // std::basic_format_string. This is done to implement an optimization related to printing
-    // strings which don't have any formatting arguments (see <__msvc_print.hpp>).
-    //
-    // This does mean that we need to make sure that our program behaves "as-if" we didn't
-    // make these changes.
-
     test::win_console test_console{};
     FILE* const console_file_stream = test_console.get_file_stream();
 
@@ -133,33 +124,6 @@ void test_print_optimizations() {
 
         assert(str_stream_line == expected_str);
     }
-
-    // We use std::_Print_string as a parameter, but we must still be able to pass std::format_string
-    // values to calls to std::print() and std::println().
-    {
-        constexpr format_string<int, string_view> test_format_str{"2 + 2 = {0}? {1}"};
-        constexpr format_string<int, string_view> test_format_str_newline{"2 + 2 = {0}? {1}\n"};
-
-        using namespace literals::string_view_literals;
-
-        print(console_file_stream, test_format_str_newline, 3, "Nope."sv);
-        assert(get_last_console_line_closure() == "2 + 2 = 3? Nope.");
-
-        println(console_file_stream, test_format_str, 7, "Still wrong..."sv);
-        assert(get_last_console_line_closure() == "2 + 2 = 7? Still wrong...");
-
-        print(test_str_stream, test_format_str_newline, -32, "Really?"sv);
-
-        string str_stream_line;
-
-        getline(test_str_stream, str_stream_line);
-        assert(str_stream_line == "2 + 2 = -32? Really?");
-
-        println(test_str_stream, test_format_str, 4, "Finally."sv);
-
-        getline(test_str_stream, str_stream_line);
-        assert(str_stream_line == "2 + 2 = 4? Finally.");
-    }
 }
 
 void test_invalid_code_points_console() {
@@ -167,14 +131,14 @@ void test_invalid_code_points_console() {
     FILE* const console_file_stream = test_console.get_file_stream();
     size_t curr_line_number         = 0;
 
-    using printed_string_type = _Print_string<>;
+    using printed_string_type = format_string<>;
 
     const auto test_valid_sequence_closure = [&](const printed_string_type printed_str) {
         println(console_file_stream, printed_str);
         maybe_flush_console_file_stream(test_console);
 
         const wstring console_line{test_console.get_console_line(curr_line_number++)};
-        assert(wstring_to_string(console_line) == printed_str._Get());
+        assert(wstring_to_string(console_line) == printed_str.get());
     };
 
     const auto test_invalid_sequence_closure = [&](const printed_string_type printed_str) {
@@ -192,7 +156,7 @@ void test_invalid_code_points_console() {
             // to the console has at least one U+FFFD character if it is invalid. (The documentation
             // for the function also implies that if the string provided to MultiByteToWideChar() isn't
             // empty, then the string created by it also won't be empty.)
-            assert(printed_str._Get().empty() || !console_line.empty());
+            assert(printed_str.get().empty() || !console_line.empty());
             assert(contains_replacement_character);
         } else {
             // When UTF-8 is not the ordinary literal encoding, calls to std::fputs() (used internally
@@ -253,7 +217,7 @@ void test_invalid_code_points_file() {
         assert(tmpfile_result == 0);
     }
 
-    using printed_string_type = _Print_string<>;
+    using printed_string_type = format_string<>;
 
     const auto test_sequence_closure = [&](const printed_string_type printed_str) {
         rewind(temp_file_stream);
@@ -262,12 +226,12 @@ void test_invalid_code_points_file() {
 
         string file_line_str;
         file_line_str.resize_and_overwrite(
-            printed_str._Get().size() + 1, [&](char* const dest_str_ptr, const size_t output_size) {
+            printed_str.get().size() + 1, [&](char* const dest_str_ptr, const size_t output_size) {
                 fgets(dest_str_ptr, static_cast<int>(output_size), temp_file_stream);
                 return (output_size - 1);
             });
 
-        assert(file_line_str == printed_str._Get());
+        assert(file_line_str == printed_str.get());
     };
 
     // Example UTF-8 Code Sequences from https://www.php.net/manual/en/reference.pcre.pattern.modifiers.php#54805

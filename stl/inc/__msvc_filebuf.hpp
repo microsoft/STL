@@ -419,7 +419,7 @@ public:
     }
 
 #if defined(__cpp_lib_print) && defined(_CPPRTTI)
-    friend inline ios_base::iostate _Print_noformat_unicode_impl(
+    friend inline ios_base::iostate _Print_noformat_unicode(
         ostream&, const string_view);
 #endif
 
