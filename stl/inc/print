@@ -56,6 +56,9 @@ inline void _Print_noformat_unicode_impl(FILE* const _Stream, const string_view 
 
     // See the documentation for __std_unicode_console_retrieval_result to understand why we do this.
     bool _Is_unicode_console;
+
+#pragma warning(push)
+#pragma warning(disable : 4061) // enumerator not explicitly handled by switch label
     switch (_Unicode_console_retrieval_result._Error) {
     case __std_win_error::_Success:
         {
@@ -75,6 +78,7 @@ inline void _Print_noformat_unicode_impl(FILE* const _Stream, const string_view 
     default:
         [[unlikely]] _STD _Throw_system_error_from_std_win_error(_Unicode_console_retrieval_result._Error);
     }
+#pragma warning(pop)
 
     if (_Is_unicode_console) {
         const bool _Was_flush_successful = (_STD fflush(_Stream) == 0);
