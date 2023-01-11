@@ -198,19 +198,19 @@ ensures that other components wanting to be a "guest in your process", like prin
 export surface of the STL they were built with. Otherwise, the "`msvcp140.dll`" you deployed in the same directory as
 your .exe would "win" over the versions in System32.
 
-## Complete Example Using x64 DLL Flavor
-
 The compiler looks for include directories according to the `INCLUDE` environment variable, and the linker looks for
 import library directories according to the `LIB` environment variable, and the Windows loader will (eventually) look
-for DLL dependencies according to directories in the `PATH` environment variable. From an
-"x64 Native Tools Command Prompt for VS 2022 Preview":
+for DLL dependencies according to directories in the `PATH` environment variable.
+The build generates a batch script named `set_environment.bat` in the output directory. If you run this script in a VS
+Developer Command Prompt, it will insert the proper directories into the `INCLUDE`, `LIB`, and `PATH` environment
+variables to ensure that the built headers and libraries are used.
+
+## Complete Example Using x64 DLL Flavor
+
+From an "x64 Native Tools Command Prompt for VS 2022 Preview":
 
 ```
-C:\Users\username\Desktop>set INCLUDE=C:\Dev\STL\out\build\x64\out\inc;%INCLUDE%
-
-C:\Users\username\Desktop>set LIB=C:\Dev\STL\out\build\x64\out\lib\amd64;%LIB%
-
-C:\Users\username\Desktop>set PATH=C:\Dev\STL\out\build\x64\out\bin\amd64;%PATH%
+C:\Users\username\Desktop>C:\Dev\STL\out\build\x64\set_environment.bat
 
 C:\Users\username\Desktop>type example.cpp
 #include <iostream>
@@ -225,7 +225,7 @@ example.cpp
 C:\Users\username\Desktop>.\example.exe
 Hello STL OSS world!
 
-C:\Users\username\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
+C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 

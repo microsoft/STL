@@ -560,11 +560,6 @@ struct _Make_signed_like_impl<false> {
 template <class _Ty>
 using _Make_signed_like_t = typename _Make_signed_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
 
-template <_Integer_like _Ty>
-_NODISCARD constexpr auto _To_signed_like(const _Ty _Value) noexcept {
-    return static_cast<_Make_signed_like_t<_Ty>>(_Value);
-}
-
 _EXPORT_STD template <class _Ty>
 concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {
                                                                          { __t++ } -> same_as<_Ty>;
