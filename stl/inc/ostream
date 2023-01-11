@@ -1157,6 +1157,9 @@ inline ios_base::iostate _Print_noformat_unicode_impl(ostream& _Ostr, const stri
 
     // See the documentation for __std_unicode_console_retrieval_result to understand why we do this.
     bool _Is_unicode_console;
+
+#pragma warning(push)
+#pragma warning(disable : 4061) // enumerator not explicitly handled by switch label
     switch (_Unicode_console_retrieval_result._Error) {
     case __std_win_error::_Success:
         {
@@ -1176,6 +1179,7 @@ inline ios_base::iostate _Print_noformat_unicode_impl(ostream& _Ostr, const stri
     default:
         [[unlikely]] return ios_base::failbit;
     }
+#pragma warning(pop)
 
     if (_Is_unicode_console) {
         _TRY_IO_BEGIN

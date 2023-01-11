@@ -43,85 +43,63 @@ namespace test {
             delete_console();
         }
 
-        win_console(const win_console&) = delete;
+        win_console(const win_console&)            = delete;
         win_console& operator=(const win_console&) = delete;
 
         win_console(win_console&& rhs) noexcept
-            : console_handle(rhs.console_handle), file_stream_ptr(rhs.file_stream_ptr)
-        {
-            rhs.console_handle = nullptr;
+            : console_handle(rhs.console_handle), file_stream_ptr(rhs.file_stream_ptr) {
+            rhs.console_handle  = nullptr;
             rhs.file_stream_ptr = nullptr;
         }
 
-        win_console& operator=(win_console&& rhs) noexcept
-        {
+        win_console& operator=(win_console&& rhs) noexcept {
             delete_console();
 
-            console_handle = rhs.console_handle;
+            console_handle     = rhs.console_handle;
             rhs.console_handle = nullptr;
 
-            file_stream_ptr = rhs.file_stream_ptr;
+            file_stream_ptr     = rhs.file_stream_ptr;
             rhs.file_stream_ptr = nullptr;
 
             return *this;
         }
 
-        FILE* get_file_stream() const
-        {
+        FILE* get_file_stream() const {
             assert(is_console_valid());
             return file_stream_ptr;
         }
 
-        wstring get_console_line(const size_t line_number) const
-        {
-            // We use the ReadConsoleOutputW() function to read lines of text which were written to the console.
-            // The neat thing here is that if we write to the console using the FILE* returned by
-            // win_console::get_file_stream() with std::print(), we can still use ReadConsoleOutputW() to get
-            // that text! This allows us to verify the output being written to the console.
-            CONSOLE_SCREEN_BUFFER_INFO screen_buffer_info;
+        wstring get_console_line(const size_t line_number) const {
+            // We use the ReadConsoleOutputCharacterW() function to read lines of text which were written to 
+            // the console. The neat thing here is that if we write to the console using the FILE* returned by
+            // win_console::get_file_stream() with std::print(), we can still use ReadConsoleOutputCharacterW() 
+            // to get that text! This allows us to verify the output being written to the console and check for,
+            // e.g., invalid code point replacement.
+            const size_t line_char_width = get_line_character_width();
+            const COORD read_coords{.X = 0, .Y = static_cast<SHORT>(line_number)};
 
-            {
-                const BOOL get_screen_buffer_info_result =
-                    GetConsoleScreenBufferInfo(console_handle, &screen_buffer_info);
-                assert(get_screen_buffer_info_result && "ERROR: GetConsoleScreenBufferInfo() failed!");
-            }
+            wstring output_str;
+            output_str.resize_and_overwrite(
+                line_char_width, [this, read_coords](wchar_t* const dest_ptr, const size_t allocated_size) {
+                    DWORD num_chars_read;
+                    const BOOL read_output_result = ReadConsoleOutputCharacterW(
+                        console_handle, dest_ptr, static_cast<DWORD>(allocated_size), read_coords, &num_chars_read);
 
-            const size_t num_columns = static_cast<size_t>(screen_buffer_info.dwSize.X);
-            vector<CHAR_INFO> char_info_arr{num_columns};
-
-            // Send the data to (0, 0) within char_info_arr (i.e., starting from the first element).
-            constexpr COORD destination_coords{};
-
-            const COORD dest_buffer_size{.X = static_cast<SHORT>(num_columns), .Y = 1};
-            SMALL_RECT read_region_rect{.Left = 0,
-                .Top                          = static_cast<SHORT>(line_number),
-                .Right                        = static_cast<SHORT>(num_columns),
-                .Bottom                       = static_cast<SHORT>(line_number + 1)};
-
-            {
-                const BOOL read_console_output_result = ReadConsoleOutputW(
-                    console_handle, char_info_arr.data(), dest_buffer_size, destination_coords, &read_region_rect);
-                assert(read_console_output_result && "ERROR: ReadConsoleOutputW() failed!");
-            }
-
-            wstring console_line_str{};
-            console_line_str.reserve(num_columns);
-
-            for (const auto& char_info : char_info_arr) {
-                console_line_str.push_back(char_info.Char.UnicodeChar);
-            }
+                    assert(read_output_result && "ERROR: ReadConsoleOutputCharacterW() failed!");
+                    return num_chars_read;
+                });
 
             // By default, Windows fills console character cells with space characters. We want to remove
             // those space characters which appear after the user's text.
-            const size_t last_valid_char = console_line_str.find_last_not_of(' ');
+            const std::size_t lastValidChar = output_str.find_last_not_of(' ');
 
-            if (last_valid_char == wstring::npos) [[unlikely]] {
-                console_line_str.clear();
+            if (lastValidChar == std::wstring::npos) [[unlikely]] {
+                output_str.clear();
             } else [[likely]] {
-                console_line_str = console_line_str.substr(0, last_valid_char + 1);
+                output_str = output_str.substr(0, lastValidChar + 1);
             }
 
-            return console_line_str;
+            return output_str;
         }
 
     private:
@@ -135,6 +113,18 @@ namespace test {
                 console_handle  = nullptr;
                 file_stream_ptr = nullptr;
             }
+        }
+
+        std::size_t get_line_character_width() const {
+            CONSOLE_SCREEN_BUFFER_INFO screen_buffer_info;
+
+            {
+                const BOOL get_screen_buffer_info_result =
+                    GetConsoleScreenBufferInfo(console_handle, &screen_buffer_info);
+                assert(get_screen_buffer_info_result && "ERROR: GetConsoleScreenBufferInfo() failed!");
+            }
+
+            return static_cast<size_t>(screen_buffer_info.dwSize.X);
         }
 
         bool is_console_valid() const {
