@@ -16,7 +16,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#include <__msvc_print.hpp>
 #include <cstdio>
 #include <streambuf>
 
