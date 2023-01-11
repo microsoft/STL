@@ -408,8 +408,6 @@ struct _Unused_parameter { // generic unused parameter struct
     constexpr _Unused_parameter(_Ty&&) noexcept {}
 };
 
-using _Any_tag = _Unused_parameter; // generic fallback/default/"other" target for tag dispatch
-
 template <class _Ty>
 using _Algorithm_int_t = conditional_t<is_integral_v<_Ty>, _Ty, ptrdiff_t>;
 

@@ -169,15 +169,6 @@ struct _Meta_at_<_List<_Types...>, _Idx, enable_if_t<(_Idx < sizeof...(_Types))>
 
 inline constexpr auto _Meta_npos = ~size_t{0};
 
-template <class _List, class _Ty>
-struct _Meta_find_index_ {
-    using type = integral_constant<size_t, _Meta_npos>;
-};
-template <class _List, class _Ty>
-using _Meta_find_index =
-    // find the index of the first occurrence of _Ty in _List
-    typename _Meta_find_index_<_List, _Ty>::type;
-
 constexpr size_t _Meta_find_index_i_(const bool* const _Ptr, const size_t _Count, size_t _Idx = 0) {
     // return the index of the first true in the _Count bools at _Ptr, or _Meta_npos if all are false
     for (; _Idx < _Count; ++_Idx) {
@@ -188,12 +179,6 @@ constexpr size_t _Meta_find_index_i_(const bool* const _Ptr, const size_t _Count
 
     return _Meta_npos;
 }
-
-template <template <class...> class _List, class _First, class... _Rest, class _Ty>
-struct _Meta_find_index_<_List<_First, _Rest...>, _Ty> {
-    static constexpr bool _Bools[] = {is_same_v<_First, _Ty>, is_same_v<_Rest, _Ty>...};
-    using type                     = integral_constant<size_t, _STD _Meta_find_index_i_(_Bools, 1 + sizeof...(_Rest))>;
-};
 
 template <class _List, class _Ty>
 struct _Meta_find_unique_index_ {
@@ -217,8 +202,8 @@ constexpr size_t _Meta_find_unique_index_i_(const bool* const _Ptr, const size_t
 
 template <template <class...> class _List, class _First, class... _Rest, class _Ty>
 struct _Meta_find_unique_index_<_List<_First, _Rest...>, _Ty> {
-    using type = integral_constant<size_t,
-        _STD _Meta_find_unique_index_i_(_Meta_find_index_<_List<_First, _Rest...>, _Ty>::_Bools, 1 + sizeof...(_Rest))>;
+    static constexpr bool _Bools[] = {is_same_v<_First, _Ty>, is_same_v<_Rest, _Ty>...};
+    using type = integral_constant<size_t, _STD _Meta_find_unique_index_i_(_Bools, 1 + sizeof...(_Rest))>;
 };
 
 template <class>
