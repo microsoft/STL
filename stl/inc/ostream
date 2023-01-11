@@ -1254,28 +1254,34 @@ void _Print_impl(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&..
             return string{};
         }
 
-        char _Prev_char = _Old_str.front();
         string _Escaped_str;
+        size_t _Escaped_str_expected_size = _Old_str.size();
 
         if constexpr (_Add_newline) {
-            _Escaped_str.reserve(_Old_str.size() + 1);
-        } else {
-            _Escaped_str.reserve(_Old_str.size());
+            ++_Escaped_str_expected_size;
         }
 
-        _Escaped_str.push_back(_Prev_char);
+        _Escaped_str.resize_and_overwrite(_Escaped_str_expected_size, [_Old_str](char* _Dest_ptr, const size_t) {
+            char _Prev_char           = _Old_str.front();
+            size_t _Num_chars_written = 1;
+            *_Dest_ptr++              = _Prev_char;
 
-        for (const auto _Curr_char : _Old_str.substr(1)) {
-            if ((_Curr_char != '{' || _Prev_char != '{') && (_Curr_char != '}' || _Prev_char != '}')) {
-                _Escaped_str.push_back(_Curr_char);
+            for (const auto _Curr_char : _Old_str.substr(1)) {
+                if ((_Curr_char != '{' || _Prev_char != '{') && (_Curr_char != '}' || _Prev_char != '}')) {
+                    *_Dest_ptr++ = _Curr_char;
+                    ++_Num_chars_written;
+                }
+
+                _Prev_char = _Curr_char;
             }
 
-            _Prev_char = _Curr_char;
-        }
-
-        if constexpr (_Add_newline) {
-            _Escaped_str += '\n';
-        }
+            if constexpr (_Add_newline) {
+                *_Dest_ptr = '\n';
+                return (_Num_chars_written + 1);
+            } else {
+                return _Num_chars_written;
+            }
+        });
 
         return _Escaped_str;
     };
