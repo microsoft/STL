@@ -3,17 +3,18 @@
 
 #include "test.hpp"
 
+#include <array>
+#include <filesystem>
 #include <format>
+#include <fstream>
 #include <locale>
 #include <print>
 #include <sstream>
 #include <string_view>
 
-#include <iostream>
-
 const locale& get_utf8_locale() {
 #pragma warning(push)
-#pragma warning(disable: 4640) // construction of local static object is not thread-safe
+#pragma warning(disable : 4640) // construction of local static object is not thread-safe
     static const locale utf8_locale{"en_US.utf8"};
 #pragma warning(pop)
 
@@ -25,8 +26,8 @@ wstring string_to_wstring(const string_view str) {
     const facet_type& facet{use_facet<facet_type>(get_utf8_locale())};
 
     mbstate_t conversion_state{};
-    const size_t num_chars_required =
-        static_cast<size_t>(facet.length(conversion_state, str.data(), (str.data() + str.size()), (numeric_limits<size_t>::max)()));
+    const size_t num_chars_required = static_cast<size_t>(
+        facet.length(conversion_state, str.data(), (str.data() + str.size()), (numeric_limits<size_t>::max)()));
 
     wstring output_str;
     output_str.resize_and_overwrite(num_chars_required, [&](wchar_t* const dest_str_ptr, const size_t output_size) {
@@ -65,15 +66,29 @@ string wstring_to_string(const wstring_view wide_str) {
     return output_str;
 }
 
-void maybe_flush_console_file_stream(const test::win_console& console)
-{
+void maybe_flush_console_file_stream(const test::win_console& console) {
     // std::print() and std::println() should automatically flush the stream if the Unicode
     // API is being used, according to the C++ specifications. So, as an additional check,
     // we'll only call std::fflush() if the ordinary literal encoding is *NOT* UTF-8. This
     // should work fine, assuming that our implementation is correct.
     if constexpr (!_Is_ordinary_literal_encoding_utf8) {
-        std::fflush(console.get_file_stream());
+        fflush(console.get_file_stream());
     }
+}
+
+void initialize_console() {
+    // We want to do things like, e.g., alter the output code page of our console, but we
+    // don't want to affect other tests which run concurrently. So, we want to detach this
+    // process from its current console, create a new console, and modify that one instead.
+
+    const BOOL free_console_result = FreeConsole();
+    assert(free_console_result);
+
+    const BOOL attach_console_result = AllocConsole();
+    assert(attach_console_result);
+
+    const BOOL set_output_cp_result = SetConsoleOutputCP(CP_UTF8);
+    assert(set_output_cp_result);
 }
 
 void test_print_optimizations() {
@@ -91,7 +106,7 @@ void test_print_optimizations() {
 
     const auto get_last_console_line_closure = [&test_console]() {
         maybe_flush_console_file_stream(test_console);
-        
+
         static size_t curr_line_number = 0;
         return wstring_to_string(test_console.get_console_line(curr_line_number++));
     };
@@ -137,12 +152,12 @@ void test_print_optimizations() {
 
         string str_stream_line;
 
-        std::getline(test_str_stream, str_stream_line);
+        getline(test_str_stream, str_stream_line);
         assert(str_stream_line == "2 + 2 = -32? Really?");
 
         println(test_str_stream, test_format_str, 4, "Finally."sv);
 
-        std::getline(test_str_stream, str_stream_line);
+        getline(test_str_stream, str_stream_line);
         assert(str_stream_line == "2 + 2 = 4? Finally.");
     }
 }
@@ -159,8 +174,6 @@ void test_invalid_code_points_console() {
         maybe_flush_console_file_stream(test_console);
 
         const wstring console_line{test_console.get_console_line(curr_line_number++)};
-        std::cout << "printed_str: " << printed_str._Get() << "\n";
-        std::cout << "console_line: " << wstring_to_string(console_line) << "\n";
         assert(wstring_to_string(console_line) == printed_str._Get());
     };
 
@@ -184,7 +197,7 @@ void test_invalid_code_points_console() {
         } else {
             // When UTF-8 is not the ordinary literal encoding, calls to std::fputs() (used internally
             // by std::print() et al.) on a FILE stream associated with a console do, in fact, seem to
-            // drop invalid characters when they get displayed. They should never be replaced with 
+            // drop invalid characters when they get displayed. They should never be replaced with
             // U+FFFD. It isn't specified which characters get dropped.
             //
             // Since the C++ specifications state that invalid code points should only be replaced with
@@ -295,12 +308,109 @@ void test_invalid_code_points_file() {
     fclose(temp_file_stream);
 }
 
+void test_stream_flush_console() {
+    // If the ordinary literal encoding is UTF-8, then the FILE stream associated with
+    // a console should always be flushed before writing output during a call to std::print()
+    // and std::println(). Otherwise, the stream should *NOT* be flushed.
+    test::win_console temp_console{};
+    FILE* const console_file_stream = temp_console.get_file_stream();
+
+    print(console_file_stream, "Hello,");
+
+    {
+        const wstring extractedStr{temp_console.get_console_line(0)};
+
+        if constexpr (_Is_ordinary_literal_encoding_utf8) {
+            assert(extractedStr == L"Hello,");
+        } else {
+            assert(extractedStr.empty());
+        }
+    }
+
+    println(console_file_stream, " world!");
+
+    {
+        const wstring extractedStr{temp_console.get_console_line(0)};
+
+        if constexpr (_Is_ordinary_literal_encoding_utf8) {
+            assert(extractedStr == L"Hello, world!");
+        } else {
+            assert(extractedStr.empty());
+        }
+    }
+
+    maybe_flush_console_file_stream(temp_console);
+
+    {
+        const wstring extractedStr{temp_console.get_console_line(0)};
+        assert(extractedStr == L"Hello, world!");
+    }
+}
+
+void test_stream_flush_file() {
+    // Regardless of the ordinary literal encoding, neither std::print() nor std::println()
+    // should flush file streams which do not refer to consoles.
+    string temp_file_name_str;
+
+    {
+        ofstream output_file_stream;
+
+        while (!output_file_stream.is_open()) {
+            temp_file_name_str.resize_and_overwrite(L_tmpnam_s, [](char* const dest_ptr, const size_t allocated_size) {
+                const errno_t tmpnam_result = tmpnam_s(dest_ptr, allocated_size);
+                assert(tmpnam_result == 0);
+
+                return allocated_size;
+            });
+
+            output_file_stream = ofstream{temp_file_name_str, ios::out};
+        }
+
+        print(output_file_stream, "Hello, ");
+
+        {
+            ifstream input_file_stream = ifstream{temp_file_name_str, ios::in};
+
+            string extracted_line_str;
+            getline(input_file_stream, extracted_line_str);
+
+            assert(extracted_line_str.empty());
+        }
+
+        println(output_file_stream, "world!");
+
+        {
+            ifstream input_file_stream = ifstream{temp_file_name_str, ios::in};
+
+            string extracted_line_str;
+            getline(input_file_stream, extracted_line_str);
+
+            assert(extracted_line_str.empty());
+        }
+
+        output_file_stream.flush();
+
+        {
+            ifstream input_file_stream = ifstream{temp_file_name_str, ios::in};
+
+            string extracted_line_str;
+            getline(input_file_stream, extracted_line_str);
+
+            assert(extracted_line_str == "Hello, world!");
+        }
+    }
+
+    filesystem::remove(temp_file_name_str);
+}
+
 int main() {
-    //locale::global(get_utf8_locale());
-    SetConsoleOutputCP(CP_UTF8);
-    
+    initialize_console();
+
     test_print_optimizations();
 
     test_invalid_code_points_console();
     test_invalid_code_points_file();
+
+    test_stream_flush_console();
+    test_stream_flush_file();
 }

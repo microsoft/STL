@@ -70,9 +70,9 @@ namespace test {
         }
 
         wstring get_console_line(const size_t line_number) const {
-            // We use the ReadConsoleOutputCharacterW() function to read lines of text which were written to 
+            // We use the ReadConsoleOutputCharacterW() function to read lines of text which were written to
             // the console. The neat thing here is that if we write to the console using the FILE* returned by
-            // win_console::get_file_stream() with std::print(), we can still use ReadConsoleOutputCharacterW() 
+            // win_console::get_file_stream() with std::print(), we can still use ReadConsoleOutputCharacterW()
             // to get that text! This allows us to verify the output being written to the console and check for,
             // e.g., invalid code point replacement.
             const size_t line_char_width = get_line_character_width();
