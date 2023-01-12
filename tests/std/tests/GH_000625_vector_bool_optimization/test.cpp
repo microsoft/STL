@@ -248,7 +248,7 @@ void test_huge_vector_bool() {
     v.back() = true;
     assert(find(v.begin(), v.end(), true) - v.begin() == large_bit_diff - 1);
 
-    v[small_bit_length] = true;
+    v[small_bit_length]                    = true;
     v[large_bit_length - small_bit_length] = true;
     assert(count(v.begin(), v.end(), false) == large_bit_diff - 3);
 }
