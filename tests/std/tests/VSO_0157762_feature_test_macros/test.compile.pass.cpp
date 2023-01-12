@@ -1488,7 +1488,7 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 #endif
 #endif
 
-#if _HAS_CXX23
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_print
 #error __cpp_lib_print is not defined
 #elif __cpp_lib_print != 202207L

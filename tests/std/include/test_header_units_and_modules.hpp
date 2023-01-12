@@ -496,7 +496,10 @@ void test_print() {
     using namespace std;
     puts("Testing <print>.");
     println("Hello, world!");
+
+#ifdef _CPPRTTI
     println(cout, "The answer to life, the universe, and everything: {}", 42);
+#endif // _CPPRTTI
 }
 
 void test_queue() {
