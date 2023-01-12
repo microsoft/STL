@@ -274,7 +274,7 @@ constexpr bool test_interface() {
         vec default_constructed;
         const auto alloc = default_constructed.get_allocator();
         static_assert(is_same_v<remove_const_t<decltype(alloc)>, soccc_allocator<bool>>);
-        assert(alloc.id == 1);
+        assert(alloc.id == 2);
         assert(alloc.soccc_generation == 0);
     }
 
