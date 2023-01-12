@@ -2392,7 +2392,7 @@ public:
     }
 
 #if _ITERATOR_DEBUG_LEVEL != 0
-    _CONSTEXPR20_CONTAINER _Difference_type _Total_off(const _Mycont* _Cont) const noexcept {
+    _CONSTEXPR20 _Difference_type _Total_off(const _Mycont* _Cont) const noexcept {
         return static_cast<_Difference_type>(
             static_cast<_Difference_type>(_VBITS) * (_Myptr - _Cont->_Myvec.data()) + _Myoff);
     }
