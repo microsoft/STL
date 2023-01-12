@@ -227,7 +227,7 @@ std/utilities/format/format.tuple/parse.pass.cpp FAIL
 std/utilities/format/format.tuple/set_brackets.pass.cpp FAIL
 std/utilities/format/format.tuple/set_separator.pass.cpp FAIL
 
-# Missing mrbtoc8 and c8rtomb
+# Missing mbrtoc8 and c8rtomb
 std/depr/depr.c.headers/uchar_h.compile.pass.cpp FAIL
 std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
@@ -643,7 +643,7 @@ std/ranges/range.access/rbegin.pass.cpp FAIL
 std/ranges/range.access/rend.pass.cpp FAIL
 std/ranges/range.access/size.pass.cpp FAIL
 
-# C5101: use of preprocessor directive in function-like macro argument list is undefined behavior
+# warning C5101: use of preprocessor directive in function-like macro argument list is undefined behavior
 std/time/time.syn/formatter.year_month.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_day_last.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL

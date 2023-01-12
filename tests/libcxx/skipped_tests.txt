@@ -227,7 +227,7 @@ utilities\format\format.tuple\parse.pass.cpp
 utilities\format\format.tuple\set_brackets.pass.cpp
 utilities\format\format.tuple\set_separator.pass.cpp
 
-# Missing mrbtoc8 and c8rtomb
+# Missing mbrtoc8 and c8rtomb
 depr\depr.c.headers\uchar_h.compile.pass.cpp
 strings\c.strings\cuchar.compile.pass.cpp
 
@@ -643,7 +643,7 @@ ranges\range.access\rbegin.pass.cpp
 ranges\range.access\rend.pass.cpp
 ranges\range.access\size.pass.cpp
 
-# C5101: use of preprocessor directive in function-like macro argument list is undefined behavior
+# warning C5101: use of preprocessor directive in function-like macro argument list is undefined behavior
 time\time.syn\formatter.year_month.pass.cpp
 time\time.syn\formatter.year_month_day_last.pass.cpp
 time\time.syn\formatter.year_month_weekday.pass.cpp
