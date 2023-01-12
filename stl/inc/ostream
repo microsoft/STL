@@ -10,7 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <ios>
 
-#ifdef _HAS_CXX23
+#if _HAS_CXX23
 #include <__msvc_filebuf.hpp>
 #include <__msvc_print.hpp>
 #include <format>
