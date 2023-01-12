@@ -333,6 +333,7 @@
 //     (missing views::zip_transform, views::adjacent, and views::adjacent_transform)
 // P2322R6 ranges::fold_left, ranges::fold_right, Etc.
 // P2387R3 Pipe Support For User-Defined Range Adaptors
+// P2404R3 Move-Only Types For Comparison Concepts
 // P2417R2 More constexpr bitset
 // P2438R2 string::substr() &&
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
@@ -1565,7 +1566,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if _HAS_CXX20
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, GH-395
+#if _HAS_CXX23
+#define __cpp_lib_concepts 202207L
+#else // ^^^ C++23 / C++20 vvv
 #define __cpp_lib_concepts 202002L
+#endif // C++20
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
 #ifdef __cpp_lib_concepts
