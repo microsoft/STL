@@ -1094,7 +1094,7 @@ inline ios_base::iostate _Print_noformat_nonunicode(ostream& _Ostr, const string
 
     _TRY_IO_BEGIN
     const bool _Was_insertion_successful =
-        (_Ostr.rdbuf()->sputn(_Str.data(), _Str.size()) == static_cast<streamsize>(_Str.size()));
+        (static_cast<size_t>(_Ostr.rdbuf()->sputn(_Str.data(), static_cast<streamsize>(_Str.size()))) == _Str.size());
     if (!_Was_insertion_successful) [[unlikely]] {
         _State |= ios_base::badbit;
     }
