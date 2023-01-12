@@ -4270,6 +4270,10 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) noexc
 }
 
 #ifdef __cpp_lib_concepts
+template <class _Iter1, class _Iter2>
+    requires (!sized_sentinel_for<_Iter1, _Iter2>)
+inline constexpr bool disable_sized_sentinel_for<move_iterator<_Iter1>, move_iterator<_Iter2>> = true;
+
 _EXPORT_STD struct default_sentinel_t {};
 
 _EXPORT_STD inline constexpr default_sentinel_t default_sentinel{};
