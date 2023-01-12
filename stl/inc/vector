@@ -2874,7 +2874,6 @@ public:
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-    static constexpr difference_type _VBITS_DIFF = _VBITS;
     enum { _EEN_VBITS = _VBITS }; // helper for expression evaluator
 
     _CONSTEXPR20 vector() noexcept(is_nothrow_default_constructible_v<_Alloc>) : _Mybase(_Alloc()) {}
@@ -3505,7 +3504,8 @@ public:
                 *_Pnext         = _Temp->_Mynextiter;
                 continue;
             }
-            const auto _Off = static_cast<size_type>(_VBITS_DIFF * (_Pnextiter._Myptr - _Base)) + _Pnextiter._Myoff;
+            const auto _Off =
+                static_cast<size_type>(const_iterator::_VBITS_DIFF * (_Pnextiter._Myptr - _Base)) + _Pnextiter._Myoff;
             if (_Off < _Offlo || _Offhi < _Off) {
                 _Pnext = &_Temp->_Mynextiter;
             } else { // orphan the iterator
