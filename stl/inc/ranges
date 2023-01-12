@@ -2624,6 +2624,10 @@ namespace ranges {
                     const auto _Size = static_cast<range_difference_t<_Vw>>(size());
                     return counted_iterator(_RANGES begin(_Range), _Size);
                 }
+            } else if constexpr (sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>>) {
+                auto _Iter       = _RANGES begin(_Range);
+                const auto _Size = (_STD min)(_Count, _RANGES end(_Range) - _Iter);
+                return counted_iterator(_STD move(_Iter), _Size);
             } else {
                 return counted_iterator(_RANGES begin(_Range), _Count);
             }
@@ -2639,6 +2643,10 @@ namespace ranges {
                     const auto _Size = static_cast<range_difference_t<_Vw>>(size());
                     return counted_iterator(_RANGES begin(_Range), _Size);
                 }
+            } else if constexpr (sized_sentinel_for<sentinel_t<const _Vw>, iterator_t<const _Vw>>) {
+                auto _Iter       = _RANGES begin(_Range);
+                const auto _Size = (_STD min)(_Count, _RANGES end(_Range) - _Iter);
+                return counted_iterator(_STD move(_Iter), _Size);
             } else {
                 return counted_iterator(_RANGES begin(_Range), _Count);
             }
@@ -2653,6 +2661,8 @@ namespace ranges {
                 } else {
                     return default_sentinel;
                 }
+            } else if constexpr (sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>>) {
+                return default_sentinel;
             } else {
                 return _Sentinel<false>{_RANGES end(_Range)};
             }
@@ -2667,6 +2677,8 @@ namespace ranges {
                 } else {
                     return default_sentinel;
                 }
+            } else if constexpr (sized_sentinel_for<sentinel_t<const _Vw>, iterator_t<const _Vw>>) {
+                return default_sentinel;
             } else {
                 return _Sentinel<true>{_RANGES end(_Range)};
             }
