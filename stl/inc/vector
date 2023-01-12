@@ -2378,6 +2378,8 @@ public:
     using _Difference_type = typename allocator_traits<_Alvbase>::difference_type;
     using _Mycont          = vector<bool, _Rebind_alloc_t<_Alvbase, bool>>;
 
+    static constexpr _Difference_type _VBITS_DIFF = _VBITS;
+
     _CONSTEXPR20 _Vb_iter_base() = default;
 
     _CONSTEXPR20 _Vb_iter_base(const _Vbase* _Ptr, _Size_type _Off, const _Container_base* _Mypvbool) noexcept
@@ -2393,8 +2395,7 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL != 0
     _CONSTEXPR20 _Difference_type _Total_off(const _Mycont* _Cont) const noexcept {
-        return static_cast<_Difference_type>(
-            static_cast<_Difference_type>(_VBITS) * (_Myptr - _Cont->_Myvec.data()) + _Myoff);
+        return static_cast<_Difference_type>(_VBITS_DIFF * (_Myptr - _Cont->_Myvec.data()) + _Myoff);
     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -2583,7 +2584,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 difference_type operator-(const _Vb_const_iterator& _Right) const noexcept {
         _Compat(_Right);
-        return static_cast<difference_type>(static_cast<difference_type>(_VBITS) * (this->_Myptr - _Right._Myptr))
+        return static_cast<difference_type>(_Mybase::_VBITS_DIFF * (this->_Myptr - _Right._Myptr))
              + static_cast<difference_type>(this->_Myoff) - static_cast<difference_type>(_Right._Myoff);
     }
 
@@ -2873,7 +2874,7 @@ public:
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-    static const int _VBITS = _STD _VBITS;
+    static constexpr difference_type _VBITS_DIFF = _VBITS;
     enum { _EEN_VBITS = _VBITS }; // helper for expression evaluator
 
     _CONSTEXPR20 vector() noexcept(is_nothrow_default_constructible_v<_Alloc>) : _Mybase(_Alloc()) {}
@@ -3504,8 +3505,7 @@ public:
                 *_Pnext         = _Temp->_Mynextiter;
                 continue;
             }
-            const auto _Off = static_cast<size_type>(static_cast<difference_type>(_VBITS) * (_Pnextiter._Myptr - _Base))
-                            + _Pnextiter._Myoff;
+            const auto _Off = static_cast<size_type>(_VBITS_DIFF * (_Pnextiter._Myptr - _Base)) + _Pnextiter._Myoff;
             if (_Off < _Offlo || _Offhi < _Off) {
                 _Pnext = &_Temp->_Mynextiter;
             } else { // orphan the iterator
