@@ -38,25 +38,16 @@ static_assert(totally_ordered_with<int, MoveOnly>);
 // clang-format off
 template <class T, class U>
     requires equality_comparable_with<T, U>
-bool attempted_equals(const T&, const U& u);
+bool attempted_equals(const T&, const U& u); // not defined
 
 template <class T, class U>
     requires common_reference_with<const remove_reference_t<T>&, const remove_reference_t<U>&>
-bool attempted_equals(const T& t, const U& u);
+bool attempted_equals(const T& t, const U& u); // not defined
 // clang-format on
 
 template <class T>
-bool test(T val) {
-    return attempted_equals(val, nullptr); // ill-formed; previously well-formed
-}
+constexpr bool check_diff_cpp20_concepts = !requires(T p) { attempted_equals(p, nullptr); };
 
-template <class T>
-constexpr bool diff_cpp20_concepts = requires(T val) { test(val); };
-
-#if _HAS_CXX23
-static_assert(!diff_cpp20_concepts<unique_ptr<int>>);
-#else // ^^^ C++23 / C++20 vvv
-static_assert(diff_cpp20_concepts<unique_ptr<int>>);
-#endif // C++20
+static_assert(check_diff_cpp20_concepts<shared_ptr<int>>);
 
 int main() {} // COMPILE-ONLY
