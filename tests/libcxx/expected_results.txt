@@ -1009,7 +1009,6 @@ std/ranges/range.adaptors/range.lazy.split/view_interface.pass.cpp FAIL
 std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
 std/ranges/range.factories/range.single.view/cpo.pass.cpp FAIL
 std/strings/basic.string/string.cons/dtor.pass.cpp FAIL
-std/strings/basic.string/string.cons/implicit_deduction_guides.pass.cpp FAIL
 std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_erase/iter_iter.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_insert/iter_iter_iter.pass.cpp:0 FAIL
@@ -1020,12 +1019,6 @@ std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer_size.
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_size_char.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:0 FAIL
-std/strings/string.view/string.view.comparison/equal.pass.cpp FAIL
-std/strings/string.view/string.view.comparison/greater.pass.cpp FAIL
-std/strings/string.view/string.view.comparison/greater_equal.pass.cpp FAIL
-std/strings/string.view/string.view.comparison/less.pass.cpp FAIL
-std/strings/string.view/string.view.comparison/less_equal.pass.cpp FAIL
-std/strings/string.view/string.view.comparison/not_equal.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/addressof.pass.cpp:0 FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.alg/swap.pass.cpp:0 FAIL

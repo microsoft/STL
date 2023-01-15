@@ -134,6 +134,19 @@ constexpr bool test_constexpr() {
     return true;
 }
 
+// Negative test cases
+struct not_streamable {};
+static_assert(!invocable<decltype(views::istream<not_streamable>), istream&>);
+static_assert(!invocable<decltype(views::istream<int>), const istream&>);
+static_assert(!invocable<decltype(views::istream<int>), volatile istream&>);
+static_assert(!invocable<decltype(views::istream<int>), const volatile istream&>);
+static_assert(invocable<decltype(views::istream<int>), istream> == is_permissive);
+static_assert(!invocable<decltype(views::istream<int>), const istream>);
+static_assert(!invocable<decltype(views::istream<int>), volatile istream>);
+static_assert(!invocable<decltype(views::istream<int>), const volatile istream>);
+static_assert(!invocable<decltype(views::istream<int>), int&>);
+static_assert(!invocable<decltype(views::istream<int>), int>);
+
 int main() {
     test_one_type<int>();
     test_one_type<streamable>();

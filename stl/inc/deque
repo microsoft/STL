@@ -439,8 +439,7 @@ private:
     using _Mybase    = _Deque_const_iterator<_Mydeque>;
 
 public:
-    using _Deque_unchecked_type = _Deque_unchecked_iterator<_Mydeque>;
-    using iterator_category     = random_access_iterator_tag;
+    using iterator_category = random_access_iterator_tag;
 
     using value_type      = typename _Mydeque::value_type;
     using difference_type = typename _Mydeque::difference_type;
@@ -577,13 +576,12 @@ private:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Ty, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("deque<T, Allocator>", "T"));
 
-    using _Alty           = _Rebind_alloc_t<_Alloc, _Ty>;
-    using _Alty_traits    = allocator_traits<_Alty>;
-    using _Alpty          = _Rebind_alloc_t<_Alloc, typename _Alty_traits::pointer>;
-    using _Alpty_traits   = allocator_traits<_Alpty>;
-    using _Mapptr         = typename _Alpty_traits::pointer;
-    using _Alproxy_ty     = _Rebind_alloc_t<_Alty, _Container_proxy>;
-    using _Alproxy_traits = allocator_traits<_Alproxy_ty>;
+    using _Alty         = _Rebind_alloc_t<_Alloc, _Ty>;
+    using _Alty_traits  = allocator_traits<_Alty>;
+    using _Alpty        = _Rebind_alloc_t<_Alloc, typename _Alty_traits::pointer>;
+    using _Alpty_traits = allocator_traits<_Alpty>;
+    using _Mapptr       = typename _Alpty_traits::pointer;
+    using _Alproxy_ty   = _Rebind_alloc_t<_Alty, _Container_proxy>;
 
     using _Scary_val = _Deque_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Deque_simple_types<_Ty>,
         _Deque_iter_types<_Ty, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,

@@ -651,7 +651,11 @@ constexpr bool impl_test_source_location() {
     using namespace std;
     const auto sl = source_location::current();
     assert(sl.line() == __LINE__ - 1);
+#ifdef _MSVC_INTERNAL_TESTING // TRANSITION, VS 2022 17.6 Preview 2
+    assert(sl.column() == 38);
+#else // ^^^ no workaround / workaround vvv
     assert(sl.column() == 1);
+#endif // ^^^ workaround ^^^
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(sl.function_name() == "impl_test_source_location"sv);
 #else // ^^^ workaround / no workaround vvv
