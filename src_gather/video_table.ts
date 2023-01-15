@@ -58,4 +58,6 @@ export const video_table: VideoRow[] = [
     { pr_id: 3035, review_date: '2022-10-13' },
     { pr_id: 3164, review_date: '2022-11-03' },
     { pr_id: 3268, review_date: '2022-12-08' },
+    { pr_id: 3322, review_date: '2023-01-12' },
+    { pr_id: 3361, review_date: '2023-02-07' },
 ];
