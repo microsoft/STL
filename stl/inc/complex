@@ -55,6 +55,10 @@ struct _C_ldouble_complex {
 };
 #endif // _C_COMPLEX_T
 
+typedef _C_double_complex _Dcomplex;
+typedef _C_float_complex _Fcomplex;
+typedef _C_ldouble_complex _Lcomplex;
+
 // complex _Val offsets
 #define _RE 0
 #define _IM 1
