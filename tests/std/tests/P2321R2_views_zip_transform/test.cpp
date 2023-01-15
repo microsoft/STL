@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <compare>
+#include <concepts>
 #include <functional>
 #include <ranges>
 #include <span>
@@ -294,7 +295,7 @@ constexpr bool validate_iterators_sentinels(
 template <class TransformType_, ranges::random_access_range TransformedElementsContainer,
     ranges::input_range... RangeTypes>
 constexpr bool test_one(
-    TransformType_&& transform, const TransformedElementsContainer& transformed_elements, RangeTypes&&... ranges) {
+    TransformType_&& transform, const TransformedElementsContainer& transformed_elements, RangeTypes&&... test_ranges) {
     // Ignore instances where one of the generated test ranges does not model
     // ranges::viewable_range.
     if constexpr ((ranges::viewable_range<RangeTypes> && ...)) {
@@ -339,10 +340,10 @@ constexpr bool test_one(
                                           && is_nothrow_constructible_v<InnerView, AllView<RangeTypes>&&...>;
 
                 STATIC_ASSERT(
-                    same_as<decltype(views::zip_transform(std::forward<TransformType_>(transform), ranges...)),
+                    same_as<decltype(views::zip_transform(std::forward<TransformType_>(transform), test_ranges...)),
                         ExpectedZipTransformType>);
-                STATIC_ASSERT(
-                    noexcept(views::zip_transform(std::forward<TransformType_>(transform), ranges...)) == is_noexcept);
+                STATIC_ASSERT(noexcept(views::zip_transform(std::forward<TransformType_>(transform), test_ranges...))
+                              == is_noexcept);
             }
 
             // ... with const lvalue arguments
@@ -355,10 +356,10 @@ constexpr bool test_one(
                                           && is_nothrow_constructible_v<InnerView, const AllView<RangeTypes>&&...>;
 
                 STATIC_ASSERT(same_as<decltype(views::zip_transform(
-                                          std::forward<TransformType_>(transform), as_const(ranges)...)),
+                                          std::forward<TransformType_>(transform), as_const(test_ranges)...)),
                     ExpectedZipTransformType>);
                 STATIC_ASSERT(
-                    noexcept(views::zip_transform(std::forward<TransformType_>(transform), as_const(ranges)...))
+                    noexcept(views::zip_transform(std::forward<TransformType_>(transform), as_const(test_ranges)...))
                     == is_noexcept);
             }
 
@@ -372,10 +373,10 @@ constexpr bool test_one(
                                           && is_nothrow_constructible_v<InnerView, AllView<RangeTypes>&&...>;
 
                 STATIC_ASSERT(same_as<decltype(views::zip_transform(
-                                          std::forward<TransformType_>(transform), std::move(ranges)...)),
+                                          std::forward<TransformType_>(transform), std::move(test_ranges)...)),
                     ExpectedZipTransformType>);
                 STATIC_ASSERT(
-                    noexcept(views::zip_transform(std::forward<TransformType_>(transform), std::move(ranges)...))
+                    noexcept(views::zip_transform(std::forward<TransformType_>(transform), std::move(test_ranges)...))
                     == is_noexcept);
             }
 
@@ -389,11 +390,11 @@ constexpr bool test_one(
                 constexpr bool is_noexcept = is_nothrow_move_constructible_v<ranges::_Movable_box<TransformType>>
                                           && is_nothrow_constructible_v<InnerView, const AllView<RangeTypes>&&...>;
 
-                STATIC_ASSERT(same_as<decltype(views::zip_transform(
-                                          std::forward<TransformType_>(transform), std::move(as_const(ranges))...)),
+                STATIC_ASSERT(same_as<decltype(views::zip_transform(std::forward<TransformType_>(transform),
+                                          std::move(as_const(test_ranges))...)),
                     ExpectedZipTransformType>);
                 STATIC_ASSERT(noexcept(views::zip_transform(
-                                  std::forward<TransformType_>(transform), std::move(as_const(ranges))...))
+                                  std::forward<TransformType_>(transform), std::move(as_const(test_ranges))...))
                               == is_noexcept);
             }
         }
@@ -401,7 +402,7 @@ constexpr bool test_one(
         if constexpr (move_constructible<TransformType>) {
             // Validate deduction guide
             same_as<ZipTransformType> auto zipped_transformed_range = ranges::zip_transform_view{
-                std::forward<TransformType_>(transform), std::forward<RangeTypes>(ranges)...};
+                std::forward<TransformType_>(transform), std::forward<RangeTypes>(test_ranges)...};
 
             // Validate zip_transform_view::size()
             STATIC_ASSERT(CanMemberSize<ZipTransformType> == ranges::sized_range<InnerView>);
