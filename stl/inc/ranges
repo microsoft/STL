@@ -7311,10 +7311,10 @@ namespace ranges {
         private:
             friend zip_view;
 
-            template <move_constructible _Func, input_range... _Views>
-                requires ((view<_Views> && ...) && (sizeof...(_Views) > 0)
-                          && is_object_v<_Func> && regular_invocable<_Func&, range_reference_t<_Views>...>
-                          && _Can_reference<invoke_result_t<_Func&, range_reference_t<_Views>...>>)
+            template <move_constructible _Func, input_range... _OtherViews>
+                requires ((view<_OtherViews> && ...) && (sizeof...(_OtherViews) > 0)
+                          && is_object_v<_Func> && regular_invocable<_Func&, range_reference_t<_OtherViews>...>
+                          && _Can_reference<invoke_result_t<_Func&, range_reference_t<_OtherViews>...>>)
             friend class zip_transform_view;
 
             using _My_tuple = tuple<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
@@ -7732,31 +7732,29 @@ namespace ranges {
         template <bool _IsConst>
             requires forward_range<_Maybe_const<_IsConst, _Inner_view>>
         struct _Category_base<_IsConst> {
+        private:
+            template <class _Tag_type>
+            static constexpr bool _Iterators_derive_from_tag =
+                (derived_from<
+                     typename iterator_traits<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>::iterator_category,
+                     _Tag_type>
+                    && ...);
+
+        public:
             using iterator_category = decltype([]() noexcept {
                 using _Invoke_t = invoke_result_t<_Maybe_const<_IsConst, _Func>&,
                     range_reference_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
 
                 if constexpr (!is_reference_v<_Invoke_t>) {
                     return input_iterator_tag{};
+                } else if constexpr (_Iterators_derive_from_tag<random_access_iterator_tag>) {
+                    return random_access_iterator_tag{};
+                } else if constexpr (_Iterators_derive_from_tag<bidirectional_iterator_tag>) {
+                    return bidirectional_iterator_tag{};
+                } else if constexpr (_Iterators_derive_from_tag<forward_iterator_tag>) {
+                    return forward_iterator_tag{};
                 } else {
-                    constexpr auto _Check_tag_type_closure = []<typename _Tag_type>() noexcept {
-                        // clang-format off
-                        return (derived_from<typename
-                            iterator_traits<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>::iterator_category,
-                            _Tag_type>
-                        && ...);
-                        // clang-format on
-                    };
-
-                    if constexpr (_Check_tag_type_closure.template operator()<random_access_iterator_tag>()) {
-                        return random_access_iterator_tag{};
-                    } else if constexpr (_Check_tag_type_closure.template operator()<bidirectional_iterator_tag>()) {
-                        return bidirectional_iterator_tag{};
-                    } else if constexpr (_Check_tag_type_closure.template operator()<forward_iterator_tag>()) {
-                        return forward_iterator_tag{};
-                    } else {
-                        return input_iterator_tag{};
-                    }
+                    return input_iterator_tag{};
                 }
             }());
         };
@@ -7782,7 +7780,7 @@ namespace ranges {
                 range_reference_t<_Maybe_const<_IsConst, _ViewTypes>>...>>;
             using difference_type  = range_difference_t<_Base_t>;
 
-            _Iterator() noexcept(is_nothrow_default_constructible_v<_Ziperator<_IsConst>>) = default;
+            _Iterator() = default;
 
             constexpr _Iterator(_Iterator<!_IsConst> _Rhs) noexcept(
                 is_nothrow_convertible_v<_Ziperator<false>, _Ziperator<_IsConst>>) // strengthened
@@ -7811,7 +7809,6 @@ namespace ranges {
             {
                 auto _Temp = *this;
                 ++*this;
-
                 return _Temp;
             }
 
@@ -7828,7 +7825,6 @@ namespace ranges {
             {
                 auto _Temp = *this;
                 --*this;
-
                 return _Temp;
             }
 
@@ -7940,7 +7936,7 @@ namespace ranges {
             }
 
         public:
-            _Sentinel() noexcept(is_nothrow_default_constructible_v<_Zentinel<_IsConst>>) = default;
+            _Sentinel() = default;
 
             constexpr _Sentinel(_Sentinel<!_IsConst> _Rhs) noexcept(
                 is_nothrow_convertible_v<_Zentinel<false>, _Zentinel<_IsConst>>) // strengthened
@@ -7994,27 +7990,25 @@ namespace ranges {
             (range<const _Inner_view> && regular_invocable<const _Func&, range_reference_t<const _ViewTypes>...>);
 
     public:
-        zip_transform_view() noexcept(
-            is_nothrow_default_constructible_v<_Movable_box<_Func>>&& is_nothrow_default_constructible_v<_Inner_view>) =
-            default;
+        zip_transform_view() = default;
 
         constexpr explicit zip_transform_view(_Func _Function_, _ViewTypes... _Views) noexcept(
-            is_nothrow_move_constructible_v<_Movable_box<_Func>>&&
+            is_nothrow_move_constructible_v<_Func>&&
                 is_nothrow_constructible_v<_Inner_view, remove_reference_t<_ViewTypes>&&...>) // strengthened
             : _Function(in_place, _STD move(_Function_)), _Zip(_STD move(_Views)...) {}
 
-        constexpr auto begin() noexcept(noexcept(_Iterator<false>{*this, _Zip.begin()})) // strengthened
+        _NODISCARD constexpr auto begin() noexcept(noexcept(_Iterator<false>{*this, _Zip.begin()})) // strengthened
         {
             return _Iterator<false>{*this, _Zip.begin()};
         }
 
-        constexpr auto begin() const noexcept(noexcept(_Iterator<true>{*this, _Zip.begin()})) // strengthened
+        _NODISCARD constexpr auto begin() const noexcept(noexcept(_Iterator<true>{*this, _Zip.begin()})) // strengthened
             requires _Enable_const_begin_end
         {
             return _Iterator<true>{*this, _Zip.begin()};
         }
 
-        constexpr auto end() noexcept(_Is_end_noexcept<false>) // strengthened
+        _NODISCARD constexpr auto end() noexcept(_Is_end_noexcept<false>) // strengthened
         {
             if constexpr (common_range<_Inner_view>) {
                 return _Iterator<false>{*this, _Zip.end()};
@@ -8023,7 +8017,7 @@ namespace ranges {
             }
         }
 
-        constexpr auto end() const noexcept(_Is_end_noexcept<true>) // strengthened
+        _NODISCARD constexpr auto end() const noexcept(_Is_end_noexcept<true>) // strengthened
             requires _Enable_const_begin_end
         {
             if constexpr (common_range<const _Inner_view>) {
@@ -8033,13 +8027,13 @@ namespace ranges {
             }
         }
 
-        constexpr auto size() noexcept(noexcept(_Zip.size())) // strengthened
+        _NODISCARD constexpr auto size() noexcept(noexcept(_Zip.size())) // strengthened
             requires sized_range<_Inner_view>
         {
             return _Zip.size();
         }
 
-        constexpr auto size() const noexcept(noexcept(_Zip.size())) // strengthened
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_Zip.size())) // strengthened
             requires sized_range<const _Inner_view>
         {
             return _Zip.size();
@@ -8055,11 +8049,6 @@ namespace ranges {
             template <class _Func, class... _Types>
             static constexpr bool _Is_invocation_noexcept = []() noexcept {
                 if constexpr (sizeof...(_Types) == 0) {
-                    // equivalent to:
-                    // using _Decayed_func = decay_t<_Func>;
-                    //
-                    // return noexcept(((void) _STD declval<_Func&>(),
-                    //     auto(empty<decay_t<invoke_result_t<_Decayed_func&>>>)));
                     return true;
                 } else {
                     return noexcept(zip_transform_view(_STD declval<_Func>(), _STD declval<_Types>()...));
@@ -8069,17 +8058,19 @@ namespace ranges {
             template <class _Func, class... _Types>
             static constexpr bool _Enable_cpo = []() noexcept {
                 if constexpr (sizeof...(_Types) == 0) {
+                    // This is a more efficient implementation of the CPO requirements listed in
+                    // N4928 [range.zip.transform.overview]/2.1.1.
                     using _Decayed_func = decay_t<_Func>;
-
                     if constexpr (move_constructible<_Decayed_func> && regular_invocable<_Decayed_func&>) {
                         return !is_void_v<invoke_result_t<_Decayed_func&>>;
                     } else {
                         return false;
                     }
                 } else {
-                    return requires(_Func && _Function, _Types && ... _Args) {
-                               zip_transform_view(_STD forward<_Func>(_Function), _STD forward<_Types>(_Args)...);
-                           };
+                    // clang-format off
+                    return requires(_Func&& _Function, _Types&&... _Args)
+                        { zip_transform_view(_STD forward<_Func>(_Function), _STD forward<_Types>(_Args)...); };
+                    // clang-format on
                 }
             }();
 
@@ -8090,10 +8081,7 @@ namespace ranges {
                 noexcept(_Is_invocation_noexcept<_Func, _Types...>) // strengthened
             {
                 if constexpr (sizeof...(_Types) == 0) {
-                    using _Decayed_func = decay_t<decltype((_Function))>;
-
-                    // equivalent to:
-                    // return ((void) _Function, auto(empty<decay_t<invoke_result_t<_Decayed_func&>>>));
+                    using _Decayed_func = decay_t<_Func>;
                     return empty_view<decay_t<invoke_result_t<_Decayed_func&>>>{};
                 } else {
                     return zip_transform_view(_STD forward<_Func>(_Function), _STD forward<_Types>(_Args)...);
