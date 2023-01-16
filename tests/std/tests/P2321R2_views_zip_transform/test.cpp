@@ -456,6 +456,47 @@ constexpr bool test_one(
                 assert(static_cast<bool>(as_const(zipped_transformed_range)) != is_empty);
             }
 
+            // Validate view_interface::cbegin() and view_interface::cend()
+            STATIC_ASSERT(CanMemberCBegin<ZipTransformType>);
+            STATIC_ASSERT(CanMemberCEnd<ZipTransformType>);
+            {
+                STATIC_ASSERT(is_same_v<decltype(zipped_transformed_range.cbegin()),
+                    const_iterator<ranges::iterator_t<ZipTransformType>>>);
+                STATIC_ASSERT(is_same_v<decltype(zipped_transformed_range.cend()),
+                    const_sentinel<ranges::sentinel_t<ZipTransformType>>>);
+
+                if constexpr ((derived_from<remove_cvref_t<RangeTypes>, forward_iterator_tag> && ...)) {
+                    const auto cbegin_itr                = zipped_transformed_range.cbegin();
+                    [[maybe_unused]] const auto cend_sen = zipped_transformed_range.cend();
+
+                    assert(*cbegin_itr == *ranges::begin(transformed_elements));
+                    assert(static_cast<decltype(ranges::size(transformed_elements))>(
+                               ranges::distance(zipped_transformed_range.cbegin(), zipped_transformed_range.cend()))
+                           == ranges::size(transformed_elements));
+                }
+            }
+
+            STATIC_ASSERT(CanMemberCBegin<const ZipTransformType> == has_const_begin_end);
+            STATIC_ASSERT(CanMemberCEnd<const ZipTransformType> == has_const_begin_end);
+            if constexpr (has_const_begin_end) {
+                STATIC_ASSERT(is_same_v<decltype(as_const(zipped_transformed_range).cbegin()),
+                    const_iterator<ranges::iterator_t<const ZipTransformType>>>);
+                STATIC_ASSERT(is_same_v<decltype(as_const(zipped_transformed_range).cend()),
+                    const_sentinel<ranges::sentinel_t<const ZipTransformType>>>);
+
+                if constexpr ((derived_from<remove_cvref_t<RangeTypes>, forward_iterator_tag> && ...)) {
+                    const same_as<const_iterator<ranges::iterator_t<const ZipTransformType>>> auto cbegin_itr =
+                        as_const(zipped_transformed_range).cbegin();
+                    [[maybe_unused]] const same_as<const_sentinel<ranges::sentinel_t<const ZipTransformType>>> auto
+                        cend_sen = as_const(zipped_transformed_range).cend();
+
+                    assert(*cbegin_itr == *ranges::begin(transformed_elements));
+                    assert(static_cast<decltype(ranges::size(transformed_elements))>(ranges::distance(
+                               as_const(zipped_transformed_range).cbegin(), as_const(zipped_transformed_range).cend()))
+                           == ranges::size(transformed_elements));
+                }
+            }
+
             // Validate contents of zip-transformed range
             assert(ranges::equal(zipped_transformed_range, transformed_elements));
 
