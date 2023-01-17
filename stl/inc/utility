@@ -840,7 +840,7 @@ _NODISCARD constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
     }
 }
 
-template<class _Ty, class _Uty>
+template <class _Ty, class _Uty>
 using _Forward_like_t = decltype(_STD forward_like<_Ty>(_STD declval<_Uty&>()));
 #endif // _HAS_CXX23
 
