@@ -819,35 +819,29 @@ _EXPORT_STD [[noreturn]] __forceinline void unreachable() noexcept /* strengthen
 #endif // _DEBUG
 }
 
-template <class _Ty, class _Uty>
-_NODISCARD consteval auto _Forward_like_t_impl() noexcept {
+_EXPORT_STD template <class _Ty, class _Uty>
+_NODISCARD constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
+    static_assert(_Can_reference<_Ty>, "std::forward_like's first template argument must be a referenceable type.");
+
     using _UnrefT = remove_reference_t<_Ty>;
     using _UnrefU = remove_reference_t<_Uty>;
-
     if constexpr (is_const_v<_UnrefT>) {
         if constexpr (is_lvalue_reference_v<_Ty>) {
-            return type_identity<const _UnrefU&>{};
+            return static_cast<const _UnrefU&>(_Ux);
         } else {
-            return type_identity<const _UnrefU&&>{};
+            return static_cast<const _UnrefU&&>(_Ux);
         }
     } else {
         if constexpr (is_lvalue_reference_v<_Ty>) {
-            return type_identity<_UnrefU&>{};
+            return static_cast<_UnrefU&>(_Ux);
         } else {
-            return type_identity<_UnrefU&&>{};
+            return static_cast<_UnrefU&&>(_Ux);
         }
     }
 }
 
-template <class _Ty, class _Uty>
-using _Forward_like_t = typename decltype(_STD _Forward_like_t_impl<_Ty, _Uty>())::type;
-
-_EXPORT_STD template <class _Ty, class _Uty>
-_NODISCARD _MSVC_INTRINSIC constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
-    static_assert(_Can_reference<_Ty>, "std::forward_like's first template argument must be a referenceable type.");
-
-    return static_cast<_Forward_like_t<_Ty, _Uty>>(_Ux);
-}
+template<class _Ty, class _Uty>
+using _Forward_like_t = decltype(_STD forward_like<_Ty>(_STD declval<_Uty&>()));
 #endif // _HAS_CXX23
 
 #if _HAS_TR1_NAMESPACE

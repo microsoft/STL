@@ -1406,7 +1406,11 @@ namespace ranges {
             /* [[no_unique_address]] */ _Index_type _Current{};
 
             constexpr explicit _Iterator(const _Ty* _Val, _Index_type _Bo_ = _Index_type{}) noexcept // strengthened
-                : _Value(_Val), _Current(_Bo_) {}
+                : _Value(_Val), _Current(_Bo_) {
+                if constexpr (_Signed_integer_like<_Bo>) {
+                    _STL_INTERNAL_CHECK(_Current >= 0);
+                }
+            }
 
         public:
             using iterator_concept  = random_access_iterator_tag;
@@ -1422,7 +1426,7 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator++() noexcept /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _CONTAINER_DEBUG_LEVEL > 0
                 _STL_VERIFY(_Current < (numeric_limits<_Index_type>::max)(),
                     "cannot increment repeat_view iterator past end (integer overflow)");
 #endif
@@ -1436,12 +1440,12 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator--() noexcept /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
-                    _STL_VERIFY(_Current > 0, "cannot decrement below 0");
-                } else {
+#if _CONTAINER_DEBUG_LEVEL > 0
+                if constexpr (is_same_v<_Bo, unreachable_sentinel_t>) {
                     _STL_VERIFY(_Current > (numeric_limits<_Index_type>::min)(),
                         "cannot decrement repeat_view iterator past end (integer overflow)");
+                } else {
+                    _STL_VERIFY(_Current > 0, "cannot decrement below 0");
                 }
 #endif
                 --_Current;
@@ -1454,10 +1458,7 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator+=(difference_type _Off) noexcept /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
-                    _STL_VERIFY(_Current + _Off >= 0, "cannot subtract below 0");
-                }
+#if _CONTAINER_DEBUG_LEVEL > 0
                 if (_Off > 0) {
                     _STL_VERIFY(_Current <= (numeric_limits<_Index_type>::max)() - static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator past end (integer overflow)");
@@ -1465,15 +1466,15 @@ namespace ranges {
                     _STL_VERIFY(_Current >= (numeric_limits<_Index_type>::min)() - static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator past end (integer overflow)");
                 }
-#endif //_ITERATOR_DEBUG_LEVEL != 0
+                if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
+                    _STL_VERIFY(_Current + _Off >= 0, "cannot subtract below 0");
+                }
+#endif //_CONTAINER_DEBUG_LEVEL > 0
                 _Current += _Off;
                 return *this;
             }
             constexpr _Iterator& operator-=(difference_type _Off) noexcept /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
-                    _STL_VERIFY(_Current - _Off >= 0, "cannot subtract below 0");
-                }
+#if _CONTAINER_DEBUG_LEVEL > 0
                 if (_Off < 0) {
                     _STL_VERIFY(_Current <= (numeric_limits<_Index_type>::max)() + static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator past end (integer overflow)");
@@ -1481,7 +1482,10 @@ namespace ranges {
                     _STL_VERIFY(_Current >= (numeric_limits<_Index_type>::min)() + static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator past end (integer overflow)");
                 }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+                if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
+                    _STL_VERIFY(_Current - _Off >= 0, "cannot subtract below 0");
+                }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
                 _Current -= _Off;
                 return *this;
             }
@@ -1527,7 +1531,7 @@ namespace ranges {
         template <class _Tuple, size_t... _Indices>
         _NODISCARD_CTOR constexpr repeat_view(_Tuple& _Val, index_sequence<_Indices...>, _Bo _Bound_) noexcept(
             is_nothrow_constructible_v<_Ty, tuple_element_t<_Indices, _Tuple>...>)
-            : _Value(in_place, _Tuple_get<_Indices>(_STD move(_Val))...), _Bound(_Bound_) {}
+            : _Value(in_place, _Tuple_get<_Indices>(_STD move(_Val))...), _Bound(_STD move(_Bound_)) {}
 
     public:
         // clang-format off
@@ -1537,18 +1541,18 @@ namespace ranges {
         _NODISCARD_CTOR constexpr explicit repeat_view(const _Ty& _Value_, _Bo _Bound_ = _Bo{}) noexcept(
             is_nothrow_copy_constructible_v<_Ty>) // strengthened
             requires copy_constructible<_Ty>
-            : _Value(in_place, _Value_), _Bound(_Bound_) {
+            : _Value(in_place, _Value_), _Bound(_STD move(_Bound_)) {
 #if _CONTAINER_DEBUG_LEVEL > 0
-            if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
+            if constexpr (_Signed_integer_like<_Bo>) {
                 _STL_VERIFY(_Bound >= 0, "Bound must be >= 0");
             }
 #endif
         }
         _NODISCARD_CTOR constexpr explicit repeat_view(_Ty&& _Value_, _Bo _Bound_ = _Bo{}) noexcept(
             is_nothrow_move_constructible_v<_Ty>) // strengthened
-            : _Value(in_place, _STD move(_Value_)), _Bound(_Bound_) {
+            : _Value(in_place, _STD move(_Value_)), _Bound(_STD move(_Bound_)) {
 #if _CONTAINER_DEBUG_LEVEL > 0
-            if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
+            if constexpr (_Signed_integer_like<_Bo>) {
                 _STL_VERIFY(_Bound >= 0, "Bound must be >= 0");
             }
 #endif
@@ -1565,13 +1569,13 @@ namespace ranges {
         _NODISCARD constexpr _Iterator begin() const noexcept /* strengthened */ {
             return _Iterator{_STD addressof(*_Value)};
         }
-        _NODISCARD constexpr _Iterator end() const noexcept // strengthened
-            requires (!same_as<_Bo, unreachable_sentinel_t>)
+        _NODISCARD constexpr auto end() const noexcept // strengthened
         {
-            return _Iterator{_STD addressof(*_Value), _Bound};
-        }
-        _NODISCARD constexpr unreachable_sentinel_t end() const noexcept {
-            return unreachable_sentinel;
+            if constexpr (same_as<_Bo, unreachable_sentinel_t>) {
+                return unreachable_sentinel;
+            } else {
+                return _Iterator{_STD addressof(*_Value), _Bound};
+            }
         }
 
         _NODISCARD constexpr auto size() const noexcept // strengthened

@@ -24,6 +24,25 @@ concept CanTakeDrop = requires(R r) {
                           forward<R>(r) | views::drop(1);
                       };
 
+struct NonDefault {
+    int value{};
+    constexpr NonDefault(int v) : value(v) {}
+    constexpr bool operator==(const NonDefault&) const = default;
+};
+struct MoveOnly {
+    int value{};
+    constexpr MoveOnly(int v) : value(v) {}
+    MoveOnly(MoveOnly&&)                             = default;
+    MoveOnly& operator=(MoveOnly&&)                  = default;
+    constexpr bool operator==(const MoveOnly&) const = default;
+};
+
+template <class T>
+constexpr conditional_t<!is_copy_constructible_v<T> && is_move_constructible_v<T>, T&&, const T&> //
+    move_if_move_only(T& val) {
+    return move(val);
+}
+
 template <class T, class B = unreachable_sentinel_t>
 constexpr void test_common(T val, B bound = unreachable_sentinel) {
     constexpr bool bounded = !same_as<B, unreachable_sentinel_t>;
@@ -38,7 +57,9 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
     static_assert(ranges::common_range<R> == bounded);
 
     static_assert(ranges::view<R>);
-    static_assert(semiregular<R>);
+    static_assert(movable<R> == movable<T>);
+    static_assert(copy_constructible<R> == copy_constructible<T>);
+    static_assert(copyable<R> == copyable<T>);
     static_assert(default_initializable<R> == default_initializable<T>);
     static_assert(is_nothrow_copy_constructible_v<R> == is_nothrow_copy_constructible_v<T>); // strengthened
     static_assert(is_nothrow_copy_assignable_v<R> == is_nothrow_copy_assignable_v<T>); // strengthened
@@ -61,10 +82,13 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
 
     static_assert(CanSize<R> == bounded);
 
-    same_as<R> auto rng = views::repeat(val, bound);
-    static_assert(noexcept(views::repeat(val, bound)) == is_nothrow_copy_constructible_v<T>); // strengthened
-    static_assert(noexcept(rng | views::drop(1)) == is_nothrow_copy_constructible_v<T>); // strengthened
-    static_assert(noexcept(rng | views::take(1)) == is_nothrow_copy_constructible_v<T>); // strengthened
+    same_as<R> auto rng = views::repeat(move_if_move_only(val), bound);
+    if constexpr (copyable<T>) {
+        static_assert(noexcept(views::repeat(val, bound)) == is_nothrow_copy_constructible_v<T>); // strengthened
+        static_assert(noexcept(rng | views::drop(1)) == is_nothrow_copy_constructible_v<T>); // strengthened
+        static_assert(noexcept(rng | views::take(1)) == is_nothrow_copy_constructible_v<T>); // strengthened
+    }
+    static_assert(noexcept(views::repeat(move(val), bound)) == is_nothrow_move_constructible_v<T>); // strengthened
     static_assert(noexcept(move(rng) | views::drop(1)) == is_nothrow_move_constructible_v<T>); // strengthened
     static_assert(noexcept(move(rng) | views::take(1)) == is_nothrow_move_constructible_v<T>); // strengthened
 
@@ -91,14 +115,19 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
         const same_as<R> auto drop = rng | views::drop(amount);
         assert(cmp_equal(drop.size(), drop_amount));
     } else {
+        auto it = rng.begin();
+        for (int i = 0; i < 10; ++i) {
+            assert(*it == val);
+            ++it;
+        }
         static_assert(noexcept(rng.end()));
 
         using ReconR = ranges::repeat_view<T, ranges::range_difference_t<R>>;
 
-        const same_as<ReconR> auto take = rng | views::take(3);
+        const same_as<ReconR> auto take = move_if_move_only(rng) | views::take(3);
         assert(take.size() == 3);
 
-        const same_as<R> auto drop = rng | views::drop(3);
+        const same_as<R> auto drop = move_if_move_only(rng) | views::drop(3);
         static_assert(!CanSize<decltype(drop)>);
     }
 
@@ -214,9 +243,10 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
     }
 
     const same_as<ranges::sentinel_t<R>> auto last = rng.end();
-    assert(!(first == last));
+    const bool is_empty                            = bound == 0;
+    assert(first == last == is_empty);
     static_assert(noexcept(first == last)); // strengthened
-    assert(first != last);
+    assert(first != last != is_empty);
     static_assert(noexcept(first != last)); // strengthened
     if constexpr (bounded) {
         assert(cmp_equal(last - first, rng.size()));
@@ -247,11 +277,14 @@ struct tuple_tester {
     forward_tester y;
     forward_tester z;
 
-#ifndef __cpp_aggregate_paren_int
-    // TRANSITION P0960R3: clang doesn't support parenthesized initialization of aggregates
+#ifdef __clang__ // TRANSITION, Clang needs to implement P0960R3
+#ifdef __cpp_aggregate_paren_init
+#error Remove this workaround
+#else // ^^^ Workaround is useless / workaround is useful vvv
     template <class T, class U>
     constexpr tuple_tester(T&& a, U&& b) : y{forward<T>(a)}, z{forward<U>(b)} {}
-#endif
+#endif // __cpp_aggregate_paren_init
+#endif // __clang__
 };
 
 constexpr bool test() {
@@ -259,7 +292,10 @@ constexpr bool test() {
 
     test_common(7, 5);
     test_common(7, 2);
+    test_common(7, 0);
     test_common(3);
+    test_common<NonDefault>(3);
+    test_common<MoveOnly>(3);
     test_common("woof"s, 5);
     test_common("woof"s, 2);
     test_common("meow"s);
