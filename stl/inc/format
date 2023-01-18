@@ -1783,6 +1783,20 @@ struct _Format_arg_traits {
 
     template <class _Ty>
     static constexpr size_t _Storage_size = sizeof(_Storage_type<_Ty>);
+
+#if !_HAS_CXX23
+    // Workaround towards N4928 [format.arg]/9 and /10 in C++20
+    template <class _Traits>
+    static auto _Deduce_converted_string_type(basic_string_view<_Char_type, _Traits>)
+        -> basic_string_view<_Char_type, _Traits>; // not defined
+
+    template <class _Traits, class _Alloc>
+    static auto _Deduce_converted_string_type(basic_string<_Char_type, _Traits, _Alloc>)
+        -> const basic_string<_Char_type, _Traits, _Alloc>&; // not defined
+
+    template <class _Ty>
+    using _Converted_string_type = decltype(_Deduce_converted_string_type(_STD declval<_Ty&>()));
+#endif // !_HAS_CXX23
 };
 
 struct _Format_arg_index {
@@ -1878,7 +1892,16 @@ private:
             _Arg_type = _Basic_format_arg_type::_Custom_type;
         }
 
-        _Store_impl<_Erased_type>(_Arg_index, _Arg_type, static_cast<_Erased_type>(_Val));
+#if !_HAS_CXX23
+        // Workaround towards N4928 [format.arg]/9 and /10 in C++20
+        if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
+            typename _Traits::template _Converted_string_type<_Ty> _Str = _Val;
+            _Store_impl<_Erased_type>(_Arg_index, _Arg_type, _Erased_type{_Str.data(), _Str.size()});
+        } else
+#endif // !_HAS_CXX23
+        {
+            _Store_impl<_Erased_type>(_Arg_index, _Arg_type, static_cast<_Erased_type>(_Val));
+        }
     }
 
 public:
