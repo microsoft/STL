@@ -853,13 +853,13 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
 #endif // ^^^ EDG workaround ^^^
 }
 
-inline constexpr char32_t _Width_estimate_intervals[] = { // Per N4885 [format.string.std]/11
+inline constexpr char32_t _Width_estimate_intervals[] = { // Per N4928 [format.string.std]/12
     0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u, 0xFE10u,
     0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u, 0x20000u,
     0x2FFFEu, 0x30000u, 0x3FFFEu};
 
 _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
-    // Computes the width estimation for Unicode characters from N4885 [format.string.std]/11
+    // Computes the width estimation for Unicode characters from N4928 [format.string.std]/12
     int _Result = 1;
     for (const auto& _Bound : _Width_estimate_intervals) {
         if (_Ch < _Bound) {
@@ -1731,13 +1731,13 @@ struct _Format_arg_traits {
     using _Char_type = typename _Context::char_type;
 
     // These overloads mirror the exposition-only single-argument constructor
-    // set of basic_format_arg (N4885 [format.arg]). They determine the mapping
+    // set of basic_format_arg (N4928 [format.arg]). They determine the mapping
     // from "raw" to "erased" argument type for _Format_arg_store.
     template <_Has_formatter<_Context> _Ty>
     static auto _Phony_basic_format_arg_constructor(_Ty&&) {
         // per the proposed resolution of LWG-3631
         using _Td = remove_cvref_t<_Ty>;
-        // See N4885 [format.arg]/5
+        // See N4928 [format.arg]/5
         if constexpr (is_same_v<_Td, bool>) {
             return bool{};
         } else if constexpr (is_same_v<_Td, _Char_type>) {
@@ -1783,20 +1783,6 @@ struct _Format_arg_traits {
 
     template <class _Ty>
     static constexpr size_t _Storage_size = sizeof(_Storage_type<_Ty>);
-
-#if !_HAS_CXX23
-    // Workaround towards N4928 [format.arg]/9 and /10 in C++20
-    template <class _Traits>
-    static auto _Deduce_converted_string_type(basic_string_view<_Char_type, _Traits>)
-        -> basic_string_view<_Char_type, _Traits>; // not defined
-
-    template <class _Traits, class _Alloc>
-    static auto _Deduce_converted_string_type(basic_string<_Char_type, _Traits, _Alloc>)
-        -> const basic_string<_Char_type, _Traits, _Alloc>&; // not defined
-
-    template <class _Ty>
-    using _Converted_string_type = decltype(_Deduce_converted_string_type(_STD declval<_Ty&>()));
-#endif // !_HAS_CXX23
 };
 
 struct _Format_arg_index {
@@ -1895,8 +1881,7 @@ private:
 #if !_HAS_CXX23
         // Workaround towards N4928 [format.arg]/9 and /10 in C++20
         if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
-            typename _Traits::template _Converted_string_type<_Ty> _Str = _Val;
-            _Store_impl<_Erased_type>(_Arg_index, _Arg_type, _Erased_type{_Str.data(), _Str.size()});
+            _Store_impl<_Erased_type>(_Arg_index, _Arg_type, _Erased_type{_Val.data(), _Val.size()});
         } else
 #endif // !_HAS_CXX23
         {
@@ -3291,7 +3276,7 @@ struct _Format_handler {
 };
 
 // Generic formatter definition, the deleted default constructor
-// makes it "disabled" as per N4885 [format.formatter.spec]/5
+// makes it "disabled" as per N4928 [format.formatter.spec]/5
 _EXPORT_STD template <class _Ty, class _CharT>
 struct formatter {
     formatter()                           = delete;
@@ -3420,7 +3405,7 @@ _EXPORT_STD template <class _Context = format_context, class... _Args>
 _NODISCARD auto make_format_args(_Args&&... _Vals) {
     static_assert((_Has_formatter<_Args, _Context> && ...),
         "Cannot format an argument. To make type T formattable, provide a formatter<T> specialization. "
-        "See N4917 [format.arg.store]/2 and [formatter.requirements].");
+        "See N4928 [format.arg.store]/2 and [formatter.requirements].");
     return _Format_arg_store<_Context, _Args...>{_Vals...};
 }
 
@@ -3428,7 +3413,7 @@ _EXPORT_STD template <class... _Args>
 _NODISCARD auto make_wformat_args(_Args&&... _Vals) {
     static_assert((_Has_formatter<_Args, wformat_context> && ...),
         "Cannot format an argument. To make type T formattable, provide a formatter<T> specialization. "
-        "See N4917 [format.arg.store]/2 and [formatter.requirements].");
+        "See N4928 [format.arg.store]/2 and [formatter.requirements].");
     return _Format_arg_store<wformat_context, _Args...>{_Vals...};
 }
 
