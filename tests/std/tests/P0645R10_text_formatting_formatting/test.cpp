@@ -25,7 +25,7 @@ constexpr auto llong_max  = numeric_limits<long long>::max();
 constexpr auto ullong_max = numeric_limits<unsigned long long>::max();
 
 // copied from the string_view tests
-template <typename CharT>
+template <class CharT>
 struct choose_literal; // not defined
 
 template <>
@@ -51,6 +51,16 @@ struct choose_literal<wchar_t> {
 #else
 #define DEFAULT_IDL_SETTING 0
 #endif
+
+// Test formatting basic_string(_view) with non-Standard traits_type
+template <class CharT>
+struct alternative_char_traits : char_traits<CharT> {};
+
+template <class CharT>
+using alternative_basic_string_view = basic_string_view<CharT, alternative_char_traits<CharT>>;
+
+template <class CharT, class Alloc = std::allocator<CharT>>
+using alternative_basic_string = basic_string<CharT, alternative_char_traits<CharT>, Alloc>;
 
 template <class charT, class... Args>
 auto make_testing_format_args(Args&&... vals) {
@@ -135,6 +145,26 @@ void test_simple_formatting() {
     format_to_n(move_only_back_inserter{output_string}, 300, STR("{} {} {} {} {} {} {} {} {}"), true, charT{'a'}, 0, 0u,
         0.0, STR("s"), basic_string_view{STR("sv")}, nullptr, static_cast<void*>(nullptr));
     assert(output_string == STR("true a 0 0 0 s sv 0x0 0x0"));
+
+    // Test formatting basic_string(_view) with non-Standard traits_type
+    // TRANSITION, LLVM-54051, DevCom-10255929, should also test class template argument deduction for alias templates
+    output_string.clear();
+    format_to(move_only_back_inserter{output_string}, STR("{} {} {} {} {} {} {} {} {} {}"), true, charT{'a'}, 0, 0u,
+        0.0, STR("s"), alternative_basic_string<charT>{STR("str")}, alternative_basic_string_view<charT>{STR("sv")},
+        nullptr, static_cast<void*>(nullptr));
+    assert(output_string == STR("true a 0 0 0 s str sv 0x0 0x0"));
+
+    output_string.clear();
+    format_to(move_only_back_inserter{output_string}, STR("{:} {:} {:} {:} {:} {:} {:} {:} {:} {:}"), true, charT{'a'},
+        0, 0u, 0.0, STR("s"), alternative_basic_string<charT>{STR("str")},
+        alternative_basic_string_view<charT>{STR("sv")}, nullptr, static_cast<void*>(nullptr));
+    assert(output_string == STR("true a 0 0 0 s str sv 0x0 0x0"));
+
+    output_string.clear();
+    format_to_n(move_only_back_inserter{output_string}, 300, STR("{} {} {} {} {} {} {} {} {} {}"), true, charT{'a'}, 0,
+        0u, 0.0, STR("s"), alternative_basic_string<charT>{STR("str")}, alternative_basic_string_view<charT>{STR("sv")},
+        nullptr, static_cast<void*>(nullptr));
+    assert(output_string == STR("true a 0 0 0 s str sv 0x0 0x0"));
 
     output_string.clear();
     vformat_to(
