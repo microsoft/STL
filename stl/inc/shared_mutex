@@ -29,7 +29,9 @@ _EXPORT_STD class shared_mutex { // class for mutual exclusion shared across thr
 public:
     using native_handle_type = _Smtx_t*;
 
-    shared_mutex() = default;
+    shared_mutex()                               = default;
+    shared_mutex(const shared_mutex&)            = delete;
+    shared_mutex& operator=(const shared_mutex&) = delete;
 
     void lock() noexcept /* strengthened */ { // lock exclusive
         _Smtx_lock_exclusive(&_Myhandle);
@@ -59,9 +61,6 @@ public:
         return &_Myhandle;
     }
 
-    shared_mutex(const shared_mutex&)            = delete;
-    shared_mutex& operator=(const shared_mutex&) = delete;
-
 private:
     _Smtx_t _Myhandle = nullptr;
 };
@@ -74,6 +73,9 @@ private:
 
 public:
     shared_timed_mutex() noexcept /* strengthened */ {}
+
+    shared_timed_mutex(const shared_timed_mutex&)            = delete;
+    shared_timed_mutex& operator=(const shared_timed_mutex&) = delete;
 
     void lock() { // lock exclusive
         unique_lock<mutex> _Lock(_Mymtx);
@@ -210,9 +212,6 @@ public:
         }
     }
 
-    shared_timed_mutex(const shared_timed_mutex&)            = delete;
-    shared_timed_mutex& operator=(const shared_timed_mutex&) = delete;
-
 private:
     mutex _Mymtx{};
     condition_variable _Read_queue{};
@@ -226,7 +225,7 @@ class shared_lock { // shareable lock
 public:
     using mutex_type = _Mutex;
 
-    shared_lock() = default;
+    shared_lock() noexcept = default;
 
     _NODISCARD_CTOR_LOCK explicit shared_lock(mutex_type& _Mtx)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) { // construct with mutex and lock shared
