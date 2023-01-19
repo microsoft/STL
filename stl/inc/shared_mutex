@@ -73,7 +73,7 @@ private:
     static constexpr _Read_cnt_t _Max_readers = static_cast<_Read_cnt_t>(-1);
 
 public:
-    shared_timed_mutex() = default;
+    shared_timed_mutex() noexcept /* strengthened */ = default;
 
     void lock() { // lock exclusive
         unique_lock<mutex> _Lock(_Mymtx);
