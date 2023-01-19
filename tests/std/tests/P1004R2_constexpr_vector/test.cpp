@@ -428,7 +428,7 @@ constexpr bool test_interface() {
         assert(equal(second.begin(), second.end(), begin(expected_second), end(expected_second)));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // erase
@@ -490,7 +490,7 @@ constexpr bool test_iterators() {
         assert(*cit == 2);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // advance
@@ -517,7 +517,7 @@ constexpr bool test_iterators() {
         assert(*cit == 4);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // advance back
@@ -558,7 +558,7 @@ constexpr bool test_iterators() {
         assert(it3 >= it1);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // access
@@ -625,7 +625,7 @@ constexpr bool test_growth() {
 
         vector<int> l(3, 47);
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
         if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
         {
@@ -644,7 +644,7 @@ constexpr bool test_growth() {
 
         vector<int> l(7000, 47);
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
         if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
         {
@@ -661,7 +661,7 @@ constexpr bool test_growth() {
         assert(v.size() == 1000);
         assert(v.capacity() == 1000);
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
         if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
         {
@@ -678,7 +678,7 @@ constexpr bool test_growth() {
         assert(v.size() == 1000);
         assert(v.capacity() == 1000);
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
         if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
         {
