@@ -238,9 +238,6 @@ template <class CharType>
 constexpr bool test_interface() {
     using str = basic_string<CharType>;
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // constructors
         // range constructors
         str literal_constructed{get_literal_input<CharType>()};
@@ -296,9 +293,6 @@ constexpr bool test_interface() {
         assert(equalRanges(conversion_start_length_constructed, "llo"sv));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // allocator constructors
         allocator<CharType> alloc;
 
@@ -347,9 +341,6 @@ constexpr bool test_interface() {
         assert(equalRanges(conversion_start_length_constructed, "llo"sv));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // assignment operator
         str literal_constructed = get_literal_input<CharType>();
 
@@ -380,9 +371,6 @@ constexpr bool test_interface() {
         assert(equalRanges(conversion_assigned, literal_constructed));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // assign
         str literal_constructed = get_literal_input<CharType>();
 
@@ -499,9 +487,6 @@ constexpr bool test_interface() {
         assert(char_traits<CharType>::length(cs) == literal_constructed.size());
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // iterators
         str literal_constructed             = get_literal_input<CharType>();
         const str const_literal_constructed = get_literal_input<CharType>();
@@ -752,9 +737,6 @@ constexpr bool test_interface() {
         assert(pushed.back() == CharType{'y'});
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // append
         const str literal_constructed = get_literal_input<CharType>();
 
@@ -800,9 +782,6 @@ constexpr bool test_interface() {
         assert(equalRanges(append_conversion_start_length, "bbllo"sv));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // operator+=
         str literal_constructed = get_literal_input<CharType>();
 
@@ -1105,9 +1084,6 @@ constexpr bool test_interface() {
         assert(equalRanges(copy_count_pos, "fluffy"sv));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // resize
         str resized = get_literal_input<CharType>();
         resized.resize(3);
@@ -1753,9 +1729,6 @@ constexpr bool test_iterators() {
         cit = cit2;
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // op->
         basic_string<CharLikeType<CharType>> bs{CharType{'x'}};
         auto it = bs.begin();
@@ -1767,9 +1740,6 @@ constexpr bool test_iterators() {
         assert(cc == CharType{'x'});
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // increment
         auto it = literal_constructed.begin();
         assert(*++it == CharType{'e'});
@@ -1801,9 +1771,6 @@ constexpr bool test_iterators() {
         assert(*cit == CharType{'f'});
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // decrement
         auto it = literal_constructed.end();
         assert(*--it == CharType{'s'});
@@ -1996,12 +1963,6 @@ constexpr bool test_growth() {
 
 template <class CharType>
 constexpr void test_copy_ctor() {
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (is_constant_evaluated()) {
-        return;
-    }
-#endif // ^^^ workaround ^^^
-
     using Str = basic_string<CharType, char_traits<CharType>, StationaryAlloc<CharType>>;
 
     { // Allocated
@@ -2025,12 +1986,6 @@ constexpr void test_copy_ctor() {
 
 template <class CharType>
 constexpr void test_copy_alloc_ctor(const size_t id1, const size_t id2) {
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (is_constant_evaluated()) {
-        return;
-    }
-#endif // ^^^ workaround ^^^
-
     using Str = basic_string<CharType, char_traits<CharType>, StationaryAlloc<CharType>>;
 
     { // Allocated
@@ -2054,12 +2009,6 @@ constexpr void test_copy_alloc_ctor(const size_t id1, const size_t id2) {
 
 template <class CharType, class Alloc>
 constexpr void test_copy_assign(const size_t id1, const size_t id2, const size_t id3) {
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (is_constant_evaluated()) {
-        return;
-    }
-#endif // ^^^ workaround ^^^
-
     using Str = basic_string<CharType, char_traits<CharType>, Alloc>;
 
     { // Allocated to SSO
@@ -2282,9 +2231,6 @@ constexpr void test_swap(const size_t id1, const size_t id2) {
         assert(rhs.get_allocator().id() == id1);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // Allocated to Allocated
         Str lhs(get_view_input<CharType>(), Alloc{id1});
         Str rhs(get_view_input<CharType>(), Alloc{id2});
