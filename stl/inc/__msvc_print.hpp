@@ -63,8 +63,7 @@ inline constexpr bool _Is_ordinary_literal_encoding_utf8 = []() {
 #else
     constexpr unsigned char _Mystery_char[] = "\u00B5";
 
-    // Due to a weird MSVC bug, we need to cast the values to a std::byte before doing the
-    // comparison.
+    // TRANSITION, DevCom-10257643
     return (sizeof(_Mystery_char) == 3 && static_cast<byte>(_Mystery_char[0]) == static_cast<byte>(0xC2)
             && static_cast<byte>(_Mystery_char[1]) == static_cast<byte>(0xB5));
 #endif
