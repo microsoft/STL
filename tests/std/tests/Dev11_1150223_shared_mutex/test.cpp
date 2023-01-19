@@ -30,11 +30,15 @@ STATIC_ASSERT(is_nothrow_destructible_v<timed_mutex>);
 STATIC_ASSERT(is_nothrow_destructible_v<recursive_timed_mutex>);
 STATIC_ASSERT(is_nothrow_destructible_v<shared_mutex>);
 STATIC_ASSERT(is_nothrow_destructible_v<shared_timed_mutex>);
+STATIC_ASSERT(is_nothrow_destructible_v<shared_lock<shared_mutex>>);
+STATIC_ASSERT(is_nothrow_destructible_v<shared_lock<shared_timed_mutex>>);
 STATIC_ASSERT(is_nothrow_destructible_v<condition_variable>);
 
 STATIC_ASSERT(is_nothrow_default_constructible_v<mutex>); // N4928 [thread.mutex.class]
 STATIC_ASSERT(is_nothrow_default_constructible_v<shared_mutex>); // strengthened
 STATIC_ASSERT(is_nothrow_default_constructible_v<shared_timed_mutex>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<shared_lock<shared_mutex>>); // N4928 [thread.lock.shared.cons]/1
+STATIC_ASSERT(is_nothrow_default_constructible_v<shared_lock<shared_timed_mutex>>); // N4928 [thread.lock.shared.cons]/1
 
 void join_and_clear(vector<thread>& threads) {
     for (auto& t : threads) {
