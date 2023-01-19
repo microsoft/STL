@@ -241,8 +241,8 @@ void test_print_optimizations() {
     // brace characters (i.e., {{ and }}) with a single brace character. We need to make sure
     // that we do the same.
     {
-        constexpr string_view escaped_braces_str{"[{{ }}]"};
-        constexpr string_view expected_str{"[{ }][{ }]"};
+        constexpr string_view escaped_braces_str{"[{{a{{{{b c}}}}d}}]"};
+        constexpr string_view expected_str{"[{a{{b c}}d}][{a{{b c}}d}]"};
 
         print(console_file_stream, escaped_braces_str);
         println(console_file_stream, escaped_braces_str);

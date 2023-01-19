@@ -135,9 +135,11 @@ void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Type
                 if ((_Curr_char != '{' || _Prev_char != '{') && (_Curr_char != '}' || _Prev_char != '}')) {
                     *_Dest_ptr++ = _Curr_char;
                     ++_Num_chars_written;
-                }
 
-                _Prev_char = _Curr_char;
+                    _Prev_char = _Curr_char;
+                } else {
+                    _Prev_char = '\0';
+                }
             }
 
             if constexpr (_Add_newline) {
