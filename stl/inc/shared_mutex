@@ -29,10 +29,7 @@ _EXPORT_STD class shared_mutex { // class for mutual exclusion shared across thr
 public:
     using native_handle_type = _Smtx_t*;
 
-    shared_mutex() noexcept // strengthened
-        : _Myhandle(nullptr) {}
-
-    ~shared_mutex() noexcept {}
+    shared_mutex() = default;
 
     void lock() noexcept /* strengthened */ { // lock exclusive
         _Smtx_lock_exclusive(&_Myhandle);
@@ -66,7 +63,7 @@ public:
     shared_mutex& operator=(const shared_mutex&) = delete;
 
 private:
-    _Smtx_t _Myhandle;
+    _Smtx_t _Myhandle = nullptr;
 };
 
 _EXPORT_STD class shared_timed_mutex { // class for mutual exclusion shared across threads
@@ -76,10 +73,7 @@ private:
     static constexpr _Read_cnt_t _Max_readers = static_cast<_Read_cnt_t>(-1);
 
 public:
-    shared_timed_mutex() noexcept // strengthened
-        : _Mymtx(), _Read_queue(), _Write_queue(), _Readers(0), _Writing(false) {}
-
-    ~shared_timed_mutex() noexcept {}
+    shared_timed_mutex() = default;
 
     void lock() { // lock exclusive
         unique_lock<mutex> _Lock(_Mymtx);
@@ -220,11 +214,11 @@ public:
     shared_timed_mutex& operator=(const shared_timed_mutex&) = delete;
 
 private:
-    mutex _Mymtx;
-    condition_variable _Read_queue;
-    condition_variable _Write_queue;
-    _Read_cnt_t _Readers;
-    bool _Writing;
+    mutex _Mymtx{};
+    condition_variable _Read_queue{};
+    condition_variable _Write_queue{};
+    _Read_cnt_t _Readers = 0;
+    bool _Writing        = false;
 };
 
 _EXPORT_STD template <class _Mutex>
@@ -232,7 +226,7 @@ class shared_lock { // shareable lock
 public:
     using mutex_type = _Mutex;
 
-    shared_lock() noexcept : _Pmtx(nullptr), _Owns(false) {}
+    shared_lock() = default;
 
     _NODISCARD_CTOR_LOCK explicit shared_lock(mutex_type& _Mtx)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) { // construct with mutex and lock shared
@@ -354,8 +348,8 @@ public:
     }
 
 private:
-    _Mutex* _Pmtx;
-    bool _Owns;
+    _Mutex* _Pmtx = nullptr;
+    bool _Owns    = false;
 
     void _Validate() const { // check if the mutex can be locked
         if (!_Pmtx) {
