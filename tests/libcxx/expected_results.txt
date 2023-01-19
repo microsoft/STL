@@ -641,7 +641,7 @@ std/ranges/range.access/rend.pass.cpp FAIL
 std/ranges/range.access/size.pass.cpp FAIL
 
 # libc++'s shared_mutex has a non-trivial destructor which suppresses -Wunused-variable
-std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/default.pass.cpp
+std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/default.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
