@@ -59,7 +59,7 @@ struct alternative_char_traits : char_traits<CharT> {};
 template <class CharT>
 using alternative_basic_string_view = basic_string_view<CharT, alternative_char_traits<CharT>>;
 
-template <class CharT, class Alloc = std::allocator<CharT>>
+template <class CharT, class Alloc = allocator<CharT>>
 using alternative_basic_string = basic_string<CharT, alternative_char_traits<CharT>, Alloc>;
 
 template <class charT, class... Args>
