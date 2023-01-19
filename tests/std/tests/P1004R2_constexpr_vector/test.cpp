@@ -326,7 +326,7 @@ constexpr bool test_interface() {
         assert(c2 == 6);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726729 (attempt to access run-time storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // modifiers
