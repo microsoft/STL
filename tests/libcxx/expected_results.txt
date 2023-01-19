@@ -641,7 +641,7 @@ std/ranges/range.access/rend.pass.cpp FAIL
 std/ranges/range.access/size.pass.cpp FAIL
 
 # unused-variable warning
-std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/default.pass.cpp SKIPPED
+std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/default.pass.cpp:1 FAIL
 
 
 # *** LIKELY STL BUGS ***
