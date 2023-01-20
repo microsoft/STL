@@ -215,13 +215,13 @@ bool test_count() {
     return true;
 }
 
-// Also test the behavior of a huge vector<bool, A> whose size is greater than SIZE_MAX, which is pratical on 32-bit
-// platforms.
+// Also test the behavior of a huge vector<bool, A> whose size is greater than SIZE_MAX,
+// which is practical on 32-bit platforms.
 template <class T>
 struct huge_allocator {
     huge_allocator() = default;
     template <class U>
-    constexpr huge_allocator(const huge_allocator<U>) noexcept {}
+    constexpr huge_allocator(const huge_allocator<U>&) noexcept {}
 
     using value_type      = T;
     using size_type       = uint64_t;
