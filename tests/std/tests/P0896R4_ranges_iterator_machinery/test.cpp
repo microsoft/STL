@@ -3411,6 +3411,26 @@ namespace move_iterator_test {
         return true;
     }
     STATIC_ASSERT(test());
+
+    // Validate disable_sized_sentinel_for partial specialization for move_iterator (LWG-3736)
+    struct weird_difference_base {
+        template <class T>
+        long operator-(T const&) const {
+            return 42;
+        }
+
+        bool operator==(weird_difference_base const&) const = default;
+    };
+    using simple_no_difference = simple_bidi_iter<weird_difference_base>;
+} // namespace move_iterator_test
+
+template <>
+inline constexpr bool std::disable_sized_sentinel_for<move_iterator_test::simple_no_difference,
+    move_iterator_test::simple_no_difference> = true;
+
+namespace move_iterator_test {
+    STATIC_ASSERT(!std::sized_sentinel_for<simple_no_difference, simple_no_difference>);
+    STATIC_ASSERT(!std::sized_sentinel_for<move_iterator<simple_no_difference>, move_iterator<simple_no_difference>>);
 } // namespace move_iterator_test
 
 namespace counted_iterator_test {

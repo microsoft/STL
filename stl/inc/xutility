@@ -408,8 +408,6 @@ struct _Unused_parameter { // generic unused parameter struct
     constexpr _Unused_parameter(_Ty&&) noexcept {}
 };
 
-using _Any_tag = _Unused_parameter; // generic fallback/default/"other" target for tag dispatch
-
 template <class _Ty>
 using _Algorithm_int_t = conditional_t<is_integral_v<_Ty>, _Ty, ptrdiff_t>;
 
@@ -559,11 +557,6 @@ struct _Make_signed_like_impl<false> {
 
 template <class _Ty>
 using _Make_signed_like_t = typename _Make_signed_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
-
-template <_Integer_like _Ty>
-_NODISCARD constexpr auto _To_signed_like(const _Ty _Value) noexcept {
-    return static_cast<_Make_signed_like_t<_Ty>>(_Value);
-}
 
 _EXPORT_STD template <class _Ty>
 concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {
@@ -2476,17 +2469,34 @@ namespace ranges {
     _NODISCARD constexpr auto _As_const_pointer(const _Ty* _Ptr) noexcept {
         return _Ptr;
     }
+
+    template <class _Ty>
+    using _Begin_on_const = decltype(_RANGES begin(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
+
+    // TRANSITION, LLVM-55945
+    template <class _Ty>
+    concept _Range_accessible_and_begin_adaptable =
+        _Should_range_access<_Ty>
+        && requires(
+            _Ty& _Val) { const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}; };
+
+    template <class _Ty>
+    using _End_on_const = decltype(_RANGES end(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
+
+    // TRANSITION, LLVM-55945
+    template <class _Ty>
+    concept _Range_accessible_and_end_adaptable =
+        _Should_range_access<_Ty>
+        && requires(
+            _Ty& _Val) { const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))}; };
 #endif // _HAS_CXX23
 
     struct _Cbegin_fn {
 #if _HAS_CXX23
-        template <_Should_range_access _Ty,
-            class _Uty = decltype(_RANGES begin(_RANGES _Possibly_const_range(_STD declval<_Ty&>())))>
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(const_iterator<_Uty>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}))
-            requires requires { const_iterator<_Uty>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}; }
-        {
-            return const_iterator<_Uty>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
+        template <_Range_accessible_and_begin_adaptable _Ty>
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(
+            noexcept(const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))})) {
+            return const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
@@ -2505,13 +2515,10 @@ namespace ranges {
 
     struct _Cend_fn {
 #if _HAS_CXX23
-        template <_Should_range_access _Ty,
-            class _Uty = decltype(_RANGES end(_RANGES _Possibly_const_range(_STD declval<_Ty&>())))>
+        template <_Range_accessible_and_end_adaptable _Ty>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(const_sentinel<_Uty>{_RANGES end(_RANGES _Possibly_const_range(_Val))}))
-            requires requires { const_sentinel<_Uty>{_RANGES end(_RANGES _Possibly_const_range(_Val))}; }
-        {
-            return const_sentinel<_Uty>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
+            noexcept(noexcept(const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))})) {
+            return const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
@@ -2667,15 +2674,34 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Rend::_Cpo rend;
     }
 
+#if _HAS_CXX23
+    template <class _Ty>
+    using _Rbegin_on_const = decltype(_RANGES rbegin(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
+
+    // TRANSITION, LLVM-55945
+    template <class _Ty>
+    concept _Range_accessible_and_rbegin_adaptable =
+        _Should_range_access<_Ty>
+        && requires(
+            _Ty& _Val) { const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}; };
+
+    template <class _Ty>
+    using _Rend_on_const = decltype(_RANGES rend(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
+
+    // TRANSITION, LLVM-55945
+    template <class _Ty>
+    concept _Range_accessible_and_rend_adaptable =
+        _Should_range_access<_Ty>
+        && requires(
+            _Ty& _Val) { const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}; };
+#endif // _HAS_CXX23
+
     struct _Crbegin_fn {
 #if _HAS_CXX23
-        template <_Should_range_access _Ty,
-            class _Uty = decltype(_RANGES rbegin(_RANGES _Possibly_const_range(_STD declval<_Ty&>())))>
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(const_iterator<_Uty>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}))
-            requires requires { const_iterator<_Uty>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}; }
-        {
-            return const_iterator<_Uty>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
+        template <_Range_accessible_and_rbegin_adaptable _Ty>
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(
+            noexcept(const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))})) {
+            return const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
@@ -2694,13 +2720,10 @@ namespace ranges {
 
     struct _Crend_fn {
 #if _HAS_CXX23
-        template <_Should_range_access _Ty,
-            class _Uty = decltype(_RANGES rend(_RANGES _Possibly_const_range(_STD declval<_Ty&>())))>
+        template <_Range_accessible_and_rend_adaptable _Ty>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(const_sentinel<_Uty>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}))
-            requires requires { const_sentinel<_Uty>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}; }
-        {
-            return const_sentinel<_Uty>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
+            noexcept(noexcept(const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))})) {
+            return const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
@@ -2919,13 +2942,19 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Data::_Cpo data;
     }
 
+#if _HAS_CXX23
+    // TRANSITION, LLVM-55945
+    template <class _Ty>
+    concept _Range_accessible_and_data_adaptable =
+        _Should_range_access<_Ty>
+        && requires(_Ty& _Val) { _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val))); };
+#endif // _HAS_CXX23
+
     struct _Cdata_fn {
 #if _HAS_CXX23
-        template <_Should_range_access _Ty>
+        template <_Range_accessible_and_data_adaptable _Ty>
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-            noexcept(noexcept(_RANGES data(_RANGES _Possibly_const_range(_Val))))
-            requires requires { _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val))); }
-        {
+            noexcept(noexcept(_RANGES data(_RANGES _Possibly_const_range(_Val)))) {
             return _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
         }
 #else // ^^^ C++23 / C++20 vvv
@@ -4238,6 +4267,10 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) noexc
 }
 
 #ifdef __cpp_lib_concepts
+template <class _Iter1, class _Iter2>
+    requires (!sized_sentinel_for<_Iter1, _Iter2>)
+inline constexpr bool disable_sized_sentinel_for<move_iterator<_Iter1>, move_iterator<_Iter2>> = true;
+
 _EXPORT_STD struct default_sentinel_t {};
 
 _EXPORT_STD inline constexpr default_sentinel_t default_sentinel{};

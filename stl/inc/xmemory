@@ -486,9 +486,6 @@ _STL_RESTORE_DEPRECATED_WARNING
 template <class _Alloc, class _Ptr>
 using _Uses_default_destroy = disjunction<_Is_default_allocator<_Alloc>, _Has_no_alloc_destroy<_Alloc, _Ptr>>;
 
-template <class _Alloc, class _Ptr>
-using _Uses_default_destroy_t = typename _Uses_default_destroy<_Alloc, _Ptr>::type;
-
 template <class _Alloc, class _Size_type, class _Const_void_pointer, class = void>
 struct _Has_allocate_hint : false_type {};
 

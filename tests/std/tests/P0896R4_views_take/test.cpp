@@ -7,6 +7,8 @@
 #include <map>
 #include <ranges>
 #include <span>
+#include <sstream>
+#include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -507,6 +509,39 @@ void test_DevCom_1397309() {
     assert(ranges::equal(values | ranges::views::take(2) | ranges::views::keys, expected));
 }
 
+struct read_some_int_range : ranges::subrange<counted_iterator<istream_iterator<int>>, default_sentinel_t> {
+    using ranges::subrange<counted_iterator<istream_iterator<int>>, default_sentinel_t>::subrange;
+};
+
+template <>
+inline constexpr bool ranges::disable_sized_range<read_some_int_range> = true;
+
+void test_lwg3737() {
+    static_assert(ranges::input_range<read_some_int_range>);
+    static_assert(ranges::input_range<const read_some_int_range>);
+    static_assert(!ranges::sized_range<read_some_int_range>);
+    static_assert(!ranges::sized_range<const read_some_int_range>);
+
+    istringstream stream{"0 1 42 1729"};
+    auto rng =
+        read_some_int_range{counted_iterator{istream_iterator<int>{stream}, 4}, default_sentinel} | views::take(2);
+
+    using result_range = decltype(rng);
+    static_assert(
+        is_same_v<ranges::iterator_t<result_range>, counted_iterator<counted_iterator<istream_iterator<int>>>>);
+    static_assert(is_same_v<ranges::sentinel_t<result_range>, default_sentinel_t>);
+
+    static_assert(
+        is_same_v<ranges::iterator_t<const result_range>, counted_iterator<counted_iterator<istream_iterator<int>>>>);
+    static_assert(is_same_v<ranges::sentinel_t<const result_range>, default_sentinel_t>);
+
+    vector<int> vec{};
+    ranges::copy(rng, back_inserter(vec));
+
+    assert(ranges::size(vec) == 2);
+    assert((vec == vector<int>{0, 1}));
+}
+
 int main() {
     // Validate views
     { // ... copyable
@@ -576,4 +611,6 @@ int main() {
     }
 
     test_DevCom_1397309();
+
+    test_lwg3737();
 }

@@ -110,6 +110,7 @@ public:
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
         _STL_VERIFY(_Off == 0 || _Ptr, "cannot seek value-initialized vector iterator");
+        _STL_VERIFY(_Off == 0 || _Mycont, "cannot seek invalidated vector iterator");
         if (_Off < 0) {
             _STL_VERIFY(_Off >= _Mycont->_Myfirst - _Ptr, "cannot seek vector iterator before begin");
         }
@@ -881,7 +882,7 @@ private:
         // insert range [_First, _Last) at end
 
         // For one-at-back, provide strong guarantee.
-        // Otherwise, provide basic guarantee (despite N4659 26.3.11.5 [vector.modifiers]/1).
+        // Otherwise, provide basic guarantee (despite N4928 [vector.modifiers]/2).
         // Performance note: except for one-at-back, _Emplace_one_at_back()'s strong guarantee is unnecessary here.
 
         for (; _First != _Last; ++_First) {
@@ -1763,7 +1764,7 @@ public:
         if (_Myfirst == _Mylast) { // already empty, nothing to do
             // This is an optimization for debug mode: we can avoid taking the debug lock to invalidate iterators.
             // Note that when clearing an empty vector, this will preserve past-the-end iterators, which is allowed by
-            // N4901 [tab:container.seq.req] "a.clear() [...] may invalidate the past-the-end iterator".
+            // N4928 [sequence.reqmts]/54 "a.clear() [...] may invalidate the past-the-end iterator".
             return;
         }
 
@@ -2775,8 +2776,7 @@ public:
         this->_Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alvbase, _Getal()));
     }
 
-    _CONSTEXPR20 _Vb_val(const _Alloc& _Al) noexcept(is_nothrow_constructible_v<_Vectype, _Alvbase>)
-        : _Myvec(static_cast<_Alvbase>(_Al)), _Mysize(0) {
+    _CONSTEXPR20 _Vb_val(const _Alloc& _Al) noexcept : _Myvec(static_cast<_Alvbase>(_Al)), _Mysize(0) {
         this->_Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alvbase, _Getal()));
     }
 
@@ -2875,12 +2875,9 @@ public:
     static const int _VBITS = _STD _VBITS;
     enum { _EEN_VBITS = _VBITS }; // helper for expression evaluator
 
-    _CONSTEXPR20 vector() noexcept(is_nothrow_default_constructible_v<_Mybase>) // strengthened
-        : _Mybase() {}
+    _CONSTEXPR20 vector() noexcept(is_nothrow_default_constructible_v<_Alloc>) : _Mybase(_Alloc()) {}
 
-    _CONSTEXPR20 explicit vector(const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Mybase, const _Alloc&>) // strengthened
-        : _Mybase(_Al) {}
+    _CONSTEXPR20 explicit vector(const _Alloc& _Al) noexcept : _Mybase(_Al) {}
 
     _CONSTEXPR20 explicit vector(_CRT_GUARDOVERFLOW size_type _Count, const _Alloc& _Al = _Alloc())
         : _Mybase(_Count, false, _Al) {
@@ -2914,13 +2911,12 @@ public:
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
-    _CONSTEXPR20 vector(vector&& _Right) noexcept(is_nothrow_move_constructible_v<_Mybase>) // strengthened
-        : _Mybase(_STD move(_Right)) {
+    _CONSTEXPR20 vector(vector&& _Right) noexcept : _Mybase(_STD move(_Right)) {
         this->_Swap_proxy_and_iterators(_Right);
     }
 
     _CONSTEXPR20 vector(vector&& _Right, const _Identity_t<_Alloc>& _Al) noexcept(
-        is_nothrow_constructible_v<_Mybase, _Mybase, const _Alloc&>)
+        is_nothrow_constructible_v<_Mybase, _Mybase, const _Alloc&>) // strengthened
         : _Mybase(_STD move(_Right), _Al) {
         if constexpr (!_Alvbase_traits::is_always_equal::value) {
             if (this->_Getal() != _Right._Getal()) {
@@ -2931,7 +2927,8 @@ public:
         this->_Swap_proxy_and_iterators(_Right);
     }
 
-    _CONSTEXPR20 vector& operator=(vector&& _Right) noexcept(is_nothrow_move_assignable_v<_Mybase>) {
+    _CONSTEXPR20 vector& operator=(vector&& _Right) noexcept(
+        _Choose_pocma_v<_Alvbase> != _Pocma_values::_No_propagate_allocators) {
         if (this == _STD addressof(_Right)) {
             return *this;
         }
