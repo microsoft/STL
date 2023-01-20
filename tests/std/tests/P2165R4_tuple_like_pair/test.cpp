@@ -132,7 +132,7 @@ constexpr bool test_pair_like_assignment() {
 
 template <template <class> class PairLike>
 constexpr bool test_pair_like_const_assignment() {
-    using Ref  = std::vector<bool>::reference;
+    using Ref  = vector<bool>::reference;
     using Pair = pair<Ref, Ref>;
 
     static_assert(is_assignable_v<const Pair&, PairLike<bool>&>);
@@ -140,8 +140,8 @@ constexpr bool test_pair_like_const_assignment() {
     static_assert(is_assignable_v<const Pair&, PairLike<bool>>);
     static_assert(is_assignable_v<const Pair&, const PairLike<bool>>);
 
-    std::vector<bool> bools = {false, true};
-    PairLike<bool> a        = {true, false};
+    vector<bool> bools = {false, true};
+    PairLike<bool> a   = {true, false};
 
     const Pair p1{bools[0], bools[1]};
     p1 = a;
