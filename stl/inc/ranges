@@ -1443,7 +1443,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
                 if constexpr (is_same_v<_Bo, unreachable_sentinel_t>) {
                     _STL_VERIFY(_Current > (numeric_limits<_Index_type>::min)(),
-                        "cannot decrement repeat_view iterator past end (integer overflow)");
+                        "cannot decrement repeat_view iterator before begin (integer overflow)");
                 } else {
                     _STL_VERIFY(_Current > 0, "cannot decrement below 0");
                 }
@@ -1464,7 +1464,7 @@ namespace ranges {
                         "cannot advance repeat_view iterator past end (integer overflow)");
                 } else {
                     _STL_VERIFY(_Current >= (numeric_limits<_Index_type>::min)() - static_cast<_Index_type>(_Off),
-                        "cannot advance repeat_view iterator past end (integer overflow)");
+                        "cannot advance repeat_view iterator before begin (integer overflow)");
                 }
                 if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
                     _STL_VERIFY(_Current + _Off >= 0, "cannot subtract below 0");
@@ -1480,7 +1480,7 @@ namespace ranges {
                         "cannot advance repeat_view iterator past end (integer overflow)");
                 } else {
                     _STL_VERIFY(_Current >= (numeric_limits<_Index_type>::min)() + static_cast<_Index_type>(_Off),
-                        "cannot advance repeat_view iterator past end (integer overflow)");
+                        "cannot advance repeat_view iterator before begin (integer overflow)");
                 }
                 if constexpr (!is_same_v<_Bo, unreachable_sentinel_t>) {
                     _STL_VERIFY(_Current - _Off >= 0, "cannot subtract below 0");
