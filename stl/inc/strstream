@@ -271,8 +271,7 @@ protected:
         case ios_base::cur:
             {
                 constexpr auto _Both = ios_base::in | ios_base::out;
-                if ((_Which & _Both)
-                    == _Both) { // prohibited by N4928 [depr.strstreambuf.virtuals] Table 151 "seekoff positioning"
+                if ((_Which & _Both) == _Both) { // prohibited by N4928 [tab:depr.strstreambuf.seekoff.pos]
                     return pos_type(off_type(-1));
                 }
 

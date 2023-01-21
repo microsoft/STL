@@ -66,7 +66,7 @@ public:
 
     basic_spanbuf& operator=(basic_spanbuf&& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
-            this->_Buf = _STD span<_Elem>{};
+            _Buf = _STD span<_Elem>{};
             this->setp(nullptr, nullptr, nullptr);
             this->setg(nullptr, nullptr, nullptr);
             this->swap(_Right);
@@ -367,7 +367,7 @@ public:
         return *this;
     }
 
-    // N4928 [spanstream.assign], swap
+    // N4928 [spanstream.swap], swap
     void swap(basic_spanstream& _Right) noexcept /* strengthened */ {
         _Mybase::swap(_Right);
         _Buf.swap(_Right._Buf);
