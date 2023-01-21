@@ -399,6 +399,7 @@ struct test_case_uninitialized_fill_n_parallel {
 };
 
 int main() {
+#ifndef _M_CEE // TRANSITION, VSO-1664463
     parallel_test_case(test_case_uninitialized_default_construct_parallel{}, par);
     parallel_test_case(test_case_uninitialized_default_construct_n_parallel{}, par);
     parallel_test_case(test_case_uninitialized_default_construct_trivial_parallel{}, par);
@@ -445,4 +446,5 @@ int main() {
     parallel_test_case(test_case_uninitialized_fill_parallel{}, unseq);
     parallel_test_case(test_case_uninitialized_fill_n_parallel{}, unseq);
 #endif // _HAS_CXX20
+#endif // _M_CEE
 }
