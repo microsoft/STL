@@ -1025,11 +1025,11 @@ struct _Distance_unknown {
 };
 
 template <class _Diff>
-#ifdef __EDG__
-_INLINE_VAR constexpr _Diff _Max_possible_v{static_cast<make_unsigned_t<_Diff>>(-1) >> 1};
-#else // ^^^ workaround / no workaround vvv
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 _INLINE_VAR constexpr _Diff _Max_possible_v{static_cast<_Make_unsigned_like_t<_Diff>>(-1) >> 1};
-#endif // ^^^ no workaround ^^^
+#else // ^^^ handles integer-class types / integer types only vvv
+_INLINE_VAR constexpr _Diff _Max_possible_v{static_cast<make_unsigned_t<_Diff>>(-1) >> 1};
+#endif // ^^^ integer types only ^^^
 
 template <class _Diff>
 _INLINE_VAR constexpr _Diff _Min_possible_v{-_Max_possible_v<_Diff> - 1};
