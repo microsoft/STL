@@ -530,8 +530,8 @@ int main() {
     }
 
     { // GH-3025 <iterator>: ranges::prev maybe ill-formed in debug mode
-        auto r = views::iota(0ull, 5ull);
-        auto it = r.end();
+        auto r    = views::iota(0ull, 5ull);
+        auto it   = r.end();
         auto prev = ranges::prev(it, 3);
         assert(*prev == 2ull);
     }
