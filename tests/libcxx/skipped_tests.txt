@@ -1009,7 +1009,6 @@ ranges\range.adaptors\range.lazy.split\view_interface.pass.cpp
 ranges\range.adaptors\range.take\adaptor.pass.cpp
 ranges\range.factories\range.single.view\cpo.pass.cpp
 strings\basic.string\string.cons\dtor.pass.cpp
-strings\basic.string\string.cons\implicit_deduction_guides.pass.cpp
 strings\basic.string\string.modifiers\string_erase\iter.pass.cpp
 strings\basic.string\string.modifiers\string_erase\iter_iter.pass.cpp
 strings\basic.string\string.modifiers\string_insert\iter_iter_iter.pass.cpp
@@ -1020,12 +1019,6 @@ strings\basic.string\string.modifiers\string_replace\iter_iter_pointer_size.pass
 strings\basic.string\string.modifiers\string_replace\iter_iter_size_char.pass.cpp
 strings\basic.string\string.modifiers\string_replace\iter_iter_string.pass.cpp
 strings\basic.string\string.modifiers\string_replace\iter_iter_string_view.pass.cpp
-strings\string.view\string.view.comparison\equal.pass.cpp
-strings\string.view\string.view.comparison\greater.pass.cpp
-strings\string.view\string.view.comparison\greater_equal.pass.cpp
-strings\string.view\string.view.comparison\less.pass.cpp
-strings\string.view\string.view.comparison\less_equal.pass.cpp
-strings\string.view\string.view.comparison\not_equal.pass.cpp
 thread\futures\futures.task\futures.task.members\ctor2.compile.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\addressof.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.alg\swap.pass.cpp

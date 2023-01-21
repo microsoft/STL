@@ -118,6 +118,18 @@ void test_smart_ptr(Args&&... args) {
 
         assert(*int_ptr == 19);
     }
+
+    // LWG-3594 inout_ptr - inconsistent release() in destructor
+    {
+        const auto f = [](int** ptr) {
+            delete *ptr;
+            *ptr = nullptr;
+        };
+
+        f(inout_ptr<int*>(int_ptr, forward<Args>(args)...));
+
+        assert(int_ptr.get() == nullptr);
+    }
 }
 
 struct reset_tag {};

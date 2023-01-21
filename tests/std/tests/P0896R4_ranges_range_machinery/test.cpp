@@ -660,6 +660,20 @@ struct initially_incomplete;
 extern initially_incomplete array_of_incomplete[42];
 STATIC_ASSERT(ranges::size(array_of_incomplete) == 42);
 STATIC_ASSERT(!ranges::empty(array_of_incomplete));
+
+// begin, end, rbegin, rend, and data (and their c variations) should reject rvalues of array of incomplete elements
+// with substitution failures
+STATIC_ASSERT(!CanBegin<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanCBegin<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanEnd<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanCEnd<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanRBegin<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanCRBegin<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanREnd<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanCREnd<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanData<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanCData<initially_incomplete (&&)[42]>);
+
 struct initially_incomplete {};
 initially_incomplete array_of_incomplete[42];
 

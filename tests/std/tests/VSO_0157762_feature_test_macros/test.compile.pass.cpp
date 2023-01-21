@@ -1519,6 +1519,20 @@ STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_as_const
+#error __cpp_lib_ranges_as_const is not defined
+#elif __cpp_lib_ranges_as_const != 202207L
+#error __cpp_lib_ranges_as_const is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_as_const == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_as_const
+#error __cpp_lib_ranges_as_const is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges_as_rvalue
 #error __cpp_lib_ranges_as_rvalue is not defined
 #elif __cpp_lib_ranges_as_rvalue != 202207L
@@ -1571,6 +1585,20 @@ STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
 #else
 #ifdef __cpp_lib_ranges_contains
 #error __cpp_lib_ranges_contains is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_find_last // per LWG-3807
+#error __cpp_lib_ranges_find_last is not defined
+#elif __cpp_lib_ranges_find_last != 202207L
+#error __cpp_lib_ranges_find_last is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_find_last == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_find_last
+#error __cpp_lib_ranges_find_last is defined
 #endif
 #endif
 

@@ -1349,7 +1349,7 @@ _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _
     _Adl_verify_range(_First, _Last);
     _Seek_wrapped(_First,
         _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _Get_unwrapped(_First), _Get_unwrapped(_Last),
-            [&](const _UFwdIt _LFirst, const _UFwdIt _LLast) { return _Find_unchecked(_LFirst, _LLast, _Val); }));
+            [&](const _UFwdIt _LFirst, const _UFwdIt _LLast) { return _STD _Find_unchecked(_LFirst, _LLast, _Val); }));
     return _First;
 }
 
@@ -2565,7 +2565,7 @@ struct _Static_partitioned_remove_if2 {
             if (_Results == _Merge_first) { // entire range up to now had no removals, don't bother moving
                 _Results = _Merge_new_end;
             } else {
-                _Results = _Move_unchecked(_Merge_first, _Merge_new_end, _Results);
+                _Results = _STD _Move_unchecked(_Merge_first, _Merge_new_end, _Results);
             }
 
             _Merge_chunk_data._State.store(_Chunk_state::_Done);

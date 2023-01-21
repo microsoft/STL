@@ -1670,7 +1670,7 @@ public:
         } else { // push down a subdirectory
             path _Newpath = _Mylist.front().second / _Mylist.front().first->path();
             ++_Mylist.front().first;
-            _Mylist.push_front(_Mypair(_Myiter(_Newpath), _Newpath));
+            _Mylist.emplace_front(_Myiter(_Newpath), _Newpath);
         }
         while (1 < _Mylist.size() && _Mylist.front().first == _Myiter()) {
             pop();
