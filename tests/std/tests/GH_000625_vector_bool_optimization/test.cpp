@@ -3,7 +3,9 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <cstdlib>
+#include <memory>
 #include <vector>
 
 using namespace std;
@@ -213,8 +215,48 @@ bool test_count() {
     return true;
 }
 
+// Also test the behavior of a huge vector<bool, A> whose size is greater than SIZE_MAX,
+// which is practical on 32-bit platforms.
+template <class T>
+struct huge_allocator {
+    huge_allocator() = default;
+    template <class U>
+    constexpr huge_allocator(const huge_allocator<U>&) noexcept {}
+
+    using value_type      = T;
+    using size_type       = uint64_t;
+    using difference_type = int64_t;
+
+    T* allocate(uint64_t n) {
+        return allocator<T>{}.allocate(static_cast<size_t>(n));
+    }
+
+    void deallocate(T* p, uint64_t n) {
+        allocator<T>{}.deallocate(p, static_cast<size_t>(n));
+    }
+};
+
+void test_huge_vector_bool() {
+    constexpr uint64_t small_bit_length = 0x7000'4321ULL;
+    constexpr uint64_t large_bit_length = 0x1'2000'4321ULL; // overflows uint32_t
+    constexpr auto large_bit_diff       = static_cast<int64_t>(large_bit_length);
+
+    vector<bool, huge_allocator<bool>> v(small_bit_length);
+    v.resize(large_bit_length);
+    assert(v.end() - v.begin() == large_bit_diff);
+
+    v.back() = true;
+    assert(find(v.begin(), v.end(), true) - v.begin() == large_bit_diff - 1);
+
+    v[small_bit_length]                    = true;
+    v[large_bit_length - small_bit_length] = true;
+    assert(count(v.begin(), v.end(), false) == large_bit_diff - 3);
+}
+
 int main() {
     test_fill();
     test_find();
     test_count();
+
+    test_huge_vector_bool();
 }
