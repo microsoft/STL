@@ -3242,33 +3242,18 @@ public:
                             && is_convertible_v<remove_pointer_t<_Uty> (*)[], element_type (*)[]>),
             int>;
 
-#ifdef _M_CEE // TRANSITION, VSO-1595465
-    template <class _Uty, class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0, class = _Enable_ctor_reset<_Uty>>
-#else // ^^^ workaround / no workaround vvv
     template <class _Uty, class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0, _Enable_ctor_reset<_Uty> = 0>
-#endif // ^^^ no workaround ^^^
-    _CONSTEXPR23 explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {
-    }
+    _CONSTEXPR23 explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx, enable_if_t<is_constructible_v<_Dx2, const _Dx2&>, int> = 0,
-#ifdef _M_CEE // TRANSITION, VSO-1595465
-        class = _Enable_ctor_reset<_Uty>>
-#else // ^^^ workaround / no workaround vvv
         _Enable_ctor_reset<_Uty> = 0>
-#endif // ^^^ no workaround ^^^
-    _CONSTEXPR23 unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {
-    }
+    _CONSTEXPR23 unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<negation<is_reference<_Dx2>>, is_constructible<_Dx2, _Dx2>>, int> = 0,
-#ifdef _M_CEE // TRANSITION, VSO-1595465
-        class = _Enable_ctor_reset<_Uty>>
-#else // ^^^ workaround / no workaround vvv
-        _Enable_ctor_reset<_Uty> = 0>
-#endif // ^^^ no workaround ^^^
+        _Enable_ctor_reset<_Uty>                                                                    = 0>
     _CONSTEXPR23 unique_ptr(_Uty _Ptr, _Dx&& _Dt) noexcept
-        : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {
-    }
+        : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
@@ -3296,22 +3281,12 @@ public:
         int>;
 
     template <class _Uty, class _Ex,
-#ifdef _M_CEE // TRANSITION, VSO-1595465
-        class = _Enable_conversion<_Uty, _Ex,
-            conditional_t<is_reference_v<_Dx>, is_same<_Ex, _Dx>, is_convertible<_Ex, _Dx>>>>
-#else // ^^^ workaround / no workaround vvv
         _Enable_conversion<_Uty, _Ex, conditional_t<is_reference_v<_Dx>, is_same<_Ex, _Dx>, is_convertible<_Ex, _Dx>>> =
             0>
-#endif // ^^^ no workaround ^^^
     _CONSTEXPR23 unique_ptr(unique_ptr<_Uty, _Ex>&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Ex>(_Right.get_deleter()), _Right.release()) {
-    }
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Ex>(_Right.get_deleter()), _Right.release()) {}
 
-#ifdef _M_CEE // TRANSITION, VSO-1595465
-    template <class _Uty, class _Ex, class = _Enable_conversion<_Uty, _Ex, is_assignable<_Dx&, _Ex>>>
-#else // ^^^ workaround / no workaround vvv
     template <class _Uty, class _Ex, _Enable_conversion<_Uty, _Ex, is_assignable<_Dx&, _Ex>> = 0>
-#endif // ^^^ no workaround ^^^
     _CONSTEXPR23 unique_ptr& operator=(unique_ptr<_Uty, _Ex>&& _Right) noexcept {
         reset(_Right.release());
         _Mypair._Get_first() = _STD forward<_Ex>(_Right._Mypair._Get_first());
@@ -3365,11 +3340,7 @@ public:
         return _STD exchange(_Mypair._Myval2, nullptr);
     }
 
-#ifdef _M_CEE // TRANSITION, VSO-1595465
-    template <class _Uty, class = _Enable_ctor_reset<_Uty, false_type>>
-#else // ^^^ workaround / no workaround vvv
     template <class _Uty, _Enable_ctor_reset<_Uty, false_type> = 0>
-#endif // ^^^ no workaround ^^^
     _CONSTEXPR23 void reset(_Uty _Ptr) noexcept {
         pointer _Old = _STD exchange(_Mypair._Myval2, _Ptr);
         if (_Old) {

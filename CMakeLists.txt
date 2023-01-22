@@ -50,12 +50,6 @@ set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid confl
 
 option(STL_USE_ANALYZE "Pass the /analyze flag to MSVC" OFF)
 
-if(STL_BUILD_BENCHMARKING)
-    message(WARNING "Due to issues with building google benchmark, "
-        "STL_BUILD_BENCHMARKING is no longer allowed as part of the STL build. "
-        "Instead, build the `benchmarks` directory with the STL_BINARY_DIR option.")
-endif()
-
 if("${VCLIBS_TARGET_ARCHITECTURE}" MATCHES "^x86$")
     set(VCLIBS_TARGET_ARCHITECTURE "x86")
     set(VCLIBS_I386_OR_AMD64 "i386")
