@@ -363,6 +363,8 @@
 // * any_of
 // * count
 // * count_if
+// * destroy
+// * destroy_n
 // * equal
 // * exclusive_scan
 // * find
@@ -396,6 +398,10 @@
 // * transform_exclusive_scan
 // * transform_inclusive_scan
 // * transform_reduce
+// * uninitialized_default_construct
+// * uninitialized_default_construct_n
+// * uninitialized_value_construct
+// * uninitialized_value_construct_n
 //
 // The following are not presently parallelized:
 //
@@ -413,6 +419,14 @@
 // * shift_left
 // * shift_right
 // * swap_ranges
+//
+// Possibly same as above, but not yet tested.
+// * uninitialized_copy
+// * uninitialized_copy_n
+// * uninitialized_fill
+// * uninitialized_fill_n
+// * uninitialized_move
+// * uninitialized_move_n
 //
 // Confusion over user parallelism requirements exists; likely in the above category anyway.
 // * generate
