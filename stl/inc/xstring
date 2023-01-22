@@ -1260,10 +1260,7 @@ public:
             && (!is_convertible_v<_Range, const _Elem*>)
             && (!requires(remove_cvref_t<_Range>& _Rng) {
                 _Rng.operator _STD basic_string_view<_Elem, _Traits>();
-            })
-            && (!requires {
-                typename remove_reference_t<_Range>::traits_type;
-            } || same_as<typename remove_reference_t<_Range>::traits_type, _Traits>))
+            })) // doesn't check member type traits_type, per LWG-3857
     constexpr explicit basic_string_view(_Range&& _Rng) noexcept(
         noexcept(_RANGES data(_Rng)) && noexcept(_RANGES size(_Rng))) // strengthened
         : _Mydata(_RANGES data(_Rng)), _Mysize(static_cast<size_t>(_RANGES size(_Rng))) {}

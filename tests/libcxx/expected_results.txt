@@ -607,6 +607,11 @@ std/language.support/support.limits/support.limits.general/format.version.compil
 # libc++ doesn't yet implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
+# libc++ doesn't speculatively implement LWG-3857
+std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
+std/strings/string.view/string.view.cons/from_string1.compile.fail.cpp FAIL
+std/strings/string.view/string.view.cons/from_string2.compile.fail.cpp FAIL
+
 # This test assumes that std::array<int, 4>::iterator is int*, but on MSVC STL it's _Array_iterator.
 # Other std/algorithm test failures likely have the same cause.
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
