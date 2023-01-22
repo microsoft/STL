@@ -399,9 +399,6 @@ strings\basic.string\string.modifiers\robust_against_adl.pass.cpp
 # GH-3100: <memory> etc.: ADL should be avoided when calling _Construct_in_place and its friends
 utilities\function.objects\func.wrap\func.wrap.func\robust_against_adl.pass.cpp
 
-# GH-3336: Failure to format basic_string_view with non-standard traits
-utilities\format\format.arguments\format.arg\visit_format_arg.pass.cpp
-
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
