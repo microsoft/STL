@@ -1755,9 +1755,6 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 }
 
 #ifdef __cpp_lib_concepts
-template <class _Ty1, class _Ty2>
-concept _Different_from = (!same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>);
-
 #if _HAS_CXX23
 _EXPORT_STD template <indirectly_readable _Ty>
 using iter_const_reference_t = common_reference_t<const iter_value_t<_Ty>&&, iter_reference_t<_Ty>>;

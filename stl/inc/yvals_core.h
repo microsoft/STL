@@ -322,7 +322,7 @@
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
 // P2136R3 invoke_r()
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
-//     (changes to views::zip only)
+//     (changes to views::zip and pair only)
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
