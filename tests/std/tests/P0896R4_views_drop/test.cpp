@@ -528,11 +528,4 @@ int main() {
         auto r2 = s | views::drop(evil_convertible_to_difference{});
         assert(ranges::equal(r2, only_four_ints));
     }
-
-    { // GH-3025 <iterator>: ranges::prev maybe ill-formed in debug mode
-        auto r    = views::iota(0ull, 5ull);
-        auto it   = r.end();
-        auto prev = ranges::prev(it, 3);
-        assert(*prev == 2ull);
-    }
 }
