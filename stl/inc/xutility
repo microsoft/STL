@@ -1101,7 +1101,7 @@ struct _Is_allocator<_Ty, void_t<typename _Ty::value_type, decltype(_STD declval
 template <class _Iter>
 using _Guide_key_t =
 #if _HAS_CXX23
-    tuple_element_t<0, typename iterator_traits<_Iter>::value_type>;
+    remove_const_t<tuple_element_t<0, typename iterator_traits<_Iter>::value_type>>;
 #else // ^^^ C++23 / C++20 vvv
     remove_const_t<typename iterator_traits<_Iter>::value_type::first_type>;
 #endif // C++20
