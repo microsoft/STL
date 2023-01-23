@@ -179,9 +179,6 @@ struct _Alloc_unpack_tuple_t {
     explicit _Alloc_unpack_tuple_t() = default;
 }; // tag type to disambiguate construction (from an allocator and unpacking a tuple/pair)
 
-_EXPORT_STD template <class... _Types>
-class tuple;
-
 template <>
 class tuple<> { // empty tuple
 public:
@@ -823,21 +820,6 @@ _EXPORT_STD template <class... _Types>
 _NODISCARD constexpr tuple<_Types&&...> forward_as_tuple(_Types&&... _Args) noexcept { // forward arguments in a tuple
     return tuple<_Types&&...>(_STD forward<_Types>(_Args)...);
 }
-
-_EXPORT_STD template <class _Ty, size_t _Size>
-class array;
-
-_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
-_NODISCARD constexpr _Ty& get(array<_Ty, _Size>& _Arr) noexcept;
-
-_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
-_NODISCARD constexpr const _Ty& get(const array<_Ty, _Size>& _Arr) noexcept;
-
-_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
-_NODISCARD constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept;
-
-_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
-_NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept;
 
 template <class _Ty, class _Kx_arg, class _Ix_arg, size_t _Ix_next, class... _Sequences>
 struct _Tuple_cat2;
