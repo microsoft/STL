@@ -1311,7 +1311,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Wi>&& is_nothrow_move_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_Value_)), _Bound(_STD move(_Bound_)) {
             if constexpr (totally_ordered_with<_Wi, _Bo>) {
-                _STL_ASSERT(_Value_ <= _Bound_, "Per N4878 [range.iota.view]/8, the first argument must precede the "
+                _STL_ASSERT(_Value_ <= _Bound_, "Per N4928 [range.iota.view]/8, the first argument must precede the "
                                                 "second when their types are totally ordered.");
             }
         }
@@ -2018,7 +2018,7 @@ namespace ranges {
         _NODISCARD constexpr _Iterator begin() {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(
-                _Pred, "N4861 [range.filter.view]/3 forbids calling begin on a filter_view that holds no predicate");
+                _Pred, "N4928 [range.filter.view]/3 forbids calling begin on a filter_view that holds no predicate");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
@@ -3015,7 +3015,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(_Count_ >= 0, "Numer of elements to drop must be non-negative (N4861 [range.drop.view]/1");
+            _STL_VERIFY(_Count_ >= 0, "Numer of elements to drop must be non-negative (N4928 [range.drop.view]/1");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         }
 
@@ -3216,7 +3216,7 @@ namespace ranges {
         _NODISCARD constexpr auto begin() {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(
-                _Pred, "N4885 [range.drop.while.view] forbids calling begin on a drop_while_view with no predicate");
+                _Pred, "N4928 [range.drop.while.view]/3 forbids calling begin on a drop_while_view with no predicate");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
@@ -6483,7 +6483,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Vw>) /* strengthened */
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(_Count > 0, "The window size must be positive (N4917 [range.slide.view]/1)");
+            _STL_VERIFY(_Count > 0, "The window size must be positive (N4928 [range.slide.view]/1)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         }
 
