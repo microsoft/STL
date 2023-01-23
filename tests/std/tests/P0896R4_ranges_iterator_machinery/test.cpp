@@ -204,6 +204,56 @@ struct std::indirectly_readable_traits<simple_contiguous_iter<Base>> {
     using value_type = double;
 };
 
+// Validate iterator_category of iterators whose reference types are rvalue references (LWG-3798).
+struct xvalue_forward_iter {
+    using value_type      = double;
+    using difference_type = long;
+
+    value_type&& operator*() const;
+    xvalue_forward_iter& operator++();
+    xvalue_forward_iter operator++(int);
+
+    bool operator==(xvalue_forward_iter const&) const = default;
+};
+
+struct xvalue_bidi_iter {
+    using value_type      = double;
+    using difference_type = long;
+    using reference       = value_type&&;
+
+    value_type&& operator*() const;
+    xvalue_bidi_iter& operator++();
+    xvalue_bidi_iter operator++(int);
+
+    bool operator==(xvalue_bidi_iter const&) const = default;
+
+    xvalue_bidi_iter& operator--();
+    xvalue_bidi_iter operator--(int);
+};
+
+struct xvalue_random_iter {
+    using value_type = double;
+    using D          = long;
+
+    value_type&& operator*() const;
+    xvalue_random_iter& operator++();
+    xvalue_random_iter operator++(int);
+
+    xvalue_random_iter& operator--();
+    xvalue_random_iter operator--(int);
+
+    bool operator==(xvalue_random_iter const&) const;
+    std::strong_ordering operator<=>(xvalue_random_iter const&) const;
+
+    value_type&& operator[](D) const;
+    xvalue_random_iter& operator-=(D);
+    xvalue_random_iter operator-(D) const;
+    D operator-(xvalue_random_iter const&) const;
+    xvalue_random_iter& operator+=(D);
+    xvalue_random_iter operator+(D) const;
+    friend xvalue_random_iter operator+(D, const xvalue_random_iter&);
+};
+
 template <int I>
 struct proxy_iterator {
     using difference_type = int;
@@ -880,6 +930,7 @@ namespace iterator_traits_test {
     // * 3.2.3.3 "... Otherwise, iterator_category names... forward_iterator_tag if I satisfies cpp17-forward-iterator."
     STATIC_ASSERT(
         check<simple_forward_iter<>, no_such_type, forward_iterator_tag, double, long, void, double const&>());
+    STATIC_ASSERT(check<xvalue_forward_iter, no_such_type, forward_iterator_tag, double, long, void, double&&>());
     // N4820 [iterator.traits]/3.2.1: "... Otherwise, if decltype(declval<I&>().operator->()) is well-formed, then
     // pointer names that type."
     STATIC_ASSERT(check<simple_forward_iter<arrow_base<double const*>>, no_such_type, forward_iterator_tag, double,
@@ -898,6 +949,7 @@ namespace iterator_traits_test {
     // cpp17-bidirectional-iterator."
     STATIC_ASSERT(
         check<simple_bidi_iter<>, no_such_type, bidirectional_iterator_tag, double, long, void, double const&>());
+    STATIC_ASSERT(check<xvalue_bidi_iter, no_such_type, bidirectional_iterator_tag, double, long, void, double&&>());
     // N4820 [iterator.traits]/3.2.1: "... Otherwise, if decltype(declval<I&>().operator->()) is well-formed, then
     // pointer names that type."
     STATIC_ASSERT(check<simple_bidi_iter<arrow_base<double const*>>, no_such_type, bidirectional_iterator_tag, double,
@@ -918,6 +970,7 @@ namespace iterator_traits_test {
     // cpp17-random-access-iterator."
     STATIC_ASSERT(
         check<simple_random_iter<>, no_such_type, random_access_iterator_tag, double, long, void, double const&>());
+    STATIC_ASSERT(check<xvalue_random_iter, no_such_type, random_access_iterator_tag, double, long, void, double&&>());
     STATIC_ASSERT(
         check<simple_contiguous_iter<>, no_such_type, random_access_iterator_tag, double, long, void, double const&>());
     // N4820 [iterator.traits]/3.2.1: "... Otherwise, if decltype(declval<I&>().operator->()) is well-formed, then
@@ -3092,6 +3145,10 @@ namespace reverse_iterator_test {
     STATIC_ASSERT(same_as<reverse_iterator<simple_random_iter<>>::iterator_category, random_access_iterator_tag>);
     STATIC_ASSERT(same_as<reverse_iterator<simple_bidi_iter<>>::iterator_concept, bidirectional_iterator_tag>);
     STATIC_ASSERT(same_as<reverse_iterator<simple_bidi_iter<>>::iterator_category, bidirectional_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<xvalue_random_iter>::iterator_concept, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<xvalue_random_iter>::iterator_category, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<xvalue_bidi_iter>::iterator_concept, bidirectional_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<xvalue_bidi_iter>::iterator_category, bidirectional_iterator_tag>);
 
     // Validate operator-> for a pointer, and for non-pointers with and without operator->()
     // clang-format off
@@ -3285,6 +3342,12 @@ namespace move_iterator_test {
     STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_concept, input_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_category, input_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<input_iter<true>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<xvalue_random_iter>::iterator_concept, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<xvalue_random_iter>::iterator_category, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<xvalue_bidi_iter>::iterator_concept, bidirectional_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<xvalue_bidi_iter>::iterator_category, bidirectional_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<xvalue_forward_iter>::iterator_concept, forward_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<xvalue_forward_iter>::iterator_category, forward_iterator_tag>);
     STATIC_ASSERT(!has_member_iter_category<move_iterator<input_iter<true>>>);
     STATIC_ASSERT(same_as<move_iterator<input_iter<false>>::iterator_concept, input_iterator_tag>);
     STATIC_ASSERT(!has_member_iter_category<move_iterator<input_iter<false>>>);
@@ -3448,6 +3511,12 @@ namespace counted_iterator_test {
     STATIC_ASSERT(
         same_as<iterator_traits<counted_iterator<simple_forward_iter<>>>::iterator_category, forward_iterator_tag>);
     STATIC_ASSERT(same_as<iterator_traits<counted_iterator<simple_input_iter>>::iterator_category, input_iterator_tag>);
+    STATIC_ASSERT(
+        same_as<iterator_traits<counted_iterator<xvalue_random_iter>>::iterator_category, random_access_iterator_tag>);
+    STATIC_ASSERT(
+        same_as<iterator_traits<counted_iterator<xvalue_bidi_iter>>::iterator_category, bidirectional_iterator_tag>);
+    STATIC_ASSERT(
+        same_as<iterator_traits<counted_iterator<xvalue_forward_iter>>::iterator_category, forward_iterator_tag>);
 
     // Validate postincrement
     STATIC_ASSERT(same_as<decltype(std::declval<counted_iterator<simple_input_iter>&>()++), simple_input_iter>);
