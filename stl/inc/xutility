@@ -3611,17 +3611,6 @@ namespace ranges {
     };
 } // namespace ranges
 
-// These declarations must be visible to qualified name lookup for _STD get in _Pair_like below, even if <tuple> hasn't
-// yet been included.
-_EXPORT_STD template <size_t _Index, class... _Types>
-_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept;
-_EXPORT_STD template <size_t _Index, class... _Types>
-_NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>& get(const tuple<_Types...>& _Tuple) noexcept;
-_EXPORT_STD template <size_t _Index, class... _Types>
-_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>&& get(tuple<_Types...>&& _Tuple) noexcept;
-_EXPORT_STD template <size_t _Index, class... _Types>
-_NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept;
-
 namespace ranges {
     // clang-format off
     template <class _From, class _To>
