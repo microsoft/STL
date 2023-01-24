@@ -23,7 +23,7 @@ STATIC_ASSERT(is_standard_layout_v<shared_mutex>); // N4928 [thread.sharedmutex.
 STATIC_ASSERT(is_standard_layout_v<shared_timed_mutex>); // N4928 [thread.sharedtimedmutex.class]/2
 STATIC_ASSERT(is_standard_layout_v<condition_variable>); // N4928 [thread.condition.condvar]/1
 
-// nothow-destructibility required by N4928 [res.on.exception.handling]/3
+// nothrow-destructibility required by N4928 [res.on.exception.handling]/3
 STATIC_ASSERT(is_nothrow_destructible_v<mutex>);
 STATIC_ASSERT(is_nothrow_destructible_v<recursive_mutex>);
 STATIC_ASSERT(is_nothrow_destructible_v<timed_mutex>);
