@@ -1566,10 +1566,10 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if _HAS_CXX20
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, GH-395
-#if _HAS_CXX23
-#define __cpp_lib_concepts 202207L
+#if _HAS_CXX23 // TRANSITION, GH-395 - move down to "macros with language mode sensitivity" section
+#define __cpp_lib_concepts 202207L // P2404R3 Move-Only Types For Comparison Concepts
 #else // ^^^ C++23 / C++20 vvv
-#define __cpp_lib_concepts 202002L
+#define __cpp_lib_concepts 202002L // P2408R5 Ranges Iterators As Inputs To Non-Ranges Algorithms
 #endif // C++20
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
