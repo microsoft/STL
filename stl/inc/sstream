@@ -76,12 +76,12 @@ public:
         _Assign_rv(_STD move(_Right));
     }
 
-    basic_stringbuf& operator=(basic_stringbuf&& _Right) {
+    basic_stringbuf& operator=(basic_stringbuf&& _Right) noexcept /* strengthened */ {
         _Assign_rv(_STD move(_Right));
         return *this;
     }
 
-    void _Assign_rv(basic_stringbuf&& _Right) {
+    void _Assign_rv(basic_stringbuf&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
             _Tidy();
             this->swap(_Right);
@@ -348,8 +348,7 @@ protected:
         case ios_base::cur:
             {
                 constexpr auto _Both = ios_base::in | ios_base::out;
-                if ((_Mode & _Both)
-                    != _Both) { // prohibited by N4727 [stringbuf.virtuals] Table 107 "seekoff positioning"
+                if ((_Mode & _Both) != _Both) { // prohibited by N4928 [tab:stringbuf.seekoff.pos]
                     if (_Mode & ios_base::in) {
                         if (_Gptr_old || !_Seeklow) {
                             _Newoff = _Gptr_old - _Seeklow;
@@ -499,7 +498,7 @@ private:
         _MINSIZE = 32
     };
 
-    static int _Getstate(ios_base::openmode _Mode) { // convert open mode to stream state bits
+    static int _Getstate(ios_base::openmode _Mode) noexcept { // convert open mode to stream state bits
         int _State = 0;
         if (!(_Mode & ios_base::in)) {
             _State |= _Noread;
@@ -577,19 +576,19 @@ public:
         _Assign_rv(_STD move(_Right));
     }
 
-    basic_istringstream& operator=(basic_istringstream&& _Right) {
+    basic_istringstream& operator=(basic_istringstream&& _Right) noexcept /* strengthened */ {
         _Assign_rv(_STD move(_Right));
         return *this;
     }
 
-    void _Assign_rv(basic_istringstream&& _Right) {
+    void _Assign_rv(basic_istringstream&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
-            _Stringbuffer.str(_Mystr());
-            this->swap(_Right);
+            _Mybase::swap(_Right);
+            _Stringbuffer._Assign_rv(_STD move(_Right._Stringbuffer));
         }
     }
 
-    void swap(basic_istringstream& _Right) {
+    void swap(basic_istringstream& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Mybase::swap(_Right);
             _Stringbuffer.swap(_Right._Stringbuffer);
@@ -601,7 +600,7 @@ public:
 
     ~basic_istringstream() noexcept override {}
 
-    _NODISCARD _Mysb* rdbuf() const {
+    _NODISCARD _Mysb* rdbuf() const noexcept /* strengthened */ {
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
     }
 
@@ -647,7 +646,8 @@ private:
 };
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_istringstream<_Elem, _Traits, _Alloc>& _Left, basic_istringstream<_Elem, _Traits, _Alloc>& _Right) {
+void swap(basic_istringstream<_Elem, _Traits, _Alloc>& _Left,
+    basic_istringstream<_Elem, _Traits, _Alloc>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 
@@ -696,19 +696,19 @@ public:
         _Assign_rv(_STD move(_Right));
     }
 
-    basic_ostringstream& operator=(basic_ostringstream&& _Right) {
+    basic_ostringstream& operator=(basic_ostringstream&& _Right) noexcept /* strengthened */ {
         _Assign_rv(_STD move(_Right));
         return *this;
     }
 
-    void _Assign_rv(basic_ostringstream&& _Right) {
+    void _Assign_rv(basic_ostringstream&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
-            _Stringbuffer.str(_Mystr());
-            this->swap(_Right);
+            _Mybase::swap(_Right);
+            _Stringbuffer._Assign_rv(_STD move(_Right._Stringbuffer));
         }
     }
 
-    void swap(basic_ostringstream& _Right) {
+    void swap(basic_ostringstream& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Mybase::swap(_Right);
             _Stringbuffer.swap(_Right._Stringbuffer);
@@ -720,7 +720,7 @@ public:
 
     ~basic_ostringstream() noexcept override {}
 
-    _NODISCARD _Mysb* rdbuf() const {
+    _NODISCARD _Mysb* rdbuf() const noexcept /* strengthened */ {
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
     }
 
@@ -766,7 +766,8 @@ private:
 };
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_ostringstream<_Elem, _Traits, _Alloc>& _Left, basic_ostringstream<_Elem, _Traits, _Alloc>& _Right) {
+void swap(basic_ostringstream<_Elem, _Traits, _Alloc>& _Left,
+    basic_ostringstream<_Elem, _Traits, _Alloc>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 
@@ -821,19 +822,19 @@ public:
         _Assign_rv(_STD move(_Right));
     }
 
-    basic_stringstream& operator=(basic_stringstream&& _Right) {
+    basic_stringstream& operator=(basic_stringstream&& _Right) noexcept /* strengthened */ {
         _Assign_rv(_STD move(_Right));
         return *this;
     }
 
-    void _Assign_rv(basic_stringstream&& _Right) {
+    void _Assign_rv(basic_stringstream&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
-            _Stringbuffer.str(_Mystr());
-            this->swap(_Right);
+            _Mybase::swap(_Right);
+            _Stringbuffer._Assign_rv(_STD move(_Right._Stringbuffer));
         }
     }
 
-    void swap(basic_stringstream& _Right) {
+    void swap(basic_stringstream& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Mybase::swap(_Right);
             _Stringbuffer.swap(_Right._Stringbuffer);
@@ -845,7 +846,7 @@ public:
 
     ~basic_stringstream() noexcept override {}
 
-    _NODISCARD _Mysb* rdbuf() const {
+    _NODISCARD _Mysb* rdbuf() const noexcept /* strengthened */ {
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
     }
 
@@ -891,7 +892,8 @@ private:
 };
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_stringstream<_Elem, _Traits, _Alloc>& _Left, basic_stringstream<_Elem, _Traits, _Alloc>& _Right) {
+void swap(basic_stringstream<_Elem, _Traits, _Alloc>& _Left,
+    basic_stringstream<_Elem, _Traits, _Alloc>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 _STD_END
