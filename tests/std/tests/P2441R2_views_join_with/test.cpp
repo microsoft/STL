@@ -363,6 +363,9 @@ struct instantiator {
             Outer empty{span<Inner, 0>{}};
             test_one(empty, "*#"sv, views::empty<char>);
         }
+#ifdef __clang__ // TRANSITION, Clang sometimes mishandles iterator/sentinel types.
+        if constexpr (ranges::forward_range<Outer> || ranges::common_range<Outer>)
+#endif // __clang__
         { // Range-of-rvalue delimiter
             Inner inner_ranges[] = {Inner{span{input[0]}}, Inner{span{input[1]}}, Inner{span{input[2]}},
                 Inner{span{input[3]}}, Inner{span{input[4]}}, Inner{span{input[5]}}, Inner{span{input[6]}},
