@@ -3720,6 +3720,160 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _Vb
         });
 }
 
+template <class _VbIt, class _OutIt>
+_CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
+    // copy [_First, _Last) to [_Dest, ...)
+    if (_First == _Last) {
+        return _Dest;
+    }
+
+    _Vbase* _VbFirst    = const_cast<_Vbase*>(_First._Myptr);
+    _Vbase* _VbLast     = const_cast<_Vbase*>(_Last._Myptr);
+    _Vbase* _VbDest     = const_cast<_Vbase*>(_Dest._Myptr);
+    const auto _DestEnd = _Dest + (_Last - _First);
+
+    const auto _FirstSourceMask = static_cast<_Vbase>(-1) << _First._Myoff;
+    const auto _FirstDestMask   = _Dest._Myoff == 0 ? 0 : (static_cast<_Vbase>(-1) >> (_VBITS - _Dest._Myoff));
+    const auto _LastDestMask    = static_cast<_Vbase>(-1) << _DestEnd._Myoff;
+
+    const bool _IsSingleBlockSource = _VbFirst == _VbLast;
+    const bool _IsSingleBlockDest   = _VbDest == _DestEnd._Myptr;
+    const bool _IsRightShift        = _Dest._Myoff < _First._Myoff;
+    if (_IsSingleBlockSource) {
+        // We already excluded _First == _Last, so here _Last._Myoff > 0 and the shift is safe
+        const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+        const auto _SourceMask     = _FirstSourceMask & _LastSourceMask;
+        const auto _SourceShift    = _IsRightShift ? _First._Myoff - _Dest._Myoff : _Dest._Myoff - _First._Myoff;
+        const auto _SourceVal      = _IsRightShift ? (*_VbFirst & _SourceMask) >> _SourceShift //
+                                                   : (*_VbFirst & _SourceMask) << _SourceShift;
+        if (_IsSingleBlockDest) {
+            const auto _DestMask = _FirstDestMask | _LastDestMask;
+            *_VbDest             = (*_VbDest & _DestMask) | _SourceVal;
+        } else {
+            *_VbDest = (*_VbDest & _FirstDestMask) | _SourceVal;
+            ++_VbDest;
+
+            const auto _LastShift     = _Last._Myoff - _DestEnd._Myoff;
+            const auto _LastSourceVal = (*_VbFirst & _SourceMask) >> _LastShift;
+            *_VbDest                  = (*_VbDest & _LastDestMask) | _LastSourceVal;
+        }
+
+        return _DestEnd;
+    } else if (_IsSingleBlockDest) {
+        const auto _SourceShift = _IsRightShift ? _First._Myoff - _Dest._Myoff : _Dest._Myoff - _First._Myoff;
+        const auto _SourceVal   = _IsRightShift ? (*_VbFirst & _FirstSourceMask) >> _SourceShift //
+                                                : (*_VbFirst & _FirstSourceMask) << _SourceShift;
+
+        const auto _DestMask = _FirstDestMask | _LastDestMask;
+        if (_Last._Myoff != 0) {
+            const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+            const auto _LastShift      = _DestEnd._Myoff - _Last._Myoff;
+            const auto _LastSourceVal  = (*_VbLast & _LastSourceMask) << _LastShift;
+            *_VbDest                   = (*_VbDest & _DestMask) | _SourceVal | _LastSourceVal;
+        } else {
+            *_VbDest = (*_VbDest & _DestMask) | _SourceVal;
+        }
+
+        return _DestEnd;
+    }
+
+#if _HAS_CXX20
+    if (!_STD is_constant_evaluated())
+#endif
+    {
+        // If _First and _Dest have matching char alignment, use memmove
+        const auto _UnalignedFirstBits = _First._Myoff & _Vbase{7};
+        const auto _UnalignedDestBits  = _Dest._Myoff & _Vbase{7};
+        if (_UnalignedFirstBits == _UnalignedDestBits) {
+            const auto _UnalignedLastBits = _Last._Myoff & _Vbase{7};
+
+            char* _VbFirst_ch = reinterpret_cast<char*>(_VbFirst) + (_First._Myoff - _UnalignedFirstBits) / 8;
+            char* _VbDest_ch  = reinterpret_cast<char*>(_VbDest) + (_Dest._Myoff - _UnalignedFirstBits) / 8;
+            char* _VbLast_ch  = reinterpret_cast<char*>(_VbLast) + (_Last._Myoff - _UnalignedLastBits) / 8;
+
+            // Copy bits until the next char alignment
+            if (_UnalignedFirstBits != 0) {
+                const auto _SourceBitMask = static_cast<char>(UCHAR_MAX << _UnalignedFirstBits);
+                const auto _DestBitMask   = static_cast<char>(UCHAR_MAX >> (8 - _UnalignedFirstBits));
+                *_VbDest_ch               = (*_VbDest_ch & _DestBitMask) | (*_VbFirst_ch & _SourceBitMask);
+                ++_VbFirst_ch;
+                ++_VbDest_ch;
+            }
+
+            _VbDest_ch = _Copy_unchecked(_VbFirst_ch, _VbLast_ch, _VbDest_ch);
+
+            // Copy remaining last bits
+            if (_UnalignedLastBits != 0) {
+                const auto _SourceBitMask = static_cast<char>(UCHAR_MAX >> (8 - _UnalignedLastBits));
+                const auto _DestBitMask   = static_cast<char>(UCHAR_MAX << _UnalignedLastBits);
+                *_VbDest_ch               = (*_VbDest_ch & _DestBitMask) | (*_VbLast_ch & _SourceBitMask);
+            }
+
+            return _DestEnd;
+        }
+    }
+
+    // Unaligned _VbFirst and _VbLast require a two step copy with carry
+    if (_IsRightShift) {
+        const auto _SourceShift = _First._Myoff - _Dest._Myoff;
+        const auto _CarryShift  = _VBITS - _SourceShift;
+        const auto _CarryMask   = static_cast<_Vbase>(-1) >> _SourceShift;
+
+        const auto _FirstSourceVal = (*_VbFirst & _FirstSourceMask) >> _SourceShift;
+        *_VbDest                   = (*_VbDest & _FirstDestMask) | _FirstSourceVal;
+
+        ++_VbFirst;
+        for (; _VbFirst != _VbLast; ++_VbFirst) {
+            const auto _CarryVal = *_VbFirst << _CarryShift;
+            *_VbDest             = (*_VbDest & _CarryMask) | _CarryVal;
+
+            ++_VbDest;
+            const auto _SourceVal = *_VbFirst >> _SourceShift;
+            *_VbDest              = _SourceVal;
+        }
+
+        if (_Last._Myoff > _SourceShift) {
+            const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+            const auto _CarryVal       = (*_VbFirst & _LastSourceMask) << _CarryShift;
+            *_VbDest                   = (*_VbDest & _CarryMask) | _CarryVal;
+
+            ++_VbDest;
+            const auto _SourceVal = (*_VbFirst & _LastSourceMask) >> _SourceShift;
+            *_VbDest              = (*_VbDest & _LastDestMask) | _SourceVal;
+        } else if (_Last._Myoff != 0) {
+            const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+            const auto _CarryVal       = (*_VbFirst & _LastSourceMask) << _CarryShift;
+            *_VbDest                   = (*_VbDest & _CarryMask) | _CarryVal;
+        }
+    } else {
+        const auto _SourceShift = _Dest._Myoff - _First._Myoff;
+        const auto _CarryShift  = _VBITS - _SourceShift;
+
+        const auto _FirstSourceVal = (*_VbFirst & _FirstSourceMask) << _SourceShift;
+        *_VbDest                   = (*_VbDest & _FirstDestMask) | _FirstSourceVal;
+
+        auto _CarryVal = *_VbFirst >> _CarryShift;
+        ++_VbFirst;
+        ++_VbDest;
+        for (; _VbFirst != _VbLast; ++_VbFirst, (void) ++_VbDest) {
+            const auto _SourceVal = *_VbFirst << _SourceShift;
+            *_VbDest              = _CarryVal | _SourceVal;
+
+            _CarryVal = *_VbFirst >> _CarryShift;
+        }
+
+        if (_Last._Myoff != 0) {
+            const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+            const auto _LastSourceVal  = (*_VbFirst & _LastSourceMask) << _SourceShift;
+            *_VbDest                   = (*_VbDest & _LastDestMask) | _CarryVal | _LastSourceVal;
+        } else {
+            *_VbDest = (*_VbDest & _LastDestMask) | _CarryVal;
+        }
+    }
+
+    return _DestEnd;
+}
+
 #undef _ASAN_VECTOR_MODIFY
 #undef _ASAN_VECTOR_REMOVE
 #undef _ASAN_VECTOR_CREATE
