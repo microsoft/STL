@@ -3,7 +3,9 @@
 
 #include <compare>
 #include <concepts>
+#include <cstddef>
 #include <memory>
+#include <type_traits>
 
 using namespace std;
 
