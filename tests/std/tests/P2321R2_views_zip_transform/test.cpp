@@ -641,7 +641,7 @@ constexpr auto single_range_transform_results_array = []() {
 }();
 
 constexpr auto three_range_transform_results_array = []() {
-    constexpr std::size_t results_array_size =
+    constexpr size_t results_array_size =
         (min) ((min) (test_element_array_one.size(), test_element_array_two.size()), test_element_array_three.size());
     array<int, results_array_size> transformed_elements_array{};
 
