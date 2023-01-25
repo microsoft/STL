@@ -24,17 +24,17 @@ concept CanTakeDrop = requires(R r) {
                           forward<R>(r) | views::drop(1);
                       };
 
-struct NonDefault {
+struct non_default {
     int value{};
-    constexpr NonDefault(int v) : value(v) {}
-    constexpr bool operator==(const NonDefault&) const = default;
+    constexpr non_default(int v) : value(v) {}
+    constexpr bool operator==(const non_default&) const = default;
 };
-struct MoveOnly {
+struct move_only {
     int value{};
-    constexpr MoveOnly(int v) : value(v) {}
-    MoveOnly(MoveOnly&&)                             = default;
-    MoveOnly& operator=(MoveOnly&&)                  = default;
-    constexpr bool operator==(const MoveOnly&) const = default;
+    constexpr move_only(int v) : value(v) {}
+    move_only(move_only&&)                            = default;
+    move_only& operator=(move_only&&)                 = default;
+    constexpr bool operator==(const move_only&) const = default;
 };
 
 template <class T>
@@ -294,8 +294,8 @@ constexpr bool test() {
     test_common(7, 2);
     test_common(7, 0);
     test_common(3);
-    test_common<NonDefault>(3);
-    test_common<MoveOnly>(3);
+    test_common<non_default>(3);
+    test_common<move_only>(3);
     test_common("woof"s, 5);
     test_common("woof"s, 2);
     test_common("meow"s);
