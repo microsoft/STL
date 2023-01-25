@@ -701,15 +701,15 @@ private:
         (Diff == test::CanDifference::yes ? test::CanDifference::no : test::CanDifference::yes)>;
 
     static constexpr void test_single_range() {
-        auto single_range = standard_range_type{span<const int>{test_element_array_one}};
+        standard_range_type single_range{span<const int>{test_element_array_one}};
         test_one(one_element_transform_closure, single_range_transform_results_array, single_range);
     }
 
     template <class DifferingRangeType>
     static constexpr void test_three_ranges() {
-        auto first_range  = DifferingRangeType{span<const int>{test_element_array_one}};
-        auto second_range = standard_range_type{span<const int>{test_element_array_two}};
-        auto third_range  = standard_range_type{span<const int>{test_element_array_three}};
+        DifferingRangeType first_range{span<const int>{test_element_array_one}};
+        standard_range_type second_range{span<const int>{test_element_array_two}};
+        standard_range_type third_range{span<const int>{test_element_array_three}};
 
         test_one(three_element_transform_closure, three_range_transform_results_array, first_range, second_range,
             third_range);
