@@ -801,10 +801,10 @@ STATIC_ASSERT(__cpp_lib_execution == 201603L);
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_expected
 #error __cpp_lib_expected is not defined
-#elif __cpp_lib_expected != 202202L
-#error __cpp_lib_expected is not 202202L
+#elif __cpp_lib_expected != 202211L
+#error __cpp_lib_expected is not 202211L
 #else
-STATIC_ASSERT(__cpp_lib_expected == 202202L);
+STATIC_ASSERT(__cpp_lib_expected == 202211L);
 #endif
 #else
 #ifdef __cpp_lib_expected
