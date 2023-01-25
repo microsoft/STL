@@ -2713,11 +2713,6 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<take_view<_Rng>> = enable_borrowed_range<_Rng>;
 
     namespace views {
-        template <class>
-        inline constexpr bool _Is_subrange = false;
-        template <class _It, class _Se, subrange_kind _Ki>
-        inline constexpr bool _Is_subrange<subrange<_It, _Se, _Ki>> = true;
-
         template <class _Rng>
         concept _Random_sized_range = random_access_range<_Rng> && sized_range<_Rng>;
 
@@ -2745,7 +2740,7 @@ namespace ranges {
                 } else if constexpr (_Random_sized_range<_Ty> && _Is_specialization_v<_Ty, iota_view>) {
                     return {_St::_Reconstruct_iota_view,
                         noexcept(_RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>()))};
-                } else if constexpr (_Random_sized_range<_Ty> && _Is_subrange<_Ty>) {
+                } else if constexpr (_Random_sized_range<_Ty> && _Is_subrange_v<_Ty>) {
                     return {_St::_Reconstruct_subrange,
                         noexcept(subrange(_RANGES begin(_STD declval<_Rng&>()),
                             _RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>())))};
@@ -3121,7 +3116,7 @@ namespace ranges {
                     return {_St::_Reconstruct_span, true};
                 } else if constexpr (_Is_specialization_v<_Ty, basic_string_view>) {
                     return {_St::_Reconstruct_other, true};
-                } else if constexpr (_Random_sized_range<_Ty> && _Is_subrange<_Ty>) {
+                } else if constexpr (_Random_sized_range<_Ty> && _Is_subrange_v<_Ty>) {
                     if constexpr (sized_sentinel_for<sentinel_t<_Ty>, iterator_t<_Ty>>) {
                         return {_St::_Reconstruct_subrange,
                             noexcept(_Ty(_RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>()),
