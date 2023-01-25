@@ -775,7 +775,7 @@ public:
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Ty&&>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
-            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of optional "
+            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.object.monadic]/7.");
 
         if (this->_Has_value) {
@@ -1438,7 +1438,7 @@ public:
         using _Uty = remove_cvref_t<invoke_result_t<_Fn>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
-            "expected<void,E>::and_then(F) requires the return type of F to be a specialization of optional "
+            "expected<void,E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.object.monadic]/7.");
 
         if (this->_Has_value) {
