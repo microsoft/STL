@@ -60,11 +60,11 @@ constexpr bool validate_iterators_sentinels(
         if constexpr (ranges::forward_range<BaseType>) {
             STATIC_ASSERT(HasIteratorCategory<LocalZipTransformType>);
 
+            using Cat                = typename ranges::iterator_t<LocalZipTransformType>::iterator_category;
             using transform_result_t = TransformResultType<is_const, TransformType, RangeTypes...>;
 
             if constexpr (!is_reference_v<transform_result_t>) {
-                STATIC_ASSERT(
-                    same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category, input_iterator_tag>);
+                STATIC_ASSERT(same_as<Cat, input_iterator_tag>);
             } else {
                 constexpr auto check_iterator_tags_closure = []<class TagType>() {
                     return (derived_from<typename iterator_traits<ranges::iterator_t<
@@ -74,17 +74,13 @@ constexpr bool validate_iterators_sentinels(
                 };
 
                 if constexpr (check_iterator_tags_closure.template operator()<random_access_iterator_tag>()) {
-                    STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
-                        random_access_iterator_tag>);
+                    STATIC_ASSERT(same_as<Cat, random_access_iterator_tag>);
                 } else if constexpr (check_iterator_tags_closure.template operator()<bidirectional_iterator_tag>()) {
-                    STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
-                        bidirectional_iterator_tag>);
+                    STATIC_ASSERT(same_as<Cat, bidirectional_iterator_tag>);
                 } else if constexpr (check_iterator_tags_closure.template operator()<forward_iterator_tag>()) {
-                    STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
-                        forward_iterator_tag>);
+                    STATIC_ASSERT(same_as<Cat, forward_iterator_tag>);
                 } else {
-                    STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_category,
-                        input_iterator_tag>);
+                    STATIC_ASSERT(same_as<Cat, input_iterator_tag>);
                 }
             }
         } else {
