@@ -39,7 +39,7 @@ concept CanZipTransform = (ranges::viewable_range<RangeTypes> && ...)
                           };
 
 template <class RangeType>
-concept HasIteratorCategory = requires() { typename ranges::iterator_t<RangeType>::iterator_category; };
+concept HasIteratorCategory = requires { typename ranges::iterator_t<RangeType>::iterator_category; };
 
 #pragma warning(push)
 #pragma warning(disable : 4365) // conversion from 'std::array<int,8>::size_type' to 'int', signed/unsigned mismatch
@@ -178,17 +178,17 @@ constexpr bool validate_iterators_sentinels(
             STATIC_ASSERT(noexcept(itr[2]) == is_random_access_noexcept);
         }
 
-        const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr2 = (itr + 2);
+        const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr2 = itr + 2;
         assert(*itr2 == transformed_elements[2]);
         STATIC_ASSERT(noexcept(itr + 2) == noexcept(declval<const ranges::iterator_t<BaseType>&>() + 2)
                       && is_nothrow_move_constructible_v<ranges::iterator_t<BaseType>>);
 
-        const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr3 = (2 + itr);
+        const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr3 = 2 + itr;
         assert(*itr3 == transformed_elements[2]);
         STATIC_ASSERT(noexcept(2 + itr) == noexcept(declval<const ranges::iterator_t<BaseType>&>() + 2)
                       && is_nothrow_move_constructible_v<ranges::iterator_t<BaseType>>);
 
-        const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr4 = (itr3 - 2);
+        const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr4 = itr3 - 2;
         assert(*itr4 == transformed_elements[0]);
         STATIC_ASSERT(noexcept(itr3 - 2) == noexcept(declval<const ranges::iterator_t<BaseType>&>() - 2)
                       && is_nothrow_move_constructible_v<ranges::iterator_t<BaseType>>);
@@ -267,13 +267,13 @@ constexpr bool validate_iterators_sentinels(
 
                     const auto comparison_itr = maybe_as_const<IteratorConst>(relevant_range).begin();
 
-                    const same_as<difference_type> auto diff1 = (sentinel - comparison_itr);
+                    const same_as<difference_type> auto diff1 = sentinel - comparison_itr;
                     assert(diff1 == static_cast<difference_type>(ranges::size(transformed_elements)));
                     STATIC_ASSERT(
                         noexcept(sentinel - comparison_itr)
                         == noexcept(declval<const comparison_sentinel_t&>() - declval<const comparison_iterator_t&>()));
 
-                    const same_as<difference_type> auto diff2 = (comparison_itr - sentinel);
+                    const same_as<difference_type> auto diff2 = comparison_itr - sentinel;
                     assert(diff2 == -static_cast<difference_type>(ranges::size(transformed_elements)));
                     STATIC_ASSERT(
                         noexcept(comparison_itr - sentinel)
@@ -328,8 +328,8 @@ constexpr bool test_one(
 
         // Validate range adaptor object
         {
-            constexpr bool can_copy_construct_ranges = (!are_views || (copy_constructible<AllView<RangeTypes>> && ...));
-            constexpr bool can_move_ranges           = (are_views || (movable<remove_reference_t<RangeTypes>> && ...));
+            constexpr bool can_copy_construct_ranges = !are_views || (copy_constructible<AllView<RangeTypes>> && ...);
+            constexpr bool can_move_ranges           = are_views || (movable<remove_reference_t<RangeTypes>> && ...);
 
             // ... with lvalue arguments
             STATIC_ASSERT(CanZipTransform<TransformType, RangeTypes&...>
@@ -624,10 +624,10 @@ constexpr bool test_one(
 
 #pragma warning(pop)
 
-constexpr auto one_element_transform_closure = []<class ElementType>(const ElementType& a) { return (a * 5); };
+constexpr auto one_element_transform_closure = []<class ElementType>(const ElementType& a) { return a * 5; };
 
 constexpr auto three_element_transform_closure = []<class Type1, class Type2, class Type3>(const Type1& a,
-                                                     const Type2& b, const Type3& c) { return (a * b + c); };
+                                                     const Type2& b, const Type3& c) { return a * b + c; };
 
 constexpr array test_element_array_one{0, 1, 2, 3, 4, 5, 6, 7};
 constexpr array test_element_array_two{5, 13, 6, -4, 12};
