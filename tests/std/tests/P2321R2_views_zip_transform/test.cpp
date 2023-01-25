@@ -460,10 +460,10 @@ constexpr bool test_one(
             STATIC_ASSERT(CanMemberCBegin<ZipTransformType>);
             STATIC_ASSERT(CanMemberCEnd<ZipTransformType>);
             {
-                STATIC_ASSERT(is_same_v<decltype(zipped_transformed_range.cbegin()),
-                    const_iterator<ranges::iterator_t<ZipTransformType>>>);
-                STATIC_ASSERT(is_same_v<decltype(zipped_transformed_range.cend()),
-                    const_sentinel<ranges::sentinel_t<ZipTransformType>>>);
+                STATIC_ASSERT(
+                    is_same_v<decltype(zipped_transformed_range.cbegin()), ranges::const_iterator_t<ZipTransformType>>);
+                STATIC_ASSERT(
+                    is_same_v<decltype(zipped_transformed_range.cend()), ranges::const_sentinel_t<ZipTransformType>>);
 
                 if constexpr ((derived_from<remove_cvref_t<RangeTypes>, forward_iterator_tag> && ...)) {
                     const auto cbegin_itr                = zipped_transformed_range.cbegin();
@@ -480,15 +480,15 @@ constexpr bool test_one(
             STATIC_ASSERT(CanMemberCEnd<const ZipTransformType> == has_const_begin_end);
             if constexpr (has_const_begin_end) {
                 STATIC_ASSERT(is_same_v<decltype(as_const(zipped_transformed_range).cbegin()),
-                    const_iterator<ranges::iterator_t<const ZipTransformType>>>);
+                    ranges::const_iterator_t<const ZipTransformType>>);
                 STATIC_ASSERT(is_same_v<decltype(as_const(zipped_transformed_range).cend()),
-                    const_sentinel<ranges::sentinel_t<const ZipTransformType>>>);
+                    ranges::const_sentinel_t<const ZipTransformType>>);
 
                 if constexpr ((derived_from<remove_cvref_t<RangeTypes>, forward_iterator_tag> && ...)) {
-                    const same_as<const_iterator<ranges::iterator_t<const ZipTransformType>>> auto cbegin_itr =
+                    const same_as<ranges::const_iterator_t<const ZipTransformType>> auto cbegin_itr =
                         as_const(zipped_transformed_range).cbegin();
-                    [[maybe_unused]] const same_as<const_sentinel<ranges::sentinel_t<const ZipTransformType>>> auto
-                        cend_sen = as_const(zipped_transformed_range).cend();
+                    [[maybe_unused]] const same_as<ranges::const_sentinel_t<const ZipTransformType>> auto cend_sen =
+                        as_const(zipped_transformed_range).cend();
 
                     assert(*cbegin_itr == *ranges::begin(transformed_elements));
                     assert(static_cast<decltype(ranges::size(transformed_elements))>(ranges::distance(
