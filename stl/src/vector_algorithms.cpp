@@ -13,9 +13,7 @@
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_ARM64EC)
 
 #include <cstdint>
-#include <emmintrin.h>
-#include <immintrin.h>
-#include <intrin0.h>
+#include <intrin.h>
 #include <isa_availability.h>
 
 extern "C" long __isa_enabled;
@@ -673,7 +671,7 @@ namespace {
 
 #ifdef _M_IX86
         static constexpr bool _Has_portion_max = false;
-#else // ^^^ 32-bit ^^^ / vvv 64-bit vvv
+#else // ^^^ 32-bit / 64-bit vvv
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
@@ -792,7 +790,7 @@ namespace {
             return static_cast<_Signed_t>(
                 (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
                 | static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur))));
-#else // ^^^ x86 ^^^ / vvv x64 vvv
+#else // ^^^ x86 / x64 vvv
             return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur));
 #endif // ^^^ x64 ^^^
         }

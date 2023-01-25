@@ -44,12 +44,12 @@ protected:
         _Myios::move(_STD move(_Right));
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL operator=(basic_ostream&& _Right) {
+    basic_ostream& __CLR_OR_THIS_CALL operator=(basic_ostream&& _Right) noexcept /* strengthened */ {
         this->swap(_Right);
         return *this;
     }
 
-    void __CLR_OR_THIS_CALL swap(basic_ostream& _Right) {
+    void __CLR_OR_THIS_CALL swap(basic_ostream& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Myios::swap(_Right);
         }
@@ -147,11 +147,11 @@ public:
     }
 
     // TRANSITION, ABI: non-Standard osfx() is preserved for binary compatibility
-    void __CLR_OR_THIS_CALL osfx() { // perform any wrapup
+    void __CLR_OR_THIS_CALL osfx() noexcept { // perform any wrapup
         _Osfx();
     }
 
-    void __CLR_OR_THIS_CALL _Osfx() { // perform any wrapup
+    void __CLR_OR_THIS_CALL _Osfx() noexcept { // perform any wrapup
         _TRY_BEGIN
         if (this->good() && this->flags() & ios_base::unitbuf) {
             if (_Myios::rdbuf()->pubsync() == -1) { // flush stream as needed

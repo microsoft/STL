@@ -445,7 +445,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) {
 
 #ifdef _WIN64
     auto _UVal_trunc = _UVal;
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else // ^^^ _WIN64 / !_WIN64 vvv
 
     constexpr bool _Big_uty = sizeof(_UTy) > 4;
     if constexpr (_Big_uty) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.

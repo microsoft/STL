@@ -161,7 +161,7 @@ namespace std_testing {
             std::merge(in1, in1, in2, in2, out, COMP{});
             std::set_union(in1, in1, in2, in2, out);
             std::set_union(in1, in1, in2, in2, out, COMP{});
-#else // ^^^ SPLIT_MODE 1 ^^^ // vvv SPLIT_MODE 2 vvv //
+#else // ^^^ SPLIT_MODE 1 / SPLIT_MODE 2 vvv
             std::set_intersection(in1, in1, in2, in2, out);
             std::set_intersection(in1, in1, in2, in2, out, COMP{});
             std::set_difference(in1, in1, in2, in2, out);
@@ -288,7 +288,7 @@ namespace std_testing {
             FLST.assign(in1, in1);
             FLST.insert_after(FLST.begin(), in1, in1);
 
-#else // ^^^ SPLIT_MODE 1 ^^^ // vvv SPLIT_MODE 2 vvv //
+#else // ^^^ SPLIT_MODE 1 / SPLIT_MODE 2 vvv
             (void) std::all_of(in1, in1, PRED{});
             (void) std::any_of(in1, in1, PRED{});
             (void) std::none_of(in1, in1, PRED{});

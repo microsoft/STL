@@ -660,6 +660,20 @@ struct initially_incomplete;
 extern initially_incomplete array_of_incomplete[42];
 STATIC_ASSERT(ranges::size(array_of_incomplete) == 42);
 STATIC_ASSERT(!ranges::empty(array_of_incomplete));
+
+// begin, end, rbegin, rend, and data (and their c variations) should reject rvalues of array of incomplete elements
+// with substitution failures
+STATIC_ASSERT(!CanBegin<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanCBegin<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanEnd<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanCEnd<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanRBegin<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanCRBegin<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanREnd<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanCREnd<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanData<initially_incomplete (&&)[42]>);
+STATIC_ASSERT(!CanCData<initially_incomplete (&&)[42]>);
+
 struct initially_incomplete {};
 initially_incomplete array_of_incomplete[42];
 
@@ -1711,7 +1725,6 @@ namespace exhaustive_size_and_view_test {
 
     using I  = int*;
     using CI = int const*;
-    using D  = std::ptrdiff_t;
     using S  = std::size_t;
     using UC = unsigned char;
 
@@ -1775,10 +1788,10 @@ namespace exhaustive_size_and_view_test {
     STATIC_ASSERT(test<strange_view3 const, false, CI, S>());
     STATIC_ASSERT(test<strange_view3 const&, false, CI, S>());
 
-    STATIC_ASSERT(test<strange_view4, true, I, D>());
-    STATIC_ASSERT(test<strange_view4&, false, I, D>());
-    STATIC_ASSERT(test<strange_view4 const, false, CI, D>());
-    STATIC_ASSERT(test<strange_view4 const&, false, CI, D>());
+    STATIC_ASSERT(test<strange_view4, true, I, S>());
+    STATIC_ASSERT(test<strange_view4&, false, I, S>());
+    STATIC_ASSERT(test<strange_view4 const, false, CI, S>());
+    STATIC_ASSERT(test<strange_view4 const&, false, CI, S>());
 
     template <class = void>
     constexpr bool strict_test_case() {
@@ -1887,61 +1900,41 @@ STATIC_ASSERT(ranges::viewable_range<std::span<int> const>);
 
 namespace poison_pill_test {
     template <class T>
-    auto begin(T&) {
-        STATIC_ASSERT(always_false<T>);
-    }
+    int* begin(T&);
     template <class T>
-    auto begin(const T&) {
-        STATIC_ASSERT(always_false<T>);
-    }
+    int const* begin(T const&);
     template <class T>
-    auto end(T&) {
-        STATIC_ASSERT(always_false<T>);
-    }
+    int* end(T&);
     template <class T>
-    auto end(const T&) {
-        STATIC_ASSERT(always_false<T>);
-    }
+    int const* end(T const&);
     template <class T>
-    auto rbegin(T&) {
-        STATIC_ASSERT(always_false<T>);
-    }
+    std::reverse_iterator<int*> rbegin(T&);
     template <class T>
-    auto rbegin(const T&) {
-        STATIC_ASSERT(always_false<T>);
-    }
+    std::reverse_iterator<int const*> rbegin(T const&);
     template <class T>
-    auto rend(T&) {
-        STATIC_ASSERT(always_false<T>);
-    }
+    std::reverse_iterator<int*> rend(T&);
     template <class T>
-    auto rend(const T&) {
-        STATIC_ASSERT(always_false<T>);
-    }
+    std::reverse_iterator<int const*> rend(T const&);
     template <class T>
-    auto size(T&) {
-        STATIC_ASSERT(always_false<T>);
-    }
+    std::size_t size(T&);
     template <class T>
-    auto size(const T&) {
-        STATIC_ASSERT(always_false<T>);
-    }
+    std::size_t size(T const&);
 
     struct some_type {};
 
-    // The above underconstrained templates should be blocked by the poison pills for the ranges CPOs tested below;
-    // that is not the case in N4849, which P2091 will fix.
+    // The above underconstrained templates were blocked by the poison pills for the ranges CPOs
+    // until P2602R2 removed them.
 
-    STATIC_ASSERT(!CanBegin<some_type&>);
-    STATIC_ASSERT(!CanBegin<some_type const&>);
-    STATIC_ASSERT(!CanEnd<some_type&>);
-    STATIC_ASSERT(!CanEnd<some_type const&>);
-    STATIC_ASSERT(!CanRBegin<some_type&>);
-    STATIC_ASSERT(!CanRBegin<some_type const&>);
-    STATIC_ASSERT(!CanREnd<some_type&>);
-    STATIC_ASSERT(!CanREnd<some_type const&>);
-    STATIC_ASSERT(!CanSize<some_type&>);
-    STATIC_ASSERT(!CanSize<some_type const&>);
+    STATIC_ASSERT(CanBegin<some_type&>);
+    STATIC_ASSERT(CanBegin<some_type const&>);
+    STATIC_ASSERT(CanEnd<some_type&>);
+    STATIC_ASSERT(CanEnd<some_type const&>);
+    STATIC_ASSERT(CanRBegin<some_type&>);
+    STATIC_ASSERT(CanRBegin<some_type const&>);
+    STATIC_ASSERT(CanREnd<some_type&>);
+    STATIC_ASSERT(CanREnd<some_type const&>);
+    STATIC_ASSERT(CanSize<some_type&>);
+    STATIC_ASSERT(CanSize<some_type const&>);
 } // namespace poison_pill_test
 
 namespace unwrapped_begin_end {

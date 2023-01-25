@@ -22,6 +22,26 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
+  <Type Name="std::error_category">
+      <DisplayString>[{name(),sb}]</DisplayString>
+      <Expand>
+      <Synthetic Name="hint">
+          <DisplayString>Enable "Allow Function Calls In Value Formatting" if you see "???" here</DisplayString>
+      </Synthetic>
+      </Expand>
+  </Type>
+
+  <Type Name="std::error_code">
+    <DisplayString>{{ value={_Myval}, category={*_Mycat} }}</DisplayString>
+    <Expand>
+      <Synthetic Name="hint">
+        <DisplayString>Enable "Allow Function Calls In Value Formatting" if you see "???" here</DisplayString>
+      </Synthetic>
+      <Item Name="[value]">_Myval</Item>
+      <Item Name="[category]">_Mycat</Item>
+    </Expand>
+  </Type>
+
   <Type Name="std::exception_ptr">
       <CustomVisualizer Condition="_Data1 != 0" VisualizerId="CEB58A03-E78D-4D19-9AE7-4738E200649E" />
       <DisplayString Condition="_Data1 == 0">null</DisplayString>
@@ -104,12 +124,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::optional&lt;*&gt;">
-      <Intrinsic Name="has_value" Expression="_Has_value"/>
-      <Intrinsic Name="value" Expression="_Value"/>
-      <DisplayString Condition="!has_value()">nullopt</DisplayString>
-      <DisplayString Condition="has_value()">{value()}</DisplayString>
+      <DisplayString Condition="!_Has_value">nullopt</DisplayString>
+      <DisplayString Condition="_Has_value">{_Value}</DisplayString>
       <Expand>
-          <Item Condition="has_value()" Name="value">value()</Item>
+          <Item Condition="_Has_value" Name="value">_Value</Item>
       </Expand>
   </Type>
 

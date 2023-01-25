@@ -9,3 +9,5 @@
 // REQUIRES: stdlib=libc++
 // UNSUPPORTED: c++14, c++17, c++2a
 // UNSUPPORTED: msvc
+// UNSUPPORTED: msvc, target={{.+}}-windows-gnu
+// UNSUPPORTED: windows

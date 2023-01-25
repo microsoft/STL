@@ -68,16 +68,16 @@ struct boolish {
     }
 };
 
-template <class T, size_t N>
+template <class T, std::size_t N>
 struct holder {
-    STATIC_ASSERT(N < ~size_t{0} / sizeof(T));
+    STATIC_ASSERT(N < ~std::size_t{0} / sizeof(T));
 
 #ifdef _M_CEE // TRANSITION, VSO-1659408
     unsigned char space[(N + 1) * sizeof(T)];
 
     auto as_span() {
-        void* buffer_ptr  = space;
-        size_t buffer_len = sizeof(space);
+        void* buffer_ptr       = space;
+        std::size_t buffer_len = sizeof(space);
         return std::span<T, N>{static_cast<T*>(std::align(alignof(T), sizeof(T), buffer_ptr, buffer_len)), N};
     }
 #else // ^^^ workaround / no workaround vvv
@@ -1452,7 +1452,7 @@ constexpr void test_in_in_write() {
     with_input_ranges<with_input_ranges<with_writable_iterators<Instantiator, Element3>, Element2>, Element1>::call();
 }
 
-template <size_t I>
+template <std::size_t I>
 struct get_nth_fn {
     template <class T>
     [[nodiscard]] constexpr auto&& operator()(T&& t) const noexcept

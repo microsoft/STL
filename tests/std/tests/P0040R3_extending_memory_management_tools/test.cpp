@@ -62,7 +62,7 @@ struct uninitialized_storage {
         size_t space      = sizeof(storage);
         return static_cast<T*>(align(alignof(T), sizeof(T), storageVoid, space));
     }
-#else // ^^^ _M_CEE ^^^ // vvv !_M_CEE vvv
+#else // ^^^ _M_CEE / !_M_CEE vvv
     alignas(T) char storage[sizeof(T) * Count];
 
     T* begin() {

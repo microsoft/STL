@@ -32,7 +32,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifdef _WIN64
 #if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
 #define _STD_COMPARE_EXCHANGE_128 _InterlockedCompareExchange128
-#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
+#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 / _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
 // 16-byte atomics are separately compiled for x64, as not all x64 hardware has the cmpxchg16b
 // instruction; in the event this instruction is not available, the fallback is a global
 // synchronization object shared by all 16-byte atomics.
@@ -2067,7 +2067,7 @@ using _Choose_atomic_base2_t =
 template <class _TVal, class _Ty = _TVal>
 using _Choose_atomic_base_t = typename _Select<is_floating_point_v<_TVal>>::template _Apply<_Atomic_floating<_Ty>,
     _Choose_atomic_base2_t<_TVal, _Ty>>;
-#else // ^^^ _HAS_CXX20 // !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _TVal, class _Ty = _TVal>
 using _Choose_atomic_base_t = _Choose_atomic_base2_t<_TVal, _Ty>;
 #endif // _HAS_CXX20
@@ -2626,46 +2626,44 @@ _Ty atomic_fetch_xor_explicit(
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty>
-void atomic_wait(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept
-/* strengthened */ {
+void atomic_wait(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept {
     _Mem->wait(_Expected);
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_wait(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept
-/* strengthened */ {
+void atomic_wait(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept {
     _Mem->wait(_Expected);
 }
 
 _EXPORT_STD template <class _Ty>
 void atomic_wait_explicit(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected,
-    const memory_order _Order) noexcept /* strengthened */ {
+    const memory_order _Order) noexcept {
     _Mem->wait(_Expected, _Order);
 }
 
 _EXPORT_STD template <class _Ty>
 void atomic_wait_explicit(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected,
-    const memory_order _Order) noexcept /* strengthened */ {
+    const memory_order _Order) noexcept {
     _Mem->wait(_Expected, _Order);
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_notify_one(volatile atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
+void atomic_notify_one(volatile atomic<_Ty>* const _Mem) noexcept {
     _Mem->notify_one();
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_notify_one(atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
+void atomic_notify_one(atomic<_Ty>* const _Mem) noexcept {
     _Mem->notify_one();
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_notify_all(volatile atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
+void atomic_notify_all(volatile atomic<_Ty>* const _Mem) noexcept {
     _Mem->notify_all();
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_notify_all(atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
+void atomic_notify_all(atomic<_Ty>* const _Mem) noexcept {
     _Mem->notify_all();
 }
 #endif // _HAS_CXX20

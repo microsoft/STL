@@ -1,15 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// REQUIRES: asan, x64 || x86
+// REQUIRES: x64 || x86
 
-#if 0 // TRANSITION, VSO-1586016: String annotations disabled temporarily.
-#pragma warning(disable : 4389) // signed/unsigned mismatch in arithmetic
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
-#pragma warning(disable : 6326) // Potential comparison of a constant with another constant.
+#pragma warning(disable : 4324) // '%s': structure was padded due to alignment specifier
+#pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch
 
 #ifdef __clang__
-#pragma clang diagnostic ignored "-Wsign-compare"
 #pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
 #endif // __clang__
 
@@ -29,6 +27,8 @@
 #include <utility>
 
 using namespace std;
+
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 #ifdef __SANITIZE_ADDRESS__
 extern "C" int __sanitizer_verify_contiguous_container(const void* beg, const void* mid, const void* end) noexcept;
@@ -76,6 +76,9 @@ constexpr auto get_sso_input() {
     }
 }
 
+template <class CharType>
+constexpr size_t max_sso_size = (16 / sizeof(CharType) < 1 ? 1 : 16 / sizeof(CharType)) - 1;
+
 #if _HAS_CXX17
 template <class CharType>
 constexpr auto get_large_input_view() {
@@ -108,7 +111,7 @@ template <class CharType>
 struct throw_on_conversion {
     throw_on_conversion() = default;
     throw_on_conversion(CharType) {}
-    operator const CharType() const {
+    operator CharType() const {
         throw 42;
     }
 };
@@ -170,30 +173,31 @@ public:
 };
 
 template <class CharType, class Alloc>
-bool verify_string(basic_string<CharType, char_traits<CharType>, Alloc>& str) {
+bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& str) {
 #ifdef __SANITIZE_ADDRESS__
-    constexpr auto proxy_size = _Size_after_ebco_v<_Container_base>;
-    if constexpr (proxy_size % _Asan_granularity != 0) { // If we have a misaligned SSO buffer we disable ASAN
-        constexpr size_t max_sso_size = (16 / sizeof(CharType) < 1 ? 1 : 16 / sizeof(CharType)) - 1;
-        if (str.capacity() == max_sso_size) {
-            return true;
-        }
-    }
-
-    size_t buffer_size  = (str.capacity() + 1) * sizeof(CharType);
-    void* buffer        = const_cast<void*>(static_cast<const void*>(str.data()));
-    void* aligned_start = align(8, 1, buffer, buffer_size);
-
-    if (!aligned_start) {
+    if (str.capacity() == max_sso_size<CharType>) {
         return true;
     }
 
-    const void* end         = const_cast<void*>(static_cast<const void*>(str.data() + (str.capacity() + 1)));
-    const void* mid         = const_cast<void*>(static_cast<const void*>(str.data() + str.size() + 1));
-    const void* aligned_mid = mid > aligned_start ? mid : aligned_start;
+    const void* const buffer  = str.data();
+    const void* const buf_end = str.data() + str.capacity() + 1;
 
-    return __sanitizer_verify_contiguous_container(aligned_start, aligned_mid, end) != 0;
-#else // ^^^ ASan instrumentation enabled ^^^ // vvv ASan instrumentation disabled vvv
+    constexpr bool _Large_string_always_aligned =
+        (_Container_allocation_minimum_asan_alignment<decay_t<decltype(str)>>) >= 8;
+
+    _Asan_aligned_pointers aligned;
+    if constexpr (_Large_string_always_aligned) {
+        aligned = {buffer, _Get_asan_aligned_after(buf_end)};
+    } else {
+        aligned = _Get_asan_aligned_first_end(buffer, buf_end);
+    }
+    assert(aligned._First != aligned._End);
+
+    const void* const mid       = str.data() + str.size() + 1;
+    const void* const fixed_mid = aligned._Clamp_to_end(mid);
+
+    return __sanitizer_verify_contiguous_container(aligned._First, fixed_mid, aligned._End) != 0;
+#else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
     (void) str;
     return true;
 #endif // ASan instrumentation disabled
@@ -221,7 +225,7 @@ constexpr bool operator!=(
 
 template <class CharType, class Pocma = true_type, class Stateless = true_type>
 struct aligned_allocator : public custom_test_allocator<CharType, Pocma, Stateless> {
-    static constexpr size_t _Minimum_allocation_alignment = 8;
+    static constexpr size_t _Minimum_asan_allocation_alignment = 8;
 
     aligned_allocator() = default;
     template <class U>
@@ -235,10 +239,15 @@ struct aligned_allocator : public custom_test_allocator<CharType, Pocma, Statele
         delete[] p;
     }
 };
+STATIC_ASSERT(
+    _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, aligned_allocator<char>>> == 8);
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
+                  basic_string<wchar_t, char_traits<wchar_t>, aligned_allocator<wchar_t>>>
+              == 8);
 
 template <class CharType, class Pocma = true_type, class Stateless = true_type>
 struct explicit_allocator : public custom_test_allocator<CharType, Pocma, Stateless> {
-    static constexpr size_t _Minimum_allocation_alignment = alignof(CharType);
+    static constexpr size_t _Minimum_asan_allocation_alignment = alignof(CharType);
 
     explicit_allocator() = default;
     template <class U>
@@ -250,9 +259,14 @@ struct explicit_allocator : public custom_test_allocator<CharType, Pocma, Statel
     }
 
     void deallocate(CharType* p, size_t) noexcept {
-        delete[](p - 1);
+        delete[] (p - 1);
     }
 };
+STATIC_ASSERT(
+    _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, explicit_allocator<char>>> == 1);
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
+                  basic_string<wchar_t, char_traits<wchar_t>, explicit_allocator<wchar_t>>>
+              == 2);
 
 template <class CharType, class Pocma = true_type, class Stateless = true_type>
 struct implicit_allocator : public custom_test_allocator<CharType, Pocma, Stateless> {
@@ -266,9 +280,14 @@ struct implicit_allocator : public custom_test_allocator<CharType, Pocma, Statel
     }
 
     void deallocate(CharType* p, size_t) noexcept {
-        delete[](p - 1);
+        delete[] (p - 1);
     }
 };
+STATIC_ASSERT(
+    _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, implicit_allocator<char>>> == 1);
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
+                  basic_string<wchar_t, char_traits<wchar_t>, implicit_allocator<wchar_t>>>
+              == 2);
 
 template <class Alloc>
 void test_construction() {
@@ -276,11 +295,11 @@ void test_construction() {
     using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
     { // constructors
         // range constructors
-        str literal_constructed{get_large_input<CharType>()};
-        assert(verify_string(literal_constructed));
-
         str literal_constructed_sso{get_sso_input<CharType>()};
         assert(verify_string(literal_constructed_sso));
+
+        str literal_constructed{get_large_input<CharType>()};
+        assert(verify_string(literal_constructed));
 
         str initializer_list_constructed({CharType{'H'}, CharType{'e'}, CharType{'l'}, CharType{'l'}, CharType{'o'},
             CharType{' '}, //
@@ -528,13 +547,12 @@ void test_append() {
     using CharType = typename Alloc::value_type;
     using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
 
-    constexpr size_t large_size   = 20;
-    constexpr size_t sso_size     = 1;
-    constexpr size_t max_sso_size = (16 / sizeof(CharType) < 1 ? 1 : 16 / sizeof(CharType)) - 1;
+    constexpr size_t large_size = 20;
+    constexpr size_t sso_size   = 1;
 
     const str input(large_size, CharType{'b'});
     const str input_sso(sso_size, CharType{'b'});
-    const str input_sso_growing(max_sso_size, CharType{'b'});
+    const str input_sso_growing(max_sso_size<CharType>, CharType{'b'});
 
     { // push_back
         str push_back{input};
@@ -851,7 +869,7 @@ void test_append() {
         str op_rstr_char_sso = str(sso_size, CharType{'b'}) + CharType{'!'};
         assert(verify_string(op_rstr_char_sso));
 
-        str op_rstr_char_sso_growing = str(max_sso_size, CharType{'b'}) + CharType{'!'};
+        str op_rstr_char_sso_growing = str(max_sso_size<CharType>, CharType{'b'}) + CharType{'!'};
         assert(verify_string(op_rstr_char_sso_growing));
 
         str op_char_rstr_large = CharType{'!'} + str(large_size, CharType{'b'});
@@ -860,7 +878,7 @@ void test_append() {
         str op_char_rstr_sso = CharType{'!'} + str(sso_size, CharType{'b'});
         assert(verify_string(op_char_rstr_sso));
 
-        str op_char_rstr_sso_growing = CharType{'!'} + str(max_sso_size, CharType{'b'});
+        str op_char_rstr_sso_growing = CharType{'!'} + str(max_sso_size<CharType>, CharType{'b'});
         assert(verify_string(op_char_rstr_sso_growing));
     }
 }
@@ -1201,13 +1219,12 @@ void test_insertion() {
     using CharType = typename Alloc::value_type;
     using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
 
-    constexpr size_t large_size   = 20;
-    constexpr size_t sso_size     = 1;
-    constexpr size_t max_sso_size = (16 / sizeof(CharType) < 1 ? 1 : 16 / sizeof(CharType)) - 1;
+    constexpr size_t large_size = 20;
+    constexpr size_t sso_size   = 1;
 
     const str input(large_size, CharType{'b'});
     const str input_sso(sso_size, CharType{'b'});
-    const str input_sso_growing(max_sso_size, CharType{'b'});
+    const str input_sso_growing(max_sso_size<CharType>, CharType{'b'});
 
     input_iterator_tester<CharType, 3> input_iter_data_sso;
 
@@ -1581,6 +1598,49 @@ void test_misc() {
         assert(verify_string(resize_char_sso_to_sso));
     }
 
+    { // replace
+        const CharType mrow[] = {'m', 'r', 'o', 'w', '\0'};
+
+        str replace_front_bigger{input};
+        replace_front_bigger.replace(0, 2, mrow);
+        assert(verify_string(replace_front_bigger));
+        str replace_front_same{input};
+        replace_front_same.replace(0, 4, mrow);
+        assert(verify_string(replace_front_same));
+        str replace_front_smaller{input};
+        replace_front_smaller.replace(0, 6, mrow);
+        assert(verify_string(replace_front_smaller));
+
+        str replace_mid_bigger{input};
+        replace_mid_bigger.replace(2, 2, mrow);
+        assert(verify_string(replace_mid_bigger));
+        str replace_mid_same{input};
+        replace_mid_same.replace(2, 4, mrow);
+        assert(verify_string(replace_mid_same));
+        str replace_mid_smaller{input};
+        replace_mid_smaller.replace(2, 6, mrow);
+        assert(verify_string(replace_mid_smaller));
+
+        str replace_back_bigger{input};
+        replace_back_bigger.replace(replace_back_bigger.size() - 2, 2, mrow);
+        assert(verify_string(replace_back_bigger));
+        str replace_back_same{input};
+        replace_back_same.replace(replace_back_same.size() - 4, 4, mrow);
+        assert(verify_string(replace_back_same));
+        str replace_back_smaller{input};
+        replace_back_smaller.replace(replace_back_smaller.size() - 6, 6, mrow);
+        assert(verify_string(replace_back_smaller));
+
+        const CharType hi[] = {'h', 'i', '\0'};
+        str replace_large_to_sso{input};
+        replace_large_to_sso.replace(0, replace_large_to_sso.size() - 1, hi);
+        assert(verify_string(replace_large_to_sso));
+
+        str replace_sso_to_large{input_sso};
+        replace_sso_to_large.replace(0, 1, input);
+        assert(verify_string(replace_sso_to_large));
+    }
+
     if constexpr (allocator_traits<Alloc>::propagate_on_container_swap::value) { // swap
         str first_large{input};
         str second_large = input + str{CharType{'c'}, CharType{'a'}, CharType{'t'}};
@@ -1845,6 +1905,14 @@ void test_DevCom_10116361() {
     s1.~string();
 }
 
+void test_DevCom_10109507() {
+    // replace failed to correctly munge asan annotations while working
+    string s("abcd");
+    s.replace(0, 1, "ef", 2);
+    s.replace(0, 0, "xy", 2);
+    assert(s == "xyefbcd");
+}
+
 int main() {
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
@@ -1855,7 +1923,5 @@ int main() {
     run_allocator_matrix<wchar_t>();
 
     test_DevCom_10116361();
+    test_DevCom_10109507();
 }
-#endif // TRANSITION, VSO-1586016
-
-int main() {}

@@ -6,14 +6,13 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
-#include <yvals.h>
-
 #include <cstdio>
 #include <cstdlib>
 
 // clang-format off
 #include <initguid.h> // should be before any header that includes <guiddef.h>
 #include <DbgEng.h>
+#include <DbgHelp.h>
 #include <Shlwapi.h>
 // clang-format on
 
@@ -106,23 +105,15 @@ namespace {
                             (void) debug_control->WaitForEvent(0, INFINITE);
                         }
 
-                        constexpr ULONG add_options = 0x1 /* SYMOPT_CASE_INSENSITIVE */
-                                                    | 0x2 /* SYMOPT_UNDNAME */
-                                                    | 0x4 /* SYMOPT_DEFERRED_LOADS */
-                                                    | 0x10 /* SYMOPT_LOAD_LINES */
-                                                    | 0x20 /* SYMOPT_OMAP_FIND_NEAREST */
-                                                    | 0x100 /* SYMOPT_FAIL_CRITICAL_ERRORS */
-                                                    | 0x10000 /* SYMOPT_AUTO_PUBLICS */
-                                                    | 0x80000 /* SYMOPT_NO_PROMPTS */;
+                        constexpr ULONG add_options = SYMOPT_CASE_INSENSITIVE | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS
+                                                    | SYMOPT_LOAD_LINES | SYMOPT_OMAP_FIND_NEAREST
+                                                    | SYMOPT_FAIL_CRITICAL_ERRORS | SYMOPT_AUTO_PUBLICS
+                                                    | SYMOPT_NO_PROMPTS;
 
-                        constexpr ULONG remove_options = 0x8 /* SYMOPT_NO_CPP */
-                                                       | 0x40 /* SYMOPT_LOAD_ANYTHING */
-                                                       | 0x100 /* SYMOPT_NO_UNQUALIFIED_LOADS */
-                                                       | 0x400 /* SYMOPT_EXACT_SYMBOLS */
-                                                       | 0x1000 /* SYMOPT_IGNORE_NT_SYMPATH */
-                                                       | 0x4000 /* SYMOPT_PUBLICS_ONLY */
-                                                       | 0x8000 /* SYMOPT_NO_PUBLICS */
-                                                       | 0x20000 /* SYMOPT_NO_IMAGE_SEARCH */;
+                        constexpr ULONG remove_options = SYMOPT_NO_CPP | SYMOPT_LOAD_ANYTHING
+                                                       | SYMOPT_NO_UNQUALIFIED_LOADS | SYMOPT_EXACT_SYMBOLS
+                                                       | SYMOPT_IGNORE_NT_SYMPATH | SYMOPT_PUBLICS_ONLY
+                                                       | SYMOPT_NO_PUBLICS | SYMOPT_NO_IMAGE_SEARCH;
 
                         (void) debug_symbols->AddSymbolOptions(add_options);
                         (void) debug_symbols->RemoveSymbolOptions(remove_options);
@@ -166,7 +157,9 @@ namespace {
 
                 off = string_fill(fill, off + max_disp_num, str, [displacement, off](char* s, size_t) {
                     const int ret = std::snprintf(s + off, max_disp_num, "+0x%llX", displacement);
-                    _STL_VERIFY(ret > 0, "formatting error");
+                    if (ret <= 0) {
+                        std::abort(); // formatting error
+                    }
                     return off + ret;
                 });
             }
@@ -230,7 +223,9 @@ namespace {
 
                 off = string_fill(fill, off + max_line_num, str, [line, off](char* s, size_t) {
                     const int ret = std::snprintf(s + off, max_line_num, "(%u): ", line);
-                    _STL_VERIFY(ret > 0, "formatting error");
+                    if (ret <= 0) {
+                        std::abort(); // formatting error
+                    }
                     return off + ret;
                 });
             }
@@ -331,7 +326,9 @@ void __stdcall __std_stacktrace_to_string(const void* const* const _Addresses, c
 
         off = string_fill(_Fill, off + max_entry_num, _Str, [off, i](char* s, size_t) {
             const int ret = std::snprintf(s + off, max_entry_num, "%u> ", static_cast<unsigned int>(i));
-            _STL_VERIFY(ret > 0, "formatting error");
+            if (ret <= 0) {
+                std::abort(); // formatting error
+            }
             return off + ret;
         });
 
