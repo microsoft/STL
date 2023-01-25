@@ -166,11 +166,11 @@ constexpr bool validate_iterators_sentinels(
 
         assert(itr[2] == transformed_elements[2]);
         {
-            constexpr bool is_random_access_noexcept = noexcept(apply(
-                []<class... IteratorTypes>(const IteratorTypes&... itrs) noexcept(
-                    noexcept(invoke(*declval<const ranges::_Movable_box<TransformType>&>(),
-                        itrs[static_cast<iter_difference_t<IteratorTypes>>(2)]...))) -> decltype(auto) { return true; },
-                declval<const ZipIteratorTupleType&>()));
+            constexpr bool is_random_access_noexcept =
+                noexcept(apply([]<class... IteratorTypes>(const IteratorTypes&... itrs) noexcept(
+                                   noexcept(invoke(*declval<const ranges::_Movable_box<TransformType>&>(),
+                                       itrs[static_cast<iter_difference_t<IteratorTypes>>(2)]...))) { return true; },
+                    declval<const ZipIteratorTupleType&>()));
             STATIC_ASSERT(noexcept(itr[2]) == is_random_access_noexcept);
         }
 
