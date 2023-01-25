@@ -1530,8 +1530,7 @@ public:
                 _STD invoke(_STD forward<_Fn>(_Func));
                 return expected<_Uty, _Err>();
             } else {
-                return expected<_Uty, _Err>(
-                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
+                return expected<_Uty, _Err>(_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
             }
         } else {
             return expected<_Uty, _Err>(unexpect, this->_Unexpected);
@@ -1548,8 +1547,7 @@ public:
                 _STD invoke(_STD forward<_Fn>(_Func));
                 return expected<_Uty, _Err>();
             } else {
-                return expected<_Uty, _Err>(
-                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
+                return expected<_Uty, _Err>(_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
             }
         } else {
             return expected<_Uty, _Err>(unexpect, this->_Unexpected);
@@ -1567,8 +1565,7 @@ public:
                 _STD invoke(_STD forward<_Fn>(_Func));
                 return expected<_Uty, _Err>();
             } else {
-                return expected<_Uty, _Err>(
-                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
+                return expected<_Uty, _Err>(_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
             }
         } else {
             return expected<_Uty, _Err>(unexpect, _STD move(this->_Unexpected));
@@ -1585,8 +1582,7 @@ public:
                 _STD invoke(_STD forward<_Fn>(_Func));
                 return expected<_Uty, _Err>();
             } else {
-                return expected<_Uty, _Err>(
-                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
+                return expected<_Uty, _Err>(_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
             }
         } else {
             return expected<_Uty, _Err>(unexpect, _STD move(this->_Unexpected));
