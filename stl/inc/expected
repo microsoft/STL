@@ -160,6 +160,10 @@ _EXPORT_STD struct unexpect_t {
 
 _EXPORT_STD inline constexpr unexpect_t unexpect{};
 
+struct _Construct_expected_from_invoke_result_tag {
+    explicit _Construct_expected_from_invoke_result_tag() = default;
+};
+
 _EXPORT_STD template <class _Ty, class _Err>
 class expected {
     static_assert(!is_reference_v<_Ty>, "T must not be a reference type. (N4910 [expected.object.general]/2)");
@@ -685,6 +689,303 @@ public:
         }
     }
 
+    template <class _Uty = _Err>
+    _NODISCARD constexpr _Err error_or(_Uty&& _Other) const& noexcept(
+        is_nothrow_copy_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) { // strengthened
+        static_assert(
+            is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. (N4928 [expected.object.obs]/20)");
+        static_assert(
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<U, E> must be true. (N4928 [expected.object.obs]/20)");
+
+        if (_Has_value) {
+            return _STD forward<_Uty>(_Other);
+        } else {
+            return _Unexpected;
+        }
+    }
+
+    template <class _Uty = _Err>
+    _NODISCARD constexpr _Err error_or(_Uty&& _Other) && noexcept(
+        is_nothrow_move_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) { // strengthened
+        static_assert(
+            is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true. (N4928 [expected.object.obs]/22)");
+        static_assert(
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<U, E> must be true. (N4928 [expected.object.obs]/22)");
+
+        if (_Has_value) {
+            return _STD forward<_Uty>(_Other);
+        } else {
+            return _STD move(_Unexpected);
+        }
+    }
+
+    // [expected.object.monadic]
+
+    template <class _Fn>
+        requires is_copy_constructible_v<_Err>
+    constexpr auto and_then(_Fn&& _Func) & {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Ty&>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/3.");
+
+        if (this->_Has_value) {
+            return _STD invoke(_STD forward<_Fn>(_Func), this->_Value);
+        } else {
+            return _Uty(unexpect, this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+        requires is_copy_constructible_v<_Err>
+    constexpr auto and_then(_Fn&& _Func) const& {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Ty&>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/3.");
+
+        if (this->_Has_value) {
+            return _STD invoke(_STD forward<_Fn>(_Func), this->_Value);
+        } else {
+            return _Uty(unexpect, this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Err>
+    constexpr auto and_then(_Fn&& _Func) && {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Ty&&>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/7.");
+
+        if (this->_Has_value) {
+            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Value));
+        } else {
+            return _Uty(unexpect, _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Err>
+    constexpr auto and_then(_Fn&& _Func) const&& {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Ty&&>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of optional "
+            "N4928 [expected.object.monadic]/7.");
+
+        if (this->_Has_value) {
+            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Value));
+        } else {
+            return _Uty(unexpect, _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+        requires is_copy_constructible_v<_Ty>
+    constexpr auto or_else(_Fn&& _Func) & {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Err&>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/11.");
+        static_assert(is_same_v<typename _Uty::value_type, _Ty>,
+            "expected<T,E>::or_else(F) requires the value type of the return type of F to be T"
+            "N4928 [expected.object.monadic]/11.");
+
+        if (this->_Has_value) {
+            return _Uty(in_place, this->_Value);
+        } else {
+            return _STD invoke(_STD forward<_Fn>(_Func), this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+        requires is_copy_constructible_v<_Ty>
+    constexpr auto or_else(_Fn&& _Func) const& {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Err&>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/11.");
+        static_assert(is_same_v<typename _Uty::value_type, _Ty>,
+            "expected<T,E>::or_else(F) requires the value type of the return type of F to be T"
+            "N4928 [expected.object.monadic]/11.");
+
+        if (this->_Has_value) {
+            return _Uty(in_place, this->_Value);
+        } else {
+            return _STD invoke(_STD forward<_Fn>(_Func), this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Ty>
+    constexpr auto or_else(_Fn&& _Func) && {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Err&&>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/11.");
+        static_assert(is_same_v<typename _Uty::value_type, _Ty>,
+            "expected<T,E>::or_else(F) requires the value type of the return type of F to be T"
+            "N4928 [expected.object.monadic]/11.");
+
+        if (this->_Has_value) {
+            return _Uty(in_place, _STD move(this->_Value));
+        } else {
+            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Ty>
+    constexpr auto or_else(_Fn&& _Func) const&& {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Err&&>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/11.");
+        static_assert(is_same_v<typename _Uty::value_type, _Ty>,
+            "expected<T,E>::or_else(F) requires the value type of the return type of F to be T"
+            "N4928 [expected.object.monadic]/11.");
+
+        if (this->_Has_value) {
+            return _Uty(in_place, _STD move(this->_Value));
+        } else {
+            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Err>
+    constexpr auto transform(_Fn&& _Func) & {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, _Ty&>>;
+
+        if (this->_Has_value) {
+            if constexpr (is_void_v<_Uty>) {
+                _STD invoke(_STD forward<_Fn>(_Func), this->_Value);
+                return expected<_Uty, _Err>();
+            } else {
+                return expected<_Uty, _Err>(
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), this->_Value);
+            }
+        } else {
+            return expected<_Uty, _Err>(unexpect, this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+        requires is_copy_constructible_v<_Err>
+    constexpr auto transform(_Fn&& _Func) const& {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Ty&>>;
+
+        if (this->_Has_value) {
+            if constexpr (is_void_v<_Uty>) {
+                _STD invoke(_STD forward<_Fn>(_Func), this->_Value);
+                return expected<_Uty, _Err>();
+            } else {
+                return expected<_Uty, _Err>(
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), this->_Value);
+            }
+        } else {
+            return expected<_Uty, _Err>(unexpect, this->_Unexpected);
+        }
+    }
+
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Err>
+    constexpr auto transform(_Fn&& _Func) && {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, _Ty&&>>;
+
+        if (this->_Has_value) {
+            if constexpr (is_void_v<_Uty>) {
+                _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Value));
+                return expected<_Uty, _Err>();
+            } else {
+                return expected<_Uty, _Err>(
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _STD move(this->_Value));
+            }
+        } else {
+            return expected<_Uty, _Err>(unexpect, _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Err>
+    constexpr auto transform(_Fn&& _Func) const&& {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Ty&&>>;
+
+        if (this->_Has_value) {
+            if constexpr (is_void_v<_Uty>) {
+                _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Value));
+                return expected<_Uty, _Err>();
+            } else {
+                return expected<_Uty, _Err>(
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _STD move(this->_Value));
+            }
+        } else {
+            return expected<_Uty, _Err>(unexpect, _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+        requires is_copy_constructible_v<_Ty>
+    constexpr auto transform_error(_Fn&& _Func) & {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err&>>;
+
+        if (this->_Has_value) {
+            return expected<_Ty, _Uty>(in_place, this->_Value);
+        } else {
+            return expected<_Ty, _Uty>(
+                _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+        requires is_copy_constructible_v<_Ty>
+    constexpr auto transform_error(_Fn&& _Func) const& {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err&>>;
+
+        if (this->_Has_value) {
+            return expected<_Ty, _Uty>(in_place, this->_Value);
+        } else {
+            return expected<_Ty, _Uty>(
+                _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Ty>
+    constexpr auto transform_error(_Fn&& _Func) && {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err&&>>;
+
+        if (this->_Has_value) {
+            return expected<_Ty, _Uty>(in_place, _STD move(this->_Value));
+        } else {
+            return expected<_Ty, _Uty>(_Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func),
+                _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Ty>
+    constexpr auto transform_error(_Fn&& _Func) const&& {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err&&>>;
+
+        if (this->_Has_value) {
+            return expected<_Ty, _Uty>(in_place, _STD move(this->_Value));
+        } else {
+            return expected<_Ty, _Uty>(_Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func),
+                _STD move(this->_Unexpected));
+        }
+    }
+
     // [expected.object.eq]
 
     template <class _Uty, class _UErr>
@@ -722,6 +1023,24 @@ public:
     }
 
 private:
+    // These overloads force copy elision from the invoke call into _Value
+    template <class _Fn, class _Ux>
+    constexpr expected(_Construct_expected_from_invoke_result_tag, _Fn&& _Func, _Ux&& _Arg) noexcept(
+        is_nothrow_constructible_v<_Ty, invoke_result_t<_Fn, _Ux>>)
+        : _Value(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{true} {}
+
+    // For when transform is called on an expected<void,E>
+    template <class _Fn>
+    constexpr expected(_Construct_expected_from_invoke_result_tag, _Fn&& _Func) noexcept(
+        is_nothrow_constructible_v<_Ty, invoke_result_t<_Fn>>)
+        : _Value(_STD invoke(_STD forward<_Fn>(_Func))), _Has_value{true} {}
+
+    template <class _Fn, class _Ux>
+    constexpr expected(_Construct_expected_from_invoke_result_tag, unexpect_t, _Fn&& _Func, _Ux&& _Arg) noexcept(
+        is_nothrow_constructible_v<_Err, invoke_result_t<_Fn, _Ux>>)
+        : _Unexpected(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{false} {}
+
+
     [[noreturn]] void _Throw_bad_expected_access_lv() const {
         _THROW(bad_expected_access{_Unexpected});
     }
@@ -1033,6 +1352,295 @@ public:
         return _STD move(_Unexpected);
     }
 
+    template <class _Uty = _Err>
+    _NODISCARD constexpr _Err error_or(_Uty&& _Other) const& noexcept(
+        is_nothrow_copy_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) { // strengthened
+        static_assert(
+            is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. (N4928 [expected.object.obs]/20)");
+        static_assert(
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<U, E> must be true. (N4928 [expected.object.obs]/20)");
+
+        if (_Has_value) {
+            return _STD forward<_Uty>(_Other);
+        } else {
+            return _Unexpected;
+        }
+    }
+
+    template <class _Uty = _Err>
+    _NODISCARD constexpr _Err error_or(_Uty&& _Other) && noexcept(
+        is_nothrow_move_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) { // strengthened
+        static_assert(
+            is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true. (N4928 [expected.object.obs]/22)");
+        static_assert(
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<U, E> must be true. (N4928 [expected.object.obs]/22)");
+
+        if (_Has_value) {
+            return _STD forward<_Uty>(_Other);
+        } else {
+            return _STD move(_Unexpected);
+        }
+    }
+
+    // [expected.object.monadic]
+
+    template <class _Fn>
+        requires is_copy_constructible_v<_Err>
+    constexpr auto and_then(_Fn&& _Func) & {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<void,E>::and_then(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/3.");
+
+        if (this->_Has_value) {
+            return _STD invoke(_STD forward<_Fn>(_Func));
+        } else {
+            return _Uty(unexpect, this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+        requires is_copy_constructible_v<_Err>
+    constexpr auto and_then(_Fn&& _Func) const& {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<void,E>::and_then(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/3.");
+
+        if (this->_Has_value) {
+            return _STD invoke(_STD forward<_Fn>(_Func));
+        } else {
+            return _Uty(unexpect, this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Err>
+    constexpr auto and_then(_Fn&& _Func) && {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<void,E>::and_then(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/7.");
+
+        if (this->_Has_value) {
+            return _STD invoke(_STD forward<_Fn>(_Func));
+        } else {
+            return _Uty(unexpect, _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Err>
+    constexpr auto and_then(_Fn&& _Func) const&& {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<void,E>::and_then(F) requires the return type of F to be a specialization of optional "
+            "N4928 [expected.object.monadic]/7.");
+
+        if (this->_Has_value) {
+            return _STD invoke(_STD forward<_Fn>(_Func));
+        } else {
+            return _Uty(unexpect, _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+    constexpr auto or_else(_Fn&& _Func) & {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Err&>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<void,E>::or_else(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/11.");
+        static_assert(is_same_v<typename _Uty::value_type, _Ty>,
+            "expected<void,E>::or_else(F) requires the value type of the return type of F to be T"
+            "N4928 [expected.object.monadic]/11.");
+
+        if (this->_Has_value) {
+            return _Uty();
+        } else {
+            return _STD invoke(_STD forward<_Fn>(_Func), this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+    constexpr auto or_else(_Fn&& _Func) const& {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Err&>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<void,E>::or_else(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/11.");
+        static_assert(is_same_v<typename _Uty::value_type, _Ty>,
+            "expected<void,E>::or_else(F) requires the value type of the return type of F to be T"
+            "N4928 [expected.object.monadic]/11.");
+
+        if (this->_Has_value) {
+            return _Uty();
+        } else {
+            return _STD invoke(_STD forward<_Fn>(_Func), this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+    constexpr auto or_else(_Fn&& _Func) && {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Err&&>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<void,E>::or_else(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/11.");
+        static_assert(is_same_v<typename _Uty::value_type, _Ty>,
+            "expected<void,E>::or_else(F) requires the value type of the return type of F to be T"
+            "N4928 [expected.object.monadic]/11.");
+
+        if (this->_Has_value) {
+            return _Uty();
+        } else {
+            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+    constexpr auto or_else(_Fn&& _Func) const&& {
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Err&&>>;
+
+        static_assert(_Is_specialization_v<_Uty, expected>,
+            "expected<void,E>::or_else(F) requires the return type of F to be a specialization of expected "
+            "N4928 [expected.object.monadic]/11.");
+        static_assert(is_same_v<typename _Uty::value_type, _Ty>,
+            "expected<void,E>::or_else(F) requires the value type of the return type of F to be T"
+            "N4928 [expected.object.monadic]/11.");
+
+        if (this->_Has_value) {
+            return _Uty();
+        } else {
+            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Err>
+    constexpr auto transform(_Fn&& _Func) & {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
+
+        if (this->_Has_value) {
+            if constexpr (is_void_v<_Uty>) {
+                _STD invoke(_STD forward<_Fn>(_Func));
+                return expected<_Uty, _Err>();
+            } else {
+                return expected<_Uty, _Err>(
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
+            }
+        } else {
+            return expected<_Uty, _Err>(unexpect, this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+        requires is_copy_constructible_v<_Err>
+    constexpr auto transform(_Fn&& _Func) const& {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
+
+        if (this->_Has_value) {
+            if constexpr (is_void_v<_Uty>) {
+                _STD invoke(_STD forward<_Fn>(_Func));
+                return expected<_Uty, _Err>();
+            } else {
+                return expected<_Uty, _Err>(
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
+            }
+        } else {
+            return expected<_Uty, _Err>(unexpect, this->_Unexpected);
+        }
+    }
+
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Err>
+    constexpr auto transform(_Fn&& _Func) && {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn&>>;
+
+        if (this->_Has_value) {
+            if constexpr (is_void_v<_Uty>) {
+                _STD invoke(_STD forward<_Fn>(_Func));
+                return expected<_Uty, _Err>();
+            } else {
+                return expected<_Uty, _Err>(
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
+            }
+        } else {
+            return expected<_Uty, _Err>(unexpect, _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+        requires is_move_constructible_v<_Err>
+    constexpr auto transform(_Fn&& _Func) const&& {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
+
+        if (this->_Has_value) {
+            if constexpr (is_void_v<_Uty>) {
+                _STD invoke(_STD forward<_Fn>(_Func));
+                return expected<_Uty, _Err>();
+            } else {
+                return expected<_Uty, _Err>(
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
+            }
+        } else {
+            return expected<_Uty, _Err>(unexpect, _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+    constexpr auto transform_error(_Fn&& _Func) & {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err&>>;
+
+        if (this->_Has_value) {
+            return expected<_Ty, _Uty>();
+        } else {
+            return expected<_Ty, _Uty>(
+                _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+    constexpr auto transform_error(_Fn&& _Func) const& {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err&>>;
+
+        if (this->_Has_value) {
+            return expected<_Ty, _Uty>();
+        } else {
+            return expected<_Ty, _Uty>(
+                _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), this->_Unexpected);
+        }
+    }
+
+    template <class _Fn>
+    constexpr auto transform_error(_Fn&& _Func) && {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err&&>>;
+
+        if (this->_Has_value) {
+            return expected<_Ty, _Uty>();
+        } else {
+            return expected<_Ty, _Uty>(_Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func),
+                _STD move(this->_Unexpected));
+        }
+    }
+
+    template <class _Fn>
+    constexpr auto transform_error(_Fn&& _Func) const&& {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err&&>>;
+
+        if (this->_Has_value) {
+            return expected<_Ty, _Uty>();
+        } else {
+            return expected<_Ty, _Uty>(_Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func),
+                _STD move(this->_Unexpected));
+        }
+    }
+
     // [expected.void.eq]
     template <class _Uty, class _UErr>
         requires is_void_v<_Uty>
@@ -1056,6 +1664,11 @@ public:
     }
 
 private:
+    template <class _Fn, class _Ux>
+    constexpr expected(_Construct_expected_from_invoke_result_tag, unexpect_t, _Fn&& _Func, _Ux&& _Arg) noexcept(
+        is_nothrow_constructible_v<_Err, invoke_result_t<_Fn, _Ux>>)
+        : _Unexpected(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{false} {}
+
     [[noreturn]] void _Throw_bad_expected_access_lv() const {
         _THROW(bad_expected_access{_Unexpected});
     }
