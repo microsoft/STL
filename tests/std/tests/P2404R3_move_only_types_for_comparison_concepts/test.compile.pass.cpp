@@ -40,11 +40,11 @@ static_assert(totally_ordered_with<int, MoveOnly>);
 // clang-format off
 template <class T, class U>
     requires equality_comparable_with<T, U>
-bool attempted_equals(const T&, const U& u); // not defined
+bool attempted_equals(const T&, const U&); // not defined
 
 template <class T, class U>
     requires common_reference_with<const remove_reference_t<T>&, const remove_reference_t<U>&>
-bool attempted_equals(const T& t, const U& u); // not defined
+bool attempted_equals(const T&, const U&); // not defined
 // clang-format on
 
 template <class T>
