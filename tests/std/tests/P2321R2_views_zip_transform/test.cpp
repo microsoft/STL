@@ -425,9 +425,9 @@ constexpr bool test_one(
             // We don't want an empty results range, since we still need to do additional testing.
             assert(!is_empty);
 
-            // Validate view_interface::empty() and view_interface::operator bool
+            // Validate view_interface::empty() and view_interface::operator bool()
             //
-            // From here on out, we'll be re-using concepts which we already verified to reduce
+            // From here on out, we'll be reusing concepts which we already verified to reduce
             // redundancy.
             STATIC_ASSERT(CanMemberEmpty<ZipTransformType>
                           == (ranges::sized_range<ZipTransformType> || ranges::forward_range<ZipTransformType>) );
@@ -722,16 +722,16 @@ public:
 
         // Test three ranges with views::zip_transform with...
 
-        // all of their traits being the same,...
+        // all of their traits being the same, ...
         test_three_ranges<standard_range_type>();
 
-        // one range having a different category,...
+        // one range having a different category, ...
         test_three_ranges<differing_category_range_type>();
 
-        // one range having a different path for ranges::size(),...
+        // one range having a different path for ranges::size(), ...
         test_three_ranges<differing_size_member_range_type>();
 
-        // one range having a different commonality,...
+        // one range having a different commonality, ...
         test_three_ranges<differing_is_common_range_type>();
 
         // and one range having iterators and sentinels which model sized_sentinel_for
