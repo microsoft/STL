@@ -363,7 +363,7 @@ struct instantiator {
             Outer empty{span<Inner, 0>{}};
             test_one(empty, "*#"sv, views::empty<char>);
         }
-#ifdef __clang__ // TRANSITION, Clang sometimes mishandles iterator/sentinel types.
+#ifdef __clang__ // TRANSITION, LLVM-60293
         if constexpr (ranges::forward_range<Outer> || ranges::common_range<Outer>)
 #endif // __clang__
         { // Range-of-rvalue delimiter
