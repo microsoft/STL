@@ -862,7 +862,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Err>
+        requires is_copy_constructible_v<_Err>
     constexpr auto transform(_Fn&& _Func) & {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Ty&>>;
 
@@ -1521,7 +1521,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Err>
+        requires is_copy_constructible_v<_Err>
     constexpr auto transform(_Fn&& _Func) & {
         using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
