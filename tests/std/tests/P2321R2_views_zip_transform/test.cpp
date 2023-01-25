@@ -416,8 +416,8 @@ constexpr bool test_one(
                 same_as<expected_size_type> auto zip_transform_size = as_const(zipped_transformed_range).size();
 
                 assert(zip_transform_size == ranges::size(transformed_elements));
-                STATIC_ASSERT(
-                    noexcept(zipped_transformed_range.size()) == noexcept(declval<const InnerView&>().size()));
+                STATIC_ASSERT(noexcept(as_const(zipped_transformed_range).size())
+                              == noexcept(declval<const InnerView&>().size()));
             }
 
             const bool is_empty = ranges::empty(transformed_elements);
@@ -596,8 +596,8 @@ constexpr bool test_one(
                     as_const(zipped_transformed_range).end();
 
                 assert(*begin_itr == *ranges::begin(transformed_elements));
-                assert(static_cast<decltype(ranges::size(transformed_elements))>(
-                           ranges::distance(zipped_transformed_range.begin(), zipped_transformed_range.end()))
+                assert(static_cast<decltype(ranges::size(transformed_elements))>(ranges::distance(
+                           as_const(zipped_transformed_range).begin(), as_const(zipped_transformed_range).end()))
                        == ranges::size(transformed_elements));
                 STATIC_ASSERT(noexcept(as_const(zipped_transformed_range).begin())
                                   == noexcept(declval<const InnerView&>().begin())
