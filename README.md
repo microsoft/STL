@@ -416,28 +416,28 @@ for how _we_ use it.
 To run benchmarks, you'll need to first build the STL, then build the benchmarks:
 
 ```cmd
-cmake -B out\build\x64 -S . -G Ninja
-cmake --build out\build\x64
-cmake -B out\build\benchmark -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\build\x64
-cmake --build out\build\benchmark
+cmake -B out\x64 -S . -G Ninja
+cmake --build out\x64
+cmake -B out\bench -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\x64
+cmake --build out\bench
 ```
 
 You can then run your benchmark with:
 
 ```cmd
-out\build\benchmark\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
+out\bench\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
 ```
 
 And then you can copy this csv file into Excel, or another spreadsheet program. For example:
 
 ```cmd
-out\build\benchmarks\benchmark-std_copy --benchmark_out=benchmark-std_copy-results.csv --benchmark_out_format=csv
+out\bench\benchmark-std_copy --benchmark_out=benchmark-std_copy-results.csv --benchmark_out_format=csv
 ```
 
 If you want to see all the other flags you can pass, run:
 
 ```cmd
-out\build\benchmarks\benchmark-<benchmark-name> --help
+out\bench\benchmark-<benchmark-name> --help
 ```
 
 # Editing And Testing The Debugger Visualizer
