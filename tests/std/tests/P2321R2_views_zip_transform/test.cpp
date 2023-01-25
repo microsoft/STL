@@ -620,10 +620,9 @@ constexpr bool test_one(
 
 #pragma warning(pop)
 
-constexpr auto one_element_transform_closure = []<class ElementType>(const ElementType& a) { return a * 5; };
+constexpr auto one_element_transform_closure = [](const auto& a) { return a * 5; };
 
-constexpr auto three_element_transform_closure = []<class Type1, class Type2, class Type3>(const Type1& a,
-                                                     const Type2& b, const Type3& c) { return a * b + c; };
+constexpr auto three_element_transform_closure = [](const auto& a, const auto& b, const auto& c) { return a * b + c; };
 
 constexpr array test_element_array_one{0, 1, 2, 3, 4, 5, 6, 7};
 constexpr array test_element_array_two{5, 13, 6, -4, 12};
