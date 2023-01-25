@@ -947,7 +947,6 @@ public:
     }
 
     _NODISCARD_RAW_PTR_ALLOC _CONSTEXPR20 __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        static_assert(sizeof(value_type) > 0, "value_type must be complete before calling allocate.");
         return static_cast<_Ty*>(_Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
     }
 
