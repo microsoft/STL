@@ -105,13 +105,13 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
         static_assert(noexcept(rng.size())); // strengthened
 
         constexpr int amount   = 3;
-        const auto size        = ranges::distance(rng);
-        const auto take_amount = ranges::min(size, amount);
+        const auto dist        = ranges::distance(rng);
+        const auto take_amount = ranges::min(dist, amount);
 
         const same_as<R> auto take = rng | views::take(amount);
         assert(cmp_equal(take.size(), take_amount));
 
-        const auto drop_amount     = size - ranges::min(size, amount);
+        const auto drop_amount     = dist - ranges::min(dist, amount);
         const same_as<R> auto drop = rng | views::drop(amount);
         assert(cmp_equal(drop.size(), drop_amount));
     } else {
@@ -244,9 +244,9 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
 
     const same_as<ranges::sentinel_t<R>> auto last = rng.end();
     const bool is_empty                            = bound == 0;
-    assert(first == last == is_empty);
+    assert((first == last) == is_empty);
     static_assert(noexcept(first == last)); // strengthened
-    assert(first != last != is_empty);
+    assert((first != last) != is_empty);
     static_assert(noexcept(first != last)); // strengthened
     if constexpr (bounded) {
         assert(cmp_equal(last - first, rng.size()));
