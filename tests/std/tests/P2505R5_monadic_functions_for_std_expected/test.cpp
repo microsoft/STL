@@ -28,7 +28,7 @@ struct convertible {
 };
 
 struct Immovable {
-    constexpr Immovable(int x) : v(x) {}
+    constexpr Immovable(const int x) : v(x) {}
     Immovable(const Immovable&)            = delete;
     Immovable(Immovable&&)                 = delete;
     Immovable& operator=(const Immovable&) = delete;
@@ -51,8 +51,8 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
     assert(!unengaged.has_value());
     using Val = typename remove_cvref_t<Expected>::value_type;
 
-    auto succeed = [](auto...) { return expected<int, int>{33}; };
-    auto fail    = [](auto...) { return expected<int, int>(unexpect, 44); };
+    const auto succeed = [](auto...) { return expected<int, int>{33}; };
+    const auto fail    = [](auto...) { return expected<int, int>(unexpect, 44); };
 
     {
         decltype(auto) result = forward<Expected>(engaged).and_then(succeed);
@@ -90,9 +90,9 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
         }
     }
 
-    auto f       = [](auto...) { return 55; };
-    auto immov   = [](auto...) { return Immovable{88}; };
-    auto to_void = [](auto...) { return; };
+    const auto f       = [](auto...) { return 55; };
+    const auto immov   = [](auto...) { return Immovable{88}; };
+    const auto to_void = [](auto...) { return; };
 
     {
         decltype(auto) result = forward<Expected>(engaged).transform(f);
@@ -141,7 +141,7 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
     }
 
 
-    auto to_thingy = [](int i) { return Thingy{i}; };
+    const auto to_thingy = [](int i) { return Thingy{i}; };
 
     {
         decltype(auto) result = forward<Expected>(engaged).transform_error(to_thingy);
@@ -185,7 +185,7 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
         assert(result.error().v == 88);
     }
 
-    auto to_expected_thingy = [](auto...) {
+    const auto to_expected_thingy = [](auto...) {
         if constexpr (is_void_v<Val>) {
             return expected<void, int>{};
         } else {
