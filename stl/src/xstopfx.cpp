@@ -42,6 +42,7 @@ int _Stopfx(const char** ps, char** endptr) { // parse prefix of floating-point 
                 }
             }
         }
+
         if (endptr != nullptr) {
             *endptr = const_cast<char*>(s);
         }

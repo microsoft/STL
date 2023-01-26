@@ -3,16 +3,18 @@
 
 // _LSinh function
 
+#include <xutility>
+
 #include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
 // coefficients
-static const long double p[] = {0.0000000000000028486835L, 0.0000000000007646464279L, 0.0000000001605905091647L,
+static constexpr long double p[] = {0.0000000000000028486835L, 0.0000000000007646464279L, 0.0000000001605905091647L,
     0.0000000250521083436962L, 0.0000027557319224130455L, 0.0001984126984126956009L, 0.0083333333333333336073L,
     0.1666666666666666666564L, 1.0000000000000000000001L};
 
-static constexpr size_t NP = sizeof(p) / sizeof(p[0]) - 1;
+static constexpr size_t NP = std::size(p) - 1;
 
 _CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _LSinh(long double x, long double y) {
     // compute y * sinh(x), |y| <= 1
@@ -40,7 +42,7 @@ _CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _LSinh(long double x, long dou
         if (x < _LRteps._Long_double) {
             x *= y; // x tiny
         } else if (x < 1.0L) {
-            long double w = x * x;
+            const long double w = x * x;
 
             x += x * w * _LPoly(w, p, NP - 1);
             x *= y;

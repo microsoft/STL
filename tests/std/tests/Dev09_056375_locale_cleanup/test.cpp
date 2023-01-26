@@ -11,6 +11,9 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
+STATIC_ASSERT(noexcept(locale{} == locale{}));
+STATIC_ASSERT(noexcept(locale{} != locale{}));
+
 void test_dll() {
     puts("Calling dll");
 #ifdef _M_CEE

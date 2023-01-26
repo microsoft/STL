@@ -1119,6 +1119,7 @@ void test() {
 
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
     test_locale<wchar_t>();
+    test_locale<char>();
     assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
     test_locale<char>();
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING

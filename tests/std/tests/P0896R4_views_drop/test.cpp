@@ -71,11 +71,9 @@ struct mapped<ranges::iota_view<W, B>> {
     template <class>
     using apply = ranges::iota_view<W, B>;
 };
-// clang-format off
 template <class I, class S>
     requires random_access_iterator<I>
 struct mapped<ranges::subrange<I, S, ranges::subrange_kind::sized>> {
-    // clang-format on
     template <class>
     using apply = ranges::subrange<I, S, ranges::subrange_kind::sized>;
 };
@@ -87,9 +85,7 @@ template <ranges::viewable_range Rng>
 using pipeline_t = mapped_t<mapped_t<mapped_t<mapped_t<Rng>>>>;
 
 template <class Rng>
-concept CanViewDrop = requires(Rng&& r) {
-    views::drop(forward<Rng>(r), 42);
-};
+concept CanViewDrop = requires(Rng&& r) { views::drop(forward<Rng>(r), 42); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
@@ -219,7 +215,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate view_interface::empty and operator bool
-    STATIC_ASSERT(CanMemberEmpty<R> == forward_range<Rng>);
+    STATIC_ASSERT(CanMemberEmpty<R> == (sized_range<Rng> || forward_range<Rng>) );
     STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
     if constexpr (CanMemberEmpty<R>) {
         assert(r.empty() == is_empty);
@@ -338,6 +334,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         if constexpr (CanIndex<R>) {
             assert(r[0] == *r.begin());
         }
+
         if constexpr (CanIndex<const R>) {
             assert(as_const(r)[0] == *as_const(r).begin());
         }
@@ -513,6 +510,7 @@ int main() {
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
 
+#ifndef _M_CEE // TRANSITION, VSO-1666180
     {
         // Validate a view borrowed range
         constexpr auto v =
@@ -520,6 +518,7 @@ int main() {
         STATIC_ASSERT(test_one(v, only_four_ints));
         test_one(v, only_four_ints);
     }
+#endif // _M_CEE
 
     { // Validate that we can use something that is convertible to integral (GH-1957)
         constexpr span s{some_ints};

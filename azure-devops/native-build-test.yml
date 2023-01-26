@@ -9,6 +9,9 @@ parameters:
 - name: buildOutputLocationVar
   type: string
   default: buildOutputLocation
+- name: benchmarkBuildOutputLocationVar
+  type: string
+  default: benchmarkBuildOutputLocation
 - name: numShards
   type: number
   default: 8

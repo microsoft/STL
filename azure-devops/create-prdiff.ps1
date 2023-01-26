@@ -11,15 +11,19 @@ if ([string]::IsNullOrEmpty($DiffFile)) {
     $DiffFile = [System.IO.Path]::GetTempFileName()
 }
 
-Start-Process -FilePath 'git' -ArgumentList 'diff' `
+Start-Process -FilePath 'git' -ArgumentList 'diff', '--ignore-submodules' `
     -NoNewWindow -Wait `
     -RedirectStandardOutput $DiffFile
 if (0 -ne (Get-Item -LiteralPath $DiffFile).Length) {
     $message = @(
         '##vso[task.logissue type=error]The formatting of the files in the repo was not what we expected.'
         'Please access the diff from format.diff in the build artifacts'
-        '(you can download it by clicking the three dots at the right)'
-        'and apply it with `git apply`.'
+        'and apply it with `git apply`. To download the diff:'
+        '1. Click the failed Validation job,'
+        '2. Click "1 artifact produced",'
+        '3. Hover over format.diff,'
+        '4. Click the three dots that appear on the right,'
+        '5. Click "Download artifacts".'
         'Alternatively, you can run the `format` CMake target:'
         '    cmake --build <builddir> --target format'
         ''

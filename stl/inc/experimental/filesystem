@@ -27,7 +27,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #error The <experimental/filesystem> header providing std::experimental::filesystem is deprecated by Microsoft \
 and will be REMOVED. It is superseded by the C++17 <filesystem> header providing std::filesystem. \
-You can define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING to acknowledge that you have received this warning.
+You can define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING to suppress this error.
 #endif // _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
 #pragma warning(disable : 4365) // conversion from 'type_1' to 'type_2', signed/unsigned mismatch (/Wall)
@@ -89,7 +89,7 @@ enum class copy_options { // names for copy options
     _Unspecified_recursion_prevention_tag = 512
 };
 
-_BITMASK_OPS(copy_options)
+_BITMASK_OPS(_EMPTY_ARGUMENT, copy_options)
 
 enum class directory_options { // names for directory options
     none = 0,
@@ -121,7 +121,7 @@ enum class perms { // names for permissions
     resolve_symlinks = 0x40000
 };
 
-_BITMASK_OPS(perms)
+_BITMASK_OPS(_EMPTY_ARGUMENT, perms)
 
 class file_status { // stores file status
 public:
@@ -1670,7 +1670,7 @@ public:
         } else { // push down a subdirectory
             path _Newpath = _Mylist.front().second / _Mylist.front().first->path();
             ++_Mylist.front().first;
-            _Mylist.push_front(_Mypair(_Myiter(_Newpath), _Newpath));
+            _Mylist.emplace_front(_Myiter(_Newpath), _Newpath);
         }
         while (1 < _Mylist.size() && _Mylist.front().first == _Myiter()) {
             pop();

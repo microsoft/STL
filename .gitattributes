@@ -6,6 +6,7 @@
 
 # Ensure GitHub detects our C++ code as C++ code.
 /stl/inc/** linguist-language=C++
+/stl/modules/** linguist-language=C++
 /stl/src/** linguist-language=C++
 *.h linguist-language=C++
 

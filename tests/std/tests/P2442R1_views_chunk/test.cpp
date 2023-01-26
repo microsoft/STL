@@ -14,16 +14,14 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewChunk = requires(Rng&& r) {
-    views::chunk(forward<Rng>(r), 2);
-};
+concept CanViewChunk = requires(Rng&& r) { views::chunk(forward<Rng>(r), 2); };
 
 constexpr auto equal_ranges = [](auto&& left, auto&& right) { return ranges::equal(left, right); };
 
 template <ranges::input_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
-    using ranges::bidirectional_range, ranges::common_range, ranges::forward_range, ranges::random_access_range,
-        ranges::sized_range;
+    using ranges::bidirectional_range, ranges::common_range, ranges::forward_range, ranges::input_range,
+        ranges::random_access_range, ranges::sized_range;
     using ranges::chunk_view, ranges::begin, ranges::end, ranges::equal, ranges::iterator_t, ranges::sentinel_t,
         ranges::prev;
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
@@ -35,6 +33,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(forward_range<R> == forward_range<Rng>);
     STATIC_ASSERT(bidirectional_range<R> == bidirectional_range<Rng>);
     STATIC_ASSERT(random_access_range<R> == random_access_range<Rng>);
+
+    // Validate non-default-initializability
+    STATIC_ASSERT(!is_default_constructible_v<R>);
+
     // Validate borrowed_range
     STATIC_ASSERT(ranges::borrowed_range<R> == (ranges::borrowed_range<V> && forward_range<V>) );
 
@@ -59,6 +61,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         using RC                   = chunk_view<views::all_t<const remove_reference_t<Rng>&>>;
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
+        STATIC_ASSERT(!is_default_constructible_v<RC>);
+
         STATIC_ASSERT(same_as<decltype(views::chunk(as_const(rng), 2)), RC>);
         STATIC_ASSERT(noexcept(views::chunk(as_const(rng), 2)) == is_noexcept);
 
@@ -71,6 +75,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     if constexpr (CanViewChunk<remove_reference_t<Rng>>) {
         using RS                   = chunk_view<views::all_t<remove_reference_t<Rng>>>;
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
+
+        STATIC_ASSERT(!is_default_constructible_v<RS>);
 
         STATIC_ASSERT(same_as<decltype(views::chunk(move(rng), 2)), RS>);
         STATIC_ASSERT(noexcept(views::chunk(move(rng), 2)) == is_noexcept);
@@ -111,7 +117,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate view_interface::empty and operator bool
-    STATIC_ASSERT(CanMemberEmpty<R> == forward_range<V>);
+    STATIC_ASSERT(CanMemberEmpty<R> == (sized_range<V> || forward_range<V>) );
     STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
     if constexpr (CanMemberEmpty<R>) {
         assert(r.empty() == is_empty);
@@ -124,7 +130,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
-    STATIC_ASSERT(CanMemberEmpty<const R> == forward_range<const Rng>);
+    STATIC_ASSERT(
+        CanMemberEmpty<const R> == ((forward_range<Rng> && sized_range<const V>) || forward_range<const Rng>) );
     STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
     if constexpr (CanMemberEmpty<const R>) {
         assert(as_const(r).empty() == is_empty);
@@ -197,23 +204,28 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
-    STATIC_ASSERT(CanMemberEnd<const R> == forward_range<const V>);
+    STATIC_ASSERT(CanMemberEnd<const R> == input_range<const V>);
     if constexpr (CanMemberEnd<const R>) {
-        const same_as<sentinel_t<const R>> auto cs = as_const(r).end();
-        assert((r.begin() == cs) == is_empty);
-        STATIC_ASSERT(
-            common_range<R> == (common_range<const V> && (sized_range<const V> || !bidirectional_range<const V>) ));
-        if constexpr (common_range<const R> && bidirectional_range<V>) {
-            if (!is_empty) {
-                assert(equal(*prev(cs), *prev(end(expected))));
-            }
-
-            if constexpr (copy_constructible<V>) {
-                const auto r2 = r;
+        if constexpr (CanMemberBegin<const R>) {
+            const same_as<sentinel_t<const R>> auto cs = as_const(r).end();
+            assert((r.begin() == cs) == is_empty);
+            STATIC_ASSERT(common_range<const R>
+                          == (forward_range<const V> && common_range<const V>
+                              && (sized_range<const V> || !bidirectional_range<const V>) ));
+            if constexpr (common_range<const R> && bidirectional_range<V>) {
                 if (!is_empty) {
-                    assert(equal(*prev(r2.end()), *prev(end(expected))));
+                    assert(equal(*prev(cs), *prev(end(expected))));
+                }
+
+                if constexpr (copy_constructible<V>) {
+                    const auto r2 = r;
+                    if (!is_empty) {
+                        assert(equal(*prev(r2.end()), *prev(end(expected))));
+                    }
                 }
             }
+        } else {
+            STATIC_ASSERT(same_as<decltype(as_const(r).end()), default_sentinel_t>);
         }
     }
 
@@ -460,7 +472,8 @@ constexpr bool test_input(Rng&& rng, Expected&& expected) {
 
     auto val_ty = *outer_iter;
     if constexpr (sized_sentinel_for<sentinel_t<Rng>, iterator_t<Rng>>) {
-        assert(val_ty.size() == 2);
+        const same_as<_Make_unsigned_like_t<ranges::range_difference_t<V>>> auto s = val_ty.size(); // test LWG-3707
+        assert(s == 2);
     }
 
     auto inner_iter                            = val_ty.begin();

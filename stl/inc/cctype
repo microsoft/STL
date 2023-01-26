@@ -19,21 +19,21 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-using _CSTD isalnum;
-using _CSTD isalpha;
-using _CSTD iscntrl;
-using _CSTD isdigit;
-using _CSTD isgraph;
-using _CSTD islower;
-using _CSTD isprint;
-using _CSTD ispunct;
-using _CSTD isspace;
-using _CSTD isupper;
-using _CSTD isxdigit;
-using _CSTD tolower;
-using _CSTD toupper;
+_EXPORT_STD using _CSTD isalnum;
+_EXPORT_STD using _CSTD isalpha;
+_EXPORT_STD using _CSTD iscntrl;
+_EXPORT_STD using _CSTD isdigit;
+_EXPORT_STD using _CSTD isgraph;
+_EXPORT_STD using _CSTD islower;
+_EXPORT_STD using _CSTD isprint;
+_EXPORT_STD using _CSTD ispunct;
+_EXPORT_STD using _CSTD isspace;
+_EXPORT_STD using _CSTD isupper;
+_EXPORT_STD using _CSTD isxdigit;
+_EXPORT_STD using _CSTD tolower;
+_EXPORT_STD using _CSTD toupper;
 
-using _CSTD isblank;
+_EXPORT_STD using _CSTD isblank;
 _STD_END
 
 #pragma pop_macro("new")

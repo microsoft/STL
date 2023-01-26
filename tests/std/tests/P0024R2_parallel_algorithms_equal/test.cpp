@@ -68,7 +68,7 @@ void test_case_equal_parallel(const size_t testSize) {
             assert(!equal(par, defaults.begin(), defaults.end(), tmp.begin(), tmp.end()));
             b = {};
         }
-#else // ^^^ EXHAUSTIVE ^^^ // vvv !EXHAUSTIVE vvv
+#else // ^^^ EXHAUSTIVE / !EXHAUSTIVE vvv
         if (testSize != 0) {
             auto middle = tmp.begin();
             advance(middle, static_cast<ptrdiff_t>(testSize / 2));
@@ -80,7 +80,9 @@ void test_case_equal_parallel(const size_t testSize) {
 }
 
 int main() {
+#ifndef _M_CEE // TRANSITION, VSO-1659695
     parallel_test_case(test_case_equal_parallel<forward_list>);
     parallel_test_case(test_case_equal_parallel<list>);
     parallel_test_case(test_case_equal_parallel<vector>);
+#endif // _M_CEE
 }

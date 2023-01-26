@@ -274,9 +274,9 @@ constexpr bool test() {
 
     { // Test vector<bool>::reference
         static_assert(is_assignable_v<const vector<bool>::reference, bool>);
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1274387, VSO-1273296
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
         if (!is_constant_evaluated())
-#endif // defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0
+#endif // ^^^ workaround ^^^
         {
             vector<bool> vb{false};
             const vector<bool>::reference r = vb[0];

@@ -17,7 +17,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-struct once_flag { // opaque data structure for call_once()
+_EXPORT_STD struct once_flag { // opaque data structure for call_once()
     constexpr once_flag() noexcept : _Opaque(nullptr) {}
 
     once_flag(const once_flag&)            = delete;
@@ -30,7 +30,7 @@ struct once_flag { // opaque data structure for call_once()
 using _Execute_once_fp_t = int(__stdcall*)(void*, void*, void**);
 
 // Returns BOOL, nonzero to indicate success, zero for failure
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(
+extern "C++" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(
     once_flag& _Flag, _Execute_once_fp_t _Callback, void* _Pv) noexcept;
 
 template <class _Ty>

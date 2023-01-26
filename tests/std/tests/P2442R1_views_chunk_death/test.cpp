@@ -75,6 +75,24 @@ void test_inner_iterator_dereference_at_end() {
     (void) *it; // cannot dereference chunk_view end iterator
 }
 
+void test_fwd_iterator_advance_past_end() {
+    auto v  = chunk_view{span{some_ints}, 2};
+    auto it = v.begin();
+    it += 5; // cannot advance chunk_view iterator past end
+}
+
+void test_fwd_iterator_advance_past_end_with_integer_overflow() {
+    auto v  = chunk_view{span{some_ints}, 2};
+    auto it = v.begin();
+    it += (numeric_limits<ptrdiff_t>::max)() / 2; // cannot advance chunk_view iterator past end (integer overflow)
+}
+
+void test_fwd_iterator_advance_negative_min() {
+    auto v  = chunk_view{span{some_ints}, 2};
+    auto it = v.begin();
+    it -= (numeric_limits<ptrdiff_t>::min)(); // cannot advance chunk_view iterator past end (integer overflow)
+}
+
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
 
@@ -88,6 +106,9 @@ int main(int argc, char* argv[]) {
         test_inner_iterator_postincrement_past_end,
         test_outer_iterator_dereference_at_end,
         test_inner_iterator_dereference_at_end,
+        test_fwd_iterator_advance_past_end,
+        test_fwd_iterator_advance_past_end_with_integer_overflow,
+        test_fwd_iterator_advance_negative_min,
     });
 #else // ^^^ test everything / test only _CONTAINER_DEBUG_LEVEL cases vvv
     exec.add_death_tests({

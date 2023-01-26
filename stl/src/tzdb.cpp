@@ -200,6 +200,7 @@ namespace {
         const auto _Input_as_wchar = reinterpret_cast<const wchar_t*>(_Input);
         const auto _Count_result = __std_fs_convert_wide_to_narrow(_Code_page, _Input_as_wchar, _Input_len, nullptr, 0);
         if (_Count_result._Err != __std_win_error::_Success) {
+            SetLastError(static_cast<DWORD>(_Count_result._Err));
             _Err = __std_tzdb_error::_Win_error;
             return nullptr;
         }
@@ -214,6 +215,7 @@ namespace {
         const auto _Result =
             __std_fs_convert_wide_to_narrow(_Code_page, _Input_as_wchar, _Input_len, _Data.get(), _Count_result._Len);
         if (_Result._Err != __std_win_error::_Success) {
+            SetLastError(static_cast<DWORD>(_Result._Err));
             _Err = __std_tzdb_error::_Win_error;
             return nullptr;
         }
@@ -375,14 +377,16 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
 
     _Info->_Num_time_zones = static_cast<size_t>(_Num_time_zones);
     // value-init to ensure __std_tzdb_delete_time_zones() cleanup is valid
-    _Info->_Names = new (_STD nothrow) const char* [_Info->_Num_time_zones] {};
-    if (_Info->_Names == nullptr) {
+    if (const auto _Names = new (_STD nothrow) const char* [_Info->_Num_time_zones] {}; _Names) {
+        _Info->_Names = _Names;
+    } else {
         return nullptr;
     }
 
     // value-init to ensure __std_tzdb_delete_time_zones() cleanup is valid
-    _Info->_Links = new (_STD nothrow) const char* [_Info->_Num_time_zones] {};
-    if (_Info->_Links == nullptr) {
+    if (const auto _Links = new (_STD nothrow) const char* [_Info->_Num_time_zones] {}; _Links) {
+        _Info->_Links = _Links;
+    } else {
         return nullptr;
     }
 

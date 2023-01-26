@@ -14,9 +14,7 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewSlide = requires(Rng&& r) {
-    views::slide(forward<Rng>(r), 4);
-};
+concept CanViewSlide = requires(Rng&& r) { views::slide(forward<Rng>(r), 4); };
 
 constexpr auto equal_ranges = [](auto&& left, auto&& right) { return ranges::equal(left, right); };
 
@@ -38,6 +36,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(ranges::forward_range<R>);
     STATIC_ASSERT(bidirectional_range<R> == bidirectional_range<Rng>);
     STATIC_ASSERT(random_access_range<R> == random_access_range<Rng>);
+
+    // Validate non-default-initializability
+    STATIC_ASSERT(!is_default_constructible_v<R>);
 
     // Validate borrowed_range
     static_assert(ranges::borrowed_range<R> == ranges::borrowed_range<V>);
@@ -63,6 +64,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         using RC                   = slide_view<views::all_t<const remove_reference_t<Rng>&>>;
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
+        STATIC_ASSERT(!is_default_constructible_v<RC>);
+
         STATIC_ASSERT(same_as<decltype(views::slide(as_const(rng), 4)), RC>);
         STATIC_ASSERT(noexcept(views::slide(as_const(rng), 4)) == is_noexcept);
 
@@ -75,6 +78,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     if constexpr (CanViewSlide<remove_reference_t<Rng>>) {
         using RS                   = slide_view<views::all_t<remove_reference_t<Rng>>>;
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
+
+        STATIC_ASSERT(!is_default_constructible_v<RS>);
 
         STATIC_ASSERT(same_as<decltype(views::slide(move(rng), 4)), RS>);
         STATIC_ASSERT(noexcept(views::slide(move(rng), 4)) == is_noexcept);

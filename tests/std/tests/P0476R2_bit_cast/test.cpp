@@ -219,10 +219,14 @@ constexpr bool test_float() {
     if (!std::is_constant_evaluated()) {
         assert(std::signbit(std::bit_cast<float>(as_int)) == true);
     }
+
+#ifndef _M_CEE // TRANSITION, VSO-1666161
     // signaling nan
     as_int     = 0x7fc00001;
     float snan = std::bit_cast<float>(as_int);
     assert(as_int == std::bit_cast<unsigned int>(snan));
+#endif // _M_CEE
+
     as_int = std::bit_cast<unsigned int>(std::numeric_limits<float>::infinity());
     assert(as_int == 0x7f800000);
     assert(std::bit_cast<float>(as_int) == std::numeric_limits<float>::infinity());

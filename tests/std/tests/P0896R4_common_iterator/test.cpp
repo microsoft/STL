@@ -13,16 +13,16 @@ using P = pair<int, int>;
 
 template <class Iter>
 concept CanDifference = requires(Iter it) {
-    {it - it};
-};
+                            { it - it };
+                        };
 
 template <class Iter>
-concept HasProxy = !is_reference_v<iter_reference_t<Iter>>;
+concept HasProxy = (!is_reference_v<iter_reference_t<Iter>>);
 
 template <class Iter>
 concept CanArrow = requires(const Iter& i) {
-    {i.operator->()};
-};
+                       { i.operator->() };
+                   };
 
 struct instantiator {
     template <input_or_output_iterator Iter>
@@ -78,25 +78,22 @@ struct instantiator {
                 assert(*iter == P(0, 1));
                 assert(iter->first == 0);
                 assert(iter->second == 1);
+
+                using ArrowRetType = decltype(iter.operator->());
                 if constexpr (HasProxy<Iter>) {
                     // We return a proxy class here
-                    static_assert(is_class_v<decltype(iter.operator->())>);
+                    static_assert(is_class_v<ArrowRetType>);
                 } else {
                     // Either a pointer or the wrapped iterator
-                    static_assert(!is_class_v<decltype(iter.operator->())>);
+                    static_assert(is_pointer_v<ArrowRetType> || is_same_v<Iter, ArrowRetType>);
                 }
 
                 const Cit constIter{Iter{input}};
                 assert(*constIter == P(0, 1));
                 assert(constIter->first == 0);
                 assert(constIter->second == 1);
-                if constexpr (HasProxy<Iter>) {
-                    // We return a proxy class here
-                    static_assert(is_class_v<decltype(constIter.operator->())>);
-                } else {
-                    // Either a pointer or the wrapped iterator
-                    static_assert(!is_class_v<decltype(constIter.operator->())>);
-                }
+
+                static_assert(is_same_v<decltype(constIter.operator->()), ArrowRetType>);
             }
 
             { // [common.iter.nav]
@@ -184,7 +181,7 @@ constexpr bool test_operator_arrow() {
     assert(*pointerIter == P(0, 1));
     assert(pointerIter->first == 0);
     assert(pointerIter->second == 1);
-    static_assert(is_same_v<decltype(pointerIter.operator->()), P* const&>);
+    static_assert(is_same_v<decltype(pointerIter.operator->()), P*>);
 
     using countedTest = common_iterator<counted_iterator<P*>, default_sentinel_t>;
     countedTest countedIter{counted_iterator{input, 3}};
@@ -192,7 +189,7 @@ constexpr bool test_operator_arrow() {
     assert(*countedIter == P(0, 1));
     assert(countedIter->first == 0);
     assert(countedIter->second == 1);
-    static_assert(is_same_v<decltype(countedIter.operator->()), counted_iterator<P*> const&>);
+    static_assert(is_same_v<decltype(countedIter.operator->()), counted_iterator<P*>>);
 
     return true;
 }

@@ -58,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4910][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N4928][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -122,7 +122,7 @@ reproducing the bug.
 
 * You should be reasonably confident that you're looking at an actual implementation bug, instead of undefined behavior
 or surprising-yet-Standard behavior. Comparing against other implementations can help (but remember that implementations
-can differ while conforming to the Standard); try Godbolt's [Compiler Explorer][]. If you still aren't
+can differ while conforming to the Standard); try [Compiler Explorer][]. If you still aren't
 sure, ask the nearest C++ expert.
 
 * You should prepare a self-contained command-line test case, ideally as small as possible. We need a source file, a
@@ -141,11 +141,11 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.3 Preview 3 or later.
+1. Install Visual Studio 2022 17.5 Preview 3 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.23 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.25 or later, and [Ninja][] 1.11.0 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
@@ -157,11 +157,11 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.3 Preview 3 or later.
+1. Install Visual Studio 2022 17.5 Preview 3 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.23 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.25 or later, and [Ninja][] 1.11.0 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open a command prompt.
@@ -198,19 +198,19 @@ ensures that other components wanting to be a "guest in your process", like prin
 export surface of the STL they were built with. Otherwise, the "`msvcp140.dll`" you deployed in the same directory as
 your .exe would "win" over the versions in System32.
 
-## Complete Example Using x64 DLL Flavor
-
 The compiler looks for include directories according to the `INCLUDE` environment variable, and the linker looks for
 import library directories according to the `LIB` environment variable, and the Windows loader will (eventually) look
-for DLL dependencies according to directories in the `PATH` environment variable. From an
-"x64 Native Tools Command Prompt for VS 2022 Preview":
+for DLL dependencies according to directories in the `PATH` environment variable.
+The build generates a batch script named `set_environment.bat` in the output directory. If you run this script in a VS
+Developer Command Prompt, it will insert the proper directories into the `INCLUDE`, `LIB`, and `PATH` environment
+variables to ensure that the built headers and libraries are used.
+
+## Complete Example Using x64 DLL Flavor
+
+From an "x64 Native Tools Command Prompt for VS 2022 Preview":
 
 ```
-C:\Users\username\Desktop>set INCLUDE=C:\Dev\STL\out\build\x64\out\inc;%INCLUDE%
-
-C:\Users\username\Desktop>set LIB=C:\Dev\STL\out\build\x64\out\lib\amd64;%LIB%
-
-C:\Users\username\Desktop>set PATH=C:\Dev\STL\out\build\x64\out\bin\amd64;%PATH%
+C:\Users\username\Desktop>C:\Dev\STL\out\build\x64\set_environment.bat
 
 C:\Users\username\Desktop>type example.cpp
 #include <iostream>
@@ -225,7 +225,7 @@ example.cpp
 C:\Users\username\Desktop>.\example.exe
 Hello STL OSS world!
 
-C:\Users\username\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
+C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 
@@ -413,17 +413,19 @@ You may also modify an existing benchmark file. We use Google's [Benchmark][gben
 so you may find [their documentation][gbenchmark:docs] helpful, and you can also read the existing code
 for how _we_ use it.
 
-To run benchmarks, you'll need to configure the STL with the `-DSTL_BUILD_BENCHMARKING=ON` option:
+To run benchmarks, you'll need to first build the STL, then build the benchmarks:
 
 ```cmd
-cmake -B out\bench -S . -G Ninja -DSTL_BUILD_BENCHMARKING=ON
-cmake --build out\bench
+cmake -B out\x64 -S . -G Ninja
+cmake --build out\x64
+cmake -B out\benchmark -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\x64
+cmake --build out\benchmark
 ```
 
 You can then run your benchmark with:
 
 ```cmd
-out\bench\benchmarks\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
+out\benchmark\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
 ```
 
 And then you can copy this csv file into Excel, or another spreadsheet program. For example:
@@ -530,7 +532,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4910]: https://wg21.link/n4910
+[N4928]: https://wg21.link/n4928
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main

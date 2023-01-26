@@ -5,5 +5,9 @@
 // REQUIRES: c++11
 // REQUIRES: c++11 || c++14
 // REQUIRES: c++11 || c++14 || c++17 || c++20
+// REQUIRES: has-unix-headers
 // REQUIRES: stdlib=libc++
 // UNSUPPORTED: c++14, c++17, c++2a
+// UNSUPPORTED: msvc
+// UNSUPPORTED: msvc, target={{.+}}-windows-gnu
+// UNSUPPORTED: windows

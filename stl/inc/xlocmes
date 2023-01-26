@@ -18,13 +18,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-struct messages_base : locale::facet { // base class for messages
+_EXPORT_STD struct messages_base : locale::facet { // base class for messages
     using catalog = int;
 
     explicit messages_base(size_t _Refs = 0) : locale::facet(_Refs) {}
 };
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 class messages : public messages_base { // facet for obtaining messages from a catalog
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
@@ -60,7 +60,7 @@ public:
     static size_t _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new messages<_Elem>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new messages<_Elem>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_MESSAGES;
@@ -101,7 +101,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id messages<_Elem>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 class messages_byname : public messages<_Elem> { // messages for named locale
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);

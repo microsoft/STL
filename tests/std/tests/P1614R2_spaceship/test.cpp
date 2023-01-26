@@ -43,9 +43,7 @@
 #include <vector>
 
 template <class T, class U>
-concept HasSpaceshipWith = requires {
-    std::declval<T>() <=> std::declval<U>();
-};
+concept HasSpaceshipWith = requires { std::declval<T>() <=> std::declval<U>(); };
 
 using PartiallyOrdered = double;
 
@@ -292,6 +290,11 @@ constexpr bool tuple_like_test() {
     return true;
 }
 
+template <class T>
+struct derived_optional : std::optional<T> {
+    friend bool operator==(const derived_optional&, const derived_optional&) = default;
+};
+
 template <auto SmallVal, decltype(SmallVal) EqualVal, decltype(EqualVal) LargeVal>
 constexpr bool optional_test() {
     using ReturnType = std::compare_three_way_result_t<decltype(SmallVal)>;
@@ -312,8 +315,13 @@ constexpr bool optional_test() {
     }
     {
         constexpr std::optional o1(SmallVal);
+        constexpr derived_optional<decltype(SmallVal)> derived1{std::optional(SmallVal)};
+        constexpr derived_optional<decltype(SmallVal)> derived2{std::optional(LargeVal)};
+
+        static_assert(!std::three_way_comparable<derived_optional<decltype(SmallVal)>>);
 
         assert(spaceship_test<ReturnType>(o1, EqualVal, LargeVal));
+        assert(spaceship_test<ReturnType>(o1, derived1, derived2));
     }
     {
         constexpr std::optional<decltype(SmallVal)> o1(std::nullopt);

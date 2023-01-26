@@ -86,7 +86,7 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
     return _State;
 }
 
-struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_get
+_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_get
     enum dateorder { // constants for different orders of date components
         no_order,
         dmy,
@@ -100,7 +100,7 @@ struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_g
     __CLR_OR_THIS_CALL ~time_base() noexcept override {}
 };
 
-template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
+_EXPORT_STD extern "C++" template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_get : public time_base { // facet for converting text to encoded times
 private:
     friend _Tidy_guard<time_get>;
@@ -215,7 +215,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new time_get<_Elem, _InIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new time_get<_Elem, _InIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_TIME;
@@ -633,7 +633,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_get<_Elem, _InIt>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
+_EXPORT_STD template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_get_byname : public time_get<_Elem, _InIt> { // time_get for named locale
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
@@ -648,7 +648,7 @@ protected:
     __CLR_OR_THIS_CALL ~time_get_byname() noexcept override {}
 };
 
-template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
+_EXPORT_STD extern "C++" template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put : public locale::facet { // facet for converting encoded times to text
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
@@ -711,7 +711,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new time_put<_Elem, _OutIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new time_put<_Elem, _OutIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_TIME;
@@ -772,9 +772,8 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_put<_Elem, _OutIt>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-template <class _OutIt>
-class _CRTIMP2_PURE_IMPORT time_put<wchar_t, _OutIt>
-    : public locale::facet { // facet for converting encoded times to wchar_t text
+extern "C++" template <class _OutIt>
+class time_put<wchar_t, _OutIt> : public locale::facet { // facet for converting encoded times to wchar_t text
 public:
     using _Elem     = wchar_t;
     using char_type = _Elem;
@@ -836,7 +835,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new time_put<_Elem, _OutIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new time_put<_Elem, _OutIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_TIME;
@@ -905,8 +904,8 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_put<wchar_t, _OutIt>::id;
 
 #if defined(_CRTBLD)
 
-template <class _OutIt>
-class _CRTIMP2_PURE_IMPORT time_put<unsigned short, _OutIt>
+extern "C++" template <class _OutIt>
+class time_put<unsigned short, _OutIt>
     : public locale::facet { // facet for converting encoded times to unsigned short text
 public:
     using _Elem     = unsigned short;
@@ -968,7 +967,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new time_put<_Elem, _OutIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new time_put<_Elem, _OutIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_TIME;
@@ -1036,7 +1035,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_put<unsigned short, _OutIt>::id;
 #endif // __clang__
 #endif // defined(_CRTBLD)
 
-template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
+_EXPORT_STD template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put_byname : public time_put<_Elem, _OutIt> { // time_put for named locale
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);

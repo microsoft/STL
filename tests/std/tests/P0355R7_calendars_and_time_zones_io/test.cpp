@@ -5,9 +5,9 @@
 #include <cassert>
 #include <charconv>
 #include <chrono>
-#include <climits>
 #include <cstdint>
 #include <iterator>
+#include <limits>
 #include <locale>
 #include <ratio>
 #include <sstream>
@@ -20,6 +20,8 @@
 
 using namespace std;
 using namespace std::chrono;
+
+constexpr auto intmax_max = numeric_limits<intmax_t>::max();
 
 template <class CharT, class Rep, class Period>
 bool test_duration_basic_out(const duration<Rep, Period>& d, const CharT* expected) {
@@ -65,7 +67,7 @@ bool test_duration_locale_out() {
 }
 
 void test_duration_output() {
-    using LongRatio = ratio<INTMAX_MAX - 1, INTMAX_MAX>;
+    using LongRatio = ratio<intmax_max - 1, intmax_max>;
     assert(test_duration_basic_out(duration<int, atto>{1}, "1as"));
     assert(test_duration_basic_out(duration<int, femto>{2}, "2fs"));
     assert(test_duration_basic_out(duration<int, pico>{3}, "3ps"));

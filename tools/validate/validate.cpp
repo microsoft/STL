@@ -19,9 +19,7 @@ constexpr size_t max_line_length = 120;
 
 class BinaryFile {
 public:
-    explicit BinaryFile(const filesystem::path& filepath) {
-        m_file = _wfopen(filepath.c_str(), L"rb");
-
+    explicit BinaryFile(const filesystem::path& filepath) : m_file(_wfopen(filepath.c_str(), L"rb")) {
         if (!m_file) {
             fwprintf(stderr, L"Validation failed: %ls couldn't be opened.\n", filepath.c_str());
         }
@@ -191,9 +189,9 @@ void scan_file(
             L".py"sv,
             L".yml"sv,
         };
-        static_assert(is_sorted(checked_extensions.begin(), checked_extensions.end()));
+        static_assert(ranges::is_sorted(checked_extensions));
 
-        if (binary_search(checked_extensions.begin(), checked_extensions.end(), filepath.extension().wstring())) {
+        if (ranges::binary_search(checked_extensions, filepath.extension().wstring())) {
             validation_failure(any_errors, filepath, L"file contains %zu lines with more than %zu columns.\n",
                 overlength_lines, max_line_length);
         }
@@ -229,10 +227,10 @@ int main() {
         L".gitmodules"sv,
     };
 
-    static_assert(is_sorted(skipped_directories.begin(), skipped_directories.end()));
-    static_assert(is_sorted(skipped_extensions.begin(), skipped_extensions.end()));
-    static_assert(is_sorted(bad_extensions.begin(), bad_extensions.end()));
-    static_assert(is_sorted(tabby_filenames.begin(), tabby_filenames.end()));
+    static_assert(ranges::is_sorted(skipped_directories));
+    static_assert(ranges::is_sorted(skipped_extensions));
+    static_assert(ranges::is_sorted(bad_extensions));
+    static_assert(ranges::is_sorted(tabby_filenames));
 
     vector<unsigned char> buffer; // reused for performance
     bool any_errors = false;
@@ -244,7 +242,7 @@ int main() {
 
         if (!rdi->is_regular_file()) {
             if (rdi->is_directory()) {
-                if (binary_search(skipped_directories.begin(), skipped_directories.end(), filename)) {
+                if (ranges::binary_search(skipped_directories, filename)) {
                     rdi.disable_recursion_pending();
                 }
             }
@@ -266,18 +264,17 @@ int main() {
 
         const wstring extension = filepath.extension().wstring();
 
-        if (binary_search(skipped_extensions.begin(), skipped_extensions.end(), extension)) {
+        if (ranges::binary_search(skipped_extensions, extension)) {
             continue;
         }
 
-        if (binary_search(bad_extensions.begin(), bad_extensions.end(), extension)) {
+        if (ranges::binary_search(bad_extensions, extension)) {
             validation_failure(any_errors, filepath, L"file should not be checked in.");
             continue;
         }
 
-        const TabPolicy tab_policy = binary_search(tabby_filenames.begin(), tabby_filenames.end(), filename)
-                                       ? TabPolicy::Allowed
-                                       : TabPolicy::Forbidden;
+        const TabPolicy tab_policy =
+            ranges::binary_search(tabby_filenames, filename) ? TabPolicy::Allowed : TabPolicy::Forbidden;
 
         scan_file(any_errors, filepath, tab_policy, buffer);
     }

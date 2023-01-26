@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# https://releases.llvm.org/14.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+# https://releases.llvm.org/15.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 ---
 # Language:        Cpp
@@ -12,12 +12,32 @@ AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
 # AlignArrayOfStructures: None
 # TRANSITION, LLVM-51935 (try using AlignArrayOfStructures after this crash is fixed)
-# AlignConsecutiveMacros: None
-AlignConsecutiveMacros: Consecutive
-# AlignConsecutiveAssignments: None
+# AlignConsecutiveAssignments:
+#   Enabled:         false
+#   AcrossEmptyLines: false
+#   AcrossComments:  false
+#   AlignCompound:   false
+#   PadOperators:    true
 AlignConsecutiveAssignments: Consecutive
-# AlignConsecutiveBitFields: None
-# AlignConsecutiveDeclarations: None
+# AlignConsecutiveBitFields:
+#   Enabled:         false
+#   AcrossEmptyLines: false
+#   AcrossComments:  false
+#   AlignCompound:   false
+#   PadOperators:    false
+# AlignConsecutiveDeclarations:
+#   Enabled:         false
+#   AcrossEmptyLines: false
+#   AcrossComments:  false
+#   AlignCompound:   false
+#   PadOperators:    false
+# AlignConsecutiveMacros:
+#   Enabled:         false
+#   AcrossEmptyLines: false
+#   AcrossComments:  false
+#   AlignCompound:   false
+#   PadOperators:    false
+AlignConsecutiveMacros: Consecutive
 # AlignEscapedNewlines: Right
 AlignEscapedNewlines: Left
 # AlignOperands:   Align
@@ -64,7 +84,7 @@ AlwaysBreakTemplateDeclarations: Yes
 #   SplitEmptyNamespace: true
 # BreakBeforeBinaryOperators: None
 BreakBeforeBinaryOperators: NonAssignment
-# BreakBeforeConceptDeclarations: true
+# BreakBeforeConceptDeclarations: Always
 # BreakBeforeBraces: Attach
 # BreakBeforeInheritanceComma: false
 # BreakInheritanceList: BeforeColon
@@ -138,12 +158,13 @@ IndentCaseBlocks: true
 # IndentGotoLabels: true
 # IndentPPDirectives: None
 # IndentExternBlock: AfterExternBlock
-# IndentRequires:  false
-IndentRequires:  true
+# IndentRequiresClause: true
 # IndentWidth:     2
 IndentWidth:     4
 # IndentWrappedFunctionNames: false
 IndentWrappedFunctionNames: true
+# InsertBraces:    false
+InsertBraces:    true
 # InsertTrailingCommas: None
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
@@ -177,6 +198,7 @@ PointerAlignment: Left
 # ReferenceAlignment: Pointer
 # ReflowComments:  true
 # RemoveBracesLLVM: false
+# RequiresClausePosition: OwnLine
 # SeparateDefinitionBlocks: Leave
 # ShortNamespaceLines: 1
 # SortIncludes:    CaseSensitive
@@ -199,7 +221,12 @@ SpaceAfterCStyleCast: true
 #   AfterFunctionDeclarationName: false
 #   AfterIfMacros:   true
 #   AfterOverloadedOperator: false
+#   AfterRequiresInClause: false
+#   AfterRequiresInExpression: false
 #   BeforeNonEmptyParentheses: false
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterRequiresInClause: true
 # SpaceAroundPointerQualifiers: Default
 # SpaceBeforeRangeBasedForLoopColon: true
 # SpaceInEmptyBlock: false

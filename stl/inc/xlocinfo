@@ -60,13 +60,9 @@ _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
     _When_(_Max_multibyte != 0, _Out_) wchar_t*, const char*, size_t _Max_multibyte, mbstate_t*, const _Cvtvec*);
 #endif // _M_CEE_PURE
 
-_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _Stof(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long);
-_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Stod(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long);
-_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _Stold(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long);
-
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(const char*, const char*, const char*, const char*, const _Collvec*);
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(_Out_writes_(_End1 - _String1)
-                                                          _Post_readable_size_(return ) char* _String1,
+                                                          _Post_readable_size_(return) char* _String1,
     _In_z_ char* _End1, const char*, const char*, const _Collvec*);
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int, const _Ctypevec*);
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int, const _Ctypevec*);
@@ -74,7 +70,7 @@ _CRTIMP2_PURE _Success_(return != -1) int __CLRCALL_PURE_OR_CDECL
     _Wcrtomb(_Out_ char*, wchar_t, mbstate_t*, const _Cvtvec*);
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(
     const wchar_t*, const wchar_t*, const wchar_t*, const wchar_t*, const _Collvec*);
-_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(_End1 - _String1) _Post_readable_size_(return )
+_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(_End1 - _String1) _Post_readable_size_(return)
                                                           wchar_t* _String1,
     _In_z_ wchar_t* _End1, const wchar_t*, const wchar_t*, const _Collvec*);
 
@@ -106,16 +102,8 @@ _Success_(return > 0) _ACRTIMP size_t __cdecl _Wcsftime(
     _Out_writes_z_(_Maxsize) wchar_t*, _In_ size_t _Maxsize, _In_z_ const wchar_t*, _In_ const tm*, _In_opt_ void*);
 _END_EXTERN_C
 
-#ifdef _M_CEE_PURE
-[System::Runtime::InteropServices::DllImport(_CRT_MSVCP_CURRENT, EntryPoint = "_GetLocaleForCP",
-    CallingConvention = System::Runtime::InteropServices::CallingConvention::Cdecl)] extern "C" _locale_t
-    _GetLocaleForCP(unsigned int);
-#else // _M_CEE_PURE
-_MRTIMP2 _locale_t __cdecl _GetLocaleForCP(unsigned int);
-#endif // _M_CEE_PURE
-
 _STD_BEGIN
-class _CRTIMP2_PURE_IMPORT _Timevec { // smart pointer to information used by _Strftime
+extern "C++" class _CRTIMP2_PURE_IMPORT _Timevec { // smart pointer to information used by _Strftime
 public:
     explicit __CLR_OR_THIS_CALL _Timevec(void* _Ptr = nullptr) : _Timeptr(_Ptr) {}
 
@@ -145,7 +133,7 @@ private:
     void* _Timeptr; // pointer to time information
 };
 
-template <class _Elem>
+extern "C++" template <class _Elem>
 class _CRTIMP2_PURE_IMPORT _Yarn { // wrap a NTCTS
 public:
     __CLR_OR_THIS_CALL _Yarn() noexcept : _Myptr(nullptr), _Nul(0) {}
@@ -226,7 +214,7 @@ private:
     _Elem _Nul; // nul terminator for unallocated string
 };
 
-class _CRTIMP2_PURE_IMPORT _Locinfo { // summary of all stuff specific to a locale used by standard facets
+extern "C++" class _CRTIMP2_PURE_IMPORT _Locinfo { // summary of all stuff specific to a locale used by standard facets
 public:
     using _Collvec  = ::_Collvec;
     using _Ctypevec = ::_Ctypevec;
@@ -239,10 +227,9 @@ public:
     static _Locinfo& __CLRCALL_PURE_OR_CDECL _Locinfo_Addcats(_Locinfo*, int, const char*);
 
     __CLR_OR_THIS_CALL _Locinfo(const char* _Pch = "C")
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
         : _Lock(_LOCK_LOCALE)
-#endif // _M_CEE
-
+#endif // _M_CEE_PURE
     {
         if (_Pch) {
             _Locinfo_ctor(this, _Pch);
@@ -253,10 +240,9 @@ public:
     }
 
     __CLR_OR_THIS_CALL _Locinfo(int _Cat, const char* _Pch)
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
         : _Lock(_LOCK_LOCALE)
-#endif // _M_CEE
-
+#endif // _M_CEE_PURE
     {
         if (_Pch) {
             _Locinfo_ctor(this, _Cat, _Pch);
@@ -385,12 +371,11 @@ public:
     _Locinfo& operator=(const _Locinfo&) = delete;
 
 private:
-#ifdef _M_CEE
+#ifdef _M_CEE_PURE
     _EmptyLockit _Empty_lock; // to maintain same size
-
-#else // _M_CEE
+#else // _M_CEE_PURE
     _Lockit _Lock; // thread lock, because global locale is altered
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
     _Yarn<char> _Days; // weekday names
     _Yarn<char> _Months; // month names
@@ -439,14 +424,14 @@ size_t __CRTDECL _LStrxfrm(_Elem* _First1, _Elem* _Last1, const _Elem* _First2, 
 }
 
 template <>
-inline size_t __CRTDECL _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return ) char* _First1,
+inline size_t __CRTDECL _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) char* _First1,
     _In_z_ char* _Last1, const char* _First2, const char* _Last2,
     const _Locinfo::_Collvec* _Vector) { // perform locale-specific transform of chars [_First1, _Last1)
     return _Strxfrm(_First1, _Last1, _First2, _Last2, _Vector);
 }
 
 template <>
-inline size_t __CRTDECL _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return ) wchar_t* _First1,
+inline size_t __CRTDECL _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) wchar_t* _First1,
     _In_z_ wchar_t* _Last1, const wchar_t* _First2, const wchar_t* _Last2,
     const _Locinfo::_Collvec* _Vector) { // perform locale-specific transform of wchar_ts [_First1, _Last1)
     return _Wcsxfrm(_First1, _Last1, _First2, _Last2, _Vector);

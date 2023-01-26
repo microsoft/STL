@@ -52,9 +52,15 @@ _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 4;
 #endif // _WIN64
 #endif // _CRT_WINDOWS
 
-using _Mtx_t = struct _Mtx_internal_imp_t*;
-
-using _Cnd_t = struct _Cnd_internal_imp_t*;
+#ifdef _M_CEE // avoid warning LNK4248: unresolved typeref token for '_Mtx_internal_imp_t'; image may not run
+using _Mtx_t = void*;
+using _Cnd_t = void*;
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
+struct _Mtx_internal_imp_t;
+struct _Cnd_internal_imp_t;
+using _Mtx_t = _Mtx_internal_imp_t*;
+using _Cnd_t = _Cnd_internal_imp_t*;
+#endif // ^^^ !defined(_M_CEE) ^^^
 
 enum { _Thrd_success, _Thrd_nomem, _Thrd_timedout, _Thrd_busy, _Thrd_error };
 
@@ -123,8 +129,8 @@ enum { // constants for error codes
     _RESOURCE_UNAVAILABLE_TRY_AGAIN
 };
 
-[[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_C_error(int _Code);
-[[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_Cpp_error(int _Code);
+extern "C++" [[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_C_error(int _Code);
+extern "C++" [[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_Cpp_error(int _Code);
 
 inline int _Check_C_return(int _Res) { // throw exception on failure
     if (_Res != _Thrd_success) {

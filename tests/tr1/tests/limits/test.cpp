@@ -27,18 +27,20 @@ void test_main() { // test basic workings of limits definitions
          STD round_toward_infinity, STD round_toward_neg_infinity};
     int i, j, ok;
 
-    for (ok = 1, i = sizeof(fds) / sizeof(fds[0]); 0 < i;)
+    for (ok = 1, i = sizeof(fds) / sizeof(fds[0]); 0 < i;) {
         for (j = --i; 0 < j;) { // test an (i, j) pair
             int testno = i * 0x100 + j;
             ok         = CHECK0(ok, testno, fds[i] != fds[--j]);
         }
+    }
     CHECK_MSG("float_denorm_style values are distinct", ok);
 
-    for (ok = 1, i = sizeof(frs) / sizeof(frs[0]); 0 < i;)
+    for (ok = 1, i = sizeof(frs) / sizeof(frs[0]); 0 < i;) {
         for (j = --i; 0 < j;) { // test an (i, j) pair
             int testno = i * 0x100 + j;
             ok         = CHECK0(ok, testno, frs[i] != frs[--j]);
         }
+    }
     CHECK_MSG("float_round_style values are distinct", ok);
 
     { // check limits template

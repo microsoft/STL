@@ -28,9 +28,7 @@ using pipeline_t = ranges::drop_while_view<
     ranges::drop_while_view<ranges::drop_while_view<ranges::drop_while_view<V, Pred>, Pred>, Pred>, Pred>;
 
 template <class Rng>
-concept CanViewDropWhile = requires(Rng&& r) {
-    views::drop_while(forward<Rng>(r), is_less_than<3>);
-};
+concept CanViewDropWhile = requires(Rng&& r) { views::drop_while(forward<Rng>(r), is_less_than<3>); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {

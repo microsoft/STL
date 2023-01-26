@@ -27,9 +27,13 @@ _STD_BEGIN
 // size in pointers of std::function and std::any (roughly 3 pointers larger than std::string when building debug)
 _INLINE_VAR constexpr int _Small_object_num_ptrs = 6 + 16 / sizeof(void*);
 
-#if !_HAS_EXCEPTIONS
+_EXPORT_STD using ::type_info;
 
-class bad_cast : public exception { // base of all bad cast exceptions
+#if _HAS_EXCEPTIONS
+_EXPORT_STD class bad_cast;
+_EXPORT_STD class bad_typeid;
+#else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
+_EXPORT_STD class bad_cast : public exception { // base of all bad cast exceptions
 public:
     bad_cast(const char* _Message = "bad cast") noexcept : exception(_Message) {}
 
@@ -41,7 +45,7 @@ protected:
     }
 };
 
-class bad_typeid : public exception { // base of all bad typeid exceptions
+_EXPORT_STD class bad_typeid : public exception { // base of all bad typeid exceptions
 public:
     bad_typeid(const char* _Message = "bad typeid") noexcept : exception(_Message) {}
 

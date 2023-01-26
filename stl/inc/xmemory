@@ -91,7 +91,7 @@ struct _Default_allocate_traits {
 #endif // _HAS_CXX20
 #endif // __clang__
         {
-            return ::operator new (_Bytes, align_val_t{_Align});
+            return ::operator new(_Bytes, align_val_t{_Align});
         }
     }
 #endif // __cpp_aligned_new
@@ -119,7 +119,7 @@ _INLINE_VAR constexpr size_t _Non_user_size           = sizeof(void*) + _Big_all
 
 #ifdef _WIN64
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else // ^^^ _WIN64 / !_WIN64 vvv
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
 #endif // _WIN64
 
@@ -157,7 +157,7 @@ inline void _Adjust_manually_vector_aligned(void*& _Ptr, size_t& _Bytes) {
     // in range [_Min_back_shift, _Non_user_size]
 #ifdef _DEBUG
     constexpr uintptr_t _Min_back_shift = 2 * sizeof(void*);
-#else // ^^^ _DEBUG ^^^ // vvv !_DEBUG vvv
+#else // ^^^ _DEBUG / !_DEBUG vvv
     constexpr uintptr_t _Min_back_shift = sizeof(void*);
 #endif // _DEBUG
     const uintptr_t _Back_shift = reinterpret_cast<uintptr_t>(_Ptr) - _Ptr_container;
@@ -207,12 +207,12 @@ _CONSTEXPR20 void _Deallocate(void* _Ptr, const size_t _Bytes) noexcept {
             _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
         }
 #endif // defined(_M_IX86) || defined(_M_X64)
-        ::operator delete (_Ptr, _Bytes, align_val_t{_Passed_align});
+        ::operator delete(_Ptr, _Bytes, align_val_t{_Passed_align});
     }
 }
 
 #define _HAS_ALIGNED_NEW 1
-#else // ^^^ __cpp_aligned_new ^^^ / vvv !__cpp_aligned_new vvv
+#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
 #define _HAS_ALIGNED_NEW 0
 #endif // __cpp_aligned_new
 
@@ -300,7 +300,7 @@ _CONSTEXPR20 void _Destroy_in_place(_Ty& _Obj) noexcept {
 }
 
 #if _HAS_CXX17
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _CONSTEXPR20 void destroy_at(_Ty* const _Location) noexcept /* strengthened */ {
 #if _HAS_CXX20
     if constexpr (is_array_v<_Ty>) {
@@ -450,7 +450,7 @@ struct _Get_rebind_type<_Ty, _Other, void_t<typename _Ty::template rebind<_Other
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class allocator;
 
 template <class _Alloc, class = void>
@@ -486,9 +486,6 @@ _STL_RESTORE_DEPRECATED_WARNING
 template <class _Alloc, class _Ptr>
 using _Uses_default_destroy = disjunction<_Is_default_allocator<_Alloc>, _Has_no_alloc_destroy<_Alloc, _Ptr>>;
 
-template <class _Alloc, class _Ptr>
-using _Uses_default_destroy_t = typename _Uses_default_destroy<_Alloc, _Ptr>::type;
-
 template <class _Alloc, class _Size_type, class _Const_void_pointer, class = void>
 struct _Has_allocate_hint : false_type {};
 
@@ -514,7 +511,7 @@ template <class _Alloc>
 struct _Has_select_on_container_copy_construction<_Alloc,
     void_t<decltype(_STD declval<const _Alloc&>().select_on_container_copy_construction())>> : true_type {};
 
-template <class _Alloc>
+_EXPORT_STD template <class _Alloc>
 struct allocator_traits;
 
 _STL_DISABLE_DEPRECATED_WARNING
@@ -542,12 +539,12 @@ struct _Normal_allocator_traits { // defines traits for allocators
     template <class _Other>
     using rebind_traits = allocator_traits<rebind_alloc<_Other>>;
 
-    _NODISCARD static _CONSTEXPR20 __declspec(allocator) pointer
+    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer
         allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
         return _Al.allocate(_Count);
     }
 
-    _NODISCARD static _CONSTEXPR20 __declspec(allocator) pointer
+    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer
         allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint) {
         if constexpr (_Has_allocate_hint<_Alloc, size_type, const_void_pointer>::value) {
             return _Al.allocate(_Count, _Hint);
@@ -628,7 +625,7 @@ struct _Default_allocator_traits { // traits for std::allocator
     template <class _Other>
     using rebind_traits = allocator_traits<allocator<_Other>>;
 
-    _NODISCARD static _CONSTEXPR20 __declspec(allocator) pointer
+    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer
         allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
 #if _HAS_CXX20 // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
@@ -642,7 +639,7 @@ struct _Default_allocator_traits { // traits for std::allocator
         }
     }
 
-    _NODISCARD static _CONSTEXPR20 __declspec(allocator) pointer
+    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer
         allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer) {
 #if _HAS_CXX20 // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
@@ -699,7 +696,7 @@ struct _Default_allocator_traits { // traits for std::allocator
     }
 };
 
-template <class _Alloc>
+_EXPORT_STD template <class _Alloc>
 struct allocator_traits : conditional_t<_Is_default_allocator<_Alloc>::value, _Default_allocator_traits<_Alloc>,
                               _Normal_allocator_traits<_Alloc>> {};
 
@@ -716,12 +713,12 @@ enum class _Pocma_values {
 };
 
 template <class _Alloc>
-_INLINE_VAR constexpr _Pocma_values
-    _Choose_pocma_v = allocator_traits<_Alloc>::is_always_equal::value
-                        ? _Pocma_values::_Equal_allocators
-                        : (allocator_traits<_Alloc>::propagate_on_container_move_assignment::value
-                                ? _Pocma_values::_Propagate_allocators
-                                : _Pocma_values::_No_propagate_allocators);
+_INLINE_VAR constexpr _Pocma_values _Choose_pocma_v =
+    allocator_traits<_Alloc>::is_always_equal::value
+        ? _Pocma_values::_Equal_allocators
+        : (allocator_traits<_Alloc>::propagate_on_container_move_assignment::value
+                ? _Pocma_values::_Propagate_allocators
+                : _Pocma_values::_No_propagate_allocators);
 
 template <class _Alloc, class _Value_type>
 using _Rebind_alloc_t = typename allocator_traits<_Alloc>::template rebind_alloc<_Value_type>;
@@ -734,10 +731,11 @@ using _Maybe_rebind_alloc_t =
         _Rebind_alloc_t<_Alloc, _Value_type>>;
 
 template <class _Alloc> // tests if allocator has simple addressing
-_INLINE_VAR constexpr bool _Is_simple_alloc_v = is_same_v<typename allocator_traits<_Alloc>::size_type, size_t>&&
-    is_same_v<typename allocator_traits<_Alloc>::difference_type, ptrdiff_t>&&
-        is_same_v<typename allocator_traits<_Alloc>::pointer, typename _Alloc::value_type*>&&
-            is_same_v<typename allocator_traits<_Alloc>::const_pointer, const typename _Alloc::value_type*>;
+_INLINE_VAR constexpr bool _Is_simple_alloc_v =
+    is_same_v<typename allocator_traits<_Alloc>::size_type, size_t>
+    && is_same_v<typename allocator_traits<_Alloc>::difference_type, ptrdiff_t>
+    && is_same_v<typename allocator_traits<_Alloc>::pointer, typename _Alloc::value_type*>
+    && is_same_v<typename allocator_traits<_Alloc>::const_pointer, const typename _Alloc::value_type*>;
 
 template <class _Value_type>
 struct _Simple_types { // wraps types from allocators with simple addressing for use in iterators
@@ -750,7 +748,7 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
 };
 
 #if _HAS_CXX23
-template <class _Ptr>
+_EXPORT_STD template <class _Ptr>
 struct allocation_result {
     _Ptr ptr;
     size_t count;
@@ -758,11 +756,9 @@ struct allocation_result {
 
 #ifdef __cpp_lib_concepts
 template <class _Alloc>
-concept _Has_member_allocate_at_least = requires(_Alloc _Al, size_t _Count) {
-    _Al.allocate_at_least(_Count);
-};
+concept _Has_member_allocate_at_least = requires(_Alloc _Al, size_t _Count) { _Al.allocate_at_least(_Count); };
 
-template <class _Alloc>
+_EXPORT_STD template <class _Alloc>
 _NODISCARD constexpr allocation_result<typename allocator_traits<_Alloc>::pointer> allocate_at_least(
     _Alloc& _Al, const size_t _Count) {
     if constexpr (_Has_member_allocate_at_least<_Alloc>) {
@@ -775,9 +771,129 @@ _NODISCARD constexpr allocation_result<typename allocator_traits<_Alloc>::pointe
 #endif // _HAS_CXX23
 
 // The number of user bytes a single byte of ASAN shadow memory can track.
-_INLINE_VAR constexpr size_t _Asan_granularity = 8;
+_INLINE_VAR constexpr size_t _Asan_granularity      = 8;
+_INLINE_VAR constexpr size_t _Asan_granularity_mask = _Asan_granularity - 1;
 
-template <class _Ty>
+struct _Asan_aligned_pointers {
+    const void* _First;
+    const void* _End;
+
+    _NODISCARD constexpr const void* _Clamp_to_end(const void* _Mid) const noexcept {
+        _STL_INTERNAL_CHECK(_Mid >= _First);
+        if (_Mid > _End) {
+            return _End;
+        } else {
+            return _Mid;
+        }
+    }
+};
+
+// The way that ASan shadow memory works, each eight byte block of memory ("shadow memory section")
+// has a single byte to mark it as either poison or valid.
+// Each section has 0 to 8 "valid" bytes followed by poison bytes, so:
+// ```
+//   [ v v v p p p p p ]
+// ```
+// or
+// ```
+//   [ v v v v v v v v ]
+// ```
+// are okay, but
+// ```
+//   [ p p p p v v v v ]
+// ```
+// is not.
+//
+// This function exists to fix up `first` and `end` pointers so that one can call
+// `__sanitizer_annotate_contiguous_container`:
+//
+//   - `__sanitizer_annotate_contiguous_container` checks that `first` is aligned to an 8-byte boundary
+//   - if `end` is not aligned to an 8-byte boundary, `__sanitizer_annotate_contiguous_container` still poisons the
+//     remaining bytes in the shadow memory section.
+//
+// Because of the second property, we can only mark poison up to the final aligned address before the true `last`.
+// Otherwise, we'd poison the memory _after_ `last` as well.
+// For the first property, we can assume that everything before `first` in the shadow memory section is valid
+// (since otherwise we couldn't mark `first` valid), and so we just return back the first address in
+// `first`'s shadow memory section.
+//
+// ### Example
+//
+// ```cpp
+// struct alignas(8) cat {
+//     int meow; // bytes [0, 4)
+//     char buffer[16]; // bytes [4, 20)
+//     int purr; // bytes [20, 24)
+// };
+// ```
+//
+// First, `meow` and `purr` are just regular data members, not container buffers, so they _must_ be valid.
+// Then, assume we want to poison all of `buffer`.
+// This would mean that, in a perfect world, we want something like:
+//
+// ```
+//    |  meow |               buffer                | purr  |
+//   [ v v v v p p p p ][ p p p p p p p p ][ p p p p v v v v ]
+//           sm1                sm2                sm3
+// ```
+//
+// However, note that by the rules above, `sm3` is not a valid shadow memory section; we always need
+// the valid bytes to come before the poison bytes. Thus, the closest we can actually get to it is:
+//
+// ```
+//    |  meow |               buffer                | purr  |
+//   [ v v v v p p p p ][ p p p p p p p p ][ v v v v v v v v ]
+//           sm1                sm2                sm3
+// ```
+//
+// We call `aligned = _Get_asan_aligned_first_end(cat.buffer, cat.buffer + 16);`, and we get back
+//
+// ```cpp
+// aligned = {
+//     ._First = &cat.meow,
+//     ._End = cat.buffer + 12,
+// };
+// ```
+//
+// Then, we poison as much of buffer as we can via
+//
+// ```cpp
+// __sanitizer_annotate_contiguous_container(
+//     aligned._First,
+//     aligned._End,
+//     cat.buffer,
+//     aligned._Clamp_to_end(cat.buffer + 16));
+// ```
+//
+// We are allowed to assume that `&cat.meow` is valid, since otherwise `cat.buffer + [0, 4)` could not be valid.
+// We cannot poison up to `cat.buffer + 16`, since then `&purr` could not be valid.
+// Thus, this results in the shadow memory state from the second example.
+_NODISCARD inline _Asan_aligned_pointers _Get_asan_aligned_first_end(
+    const void* const _First, const void* const _End) noexcept {
+    return {
+        reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(_First) & ~_Asan_granularity_mask),
+        reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(_End) & ~_Asan_granularity_mask),
+    };
+}
+
+// When we can assume that the allocator we are using will always align allocations to the 8-byte,
+// we can simply push the `_End` pointer to the end of the shadow memory section.
+// This is _not_ safe in general (see _Get_asan_aligned_first_end's comment for why).
+_NODISCARD inline const void* _Get_asan_aligned_after(const void* const _End) noexcept {
+    return reinterpret_cast<const void*>(
+        (reinterpret_cast<uintptr_t>(_End) + _Asan_granularity_mask) & ~_Asan_granularity_mask);
+}
+
+template <class _Container, class = void>
+_INLINE_VAR constexpr size_t _Container_allocation_minimum_asan_alignment = alignof(typename _Container::value_type);
+
+template <class _Container>
+_INLINE_VAR constexpr size_t _Container_allocation_minimum_asan_alignment<_Container,
+    void_t<decltype(_Container::allocator_type::_Minimum_asan_allocation_alignment)>> =
+    (_STD max)(
+        alignof(typename _Container::value_type), _Container::allocator_type::_Minimum_asan_allocation_alignment);
+
+_EXPORT_STD template <class _Ty>
 class allocator {
 public:
     static_assert(!is_const_v<_Ty>, "The C++ Standard forbids containers of const elements "
@@ -788,11 +904,11 @@ public:
     using value_type = _Ty;
 
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef _Ty* pointer;
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const _Ty* const_pointer;
+    using pointer _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS       = _Ty*;
+    using const_pointer _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = const _Ty*;
 
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef _Ty& reference;
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const _Ty& const_reference;
+    using reference _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS       = _Ty&;
+    using const_reference _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = const _Ty&;
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
     using size_type       = size_t;
@@ -830,19 +946,20 @@ public:
         _Deallocate<_New_alignof<_Ty>>(_Ptr, sizeof(_Ty) * _Count);
     }
 
-    _NODISCARD _CONSTEXPR20 __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
+    _NODISCARD_RAW_PTR_ALLOC _CONSTEXPR20 __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
         static_assert(sizeof(value_type) > 0, "value_type must be complete before calling allocate.");
         return static_cast<_Ty*>(_Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
     }
 
 #if _HAS_CXX23
-    _NODISCARD constexpr allocation_result<_Ty*> allocate_at_least(_CRT_GUARDOVERFLOW const size_t _Count) {
+    _NODISCARD_RAW_PTR_ALLOC constexpr allocation_result<_Ty*> allocate_at_least(
+        _CRT_GUARDOVERFLOW const size_t _Count) {
         return {allocate(_Count), _Count};
     }
 #endif // _HAS_CXX23
 
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD __declspec(allocator) _Ty* allocate(
+    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) _Ty* allocate(
         _CRT_GUARDOVERFLOW const size_t _Count, const void*) {
         return allocate(_Count);
     }
@@ -862,7 +979,7 @@ public:
     }
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
-    static constexpr size_t _Minimum_allocation_alignment = _Asan_granularity;
+    static constexpr size_t _Minimum_asan_allocation_alignment = _Asan_granularity;
 };
 
 #if _HAS_DEPRECATED_ALLOCATOR_VOID || _HAS_DEPRECATED_ALLOCATOR_MEMBERS
@@ -871,8 +988,8 @@ class allocator<void> {
 public:
     using value_type = void;
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef void* pointer;
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const void* const_pointer;
+    using pointer _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS       = void*;
+    using const_pointer _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = const void*;
 
     template <class _Other>
     struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
@@ -890,7 +1007,7 @@ public:
 };
 #endif // _HAS_DEPRECATED_ALLOCATOR_VOID || _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
-template <class _Ty, class _Other>
+_EXPORT_STD template <class _Ty, class _Other>
 _NODISCARD _CONSTEXPR20 bool operator==(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
     return true;
 }
@@ -1111,7 +1228,7 @@ public:
         {
             _Assign_locked(_Right);
         }
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
         _Myproxy = _Right._Myproxy;
 #endif // _ITERATOR_DEBUG_LEVEL != 2
         return *this;
@@ -1139,7 +1256,7 @@ public:
             _Adopt_locked(_Parent);
         }
     }
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
     _CONSTEXPR20 void _Adopt(const _Container_base12* _Parent) noexcept {
         if (_Parent) { // have a parent, do adoption
             _Myproxy = _Parent->_Myproxy;
@@ -1270,7 +1387,7 @@ _CONSTEXPR20 void _Container_base12::_Swap_proxy_and_iterators(_Container_base12
     {
         _Swap_proxy_and_iterators_locked(_Right);
     }
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
     _Swap_proxy_and_iterators_unlocked(_Right);
 #endif // _ITERATOR_DEBUG_LEVEL != 2
 }
@@ -1425,7 +1542,7 @@ pair<_Ty*, ptrdiff_t> _Get_temporary_buffer(ptrdiff_t _Count) noexcept {
             void* _Pbuf;
 #ifdef __cpp_aligned_new
             if constexpr (alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-                _Pbuf = ::operator new (_Size, align_val_t{alignof(_Ty)}, nothrow);
+                _Pbuf = ::operator new(_Size, align_val_t{alignof(_Ty)}, nothrow);
             } else
 #endif // __cpp_aligned_new
             {
@@ -1445,7 +1562,7 @@ template <class _Ty>
 void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
 #ifdef __cpp_aligned_new
     if constexpr (alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        ::operator delete (_Pbuf, align_val_t{alignof(_Ty)});
+        ::operator delete(_Pbuf, align_val_t{alignof(_Ty)});
     } else
 #endif // __cpp_aligned_new
     {
@@ -1506,25 +1623,25 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _In
 namespace ranges {
     template <class _It>
     concept _No_throw_input_iterator = input_iterator<_It> //
-        && is_lvalue_reference_v<iter_reference_t<_It>> //
-        && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
+                                    && is_lvalue_reference_v<iter_reference_t<_It>> //
+                                    && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
 
     template <class _Se, class _It>
     concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
 
     template <class _It>
     concept _No_throw_forward_iterator = _No_throw_input_iterator<_It> //
-        && forward_iterator<_It> //
-        && _No_throw_sentinel_for<_It, _It>;
+                                      && forward_iterator<_It> //
+                                      && _No_throw_sentinel_for<_It, _It>;
 
     template <class _Rng>
     concept _No_throw_input_range = range<_Rng> //
-        && _No_throw_input_iterator<iterator_t<_Rng>> //
-        && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
+                                 && _No_throw_input_iterator<iterator_t<_Rng>> //
+                                 && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
 
     template <class _Rng>
     concept _No_throw_forward_range = _No_throw_input_range<_Rng> //
-        && _No_throw_forward_iterator<iterator_t<_Rng>>;
+                                   && _No_throw_forward_iterator<iterator_t<_Rng>>;
 
     template <class _InIt, class _OutIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_count(_InIt _IFirst, _OutIt _OFirst, const size_t _Count) noexcept {
@@ -1537,13 +1654,13 @@ namespace ranges {
         if constexpr (is_pointer_v<_InIt>) {
             _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
         } else {
-            _IFirst += _Count;
+            _IFirst += static_cast<iter_difference_t<_InIt>>(_Count);
         }
 
         if constexpr (is_pointer_v<_OutIt>) {
             _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count_bytes);
         } else {
-            _OFirst += _Count;
+            _OFirst += static_cast<iter_difference_t<_OutIt>>(_Count);
         }
         return {_STD move(_IFirst), _STD move(_OFirst)};
     }
@@ -1592,27 +1709,25 @@ namespace ranges {
         if constexpr (is_pointer_v<_InIt>) {
             _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
         } else {
-            _IFirst += _Count_bytes / sizeof(iter_value_t<_InIt>);
+            _IFirst += static_cast<iter_difference_t<_InIt>>(_Count_bytes / sizeof(iter_value_t<_InIt>));
         }
 
         if constexpr (is_pointer_v<_OutIt>) {
             _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count_bytes);
         } else {
-            _OFirst += _Count_bytes / sizeof(iter_value_t<_OutIt>);
+            _OFirst += static_cast<iter_difference_t<_OutIt>>(_Count_bytes / sizeof(iter_value_t<_OutIt>));
         }
         return {_STD move(_IFirst), _STD move(_OFirst)};
     }
 
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using uninitialized_move_result = in_out_result<_In, _Out>;
 
-    // clang-format off
     template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
         _No_throw_sentinel_for<_Out> _OSe>
         requires (constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>)
     uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
         _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
-        // clang-format on
         constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
         constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
         if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_constructible
@@ -1674,30 +1789,77 @@ private:
     _Alloc& _Al;
 };
 
-template <class _InIt, class _Alloc>
+template <class _InIt, class _Se, class _Alloc>
 _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
-    const _InIt _First, const _InIt _Last, _Alloc_ptr_t<_Alloc> _Dest, _Alloc& _Al) {
+    _InIt _First, _Se _Last, _Alloc_ptr_t<_Alloc> _Dest, _Alloc& _Al) {
     // copy [_First, _Last) to raw _Dest, using _Al
     // note: only called internally from elsewhere in the STL
     using _Ptrval = typename _Alloc::value_type*;
 
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+#ifdef __cpp_lib_concepts
+    auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+    auto _ULast  = _RANGES _Unwrap_sent<_InIt>(_STD move(_Last));
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+    // In pre-concepts world, _Uninitialized_copy should only ever be called with an iterator
+    // and sentinel of the same type, so `_Get_unwrapped` is fine to call.
+    auto _UFirst = _Get_unwrapped(_STD move(_First));
+    auto _ULast = _Get_unwrapped(_STD move(_Last));
+#endif // ^^^ !__cpp_lib_concepts ^^^
 
-    if constexpr (conjunction_v<bool_constant<_Iter_copy_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
-                      _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>) {
+    constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
+                               && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
+
+    if constexpr (_Can_memmove) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
-            _Dest += _ULast - _UFirst;
+            if constexpr (is_same_v<decltype(_UFirst), decltype(_ULast)>) {
+                _Copy_memmove(_To_address(_UFirst), _To_address(_ULast), _Unfancy(_Dest));
+                _Dest += _ULast - _UFirst;
+            } else {
+                const auto _Count = static_cast<size_t>(_ULast - _UFirst);
+                _Copy_memmove_n(_To_address(_UFirst), _Count, _Unfancy(_Dest));
+                _Dest += _Count;
+            }
             return _Dest;
         }
     }
 
     _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
     for (; _UFirst != _ULast; ++_UFirst) {
+        _Backout._Emplace_back(*_UFirst);
+    }
+
+    return _Backout._Release();
+}
+
+template <class _InIt, class _Alloc>
+_CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
+    _InIt _First, size_t _Count, _Alloc_ptr_t<_Alloc> _Dest, _Alloc& _Al) {
+    // copy _First + [0, _Count) to raw _Dest, using _Al
+    // note: only called internally from elsewhere in the STL
+    using _Ptrval = typename _Alloc::value_type*;
+
+    auto _UFirst = _Get_unwrapped(_STD move(_First));
+
+    constexpr bool _Can_memmove =
+        conjunction_v<bool_constant<_Iter_copy_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
+            _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>;
+
+    if constexpr (_Can_memmove) {
+#if _HAS_CXX20
+        if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+        {
+            _Copy_memmove_n(_UFirst, _Count, _Unfancy(_Dest));
+            _Dest += _Count;
+            return _Dest;
+        }
+    }
+
+    _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
+    for (; _Count != 0; ++_UFirst, (void) --_Count) {
         _Backout._Emplace_back(*_UFirst);
     }
 
@@ -1724,7 +1886,7 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _In
     return _Backout._Release();
 }
 
-template <class _InIt, class _NoThrowFwdIt>
+_EXPORT_STD template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // copy [_First, _Last) to raw [_Dest, ...)
     _Adl_verify_range(_First, _Last);
@@ -1795,7 +1957,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
     return _Backout._Release();
 }
 
-template <class _NoThrowFwdIt, class _Tval>
+_EXPORT_STD template <class _NoThrowFwdIt, class _Tval>
 void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, const _Tval& _Val) {
     // copy _Val throughout raw [_First, _Last)
     _Adl_verify_range(_First, _Last);
@@ -1875,12 +2037,12 @@ _NoThrowFwdIt _Uninitialized_value_construct_n_unchecked1(_NoThrowFwdIt _UFirst,
 }
 
 #if _HAS_DEPRECATED_TEMPORARY_BUFFER
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _CXX17_DEPRECATE_TEMPORARY_BUFFER _NODISCARD pair<_Ty*, ptrdiff_t> get_temporary_buffer(ptrdiff_t _Count) noexcept {
     return _Get_temporary_buffer<_Ty>(_Count);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _CXX17_DEPRECATE_TEMPORARY_BUFFER void return_temporary_buffer(_Ty* _Pbuf) {
     _Return_temporary_buffer(_Pbuf);
 }
@@ -1954,7 +2116,7 @@ struct _Alloc_temporary2 {
     _NODISCARD _CONSTEXPR20 const value_type& _Get_value() const noexcept {
         return _Storage._Value;
     }
-#else // ^^^ workaround for VSO-586813 "T^ is not allowed in a union" ^^^ / vvv no workaround vvv
+#else // ^^^ workaround for VSO-586813 "T^ is not allowed in a union" / no workaround vvv
     union {
         value_type _Value;
     };
@@ -1992,13 +2154,13 @@ _NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _R
     }
 }
 
-template <class _FwdIt, class _Ty>
-_NODISCARD _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
+_EXPORT_STD template <class _FwdIt, class _Ty>
+_NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
     // remove each matching _Val
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    _UFirst           = _Find_unchecked(_UFirst, _ULast, _Val);
+    _UFirst           = _STD _Find_unchecked(_UFirst, _ULast, _Val);
     auto _UNext       = _UFirst;
     if (_UFirst != _ULast) {
         while (++_UFirst != _ULast) {
@@ -2013,8 +2175,8 @@ _NODISCARD _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _
     return _First;
 }
 
-template <class _FwdIt, class _Pr>
-_NODISCARD _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
+_EXPORT_STD template <class _FwdIt, class _Pr>
+_NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // remove each satisfying _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -2097,7 +2259,7 @@ template <class _Ty, class _Uty>
 _INLINE_VAR constexpr bool _Is_normally_bindable<_Ty, _Uty, void_t<_Normally_bound_ref<_Ty, _Uty>>> = true;
 
 #if _HAS_CXX20
-template <class _Ty, class _Alloc, class... _Types, enable_if_t<!_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class... _Types, enable_if_t<!_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Types&&... _Args) noexcept {
     if constexpr (!uses_allocator_v<_Ty, _Alloc>) {
         static_assert(is_constructible_v<_Ty, _Types...>,
@@ -2116,34 +2278,40 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _T
     }
 }
 
-template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept;
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept;
 
 #if _HAS_CXX23
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>& _Pair) noexcept;
 #endif // _HAS_CXX23
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept;
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept;
 
 #if _HAS_CXX23
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>&& _Pair) noexcept;
 #endif // _HAS_CXX23
 
-template <class _Ty, class _Alloc, class _Uty,
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty,
     enable_if_t<_Is_specialization_v<_Ty, pair> && !_Is_deducible_as_pair<_Uty&>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept;
 
-template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, piecewise_construct_t, _Tuple1&& _Tup1, _Tuple2&& _Tup2) noexcept {
     return _STD make_tuple(piecewise_construct,
@@ -2161,7 +2329,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
             _STD forward<_Tuple2>(_Tup2)));
 }
 
-template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_EXPORT_STD template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct, tuple<>{}, tuple<>{});
@@ -2169,7 +2337,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) no
         _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al));
 }
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2180,7 +2349,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
 }
 
 #if _HAS_CXX23
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>& _Pair) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2191,7 +2361,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pa
 }
 #endif // _HAS_CXX23
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept {
     // equivalent to
@@ -2202,7 +2373,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
         _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _Pair.second));
 }
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2213,7 +2385,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pa
 }
 
 #if _HAS_CXX23
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2,
+    enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>&& _Pair) noexcept {
     // equivalent to
@@ -2225,7 +2398,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
 }
 #endif // _HAS_CXX23
 
-template <class _Ty, class _Alloc, class _Uty,
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty,
     enable_if_t<_Is_specialization_v<_Ty, pair> && !_Is_deducible_as_pair<_Uty&>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
     struct _Pair_remaker {
@@ -2262,12 +2435,12 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
     return tuple<_Pair_remaker>({_Al, _Ux});
 }
 
-template <class _Ty, class _Alloc, class... _Types>
+_EXPORT_STD template <class _Ty, class _Alloc, class... _Types>
 _NODISCARD constexpr _Ty make_obj_using_allocator(const _Alloc& _Al, _Types&&... _Args) {
     return _STD make_from_tuple<_Ty>(_STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
 }
 
-template <class _Ty, class _Alloc, class... _Types>
+_EXPORT_STD template <class _Ty, class _Alloc, class... _Types>
 constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& _Al, _Types&&... _Args) {
     return _STD apply(
         [&](auto&&... _Construct_args) {
@@ -2276,6 +2449,83 @@ constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& 
         _STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
 }
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+_EXPORT_STD struct from_range_t {
+    explicit from_range_t() = default;
+};
+_EXPORT_STD inline constexpr from_range_t from_range;
+
+template <class _Rng, class _Elem>
+concept _Container_compatible_range =
+    (_RANGES input_range<_Rng>) && convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
+
+template <_RANGES input_range _Rng>
+using _Range_key_type = remove_const_t<typename _RANGES range_value_t<_Rng>::first_type>;
+
+template <_RANGES input_range _Rng>
+using _Range_mapped_type = typename _RANGES range_value_t<_Rng>::second_type;
+
+template <_RANGES input_range _Rng>
+using _Range_to_alloc_type =
+    pair<const typename _RANGES range_value_t<_Rng>::first_type, typename _RANGES range_value_t<_Rng>::second_type>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+template <class _Ty,
+    bool = is_empty_v<_Ty> && !is_final_v<_Ty>>
+class _Ebco_base : private _Ty { // Empty Base Class Optimization, active
+private:
+    using _Mybase = _Ty; // for visualization
+
+protected:
+    template <class _Other, enable_if_t<!is_same_v<_Remove_cvref_t<_Other>, _Ebco_base>, int> = 0>
+    constexpr explicit _Ebco_base(_Other&& _Val) noexcept(is_nothrow_constructible_v<_Ty, _Other>)
+        : _Ty(_STD forward<_Other>(_Val)) {}
+
+    constexpr _Ty& _Get_val() noexcept {
+        return *this;
+    }
+
+    constexpr const _Ty& _Get_val() const noexcept {
+        return *this;
+    }
+};
+
+template <class _Ty>
+class _Ebco_base<_Ty, false> { // Empty Base Class Optimization, inactive
+private:
+    _Ty _Myval;
+
+protected:
+    template <class _Other, enable_if_t<!is_same_v<_Remove_cvref_t<_Other>, _Ebco_base>, int> = 0>
+    constexpr explicit _Ebco_base(_Other&& _Val) noexcept(is_nothrow_constructible_v<_Ty, _Other>)
+        : _Myval(_STD forward<_Other>(_Val)) {}
+
+    constexpr _Ty& _Get_val() noexcept {
+        return _Myval;
+    }
+
+    constexpr const _Ty& _Get_val() const noexcept {
+        return _Myval;
+    }
+};
+
+_EXPORT_STD inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t& _Space) noexcept /* strengthened */ {
+    // try to carve out _Size bytes on boundary _Bound
+    size_t _Off = static_cast<size_t>(reinterpret_cast<uintptr_t>(_Ptr) & (_Bound - 1));
+    if (_Off != 0) {
+        _Off = _Bound - _Off; // number of bytes to skip
+    }
+
+    if (_Space < _Off || _Space - _Off < _Size) {
+        return nullptr;
+    }
+
+    // enough room, update
+    _Ptr = static_cast<char*>(_Ptr) + _Off;
+    _Space -= _Off;
+    return _Ptr;
+}
 _STD_END
 
 #pragma pop_macro("new")

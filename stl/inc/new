@@ -18,35 +18,99 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#ifdef _BUILD_STD_MODULE
+#pragma warning(push)
+#pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
+
+// Mirroring <vcruntime_new.h> declarations:
+
 _STD_BEGIN
+_EXPORT_STD extern "C++" struct nothrow_t;
+_EXPORT_STD extern "C++" const nothrow_t nothrow;
+_STD_END
+
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t);
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(
+    size_t, const _STD nothrow_t&) noexcept;
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t);
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](
+    size_t, const _STD nothrow_t&) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, size_t) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, const _STD nothrow_t&) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, size_t) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, const _STD nothrow_t&) noexcept;
+
+#ifdef __cpp_aligned_new
+_STD_BEGIN
+#ifdef __EDG__ // TRANSITION, VSO-1618988
+extern "C++" {
+_EXPORT_STD enum class align_val_t : size_t;
+}
+#else // ^^^ workaround / no workaround vvv
+_EXPORT_STD extern "C++" enum class align_val_t : size_t;
+#endif // ^^^ no workaround ^^^
+_STD_END
+
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t, _STD align_val_t);
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(
+    size_t, _STD align_val_t, const _STD nothrow_t&) noexcept;
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t, _STD align_val_t);
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](
+    size_t, _STD align_val_t, const _STD nothrow_t&) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, _STD align_val_t) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, size_t, _STD align_val_t) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, _STD align_val_t, const _STD nothrow_t&) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, _STD align_val_t) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, size_t, _STD align_val_t) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, _STD align_val_t, const _STD nothrow_t&) noexcept;
+#endif // __cpp_aligned_new
+
+_EXPORT_STD extern "C++" _NODISCARD void* __CRTDECL operator new(size_t, void*) noexcept;
+_EXPORT_STD extern "C++" _NODISCARD void* __CRTDECL operator new[](size_t, void*) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, void*) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, void*) noexcept;
+
+#pragma warning(pop)
+#endif // _BUILD_STD_MODULE
+
+_STD_BEGIN
+#if _HAS_EXCEPTIONS
+_EXPORT_STD class bad_alloc;
+_EXPORT_STD class bad_array_new_length;
+#else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
+// <exception> exports bad_alloc and bad_array_new_length.
+#endif // ^^^ !_HAS_EXCEPTIONS ^^^
+
 #if _HAS_CXX20
-struct destroying_delete_t {
+_EXPORT_STD struct destroying_delete_t {
     explicit destroying_delete_t() = default;
 };
-inline constexpr destroying_delete_t destroying_delete{};
+_EXPORT_STD inline constexpr destroying_delete_t destroying_delete{};
 #endif // _HAS_CXX20
 
 #if _HAS_CXX17
-template <class _Ty>
-_NODISCARD constexpr _Ty* launder(_Ty* _Ptr) noexcept {
+_EXPORT_STD template <class _Ty>
+_NODISCARD_LAUNDER constexpr _Ty* launder(_Ty* _Ptr) noexcept {
     static_assert(!is_function_v<_Ty> && !is_void_v<_Ty>,
         "N4727 21.6.4 [ptr.launder]/3: The program is ill-formed if T is a function type or cv void.");
     return __builtin_launder(_Ptr);
 }
 
 #if defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
-inline constexpr size_t hardware_constructive_interference_size = 64;
-inline constexpr size_t hardware_destructive_interference_size  = 64;
-#else // ^^^ supported hardware ^^^ // vvv unsupported hardware vvv
+_EXPORT_STD inline constexpr size_t hardware_constructive_interference_size = 64;
+_EXPORT_STD inline constexpr size_t hardware_destructive_interference_size  = 64;
+#else // ^^^ supported hardware / unsupported hardware vvv
 #error Unsupported architecture
 #endif // hardware
 
 #endif // _HAS_CXX17
 
-using new_handler = void(__CLRCALL_PURE_OR_CDECL*)();
+_EXPORT_STD using new_handler = void(__CLRCALL_PURE_OR_CDECL*)();
 
-_CRTIMP2 new_handler __cdecl set_new_handler(_In_opt_ new_handler) noexcept;
-_NODISCARD _CRTIMP2 new_handler __cdecl get_new_handler() noexcept;
+_EXPORT_STD extern "C++" _CRTIMP2 new_handler __cdecl set_new_handler(_In_opt_ new_handler) noexcept;
+_EXPORT_STD extern "C++" _NODISCARD _CRTIMP2 new_handler __cdecl get_new_handler() noexcept;
 _STD_END
 
 #pragma pop_macro("new")

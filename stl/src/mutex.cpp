@@ -129,6 +129,7 @@ static int mtx_do_lock(_Mtx_t mtx, const xtime* target) { // lock mutex
                 xtime_get(&now, TIME_UTC);
             }
         }
+
         if (res == WAIT_OBJECT_0 || res == WAIT_ABANDONED) {
             if (1 < ++mtx->count) { // check count
                 if ((mtx->type & _Mtx_recursive) != _Mtx_recursive) { // not recursive, fixup count

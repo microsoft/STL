@@ -15,15 +15,9 @@
 #include <numeric>
 #include <type_traits>
 
-#if _HAS_CXX17 && !defined(_M_CEE)
-#define HAS_PARALLEL_ALGORITHMS 1
-#else
-#define HAS_PARALLEL_ALGORITHMS 0
-#endif // _HAS_CXX17 && !defined(_M_CEE)
-
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
 #include <execution>
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 
 // Compiling all algorithms takes too long for one test case.
 // Therefore, when using this header, be sure to define INSTANTIATE_ALGORITHMS_SPLIT_MODE
@@ -167,7 +161,7 @@ namespace std_testing {
             std::merge(in1, in1, in2, in2, out, COMP{});
             std::set_union(in1, in1, in2, in2, out);
             std::set_union(in1, in1, in2, in2, out, COMP{});
-#else // ^^^ SPLIT_MODE 1 ^^^ // vvv SPLIT_MODE 2 vvv //
+#else // ^^^ SPLIT_MODE 1 / SPLIT_MODE 2 vvv
             std::set_intersection(in1, in1, in2, in2, out);
             std::set_intersection(in1, in1, in2, in2, out, COMP{});
             std::set_difference(in1, in1, in2, in2, out);
@@ -294,7 +288,7 @@ namespace std_testing {
             FLST.assign(in1, in1);
             FLST.insert_after(FLST.begin(), in1, in1);
 
-#else // ^^^ SPLIT_MODE 1 ^^^ // vvv SPLIT_MODE 2 vvv //
+#else // ^^^ SPLIT_MODE 1 / SPLIT_MODE 2 vvv
             (void) std::all_of(in1, in1, PRED{});
             (void) std::any_of(in1, in1, PRED{});
             (void) std::none_of(in1, in1, PRED{});
@@ -328,7 +322,7 @@ namespace std_testing {
 #endif // SPLIT_MODE
         }
 
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
         template <typename Fwd1, typename Fwd2, typename Fwd3, typename ExecutionPolicy>
         void test_exec_fwd1_fwd2_fwd3(ExecutionPolicy&& exec, Fwd1 fwd1, Fwd2 fwd2, Fwd3 fwd3) {
             std::transform(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, fwd2, fwd3, BINARYOP{});
@@ -406,19 +400,19 @@ namespace std_testing {
             std::adjacent_difference(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, fwd2);
             std::adjacent_difference(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, fwd2, BINARYOP{});
         }
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 
         template <typename Fwd1, typename Fwd2>
         void test_fwd1_fwd2(Fwd1 fwd1, Fwd2 fwd2) {
             // SPLIT_MODE 1
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
             test_exec_fwd1_fwd2(std::execution::seq, fwd1, fwd2);
             test_exec_fwd1_fwd2(std::execution::par, fwd1, fwd2);
             test_exec_fwd1_fwd2(std::execution::par_unseq, fwd1, fwd2);
 #if _HAS_CXX20
             test_exec_fwd1_fwd2(std::execution::unseq, fwd1, fwd2);
 #endif // _HAS_CXX20
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 
             (void) std::find_end(fwd1, fwd1, fwd2, fwd2);
             (void) std::find_end(fwd1, fwd1, fwd2, fwd2, BIPRED{});
@@ -441,7 +435,7 @@ namespace std_testing {
 #endif // _HAS_CXX17
         }
 
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
         template <typename Fwd1, typename ExecutionPolicy>
         void test_exec_fwd1(ExecutionPolicy&& exec, Fwd1 fwd1) {
             (void) std::all_of(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, PRED{});
@@ -497,19 +491,19 @@ namespace std_testing {
             (void) std::reduce(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, VAL, BINARYOP{});
             (void) std::transform_reduce(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, VAL, BINARYOP{}, UNARYOP{});
         }
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 
         template <typename Fwd1>
         void test_fwd1(Fwd1 fwd1) {
             // SPLIT_MODE 2
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
             test_exec_fwd1(std::execution::seq, fwd1);
             test_exec_fwd1(std::execution::par, fwd1);
             test_exec_fwd1(std::execution::par_unseq, fwd1);
 #if _HAS_CXX20
             test_exec_fwd1(std::execution::unseq, fwd1);
 #endif // _HAS_CXX20
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 
             test_fwd1_fwd2(fwd1, FWDIT);
             test_fwd1_fwd2(fwd1, BIDIT);
@@ -595,7 +589,7 @@ namespace std_testing {
             std::reverse_copy(bid1, bid1, out);
         }
 
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
         template <typename Bid1, typename Fwd1, typename ExecutionPolicy>
         void test_exec_bid1_fwd1(ExecutionPolicy&& exec, Bid1 bid1, Fwd1 fwd1) {
             std::reverse_copy(std::forward<ExecutionPolicy>(exec), bid1, bid1, fwd1);
@@ -622,7 +616,7 @@ namespace std_testing {
             std::inplace_merge(std::forward<ExecutionPolicy>(exec), bid1, bid1, bid1);
             std::inplace_merge(std::forward<ExecutionPolicy>(exec), bid1, bid1, bid1, COMP{});
         }
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 
         template <typename Bid1>
         void test_bid1(Bid1 bid1) {
@@ -638,7 +632,7 @@ namespace std_testing {
             test_bid1_out(bid1, RANIT);
             test_bid1_out(bid1, ARRIT);
 
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
             test_bid1_fwd1(bid1, FWDIT);
             test_bid1_fwd1(bid1, BIDIT);
             test_bid1_fwd1(bid1, RANIT);
@@ -650,7 +644,7 @@ namespace std_testing {
 #if _HAS_CXX20
             test_exec_bid1(std::execution::unseq, bid1);
 #endif // _HAS_CXX20
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 
             std::reverse(bid1, bid1);
             // Currently the standard requires random-access iterators for stable_sort, but our implementation
@@ -674,7 +668,7 @@ namespace std_testing {
             std::generate_n(out, 0, GENERATOR{});
         }
 
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
         template <typename Ran, typename ExecutionPolicy>
         void test_exec_ran(ExecutionPolicy&& exec, Ran ran) {
             std::sort(std::forward<ExecutionPolicy>(exec), ran, ran);
@@ -688,19 +682,19 @@ namespace std_testing {
             (void) std::is_heap_until(std::forward<ExecutionPolicy>(exec), ran, ran);
             (void) std::is_heap_until(std::forward<ExecutionPolicy>(exec), ran, ran, COMP{});
         }
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 
         template <typename Ran>
         void test_ran(Ran ran) {
             // SPLIT_MODE 1
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
             test_exec_ran(std::execution::seq, ran);
             test_exec_ran(std::execution::par, ran);
             test_exec_ran(std::execution::par_unseq, ran);
 #if _HAS_CXX20
             test_exec_ran(std::execution::unseq, ran);
 #endif // _HAS_CXX20
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 
 #if _HAS_AUTO_PTR_ETC
             std::random_shuffle(ran, ran);

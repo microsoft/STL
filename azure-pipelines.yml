@@ -6,8 +6,14 @@
 variables:
   tmpDir: 'D:\Temp'
   buildOutputLocation: 'D:\build'
+  benchmarkBuildOutputLocation: 'D:\benchmark'
 
-pool: 'StlBuild-2022-07-12-T1418'
+pool:
+  name: 'StlBuild-2023-01-18T1600-Pool'
+  demands: EnableSpotVM -equals true
+
+pr:
+  drafts: false
 
 stages:
   - stage: Code_Format
@@ -86,7 +92,7 @@ stages:
         parameters:
           targetPlatform: arm
           vsDevCmdArch: arm
-          buildBenchmarking: 'OFF'
+          benchmarkBuildOutputLocationVar: ''
 
   - stage: Build_ARM64
     dependsOn: Build_And_Test_x64

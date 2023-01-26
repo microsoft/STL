@@ -26,9 +26,7 @@ using pipeline_t =
     ranges::filter_view<ranges::filter_view<ranges::filter_view<ranges::filter_view<V, Pred>, Pred>, Pred>, Pred>;
 
 template <class Rng>
-concept CanViewFilter = requires(Rng&& r) {
-    views::filter(forward<Rng>(r), is_even);
-};
+concept CanViewFilter = requires(Rng&& r) { views::filter(forward<Rng>(r), is_even); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {

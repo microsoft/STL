@@ -126,11 +126,11 @@ void _Uses_allocator_construct(pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& _Oute
 
 #if _HAS_CXX17
 namespace pmr {
-    class __declspec(novtable) memory_resource {
+    _EXPORT_STD class __declspec(novtable) memory_resource {
     public:
         virtual ~memory_resource() noexcept = default;
 
-        _NODISCARD __declspec(allocator) void* allocate(_CRT_GUARDOVERFLOW const size_t _Bytes,
+        _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) void* allocate(_CRT_GUARDOVERFLOW const size_t _Bytes,
             const size_t _Align = alignof(max_align_t)) { // allocate _Bytes bytes of memory with alignment _Align
             _STL_ASSERT(_Is_pow_2(_Align), "memory_resource::allocate(): Alignment must be a power of two.");
             void* _Ptr = do_allocate(_Bytes, _Align);
@@ -154,7 +154,8 @@ namespace pmr {
         virtual bool do_is_equal(const memory_resource& _That) const noexcept = 0;
     };
 
-    _NODISCARD inline bool operator==(const memory_resource& _Left, const memory_resource& _Right) noexcept {
+    _EXPORT_STD _NODISCARD inline bool operator==(
+        const memory_resource& _Left, const memory_resource& _Right) noexcept {
         return &_Left == &_Right || _Left.is_equal(_Right);
     }
 
@@ -167,7 +168,7 @@ namespace pmr {
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_get_default_resource() noexcept;
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Unaligned_get_default_resource() noexcept;
 
-    _NODISCARD inline memory_resource* get_default_resource() noexcept {
+    _EXPORT_STD _NODISCARD inline memory_resource* get_default_resource() noexcept {
 #ifdef __cpp_aligned_new
         return _Aligned_get_default_resource();
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
@@ -176,9 +177,9 @@ namespace pmr {
     }
 
 #if _HAS_CXX20 && defined(__cpp_lib_byte)
-    template <class _Ty = byte>
+    _EXPORT_STD template <class _Ty = byte>
 #else
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
 #endif // _HAS_CXX20 && defined(__cpp_lib_byte)
     class polymorphic_allocator {
     public:
@@ -203,7 +204,7 @@ namespace pmr {
 
         polymorphic_allocator& operator=(const polymorphic_allocator&) = delete;
 
-        _NODISCARD __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
+        _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
             // get space for _Count objects of type _Ty from _Resource
             void* const _Vp = _Resource->allocate(_Get_size_of_n<sizeof(_Ty)>(_Count), alignof(_Ty));
             return static_cast<_Ty*>(_Vp);
@@ -216,7 +217,7 @@ namespace pmr {
         }
 
 #if _HAS_CXX20
-        _NODISCARD __declspec(allocator) void* allocate_bytes(
+        _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) void* allocate_bytes(
             const size_t _Bytes, const size_t _Align = alignof(max_align_t)) {
             return _Resource->allocate(_Bytes, _Align);
         }
@@ -227,7 +228,8 @@ namespace pmr {
         }
 
         template <class _Uty>
-        _NODISCARD __declspec(allocator) _Uty* allocate_object(_CRT_GUARDOVERFLOW const size_t _Count = 1) {
+        _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) _Uty* allocate_object(
+            _CRT_GUARDOVERFLOW const size_t _Count = 1) {
             void* const _Vp = allocate_bytes(_Get_size_of_n<sizeof(_Uty)>(_Count), alignof(_Uty));
             return static_cast<_Uty*>(_Vp);
         }
@@ -238,7 +240,7 @@ namespace pmr {
         }
 
         template <class _Uty, class... _Types>
-        _NODISCARD __declspec(allocator) _Uty* new_object(_Types&&... _Args) {
+        _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) _Uty* new_object(_Types&&... _Args) {
             _Uty* const _Ptr = allocate_object<_Uty>();
             _TRY_BEGIN
             construct(_Ptr, _STD forward<_Types>(_Args)...);
@@ -261,7 +263,7 @@ namespace pmr {
             // propagate allocator *this if uses_allocator_v<_Uty, polymorphic_allocator>
 #if _HAS_CXX20
             _STD uninitialized_construct_using_allocator(_Ptr, *this, _STD forward<_Types>(_Args)...);
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
             allocator<char> _Al{};
             _Uses_allocator_construct(_Ptr, _Al, *this, _STD forward<_Types>(_Args)...);
 #endif // ^^^ !_HAS_CXX20 ^^^
@@ -282,11 +284,23 @@ namespace pmr {
             return _Resource;
         }
 
+        _NODISCARD_FRIEND bool operator==(
+            const polymorphic_allocator& _Lhs, const polymorphic_allocator& _Rhs) noexcept {
+            return *_Lhs._Resource == *_Rhs._Resource;
+        }
+
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(
+            const polymorphic_allocator& _Lhs, const polymorphic_allocator& _Rhs) noexcept {
+            return *_Lhs._Resource != *_Rhs._Resource;
+        }
+#endif // !_HAS_CXX20
+
     private:
         memory_resource* _Resource = _STD pmr::get_default_resource();
     };
 
-    template <class _Ty1, class _Ty2>
+    _EXPORT_STD template <class _Ty1, class _Ty2>
     _NODISCARD bool operator==(
         const polymorphic_allocator<_Ty1>& _Left, const polymorphic_allocator<_Ty2>& _Right) noexcept {
         // polymorphic_allocators with the same resource are compatible

@@ -347,8 +347,8 @@ void test_gh_1893() {
     string high          = "n";
     int projection_count = 0;
     const auto clamped   = ranges::clamp(
-          ref(val), ref(low), ref(high), [](auto x, auto y) { return x < y; },
-          [&projection_count](const auto& x) -> decltype(auto) {
+        ref(val), ref(low), ref(high), [](auto x, auto y) { return x < y; },
+        [&projection_count](const auto& x) -> decltype(auto) {
             ++projection_count;
             return x.get();
         });

@@ -7,6 +7,8 @@
 #include <map>
 #include <ranges>
 #include <span>
+#include <sstream>
+#include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -72,11 +74,9 @@ struct mapped<ranges::iota_view<W, B>> {
     template <class>
     using apply = ranges::iota_view<W, W>;
 };
-// clang-format off
 template <class I, class S>
     requires random_access_iterator<I>
 struct mapped<ranges::subrange<I, S, ranges::subrange_kind::sized>> {
-    // clang-format on
     template <class>
     using apply = ranges::subrange<I, I, ranges::subrange_kind::sized>;
 };
@@ -88,9 +88,7 @@ template <ranges::viewable_range Rng>
 using pipeline_t = mapped_t<mapped_t<mapped_t<mapped_t<Rng>>>>;
 
 template <class Rng>
-concept CanViewTake = requires(Rng&& r) {
-    views::take(forward<Rng>(r), 42);
-};
+concept CanViewTake = requires(Rng&& r) { views::take(forward<Rng>(r), 42); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
@@ -219,7 +217,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate view_interface::empty and operator bool
-    STATIC_ASSERT(CanMemberEmpty<R> == forward_range<Rng>);
+    STATIC_ASSERT(CanMemberEmpty<R> == (sized_range<Rng> || forward_range<Rng>) );
     STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
     if constexpr (CanMemberEmpty<R>) {
         assert(r.empty() == is_empty);
@@ -232,7 +230,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
-    STATIC_ASSERT(CanMemberEmpty<const R> == forward_range<const Rng>);
+    STATIC_ASSERT(CanMemberEmpty<const R> == (sized_range<const Rng> || forward_range<const Rng>) );
     STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
     if constexpr (CanMemberEmpty<const R>) {
         assert(as_const(r).empty() == is_empty);
@@ -367,6 +365,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         if constexpr (CanIndex<R>) {
             assert(r[0] == *r.begin());
         }
+
         if constexpr (CanIndex<const R>) {
             assert(as_const(r)[0] == *as_const(r).begin());
         }
@@ -510,6 +509,39 @@ void test_DevCom_1397309() {
     assert(ranges::equal(values | ranges::views::take(2) | ranges::views::keys, expected));
 }
 
+struct read_some_int_range : ranges::subrange<counted_iterator<istream_iterator<int>>, default_sentinel_t> {
+    using ranges::subrange<counted_iterator<istream_iterator<int>>, default_sentinel_t>::subrange;
+};
+
+template <>
+inline constexpr bool ranges::disable_sized_range<read_some_int_range> = true;
+
+void test_lwg3737() {
+    static_assert(ranges::input_range<read_some_int_range>);
+    static_assert(ranges::input_range<const read_some_int_range>);
+    static_assert(!ranges::sized_range<read_some_int_range>);
+    static_assert(!ranges::sized_range<const read_some_int_range>);
+
+    istringstream stream{"0 1 42 1729"};
+    auto rng =
+        read_some_int_range{counted_iterator{istream_iterator<int>{stream}, 4}, default_sentinel} | views::take(2);
+
+    using result_range = decltype(rng);
+    static_assert(
+        is_same_v<ranges::iterator_t<result_range>, counted_iterator<counted_iterator<istream_iterator<int>>>>);
+    static_assert(is_same_v<ranges::sentinel_t<result_range>, default_sentinel_t>);
+
+    static_assert(
+        is_same_v<ranges::iterator_t<const result_range>, counted_iterator<counted_iterator<istream_iterator<int>>>>);
+    static_assert(is_same_v<ranges::sentinel_t<const result_range>, default_sentinel_t>);
+
+    vector<int> vec{};
+    ranges::copy(rng, back_inserter(vec));
+
+    assert(ranges::size(vec) == 2);
+    assert((vec == vector<int>{0, 1}));
+}
+
 int main() {
     // Validate views
     { // ... copyable
@@ -559,6 +591,7 @@ int main() {
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
 
+#ifndef _M_CEE // TRANSITION, VSO-1666180
     {
         // Validate a view borrowed range
         constexpr auto v =
@@ -566,6 +599,7 @@ int main() {
         STATIC_ASSERT(test_one(v, only_four_ints));
         test_one(v, only_four_ints);
     }
+#endif // _M_CEE
 
     { // Validate that we can use something that is convertible to integral (GH-1957)
         constexpr span s{some_ints};
@@ -577,4 +611,6 @@ int main() {
     }
 
     test_DevCom_1397309();
+
+    test_lwg3737();
 }

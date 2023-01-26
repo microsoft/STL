@@ -11,9 +11,7 @@
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_ARM64EC)
 
 #include <cstdint>
-#include <emmintrin.h>
-#include <immintrin.h>
-#include <intrin0.h>
+#include <intrin.h>
 #include <isa_availability.h>
 
 extern "C" long __isa_enabled;
@@ -159,7 +157,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
         const void* _Stop_at                  = _First;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
+        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0x1F});
         do {
             _Advance_bytes(_Last, -32);
             // vpermq to load left and right, and transpose the lanes
@@ -179,7 +177,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
     if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
         const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
         const void* _Stop_at            = _First;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
+        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
@@ -201,7 +199,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
         const void* _Stop_at                   = _First;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
+        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0x1F});
         do {
             _Advance_bytes(_Last, -32);
             const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
@@ -219,7 +217,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
     if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
         const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
         const void* _Stop_at             = _First;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
+        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
@@ -238,7 +236,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _First, void* _Last) noexcept {
     if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
         const void* _Stop_at = _First;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
+        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0x1F});
         const __m256i _Shuf = _mm256_set_epi32(0, 1, 2, 3, 4, 5, 6, 7);
         do {
             _Advance_bytes(_Last, -32);
@@ -254,7 +252,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
 
     if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
         const void* _Stop_at = _First;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
+        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
@@ -273,7 +271,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept {
     if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
         const void* _Stop_at = _First;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
+        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0x1F});
         do {
             _Advance_bytes(_Last, -32);
             const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
@@ -288,7 +286,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
 
     if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
         const void* _Stop_at = _First;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
+        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
@@ -311,7 +309,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
         const void* _Stop_at                  = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0x1F});
         do {
             _Advance_bytes(_Last, -32);
             const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
@@ -325,7 +323,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
         const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
         const void* _Stop_at            = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
@@ -346,7 +344,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
         const void* _Stop_at                   = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0x1F});
         do {
             _Advance_bytes(_Last, -32);
             const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
@@ -360,7 +358,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
     if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
         const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
         const void* _Stop_at             = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
@@ -378,7 +376,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     const void* _First, const void* _Last, void* _Dest) noexcept {
     if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
         const void* _Stop_at = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0x1F});
         const __m256i _Shuf = _mm256_set_epi32(0, 1, 2, 3, 4, 5, 6, 7);
         do {
             _Advance_bytes(_Last, -32);
@@ -391,7 +389,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
 
     if (_Byte_length(_First, _Last) >= 16 && _Use_sse2()) {
         const void* _Stop_at = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
@@ -409,7 +407,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept {
     if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
         const void* _Stop_at = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0x1F});
         do {
             _Advance_bytes(_Last, -32);
             const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
@@ -421,7 +419,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 
     if (_Byte_length(_First, _Last) >= 16 && _Use_sse2()) {
         const void* _Stop_at = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
@@ -671,7 +669,7 @@ namespace {
 
 #ifdef _M_IX86
         static constexpr bool _Has_portion_max = false;
-#else // ^^^ 32-bit ^^^ / vvv 64-bit vvv
+#else // ^^^ 32-bit / 64-bit vvv
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
@@ -790,7 +788,7 @@ namespace {
             return static_cast<_Signed_t>(
                 (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
                 | static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur))));
-#else // ^^^ x86 ^^^ / vvv x64 vvv
+#else // ^^^ x86 / x64 vvv
             return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur));
 #endif // ^^^ x64 ^^^
         }

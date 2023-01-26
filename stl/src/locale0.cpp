@@ -8,6 +8,7 @@
 
 #include <crtdbg.h>
 #include <internal_shared.h>
+#include <xatomic.h>
 #include <xfacet>
 
 // This should probably go to a compiler section just after the locks - unfortunately we have per-appdomain
@@ -134,7 +135,22 @@ __PURE_APPDOMAIN_GLOBAL locale::id ctype<unsigned short>::id(0);
 __PURE_APPDOMAIN_GLOBAL locale::id codecvt<unsigned short, char, mbstate_t>::id(0);
 
 _MRTIMP2_PURE const locale& __CLRCALL_PURE_OR_CDECL locale::classic() { // get reference to "C" locale
-    _Init();
+#if !defined(_M_CEE_PURE)
+    const auto mem = reinterpret_cast<const intptr_t*>(&locale::_Locimp::_Clocptr);
+    intptr_t as_bytes;
+#ifdef _WIN64
+    as_bytes = __iso_volatile_load64(mem);
+#else // ^^^ 64-bit / 32-bit vvv
+    as_bytes = __iso_volatile_load32(mem);
+#endif // ^^^ 32-bit ^^^
+    _Compiler_or_memory_barrier();
+    const auto ptr = reinterpret_cast<locale::_Locimp*>(as_bytes);
+    if (ptr == nullptr)
+#endif // !defined(_M_CEE_PURE)
+    {
+        _Init();
+    }
+
     return classic_locale;
 }
 
@@ -155,9 +171,21 @@ _MRTIMP2_PURE locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Init(bool _Do_in
         ptr->_Catmask = all; // set current locale to "C"
         ptr->_Name    = "C";
 
-        _Locimp::_Clocptr = ptr; // set classic to match
-        _Locimp::_Clocptr->_Incref();
-        ::new (&classic_locale) locale(_Locimp::_Clocptr);
+        // set classic to match
+        ptr->_Incref();
+        ::new (&classic_locale) locale(ptr);
+#if defined(_M_CEE_PURE)
+        locale::_Locimp::_Clocptr = ptr;
+#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+        const auto mem      = reinterpret_cast<volatile intptr_t*>(&locale::_Locimp::_Clocptr);
+        const auto as_bytes = reinterpret_cast<intptr_t>(ptr);
+        _Compiler_or_memory_barrier();
+#ifdef _WIN64
+        __iso_volatile_store64(mem, as_bytes);
+#else // ^^^ 64-bit / 32-bit vvv
+        __iso_volatile_store32(mem, as_bytes);
+#endif // ^^^ 32-bit ^^^
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
     }
 
     if (_Do_incref) {

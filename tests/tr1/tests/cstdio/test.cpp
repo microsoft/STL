@@ -184,8 +184,9 @@ void test_cpp() { // test C++ header
         assert((pf = STDx tmpfile()) != nullptr);
         CHECK_INT(STDx fputc('x', pf), 'x');
         errno = EDOM;
-        if (!terse)
+        if (!terse) {
             STDx perror("Domain error reported as");
+        }
     }
 }
 

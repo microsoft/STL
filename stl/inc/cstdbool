@@ -18,8 +18,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_CXX17_DEPRECATE_C_HEADER typedef int _Header_cstdbool;
-using _Hdr_cstdbool = _Header_cstdbool;
+using _Header_cstdbool _CXX17_DEPRECATE_C_HEADER = int;
+using _Hdr_cstdbool                              = _Header_cstdbool;
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

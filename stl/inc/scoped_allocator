@@ -46,7 +46,7 @@ using _Scoped_outermost_t = remove_reference_t<decltype(_Scoped_outermost(_STD d
 template <class _Alloc>
 using _Scoped_outermost_traits = allocator_traits<_Scoped_outermost_t<_Alloc>>;
 
-template <class _Outer, class... _Inner>
+_EXPORT_STD template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor;
 
 template <class _Outer, class... _Inner>
@@ -121,7 +121,7 @@ struct _Scoped_base<_Outer> : _Outer { // nest of allocators, one deep
     }
 };
 
-template <class _Outer, class... _Inner>
+_EXPORT_STD template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor : public _Scoped_base<_Outer, _Inner...> { // nest of allocators
 private:
     using _Mybase       = _Scoped_base<_Outer, _Inner...>;
@@ -206,12 +206,12 @@ public:
         return static_cast<const _Outer&>(*this);
     }
 
-    _NODISCARD __declspec(allocator) pointer
+    _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) pointer
         allocate(_CRT_GUARDOVERFLOW size_type _Count) { // allocate array of _Count elements, ignore hint
         return _Outer_traits::allocate(outer_allocator(), _Count);
     }
 
-    _NODISCARD __declspec(allocator) pointer allocate(
+    _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) pointer allocate(
         _CRT_GUARDOVERFLOW size_type _Count, const_void_pointer _Hint) { // allocate array of _Count elements, with hint
         return _Outer_traits::allocate(outer_allocator(), _Count, _Hint);
     }
@@ -233,7 +233,7 @@ public:
                     _Scoped_outermost(*this), _Ptr, _STD forward<decltype(_New_args)>(_New_args)...);
             },
             _STD uses_allocator_construction_args<_Ty>(inner_allocator(), _STD forward<_Types>(_Args)...));
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         _Uses_allocator_construct(_Ptr, _Scoped_outermost(*this), inner_allocator(), _STD forward<_Types>(_Args)...);
 #endif // ^^^ !_HAS_CXX20 ^^^
     }
@@ -251,7 +251,7 @@ template <class _Outer, class... _Inner>
 scoped_allocator_adaptor(_Outer, _Inner...) -> scoped_allocator_adaptor<_Outer, _Inner...>;
 #endif // _HAS_CXX17
 
-template <class _Outer1, class _Outer2, class... _Inner>
+_EXPORT_STD template <class _Outer1, class _Outer2, class... _Inner>
 _NODISCARD bool operator==(const scoped_allocator_adaptor<_Outer1, _Inner...>& _Left,
     const scoped_allocator_adaptor<_Outer2, _Inner...>& _Right) noexcept {
     if constexpr (sizeof...(_Inner) == 0) {

@@ -151,6 +151,10 @@ STATIC_ASSERT(is_member_object_pointer_v<int X::*>);
 STATIC_ASSERT(!is_member_function_pointer_v<int X::*>);
 STATIC_ASSERT(!is_member_object_pointer_v<int (X::*)(int, int)>);
 
+// Verify that the machinery for LWG-3617 "function/packaged_task deduction guides and deducing this"
+// doesn't cause such function pointers to be detected as PMFs.
+STATIC_ASSERT(!is_member_function_pointer_v<int (*)(X, int)>);
+
 
 // N4594 20.13.7.6 [meta.trans.other]:
 // Template:
@@ -1213,7 +1217,7 @@ STATIC_ASSERT(TestRWTypes<Pmf2, None, None, None, None>::value);
 STATIC_ASSERT(TestRWTypes<Pmf0c, None, None, None, None>::value);
 STATIC_ASSERT(TestRWTypes<Pmf1c, None, None, None, None>::value);
 STATIC_ASSERT(TestRWTypes<Pmf2c, None, None, None, None>::value);
-#else // ^^^ _HAS_CXX20 // !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 STATIC_ASSERT(TestTypes<reference_wrapper<Fxn0>, char, None, None, None>::value);
 STATIC_ASSERT(TestTypes<reference_wrapper<Fxn1>, short, short*, None, None>::value);
 STATIC_ASSERT(TestTypes<reference_wrapper<Fxn2>, int, None, int*, int**>::value);
@@ -1277,7 +1281,7 @@ STATIC_ASSERT(TestRWTypes<OnlySecond, None, None, None, None>::value);
 STATIC_ASSERT(TestRWTypes<BothFirstSecond, None, None, None, None>::value);
 STATIC_ASSERT(TestRWTypes<NormalOne, None, None, None, None>::value);
 STATIC_ASSERT(TestRWTypes<NormalTwo, None, None, None, None>::value);
-#else // ^^^ _HAS_CXX20 // !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 STATIC_ASSERT(TestRWTypes<OnlyRes, bool, None, None, None>::value);
 STATIC_ASSERT(TestRWTypes<OnlyArg, None, bool*, None, None>::value);
 STATIC_ASSERT(TestRWTypes<OnlyFirst, None, None, None, None>::value);
@@ -1302,7 +1306,7 @@ struct SameResults : UnaryFunction<int, bool>, BinaryFunction<short, long, bool>
 
 #if _HAS_CXX20
 STATIC_ASSERT(TestRWTypes<SameResults, None, None, None, None>::value);
-#else // ^^^ _HAS_CXX20 // !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 STATIC_ASSERT(TestRWTypes<SameResults, bool, int, short, long>::value);
 #endif // _HAS_CXX20
 
@@ -1310,7 +1314,7 @@ struct DifferentResults : UnaryFunction<unsigned int, float>, BinaryFunction<uns
 
 #if _HAS_CXX20
 STATIC_ASSERT(TestRWTypes<DifferentResults, None, None, None, None>::value);
-#else // ^^^ _HAS_CXX20 // !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 STATIC_ASSERT(TestRWTypes<DifferentResults, None, unsigned int, unsigned short, unsigned long>::value);
 #endif // _HAS_CXX20
 
@@ -1373,6 +1377,7 @@ _CONSTEXPR20 bool test_mem_fn() {
     assert(&r2 == &cw.m_i);
 
 
+#ifndef _M_CEE // TRANSITION, VSO-1664293
     w.m_i = 1000;
 
     assert(mem_fn(&Widget::nullary)(w) == 1001);
@@ -1396,6 +1401,7 @@ _CONSTEXPR20 bool test_mem_fn() {
     assert(mem_fn(&Widget::unary_lv)(&w, 6) == 1061);
 
     assert(mem_fn(&Widget::unary_rv)(move(w), 7) == 1404);
+#endif // _M_CEE
 
     return true;
 }

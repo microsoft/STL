@@ -3,110 +3,280 @@
 
 #include <__msvc_int128.hpp>
 #include <cassert>
-#include <compare>
-#include <concepts>
 #include <cstdint>
 #include <iterator>
 #include <limits>
 #include <type_traits>
 
+#if _HAS_CXX20
+#include <compare>
+
+namespace ordtest {
+    using std::strong_ordering;
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+namespace ordtest {
+    enum class strong_ordering : signed char {
+        less       = -1,
+        equal      = 0,
+        equivalent = 0,
+        greater    = 1,
+    };
+}
+#endif // ^^^ !_HAS_CXX20 ^^^
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#include <concepts>
+
+#define SAME_AS std::same_as
+#else // ^^^ has concepts / has no concepts vvv
+#define SAME_AS std::is_same_v
+#endif // ^^^ has no concepts ^^^
+
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
+#if _HAS_CXX20
+#define CONSTEVAL consteval
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#define CONSTEVAL constexpr
+#endif // ^^^ !_HAS_CXX20 ^^^
+
+#if _HAS_CXX20 && !defined(__clang__) // TRANSITION, LLVM-51840
+#define CONSTEVAL_CLANG_WORKAROUND consteval
+#else // ^^^ _HAS_CXX20 && !defined(__clang__) / !_HAS_CXX20 || defined(__clang__) vvv
+#define CONSTEVAL_CLANG_WORKAROUND constexpr
+#endif // ^^^ !_HAS_CXX20 || defined(__clang__) ^^^
+
 using std::_Signed128;
 using std::_Unsigned128;
 
-constexpr void check_equal(const auto& x) {
+namespace i128_udl_detail {
+    enum class u128_parse_status : unsigned char {
+        valid,
+        overflow,
+        invalid,
+    };
+
+    struct u128_parse_result {
+        u128_parse_status status_code;
+        _Unsigned128 value;
+    };
+
+    [[nodiscard]] CONSTEVAL_CLANG_WORKAROUND unsigned int char_to_digit(const char c) noexcept {
+        if (c >= '0' && c <= '9') {
+            return static_cast<unsigned int>(c - '0');
+        }
+
+        if (c >= 'A' && c <= 'F') {
+            return static_cast<unsigned int>(c - 'A' + 10);
+        }
+
+        if (c >= 'a' && c <= 'f') {
+            return static_cast<unsigned int>(c - 'a' + 10);
+        }
+
+        return static_cast<unsigned int>(-1);
+    }
+
+    template <unsigned int Base, char... Chars>
+    struct parse_u128_impl {
+        [[nodiscard]] static CONSTEVAL u128_parse_result parse() noexcept {
+            constexpr char char_seq[]{Chars...};
+            constexpr auto u128_max = std::numeric_limits<_Unsigned128>::max();
+
+            _Unsigned128 val{};
+            for (const char c : char_seq) {
+                if (c == '\'') {
+                    continue;
+                }
+
+                const unsigned int digit = char_to_digit(c);
+                if (digit == static_cast<unsigned int>(-1)) {
+                    return {u128_parse_status::invalid, _Unsigned128{}};
+                }
+
+                if (val > u128_max / Base || Base * val > u128_max - digit) {
+                    return {u128_parse_status::overflow, _Unsigned128{}};
+                }
+
+                val = Base * val + digit;
+            }
+            return {u128_parse_status::valid, val};
+        }
+    };
+
+    template <unsigned int Base>
+    struct parse_u128_impl<Base> {
+        [[nodiscard]] static CONSTEVAL u128_parse_result parse() noexcept {
+            return {u128_parse_status::valid, 0};
+        }
+    };
+
+    template <char... Chars>
+    struct parse_u128 : parse_u128_impl<10, Chars...> {};
+
+    template <char... Chars>
+    struct parse_u128<'0', 'X', Chars...> : parse_u128_impl<16, Chars...> {};
+
+    template <char... Chars>
+    struct parse_u128<'0', 'x', Chars...> : parse_u128_impl<16, Chars...> {};
+
+    template <char... Chars>
+    struct parse_u128<'0', 'B', Chars...> : parse_u128_impl<2, Chars...> {};
+
+    template <char... Chars>
+    struct parse_u128<'0', 'b', Chars...> : parse_u128_impl<2, Chars...> {};
+
+    template <char... Chars>
+    struct parse_u128<'0', Chars...> : parse_u128_impl<8, Chars...> {};
+} // namespace i128_udl_detail
+
+template <char... Chars>
+[[nodiscard]] CONSTEVAL _Unsigned128 operator"" _u128() noexcept {
+    constexpr auto parsed_result = i128_udl_detail::parse_u128<Chars...>::parse();
+    static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::invalid,
+        "Invalid characters in the integer literal");
+    static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::overflow,
+        "The integer literal is too large for an unsigned 128-bit number");
+    return parsed_result.value;
+}
+
+template <char... Chars>
+[[nodiscard]] CONSTEVAL _Signed128 operator"" _i128() noexcept {
+    constexpr auto parsed_result = i128_udl_detail::parse_u128<Chars...>::parse();
+    static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::invalid,
+        "Invalid characters in the integer literal");
+    static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::overflow
+                      && parsed_result.value._Word[1] < (static_cast<std::uint64_t>(1) << 63),
+        "The integer literal is too large for a signed 128-bit number");
+    return static_cast<_Signed128>(parsed_result.value);
+}
+
+template <class I>
+constexpr void check_equal(const I& x) {
     assert(x == x);
     assert(!(x != x));
     assert(!(x < x));
     assert(!(x > x));
     assert(x <= x);
     assert(x >= x);
+#if _HAS_CXX20
     assert(x <=> x == 0);
+#endif // _HAS_CXX20
 }
 
-constexpr void check_order(const auto& x, const auto& y, const std::strong_ordering ord) {
-    assert((x == y) == (ord == std::strong_ordering::equal));
-    assert((x != y) == (ord != std::strong_ordering::equal));
-    assert((x < y) == (ord == std::strong_ordering::less));
-    assert((x > y) == (ord == std::strong_ordering::greater));
-    assert((x <= y) == (ord != std::strong_ordering::greater));
-    assert((x >= y) == (ord != std::strong_ordering::less));
+template <class I1, class I2>
+constexpr void check_order(const I1& x, const I2& y, const ordtest::strong_ordering ord) {
+    assert((x == y) == (ord == ordtest::strong_ordering::equal));
+    assert((x != y) == (ord != ordtest::strong_ordering::equal));
+    assert((x < y) == (ord == ordtest::strong_ordering::less));
+    assert((x > y) == (ord == ordtest::strong_ordering::greater));
+    assert((x <= y) == (ord != ordtest::strong_ordering::greater));
+    assert((x >= y) == (ord != ordtest::strong_ordering::less));
 
-    assert((y == x) == (ord == std::strong_ordering::equal));
-    assert((y != x) == (ord != std::strong_ordering::equal));
-    assert((y < x) == (ord == std::strong_ordering::greater));
-    assert((y > x) == (ord == std::strong_ordering::less));
-    assert((y <= x) == (ord != std::strong_ordering::less));
-    assert((y >= x) == (ord != std::strong_ordering::greater));
+    assert((y == x) == (ord == ordtest::strong_ordering::equal));
+    assert((y != x) == (ord != ordtest::strong_ordering::equal));
+    assert((y < x) == (ord == ordtest::strong_ordering::greater));
+    assert((y > x) == (ord == ordtest::strong_ordering::less));
+    assert((y <= x) == (ord != ordtest::strong_ordering::less));
+    assert((y >= x) == (ord != ordtest::strong_ordering::greater));
 
+#if _HAS_CXX20
     assert((x <=> y) == (ord <=> 0));
     assert((y <=> x) == (0 <=> ord));
+#endif // _HAS_CXX20
 }
 
 constexpr bool test_unsigned() {
-    static_assert(std::regular<_Unsigned128>);
-    static_assert(std::three_way_comparable<_Unsigned128, std::strong_ordering>);
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+    STATIC_ASSERT(std::regular<_Unsigned128>);
+    STATIC_ASSERT(std::three_way_comparable<_Unsigned128, ordtest::strong_ordering>);
+#endif // __cpp_lib_concepts
 
-    static_assert(std::numeric_limits<_Unsigned128>::min() == 0);
-    static_assert(std::numeric_limits<_Unsigned128>::max() == ~_Unsigned128{});
-    static_assert(std::numeric_limits<_Unsigned128>::digits == 128);
-    static_assert(std::numeric_limits<_Unsigned128>::is_modulo);
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::is_specialized);
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::is_exact);
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::is_integer);
+    STATIC_ASSERT(!std::numeric_limits<_Unsigned128>::is_signed);
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::is_bounded);
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::min() == 0);
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::max() == ~_Unsigned128{});
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::digits == 128);
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::radix == 2);
+    STATIC_ASSERT(std::numeric_limits<_Unsigned128>::is_modulo);
 
-    static_assert(std::same_as<std::common_type_t<bool, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<char, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<signed char, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<unsigned char, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<wchar_t, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<bool, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<char, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<signed char, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<unsigned char, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<wchar_t, _Unsigned128>, _Unsigned128>);
 #ifdef __cpp_char8_t
-    static_assert(std::same_as<std::common_type_t<char8_t, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<char8_t, _Unsigned128>, _Unsigned128>);
 #endif // __cpp_char8_t
-    static_assert(std::same_as<std::common_type_t<char16_t, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<char32_t, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<short, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<unsigned short, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<int, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<unsigned int, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<long, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<unsigned long, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<long long, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<unsigned long long, _Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<char16_t, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<char32_t, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<short, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<unsigned short, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<int, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<unsigned int, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<long, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<unsigned long, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<long long, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<unsigned long long, _Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, _Unsigned128>, _Unsigned128>);
 
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, bool>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, char>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, signed char>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, unsigned char>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, wchar_t>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, bool>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, char>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, signed char>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, unsigned char>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, wchar_t>, _Unsigned128>);
 #ifdef __cpp_char8_t
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, char8_t>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, char8_t>, _Unsigned128>);
 #endif // __cpp_char8_t
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, char16_t>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, char32_t>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, short>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, unsigned short>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, int>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, unsigned int>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, long>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, unsigned long>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, long long>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, unsigned long long>, _Unsigned128>);
-    static_assert(std::same_as<std::common_type_t<_Unsigned128, _Signed128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, char16_t>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, char32_t>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, short>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, unsigned short>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, int>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, unsigned int>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, long>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, unsigned long>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, long long>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, unsigned long long>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, _Signed128>, _Unsigned128>);
 
-    static_assert(std::_Integer_class<_Unsigned128>);
-    static_assert(std::_Integer_like<_Unsigned128>);
-    static_assert(!std::_Signed_integer_like<_Unsigned128>);
-    static_assert(std::same_as<std::_Make_unsigned_like_t<_Unsigned128>, _Unsigned128>);
-    static_assert(std::same_as<std::_Make_signed_like_t<_Unsigned128>, _Signed128>);
+    struct ConversionSource {
+        constexpr operator _Unsigned128() const {
+            return _Unsigned128{};
+        }
+    };
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, ConversionSource>, _Unsigned128>);
+
+    struct ConversionTarget {
+        constexpr ConversionTarget(_Unsigned128) {}
+    };
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, ConversionTarget>, ConversionTarget>);
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+    STATIC_ASSERT(std::_Integer_class<_Unsigned128>);
+    STATIC_ASSERT(std::_Integer_like<_Unsigned128>);
+    STATIC_ASSERT(!std::_Signed_integer_like<_Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::_Make_unsigned_like_t<_Unsigned128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::_Make_signed_like_t<_Unsigned128>, _Signed128>);
+#endif // __cpp_lib_concepts
 
     check_equal(_Unsigned128{});
     check_equal(_Unsigned128{42});
     check_equal(_Unsigned128{-42});
     check_equal(_Unsigned128{0x11111111'11111111, 0x22222222'22222222});
+    check_equal(0x22222222'22222222'11111111'11111111_u128);
 
-    check_order(_Unsigned128{42}, _Unsigned128{-42}, std::strong_ordering::less);
-    check_order(_Unsigned128{0, 42}, _Unsigned128{0, 52}, std::strong_ordering::less); // ordered only by MSW
-    check_order(_Unsigned128{42}, _Unsigned128{52}, std::strong_ordering::less); // ordered only by LSW
+    check_order(_Unsigned128{42}, _Unsigned128{-42}, ordtest::strong_ordering::less);
+    check_order(_Unsigned128{0, 42}, _Unsigned128{0, 52}, ordtest::strong_ordering::less); // ordered only by MSW
+    check_order(_Unsigned128{42}, _Unsigned128{52}, ordtest::strong_ordering::less); // ordered only by LSW
     check_order(_Unsigned128{0x11111111'11111111, 0x22222222'22222222},
-        _Unsigned128{0x01010101'01010101, 0x01010101'01010101}, std::strong_ordering::greater);
+        _Unsigned128{0x01010101'01010101, 0x01010101'01010101}, ordtest::strong_ordering::greater);
+    check_order(0x22222222'22222222'11111111'11111111_u128, 0x01010101'01010101'01010101'01010101_u128,
+        ordtest::strong_ordering::greater);
 
     {
         _Unsigned128 u{42};
@@ -169,6 +339,7 @@ constexpr bool test_unsigned() {
             product = _Unsigned128{0x01010101'01010101, 0x01010101'01010101} * 5;
             assert(product._Word[0] == 0x05050505'05050505);
             assert(product._Word[1] == 0x05050505'05050505);
+            assert(product == 0x05050505'05050505'05050505'05050505_u128);
 
             product = 5 * _Unsigned128{0x01010101'01010101, 0x01010101'01010101};
             assert(product._Word[0] == 0x05050505'05050505);
@@ -178,6 +349,7 @@ constexpr bool test_unsigned() {
             product *= product;
             assert(product._Word[0] == 0x08070605'04030201);
             assert(product._Word[1] == 0x100f0e0d'0c0b0a09);
+            assert(product == 0x100f0e0d'0c0b0a09'08070605'04030201_u128);
             assert(+product == product);
             assert(-product + product == 0);
 
@@ -185,18 +357,21 @@ constexpr bool test_unsigned() {
                     * _Unsigned128{0x000f0e0d'0c0b0a09, 0x08070605'04030201};
             assert(product._Word[0] == 0x6dc18e55'16d48f48);
             assert(product._Word[1] == 0xdc1b6bce'43cd6c21);
+            assert(product == 0xdc1b6bce'43cd6c21'6dc18e55'16d48f48_u128);
             assert(+product == product);
             assert(-product + product == 0);
 
             product <<= 11;
             assert(product._Word[0] == 0x0c72a8b6'a47a4000);
             assert(product._Word[1] == 0xdb5e721e'6b610b6e);
+            assert(product == 0xdb5e721e'6b610b6e'0c72a8b6'a47a4000_u128);
             assert(+product == product);
             assert(-product + product == 0);
 
             product >>= 17;
             assert(product._Word[0] == 0x85b70639'545b523d);
             assert(product._Word[1] == 0x00006daf'390f35b0);
+            assert(product == 0x00006daf'390f35b0'85b70639'545b523d_u128);
             assert(+product == product);
             assert(-product + product == 0);
         }
@@ -213,6 +388,7 @@ constexpr bool test_unsigned() {
         q = _Unsigned128{0x01010101'01010101, 0x01010101'01010101} / _Unsigned128{13};
         assert(q._Word[0] == 0xc50013c5'0013c500);
         assert(q._Word[1] == 0x0013c500'13c50013);
+        assert(q == 0x0013c500'13c50013'c50013c5'0013c500_u128);
 
         q = _Unsigned128{0x22222222'22222222, 0x22222222'22222222}
           / _Unsigned128{0x11111111'11111111, 0x11111111'11111111};
@@ -262,16 +438,19 @@ constexpr bool test_unsigned() {
         const _Unsigned128 x{0x01020304'02030405, 0x03040506'04050607};
         const _Unsigned128 y{0x07060504'06050403, 0x05040302'04030101};
         assert(((x & y) == _Unsigned128{0x01020104'02010401, 0x01040102'04010001}));
+        assert(((x & y) == 0x01040102'04010001'01020104'02010401_u128));
         auto tmp = x;
         tmp &= y;
         assert(tmp == (x & y));
 
         assert(((x | y) == _Unsigned128{0x07060704'06070407, 0x07040706'04070707}));
+        assert(((x | y) == 0x07040706'04070707'07060704'06070407_u128));
         tmp = x;
         tmp |= y;
         assert(tmp == (x | y));
 
         assert(((x ^ y) == _Unsigned128{0x06040600'04060006, 0x06000604'00060706}));
+        assert(((x ^ y) == 0x06000604'00060706'06040600'04060006_u128));
         tmp = x;
         tmp ^= y;
         assert(tmp == (x ^ y));
@@ -308,90 +487,152 @@ constexpr bool test_unsigned() {
         assert(x._Word[0] == ~0ull);
         assert(x._Word[1] == static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()));
     }
+    {
+        STATIC_ASSERT(noexcept(0_u128));
+        STATIC_ASSERT(noexcept(42_u128));
+        STATIC_ASSERT(noexcept(4'2_u128));
+        STATIC_ASSERT(noexcept(052_u128));
+        STATIC_ASSERT(noexcept(05'2_u128));
+        STATIC_ASSERT(noexcept(0x2a_u128));
+        STATIC_ASSERT(noexcept(0X2a_u128));
+        STATIC_ASSERT(noexcept(0x2A_u128));
+        STATIC_ASSERT(noexcept(0X2A_u128));
+        STATIC_ASSERT(noexcept(0x2'A_u128));
+        STATIC_ASSERT(noexcept(0b101010_u128));
+        STATIC_ASSERT(noexcept(0b1'0101'0_u128));
+        STATIC_ASSERT(noexcept(0B101010_u128));
+        STATIC_ASSERT(noexcept(0B1'0101'0_u128));
+        STATIC_ASSERT(noexcept(0xABCDEF_u128));
+        STATIC_ASSERT(noexcept(340282366920938463463374607431768211455_u128));
+        STATIC_ASSERT(noexcept(0xffffffff'FFFFFFFF'ffffFFFF'FFFFffff_u128));
+
+        STATIC_ASSERT(42_u128 == 42);
+        STATIC_ASSERT(4'2_u128 == 42);
+        STATIC_ASSERT(42_u128 == 052_u128);
+        STATIC_ASSERT(4'2_u128 == 052_u128);
+        STATIC_ASSERT(42_u128 == 0x2a_u128);
+        STATIC_ASSERT(4'2_u128 == 0X2a_u128);
+        STATIC_ASSERT(42_u128 == 0b101010_u128);
+        STATIC_ASSERT(4'2_u128 == 0b101010_u128);
+        STATIC_ASSERT(42_u128 == 0B101010_u128);
+        STATIC_ASSERT(4'2_u128 == 0B101010_u128);
+        STATIC_ASSERT(11259375_u128 == 0xABCDEF_u128);
+        STATIC_ASSERT(
+            340'2823'6692'0938'4634'6337'4607'4317'6821'1455_u128 == 0xffffffff'FFFFFFFF'ffffFFFF'FFFFffff_u128);
+
+        STATIC_ASSERT(
+            340'282'366'920'938'463'463'374'607'431'768'211'455_u128 == std::numeric_limits<_Unsigned128>::max());
+        STATIC_ASSERT(0xffffffff'ffffffff'ffffffff'ffffffff_u128 == std::numeric_limits<_Unsigned128>::max());
+    }
 
     return true;
 }
 
 constexpr bool test_signed() {
-    static_assert(std::regular<_Signed128>);
-    static_assert(std::three_way_comparable<_Signed128, std::strong_ordering>);
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+    STATIC_ASSERT(std::regular<_Signed128>);
+    STATIC_ASSERT(std::three_way_comparable<_Signed128, ordtest::strong_ordering>);
+#endif // __cpp_lib_concepts
 
-    static_assert(std::numeric_limits<_Signed128>::min() == _Signed128{0, 1ull << 63});
-    static_assert(std::numeric_limits<_Signed128>::max() == _Signed128{~0ull, ~0ull >> 1});
-    static_assert(std::numeric_limits<_Signed128>::digits == 127);
-    static_assert(!std::numeric_limits<_Signed128>::is_modulo);
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::is_specialized);
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::is_exact);
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::is_integer);
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::is_signed);
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::is_bounded);
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::min() == _Signed128{0, 1ull << 63});
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::max() == _Signed128{~0ull, ~0ull >> 1});
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::digits == 127);
+    STATIC_ASSERT(std::numeric_limits<_Signed128>::radix == 2);
+    STATIC_ASSERT(!std::numeric_limits<_Signed128>::is_modulo);
 
-    static_assert(std::same_as<std::common_type_t<bool, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<char, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<signed char, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<unsigned char, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<wchar_t, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<bool, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<char, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<signed char, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<unsigned char, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<wchar_t, _Signed128>, _Signed128>);
 #ifdef __cpp_char8_t
-    static_assert(std::same_as<std::common_type_t<char8_t, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<char8_t, _Signed128>, _Signed128>);
 #endif // __cpp_char8_t
-    static_assert(std::same_as<std::common_type_t<char16_t, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<char32_t, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<short, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<unsigned short, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<int, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<unsigned int, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<long, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<unsigned long, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<long long, _Signed128>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<unsigned long long, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<char16_t, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<char32_t, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<short, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<unsigned short, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<int, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<unsigned int, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<long, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<unsigned long, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<long long, _Signed128>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<unsigned long long, _Signed128>, _Signed128>);
 
-    static_assert(std::same_as<std::common_type_t<_Signed128, bool>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, char>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, signed char>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, unsigned char>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, wchar_t>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, bool>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, char>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, signed char>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, unsigned char>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, wchar_t>, _Signed128>);
 #ifdef __cpp_char8_t
-    static_assert(std::same_as<std::common_type_t<_Signed128, char8_t>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, char8_t>, _Signed128>);
 #endif // __cpp_char8_t
-    static_assert(std::same_as<std::common_type_t<_Signed128, char16_t>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, char32_t>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, short>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, unsigned short>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, int>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, unsigned int>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, long>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, unsigned long>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, long long>, _Signed128>);
-    static_assert(std::same_as<std::common_type_t<_Signed128, unsigned long long>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, char16_t>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, char32_t>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, short>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, unsigned short>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, int>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, unsigned int>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, long>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, unsigned long>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, long long>, _Signed128>);
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, unsigned long long>, _Signed128>);
 
-    static_assert(std::_Integer_class<_Signed128>);
-    static_assert(std::_Integer_like<_Signed128>);
-    static_assert(std::_Signed_integer_like<_Signed128>);
-    static_assert(std::same_as<std::_Make_unsigned_like_t<_Signed128>, _Unsigned128>);
-    static_assert(std::same_as<std::_Make_signed_like_t<_Signed128>, _Signed128>);
+    struct ConversionSource {
+        constexpr operator _Signed128() const {
+            return _Signed128{};
+        }
+    };
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, ConversionSource>, _Signed128>);
+
+    struct ConversionTarget {
+        constexpr ConversionTarget(_Signed128) {}
+    };
+    STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, ConversionTarget>, ConversionTarget>);
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+    STATIC_ASSERT(std::_Integer_class<_Signed128>);
+    STATIC_ASSERT(std::_Integer_like<_Signed128>);
+    STATIC_ASSERT(std::_Signed_integer_like<_Signed128>);
+    STATIC_ASSERT(SAME_AS<std::_Make_unsigned_like_t<_Signed128>, _Unsigned128>);
+    STATIC_ASSERT(SAME_AS<std::_Make_signed_like_t<_Signed128>, _Signed128>);
+#endif // __cpp_lib_concepts
 
     check_equal(_Signed128{});
     check_equal(_Signed128{42});
     check_equal(_Signed128{-42});
     check_equal(_Signed128{0x11111111'11111111, 0x22222222'22222222});
+    check_equal(0x22222222'22222222'11111111'11111111_i128);
 
-    check_order(_Signed128{42}, _Signed128{-42}, std::strong_ordering::greater);
+    check_order(_Signed128{42}, _Signed128{-42}, ordtest::strong_ordering::greater);
     check_order(_Signed128{0x11111111'11111111, 0x22222222'22222222},
-        _Signed128{0x01010101'01010101, 0x01010101'01010101}, std::strong_ordering::greater);
-    check_order(_Signed128{~0ull, ~0ull}, _Signed128{-1}, std::strong_ordering::equal);
+        _Signed128{0x01010101'01010101, 0x01010101'01010101}, ordtest::strong_ordering::greater);
+    check_order(0x22222222'22222222'11111111'11111111_i128, 0x01010101'01010101'01010101'01010101_i128,
+        ordtest::strong_ordering::greater);
+    check_order(_Signed128{~0ull, ~0ull}, _Signed128{-1}, ordtest::strong_ordering::equal);
 
-    check_order(_Signed128{-2}, _Signed128{-1}, std::strong_ordering::less);
-    check_order(_Signed128{-2}, _Signed128{1}, std::strong_ordering::less);
-    check_order(_Signed128{2}, _Signed128{-1}, std::strong_ordering::greater);
-    check_order(_Signed128{2}, _Signed128{1}, std::strong_ordering::greater);
+    check_order(_Signed128{-2}, _Signed128{-1}, ordtest::strong_ordering::less);
+    check_order(_Signed128{-2}, _Signed128{1}, ordtest::strong_ordering::less);
+    check_order(_Signed128{2}, _Signed128{-1}, ordtest::strong_ordering::greater);
+    check_order(_Signed128{2}, _Signed128{1}, ordtest::strong_ordering::greater);
 
     check_equal(_Signed128{0, 0});
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, 0}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, (1ull << 63)}, std::strong_ordering::equal);
-    check_order(_Signed128{0, 0}, _Signed128{1, 0}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, 0}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, (1ull << 63)}, std::strong_ordering::less);
-    check_order(_Signed128{0, 0}, _Signed128{0, 1}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, 1}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, 1 | (1ull << 63)}, std::strong_ordering::less);
-    check_order(_Signed128{0, 0}, _Signed128{1, 1}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, 1}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, 1 | (1ull << 63)}, std::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, 0}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, (1ull << 63)}, ordtest::strong_ordering::equal);
+    check_order(_Signed128{0, 0}, _Signed128{1, 0}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, 0}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, (1ull << 63)}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, 0}, _Signed128{0, 1}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, 1}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, 1 | (1ull << 63)}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, 0}, _Signed128{1, 1}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, 1}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, 1 | (1ull << 63)}, ordtest::strong_ordering::less);
 
     assert((_Signed128{-2} == _Unsigned128{0ull - 2, ~0ull}));
     assert((_Unsigned128{_Signed128{-2}} == _Unsigned128{0ull - 2, ~0ull}));
@@ -497,16 +738,19 @@ constexpr bool test_signed() {
     }
     {
         auto product = _Signed128{0x01010101'01010101, 0x01010101'01010101} * 5;
+        assert(product == 0x05050505'05050505'05050505'05050505_i128);
         assert(product._Word[0] == 0x05050505'05050505);
         assert(product._Word[1] == 0x05050505'05050505);
 
         product = 5 * _Signed128{0x01010101'01010101, 0x01010101'01010101};
+        assert(product == 0x05050505'05050505'05050505'05050505_i128);
         assert(product._Word[0] == 0x05050505'05050505);
         assert(product._Word[1] == 0x05050505'05050505);
     }
     {
         auto product = _Signed128{0x01010101'01010101, 0x01010101'01010101};
         product *= product;
+        assert(product == 0x100f0e0d'0c0b0a09'08070605'04030201_i128);
         assert(product._Word[0] == 0x08070605'04030201);
         assert(product._Word[1] == 0x100f0e0d'0c0b0a09);
         assert(+product == product);
@@ -515,18 +759,21 @@ constexpr bool test_signed() {
     {
         auto product =
             _Signed128{0x01020304'05060708, 0x090a0b0c'0d0e0f00} * _Signed128{0x000f0e0d'0c0b0a09, 0x08070605'04030201};
+        assert(product == -0x23e49431'bc3293de'923e71aa'e92b70b8_i128);
         assert(product._Word[0] == 0x6dc18e55'16d48f48);
         assert(product._Word[1] == 0xdc1b6bce'43cd6c21);
         assert(+product == product);
         assert(-product + product == 0);
 
         product <<= 11;
+        assert(product == -0x24a18de1'949ef491'f38d5749'5b85c000_i128);
         assert(product._Word[0] == 0x0c72a8b6'a47a4000);
         assert(product._Word[1] == 0xdb5e721e'6b610b6e);
         assert(+product == product);
         assert(-product + product == 0);
 
         product >>= 17;
+        assert(product == -0x00001250'c6f0ca4f'7a48f9c6'aba4adc3_i128);
         assert(product._Word[0] == 0x85b70639'545b523d);
         assert(product._Word[1] == 0xffffedaf'390f35b0);
         assert(+product == product);
@@ -566,6 +813,7 @@ constexpr bool test_signed() {
         assert(q._Word[1] == 0);
 
         q = _Signed128{0x01010101'01010101, 0x01010101'01010101} / _Signed128{13};
+        assert(q == 0x0013c500'13c50013'c50013c5'0013c500_i128);
         assert(q._Word[0] == 0xc50013c5'0013c500);
         assert(q._Word[1] == 0x0013c500'13c50013);
 
@@ -658,16 +906,19 @@ constexpr bool test_signed() {
         const _Signed128 x{0x01020304'02030405, 0x03040506'04050607};
         const _Signed128 y{0x07060504'06050403, 0x05040302'04030101};
         assert(((x & y) == _Signed128{0x01020104'02010401, 0x01040102'04010001}));
+        assert(((x & y) == 0x01040102'04010001'01020104'02010401_i128));
         auto tmp = x;
         tmp &= y;
         assert(tmp == (x & y));
 
         assert(((x | y) == _Signed128{0x07060704'06070407, 0x07040706'04070707}));
+        assert(((x | y) == 0x07040706'04070707'07060704'06070407_i128));
         tmp = x;
         tmp |= y;
         assert(tmp == (x | y));
 
         assert(((x ^ y) == _Signed128{0x06040600'04060006, 0x06000604'00060706}));
+        assert(((x ^ y) == 0x06000604'00060706'06040600'04060006_i128));
         tmp = x;
         tmp ^= y;
         assert(tmp == (x ^ y));
@@ -704,6 +955,47 @@ constexpr bool test_signed() {
         assert(x._Word[1] == static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()));
         assert(x == std::numeric_limits<_Signed128>::max());
     }
+    {
+        STATIC_ASSERT(noexcept(0_i128));
+        STATIC_ASSERT(noexcept(42_i128));
+        STATIC_ASSERT(noexcept(4'2_i128));
+        STATIC_ASSERT(noexcept(052_i128));
+        STATIC_ASSERT(noexcept(05'2_i128));
+        STATIC_ASSERT(noexcept(0x2a_i128));
+        STATIC_ASSERT(noexcept(0X2a_i128));
+        STATIC_ASSERT(noexcept(0x2A_i128));
+        STATIC_ASSERT(noexcept(0X2A_i128));
+        STATIC_ASSERT(noexcept(0x2'A_i128));
+        STATIC_ASSERT(noexcept(0b101010_i128));
+        STATIC_ASSERT(noexcept(0b1'0101'0_i128));
+        STATIC_ASSERT(noexcept(0B101010_i128));
+        STATIC_ASSERT(noexcept(0B1'0101'0_i128));
+        STATIC_ASSERT(noexcept(0xABCDEF_i128));
+        STATIC_ASSERT(noexcept(170141183460469231731687303715884105727_i128));
+        STATIC_ASSERT(noexcept(0x7fffffff'FFFFFFFF'ffffFFFF'FFFFffff_i128));
+
+        STATIC_ASSERT(42_i128 == 42);
+        STATIC_ASSERT(4'2_i128 == 42);
+        STATIC_ASSERT(42_i128 == 052_i128);
+        STATIC_ASSERT(4'2_i128 == 052_i128);
+        STATIC_ASSERT(42_i128 == 0x2a_i128);
+        STATIC_ASSERT(4'2_i128 == 0X2a_i128);
+        STATIC_ASSERT(42_i128 == 0b101010_i128);
+        STATIC_ASSERT(4'2_i128 == 0b101010_i128);
+        STATIC_ASSERT(42_i128 == 0B101010_i128);
+        STATIC_ASSERT(4'2_i128 == 0B101010_i128);
+        STATIC_ASSERT(11259375_i128 == 0xABCDEF_i128);
+        STATIC_ASSERT(
+            170'1411'8346'0469'2317'3168'7303'7158'8410'5727_i128 == 0x7fffffff'FFFFFFFF'ffffFFFF'FFFFffff_i128);
+
+        STATIC_ASSERT(
+            170'141'183'460'469'231'731'687'303'715'884'105'727_i128 == std::numeric_limits<_Signed128>::max());
+        STATIC_ASSERT(0x7fffffff'ffffffff'ffffffff'ffffffff_i128 == std::numeric_limits<_Signed128>::max());
+
+        STATIC_ASSERT(
+            -170'141'183'460'469'231'731'687'303'715'884'105'727_i128 - 1 == std::numeric_limits<_Signed128>::min());
+        STATIC_ASSERT(-0x7fffffff'ffffffff'ffffffff'ffffffff_i128 - 1 == std::numeric_limits<_Signed128>::min());
+    }
 
     return true;
 }
@@ -711,18 +1003,24 @@ constexpr bool test_signed() {
 template <class T>
 T val() noexcept;
 
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 template <class T, class U>
-concept CanConditional = requires {
-    true ? val<T>() : val<U>();
-};
+concept CanConditional = requires { true ? val<T>() : val<U>(); };
+#else // ^^^ has concepts / has no concepts vvv
+template <class T, class U, class = void>
+constexpr bool CanConditional = false;
+
+template <class T, class U>
+constexpr bool CanConditional<T, U, std::void_t<decltype(true ? val<T>() : val<U>())>> = true;
+#endif // ^^^ has no concepts ^^^
 
 constexpr bool test_cross() {
     // Test the behavior of cross-type operations.
 
-#define TEST(expr, result)                                                                      \
-    do {                                                                                        \
-        static_assert(std::same_as<decltype((expr)), std::remove_const_t<decltype((result))>>); \
-        assert((expr) == (result));                                                             \
+#define TEST(expr, result)                                                                 \
+    do {                                                                                   \
+        STATIC_ASSERT(SAME_AS<decltype((expr)), std::remove_const_t<decltype((result))>>); \
+        assert((expr) == (result));                                                        \
     } while (0)
 
     //////// Mixed integer-class operands
@@ -764,14 +1062,16 @@ constexpr bool test_cross() {
     // convertible only to wider types, or types of the same width and
     // signedness. Consequently, the conditional operator should reject integer-
     // class operands with the same width but differing signedness.
-    static_assert(!CanConditional<_Unsigned128, _Signed128>);
-    static_assert(!CanConditional<_Signed128, _Unsigned128>);
+    STATIC_ASSERT(!CanConditional<_Unsigned128, _Signed128>);
+    STATIC_ASSERT(!CanConditional<_Signed128, _Unsigned128>);
 
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
     // Conversions between integer-class types with the same width and differing
     // signedness are narrowing, so the three-way comparison operator should
     // reject mixed operands of such types.
-    static_assert(!std::three_way_comparable_with<_Unsigned128, _Signed128>);
-    static_assert(!std::three_way_comparable_with<_Signed128, _Unsigned128>);
+    STATIC_ASSERT(!std::three_way_comparable_with<_Unsigned128, _Signed128>);
+    STATIC_ASSERT(!std::three_way_comparable_with<_Signed128, _Unsigned128>);
+#endif // __cpp_lib_concepts
 
     // Other comparison operators behave as they do for operands of mixed
     // integral types; when the operands have the same width, the signed operand
@@ -917,6 +1217,7 @@ constexpr bool test_cross() {
     TEST(true ? 42 : _Signed128{13}, _Signed128{42});
     TEST(true ? 42 : _Unsigned128{13}, _Unsigned128{42});
 
+#if _HAS_CXX20
     // (meow <=> 0) here is a hack to get prvalues
     TEST(4 <=> _Unsigned128{3}, (std::strong_ordering::greater <=> 0));
     TEST(4 <=> _Signed128{3}, (std::strong_ordering::greater <=> 0));
@@ -930,6 +1231,7 @@ constexpr bool test_cross() {
     TEST(-3 <=> _Signed128{3}, (std::strong_ordering::less <=> 0));
     TEST(_Signed128{-3} <=> 3, (std::strong_ordering::less <=> 0));
     TEST(_Unsigned128{-3} <=> 3, (std::strong_ordering::greater <=> 0));
+#endif // _HAS_CXX20
 
     // Other comparison operators behave as they do for operands of mixed
     // integral types; when the operands have the same width, the signed operand
@@ -997,7 +1299,11 @@ constexpr bool test_cross() {
         x = -26;
         TEST(u *= 2, x);
         y = 12;
+#ifdef _M_CEE // TRANSITION, VSO-1658184 (/clr silent bad codegen)
+        i = 12;
+#else // ^^^ workaround / no workaround vvv
         TEST(i *= -2, y);
+#endif // ^^^ no workaround ^^^
 
         x = _Unsigned128{0x55555555'5555554c, 0x55555555'55555555};
         TEST(u /= 3, x); // Yes, u is still unsigned =)
@@ -1041,9 +1347,9 @@ constexpr bool test_cross() {
 
 int main() {
     test_unsigned();
-    static_assert(test_unsigned());
+    STATIC_ASSERT(test_unsigned());
     test_signed();
-    static_assert(test_signed());
+    STATIC_ASSERT(test_signed());
     test_cross();
-    static_assert(test_cross());
+    STATIC_ASSERT(test_cross());
 }

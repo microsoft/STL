@@ -1,0 +1,73 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+name: Move PR To Work In Progress
+on:
+  issue_comment:
+    types: [created]
+    branch:
+      - main
+
+jobs:
+  move-pr-to-wip:
+    if: >
+      github.event.issue.pull_request
+      && github.event.comment.user.login == github.event.issue.user.login
+      && contains(github.event.comment.body, '/pr wip')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move To Work In Progress
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Find "Code Reviews" project manually by name matching
+            // This avoids hardcoding the project ID
+            const projects = await github.paginate(github.rest.projects.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const code_reviews = projects.find(project => project.name === 'Code Reviews');
+            if (!code_reviews) {
+              console.error("'Code Reviews' project not found!");
+              return;
+            }
+
+            // Find "Work In Progress" column manually by name matching
+            // Also find the card of the PR in either "Initial Review" or "Final Review"
+            // This avoids hardcoding the column ID and card ID
+            const columns = await github.paginate(github.rest.projects.listColumns, {
+              project_id: code_reviews.id,
+            });
+
+            const work_in_progress = columns.find(column => column.name === 'Work In Progress');
+            if (!work_in_progress) {
+              console.error("'Work In Progress' column not found!");
+              return;
+            }
+
+            const move_card_in_column = async (column) => {
+              const cards = await github.paginate(github.rest.projects.listCards, {
+                column_id: column.id,
+              });
+
+              const pr_card = cards.find(card => card.content_url === context.payload.issue.url);
+              if (!pr_card) {
+                return; // the PR card is not in this column
+              }
+
+              await github.rest.projects.moveCard({
+                card_id: pr_card.id,
+                position: 'bottom',
+                column_id: work_in_progress.id,
+              });
+            };
+
+            columns.forEach(column => {
+              if (column.name !== 'Initial Review' && column.name !== 'Final Review') {
+                return; // no reason to search through other columns and avoids unnecessary API calls
+              }
+
+              move_card_in_column(column).catch(error => {
+                console.error(`Error occurred while moving card to 'Work In Progress': ${error}`);
+              });
+            });

@@ -8,22 +8,16 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
-#if _HAS_CXX17 && !defined(_M_CEE)
-#define HAS_PARALLEL_ALGORITHMS 1
-#else
-#define HAS_PARALLEL_ALGORITHMS 0
-#endif // _HAS_CXX17 && !defined(_M_CEE)
-
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
 #include <execution>
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
+
+using namespace std;
 
 int main() {
     {
         vector<string> v = {"cute", "fluffy", "kittens", "ugly", "stupid", "puppies"};
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
         auto p = v;
 #endif
 
@@ -33,7 +27,7 @@ int main() {
 
         assert(v == correct);
 
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
         stable_sort(execution::par, p.begin(), p.end());
 
         assert(p == correct);
@@ -42,7 +36,7 @@ int main() {
 
     {
         vector<string> v = {"cute", "fluffy", "kittens", "ugly", "stupid", "puppies"};
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
         auto p = v;
 #endif
 
@@ -53,7 +47,7 @@ int main() {
 
         assert(v == correct);
 
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
         stable_sort(execution::par, p.begin(), p.end(), cmp);
 
         assert(p == correct);
@@ -96,14 +90,14 @@ int main() {
                 v.emplace_back(urng());
             }
 
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
             auto p = v;
 #endif
 
             stable_sort(v.begin(), v.end());
             assert(is_sorted(v.begin(), v.end()));
 
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
             stable_sort(execution::par, p.begin(), p.end());
             assert(is_sorted(p.begin(), p.end()));
 #endif

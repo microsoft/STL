@@ -282,7 +282,7 @@ extern "C" _CRTIMP2 BOOLEAN __cdecl __crtCreateSymbolicLinkW(
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
-extern "C" _CRTIMP2 _Success_(return ) BOOL __cdecl __crtGetFileInformationByHandleEx(_In_ HANDLE const hFile,
+extern "C" _CRTIMP2 _Success_(return) BOOL __cdecl __crtGetFileInformationByHandleEx(_In_ HANDLE const hFile,
     _In_ FILE_INFO_BY_HANDLE_CLASS const FileInformationClass,
     _Out_writes_bytes_(dwBufferSize) LPVOID const lpFileInformation, _In_ DWORD const dwBufferSize) {
     return GetFileInformationByHandleEx(hFile, FileInformationClass, lpFileInformation, dwBufferSize);

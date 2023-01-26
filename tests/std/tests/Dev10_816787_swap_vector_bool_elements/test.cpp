@@ -17,7 +17,6 @@ int main() {
     assert(all_of(x.begin(), x.end(), is_false));
     assert(all_of(y.begin(), y.end(), is_true));
 
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273381
     swap(x[12], y[34]);
 
     assert(all_of(x.begin(), x.begin() + 12, is_false));
@@ -27,5 +26,4 @@ int main() {
     assert(all_of(y.begin(), y.begin() + 34, is_true));
     assert(!y[34]);
     assert(all_of(y.begin() + 35, y.end(), is_true));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
 }

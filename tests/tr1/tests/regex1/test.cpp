@@ -177,8 +177,9 @@ static void test_traits() { // test template regex_traits
     CHECK(v0.transform_primary(carr, carr + xlen(carr)) == v0.transform_primary(carr0, carr0 + xlen(carr0)));
     CHECK(v0.transform_primary(carr0, carr0 + xlen(carr0)) < v0.transform_primary(carr1, carr1 + xlen(carr1)));
 
-    for (size_t i = 0; i < sizeof(class_names) / sizeof(*class_names); ++i)
+    for (size_t i = 0; i < sizeof(class_names) / sizeof(*class_names); ++i) {
         CHECK(v0.lookup_classname(class_names[i], class_names[i] + xlen(class_names[i])) != 0);
+    }
     CHECK(v0.lookup_classname(carr, carr) == 0);
     CHECK(v0.lookup_collatename(carr, carr + xlen(carr)) != STDString());
     CHECK(v0.isctype('0', v0.lookup_classname(class_names[0], class_names[0] + xlen(class_names[0]))));
@@ -507,8 +508,9 @@ static void test_match_results() { // test template match_results
 
     p_val = p_val; // to quiet diagnostics
     (void) citer;
-    if (cref.length() == ref.length())
+    if (cref.length() == ref.length()) {
         p_iter = p_iter;
+    }
     p_diff  = p_diff;
     p_size  = p_size;
     p_alloc = p_alloc;
@@ -663,8 +665,9 @@ static void test_regex_iterator() { // test template regex_iterator
     p_val = p_val;
     p_dif = p_dif;
     ptr   = ptr;
-    if (ref.size())
+    if (ref.size()) {
         p_tag = p_tag;
+    }
 }
 
 static void test_regex_token_iterator() { // test template regex_token_iterator
@@ -886,8 +889,9 @@ static void test_regex_token_iterator() { // test template regex_token_iterator
     p_val = p_val;
     p_dif = p_dif;
     ptr   = ptr;
-    if (ref.length())
+    if (ref.length()) {
         p_tag = p_tag;
+    }
 }
 
 static void test_match() { // test function regex_match
@@ -1065,11 +1069,12 @@ static void test_replace() { // test function regex_replace
 static void test_syntax_flags() { // test syntax flags
     MyRgx r0;
     int i, j, ok;
-    for (ok = 1, i = sizeof(synflags) / sizeof(synflags[0]); 0 < i;)
+    for (ok = 1, i = sizeof(synflags) / sizeof(synflags[0]); 0 < i;) {
         for (j = --i; 0 < j;) { // test an (i, j) pair
             int testno = i * 0x100 + j;
             ok         = CHECK0(ok, testno, synflags[i] != synflags[--j]);
         }
+    }
     CHECK_MSG("regex_constants::syntax_option_type values are distinct", ok);
 
     r0.assign(T("a"));
@@ -1096,11 +1101,12 @@ static void test_match_flags() { // test match flags
     CHECK_INT(mtchflags[0], 0);
     CHECK_INT(mtchflags[9], 0);
     int i, j, ok;
-    for (ok = 1, i = sizeof(mtchflags) / sizeof(mtchflags[0]); 0 < i;)
+    for (ok = 1, i = sizeof(mtchflags) / sizeof(mtchflags[0]); 0 < i;) {
         for (j = --i; 0 < j;) { // test an (i, j) pair
             int testno = i * 0x100 + j;
             ok         = CHECK0(ok, testno, mtchflags[i] != mtchflags[--j] || mtchflags[i] == 0);
         }
+    }
     CHECK_MSG("regex_constants::match_flag_type values are distinct", ok);
 
     r0.assign(T("^a"));
@@ -1141,18 +1147,20 @@ static void test_match_flags() { // test match flags
 
 static void test_error_flags() { // test error flags
     int i, j, ok;
-    for (ok = 1, i = sizeof(errflags) / sizeof(errflags[0]); 0 < i;)
+    for (ok = 1, i = sizeof(errflags) / sizeof(errflags[0]); 0 < i;) {
         for (j = --i; 0 < j;) { // test an (i, j) pair
             int testno = i * 0x100 + j;
             ok         = CHECK0(ok, testno, errflags[i] != errflags[--j]);
         }
+    }
     CHECK_MSG("regex_constants::error_type values are distinct", ok);
 
     STD regex_error x(errflags[0]);
     STD runtime_error* pex = &x;
 
-    if (!terse)
+    if (!terse) {
         printf("regex_error().what() returns \"%s\"\n", pex->what());
+    }
 
     CHECK(pex->what() != nullptr);
     CHECK_INT(x.code(), errflags[0]);

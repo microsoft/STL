@@ -24,11 +24,9 @@ struct CpoResultImpl {
     using type = IllFormed;
 };
 
-// clang-format off
 template <const auto& CPO, typename E, typename F>
     requires requires { CPO(declval<E>(), declval<F>()); }
 struct CpoResultImpl<CPO, E, F> {
-    // clang-format on
     using type = decltype(CPO(declval<E>(), declval<F>()));
 };
 
@@ -328,6 +326,65 @@ namespace {
     static_assert(is_same_v<CpoResult<compare_partial_order_fallback, F<13>, const F<13>>, Partial>); // [cmp.alg]/6.3
 } // namespace
 
+// Test strengthened requirements in P2167R3: compare_*_order_fallback CPOs require return types to be boolean-testable.
+enum class ResultKind : bool {
+    Bad,
+    Good,
+};
+
+template <ResultKind K>
+struct ComparisonResult {
+    bool value;
+
+    constexpr operator bool() const noexcept {
+        return value;
+    }
+
+    constexpr auto operator!() const noexcept {
+        if constexpr (K == ResultKind::Good) {
+            return ComparisonResult{!value};
+        }
+    }
+};
+
+template <ResultKind EqKind, ResultKind LeKind>
+struct BoolTestType {
+    friend constexpr ComparisonResult<EqKind> operator==(BoolTestType, BoolTestType) noexcept {
+        return ComparisonResult<EqKind>{true};
+    }
+
+    friend constexpr ComparisonResult<LeKind> operator<(BoolTestType, BoolTestType) noexcept {
+        return ComparisonResult<LeKind>{false};
+    }
+};
+
+static_assert(is_same_v<CpoResult<compare_strong_order_fallback, BoolTestType<ResultKind::Bad, ResultKind::Bad>>,
+    IllFormed>); // [cmp.alg]/4.3
+static_assert(is_same_v<CpoResult<compare_strong_order_fallback, BoolTestType<ResultKind::Bad, ResultKind::Good>>,
+    IllFormed>); // [cmp.alg]/4.3
+static_assert(is_same_v<CpoResult<compare_strong_order_fallback, BoolTestType<ResultKind::Good, ResultKind::Bad>>,
+    IllFormed>); // [cmp.alg]/4.3
+static_assert(is_same_v<CpoResult<compare_strong_order_fallback, BoolTestType<ResultKind::Good, ResultKind::Good>>,
+    strong_ordering>); // [cmp.alg]/4.3
+
+static_assert(is_same_v<CpoResult<compare_weak_order_fallback, BoolTestType<ResultKind::Bad, ResultKind::Bad>>,
+    IllFormed>); // [cmp.alg]/5.3
+static_assert(is_same_v<CpoResult<compare_weak_order_fallback, BoolTestType<ResultKind::Bad, ResultKind::Good>>,
+    IllFormed>); // [cmp.alg]/5.3
+static_assert(is_same_v<CpoResult<compare_weak_order_fallback, BoolTestType<ResultKind::Good, ResultKind::Bad>>,
+    IllFormed>); // [cmp.alg]/5.3
+static_assert(is_same_v<CpoResult<compare_weak_order_fallback, BoolTestType<ResultKind::Good, ResultKind::Good>>,
+    weak_ordering>); // [cmp.alg]/5.3
+
+static_assert(is_same_v<CpoResult<compare_partial_order_fallback, BoolTestType<ResultKind::Bad, ResultKind::Bad>>,
+    IllFormed>); // [cmp.alg]/6.3
+static_assert(is_same_v<CpoResult<compare_partial_order_fallback, BoolTestType<ResultKind::Bad, ResultKind::Good>>,
+    IllFormed>); // [cmp.alg]/6.3
+static_assert(is_same_v<CpoResult<compare_partial_order_fallback, BoolTestType<ResultKind::Good, ResultKind::Bad>>,
+    IllFormed>); // [cmp.alg]/6.3
+static_assert(is_same_v<CpoResult<compare_partial_order_fallback, BoolTestType<ResultKind::Good, ResultKind::Good>>,
+    partial_ordering>); // [cmp.alg]/6.3
+
 // Test when the type is comparable through ADL. Part B, exception specifications.
 static_assert(!NoexceptCpo<std::strong_order, TestAdl::StrongType<Throwing>>); // [cmp.alg]/1.2
 static_assert(!NoexceptCpo<std::weak_order, TestAdl::WeakType<Throwing>>); // [cmp.alg]/2.2
@@ -444,9 +501,11 @@ template <typename Floating>
 constexpr void test_floating() {
     if constexpr (is_same_v<Floating, float>) {
         const pair<int, float> rank_value_pairs[]{
+#ifndef _M_CEE // TRANSITION, VSO-1666161
             {10, bit_cast<float>(0xFFFFFFFFu)}, // negative quiet NaN, all payload bits set
             {10, bit_cast<float>(0xFFC01234u)}, // negative quiet NaN, some payload bits set
             {10, bit_cast<float>(0xFFC00000u)}, // negative quiet NaN, no payload bits set
+#endif // _M_CEE
 #ifdef __clang__ // TRANSITION, MSVC "quiets" signaling NaNs into quiet NaNs when constant evaluated
             {10, bit_cast<float>(0xFFBFFFFFu)}, // negative signaling NaN, all payload bits set
             {10, bit_cast<float>(0xFF801234u)}, // negative signaling NaN, some payload bits set
@@ -469,9 +528,11 @@ constexpr void test_floating() {
             {90, bit_cast<float>(0x7F801234u)}, // signaling NaN, some payload bits set
             {90, bit_cast<float>(0x7FBFFFFFu)}, // signaling NaN, all payload bits set
 #endif // defined(__clang__)
+#ifndef _M_CEE // TRANSITION, VSO-1666161
             {90, bit_cast<float>(0x7FC00000u)}, // quiet NaN, no payload bits set
             {90, bit_cast<float>(0x7FC01234u)}, // quiet NaN, some payload bits set
             {90, bit_cast<float>(0x7FFFFFFFu)}, // quiet NaN, all payload bits set
+#endif // _M_CEE
         };
 
         test_ranked_values(rank_value_pairs);

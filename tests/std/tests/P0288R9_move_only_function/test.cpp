@@ -393,7 +393,7 @@ void test_noexcept() {
     static_assert(!noexcept(declval<f_x>()()));
 #ifdef __cpp_noexcept_function_type
     static_assert(noexcept(declval<f_nx>()()));
-#else // ^^^ defined(__cpp_noexcept_function_type) ^^^ / vvv !defined(__cpp_noexcept_function_type) vvv
+#else // ^^^ defined(__cpp_noexcept_function_type) / !defined(__cpp_noexcept_function_type) vvv
     static_assert(!noexcept(declval<f_nx>()()));
 #endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
@@ -405,7 +405,7 @@ void test_noexcept() {
 
 #ifdef __cpp_noexcept_function_type
     static_assert(!is_constructible_v<f_nx, test_noexcept_t<false>>);
-#else // ^^^ defined(__cpp_noexcept_function_type) ^^^ / vvv !defined(__cpp_noexcept_function_type) vvv
+#else // ^^^ defined(__cpp_noexcept_function_type) / !defined(__cpp_noexcept_function_type) vvv
     static_assert(is_constructible_v<f_nx, test_noexcept_t<false>>);
     assert(f_nx(test_noexcept_t<false>{})() == 888);
 #endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
@@ -467,16 +467,16 @@ void test_qual() {
 
     move_only_function<int(int) noexcept> f1_nx([](auto i) noexcept { return i + 1; });
     assert(f1_nx(1) == 2);
-    move_only_function<int(int)& noexcept> f2_nx([](auto i) noexcept { return i + 1; });
+    move_only_function<int(int) & noexcept> f2_nx([](auto i) noexcept { return i + 1; });
     assert(f2_nx(2) == 3);
-    move_only_function<int(int)&& noexcept> f3_nx([](auto i) noexcept { return i + 1; });
+    move_only_function<int(int) && noexcept> f3_nx([](auto i) noexcept { return i + 1; });
     assert(move(f3_nx)(3) == 4);
 
     move_only_function<int(int) const noexcept> f1c_nx([](auto i) noexcept { return i + 1; });
     assert(f1c_nx(4) == 5);
-    move_only_function<int(int) const& noexcept> f2c_nx([](auto i) noexcept { return i + 1; });
+    move_only_function<int(int) const & noexcept> f2c_nx([](auto i) noexcept { return i + 1; });
     assert(f2c_nx(5) == 6);
-    move_only_function<int(int) const&& noexcept> f3c_nx([](auto i) noexcept { return i + 1; });
+    move_only_function<int(int) const && noexcept> f3c_nx([](auto i) noexcept { return i + 1; });
     assert(move(f3c_nx)(6) == 7);
 }
 
@@ -492,8 +492,8 @@ static_assert(is_same_v<move_only_function<void() noexcept>::result_type, void>)
 static_assert(is_same_v<move_only_function<short(long&) & noexcept>::result_type, short>);
 static_assert(is_same_v<move_only_function<int(char*) && noexcept>::result_type, int>);
 static_assert(is_same_v<move_only_function<void() const noexcept>::result_type, void>);
-static_assert(is_same_v<move_only_function<short(long&) const& noexcept>::result_type, short>);
-static_assert(is_same_v<move_only_function<int(char*) const&& noexcept>::result_type, int>);
+static_assert(is_same_v<move_only_function<short(long&) const & noexcept>::result_type, short>);
+static_assert(is_same_v<move_only_function<int(char*) const && noexcept>::result_type, int>);
 #endif // ^^^ defined(__cpp_noexcept_function_type) ^^^
 
 bool fail_allocations = false;

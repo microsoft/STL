@@ -4,9 +4,11 @@
 set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_all_public_headers.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_chrono.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_cxx_stdatomic.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_format_ucd_tables.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_int128.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_iter_core.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_sanitizer_annotate_container.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_tzdb.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_xlocinfo_types.hpp
@@ -191,7 +193,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/sstream
     ${CMAKE_CURRENT_LIST_DIR}/inc/stack
     ${CMAKE_CURRENT_LIST_DIR}/inc/stacktrace
-    ${CMAKE_CURRENT_LIST_DIR}/inc/stdatomic.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/stdexcept
     ${CMAKE_CURRENT_LIST_DIR}/inc/stop_token
     ${CMAKE_CURRENT_LIST_DIR}/inc/streambuf
@@ -253,6 +254,17 @@ set(HEADERS
 foreach(header ${HEADERS})
     file(RELATIVE_PATH _header_path "${CMAKE_CURRENT_LIST_DIR}/inc" "${header}")
     configure_file("${header}" "${PROJECT_BINARY_DIR}/out/inc/${_header_path}" COPYONLY)
+endforeach()
+
+set(MODULE_FILES
+    ${CMAKE_CURRENT_LIST_DIR}/modules/modules.json
+    ${CMAKE_CURRENT_LIST_DIR}/modules/std.ixx
+    ${CMAKE_CURRENT_LIST_DIR}/modules/std.compat.ixx
+)
+
+foreach(module_file ${MODULE_FILES})
+    file(RELATIVE_PATH _module_file_path "${CMAKE_CURRENT_LIST_DIR}/modules" "${module_file}")
+    configure_file("${module_file}" "${PROJECT_BINARY_DIR}/out/modules/${_module_file_path}" COPYONLY)
 endforeach()
 
 # Objs that implement aliases; these are completely independent of the configuration

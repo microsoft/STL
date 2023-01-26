@@ -34,15 +34,13 @@ using pipeline_t =
         Fun>;
 
 template <class Rng>
-concept CanViewTransform = requires(Rng&& r) {
-    views::transform(forward<Rng>(r), add8);
-};
+concept CanViewTransform = requires(Rng&& r) { views::transform(forward<Rng>(r), add8); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using ranges::transform_view, ranges::bidirectional_range, ranges::common_range, ranges::contiguous_range,
         ranges::enable_borrowed_range, ranges::forward_range, ranges::input_range, ranges::iterator_t, ranges::prev,
-        ranges::random_access_range, ranges::range, ranges::range_reference_t, ranges::sentinel_t;
+        ranges::random_access_range, ranges::sized_range, ranges::range, ranges::range_reference_t, ranges::sentinel_t;
 
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
 
@@ -169,7 +167,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     constexpr bool const_invocable = regular_invocable<const Fun&, range_reference_t<const V>>;
 
     // Validate view_interface::empty and operator bool
-    STATIC_ASSERT(CanMemberEmpty<R> == forward_range<Rng>);
+    STATIC_ASSERT(CanMemberEmpty<R> == (sized_range<Rng> || forward_range<Rng>) );
     STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
     if constexpr (CanMemberEmpty<R>) {
         assert(r.empty() == is_empty);
@@ -182,7 +180,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
-    STATIC_ASSERT(CanMemberEmpty<const R> == (forward_range<const Rng> && const_invocable));
+    STATIC_ASSERT(CanMemberEmpty<const R> == ((sized_range<const Rng> || forward_range<const Rng>) &&const_invocable));
     STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
     if constexpr (CanMemberEmpty<const R>) {
         assert(as_const(r).empty() == is_empty);
@@ -321,6 +319,50 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     return true;
 }
 
+// Test a function object whose const and non-const versions behave differently
+struct difference_teller {
+    constexpr auto& operator()(auto&& x) noexcept {
+        auto& ref = x;
+        return ref;
+    }
+
+    constexpr auto operator()(auto&& x) const noexcept {
+        return type_identity<decltype(x)>{};
+    }
+};
+
+template <ranges::input_range Rng>
+constexpr void test_difference_on_const_functor(Rng&& rng) {
+    using ranges::transform_view, ranges::input_range, ranges::forward_range, ranges::bidirectional_range,
+        ranges::random_access_range, ranges::iterator_t, ranges::range_reference_t, ranges::range_value_t;
+
+    using V  = views::all_t<Rng>;
+    using TV = transform_view<V, difference_teller>;
+
+    auto r = forward<Rng>(rng) | views::transform(difference_teller{});
+    STATIC_ASSERT(is_same_v<decltype(r), TV>);
+
+    STATIC_ASSERT(is_lvalue_reference_v<range_reference_t<TV>>);
+    if constexpr (input_range<const TV>) {
+        STATIC_ASSERT(is_object_v<range_reference_t<const TV>>);
+        STATIC_ASSERT(!is_same_v<range_value_t<TV>, range_value_t<const TV>>);
+    }
+
+    if constexpr (forward_range<V>) {
+        using It      = iterator_t<V>;
+        using TVIt    = iterator_t<TV>;
+        using VItCat  = typename iterator_traits<It>::iterator_category;
+        using TVItCat = typename iterator_traits<TVIt>::iterator_category;
+        STATIC_ASSERT(
+            is_same_v<TVItCat, VItCat>
+            || (is_same_v<TVItCat, random_access_iterator_tag> && is_same_v<VItCat, contiguous_iterator_tag>) );
+    }
+
+    if constexpr (forward_range<const V>) {
+        STATIC_ASSERT(is_same_v<typename iterator_traits<iterator_t<const TV>>::iterator_category, input_iterator_tag>);
+    }
+}
+
 static constexpr int some_ints[]        = {0, 1, 2, 3, 4, 5, 6, 7};
 static constexpr int transformed_ints[] = {8, 9, 10, 11, 12, 13, 14, 15};
 
@@ -329,6 +371,9 @@ struct instantiator {
     static constexpr void call() {
         R r{some_ints};
         test_one(r, transformed_ints);
+
+        R r2{some_ints};
+        test_difference_on_const_functor(r2);
     }
 };
 
