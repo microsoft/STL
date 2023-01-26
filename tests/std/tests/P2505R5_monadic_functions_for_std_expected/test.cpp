@@ -158,7 +158,8 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
         assert(result.error().x == 22);
     }
     {
-        decltype(auto) result = forward<Expected>(engaged).transform_error(to_thingy).transform_error(&Thingy::member_func);
+        decltype(auto) result =
+            forward<Expected>(engaged).transform_error(to_thingy).transform_error(&Thingy::member_func);
         static_assert(is_same_v<decltype(result), expected<Val, int>>);
         if constexpr (!is_void_v<Val>) {
             assert(result->x == 11);
