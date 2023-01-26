@@ -3015,7 +3015,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(_Count_ >= 0, "Numer of elements to drop must be non-negative (N4928 [range.drop.view]/1");
+            _STL_VERIFY(_Count_ >= 0, "Number of elements to drop must be non-negative (N4928 [range.drop.view]/1");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         }
 

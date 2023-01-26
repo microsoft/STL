@@ -372,8 +372,7 @@ struct move_fn {
 
 template <ranges::input_range Rng>
 constexpr void test_xvalue_ranges(Rng&& rng) {
-    using ranges::transform_view, ranges::input_range, ranges::forward_range, ranges::bidirectional_range,
-        ranges::random_access_range, ranges::iterator_t, ranges::range_reference_t, ranges::range_value_t;
+    using ranges::transform_view, ranges::forward_range, ranges::iterator_t, ranges::range_reference_t;
 
     using V  = views::all_t<Rng>;
     using TV = transform_view<V, move_fn>;

@@ -251,7 +251,7 @@ struct xvalue_random_iter {
     D operator-(xvalue_random_iter const&) const;
     xvalue_random_iter& operator+=(D);
     xvalue_random_iter operator+(D) const;
-    friend xvalue_random_iter operator+(D, const xvalue_random_iter&);
+    friend xvalue_random_iter operator+(D, xvalue_random_iter const&);
 };
 
 template <int I>
@@ -1012,7 +1012,7 @@ namespace iterator_traits_test {
     // "... otherwise, it names void."
     STATIC_ASSERT(check<simple_output_iter<>, no_such_type, output_iterator_tag, void, void, void, void>());
 
-    // N4928 [iterator.traits]/3.4: "Otherwise, iterator_traits has no members by any of the above names."
+    // N4928 [iterator.traits]/3.4: "Otherwise, iterator_traits<I> has no members by any of the above names."
     STATIC_ASSERT(has_empty_traits<int>);
     STATIC_ASSERT(has_empty_traits<void>);
     STATIC_ASSERT(has_empty_traits<int(int)>);
@@ -1039,7 +1039,8 @@ namespace iterator_cust_move_test {
     template <class T>
     concept can_iter_rvalue_ref = requires { typename iter_rvalue_reference_t<T>; };
 
-    // N4928 [iterator.cust.move]/1.1 "iter_move(E), if that expression is valid, with overload resolution..."
+    // N4928 [iterator.cust.move]/1.1 "iter_move(E), if [...] iter_move(E) is a well-formed expression when [...]
+    // performing argument-dependent lookup only."
     struct friend_hook {
         friend constexpr double iter_move(friend_hook) noexcept {
             return 3.14;
@@ -1146,7 +1147,8 @@ namespace iterator_cust_swap_test {
     template <class T, class U>
     concept can_iter_swap = requires(T&& t, U&& u) { ranges::iter_swap(std::forward<T>(t), std::forward<U>(u)); };
 
-    // N4928 [iterator.cust.swap]/4.1: "(void)iter_swap(E1, E2), if that expression is valid, with..."
+    // N4928 [iterator.cust.swap]/4.1: "(void)iter_swap(E1, E2), if [...] iter_swap(E1, E2) is a
+    // well-formed expression with overload resolution performed in a context [...]"
     namespace adl_barrier {
         template <class T, class U>
         void iter_swap(T, U) = delete;
@@ -1180,8 +1182,8 @@ namespace iterator_cust_swap_test {
     STATIC_ASSERT(bullet1<E1>);
     STATIC_ASSERT((ranges::iter_swap(E1::x, E1::x), true));
 
-    // N4928 [iterator.cust.swap]/4.2: "Otherwise if the types of E1 and E2 each model indirectly_readable, and if the
-    // reference types of E1 and E2 model swappable_with, then ranges::swap(*E1, *E2)."
+    // N4928 [iterator.cust.swap]/4.2: "Otherwise, if the types of E1 and E2 each model indirectly_readable,
+    // and if the reference types of E1 and E2 model swappable_with, then ranges::swap(*E1, *E2)."
     // clang-format off
     template <class T, class U = T>
     concept bullet2 = !bullet1<T, U> && indirectly_readable<remove_reference_t<T>>
