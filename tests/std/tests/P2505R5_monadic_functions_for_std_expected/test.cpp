@@ -46,45 +46,45 @@ struct Thingy {
 };
 
 template <class Expected>
-constexpr void test_impl(Expected&& exp, Expected&& unexp) {
-    assert(exp.has_value());
-    assert(!unexp.has_value());
+constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
+    assert(engaged.has_value());
+    assert(!unengaged.has_value());
     using Val = typename remove_cvref_t<Expected>::value_type;
 
     auto succeed = [](auto...) { return expected<int, int>{33}; };
     auto fail    = [](auto...) { return expected<int, int>(unexpect, 44); };
 
     {
-        decltype(auto) result = forward<Expected>(exp).and_then(succeed);
+        decltype(auto) result = forward<Expected>(engaged).and_then(succeed);
         static_assert(is_same_v<decltype(result), expected<int, int>>);
         assert(result == 33);
     }
     {
-        decltype(auto) result = forward<Expected>(unexp).and_then(succeed);
+        decltype(auto) result = forward<Expected>(unengaged).and_then(succeed);
         static_assert(is_same_v<decltype(result), expected<int, int>>);
         assert(!result);
         assert(result.error() == 22);
     }
     {
-        decltype(auto) result = forward<Expected>(exp).and_then(fail);
+        decltype(auto) result = forward<Expected>(engaged).and_then(fail);
         static_assert(is_same_v<decltype(result), expected<int, int>>);
         assert(!result);
         assert(result.error() == 44);
     }
     {
-        decltype(auto) result = forward<Expected>(unexp).and_then(fail);
+        decltype(auto) result = forward<Expected>(unengaged).and_then(fail);
         static_assert(is_same_v<decltype(result), expected<int, int>>);
         assert(!result);
         assert(result.error() == 22);
     }
     if constexpr (!is_void_v<Val>) {
         {
-            decltype(auto) result = forward<Expected>(exp).and_then(&Thingy::x);
+            decltype(auto) result = forward<Expected>(engaged).and_then(&Thingy::x);
             static_assert(is_same_v<decltype(result), expected<int, int>>);
             assert(result == 11);
         }
         {
-            decltype(auto) result = forward<Expected>(unexp).and_then(&Thingy::x);
+            decltype(auto) result = forward<Expected>(unengaged).and_then(&Thingy::x);
             static_assert(is_same_v<decltype(result), expected<int, int>>);
             assert(result.error() == 22);
         }
@@ -95,46 +95,46 @@ constexpr void test_impl(Expected&& exp, Expected&& unexp) {
     auto to_void = [](auto...) { return; };
 
     {
-        decltype(auto) result = forward<Expected>(exp).transform(f);
+        decltype(auto) result = forward<Expected>(engaged).transform(f);
         static_assert(is_same_v<decltype(result), expected<int, int>>);
         assert(result == 55);
     }
     {
-        decltype(auto) result = forward<Expected>(unexp).transform(f);
+        decltype(auto) result = forward<Expected>(unengaged).transform(f);
         static_assert(is_same_v<decltype(result), expected<int, int>>);
         assert(!result);
         assert(result.error() == 22);
     }
     if constexpr (!is_void_v<Val>) {
         {
-            decltype(auto) result = forward<Expected>(exp).transform(&Thingy::member_func);
+            decltype(auto) result = forward<Expected>(engaged).transform(&Thingy::member_func);
             static_assert(is_same_v<decltype(result), expected<int, int>>);
             assert(result == 66);
         }
         {
-            decltype(auto) result = forward<Expected>(unexp).transform(&Thingy::member_func);
+            decltype(auto) result = forward<Expected>(unengaged).transform(&Thingy::member_func);
             static_assert(is_same_v<decltype(result), expected<int, int>>);
             assert(result.error() == 22);
         }
     }
     {
-        decltype(auto) result = forward<Expected>(exp).transform(immov);
+        decltype(auto) result = forward<Expected>(engaged).transform(immov);
         static_assert(is_same_v<decltype(result), expected<Immovable, int>>);
         assert(result->v == 88);
     }
     {
-        decltype(auto) result = forward<Expected>(unexp).transform(immov);
+        decltype(auto) result = forward<Expected>(unengaged).transform(immov);
         static_assert(is_same_v<decltype(result), expected<Immovable, int>>);
         assert(!result);
         assert(result.error() == 22);
     }
     {
-        decltype(auto) result = forward<Expected>(exp).transform(to_void);
+        decltype(auto) result = forward<Expected>(engaged).transform(to_void);
         static_assert(is_same_v<decltype(result), expected<void, int>>);
         assert(result);
     }
     {
-        decltype(auto) result = forward<Expected>(unexp).transform(to_void);
+        decltype(auto) result = forward<Expected>(unengaged).transform(to_void);
         static_assert(is_same_v<decltype(result), expected<void, int>>);
         assert(!result);
         assert(result.error() == 22);
@@ -144,7 +144,7 @@ constexpr void test_impl(Expected&& exp, Expected&& unexp) {
     auto to_thingy = [](int i) { return Thingy{i}; };
 
     {
-        decltype(auto) result = forward<Expected>(exp).transform_error(to_thingy);
+        decltype(auto) result = forward<Expected>(engaged).transform_error(to_thingy);
         static_assert(is_same_v<decltype(result), expected<Val, Thingy>>);
         assert(result);
         if constexpr (!is_void_v<Val>) {
@@ -152,13 +152,13 @@ constexpr void test_impl(Expected&& exp, Expected&& unexp) {
         }
     }
     {
-        decltype(auto) result = forward<Expected>(unexp).transform_error(to_thingy);
+        decltype(auto) result = forward<Expected>(unengaged).transform_error(to_thingy);
         static_assert(is_same_v<decltype(result), expected<Val, Thingy>>);
         assert(!result);
         assert(result.error().x == 22);
     }
     {
-        decltype(auto) result = forward<Expected>(exp).transform_error(to_thingy).transform_error(&Thingy::member_func);
+        decltype(auto) result = forward<Expected>(engaged).transform_error(to_thingy).transform_error(&Thingy::member_func);
         static_assert(is_same_v<decltype(result), expected<Val, int>>);
         if constexpr (!is_void_v<Val>) {
             assert(result->x == 11);
@@ -166,20 +166,20 @@ constexpr void test_impl(Expected&& exp, Expected&& unexp) {
     }
     {
         decltype(auto) result =
-            forward<Expected>(unexp).transform_error(to_thingy).transform_error(&Thingy::member_func);
+            forward<Expected>(unengaged).transform_error(to_thingy).transform_error(&Thingy::member_func);
         static_assert(is_same_v<decltype(result), expected<Val, int>>);
         assert(!result);
         assert(result.error() == 66);
     }
     {
-        decltype(auto) result = forward<Expected>(exp).transform_error(immov);
+        decltype(auto) result = forward<Expected>(engaged).transform_error(immov);
         static_assert(is_same_v<decltype(result), expected<Val, Immovable>>);
         if constexpr (!is_void_v<Val>) {
             assert(result->x == 11);
         }
     }
     {
-        decltype(auto) result = forward<Expected>(unexp).transform_error(immov);
+        decltype(auto) result = forward<Expected>(unengaged).transform_error(immov);
         static_assert(is_same_v<decltype(result), expected<Val, Immovable>>);
         assert(!result);
         assert(result.error().v == 88);
@@ -193,7 +193,7 @@ constexpr void test_impl(Expected&& exp, Expected&& unexp) {
         }
     };
     {
-        decltype(auto) result = forward<Expected>(exp).or_else(to_expected_thingy);
+        decltype(auto) result = forward<Expected>(engaged).or_else(to_expected_thingy);
         static_assert(is_same_v<decltype(result), expected<Val, int>>);
         assert(result);
         if constexpr (!is_void_v<Val>) {
@@ -201,7 +201,7 @@ constexpr void test_impl(Expected&& exp, Expected&& unexp) {
         }
     }
     {
-        decltype(auto) result = forward<Expected>(unexp).or_else(to_expected_thingy);
+        decltype(auto) result = forward<Expected>(unengaged).or_else(to_expected_thingy);
         static_assert(is_same_v<decltype(result), expected<Val, int>>);
         assert(result);
         if constexpr (!is_void_v<Val>) {
@@ -300,21 +300,21 @@ constexpr void test_error_or() noexcept {
 
 constexpr void test_monadic() {
     {
-        expected<Thingy, int> exp{Thingy{11}};
-        expected<Thingy, int> unexp{std::unexpect, 22};
-        test_impl(exp, unexp);
-        test_impl(as_const(exp), as_const(unexp));
-        test_impl(move(exp), move(unexp));
-        test_impl(move(as_const(exp)), move(as_const(unexp)));
+        expected<Thingy, int> engaged{Thingy{11}};
+        expected<Thingy, int> unengaged{std::unexpect, 22};
+        test_impl(engaged, unengaged);
+        test_impl(as_const(engaged), as_const(unengaged));
+        test_impl(move(engaged), move(unengaged));
+        test_impl(move(as_const(engaged)), move(as_const(unengaged)));
     }
 
     {
-        expected<void, int> exp{};
-        expected<void, int> unexp{std::unexpect, 22};
-        test_impl(exp, unexp);
-        test_impl(as_const(exp), as_const(unexp));
-        test_impl(move(exp), move(unexp));
-        test_impl(move(as_const(exp)), move(as_const(unexp)));
+        expected<void, int> engaged{};
+        expected<void, int> unengaged{std::unexpect, 22};
+        test_impl(engaged, unengaged);
+        test_impl(as_const(engaged), as_const(unengaged));
+        test_impl(move(engaged), move(unengaged));
+        test_impl(move(as_const(engaged)), move(as_const(unengaged)));
     }
 }
 
