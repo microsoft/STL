@@ -231,6 +231,8 @@ utilities\format\format.tuple\set_separator.pass.cpp
 depr\depr.c.headers\uchar_h.compile.pass.cpp
 strings\c.strings\cuchar.compile.pass.cpp
 
+# P2505R5 "Monadic Functions for std::expected"
+std/language.support/support.limits/support.limits.general/expected.version.compile.pass.cpp FAIL
 
 # *** MISSING COMPILER FEATURES ***
 # Nothing here! :-)
