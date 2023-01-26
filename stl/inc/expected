@@ -730,10 +730,10 @@ public:
             "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.object.monadic]/3.");
 
-        if (this->_Has_value) {
-            return _STD invoke(_STD forward<_Fn>(_Func), this->_Value);
+        if (_Has_value) {
+            return _STD invoke(_STD forward<_Fn>(_Func), _Value);
         } else {
-            return _Uty(unexpect, this->_Unexpected);
+            return _Uty(unexpect, _Unexpected);
         }
     }
 
@@ -746,10 +746,10 @@ public:
             "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.object.monadic]/3.");
 
-        if (this->_Has_value) {
-            return _STD invoke(_STD forward<_Fn>(_Func), this->_Value);
+        if (_Has_value) {
+            return _STD invoke(_STD forward<_Fn>(_Func), _Value);
         } else {
-            return _Uty(unexpect, this->_Unexpected);
+            return _Uty(unexpect, _Unexpected);
         }
     }
 
@@ -762,10 +762,10 @@ public:
             "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.object.monadic]/7.");
 
-        if (this->_Has_value) {
-            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Value));
+        if (_Has_value) {
+            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
         } else {
-            return _Uty(unexpect, _STD move(this->_Unexpected));
+            return _Uty(unexpect, _STD move(_Unexpected));
         }
     }
 
@@ -778,10 +778,10 @@ public:
             "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.object.monadic]/7.");
 
-        if (this->_Has_value) {
-            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Value));
+        if (_Has_value) {
+            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
         } else {
-            return _Uty(unexpect, _STD move(this->_Unexpected));
+            return _Uty(unexpect, _STD move(_Unexpected));
         }
     }
 
@@ -797,10 +797,10 @@ public:
             "expected<T,E>::or_else(F) requires the value type of the return type of F to be T"
             "N4928 [expected.object.monadic]/11.");
 
-        if (this->_Has_value) {
-            return _Uty(in_place, this->_Value);
+        if (_Has_value) {
+            return _Uty(in_place, _Value);
         } else {
-            return _STD invoke(_STD forward<_Fn>(_Func), this->_Unexpected);
+            return _STD invoke(_STD forward<_Fn>(_Func), _Unexpected);
         }
     }
 
@@ -816,10 +816,10 @@ public:
             "expected<T,E>::or_else(F) requires the value type of the return type of F to be T"
             "N4928 [expected.object.monadic]/11.");
 
-        if (this->_Has_value) {
-            return _Uty(in_place, this->_Value);
+        if (_Has_value) {
+            return _Uty(in_place, _Value);
         } else {
-            return _STD invoke(_STD forward<_Fn>(_Func), this->_Unexpected);
+            return _STD invoke(_STD forward<_Fn>(_Func), _Unexpected);
         }
     }
 
@@ -835,10 +835,10 @@ public:
             "expected<T,E>::or_else(F) requires the value type of the return type of F to be T"
             "N4928 [expected.object.monadic]/11.");
 
-        if (this->_Has_value) {
-            return _Uty(in_place, _STD move(this->_Value));
+        if (_Has_value) {
+            return _Uty(in_place, _STD move(_Value));
         } else {
-            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Unexpected));
+            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Unexpected));
         }
     }
 
@@ -854,10 +854,10 @@ public:
             "expected<T,E>::or_else(F) requires the value type of the return type of F to be T"
             "N4928 [expected.object.monadic]/11.");
 
-        if (this->_Has_value) {
-            return _Uty(in_place, _STD move(this->_Value));
+        if (_Has_value) {
+            return _Uty(in_place, _STD move(_Value));
         } else {
-            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Unexpected));
+            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Unexpected));
         }
     }
 
@@ -866,16 +866,16 @@ public:
     constexpr auto transform(_Fn&& _Func) & {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Ty&>>;
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
-                _STD invoke(_STD forward<_Fn>(_Func), this->_Value);
+                _STD invoke(_STD forward<_Fn>(_Func), _Value);
                 return expected<_Uty, _Err>();
             } else {
                 return expected<_Uty, _Err>(
-                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), this->_Value);
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _Value);
             }
         } else {
-            return expected<_Uty, _Err>(unexpect, this->_Unexpected);
+            return expected<_Uty, _Err>(unexpect, _Unexpected);
         }
     }
 
@@ -884,16 +884,16 @@ public:
     constexpr auto transform(_Fn&& _Func) const& {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Ty&>>;
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
-                _STD invoke(_STD forward<_Fn>(_Func), this->_Value);
+                _STD invoke(_STD forward<_Fn>(_Func), _Value);
                 return expected<_Uty, _Err>();
             } else {
                 return expected<_Uty, _Err>(
-                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), this->_Value);
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _Value);
             }
         } else {
-            return expected<_Uty, _Err>(unexpect, this->_Unexpected);
+            return expected<_Uty, _Err>(unexpect, _Unexpected);
         }
     }
 
@@ -903,16 +903,16 @@ public:
     constexpr auto transform(_Fn&& _Func) && {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Ty&&>>;
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
-                _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Value));
+                _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
                 return expected<_Uty, _Err>();
             } else {
                 return expected<_Uty, _Err>(
-                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _STD move(this->_Value));
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _STD move(_Value));
             }
         } else {
-            return expected<_Uty, _Err>(unexpect, _STD move(this->_Unexpected));
+            return expected<_Uty, _Err>(unexpect, _STD move(_Unexpected));
         }
     }
 
@@ -921,16 +921,16 @@ public:
     constexpr auto transform(_Fn&& _Func) const&& {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Ty&&>>;
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
-                _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Value));
+                _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
                 return expected<_Uty, _Err>();
             } else {
                 return expected<_Uty, _Err>(
-                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _STD move(this->_Value));
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _STD move(_Value));
             }
         } else {
-            return expected<_Uty, _Err>(unexpect, _STD move(this->_Unexpected));
+            return expected<_Uty, _Err>(unexpect, _STD move(_Unexpected));
         }
     }
 
@@ -939,11 +939,11 @@ public:
     constexpr auto transform_error(_Fn&& _Func) & {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err&>>;
 
-        if (this->_Has_value) {
-            return expected<_Ty, _Uty>(in_place, this->_Value);
+        if (_Has_value) {
+            return expected<_Ty, _Uty>(in_place, _Value);
         } else {
             return expected<_Ty, _Uty>(
-                _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), this->_Unexpected);
+                _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), _Unexpected);
         }
     }
 
@@ -952,11 +952,11 @@ public:
     constexpr auto transform_error(_Fn&& _Func) const& {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err&>>;
 
-        if (this->_Has_value) {
-            return expected<_Ty, _Uty>(in_place, this->_Value);
+        if (_Has_value) {
+            return expected<_Ty, _Uty>(in_place, _Value);
         } else {
             return expected<_Ty, _Uty>(
-                _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), this->_Unexpected);
+                _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), _Unexpected);
         }
     }
 
@@ -965,11 +965,11 @@ public:
     constexpr auto transform_error(_Fn&& _Func) && {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err&&>>;
 
-        if (this->_Has_value) {
-            return expected<_Ty, _Uty>(in_place, _STD move(this->_Value));
+        if (_Has_value) {
+            return expected<_Ty, _Uty>(in_place, _STD move(_Value));
         } else {
             return expected<_Ty, _Uty>(_Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func),
-                _STD move(this->_Unexpected));
+                _STD move(_Unexpected));
         }
     }
 
@@ -978,11 +978,11 @@ public:
     constexpr auto transform_error(_Fn&& _Func) const&& {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err&&>>;
 
-        if (this->_Has_value) {
-            return expected<_Ty, _Uty>(in_place, _STD move(this->_Value));
+        if (_Has_value) {
+            return expected<_Ty, _Uty>(in_place, _STD move(_Value));
         } else {
             return expected<_Ty, _Uty>(_Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func),
-                _STD move(this->_Unexpected));
+                _STD move(_Unexpected));
         }
     }
 
@@ -1393,10 +1393,10 @@ public:
             "expected<void,E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.object.monadic]/3.");
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func));
         } else {
-            return _Uty(unexpect, this->_Unexpected);
+            return _Uty(unexpect, _Unexpected);
         }
     }
 
@@ -1409,10 +1409,10 @@ public:
             "expected<void,E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.object.monadic]/3.");
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func));
         } else {
-            return _Uty(unexpect, this->_Unexpected);
+            return _Uty(unexpect, _Unexpected);
         }
     }
 
@@ -1425,10 +1425,10 @@ public:
             "expected<void,E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.object.monadic]/7.");
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func));
         } else {
-            return _Uty(unexpect, _STD move(this->_Unexpected));
+            return _Uty(unexpect, _STD move(_Unexpected));
         }
     }
 
@@ -1441,10 +1441,10 @@ public:
             "expected<void,E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.object.monadic]/7.");
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func));
         } else {
-            return _Uty(unexpect, _STD move(this->_Unexpected));
+            return _Uty(unexpect, _STD move(_Unexpected));
         }
     }
 
@@ -1459,10 +1459,10 @@ public:
             "expected<void,E>::or_else(F) requires the value type of the return type of F to be T"
             "N4928 [expected.object.monadic]/11.");
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             return _Uty();
         } else {
-            return _STD invoke(_STD forward<_Fn>(_Func), this->_Unexpected);
+            return _STD invoke(_STD forward<_Fn>(_Func), _Unexpected);
         }
     }
 
@@ -1477,10 +1477,10 @@ public:
             "expected<void,E>::or_else(F) requires the value type of the return type of F to be T"
             "N4928 [expected.object.monadic]/11.");
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             return _Uty();
         } else {
-            return _STD invoke(_STD forward<_Fn>(_Func), this->_Unexpected);
+            return _STD invoke(_STD forward<_Fn>(_Func), _Unexpected);
         }
     }
 
@@ -1495,10 +1495,10 @@ public:
             "expected<void,E>::or_else(F) requires the value type of the return type of F to be T"
             "N4928 [expected.object.monadic]/11.");
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             return _Uty();
         } else {
-            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Unexpected));
+            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Unexpected));
         }
     }
 
@@ -1513,10 +1513,10 @@ public:
             "expected<void,E>::or_else(F) requires the value type of the return type of F to be T"
             "N4928 [expected.object.monadic]/11.");
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             return _Uty();
         } else {
-            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Unexpected));
+            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Unexpected));
         }
     }
 
@@ -1525,7 +1525,7 @@ public:
     constexpr auto transform(_Fn&& _Func) & {
         using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
                 _STD invoke(_STD forward<_Fn>(_Func));
                 return expected<_Uty, _Err>();
@@ -1533,7 +1533,7 @@ public:
                 return expected<_Uty, _Err>(_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
             }
         } else {
-            return expected<_Uty, _Err>(unexpect, this->_Unexpected);
+            return expected<_Uty, _Err>(unexpect, _Unexpected);
         }
     }
 
@@ -1542,7 +1542,7 @@ public:
     constexpr auto transform(_Fn&& _Func) const& {
         using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
                 _STD invoke(_STD forward<_Fn>(_Func));
                 return expected<_Uty, _Err>();
@@ -1550,7 +1550,7 @@ public:
                 return expected<_Uty, _Err>(_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
             }
         } else {
-            return expected<_Uty, _Err>(unexpect, this->_Unexpected);
+            return expected<_Uty, _Err>(unexpect, _Unexpected);
         }
     }
 
@@ -1560,7 +1560,7 @@ public:
     constexpr auto transform(_Fn&& _Func) && {
         using _Uty = remove_cv_t<invoke_result_t<_Fn&>>;
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
                 _STD invoke(_STD forward<_Fn>(_Func));
                 return expected<_Uty, _Err>();
@@ -1568,7 +1568,7 @@ public:
                 return expected<_Uty, _Err>(_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
             }
         } else {
-            return expected<_Uty, _Err>(unexpect, _STD move(this->_Unexpected));
+            return expected<_Uty, _Err>(unexpect, _STD move(_Unexpected));
         }
     }
 
@@ -1577,7 +1577,7 @@ public:
     constexpr auto transform(_Fn&& _Func) const&& {
         using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
                 _STD invoke(_STD forward<_Fn>(_Func));
                 return expected<_Uty, _Err>();
@@ -1585,7 +1585,7 @@ public:
                 return expected<_Uty, _Err>(_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func));
             }
         } else {
-            return expected<_Uty, _Err>(unexpect, _STD move(this->_Unexpected));
+            return expected<_Uty, _Err>(unexpect, _STD move(_Unexpected));
         }
     }
 
@@ -1593,11 +1593,11 @@ public:
     constexpr auto transform_error(_Fn&& _Func) & {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err&>>;
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             return expected<_Ty, _Uty>();
         } else {
             return expected<_Ty, _Uty>(
-                _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), this->_Unexpected);
+                _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), _Unexpected);
         }
     }
 
@@ -1605,11 +1605,11 @@ public:
     constexpr auto transform_error(_Fn&& _Func) const& {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err&>>;
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             return expected<_Ty, _Uty>();
         } else {
             return expected<_Ty, _Uty>(
-                _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), this->_Unexpected);
+                _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), _Unexpected);
         }
     }
 
@@ -1617,11 +1617,11 @@ public:
     constexpr auto transform_error(_Fn&& _Func) && {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err&&>>;
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             return expected<_Ty, _Uty>();
         } else {
             return expected<_Ty, _Uty>(_Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func),
-                _STD move(this->_Unexpected));
+                _STD move(_Unexpected));
         }
     }
 
@@ -1629,11 +1629,11 @@ public:
     constexpr auto transform_error(_Fn&& _Func) const&& {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err&&>>;
 
-        if (this->_Has_value) {
+        if (_Has_value) {
             return expected<_Ty, _Uty>();
         } else {
             return expected<_Ty, _Uty>(_Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func),
-                _STD move(this->_Unexpected));
+                _STD move(_Unexpected));
         }
     }
 
