@@ -208,6 +208,8 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
             assert(result.value().x == 77);
         }
     }
+
+    engaged.transform([](auto...) { return ""; });
 }
 
 template <IsNothrowConstructible nothrowConstructible, IsNothrowConvertible nothrowConvertible>
@@ -301,7 +303,7 @@ constexpr void test_error_or() noexcept {
 constexpr void test_monadic() {
     {
         expected<Thingy, int> engaged{Thingy{11}};
-        expected<Thingy, int> unengaged{std::unexpect, 22};
+        expected<Thingy, int> unengaged{unexpect, 22};
         test_impl(engaged, unengaged);
         test_impl(as_const(engaged), as_const(unengaged));
         test_impl(move(engaged), move(unengaged));
@@ -310,7 +312,7 @@ constexpr void test_monadic() {
 
     {
         expected<void, int> engaged{};
-        expected<void, int> unengaged{std::unexpect, 22};
+        expected<void, int> unengaged{unexpect, 22};
         test_impl(engaged, unengaged);
         test_impl(as_const(engaged), as_const(unengaged));
         test_impl(move(engaged), move(unengaged));
