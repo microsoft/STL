@@ -7840,10 +7840,10 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator[](const difference_type _Where) const
-                noexcept(noexcept(_STD apply(_Random_access_closure(_Where), _Inner._Current))) // strengthened
+                noexcept(noexcept(_STD apply(_Subscript_closure(_Where), _Inner._Current))) // strengthened
                 requires random_access_range<_Base_t>
             {
-                return _STD apply(_Random_access_closure(_Where), _Inner._Current);
+                return _STD apply(_Subscript_closure(_Where), _Inner._Current);
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept(
@@ -7896,7 +7896,7 @@ namespace ranges {
                            *_Itrs...))) -> decltype(auto) { return _STD invoke(*_Parent->_Function, *_Itrs...); };
             }
 
-            _NODISCARD constexpr auto _Random_access_closure(const difference_type _Where) const noexcept {
+            _NODISCARD constexpr auto _Subscript_closure(const difference_type _Where) const noexcept {
                 return [this, _Where]<class... _Iterator_types>(const _Iterator_types&... _Iters) noexcept(
                            noexcept(_STD invoke(*_Parent->_Function,
                                _Iters[static_cast<iter_difference_t<_Iterator_types>>(_Where)]...))) -> decltype(auto) {
