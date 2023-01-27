@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// derived from libc++'s test files:
+// * std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_float.pass.cpp
+// * std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp
+
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -192,7 +196,7 @@ void test() {
     {
         v                = -1;
         const char str[] = "0x125p-1 ";
-        std::istringstream f(str);
+        istringstream f(str);
         f >> v;
         assert(v == 0x125p-1);
         assert(f.good());
