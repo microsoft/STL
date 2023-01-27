@@ -10,7 +10,6 @@
 #include <io.h>
 #include <limits>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 #include <type_traits>
 
@@ -72,7 +71,31 @@ _EXTERN_C
 _END_EXTERN_C
 
 namespace {
-    [[nodiscard]] _STD expected<_STD wstring, __std_win_error> __stdcall _Transcode_utf8_string(
+    // NOTE: We don't use std::wstring in here. Otherwise, compiling with /MD and
+    // _ITERATOR_DEBUG_LEVEL > 0 will lead to bad code generation. This happens because
+    // sizeof(std::_String_val) changes based on whether or not _ITERATOR_DEBUG_LEVEL > 0.
+    //
+    // (This is an issue because these functions are packaged into the msvcprt.lib static
+    // import library, and we don't create different versions of this library based on the
+    // _ITERATOR_DEBUG_LEVEL value, unlike with libcpmt.lib. So, even if we use /MD, the
+    // functions are going to be statically defined within dependent projects.)
+    class _Allocated_string {
+    public:
+        _Allocated_string() : _Str(nullptr), _Str_size(0) {}
+
+        explicit _Allocated_string(__crt_unique_heap_ptr<wchar_t>&& _Other_str, size_t _Other_size)
+            : _Str(_STD move(_Other_str)), _Str_size(_Other_size) {}
+
+        [[nodiscard]] _STD wstring_view _To_string_view() const noexcept {
+            return _STD wstring_view{_Str.get(), _Str_size};
+        }
+
+    private:
+        __crt_unique_heap_ptr<wchar_t> _Str;
+        size_t _Str_size;
+    };
+
+    [[nodiscard]] _STD expected<_Allocated_string, __std_win_error> __stdcall _Transcode_utf8_string(
         const char* const _Str, const size_t _Str_size) noexcept {
         // MultiByteToWideChar() fails if strLength == 0.
         if (_Str_size == 0) [[unlikely]] {
@@ -89,26 +112,20 @@ namespace {
             return _STD unexpected{static_cast<__std_win_error>(GetLastError())};
         }
 
-        _STD wstring _Wide_str;
+        __crt_unique_heap_ptr<wchar_t> _Wide_str{_malloc_crt_t(wchar_t, _Num_chars_required)};
 
-        try {
-            _Wide_str.resize_and_overwrite(static_cast<size_t>(_Num_chars_required),
-                [&](wchar_t* const _Dst_buffer, const size_t _Buffer_size) noexcept {
-                    return MultiByteToWideChar(
-                        CP_UTF8, 0, _Str, static_cast<int>(_Str_size), _Dst_buffer, static_cast<int>(_Buffer_size));
-                });
-        } catch (const _STD length_error&) {
-            return _STD unexpected{__std_win_error::_Insufficient_buffer};
-        } catch (...) {
+        if (!_Wide_str) [[unlikely]] {
             return _STD unexpected{__std_win_error::_Not_enough_memory};
         }
 
-        // Did MultiByteToWideChar() return 0?
-        if (_Wide_str.empty()) [[unlikely]] {
+        const int32_t _Conversion_result =
+            MultiByteToWideChar(CP_UTF8, 0, _Str, static_cast<int>(_Str_size), _Wide_str.get(), _Num_chars_required);
+
+        if (_Conversion_result == 0) [[unlikely]] {
             return _STD unexpected{static_cast<__std_win_error>(GetLastError())};
         }
 
-        return {_STD move(_Wide_str)};
+        return _Allocated_string{_STD move(_Wide_str), static_cast<size_t>(_Num_chars_required)};
     }
 
     [[nodiscard]] __std_win_error _Write_console(
@@ -139,14 +156,14 @@ _EXTERN_C
     }
 
     const HANDLE _Actual_console_handle = reinterpret_cast<HANDLE>(_Console_handle);
-    const _STD expected<_STD wstring, __std_win_error> _Transcoded_str{
+    const _STD expected<_Allocated_string, __std_win_error> _Transcoded_str{
         _Transcode_utf8_string(_Str, static_cast<size_t>(_Str_size))};
 
     if (!_Transcoded_str.has_value()) [[unlikely]] {
         return _Transcoded_str.error();
     }
 
-    return _Write_console(_Actual_console_handle, _STD wstring_view{*_Transcoded_str});
+    return _Write_console(_Actual_console_handle, _Transcoded_str->_To_string_view());
 }
 
 _END_EXTERN_C
