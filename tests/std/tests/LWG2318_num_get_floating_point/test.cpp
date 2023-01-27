@@ -209,10 +209,10 @@ void test() {
     {
         v                = -1;
         const char str[] = "0x125p-1 ";
-        istringstream f(str);
-        f >> v;
+        istringstream str_instr(str);
+        str_instr >> v;
         assert(v == 0x125p-1);
-        assert(f.good());
+        assert(str_instr.good());
     }
 }
 

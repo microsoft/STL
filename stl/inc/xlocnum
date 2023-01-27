@@ -802,8 +802,11 @@ private:
         bool _Has_dec_leading_zero = false;
         if (_First != _Last && *_First == _Zero_ch) {
             ++_First;
-            if (_First != _Last
-                && (*_First == _Atoms[_Numget_xoff] || *_First == _Atoms[_Numget_xoff + 1])) { // 0X or 0x
+            if (_First == _Last) { // "0" only
+                *_Ptr = '\0';
+                return 0;
+            }
+            if (*_First == _Atoms[_Numget_xoff] || *_First == _Atoms[_Numget_xoff + 1]) { // 0X or 0x
                 _Parse_hex = true;
                 ++_First; // discard 0X or 0x for further parsing
             } else {
