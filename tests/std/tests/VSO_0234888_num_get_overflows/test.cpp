@@ -181,7 +181,7 @@ void test_case_float(const string& outOfRangeValue) {
         istringstream src(outOfRangeValue);
         Float result = 17.49f;
         src >> result;
-        assert(result == static_cast<Float>(0));
+        assert(result == numeric_limits<Float>::infinity());
         assert(src.rdstate() == (ios_base::failbit | ios_base::eofbit));
     }
 
@@ -189,7 +189,7 @@ void test_case_float(const string& outOfRangeValue) {
         istringstream src("-" + outOfRangeValue);
         Float result = 17.49f;
         src >> result;
-        assert(result == static_cast<Float>(0));
+        assert(result == -numeric_limits<Float>::infinity());
         assert(src.rdstate() == (ios_base::failbit | ios_base::eofbit));
     }
 

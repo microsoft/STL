@@ -798,13 +798,16 @@ private:
 
         const int _Max_sig_dig = (*_Phexexp == _ENABLE_V2_BEHAVIOR ? _MAX_SIG_DIG_V2 : _MAX_SIG_DIG_V1);
 
-        bool _Parse_hex = false;
+        bool _Parse_hex            = false;
+        bool _Has_dec_leading_zero = false;
         if (_First != _Last && *_First == _Zero_ch) {
             ++_First;
             if (_First != _Last
                 && (*_First == _Atoms[_Numget_xoff] || *_First == _Atoms[_Numget_xoff + 1])) { // 0X or 0x
                 _Parse_hex = true;
                 ++_First; // discard 0X or 0x for further parsing
+            } else {
+                _Has_dec_leading_zero = true;
             }
         }
 
@@ -962,6 +965,10 @@ private:
                 const _Elem _Kseparator = _Grouping.empty() ? _Elem{} : _Punct_fac.thousands_sep();
                 string _Groups(1, '\0');
                 size_t _Group = 0;
+
+                if (_Has_dec_leading_zero) {
+                    ++_Groups[_Group];
+                }
 
                 for (; _First != _Last; ++_First) {
                     if ((_Idx = _STD _Find_elem(_Atoms, *_First)) < _Dec_digits_cnt) { // got a digit, add to group size
