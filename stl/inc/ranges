@@ -7787,14 +7787,12 @@ namespace ranges {
                 return _STD apply(_Dereference_closure(), _Inner._Current);
             }
 
-            constexpr _Iterator& operator++() noexcept(noexcept(++_Inner)) // strengthened
-            {
+            constexpr _Iterator& operator++() noexcept(noexcept(++_Inner)) /* strengthened */ {
                 ++_Inner;
                 return *this;
             }
 
-            constexpr void operator++(int) noexcept(noexcept(++_STD declval<_Iterator&>())) // strengthened
-            {
+            constexpr void operator++(int) noexcept(noexcept(++_STD declval<_Iterator&>())) /* strengthened */ {
                 ++*this;
             }
 
@@ -7938,8 +7936,7 @@ namespace ranges {
             template <bool _IteratorConst>
                 requires sentinel_for<_Zentinel<_IsConst>, _Ziperator<_IteratorConst>>
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_IteratorConst>& _Lhs,
-                const _Sentinel& _Rhs) noexcept(noexcept(_Get_iterator_inner(_Lhs) == _Rhs._Inner)) // strengthened
-            {
+                const _Sentinel& _Rhs) noexcept(noexcept(_Get_iterator_inner(_Lhs) == _Rhs._Inner)) /* strengthened */ {
                 return _Get_iterator_inner(_Lhs) == _Rhs._Inner;
             }
 
@@ -7947,8 +7944,7 @@ namespace ranges {
                 requires sized_sentinel_for<_Zentinel<_IsConst>, _Ziperator<_IteratorConst>>
             _NODISCARD_FRIEND constexpr _Iter_sent_difference_type<_IteratorConst> // TRANSITION, DevCom-10253131
                 operator-(const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs) noexcept(
-                    noexcept(_Get_iterator_inner(_Lhs) - _Rhs._Inner)) // strengthened
-            {
+                    noexcept(_Get_iterator_inner(_Lhs) - _Rhs._Inner)) /* strengthened */ {
                 return _Get_iterator_inner(_Lhs) - _Rhs._Inner;
             }
 
@@ -7956,8 +7952,7 @@ namespace ranges {
                 requires sized_sentinel_for<_Zentinel<_IsConst>, _Ziperator<_IteratorConst>>
             _NODISCARD_FRIEND constexpr _Iter_sent_difference_type<_IteratorConst> // TRANSITION, DevCom-10253131
                 operator-(const _Sentinel& _Lhs, const _Iterator<_IteratorConst>& _Rhs) noexcept(
-                    noexcept(_Lhs._Inner - _Get_iterator_inner(_Rhs))) // strengthened
-            {
+                    noexcept(_Lhs._Inner - _Get_iterator_inner(_Rhs))) /* strengthened */ {
                 return _Lhs._Inner - _Get_iterator_inner(_Rhs);
             }
         };
@@ -7983,8 +7978,7 @@ namespace ranges {
                 is_nothrow_constructible_v<_Inner_view, remove_reference_t<_ViewTypes>&&...>) // strengthened
             : _Function(in_place, _STD move(_Function_)), _Zip(_STD move(_Views)...) {}
 
-        _NODISCARD constexpr auto begin() noexcept(noexcept(_Iterator<false>{*this, _Zip.begin()})) // strengthened
-        {
+        _NODISCARD constexpr auto begin() noexcept(noexcept(_Iterator<false>{*this, _Zip.begin()})) /* strengthened */ {
             return _Iterator<false>{*this, _Zip.begin()};
         }
 
@@ -7994,8 +7988,7 @@ namespace ranges {
             return _Iterator<true>{*this, _Zip.begin()};
         }
 
-        _NODISCARD constexpr auto end() noexcept(_Is_end_noexcept<false>) // strengthened
-        {
+        _NODISCARD constexpr auto end() noexcept(_Is_end_noexcept<false>) /* strengthened */ {
             if constexpr (common_range<_Inner_view>) {
                 return _Iterator<false>{*this, _Zip.end()};
             } else {
@@ -8064,8 +8057,7 @@ namespace ranges {
             template <class _Func, class... _Types>
                 requires _Enable_cpo<_Func, _Types...>
             _NODISCARD constexpr auto operator()(_Func&& _Function, _Types&&... _Args) const
-                noexcept(_Is_invocation_noexcept<_Func, _Types...>) // strengthened
-            {
+                noexcept(_Is_invocation_noexcept<_Func, _Types...>) /* strengthened */ {
                 if constexpr (sizeof...(_Types) == 0) {
                     using _Decayed_func = decay_t<_Func>;
                     return empty_view<decay_t<invoke_result_t<_Decayed_func&>>>{};
