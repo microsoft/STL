@@ -218,6 +218,7 @@ tests\GH_003022_substr_allocator
 tests\GH_003105_piecewise_densities
 tests\GH_003119_error_category_ctor
 tests\GH_003246_cmath_narrowing
+tests\LWG2318_num_get_floating_point
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\LWG3121_constrained_tuple_forwarding_ctor
