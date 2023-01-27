@@ -7586,7 +7586,7 @@ namespace ranges {
         };
 
         template <bool _IsConst>
-        static constexpr bool _Is_end_noexcept = []() {
+        _NODISCARD static _CONSTEVAL bool _Is_end_noexcept() noexcept {
             if constexpr (!_Zip_is_common<_Maybe_const<_IsConst, _ViewTypes>...>) {
                 return noexcept(_Sentinel<_IsConst>{
                     _Tuple_transform(_RANGES end, _STD declval<_Maybe_const<_IsConst, tuple<_ViewTypes...>>&>())});
@@ -7598,7 +7598,7 @@ namespace ranges {
                 return noexcept(_Iterator<_IsConst>{
                     _Tuple_transform(_RANGES end, _STD declval<_Maybe_const<_IsConst, tuple<_ViewTypes...>>&>())});
             }
-        }();
+        }
 
     public:
         zip_view() noexcept((is_nothrow_default_constructible_v<_ViewTypes> && ...)) = default;
@@ -7621,7 +7621,7 @@ namespace ranges {
             return _Iterator<true>{_Tuple_transform(_RANGES begin, _Views)};
         }
 
-        _NODISCARD constexpr auto end() noexcept(_Is_end_noexcept<false>) // strengthened
+        _NODISCARD constexpr auto end() noexcept(_Is_end_noexcept<false>()) // strengthened
             requires (!(_Simple_view<_ViewTypes> && ...))
         {
             if constexpr (!_Zip_is_common<_ViewTypes...>) {
@@ -7633,7 +7633,7 @@ namespace ranges {
             }
         }
 
-        _NODISCARD constexpr auto end() const noexcept(_Is_end_noexcept<true>) // strengthened
+        _NODISCARD constexpr auto end() const noexcept(_Is_end_noexcept<true>()) // strengthened
             requires (range<const _ViewTypes> && ...)
         {
             if constexpr (!_Zip_is_common<const _ViewTypes...>) {
@@ -7958,14 +7958,14 @@ namespace ranges {
         };
 
         template <bool _IsConst>
-        static constexpr bool _Is_end_noexcept = []() noexcept {
+        _NODISCARD static _CONSTEVAL bool _Is_end_noexcept() noexcept {
             if constexpr (common_range<_Maybe_const<_IsConst, _Inner_view>>) {
                 return noexcept(_Iterator<_IsConst>{_STD declval<_Maybe_const<_IsConst, zip_transform_view>&>(),
                     _STD declval<_Maybe_const<_IsConst, _Inner_view>&>().end()});
             } else {
                 return noexcept(_Sentinel<_IsConst>{_STD declval<_Maybe_const<_IsConst, _Inner_view>&>().end()});
             }
-        }();
+        }
 
         static constexpr bool _Enable_const_begin_end =
             (range<const _Inner_view> && regular_invocable<const _Func&, range_reference_t<const _ViewTypes>...>);
@@ -7988,7 +7988,7 @@ namespace ranges {
             return _Iterator<true>{*this, _Zip.begin()};
         }
 
-        _NODISCARD constexpr auto end() noexcept(_Is_end_noexcept<false>) /* strengthened */ {
+        _NODISCARD constexpr auto end() noexcept(_Is_end_noexcept<false>()) /* strengthened */ {
             if constexpr (common_range<_Inner_view>) {
                 return _Iterator<false>{*this, _Zip.end()};
             } else {
@@ -7996,7 +7996,7 @@ namespace ranges {
             }
         }
 
-        _NODISCARD constexpr auto end() const noexcept(_Is_end_noexcept<true>) // strengthened
+        _NODISCARD constexpr auto end() const noexcept(_Is_end_noexcept<true>()) // strengthened
             requires _Enable_const_begin_end
         {
             if constexpr (common_range<const _Inner_view>) {
