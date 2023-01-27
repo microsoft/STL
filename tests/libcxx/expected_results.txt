@@ -908,7 +908,6 @@ std/algorithms/alg.sorting/alg.heap.operations/push.heap/ranges_push_heap.pass.c
 std/algorithms/alg.sorting/alg.heap.operations/sort.heap/ranges_sort_heap.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.merge/ranges_inplace_merge.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.merge/ranges_merge.pass.cpp FAIL
-std/algorithms/alg.sorting/alg.min.max/ranges.minmax.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.min.max/requires_forward_iterator.fail.cpp FAIL
 std/algorithms/alg.sorting/alg.nth.element/ranges_nth_element.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.partitions/ranges.is_partitioned.pass.cpp:0 FAIL
