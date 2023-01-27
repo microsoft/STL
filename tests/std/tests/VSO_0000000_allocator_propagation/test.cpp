@@ -296,7 +296,7 @@ _CONSTEXPR20 void test_sequence_swap(const size_t id1, const size_t id2) {
 template <template <class, class> class Sequence>
 _CONSTEXPR20 bool test_sequence() {
 #if _HAS_CXX20 && defined(__EDG__) \
-    && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1674140 (attempt to access expired storage)
+    && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
     if (is_constant_evaluated()) {
         return true;
     }

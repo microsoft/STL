@@ -89,7 +89,7 @@ public:
         }
     }
 
-    void swap(basic_ifstream& _Right) {
+    void swap(basic_ifstream& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Mybase::swap(_Right);
             _Filebuffer.swap(_Right._Filebuffer);
@@ -160,11 +160,11 @@ public:
 
     __CLR_OR_THIS_CALL ~basic_ifstream() noexcept override {}
 
-    _NODISCARD _Myfb* rdbuf() const {
+    _NODISCARD _Myfb* rdbuf() const noexcept /* strengthened */ {
         return const_cast<_Myfb*>(_STD addressof(_Filebuffer));
     }
 
-    _NODISCARD bool is_open() const {
+    _NODISCARD bool is_open() const noexcept /* strengthened */ {
         return _Filebuffer.is_open();
     }
 
@@ -200,7 +200,7 @@ private:
 };
 
 _EXPORT_STD template <class _Elem, class _Traits>
-void swap(basic_ifstream<_Elem, _Traits>& _Left, basic_ifstream<_Elem, _Traits>& _Right) {
+void swap(basic_ifstream<_Elem, _Traits>& _Left, basic_ifstream<_Elem, _Traits>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 
@@ -272,7 +272,7 @@ public:
         }
     }
 
-    void swap(basic_ofstream& _Right) {
+    void swap(basic_ofstream& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Mybase::swap(_Right);
             _Filebuffer.swap(_Right._Filebuffer);
@@ -343,11 +343,11 @@ public:
 
     __CLR_OR_THIS_CALL ~basic_ofstream() noexcept override {}
 
-    _NODISCARD _Myfb* rdbuf() const {
+    _NODISCARD _Myfb* rdbuf() const noexcept /* strengthened */ {
         return const_cast<_Myfb*>(_STD addressof(_Filebuffer));
     }
 
-    _NODISCARD bool is_open() const {
+    _NODISCARD bool is_open() const noexcept /* strengthened */ {
         return _Filebuffer.is_open();
     }
 
@@ -383,7 +383,7 @@ private:
 };
 
 _EXPORT_STD template <class _Elem, class _Traits>
-void swap(basic_ofstream<_Elem, _Traits>& _Left, basic_ofstream<_Elem, _Traits>& _Right) {
+void swap(basic_ofstream<_Elem, _Traits>& _Left, basic_ofstream<_Elem, _Traits>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 
@@ -460,7 +460,7 @@ public:
         }
     }
 
-    void swap(basic_fstream& _Right) {
+    void swap(basic_fstream& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Mybase::swap(_Right);
             _Filebuffer.swap(_Right._Filebuffer);
@@ -532,11 +532,11 @@ public:
 
     __CLR_OR_THIS_CALL ~basic_fstream() noexcept override {}
 
-    _NODISCARD _Myfb* rdbuf() const {
+    _NODISCARD _Myfb* rdbuf() const noexcept /* strengthened */ {
         return const_cast<_Myfb*>(_STD addressof(_Filebuffer));
     }
 
-    _NODISCARD bool is_open() const {
+    _NODISCARD bool is_open() const noexcept /* strengthened */ {
         return _Filebuffer.is_open();
     }
 
@@ -573,7 +573,7 @@ private:
 };
 
 _EXPORT_STD template <class _Elem, class _Traits>
-void swap(basic_fstream<_Elem, _Traits>& _Left, basic_fstream<_Elem, _Traits>& _Right) {
+void swap(basic_fstream<_Elem, _Traits>& _Left, basic_fstream<_Elem, _Traits>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 _STD_END

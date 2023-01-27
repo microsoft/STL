@@ -323,7 +323,7 @@
 // P2093R14 Formatted Output
 // P2136R3 invoke_r()
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
-//     (changes to views::zip only)
+//     (changes to views::zip and pair only)
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
@@ -365,6 +365,8 @@
 // * any_of
 // * count
 // * count_if
+// * destroy
+// * destroy_n
 // * equal
 // * exclusive_scan
 // * find
@@ -398,6 +400,10 @@
 // * transform_exclusive_scan
 // * transform_inclusive_scan
 // * transform_reduce
+// * uninitialized_default_construct
+// * uninitialized_default_construct_n
+// * uninitialized_value_construct
+// * uninitialized_value_construct_n
 //
 // The following are not presently parallelized:
 //
@@ -415,6 +421,14 @@
 // * shift_left
 // * shift_right
 // * swap_ranges
+//
+// Possibly same as above, but not yet tested.
+// * uninitialized_copy
+// * uninitialized_copy_n
+// * uninitialized_fill
+// * uninitialized_fill_n
+// * uninitialized_move
+// * uninitialized_move_n
 //
 // Confusion over user parallelism requirements exists; likely in the above category anyway.
 // * generate
