@@ -7922,7 +7922,7 @@ namespace ranges {
                 : _Inner(_Inner_) {}
 
             template <bool _IteratorConst>
-            _NODISCARD static constexpr const auto& _Get_iterator_ziperator(
+            _NODISCARD static constexpr const auto& _Get_iterator_inner(
                 const _Iterator<_IteratorConst>& _Itr) noexcept {
                 return _Itr._Inner;
             }
@@ -7939,10 +7939,10 @@ namespace ranges {
                 requires sentinel_for<_Zentinel<_IsConst>, _Ziperator<_IteratorConst>>
             // clang-format off
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs)
-                noexcept(noexcept(_Get_iterator_ziperator(_Lhs) == _Rhs._Inner)) // strengthened
+                noexcept(noexcept(_Get_iterator_inner(_Lhs) == _Rhs._Inner)) // strengthened
             {
                 // clang-format on
-                return _Get_iterator_ziperator(_Lhs) == _Rhs._Inner;
+                return _Get_iterator_inner(_Lhs) == _Rhs._Inner;
             }
 
             template <bool _IteratorConst>
@@ -7951,10 +7951,10 @@ namespace ranges {
                 // clang-format off
                 _Iterator_sentinel_difference_type<_IteratorConst> // TRANSITION, DevCom-10253131
                 operator-(const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs)
-                noexcept(noexcept(_Get_iterator_ziperator<_IteratorConst>(_Lhs) - _Rhs._Inner)) // strengthened
+                noexcept(noexcept(_Get_iterator_inner(_Lhs) - _Rhs._Inner)) // strengthened
             {
                 // clang-format on
-                return _Get_iterator_ziperator(_Lhs) - _Rhs._Inner;
+                return _Get_iterator_inner(_Lhs) - _Rhs._Inner;
             }
 
             template <bool _IteratorConst>
@@ -7963,10 +7963,10 @@ namespace ranges {
                 // clang-format off
                 _Iterator_sentinel_difference_type<_IteratorConst> // TRANSITION, DevCom-10253131
                 operator-(const _Sentinel& _Lhs, const _Iterator<_IteratorConst>& _Rhs)
-                noexcept(noexcept(_Lhs._Inner - _Get_iterator_ziperator<_IteratorConst>(_Rhs))) // strengthened
+                noexcept(noexcept(_Lhs._Inner - _Get_iterator_inner(_Rhs))) // strengthened
             {
                 // clang-format on
-                return _Lhs._Inner - _Get_iterator_ziperator(_Rhs);
+                return _Lhs._Inner - _Get_iterator_inner(_Rhs);
             }
         };
 
