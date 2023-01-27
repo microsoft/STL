@@ -10104,12 +10104,12 @@ namespace ranges {
                     _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
                 if (_Found.min == _Found.max) {
                     _Vty _Temp{*_Found.min};
-                    return {_Temp, _Temp};
+                    return {_Temp, _STD move(_Temp)};
                 }
                 return {static_cast<_Vty>(*_Found.min), static_cast<_Vty>(*_Found.max)};
             } else {
                 _Vty _Temp{*_UFirst};
-                minmax_result<_Vty> _Found = {_Temp, _Temp};
+                minmax_result<_Vty> _Found = {_Temp, _STD move(_Temp)};
                 if (_UFirst == _ULast) {
                     return _Found;
                 }
