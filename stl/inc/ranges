@@ -7735,23 +7735,15 @@ namespace ranges {
                      _Tag_type>
                     && ...);
 
-        public:
-            using iterator_category = decltype([]() noexcept {
-                using _Invoke_t = invoke_result_t<_Maybe_const<_IsConst, _Func>&,
-                    range_reference_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
+            using _Invoke_t = invoke_result_t<_Maybe_const<_IsConst, _Func>&,
+                range_reference_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
 
-                if constexpr (!is_reference_v<_Invoke_t>) {
-                    return input_iterator_tag{};
-                } else if constexpr (_Iterators_derive_from_tag<random_access_iterator_tag>) {
-                    return random_access_iterator_tag{};
-                } else if constexpr (_Iterators_derive_from_tag<bidirectional_iterator_tag>) {
-                    return bidirectional_iterator_tag{};
-                } else if constexpr (_Iterators_derive_from_tag<forward_iterator_tag>) {
-                    return forward_iterator_tag{};
-                } else {
-                    return input_iterator_tag{};
-                }
-            }());
+        public:
+            using iterator_category = conditional_t<!is_reference_v<_Invoke_t>, input_iterator_tag,
+                conditional_t<_Iterators_derive_from_tag<random_access_iterator_tag>, random_access_iterator_tag,
+                    conditional_t<_Iterators_derive_from_tag<bidirectional_iterator_tag>, bidirectional_iterator_tag,
+                        conditional_t<_Iterators_derive_from_tag<forward_iterator_tag>, forward_iterator_tag,
+                            input_iterator_tag>>>>;
         };
 
         template <bool _IsConst>
