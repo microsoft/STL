@@ -7913,7 +7913,7 @@ namespace ranges {
 
             // TRANSITION, DevCom-10253131
             template <bool _IteratorConst>
-            using _Iterator_sentinel_difference_type = range_difference_t<_Maybe_const<_IteratorConst, _Inner_view>>;
+            using _Iter_sent_difference_type = range_difference_t<_Maybe_const<_IteratorConst, _Inner_view>>;
 
             /* [[no_unique_address]] */ _Zentinel<_IsConst> _Inner;
 
@@ -7949,7 +7949,7 @@ namespace ranges {
                 requires sized_sentinel_for<_Zentinel<_IsConst>, _Ziperator<_IteratorConst>>
             _NODISCARD_FRIEND constexpr
                 // clang-format off
-                _Iterator_sentinel_difference_type<_IteratorConst> // TRANSITION, DevCom-10253131
+                _Iter_sent_difference_type<_IteratorConst> // TRANSITION, DevCom-10253131
                 operator-(const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs)
                 noexcept(noexcept(_Get_iterator_inner(_Lhs) - _Rhs._Inner)) // strengthened
             {
@@ -7961,7 +7961,7 @@ namespace ranges {
                 requires sized_sentinel_for<_Zentinel<_IsConst>, _Ziperator<_IteratorConst>>
             _NODISCARD_FRIEND constexpr
                 // clang-format off
-                _Iterator_sentinel_difference_type<_IteratorConst> // TRANSITION, DevCom-10253131
+                _Iter_sent_difference_type<_IteratorConst> // TRANSITION, DevCom-10253131
                 operator-(const _Sentinel& _Lhs, const _Iterator<_IteratorConst>& _Rhs)
                 noexcept(noexcept(_Lhs._Inner - _Get_iterator_inner(_Rhs))) // strengthened
             {
