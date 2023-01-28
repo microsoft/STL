@@ -290,6 +290,18 @@ constexpr bool test_difference() {
     return true;
 }
 
+constexpr bool test_gh_3025() {
+#ifndef _M_CEE // TRANSITION, VSO-1666180
+    // GH-3025 <iterator>: ranges::prev maybe ill-formed in debug mode
+    auto r  = views::iota(0ull, 5ull);
+    auto it = r.end();
+    auto pr = ranges::prev(it, 3);
+    assert(*pr == 2ull);
+#endif // _M_CEE
+
+    return true;
+}
+
 int main() {
     // Validate standard signed integer types
     static_assert((test_integral<signed char>(), true));
@@ -358,4 +370,7 @@ int main() {
 
     test_difference();
     static_assert(test_difference());
+
+    test_gh_3025();
+    static_assert(test_gh_3025());
 }
