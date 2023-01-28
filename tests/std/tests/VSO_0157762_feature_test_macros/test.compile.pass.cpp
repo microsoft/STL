@@ -1653,6 +1653,20 @@ STATIC_ASSERT(__cpp_lib_ranges_join_with == 202202L);
 #endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_repeat
+#error __cpp_lib_ranges_repeat is not defined
+#elif __cpp_lib_ranges_repeat != 202207L
+#error __cpp_lib_ranges_repeat is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_repeat == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_repeat
+#error __cpp_lib_ranges_repeat is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges_slide
 #error __cpp_lib_ranges_slide is not defined
 #elif __cpp_lib_ranges_slide != 202202L
