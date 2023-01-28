@@ -120,8 +120,8 @@ namespace {
         // If _End_ptr doesn't point to the end of a code point, then we return the segment ending
         // with the last byte of the previous code point. It is possible, however, that we aren't
         // dealing with a valid code point in the first place. So, since UTF-8 code points consist
-        // of at most four bytes, we only check the preceding four bytes.
-        for (size_t _Offset = 1; _Offset < 5; ++_Offset) {
+        // of at most four bytes, we only check the last four bytes.
+        for (size_t _Offset = 0; _Offset < 4; ++_Offset) {
             const char* const _Curr_end_ptr = _End_ptr - _Offset;
 
             // If _Curr_end_ptr points to the sole byte in a 1-byte code point, then end the
@@ -137,7 +137,7 @@ namespace {
             }
         }
 
-        // If that failed, then the string definitely ends in an invalid code point. In that case,
+        // If that failed, then the segment definitely ends in an invalid code point. In that case,
         // we just return the segment containing it, since MultiByteToWideChar() will end up
         // replacing it with U+FFFD, anyways.
         return _STD string_view{_Str, _Max_str_segment_size};
@@ -171,14 +171,14 @@ namespace {
             _Dst_str = _Allocated_string{_STD move(_Wide_str), static_cast<size_t>(_Num_chars_required)};
         }
 
-        const int32_t _Conversion_result = MultiByteToWideChar(
-            CP_UTF8, 0, _Src_str.data(), static_cast<int>(_Src_str.size()), _Dst_str._Data(), _Dst_str._Capacity());
+        const int32_t _Conversion_result = MultiByteToWideChar(CP_UTF8, 0, _Src_str.data(),
+            static_cast<int>(_Src_str.size()), _Dst_str._Data(), static_cast<int>(_Dst_str._Capacity()));
 
         if (_Conversion_result == 0) [[unlikely]] {
             return _STD unexpected{static_cast<__std_win_error>(GetLastError())};
         }
 
-        return _STD wstring_view{_Dst_str._Data(), _Dst_str._Capacity()};
+        return _STD wstring_view{_Dst_str._Data(), static_cast<size_t>(_Conversion_result)};
     }
 
     [[nodiscard]] __std_win_error _Write_console(
@@ -221,6 +221,8 @@ _EXTERN_C
     }
 
     {
+        // We acquire a lock here to prevent multiple threads from writing interleaved text,
+        // since we only print segments of a string to the console at a time.
         static _STD mutex _Mtx{};
         const _STD scoped_lock _Lock{_Mtx};
 
