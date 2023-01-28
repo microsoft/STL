@@ -1012,8 +1012,7 @@ protected:
 
 private:
     int __CLRCALL_OR_CDECL _Getifld(char* _Ac, _InIt& _First, _InIt& _Last, ios_base::fmtflags _Basefield,
-        const locale& _Loc) const {
-        // get integer field from [_First, _Last) into _Ac
+        const locale& _Loc) const { // get integer field from [_First, _Last) into _Ac
         const auto& _Punct_fac  = _STD use_facet<numpunct<_Elem>>(_Loc);
         const string _Grouping  = _Punct_fac.grouping();
         const _Elem _Kseparator = _Grouping.empty() ? _Elem{} : _Punct_fac.thousands_sep();
