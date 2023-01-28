@@ -372,7 +372,7 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
 
             const char* _Grouping_iter      = _Grouping.data();
             const char* const _Grouping_end = _Grouping.data() + _Grouping.size();
-            char _Current_grouping_count;
+            char _Current_grouping_count    = '\0';
             while (!_Bad && _Group_index > 0) {
                 if (_Grouping_iter != _Grouping_end) { // keep the last value when _Grouping is exhausted
                     _Current_grouping_count = *_Grouping_iter; // assign the variable at least once
@@ -519,7 +519,7 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
 
             const char* _Grouping_iter      = _Grouping.data();
             const char* const _Grouping_end = _Grouping.data() + _Grouping.size();
-            char _Current_grouping_count;
+            char _Current_grouping_count    = '\0';
             while (!_Bad && _Group_index > 0) {
                 if (_Grouping_iter != _Grouping_end) { // keep the last value when _Grouping is exhausted
                     _Current_grouping_count = *_Grouping_iter; // assign the variable at least once
