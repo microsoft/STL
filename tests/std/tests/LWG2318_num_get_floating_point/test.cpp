@@ -22,6 +22,16 @@ public:
     explicit my_facet(size_t refs = 0) : num_get<char, const char*>(refs) {}
 };
 
+class mid_zero_numpunct : public numpunct<char> {
+public:
+    mid_zero_numpunct() : numpunct<char>() {}
+
+protected:
+    virtual string do_grouping() const {
+        return "\1\0\2"s;
+    }
+};
+
 class my_numpunct : public numpunct<char> {
 public:
     my_numpunct() : numpunct<char>() {}
@@ -176,10 +186,113 @@ void test() {
         assert(v == 0x125p-1);
         assert(str_instr.good());
     }
+
+    // Also test non-ending unlimited grouping
+    instr.imbue(locale(locale(), new mid_zero_numpunct));
+    {
+        v                     = -1;
+        const char sep_str[]  = "17,2,9.0";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(v == 1729.0);
+    }
+    {
+        v                     = -1;
+        const char sep_str[]  = "17,222,9.0";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(v == 172229.0);
+    }
+    {
+        v                     = -1;
+        const char sep_str[]  = "0x17,2,9.0";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(v == 0x1729.0p0);
+    }
+    {
+        v                     = -1;
+        const char sep_str[]  = "0x17,222,9.0";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(v == 0x172229.0p0);
+    }
+}
+
+// Also test non-ending unlimited grouping for integers
+template <class Integer>
+void test_int_grouping() {
+    const my_facet f(1);
+    ios instr(nullptr);
+    instr.imbue(locale(locale(), new mid_zero_numpunct));
+
+    Integer v = 0;
+    {
+        v                     = -1;
+        const char sep_str[]  = "17,2,9";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(v == 1729);
+    }
+    {
+        v                     = -1;
+        const char sep_str[]  = "17,222,9";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(v == 172229);
+    }
+    {
+        v                     = -1;
+        const char sep_str[]  = "0x17,2,9";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+
+        instr.flags(std::ios_base::fmtflags{});
+        const char* iter = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(v == 0x1729);
+    }
+    {
+        v                     = -1;
+        const char sep_str[]  = "0x17,222,9";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+
+        instr.flags(std::ios_base::fmtflags{});
+        const char* iter = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(v == 0x172229);
+    }
 }
 
 int main() {
     test<float>();
     test<double>();
     test<long double>();
+
+    test_int_grouping<unsigned int>();
+    test_int_grouping<long>();
+    test_int_grouping<unsigned long>();
+    test_int_grouping<long long>();
+    test_int_grouping<unsigned long long>();
 }
