@@ -240,27 +240,27 @@ void test_int_grouping() {
 
     Integer v = 0;
     {
-        v                     = -1;
+        v                     = static_cast<Integer>(-1);
         const char sep_str[]  = "17,2,9";
         const size_t len      = sizeof(sep_str) - 1;
         ios_base::iostate err = instr.goodbit;
         const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
         assert(iter == sep_str + len);
         assert(err == instr.goodbit);
-        assert(v == 1729);
+        assert(v == static_cast<Integer>(1729));
     }
     {
-        v                     = -1;
+        v                     = static_cast<Integer>(-1);
         const char sep_str[]  = "17,222,9";
         const size_t len      = sizeof(sep_str) - 1;
         ios_base::iostate err = instr.goodbit;
         const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
         assert(iter == sep_str + len);
         assert(err == instr.goodbit);
-        assert(v == 172229);
+        assert(v == static_cast<Integer>(172229));
     }
     {
-        v                     = -1;
+        v                     = static_cast<Integer>(-1);
         const char sep_str[]  = "0x17,2,9";
         const size_t len      = sizeof(sep_str) - 1;
         ios_base::iostate err = instr.goodbit;
@@ -269,10 +269,10 @@ void test_int_grouping() {
         const char* iter = f.get(sep_str, sep_str + len + 1, instr, err, v);
         assert(iter == sep_str + len);
         assert(err == instr.goodbit);
-        assert(v == 0x1729);
+        assert(v == static_cast<Integer>(0x1729));
     }
     {
-        v                     = -1;
+        v                     = static_cast<Integer>(-1);
         const char sep_str[]  = "0x17,222,9";
         const size_t len      = sizeof(sep_str) - 1;
         ios_base::iostate err = instr.goodbit;
@@ -281,7 +281,7 @@ void test_int_grouping() {
         const char* iter = f.get(sep_str, sep_str + len + 1, instr, err, v);
         assert(iter == sep_str + len);
         assert(err == instr.goodbit);
-        assert(v == 0x172229);
+        assert(v == static_cast<Integer>(0x172229));
     }
 }
 
