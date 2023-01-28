@@ -458,7 +458,15 @@ STATIC_ASSERT(__cpp_lib_clamp == 201603L);
 STATIC_ASSERT(__cpp_lib_complex_udls == 201309L);
 #endif
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, GH-395
+#ifndef __cpp_lib_concepts
+#error __cpp_lib_concepts is not defined
+#elif __cpp_lib_concepts != 202207L
+#error __cpp_lib_concepts is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_concepts == 202207L);
+#endif
+#elif _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
 #ifndef __cpp_lib_concepts
 #error __cpp_lib_concepts is not defined
 #elif __cpp_lib_concepts != 202002L
