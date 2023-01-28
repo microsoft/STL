@@ -257,6 +257,13 @@ void test_print_optimizations() {
 
         assert(str_stream_line == expected_str);
     }
+
+    // When writing out to a Unicode console, we transcode the string in segments of 8,192 bytes
+    // each. Splitting up the strings into segments requires ending each segment on a valid code
+    // point (if applicable). We need to make sure that the actual string is getting printed
+    // appropriately.
+    //
+    // (TODO: Add this test!)
 }
 
 void test_invalid_code_points_console() {

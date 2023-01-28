@@ -1149,11 +1149,9 @@ inline ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_vi
         return _State;
     }
 
-    FILE* const _File_stream                         = _Filebuf->_Myfile;
-    const __std_file_stream_pointer _File_stream_ptr = static_cast<__std_file_stream_pointer>(
-        reinterpret_cast<underlying_type_t<__std_file_stream_pointer>>(_File_stream));
+    FILE* const _File_stream = _Filebuf->_Myfile;
     const __std_unicode_console_retrieval_result _Unicode_console_retrieval_result{
-        __std_get_unicode_console_handle_from_file_stream(_File_stream_ptr)};
+        __std_get_unicode_console_handle_from_file_stream(_File_stream)};
 
     // See the documentation for __std_unicode_console_retrieval_result to understand why we do this.
     bool _Is_unicode_console;

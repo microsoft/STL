@@ -9,6 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#include <cstdio>
 #include <xfilesystem_abi.h>
 
 #pragma pack(push, _CRT_PACKING)
@@ -20,7 +21,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C
 
-enum class __std_file_stream_pointer : uintptr_t { _Invalid = 0 };
 enum class __std_unicode_console_handle : intptr_t { _Invalid = -1 };
 
 struct __std_unicode_console_retrieval_result {
@@ -43,11 +43,11 @@ struct __std_unicode_console_retrieval_result {
 };
 
 _NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_retrieval_result
-    __stdcall __std_get_unicode_console_handle_from_file_stream(_In_ const __std_file_stream_pointer _Stream) noexcept;
+    __stdcall __std_get_unicode_console_handle_from_file_stream(_In_ FILE* const _Stream) noexcept;
 
 _NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_print_to_unicode_console(_In_ const __std_unicode_console_handle _Console_handle,
-        _In_ const char* const _Str, _In_ const unsigned long long _Str_size) noexcept;
+        _In_ const char* const _Str, _In_ const size_t _Str_size) noexcept;
 
 _END_EXTERN_C
 

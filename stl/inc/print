@@ -49,10 +49,8 @@ void _Vprint_nonunicode_impl(FILE* const _Stream, const string_view _Fmt_str, co
 }
 
 inline void _Print_noformat_unicode(FILE* const _Stream, const string_view _Str) {
-    const __std_file_stream_pointer _File_stream =
-        static_cast<__std_file_stream_pointer>(reinterpret_cast<underlying_type_t<__std_file_stream_pointer>>(_Stream));
     const __std_unicode_console_retrieval_result _Unicode_console_retrieval_result{
-        __std_get_unicode_console_handle_from_file_stream(_File_stream)};
+        __std_get_unicode_console_handle_from_file_stream(_Stream)};
 
     // See the documentation for __std_unicode_console_retrieval_result to understand why we do this.
     bool _Is_unicode_console;
