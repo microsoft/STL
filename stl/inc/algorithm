@@ -10102,6 +10102,9 @@ namespace ranges {
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 const auto _Found = _RANGES _Minmax_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                // We can dereference normal pointers many times but some iterators could move their value after
+                // dereferencing so we should dereference them only once. The if constexpr is a pure optimization, we
+                // don't want an additional branch for normal pointers.
                 if constexpr (!is_pointer_v<iterator_t<_Rng>>) {
                     if (_Found.min == _Found.max) {
                         auto _Temp = static_cast<_Vty>(*_Found.min);
