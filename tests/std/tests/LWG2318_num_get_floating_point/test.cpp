@@ -3,11 +3,12 @@
 
 // derived from libc++'s test files:
 // * std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_float.pass.cpp
-// * std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp
+// * std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_double.pass.cpp
 
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <cstring>
 #include <ios>
 #include <locale>
 #include <sstream>
@@ -36,74 +37,6 @@ protected:
         return string("\1\2\3");
     }
 };
-
-template <class Flt, enable_if_t<is_same_v<Flt, float>, int> = 0>
-void test_inf(ios& instr, const my_facet& f) {
-    Flt v = 0.0;
-    {
-        v                     = -1;
-        const char str[]      = "3.40283e+39"; // unrepresentable
-        ios_base::iostate err = instr.goodbit;
-        const char* iter      = f.get(str, str + sizeof(str), instr, err, v);
-        assert(iter == str + sizeof(str) - 1);
-        assert(err == instr.failbit);
-        assert(v == HUGE_VALF);
-    }
-    {
-        v                     = -1;
-        const char str[]      = "-3.40283e+38"; // unrepresentable
-        ios_base::iostate err = instr.goodbit;
-        const char* iter      = f.get(str, str + sizeof(str), instr, err, v);
-        assert(iter == str + sizeof(str) - 1);
-        assert(err == instr.failbit);
-        assert(v == -HUGE_VALF);
-    }
-}
-
-template <class Flt, enable_if_t<!is_same_v<Flt, float>, int> = 0>
-void test_inf(ios& instr, const my_facet& f) {
-    Flt v = 0.0;
-    {
-        v                     = -1;
-        const char str[]      = "1.79779e+309"; // unrepresentable
-        ios_base::iostate err = instr.goodbit;
-        const char* iter      = f.get(str, str + sizeof(str), instr, err, v);
-        assert(iter == str + sizeof(str) - 1);
-        assert(err == instr.failbit);
-        assert(v == HUGE_VAL);
-    }
-    {
-        v                     = -1;
-        const char str[]      = "-1.79779e+308"; // unrepresentable
-        ios_base::iostate err = instr.goodbit;
-        const char* iter      = f.get(str, str + sizeof(str), instr, err, v);
-        assert(iter == str + sizeof(str) - 1);
-        assert(err == instr.failbit);
-        assert(v == -HUGE_VAL);
-    }
-}
-
-template <class Flt, enable_if_t<is_same_v<Flt, float>, int> = 0>
-void test_sep(ios& instr, const my_facet& f) {
-    Flt v                 = -1;
-    const char str[]      = "456_78_9;5";
-    ios_base::iostate err = instr.goodbit;
-    const char* iter      = f.get(str, str + sizeof(str), instr, err, v);
-    assert(iter == str + sizeof(str) - 1);
-    assert(err == instr.goodbit);
-    assert(v == 456789.5);
-}
-
-template <class Flt, enable_if_t<!is_same_v<Flt, float>, int> = 0>
-void test_sep(ios& instr, const my_facet& f) {
-    Flt v                 = -1;
-    const char str[]      = "123_456_78_9;125";
-    ios_base::iostate err = instr.goodbit;
-    const char* iter      = f.get(str, str + sizeof(str), instr, err, v);
-    assert(iter == str + sizeof(str) - 1);
-    assert(err == instr.goodbit);
-    assert(v == 123456789.125);
-}
 
 template <class Flt>
 void test() {
@@ -172,10 +105,39 @@ void test() {
         assert(err == instr.goodbit);
         assert(v == 2);
     }
-    test_inf<Flt>(instr, f);
+
+    {
+        v                     = -1;
+        const char* inf_str   = is_same_v<Flt, float> ? "3.40283e+39" : "1.7979e+309"; // unrepresentable
+        const size_t len      = strlen(inf_str);
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(inf_str, inf_str + len + 1, instr, err, v);
+        assert(iter == inf_str + len);
+        assert(err == instr.failbit);
+        assert(v == HUGE_VAL);
+    }
+    {
+        v                     = -1;
+        const char* inf_str   = is_same_v<Flt, float> ? "-3.40283e+39" : "-1.7979e+309"; // unrepresentable
+        const size_t len      = strlen(inf_str);
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(inf_str, inf_str + len + 1, instr, err, v);
+        assert(iter == inf_str + len);
+        assert(err == instr.failbit);
+        assert(v == -HUGE_VAL);
+    }
 
     instr.imbue(locale(locale(), new my_numpunct));
-    test_sep<Flt>(instr, f);
+    {
+        v                     = -1;
+        const char* sep_str   = is_same_v<Flt, float> ? "456_78_9;5" : "123_456_78_9;125";
+        const size_t len      = strlen(sep_str);
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(v == (is_same_v<Flt, float> ? 456789.5 : 123456789.125));
+    }
     {
         v                     = -1;
         const char str[]      = "1_2_3_4_5_6_7_8_9_0_1_2_3_4_5_6_7_8_9_0_1_2_3_4_5_6_7_8_9_0_"

@@ -552,7 +552,7 @@ protected:
         _Adl_verify_range(_First, _Last);
         char _Ac[_FLOATING_BUFFER_SIZE];
         int _Hexexp     = _ENABLE_V2_BEHAVIOR;
-        const int _Base = _Getffld(_Ac, _First, _Last, _Iosbase, &_Hexexp); // gather field
+        const int _Base = _Getffldx(_Ac, _First, _Last, _Iosbase, &_Hexexp); // gather field
         if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
             _State = ios_base::failbit;
             _Val   = 0.0f;
@@ -579,7 +579,7 @@ protected:
         _Adl_verify_range(_First, _Last);
         char _Ac[_FLOATING_BUFFER_SIZE];
         int _Hexexp     = _ENABLE_V2_BEHAVIOR;
-        const int _Base = _Getffld(_Ac, _First, _Last, _Iosbase, &_Hexexp); // gather field
+        const int _Base = _Getffldx(_Ac, _First, _Last, _Iosbase, &_Hexexp); // gather field
         if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
             _State = ios_base::failbit;
             _Val   = 0.0;
@@ -749,6 +749,12 @@ private:
     }
 
     int __CLRCALL_OR_CDECL _Getffld(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _Iosbase, int* _Phexexp) const {
+        // TRANSITION, ABI, unused now
+        // get floating-point field from [_First, _Last) into _Ac
+        return _Getffldx(_Ac, _First, _Last, _Iosbase, _Phexexp);
+    }
+
+    int __CLRCALL_OR_CDECL _Getffldx(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _Iosbase, int* _Phexexp) const {
         // get floating-point field from [_First, _Last) into _Ac
         const auto& _Punct_fac = _STD use_facet<numpunct<_Elem>>(_Iosbase.getloc());
         const string _Grouping = _Punct_fac.grouping();
@@ -756,21 +762,25 @@ private:
         bool _Bad              = false;
         bool _Sticky           = false;
 
-        constexpr int _Dec_digits_cnt     = 10;
-        constexpr int _Hex_signoff        = 22;
-        constexpr int _Numget_xoff        = 24;
-        constexpr int _Numget_poff        = 26;
-        constexpr int _Numget_upper_e_off = 0xE;
-        constexpr int _Numget_lower_e_off = 0xE + 0x10 - 10;
-        static constexpr char _Src[]      = "0123456789ABCDEFabcdef-+XxPp";
+        constexpr int _Offset_dec_digit_end = 10;
+        constexpr int _Offset_hex_digit_end = 22;
+        constexpr int _Offset_neg_sign      = 22;
+        constexpr int _Offset_pos_sign      = _Offset_neg_sign + 1;
+        constexpr int _Offset_upper_x       = 24;
+        constexpr int _Offset_lower_x       = _Offset_upper_x + 1;
+        constexpr int _Offset_upper_p       = 26;
+        constexpr int _Offset_lower_p       = _Offset_upper_p + 1;
+        constexpr int _Offset_upper_e       = 0xE;
+        constexpr int _Offset_lower_e       = 0xE + 0x10 - 10;
+        static constexpr char _Src[]        = "0123456789ABCDEFabcdef-+XxPp";
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
         _Ctype_fac.widen(_STD begin(_Src), _STD end(_Src), _Atoms);
 
-        const _Elem _Positive_sign = _Atoms[_Hex_signoff + 1];
-        const _Elem _Negative_sign = _Atoms[_Hex_signoff];
-        const _Elem _Upper_e       = _Atoms[_Numget_upper_e_off];
-        const _Elem _Lower_e       = _Atoms[_Numget_lower_e_off];
+        const _Elem _Positive_sign = _Atoms[_Offset_pos_sign];
+        const _Elem _Negative_sign = _Atoms[_Offset_neg_sign];
+        const _Elem _Upper_e       = _Atoms[_Offset_upper_e];
+        const _Elem _Lower_e       = _Atoms[_Offset_lower_e];
         const _Elem _Zero_ch       = _Atoms[0];
 
         if (_First != _Last) {
@@ -800,7 +810,7 @@ private:
                 *_Ptr = '\0';
                 return 0;
             }
-            if (*_First == _Atoms[_Numget_xoff] || *_First == _Atoms[_Numget_xoff + 1]) { // 0X or 0x
+            if (*_First == _Atoms[_Offset_lower_x] || *_First == _Atoms[_Offset_upper_x]) { // 0X or 0x
                 _Parse_hex = true;
                 ++_First; // discard 0X or 0x for further parsing
             } else {
@@ -808,18 +818,18 @@ private:
             }
         }
 
-        const char* _Pg = &_Grouping[0];
+        const char* _Current_grouping = &_Grouping[0];
 
         if (_Parse_hex) {
-            int _Phex = 0; // power of 10 multiplier
+            int _Power_of_16 = 0;
 
             *_Ptr++ = 'x';
 
-            if (*_Pg == CHAR_MAX || *_Pg <= '\0') {
-                for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Hex_signoff;
+            if (*_Current_grouping == CHAR_MAX || *_Current_grouping <= '\0') {
+                for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_hex_digit_end;
                      _Seendigit = true, (void) ++_First) {
                     if (_Max_sig_dig <= _Significant) {
-                        ++_Phex; // just scale by 10
+                        ++_Power_of_16; // just scale by 16
                     } else if (_Idx != 0 || _Significant != 0) { // save a significant digit
                         *_Ptr++ = _Src[_Idx];
                         ++_Significant;
@@ -831,10 +841,11 @@ private:
                 size_t _Group = 0;
 
                 for (; _First != _Last; ++_First) {
-                    if ((_Idx = _STD _Find_elem(_Atoms, *_First)) < _Hex_signoff) { // got a digit, add to group size
+                    if ((_Idx = _STD _Find_elem(_Atoms, *_First))
+                        < _Offset_hex_digit_end) { // got a digit, add to group size
                         _Seendigit = true;
                         if (_Max_sig_dig <= _Significant) {
-                            ++_Phex; // just scale by 10
+                            ++_Power_of_16; // just scale by 16
                         } else if (_Idx != 0 || _Significant != 0) { // save a significant digit
                             *_Ptr++ = _Src[_Idx];
                             ++_Significant;
@@ -860,14 +871,15 @@ private:
                 }
 
                 while (!_Bad && 0 < _Group) {
-                    if (*_Pg == CHAR_MAX) {
+                    if (*_Current_grouping == CHAR_MAX) {
                         break; // end of grouping constraints to check
                     }
 
-                    if ((0 < --_Group && *_Pg != _Groups[_Group]) || (0 == _Group && *_Pg < _Groups[_Group])) {
+                    if ((0 < --_Group && *_Current_grouping != _Groups[_Group])
+                        || (0 == _Group && *_Current_grouping < _Groups[_Group])) {
                         _Bad = true; // bad group size, fail
-                    } else if ('\0' < _Pg[1]) {
-                        ++_Pg; // group size okay, advance to next test
+                    } else if ('\0' < _Current_grouping[1]) {
+                        ++_Current_grouping; // group size okay, advance to next test
                     }
                 }
             }
@@ -883,16 +895,16 @@ private:
 
             if (_Significant == 0) { // 0000. so far
                 for (; _First != _Last && *_First == _Zero_ch; _Seendigit = true, (void) ++_First) {
-                    --_Phex; // just count leading fraction zeros
+                    --_Power_of_16; // just count leading fraction zeros
                 }
 
-                if (_Phex < 0) { // put one back
+                if (_Power_of_16 < 0) { // put one back
                     *_Ptr++ = '0';
-                    ++_Phex;
+                    ++_Power_of_16;
                 }
             }
 
-            for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Hex_signoff;
+            for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_hex_digit_end;
                  _Seendigit = true, (void) ++_First) {
                 if (_Significant < _Max_sig_dig) { // save a significant fraction digit
                     *_Ptr++ = _Src[_Idx];
@@ -901,8 +913,8 @@ private:
             }
 
             if (_Seendigit && _First != _Last
-                && (*_First == _Atoms[_Numget_poff + 1]
-                    || *_First == _Atoms[_Numget_poff])) { // 'p' or 'P', collect exponent
+                && (*_First == _Atoms[_Offset_lower_p]
+                    || *_First == _Atoms[_Offset_upper_p])) { // 'p' or 'P', collect exponent
                 *_Ptr++ = 'p';
                 ++_First;
                 _Seendigit   = false;
@@ -926,7 +938,7 @@ private:
                     *_Ptr++ = '0'; // put one back
                 }
 
-                for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Hex_signoff;
+                for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_hex_digit_end;
                      _Seendigit = true, (void) ++_First) {
                     if (_Significant < _MAX_EXP_DIG) { // save a significant exponent digit
                         *_Ptr++ = _Src[_Idx];
@@ -940,16 +952,16 @@ private:
             }
 
             *_Ptr     = '\0';
-            *_Phexexp = _Phex; // power of 16 multiplier
-            return 0; // power of 10 multiplier
+            *_Phexexp = _Power_of_16; // power of 16 multiplier
+            return 0;
         } else {
-            int _Pten = 0; // power of 10 multiplier
+            int _Power_of_10 = 0;
 
-            if (*_Pg == CHAR_MAX || *_Pg <= '\0') {
-                for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Dec_digits_cnt;
+            if (*_Current_grouping == CHAR_MAX || *_Current_grouping <= '\0') {
+                for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_dec_digit_end;
                      _Seendigit = true, (void) ++_First) {
                     if (_Max_sig_dig <= _Significant) { // enough digits, scale by 10 and update _Sticky
-                        ++_Pten;
+                        ++_Power_of_10;
                         if (0 < _Idx) {
                             _Sticky = true;
                         }
@@ -968,10 +980,11 @@ private:
                 }
 
                 for (; _First != _Last; ++_First) {
-                    if ((_Idx = _STD _Find_elem(_Atoms, *_First)) < _Dec_digits_cnt) { // got a digit, add to group size
+                    if ((_Idx = _STD _Find_elem(_Atoms, *_First))
+                        < _Offset_dec_digit_end) { // got a digit, add to group size
                         _Seendigit = true;
                         if (_Max_sig_dig <= _Significant) { // enough digits, scale by 10 and update _Sticky
-                            ++_Pten;
+                            ++_Power_of_10;
                             if (0 < _Idx) {
                                 _Sticky = true;
                             }
@@ -1000,19 +1013,20 @@ private:
                 }
 
                 while (!_Bad && 0 < _Group) {
-                    if (*_Pg == CHAR_MAX) {
+                    if (*_Current_grouping == CHAR_MAX) {
                         break; // end of grouping constraints to check
                     }
 
-                    if ((0 < --_Group && *_Pg != _Groups[_Group]) || (0 == _Group && *_Pg < _Groups[_Group])) {
+                    if ((0 < --_Group && *_Current_grouping != _Groups[_Group])
+                        || (0 == _Group && *_Current_grouping < _Groups[_Group])) {
                         _Bad = true; // bad group size, fail
-                    } else if ('\0' < _Pg[1]) {
-                        ++_Pg; // group size okay, advance to next test
+                    } else if ('\0' < _Current_grouping[1]) {
+                        ++_Current_grouping; // group size okay, advance to next test
                     }
                 }
             }
 
-            const char _Decimal_point = localeconv()->decimal_point[0];
+            const char _Decimal_point = _CSTD localeconv()->decimal_point[0];
             if (_First != _Last && *_First == _Punct_fac.decimal_point()) { // add .
                 *_Ptr++ = _Decimal_point;
                 ++_First;
@@ -1020,16 +1034,16 @@ private:
 
             if (*_Phexexp != _ENABLE_V2_BEHAVIOR && _Significant == 0) { // 0000. so far
                 for (; _First != _Last && *_First == _Zero_ch; _Seendigit = true, (void) ++_First) {
-                    --_Pten; // just count leading fraction zeros
+                    --_Power_of_10; // just count leading fraction zeros
                 }
 
-                if (_Pten < 0) { // put one back
+                if (_Power_of_10 < 0) { // put one back
                     *_Ptr++ = '0';
-                    ++_Pten;
+                    ++_Power_of_10;
                 }
             }
 
-            for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Dec_digits_cnt;
+            for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_dec_digit_end;
                  _Seendigit = true, (void) ++_First) {
                 if (_Significant < _Max_sig_dig) { // save a significant fraction digit
                     *_Ptr++ = _Src[_Idx];
@@ -1052,9 +1066,9 @@ private:
                     }
                 }
 
-                if (_Px == _Leading) { // change "999..." to "1000..." and scale _Pten
+                if (_Px == _Leading) { // change "999..." to "1000..." and scale _Power_of_10
                     *_Px = '1';
-                    ++_Pten;
+                    ++_Power_of_10;
                 }
             }
 
@@ -1083,7 +1097,7 @@ private:
                     *_Ptr++ = '0'; // put one back
                 }
 
-                for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Dec_digits_cnt;
+                for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_dec_digit_end;
                      _Seendigit = true, (void) ++_First) {
                     if (_Significant < _MAX_EXP_DIG) { // save a significant exponent digit
                         *_Ptr++ = _Src[_Idx];
@@ -1097,14 +1111,8 @@ private:
             }
 
             *_Ptr = '\0';
-            return _Pten;
+            return _Power_of_10;
         }
-    }
-
-    int __CLRCALL_OR_CDECL _Getffldx(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _Iosbase, int* _Phexexp) const {
-        // TRANSITION, ABI, unused now
-        // get hex floating-point field from [_First, _Last) into _Ac
-        return _Getffld(_Ac, _First, _Last, _Iosbase, _Phexexp);
     }
 
 #undef _ENABLE_V2_BEHAVIOR
