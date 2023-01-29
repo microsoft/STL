@@ -204,7 +204,7 @@ void maybe_flush_console_file_stream(const test::win_console& console) {
     // API is being used, according to the C++ specifications. So, as an additional check,
     // we'll only call std::fflush() if the ordinary literal encoding is *NOT* UTF-8. This
     // should work fine, assuming that our implementation is correct.
-    if constexpr (!_Is_ordinary_literal_encoding_utf8) {
+    if constexpr (!_Is_ordinary_literal_encoding_utf8()) {
         fflush(console.get_file_stream());
     }
 }
@@ -257,6 +257,13 @@ void test_print_optimizations() {
 
         assert(str_stream_line == expected_str);
     }
+
+    // When writing out to a Unicode console, we transcode the string in segments of 8,192 bytes
+    // each. Splitting up the strings into segments requires ending each segment on a valid code
+    // point (if applicable). We need to make sure that the actual string is getting printed
+    // appropriately.
+    //
+    // (TODO: Add this test!)
 }
 
 void test_invalid_code_points_console() {
@@ -281,7 +288,7 @@ void test_invalid_code_points_console() {
         const wstring console_line{test_console.get_console_line(curr_line_number++)};
         const bool contains_replacement_character = console_line.contains(L'\uFFFD');
 
-        if constexpr (_Is_ordinary_literal_encoding_utf8) {
+        if constexpr (_Is_ordinary_literal_encoding_utf8()) {
             // It isn't necessarily well-documented how MultiByteToWideChar() (used internally by
             // __std_print_to_unicode_console()) replaces invalid code points, except for the fact
             // that if an invalid code point is encountered, then some amount of characters are
@@ -413,7 +420,7 @@ void test_stream_flush_console() {
     {
         const wstring extractedStr{temp_console.get_console_line(0)};
 
-        if constexpr (_Is_ordinary_literal_encoding_utf8) {
+        if constexpr (_Is_ordinary_literal_encoding_utf8()) {
             assert(extractedStr == L"Hello,");
         } else {
             assert(extractedStr.empty());
@@ -425,7 +432,7 @@ void test_stream_flush_console() {
     {
         const wstring extractedStr{temp_console.get_console_line(0)};
 
-        if constexpr (_Is_ordinary_literal_encoding_utf8) {
+        if constexpr (_Is_ordinary_literal_encoding_utf8()) {
             assert(extractedStr == L"Hello, world!");
         } else {
             assert(extractedStr.empty());

@@ -28,7 +28,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 inline void _Print_noformat_nonunicode(FILE* const _Stream, const string_view _Str) {
-    const bool _Was_write_successful = (_STD fputs(_Str.data(), _Stream) != EOF);
+    const bool _Was_write_successful = (_CSTD fwrite(_Str.data(), 1, _Str.size(), _Stream) == _Str.size());
 
     if (!_Was_write_successful) [[unlikely]] {
         throw system_error{_STD make_error_code(static_cast<errc>(errno))};
@@ -37,22 +37,19 @@ inline void _Print_noformat_nonunicode(FILE* const _Stream, const string_view _S
 
 template <bool _Add_newline>
 void _Vprint_nonunicode_impl(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
-    const string _Output_str = [&]() {
-        if constexpr (_Add_newline) {
-            return _STD vformat(_Fmt_str, _Fmt_args) + '\n';
-        } else {
-            return _STD vformat(_Fmt_str, _Fmt_args);
-        }
-    }();
+    string _Output_str;
+    if constexpr (_Add_newline) {
+        _Output_str = _STD vformat(_Fmt_str, _Fmt_args) + '\n';
+    } else {
+        _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
+    }
 
     _STD _Print_noformat_nonunicode(_Stream, _Output_str);
 }
 
 inline void _Print_noformat_unicode(FILE* const _Stream, const string_view _Str) {
-    const __std_file_stream_pointer _File_stream =
-        static_cast<__std_file_stream_pointer>(reinterpret_cast<underlying_type_t<__std_file_stream_pointer>>(_Stream));
     const __std_unicode_console_retrieval_result _Unicode_console_retrieval_result{
-        __std_get_unicode_console_handle_from_file_stream(_File_stream)};
+        __std_get_unicode_console_handle_from_file_stream(_Stream)};
 
     // See the documentation for __std_unicode_console_retrieval_result to understand why we do this.
     bool _Is_unicode_console;
@@ -81,15 +78,13 @@ inline void _Print_noformat_unicode(FILE* const _Stream, const string_view _Str)
 #pragma warning(pop)
 
     if (_Is_unicode_console) {
-        const bool _Was_flush_successful = (_STD fflush(_Stream) == 0);
-
+        const bool _Was_flush_successful = (_CSTD fflush(_Stream) == 0);
         if (!_Was_flush_successful) [[unlikely]] {
             throw system_error{_STD make_error_code(static_cast<errc>(errno))};
         }
 
         const __std_win_error _Console_print_result =
             __std_print_to_unicode_console(_Unicode_console_retrieval_result._Console_handle, _Str.data(), _Str.size());
-
         if (_Console_print_result != __std_win_error::_Success) [[unlikely]] {
             _STD _Throw_system_error_from_std_win_error(_Console_print_result);
         }
@@ -100,15 +95,14 @@ inline void _Print_noformat_unicode(FILE* const _Stream, const string_view _Str)
 
 template <bool _Add_newline>
 void _Vprint_unicode_impl(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
-    const string _Output_str = [&]() {
-        if constexpr (_Add_newline) {
-            return _STD vformat(_Fmt_str, _Fmt_args) + '\n';
-        } else {
-            return _STD vformat(_Fmt_str, _Fmt_args);
-        }
-    }();
+    string _Output_str;
+    if constexpr (_Add_newline) {
+        _Output_str = _STD vformat(_Fmt_str, _Fmt_args) + '\n';
+    } else {
+        _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
+    }
 
-    _Print_noformat_unicode(_Stream, _Output_str);
+    _STD _Print_noformat_unicode(_Stream, _Output_str);
 }
 
 template <bool _Add_newline, class... _Types>
@@ -154,7 +148,7 @@ void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Type
     };
 
     if constexpr (_Has_format_args) {
-        if constexpr (_Is_ordinary_literal_encoding_utf8) {
+        if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
             _STD _Vprint_unicode_impl<_Add_newline>(
                 _Stream, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
         } else {
@@ -164,7 +158,7 @@ void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Type
     } else {
         const string _Escaped_str{_Escape_braces_closure(_Fmt.get())};
 
-        if constexpr (_Is_ordinary_literal_encoding_utf8) {
+        if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
             _STD _Print_noformat_unicode(_Stream, _Escaped_str);
         } else {
             _STD _Print_noformat_nonunicode(_Stream, _Escaped_str);

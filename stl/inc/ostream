@@ -1113,13 +1113,12 @@ void _Vprint_nonunicode_impl(ostream& _Ostr, const string_view _Fmt_str, const f
     } else [[likely]] {
         // This is intentionally kept outside of the try/catch block in _Print_noformat_nonunicode()
         // (see [ostream.formatted.print/3.2]).
-        const string _Output_str = [&]() {
-            if constexpr (_Add_newline) {
-                return _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
-            } else {
-                return _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
-            }
-        }();
+        string _Output_str;
+        if constexpr (_Add_newline) {
+            _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
+        } else {
+            _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
+        }
 
         _State |= _STD _Print_noformat_nonunicode(_Ostr, _Output_str);
     }
@@ -1149,11 +1148,9 @@ inline ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_vi
         return _State;
     }
 
-    FILE* const _File_stream                         = _Filebuf->_Myfile;
-    const __std_file_stream_pointer _File_stream_ptr = static_cast<__std_file_stream_pointer>(
-        reinterpret_cast<underlying_type_t<__std_file_stream_pointer>>(_File_stream));
+    FILE* const _File_stream = _Filebuf->_Myfile;
     const __std_unicode_console_retrieval_result _Unicode_console_retrieval_result{
-        __std_get_unicode_console_handle_from_file_stream(_File_stream_ptr)};
+        __std_get_unicode_console_handle_from_file_stream(_File_stream)};
 
     // See the documentation for __std_unicode_console_retrieval_result to understand why we do this.
     bool _Is_unicode_console;
@@ -1212,13 +1209,12 @@ void _Vprint_unicode_impl(ostream& _Ostr, const string_view _Fmt_str, const form
     } else [[likely]] {
         // This is intentionally kept outside of the try/catch block in _Print_noformat_unicode()
         // (see [ostream.formatted.print/3.2]).
-        const string _Output_str = [&]() {
-            if constexpr (_Add_newline) {
-                return _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
-            } else {
-                return _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
-            }
-        }();
+        string _Output_str;
+        if constexpr (_Add_newline) {
+            _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
+        } else {
+            _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
+        }
 
         _State |= _STD _Print_noformat_unicode(_Ostr, _Output_str);
     }
@@ -1233,7 +1229,7 @@ inline void _Print_noformat(ostream& _Ostr, const string_view _Str) {
     if (!_Ok) [[unlikely]] {
         _State |= ios_base::badbit;
     } else [[likely]] {
-        if constexpr (_Is_ordinary_literal_encoding_utf8) {
+        if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
             _State |= _STD _Print_noformat_unicode(_Ostr, _Str);
         } else {
             _State |= _STD _Print_noformat_nonunicode(_Ostr, _Str);
@@ -1289,7 +1285,7 @@ void _Print_impl(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&..
     };
 
     if constexpr (_Has_format_args) {
-        if constexpr (_Is_ordinary_literal_encoding_utf8) {
+        if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
             _STD _Vprint_unicode_impl<_Add_newline>(
                 _Ostr, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
         } else {
