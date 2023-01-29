@@ -58,6 +58,7 @@ static_assert(test_common_reference<tuple<short&, const volatile long&&>, pair<v
 
 // Test common_reference<cvref tuple, cvref tuple-like>, tuple-like is pair
 static_assert(test_common_reference<tuple<int, int>&, pair<int, int>&, tuple<int&, int&>>);
+static_assert(test_common_reference<const tuple<int, int>&, const pair<int, int>&, tuple<const int&, const int&>>);
 static_assert(
     test_common_reference<tuple<int&, long&&>&, const pair<const int&, const long&&>&, tuple<const int&, const long&>>);
 static_assert(test_common_reference<const tuple<short&, const volatile long&&>, const pair<volatile int, long>&,
