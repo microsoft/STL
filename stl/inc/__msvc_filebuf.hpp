@@ -194,7 +194,7 @@ public:
     using pos_type = typename _Traits::pos_type;
     using off_type = typename _Traits::off_type;
 
-    basic_filebuf(_Uninitialized) : _Mysb(_Noinit) {}
+    basic_filebuf(_Uninitialized) noexcept : _Mysb(_Noinit) {}
 
     basic_filebuf(basic_filebuf&& _Right) {
         _Init(_Right._Myfile, _Newfl); // match buffering styles
@@ -214,7 +214,7 @@ public:
         }
     }
 
-    void swap(basic_filebuf& _Right) {
+    void swap(basic_filebuf& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             FILE* _Myfile_sav                       = _Myfile;
             const _Cvt* _Pcvt_sav                   = _Pcvt;
@@ -281,7 +281,7 @@ public:
         _Closefl
     };
 
-    _NODISCARD bool is_open() const {
+    _NODISCARD bool is_open() const noexcept /* strengthened */ {
         return static_cast<bool>(_Myfile);
     }
 
@@ -708,7 +708,7 @@ protected:
         _Initcvt(_STD use_facet<_Cvt>(_Loc));
     }
 
-    void _Init(FILE* _File, _Initfl _Which) { // initialize to C stream _File after {new, open, close}
+    void _Init(FILE* _File, _Initfl _Which) noexcept { // initialize to C stream _File after {new, open, close}
         using _State_type = typename _Traits::state_type;
 
         __PURE_APPDOMAIN_GLOBAL static _State_type _Stinit; // initial state
@@ -772,7 +772,7 @@ protected:
         }
     }
 
-    void _Initcvt(const _Cvt& _Newcvt) { // initialize codecvt pointer
+    void _Initcvt(const _Cvt& _Newcvt) noexcept { // initialize codecvt pointer
         if (_Newcvt.always_noconv()) {
             _Pcvt = nullptr; // nothing to do
         } else { // set up for nontrivial codecvt facet
@@ -789,13 +789,13 @@ private:
     bool _Closef; // true if C stream must be closed
     FILE* _Myfile; // pointer to C stream
 
-    void _Reset_back() { // restore buffer after putback
+    void _Reset_back() noexcept { // restore buffer after putback
         if (_Mysb::eback() == &_Mychar) {
             _Mysb::setg(_Set_eback, _Set_eback, _Set_egptr);
         }
     }
 
-    void _Set_back() { // set up putback area
+    void _Set_back() noexcept { // set up putback area
         if (_Mysb::eback() != &_Mychar) { // save current get buffer
             _Set_eback = _Mysb::eback();
             _Set_egptr = _Mysb::egptr();
@@ -808,7 +808,7 @@ private:
 };
 
 _EXPORT_STD template <class _Elem, class _Traits>
-void swap(basic_filebuf<_Elem, _Traits>& _Left, basic_filebuf<_Elem, _Traits>& _Right) {
+void swap(basic_filebuf<_Elem, _Traits>& _Left, basic_filebuf<_Elem, _Traits>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 
