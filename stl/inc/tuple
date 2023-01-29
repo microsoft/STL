@@ -1005,8 +1005,12 @@ constexpr _Ret _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty _A
     return _Ret{_STD get<_Kx>(_STD get<_Ix>(_STD move(_Arg)))...};
 }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+_EXPORT_STD template <_Tuple_like... _Tuples>
+#else // ^^^ C++23 / C++20 vvv
 _EXPORT_STD template <class... _Tuples>
-_NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::_Ret tuple_cat(_Tuples&&... _Tpls) { // concatenate tuples
+#endif // C++20
+_NODISCARD constexpr auto tuple_cat(_Tuples&&... _Tpls) { // concatenate tuples
     using _Cat1   = _Tuple_cat1<_Tuples...>;
     using _Ret    = typename _Cat1::_Ret;
     using _Kx_seq = typename _Cat1::_Kx_seq;
@@ -1015,13 +1019,21 @@ _NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::_Ret tuple_cat(_Tuples&&.
 }
 
 #if _HAS_CXX17
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+template <class _Callable, _Tuple_like _Tuple, size_t... _Indices>
+#else // ^^^ C++23 / C++20 vvv
 template <class _Callable, class _Tuple, size_t... _Indices>
+#endif // C++20
 constexpr decltype(auto) _Apply_impl(_Callable&& _Obj, _Tuple&& _Tpl, index_sequence<_Indices...>) noexcept(
     noexcept(_STD invoke(_STD forward<_Callable>(_Obj), _STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...))) {
     return _STD invoke(_STD forward<_Callable>(_Obj), _STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+_EXPORT_STD template <class _Callable, _Tuple_like _Tuple>
+#else // ^^^ C++23 / C++20 vvv
 _EXPORT_STD template <class _Callable, class _Tuple>
+#endif // C++20
 constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) noexcept(
     noexcept(_Apply_impl(_STD forward<_Callable>(_Obj), _STD forward<_Tuple>(_Tpl),
         make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{}))) {
@@ -1029,7 +1041,11 @@ constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) noexcept(
         make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
 }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+template <class _Ty, _Tuple_like _Tuple, size_t... _Indices>
+#else // ^^^ C++23 / C++20 vvv
 template <class _Ty, class _Tuple, size_t... _Indices>
+#endif // C++20
 constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>) {
     // construct _Ty from the elements of _Tpl
     static_assert(is_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>,
@@ -1037,7 +1053,11 @@ constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>) 
     return _Ty(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+_EXPORT_STD template <class _Ty, _Tuple_like _Tuple>
+#else // ^^^ C++23 / C++20 vvv
 _EXPORT_STD template <class _Ty, class _Tuple>
+#endif // C++20
 _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) { // construct _Ty from the elements of _Tpl
     return _Make_from_tuple_impl<_Ty>(
         _STD forward<_Tuple>(_Tpl), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
