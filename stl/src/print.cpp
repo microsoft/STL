@@ -106,11 +106,11 @@ namespace {
         const char* const _End_ptr                   = _Str + _Base_ptr_adjustment;
 
         // clang-format off
-        const bool _Include_end_byte = 
+        const bool _Include_end_byte =
             ((*_End_ptr & 0b1000'0000) == 0) ||   // 1-Byte Code Point
             ((*(_End_ptr - 1) >> 5) == 0b110) ||  // 2nd Byte in 2-Byte Code Point
             ((*(_End_ptr - 2) >> 4) == 0b1110) || // 3rd Byte in 3-Byte Code Point
-            ((*(_End_ptr - 3) >> 3) == 0b1111'0); // 4th Byte in 4-Byte Code Point
+            ((*(_End_ptr - 3) >> 3) == 0b1'1110); // 4th Byte in 4-Byte Code Point
         // clang-format on
 
         if (_Include_end_byte) {

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Dogfood">
-	<!--
+    <!--
 Copyright (c) Microsoft Corporation.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-	<ItemGroup>
-		<!-- Objs that exist only in libcpmt[d][01].lib. -->
-		<BuildFiles Include="
+    <ItemGroup>
+        <!-- Objs that exist only in libcpmt[d][01].lib. -->
+        <BuildFiles Include="
             $(CrtRoot)\github\stl\src\atomic_wait.cpp;
             $(CrtRoot)\github\stl\src\memory_resource.cpp;
             $(CrtRoot)\github\stl\src\parallel_algorithms.cpp;
@@ -16,18 +16,18 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\tzdb.cpp;
             $(CrtRoot)\github\stl\src\ulocale.cpp;
             ">
-			<BuildAs>nativecpp</BuildAs>
-			<IncludeInLink>false</IncludeInLink>
-			<IncludeInLib>true</IncludeInLib>
-			<IncludeInImportLib>false</IncludeInImportLib>
-		</BuildFiles>
+            <BuildAs>nativecpp</BuildAs>
+            <IncludeInLink>false</IncludeInLink>
+            <IncludeInLib>true</IncludeInLib>
+            <IncludeInImportLib>false</IncludeInImportLib>
+        </BuildFiles>
 
-		<BuildFiles Include="$(CrtRoot)\github\stl\src\excptptr.cpp;">
-			<BuildAs>nativecpp</BuildAs>
-			<ExceptionHandling>async</ExceptionHandling>
-		</BuildFiles>
+        <BuildFiles Include="$(CrtRoot)\github\stl\src\excptptr.cpp;">
+            <BuildAs>nativecpp</BuildAs>
+            <ExceptionHandling>async</ExceptionHandling>
+        </BuildFiles>
 
-		<BuildFiles Include="
+        <BuildFiles Include="
             $(CrtRoot)\github\stl\src\StlCompareStringA.cpp;
             $(CrtRoot)\github\stl\src\StlCompareStringW.cpp;
             $(CrtRoot)\github\stl\src\StlLCMapStringA.cpp;
@@ -147,19 +147,19 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\xwstopfx.cpp;
             $(CrtRoot)\github\stl\src\xwstoxfl.cpp;
             ">
-			<BuildAs>nativecpp</BuildAs>
-		</BuildFiles>
+            <BuildAs>nativecpp</BuildAs>
+        </BuildFiles>
 
-		<BuildFiles Include="
+        <BuildFiles Include="
             $(CrtRoot)\github\stl\src\winapisupp.cpp;
             ">
-			<BuildAs>nativecpp</BuildAs>
-			<HasCrtInitializers>true</HasCrtInitializers>
-		</BuildFiles>
+            <BuildAs>nativecpp</BuildAs>
+            <HasCrtInitializers>true</HasCrtInitializers>
+        </BuildFiles>
 
-		<!-- Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib
+        <!-- Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib
              (controlled by IncludeInLink and IncludeInImportLib). -->
-		<BuildFiles Include="
+        <BuildFiles Include="
             $(CrtRoot)\github\stl\src\asan_noop.cpp;
             $(CrtRoot)\github\stl\src\charconv.cpp;
             $(CrtRoot)\github\stl\src\filesystem.cpp;
@@ -176,78 +176,78 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\xcharconv_tables_float.cpp;
             $(CrtRoot)\github\stl\src\xonce2.cpp;
             ">
-			<BuildAs>nativecpp</BuildAs>
-			<IncludeInLink>false</IncludeInLink>
-			<IncludeInImportLib>true</IncludeInImportLib>
-		</BuildFiles>
-	</ItemGroup>
+            <BuildAs>nativecpp</BuildAs>
+            <IncludeInLink>false</IncludeInLink>
+            <IncludeInImportLib>true</IncludeInImportLib>
+        </BuildFiles>
+    </ItemGroup>
 
-	<ItemGroup Condition="'$(BuildArchitecture)' == 'i386' or '$(BuildArchitecture)' == 'amd64'">
-		<!-- Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib
+    <ItemGroup Condition="'$(BuildArchitecture)' == 'i386' or '$(BuildArchitecture)' == 'amd64'">
+        <!-- Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib
              (controlled by IncludeInLink and IncludeInImportLib). -->
-		<BuildFiles Include="
+        <BuildFiles Include="
             $(CrtRoot)\github\stl\src\alias_init_once_begin_initialize.asm;
             $(CrtRoot)\github\stl\src\alias_init_once_complete.asm;
             ">
-			<BuildAs>asm</BuildAs>
-			<IncludeInLink>false</IncludeInLink>
-			<IncludeInImportLib>true</IncludeInImportLib>
-		</BuildFiles>
-	</ItemGroup>
+            <BuildAs>asm</BuildAs>
+            <IncludeInLink>false</IncludeInLink>
+            <IncludeInImportLib>true</IncludeInImportLib>
+        </BuildFiles>
+    </ItemGroup>
 
-	<ItemGroup Condition="'$(CrtBuildModelIsDll)' == 'true'">
-		<!-- The following files are linked in msvcpXXX[d][_clr].dll. -->
-		<BuildFiles Include="
+    <ItemGroup Condition="'$(CrtBuildModelIsDll)' == 'true'">
+        <!-- The following files are linked in msvcpXXX[d][_clr].dll. -->
+        <BuildFiles Include="
             $(CrtRoot)\github\stl\src\dllmain.cpp;
             $(CrtRoot)\github\stl\src\instances.cpp;
             ">
-			<BuildAs>nativecpp</BuildAs>
-		</BuildFiles>
-	</ItemGroup>
+            <BuildAs>nativecpp</BuildAs>
+        </BuildFiles>
+    </ItemGroup>
 
-	<Choose>
-		<When Condition="'$(CrtBuildModel)' != 'md'">
-			<!-- Only check exports of release, DLL, builds -->
-		</When>
+    <Choose>
+        <When Condition="'$(CrtBuildModel)' != 'md'">
+            <!-- Only check exports of release, DLL, builds -->
+        </When>
 
-		<When Condition="'$(BuildArchitecture)' == 'i386' or '$(BuildArchitecture)' == 'chpe'">
-			<Choose>
-				<When Condition="'$(MsvcpFlavor)' == 'kernel32' or '$(MsvcpFlavor)' == 'netfx'">
-					<PropertyGroup>
-						<ExpectedExportsList>$(MSBuildThisFileDirectory)\i386.exports</ExpectedExportsList>
-					</PropertyGroup>
-				</When>
-				<Otherwise>
-					<PropertyGroup>
-						<ExpectedExportsList>$(MSBuildThisFileDirectory)\i386_onecore.exports</ExpectedExportsList>
-					</PropertyGroup>
-				</Otherwise>
-			</Choose>
-		</When>
-		<When Condition="'$(BuildArchitecture)' == 'amd64' or '$(BuildArchitecture)' == 'arm64ec'">
-			<Choose>
-				<When Condition="'$(MsvcpFlavor)' == 'kernel32' or '$(MsvcpFlavor)' == 'netfx'">
-					<PropertyGroup>
-						<ExpectedExportsList>$(MSBuildThisFileDirectory)\amd64.exports</ExpectedExportsList>
-					</PropertyGroup>
-				</When>
-				<Otherwise>
-					<PropertyGroup>
-						<ExpectedExportsList>$(MSBuildThisFileDirectory)\amd64_onecore.exports</ExpectedExportsList>
-					</PropertyGroup>
-				</Otherwise>
-			</Choose>
-		</When>
-		<When Condition="'$(BuildArchitecture)' == 'arm'">
-			<PropertyGroup>
-				<ExpectedExportsList>$(MSBuildThisFileDirectory)\arm.exports</ExpectedExportsList>
-			</PropertyGroup>
-		</When>
-		<When Condition="'$(BuildArchitecture)' == 'arm64'">
-			<PropertyGroup>
-				<ExpectedExportsList>$(MSBuildThisFileDirectory)\arm64.exports</ExpectedExportsList>
-			</PropertyGroup>
-		</When>
-	</Choose>
+        <When Condition="'$(BuildArchitecture)' == 'i386' or '$(BuildArchitecture)' == 'chpe'">
+            <Choose>
+                <When Condition="'$(MsvcpFlavor)' == 'kernel32' or '$(MsvcpFlavor)' == 'netfx'">
+                    <PropertyGroup>
+                        <ExpectedExportsList>$(MSBuildThisFileDirectory)\i386.exports</ExpectedExportsList>
+                    </PropertyGroup>
+                </When>
+                <Otherwise>
+                    <PropertyGroup>
+                        <ExpectedExportsList>$(MSBuildThisFileDirectory)\i386_onecore.exports</ExpectedExportsList>
+                    </PropertyGroup>
+                </Otherwise>
+            </Choose>
+        </When>
+        <When Condition="'$(BuildArchitecture)' == 'amd64' or '$(BuildArchitecture)' == 'arm64ec'">
+            <Choose>
+                <When Condition="'$(MsvcpFlavor)' == 'kernel32' or '$(MsvcpFlavor)' == 'netfx'">
+                    <PropertyGroup>
+                        <ExpectedExportsList>$(MSBuildThisFileDirectory)\amd64.exports</ExpectedExportsList>
+                    </PropertyGroup>
+                </When>
+                <Otherwise>
+                    <PropertyGroup>
+                        <ExpectedExportsList>$(MSBuildThisFileDirectory)\amd64_onecore.exports</ExpectedExportsList>
+                    </PropertyGroup>
+                </Otherwise>
+            </Choose>
+        </When>
+        <When Condition="'$(BuildArchitecture)' == 'arm'">
+            <PropertyGroup>
+                <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm.exports</ExpectedExportsList>
+            </PropertyGroup>
+        </When>
+        <When Condition="'$(BuildArchitecture)' == 'arm64'">
+            <PropertyGroup>
+                <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm64.exports</ExpectedExportsList>
+            </PropertyGroup>
+        </When>
+    </Choose>
 
 </Project>
