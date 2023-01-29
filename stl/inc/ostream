@@ -1113,13 +1113,12 @@ void _Vprint_nonunicode_impl(ostream& _Ostr, const string_view _Fmt_str, const f
     } else [[likely]] {
         // This is intentionally kept outside of the try/catch block in _Print_noformat_nonunicode()
         // (see [ostream.formatted.print/3.2]).
-        const string _Output_str = [&]() {
-            if constexpr (_Add_newline) {
-                return _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
-            } else {
-                return _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
-            }
-        }();
+        string _Output_str;
+        if constexpr (_Add_newline) {
+            _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
+        } else {
+            _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
+        }
 
         _State |= _STD _Print_noformat_nonunicode(_Ostr, _Output_str);
     }
@@ -1210,13 +1209,12 @@ void _Vprint_unicode_impl(ostream& _Ostr, const string_view _Fmt_str, const form
     } else [[likely]] {
         // This is intentionally kept outside of the try/catch block in _Print_noformat_unicode()
         // (see [ostream.formatted.print/3.2]).
-        const string _Output_str = [&]() {
-            if constexpr (_Add_newline) {
-                return _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
-            } else {
-                return _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
-            }
-        }();
+        string _Output_str;
+        if constexpr (_Add_newline) {
+            _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
+        } else {
+            _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
+        }
 
         _State |= _STD _Print_noformat_unicode(_Ostr, _Output_str);
     }

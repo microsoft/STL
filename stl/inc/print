@@ -37,13 +37,12 @@ inline void _Print_noformat_nonunicode(FILE* const _Stream, const string_view _S
 
 template <bool _Add_newline>
 void _Vprint_nonunicode_impl(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
-    const string _Output_str = [&]() {
-        if constexpr (_Add_newline) {
-            return _STD vformat(_Fmt_str, _Fmt_args) + '\n';
-        } else {
-            return _STD vformat(_Fmt_str, _Fmt_args);
-        }
-    }();
+    string _Output_str;
+    if constexpr (_Add_newline) {
+        _Output_str = _STD vformat(_Fmt_str, _Fmt_args) + '\n';
+    } else {
+        _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
+    }
 
     _STD _Print_noformat_nonunicode(_Stream, _Output_str);
 }
@@ -96,13 +95,12 @@ inline void _Print_noformat_unicode(FILE* const _Stream, const string_view _Str)
 
 template <bool _Add_newline>
 void _Vprint_unicode_impl(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
-    const string _Output_str = [&]() {
-        if constexpr (_Add_newline) {
-            return _STD vformat(_Fmt_str, _Fmt_args) + '\n';
-        } else {
-            return _STD vformat(_Fmt_str, _Fmt_args);
-        }
-    }();
+    string _Output_str;
+    if constexpr (_Add_newline) {
+        _Output_str = _STD vformat(_Fmt_str, _Fmt_args) + '\n';
+    } else {
+        _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
+    }
 
     _STD _Print_noformat_unicode(_Stream, _Output_str);
 }
