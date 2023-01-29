@@ -95,4 +95,6 @@ constexpr bool test() {
     return true;
 }
 
+static_assert(test());
+
 int main() {} // COMPILE-ONLY
