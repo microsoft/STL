@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Dogfood">
-    <!--
+<!--
 Copyright (c) Microsoft Corporation.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
@@ -23,8 +23,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         </BuildFiles>
 
         <BuildFiles Include="$(CrtRoot)\github\stl\src\excptptr.cpp;">
-            <BuildAs>nativecpp</BuildAs>
-            <ExceptionHandling>async</ExceptionHandling>
+          <BuildAs>nativecpp</BuildAs>
+          <ExceptionHandling>async</ExceptionHandling>
         </BuildFiles>
 
         <BuildFiles Include="
@@ -206,48 +206,48 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </ItemGroup>
 
     <Choose>
-        <When Condition="'$(CrtBuildModel)' != 'md'">
-            <!-- Only check exports of release, DLL, builds -->
-        </When>
+      <When Condition="'$(CrtBuildModel)' != 'md'">
+        <!-- Only check exports of release, DLL, builds -->
+      </When>
 
-        <When Condition="'$(BuildArchitecture)' == 'i386' or '$(BuildArchitecture)' == 'chpe'">
-            <Choose>
-                <When Condition="'$(MsvcpFlavor)' == 'kernel32' or '$(MsvcpFlavor)' == 'netfx'">
-                    <PropertyGroup>
-                        <ExpectedExportsList>$(MSBuildThisFileDirectory)\i386.exports</ExpectedExportsList>
-                    </PropertyGroup>
-                </When>
-                <Otherwise>
-                    <PropertyGroup>
-                        <ExpectedExportsList>$(MSBuildThisFileDirectory)\i386_onecore.exports</ExpectedExportsList>
-                    </PropertyGroup>
-                </Otherwise>
-            </Choose>
-        </When>
-        <When Condition="'$(BuildArchitecture)' == 'amd64' or '$(BuildArchitecture)' == 'arm64ec'">
-            <Choose>
-                <When Condition="'$(MsvcpFlavor)' == 'kernel32' or '$(MsvcpFlavor)' == 'netfx'">
-                    <PropertyGroup>
-                        <ExpectedExportsList>$(MSBuildThisFileDirectory)\amd64.exports</ExpectedExportsList>
-                    </PropertyGroup>
-                </When>
-                <Otherwise>
-                    <PropertyGroup>
-                        <ExpectedExportsList>$(MSBuildThisFileDirectory)\amd64_onecore.exports</ExpectedExportsList>
-                    </PropertyGroup>
-                </Otherwise>
-            </Choose>
-        </When>
-        <When Condition="'$(BuildArchitecture)' == 'arm'">
+      <When Condition="'$(BuildArchitecture)' == 'i386' or '$(BuildArchitecture)' == 'chpe'">
+        <Choose>
+          <When Condition="'$(MsvcpFlavor)' == 'kernel32' or '$(MsvcpFlavor)' == 'netfx'">
             <PropertyGroup>
-                <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm.exports</ExpectedExportsList>
+              <ExpectedExportsList>$(MSBuildThisFileDirectory)\i386.exports</ExpectedExportsList>
             </PropertyGroup>
-        </When>
-        <When Condition="'$(BuildArchitecture)' == 'arm64'">
+          </When>
+          <Otherwise>
             <PropertyGroup>
-                <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm64.exports</ExpectedExportsList>
+              <ExpectedExportsList>$(MSBuildThisFileDirectory)\i386_onecore.exports</ExpectedExportsList>
             </PropertyGroup>
-        </When>
+          </Otherwise>
+        </Choose>
+      </When>
+      <When Condition="'$(BuildArchitecture)' == 'amd64' or '$(BuildArchitecture)' == 'arm64ec'">
+        <Choose>
+          <When Condition="'$(MsvcpFlavor)' == 'kernel32' or '$(MsvcpFlavor)' == 'netfx'">
+            <PropertyGroup>
+              <ExpectedExportsList>$(MSBuildThisFileDirectory)\amd64.exports</ExpectedExportsList>
+            </PropertyGroup>
+          </When>
+          <Otherwise>
+            <PropertyGroup>
+              <ExpectedExportsList>$(MSBuildThisFileDirectory)\amd64_onecore.exports</ExpectedExportsList>
+            </PropertyGroup>
+          </Otherwise>
+        </Choose>
+      </When>
+      <When Condition="'$(BuildArchitecture)' == 'arm'">
+        <PropertyGroup>
+          <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm.exports</ExpectedExportsList>
+        </PropertyGroup>
+      </When>
+      <When Condition="'$(BuildArchitecture)' == 'arm64'">
+        <PropertyGroup>
+          <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm64.exports</ExpectedExportsList>
+        </PropertyGroup>
+      </When>
     </Choose>
 
 </Project>
