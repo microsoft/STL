@@ -259,6 +259,7 @@ tests\P0024R2_parallel_algorithms_transform_inclusive_scan
 tests\P0024R2_parallel_algorithms_transform_reduce
 tests\P0035R4_over_aligned_allocation
 tests\P0040R3_extending_memory_management_tools
+tests\P0040R3_parallel_memory_algorithms
 tests\P0053R7_cpp_synchronized_buffered_ostream
 tests\P0067R5_charconv
 tests\P0083R3_splicing_maps_and_sets
@@ -551,6 +552,7 @@ tests\P1951R1_default_arguments_pair_forward_ctor
 tests\P2093R14_formatted_output
 tests\P2136R3_invoke_r
 tests\P2162R2_std_visit_for_derived_classes_from_variant
+tests\P2165R4_tuple_like_pair
 tests\P2231R1_complete_constexpr_optional_variant
 tests\P2273R3_constexpr_unique_ptr
 tests\P2278R4_basic_const_iterator
@@ -562,10 +564,12 @@ tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference
 tests\P2321R2_views_zip
+tests\P2321R2_views_zip_transform
 tests\P2322R6_ranges_alg_fold
 tests\P2387R3_bind_back
 tests\P2387R3_pipe_support_for_user_defined_range_adaptors
 tests\P2401R0_conditional_noexcept_for_exchange
+tests\P2404R3_move_only_types_for_comparison_concepts
 tests\P2408R5_ranges_iterators_to_classic_algorithms
 tests\P2415R2_owning_view
 tests\P2417R2_constexpr_bitset
@@ -584,6 +588,8 @@ tests\P2445R1_forward_like
 tests\P2446R2_views_as_rvalue
 tests\P2465R3_standard_library_modules
 tests\P2467R1_exclusive_mode_fstreams
+tests\P2474R2_views_repeat
+tests\P2474R2_views_repeat_death
 tests\P2494R2_move_only_range_adaptors
 tests\P2517R1_apply_conditional_noexcept
 tests\VSO_0000000_allocator_propagation

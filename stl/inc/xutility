@@ -866,6 +866,9 @@ using _Iter_value_t = typename iterator_traits<_Iter>::value_type;
 
 template <class _Iter>
 using _Iter_diff_t = typename iterator_traits<_Iter>::difference_type;
+
+template <class _Ty>
+using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
 #endif // __cpp_lib_concepts
 
 template <class... _Iters>
@@ -1025,7 +1028,7 @@ struct _Distance_unknown {
 };
 
 template <class _Diff>
-_INLINE_VAR constexpr _Diff _Max_possible_v{static_cast<make_unsigned_t<_Diff>>(-1) >> 1};
+_INLINE_VAR constexpr _Diff _Max_possible_v{static_cast<_Make_unsigned_like_t<_Diff>>(-1) >> 1};
 
 template <class _Diff>
 _INLINE_VAR constexpr _Diff _Min_possible_v{-_Max_possible_v<_Diff> - 1};
@@ -1755,9 +1758,6 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 }
 
 #ifdef __cpp_lib_concepts
-template <class _Ty1, class _Ty2>
-concept _Different_from = (!same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>);
-
 #if _HAS_CXX23
 _EXPORT_STD template <indirectly_readable _Ty>
 using iter_const_reference_t = common_reference_t<const iter_value_t<_Ty>&&, iter_reference_t<_Ty>>;
