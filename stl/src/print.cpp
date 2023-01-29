@@ -3,13 +3,16 @@
 
 // print.cpp -- C++23 <print> implementation
 
+// This must be as small as possible, because its contents are
+// injected into the msvcprt.lib and msvcprtd.lib import libraries.
+// Do not include or define anything else here.
+// In particular, basic_string must not be included here.
+
 #include <__msvc_print.hpp>
+#include <corecrt_terminate.h>
 #include <cstdio>
-#include <expected>
 #include <internal_shared.h>
 #include <io.h>
-#include <mutex>
-#include <string_view>
 #include <type_traits>
 
 #include <Windows.h>
@@ -57,19 +60,11 @@ _EXTERN_C
 _END_EXTERN_C
 
 namespace {
-    // NOTE: We don't use std::wstring in here. Otherwise, compiling with /MD and
-    // _ITERATOR_DEBUG_LEVEL > 0 will lead to bad code generation. This happens because
-    // sizeof(std::_String_val) changes based on whether or not _ITERATOR_DEBUG_LEVEL > 0.
-    //
-    // (This is an issue because these functions are packaged into the msvcprt.lib static
-    // import library, and we don't create different versions of this library based on the
-    // _ITERATOR_DEBUG_LEVEL value, unlike with libcpmt.lib. So, even if we use /MD, the
-    // functions are going to be statically defined within dependent projects.)
     class _Allocated_string {
     public:
-        _Allocated_string() : _Str(nullptr), _Str_capacity(0) {}
+        _Allocated_string() = default;
 
-        explicit _Allocated_string(__crt_unique_heap_ptr<wchar_t>&& _Other_str, size_t _Other_capacity)
+        explicit _Allocated_string(__crt_unique_heap_ptr<wchar_t>&& _Other_str, const size_t _Other_capacity) noexcept
             : _Str(_STD move(_Other_str)), _Str_capacity(_Other_capacity) {}
 
         [[nodiscard]] wchar_t* _Data() noexcept {
@@ -90,12 +85,40 @@ namespace {
         size_t _Str_capacity;
     };
 
+    template <class _Char_type>
+    class _Really_basic_string_view {
+    public:
+        _Really_basic_string_view() = default;
+
+        explicit _Really_basic_string_view(const _Char_type* const _Other_str, const size_t _Other_size) noexcept
+            : _Str(_Other_str), _Str_size(_Other_size) {}
+
+        [[nodiscard]] const _Char_type* _Data() const noexcept {
+            return _Str;
+        }
+
+        [[nodiscard]] size_t _Size() const noexcept {
+            return _Str_size;
+        }
+
+        [[nodiscard]] bool _Empty() const noexcept {
+            return (_Size() == 0);
+        }
+
+    private:
+        const _Char_type* _Str;
+        size_t _Str_size;
+    };
+
+    using _Minimal_string_view  = _Really_basic_string_view<char>;
+    using _Minimal_wstring_view = _Really_basic_string_view<wchar_t>;
+
     static constexpr size_t _Max_str_segment_size = 8192;
 
-    [[nodiscard]] _STD string_view __stdcall _Get_next_utf8_string_segment(
+    [[nodiscard]] _Minimal_string_view __stdcall _Get_next_utf8_string_segment(
         const char* const _Str, const size_t _Str_size) noexcept {
         if (_Str_size <= _Max_str_segment_size) [[likely]] {
-            return _STD string_view{_Str, _Str_size};
+            return _Minimal_string_view{_Str, _Str_size};
         }
 
         // We want to find a pointer to the last valid code point _End_ptr such that the number of
@@ -112,7 +135,7 @@ namespace {
         // clang-format on
 
         if (_Include_end_byte) {
-            return _STD string_view{_Str, _Max_str_segment_size};
+            return _Minimal_string_view{_Str, _Max_str_segment_size};
         }
 
         // If _End_ptr doesn't point to the end of a code point, then we return the segment ending
@@ -125,26 +148,56 @@ namespace {
             // If _Curr_end_ptr points to the sole byte in a 1-byte code point, then end the
             // segment on that byte.
             if ((*_Curr_end_ptr & 0b1000'0000) == 0) {
-                return _STD string_view{_Str, _Max_str_segment_size - _Offset};
+                return _Minimal_string_view{_Str, _Max_str_segment_size - _Offset};
             }
 
             // Otherwise, if _Curr_end_ptr points to the beginning of a multi-byte code point,
             // then end the segment on the byte just before this one.
             if ((*_Curr_end_ptr & 0b1100'0000) == 0b1100'0000) {
-                return _STD string_view{_Str, _Max_str_segment_size - (_Offset + 1)};
+                return _Minimal_string_view{_Str, _Max_str_segment_size - (_Offset + 1)};
             }
         }
 
         // If that failed, then the segment definitely ends in an invalid code point. In that case,
         // we just return the segment containing it, since MultiByteToWideChar() will end up
         // replacing it with U+FFFD, anyways.
-        return _STD string_view{_Str, _Max_str_segment_size};
+        return _Minimal_string_view{_Str, _Max_str_segment_size};
     }
 
-    [[nodiscard]] _STD expected<_STD wstring_view, __std_win_error> __stdcall _Transcode_utf8_string(
-        _Allocated_string& _Dst_str, const _STD string_view _Src_str) noexcept {
+    class _Transcode_result {
+    public:
+        _Transcode_result() noexcept : _Transcoded_str(), _Successful(true) {}
+
+        _Transcode_result(_Minimal_wstring_view _Result_str) noexcept
+            : _Transcoded_str(_STD move(_Result_str)), _Successful(true) {}
+
+        _Transcode_result(__std_win_error _Result_error) noexcept : _Win_error(_Result_error), _Successful(false) {}
+
+        [[nodiscard]] bool _Has_value() const noexcept {
+            return _Successful;
+        }
+
+        [[nodiscard]] _Minimal_wstring_view _Value() const noexcept {
+            return _Transcoded_str;
+        }
+
+        [[nodiscard]] __std_win_error _Error() const noexcept {
+            return _Win_error;
+        }
+
+    private:
+        union {
+            _Minimal_wstring_view _Transcoded_str;
+            __std_win_error _Win_error;
+        };
+
+        bool _Successful;
+    };
+
+    [[nodiscard]] _Transcode_result __stdcall _Transcode_utf8_string(
+        _Allocated_string& _Dst_str, const _Minimal_string_view _Src_str) noexcept {
         // MultiByteToWideChar() fails if strLength == 0.
-        if (_Src_str.empty()) [[unlikely]] {
+        if (_Src_str._Empty()) [[unlikely]] {
             return {};
         }
 
@@ -152,10 +205,10 @@ namespace {
         // code units with U+FFFD. This is done automatically by MultiByteToWideChar(),
         // so long as we do not use the MB_ERR_INVALID_CHARS flag.
         const int32_t _Num_chars_required =
-            MultiByteToWideChar(CP_UTF8, 0, _Src_str.data(), static_cast<int>(_Src_str.size()), nullptr, 0);
+            MultiByteToWideChar(CP_UTF8, 0, _Src_str._Data(), static_cast<int>(_Src_str._Size()), nullptr, 0);
 
         if (_Num_chars_required == 0) [[unlikely]] {
-            return _STD unexpected{static_cast<__std_win_error>(GetLastError())};
+            return static_cast<__std_win_error>(GetLastError());
         }
 
         if (static_cast<size_t>(_Num_chars_required) > _Dst_str._Capacity()) {
@@ -163,27 +216,27 @@ namespace {
 
             __crt_unique_heap_ptr<wchar_t> _Wide_str{_malloc_crt_t(wchar_t, _Num_chars_required)};
             if (!_Wide_str) [[unlikely]] {
-                return _STD unexpected{__std_win_error::_Not_enough_memory};
+                return __std_win_error::_Not_enough_memory;
             }
 
             _Dst_str = _Allocated_string{_STD move(_Wide_str), static_cast<size_t>(_Num_chars_required)};
         }
 
-        const int32_t _Conversion_result = MultiByteToWideChar(CP_UTF8, 0, _Src_str.data(),
-            static_cast<int>(_Src_str.size()), _Dst_str._Data(), static_cast<int>(_Dst_str._Capacity()));
+        const int32_t _Conversion_result = MultiByteToWideChar(CP_UTF8, 0, _Src_str._Data(),
+            static_cast<int>(_Src_str._Size()), _Dst_str._Data(), static_cast<int>(_Dst_str._Capacity()));
 
         if (_Conversion_result == 0) [[unlikely]] {
             // This shouldn't happen...
             _CSTD terminate();
         }
 
-        return _STD wstring_view{_Dst_str._Data(), static_cast<size_t>(_Conversion_result)};
+        return _Minimal_wstring_view{_Dst_str._Data(), static_cast<size_t>(_Conversion_result)};
     }
 
     [[nodiscard]] __std_win_error _Write_console(
-        const HANDLE _Console_handle, const _STD wstring_view _Wide_str) noexcept {
+        const HANDLE _Console_handle, const _Minimal_wstring_view _Wide_str) noexcept {
         const BOOL _Write_result =
-            WriteConsoleW(_Console_handle, _Wide_str.data(), static_cast<DWORD>(_Wide_str.size()), nullptr, nullptr);
+            WriteConsoleW(_Console_handle, _Wide_str._Data(), static_cast<DWORD>(_Wide_str._Size()), nullptr, nullptr);
 
         if (!_Write_result) [[unlikely]] {
             return static_cast<__std_win_error>(GetLastError());
@@ -191,6 +244,48 @@ namespace {
 
         return __std_win_error::_Success;
     }
+
+    class _Critical_section {
+    public:
+        _Critical_section() noexcept {
+            InitializeCriticalSection(&_Mtx);
+        }
+
+        ~_Critical_section() noexcept {
+            DeleteCriticalSection(&_Mtx);
+        }
+
+        _Critical_section(const _Critical_section&)            = delete;
+        _Critical_section& operator=(const _Critical_section&) = delete;
+
+        void _Lock() noexcept {
+            EnterCriticalSection(&_Mtx);
+        }
+
+        void _Unlock() noexcept {
+            LeaveCriticalSection(&_Mtx);
+        }
+
+    private:
+        CRITICAL_SECTION _Mtx;
+    };
+
+    class _Scoped_critical_section_lock {
+    public:
+        explicit _Scoped_critical_section_lock(_Critical_section& _Mtx) noexcept : _Mtx_ptr(&_Mtx) {
+            _Mtx_ptr->_Lock();
+        }
+
+        ~_Scoped_critical_section_lock() noexcept {
+            _Mtx_ptr->_Unlock();
+        }
+
+        _Scoped_critical_section_lock(const _Scoped_critical_section_lock&)            = delete;
+        _Scoped_critical_section_lock& operator=(const _Scoped_critical_section_lock&) = delete;
+
+    private:
+        _Critical_section* _Mtx_ptr;
+    };
 } // unnamed namespace
 
 _EXTERN_C
@@ -210,41 +305,40 @@ _EXTERN_C
     const char* _Remaining_str = _Str;
     size_t _Remaining_str_size = _Str_size;
 
-    _STD string_view _Curr_str_segment = _Get_next_utf8_string_segment(_Remaining_str, _Remaining_str_size);
+    _Minimal_string_view _Curr_str_segment = _Get_next_utf8_string_segment(_Remaining_str, _Remaining_str_size);
     _Allocated_string _Allocated_str{};
-    _STD expected<_STD wstring_view, __std_win_error> _Transcoded_str{
-        _Transcode_utf8_string(_Allocated_str, _Curr_str_segment)};
+    _Transcode_result _Transcoded_str{_Transcode_utf8_string(_Allocated_str, _Curr_str_segment)};
 
-    if (!_Transcoded_str.has_value()) [[unlikely]] {
-        return _Transcoded_str.error();
+    if (!_Transcoded_str._Has_value()) [[unlikely]] {
+        return _Transcoded_str._Error();
     }
 
     {
         // We acquire a lock here to prevent multiple threads from writing interleaved text,
         // since we only print segments of a string to the console at a time.
-        static _STD mutex _Mtx{};
-        const _STD scoped_lock _Lock{_Mtx};
+        static _Critical_section _Mtx{};
+        const _Scoped_critical_section_lock _Lock{_Mtx};
 
         while (true) {
-            const __std_win_error _Write_result = _Write_console(_Actual_console_handle, *_Transcoded_str);
+            const __std_win_error _Write_result = _Write_console(_Actual_console_handle, _Transcoded_str._Value());
 
             if (_Write_result != __std_win_error::_Success) [[unlikely]] {
                 return _Write_result;
             }
 
-            _Remaining_str_size -= _Curr_str_segment.size();
+            _Remaining_str_size -= _Curr_str_segment._Size();
 
             if (_Remaining_str_size == 0) {
                 return __std_win_error::_Success;
             }
 
-            _Remaining_str += _Curr_str_segment.size();
+            _Remaining_str += _Curr_str_segment._Size();
 
             _Curr_str_segment = _Get_next_utf8_string_segment(_Remaining_str, _Remaining_str_size);
             _Transcoded_str   = _Transcode_utf8_string(_Allocated_str, _Curr_str_segment);
 
-            if (!_Transcoded_str.has_value()) [[unlikely]] {
-                return _Transcoded_str.error();
+            if (!_Transcoded_str._Has_value()) [[unlikely]] {
+                return _Transcoded_str._Error();
             }
         }
     }
