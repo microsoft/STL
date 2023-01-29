@@ -28,7 +28,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 inline void _Print_noformat_nonunicode(FILE* const _Stream, const string_view _Str) {
-    const bool _Was_write_successful = (_STD fwrite(_Str.data(), 1, _Str.size(), _Stream) == _Str.size());
+    const bool _Was_write_successful = (_CSTD fwrite(_Str.data(), 1, _Str.size(), _Stream) == _Str.size());
 
     if (!_Was_write_successful) [[unlikely]] {
         throw system_error{_STD make_error_code(static_cast<errc>(errno))};
@@ -78,7 +78,7 @@ inline void _Print_noformat_unicode(FILE* const _Stream, const string_view _Str)
 #pragma warning(pop)
 
     if (_Is_unicode_console) {
-        const bool _Was_flush_successful = (_STD fflush(_Stream) == 0);
+        const bool _Was_flush_successful = (_CSTD fflush(_Stream) == 0);
         if (!_Was_flush_successful) [[unlikely]] {
             throw system_error{_STD make_error_code(static_cast<errc>(errno))};
         }

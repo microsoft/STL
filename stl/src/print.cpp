@@ -8,9 +8,7 @@
 #include <expected>
 #include <internal_shared.h>
 #include <io.h>
-#include <limits>
 #include <mutex>
-#include <stdexcept>
 #include <string_view>
 #include <type_traits>
 
@@ -175,7 +173,8 @@ namespace {
             static_cast<int>(_Src_str.size()), _Dst_str._Data(), static_cast<int>(_Dst_str._Capacity()));
 
         if (_Conversion_result == 0) [[unlikely]] {
-            return _STD unexpected{static_cast<__std_win_error>(GetLastError())};
+            // This shouldn't happen...
+            _CSTD terminate();
         }
 
         return _STD wstring_view{_Dst_str._Data(), static_cast<size_t>(_Conversion_result)};
