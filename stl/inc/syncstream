@@ -346,7 +346,7 @@ public:
 
     ~basic_osyncstream() = default;
 
-    basic_osyncstream& operator=(basic_osyncstream&&) noexcept = default;
+    basic_osyncstream& operator=(basic_osyncstream&&) = default; // per LWG-3867
 
     void emit() {
         ios_base::iostate _State = ios_base::goodbit;
