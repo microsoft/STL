@@ -62,10 +62,10 @@ public:
 
     static constexpr bool run() {
         using Seq = make_index_sequence<N>;
-        test_tuple_like_constructor(Seq{});
-        test_tuple_like_allocator_constructor(Seq{});
-        test_tuple_like_assignment(Seq{});
-        test_pair_like_const_assignment(Seq{});
+        static_assert(test_tuple_like_constructor(Seq{}));
+        static_assert(test_tuple_like_allocator_constructor(Seq{}));
+        static_assert(test_tuple_like_assignment(Seq{}));
+        static_assert(test_pair_like_const_assignment(Seq{}));
         return true;
     }
 

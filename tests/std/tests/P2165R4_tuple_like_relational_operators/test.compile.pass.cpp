@@ -44,7 +44,7 @@ constexpr bool test() {
 
     { // Check comparisons of (tuple_size_v == 1) tuple-like types
         static_assert(verify_comparisons<tuple<int>, array<int, 1>>);
-        static_assert(!verify_comparisons<tuple<Incomparable>, array<Incomparable, 1>>);
+        static_assert(!verify_comparisons<tuple<int>, array<Incomparable, 1>>);
         static_assert(tuple{5} == array{5} && tuple{6} != array{7});
         static_assert(is_eq(tuple{1} <=> array{1}) && is_lt(tuple{1} <=> array{2}) && is_gt(tuple{3} <=> array{2}));
     }

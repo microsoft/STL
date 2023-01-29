@@ -766,7 +766,8 @@ tuple(allocator_arg_t, _Alloc, tuple<_Types...>) -> tuple<_Types...>;
 
 _EXPORT_STD template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator==(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
-    static_assert(sizeof...(_Types1) == sizeof...(_Types2), "cannot compare tuples of different sizes");
+    static_assert(
+        sizeof...(_Types1) == sizeof...(_Types2), "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
     return _Left._Equals(_Right);
 }
 
@@ -780,15 +781,12 @@ _NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_Types
 
 #if _HAS_CXX23
 template <class _TTuple, class _UTuple, class _Indices = make_index_sequence<tuple_size_v<_TTuple>>>
-inline constexpr bool _Equality_comparable_tuples_v = false;
+struct _Can_use_get_for_all_indices;
 
-// clang-format off
 template <class _TTuple, class _UTuple, size_t... _Indices>
-inline constexpr bool _Equality_comparable_tuples_v<_TTuple, _UTuple, index_sequence<_Indices...>> =
-    tuple_size_v<_TTuple> == tuple_size_v<_UTuple> &&
+struct _Can_use_get_for_all_indices<_TTuple, _UTuple, index_sequence<_Indices...>>  : bool_constant<
     (requires(const _TTuple& _Left, const _UTuple& _Right) {
-        { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) } -> _Boolean_testable; } && ...);
-// clang-format on
+    { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) } -> _Boolean_testable; } && ...)> {};
 
 template <class _TTuple, class _UTuple, size_t... _Indices>
 _NODISCARD constexpr bool _Equality_compare_tuples(
@@ -797,8 +795,12 @@ _NODISCARD constexpr bool _Equality_compare_tuples(
 }
 
 _EXPORT_STD template <class... _TTypes, _Tuple_like _UTuple>
-    requires _Equality_comparable_tuples_v<tuple<_TTypes...>, remove_cvref_t<_UTuple>>
 _NODISCARD constexpr bool operator==(const tuple<_TTypes...>& _Left, const _UTuple& _Right) {
+    static_assert(
+        sizeof...(_TTypes) == tuple_size_v<_UTuple>, "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
+    static_assert(_Can_use_get_for_all_indices<tuple<_TTypes...>, remove_cvref_t<_UTuple>>::value,
+        "For all i, where 0 <= i <= sizeof...(_TTypes), get<i>(_Left) == get<i>(_Right) must be valid expression "
+        "(N4928 [tuple.rel]/2).");
     return _STD _Equality_compare_tuples(_Left, _Right, index_sequence_for<_TTypes...>{});
 }
 
@@ -817,23 +819,14 @@ _NODISCARD constexpr auto _Compare_three_way_tuples(
     const _TTuple& _Left, const _UTuple& _Right, index_sequence<_Indices...>) {
     using _Result_type   = typename _Three_way_tuple_comparison_result<_TTuple, _UTuple>::type;
     _Result_type _Result = strong_ordering::equal;
-
-    auto _Compare = [&]<size_t _Index>(integral_constant<size_t, _Index>) {
-        if (auto _Cmp = _Synth_three_way{}(_STD get<_Index>(_Left), _STD get<_Index>(_Right)); _Cmp != 0) {
-            _Result = _Cmp;
-            return false; // stop comparisons
-        }
-
-        return true; // continue comparisons
-    };
-
-    static_cast<void>((_Compare(integral_constant<size_t, _Indices>{}) && ...)); // short circuited
+    (void) (((_Result = _Synth_three_way{}(_STD get<_Indices>(_Left), _STD get<_Indices>(_Right))) != 0) || ...);
     return _Result;
 }
 
 _EXPORT_STD template <class... _TTypes, _Tuple_like _UTuple>
-    requires (sizeof...(_TTypes) == tuple_size_v<remove_cvref_t<_UTuple>>)
 _NODISCARD constexpr auto operator<=>(const tuple<_TTypes...>& _Left, const _UTuple& _Right) {
+    static_assert(
+        sizeof...(_TTypes) == tuple_size_v<remove_cvref_t<_UTuple>>, "cannot compare tuples of different sizes");
     return _STD _Compare_three_way_tuples(_Left, _Right, make_index_sequence<sizeof...(_TTypes)>{});
 }
 #endif // _HAS_CXX23
@@ -1069,10 +1062,10 @@ struct uses_allocator<tuple<_Types...>, _Alloc> : true_type {}; // true_type if 
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
 template <_Tuple_like _TTuple, _Tuple_like _UTuple, template <class> class _TQual, template <class> class _UQual,
-    typename _Indices = make_index_sequence<tuple_size_v<_TTuple>>>
-struct _Tuple_like_common_reference {};
+    class _Indices = make_index_sequence<tuple_size_v<_TTuple>>>
+struct _Tuple_like_common_reference;
 
-template <typename _TTuple, typename _UTuple, template <class> class _TQual, template <class> class _UQual,
+template <class _TTuple, class _UTuple, template <class> class _TQual, template <class> class _UQual,
     size_t... _Indices>
     requires requires {
                  typename tuple<common_reference_t<_TQual<tuple_element_t<_Indices, _TTuple>>,
@@ -1092,10 +1085,10 @@ struct basic_common_reference<_TTuple, _UTuple, _TQual, _UQual> {
     using type = typename _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type;
 };
 
-template <_Tuple_like _TTuple, _Tuple_like _UTuple, typename _Indices = make_index_sequence<tuple_size_v<_TTuple>>>
-struct _Tuple_like_common_type {};
+template <_Tuple_like _TTuple, _Tuple_like _UTuple, class _Indices = make_index_sequence<tuple_size_v<_TTuple>>>
+struct _Tuple_like_common_type;
 
-template <typename _TTuple, typename _UTuple, size_t... _Indices>
+template <class _TTuple, class _UTuple, size_t... _Indices>
     requires requires {
                  typename tuple<
                      common_type_t<tuple_element_t<_Indices, _TTuple>, tuple_element_t<_Indices, _UTuple>>...>;
