@@ -80,14 +80,12 @@ inline void _Print_noformat_unicode(FILE* const _Stream, const string_view _Str)
 
     if (_Is_unicode_console) {
         const bool _Was_flush_successful = (_STD fflush(_Stream) == 0);
-
         if (!_Was_flush_successful) [[unlikely]] {
             throw system_error{_STD make_error_code(static_cast<errc>(errno))};
         }
 
         const __std_win_error _Console_print_result =
             __std_print_to_unicode_console(_Unicode_console_retrieval_result._Console_handle, _Str.data(), _Str.size());
-
         if (_Console_print_result != __std_win_error::_Success) [[unlikely]] {
             _STD _Throw_system_error_from_std_win_error(_Console_print_result);
         }
@@ -106,7 +104,7 @@ void _Vprint_unicode_impl(FILE* const _Stream, const string_view _Fmt_str, const
         }
     }();
 
-    _Print_noformat_unicode(_Stream, _Output_str);
+    _STD _Print_noformat_unicode(_Stream, _Output_str);
 }
 
 template <bool _Add_newline, class... _Types>
@@ -152,7 +150,7 @@ void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Type
     };
 
     if constexpr (_Has_format_args) {
-        if constexpr (_Is_ordinary_literal_encoding_utf8) {
+        if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
             _STD _Vprint_unicode_impl<_Add_newline>(
                 _Stream, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
         } else {
@@ -162,7 +160,7 @@ void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Type
     } else {
         const string _Escaped_str{_Escape_braces_closure(_Fmt.get())};
 
-        if constexpr (_Is_ordinary_literal_encoding_utf8) {
+        if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
             _STD _Print_noformat_unicode(_Stream, _Escaped_str);
         } else {
             _STD _Print_noformat_nonunicode(_Stream, _Escaped_str);

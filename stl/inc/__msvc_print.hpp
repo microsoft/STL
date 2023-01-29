@@ -53,10 +53,10 @@ _END_EXTERN_C
 
 _STD_BEGIN
 
-inline constexpr bool _Is_ordinary_literal_encoding_utf8 = []() {
-// We typically use the _MSVC_EXECUTION_CHARACTER_SET macro to get the ordinary literal encoding
-// exactly. In the unlikely event that we cannot get the encoding from that, we use the hack suggested
-// in P2093R14.
+[[nodiscard]] consteval bool _Is_ordinary_literal_encoding_utf8() {
+    // We typically use the _MSVC_EXECUTION_CHARACTER_SET macro to get the ordinary literal encoding
+    // exactly. In the unlikely event that we cannot get the encoding from that, we use the hack suggested
+    // in P2093R14.
 #ifdef _MSVC_EXECUTION_CHARACTER_SET
     // See: https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
     return (_MSVC_EXECUTION_CHARACTER_SET == 65001); // Unicode (UTF-8) == 65001
@@ -67,7 +67,7 @@ inline constexpr bool _Is_ordinary_literal_encoding_utf8 = []() {
     return (sizeof(_Mystery_char) == 3 && static_cast<byte>(_Mystery_char[0]) == static_cast<byte>(0xC2)
             && static_cast<byte>(_Mystery_char[1]) == static_cast<byte>(0xB5));
 #endif
-}();
+}
 
 _STD_END
 
