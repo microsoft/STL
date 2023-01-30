@@ -46,6 +46,10 @@ containers\sequences\array\array.cons\implicit_copy.pass.cpp
 # libc++ hasn't updated move_iterator for P2520R0
 iterators\predef.iterators\move.iterators\move.iterator\types.pass.cpp
 
+# libc++ has not implemented P2165R4: "Compatibility Between tuple, pair, And tuple-like Objects"
+utilities\tuple\tuple.tuple\tuple.assign\const_pair.pass.cpp
+utilities\tuple\tuple.tuple\tuple.assign\const_pair.pass.cpp
+
 # libc++ has not implemented P2278R4: "cbegin should always return a constant iterator"
 containers\views\views.span\types.pass.cpp
 ranges\range.access\begin.pass.cpp
