@@ -9,6 +9,7 @@
 // In particular, basic_string must not be included here.
 
 #include <__msvc_print.hpp>
+#include <__msvc_unicode_iterators.hpp>
 #include <corecrt_terminate.h>
 #include <cstdio>
 #include <internal_shared.h>
@@ -122,46 +123,31 @@ namespace {
         }
 
         // We want to find a pointer to the last valid code point _End_ptr such that the number of
-        // bytes in [_Str, _End_ptr] is <= _Max_str_segment_size.
-        static constexpr size_t _Base_ptr_adjustment = _Max_str_segment_size - 1;
-        const char* const _End_ptr                   = _Str + _Base_ptr_adjustment;
+        // bytes in [_Str, _End_ptr] is <= _Max_str_segment_size. However, we also want to make sure
+        // that we end on a complete grapheme cluster to ensure that WriteConsoleW() can correctly
+        // draw Unicode characters which consume more than one code point.
+        _STD _Grapheme_break_property_iterator<char> _Grapheme_cluster_itr{_Str, _Str + _Str_size};
+        size_t _Str_segment_size = 0;
 
-        // clang-format off
-        const bool _Include_end_byte =
-            ((*_End_ptr & 0b1000'0000) == 0) ||   // 1-Byte Code Point
-            ((*(_End_ptr - 1) >> 5) == 0b110) ||  // 2nd Byte in 2-Byte Code Point
-            ((*(_End_ptr - 2) >> 4) == 0b1110) || // 3rd Byte in 3-Byte Code Point
-            ((*(_End_ptr - 3) >> 3) == 0b1'1110); // 4th Byte in 4-Byte Code Point
-        // clang-format on
+        while (_Grapheme_cluster_itr != _STD default_sentinel) {
+            ++_Grapheme_cluster_itr;
+            const char* const _Next_cluster_ptr = _Grapheme_cluster_itr._Position();
 
-        if (_Include_end_byte) {
-            return _Minimal_string_view{_Str, _Max_str_segment_size};
-        }
-
-        // If _End_ptr doesn't point to the end of a code point, then we return the segment ending
-        // with the last byte of the previous code point. It is possible, however, that we aren't
-        // dealing with a valid code point in the first place. So, since UTF-8 code points consist
-        // of at most four bytes, we only check the last four bytes.
-        for (size_t _Offset = 0; _Offset < 4; ++_Offset) {
-            const char* const _Curr_end_ptr = _End_ptr - _Offset;
-
-            // If _Curr_end_ptr points to the sole byte in a 1-byte code point, then end the
-            // segment on that byte.
-            if ((*_Curr_end_ptr & 0b1000'0000) == 0) {
-                return _Minimal_string_view{_Str, _Max_str_segment_size - _Offset};
+            const _STD ptrdiff_t _Num_bytes_required = (_Next_cluster_ptr - _Str);
+            if (_Num_bytes_required > _Max_str_segment_size) {
+                break;
             }
 
-            // Otherwise, if _Curr_end_ptr points to the beginning of a multi-byte code point,
-            // then end the segment on the byte just before this one.
-            if ((*_Curr_end_ptr & 0b1100'0000) == 0b1100'0000) {
-                return _Minimal_string_view{_Str, _Max_str_segment_size - (_Offset + 1)};
-            }
+            _Str_segment_size = _Num_bytes_required;
         }
 
-        // If that failed, then the segment definitely ends in an invalid code point. In that case,
-        // we just return the segment containing it, since MultiByteToWideChar() will end up
-        // replacing it with U+FFFD, anyways.
-        return _Minimal_string_view{_Str, _Max_str_segment_size};
+        // In the highly unlikely event that the entire string is one grapheme cluster larger than
+        // _Num_bytes_required, then we'll need to just write out that string all at once.
+        if (_Str_segment_size == 0) [[unlikely]] {
+            return _Minimal_string_view{_Str, _Str_size};
+        }
+
+        return _Minimal_string_view{_Str, _Str_segment_size};
     }
 
     class _Transcode_result {

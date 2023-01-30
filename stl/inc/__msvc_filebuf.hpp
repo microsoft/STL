@@ -9,15 +9,15 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#include <cstdio>
+#include <streambuf>
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
-
-#include <cstdio>
-#include <streambuf>
 
 // TRANSITION, ABI: The _Path_ish functions accepting filesystem::path or experimental::filesystem::path are templates
 // which always use the same types as a workaround for user code deriving from iostreams types and
