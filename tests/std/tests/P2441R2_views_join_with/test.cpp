@@ -55,6 +55,55 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
                       && common_range<Inner> && bidirectional_range<DV> && common_range<DV>) );
     STATIC_ASSERT(!ranges::random_access_range<R>);
 
+    // Validate iterator_category
+    if constexpr (forward_range<R>) {
+        using OuterIter   = iterator_t<Outer>;
+        using InnerIter   = iterator_t<range_reference_t<Outer>>;
+        using PatternIter = iterator_t<DV>;
+        using OuterCat    = typename iterator_traits<OuterIter>::iterator_category;
+        using InnerCat    = typename iterator_traits<InnerIter>::iterator_category;
+        using PatternCat  = typename iterator_traits<PatternIter>::iterator_category;
+
+        if constexpr (!is_reference_v<common_reference_t<iter_reference_t<InnerIter>, iter_reference_t<PatternIter>>>) {
+            STATIC_ASSERT(same_as<typename iterator_t<R>::iterator_category, input_iterator_tag>);
+        } else if constexpr (derived_from<OuterCat, bidirectional_iterator_tag>
+                             && derived_from<InnerCat, bidirectional_iterator_tag>
+                             && derived_from<PatternCat, bidirectional_iterator_tag>
+                             && common_range<range_reference_t<Outer>> && common_range<DV>) {
+            STATIC_ASSERT(same_as<typename iterator_t<R>::iterator_category, bidirectional_iterator_tag>);
+        } else if constexpr (derived_from<OuterCat, forward_iterator_tag>
+                             && derived_from<InnerCat, forward_iterator_tag>
+                             && derived_from<PatternCat, forward_iterator_tag>) {
+            STATIC_ASSERT(same_as<typename iterator_t<R>::iterator_category, forward_iterator_tag>);
+        } else {
+            STATIC_ASSERT(same_as<typename iterator_t<R>::iterator_category, input_iterator_tag>);
+        }
+    }
+
+    if constexpr (forward_range<const R>) {
+        using OuterIter   = iterator_t<const Outer>;
+        using InnerIter   = iterator_t<range_reference_t<const Outer>>;
+        using PatternIter = iterator_t<const DV>;
+        using OuterCat    = typename iterator_traits<OuterIter>::iterator_category;
+        using InnerCat    = typename iterator_traits<InnerIter>::iterator_category;
+        using PatternCat  = typename iterator_traits<PatternIter>::iterator_category;
+
+        if constexpr (!is_reference_v<common_reference_t<iter_reference_t<InnerIter>, iter_reference_t<PatternIter>>>) {
+            STATIC_ASSERT(same_as<typename iterator_t<const R>::iterator_category, input_iterator_tag>);
+        } else if constexpr (derived_from<OuterCat, bidirectional_iterator_tag>
+                             && derived_from<InnerCat, bidirectional_iterator_tag>
+                             && derived_from<PatternCat, bidirectional_iterator_tag>
+                             && common_range<range_reference_t<const Outer>> && common_range<const DV>) {
+            STATIC_ASSERT(same_as<typename iterator_t<const R>::iterator_category, bidirectional_iterator_tag>);
+        } else if constexpr (derived_from<OuterCat, forward_iterator_tag>
+                             && derived_from<InnerCat, forward_iterator_tag>
+                             && derived_from<PatternCat, forward_iterator_tag>) {
+            STATIC_ASSERT(same_as<typename iterator_t<const R>::iterator_category, forward_iterator_tag>);
+        } else {
+            STATIC_ASSERT(same_as<typename iterator_t<const R>::iterator_category, input_iterator_tag>);
+        }
+    }
+
     // Validate range adaptor object and range adaptor closure
     constexpr bool is_view = ranges::view<remove_cvref_t<Outer>>;
     const auto closure     = views::join_with(delimiter);
@@ -313,6 +362,19 @@ struct instantiator {
 
             Outer empty{span<Inner, 0>{}};
             test_one(empty, "*#"sv, views::empty<char>);
+        }
+#ifdef __clang__ // TRANSITION, LLVM-60293
+        if constexpr (ranges::forward_range<Outer> || ranges::common_range<Outer>)
+#endif // __clang__
+        { // Range-of-rvalue delimiter
+            Inner inner_ranges[] = {Inner{span{input[0]}}, Inner{span{input[1]}}, Inner{span{input[2]}},
+                Inner{span{input[3]}}, Inner{span{input[4]}}, Inner{span{input[5]}}, Inner{span{input[6]}},
+                Inner{span{input[7]}}};
+            Outer r{inner_ranges};
+            test_one(r | views::as_rvalue, "*#"sv | views::as_rvalue, expected_range);
+
+            Outer empty{span<Inner, 0>{}};
+            test_one(empty | views::as_rvalue, "*#"sv | views::as_rvalue, views::empty<char>);
         }
     }
 };

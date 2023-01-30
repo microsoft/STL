@@ -54,6 +54,16 @@ ranges\range.access\end.pass.cpp
 ranges\range.access\rbegin.pass.cpp
 ranges\range.access\rend.pass.cpp
 
+# libc++ has not implemented P2404R3: "Move-Only Types For Comparison Concepts"
+algorithms\alg.sorting\alg.sort\partial.sort.copy\ranges_partial_sort_copy.pass.cpp
+language.support\support.limits\support.limits.general\concepts.version.compile.pass.cpp
+utilities\function.objects\range.cmp\equal_to.pass.cpp
+utilities\function.objects\range.cmp\greater.pass.cpp
+utilities\function.objects\range.cmp\greater_equal.pass.cpp
+utilities\function.objects\range.cmp\less.pass.cpp
+utilities\function.objects\range.cmp\less_equal.pass.cpp
+utilities\function.objects\range.cmp\not_equal_to.pass.cpp
+
 # Various bogosity (LLVM-D141004)
 utilities\utility\mem.res\mem.poly.allocator.class\mem.poly.allocator.mem\construct_pair_const_lvalue_pair.pass.cpp
 utilities\utility\mem.res\mem.poly.allocator.class\mem.poly.allocator.mem\construct_pair_values.pass.cpp

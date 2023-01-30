@@ -54,6 +54,16 @@ std/ranges/range.access/end.pass.cpp FAIL
 std/ranges/range.access/rbegin.pass.cpp FAIL
 std/ranges/range.access/rend.pass.cpp FAIL
 
+# libc++ has not implemented P2404R3: "Move-Only Types For Comparison Concepts"
+std/algorithms/alg.sorting/alg.sort/partial.sort.copy/ranges_partial_sort_copy.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/concepts.version.compile.pass.cpp FAIL
+std/utilities/function.objects/range.cmp/equal_to.pass.cpp FAIL
+std/utilities/function.objects/range.cmp/greater.pass.cpp FAIL
+std/utilities/function.objects/range.cmp/greater_equal.pass.cpp FAIL
+std/utilities/function.objects/range.cmp/less.pass.cpp FAIL
+std/utilities/function.objects/range.cmp/less_equal.pass.cpp FAIL
+std/utilities/function.objects/range.cmp/not_equal_to.pass.cpp FAIL
+
 # Various bogosity (LLVM-D141004)
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_const_lvalue_pair.pass.cpp:0 FAIL
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_values.pass.cpp:0 FAIL

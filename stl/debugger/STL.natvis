@@ -1828,7 +1828,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::ranges::single_view&lt;*&gt;">
-    <DisplayString>{{ _Val._Val }}</DisplayString>
+    <DisplayString>[{ _Val._Val }]</DisplayString>
     <Expand>
       <ArrayItems>
         <Size>1</Size>
@@ -1859,6 +1859,44 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <DisplayString>[{_Value}; +&#8734;)</DisplayString>
     <Expand>
       <Item Name="[begin]">_Value</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::repeat_view&lt;*,*&gt;">
+    <DisplayString>[{_Value._Val} x {_Bound}]</DisplayString>
+    <Expand>
+      <Item Name="[size]">_Bound</Item>
+      <CustomListItems Optional="true">
+        <Variable Name="idx" InitialValue="0" />
+
+        <Loop>
+          <Break Condition="idx == _Bound"/>
+          <Item>_Value._Val</Item>
+          <Exec>++idx</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::repeat_view&lt;*,std::unreachable_sentinel_t&gt;">
+    <DisplayString>[{_Value._Val} x +&#8734;]</DisplayString>
+    <Expand>
+      <Item Name="[+&#8734;]">_Value._Val</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::repeat_view&lt;*,*&gt;::_Iterator">
+    <DisplayString>{*_Value}</DisplayString>
+    <Expand>
+      <Item Name="[ptr]">_Value</Item>
+      <Item Name="[index]">_Current</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::repeat_view&lt;*,std::unreachable_sentinel_t&gt;::_Iterator">
+    <DisplayString>{*_Value}</DisplayString>
+    <Expand>
+      <Item Name="[ptr]">_Value</Item>
     </Expand>
   </Type>
 
