@@ -1381,7 +1381,7 @@ public:
         }
     }
 
-    // [expected.object.monadic]
+    // [expected.void.monadic]
 
     template <class _Fn>
         requires is_copy_constructible_v<_Err>
@@ -1390,7 +1390,7 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void,E>::and_then(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/3.");
+            "N4928 [expected.void.monadic]/3.");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func));
@@ -1406,7 +1406,7 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void,E>::and_then(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/3.");
+            "N4928 [expected.void.monadic]/3.");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func));
@@ -1422,7 +1422,7 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void,E>::and_then(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/7.");
+            "N4928 [expected.void.monadic]/7.");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func));
@@ -1438,7 +1438,7 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void,E>::and_then(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/7.");
+            "N4928 [expected.void.monadic]/7.");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func));
@@ -1453,10 +1453,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void,E>::or_else(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/11.");
+            "N4928 [expected.void.monadic]/10.");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
             "expected<void,E>::or_else(F) requires the value type of the return type of F to be T"
-            "N4928 [expected.object.monadic]/11.");
+            "N4928 [expected.void.monadic]/10.");
 
         if (_Has_value) {
             return _Uty();
@@ -1471,10 +1471,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void,E>::or_else(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/11.");
+            "N4928 [expected.void.monadic]/10.");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
             "expected<void,E>::or_else(F) requires the value type of the return type of F to be T"
-            "N4928 [expected.object.monadic]/11.");
+            "N4928 [expected.void.monadic]/10.");
 
         if (_Has_value) {
             return _Uty();
@@ -1489,10 +1489,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void,E>::or_else(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/11.");
+            "N4928 [expected.void.monadic]/13.");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
             "expected<void,E>::or_else(F) requires the value type of the return type of F to be T"
-            "N4928 [expected.object.monadic]/11.");
+            "N4928 [expected.void.monadic]/13.");
 
         if (_Has_value) {
             return _Uty();
@@ -1507,10 +1507,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void,E>::or_else(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/11.");
+            "N4928 [expected.void.monadic]/13.");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
             "expected<void,E>::or_else(F) requires the value type of the return type of F to be T"
-            "N4928 [expected.object.monadic]/11.");
+            "N4928 [expected.void.monadic]/13.");
 
         if (_Has_value) {
             return _Uty();
