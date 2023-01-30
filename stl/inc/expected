@@ -897,7 +897,6 @@ public:
         }
     }
 
-
     template <class _Fn>
         requires is_move_constructible_v<_Err>
     constexpr auto transform(_Fn&& _Func) && {
@@ -1553,7 +1552,6 @@ public:
             return expected<_Uty, _Err>(unexpect, _Unexpected);
         }
     }
-
 
     template <class _Fn>
         requires is_move_constructible_v<_Err>

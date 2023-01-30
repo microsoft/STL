@@ -140,7 +140,6 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
         assert(result.error() == 22);
     }
 
-
     const auto to_thingy = [](int i) { return Thingy{i}; };
 
     {
@@ -320,7 +319,6 @@ constexpr void test_monadic() {
         test_impl(move(as_const(engaged)), move(as_const(unengaged)));
     }
 }
-
 
 constexpr bool test() {
     test_error_or();
