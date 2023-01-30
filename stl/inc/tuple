@@ -285,7 +285,7 @@ public:
         requires _Different_from<_Other, tuple>
 #endif // __clang__
     _NODISCARD_FRIEND constexpr auto operator<=>(const tuple&, const _Other&) noexcept /* strengthened */ {
-        static_assert(tuple_size_v<remove_cvref_t<_Other>> == 0, "cannot compare tuples of different sizes");
+        static_assert(tuple_size_v<_Other> == 0, "cannot compare tuples of different sizes");
         return strong_ordering::equal;
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
