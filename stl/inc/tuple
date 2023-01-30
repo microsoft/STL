@@ -179,7 +179,7 @@ struct _Alloc_unpack_tuple_t {
     explicit _Alloc_unpack_tuple_t() = default;
 }; // tag type to disambiguate construction (from an allocator and unpacking a tuple/pair)
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) && defined(__clang__) // TRANSITION, LLVM-59827
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
 template <class _Other, class _Tuple, class _Indices = make_index_sequence<tuple_size_v<_Tuple>>>
 struct _Can_construct_values_from_tuple_like;
 
@@ -187,6 +187,7 @@ template <class _Other, class... _Types, size_t... _Indices>
 struct _Can_construct_values_from_tuple_like<_Other, tuple<_Types...>, index_sequence<_Indices...>>
     : conjunction<is_constructible<_Types, decltype(_STD get<_Indices>(_STD declval<_Other>()))>...> {};
 
+#ifdef __clang__ // TRANSITION, LLVM-59827
 template <class _TupleLike, class _Tuple>
 concept _Can_construct_from_tuple_like = _Tuple_like<_TupleLike> && _Different_from<_TupleLike, _Tuple>
                                       && (!_Is_subrange_v<remove_cvref_t<_TupleLike>>)
@@ -195,7 +196,8 @@ concept _Can_construct_from_tuple_like = _Tuple_like<_TupleLike> && _Different_f
                                       && (tuple_size_v<_Tuple> != 1
                                           || (!is_convertible_v<_TupleLike, tuple_element_t<0, _Tuple>>
                                               && !is_constructible_v<tuple_element_t<0, _Tuple>, _TupleLike>) );
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts) && defined(__clang__)
+#endif // __clang__
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <>
 class tuple<> { // empty tuple
@@ -403,7 +405,7 @@ public:
     template <_Tuple_like _Other>
         requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
-              && _Can_construct_values_from_tuple_like<_Other>::value
+              && _Can_construct_values_from_tuple_like<_Other, tuple>::value
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
 #endif // __clang__
     constexpr explicit(_Is_tuple_like_constructor_explicit<_Other>::value) tuple(_Other&& _Right)
@@ -511,7 +513,7 @@ public:
     template <class _Alloc, _Tuple_like _Other>
         requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
-              && _Can_construct_values_from_tuple_like<_Other>::value
+              && _Can_construct_values_from_tuple_like<_Other, tuple>::value
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
 #endif // __clang__
     constexpr explicit(_Is_tuple_like_constructor_explicit<_Other>::value)
