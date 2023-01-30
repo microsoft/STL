@@ -727,11 +727,11 @@ public:
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Ty&>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
-            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/3.");
+            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected. "
+            "(N4928 [expected.object.monadic]/3).");
         static_assert(is_same_v<typename _Uty::error_type, _Err>),
-            "expected<T,E>::and_then(F) requires the error type of the return type of F to be E "
-            "N4928 [expected.object.monadic]/3.");
+            "expected<T,E>::and_then(F) requires the error type of the return type of F to be E. "
+            "(N4928 [expected.object.monadic]/3)");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), _Value);
@@ -746,11 +746,11 @@ public:
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Ty&>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
-            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/3.");
+            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected. "
+            "(N4928 [expected.object.monadic]/3).");
         static_assert(is_same_v<typename _Uty::error_type, _Err>),
-            "expected<T,E>::and_then(F) requires the error type of the return type of F to be E "
-            "N4928 [expected.object.monadic]/3.");
+            "expected<T,E>::and_then(F) requires the error type of the return type of F to be E. "
+            "(N4928 [expected.object.monadic]/3)");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), _Value);
@@ -765,11 +765,11 @@ public:
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Ty>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
-            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/7.");
+            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected. "
+            "(N4928 [expected.object.monadic]/7).");
         static_assert(is_same_v<typename _Uty::error_type, _Err>),
-            "expected<T,E>::and_then(F) requires the error type of the return type of F to be E "
-            "N4928 [expected.object.monadic]/7.");
+            "expected<T,E>::and_then(F) requires the error type of the return type of F to be E. "
+            "(N4928 [expected.object.monadic]/7)");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
@@ -784,11 +784,11 @@ public:
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Ty>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
-            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/7.");
+            "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected. "
+            "(N4928 [expected.object.monadic]/7).");
         static_assert(is_same_v<typename _Uty::error_type, _Err>),
-            "expected<T,E>::and_then(F) requires the error type of the return type of F to be E "
-            "N4928 [expected.object.monadic]/7.");
+            "expected<T,E>::and_then(F) requires the error type of the return type of F to be E. "
+            "(N4928 [expected.object.monadic]/7)");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
@@ -803,11 +803,11 @@ public:
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Err&>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
-            "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/11.");
+            "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected. "
+            "(N4928 [expected.object.monadic]/11)");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
-            "expected<T,E>::or_else(F) requires the value type of the return type of F to be T"
-            "N4928 [expected.object.monadic]/11.");
+            "expected<T,E>::or_else(F) requires the value type of the return type of F to be T. "
+            "(N4928 [expected.object.monadic]/11)");
 
         if (_Has_value) {
             return _Uty(in_place, _Value);
@@ -822,11 +822,11 @@ public:
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Err&>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
-            "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/11.");
+            "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected. "
+            "(N4928 [expected.object.monadic]/11)");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
-            "expected<T,E>::or_else(F) requires the value type of the return type of F to be T"
-            "N4928 [expected.object.monadic]/11.");
+            "expected<T,E>::or_else(F) requires the value type of the return type of F to be T. "
+            "(N4928 [expected.object.monadic]/11)");
 
         if (_Has_value) {
             return _Uty(in_place, _Value);
@@ -841,11 +841,11 @@ public:
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Err>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
-            "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/15.");
+            "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected. "
+            "(N4928 [expected.object.monadic]/15)");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
-            "expected<T,E>::or_else(F) requires the value type of the return type of F to be T"
-            "N4928 [expected.object.monadic]/15.");
+            "expected<T,E>::or_else(F) requires the value type of the return type of F to be T. "
+            "(N4928 [expected.object.monadic]/15)");
 
         if (_Has_value) {
             return _Uty(in_place, _STD move(_Value));
@@ -860,11 +860,11 @@ public:
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Err>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
-            "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected "
-            "N4928 [expected.object.monadic]/15.");
+            "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected. "
+            "(N4928 [expected.object.monadic]/15)");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
-            "expected<T,E>::or_else(F) requires the value type of the return type of F to be T"
-            "N4928 [expected.object.monadic]/15.");
+            "expected<T,E>::or_else(F) requires the value type of the return type of F to be T. "
+            "(N4928 [expected.object.monadic]/15)");
 
         if (_Has_value) {
             return _Uty(in_place, _STD move(_Value));
