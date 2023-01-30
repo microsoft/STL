@@ -179,6 +179,24 @@ struct _Alloc_unpack_tuple_t {
     explicit _Alloc_unpack_tuple_t() = default;
 }; // tag type to disambiguate construction (from an allocator and unpacking a tuple/pair)
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) && defined(__clang__) // TRANSITION, LLVM-59827
+template <class _Other, class _Tuple, class _Indices = make_index_sequence<tuple_size_v<_Tuple>>>
+struct _Can_construct_values_from_tuple_like;
+
+template <class _Other, class... _Types, size_t... _Indices>
+struct _Can_construct_values_from_tuple_like<_Other, tuple<_Types...>, index_sequence<_Indices...>>
+    : conjunction<is_constructible<_Types, decltype(_STD get<_Indices>(_STD declval<_Other>()))>...> {};
+
+template <class _TupleLike, class _Tuple>
+concept _Can_construct_from_tuple_like = _Tuple_like<_TupleLike> && _Different_from<_TupleLike, _Tuple>
+                                      && (!_Is_subrange_v<remove_cvref_t<_TupleLike>>)
+                                      && (tuple_size_v<_Tuple> == tuple_size_v<remove_cvref_t<_TupleLike>>)
+                                      && _Can_construct_values_from_tuple_like<_TupleLike, _Tuple>::value
+                                      && (tuple_size_v<_Tuple> != 1
+                                          || (!is_convertible_v<_TupleLike, tuple_element_t<0, _Tuple>>
+                                              && !is_constructible_v<tuple_element_t<0, _Tuple>, _TupleLike>) );
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts) && defined(__clang__)
+
 template <>
 class tuple<> { // empty tuple
 public:
@@ -372,28 +390,25 @@ public:
 
 #ifdef __cpp_lib_concepts
     template <class _Other, class _Indices = index_sequence_for<_Rest...>>
-    static constexpr bool _Can_construct_from_tuple_like_v = false;
+    struct _Is_tuple_like_constructor_explicit;
 
     template <_Tuple_like _Other, size_t... _Indices>
-    static constexpr bool _Can_construct_from_tuple_like_v<_Other, index_sequence<_Indices...>> =
-        _Different_from<_Other, tuple> && !_Is_subrange_v<remove_cvref_t<_Other>>
-        && 1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>
-        && (is_constructible_v<_This, decltype(_STD get<0>(_STD declval<_Other>()))> && ...
-            && is_constructible_v<_Rest, decltype(_STD get<_Indices + 1>(_STD declval<_Other>()))>) //
-        &&(sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) );
+    struct _Is_tuple_like_constructor_explicit<_Other, index_sequence<_Indices...>>
+        : negation<conjunction<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _This>,
+              is_convertible<decltype(_STD get<_Indices + 1>(_STD declval<_Other>())), _Rest>...>> {};
 
-    template <class _Other, class _Indices = index_sequence_for<_Rest...>>
-    static constexpr bool _Is_tuple_like_constructor_explicit_v = false;
-
-    template <_Tuple_like _Other, size_t... _Indices>
-    static constexpr bool _Is_tuple_like_constructor_explicit_v<_Other, index_sequence<_Indices...>> =
-        !(is_convertible_v<decltype(_STD get<0>(_STD declval<_Other>())), _This> && ...
-            && is_convertible_v<decltype(_STD get<_Indices + 1>(_STD declval<_Other>())), _Rest>);
-
+#ifdef __clang__ // TRANSITION, LLVM-59827
+    template <class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
+#else // ^^^ workaround / no workaround vvv
     template <_Tuple_like _Other>
-        requires _Can_construct_from_tuple_like_v<_Other>
-    constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>) tuple(_Other&& _Right)
-        : tuple(_Unpack_tuple_t{}, _STD forward<_Other>(_Right)) {}
+        requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+              && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
+              && _Can_construct_values_from_tuple_like<_Other>::value
+              && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
+#endif // __clang__
+    constexpr explicit(_Is_tuple_like_constructor_explicit<_Other>::value) tuple(_Other&& _Right)
+        : tuple(_Unpack_tuple_t{}, _STD forward<_Other>(_Right)) {
+    }
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
@@ -490,11 +505,19 @@ public:
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
 
 #ifdef __cpp_lib_concepts
+#ifdef __clang__ // TRANSITION, LLVM-59827
+    template <class _Alloc, class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
+#else // ^^^ workaround / no workaround vvv
     template <class _Alloc, _Tuple_like _Other>
-        requires _Can_construct_from_tuple_like_v<_Other>
-    constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>)
+        requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+              && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
+              && _Can_construct_values_from_tuple_like<_Other>::value
+              && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
+#endif // __clang__
+    constexpr explicit(_Is_tuple_like_constructor_explicit<_Other>::value)
         tuple(allocator_arg_t, const _Alloc& _Al, _Other&& _Right)
-        : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD forward<_Other>(_Right)) {}
+        : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD forward<_Other>(_Right)) {
+    }
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
