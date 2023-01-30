@@ -260,7 +260,6 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
     const auto& _Punct_fac = _STD use_facet<numpunct<_Elem>>(_Iosbase.getloc());
     char* _Ptr             = _Ac;
     bool _Bad              = false;
-    bool _Sticky           = false;
 
     constexpr int _Offset_dec_digit_end = 10;
     constexpr int _Offset_hex_digit_end = 22;
@@ -461,13 +460,14 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
         return 0;
     } else {
         int _Power_of_10 = 0;
+        bool _Sticky     = false;
 
         if (_Grouping.empty()) {
             for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_dec_digit_end;
                  _Seendigit = true, (void) ++_First) {
                 if (_Max_sig_dig <= _Significant) { // enough digits, scale by 10 and update _Sticky
                     ++_Power_of_10;
-                    if (0 < _Idx) {
+                    if (_Idx > 0) {
                         _Sticky = true;
                     }
                 } else if (_Idx != 0 || _Significant != 0) { // save a significant digit
@@ -477,12 +477,8 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
             }
         } else { // grouping specified, gather digits and group sizes
             const _Elem _Kseparator = _Punct_fac.thousands_sep();
-            string _Groups(1, '\0');
+            string _Groups(1, static_cast<char>(_Has_dec_leading_zero));
             size_t _Group_index = 0;
-
-            if (_Has_dec_leading_zero) {
-                ++_Groups[_Group_index];
-            }
 
             for (; _First != _Last; ++_First) {
                 if ((_Idx = _STD _Find_elem(_Atoms, *_First))
@@ -490,7 +486,7 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
                     _Seendigit = true;
                     if (_Max_sig_dig <= _Significant) { // enough digits, scale by 10 and update _Sticky
                         ++_Power_of_10;
-                        if (0 < _Idx) {
+                        if (_Idx > 0) {
                             _Sticky = true;
                         }
                     } else if (_Idx != 0 || _Significant != 0) { // save a significant digit
@@ -510,7 +506,7 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
             }
 
             if (_Group_index != 0) {
-                if ('\0' < _Groups[_Group_index]) {
+                if (_Groups[_Group_index] > '\0') {
                     ++_Group_index; // add trailing group to group count
                 } else {
                     _Bad = true; // trailing separator, fail
