@@ -695,7 +695,7 @@ public:
         static_assert(
             is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. (N4928 [expected.object.obs]/20)");
         static_assert(
-            is_convertible_v<_Uty, _Err>, "is_convertible_v<U, E> must be true. (N4928 [expected.object.obs]/20)");
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4928 [expected.object.obs]/20)");
 
         if (_Has_value) {
             return _STD forward<_Uty>(_Other);
