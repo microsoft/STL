@@ -656,17 +656,15 @@ public:
 
 #ifdef __cpp_lib_concepts
     template <bool _Const_assignment, class _Other, class _Indices = index_sequence_for<_Rest...>>
-    static constexpr bool _Can_assign_from_tuple_like_v = false;
+    struct _Can_assign_values_from_tuple_like;
 
     template <bool _Const_assignment, _Tuple_like _Other, size_t... _Indices>
-    static constexpr bool _Can_assign_from_tuple_like_v<_Const_assignment, _Other, index_sequence<_Indices...>> =
-        _Different_from<_Other, tuple> && !_Is_subrange_v<remove_cvref_t<_Other>>
-        && 1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>
-        && (is_assignable_v<conditional_t<_Const_assignment, const _This&, _This&>,
-                decltype(_STD get<0>(_STD declval<_Other>()))>
-            && ... && //
-            is_assignable_v<conditional_t<_Const_assignment, const _Rest&, _Rest&>,
-                decltype(_STD get<_Indices + 1>(_STD declval<_Other>()))>);
+    struct _Can_assign_values_from_tuple_like<_Const_assignment, _Other, index_sequence<_Indices...>>
+        : conjunction< //
+              is_assignable<conditional_t<_Const_assignment, const _This&, _This&>,
+                  decltype(_STD get<0>(_STD declval<_Other>()))>,
+              is_assignable<conditional_t<_Const_assignment, const _Rest&, _Rest&>,
+                  decltype(_STD get<_Indices + 1>(_STD declval<_Other>()))>...> {};
 
     template <_Tuple_like _Other, size_t... _Indices>
     constexpr void _Assign_tuple_like(_Other&& _Right, index_sequence<_Indices...>) {
@@ -679,14 +677,18 @@ public:
     }
 
     template <_Tuple_like _Other>
-        requires _Can_assign_from_tuple_like_v<false, _Other>
+        requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+              && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
+              && _Can_assign_values_from_tuple_like<false, _Other>::value
     constexpr tuple& operator=(_Other&& _Right) {
         _Assign_tuple_like(_STD forward<_Other>(_Right), make_index_sequence<1 + sizeof...(_Rest)>{});
         return *this;
     }
 
     template <_Tuple_like _Other>
-        requires _Can_assign_from_tuple_like_v<true, _Other>
+        requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+              && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
+              && _Can_assign_values_from_tuple_like<true, _Other>::value
     constexpr const tuple& operator=(_Other&& _Right) const {
         _Assign_tuple_like(_STD forward<_Other>(_Right), make_index_sequence<1 + sizeof...(_Rest)>{});
         return *this;
