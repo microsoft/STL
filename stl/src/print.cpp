@@ -142,7 +142,7 @@ namespace {
         }
 
         // In the highly unlikely event that the entire string is one grapheme cluster larger than
-        // _Num_bytes_required, then we'll need to just write out that string all at once.
+        // _Max_str_segment_size, then we'll need to just write out that string all at once.
         if (_Str_segment_size == 0) [[unlikely]] {
             return _Minimal_string_view{_Str, _Str_size};
         }
