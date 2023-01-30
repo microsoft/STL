@@ -1556,7 +1556,7 @@ public:
     template <class _Fn>
         requires is_move_constructible_v<_Err>
     constexpr auto transform(_Fn&& _Func) && {
-        using _Uty = remove_cv_t<invoke_result_t<_Fn&>>;
+        using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
         if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
