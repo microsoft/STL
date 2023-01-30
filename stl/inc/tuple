@@ -269,6 +269,26 @@ public:
         return false;
     }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+    template <_Tuple_like _Other>
+#ifndef __clang__ // TRANSITION, MSVC cannot figure out which operator== it should pick
+        requires _Different_from<_Other, tuple>
+#endif // __clang__
+    _NODISCARD_FRIEND constexpr bool operator==(const tuple&, const _Other&) noexcept /* strengthened */ {
+        static_assert(tuple_size_v<_Other> == 0, "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
+        return true;
+    }
+
+    template <_Tuple_like _Other>
+#ifndef __clang__ // TRANSITION, MSVC cannot figure out which operator<=> it should pick
+        requires _Different_from<_Other, tuple>
+#endif // __clang__
+    _NODISCARD_FRIEND constexpr auto operator<=>(const tuple&, const _Other&) noexcept /* strengthened */ {
+        static_assert(tuple_size_v<remove_cvref_t<_Other>> == 0, "cannot compare tuples of different sizes");
+        return strong_ordering::equal;
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 };
 
 template <class _This, class... _Rest>
@@ -736,6 +756,60 @@ public:
         }
         return _Mybase::_Three_way_compare(_Right._Get_rest());
     }
+
+#if _HAS_CXX23
+    template <class _Other, class _Indices = make_index_sequence<1 + sizeof...(_Rest)>>
+    struct _Can_equal_compare_with_tuple_like;
+
+    template <class _Other, size_t... _Indices>
+    struct _Can_equal_compare_with_tuple_like<_Other, index_sequence<_Indices...>>  : bool_constant<
+        (requires(const tuple& _Left, const _Other& _Right) {
+        { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) } -> _Boolean_testable; } && ...)> {};
+
+    template <class _Other, size_t... _Indices>
+    _NODISCARD constexpr bool _Equals_to_tuple_like(const _Other& _Right, index_sequence<_Indices...>) const {
+        return ((_STD get<_Indices>(*this) == _STD get<_Indices>(_Right)) && ...);
+    }
+
+    template <_Tuple_like _Other>
+#ifndef __clang__ // TRANSITION, MSVC cannot figure out which operator== it should pick
+        requires _Different_from<_Other, tuple>
+#endif // __clang__
+    _NODISCARD_FRIEND constexpr bool operator==(const tuple& _Left, const _Other& _Right) {
+        static_assert(1 + sizeof...(_Rest) == tuple_size_v<_Other>,
+            "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
+        static_assert(_Can_equal_compare_with_tuple_like<_Other>::value,
+            "For all i, where 0 <= i <= sizeof...(_TTypes), get<i>(_Left) == get<i>(_Right) must be valid "
+            "expression (N4928 [tuple.rel]/2).");
+        return _Left._Equals_to_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
+    }
+
+    template <class _Other, class _Indices = index_sequence_for<_Rest...>>
+    struct _Three_way_tuple_comparison_result;
+
+    template <class _Other, size_t... _Indices>
+    struct _Three_way_tuple_comparison_result<_Other, index_sequence<_Indices...>> {
+        using type = common_comparison_category_t<_Synth_three_way_result<_This, tuple_element_t<0, _Other>>,
+            _Synth_three_way_result<_Rest, tuple_element_t<_Indices + 1, _Other>>...>;
+    };
+
+    template <class _Other, size_t... _Indices>
+    _NODISCARD constexpr auto _Three_way_compare_with_tuple_like(
+        const _Other& _Right, index_sequence<_Indices...>) const {
+        typename _Three_way_tuple_comparison_result<_Other>::type _Result = strong_ordering::equal;
+        (void) (((_Result = _Synth_three_way{}(_STD get<_Indices>(*this), _STD get<_Indices>(_Right))) != 0) || ...);
+        return _Result;
+    }
+
+    template <_Tuple_like _Other>
+#ifndef __clang__ // TRANSITION, MSVC cannot figure out which operator<=> it should pick
+        requires _Different_from<_Other, tuple>
+#endif // __clang__
+    _NODISCARD_FRIEND constexpr auto operator<=>(const tuple& _Left, const _Other& _Right) {
+        static_assert(1 + sizeof...(_Rest) == tuple_size_v<_Other>, "cannot compare tuples of different sizes");
+        return _Left._Three_way_compare_with_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
+    }
+#endif // _HAS_CXX23
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     template <class... _Other>
     _NODISCARD constexpr bool _Less(const tuple<_Other...>& _Right) const {
@@ -805,58 +879,6 @@ _NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_Types
     static_assert(sizeof...(_Types1) == sizeof...(_Types2), "cannot compare tuples of different sizes");
     return _Left._Three_way_compare(_Right);
 }
-
-#if _HAS_CXX23
-template <class _TTuple, class _UTuple, class _Indices = make_index_sequence<tuple_size_v<_TTuple>>>
-struct _Can_use_get_for_all_indices;
-
-template <class _TTuple, class _UTuple, size_t... _Indices>
-struct _Can_use_get_for_all_indices<_TTuple, _UTuple, index_sequence<_Indices...>>  : bool_constant<
-    (requires(const _TTuple& _Left, const _UTuple& _Right) {
-    { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) } -> _Boolean_testable; } && ...)> {};
-
-template <class _TTuple, class _UTuple, size_t... _Indices>
-_NODISCARD constexpr bool _Equality_compare_tuples(
-    const _TTuple& _Left, const _UTuple& _Right, index_sequence<_Indices...>) {
-    return ((_STD get<_Indices>(_Left) == _STD get<_Indices>(_Right)) && ...);
-}
-
-_EXPORT_STD template <class... _TTypes, _Tuple_like _UTuple>
-_NODISCARD constexpr bool operator==(const tuple<_TTypes...>& _Left, const _UTuple& _Right) {
-    static_assert(
-        sizeof...(_TTypes) == tuple_size_v<_UTuple>, "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
-    static_assert(_Can_use_get_for_all_indices<tuple<_TTypes...>, remove_cvref_t<_UTuple>>::value,
-        "For all i, where 0 <= i <= sizeof...(_TTypes), get<i>(_Left) == get<i>(_Right) must be valid expression "
-        "(N4928 [tuple.rel]/2).");
-    return _STD _Equality_compare_tuples(_Left, _Right, index_sequence_for<_TTypes...>{});
-}
-
-template <class _TTuple, class _UTuple, class _Indices = make_index_sequence<tuple_size_v<remove_cvref_t<_TTuple>>>>
-struct _Three_way_tuple_comparison_result;
-
-template <class _TTuple, class _UTuple, size_t... _Indices>
-struct _Three_way_tuple_comparison_result<_TTuple, _UTuple, index_sequence<_Indices...>> {
-    using type =
-        common_comparison_category_t<_Synth_three_way_result<tuple_element_t<_Indices, remove_cvref_t<_TTuple>>,
-            tuple_element_t<_Indices, remove_cvref_t<_UTuple>>>...>;
-};
-
-template <class _TTuple, class _UTuple, size_t... _Indices>
-_NODISCARD constexpr auto _Compare_three_way_tuples(
-    const _TTuple& _Left, const _UTuple& _Right, index_sequence<_Indices...>) {
-    using _Result_type   = typename _Three_way_tuple_comparison_result<_TTuple, _UTuple>::type;
-    _Result_type _Result = strong_ordering::equal;
-    (void) (((_Result = _Synth_three_way{}(_STD get<_Indices>(_Left), _STD get<_Indices>(_Right))) != 0) || ...);
-    return _Result;
-}
-
-_EXPORT_STD template <class... _TTypes, _Tuple_like _UTuple>
-_NODISCARD constexpr auto operator<=>(const tuple<_TTypes...>& _Left, const _UTuple& _Right) {
-    static_assert(
-        sizeof...(_TTypes) == tuple_size_v<remove_cvref_t<_UTuple>>, "cannot compare tuples of different sizes");
-    return _STD _Compare_three_way_tuples(_Left, _Right, make_index_sequence<sizeof...(_TTypes)>{});
-}
-#endif // _HAS_CXX23
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 #if !_HAS_CXX20
 template <class... _Types1, class... _Types2>

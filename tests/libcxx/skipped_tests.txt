@@ -46,7 +46,11 @@ containers\sequences\array\array.cons\implicit_copy.pass.cpp
 # libc++ hasn't updated move_iterator for P2520R0
 iterators\predef.iterators\move.iterators\move.iterator\types.pass.cpp
 
-# libc++ has not implemented P2165R4: "Compatibility Between tuple, pair, And tuple-like Objects"
+# libc++ hasn't implemented P2165R4: "Compatibility Between tuple, pair, And tuple-like Objects"
+library\description\conventions\expos.only.func\synth_three_way.pass.cpp:1
+utilities\tuple\tuple.tuple\tuple.rel\size_incompatible_three_way.compile.pass.cpp
+
+# libc++ tests strengthened assignment operators (not compatible with P2165R4: "Compatibility Between tuple, pair, And tuple-like Objects")
 utilities\tuple\tuple.tuple\tuple.assign\const_pair.pass.cpp
 utilities\tuple\tuple.tuple\tuple.assign\const_pair.pass.cpp
 
