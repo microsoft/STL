@@ -13,6 +13,7 @@
 #include <span>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
@@ -364,10 +365,11 @@ void test_gh_1893() {
 void test_gh_2900() {
     // GH-2900: <algorithm>: ranges::minmax initializes minmax_result with the moved value
     {
-        vector<string> v{"1"};
-        auto [min, max] = ranges::minmax(ranges::subrange{make_move_iterator(v.begin()), make_move_iterator(v.end())});
-        assert(min == "1");
-        assert(max == "1");
+        const string str{"this long string will be dynamically allocated"};
+        vector<string> v{str};
+        auto result = ranges::minmax(ranges::subrange{move_iterator{v.begin()}, move_iterator{v.end()}});
+        assert(result.min == str);
+        assert(result.max == str);
     }
 }
 
