@@ -756,7 +756,7 @@ public:
     template <class _Fn>
         requires is_move_constructible_v<_Err>
     constexpr auto and_then(_Fn&& _Func) && {
-        using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Ty&&>>;
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Ty>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
@@ -772,7 +772,7 @@ public:
     template <class _Fn>
         requires is_move_constructible_v<_Err>
     constexpr auto and_then(_Fn&& _Func) const&& {
-        using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Ty&&>>;
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Ty>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<T,E>::and_then(F) requires the return type of F to be a specialization of expected "
@@ -826,7 +826,7 @@ public:
     template <class _Fn>
         requires is_move_constructible_v<_Ty>
     constexpr auto or_else(_Fn&& _Func) && {
-        using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Err&&>>;
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Err>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected "
@@ -845,7 +845,7 @@ public:
     template <class _Fn>
         requires is_move_constructible_v<_Ty>
     constexpr auto or_else(_Fn&& _Func) const&& {
-        using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Err&&>>;
+        using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Err>>;
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<T,E>::or_else(F) requires the return type of F to be a specialization of expected "
@@ -900,7 +900,7 @@ public:
     template <class _Fn>
         requires is_move_constructible_v<_Err>
     constexpr auto transform(_Fn&& _Func) && {
-        using _Uty = remove_cv_t<invoke_result_t<_Fn, _Ty&&>>;
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, _Ty>>;
 
         if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
@@ -918,7 +918,7 @@ public:
     template <class _Fn>
         requires is_move_constructible_v<_Err>
     constexpr auto transform(_Fn&& _Func) const&& {
-        using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Ty&&>>;
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Ty>>;
 
         if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
@@ -962,7 +962,7 @@ public:
     template <class _Fn>
         requires is_move_constructible_v<_Ty>
     constexpr auto transform_error(_Fn&& _Func) && {
-        using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err&&>>;
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err>>;
 
         if (_Has_value) {
             return expected<_Ty, _Uty>(in_place, _STD move(_Value));
@@ -975,7 +975,7 @@ public:
     template <class _Fn>
         requires is_move_constructible_v<_Ty>
     constexpr auto transform_error(_Fn&& _Func) const&& {
-        using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err&&>>;
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err>>;
 
         if (_Has_value) {
             return expected<_Ty, _Uty>(in_place, _STD move(_Value));
