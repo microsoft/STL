@@ -11,7 +11,7 @@ using namespace std;
 enum class IsNothrowConstructible : bool { Not, Yes };
 enum class IsNothrowConvertible : bool { Not, Yes };
 
-template <typename E>
+template <class E>
 [[nodiscard]] constexpr bool IsYes(const E e) noexcept {
     return e == E::Yes;
 }

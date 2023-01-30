@@ -695,7 +695,7 @@ public:
         static_assert(
             is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. (N4928 [expected.object.obs]/20)");
         static_assert(
-            is_convertible_v<_Uty, _Err>, "is_convertible_v<U, E> must be true. (N4928 [expected.object.obs]/20)");
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4928 [expected.object.obs]/20)");
 
         if (_Has_value) {
             return _STD forward<_Uty>(_Other);
@@ -710,7 +710,7 @@ public:
         static_assert(
             is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true. (N4928 [expected.object.obs]/22)");
         static_assert(
-            is_convertible_v<_Uty, _Err>, "is_convertible_v<U, E> must be true. (N4928 [expected.object.obs]/22)");
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4928 [expected.object.obs]/22)");
 
         if (_Has_value) {
             return _STD forward<_Uty>(_Other);
@@ -1556,7 +1556,7 @@ public:
     template <class _Fn>
         requires is_move_constructible_v<_Err>
     constexpr auto transform(_Fn&& _Func) && {
-        using _Uty = remove_cv_t<invoke_result_t<_Fn&>>;
+        using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
         if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
