@@ -17,7 +17,6 @@ template <class E>
 }
 
 struct convertible {
-    constexpr convertible() = default;
     constexpr convertible(const int val) noexcept : _val(val) {}
 
     [[nodiscard]] constexpr bool operator==(const int other) const noexcept {
