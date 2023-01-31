@@ -52,6 +52,7 @@ constexpr bool test() {
     { // Check comparisons of (tuple_size_v == 2) tuple-like_types
         static_assert(verify_comparisons<tuple<int, int>, array<int, 2>>);
         static_assert(!verify_comparisons<tuple<int, int>, array<Incomparable, 2>>);
+        static_assert(!verify_comparisons<tuple<Incomparable, Incomparable>, array<Incomparable, 2>>);
         static_assert(verify_comparisons<tuple<int, int>, pair<int, int>>);
         static_assert(!verify_comparisons<tuple<int, int>, pair<int, Incomparable>>);
         static_assert(!verify_comparisons<tuple<int*, int*>,
@@ -90,6 +91,12 @@ constexpr bool test() {
     { // Check result type of three-way comparison
         static_assert(same_as<strong_ordering, decltype(tuple{0, 1} <=> array{0, 2})>);
         static_assert(same_as<partial_ordering, decltype(tuple{0, 1.f} <=> array{0, 2})>);
+    }
+
+    { // Check incorrect three-way comparisons
+        static_assert(!three_way_comparable_with<tuple<int>, array<int, 2>>);
+        static_assert(!three_way_comparable_with<tuple<int>, subrange<int*, int*>>);
+        static_assert(!three_way_comparable_with<tuple<int>, pair<int, int>>);
     }
 
     return true;
