@@ -211,7 +211,7 @@ struct _Three_way_comparison_result_with_tuple_like<tuple<_TTypes...>, _UTuple, 
     using type = common_comparison_category_t<_Synth_three_way_result<_TTypes, tuple_element_t<_Indices, _UTuple>>...>;
 };
 
-template <class _TTuple, class _UTuple>
+template <class _TTuple, _Tuple_like _UTuple>
 using _Three_way_comparison_result_with_tuple_like_t =
     typename _Three_way_comparison_result_with_tuple_like<_TTuple, _UTuple>::type;
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
