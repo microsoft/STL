@@ -272,7 +272,7 @@ public:
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
     template <_Tuple_like _Other>
-#ifndef __clang__ // TRANSITION, MSVC cannot figure out which operator== it should pick
+#ifndef __clang__ // TRANSITION, DevCom-10265322
         requires _Different_from<_Other, tuple>
 #endif // __clang__
     _NODISCARD_FRIEND constexpr bool operator==(const tuple&, const _Other&) noexcept /* strengthened */ {
@@ -281,7 +281,7 @@ public:
     }
 
     template <_Tuple_like _Other>
-#ifndef __clang__ // TRANSITION, MSVC cannot figure out which operator<=> it should pick
+#ifndef __clang__ // TRANSITION, DevCom-10265322
         requires _Different_from<_Other, tuple>
 #endif // __clang__
     _NODISCARD_FRIEND constexpr auto operator<=>(const tuple&, const _Other&) noexcept /* strengthened */ {
@@ -772,7 +772,7 @@ public:
     }
 
     template <_Tuple_like _Other>
-#ifndef __clang__ // TRANSITION, MSVC cannot figure out which operator== it should pick
+#ifndef __clang__ // TRANSITION, DevCom-10265322
         requires _Different_from<_Other, tuple>
 #endif // __clang__
     _NODISCARD_FRIEND constexpr bool operator==(const tuple& _Left, const _Other& _Right) {
@@ -802,7 +802,7 @@ public:
     }
 
     template <_Tuple_like _Other>
-#ifndef __clang__ // TRANSITION, MSVC cannot figure out which operator<=> it should pick
+#ifndef __clang__ // TRANSITION, DevCom-10265322
         requires _Different_from<_Other, tuple>
 #endif // __clang__
     _NODISCARD_FRIEND constexpr auto operator<=>(const tuple& _Left, const _Other& _Right) {
