@@ -90,4 +90,9 @@ static_assert(test_common_reference<const tuple<int*, int*>&&, const subrange<in
 static_assert(
     test_common_reference<const tuple<int*, const int*>&, subrange<const int*, int*>, tuple<const int*, const int*>>);
 
+// Test invalid common_references
+static_assert(!CanCommonReference<tuple<int>, array<int, 2>>);
+static_assert(!CanCommonReference<tuple<int>, subrange<int*, int*>>);
+static_assert(!CanCommonReference<tuple<int>, pair<int, int>>);
+
 int main() {} // COMPILE-ONLY

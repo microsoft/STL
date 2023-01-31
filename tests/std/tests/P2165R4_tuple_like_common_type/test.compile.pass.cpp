@@ -82,4 +82,9 @@ static_assert(test_common_type<const tuple<int*, int*>&, volatile subrange<int*,
 static_assert(test_common_type<volatile tuple<int*, Sentinel>&, const subrange<int*, unreachable_sentinel_t>&&,
     tuple<int*, unreachable_sentinel_t>>);
 
+// Test invalid common_types
+static_assert(!CanCommonType<tuple<int>, array<int, 2>>);
+static_assert(!CanCommonType<tuple<int>, subrange<int*, int*>>);
+static_assert(!CanCommonType<tuple<int>, pair<int, int>>);
+
 int main() {} // COMPILE-ONLY
