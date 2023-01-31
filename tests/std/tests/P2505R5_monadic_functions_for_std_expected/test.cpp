@@ -48,6 +48,7 @@ template <class Expected>
 constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
     assert(engaged.has_value());
     assert(!unengaged.has_value());
+    static_assert(is_same_v<typename remove_cvref_t<Expected>::error_type, int>);
     using Val = typename remove_cvref_t<Expected>::value_type;
 
     const auto succeed = [](auto...) { return expected<int, int>{33}; };
