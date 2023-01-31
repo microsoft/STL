@@ -32,7 +32,7 @@ struct Immovable {
     Immovable(Immovable&&)                 = delete;
     Immovable& operator=(const Immovable&) = delete;
     Immovable& operator=(Immovable&&)      = delete;
-    constexpr ~Immovable() {}
+    constexpr ~Immovable()                 = default;
 
     int v;
 };
