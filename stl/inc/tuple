@@ -775,12 +775,13 @@ public:
 
 #if _HAS_CXX23
     template <class _Other, class _Indices = make_index_sequence<1 + sizeof...(_Rest)>>
-    struct _Can_equal_compare_with_tuple_like;
+    static constexpr bool _Can_equal_compare_with_tuple_like_v = false;
 
     template <class _Other, size_t... _Indices>
-    struct _Can_equal_compare_with_tuple_like<_Other, index_sequence<_Indices...>>  : bool_constant<
+    static constexpr bool _Can_equal_compare_with_tuple_like_v<_Other, index_sequence<_Indices...>> =
         (requires(const tuple& _Left, const _Other& _Right) {
-        { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) } -> _Boolean_testable; } && ...)> {};
+             { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) } -> _Boolean_testable;
+         } && ...);
 
     template <class _Other, size_t... _Indices>
     _NODISCARD constexpr bool _Equals_to_tuple_like(const _Other& _Right, index_sequence<_Indices...>) const {
@@ -794,7 +795,7 @@ public:
     _NODISCARD_FRIEND constexpr bool operator==(const tuple& _Left, const _Other& _Right) {
         static_assert(1 + sizeof...(_Rest) == tuple_size_v<_Other>,
             "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
-        static_assert(_Can_equal_compare_with_tuple_like<_Other>::value,
+        static_assert(_Can_equal_compare_with_tuple_like_v<_Other>,
             "For all i, where 0 <= i <= sizeof...(_TTypes), get<i>(_Left) == get<i>(_Right) must be valid "
             "expression (N4928 [tuple.rel]/2).");
         return _Left._Equals_to_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
