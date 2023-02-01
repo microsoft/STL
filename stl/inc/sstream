@@ -363,16 +363,16 @@ protected:
 
             _FALLTHROUGH;
         default:
-            return pos_type{off_type(-1)};
+            return pos_type{off_type{-1}};
         }
 
         if (static_cast<unsigned long long>(_Off) + _Newoff > static_cast<unsigned long long>(_Seekdist)) {
-            return pos_type{off_type(-1)};
+            return pos_type{off_type{-1}};
         }
 
         _Off += _Newoff;
         if (_Off != 0 && (((_Mode & ios_base::in) && !_Gptr_old) || ((_Mode & ios_base::out) && !_Pptr_old))) {
-            return pos_type{off_type(-1)};
+            return pos_type{off_type{-1}};
         }
 
         const auto _Newptr = _Seeklow + _Off; // may perform nullptr + 0
@@ -399,11 +399,11 @@ protected:
         const auto _Seeklow  = _Mysb::eback();
         const auto _Seekdist = _Seekhigh - _Seeklow;
         if (static_cast<unsigned long long>(_Off) > static_cast<unsigned long long>(_Seekdist)) {
-            return pos_type{off_type(-1)};
+            return pos_type{off_type{-1}};
         }
 
         if (_Off != 0 && (((_Mode & ios_base::in) && !_Gptr_old) || ((_Mode & ios_base::out) && !_Pptr_old))) {
-            return pos_type{off_type(-1)};
+            return pos_type{off_type{-1}};
         }
 
         const auto _Newptr = _Seeklow + _Off; // may perform nullptr + 0
