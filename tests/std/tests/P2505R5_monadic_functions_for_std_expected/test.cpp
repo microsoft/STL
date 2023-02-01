@@ -8,6 +8,28 @@
 
 using namespace std;
 
+namespace detail {
+    static constexpr bool permissive() {
+        return false;
+    }
+
+    template <class>
+    struct DependentBase {
+        static constexpr bool permissive() {
+            return true;
+        }
+    };
+
+    template <class T>
+    struct Derived : DependentBase<T> {
+        static constexpr bool test() {
+            return permissive();
+        }
+    };
+} // namespace detail
+
+constexpr bool is_permissive = detail::Derived<int>::test();
+
 enum class IsNothrowConstructible : bool { Not, Yes };
 enum class IsNothrowConvertible : bool { Not, Yes };
 
@@ -117,16 +139,18 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
             assert(result.error() == 22);
         }
     }
-    {
-        decltype(auto) result = forward<Expected>(engaged).transform(immov);
-        static_assert(is_same_v<decltype(result), expected<Immovable, int>>);
-        assert(result->v == 88);
-    }
-    {
-        decltype(auto) result = forward<Expected>(unengaged).transform(immov);
-        static_assert(is_same_v<decltype(result), expected<Immovable, int>>);
-        assert(!result);
-        assert(result.error() == 22);
+    if constexpr (!is_permissive) { // TRANSITION, VSO-1734935
+        {
+            decltype(auto) result = forward<Expected>(engaged).transform(immov);
+            static_assert(is_same_v<decltype(result), expected<Immovable, int>>);
+            assert(result->v == 88);
+        }
+        {
+            decltype(auto) result = forward<Expected>(unengaged).transform(immov);
+            static_assert(is_same_v<decltype(result), expected<Immovable, int>>);
+            assert(!result);
+            assert(result.error() == 22);
+        }
     }
     {
         decltype(auto) result = forward<Expected>(engaged).transform(to_void);
@@ -171,18 +195,23 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
         assert(!result);
         assert(result.error() == 66);
     }
-    {
-        decltype(auto) result = forward<Expected>(engaged).transform_error(immov);
-        static_assert(is_same_v<decltype(result), expected<Val, Immovable>>);
-        if constexpr (!is_void_v<Val>) {
-            assert(result->x == 11);
+
+    if constexpr (!is_permissive) { // TRANSITION, VSO-1734935
+        {
+            {
+                decltype(auto) result = forward<Expected>(engaged).transform_error(immov);
+                static_assert(is_same_v<decltype(result), expected<Val, Immovable>>);
+                if constexpr (!is_void_v<Val>) {
+                    assert(result->x == 11);
+                }
+            }
+            {
+                decltype(auto) result = forward<Expected>(unengaged).transform_error(immov);
+                static_assert(is_same_v<decltype(result), expected<Val, Immovable>>);
+                assert(!result);
+                assert(result.error().v == 88);
+            }
         }
-    }
-    {
-        decltype(auto) result = forward<Expected>(unengaged).transform_error(immov);
-        static_assert(is_same_v<decltype(result), expected<Val, Immovable>>);
-        assert(!result);
-        assert(result.error().v == 88);
     }
 
     const auto to_expected_thingy = [](auto...) {
