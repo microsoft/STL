@@ -956,9 +956,9 @@ public:
 
     path& replace_extension(const path& _Newext = {}) { // replace extension with _Newext
         if (_Newext.empty() || _Newext.c_str()[0] == _FS_PERIOD) {
-            *this = parent_path() / path{(stem().native() + _Newext.native())};
+            *this = parent_path() / path{stem().native() + _Newext.native()};
         } else {
-            *this = parent_path() / path{(stem().native() + _FS_PERIOD + _Newext.native())};
+            *this = parent_path() / path{stem().native() + _FS_PERIOD + _Newext.native()};
         }
 
         return *this;
