@@ -5,6 +5,7 @@
 #include <cmath>
 #include <limits>
 #include <type_traits>
+#include <utility>
 
 using namespace std;
 
@@ -102,8 +103,24 @@ Ambiguous sph_neumann(unsigned int, Ambiguous) {
     return Ambiguous{};
 }
 
-bool expect_epsilons(double expected, double calculated, unsigned int multiple) {
-    return abs((calculated - expected) / expected) <= multiple * numeric_limits<double>::epsilon();
+template <class Float>
+bool isclose(Float f, Float g, const int ulps = 1) {
+    if (f == g) {
+        return true;
+    }
+
+    if (f > g) {
+        swap(f, g);
+    }
+    // f < g
+    for (int i = 0; i < ulps; ++i) {
+        f = nextafter(f, numeric_limits<Float>::infinity());
+        if (f == g) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void test_assoc_laguerre() {
@@ -197,7 +214,7 @@ void test_comp_ellint_2() {
     static_assert(is_same_v<decltype(comp_ellint_2f(0)), float>);
     static_assert(is_same_v<decltype(comp_ellint_2l(0)), long double>);
     static_assert(is_same_v<decltype(comp_ellint_2(Ambiguous{})), Ambiguous>);
-    assert(comp_ellint_2(0) == acos(-1.0) / 2);
+    assert(isclose(comp_ellint_2(0), acos(-1.0) / 2));
 }
 
 void test_comp_ellint_3() {
@@ -285,7 +302,7 @@ void test_cyl_bessel_k() {
     static_assert(is_same_v<decltype(cyl_bessel_kl(0, 0)), long double>);
     static_assert(is_same_v<decltype(cyl_bessel_k(0, 0)), double>);
     static_assert(is_same_v<decltype(cyl_bessel_k(Ambiguous{}, Ambiguous{})), Ambiguous>);
-    assert(expect_epsilons(cyl_bessel_k(0.5, 1), acos(-1.0) / 2 * (cyl_bessel_i(-0.5, 1) - cyl_bessel_i(0.5, 1)), 10));
+    assert(isclose(cyl_bessel_k(0.5, 1), acos(-1.0) / 2 * (cyl_bessel_i(-0.5, 1) - cyl_bessel_i(0.5, 1)), 15));
 }
 
 void test_cyl_neumann() {
@@ -507,7 +524,7 @@ void test_sph_bessel() {
     static_assert(is_same_v<decltype(sph_besself(0u, 0)), float>);
     static_assert(is_same_v<decltype(sph_bessell(0u, 0)), long double>);
     static_assert(is_same_v<decltype(sph_bessel(0u, Ambiguous{})), Ambiguous>);
-    assert(expect_epsilons(sph_bessel(1, 2), sin(2) / (static_cast<double>(2) * 2) - cos(2) / 2, 2));
+    assert(isclose(sph_bessel(1, 2), sin(2) / (2.0 * 2) - cos(2) / 2, 2));
 }
 
 void test_sph_legendre() {
@@ -527,7 +544,7 @@ void test_sph_legendre() {
     static_assert(is_same_v<decltype(sph_legendre(0u, 0u, Ambiguous{})), Ambiguous>);
 
     const double pi = acos(-1.0);
-    assert(expect_epsilons(sph_legendre(3, 0, 1), 0.25 * sqrt(7 / pi) * (5 * pow(cos(1), 3) - 3 * cos(1)), 2));
+    assert(isclose(sph_legendre(3, 0, 1), 0.25 * sqrt(7 / pi) * (5 * pow(cos(1), 3) - 3 * cos(1))));
 }
 
 void test_sph_neumann() {
@@ -545,7 +562,7 @@ void test_sph_neumann() {
     static_assert(is_same_v<decltype(sph_neumannf(0u, 0)), float>);
     static_assert(is_same_v<decltype(sph_neumannl(0u, 0)), long double>);
     static_assert(is_same_v<decltype(sph_neumann(0u, Ambiguous{})), Ambiguous>);
-    assert(expect_epsilons(sph_neumann(1, 1), -cos(1) - sin(1), 2));
+    assert(isclose(sph_neumann(1, 1), -cos(1) - sin(1), 2));
 }
 
 int main() {

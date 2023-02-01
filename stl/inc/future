@@ -58,7 +58,9 @@ _NODISCARD _Unique_ptr_alloc<_Alloc> _Make_unique_alloc(_Alloc& _Al, _Args&&... 
     return _Unique_ptr_alloc<_Alloc>(_Constructor._Release(), _Allocator_deleter<_Alloc>{_Al});
 }
 
-struct _Nil {}; // empty struct, for unused argument types
+struct _From_raw_state_tag { // internal tag type for constructing a future from a raw state
+    explicit _From_raw_state_tag() = default;
+};
 
 _EXPORT_STD enum class future_errc { // names for futures errors
     broken_promise = 1,
@@ -170,8 +172,8 @@ class _Associated_state;
 
 template <class _Ty>
 struct __declspec(novtable) _Deleter_base { // abstract base class for managing deletion of state objects
-    virtual void _Delete(_Associated_state<_Ty>*) = 0;
-    virtual ~_Deleter_base() noexcept {}
+    virtual void _Delete(_Associated_state<_Ty>*) noexcept = 0;
+    virtual ~_Deleter_base() = default; // TRANSITION, vNext (make non-virtual, never called polymorphically)
 };
 
 template <class _Ty, class _Derived, class _Alloc>
@@ -181,15 +183,15 @@ struct _State_deleter : _Deleter_base<_Ty> { // manage allocator and deletion st
     _State_deleter(const _State_deleter&)            = delete;
     _State_deleter& operator=(const _State_deleter&) = delete;
 
-    void _Delete(_Associated_state<_Ty>* _State) override;
+    void _Delete(_Associated_state<_Ty>* _State) noexcept override;
 
     _Alloc _My_alloc;
 };
 
 template <class _Ty>
 union _Result_holder {
-    _Result_holder() {}
-    ~_Result_holder() {}
+    _Result_holder() noexcept {}
+    ~_Result_holder() noexcept {}
 
     _Ty _Held_value;
 };
@@ -218,11 +220,11 @@ public:
         }
     }
 
-    void _Retain() { // increment reference count
+    void _Retain() noexcept { // increment reference count
         _MT_INCR(_Refs);
     }
 
-    void _Release() { // decrement reference count and destroy when zero
+    void _Release() noexcept { // decrement reference count and destroy when zero
         if (_MT_DECR(_Refs) == 0) {
             _Delete_this();
         }
@@ -288,7 +290,7 @@ public:
         }
 
         // TRANSITION: `_Retrieved` should be assigned before `_Exception` is thrown so that a `future::get`
-        // that throws a stored exception invalidates the future (N4901 [futures.unique.future]/17)
+        // that throws a stored exception invalidates the future (N4928 [futures.unique.future]/17)
         _Retrieved = true;
         _Maybe_run_deferred_function(_Lock);
         while (!_Ready) {
@@ -359,20 +361,20 @@ public:
         }
 
         _STL_ASSERT(_Exc != nullptr, "promise<T>::set_exception/set_exception_at_thread_exit called with a null "
-                                     "std::exception_ptr, which is invalid per N4901 32.9.6 [futures.promise]/20");
+                                     "std::exception_ptr, which is invalid per N4928 [futures.promise]/20");
         _Exception = _Exc;
         _Do_notify(_Lock, _At_thread_exit);
     }
 
-    bool _Is_ready() const {
+    bool _Is_ready() const noexcept {
         return _Ready != 0;
     }
 
-    bool _Is_ready_at_thread_exit() const {
+    bool _Is_ready_at_thread_exit() const noexcept {
         return _Ready_at_thread_exit;
     }
 
-    bool _Already_has_stored_result() const { // Has a result or an exception
+    bool _Already_has_stored_result() const noexcept { // Has a result or an exception
         if constexpr (is_default_constructible_v<_Ty>) {
             return _Has_stored_result;
         } else {
@@ -380,14 +382,14 @@ public:
         }
     }
 
-    bool _Already_retrieved() const {
+    bool _Already_retrieved() const noexcept {
         return _Retrieved;
     }
 
     void _Abandon() { // abandon shared state
         unique_lock<mutex> _Lock(_Mtx);
         if (!_Already_has_stored_result()) { // queue exception
-            future_error _Fut(make_error_code(future_errc::broken_promise));
+            future_error _Fut(_STD make_error_code(future_errc::broken_promise));
             _Set_exception_raw(_STD make_exception_ptr(_Fut), &_Lock, false);
         }
     }
@@ -438,7 +440,7 @@ private:
         }
     }
 
-    void _Delete_this() { // delete this object
+    void _Delete_this() noexcept { // delete this object
         if (_Deleter) {
             _Deleter->_Delete(this);
         } else {
@@ -454,7 +456,7 @@ public:
 };
 
 template <class _Ty, class _Derived, class _Alloc>
-void _State_deleter<_Ty, _Derived, _Alloc>::_Delete(_Associated_state<_Ty>* _State) {
+void _State_deleter<_Ty, _Derived, _Alloc>::_Delete(_Associated_state<_Ty>* _State) noexcept {
     // delete _State and this using stored allocator
     using _State_allocator = _Rebind_alloc_t<_Alloc, _Derived>;
     _State_allocator _St_alloc(_My_alloc);
@@ -725,24 +727,20 @@ template <class _Ty>
 class _State_manager {
     // class for managing possibly non-existent associated asynchronous state object
 public:
-    _State_manager() : _Assoc_state(nullptr) { // construct with no associated asynchronous state object
-        _Get_only_once = false;
+    _State_manager() = default; // construct with no associated asynchronous state object
+
+    _State_manager(_Associated_state<_Ty>* _New_state, bool _Get_once) noexcept
+        : _Assoc_state(_New_state), _Get_only_once(_Get_once) {} // construct with _New_state
+
+    _State_manager(const _State_manager& _Other, bool _Get_once = false) noexcept
+        : _Assoc_state(_Other._Assoc_state), _Get_only_once(_Get_once) {
+        if (_Assoc_state) { // do the copy
+            _Assoc_state->_Retain();
+        }
     }
 
-    _State_manager(_Associated_state<_Ty>* _New_state, bool _Get_once)
-        : _Assoc_state(_New_state) { // construct with _New_state
-        _Get_only_once = _Get_once;
-    }
-
-    _State_manager(const _State_manager& _Other, bool _Get_once = false) : _Assoc_state(nullptr) {
-        _Copy_from(_Other);
-        _Get_only_once = _Get_once;
-    }
-
-    _State_manager(_State_manager&& _Other, bool _Get_once = false) : _Assoc_state(nullptr) {
-        _Move_from(_Other);
-        _Get_only_once = _Get_once;
-    }
+    _State_manager(_State_manager&& _Other, bool _Get_once = false) noexcept
+        : _Assoc_state(_STD exchange(_Other._Assoc_state, nullptr)), _Get_only_once(_Get_once) {}
 
     ~_State_manager() noexcept {
         if (_Assoc_state) {
@@ -750,13 +748,31 @@ public:
         }
     }
 
-    _State_manager& operator=(const _State_manager& _Other) {
-        _Copy_from(_Other);
+    _State_manager& operator=(const _State_manager& _Other) noexcept {
+        // copy stored associated asynchronous state object from _Other
+        if (_Other._Assoc_state) {
+            _Other._Assoc_state->_Retain();
+        }
+
+        if (_Assoc_state) {
+            _Assoc_state->_Release();
+        }
+
+        _Assoc_state   = _Other._Assoc_state;
+        _Get_only_once = _Other._Get_only_once;
         return *this;
     }
 
-    _State_manager& operator=(_State_manager&& _Other) {
-        _Move_from(_Other);
+    _State_manager& operator=(_State_manager&& _Other) noexcept {
+        // move stored associated asynchronous state object from _Other
+        if (this != _STD addressof(_Other)) {
+            if (_Assoc_state) {
+                _Assoc_state->_Release();
+            }
+
+            _Assoc_state   = _STD exchange(_Other._Assoc_state, nullptr);
+            _Get_only_once = _Other._Get_only_once;
+        }
         return *this;
     }
 
@@ -831,53 +847,25 @@ public:
         _Assoc_state->_Set_exception(_Exc, _Defer);
     }
 
-    void _Swap(_State_manager& _Other) { // exchange with _Other
+    void _Swap(_State_manager& _Other) noexcept { // exchange with _Other
         _STD swap(_Assoc_state, _Other._Assoc_state);
     }
 
-    _Associated_state<_Ty>* _Ptr() const {
+    _Associated_state<_Ty>* _Ptr() const noexcept {
         return _Assoc_state;
     }
 
-    void _Copy_from(const _State_manager& _Other) { // copy stored associated asynchronous state object from _Other
-        if (this != _STD addressof(_Other)) {
-            if (_Assoc_state) {
-                _Assoc_state->_Release();
-            }
-
-            if (_Other._Assoc_state) { // do the copy
-                _Other._Assoc_state->_Retain();
-                _Assoc_state   = _Other._Assoc_state;
-                _Get_only_once = _Other._Get_only_once;
-            } else {
-                _Assoc_state = nullptr;
-            }
-        }
-    }
-
-    void _Move_from(_State_manager& _Other) { // move stored associated asynchronous state object from _Other
-        if (this != _STD addressof(_Other)) {
-            if (_Assoc_state) {
-                _Assoc_state->_Release();
-            }
-
-            _Assoc_state        = _Other._Assoc_state;
-            _Other._Assoc_state = nullptr;
-            _Get_only_once      = _Other._Get_only_once;
-        }
-    }
-
-    bool _Is_ready() const {
+    bool _Is_ready() const noexcept {
         return _Assoc_state && _Assoc_state->_Is_ready();
     }
 
-    bool _Is_ready_at_thread_exit() const {
+    bool _Is_ready_at_thread_exit() const noexcept {
         return _Assoc_state && _Assoc_state->_Is_ready_at_thread_exit();
     }
 
 private:
-    _Associated_state<_Ty>* _Assoc_state;
-    bool _Get_only_once;
+    _Associated_state<_Ty>* _Assoc_state = nullptr;
+    bool _Get_only_once                  = false;
 };
 
 _EXPORT_STD template <class _Ty>
@@ -891,20 +879,15 @@ private:
 
 public:
     static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
-        "T in future<T> must meet the Cpp17Destructible requirements (N4878 [futures.unique.future]/4).");
+        "T in future<T> must meet the Cpp17Destructible requirements (N4928 [futures.unique.future]/4).");
 
-    future() noexcept {}
+    future() = default;
 
     future(future&& _Other) noexcept : _Mybase(_STD move(_Other), true) {}
 
-    future& operator=(future&& _Right) noexcept {
-        _Mybase::operator=(_STD move(_Right));
-        return *this;
-    }
+    future& operator=(future&&) = default;
 
-    future(const _Mybase& _State, _Nil) : _Mybase(_State, true) {}
-
-    ~future() noexcept {}
+    future(_From_raw_state_tag, const _Mybase& _State) noexcept : _Mybase(_State, true) {}
 
     _Ty get() {
         // block until ready then return the stored result or throw the stored exception
@@ -927,18 +910,13 @@ private:
     using _Mybase = _State_manager<_Ty*>;
 
 public:
-    future() noexcept {}
+    future() = default;
 
     future(future&& _Other) noexcept : _Mybase(_STD move(_Other), true) {}
 
-    future& operator=(future&& _Right) noexcept {
-        _Mybase::operator=(_STD move(_Right));
-        return *this;
-    }
+    future& operator=(future&&) = default;
 
-    future(const _Mybase& _State, _Nil) : _Mybase(_State, true) {}
-
-    ~future() noexcept {}
+    future(_From_raw_state_tag, const _Mybase& _State) noexcept : _Mybase(_State, true) {}
 
     _Ty& get() {
         // block until ready then return the stored result or throw the stored exception
@@ -961,18 +939,13 @@ private:
     using _Mybase = _State_manager<int>;
 
 public:
-    future() noexcept {}
+    future() = default;
 
     future(future&& _Other) noexcept : _Mybase(_STD move(_Other), true) {}
 
-    future& operator=(future&& _Right) noexcept {
-        _Mybase::operator=(_STD move(_Right));
-        return *this;
-    }
+    future& operator=(future&&) = default;
 
-    future(const _Mybase& _State, _Nil) : _Mybase(_State, true) {}
-
-    ~future() noexcept {}
+    future(_From_raw_state_tag, const _Mybase& _State) noexcept : _Mybase(_State, true) {}
 
     void get() {
         // block until ready then return or throw the stored exception
@@ -994,27 +967,19 @@ private:
 
 public:
     static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
-        "T in shared_future<T> must meet the Cpp17Destructible requirements (N4878 [futures.shared.future]/4).");
+        "T in shared_future<T> must meet the Cpp17Destructible requirements (N4928 [futures.shared.future]/4).");
 
-    shared_future() noexcept {}
+    shared_future() = default;
 
     shared_future(const shared_future& _Other) noexcept : _Mybase(_Other) {}
 
-    shared_future& operator=(const shared_future& _Right) noexcept {
-        _Mybase::operator=(_Right);
-        return *this;
-    }
+    shared_future& operator=(const shared_future&) = default;
 
     shared_future(future<_Ty>&& _Other) noexcept : _Mybase(_STD forward<_Mybase>(_Other)) {}
 
     shared_future(shared_future&& _Other) noexcept : _Mybase(_STD move(_Other)) {}
 
-    shared_future& operator=(shared_future&& _Right) noexcept {
-        _Mybase::operator=(_STD move(_Right));
-        return *this;
-    }
-
-    ~shared_future() noexcept {}
+    shared_future& operator=(shared_future&&) = default;
 
     const _Ty& get() const {
         // block until ready then return the stored result or throw the stored exception
@@ -1029,25 +994,17 @@ private:
     using _Mybase = _State_manager<_Ty*>;
 
 public:
-    shared_future() noexcept {}
+    shared_future() = default;
 
     shared_future(const shared_future& _Other) noexcept : _Mybase(_Other) {}
 
-    shared_future& operator=(const shared_future& _Right) noexcept {
-        _Mybase::operator=(_Right);
-        return *this;
-    }
+    shared_future& operator=(const shared_future&) = default;
 
     shared_future(future<_Ty&>&& _Other) noexcept : _Mybase(_STD forward<_Mybase>(_Other)) {}
 
     shared_future(shared_future&& _Other) noexcept : _Mybase(_STD move(_Other)) {}
 
-    shared_future& operator=(shared_future&& _Right) noexcept {
-        _Mybase::operator=(_STD move(_Right));
-        return *this;
-    }
-
-    ~shared_future() noexcept {}
+    shared_future& operator=(shared_future&&) = default;
 
     _Ty& get() const {
         // block until ready then return the stored result or throw the stored exception
@@ -1066,21 +1023,13 @@ public:
 
     shared_future(const shared_future& _Other) noexcept : _Mybase(_Other) {}
 
-    shared_future& operator=(const shared_future& _Right) noexcept {
-        _Mybase::operator=(_Right);
-        return *this;
-    }
+    shared_future& operator=(const shared_future&) = default;
 
     shared_future(shared_future&& _Other) noexcept : _Mybase(_STD move(_Other)) {}
 
     shared_future(future<void>&& _Other) noexcept : _Mybase(_STD forward<_Mybase>(_Other)) {}
 
-    shared_future& operator=(shared_future&& _Right) {
-        _Mybase::operator=(_STD move(_Right));
-        return *this;
-    }
-
-    ~shared_future() noexcept {}
+    shared_future& operator=(shared_future&&) = default;
 
     void get() const { // block until ready then return or throw the stored exception
         this->_Get_value();
@@ -1094,27 +1043,21 @@ _NODISCARD inline shared_future<void> future<void>::share() noexcept {
 template <class _Ty>
 class _Promise {
 public:
-    _Promise(_Associated_state<_Ty>* _State_ptr) : _State(_State_ptr, false), _Future_retrieved(false) {}
+    _Promise(_Associated_state<_Ty>* _State_ptr) noexcept : _State(_State_ptr, false), _Future_retrieved(false) {}
 
-    _Promise(_Promise&& _Other) : _State(_STD move(_Other._State)), _Future_retrieved(_Other._Future_retrieved) {}
+    _Promise(_Promise&&) = default;
 
-    _Promise& operator=(_Promise&& _Other) {
-        _State            = _STD move(_Other._State);
-        _Future_retrieved = _Other._Future_retrieved;
-        return *this;
-    }
+    _Promise& operator=(_Promise&&) = default;
 
-    ~_Promise() noexcept {}
-
-    void _Swap(_Promise& _Other) {
+    void _Swap(_Promise& _Other) noexcept {
         _State._Swap(_Other._State);
         _STD swap(_Future_retrieved, _Other._Future_retrieved);
     }
 
-    const _State_manager<_Ty>& _Get_state() const {
+    const _State_manager<_Ty>& _Get_state() const noexcept {
         return _State;
     }
-    _State_manager<_Ty>& _Get_state() {
+    _State_manager<_Ty>& _Get_state() noexcept {
         return _State;
     }
 
@@ -1143,11 +1086,11 @@ public:
         return _State.valid();
     }
 
-    bool _Is_ready() const {
+    bool _Is_ready() const noexcept {
         return _State._Is_ready();
     }
 
-    bool _Is_ready_at_thread_exit() const {
+    bool _Is_ready_at_thread_exit() const noexcept {
         return _State._Is_ready_at_thread_exit();
     }
 
@@ -1163,14 +1106,14 @@ _EXPORT_STD template <class _Ty>
 class promise { // class that defines an asynchronous provider that holds a value
 public:
     static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
-        "T in promise<T> must meet the Cpp17Destructible requirements (N4878 [futures.promise]/1).");
+        "T in promise<T> must meet the Cpp17Destructible requirements (N4928 [futures.promise]/1).");
 
     promise() : _MyPromise(new _Associated_state<_Ty>) {}
 
     template <class _Alloc>
     promise(allocator_arg_t, const _Alloc& _Al) : _MyPromise(_Make_associated_state<_Ty>(_Al)) {}
 
-    promise(promise&& _Other) noexcept : _MyPromise(_STD move(_Other._MyPromise)) {}
+    promise(promise&&) = default;
 
     promise& operator=(promise&& _Other) noexcept {
         promise(_STD move(_Other)).swap(*this);
@@ -1180,7 +1123,7 @@ public:
     ~promise() noexcept {
         if (_MyPromise._Is_valid() && !_MyPromise._Is_ready() && !_MyPromise._Is_ready_at_thread_exit()) {
             // exception if destroyed before function object returns
-            future_error _Fut(make_error_code(future_errc::broken_promise));
+            future_error _Fut(_STD make_error_code(future_errc::broken_promise));
             _MyPromise._Get_state()._Set_exception(_STD make_exception_ptr(_Fut), false);
         }
     }
@@ -1190,7 +1133,7 @@ public:
     }
 
     _NODISCARD_GET_FUTURE future<_Ty> get_future() {
-        return future<_Ty>(_MyPromise._Get_state_for_future(), _Nil{});
+        return future<_Ty>(_From_raw_state_tag{}, _MyPromise._Get_state_for_future());
     }
 
     void set_value(const _Ty& _Val) {
@@ -1232,7 +1175,7 @@ public:
     template <class _Alloc>
     promise(allocator_arg_t, const _Alloc& _Al) : _MyPromise(_Make_associated_state<_Ty*>(_Al)) {}
 
-    promise(promise&& _Other) noexcept : _MyPromise(_STD move(_Other._MyPromise)) {}
+    promise(promise&&) = default;
 
     promise& operator=(promise&& _Other) noexcept {
         promise(_STD move(_Other)).swap(*this);
@@ -1242,7 +1185,7 @@ public:
     ~promise() noexcept {
         if (_MyPromise._Is_valid() && !_MyPromise._Is_ready() && !_MyPromise._Is_ready_at_thread_exit()) {
             // exception if destroyed before function object returns
-            future_error _Fut(make_error_code(future_errc::broken_promise));
+            future_error _Fut(_STD make_error_code(future_errc::broken_promise));
             _MyPromise._Get_state()._Set_exception(_STD make_exception_ptr(_Fut), false);
         }
     }
@@ -1252,7 +1195,7 @@ public:
     }
 
     _NODISCARD_GET_FUTURE future<_Ty&> get_future() {
-        return future<_Ty&>(_MyPromise._Get_state_for_future(), _Nil{});
+        return future<_Ty&>(_From_raw_state_tag{}, _MyPromise._Get_state_for_future());
     }
 
     void set_value(_Ty& _Val) {
@@ -1286,7 +1229,7 @@ public:
     template <class _Alloc>
     promise(allocator_arg_t, const _Alloc& _Al) : _MyPromise(_Make_associated_state<int>(_Al)) {}
 
-    promise(promise&& _Other) noexcept : _MyPromise(_STD move(_Other._MyPromise)) {}
+    promise(promise&&) = default;
 
     promise& operator=(promise&& _Other) noexcept {
         promise(_STD move(_Other)).swap(*this);
@@ -1296,7 +1239,7 @@ public:
     ~promise() noexcept {
         if (_MyPromise._Is_valid() && !_MyPromise._Is_ready() && !_MyPromise._Is_ready_at_thread_exit()) {
             // exception if destroyed before function object returns
-            future_error _Fut(make_error_code(future_errc::broken_promise));
+            future_error _Fut(_STD make_error_code(future_errc::broken_promise));
             _MyPromise._Get_state()._Set_exception(_STD make_exception_ptr(_Fut), false);
         }
     }
@@ -1306,7 +1249,7 @@ public:
     }
 
     _NODISCARD_GET_FUTURE future<void> get_future() {
-        return future<void>(_MyPromise._Get_state_for_future(), _Nil{});
+        return future<void>(_From_raw_state_tag{}, _MyPromise._Get_state_for_future());
     }
 
     void set_value() {
@@ -1367,17 +1310,14 @@ public:
     using _MyStateManagerType = _State_manager<_Ptype>;
     using _MyStateType        = _Packaged_state<_Ret(_ArgTypes...)>;
 
-    packaged_task() noexcept : _MyPromise(0) {}
+    packaged_task() = default;
 
     template <class _Fty2, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
     explicit packaged_task(_Fty2&& _Fnarg) : _MyPromise(new _MyStateType(_STD forward<_Fty2>(_Fnarg))) {}
 
-    packaged_task(packaged_task&& _Other) noexcept : _MyPromise(_STD move(_Other._MyPromise)) {}
+    packaged_task(packaged_task&&) = default;
 
-    packaged_task& operator=(packaged_task&& _Other) noexcept {
-        _MyPromise = _STD move(_Other._MyPromise);
-        return *this;
-    }
+    packaged_task& operator=(packaged_task&&) = default;
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     template <class _Fty2, class _Alloc, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
@@ -1398,7 +1338,7 @@ public:
     }
 
     _NODISCARD_GET_FUTURE future<_Ret> get_future() {
-        return future<_Ret>(_MyPromise._Get_state_for_future(), _Nil{});
+        return future<_Ret>(_From_raw_state_tag{}, _MyPromise._Get_state_for_future());
     }
 
     void operator()(_ArgTypes... _Args) {
@@ -1438,7 +1378,7 @@ public:
     packaged_task& operator=(const packaged_task&) = delete;
 
 private:
-    _MyPromiseType _MyPromise;
+    _MyPromiseType _MyPromise{nullptr};
 };
 
 #if _HAS_CXX17
@@ -1528,7 +1468,7 @@ _NODISCARD_ASYNC future<_Invoke_result_t<decay_t<_Fty>, decay_t<_ArgTypes>...>> 
         _Get_associated_state<_Ret>(_Policy, _Fake_no_copy_callable_adapter<_Fty, _ArgTypes...>(
                                                  _STD forward<_Fty>(_Fnarg), _STD forward<_ArgTypes>(_Args)...)));
 
-    return future<_Ret>(_Pr._Get_state_for_future(), _Nil{});
+    return future<_Ret>(_From_raw_state_tag{}, _Pr._Get_state_for_future());
 }
 
 _EXPORT_STD template <class _Fty, class... _ArgTypes>

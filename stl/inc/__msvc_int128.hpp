@@ -10,7 +10,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstdint>
-#include <intrin.h> // TRANSITION, GH-2520
+#include _STL_INTRIN_HEADER
 #include <limits>
 #include <type_traits>
 
@@ -1407,8 +1407,9 @@ public:
         return 0;
     }
 
-    static constexpr int digits   = 127;
-    static constexpr int digits10 = 38;
+    static constexpr int digits     = 127;
+    static constexpr int digits10   = 38;
+    static constexpr bool is_signed = true;
 };
 
 template <>

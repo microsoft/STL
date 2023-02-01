@@ -206,9 +206,26 @@ concept _Weakly_equality_comparable_with =
 _EXPORT_STD template <class _Ty>
 concept equality_comparable = _Half_equality_comparable<_Ty, _Ty>;
 
+#if _HAS_CXX23
+template <class _Ty1, class _Ty2, class _Ref = common_reference_t<const _Ty1&, const _Ty2&>>
+concept _Comparison_common_type_with_impl =
+    same_as<_Ref, common_reference_t<const _Ty2&, const _Ty1&>>
+    && requires {
+           requires convertible_to<const _Ty1&, const _Ref&> || convertible_to<_Ty1, const _Ref&>;
+           requires convertible_to<const _Ty2&, const _Ref&> || convertible_to<_Ty2, const _Ref&>;
+       };
+
+template <class _Ty1, class _Ty2>
+concept _Comparison_common_type_with = _Comparison_common_type_with_impl<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
+#endif // _HAS_CXX23
+
 _EXPORT_STD template <class _Ty1, class _Ty2>
 concept equality_comparable_with = equality_comparable<_Ty1> && equality_comparable<_Ty2>
+#if _HAS_CXX23
+    && _Comparison_common_type_with<_Ty1, _Ty2>
+#else // ^^^ C++23 / C++20 vvv
     && common_reference_with<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>
+#endif // C++20
     && equality_comparable<common_reference_t<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>>
     && _Weakly_equality_comparable_with<_Ty1, _Ty2>;
 

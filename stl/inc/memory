@@ -26,6 +26,24 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+#if _HAS_CXX17
+#define _REQUIRE_PARALLEL_LVALUE_ITERATOR(_Iter)                                                                     \
+    static_assert(_Is_ranges_fwd_iter_v<_Iter> && is_lvalue_reference_v<_Iter_ref_t<_Iter>>,                         \
+        "Parallel specialized <memory> algorithms require the iterator type to be forward iterator and dereference " \
+        "to lvalues.")
+
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_NoThrowFwdIt uninitialized_copy(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _NoThrowFwdIt _Dest) noexcept
+/* terminates */ {
+    // copy [_First, _Last) to raw [_Dest, ...)
+    // not parallelized at present
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+
+    return _STD uninitialized_copy(_First, _Last, _Dest);
+}
+#endif // _HAS_CXX17
+
 #ifdef __cpp_lib_concepts
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
@@ -129,6 +147,21 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
     return _Dest;
 }
 
+#if _HAS_CXX17
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _NoThrowFwdIt,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
+_NoThrowFwdIt uninitialized_copy_n(_ExPo&&, const _FwdIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) noexcept
+/* terminates */ {
+    // copy [_First, _First + _Count) to raw [_Dest, ...)
+    // not parallelized at present
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+
+    _Algorithm_int_t<_Diff> _Count = _Count_raw;
+    return _STD uninitialized_copy_n(_First, _Count, _Dest);
+}
+#endif // _HAS_CXX17
+
 #ifdef __cpp_lib_concepts
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
@@ -190,8 +223,19 @@ _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrow
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     const auto _UDest  = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
-    _Seek_wrapped(_Dest, _Uninitialized_move_unchecked(_UFirst, _ULast, _UDest));
+    _Seek_wrapped(_Dest, _STD _Uninitialized_move_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
+}
+
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_NoThrowFwdIt uninitialized_move(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _NoThrowFwdIt _Dest) noexcept
+/* terminates */ {
+    // move [_First, _Last) to raw [_Dest, ...)
+    // not parallelized at present
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+
+    return _STD uninitialized_move(_First, _Last, _Dest);
 }
 
 #ifdef __cpp_lib_concepts
@@ -259,8 +303,30 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
     _Seek_wrapped(_First, _UFirst);
     return {_First, _Dest};
 }
-#endif // _HAS_CXX17
 
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _NoThrowFwdIt,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
+pair<_FwdIt, _NoThrowFwdIt> uninitialized_move_n(
+    _ExPo&&, const _FwdIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) noexcept /* terminates */ {
+    // move [_First, _First + _Count) to raw [_Dest, ...)
+    // not parallelized at present
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+
+    _Algorithm_int_t<_Diff> _Count = _Count_raw;
+    return _STD uninitialized_move_n(_First, _Count, _Dest);
+}
+
+_EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Tval, _Enable_if_execution_policy_t<_ExPo> = 0>
+void uninitialized_fill(_ExPo&&, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, const _Tval& _Val) noexcept
+/* terminates */ {
+    // copy _Val throughout raw [_First, _Last)
+    // not parallelized at present
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+
+    _STD uninitialized_fill(_First, _Last, _Val);
+}
+#endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
@@ -403,6 +469,21 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
     return _First;
 }
 
+#if _HAS_CXX17
+_EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, class _Tval,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
+_NoThrowFwdIt uninitialized_fill_n(
+    _ExPo&&, const _NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) noexcept
+/* terminates */ {
+    // copy _Count copies of _Val to raw _First
+    // not parallelized at present
+    _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
+
+    _Algorithm_int_t<_Diff> _Count = _Count_raw;
+    return _STD uninitialized_fill_n(_First, _Count, _Val);
+}
+#endif // _HAS_CXX17
+
 #ifdef __cpp_lib_concepts
 namespace ranges {
     class _Uninitialized_fill_n_fn : private _Not_quite_object {
@@ -493,6 +574,9 @@ _CONSTEXPR20 void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last)
     _Destroy_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
 }
 
+_EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+void destroy(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept; // terminates
+
 #ifdef __cpp_lib_concepts
 namespace ranges {
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
@@ -557,6 +641,9 @@ _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_ra
     return _First;
 }
 
+_EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> = 0>
+_NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) noexcept; // terminates
+
 #ifdef __cpp_lib_concepts
 namespace ranges {
     class _Destroy_n_fn : private _Not_quite_object {
@@ -606,6 +693,9 @@ void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowF
         _Backout._Release();
     }
 }
+
+_EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+void uninitialized_default_construct(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept; // terminates
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
@@ -683,6 +773,10 @@ _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Dif
     return _First;
 }
 
+_EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> = 0>
+_NoThrowFwdIt uninitialized_default_construct_n(
+    _ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) noexcept; // terminates
+
 #ifdef __cpp_lib_concepts
 namespace ranges {
     class _Uninitialized_default_construct_n_fn : private _Not_quite_object {
@@ -735,6 +829,9 @@ void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwd
         _Backout._Release();
     }
 }
+
+_EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+void uninitialized_value_construct(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept; // terminates
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
@@ -798,6 +895,10 @@ _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff 
     _Seek_wrapped(_First, _Uninitialized_value_construct_n_unchecked1(_Get_unwrapped_n(_First, _Count), _Count));
     return _First;
 }
+
+_EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> = 0>
+_NoThrowFwdIt uninitialized_value_construct_n(
+    _ExPo&& _Exec, _NoThrowFwdIt _First, const _Diff _Count_raw) noexcept; // terminates
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
@@ -3242,33 +3343,18 @@ public:
                             && is_convertible_v<remove_pointer_t<_Uty> (*)[], element_type (*)[]>),
             int>;
 
-#ifdef _M_CEE // TRANSITION, VSO-1595465
-    template <class _Uty, class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0, class = _Enable_ctor_reset<_Uty>>
-#else // ^^^ workaround / no workaround vvv
     template <class _Uty, class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0, _Enable_ctor_reset<_Uty> = 0>
-#endif // ^^^ no workaround ^^^
-    _CONSTEXPR23 explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {
-    }
+    _CONSTEXPR23 explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx, enable_if_t<is_constructible_v<_Dx2, const _Dx2&>, int> = 0,
-#ifdef _M_CEE // TRANSITION, VSO-1595465
-        class = _Enable_ctor_reset<_Uty>>
-#else // ^^^ workaround / no workaround vvv
         _Enable_ctor_reset<_Uty> = 0>
-#endif // ^^^ no workaround ^^^
-    _CONSTEXPR23 unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {
-    }
+    _CONSTEXPR23 unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<negation<is_reference<_Dx2>>, is_constructible<_Dx2, _Dx2>>, int> = 0,
-#ifdef _M_CEE // TRANSITION, VSO-1595465
-        class = _Enable_ctor_reset<_Uty>>
-#else // ^^^ workaround / no workaround vvv
-        _Enable_ctor_reset<_Uty> = 0>
-#endif // ^^^ no workaround ^^^
+        _Enable_ctor_reset<_Uty>                                                                    = 0>
     _CONSTEXPR23 unique_ptr(_Uty _Ptr, _Dx&& _Dt) noexcept
-        : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {
-    }
+        : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
@@ -3296,22 +3382,12 @@ public:
         int>;
 
     template <class _Uty, class _Ex,
-#ifdef _M_CEE // TRANSITION, VSO-1595465
-        class = _Enable_conversion<_Uty, _Ex,
-            conditional_t<is_reference_v<_Dx>, is_same<_Ex, _Dx>, is_convertible<_Ex, _Dx>>>>
-#else // ^^^ workaround / no workaround vvv
         _Enable_conversion<_Uty, _Ex, conditional_t<is_reference_v<_Dx>, is_same<_Ex, _Dx>, is_convertible<_Ex, _Dx>>> =
             0>
-#endif // ^^^ no workaround ^^^
     _CONSTEXPR23 unique_ptr(unique_ptr<_Uty, _Ex>&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Ex>(_Right.get_deleter()), _Right.release()) {
-    }
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Ex>(_Right.get_deleter()), _Right.release()) {}
 
-#ifdef _M_CEE // TRANSITION, VSO-1595465
-    template <class _Uty, class _Ex, class = _Enable_conversion<_Uty, _Ex, is_assignable<_Dx&, _Ex>>>
-#else // ^^^ workaround / no workaround vvv
     template <class _Uty, class _Ex, _Enable_conversion<_Uty, _Ex, is_assignable<_Dx&, _Ex>> = 0>
-#endif // ^^^ no workaround ^^^
     _CONSTEXPR23 unique_ptr& operator=(unique_ptr<_Uty, _Ex>&& _Right) noexcept {
         reset(_Right.release());
         _Mypair._Get_first() = _STD forward<_Ex>(_Right._Mypair._Get_first());
@@ -3365,11 +3441,7 @@ public:
         return _STD exchange(_Mypair._Myval2, nullptr);
     }
 
-#ifdef _M_CEE // TRANSITION, VSO-1595465
-    template <class _Uty, class = _Enable_ctor_reset<_Uty, false_type>>
-#else // ^^^ workaround / no workaround vvv
     template <class _Uty, _Enable_ctor_reset<_Uty, false_type> = 0>
-#endif // ^^^ no workaround ^^^
     _CONSTEXPR23 void reset(_Uty _Ptr) noexcept {
         pointer _Old = _STD exchange(_Mypair._Myval2, _Ptr);
         if (_Old) {
@@ -4190,6 +4262,10 @@ public:
     inout_ptr_t(const inout_ptr_t&) = delete;
 
     ~inout_ptr_t() {
+        if constexpr (!is_pointer_v<_SmartPtr>) {
+            _Smart_ptr.release();
+        }
+
         if (!_Get_ptr()) {
             return;
         }
@@ -4200,11 +4276,9 @@ public:
                 if constexpr (is_pointer_v<_SmartPtr>) {
                     _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 } else if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
-                    _Smart_ptr.release();
                     _Smart_ptr.reset(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 } else {
                     static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4892 [inout.ptr.t]/11.4)");
-                    _Smart_ptr.release();
                     _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 }
             },

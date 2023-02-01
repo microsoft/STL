@@ -1,7 +1,11 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.25)
+
+# TRANSITION, CMake-24249
+cmake_policy(SET CMP0141 OLD)
+
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
@@ -45,12 +49,6 @@ option(BUILD_TESTING "Enable testing" ON)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
 option(STL_USE_ANALYZE "Pass the /analyze flag to MSVC" OFF)
-
-if(STL_BUILD_BENCHMARKING)
-    message(WARNING "Due to issues with building google benchmark, "
-        "STL_BUILD_BENCHMARKING is no longer allowed as part of the STL build. "
-        "Instead, build the `benchmarks` directory with the STL_BINARY_DIR option.")
-endif()
 
 if("${VCLIBS_TARGET_ARCHITECTURE}" MATCHES "^x86$")
     set(VCLIBS_TARGET_ARCHITECTURE "x86")

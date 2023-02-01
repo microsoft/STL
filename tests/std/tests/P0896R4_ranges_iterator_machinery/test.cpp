@@ -204,6 +204,56 @@ struct std::indirectly_readable_traits<simple_contiguous_iter<Base>> {
     using value_type = double;
 };
 
+// Validate iterator_category of iterators whose reference types are rvalue references (LWG-3798).
+struct xvalue_forward_iter {
+    using value_type      = double;
+    using difference_type = long;
+
+    value_type&& operator*() const;
+    xvalue_forward_iter& operator++();
+    xvalue_forward_iter operator++(int);
+
+    bool operator==(xvalue_forward_iter const&) const = default;
+};
+
+struct xvalue_bidi_iter {
+    using value_type      = double;
+    using difference_type = long;
+    using reference       = value_type&&;
+
+    value_type&& operator*() const;
+    xvalue_bidi_iter& operator++();
+    xvalue_bidi_iter operator++(int);
+
+    bool operator==(xvalue_bidi_iter const&) const = default;
+
+    xvalue_bidi_iter& operator--();
+    xvalue_bidi_iter operator--(int);
+};
+
+struct xvalue_random_iter {
+    using value_type = double;
+    using D          = long;
+
+    value_type&& operator*() const;
+    xvalue_random_iter& operator++();
+    xvalue_random_iter operator++(int);
+
+    xvalue_random_iter& operator--();
+    xvalue_random_iter operator--(int);
+
+    bool operator==(xvalue_random_iter const&) const;
+    std::strong_ordering operator<=>(xvalue_random_iter const&) const;
+
+    value_type&& operator[](D) const;
+    xvalue_random_iter& operator-=(D);
+    xvalue_random_iter operator-(D) const;
+    D operator-(xvalue_random_iter const&) const;
+    xvalue_random_iter& operator+=(D);
+    xvalue_random_iter operator+(D) const;
+    friend xvalue_random_iter operator+(D, xvalue_random_iter const&);
+};
+
 template <int I>
 struct proxy_iterator {
     using difference_type = int;
@@ -592,7 +642,7 @@ inline constexpr std::size_t contig_iterator_archetype_max = 34;
 #pragma warning(pop)
 
 struct iter_concept_example {
-    // bidirectional_iterator and Cpp17InputIterator, but not Cpp17ForwardIterator (N4820 [iterator.concepts.general]/2)
+    // bidirectional_iterator and Cpp17InputIterator, but not Cpp17ForwardIterator (N4928 [iterator.concepts.general]/2)
 
     using value_type      = int;
     using difference_type = int;
@@ -866,43 +916,45 @@ namespace iterator_traits_test {
         return true;
     }
 
-    // N4820 [iterator.traits]/3.2: "Otherwise, if I satisfies the exposition-only concept cpp17-input-iterator..."
+    // N4928 [iterator.traits]/3.2: "Otherwise, if I satisfies the exposition-only concept cpp17-input-iterator..."
 
-    // N4820 [iterator.traits]:
+    // N4928 [iterator.traits]:
     // * 3.2.1: "... Otherwise, pointer names void."
     // * 3.2.2: "... Otherwise, reference names iter_reference_t<I>."
     // * 3.2.3.4 "... Otherwise, iterator_category names... input_iterator_tag."
     STATIC_ASSERT(check<simple_input_iter, no_such_type, input_iterator_tag, double, long, void, double>());
 
-    // N4820 [iterator.traits]:
+    // N4928 [iterator.traits]:
     // * 3.2.1: "... Otherwise, pointer names void."
     // * 3.2.2: "... Otherwise, reference names iter_reference_t<I>."
     // * 3.2.3.3 "... Otherwise, iterator_category names... forward_iterator_tag if I satisfies cpp17-forward-iterator."
     STATIC_ASSERT(
         check<simple_forward_iter<>, no_such_type, forward_iterator_tag, double, long, void, double const&>());
-    // N4820 [iterator.traits]/3.2.1: "... Otherwise, if decltype(declval<I&>().operator->()) is well-formed, then
+    STATIC_ASSERT(check<xvalue_forward_iter, no_such_type, forward_iterator_tag, double, long, void, double&&>());
+    // N4928 [iterator.traits]/3.2.1: "... Otherwise, if decltype(declval<I&>().operator->()) is well-formed, then
     // pointer names that type."
     STATIC_ASSERT(check<simple_forward_iter<arrow_base<double const*>>, no_such_type, forward_iterator_tag, double,
         long, double const*, double const&>());
-    // N4820 [iterator.traits]/3.2.3: "If the qualified-id I::iterator_category is valid and denotes a type,
+    // N4928 [iterator.traits]/3.2.3: "If the qualified-id I::iterator_category is valid and denotes a type,
     // iterator_category names that type."
     STATIC_ASSERT(check<simple_forward_iter<with_iter_cat<output_iterator_tag>>, no_such_type, output_iterator_tag,
         double, long, void, double const&>());
     STATIC_ASSERT(check<simple_forward_iter<with_iter_cat<input_iterator_tag>>, no_such_type, input_iterator_tag,
         double, long, void, double const&>());
 
-    // N4820 [iterator.traits]:
+    // N4928 [iterator.traits]:
     // * 3.2.1: "... Otherwise, pointer names void."
     // * 3.2.2: "If the qualified-id I::reference is valid and denotes a type, reference names that type."
     // * 3.2.3.2 "... Otherwise, iterator_category names... bidirectional_iterator_tag if I satisfies
     // cpp17-bidirectional-iterator."
     STATIC_ASSERT(
         check<simple_bidi_iter<>, no_such_type, bidirectional_iterator_tag, double, long, void, double const&>());
-    // N4820 [iterator.traits]/3.2.1: "... Otherwise, if decltype(declval<I&>().operator->()) is well-formed, then
+    STATIC_ASSERT(check<xvalue_bidi_iter, no_such_type, bidirectional_iterator_tag, double, long, void, double&&>());
+    // N4928 [iterator.traits]/3.2.1: "... Otherwise, if decltype(declval<I&>().operator->()) is well-formed, then
     // pointer names that type."
     STATIC_ASSERT(check<simple_bidi_iter<arrow_base<double const*>>, no_such_type, bidirectional_iterator_tag, double,
         long, double const*, double const&>());
-    // N4820 [iterator.traits]/3.2.3: "If the qualified-id I::iterator_category is valid and denotes a type,
+    // N4928 [iterator.traits]/3.2.3: "If the qualified-id I::iterator_category is valid and denotes a type,
     // iterator_category names that type."
     STATIC_ASSERT(check<simple_bidi_iter<with_iter_cat<output_iterator_tag>>, no_such_type, output_iterator_tag, double,
         long, void, double const&>());
@@ -911,22 +963,23 @@ namespace iterator_traits_test {
     STATIC_ASSERT(check<simple_bidi_iter<with_iter_cat<forward_iterator_tag>>, no_such_type, forward_iterator_tag,
         double, long, void, double const&>());
 
-    // N4820 [iterator.traits]:
+    // N4928 [iterator.traits]:
     // * 3.2.1: "... Otherwise, pointer names void."
     // * 3.2.2: "... Otherwise, reference names iter_reference_t<I>."
     // * 3.2.3.1 "... Otherwise, iterator_category names... random_access_iterator_tag if I satisfies
     // cpp17-random-access-iterator."
     STATIC_ASSERT(
         check<simple_random_iter<>, no_such_type, random_access_iterator_tag, double, long, void, double const&>());
+    STATIC_ASSERT(check<xvalue_random_iter, no_such_type, random_access_iterator_tag, double, long, void, double&&>());
     STATIC_ASSERT(
         check<simple_contiguous_iter<>, no_such_type, random_access_iterator_tag, double, long, void, double const&>());
-    // N4820 [iterator.traits]/3.2.1: "... Otherwise, if decltype(declval<I&>().operator->()) is well-formed, then
+    // N4928 [iterator.traits]/3.2.1: "... Otherwise, if decltype(declval<I&>().operator->()) is well-formed, then
     // pointer names that type."
     STATIC_ASSERT(check<simple_random_iter<arrow_base<double const*>>, no_such_type, random_access_iterator_tag, double,
         long, double const*, double const&>());
     STATIC_ASSERT(check<simple_contiguous_iter<arrow_base<double const*>>, no_such_type, random_access_iterator_tag,
         double, long, double const*, double const&>());
-    // N4820 [iterator.traits]/3.2.3: "If the qualified-id I::iterator_category is valid and denotes a type,
+    // N4928 [iterator.traits]/3.2.3: "If the qualified-id I::iterator_category is valid and denotes a type,
     // iterator_category names that type."
     STATIC_ASSERT(check<simple_random_iter<with_iter_cat<output_iterator_tag>>, no_such_type, output_iterator_tag,
         double, long, void, double const&>());
@@ -945,7 +998,7 @@ namespace iterator_traits_test {
     STATIC_ASSERT(check<simple_contiguous_iter<with_iter_cat<contiguous_iterator_tag>>, no_such_type,
         contiguous_iterator_tag, double, long, void, double const&>());
 
-    // N4820 [iterator.traits]/3.3: "Otherwise, if I satisfies the exposition-only concept cpp17-iterator..."
+    // N4928 [iterator.traits]/3.3: "Otherwise, if I satisfies the exposition-only concept cpp17-iterator..."
     template <class Base = empty_type>
     struct simple_output_iter : Base {
         simple_output_iter const& operator*() const;
@@ -959,13 +1012,13 @@ namespace iterator_traits_test {
     // "... otherwise, it names void."
     STATIC_ASSERT(check<simple_output_iter<>, no_such_type, output_iterator_tag, void, void, void, void>());
 
-    // N4820 [iterator.traits]/3.4: "Otherwise, iterator_traits has no members by any of the above names."
+    // N4928 [iterator.traits]/3.4: "Otherwise, iterator_traits<I> has no members by any of the above names."
     STATIC_ASSERT(has_empty_traits<int>);
     STATIC_ASSERT(has_empty_traits<void>);
     STATIC_ASSERT(has_empty_traits<int(int)>);
     STATIC_ASSERT(has_empty_traits<int(int) const>);
 
-    // N4820 [iterator.traits]/5: "iterator_traits is specialized for pointers..."
+    // N4928 [iterator.traits]/5: "iterator_traits is specialized for pointers..."
     STATIC_ASSERT(check<int*, contiguous_iterator_tag, random_access_iterator_tag, int, std::ptrdiff_t, int*, int&>());
     STATIC_ASSERT(check<int const*, contiguous_iterator_tag, random_access_iterator_tag, int, std::ptrdiff_t,
         int const*, int const&>());
@@ -986,7 +1039,8 @@ namespace iterator_cust_move_test {
     template <class T>
     concept can_iter_rvalue_ref = requires { typename iter_rvalue_reference_t<T>; };
 
-    // N4820 [iterator.cust.move]/1.1 "iter_move(E), if that expression is valid, with overload resolution..."
+    // N4928 [iterator.cust.move]/1.1 "iter_move(E), if [...] iter_move(E) is a well-formed expression when [...]
+    // performing argument-dependent lookup only."
     struct friend_hook {
         friend constexpr double iter_move(friend_hook) noexcept {
             return 3.14;
@@ -1015,7 +1069,7 @@ namespace iterator_cust_move_test {
     STATIC_ASSERT(static_cast<int>(ranges::iter_move(E1::x)) == 0);
     STATIC_ASSERT(noexcept(ranges::iter_move(E1::x)));
 
-    // N4820 [iterator.cust.move]/1.2.1 "if *E is an lvalue, std::move(*E)"
+    // N4928 [iterator.cust.move]/1.2.1 "if *E is an lvalue, std::move(*E)"
     static constexpr int some_ints[] = {0, 1, 2, 3};
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int*>, int&&>);
     STATIC_ASSERT(ranges::iter_move(&some_ints[1]) == 1);
@@ -1062,7 +1116,7 @@ namespace iterator_cust_move_test {
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<with_bogus_typedefs>, int const&&>); // oblivious to nested types
     STATIC_ASSERT(ranges::iter_move(with_bogus_typedefs{}) == 1);
 
-    // N4820 [iterator.cust.move]/1.2.2 "otherwise, *E."
+    // N4928 [iterator.cust.move]/1.2.2 "otherwise, *E."
     struct ref_is_prvalue {
         int operator*() const {
             return 42;
@@ -1076,7 +1130,7 @@ namespace iterator_cust_move_test {
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<ref_is_xvalue>, int&&>);
     STATIC_ASSERT(!noexcept(ranges::iter_move(ref_is_xvalue{})));
 
-    // N4820 [iterator.cust.move]/1.3 "Otherwise, ranges::iter_move(E) is ill-formed."
+    // N4928 [iterator.cust.move]/1.3 "Otherwise, ranges::iter_move(E) is ill-formed."
     STATIC_ASSERT(!can_iter_move<int>);
     STATIC_ASSERT(!can_iter_move<void>);
     STATIC_ASSERT(!can_iter_move<int(int) const>);
@@ -1093,7 +1147,8 @@ namespace iterator_cust_swap_test {
     template <class T, class U>
     concept can_iter_swap = requires(T&& t, U&& u) { ranges::iter_swap(std::forward<T>(t), std::forward<U>(u)); };
 
-    // N4820 [iterator.cust.swap]/4.1: "(void)iter_swap(E1, E2), if that expression is valid, with..."
+    // N4928 [iterator.cust.swap]/4.1: "(void)iter_swap(E1, E2), if [...] iter_swap(E1, E2) is a
+    // well-formed expression with overload resolution performed in a context [...]"
     namespace adl_barrier {
         template <class T, class U>
         void iter_swap(T, U) = delete;
@@ -1127,8 +1182,8 @@ namespace iterator_cust_swap_test {
     STATIC_ASSERT(bullet1<E1>);
     STATIC_ASSERT((ranges::iter_swap(E1::x, E1::x), true));
 
-    // N4849 [iterator.cust.swap]/4.2: "Otherwise if the types of E1 and E2 each model indirectly_readable, and if the
-    // reference types of E1 and E2 model swappable_with, then ranges::swap(*E1, *E2)."
+    // N4928 [iterator.cust.swap]/4.2: "Otherwise, if the types of E1 and E2 each model indirectly_readable,
+    // and if the reference types of E1 and E2 model swappable_with, then ranges::swap(*E1, *E2)."
     // clang-format off
     template <class T, class U = T>
     concept bullet2 = !bullet1<T, U> && indirectly_readable<remove_reference_t<T>>
@@ -1178,7 +1233,7 @@ namespace iterator_cust_swap_test {
     STATIC_ASSERT((ranges::iter_swap(swap_proxy_readable<0>{}, swap_proxy_readable<1>{}), true));
     STATIC_ASSERT(noexcept(ranges::iter_swap(swap_proxy_readable<0>{}, swap_proxy_readable<1>{})));
 
-    // N4820 [iterator.cust.swap]/4.3: "Otherwise, if the types T1 and T2 of E1 and E2 model
+    // N4928 [iterator.cust.swap]/4.3: "Otherwise, if the types T1 and T2 of E1 and E2 model
     // indirectly_movable_storable<T1, T2> and indirectly_movable_storable<T2, T1>..."
     // clang-format off
     template <class T, class U = T>
@@ -1204,7 +1259,7 @@ namespace iterator_cust_swap_test {
     STATIC_ASSERT(same_as<decltype(ranges::iter_swap(unswap_proxy_readable<0>{}, unswap_proxy_readable<1>{})), void>);
     STATIC_ASSERT(noexcept(ranges::iter_swap(unswap_proxy_readable<0>{}, unswap_proxy_readable<1>{})));
 
-    // N4820 [iterator.cust.swap]/4.4: "Otherwise, ranges::iter_swap(E1, E2) is ill-formed."
+    // N4928 [iterator.cust.swap]/4.4: "Otherwise, ranges::iter_swap(E1, E2) is ill-formed."
     template <class T, class U>
     concept bullet4 = (!can_iter_swap<T, U>);
 
@@ -3092,6 +3147,10 @@ namespace reverse_iterator_test {
     STATIC_ASSERT(same_as<reverse_iterator<simple_random_iter<>>::iterator_category, random_access_iterator_tag>);
     STATIC_ASSERT(same_as<reverse_iterator<simple_bidi_iter<>>::iterator_concept, bidirectional_iterator_tag>);
     STATIC_ASSERT(same_as<reverse_iterator<simple_bidi_iter<>>::iterator_category, bidirectional_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<xvalue_random_iter>::iterator_concept, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<xvalue_random_iter>::iterator_category, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<xvalue_bidi_iter>::iterator_concept, bidirectional_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<xvalue_bidi_iter>::iterator_category, bidirectional_iterator_tag>);
 
     // Validate operator-> for a pointer, and for non-pointers with and without operator->()
     // clang-format off
@@ -3285,6 +3344,12 @@ namespace move_iterator_test {
     STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_concept, input_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_category, input_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<input_iter<true>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<xvalue_random_iter>::iterator_concept, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<xvalue_random_iter>::iterator_category, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<xvalue_bidi_iter>::iterator_concept, bidirectional_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<xvalue_bidi_iter>::iterator_category, bidirectional_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<xvalue_forward_iter>::iterator_concept, forward_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<xvalue_forward_iter>::iterator_category, forward_iterator_tag>);
     STATIC_ASSERT(!has_member_iter_category<move_iterator<input_iter<true>>>);
     STATIC_ASSERT(same_as<move_iterator<input_iter<false>>::iterator_concept, input_iterator_tag>);
     STATIC_ASSERT(!has_member_iter_category<move_iterator<input_iter<false>>>);
@@ -3411,6 +3476,26 @@ namespace move_iterator_test {
         return true;
     }
     STATIC_ASSERT(test());
+
+    // Validate disable_sized_sentinel_for partial specialization for move_iterator (LWG-3736)
+    struct weird_difference_base {
+        template <class T>
+        long operator-(T const&) const {
+            return 42;
+        }
+
+        bool operator==(weird_difference_base const&) const = default;
+    };
+    using simple_no_difference = simple_bidi_iter<weird_difference_base>;
+} // namespace move_iterator_test
+
+template <>
+inline constexpr bool std::disable_sized_sentinel_for<move_iterator_test::simple_no_difference,
+    move_iterator_test::simple_no_difference> = true;
+
+namespace move_iterator_test {
+    STATIC_ASSERT(!std::sized_sentinel_for<simple_no_difference, simple_no_difference>);
+    STATIC_ASSERT(!std::sized_sentinel_for<move_iterator<simple_no_difference>, move_iterator<simple_no_difference>>);
 } // namespace move_iterator_test
 
 namespace counted_iterator_test {
@@ -3428,6 +3513,12 @@ namespace counted_iterator_test {
     STATIC_ASSERT(
         same_as<iterator_traits<counted_iterator<simple_forward_iter<>>>::iterator_category, forward_iterator_tag>);
     STATIC_ASSERT(same_as<iterator_traits<counted_iterator<simple_input_iter>>::iterator_category, input_iterator_tag>);
+    STATIC_ASSERT(
+        same_as<iterator_traits<counted_iterator<xvalue_random_iter>>::iterator_category, random_access_iterator_tag>);
+    STATIC_ASSERT(
+        same_as<iterator_traits<counted_iterator<xvalue_bidi_iter>>::iterator_category, bidirectional_iterator_tag>);
+    STATIC_ASSERT(
+        same_as<iterator_traits<counted_iterator<xvalue_forward_iter>>::iterator_category, forward_iterator_tag>);
 
     // Validate postincrement
     STATIC_ASSERT(same_as<decltype(std::declval<counted_iterator<simple_input_iter>&>()++), simple_input_iter>);

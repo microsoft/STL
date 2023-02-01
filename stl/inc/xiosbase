@@ -44,7 +44,7 @@ public:
     static constexpr _Fmtflags scientific = static_cast<_Fmtflags>(0x1000);
     static constexpr _Fmtflags fixed      = static_cast<_Fmtflags>(0x2000);
 
-    static constexpr _Fmtflags hexfloat = static_cast<_Fmtflags>(0x3000); // added with TR1 (not in C++11)
+    static constexpr _Fmtflags hexfloat = static_cast<_Fmtflags>(0x3000); // TRANSITION, ABI, GH-3296
 
     static constexpr _Fmtflags boolalpha   = static_cast<_Fmtflags>(0x4000);
     static constexpr _Fmtflags _Stdio      = static_cast<_Fmtflags>(0x8000);
@@ -124,7 +124,7 @@ template <class _Dummy>
 const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::fixed;
 
 template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::hexfloat; // added with TR1 (not in C++11)
+const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::hexfloat; // TRANSITION, ABI, GH-3296
 
 template <class _Dummy>
 const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::boolalpha;
@@ -198,10 +198,10 @@ public:
 
     class failure : public system_error { // base of all iostreams exceptions
     public:
-        explicit failure(const string& _Message, const error_code& _Errcode = make_error_code(io_errc::stream))
+        explicit failure(const string& _Message, const error_code& _Errcode = _STD make_error_code(io_errc::stream))
             : system_error(_Errcode, _Message) {} // construct with message
 
-        explicit failure(const char* _Message, const error_code& _Errcode = make_error_code(io_errc::stream))
+        explicit failure(const char* _Message, const error_code& _Errcode = _STD make_error_code(io_errc::stream))
             : system_error(_Errcode, _Message) {} // construct with message
 
 #if !_HAS_EXCEPTIONS
@@ -231,11 +231,11 @@ public:
         static int& __cdecl _Init_cnt_func();
     };
 
-    explicit __CLR_OR_THIS_CALL operator bool() const {
+    explicit __CLR_OR_THIS_CALL operator bool() const noexcept /* strengthened */ {
         return !fail();
     }
 
-    _NODISCARD bool __CLR_OR_THIS_CALL operator!() const {
+    _NODISCARD bool __CLR_OR_THIS_CALL operator!() const noexcept /* strengthened */ {
         return fail();
     }
 
@@ -271,7 +271,7 @@ public:
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 
-    _NODISCARD iostate __CLR_OR_THIS_CALL rdstate() const {
+    _NODISCARD iostate __CLR_OR_THIS_CALL rdstate() const noexcept /* strengthened */ {
         return _Mystate;
     }
 
@@ -290,23 +290,23 @@ public:
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 
-    _NODISCARD bool __CLR_OR_THIS_CALL good() const {
+    _NODISCARD bool __CLR_OR_THIS_CALL good() const noexcept /* strengthened */ {
         return rdstate() == ios_base::goodbit;
     }
 
-    _NODISCARD bool __CLR_OR_THIS_CALL eof() const {
+    _NODISCARD bool __CLR_OR_THIS_CALL eof() const noexcept /* strengthened */ {
         return rdstate() & ios_base::eofbit;
     }
 
-    _NODISCARD bool __CLR_OR_THIS_CALL fail() const {
+    _NODISCARD bool __CLR_OR_THIS_CALL fail() const noexcept /* strengthened */ {
         return rdstate() & (ios_base::badbit | ios_base::failbit);
     }
 
-    _NODISCARD bool __CLR_OR_THIS_CALL bad() const {
+    _NODISCARD bool __CLR_OR_THIS_CALL bad() const noexcept /* strengthened */ {
         return rdstate() & ios_base::badbit;
     }
 
-    _NODISCARD iostate __CLR_OR_THIS_CALL exceptions() const {
+    _NODISCARD iostate __CLR_OR_THIS_CALL exceptions() const noexcept /* strengthened */ {
         return _Except;
     }
 
@@ -321,54 +321,59 @@ public:
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 
-    _NODISCARD fmtflags __CLR_OR_THIS_CALL flags() const {
+    _NODISCARD fmtflags __CLR_OR_THIS_CALL flags() const noexcept /* strengthened */ {
         return _Fmtfl;
     }
 
-    fmtflags __CLR_OR_THIS_CALL flags(fmtflags _Newfmtflags) { // set format flags to argument
+    fmtflags __CLR_OR_THIS_CALL flags(fmtflags _Newfmtflags) noexcept /* strengthened */ {
+        // set format flags to argument
         const fmtflags _Oldfmtflags = _Fmtfl;
         _Fmtfl                      = _Newfmtflags & _Fmtmask;
         return _Oldfmtflags;
     }
 
-    fmtflags __CLR_OR_THIS_CALL setf(fmtflags _Newfmtflags) { // merge in format flags argument
+    fmtflags __CLR_OR_THIS_CALL setf(fmtflags _Newfmtflags) noexcept /* strengthened */ {
+        // merge in format flags argument
         const ios_base::fmtflags _Oldfmtflags = _Fmtfl;
         _Fmtfl |= _Newfmtflags & _Fmtmask;
         return _Oldfmtflags;
     }
 
-    fmtflags __CLR_OR_THIS_CALL setf(
-        fmtflags _Newfmtflags, fmtflags _Mask) { // merge in format flags argument under mask argument
+    fmtflags __CLR_OR_THIS_CALL setf(fmtflags _Newfmtflags, fmtflags _Mask) noexcept /* strengthened */ {
+        // merge in format flags argument under mask argument
         const ios_base::fmtflags _Oldfmtflags = _Fmtfl;
         _Fmtfl                                = (_Oldfmtflags & ~_Mask) | (_Newfmtflags & _Mask & _Fmtmask);
         return _Oldfmtflags;
     }
 
-    void __CLR_OR_THIS_CALL unsetf(fmtflags _Mask) { // clear format flags under mask argument
+    void __CLR_OR_THIS_CALL unsetf(fmtflags _Mask) noexcept /* strengthened */ {
+        // clear format flags under mask argument
         _Fmtfl &= ~_Mask;
     }
 
-    _NODISCARD streamsize __CLR_OR_THIS_CALL precision() const {
+    _NODISCARD streamsize __CLR_OR_THIS_CALL precision() const noexcept /* strengthened */ {
         return _Prec;
     }
 
-    streamsize __CLR_OR_THIS_CALL precision(streamsize _Newprecision) { // set precision to argument
+    streamsize __CLR_OR_THIS_CALL precision(streamsize _Newprecision) noexcept /* strengthened */ {
+        // set precision to argument
         const streamsize _Oldprecision = _Prec;
         _Prec                          = _Newprecision;
         return _Oldprecision;
     }
 
-    _NODISCARD streamsize __CLR_OR_THIS_CALL width() const {
+    _NODISCARD streamsize __CLR_OR_THIS_CALL width() const noexcept /* strengthened */ {
         return _Wide;
     }
 
-    streamsize __CLR_OR_THIS_CALL width(streamsize _Newwidth) { // set width to argument
+    streamsize __CLR_OR_THIS_CALL width(streamsize _Newwidth) noexcept /* strengthened */ {
+        // set width to argument
         const streamsize _Oldwidth = _Wide;
         _Wide                      = _Newwidth;
         return _Oldwidth;
     }
 
-    _NODISCARD locale __CLR_OR_THIS_CALL getloc() const { // get locale
+    _NODISCARD locale __CLR_OR_THIS_CALL getloc() const noexcept /* strengthened */ { // get locale
         return *_Ploc;
     }
 
@@ -393,8 +398,8 @@ public:
         return _Findarr(_Idx)._Vp;
     }
 
-    void __CLR_OR_THIS_CALL register_callback(event_callback _Pfn,
-        int _Idx) { // register event handler
+    void __CLR_OR_THIS_CALL register_callback(event_callback _Pfn, int _Idx) {
+        // register event handler
         _Calls = new _Fnarray(_Idx, _Pfn, _Calls);
     }
 
@@ -424,8 +429,8 @@ public:
         return *this;
     }
 
-    static bool __CLRCALL_OR_CDECL sync_with_stdio(
-        bool _Newsync = true) { // set C/C++ synchronization flag from argument
+    static bool __CLRCALL_OR_CDECL sync_with_stdio(bool _Newsync = true) {
+        // set C/C++ synchronization flag from argument
         _BEGIN_LOCK(_LOCK_STREAM) // lock thread to ensure atomicity
         const bool _Oldsync = _Sync;
         _Sync               = _Newsync;
@@ -433,7 +438,7 @@ public:
         _END_LOCK()
     }
 
-    void __CLR_OR_THIS_CALL swap(ios_base& _Right) {
+    void __CLR_OR_THIS_CALL swap(ios_base& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _STD swap(_Mystate, _Right._Mystate);
             _STD swap(_Except, _Right._Except);

@@ -301,21 +301,6 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         const auto const_tuple_element_arr = as_const(test_container).get_element_tuple_arr();
 
         // Validate zip_view::size()
-#if defined(_MSVC_INTERNAL_TESTING) && !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1655459
-        STATIC_ASSERT(CanMemberSize<ZipType> == (ranges::sized_range<AllView<RangeTypes>> && ...));
-        if constexpr (CanMemberSize<ZipType>) {
-            auto zip_size = zipped_range.size();
-
-            assert(zip_size == ranges::size(tuple_element_arr));
-        }
-
-        STATIC_ASSERT(CanMemberSize<const ZipType> == (ranges::sized_range<const AllView<RangeTypes>> && ...));
-        if constexpr (CanMemberSize<const ZipType>) {
-            auto zip_size = as_const(zipped_range).size();
-
-            assert(zip_size == ranges::size(tuple_element_arr));
-        }
-#else // ^^^ workaround / no workaround vvv
         STATIC_ASSERT(CanMemberSize<ZipType> == (ranges::sized_range<AllView<RangeTypes>> && ...));
         if constexpr (CanMemberSize<ZipType>) {
             using expected_size_type =
@@ -338,13 +323,12 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
                 noexcept(as_const(zipped_range).size())
                 == (noexcept(static_cast<expected_size_type>(declval<const AllView<RangeTypes>>().size())) && ...));
         }
-#endif // ^^^ no workaround ^^^
 
         const bool is_empty = ranges::empty(tuple_element_arr);
 
         // Validate view_interface::empty() and view_interface::operator bool()
         //
-        // From here on out, we'll be re-using concepts which we already verified to reduce
+        // From here on out, we'll be reusing concepts which we already verified to reduce
         // redundancy.
         STATIC_ASSERT(CanMemberEmpty<ZipType> == (ranges::sized_range<ZipType> || ranges::forward_range<ZipType>) );
         if constexpr (CanMemberEmpty<ZipType>) {
@@ -726,16 +710,16 @@ public:
 
         // Test three ranges with views::zip with...
 
-        // all of their traits being the same,...
+        // all of their traits being the same, ...
         test_three_ranges<tuple_element_t<0, standard_range_tuple_type>>(three_element_container_instance);
 
-        // one range having a different category,...
+        // one range having a different category, ...
         test_three_ranges<differing_category_range_type>(three_element_container_instance);
 
-        // one range having a different path for ranges::size(),...
+        // one range having a different path for ranges::size(), ...
         test_three_ranges<differing_size_member_range_type>(three_element_container_instance);
 
-        // one range having a different commonality,...
+        // one range having a different commonality, ...
         test_three_ranges<differing_is_common_range_type>(three_element_container_instance);
 
         // and one range having iterators and sentinels which model sized_sentinel_for

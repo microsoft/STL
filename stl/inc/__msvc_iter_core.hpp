@@ -310,7 +310,7 @@ struct _Iter_traits_category2<false> {
 
 // clang-format off
 template <class _It>
-concept _Cpp17_forward_delta = constructible_from<_It> && is_lvalue_reference_v<iter_reference_t<_It>>
+concept _Cpp17_forward_delta = constructible_from<_It> && is_reference_v<iter_reference_t<_It>>
     && same_as<remove_cvref_t<iter_reference_t<_It>>, typename indirectly_readable_traits<_It>::value_type>
     && requires(_It __i) {
         { __i++ } -> convertible_to<const _It&>;
@@ -428,6 +428,9 @@ namespace ranges {
 } // namespace ranges
 
 _EXPORT_STD using ranges::get;
+
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+inline constexpr bool _Is_subrange_v<ranges::subrange<_It, _Se, _Ki>> = true;
 
 template <class _It, class _Se, ranges::subrange_kind _Ki>
 struct tuple_size<ranges::subrange<_It, _Se, _Ki>> : integral_constant<size_t, 2> {};

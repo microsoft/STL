@@ -308,6 +308,7 @@
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
 // P1206R7 Conversions From Ranges To Containers
+// P1223R5 ranges::find_last, ranges::find_last_if, ranges::find_last_if_not
 // P1272R4 byteswap()
 // P1328R1 constexpr type_info::operator==()
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -321,18 +322,18 @@
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
 // P2136R3 invoke_r()
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
-//     (changes to views::zip only)
+//     (changes to views::zip and pair only)
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
 // P2278R4 cbegin Should Always Return A Constant Iterator
-//     (missing views::as_const)
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
-//     (missing views::zip_transform, views::adjacent, and views::adjacent_transform)
+//     (missing views::adjacent and views::adjacent_transform)
 // P2322R6 ranges::fold_left, ranges::fold_right, Etc.
 // P2387R3 Pipe Support For User-Defined Range Adaptors
+// P2404R3 Move-Only Types For Comparison Concepts
 // P2417R2 More constexpr bitset
 // P2438R2 string::substr() &&
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
@@ -343,6 +344,7 @@
 // P2446R2 views::as_rvalue
 // P2465R3 Standard Library Modules std And std.compat
 // P2467R1 ios_base::noreplace: Exclusive Mode For fstreams
+// P2474R2 views::repeat
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2549R1 unexpected<E>::error()
@@ -363,6 +365,8 @@
 // * any_of
 // * count
 // * count_if
+// * destroy
+// * destroy_n
 // * equal
 // * exclusive_scan
 // * find
@@ -396,6 +400,10 @@
 // * transform_exclusive_scan
 // * transform_inclusive_scan
 // * transform_reduce
+// * uninitialized_default_construct
+// * uninitialized_default_construct_n
+// * uninitialized_value_construct
+// * uninitialized_value_construct_n
 //
 // The following are not presently parallelized:
 //
@@ -413,6 +421,14 @@
 // * shift_left
 // * shift_right
 // * swap_ranges
+//
+// Possibly same as above, but not yet tested.
+// * uninitialized_copy
+// * uninitialized_copy_n
+// * uninitialized_fill
+// * uninitialized_fill_n
+// * uninitialized_move
+// * uninitialized_move_n
 //
 // Confusion over user parallelism requirements exists; likely in the above category anyway.
 // * generate
@@ -796,7 +812,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202212L
+#define _MSVC_STL_UPDATE  202301L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -810,8 +826,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or new
 _EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 15.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1934 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.34 or newer.");
+#if _MSC_VER < 1935 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.35 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1551,7 +1567,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if _HAS_CXX20
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, GH-395
-#define __cpp_lib_concepts 202002L
+#if _HAS_CXX23 // TRANSITION, GH-395 - move down to "macros with language mode sensitivity" section
+#define __cpp_lib_concepts 202207L // P2404R3 Move-Only Types For Comparison Concepts
+#else // ^^^ C++23 / C++20 vvv
+#define __cpp_lib_concepts 202002L // P1964R2 Replacing boolean With boolean-testable
+#endif // C++20
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
 #ifdef __cpp_lib_concepts
@@ -1675,13 +1695,16 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
+#define __cpp_lib_ranges_as_const         202207L
 #define __cpp_lib_ranges_as_rvalue        202207L
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
 #define __cpp_lib_ranges_contains         202207L
+#define __cpp_lib_ranges_find_last        202207L // per LWG-3807
 #define __cpp_lib_ranges_fold             202207L
 #define __cpp_lib_ranges_iota             202202L
 #define __cpp_lib_ranges_join_with        202202L
+#define __cpp_lib_ranges_repeat           202207L
 #define __cpp_lib_ranges_slide            202202L
 #define __cpp_lib_ranges_starts_ends_with 202106L
 #define __cpp_lib_ranges_stride           202207L
@@ -1833,9 +1856,11 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // __cpp_noexcept_function_type
 
 #ifdef __clang__
-#define _STL_UNREACHABLE __builtin_unreachable()
+#define _STL_INTRIN_HEADER <intrin.h>
+#define _STL_UNREACHABLE   __builtin_unreachable()
 #else // ^^^ clang / other vvv
-#define _STL_UNREACHABLE __assume(false)
+#define _STL_INTRIN_HEADER <intrin0.h>
+#define _STL_UNREACHABLE   __assume(false)
 #endif // __clang__
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
