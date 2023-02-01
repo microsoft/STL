@@ -241,13 +241,13 @@ namespace stdext {
             pos_type seekoff(off_type, _STD ios_base::seekdir,
                 _STD ios_base::openmode = static_cast<_STD ios_base::openmode>(
                     _STD ios_base::in | _STD ios_base::out)) override { // change position by _Off
-                return pos_type(-1); // always fail
+                return pos_type{-1}; // always fail
             }
 
             pos_type seekpos(pos_type,
                 _STD ios_base::openmode = static_cast<_STD ios_base::openmode>(
                     _STD ios_base::in | _STD ios_base::out)) override { // change position to _Pos
-                return pos_type(-1); // always fail
+                return pos_type{-1}; // always fail
             }
 
         private:
