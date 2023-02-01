@@ -10102,9 +10102,8 @@ namespace ranges {
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 const auto _Found = _RANGES _Minmax_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
-                // Some iterators could move their value after dereferencing so we should dereference them only once.
-                // The `if constexpr` is a pure optimization;
-                // we don't want an additional branch if iterators dereference return lvalue reference.
+                // We need to detect move_iterators (and similar types) to avoid dereferencing them more than once.
+                // The `if constexpr` is a pure optimization; we don't want an additional branch for normal iterators.
                 if constexpr (!is_lvalue_reference_v<range_reference_t<_Rng>>) {
                     if (_Found.min == _Found.max) {
                         minmax_result<_Vty> _Result = {static_cast<_Vty>(*_Found.min), _Result.min};
