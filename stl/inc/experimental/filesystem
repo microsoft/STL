@@ -1550,10 +1550,10 @@ private:
     void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype) {
         if constexpr (_Prefix_directory::value) {
             // set entry to _Mydirpath/_Filename
-            _Myentry.assign(_Mydirpath / path{_Filename}, file_status(_Ftype));
+            _Myentry.assign(_Mydirpath / path{_Filename}, file_status{_Ftype});
         } else {
             // set entry to _Filename
-            _Myentry.assign(path{_Filename}, file_status(_Ftype));
+            _Myentry.assign(path{_Filename}, file_status{_Ftype});
         }
     }
 
@@ -2613,7 +2613,7 @@ _NODISCARD inline file_status status(const path& _Path, error_code& _Code) noexc
     _Code.clear();
     perms _Mode;
     const file_type _Ftype = _Stat(_Path.c_str(), &_Mode);
-    return file_status(_Ftype, _Mode);
+    return file_status{_Ftype, _Mode};
 }
 
 _NODISCARD inline bool status_known(file_status _Stat) noexcept {
@@ -2630,7 +2630,7 @@ _NODISCARD inline file_status symlink_status(const path& _Path, error_code& _Cod
     const file_type _Ftype = _Lstat(_Path.c_str(), &_Mode);
 
     _Code.clear();
-    return file_status(_Ftype, _Mode);
+    return file_status{_Ftype, _Mode};
 }
 
 _NODISCARD inline path system_complete(const path& _Path) {
