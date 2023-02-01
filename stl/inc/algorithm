@@ -10107,14 +10107,13 @@ namespace ranges {
                 // we don't want an additional branch for normal pointers.
                 if constexpr (!is_pointer_v<iterator_t<_Rng>>) {
                     if (_Found.min == _Found.max) {
-                        auto _Temp = static_cast<_Vty>(*_Found.min);
-                        return {_Temp, _STD move(_Temp)};
+                        minmax_result<_Vty> _Result = {static_cast<_Vty>(*_Found.min), _Result.min};
+                        return _Result;
                     }
                 }
                 return {static_cast<_Vty>(*_Found.min), static_cast<_Vty>(*_Found.max)};
             } else {
-                auto _Temp                 = static_cast<_Vty>(*_UFirst);
-                minmax_result<_Vty> _Found = {_Temp, _STD move(_Temp)};
+                minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst), _Found.min};
                 if (_UFirst == _ULast) {
                     return _Found;
                 }
