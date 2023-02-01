@@ -214,7 +214,6 @@ struct _Cmp_collate { // functor to compare for locale-specific equality
 
 struct _Regex_traits_base { // base of all regular expression traits
     enum _Char_class_type {
-        _Ch_none   = 0,
         _Ch_alnum  = ctype_base::alnum,
         _Ch_alpha  = ctype_base::alpha,
         _Ch_cntrl  = ctype_base::cntrl,
@@ -2309,7 +2308,7 @@ _OutIt _Regex_replace1(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_
             _Flags |= regex_constants::match_prev_avail;
         }
     }
-    return _Flgs & regex_constants::format_no_copy ? _Result : _Copy_unchecked(_Pos, _Last, _Result);
+    return _Flgs & regex_constants::format_no_copy ? _Result : _STD _Copy_unchecked(_Pos, _Last, _Result);
 }
 
 _EXPORT_STD template <class _OutIt, class _BidIt, class _RxTraits, class _Elem, class _Traits, class _Alloc>

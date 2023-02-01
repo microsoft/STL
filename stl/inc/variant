@@ -169,15 +169,6 @@ struct _Meta_at_<_List<_Types...>, _Idx, enable_if_t<(_Idx < sizeof...(_Types))>
 
 inline constexpr auto _Meta_npos = ~size_t{0};
 
-template <class _List, class _Ty>
-struct _Meta_find_index_ {
-    using type = integral_constant<size_t, _Meta_npos>;
-};
-template <class _List, class _Ty>
-using _Meta_find_index =
-    // find the index of the first occurrence of _Ty in _List
-    typename _Meta_find_index_<_List, _Ty>::type;
-
 constexpr size_t _Meta_find_index_i_(const bool* const _Ptr, const size_t _Count, size_t _Idx = 0) {
     // return the index of the first true in the _Count bools at _Ptr, or _Meta_npos if all are false
     for (; _Idx < _Count; ++_Idx) {
@@ -188,12 +179,6 @@ constexpr size_t _Meta_find_index_i_(const bool* const _Ptr, const size_t _Count
 
     return _Meta_npos;
 }
-
-template <template <class...> class _List, class _First, class... _Rest, class _Ty>
-struct _Meta_find_index_<_List<_First, _Rest...>, _Ty> {
-    static constexpr bool _Bools[] = {is_same_v<_First, _Ty>, is_same_v<_Rest, _Ty>...};
-    using type                     = integral_constant<size_t, _STD _Meta_find_index_i_(_Bools, 1 + sizeof...(_Rest))>;
-};
 
 template <class _List, class _Ty>
 struct _Meta_find_unique_index_ {
@@ -217,8 +202,8 @@ constexpr size_t _Meta_find_unique_index_i_(const bool* const _Ptr, const size_t
 
 template <template <class...> class _List, class _First, class... _Rest, class _Ty>
 struct _Meta_find_unique_index_<_List<_First, _Rest...>, _Ty> {
-    using type = integral_constant<size_t,
-        _STD _Meta_find_unique_index_i_(_Meta_find_index_<_List<_First, _Rest...>, _Ty>::_Bools, 1 + sizeof...(_Rest))>;
+    static constexpr bool _Bools[] = {is_same_v<_First, _Ty>, is_same_v<_Rest, _Ty>...};
+    using type = integral_constant<size_t, _STD _Meta_find_unique_index_i_(_Bools, 1 + sizeof...(_Rest))>;
 };
 
 template <class>
@@ -374,7 +359,7 @@ struct variant_alternative<_Idx, variant<_Types...>> {
 
 #ifdef __clang__
     using type = __type_pack_element<_Idx, _Types...>;
-#else // ^^^ __clang__ ^^^ / vvv !__clang__ vvv
+#else // ^^^ __clang__ / !__clang__ vvv
     using type = _Meta_at_c<variant<_Types...>, _Idx>;
 #endif // __clang__
 };
@@ -1121,7 +1106,7 @@ public:
                             constexpr size_t _That_idx = decltype(_That_ref)::_Idx;
 #ifdef __EDG__ // TRANSITION, VSO-657455
                             constexpr size_t _My_idx   = decltype(_My_ref)::_Idx + 0 * _That_idx;
-#else // ^^^ workaround ^^^ / vvv no workaround vvv
+#else // ^^^ workaround / no workaround vvv
                             constexpr size_t _My_idx = decltype(_My_ref)::_Idx;
 #endif // TRANSITION, VSO-657455
                             if constexpr (_My_idx == _That_idx) { // Same alternatives...
@@ -1139,7 +1124,7 @@ public:
 #ifdef __EDG__ // TRANSITION, VSO-657455
                                 using _Workaround = enable_if_t<_That_idx != variant_npos, decltype(_My_ref._Val)>;
                                 auto _Tmp         = _STD move(static_cast<_Workaround>(_My_ref._Val));
-#else // ^^^ workaround ^^^ / vvv no workaround vvv
+#else // ^^^ workaround / no workaround vvv
                                 auto _Tmp = _STD move(_My_ref._Val);
 #endif // TRANSITION, VSO-657455
                                 this->template _Reset<_My_idx>();

@@ -69,10 +69,10 @@ inline float _Stofx_v2(const char* _Str, char** _Endptr, int _Pten, int* _Perr) 
 }
 
 template <class _Elem, size_t _Base_size>
-size_t _Find_elem(const _Elem (&_Base)[_Base_size],
-    const _Elem _Ch) { // lookup _Ch in array storing NUL-terminated string _Base
-                       // pre: _Base contains no nulls except for _Base[_Base_size - 1]
-    return static_cast<size_t>(_Find_unchecked(_Base, _Base + (_Base_size - 1), _Ch) - _Base);
+size_t _Find_elem(const _Elem (&_Base)[_Base_size], const _Elem _Ch) {
+    // lookup _Ch in array storing NUL-terminated string _Base
+    // pre: _Base contains no nulls except for _Base[_Base_size - 1]
+    return static_cast<size_t>(_STD _Find_unchecked(_Base, _Base + (_Base_size - 1), _Ch) - _Base);
 }
 
 inline wchar_t* _Maklocwcs(const wchar_t* _Ptr) { // copy NTWCS to allocated storage
@@ -626,7 +626,7 @@ protected:
             char* _Ep;
 #ifdef _WIN64
             _Val = reinterpret_cast<void*>(_CSTD _Stoullx(_Ac, &_Ep, _Base, &_Errno));
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else // ^^^ _WIN64 / !_WIN64 vvv
             _Val = reinterpret_cast<void*>(_CSTD _Stoulx(_Ac, &_Ep, _Base, &_Errno));
 #endif // _WIN64
             if (_Ep == _Ac || _Errno != 0) {

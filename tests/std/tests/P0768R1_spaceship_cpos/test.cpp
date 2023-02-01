@@ -326,6 +326,65 @@ namespace {
     static_assert(is_same_v<CpoResult<compare_partial_order_fallback, F<13>, const F<13>>, Partial>); // [cmp.alg]/6.3
 } // namespace
 
+// Test strengthened requirements in P2167R3: compare_*_order_fallback CPOs require return types to be boolean-testable.
+enum class ResultKind : bool {
+    Bad,
+    Good,
+};
+
+template <ResultKind K>
+struct ComparisonResult {
+    bool value;
+
+    constexpr operator bool() const noexcept {
+        return value;
+    }
+
+    constexpr auto operator!() const noexcept {
+        if constexpr (K == ResultKind::Good) {
+            return ComparisonResult{!value};
+        }
+    }
+};
+
+template <ResultKind EqKind, ResultKind LeKind>
+struct BoolTestType {
+    friend constexpr ComparisonResult<EqKind> operator==(BoolTestType, BoolTestType) noexcept {
+        return ComparisonResult<EqKind>{true};
+    }
+
+    friend constexpr ComparisonResult<LeKind> operator<(BoolTestType, BoolTestType) noexcept {
+        return ComparisonResult<LeKind>{false};
+    }
+};
+
+static_assert(is_same_v<CpoResult<compare_strong_order_fallback, BoolTestType<ResultKind::Bad, ResultKind::Bad>>,
+    IllFormed>); // [cmp.alg]/4.3
+static_assert(is_same_v<CpoResult<compare_strong_order_fallback, BoolTestType<ResultKind::Bad, ResultKind::Good>>,
+    IllFormed>); // [cmp.alg]/4.3
+static_assert(is_same_v<CpoResult<compare_strong_order_fallback, BoolTestType<ResultKind::Good, ResultKind::Bad>>,
+    IllFormed>); // [cmp.alg]/4.3
+static_assert(is_same_v<CpoResult<compare_strong_order_fallback, BoolTestType<ResultKind::Good, ResultKind::Good>>,
+    strong_ordering>); // [cmp.alg]/4.3
+
+static_assert(is_same_v<CpoResult<compare_weak_order_fallback, BoolTestType<ResultKind::Bad, ResultKind::Bad>>,
+    IllFormed>); // [cmp.alg]/5.3
+static_assert(is_same_v<CpoResult<compare_weak_order_fallback, BoolTestType<ResultKind::Bad, ResultKind::Good>>,
+    IllFormed>); // [cmp.alg]/5.3
+static_assert(is_same_v<CpoResult<compare_weak_order_fallback, BoolTestType<ResultKind::Good, ResultKind::Bad>>,
+    IllFormed>); // [cmp.alg]/5.3
+static_assert(is_same_v<CpoResult<compare_weak_order_fallback, BoolTestType<ResultKind::Good, ResultKind::Good>>,
+    weak_ordering>); // [cmp.alg]/5.3
+
+static_assert(is_same_v<CpoResult<compare_partial_order_fallback, BoolTestType<ResultKind::Bad, ResultKind::Bad>>,
+    IllFormed>); // [cmp.alg]/6.3
+static_assert(is_same_v<CpoResult<compare_partial_order_fallback, BoolTestType<ResultKind::Bad, ResultKind::Good>>,
+    IllFormed>); // [cmp.alg]/6.3
+static_assert(is_same_v<CpoResult<compare_partial_order_fallback, BoolTestType<ResultKind::Good, ResultKind::Bad>>,
+    IllFormed>); // [cmp.alg]/6.3
+static_assert(is_same_v<CpoResult<compare_partial_order_fallback, BoolTestType<ResultKind::Good, ResultKind::Good>>,
+    partial_ordering>); // [cmp.alg]/6.3
+
 // Test when the type is comparable through ADL. Part B, exception specifications.
 static_assert(!NoexceptCpo<std::strong_order, TestAdl::StrongType<Throwing>>); // [cmp.alg]/1.2
 static_assert(!NoexceptCpo<std::weak_order, TestAdl::WeakType<Throwing>>); // [cmp.alg]/2.2

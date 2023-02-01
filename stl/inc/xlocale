@@ -380,12 +380,12 @@ public:
         return nullptr; // no entry in current locale
     }
 
-    _NODISCARD bool operator==(const locale& _Loc) const { // compare locales for equality
-        return _Ptr == _Loc._Ptr || (name().compare("*") != 0 && name().compare(_Loc.name()) == 0);
+    _NODISCARD bool operator==(const locale& _Loc) const noexcept /* strengthened */ { // compare locales for equality
+        return _Ptr == _Loc._Ptr || (_CSTD strcmp(_C_str(), "*") != 0 && _CSTD strcmp(_C_str(), _Loc._C_str()) == 0);
     }
 
 #if !_HAS_CXX20
-    _NODISCARD bool operator!=(const locale& _Right) const {
+    _NODISCARD bool operator!=(const locale& _Right) const noexcept /* strengthened */ {
         return !(*this == _Right);
     }
 #endif // !_HAS_CXX20
@@ -843,7 +843,7 @@ _NODISCARD int _Codecvt_do_length(
 
 enum _Codecvt_mode { _Consume_header = 4, _Generate_header = 2 };
 
-template <>
+extern "C++" template <>
 class _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE _CXX20_DEPRECATE_CODECVT_FACETS
     codecvt<char16_t, char, mbstate_t> : public codecvt_base {
     // facet for converting between char16_t and UTF-8 byte sequences
@@ -1141,7 +1141,7 @@ private:
     _Codecvt_mode _Mode; // default: _Consume_header
 };
 
-template <>
+extern "C++" template <>
 class _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE _CXX20_DEPRECATE_CODECVT_FACETS
     codecvt<char32_t, char, mbstate_t> : public codecvt_base {
     // facet for converting between char32_t and UTF-8 byte sequences
@@ -1395,7 +1395,7 @@ struct _NODISCARD _Codecvt_guard {
     }
 };
 
-template <>
+extern "C++" template <>
 class codecvt<char16_t, char8_t, mbstate_t> : public codecvt_base {
     // facet for converting between UTF-16 and UTF-8 sequences
 public:
@@ -1676,7 +1676,7 @@ protected:
     }
 };
 
-template <>
+extern "C++" template <>
 class codecvt<char32_t, char8_t, mbstate_t> : public codecvt_base {
     // facet for converting between UTF-32 and UTF-8 sequences
 public:
@@ -1919,7 +1919,7 @@ protected:
 };
 #endif // defined(__cpp_char8_t) && !defined(_M_CEE_PURE)
 
-template <>
+extern "C++" template <>
 class _CRTIMP2_PURE_IMPORT codecvt<wchar_t, char, mbstate_t> : public codecvt_base {
     // facet for converting between wchar_t and char (_Byte) sequences
 public:
@@ -2118,7 +2118,7 @@ private:
 };
 
 #if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
-template <>
+extern "C++" template <>
 class _CRTIMP2_PURE_IMPORT codecvt<unsigned short, char, mbstate_t> : public codecvt_base {
     // facet for converting between unsigned short and char sequences
 public:
@@ -2615,7 +2615,7 @@ locale::id ctype<_Elem>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-template <>
+extern "C++" template <>
 class _CRTIMP2_PURE_IMPORT ctype<char> : public ctype_base { // facet for classifying char elements, converting cases
 public:
     using _Elem     = char;
@@ -2805,7 +2805,7 @@ private:
     _Locinfo::_Ctypevec _Ctype; // information
 };
 
-template <>
+extern "C++" template <>
 class _CRTIMP2_PURE_IMPORT ctype<wchar_t>
     : public ctype_base { // facet for classifying wchar_t elements, converting cases
 public:
@@ -3006,7 +3006,7 @@ private:
 };
 
 #if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
-template <>
+extern "C++" template <>
 class _CRTIMP2_PURE_IMPORT ctype<unsigned short>
     : public ctype_base { // facet for classifying unsigned short elements, converting cases
 public:

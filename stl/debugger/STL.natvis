@@ -22,6 +22,26 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
+  <Type Name="std::error_category">
+      <DisplayString>[{name(),sb}]</DisplayString>
+      <Expand>
+      <Synthetic Name="hint">
+          <DisplayString>Enable "Allow Function Calls In Value Formatting" if you see "???" here</DisplayString>
+      </Synthetic>
+      </Expand>
+  </Type>
+
+  <Type Name="std::error_code">
+    <DisplayString>{{ value={_Myval}, category={*_Mycat} }}</DisplayString>
+    <Expand>
+      <Synthetic Name="hint">
+        <DisplayString>Enable "Allow Function Calls In Value Formatting" if you see "???" here</DisplayString>
+      </Synthetic>
+      <Item Name="[value]">_Myval</Item>
+      <Item Name="[category]">_Mycat</Item>
+    </Expand>
+  </Type>
+
   <Type Name="std::exception_ptr">
       <CustomVisualizer Condition="_Data1 != 0" VisualizerId="CEB58A03-E78D-4D19-9AE7-4738E200649E" />
       <DisplayString Condition="_Data1 == 0">null</DisplayString>
@@ -104,12 +124,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::optional&lt;*&gt;">
-      <Intrinsic Name="has_value" Expression="_Has_value"/>
-      <Intrinsic Name="value" Expression="_Value"/>
-      <DisplayString Condition="!has_value()">nullopt</DisplayString>
-      <DisplayString Condition="has_value()">{value()}</DisplayString>
+      <DisplayString Condition="!_Has_value">nullopt</DisplayString>
+      <DisplayString Condition="_Has_value">{_Value}</DisplayString>
       <Expand>
-          <Item Condition="has_value()" Name="value">value()</Item>
+          <Item Condition="_Has_value" Name="value">_Value</Item>
       </Expand>
   </Type>
 
@@ -1810,7 +1828,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::ranges::single_view&lt;*&gt;">
-    <DisplayString>{{ _Val._Val }}</DisplayString>
+    <DisplayString>[{ _Val._Val }]</DisplayString>
     <Expand>
       <ArrayItems>
         <Size>1</Size>
@@ -1841,6 +1859,44 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <DisplayString>[{_Value}; +&#8734;)</DisplayString>
     <Expand>
       <Item Name="[begin]">_Value</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::repeat_view&lt;*,*&gt;">
+    <DisplayString>[{_Value._Val} x {_Bound}]</DisplayString>
+    <Expand>
+      <Item Name="[size]">_Bound</Item>
+      <CustomListItems Optional="true">
+        <Variable Name="idx" InitialValue="0" />
+
+        <Loop>
+          <Break Condition="idx == _Bound"/>
+          <Item>_Value._Val</Item>
+          <Exec>++idx</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::repeat_view&lt;*,std::unreachable_sentinel_t&gt;">
+    <DisplayString>[{_Value._Val} x +&#8734;]</DisplayString>
+    <Expand>
+      <Item Name="[+&#8734;]">_Value._Val</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::repeat_view&lt;*,*&gt;::_Iterator">
+    <DisplayString>{*_Value}</DisplayString>
+    <Expand>
+      <Item Name="[ptr]">_Value</Item>
+      <Item Name="[index]">_Current</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::repeat_view&lt;*,std::unreachable_sentinel_t&gt;::_Iterator">
+    <DisplayString>{*_Value}</DisplayString>
+    <Expand>
+      <Item Name="[ptr]">_Value</Item>
     </Expand>
   </Type>
 

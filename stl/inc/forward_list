@@ -1462,7 +1462,7 @@ private:
         // splice _Right (_Prev, _Prev + 2) after _Where
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 // _ITERATOR_DEBUG_LEVEL != 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
         }
@@ -1491,7 +1491,7 @@ private:
         // splice _Right (_First, _Last) just after _Where
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 // _ITERATOR_DEBUG_LEVEL != 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
         }

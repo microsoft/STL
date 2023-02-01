@@ -263,7 +263,7 @@ namespace pmr {
             // propagate allocator *this if uses_allocator_v<_Uty, polymorphic_allocator>
 #if _HAS_CXX20
             _STD uninitialized_construct_using_allocator(_Ptr, *this, _STD forward<_Types>(_Args)...);
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
             allocator<char> _Al{};
             _Uses_allocator_construct(_Ptr, _Al, *this, _STD forward<_Types>(_Args)...);
 #endif // ^^^ !_HAS_CXX20 ^^^

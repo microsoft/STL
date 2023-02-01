@@ -772,9 +772,8 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_put<_Elem, _OutIt>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-template <class _OutIt>
-class _CRTIMP2_PURE_IMPORT time_put<wchar_t, _OutIt>
-    : public locale::facet { // facet for converting encoded times to wchar_t text
+extern "C++" template <class _OutIt>
+class time_put<wchar_t, _OutIt> : public locale::facet { // facet for converting encoded times to wchar_t text
 public:
     using _Elem     = wchar_t;
     using char_type = _Elem;
@@ -905,8 +904,8 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_put<wchar_t, _OutIt>::id;
 
 #if defined(_CRTBLD)
 
-template <class _OutIt>
-class _CRTIMP2_PURE_IMPORT time_put<unsigned short, _OutIt>
+extern "C++" template <class _OutIt>
+class time_put<unsigned short, _OutIt>
     : public locale::facet { // facet for converting encoded times to unsigned short text
 public:
     using _Elem     = unsigned short;

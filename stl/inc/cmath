@@ -15,12 +15,12 @@
 #if !defined(__clang__) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER) \
     && !defined(_M_CEE) // TRANSITION, VSO-1663104
 #define _HAS_CMATH_INTRINSICS 1
-#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_CMATH_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
 #if _HAS_CMATH_INTRINSICS
-#include <intrin0.h>
+#include _STL_INTRIN_HEADER
 #endif // _HAS_CMATH_INTRINSICS
 
 #if _HAS_CXX20
@@ -71,7 +71,7 @@ _NODISCARD _Check_return_ inline float ceil(_In_ float _Xx) noexcept /* strength
     return __ceilf(_Xx);
 #elif defined(__clang__)
     return __builtin_ceilf(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD ceilf(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -81,7 +81,7 @@ _NODISCARD _Check_return_ inline float copysign(_In_ float _Number, _In_ float _
     return __copysignf(_Number, _Sign);
 #elif defined(__clang__)
     return __builtin_copysignf(_Number, _Sign);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD copysignf(_Number, _Sign);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -127,7 +127,7 @@ _NODISCARD _Check_return_ inline float floor(_In_ float _Xx) noexcept /* strengt
     return __floorf(_Xx);
 #elif defined(__clang__)
     return __builtin_floorf(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD floorf(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -241,7 +241,7 @@ _NODISCARD _Check_return_ inline float round(_In_ float _Xx) noexcept /* strengt
     return __roundf(_Xx);
 #elif defined(__clang__)
     return __builtin_roundf(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD roundf(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -283,7 +283,7 @@ _NODISCARD _Check_return_ inline float trunc(_In_ float _Xx) noexcept /* strengt
     return __truncf(_Xx);
 #elif defined(__clang__)
     return __builtin_truncf(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD truncf(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -326,7 +326,7 @@ _NODISCARD _Check_return_ inline long double ceil(_In_ long double _Xx) noexcept
     return __ceil(static_cast<double>(_Xx));
 #elif defined(__clang__)
     return __builtin_ceill(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD ceill(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -337,7 +337,7 @@ _NODISCARD _Check_return_ inline long double copysign(_In_ long double _Number, 
     return __copysign(static_cast<double>(_Number), static_cast<double>(_Sign));
 #elif defined(__clang__)
     return __builtin_copysignl(_Number, _Sign);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD copysignl(_Number, _Sign);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -384,7 +384,7 @@ _NODISCARD _Check_return_ inline long double floor(_In_ long double _Xx) noexcep
     return __floor(static_cast<double>(_Xx));
 #elif defined(__clang__)
     return __builtin_floorl(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD floorl(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -507,7 +507,7 @@ _NODISCARD _Check_return_ inline long double round(_In_ long double _Xx) noexcep
     return __round(static_cast<double>(_Xx));
 #elif defined(__clang__)
     return __builtin_roundl(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD roundl(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -549,7 +549,7 @@ _NODISCARD _Check_return_ inline long double trunc(_In_ long double _Xx) noexcep
     return __trunc(static_cast<double>(_Xx));
 #elif defined(__clang__)
     return __builtin_truncl(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD truncl(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -606,7 +606,7 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, MSVC_INTRIN)
 #elif defined(__clang__)
 #define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, CLANG_INTRIN)
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
 #define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 
@@ -616,12 +616,17 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
         return _CSTD FUN(static_cast<double>(_Left), _Arg2);                   \
     }
 
+// When the arguments are both floats or both long doubles, overload resolution prefers the
+// non-template overloads to the templates generated from this macro. The templates generated from
+// this macro are only selected by overload resolution when both arguments have integral type, or
+// when the types of the two arguments differ, in which case _Common_float_type_t is either double
+// or long double. Note that double and long double have the same underlying representation on our
+// supported platforms.
 #define _GENERIC_MATH2_BASE(NAME, FUN)                                                                           \
     template <class _Ty1, class _Ty2,                                                                            \
         _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>                     \
     _NODISCARD _STD _Common_float_type_t<_Ty1, _Ty2> NAME(_Ty1 _Left, _Ty2 _Right) noexcept /* strengthened */ { \
-        using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;                                                   \
-        return FUN(static_cast<_Common>(_Left), static_cast<_Common>(_Right));                                   \
+        return FUN(static_cast<double>(_Left), static_cast<double>(_Right));                                     \
     }
 
 #define _GENERIC_MATH2(FUN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
@@ -630,7 +635,7 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, MSVC_INTRIN)
 #elif defined(__clang__)
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, CLANG_INTRIN)
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 

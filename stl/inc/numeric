@@ -30,7 +30,7 @@ _NODISCARD _CONSTEXPR20 _Ty accumulate(const _InIt _First, const _InIt _Last, _T
     for (; _UFirst != _ULast; ++_UFirst) {
 #if _HAS_CXX20
         _Val = _Reduce_op(_STD move(_Val), *_UFirst);
-#else // ^^^ _HAS_CXX20 ^^^ // vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         _Val = _Reduce_op(_Val, *_UFirst);
 #endif // _HAS_CXX20
     }
@@ -62,7 +62,7 @@ _Ty _Reduce_plus_arithmetic_ranges(_InIt _First, const _InIt _Last, _Ty _Val) {
 }
 #pragma float_control(pop)
 
-#else // ^^^ _STD_VECTORIZE_WITH_FLOAT_CONTROL ^^^ // vvv !_STD_VECTORIZE_WITH_FLOAT_CONTROL vvv
+#else // ^^^ _STD_VECTORIZE_WITH_FLOAT_CONTROL / !_STD_VECTORIZE_WITH_FLOAT_CONTROL vvv
 template <class _InIt, class _Ty, class _BinOp>
 inline constexpr bool _Plus_on_arithmetic_ranges_reduction_v = false;
 #endif // _STD_VECTORIZE_WITH_FLOAT_CONTROL
@@ -134,7 +134,7 @@ _NODISCARD _CONSTEXPR20 _Ty inner_product(
     for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
 #if _HAS_CXX20
         _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
-#else // ^^^ _HAS_CXX20 ^^^ // vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         _Val = _Reduce_op(_Val, _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
 #endif // _HAS_CXX20
     }
@@ -167,7 +167,7 @@ _Ty _Transform_reduce_arithmetic_defaults(_InIt1 _First1, const _InIt1 _Last1, _
     return _Val;
 }
 #pragma float_control(pop)
-#else // ^^^ _STD_VECTORIZE_WITH_FLOAT_CONTROL ^^^ // vvv !_STD_VECTORIZE_WITH_FLOAT_CONTROL vvv
+#else // ^^^ _STD_VECTORIZE_WITH_FLOAT_CONTROL / !_STD_VECTORIZE_WITH_FLOAT_CONTROL vvv
 template <class _InIt1, class _InIt2, class _Ty, class _BinOp1, class _BinOp2>
 inline constexpr bool _Default_ops_transform_reduce_v = false;
 #endif // _STD_VECTORIZE_WITH_FLOAT_CONTROL
@@ -259,7 +259,7 @@ _CONSTEXPR20 _OutIt partial_sum(const _InIt _First, const _InIt _Last, _OutIt _D
             }
 #if _HAS_CXX20
             _Val = _Reduce_op(_STD move(_Val), *_UFirst);
-#else // ^^^ _HAS_CXX20 ^^^ // vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
             _Val      = _Reduce_op(_Val, *_UFirst);
 #endif // _HAS_CXX20
         }
@@ -483,7 +483,7 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _
             _Iter_value_t<_InIt> _Tmp = *_UFirst;
 #if _HAS_CXX20
             *++_UDest = _Func(_Tmp, _STD move(_Val));
-#else // ^^^ _HAS_CXX20 ^^^ // vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
             *++_UDest = _Func(_Tmp, _Val);
 #endif // _HAS_CXX20
             _Val = _STD move(_Tmp);

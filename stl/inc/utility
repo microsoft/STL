@@ -134,11 +134,86 @@ struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {
 _EXPORT_STD template <class _Ty, class _Alloc>
 _INLINE_VAR constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
 
-_EXPORT_STD template <class...>
+_EXPORT_STD template <class... _Types>
 class tuple;
+
+_EXPORT_STD template <class _Ty1, class _Ty2>
+struct pair;
+
+_EXPORT_STD template <class _Ty, size_t _Size>
+class array;
+
+_EXPORT_STD template <class _Tuple>
+struct tuple_size;
+
+_EXPORT_STD template <class _Ty>
+_INLINE_VAR constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
+
+_EXPORT_STD template <size_t _Index, class _Tuple>
+struct tuple_element;
+
+_EXPORT_STD template <size_t _Index, class _Tuple>
+using tuple_element_t = typename tuple_element<_Index, _Tuple>::type;
 
 _EXPORT_STD /* TRANSITION, VSO-1538698 */ template <size_t _Index, class... _Types>
 _NODISCARD constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
+
+_EXPORT_STD template <size_t _Index, class... _Types>
+_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept;
+
+_EXPORT_STD template <size_t _Index, class... _Types>
+_NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>& get(const tuple<_Types...>& _Tuple) noexcept;
+
+_EXPORT_STD template <size_t _Index, class... _Types>
+_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>&& get(tuple<_Types...>&& _Tuple) noexcept;
+
+_EXPORT_STD template <size_t _Index, class... _Types>
+_NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept;
+
+_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
+_NODISCARD constexpr _Ty& get(array<_Ty, _Size>& _Arr) noexcept;
+
+_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
+_NODISCARD constexpr const _Ty& get(const array<_Ty, _Size>& _Arr) noexcept;
+
+_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
+_NODISCARD constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept;
+
+_EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
+_NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept;
+
+#ifdef __cpp_lib_concepts
+template <class _Ty1, class _Ty2>
+concept _Different_from = (!same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>);
+
+template <class>
+inline constexpr bool _Is_std_array_v = false;
+
+template <class _Ty, size_t _Size>
+inline constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
+
+template <class>
+inline constexpr bool _Is_subrange_v = false;
+
+#if _HAS_CXX23
+template <class _Ty>
+inline constexpr bool _Tuple_like_impl =
+    _Is_specialization_v<_Ty, tuple> || _Is_specialization_v<_Ty, pair> || _Is_std_array_v<_Ty> || _Is_subrange_v<_Ty>;
+
+template <class _Ty>
+concept _Tuple_like = _Tuple_like_impl<remove_cvref_t<_Ty>>;
+
+template <class _Ty>
+concept _Pair_like = _Tuple_like<_Ty> && tuple_size_v<remove_cvref_t<_Ty>> == 2;
+
+#ifdef __clang__ // TRANSITION, LLVM-59827
+template <class _PairLike, class _Ty1, class _Ty2>
+concept _Can_construct_from_pair_like =
+    _Pair_like<_PairLike> && is_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_PairLike>()))>
+    && is_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_PairLike>()))>;
+#endif // __clang__
+#endif // _HAS_CXX23
+#endif // __cpp_lib_concepts
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct pair { // store a pair of values
@@ -207,11 +282,27 @@ struct pair { // store a pair of values
         pair(const pair<_Other1, _Other2>&& _Right) noexcept(is_nothrow_constructible_v<_Ty1, const _Other1>&&
                 is_nothrow_constructible_v<_Ty2, const _Other2>) // strengthened
         : first(_STD forward<const _Other1>(_Right.first)), second(_STD forward<const _Other2>(_Right.second)) {}
+
+#ifdef __cpp_lib_concepts
+#ifdef __clang__ // TRANSITION, LLVM-59827
+    template <class _Other, enable_if_t<_Can_construct_from_pair_like<_Other, _Ty1, _Ty2>, int> = 0>
+#else // ^^^ workaround / no workaround vvv
+    template <_Pair_like _Other>
+        requires conjunction_v<is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
+                     is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
+#endif // __clang__
+    constexpr explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
+                       is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>)
+        pair(_Other&& _Right) noexcept(is_nothrow_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>&&
+                is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
+        : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {
+    }
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
-    template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>
-    constexpr pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indexes1...>, index_sequence<_Indexes2...>)
-        : first(_Tuple_get<_Indexes1>(_STD move(_Val1))...), second(_Tuple_get<_Indexes2>(_STD move(_Val2))...) {}
+    template <class _Tuple1, class _Tuple2, size_t... _Indices1, size_t... _Indices2>
+    constexpr pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indices1...>, index_sequence<_Indices2...>)
+        : first(_Tuple_get<_Indices1>(_STD move(_Val1))...), second(_Tuple_get<_Indices2>(_STD move(_Val2))...) {}
 
     template <class... _Types1, class... _Types2>
     _CONSTEXPR20 pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2)
@@ -318,6 +409,32 @@ struct pair { // store a pair of values
         second = _STD forward<_Other2>(_Right.second);
         return *this;
     }
+
+#ifdef __cpp_lib_concepts
+    template <_Pair_like _Other>
+        requires _Different_from<_Other, pair> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+              && is_assignable_v<_Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
+              && is_assignable_v<_Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>
+    constexpr pair& operator=(_Other&& _Right) noexcept(
+        is_nothrow_assignable_v<_Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>&&
+            is_nothrow_assignable_v<_Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>) /* strengthened */ {
+        first  = _STD get<0>(_STD forward<_Other>(_Right));
+        second = _STD get<1>(_STD forward<_Other>(_Right));
+        return *this;
+    }
+
+    template <_Pair_like _Other>
+        requires _Different_from<_Other, pair> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+              && is_assignable_v<const _Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
+              && is_assignable_v<const _Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>
+    constexpr const pair& operator=(_Other&& _Right) const noexcept(
+        is_nothrow_assignable_v<const _Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>&&
+            is_nothrow_assignable_v<const _Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>) /* strengthened */ {
+        first  = _STD get<0>(_STD forward<_Other>(_Right));
+        second = _STD get<1>(_STD forward<_Other>(_Right));
+        return *this;
+    }
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(pair& _Right) noexcept(
@@ -469,9 +586,6 @@ namespace _CXX20_DEPRECATE_REL_OPS rel_ops {
     }
 } // namespace _CXX20_DEPRECATE_REL_OPS rel_ops
 
-_EXPORT_STD template <class _Tuple>
-struct tuple_size;
-
 template <class _Tuple, class = void>
 struct _Tuple_size_sfinae {}; // selected when tuple_size<_Tuple>::value isn't well-formed
 
@@ -487,12 +601,6 @@ struct _CXX20_DEPRECATE_VOLATILE tuple_size<volatile _Tuple> : _Tuple_size_sfina
 
 template <class _Tuple>
 struct _CXX20_DEPRECATE_VOLATILE tuple_size<const volatile _Tuple> : _Tuple_size_sfinae<_Tuple> {}; // ignore cv
-
-_EXPORT_STD template <class _Ty>
-_INLINE_VAR constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
-
-_EXPORT_STD template <size_t _Index, class _Tuple>
-struct tuple_element;
 
 template <size_t _Index, class _Tuple>
 struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, const _Tuple> : tuple_element<_Index, _Tuple> {
@@ -513,12 +621,6 @@ struct _CXX20_DEPRECATE_VOLATILE _MSVC_KNOWN_SEMANTICS tuple_element<_Index, con
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_cv_t<typename _Mybase::type>;
 };
-
-_EXPORT_STD template <size_t _Index, class _Tuple>
-using tuple_element_t = typename tuple_element<_Index, _Tuple>::type;
-
-_EXPORT_STD template <class _Ty, size_t _Size>
-class array;
 
 template <class _Ty, size_t _Size>
 struct tuple_size<array<_Ty, _Size>> : integral_constant<size_t, _Size> {}; // size of array
@@ -839,6 +941,9 @@ _NODISCARD _MSVC_INTRINSIC constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
         }
     }
 }
+
+template <class _Ty, class _Uty>
+using _Forward_like_t = decltype(_STD forward_like<_Ty>(_STD declval<_Uty&>()));
 #endif // _HAS_CXX23
 
 #if _HAS_TR1_NAMESPACE

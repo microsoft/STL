@@ -290,23 +290,26 @@ struct common_comparison_category {
 template <class _Ty, class _Cat>
 concept _Compares_as = same_as<common_comparison_category_t<_Ty, _Cat>, _Cat>;
 
-// clang-format off
 _EXPORT_STD template <class _Ty, class _Cat = partial_ordering>
 concept three_way_comparable = _Half_equality_comparable<_Ty, _Ty> && _Half_ordered<_Ty, _Ty>
-    && requires(const remove_reference_t<_Ty>& __a, const remove_reference_t<_Ty>& __b) {
-        { __a <=> __b } -> _Compares_as<_Cat>;
-    };
+                            && requires(const remove_reference_t<_Ty>& __a, const remove_reference_t<_Ty>& __b) {
+                                   { __a <=> __b } -> _Compares_as<_Cat>;
+                               };
 
 _EXPORT_STD template <class _Ty1, class _Ty2, class _Cat = partial_ordering>
-concept three_way_comparable_with = three_way_comparable<_Ty1, _Cat> && three_way_comparable<_Ty2, _Cat>
+concept three_way_comparable_with =
+    three_way_comparable<_Ty1, _Cat> && three_way_comparable<_Ty2, _Cat>
+#if _HAS_CXX23
+    && _Comparison_common_type_with<_Ty1, _Ty2>
+#else // ^^^ C++23 / C++20 vvv
     && common_reference_with<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>
+#endif // C++20
     && three_way_comparable<common_reference_t<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>, _Cat>
     && _Weakly_equality_comparable_with<_Ty1, _Ty2> && _Partially_ordered_with<_Ty1, _Ty2>
     && requires(const remove_reference_t<_Ty1>& __t, const remove_reference_t<_Ty2>& __u) {
-        { __t <=> __u } -> _Compares_as<_Cat>;
-        { __u <=> __t } -> _Compares_as<_Cat>;
-    };
-// clang-format on
+           { __t <=> __u } -> _Compares_as<_Cat>;
+           { __u <=> __t } -> _Compares_as<_Cat>;
+       };
 
 _EXPORT_STD template <class _Ty1, class _Ty2 = _Ty1>
 using compare_three_way_result_t =
@@ -360,11 +363,16 @@ using _Synth_three_way_result = decltype(_Synth_three_way{}(_STD declval<_Ty1&>(
 // Note: The following CPOs are passing arguments as lvalues; see GH-1374.
 
 namespace _Strong_order {
-    void strong_order(); // Block unqualified name lookup; see GH-1374.
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+    void strong_order() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+    void strong_order();
+#endif // ^^^ workaround ^^^
 
     template <class _Ty1, class _Ty2>
-    concept _Has_ADL =
-        requires(_Ty1& _Left, _Ty2& _Right) { static_cast<strong_ordering>(/* ADL */ strong_order(_Left, _Right)); };
+    concept _Has_ADL = requires(_Ty1& _Left, _Ty2& _Right) {
+                           static_cast<strong_ordering>(strong_order(_Left, _Right)); // intentional ADL
+                       };
 
     template <class _Ty1, class _Ty2>
     concept _Can_compare_three_way =
@@ -380,7 +388,7 @@ namespace _Strong_order {
                 return {_St::_None};
             } else if constexpr (_Has_ADL<_Ty1, _Ty2>) {
                 return {_St::_Adl, noexcept(static_cast<strong_ordering>(
-                                       /* ADL */ strong_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>())))};
+                                       strong_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>())))}; // intentional ADL
             } else if constexpr (floating_point<decay_t<_Ty1>>) {
                 return {_St::_Floating, true};
             } else if constexpr (_Can_compare_three_way<_Ty1, _Ty2>) {
@@ -401,7 +409,7 @@ namespace _Strong_order {
             noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Adl) {
-                return static_cast<strong_ordering>(/* ADL */ strong_order(_Left, _Right));
+                return static_cast<strong_ordering>(strong_order(_Left, _Right)); // intentional ADL
             } else if constexpr (_Strat == _St::_Floating) {
                 using _Floating_type = decay_t<_Ty1>;
                 using _Traits        = _Floating_type_traits<_Floating_type>;
@@ -451,18 +459,27 @@ inline namespace _Cpos {
 }
 
 namespace _Weak_order {
-    void weak_order(); // Block unqualified name lookup; see GH-1374.
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+    void weak_order() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+    void weak_order();
+#endif // ^^^ workaround ^^^
 
     template <class _Ty1, class _Ty2>
-    concept _Has_ADL =
-        requires(_Ty1& _Left, _Ty2& _Right) { static_cast<weak_ordering>(/* ADL */ weak_order(_Left, _Right)); };
+    concept _Has_ADL = requires(_Ty1& _Left, _Ty2& _Right) {
+                           static_cast<weak_ordering>(weak_order(_Left, _Right)); // intentional ADL
+                       };
 
     template <class _Ty1, class _Ty2>
     concept _Can_compare_three_way =
         requires(_Ty1& _Left, _Ty2& _Right) { static_cast<weak_ordering>(compare_three_way{}(_Left, _Right)); };
 
     // Throughput optimization: attempting to use _STD strong_order will always select ADL strong_order here.
-    void strong_order(); // Block unqualified name lookup; see GH-1374.
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+    void strong_order() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+    void strong_order();
+#endif // ^^^ workaround ^^^
 
     class _Cpo {
     private:
@@ -474,16 +491,16 @@ namespace _Weak_order {
                 return {_St::_None};
             } else if constexpr (_Has_ADL<_Ty1, _Ty2>) {
                 return {_St::_Adl, noexcept(static_cast<weak_ordering>(
-                                       /* ADL */ weak_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>())))};
+                                       weak_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>())))}; // intentional ADL
             } else if constexpr (floating_point<decay_t<_Ty1>>) {
                 return {_St::_Floating, true};
             } else if constexpr (_Can_compare_three_way<_Ty1, _Ty2>) {
                 return {_St::_Three, noexcept(static_cast<weak_ordering>(
                                          compare_three_way{}(_STD declval<_Ty1&>(), _STD declval<_Ty2&>())))};
             } else if constexpr (_Strong_order::_Has_ADL<_Ty1, _Ty2>) {
-                return {_St::_Strong, noexcept(static_cast<weak_ordering>(static_cast<strong_ordering>(
-                                          /* ADL, throughput optimization */ strong_order(
-                                              _STD declval<_Ty1&>(), _STD declval<_Ty2&>()))))};
+                // throughput optimization (see above):
+                return {_St::_Strong, noexcept(static_cast<weak_ordering>(static_cast<strong_ordering>(strong_order(
+                                          _STD declval<_Ty1&>(), _STD declval<_Ty2&>()))))}; // intentional ADL
             } else {
                 return {_St::_None};
             }
@@ -499,7 +516,7 @@ namespace _Weak_order {
             noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Adl) {
-                return static_cast<weak_ordering>(/* ADL */ weak_order(_Left, _Right));
+                return static_cast<weak_ordering>(weak_order(_Left, _Right)); // intentional ADL
             } else if constexpr (_Strat == _St::_Floating) {
                 using _Floating_type = decay_t<_Ty1>;
                 using _Traits        = _Floating_type_traits<_Floating_type>;
@@ -553,8 +570,9 @@ namespace _Weak_order {
             } else if constexpr (_Strat == _St::_Three) {
                 return static_cast<weak_ordering>(compare_three_way{}(_Left, _Right));
             } else if constexpr (_Strat == _St::_Strong) {
+                // throughput optimization (see above):
                 return static_cast<weak_ordering>(
-                    static_cast<strong_ordering>(/* ADL, throughput optimization */ strong_order(_Left, _Right)));
+                    static_cast<strong_ordering>(strong_order(_Left, _Right))); // intentional ADL
             } else {
                 static_assert(_Always_false<_Ty1>, "should be unreachable");
             }
@@ -567,11 +585,16 @@ inline namespace _Cpos {
 }
 
 namespace _Partial_order {
-    void partial_order(); // Block unqualified name lookup; see GH-1374.
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+    void partial_order() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+    void partial_order();
+#endif // ^^^ workaround ^^^
 
     template <class _Ty1, class _Ty2>
-    concept _Has_ADL =
-        requires(_Ty1& _Left, _Ty2& _Right) { static_cast<partial_ordering>(/* ADL */ partial_order(_Left, _Right)); };
+    concept _Has_ADL = requires(_Ty1& _Left, _Ty2& _Right) {
+                           static_cast<partial_ordering>(partial_order(_Left, _Right)); // intentional ADL
+                       };
 
     template <class _Ty1, class _Ty2>
     concept _Can_compare_three_way =
@@ -579,8 +602,13 @@ namespace _Partial_order {
 
     // Throughput optimization: attempting to use _STD weak_order
     // will attempt to select ADL weak_order, followed by ADL strong_order, here.
-    void weak_order(); // Block unqualified name lookup; see GH-1374.
-    void strong_order(); // Block unqualified name lookup; see GH-1374.
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+    void weak_order()   = delete; // Block unqualified name lookup
+    void strong_order() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+    void weak_order();
+    void strong_order();
+#endif // ^^^ workaround ^^^
 
     class _Cpo {
     private:
@@ -591,19 +619,19 @@ namespace _Partial_order {
             if constexpr (!same_as<decay_t<_Ty1>, decay_t<_Ty2>>) {
                 return {_St::_None};
             } else if constexpr (_Has_ADL<_Ty1, _Ty2>) {
-                return {_St::_Adl, noexcept(static_cast<partial_ordering>(
-                                       /* ADL */ partial_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>())))};
+                return {_St::_Adl, noexcept(static_cast<partial_ordering>(partial_order(
+                                       _STD declval<_Ty1&>(), _STD declval<_Ty2&>())))}; // intentional ADL
             } else if constexpr (_Can_compare_three_way<_Ty1, _Ty2>) {
                 return {_St::_Three, noexcept(static_cast<partial_ordering>(
                                          compare_three_way{}(_STD declval<_Ty1&>(), _STD declval<_Ty2&>())))};
             } else if constexpr (_Weak_order::_Has_ADL<_Ty1, _Ty2>) {
-                return {_St::_Weak,
-                    noexcept(static_cast<partial_ordering>(static_cast<weak_ordering>(
-                        /* ADL, throughput optimization */ weak_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()))))};
+                // throughput optimization (see above):
+                return {_St::_Weak, noexcept(static_cast<partial_ordering>(static_cast<weak_ordering>(
+                                        weak_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()))))}; // intentional ADL
             } else if constexpr (_Strong_order::_Has_ADL<_Ty1, _Ty2>) {
-                return {_St::_Strong, noexcept(static_cast<partial_ordering>(static_cast<strong_ordering>(
-                                          /* ADL, throughput optimization */ strong_order(
-                                              _STD declval<_Ty1&>(), _STD declval<_Ty2&>()))))};
+                // throughput optimization (see above):
+                return {_St::_Strong, noexcept(static_cast<partial_ordering>(static_cast<strong_ordering>(strong_order(
+                                          _STD declval<_Ty1&>(), _STD declval<_Ty2&>()))))}; // intentional ADL
             } else {
                 return {_St::_None};
             }
@@ -623,11 +651,13 @@ namespace _Partial_order {
             } else if constexpr (_Strat == _St::_Three) {
                 return static_cast<partial_ordering>(compare_three_way{}(_Left, _Right));
             } else if constexpr (_Strat == _St::_Weak) {
+                // throughput optimization (see above):
                 return static_cast<partial_ordering>(
-                    static_cast<weak_ordering>(/* ADL, throughput optimization */ weak_order(_Left, _Right)));
+                    static_cast<weak_ordering>(weak_order(_Left, _Right))); // intentional ADL
             } else if constexpr (_Strat == _St::_Strong) {
+                // throughput optimization (see above):
                 return static_cast<partial_ordering>(
-                    static_cast<strong_ordering>(/* ADL, throughput optimization */ strong_order(_Left, _Right)));
+                    static_cast<strong_ordering>(strong_order(_Left, _Right))); // intentional ADL
             } else {
                 static_assert(_Always_false<_Ty1>, "should be unreachable");
             }
@@ -641,8 +671,8 @@ inline namespace _Cpos {
 
 template <class _Ty1, class _Ty2>
 concept _Can_fallback_eq_lt = requires(_Ty1& _Left, _Ty2& _Right) {
-                                  { _Left == _Right } -> _Implicitly_convertible_to<bool>;
-                                  { _Left < _Right } -> _Implicitly_convertible_to<bool>;
+                                  { _Left == _Right } -> _Boolean_testable;
+                                  { _Left < _Right } -> _Boolean_testable;
                               };
 
 template <class _Ty1, class _Ty2>
@@ -751,9 +781,9 @@ concept _Can_partial_order = requires(_Ty1& _Left, _Ty2& _Right) { _STD partial_
 namespace _Compare_partial_order_fallback {
     template <class _Ty1, class _Ty2>
     concept _Can_fallback_eq_lt_twice = requires(_Ty1& _Left, _Ty2& _Right) {
-                                            { _Left == _Right } -> _Implicitly_convertible_to<bool>;
-                                            { _Left < _Right } -> _Implicitly_convertible_to<bool>;
-                                            { _Right < _Left } -> _Implicitly_convertible_to<bool>;
+                                            { _Left == _Right } -> _Boolean_testable;
+                                            { _Left < _Right } -> _Boolean_testable;
+                                            { _Right < _Left } -> _Boolean_testable;
                                         };
 
     class _Cpo {

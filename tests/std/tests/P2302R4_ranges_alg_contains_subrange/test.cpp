@@ -66,7 +66,7 @@ int main() {
     STATIC_ASSERT((test_fwd_fwd<instantiator, Elem1, Elem2>(), true));
     test_fwd_fwd<instantiator, Elem1, Elem2>();
 }
-#else // ^^^ test all range combinations // test only interesting range combos vvv
+#else // ^^^ test all range combinations / test only interesting range combos vvv
 template <class Elem, test::Sized IsSized>
 using fwd_test_range = test::range<forward_iterator_tag, Elem, IsSized, test::CanDifference::no, test::Common::no,
     test::CanCompare::yes, test::ProxyRef::yes>;

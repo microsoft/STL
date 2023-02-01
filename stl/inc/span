@@ -222,9 +222,6 @@ struct _Span_extent_type<_Ty, dynamic_extent> {
     size_t _Mysize{0};
 };
 
-_EXPORT_STD template <class _Ty, size_t _Size>
-class array;
-
 _EXPORT_STD template <class _Ty, size_t _Extent>
 class span;
 
@@ -241,12 +238,6 @@ inline constexpr bool _Is_span_v = false;
 
 template <class _Ty, size_t _Extent>
 inline constexpr bool _Is_span_v<span<_Ty, _Extent>> = true;
-
-template <class>
-inline constexpr bool _Is_std_array_v = false;
-
-template <class _Ty, size_t _Size>
-inline constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
 
 // clang-format off
 template <class _It, class _Ty>
@@ -606,7 +597,7 @@ public:
     _NODISCARD constexpr iterator begin() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         return {_Mydata, _Mydata, _Mydata + _Mysize};
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return {_Mydata};
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -615,7 +606,7 @@ public:
         const auto _End = _Mydata + _Mysize;
 #if _ITERATOR_DEBUG_LEVEL >= 1
         return {_End, _Mydata, _End};
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return {_End};
 #endif // _ITERATOR_DEBUG_LEVEL
     }
