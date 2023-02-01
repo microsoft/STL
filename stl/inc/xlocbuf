@@ -225,12 +225,12 @@ protected:
 
     pos_type seekoff(off_type, ios_base::seekdir,
         ios_base::openmode = static_cast<ios_base::openmode>(ios_base::in | ios_base::out)) override {
-        return pos_type{-1}; // always fail
+        return pos_type{off_type{-1}}; // always fail
     }
 
     pos_type seekpos(
         pos_type, ios_base::openmode = static_cast<ios_base::openmode>(ios_base::in | ios_base::out)) override {
-        return pos_type{-1}; // always fail
+        return pos_type{off_type{-1}}; // always fail
     }
 
 private:

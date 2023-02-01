@@ -647,7 +647,7 @@ protected:
         if (!_Myfile || !_Endwrite()
             || ((_Off != 0 || _Way != ios_base::cur) && _CSTD _fseeki64(_Myfile, _Off, _Way) != 0)
             || _CSTD fgetpos(_Myfile, &_Fileposition) != 0) {
-            return pos_type{-1}; // report failure
+            return pos_type{off_type{-1}}; // report failure
         }
 
         _Reset_back(); // revert from _Mychar buffer, discarding any putback
@@ -659,7 +659,7 @@ protected:
         off_type _Off = static_cast<off_type>(_Pos);
 
         if (!_Myfile || !_Endwrite() || _CSTD fsetpos(_Myfile, &_Off) != 0) {
-            return pos_type{-1}; // report failure
+            return pos_type{off_type{-1}}; // report failure
         }
 
         _State = _Pos.state();

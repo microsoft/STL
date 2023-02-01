@@ -612,7 +612,7 @@ public:
             _CATCH_IO_END
         }
 
-        return pos_type{-1};
+        return pos_type{off_type{-1}};
     }
 };
 
