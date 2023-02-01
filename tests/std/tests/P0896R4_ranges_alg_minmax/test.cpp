@@ -373,51 +373,49 @@ public:
     using reference         = shared_ptr<int>&&;
 
     input_move_iterator() = default;
-    input_move_iterator(shared_ptr<int>* ptr) : m_ptr(ptr) {}
+    explicit input_move_iterator(shared_ptr<int>* ptr) : m_ptr(ptr) {}
 
     reference operator*() const {
         return ranges::iter_move(m_ptr);
     }
-    pointer operator->() {
+    pointer operator->() const {
         return m_ptr;
     }
 
     input_move_iterator& operator++() {
-        m_ptr++;
+        ++m_ptr;
         return *this;
     }
     input_move_iterator operator++(int) {
         input_move_iterator tmp = *this;
-        ++(*this);
+        ++*this;
         return tmp;
     }
 
     friend bool operator==(const input_move_iterator& a, const input_move_iterator& b) {
         return a.m_ptr == b.m_ptr;
-    };
-    friend bool operator!=(const input_move_iterator& a, const input_move_iterator& b) {
-        return a.m_ptr != b.m_ptr;
-    };
+    }
 
 private:
-    shared_ptr<int>* m_ptr;
+    shared_ptr<int>* m_ptr{nullptr};
 };
 
 void test_gh_2900() {
     // GH-2900: <algorithm>: ranges::minmax initializes minmax_result with the moved value
     {
-        // check that the range access iterator isn't moved from multiple times
+        // check that the random access iterator isn't moved from multiple times
         const string str{"this long string will be dynamically allocated"};
         vector<string> v{str};
-        auto result = ranges::minmax(ranges::subrange{move_iterator{v.begin()}, move_iterator{v.end()}});
+        ranges::subrange rng{move_iterator{v.begin()}, move_iterator{v.end()}};
+        auto result = ranges::minmax(rng);
         assert(result.min == str);
         assert(result.max == str);
     }
     {
         // check that the input iterator isn't moved from multiple times
         shared_ptr<int> a[] = {make_shared<int>(42)};
-        auto range          = ranges::subrange(input_move_iterator(a), input_move_iterator(a + 1));
-        auto result         = ranges::minmax(range);
+        ranges::subrange rng{input_move_iterator{a}, input_move_iterator{a + 1}};
+        auto result = ranges::minmax(rng);
         assert(a[0] == nullptr);
         assert(result.min != nullptr);
         assert(result.max == result.min);
