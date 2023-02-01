@@ -96,7 +96,7 @@ public:
     // [expected.un.eq]
     template <class _UErr>
     _NODISCARD_FRIEND constexpr bool operator==(const unexpected& _Left, const unexpected<_UErr>& _Right) noexcept(
-        noexcept(_Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
+        noexcept(_Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         return _Left._Unexpected == _Right.error();
     }
 
@@ -421,7 +421,7 @@ public:
                   && (is_nothrow_constructible_v<_Ty, _Uty> || is_nothrow_move_constructible_v<_Ty>
                       || is_nothrow_move_constructible_v<_Err>) )
     constexpr expected& operator=(_Uty&& _Other) noexcept(
-        is_nothrow_constructible_v<_Ty, _Uty>&& is_nothrow_assignable_v<_Ty&, _Uty>) { // strengthened
+        is_nothrow_constructible_v<_Ty, _Uty>&& is_nothrow_assignable_v<_Ty&, _Uty>) /* strengthened */ {
         if (_Has_value) {
             _Value = _STD forward<_Uty>(_Other);
         } else {
@@ -437,7 +437,7 @@ public:
                   && (is_nothrow_constructible_v<_Err, const _UErr&> || is_nothrow_move_constructible_v<_Ty>
                       || is_nothrow_move_constructible_v<_Err>) )
     constexpr expected& operator=(const unexpected<_UErr>& _Other) noexcept(
-        is_nothrow_constructible_v<_Err, const _UErr&>&& is_nothrow_assignable_v<_Err&, const _UErr&>) { // strengthened
+        is_nothrow_constructible_v<_Err, const _UErr&>&& is_nothrow_assignable_v<_Err&, const _UErr&>) /* strengthened */ {
         if (_Has_value) {
             _Reinit_expected(_Unexpected, _Value, _Other._Unexpected);
             _Has_value = false;
@@ -453,7 +453,7 @@ public:
                   && (is_nothrow_constructible_v<_Err, _UErr> || is_nothrow_move_constructible_v<_Ty>
                       || is_nothrow_move_constructible_v<_Err>) )
     constexpr expected& operator=(unexpected<_UErr>&& _Other) noexcept(
-        is_nothrow_constructible_v<_Err, _UErr>&& is_nothrow_assignable_v<_Err&, _UErr>) { // strengthened
+        is_nothrow_constructible_v<_Err, _UErr>&& is_nothrow_assignable_v<_Err&, _UErr>) /* strengthened */ {
         if (_Has_value) {
             _Reinit_expected(_Unexpected, _Value, _STD move(_Other._Unexpected));
             _Has_value = false;
@@ -662,7 +662,7 @@ public:
 
     template <class _Uty>
     _NODISCARD constexpr _Ty value_or(_Uty&& _Other) const& noexcept(
-        is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_convertible_v<_Uty, _Ty>) { // strengthened
+        is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_convertible_v<_Uty, _Ty>) /* strengthened */ {
         static_assert(
             is_copy_constructible_v<_Ty>, "is_copy_constructible_v<T> must be true. (N4910 [expected.object.obs]/16)");
         static_assert(
@@ -676,7 +676,7 @@ public:
     }
     template <class _Uty>
     _NODISCARD constexpr _Ty value_or(_Uty&& _Other) && noexcept(
-        is_nothrow_move_constructible_v<_Ty>&& is_nothrow_convertible_v<_Uty, _Ty>) { // strengthened
+        is_nothrow_move_constructible_v<_Ty>&& is_nothrow_convertible_v<_Uty, _Ty>) /* strengthened */ {
         static_assert(
             is_move_constructible_v<_Ty>, "is_move_constructible_v<T> must be true. (N4910 [expected.object.obs]/18)");
         static_assert(
@@ -691,7 +691,7 @@ public:
 
     template <class _Uty = _Err>
     _NODISCARD constexpr _Err error_or(_Uty&& _Other) const& noexcept(
-        is_nothrow_copy_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) { // strengthened
+        is_nothrow_copy_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) /* strengthened */ {
         static_assert(
             is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. (N4928 [expected.object.obs]/20)");
         static_assert(
@@ -706,7 +706,7 @@ public:
 
     template <class _Uty = _Err>
     _NODISCARD constexpr _Err error_or(_Uty&& _Other) && noexcept(
-        is_nothrow_move_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) { // strengthened
+        is_nothrow_move_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) /* strengthened */ {
         static_assert(
             is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true. (N4928 [expected.object.obs]/22)");
         static_assert(
@@ -950,6 +950,8 @@ public:
     constexpr auto transform_error(_Fn&& _Func) & {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err&>>;
 
+        static_assert(_Check_unexpected_argument<_Uty>::value);
+
         if (_Has_value) {
             return expected<_Ty, _Uty>(in_place, _Value);
         } else {
@@ -962,6 +964,8 @@ public:
         requires is_copy_constructible_v<_Ty>
     constexpr auto transform_error(_Fn&& _Func) const& {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err&>>;
+
+        static_assert(_Check_unexpected_argument<_Uty>::value);
 
         if (_Has_value) {
             return expected<_Ty, _Uty>(in_place, _Value);
@@ -976,6 +980,8 @@ public:
     constexpr auto transform_error(_Fn&& _Func) && {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err>>;
 
+        static_assert(_Check_unexpected_argument<_Uty>::value);
+
         if (_Has_value) {
             return expected<_Ty, _Uty>(in_place, _STD move(_Value));
         } else {
@@ -988,6 +994,8 @@ public:
         requires is_move_constructible_v<_Ty>
     constexpr auto transform_error(_Fn&& _Func) const&& {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err>>;
+
+        static_assert(_Check_unexpected_argument<_Uty>::value);
 
         if (_Has_value) {
             return expected<_Ty, _Uty>(in_place, _STD move(_Value));
@@ -1003,7 +1011,7 @@ public:
         requires (!is_void_v<_Uty>)
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Value == *_Right)) && noexcept(
-            _Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
+            _Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value != _Right.has_value()) {
             return false;
         } else if (_Left._Has_value) {
@@ -1015,7 +1023,7 @@ public:
 
     template <class _Uty>
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const _Uty& _Right) noexcept(
-        noexcept(static_cast<bool>(_Left._Value == _Right))) { // strengthened
+        noexcept(static_cast<bool>(_Left._Value == _Right))) /* strengthened */ {
         if (_Left._Has_value) {
             return static_cast<bool>(_Left._Value == _Right);
         } else {
@@ -1025,7 +1033,7 @@ public:
 
     template <class _UErr>
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const unexpected<_UErr>& _Right) noexcept(
-        noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
+        noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value) {
             return false;
         } else {
@@ -1037,18 +1045,18 @@ private:
     // These overloads force copy elision from the invoke call into _Value
     template <class _Fn, class _Ux>
     constexpr expected(_Construct_expected_from_invoke_result_tag, _Fn&& _Func, _Ux&& _Arg) noexcept(
-        is_nothrow_constructible_v<_Ty, invoke_result_t<_Fn, _Ux>>)
+        noexcept(_Ty(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg)))))
         : _Value(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{true} {}
 
     // For when transform is called on an expected<void,E>
     template <class _Fn>
     constexpr expected(_Construct_expected_from_invoke_result_tag, _Fn&& _Func) noexcept(
-        is_nothrow_constructible_v<_Ty, invoke_result_t<_Fn>>)
-        : _Value(_STD invoke(_STD forward<_Fn>(_Func))), _Has_value{true} {}
+        noexcept(_Ty(_STD forward<_Fn>(_Func)())))
+        : _Value(_STD forward<_Fn>(_Func)()), _Has_value{true} {}
 
     template <class _Fn, class _Ux>
     constexpr expected(_Construct_expected_from_invoke_result_tag, unexpect_t, _Fn&& _Func, _Ux&& _Arg) noexcept(
-        is_nothrow_constructible_v<_Err, invoke_result_t<_Fn, _Ux>>)
+        noexcept(_Err(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg)))))
         : _Unexpected(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{false} {}
 
 
@@ -1228,7 +1236,7 @@ public:
     template <class _UErr>
         requires is_constructible_v<_Err, const _UErr&> && is_assignable_v<_Err&, const _UErr&>
     constexpr expected& operator=(const unexpected<_UErr>& _Other) noexcept(
-        is_nothrow_constructible_v<_Err, const _UErr&>&& is_nothrow_assignable_v<_Err&, const _UErr&>) { // strengthened
+        is_nothrow_constructible_v<_Err, const _UErr&>&& is_nothrow_assignable_v<_Err&, const _UErr&>) /* strengthened */ {
         if (_Has_value) {
             _STD construct_at(_STD addressof(_Unexpected), _Other._Unexpected);
             _Has_value = false;
@@ -1242,7 +1250,7 @@ public:
     template <class _UErr>
         requires is_constructible_v<_Err, _UErr> && is_assignable_v<_Err&, _UErr>
     constexpr expected& operator=(unexpected<_UErr>&& _Other) noexcept(
-        is_nothrow_constructible_v<_Err, _UErr>&& is_nothrow_assignable_v<_Err&, _UErr>) { // strengthened
+        is_nothrow_constructible_v<_Err, _UErr>&& is_nothrow_assignable_v<_Err&, _UErr>) /* strengthened */ {
         if (_Has_value) {
             _STD construct_at(_STD addressof(_Unexpected), _STD move(_Other._Unexpected));
             _Has_value = false;
@@ -1365,7 +1373,7 @@ public:
 
     template <class _Uty = _Err>
     _NODISCARD constexpr _Err error_or(_Uty&& _Other) const& noexcept(
-        is_nothrow_copy_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) { // strengthened
+        is_nothrow_copy_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) /* strengthened */ {
         static_assert(
             is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. (N4928 [expected.void.obs]/9)");
         static_assert(
@@ -1380,7 +1388,7 @@ public:
 
     template <class _Uty = _Err>
     _NODISCARD constexpr _Err error_or(_Uty&& _Other) && noexcept(
-        is_nothrow_move_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) { // strengthened
+        is_nothrow_move_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) /* strengthened */ {
         static_assert(
             is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true. (N4928 [expected.void.obs]/11)");
         static_assert(
@@ -1651,7 +1659,7 @@ public:
     template <class _Uty, class _UErr>
         requires is_void_v<_Uty>
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
-        noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
+        noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value != _Right.has_value()) {
             return false;
         } else {
@@ -1661,7 +1669,7 @@ public:
 
     template <class _UErr>
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const unexpected<_UErr>& _Right) noexcept(
-        noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
+        noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value) {
             return false;
         } else {
