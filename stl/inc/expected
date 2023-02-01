@@ -1680,7 +1680,7 @@ public:
 private:
     template <class _Fn, class _Ux>
     constexpr expected(_Construct_expected_from_invoke_result_tag, unexpect_t, _Fn&& _Func, _Ux&& _Arg) noexcept(
-        is_nothrow_constructible_v<_Err, invoke_result_t<_Fn, _Ux>>)
+        noexcept(_Err(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg)))))
         : _Unexpected(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{false} {}
 
     [[noreturn]] void _Throw_bad_expected_access_lv() const {
