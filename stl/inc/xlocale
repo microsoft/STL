@@ -245,7 +245,7 @@ public:
         _Newimp->_Addfac(_Facptr, _Facet::id);
         _Newimp->_Catmask = none;
         _Newimp->_Name    = "*";
-        return locale(_Newimp);
+        return locale{_Newimp};
     }
 
     template <class _Facet>

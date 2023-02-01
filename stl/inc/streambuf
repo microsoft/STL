@@ -27,7 +27,7 @@ protected:
 
     __CLR_OR_THIS_CALL basic_streambuf(_Uninitialized) noexcept {}
 
-    __CLR_OR_THIS_CALL basic_streambuf(const basic_streambuf& _Right) : _Plocale(new locale(_Right.getloc())) {
+    __CLR_OR_THIS_CALL basic_streambuf(const basic_streambuf& _Right) : _Plocale(new locale{_Right.getloc()}) {
         _Init();
         setp(_Right.pbase(), _Right.pptr(), _Right.epptr());
         setg(_Right.eback(), _Right.gptr(), _Right.egptr());

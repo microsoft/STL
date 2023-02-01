@@ -45,7 +45,7 @@ namespace stdext {
                 static state_type _State0;
 
                 _State = _State0;
-                _Loc   = _STD locale(_Loc, _Pcvt);
+                _Loc   = _STD locale{_Loc, _Pcvt};
             }
 
             explicit wbuffer_convert(_Mysb* _Strbuf)
@@ -53,7 +53,7 @@ namespace stdext {
                 static state_type _State0;
 
                 _State = _State0;
-                _Loc   = _STD locale(_Loc, _Pcvt);
+                _Loc   = _STD locale{_Loc, _Pcvt};
             }
 
             wbuffer_convert(_Mysb* _Strbuf, _Codecvt* _Pcvt_arg)
@@ -61,13 +61,13 @@ namespace stdext {
                 static state_type _State0;
 
                 _State = _State0;
-                _Loc   = _STD locale(_Loc, _Pcvt);
+                _Loc   = _STD locale{_Loc, _Pcvt};
             }
 
             wbuffer_convert(_Mysb* _Strbuf, _Codecvt* _Pcvt_arg, state_type _State_arg)
                 : _Pcvt(_Pcvt_arg), _Mystrbuf(_Strbuf), _Status(_Unused), _Nback(0) {
                 _State = _State_arg;
-                _Loc   = _STD locale(_Loc, _Pcvt);
+                _Loc   = _STD locale{_Loc, _Pcvt};
             }
 
             ~wbuffer_convert() noexcept override {

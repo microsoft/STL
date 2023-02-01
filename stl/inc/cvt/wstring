@@ -29,7 +29,7 @@ namespace stdext {
 
             void _Init(_Codecvt* _Pcvt_arg = new _Codecvt) { // initialize the object
                 _Pcvt  = _Pcvt_arg;
-                _Loc   = _STD locale(_Loc, _Pcvt);
+                _Loc   = _STD locale{_Loc, _Pcvt};
                 _Nconv = 0;
             }
 

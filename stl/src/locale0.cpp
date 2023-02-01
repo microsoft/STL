@@ -175,7 +175,7 @@ _MRTIMP2_PURE locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Init(bool _Do_in
 
         // set classic to match
         ptr->_Incref();
-        ::new (&classic_locale) locale(ptr);
+        ::new (&classic_locale) locale{ptr};
 #if defined(_M_CEE_PURE)
         locale::_Locimp::_Clocptr = ptr;
 #else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
