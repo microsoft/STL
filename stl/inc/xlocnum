@@ -409,7 +409,7 @@ int _Parse_fp_with_ios_base(char* const _Ac, _InIt& _First, _InIt& _Last, ios_ba
         }
     }
 
-    for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_dec_digit_end;
+    for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
          _Seendigit = true, (void) ++_First) {
         if (_Significant < _Max_sig_dig) { // save a significant fraction digit
             *_Ptr++ = _Src[_Idx];
