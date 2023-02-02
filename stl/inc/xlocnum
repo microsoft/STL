@@ -255,7 +255,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id numpunct<_Elem>::id;
 #define _ENABLE_V2_BEHAVIOR 1000000000
 
 template <class _Elem, class _InIt>
-int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _Iosbase, int* _Phexexp) {
+int _Parse_fp_with_ios_base(char* const _Ac, _InIt& _First, _InIt& _Last, ios_base& _Iosbase, int* _Phexexp) {
     // get floating-point field from [_First, _Last) into _Ac
     const auto& _Punct_fac = _STD use_facet<numpunct<_Elem>>(_Iosbase.getloc());
     char* _Ptr             = _Ac;
@@ -289,8 +289,7 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
         }
     }
 
-    char* const _Leading = _Ptr; // remember backstop
-    *_Ptr++              = '0'; // backstop carries from sticky bit
+    *_Ptr++ = '0'; // backstop carries from sticky bit
 
     bool _Parse_hex                = false;
     char _Initial_dec_leading_zero = '\0';
@@ -341,7 +340,7 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
         for (; _First != _Last; ++_First) {
             if ((_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end) { // got a digit, add to group size
                 _Seendigit = true;
-                if (_Max_sig_dig <= _Significant) {
+                if (_Significant >= _Max_sig_dig) {
                     ++_Power_of_rep_base; // just scale by 10 or 16
                     if (_Idx > 0) {
                         _Sticky = true;
