@@ -259,7 +259,6 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
     // get floating-point field from [_First, _Last) into _Ac
     const auto& _Punct_fac = _STD use_facet<numpunct<_Elem>>(_Iosbase.getloc());
     char* _Ptr             = _Ac;
-    bool _Bad              = false;
 
     constexpr int _Offset_dec_digit_end = 10;
     constexpr int _Offset_hex_digit_end = 22;
@@ -278,9 +277,7 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
 
     const _Elem _Positive_sign = _Atoms[_Offset_pos_sign];
     const _Elem _Negative_sign = _Atoms[_Offset_neg_sign];
-    const _Elem _Upper_e       = _Atoms[_Offset_upper_e];
-    const _Elem _Lower_e       = _Atoms[_Offset_lower_e];
-    const _Elem _Zero_ch       = _Atoms[0];
+    const _Elem _Zero_wc       = _Atoms[0];
 
     if (_First != _Last) {
         if (*_First == _Positive_sign) { // gather plus sign
@@ -295,15 +292,9 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
     char* const _Leading = _Ptr; // remember backstop
     *_Ptr++              = '0'; // backstop carries from sticky bit
 
-    bool _Seendigit  = false; // seen a digit in input
-    int _Significant = 0; // number of significant digits
-    size_t _Idx;
-
-    const int _Max_sig_dig = (*_Phexexp == _ENABLE_V2_BEHAVIOR ? _MAX_SIG_DIG_V2 : _MAX_SIG_DIG_V1);
-
-    bool _Parse_hex            = false;
-    bool _Has_dec_leading_zero = false;
-    if (_First != _Last && *_First == _Zero_ch) {
+    bool _Parse_hex                = false;
+    char _Initial_dec_leading_zero = '\0';
+    if (_First != _Last && *_First == _Zero_wc) {
         ++_First;
         if (_First == _Last) { // "0" only
             *_Ptr = '\0';
@@ -312,161 +303,46 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
         if (*_First == _Atoms[_Offset_lower_x] || *_First == _Atoms[_Offset_upper_x]) { // 0X or 0x
             _Parse_hex = true;
             ++_First; // discard 0X or 0x for further parsing
+            *_Ptr++ = 'x';
         } else {
-            _Has_dec_leading_zero = true;
+            ++_Initial_dec_leading_zero;
         }
     }
 
-    const string _Grouping = _Punct_fac.grouping();
+    const int _Max_sig_dig = (*_Phexexp == _ENABLE_V2_BEHAVIOR ? _MAX_SIG_DIG_V2 : _MAX_SIG_DIG_V1);
 
-    if (_Parse_hex) {
-        int _Power_of_16 = 0;
+    size_t _Idx;
+    bool _Sticky           = false;
+    bool _Seendigit        = false; // seen a digit in input
+    bool _Bad              = false;
+    int _Significant       = 0; // number of significant digits
+    int _Power_of_rep_base = 0; // power of 10 or 16
 
-        *_Ptr++ = 'x';
-
-        if (_Grouping.empty()) {
-            for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_hex_digit_end;
-                 _Seendigit = true, (void) ++_First) {
-                if (_Max_sig_dig <= _Significant) {
-                    ++_Power_of_16; // just scale by 16
-                } else if (_Idx != 0 || _Significant != 0) { // save a significant digit
-                    *_Ptr++ = _Src[_Idx];
-                    ++_Significant;
-                }
-            }
-        } else {
-            const _Elem _Kseparator = _Punct_fac.thousands_sep();
-            string _Groups(1, '\0');
-            size_t _Group_index = 0;
-
-            for (; _First != _Last; ++_First) {
-                if ((_Idx = _STD _Find_elem(_Atoms, *_First))
-                    < _Offset_hex_digit_end) { // got a digit, add to group size
-                    _Seendigit = true;
-                    if (_Max_sig_dig <= _Significant) {
-                        ++_Power_of_16; // just scale by 16
-                    } else if (_Idx != 0 || _Significant != 0) { // save a significant digit
-                        *_Ptr++ = _Src[_Idx];
-                        ++_Significant;
-                    }
-
-                    if (_Groups[_Group_index] != CHAR_MAX) {
-                        ++_Groups[_Group_index];
-                    }
-                } else if (_Groups[_Group_index] == '\0' || *_First != _Kseparator) {
-                    break; // not a group separator, done
-                } else { // add a new group to _Groups string
-                    _Groups.push_back('\0');
-                    ++_Group_index;
-                }
-            }
-
-            if (_Group_index != 0) {
-                if (_Groups[_Group_index] > '\0') {
-                    ++_Group_index; // add trailing group to group count
-                } else {
-                    _Bad = true; // trailing separator, fail
-                }
-            }
-
-            const char* _Grouping_iter      = _Grouping.data();
-            const char* const _Grouping_end = _Grouping.data() + _Grouping.size();
-            char _Current_grouping_count    = '\0';
-            while (!_Bad && _Group_index > 0) {
-                if (_Grouping_iter != _Grouping_end) { // keep the last value when _Grouping is exhausted
-                    _Current_grouping_count = *_Grouping_iter; // assign the variable at least once
-                    ++_Grouping_iter;
-                }
-
-                --_Group_index;
-                if ((_Current_grouping_count > '\0' && _Current_grouping_count != CHAR_MAX)
-                    && ((_Group_index > 0 && _Groups[_Group_index] != _Current_grouping_count)
-                        || (_Group_index == 0 && _Groups[_Group_index] > _Current_grouping_count))) {
-                    _Bad = true; // bad group size, fail
-                }
-                // group size okay, advance to next test
-            }
-        }
-
-        if (_Seendigit && _Significant == 0) {
-            *_Ptr++ = '0'; // save at least one leading digit
-        }
-
-        if (_First != _Last && *_First == _Punct_fac.decimal_point()) { // add .
-            *_Ptr++ = _CSTD localeconv()->decimal_point[0];
-            ++_First;
-        }
-
-        if (_Significant == 0) { // 0000. so far
-            for (; _First != _Last && *_First == _Zero_ch; _Seendigit = true, (void) ++_First) {
-                --_Power_of_16; // just count leading fraction zeros
-            }
-
-            if (_Power_of_16 < 0) { // put one back
-                *_Ptr++ = '0';
-                ++_Power_of_16;
-            }
-        }
-
-        for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_hex_digit_end;
+    const size_t _Offset_digit_end = _Parse_hex ? _Offset_hex_digit_end : _Offset_dec_digit_end;
+    const string _Grouping         = _Punct_fac.grouping();
+    if (_Grouping.empty()) {
+        for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
              _Seendigit = true, (void) ++_First) {
-            if (_Significant < _Max_sig_dig) { // save a significant fraction digit
+            if (_Max_sig_dig <= _Significant) {
+                ++_Power_of_rep_base; // just scale by 10 or 16
+                if (_Idx > 0) {
+                    _Sticky = true;
+                }
+            } else if (_Idx != 0 || _Significant != 0) { // save a significant digit
                 *_Ptr++ = _Src[_Idx];
                 ++_Significant;
             }
         }
-
-        if (_Seendigit && _First != _Last
-            && (*_First == _Atoms[_Offset_lower_p]
-                || *_First == _Atoms[_Offset_upper_p])) { // 'p' or 'P', collect exponent
-            *_Ptr++ = 'p';
-            ++_First;
-            _Seendigit   = false;
-            _Significant = 0;
-
-            if (_First != _Last) {
-                if (*_First == _Positive_sign) { // gather plus sign
-                    *_Ptr++ = '+';
-                    ++_First;
-                } else if (*_First == _Negative_sign) { // gather minus sign
-                    *_Ptr++ = '-';
-                    ++_First;
-                }
-            }
-
-            for (; _First != _Last && *_First == _Zero_ch; ++_First) { // strip leading zeros
-                _Seendigit = true;
-            }
-
-            if (_Seendigit) {
-                *_Ptr++ = '0'; // put one back
-            }
-
-            for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_hex_digit_end;
-                 _Seendigit = true, (void) ++_First) {
-                if (_Significant < _MAX_EXP_DIG) { // save a significant exponent digit
-                    *_Ptr++ = _Src[_Idx];
-                    ++_Significant;
-                }
-            }
-        }
-
-        if (_Bad || !_Seendigit) {
-            _Ptr = _Ac; // roll back pointer to indicate failure
-        }
-
-        *_Ptr     = '\0';
-        *_Phexexp = _Power_of_16; // power of 16 multiplier
-        return 0;
     } else {
-        int _Power_of_10 = 0;
-        bool _Sticky     = false;
+        const _Elem _Kseparator = _Punct_fac.thousands_sep();
+        string _Groups(1, _Initial_dec_leading_zero);
+        size_t _Group_index = 0;
 
-        if (_Grouping.empty()) {
-            for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_dec_digit_end;
-                 _Seendigit = true, (void) ++_First) {
-                if (_Max_sig_dig <= _Significant) { // enough digits, scale by 10 and update _Sticky
-                    ++_Power_of_10;
+        for (; _First != _Last; ++_First) {
+            if ((_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end) { // got a digit, add to group size
+                _Seendigit = true;
+                if (_Max_sig_dig <= _Significant) {
+                    ++_Power_of_rep_base; // just scale by 10 or 16
                     if (_Idx > 0) {
                         _Sticky = true;
                     }
@@ -474,149 +350,128 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
                     *_Ptr++ = _Src[_Idx];
                     ++_Significant;
                 }
-            }
-        } else { // grouping specified, gather digits and group sizes
-            const _Elem _Kseparator = _Punct_fac.thousands_sep();
-            string _Groups(1, static_cast<char>(_Has_dec_leading_zero));
-            size_t _Group_index = 0;
 
-            for (; _First != _Last; ++_First) {
-                if ((_Idx = _STD _Find_elem(_Atoms, *_First))
-                    < _Offset_dec_digit_end) { // got a digit, add to group size
-                    _Seendigit = true;
-                    if (_Max_sig_dig <= _Significant) { // enough digits, scale by 10 and update _Sticky
-                        ++_Power_of_10;
-                        if (_Idx > 0) {
-                            _Sticky = true;
-                        }
-                    } else if (_Idx != 0 || _Significant != 0) { // save a significant digit
-                        *_Ptr++ = _Src[_Idx];
-                        ++_Significant;
-                    }
-
-                    if (_Groups[_Group_index] != CHAR_MAX) {
-                        ++_Groups[_Group_index];
-                    }
-                } else if (_Groups[_Group_index] == '\0' || *_First != _Kseparator) {
-                    break; // not a group separator, done
-                } else { // add a new group to _Groups string
-                    _Groups.push_back('\0');
-                    ++_Group_index;
+                if (_Groups[_Group_index] != CHAR_MAX) {
+                    ++_Groups[_Group_index];
                 }
-            }
-
-            if (_Group_index != 0) {
-                if (_Groups[_Group_index] > '\0') {
-                    ++_Group_index; // add trailing group to group count
-                } else {
-                    _Bad = true; // trailing separator, fail
-                }
-            }
-
-            const char* _Grouping_iter      = _Grouping.data();
-            const char* const _Grouping_end = _Grouping.data() + _Grouping.size();
-            char _Current_grouping_count    = '\0';
-            while (!_Bad && _Group_index > 0) {
-                if (_Grouping_iter != _Grouping_end) { // keep the last value when _Grouping is exhausted
-                    _Current_grouping_count = *_Grouping_iter; // assign the variable at least once
-                    ++_Grouping_iter;
-                }
-
-                --_Group_index;
-                if ((_Current_grouping_count > '\0' && _Current_grouping_count != CHAR_MAX)
-                    && ((_Group_index > 0 && _Groups[_Group_index] != _Current_grouping_count)
-                        || (_Group_index == 0 && _Groups[_Group_index] > _Current_grouping_count))) {
-                    _Bad = true; // bad group size, fail
-                }
-                // group size okay, advance to next test
+            } else if (_Groups[_Group_index] == '\0' || *_First != _Kseparator) {
+                break; // not a group separator, done
+            } else { // add a new group to _Groups string
+                _Groups.push_back('\0');
+                ++_Group_index;
             }
         }
 
-        const char _Decimal_point = _CSTD localeconv()->decimal_point[0];
-        if (_First != _Last && *_First == _Punct_fac.decimal_point()) { // add .
-            *_Ptr++ = _Decimal_point;
-            ++_First;
-        }
-
-        if (*_Phexexp != _ENABLE_V2_BEHAVIOR && _Significant == 0) { // 0000. so far
-            for (; _First != _Last && *_First == _Zero_ch; _Seendigit = true, (void) ++_First) {
-                --_Power_of_10; // just count leading fraction zeros
-            }
-
-            if (_Power_of_10 < 0) { // put one back
-                *_Ptr++ = '0';
-                ++_Power_of_10;
+        if (_Group_index != 0) {
+            if (_Groups[_Group_index] > '\0') {
+                ++_Group_index; // add trailing group to group count
+            } else {
+                _Bad = true; // trailing separator, fail
             }
         }
 
-        for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_dec_digit_end;
+        const char* _Grouping_iter      = _Grouping.data();
+        const char* const _Grouping_end = _Grouping.data() + _Grouping.size();
+        char _Current_grouping_count    = '\0';
+        while (!_Bad && _Group_index > 0) {
+            if (_Grouping_iter != _Grouping_end) { // keep the last value when _Grouping is exhausted
+                _Current_grouping_count = *_Grouping_iter; // assign the variable at least once
+                ++_Grouping_iter;
+            }
+
+            --_Group_index;
+            if ((_Current_grouping_count > '\0' && _Current_grouping_count != CHAR_MAX)
+                && ((_Group_index > 0 && _Groups[_Group_index] != _Current_grouping_count)
+                    || (_Group_index == 0 && _Groups[_Group_index] > _Current_grouping_count))) {
+                _Bad = true; // bad group size, fail
+            }
+            // group size okay, advance to next test
+        }
+    }
+
+    if (_Parse_hex && _Seendigit && _Significant == 0) {
+        *_Ptr++ = '0'; // save at least one leading digit for hex
+    }
+
+    const char _Decimal_point = _CSTD localeconv()->decimal_point[0];
+    if (_First != _Last && *_First == _Punct_fac.decimal_point()) { // add .
+        *_Ptr++ = _Decimal_point;
+        ++_First;
+    }
+
+    if ((_Parse_hex || *_Phexexp != _ENABLE_V2_BEHAVIOR) && _Significant == 0) { // 0000. so far
+        for (; _First != _Last && *_First == _Zero_wc; _Seendigit = true, (void) ++_First) {
+            --_Power_of_rep_base; // just count leading fraction zeros
+        }
+
+        if (_Power_of_rep_base < 0) { // put one back
+            *_Ptr++ = '0';
+            ++_Power_of_rep_base;
+        }
+    }
+
+    for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_dec_digit_end;
+         _Seendigit = true, (void) ++_First) {
+        if (_Significant < _Max_sig_dig) { // save a significant fraction digit
+            *_Ptr++ = _Src[_Idx];
+            ++_Significant;
+        } else if (_Idx > 0) {
+            _Sticky = true; // just update _Sticky
+        }
+    }
+
+    if (_Sticky) { // increment ls digit in memory of those lost
+        char& _Last_got_digit = _Ptr[-1] == _Decimal_point ? _Ptr[-2] : _Ptr[-1];
+        if (_Last_got_digit == '0' || _Last_got_digit == (_Parse_hex ? '8' : '5')) {
+            ++_Last_got_digit;
+        }
+    }
+
+    const _Elem _Lower_exp_wc = _Atoms[_Parse_hex ? _Offset_lower_p : _Offset_lower_e]; // 'e' for dec, 'p' for hex
+    const _Elem _Upper_exp_wc = _Atoms[_Parse_hex ? _Offset_upper_p : _Offset_upper_e]; // 'E' for dec, 'P' for hex
+
+    if (_Seendigit && _First != _Last && (*_First == _Lower_exp_wc || *_First == _Upper_exp_wc)) { // collect exponent
+        *_Ptr++ = _Parse_hex ? 'p' : 'e';
+        ++_First;
+        _Seendigit   = false;
+        _Significant = 0;
+
+        if (_First != _Last) {
+            if (*_First == _Positive_sign) { // gather plus sign
+                *_Ptr++ = '+';
+                ++_First;
+            } else if (*_First == _Negative_sign) { // gather minus sign
+                *_Ptr++ = '-';
+                ++_First;
+            }
+        }
+
+        for (; _First != _Last && *_First == _Zero_wc; ++_First) { // strip leading zeros
+            _Seendigit = true;
+        }
+
+        if (_Seendigit) {
+            *_Ptr++ = '0'; // put one back
+        }
+
+        for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
              _Seendigit = true, (void) ++_First) {
-            if (_Significant < _Max_sig_dig) { // save a significant fraction digit
+            if (_Significant < _MAX_EXP_DIG) { // save a significant exponent digit
                 *_Ptr++ = _Src[_Idx];
                 ++_Significant;
-            } else if (0 < _Idx) {
-                _Sticky = true; // just update _Sticky
             }
         }
+    }
 
-        if (_Sticky) { // increment ls digit in memory of those lost
-            char* _Px = _Ptr;
-            while (--_Px != _Leading) { // add in carry
-                if (*_Px != _Decimal_point) { // not decimal point
-                    if (*_Px != '9') { // carry stops here
-                        ++*_Px;
-                        break;
-                    }
+    if (_Bad || !_Seendigit) {
+        _Ptr = _Ac; // roll back pointer to indicate failure
+    }
 
-                    *_Px = '0'; // propagate carry
-                }
-            }
-
-            if (_Px == _Leading) { // change "09..." to "10...", no need to increase _Power_of_10
-                *_Px = '1';
-            }
-        }
-
-        if (_Seendigit && _First != _Last
-            && (*_First == _Lower_e || *_First == _Upper_e)) { // 'e' or 'E', collect exponent
-            *_Ptr++ = 'e';
-            ++_First;
-            _Seendigit   = false;
-            _Significant = 0;
-
-            if (_First != _Last) {
-                if (*_First == _Positive_sign) { // gather plus sign
-                    *_Ptr++ = '+';
-                    ++_First;
-                } else if (*_First == _Negative_sign) { // gather minus sign
-                    *_Ptr++ = '-';
-                    ++_First;
-                }
-            }
-
-            for (; _First != _Last && *_First == _Zero_ch; ++_First) { // strip leading zeros
-                _Seendigit = true;
-            }
-
-            if (_Seendigit) {
-                *_Ptr++ = '0'; // put one back
-            }
-
-            for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_dec_digit_end;
-                 _Seendigit = true, (void) ++_First) {
-                if (_Significant < _MAX_EXP_DIG) { // save a significant exponent digit
-                    *_Ptr++ = _Src[_Idx];
-                    ++_Significant;
-                }
-            }
-        }
-
-        if (_Bad || !_Seendigit) {
-            _Ptr = _Ac; // roll back pointer to indicate failure
-        }
-
-        *_Ptr = '\0';
-        return _Power_of_10;
+    if (_Parse_hex) {
+        *_Phexexp = _Power_of_rep_base; // power of 16 multiplier
+        return 0;
+    } else {
+        return _Power_of_rep_base; // power of 10 multiplier
     }
 }
 
