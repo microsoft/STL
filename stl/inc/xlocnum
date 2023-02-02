@@ -466,6 +466,7 @@ int _Parse_fp_with_ios_base(char* const _Ac, _InIt& _First, _InIt& _Last, ios_ba
         _Ptr = _Ac; // roll back pointer to indicate failure
     }
 
+    *_Ptr = '\0';
     if (_Parse_hex) {
         *_Phexexp = _Power_of_rep_base; // power of 16 multiplier
         return 0;
