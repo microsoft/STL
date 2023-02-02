@@ -99,6 +99,7 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
         assert(!result);
         assert(result.error() == 22);
     }
+
     if constexpr (!is_void_v<Val>) {
         {
             decltype(auto) result = forward<Expected>(engaged).and_then(&Thingy::x);
@@ -127,6 +128,7 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
         assert(!result);
         assert(result.error() == 22);
     }
+
     if constexpr (!is_void_v<Val>) {
         {
             decltype(auto) result = forward<Expected>(engaged).transform(&Thingy::member_func);
@@ -139,6 +141,7 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
             assert(result.error() == 22);
         }
     }
+
     if constexpr (!is_permissive) { // TRANSITION, VSO-1734935
         {
             decltype(auto) result = forward<Expected>(engaged).transform(immov);
@@ -152,6 +155,7 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
             assert(result.error() == 22);
         }
     }
+
     {
         decltype(auto) result = forward<Expected>(engaged).transform(to_void);
         static_assert(is_same_v<decltype(result), expected<void, int>>);
@@ -198,19 +202,17 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
 
     if constexpr (!is_permissive) { // TRANSITION, VSO-1734935
         {
-            {
-                decltype(auto) result = forward<Expected>(engaged).transform_error(immov);
-                static_assert(is_same_v<decltype(result), expected<Val, Immovable>>);
-                if constexpr (!is_void_v<Val>) {
-                    assert(result->x == 11);
-                }
+            decltype(auto) result = forward<Expected>(engaged).transform_error(immov);
+            static_assert(is_same_v<decltype(result), expected<Val, Immovable>>);
+            if constexpr (!is_void_v<Val>) {
+                assert(result->x == 11);
             }
-            {
-                decltype(auto) result = forward<Expected>(unengaged).transform_error(immov);
-                static_assert(is_same_v<decltype(result), expected<Val, Immovable>>);
-                assert(!result);
-                assert(result.error().v == 88);
-            }
+        }
+        {
+            decltype(auto) result = forward<Expected>(unengaged).transform_error(immov);
+            static_assert(is_same_v<decltype(result), expected<Val, Immovable>>);
+            assert(!result);
+            assert(result.error().v == 88);
         }
     }
 
@@ -256,11 +258,9 @@ constexpr void test_error_or() {
         constexpr payload_error_or(const convertible& val) noexcept(conversion_is_noexcept) : _val(val._val + 4) {}
         constexpr payload_error_or(convertible&& val) noexcept(conversion_is_noexcept) : _val(val._val + 5) {}
 
-        [[nodiscard]] constexpr bool operator==(const payload_error_or& right) const noexcept {
-            return _val == right._val;
-        }
+        [[nodiscard]] constexpr bool operator==(const payload_error_or&) const noexcept = default;
 
-        int _val = 0;
+        int _val;
     };
 
     { // with payload argument
