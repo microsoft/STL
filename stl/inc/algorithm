@@ -10105,7 +10105,7 @@ namespace ranges {
                 // Avoid repeatedly initializing objects from the result of an iterator dereference when doing so might
                 // not be idempotent. The `if constexpr` to avoid the extra branch in cases where it's not needed
                 if constexpr (!same_as<remove_cvref_t<range_reference_t<_Rng>>, _Vty>
-                              || !is_lvalue_reference_v<range_reference_t<_Rng>>) {
+                              || is_rvalue_reference_v<range_reference_t<_Rng>>) {
                     if (_Found.min == _Found.max) {
                         // This initialization is correct, similar to WG21-N4928 [dcl.init.aggr]/6 example
                         minmax_result<_Vty> _Result = {static_cast<_Vty>(*_Found.min), _Result.min};
