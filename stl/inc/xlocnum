@@ -270,7 +270,7 @@ int _Parse_fp_with_ios_base(char* const _Ac, _InIt& _First, _InIt& _Last, ios_ba
     constexpr size_t _Offset_lower_p       = _Offset_upper_p + 1;
     constexpr size_t _Offset_upper_e       = 0xE;
     constexpr size_t _Offset_lower_e       = 0xE + 0x10 - 10;
-    static constexpr char _Src[]        = "0123456789ABCDEFabcdef-+XxPp";
+    static constexpr char _Src[]           = "0123456789ABCDEFabcdef-+XxPp";
     _Elem _Atoms[sizeof(_Src)];
     const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
     _Ctype_fac.widen(_STD begin(_Src), _STD end(_Src), _Atoms);
