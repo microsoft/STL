@@ -392,7 +392,7 @@ public:
         return tmp;
     }
 
-    friend bool operator==(const input_move_iterator& a, const input_move_iterator& b) = default;
+    friend bool operator==(const input_move_iterator&, const input_move_iterator&) = default;
 
 private:
     shared_ptr<int>* m_ptr{nullptr};
