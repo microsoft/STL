@@ -31,7 +31,8 @@ We're in the process of moving all of our work on the STL to GitHub. Current sta
 * Build System: **In progress.** We're working on a CMake build system, which is currently capable of building one
 flavor of the STL (native desktop). We need to extend this to build all of the flavors required for the MSVC toolset
 (e.g. `/clr`, `/clr:pure`, OneCore, Spectre). Until that's done, we're keeping our legacy build system around in the
-`stl/msbuild` subdirectory. (We're keeping those files in this repo, even though they're unusable outside of Microsoft because they need to be updated whenever source files are added/renamed/deleted. We'll delete the legacy machinery as
+`stl/msbuild` subdirectory. (We're keeping those files in this repo, even though they're unusable outside of Microsoft,
+because they need to be updated whenever source files are added/renamed/deleted. We'll delete the legacy machinery as
 soon as possible.)
 
 * Tests: **In progress.** We rely on three test suites: std, tr1, and [libcxx][]. We've partially ported std and tr1,
@@ -49,7 +50,7 @@ libraries.)
 
 * Issues: **In progress.** We're going to use GitHub issues to track all of the things that we need to work on. This
 includes C++20 features, [LWG issues][], conformance bugs, performance improvements, and other todos. There are
-approximately 200 active bugs in the STL's Microsoft internal database; we need to manually replicate all of them to
+approximately 200 active bugs in the STL's Microsoft-internal database; we need to manually replicate all of them to
 GitHub issues. Currently, the [cxx20 tag][] and [LWG tag][] are done; every remaining work item is tracked by a GitHub
 issue. The [bug tag][] and [enhancement tag][] are being populated.
 
@@ -93,7 +94,7 @@ all-important; breaking source compatibility can be an acceptable cost if done f
 # Non-Goals
 
 There are things that we aren't interested in doing with this project, for various reasons (most importantly, we need to
-focus development efforts on our goals). Some examples:
+focus development effort on our goals). Some examples:
 
 * Non-goal: Porting to other platforms.
 
@@ -103,7 +104,7 @@ focus development efforts on our goals). Some examples:
 might implement some or all of a TS, often when we're working on the specification itself.)
 
 If you're proposing a feature to WG21 (the C++ Standardization Committee), you're welcome (and encouraged!) to use our
-code as a base for proof-of-concept implementation. These non-goals simply mean that we're unable to consider pull
+code as a base for a proof-of-concept implementation. These non-goals simply mean that we're unable to consider pull
 requests for a proposed feature until it has been voted into a Working Paper. After that happens, we'll be delighted to
 review a production-ready pull request.
 
@@ -114,7 +115,7 @@ You can report STL bugs here, where they'll be directly reviewed by maintainers.
 
 **Please help us** efficiently process bug reports by following these rules:
 
-* Only STL bugs should be reported here. If it's a bug in the compiler, CRT, or IDE, please report it through the Developer
+* Only STL bugs should be reported here. If it's a bug in the compiler, CRT, or IDE, please report it through Developer
 Community or Report A Problem. If it's a bug in the Windows SDK, please report it through the [Feedback Hub][hub] app.
 If you aren't sure, try to reduce your test case and see if you can eliminate the STL's involvement while still
 reproducing the bug.
@@ -186,7 +187,7 @@ To build the x64 target (recommended):
 Consumption of the built library is largely based on the build system you're using. There are at least 2 directories
 you need to hook up. Assuming you built the x64 target with the Visual Studio IDE, with the STL repository cloned to
 `C:\Dev\STL`, build outputs will end up at `C:\Dev\STL\out\build\x64\out`. Ensure that the `inc` directory is searched
-for headers and that `lib\{architecture}` is searched for link libraries, before any defaults supplied by MSVC. The
+for headers, and that `lib\{architecture}` is searched for link libraries, before any defaults supplied by MSVC. The
 names of the import and static libraries are the same as those that ship with MSVC. As a result, the compiler `/MD`,
 `/MDd`, `/MT`, or `/MTd` switches will work without modification of your build scripts or command-line muscle memory.
 
@@ -256,14 +257,14 @@ These examples assume that your current directory is `C:\Dev\STL\out\build\x64`.
 
 * This command will run all of the test suites with verbose output.
   + `ctest -V`
-* This command will also run all of the testsuites.
+* This command will also run all of the test suites.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test ..\..\..\tests\std ..\..\..\tests\tr1`
-* This command will run all of the std testsuite.
+* This command will run all of the std test suite.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std`
-* If you want to run a subset of a testsuite, you need to point it to the right place in the sources. The following
+* If you want to run a subset of a test suite, you need to point it to the right place in the sources. The following
 will run the single test found under VSO_0000000_any_calling_conventions.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std\tests\VSO_0000000_any_calling_conventions`
-* You can invoke `stl-lit` with any arbitrary subdirectory of a testsuite. In libcxx this allows you to have finer
+* You can invoke `stl-lit` with any arbitrary subdirectory of a test suite. In libcxx this allows you to have finer
 control over what category of tests you would like to run. The following will run all the libcxx map tests.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test\std\containers\associative\map`
 
@@ -271,12 +272,12 @@ control over what category of tests you would like to run. The following will ru
 
 ### CTest
 
-When running the tests via CTest, all of the testsuites are considered to be a single test. If any single test in a
-testsuite fails, CTest will simply report that the `stl` test failed.
+When running the tests via CTest, all of the test suites are considered to be a single test. If any single test in a
+test suite fails, CTest will simply report that the `stl` test failed.
 
 Example:
 ```
-0% of tests passed, 1 test failed out of 1
+0% tests passed, 1 tests failed out of 1
 
 Total Test time (real) = 2441.55 sec
 
@@ -287,13 +288,13 @@ The following tests FAILED:
 The primary utility of CTest in this case is to conveniently invoke `stl-lit.py` with the correct set of arguments.
 
 CTest will output everything that was sent to stderr for each of the failed test suites, which can be used to identify
-which individual test within the testsuite failed. It can sometimes be helpful to run CTest with the `-V` option in
+which individual test within the test suite failed. It can sometimes be helpful to run CTest with the `-V` option in
 order to see the stdout of the tests.
 
 ### stl-lit
 
 When running the tests directly via the generated `stl-lit.py` script the result of each test will be printed. The
-format of each result is `{Result Code}: {Testsuite Name} :: {Test Name}:{Configuration Number}`.
+format of each result is `{Result Code}: {Test Suite Name} :: {Test Name}:{Configuration Number}`.
 
 Example:
 ```
@@ -343,12 +344,12 @@ The `PASS` and `FAIL` result codes are self-explanatory. We want our tests to `P
 
 The `XPASS` and `XFAIL` result codes are less obvious. `XPASS` is actually a failure result and indicates that we
 expected a test to fail but it passed. `XFAIL` is a successful result and indicates that we expected the test to fail
-and it did. Typically an `XPASS` result means that the `expected_results.txt` file for the testsuite needs to be
+and it did. Typically an `XPASS` result means that the `expected_results.txt` file for the test suite needs to be
 modified. If the `XPASS` result is a test legitimately passing, the usual course of action would be to remove a `FAIL`
 entry from the `expected_results.txt`. However, some tests from `libcxx` mark themselves as `XFAIL` (meaning they
 expect to fail) for features they have added tests for but have yet to implement in `libcxx`. If the STL implements
 those features first the tests will begin passing unexpectedly for us and return `XPASS` results. In order to resolve
-this it is necessary to add a `PASS` entry to the `expected_results.txt` of the testsuite in question.
+this it is necessary to add a `PASS` entry to the `expected_results.txt` of the test suite in question.
 
 The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently,
 all tests which use the `/clr` or `/clr:pure` options are unsupported. Also, the `/BE` option is unsupported for x86.
