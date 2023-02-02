@@ -357,7 +357,7 @@ void test_gh3376() {
         assert(bool(stream));
         assert((ostringstream{} << x).str() == "-10");
     }
-    
+
     // Ensure that huge "999...999.999...999" represantations are correctly parsed.
     {
         istringstream stream(string(38, '9') + "." + string(800, '9'));
