@@ -572,9 +572,8 @@ int _Parse_fp_with_ios_base(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _I
                 }
             }
 
-            if (_Px == _Leading) { // change "999..." to "1000..." and scale _Power_of_10
+            if (_Px == _Leading) { // change "09..." to "10...", no need to increase _Power_of_10
                 *_Px = '1';
-                ++_Power_of_10;
             }
         }
 
