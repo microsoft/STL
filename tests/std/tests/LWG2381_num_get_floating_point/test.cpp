@@ -285,6 +285,124 @@ void test_int_grouping() {
     }
 }
 
+// Also test GH-3376 <xlocnum>: Incorrect result when parsing 9.999999...
+template <class Flt>
+void test_gh3376() {
+    // Ensure that "0.0999....999" is still correctly parsed.
+    {
+        istringstream stream("0.09" + string(800, '9'));
+        Flt x = 0.0;
+
+        stream >> x;
+        assert(bool(stream));
+        assert((ostringstream{} << x).str() == "0.1");
+    }
+    {
+        istringstream stream("-0.09" + string(800, '9'));
+        Flt x = 0.0;
+
+        stream >> x;
+        assert(bool(stream));
+        assert((ostringstream{} << x).str() == "-0.1");
+    }
+
+    // Ensure that "8.999....999" is still correctly parsed.
+    {
+        istringstream stream("8." + string(800, '9'));
+        Flt x = 0.0;
+
+        stream >> x;
+        assert(bool(stream));
+        assert((ostringstream{} << x).str() == "9");
+    }
+    {
+        istringstream stream("-8." + string(800, '9'));
+        Flt x = 0.0;
+
+        stream >> x;
+        assert(bool(stream));
+        assert((ostringstream{} << x).str() == "-9");
+    }
+
+    // Ensure that "0.999...999" and its friends are correctly parsed.
+    {
+        istringstream stream("0." + string(800, '9'));
+        Flt x = 0.0;
+
+        stream >> x;
+        assert(bool(stream));
+        assert((ostringstream{} << x).str() == "1");
+    }
+    {
+        istringstream stream("-0." + string(800, '9'));
+        Flt x = 0.0;
+
+        stream >> x;
+        assert(bool(stream));
+        assert((ostringstream{} << x).str() == "-1");
+    }
+    {
+        istringstream stream("9." + string(800, '9'));
+        Flt x = 0.0;
+
+        stream >> x;
+        assert(bool(stream));
+        assert((ostringstream{} << x).str() == "10");
+    }
+    {
+        istringstream stream("-9." + string(800, '9'));
+        Flt x = 0.0;
+
+        stream >> x;
+        assert(bool(stream));
+        assert((ostringstream{} << x).str() == "-10");
+    }
+    
+    // Ensure that huge "999...999.999...999" represantations are correctly parsed.
+    {
+        istringstream stream(string(38, '9') + "." + string(800, '9'));
+        Flt x = 0.0;
+
+        stream >> x;
+        assert(bool(stream));
+        assert((ostringstream{} << x).str() == "1e+38");
+    }
+    {
+        istringstream stream("-" + string(38, '9') + "." + string(800, '9'));
+        Flt x = 0.0;
+
+        stream >> x;
+        assert(bool(stream));
+        assert((ostringstream{} << x).str() == "-1e+38");
+    }
+    {
+        istringstream stream(string(308, '9') + "." + string(800, '9'));
+        Flt x = 0.0;
+
+        stream >> x;
+        if (is_same_v<Flt, float>) {
+            assert(!stream);
+            assert(x == HUGE_VALF);
+        } else {
+            assert(bool(stream));
+            assert((ostringstream{} << x).str() == "1e+308");
+        }
+    }
+    {
+        istringstream stream("-" + string(308, '9') + "." + string(800, '9'));
+        Flt x = 0.0;
+
+        stream >> x;
+        if (is_same_v<Flt, float>) {
+            assert(!stream);
+            assert(x == -HUGE_VALF);
+        } else {
+            assert(bool(stream));
+            assert((ostringstream{} << x).str() == "-1e+308");
+        }
+    }
+}
+
 int main() {
     test<float>();
     test<double>();
@@ -295,4 +413,8 @@ int main() {
     test_int_grouping<unsigned long>();
     test_int_grouping<long long>();
     test_int_grouping<unsigned long long>();
+
+    test_gh3376<float>();
+    test_gh3376<double>();
+    test_gh3376<long double>();
 }
