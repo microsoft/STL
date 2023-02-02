@@ -285,9 +285,48 @@ void test_int_grouping() {
     }
 }
 
-// Also test GH-3376 <xlocnum>: Incorrect result when parsing 9.999999...
+// Also test GH-3375 <xlocnum>: Incorrect rounding when parsing long hexadecimal floating point numbers just above
+// midpoints
+// And GH-3376 <xlocnum>: Incorrect result when parsing 9.999999...
 template <class Flt>
-void test_gh3376() {
+void test_gh3375_gh3376() {
+    // Ensure long hexadecimal FP representations just above midpoints are correctly parsed.
+    if (is_same_v<Flt, float>) {
+        {
+            istringstream stream("0x1.000001" + string(800, '0') + "1p+0");
+            Flt x = 0.0;
+
+            stream >> x;
+            assert(bool(stream));
+            assert((ostringstream{} << hexfloat << x).str() == "0x1.0000020000000p+0");
+        }
+        {
+            istringstream stream("-0x1.000001" + string(800, '0') + "1p+0");
+            Flt x = 0.0;
+
+            stream >> x;
+            assert(bool(stream));
+            assert((ostringstream{} << hexfloat << x).str() == "-0x1.0000020000000p+0");
+        }
+    } else {
+        {
+            istringstream stream("0x1.00000000000008" + string(800, '0') + "1p+0");
+            Flt x = 0.0;
+
+            stream >> x;
+            assert(bool(stream));
+            assert((ostringstream{} << hexfloat << x).str() == "0x1.0000000000001p+0");
+        }
+        {
+            istringstream stream("-0x1.00000000000008" + string(800, '0') + "1p+0");
+            Flt x = 0.0;
+
+            stream >> x;
+            assert(bool(stream));
+            assert((ostringstream{} << hexfloat << x).str() == "-0x1.0000000000001p+0");
+        }
+    }
+
     // Ensure that "0.0999....999" is still correctly parsed.
     {
         istringstream stream("0.09" + string(800, '9'));
@@ -403,6 +442,53 @@ void test_gh3376() {
     }
 }
 
+// Also test GH-3378: <xlocnum>: Incorrect rounding when parsing long floating point numbers just below midpoints
+template <class Flt>
+void test_gh3378() {
+    {
+        // just below 2^-1022 + 2^-1074 + 2^-1075
+        istringstream stream(
+            "2."
+            "2250738585072021241887014792022203290724052827943903781430313383743510731924419468675440643256388185138218"
+            "8218502438069999947733013005649884107791928741341929297200970481951993067993290969042784064731682041565926"
+            "7286329336304746701233168529834221527445172608358596545663192828352447877877998943107797838336991592885945"
+            "5521371418112845825114558431922307989750439508685941245723089173894616936837232119137365897797772328669884"
+            "0356390251044443035457396733706583981055420456693824658413747607155981176573877626747665912387199931904006"
+            "3173347090030127901881752034471902500280612777779167983910905785840064647159438105114891542827750411746821"
+            "9413395246668250343130618158782937900420539237507208336669324158000275839111885418864151316847843631308023"
+            "75962957739830017089843749e-308");
+
+        ostringstream os;
+        os.precision(17);
+
+        Flt x = 0.0;
+        stream >> x;
+        assert(bool(stream));
+        assert((move(os) << x).str() == "2.2250738585072019e-308");
+    }
+    {
+        // negative case
+        istringstream stream(
+            "-2."
+            "2250738585072021241887014792022203290724052827943903781430313383743510731924419468675440643256388185138218"
+            "8218502438069999947733013005649884107791928741341929297200970481951993067993290969042784064731682041565926"
+            "7286329336304746701233168529834221527445172608358596545663192828352447877877998943107797838336991592885945"
+            "5521371418112845825114558431922307989750439508685941245723089173894616936837232119137365897797772328669884"
+            "0356390251044443035457396733706583981055420456693824658413747607155981176573877626747665912387199931904006"
+            "3173347090030127901881752034471902500280612777779167983910905785840064647159438105114891542827750411746821"
+            "9413395246668250343130618158782937900420539237507208336669324158000275839111885418864151316847843631308023"
+            "75962957739830017089843749e-308");
+
+        ostringstream os;
+        os.precision(17);
+
+        Flt x = 0.0;
+        stream >> x;
+        assert(bool(stream));
+        assert((move(os) << x).str() == "-2.2250738585072019e-308");
+    }
+}
+
 int main() {
     test<float>();
     test<double>();
@@ -414,7 +500,10 @@ int main() {
     test_int_grouping<long long>();
     test_int_grouping<unsigned long long>();
 
-    test_gh3376<float>();
-    test_gh3376<double>();
-    test_gh3376<long double>();
+    test_gh3375_gh3376<float>();
+    test_gh3375_gh3376<double>();
+    test_gh3375_gh3376<long double>();
+
+    test_gh3378<double>();
+    test_gh3378<long double>();
 }
