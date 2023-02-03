@@ -4,6 +4,7 @@
 #include <array>
 #include <cassert>
 #include <functional>
+#include <memory>
 #include <ranges>
 #include <string>
 #include <tuple>
@@ -29,7 +30,7 @@ namespace test_apply {
     static_assert(CanApply<tuple<>>);
     static_assert(CanApply<tuple<char, wchar_t>>);
     static_assert(CanApply<tuple<char, signed char, unsigned char>>);
-    static_assert(CanApply<pair<signed, unsigned>>);
+    static_assert(CanApply<pair<int, unsigned int>>);
     static_assert(CanApply<array<int, 0>>);
     static_assert(CanApply<array<short, 1>>);
     static_assert(CanApply<array<long, 2>>);
@@ -121,12 +122,12 @@ namespace test_make_from_tuple {
 
             int a = 0;
             int b = 1;
-            S expected{&a, &b};
+            S expected_val{&a, &b};
 
-            assert(make_from_tuple<S>(tuple{&a, &b}) == expected);
-            assert(make_from_tuple<S>(pair{&a, &b}) == expected);
-            assert(make_from_tuple<S>(array{&a, &b}) == expected);
-            assert(make_from_tuple<S>(subrange{&a, &b}) == expected);
+            assert(make_from_tuple<S>(tuple{&a, &b}) == expected_val);
+            assert(make_from_tuple<S>(pair{&a, &b}) == expected_val);
+            assert(make_from_tuple<S>(array{&a, &b}) == expected_val);
+            assert(make_from_tuple<S>(subrange{&a, &b}) == expected_val);
         }
 
         { // Test make_from_tuple with big tuple-like types
@@ -141,9 +142,9 @@ namespace test_make_from_tuple {
                 int z;
             };
 
-            S expected{NoIncrement{}, 2, 3, 4};
-            assert(make_from_tuple<S>(tuple{1, 2, 3}) == expected);
-            assert(make_from_tuple<S>(array{1, 2, 3}) == expected);
+            S expected_val{NoIncrement{}, 2, 3, 4};
+            assert(make_from_tuple<S>(tuple{1, 2, 3}) == expected_val);
+            assert(make_from_tuple<S>(array{1, 2, 3}) == expected_val);
         }
 
         return true;

@@ -71,7 +71,7 @@ static_assert(test_common_reference<tuple<int, long>, array<int, 2>, tuple<int, 
 static_assert(test_common_reference<tuple<short, int&&, const long>, array<int, 3>, tuple<int, int, long>>);
 static_assert(test_common_reference<tuple<short&, int&&, const volatile long>, array<int, 3>, tuple<int, int, long>>);
 
-// Test common_reference<cvref tuple&, cvref tuple-like>, tuple-like is array
+// Test common_reference<cvref tuple, cvref tuple-like>, tuple-like is array
 static_assert(test_common_reference<const tuple<>&, array<int, 0>, tuple<>>);
 static_assert(test_common_reference<tuple<int>&, array<int, 1>&, tuple<int&>>);
 static_assert(test_common_reference<const tuple<int, long>&&, array<int, 2>&, tuple<const int&, long>>);

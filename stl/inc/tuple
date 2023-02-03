@@ -180,11 +180,11 @@ struct _Alloc_unpack_tuple_t {
 }; // tag type to disambiguate construction (from an allocator and unpacking a tuple/pair)
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
-template <class _Other, class _Tuple, class _Indices = make_index_sequence<tuple_size_v<_Tuple>>>
+template <class _Tuple, class _Other, class _Indices = make_index_sequence<tuple_size_v<_Tuple>>>
 inline constexpr bool _Can_construct_values_from_tuple_like_v = false;
 
-template <class _Other, class... _Types, size_t... _Indices>
-inline constexpr bool _Can_construct_values_from_tuple_like_v<_Other, tuple<_Types...>, index_sequence<_Indices...>> =
+template <class... _Types, class _Other, size_t... _Indices>
+inline constexpr bool _Can_construct_values_from_tuple_like_v<tuple<_Types...>, _Other, index_sequence<_Indices...>> =
     conjunction_v<is_constructible<_Types, decltype(_STD get<_Indices>(_STD declval<_Other>()))>...>;
 
 #ifdef __clang__ // TRANSITION, LLVM-59827
@@ -253,7 +253,7 @@ public:
         return *this;
     }
 
-#if defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts
     template <_Tuple_like _Other>
         requires _Different_from<_Other, tuple> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr tuple& operator=(_Other&&) noexcept /* strengthened */ {
@@ -265,7 +265,7 @@ public:
     constexpr const tuple& operator=(_Other&&) const noexcept /* strengthened */ {
         return *this;
     }
-#endif // defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(tuple&) noexcept {}

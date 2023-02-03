@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cstddef>
 #include <memory_resource>
 #include <string>
 #include <string_view>
@@ -72,7 +73,7 @@ public:
 private:
     template <size_t... Indices>
     static constexpr bool test_tuple_like_constructor(index_sequence<Indices...>) {
-        // Test tuple(tuple-like) constructor with TupleLike<int...>&
+        // Test tuple(tuple-like) constructor with TupleLike<int>&
         static_assert(constructible_from<Tuple<int>, TupleLike<int>&>);
         static_assert(constructible_from<Tuple<int&>, TupleLike<int>&>);
         static_assert(constructible_from<Tuple<const int&>, TupleLike<int>&>);
@@ -122,8 +123,8 @@ private:
         assert((get<Indices>(t6) == get_letter(Indices) && get<Indices>(a) == '\x7F') && ...);
         ((get<Indices>(a) = std::move(get<Indices>(t6))), ...);
 
-        Tuple<const TmpChar&> p7(std::move(a));
-        assert((&get<Indices>(p7) == &get<Indices>(a)) && ...);
+        Tuple<const TmpChar&> t7(std::move(a));
+        assert((&get<Indices>(t7) == &get<Indices>(a)) && ...);
 
         Tuple<TmpChar&&> t8(std::move(a));
         assert((&get<Indices>(t8) == &get<Indices>(a)) && ...);
@@ -151,7 +152,7 @@ private:
 
     template <size_t... Indices>
     static constexpr bool test_tuple_like_allocator_constructor(index_sequence<Indices...>) {
-        // Test tuple(tuple-like, allocator_arg_t, Alloc)
+        // Test tuple(allocator_arg_t, Alloc, tuple-like)
         static_assert(constructible_from<Tuple<string>, allocator_arg_t, allocator<char>, TupleLike<string>&>);
         static_assert(constructible_from<Tuple<string>, allocator_arg_t, allocator<char>, const TupleLike<string>&>);
         static_assert(constructible_from<Tuple<string>, allocator_arg_t, allocator<char>, TupleLike<string>>);
@@ -168,8 +169,8 @@ private:
 
             Tuple<pmr::string> t1(allocator_arg, Alloc{&resource}, a);
             assert((get<Indices>(t1).get_allocator() == get<Indices>(a).get_allocator()) && ...);
-            assert((ranges::equal(get<Indices>(t1), get_str(Indices)) && //
-                       ranges::equal(get<Indices>(a), get_str(Indices)))
+            assert((ranges::equal(get<Indices>(t1), get_str(Indices)) //
+                       && ranges::equal(get<Indices>(a), get_str(Indices)))
                    && ...);
 
             array<byte, 128> extra_buffer;
@@ -177,8 +178,8 @@ private:
 
             Tuple<const pmr::string> t2(allocator_arg, Alloc{&extra_resource}, a);
             assert((get<Indices>(t2).get_allocator() != get<Indices>(a).get_allocator()) && ...);
-            assert((ranges::equal(get<Indices>(t2), get_str(Indices)) && //
-                       ranges::equal(get<Indices>(a), get_str(Indices)))
+            assert((ranges::equal(get<Indices>(t2), get_str(Indices)) //
+                       && ranges::equal(get<Indices>(a), get_str(Indices)))
                    && ...);
         }
 

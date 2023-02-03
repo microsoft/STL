@@ -1708,7 +1708,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_starts_ends_with 202106L
 #define __cpp_lib_ranges_stride           202207L
 #define __cpp_lib_ranges_to_container     202202L
-#define __cpp_lib_tuple_like              202207L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream                  202106L
@@ -1717,7 +1716,12 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_string_contains             202011L
 #define __cpp_lib_string_resize_and_overwrite 202110L
 #define __cpp_lib_to_underlying               202102L
-#define __cpp_lib_unreachable                 202202L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_tuple_like 202207L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_unreachable 202202L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
