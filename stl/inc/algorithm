@@ -10102,9 +10102,20 @@ namespace ranges {
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 const auto _Found = _RANGES _Minmax_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                // Avoid repeatedly initializing objects from the result of an iterator dereference when doing so might
+                // not be idempotent. The `if constexpr` avoids the extra branch in cases where it's not needed.
+                if constexpr (!same_as<remove_cvref_t<range_reference_t<_Rng>>, _Vty>
+                              || is_rvalue_reference_v<range_reference_t<_Rng>>) {
+                    if (_Found.min == _Found.max) {
+                        // This initialization is correct, similar to the N4928 [dcl.init.aggr]/6 example
+                        minmax_result<_Vty> _Result = {static_cast<_Vty>(*_Found.min), _Result.min};
+                        return _Result;
+                    }
+                }
                 return {static_cast<_Vty>(*_Found.min), static_cast<_Vty>(*_Found.max)};
             } else {
-                minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst), static_cast<_Vty>(*_UFirst)};
+                // This initialization is correct, similar to the N4928 [dcl.init.aggr]/6 example
+                minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst), _Found.min};
                 if (_UFirst == _ULast) {
                     return _Found;
                 }

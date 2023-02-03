@@ -381,7 +381,7 @@ namespace filesystem {
         // * \\server\share
         //   We parse \\server as root-name, \ as root-directory, and share as the first element in relative-path.
         //   Technically, Windows considers all of \\server\share the logical "root", but for purposes
-        //   of decomposition we want those split, so that path(R"(\\server\share)").replace_filename("other_share")
+        //   of decomposition we want those split, so that path{R"(\\server\share)"}.replace_filename("other_share")
         //   is \\server\other_share
         // * \\?\device
         // * \??\device
@@ -707,12 +707,12 @@ namespace filesystem {
         path& operator/=(const path& _Other) {
             // set *this to the path lexically resolved by _Other relative to *this
             // examples:
-            // path("cat") / "c:/dog"; // yields "c:/dog"
-            // path("cat") / "c:"; // yields "c:"
-            // path("c:") / ""; // yields "c:"
-            // path("c:cat") / "/dog"; // yields "c:/dog"
-            // path("c:cat") / "c:dog"; // yields "c:cat/dog"
-            // path("c:cat") / "d:dog"; // yields "d:dog"
+            // path{"cat"} / "c:/dog"; // yields "c:/dog"
+            // path{"cat"} / "c:"; // yields "c:"
+            // path{"c:"} / ""; // yields "c:"
+            // path{"c:cat"} / "/dog"; // yields "c:/dog"
+            // path{"c:cat"} / "c:dog"; // yields "c:cat/dog"
+            // path{"c:cat"} / "d:dog"; // yields "d:dog"
             // several places herein quote the standard, but the standard's variable p is replaced with _Other
 
             if (_Other.is_absolute()) { // if _Other.is_absolute(), then op=(_Other)
@@ -772,18 +772,18 @@ namespace filesystem {
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
         path& operator/=(const _Src& _Source) {
-            return operator/=(path(_Source));
+            return operator/=(path{_Source});
         }
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
         path& append(const _Src& _Source) {
-            return operator/=(path(_Source));
+            return operator/=(path{_Source});
         }
 
         template <class _InIt>
         path& append(_InIt _First, _InIt _Last) {
             static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
-            return operator/=(path(_First, _Last));
+            return operator/=(path{_First, _Last});
         }
 
         path& operator+=(const path& _Added) { // concat _Added to native()
@@ -816,23 +816,23 @@ namespace filesystem {
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
         path& operator+=(const _Src& _Added) { // concat _Added to native()
-            return operator+=(path(_Added)._Text);
+            return operator+=(path{_Added}._Text);
         }
 
         template <class _EcharT, enable_if_t<_Is_EcharT<_EcharT>, int> = 0>
         path& operator+=(const _EcharT _Added) { // concat _Added to native()
-            return operator+=(path(&_Added, &_Added + 1)._Text);
+            return operator+=(path{&_Added, &_Added + 1}._Text);
         }
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
         path& concat(const _Src& _Added) { // concat _Added to native()
-            return operator+=(path(_Added)._Text);
+            return operator+=(path{_Added}._Text);
         }
 
         template <class _InIt>
         path& concat(_InIt _First, _InIt _Last) { // concat [_First, _Last) to native()
             static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
-            return operator+=(path(_First, _Last)._Text);
+            return operator+=(path{_First, _Last}._Text);
         }
 
         void clear() noexcept { // set *this to the empty path
@@ -1374,14 +1374,14 @@ namespace filesystem {
 
     _EXPORT_STD template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
     _CXX20_DEPRECATE_U8PATH _NODISCARD path u8path(const _Src& _Source) { // construct a path from UTF-8 _Source
-        return path(_Convert_Source_to_wide(_Source, _Utf8_conversion{}));
+        return path{_Convert_Source_to_wide(_Source, _Utf8_conversion{})};
     }
 
     _EXPORT_STD template <class _InIt>
     _CXX20_DEPRECATE_U8PATH _NODISCARD path u8path(_InIt _First, _InIt _Last) {
         // construct a path from UTF-8 [_First, _Last)
         static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
-        return path(_Convert_range_to_wide(_First, _Last, _Utf8_conversion{}));
+        return path{_Convert_range_to_wide(_First, _Last, _Utf8_conversion{})};
     }
 
     template <class _Base_iter>

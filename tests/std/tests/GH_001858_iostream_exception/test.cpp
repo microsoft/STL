@@ -389,8 +389,6 @@ static_assert(is_nothrow_swappable_v<wstringstream>);
 static_assert(is_nothrow_swappable_v<syncbuf>);
 static_assert(is_nothrow_swappable_v<wsyncbuf>);
 
-// TRANSITION, GH-3355: "<syncstream>: is_nothrow_move_assignable_v<osyncstream> is squirrelly"
-
 static_assert(has_nothrow_rdbuf<osyncstream>); // mandatory
 static_assert(has_nothrow_rdbuf<wosyncstream>); // mandatory
 #endif // _HAS_CXX20

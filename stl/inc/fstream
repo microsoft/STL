@@ -647,11 +647,11 @@ protected:
         if (!_Myfile || !_Endwrite()
             || ((_Off != 0 || _Way != ios_base::cur) && _CSTD _fseeki64(_Myfile, _Off, _Way) != 0)
             || _CSTD fgetpos(_Myfile, &_Fileposition) != 0) {
-            return pos_type(-1); // report failure
+            return pos_type{off_type{-1}}; // report failure
         }
 
         _Reset_back(); // revert from _Mychar buffer, discarding any putback
-        return pos_type(_State, _Fileposition); // return new position
+        return pos_type{_State, _Fileposition}; // return new position
     }
 
     pos_type __CLR_OR_THIS_CALL seekpos(pos_type _Pos, ios_base::openmode = ios_base::in | ios_base::out) override {
@@ -659,12 +659,12 @@ protected:
         off_type _Off = static_cast<off_type>(_Pos);
 
         if (!_Myfile || !_Endwrite() || _CSTD fsetpos(_Myfile, &_Off) != 0) {
-            return pos_type(-1); // report failure
+            return pos_type{off_type{-1}}; // report failure
         }
 
         _State = _Pos.state();
         _Reset_back(); // revert from _Mychar buffer, discarding any putback
-        return pos_type(_State, _Off); // return new position
+        return pos_type{_State, _Off}; // return new position
     }
 
     _Mysb* __CLR_OR_THIS_CALL setbuf(_Elem* _Buffer, streamsize _Count) override { // offer _Buffer to C stream
