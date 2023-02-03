@@ -86,7 +86,7 @@ namespace test_make_from_tuple {
     static_assert(CanMakeFromTuple<string, tuple<>>);
     static_assert(CanMakeFromTuple<string, tuple<size_t, char>>);
     static_assert(CanMakeFromTuple<wstring, tuple<size_t, wchar_t, allocator<wchar_t>>>);
-    static_assert(CanMakeFromTuple<tuple<signed, unsigned>, pair<signed, unsigned>>);
+    static_assert(CanMakeFromTuple<tuple<int, unsigned int>, pair<int, unsigned int>>);
     static_assert(CanMakeFromTuple<string, array<int, 0>>);
     static_assert(CanMakeFromTuple<vector<int>, array<long, 2>>);
     static_assert(CanMakeFromTuple<vector<wchar_t>, subrange<wchar_t*, wchar_t*>>);
