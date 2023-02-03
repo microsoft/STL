@@ -116,7 +116,7 @@ protected:
         case ios_base::beg:
             // N4928 [spanbuf.virtuals]/4.1 baseoff = 0
             if (static_cast<size_t>(_Off) > _Buf.size()) { // negative wraparound to positive to save a compare
-                return pos_type(off_type(-1)); // N4928 [spanbuf.virtuals]/5 report failure
+                return pos_type{off_type{-1}}; // N4928 [spanbuf.virtuals]/5 report failure
             }
 
             break;
@@ -127,40 +127,40 @@ protected:
                                         ? static_cast<off_type>(_Mysb::pptr() - _Mysb::pbase())
                                         : static_cast<off_type>(_Buf.size());
                 if (_Off > (numeric_limits<off_type>::max)() - _Baseoff) { // overflow, _Baseoff is always non-negative
-                    return pos_type(off_type(-1)); // report failure
+                    return pos_type{off_type{-1}}; // report failure
                 }
 
                 _Off += _Baseoff;
                 if (static_cast<size_t>(_Off) > _Buf.size()) { // negative wraparound to positive to save a compare
-                    return pos_type(off_type(-1)); // N4928 [spanbuf.virtuals]/5 report failure
+                    return pos_type{off_type{-1}}; // N4928 [spanbuf.virtuals]/5 report failure
                 }
 
                 break;
             }
         case ios_base::cur:
             if (_Sequence_in && _Sequence_out) {
-                return pos_type(off_type(-1)); // report failure
+                return pos_type{off_type{-1}}; // report failure
             } else if (_Sequence_in || _Sequence_out) {
                 const off_type _Oldoff  = _Sequence_in ? static_cast<off_type>(_Mysb::gptr() - _Mysb::eback())
                                                        : static_cast<off_type>(_Mysb::pptr() - _Mysb::pbase());
                 const off_type _Oldleft = static_cast<off_type>(_Buf.size() - _Oldoff);
                 if (_Off < -_Oldoff || _Off > _Oldleft) { // out of bounds
-                    return pos_type(off_type(-1));
+                    return pos_type{off_type{-1}};
                 }
 
                 _Off += _Oldoff;
             } else {
-                return pos_type(off_type(-1)); // report failure
+                return pos_type{off_type{-1}}; // report failure
             }
             break;
         default:
-            return pos_type(off_type(-1)); // report failure
+            return pos_type{off_type{-1}}; // report failure
         }
 
         // N4928 [spanbuf.virtuals]/4: For a sequence to be positioned, if its next pointer is a null pointer and newoff
         // is not equal to 0, the positioning operation fails.
         if (_Off != 0 && ((_Sequence_in && !_Mysb::gptr()) || (_Sequence_out && !_Mysb::pptr()))) {
-            return pos_type(off_type(-1)); // report failure
+            return pos_type{off_type{-1}}; // report failure
         }
 
         if (_Sequence_in) {
@@ -171,7 +171,7 @@ protected:
             _Mysb::pbump(static_cast<int>(_Off - (_Mysb::pptr() - _Mysb::pbase())));
         }
 
-        return pos_type(_Off);
+        return pos_type{_Off};
     }
 
     pos_type seekpos(pos_type _Pos, ios_base::openmode _Which = ios_base::in | ios_base::out) override {

@@ -37,25 +37,25 @@ public:
 
     wbuffer_convert() : _State(), _Pcvt(new _Codecvt), _Mystrbuf(nullptr), _Status(_Unused), _Nback(0) {
         // construct without buffer pointer
-        _Loc = locale(_Loc, _Pcvt);
+        _Loc = locale{_Loc, _Pcvt};
     }
 
     explicit wbuffer_convert(_Mysb* _Strbuf)
         : _State(), _Pcvt(new _Codecvt), _Mystrbuf(_Strbuf), _Status(_Unused), _Nback(0) {
         // construct with byte stream buffer pointer
-        _Loc = locale(_Loc, _Pcvt);
+        _Loc = locale{_Loc, _Pcvt};
     }
 
     wbuffer_convert(_Mysb* _Strbuf, const _Codecvt* _Pcvt_arg)
         : _State(), _Pcvt(_Pcvt_arg), _Mystrbuf(_Strbuf), _Status(_Unused), _Nback(0) {
         // construct with byte stream buffer pointer and codecvt
-        _Loc = locale(_Loc, _Pcvt);
+        _Loc = locale{_Loc, _Pcvt};
     }
 
     wbuffer_convert(_Mysb* _Strbuf, const _Codecvt* _Pcvt_arg, state_type _State_arg)
         : _State(_State_arg), _Pcvt(_Pcvt_arg), _Mystrbuf(_Strbuf), _Status(_Unused), _Nback(0) {
         // construct with byte stream buffer pointer, codecvt, and state
-        _Loc = locale(_Loc, _Pcvt);
+        _Loc = locale{_Loc, _Pcvt};
     }
 
     ~wbuffer_convert() noexcept override {
@@ -225,12 +225,12 @@ protected:
 
     pos_type seekoff(off_type, ios_base::seekdir,
         ios_base::openmode = static_cast<ios_base::openmode>(ios_base::in | ios_base::out)) override {
-        return pos_type(-1); // always fail
+        return pos_type{off_type{-1}}; // always fail
     }
 
     pos_type seekpos(
         pos_type, ios_base::openmode = static_cast<ios_base::openmode>(ios_base::in | ios_base::out)) override {
-        return pos_type(-1); // always fail
+        return pos_type{off_type{-1}}; // always fail
     }
 
 private:
@@ -307,7 +307,7 @@ private:
     void _Init(const _Codecvt* _Pcvt_arg = new _Codecvt) { // initialize the object
         _State = state_type{};
         _Pcvt  = _Pcvt_arg;
-        _Loc   = locale(_Loc, _Pcvt);
+        _Loc   = locale{_Loc, _Pcvt};
         _Nconv = 0;
     }
 
