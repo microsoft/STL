@@ -797,7 +797,7 @@ public:
         static_assert(1 + sizeof...(_Rest) == tuple_size_v<_Other>,
             "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
         static_assert(_Can_equal_compare_with_tuple_like_v<_Other>,
-            "For all i, where 0 <= i < sizeof...(TTypes), get<i>(t) == get<i>(u) must be valid a expression (N4928 "
+            "For all i, where 0 <= i < sizeof...(TTypes), get<i>(t) == get<i>(u) must be a valid expression (N4928 "
             "[tuple.rel]/2).");
         return _Left._Equals_to_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
     }
