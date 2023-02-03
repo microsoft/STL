@@ -52,6 +52,20 @@ struct TmpChar {
     constexpr bool operator==(const TmpChar&) const = default;
 };
 
+struct EvilComma {
+    constexpr EvilComma& operator=(size_t) {
+        return *this;
+    }
+
+    constexpr const EvilComma& operator=(size_t) const {
+        return *this;
+    }
+
+    constexpr void operator,(auto&&) const {
+        assert(false);
+    }
+};
+
 template <size_t N, template <class...> class TplLike>
 struct tester {
 public:
@@ -214,6 +228,10 @@ private:
         t4 = std::move(as_const(a));
         assert((get<Indices>(t4) == get_letter(Indices) && get<Indices>(a) == get_letter(Indices)) && ...);
 
+        // Check comma hijacking
+        Tuple<EvilComma> t5;
+        t5 = TupleLike<size_t>{Indices...};
+
         return true;
     }
 
@@ -233,24 +251,28 @@ private:
         vector<bool> booleans = {get_false_true(Indices)...}; // false, true, false, true, ...
         TupleLike<bool> a     = {get_true_false(Indices)...}; // true, false, true, false, ...
 
-        const Tuple<Ref> p1{booleans[Indices]...};
-        p1 = a;
-        assert((get<Indices>(p1) == get_true_false(Indices)) && ...);
+        const Tuple<Ref> t1{booleans[Indices]...};
+        t1 = a;
+        assert((get<Indices>(t1) == get_true_false(Indices)) && ...);
         booleans = {get_false_true(Indices)...};
 
-        const Tuple<Ref> p2{booleans[Indices]...};
-        p2 = as_const(a);
-        assert((get<Indices>(p2) == get_true_false(Indices)) && ...);
+        const Tuple<Ref> t2{booleans[Indices]...};
+        t2 = as_const(a);
+        assert((get<Indices>(t2) == get_true_false(Indices)) && ...);
         booleans = {get_false_true(Indices)...};
 
-        const Tuple<Ref> p3{booleans[Indices]...};
-        p3 = std::move(a);
-        assert((get<Indices>(p3) == get_true_false(Indices)) && ...);
+        const Tuple<Ref> t3{booleans[Indices]...};
+        t3 = std::move(a);
+        assert((get<Indices>(t3) == get_true_false(Indices)) && ...);
         booleans = {get_false_true(Indices)...};
 
-        const Tuple<Ref> p4{booleans[Indices]...};
-        p4 = std::move(as_const(a));
-        assert((get<Indices>(p4) == get_true_false(Indices)) && ...);
+        const Tuple<Ref> t4{booleans[Indices]...};
+        t4 = std::move(as_const(a));
+        assert((get<Indices>(t4) == get_true_false(Indices)) && ...);
+
+        // Check comma hijacking
+        const Tuple<EvilComma> t5;
+        t5 = TupleLike<size_t>{Indices...};
 
         return true;
     }

@@ -192,7 +192,7 @@ template <class _TupleLike, class _Tuple>
 concept _Can_construct_from_tuple_like = _Tuple_like<_TupleLike> && _Different_from<_TupleLike, _Tuple>
                                       && (!_Is_subrange_v<remove_cvref_t<_TupleLike>>)
                                       && (tuple_size_v<_Tuple> == tuple_size_v<remove_cvref_t<_TupleLike>>)
-                                      && _Can_construct_values_from_tuple_like_v<_TupleLike, _Tuple>
+                                      && _Can_construct_values_from_tuple_like_v<_Tuple, _TupleLike>
                                       && (tuple_size_v<_Tuple> != 1
                                           || (!is_convertible_v<_TupleLike, tuple_element_t<0, _Tuple>>
                                               && !is_constructible_v<tuple_element_t<0, _Tuple>, _TupleLike>) );
@@ -297,11 +297,12 @@ public:
         return true;
     }
 
-    template <_Tuple_like _Other, class _Return_type = _Three_way_comparison_result_with_tuple_like_t<tuple, _Other>>
+    template <_Tuple_like _Other>
+        requires (tuple_size_v<remove_cvref_t<_Other>> == 0)
 #ifndef __clang__ // TRANSITION, DevCom-10265322
-        requires _Different_from<_Other, tuple>
+                 && _Different_from<_Other, tuple>
 #endif // __clang__
-    _NODISCARD_FRIEND constexpr _Return_type operator<=>(const tuple&, const _Other&) noexcept /* strengthened */ {
+    _NODISCARD_FRIEND constexpr strong_ordering operator<=>(const tuple&, const _Other&) noexcept /* strengthened */ {
         return strong_ordering::equal;
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
@@ -441,7 +442,7 @@ public:
     template <_Tuple_like _Other>
         requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
-              && _Can_construct_values_from_tuple_like_v<_Other, tuple>
+              && _Can_construct_values_from_tuple_like_v<tuple, _Other>
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
 #endif // __clang__
     constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>) tuple(_Other&& _Right)
@@ -549,7 +550,7 @@ public:
     template <class _Alloc, _Tuple_like _Other>
         requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
-              && _Can_construct_values_from_tuple_like_v<_Other, tuple>
+              && _Can_construct_values_from_tuple_like_v<tuple, _Other>
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
 #endif // __clang__
     constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>)
@@ -706,12 +707,12 @@ public:
 
     template <_Tuple_like _Other, size_t... _Indices>
     constexpr void _Assign_tuple_like(_Other&& _Right, index_sequence<_Indices...>) {
-        ((_STD get<_Indices>(*this) = _STD get<_Indices>(_STD forward<_Other>(_Right))), ...);
+        (static_cast<void>(_STD get<_Indices>(*this) = _STD get<_Indices>(_STD forward<_Other>(_Right))), ...);
     }
 
     template <_Tuple_like _Other, size_t... _Indices>
     constexpr void _Assign_tuple_like(_Other&& _Right, index_sequence<_Indices...>) const {
-        ((_STD get<_Indices>(*this) = _STD get<_Indices>(_STD forward<_Other>(_Right))), ...);
+        (static_cast<void>(_STD get<_Indices>(*this) = _STD get<_Indices>(_STD forward<_Other>(_Right))), ...);
     }
 
     template <_Tuple_like _Other>
@@ -796,8 +797,8 @@ public:
         static_assert(1 + sizeof...(_Rest) == tuple_size_v<_Other>,
             "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
         static_assert(_Can_equal_compare_with_tuple_like_v<_Other>,
-            "For all i, where 0 <= i <= sizeof...(_TTypes), get<i>(_Left) == get<i>(_Right) must be valid "
-            "expression (N4928 [tuple.rel]/2).");
+            "For all i, where 0 <= i < sizeof...(TTypes), get<i>(t) == get<i>(u) must be valid a expression (N4928 "
+            "[tuple.rel]/2).");
         return _Left._Equals_to_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
     }
 
