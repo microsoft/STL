@@ -193,7 +193,7 @@ void exec_test_scoped_lock_adopts_one_mutex() {
 #if _HAS_CXX17
 // Special case for 0 mutex types.
 void exec_test_scoped_lock_compiles_with_no_mutexes() {
-    scoped_lock<> takeNoLocks;
+    [[maybe_unused]] scoped_lock<> takeNoLocks;
     VERIFY_UNOWNED(g_mutexA);
     VERIFY_UNOWNED(g_mutexB);
     VERIFY_UNOWNED(g_mutexC);
