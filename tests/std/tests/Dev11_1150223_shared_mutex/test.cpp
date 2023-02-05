@@ -35,10 +35,32 @@ STATIC_ASSERT(is_nothrow_destructible_v<shared_lock<shared_timed_mutex>>);
 STATIC_ASSERT(is_nothrow_destructible_v<condition_variable>);
 
 STATIC_ASSERT(is_nothrow_default_constructible_v<mutex>); // N4928 [thread.mutex.class]
+STATIC_ASSERT(is_nothrow_default_constructible_v<recursive_mutex>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<timed_mutex>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<recursive_timed_mutex>); // strengthened
 STATIC_ASSERT(is_nothrow_default_constructible_v<shared_mutex>); // strengthened
 STATIC_ASSERT(is_nothrow_default_constructible_v<shared_timed_mutex>); // strengthened
 STATIC_ASSERT(is_nothrow_default_constructible_v<shared_lock<shared_mutex>>); // N4928 [thread.lock.shared.cons]/1
 STATIC_ASSERT(is_nothrow_default_constructible_v<shared_lock<shared_timed_mutex>>); // N4928 [thread.lock.shared.cons]/1
+STATIC_ASSERT(is_nothrow_default_constructible_v<condition_variable>); // strengthened
+
+STATIC_ASSERT(is_nothrow_constructible_v<shared_lock<shared_mutex>, shared_mutex&, adopt_lock_t>); // strengthened
+STATIC_ASSERT(
+    is_nothrow_constructible_v<shared_lock<shared_mutex>, shared_mutex&, const adopt_lock_t&>); // strengthened
+STATIC_ASSERT(
+    is_nothrow_constructible_v<shared_lock<shared_timed_mutex>, shared_timed_mutex&, adopt_lock_t>); // strengthened
+STATIC_ASSERT(is_nothrow_constructible_v<shared_lock<shared_timed_mutex>, shared_timed_mutex&,
+    const adopt_lock_t&>); // strengthened
+
+// Also test strengthened exception specification for native_handle().
+STATIC_ASSERT(noexcept(thread{}.native_handle()));
+#if _HAS_CXX20
+STATIC_ASSERT(noexcept(jthread{}.native_handle()));
+#endif // _HAS_CXX20
+STATIC_ASSERT(noexcept(mutex{}.native_handle()));
+STATIC_ASSERT(noexcept(recursive_mutex{}.native_handle()));
+STATIC_ASSERT(noexcept(shared_mutex{}.native_handle()));
+STATIC_ASSERT(noexcept(condition_variable{}.native_handle()));
 
 void join_and_clear(vector<thread>& threads) {
     for (auto& t : threads) {

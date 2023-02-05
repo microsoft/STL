@@ -160,7 +160,7 @@ private:
     struct _Cv_any_notify_all {
         condition_variable_any* _This;
 
-        explicit _Cv_any_notify_all(condition_variable_any* _This_) : _This{_This_} {}
+        explicit _Cv_any_notify_all(condition_variable_any* _This_) noexcept : _This{_This_} {}
 
         _Cv_any_notify_all(const _Cv_any_notify_all&)            = delete;
         _Cv_any_notify_all& operator=(const _Cv_any_notify_all&) = delete;
@@ -273,7 +273,8 @@ private:
     }
 };
 
-_EXPORT_STD inline void notify_all_at_thread_exit(condition_variable& _Cnd, unique_lock<mutex> _Lck) {
+_EXPORT_STD inline void notify_all_at_thread_exit(condition_variable& _Cnd, unique_lock<mutex> _Lck) noexcept
+/* strengthened */ {
     // register _Cnd for release at thread exit
     _Cnd._Register(_Lck, nullptr);
 }
