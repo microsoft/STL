@@ -5815,7 +5815,11 @@ namespace ranges {
                     return _RANGES next(_STD move(_First), _Result - _First_ptr);
                 }
 #else // ^^^ _USE_STD_VECTOR_ALGORITHMS / not _USE_STD_VECTOR_ALGORITHMS vvv
-                if constexpr (sizeof(_Iter_value_t<_It>) == 1) {
+                if constexpr (sizeof(_Iter_value_t<_It>) == 1
+#if defined(_M_ARM64) || defined(_M_ARM64EC) // TRANSITION, VSO-1538014
+                              && _Is_sized
+#endif // ^^^ workaround ^^^
+                ) {
                     size_t _Count;
                     if constexpr (_Is_sized) {
                         _Count = static_cast<size_t>(_Last - _First);
