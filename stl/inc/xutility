@@ -375,13 +375,11 @@ struct _Ref_fn { // pass function object by value as a reference
 };
 
 template <class _Fn>
-_INLINE_VAR constexpr bool _Pass_functor_by_value = conjunction_v<bool_constant<sizeof(_Fn) <= sizeof(void*)>,
-    is_trivially_copy_constructible<_Fn>, is_trivially_destructible<_Fn>>;
-
-template <class _Fn>
-constexpr auto _Pass_fn(_Fn& _Func) {
-    if constexpr (_Pass_functor_by_value<_Fn>) {
-        return _Func; // pass functor by value
+constexpr auto _Pass_fn(_Fn& _Func) noexcept {
+    constexpr bool _Pass_by_value = conjunction_v<bool_constant<sizeof(_Fn) <= sizeof(void*)>,
+        is_trivially_copy_constructible<_Fn>, is_trivially_destructible<_Fn>>;
+    if constexpr (_Pass_by_value) {
+        return _Func;
     } else {
         return _Ref_fn<_Fn>{_Func}; // pass functor by "reference"
     }
