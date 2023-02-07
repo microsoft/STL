@@ -1525,6 +1525,26 @@ namespace {
             pair_conversion_test<std::pmr::unordered_map<int, int>>();
             pair_conversion_test<std::pmr::unordered_multimap<int, int>>();
         }
+
+        // Test cv-qualified source type (LWG-3677)
+        void lwg3677_test() {
+            using PairType = std::pair<const int, int>;
+
+            alignas(PairType) unsigned char buffer[sizeof(PairType)];
+            const auto raw_ptr = reinterpret_cast<PairType*>(buffer);
+
+            std::pmr::polymorphic_allocator<PairType> al;
+
+            al.construct(raw_ptr, pair_conv{});
+            al.construct(static_cast<const PairType*>(raw_ptr), pair_conv{});
+            al.construct(static_cast<volatile PairType*>(raw_ptr), pair_conv{});
+            al.construct(static_cast<const volatile PairType*>(raw_ptr), pair_conv{});
+
+            al.construct(raw_ptr, mem_pair_conv{});
+            al.construct(static_cast<const PairType*>(raw_ptr), mem_pair_conv{});
+            al.construct(static_cast<volatile PairType*>(raw_ptr), mem_pair_conv{});
+            al.construct(static_cast<const volatile PairType*>(raw_ptr), mem_pair_conv{});
+        }
     } // namespace map_containers
 } // unnamed namespace
 
@@ -1569,4 +1589,6 @@ int main() {
     containers::test();
 
     map_containers::test();
+
+    map_containers::lwg3677_test();
 }
