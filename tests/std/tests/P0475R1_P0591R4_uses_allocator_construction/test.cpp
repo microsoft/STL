@@ -251,12 +251,12 @@ public:
 
     using value_type = T;
 
-    constexpr T* allocate(std::size_t n) {
-        return std::allocator<T>{}.allocate(n);
+    constexpr T* allocate(size_t n) {
+        return allocator<T>{}.allocate(n);
     }
 
-    constexpr void deallocate(T* p, std::size_t n) {
-        return std::allocator<T>{}.deallocate(p, n);
+    constexpr void deallocate(T* p, size_t n) {
+        return allocator<T>{}.deallocate(p, n);
     }
 
     constexpr int get_payload() const noexcept {
@@ -266,10 +266,10 @@ public:
 
 constexpr bool test_lwg3677() {
     using my_allocator = payloaded_allocator<int>;
-    using my_pair      = std::pair<int, std::vector<int, my_allocator>>;
+    using my_pair      = pair<int, vector<int, my_allocator>>;
 
     constexpr int in_v = 42;
-    auto out_v = std::make_obj_using_allocator<const my_pair>(my_allocator{in_v}).second.get_allocator().get_payload();
+    auto out_v = make_obj_using_allocator<const my_pair>(my_allocator{in_v}).second.get_allocator().get_payload();
     return in_v == out_v;
 }
 
