@@ -248,6 +248,7 @@ constexpr void test_error_or() {
     constexpr bool should_be_noexcept       = construction_is_noexcept && conversion_is_noexcept;
 
     struct payload_error_or {
+        constexpr payload_error_or() noexcept : _val(55) {}
         constexpr payload_error_or(const int val) noexcept : _val(val) {}
         constexpr payload_error_or(const payload_error_or& other) noexcept(construction_is_noexcept)
             : _val(other._val + 2) {}
@@ -319,6 +320,20 @@ constexpr void test_error_or() {
         assert(move(const_with_value).error_or(input) == 2 + 4);
         static_assert(noexcept(move(with_value).error_or(convertible{1})) == should_be_noexcept);
         static_assert(noexcept(move(const_with_value).error_or(input)) == should_be_noexcept);
+    }
+
+    { // test error_or({})
+        using Expected = expected<int, payload_error_or>;
+
+        Expected with_error{unexpect, 42};
+        const Expected const_with_error{unexpect, 1337};
+        Expected with_value{in_place, 42};
+        const Expected const_with_value{in_place, 1337};
+
+        assert(with_error.error_or({}) == 42 + 2);
+        assert(const_with_error.error_or({}) == 1337 + 2);
+        assert(with_value.error_or({}) == 55 + 3);
+        assert(const_with_value.error_or({}) == 55 + 3);
     }
 }
 
