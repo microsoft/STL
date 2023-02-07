@@ -1499,21 +1499,21 @@ namespace {
     } // namespace containers
 
     namespace map_containers {
+        struct pair_conv {
+            operator std::pair<const int, int>() const {
+                return {};
+            }
+        };
+
+        struct mem_pair_conv {
+            std::pair<const int, int> pair_{1, 42};
+            operator const std::pair<const int, int>&() const {
+                return pair_;
+            }
+        };
+
         template <class T>
         void pair_conversion_test() {
-            struct pair_conv {
-                operator std::pair<const int, int>() const {
-                    return {};
-                }
-            };
-
-            struct mem_pair_conv {
-                std::pair<const int, int> pair_{1, 42};
-                operator const std::pair<const int, int>&() const {
-                    return pair_;
-                }
-            };
-
             T cont;
             cont.emplace(pair_conv{});
             cont.emplace(mem_pair_conv{});
