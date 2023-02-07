@@ -68,8 +68,8 @@ void _Uses_alloc_construct_pair_piecewise(_CvPair* const _Ptr, _Outer_alloc& _Ou
 }
 
 template <class _CvPair, class _Outer_alloc, class _Inner_alloc, class... _Types1, class... _Types2>
-void _Uses_alloc_construct_pair(_CvPair* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner,
-    piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2) {
+void _Uses_alloc_construct_pair(_CvPair* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, piecewise_construct_t,
+    tuple<_Types1...> _Val1, tuple<_Types2...> _Val2) {
     // uses-allocator construction of pair by alloc _Outer propagating alloc _Inner, piecewise case
     _STD _Uses_alloc_construct_pair_piecewise(_Ptr, _Outer, _Inner, _STD move(_Val1), _STD move(_Val2));
 }
