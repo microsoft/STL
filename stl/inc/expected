@@ -1613,9 +1613,9 @@ public:
         using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
         if constexpr (!is_void_v<_Uty>) {
-            static_assert(_Is_invoke_constructible<_Fn>,
-                "expected<void, E>::transform(F) requires that the return type of F is constructible with the result of "
-                "invoking f. (N4928 [expected.object.monadic]/17)");
+            static_assert(_Is_invoke_constructible<_Fn>, "expected<void, E>::transform(F) requires that the return "
+                                                         "type of F is constructible with the result of "
+                                                         "invoking f. (N4928 [expected.object.monadic]/17)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -1639,9 +1639,9 @@ public:
         using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
         if constexpr (!is_void_v<_Uty>) {
-            static_assert(_Is_invoke_constructible<_Fn>,
-                "expected<void, E>::transform(F) requires that the return type of F is constructible with the result of "
-                "invoking f. (N4928 [expected.object.monadic]/17)");
+            static_assert(_Is_invoke_constructible<_Fn>, "expected<void, E>::transform(F) requires that the return "
+                                                         "type of F is constructible with the result of "
+                                                         "invoking f. (N4928 [expected.object.monadic]/17)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -1665,9 +1665,9 @@ public:
         using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
         if constexpr (!is_void_v<_Uty>) {
-            static_assert(_Is_invoke_constructible<_Fn>,
-                "expected<void, E>::transform(F) requires that the return type of F is constructible with the result of "
-                "invoking f. (N4928 [expected.object.monadic]/21)");
+            static_assert(_Is_invoke_constructible<_Fn>, "expected<void, E>::transform(F) requires that the return "
+                                                         "type of F is constructible with the result of "
+                                                         "invoking f. (N4928 [expected.object.monadic]/21)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -1691,9 +1691,9 @@ public:
         using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
         if constexpr (!is_void_v<_Uty>) {
-            static_assert(_Is_invoke_constructible<_Fn>,
-                "expected<void, E>::transform(F) requires that the return type of F is constructible with the result of "
-                "invoking f. (N4928 [expected.object.monadic]/21)");
+            static_assert(_Is_invoke_constructible<_Fn>, "expected<void, E>::transform(F) requires that the return "
+                                                         "type of F is constructible with the result of "
+                                                         "invoking f. (N4928 [expected.object.monadic]/21)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -1752,8 +1752,9 @@ public:
 
     template <class _Fn>
     constexpr auto transform_error(_Fn&& _Func) && {
-        static_assert(invocable<_Fn, _Err>, "expected<void, E>::transform_error(F) requires that F is invocable with E. "
-                                            "(N4928 [expected.void.monadic]/27)");
+        static_assert(invocable<_Fn, _Err>,
+            "expected<void, E>::transform_error(F) requires that F is invocable with E. "
+            "(N4928 [expected.void.monadic]/27)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err>>;
         static_assert(_Is_invoke_constructible<_Fn, _Err>, "expected<void, E>::transform_error(F) requires that the "
                                                            "return type of F is constructible with the result of "
