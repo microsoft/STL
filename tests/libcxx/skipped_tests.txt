@@ -350,11 +350,6 @@ containers\sequences\array\array.swap\swap.fail.cpp
 algorithms\alg.sorting\alg.merge\inplace_merge_comp.pass.cpp
 algorithms\alg.sorting\alg.min.max\minmax_init_list_comp.pass.cpp
 
-# GH-1259 <locale>: wrong field extraction for hexfloats, or special cases like inf
-localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_double.pass.cpp
-localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_float.pass.cpp
-localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_long_double.pass.cpp
-
 # GH-1277 <xlocnum>: We don't match numpunct groups correctly in do_get
 localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_long.pass.cpp
 
@@ -591,8 +586,11 @@ utilities\format\format.formatter\format.formatter.spec\formatter.floating_point
 # libc++ chose option A for [time.clock.file.members], and we chose option B.
 time\time.clock\time.clock.file\to_from_sys.pass.cpp
 
-# libc++'s filesystem::path::iterator model bidirectional_iterator, which is not guaranteed by the Standard
+# libc++'s filesystem::path::iterator models bidirectional_iterator, which is not guaranteed by the Standard
 input.output\filesystems\class.path\range_concept_conformance.compile.pass.cpp
+
+# libc++ assumes long double is at least as precise as the Intel 80-bit format; also affected by LWG-2381
+localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_long_double.pass.cpp
 
 # libc++ is missing various Ranges DRs
 language.support\support.limits\support.limits.general\ranges.version.compile.pass.cpp
@@ -613,6 +611,10 @@ strings\basic.string\string.capacity\resize_and_overwrite.pass.cpp
 
 # libc++ is missing various <format> DRs
 language.support\support.limits\support.limits.general\format.version.compile.pass.cpp
+
+# libc++ doesn't yet implement LWG-2381 (LLVM-60597)
+localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_double.pass.cpp
+localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_float.pass.cpp
 
 # libc++ doesn't yet implement LWG-3670
 ranges\range.factories\range.iota.view\iterator\member_typedefs.compile.pass.cpp
