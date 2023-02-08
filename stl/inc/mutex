@@ -48,16 +48,8 @@ public:
         _Check_C_return(_Mtx_lock(_Mymtx()));
     }
 
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock() {
-        const auto _Res = _Mtx_trylock(_Mymtx());
-        switch (_Res) {
-        case _Thrd_success:
-            return true;
-        case _Thrd_busy:
-            return false;
-        default:
-            _Throw_C_error(_Res);
-        }
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept /* strengthened */ {
+        return _Mtx_trylock(_Mymtx()) == _Thrd_success;
     }
 
     void unlock() noexcept /* strengthened */ {
