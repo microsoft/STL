@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+##################################################
+# Lists of files. (We can also copy files here.) #
+##################################################
+
 set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_all_public_headers.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_chrono.hpp
@@ -463,7 +467,9 @@ set(SATELLITE_DLL_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/dllmain_satellite.cpp
 )
 
-add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1 _STL_CONCRT_SUPPORT)
+####################
+# Toolset options. #
+####################
 
 set(CMAKE_CXX_FLAGS "")
 set(CMAKE_CXX_FLAGS_DEBUG "")
@@ -483,10 +489,22 @@ set(CMAKE_SHARED_LINKER_FLAGS "/DEBUG:FULL /WX /RELEASE /SUBSYSTEM:Console /NODE
 set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "")
 
+add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1 _STL_CONCRT_SUPPORT)
+
+add_compile_options(/WX /Gy
+    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Z7;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
+    # note that /Zi generates debug info inside the object file, it's the same as /Z7 for msvc
+    "$<$<COMPILE_LANGUAGE:ASM_MASM>:/Zi;/W3;/nologo>"
+)
+
 include_directories(BEFORE
     "${CMAKE_CURRENT_LIST_DIR}/inc"
     "${TOOLSET_ROOT_DIR}/crt/src/vcruntime"
 )
+
+####################################################################################################################
+# CMake is order-sensitive! add_compile_options() must appear before add_library() for the options to take effect. #
+####################################################################################################################
 
 if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(x86|x64)$")
     add_library(stl_alias_objects OBJECT ${ALIAS_SOURCES_X86_X64})
@@ -496,12 +514,6 @@ else()
     # on ARM64 and ARM, we can unconditionally expect Synchronization.lib to exist
     string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " Synchronization.lib")
 endif()
-
-add_compile_options(/WX /Gy
-    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Z7;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
-    # note that /Zi generates debug info inside the object file, it's the same as /Z7 for msvc
-    "$<$<COMPILE_LANGUAGE:ASM_MASM>:/Zi;/W3;/nologo>"
-)
 
 function(target_stl_compile_options tgt rel_or_dbg)
     if(rel_or_dbg STREQUAL "Release")
