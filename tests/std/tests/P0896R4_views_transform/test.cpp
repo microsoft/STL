@@ -363,6 +363,36 @@ constexpr void test_difference_on_const_functor(Rng&& rng) {
     }
 }
 
+// Test xvalue ranges (LWG-3798)
+struct move_fn {
+    constexpr auto&& operator()(auto&& x) const noexcept {
+        return move(x);
+    }
+};
+
+template <ranges::input_range Rng>
+constexpr void test_xvalue_ranges(Rng&& rng) {
+    using ranges::transform_view, ranges::forward_range, ranges::iterator_t, ranges::range_reference_t;
+
+    using V  = views::all_t<Rng>;
+    using TV = transform_view<V, move_fn>;
+
+    auto r = forward<Rng>(rng) | views::transform(move_fn{});
+    STATIC_ASSERT(is_same_v<decltype(r), TV>);
+
+    STATIC_ASSERT(is_rvalue_reference_v<range_reference_t<TV>>);
+
+    if constexpr (forward_range<V>) {
+        using It      = iterator_t<V>;
+        using TVIt    = iterator_t<TV>;
+        using VItCat  = typename iterator_traits<It>::iterator_category;
+        using TVItCat = typename iterator_traits<TVIt>::iterator_category;
+        STATIC_ASSERT(
+            is_same_v<TVItCat, VItCat>
+            || (is_same_v<TVItCat, random_access_iterator_tag> && is_same_v<VItCat, contiguous_iterator_tag>) );
+    }
+}
+
 static constexpr int some_ints[]        = {0, 1, 2, 3, 4, 5, 6, 7};
 static constexpr int transformed_ints[] = {8, 9, 10, 11, 12, 13, 14, 15};
 
@@ -374,6 +404,9 @@ struct instantiator {
 
         R r2{some_ints};
         test_difference_on_const_functor(r2);
+
+        R r3{some_ints};
+        test_xvalue_ranges(r3);
     }
 };
 

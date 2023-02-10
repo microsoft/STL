@@ -54,6 +54,16 @@ std/ranges/range.access/end.pass.cpp FAIL
 std/ranges/range.access/rbegin.pass.cpp FAIL
 std/ranges/range.access/rend.pass.cpp FAIL
 
+# libc++ has not implemented P2404R3: "Move-Only Types For Comparison Concepts"
+std/algorithms/alg.sorting/alg.sort/partial.sort.copy/ranges_partial_sort_copy.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/concepts.version.compile.pass.cpp FAIL
+std/utilities/function.objects/range.cmp/equal_to.pass.cpp FAIL
+std/utilities/function.objects/range.cmp/greater.pass.cpp FAIL
+std/utilities/function.objects/range.cmp/greater_equal.pass.cpp FAIL
+std/utilities/function.objects/range.cmp/less.pass.cpp FAIL
+std/utilities/function.objects/range.cmp/less_equal.pass.cpp FAIL
+std/utilities/function.objects/range.cmp/not_equal_to.pass.cpp FAIL
+
 # Various bogosity (LLVM-D141004)
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_const_lvalue_pair.pass.cpp:0 FAIL
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_values.pass.cpp:0 FAIL
@@ -653,6 +663,9 @@ std/time/time.syn/formatter.year_month.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_day_last.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
 
+# unused-variable warning
+std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/default.pass.cpp:1 FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Various assertions.
@@ -911,7 +924,6 @@ std/algorithms/alg.sorting/alg.heap.operations/push.heap/ranges_push_heap.pass.c
 std/algorithms/alg.sorting/alg.heap.operations/sort.heap/ranges_sort_heap.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.merge/ranges_inplace_merge.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.merge/ranges_merge.pass.cpp FAIL
-std/algorithms/alg.sorting/alg.min.max/ranges.minmax.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.min.max/requires_forward_iterator.fail.cpp FAIL
 std/algorithms/alg.sorting/alg.nth.element/ranges_nth_element.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.partitions/ranges.is_partitioned.pass.cpp:0 FAIL

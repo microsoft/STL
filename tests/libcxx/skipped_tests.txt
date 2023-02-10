@@ -54,6 +54,16 @@ ranges\range.access\end.pass.cpp
 ranges\range.access\rbegin.pass.cpp
 ranges\range.access\rend.pass.cpp
 
+# libc++ has not implemented P2404R3: "Move-Only Types For Comparison Concepts"
+algorithms\alg.sorting\alg.sort\partial.sort.copy\ranges_partial_sort_copy.pass.cpp
+language.support\support.limits\support.limits.general\concepts.version.compile.pass.cpp
+utilities\function.objects\range.cmp\equal_to.pass.cpp
+utilities\function.objects\range.cmp\greater.pass.cpp
+utilities\function.objects\range.cmp\greater_equal.pass.cpp
+utilities\function.objects\range.cmp\less.pass.cpp
+utilities\function.objects\range.cmp\less_equal.pass.cpp
+utilities\function.objects\range.cmp\not_equal_to.pass.cpp
+
 # Various bogosity (LLVM-D141004)
 utilities\utility\mem.res\mem.poly.allocator.class\mem.poly.allocator.mem\construct_pair_const_lvalue_pair.pass.cpp
 utilities\utility\mem.res\mem.poly.allocator.class\mem.poly.allocator.mem\construct_pair_values.pass.cpp
@@ -653,6 +663,9 @@ time\time.syn\formatter.year_month.pass.cpp
 time\time.syn\formatter.year_month_day_last.pass.cpp
 time\time.syn\formatter.year_month_weekday.pass.cpp
 
+# unused-variable warning
+thread\thread.mutex\thread.mutex.requirements\thread.shared_mutex.requirements\thread.shared_mutex.class\default.pass.cpp
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Various assertions.
@@ -911,7 +924,6 @@ algorithms\alg.sorting\alg.heap.operations\push.heap\ranges_push_heap.pass.cpp
 algorithms\alg.sorting\alg.heap.operations\sort.heap\ranges_sort_heap.pass.cpp
 algorithms\alg.sorting\alg.merge\ranges_inplace_merge.pass.cpp
 algorithms\alg.sorting\alg.merge\ranges_merge.pass.cpp
-algorithms\alg.sorting\alg.min.max\ranges.minmax.pass.cpp
 algorithms\alg.sorting\alg.min.max\requires_forward_iterator.fail.cpp
 algorithms\alg.sorting\alg.nth.element\ranges_nth_element.pass.cpp
 algorithms\alg.sorting\alg.partitions\ranges.is_partitioned.pass.cpp
