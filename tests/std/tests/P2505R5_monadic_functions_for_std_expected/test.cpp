@@ -283,16 +283,16 @@ constexpr void test_error_or() {
         static_assert(noexcept(move(with_error).error_or(payload_error_or{1})) == construction_is_noexcept);
         static_assert(noexcept(move(const_with_error).error_or(payload_error_or{1})) == construction_is_noexcept);
 
-        const payload_error_or input{2};
+        const payload_error_or input{2000};
         Expected with_value{in_place, 42};
         const Expected const_with_value{in_place, 1337};
         assert(with_value.error_or(payload_error_or{1}) == 1 + 3);
-        assert(const_with_value.error_or(input) == 2 + 2);
+        assert(const_with_value.error_or(input) == 2000 + 2);
         static_assert(noexcept(with_value.error_or(payload_error_or{1})) == construction_is_noexcept);
         static_assert(noexcept(const_with_value.error_or(input)) == construction_is_noexcept);
 
         assert(move(with_value).error_or(payload_error_or{1}) == 1 + 3);
-        assert(move(const_with_value).error_or(input) == 2 + 2);
+        assert(move(const_with_value).error_or(input) == 2000 + 2);
         static_assert(noexcept(move(with_value).error_or(payload_error_or{1})) == construction_is_noexcept);
         static_assert(noexcept(move(const_with_value).error_or(input)) == construction_is_noexcept);
     }
@@ -312,16 +312,16 @@ constexpr void test_error_or() {
         static_assert(noexcept(move(with_error).error_or(convertible{1})) == should_be_noexcept);
         static_assert(noexcept(move(const_with_error).error_or(convertible{1})) == should_be_noexcept);
 
-        const convertible input{2};
+        const convertible input{2000};
         Expected with_value{in_place, 42};
         const Expected const_with_value{in_place, 1337};
         assert(with_value.error_or(convertible{1}) == 1 + 5);
-        assert(const_with_value.error_or(input) == 2 + 4);
+        assert(const_with_value.error_or(input) == 2000 + 4);
         static_assert(noexcept(with_value.error_or(convertible{1})) == should_be_noexcept);
         static_assert(noexcept(const_with_value.error_or(input)) == should_be_noexcept);
 
         assert(move(with_value).error_or(convertible{1}) == 1 + 5);
-        assert(move(const_with_value).error_or(input) == 2 + 4);
+        assert(move(const_with_value).error_or(input) == 2000 + 4);
         static_assert(noexcept(move(with_value).error_or(convertible{1})) == should_be_noexcept);
         static_assert(noexcept(move(const_with_value).error_or(input)) == should_be_noexcept);
     }
