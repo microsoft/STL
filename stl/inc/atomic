@@ -53,6 +53,19 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define _ATOMIC_HAS_DCAS 0
 #endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64) || defined(_M_ARM64EC)
 
+// Controls whether ARM64 ldar/ldapr/stlr should be used
+#ifndef _STD_ATOMIC_USE_ARM64_LDAR_STLR
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_HAS_ARM64_LOAD_ACQUIRE) && _HAS_ARM64_LOAD_ACQUIRE == 1 // TRANSITION, VS 2022 17.7 Preview 1
+#define _STD_ATOMIC_USE_ARM64_LDAR_STLR 1
+#else // ^^^ updated intrin0.inl.h is available / workaround vvv
+#define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
+#endif // ^^^ workaround ^^^
+#else // ^^^ ARM64/ARM64EC / Other architectures vvv
+#define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
+#endif // defined(_M_ARM64) || defined(_M_ARM64EC)
+#endif // _STD_ATOMIC_USE_ARM64_LDAR_STLR
+
 #define ATOMIC_BOOL_LOCK_FREE 2
 #define ATOMIC_CHAR_LOCK_FREE 2
 #ifdef __cpp_lib_char8_t
@@ -121,6 +134,32 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     }
 #endif // hardware
 
+#if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
+
+#define __LOAD_ACQUIRE_ARM64(_Width, _Ptr) \
+    __load_acquire##_Width(reinterpret_cast<const volatile unsigned __int##_Width*>(_Ptr))
+
+#define _ATOMIC_LOAD_ARM64(_Result, _Width, _Ptr, _Order_var) \
+    switch (_Order_var) {                                     \
+    case _Atomic_memory_order_relaxed:                        \
+        _Result = __iso_volatile_load##_Width(_Ptr);          \
+        break;                                                \
+    case _Atomic_memory_order_consume:                        \
+    case _Atomic_memory_order_acquire:                        \
+    case _Atomic_memory_order_seq_cst:                        \
+        _Result = __LOAD_ACQUIRE_ARM64(_Width, _Ptr);         \
+        _Compiler_barrier();                                  \
+        break;                                                \
+    case _Atomic_memory_order_release:                        \
+    case _Atomic_memory_order_acq_rel:                        \
+    default:                                                  \
+        _Result = __iso_volatile_load##_Width(_Ptr);          \
+        _INVALID_MEMORY_ORDER;                                \
+        break;                                                \
+    }
+
+#endif // _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
+
 // note: these macros are _not_ always safe to use with a trailing semicolon,
 // we avoid wrapping them in do {} while (0) because MSVC generates code for such loops
 // in debug mode.
@@ -140,13 +179,26 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
         break;                                       \
     }
 
+#if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
+
+#define __STORE_RELEASE(_Width, _Ptr, _Desired) \
+    _Compiler_barrier();                        \
+    __stlr##_Width(reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), (_Desired));
+
+#else
+
+#define __STORE_RELEASE(_Width, _Ptr, _Desired) \
+    _Compiler_or_memory_barrier();              \
+    __iso_volatile_store##_Width((_Ptr), (_Desired));
+
+#endif
+
 #define _ATOMIC_STORE_PREFIX(_Width, _Ptr, _Desired)      \
     case _Atomic_memory_order_relaxed:                    \
         __iso_volatile_store##_Width((_Ptr), (_Desired)); \
         return;                                           \
     case _Atomic_memory_order_release:                    \
-        _Compiler_or_memory_barrier();                    \
-        __iso_volatile_store##_Width((_Ptr), (_Desired)); \
+        __STORE_RELEASE(_Width, _Ptr, _Desired)           \
         return;                                           \
     default:                                              \
     case _Atomic_memory_order_consume:                    \
@@ -160,6 +212,16 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     _Memory_barrier();                                    \
     __iso_volatile_store##_Width((_Ptr), (_Desired));     \
     _Memory_barrier();
+
+#if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
+#define _ATOMIC_STORE_SEQ_CST_ARM64(_Width, _Ptr, _Desired)                               \
+    _Compiler_barrier();                                                                  \
+    __stlr##_Width(reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), (_Desired)); \
+    _Memory_barrier();
+#else
+#define _ATOMIC_STORE_SEQ_CST_ARM64 _ATOMIC_STORE_SEQ_CST_ARM
+#endif
+
 #define _ATOMIC_STORE_SEQ_CST_X86_X64(_Width, _Ptr, _Desired) (void) _InterlockedExchange##_Width((_Ptr), (_Desired));
 #define _ATOMIC_STORE_32_SEQ_CST_X86_X64(_Ptr, _Desired) \
     (void) _InterlockedExchange(reinterpret_cast<volatile long*>(_Ptr), static_cast<long>(_Desired));
@@ -169,19 +231,25 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     __iso_volatile_store64((_Ptr), (_Desired));       \
     _Atomic_thread_fence(_Atomic_memory_order_seq_cst);
 
-#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_M_ARM)
 #define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_ARM(_Width, (_Ptr), (_Desired))
 #define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM(32, (_Ptr), (_Desired))
 #define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM(64, (_Ptr), (_Desired))
-#else // ^^^ ARM32/ARM64/ARM64EC hardware / x86/x64 hardware vvv
+#elif defined(_M_ARM64) || defined(_M_ARM64EC) // ^^^ ARM32 / ARM64/ARM64EC vvv
+#define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_ARM64(_Width, (_Ptr), (_Desired))
+#define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM64(32, (_Ptr), (_Desired))
+#define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM64(64, (_Ptr), (_Desired))
+#elif defined(_M_IX86) || defined(_M_X64) // ^^^ ARM64/ARM64EC / x86/x64 vvv
 #define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_X86_X64(_Width, (_Ptr), (_Desired))
 #define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_32_SEQ_CST_X86_X64((_Ptr), (_Desired))
 #ifdef _M_IX86
 #define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired) _ATOMIC_STORE_64_SEQ_CST_IX86((_Ptr), (_Desired))
 #else // ^^^ x86 / x64 vvv
 #define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_X86_X64(64, (_Ptr), (_Desired))
-#endif // x86/x64
-#endif // hardware
+#endif // ^^^ x64 ^^^
+#else // ^^^ x86/x64 / Unsupported hardware vvv
+#error "Unsupported hardware"
+#endif
 
 #pragma warning(push)
 #pragma warning(disable : 6001) // "Using uninitialized memory '_Guard'"
@@ -715,8 +783,13 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 
     _NODISCARD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<char>(_Storage);
-        char _As_bytes  = __iso_volatile_load8(_Mem);
+        char _As_bytes;
+#if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
+        _ATOMIC_LOAD_ARM64(_As_bytes, 8, _Mem, static_cast<unsigned int>(_Order))
+#else
+        _As_bytes = __iso_volatile_load8(_Mem);
         _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(static_cast<unsigned int>(_Order))
+#endif
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
@@ -818,8 +891,13 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
     _NODISCARD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<short>(_Storage);
-        short _As_bytes = __iso_volatile_load16(_Mem);
+        short _As_bytes;
+#if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
+        _ATOMIC_LOAD_ARM64(_As_bytes, 16, _Mem, static_cast<unsigned int>(_Order))
+#else
+        _As_bytes = __iso_volatile_load16(_Mem);
         _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(static_cast<unsigned int>(_Order))
+#endif
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
@@ -920,8 +998,13 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
     _NODISCARD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<int>(_Storage);
-        int _As_bytes   = __iso_volatile_load32(_Mem);
+        int _As_bytes;
+#if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
+        _ATOMIC_LOAD_ARM64(_As_bytes, 32, _Mem, static_cast<unsigned int>(_Order))
+#else
+        _As_bytes = __iso_volatile_load32(_Mem);
         _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(static_cast<unsigned int>(_Order))
+#endif
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
@@ -1026,12 +1109,19 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
     _NODISCARD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<long long>(_Storage);
+        long long _As_bytes;
+#if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
+        _ATOMIC_LOAD_ARM64(_As_bytes, 64, _Mem, static_cast<unsigned int>(_Order))
+#else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR != 1 vvv
+
 #ifdef _M_ARM
-        long long _As_bytes = __ldrexd(_Mem);
+        _As_bytes = __ldrexd(_Mem);
 #else
-        long long _As_bytes = __iso_volatile_load64(_Mem);
+        _As_bytes = __iso_volatile_load64(_Mem);
 #endif
+
         _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(static_cast<unsigned int>(_Order))
+#endif // _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
@@ -2965,6 +3055,11 @@ _STD_END
 #undef _ATOMIC_STORE_64_SEQ_CST
 #undef _ATOMIC_STORE_64_SEQ_CST_IX86
 #undef _ATOMIC_HAS_DCAS
+#undef _ATOMIC_STORE_SEQ_CST_ARM64
+#undef __LOAD_ACQUIRE_ARM64
+#undef _ATOMIC_LOAD_ARM64
+#undef __STORE_RELEASE
+#undef _STD_ATOMIC_USE_ARM64_LDAR_STLR
 
 #undef _STD_COMPARE_EXCHANGE_128
 #undef _INVALID_MEMORY_ORDER
