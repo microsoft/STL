@@ -1541,7 +1541,7 @@ public:
             "expected<void, E>::or_else(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.void.monadic]/10.");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
-            "expected<void, E>::or_else(F) requires the value type of the return type of F to be T"
+            "expected<void, E>::or_else(F) requires the value type of the return type of F to be T "
             "N4928 [expected.void.monadic]/10.");
 
         if (_Has_value) {
@@ -1559,7 +1559,7 @@ public:
             "expected<void, E>::or_else(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.void.monadic]/10.");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
-            "expected<void, E>::or_else(F) requires the value type of the return type of F to be T"
+            "expected<void, E>::or_else(F) requires the value type of the return type of F to be T "
             "N4928 [expected.void.monadic]/10.");
 
         if (_Has_value) {
@@ -1577,7 +1577,7 @@ public:
             "expected<void, E>::or_else(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.void.monadic]/13.");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
-            "expected<void, E>::or_else(F) requires the value type of the return type of F to be T"
+            "expected<void, E>::or_else(F) requires the value type of the return type of F to be T "
             "N4928 [expected.void.monadic]/13.");
 
         if (_Has_value) {
@@ -1595,7 +1595,7 @@ public:
             "expected<void, E>::or_else(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.void.monadic]/13.");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
-            "expected<void, E>::or_else(F) requires the value type of the return type of F to be T"
+            "expected<void, E>::or_else(F) requires the value type of the return type of F to be T "
             "N4928 [expected.void.monadic]/13.");
 
         if (_Has_value) {
