@@ -74,7 +74,7 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
     using Val = typename remove_cvref_t<Expected>::value_type;
 
     const auto succeed = [](auto...) { return expected<int, int>{33}; };
-    const auto fail    = [](auto...) { return expected<int, int>(unexpect, 44); };
+    const auto fail    = [](auto...) { return expected<int, int>{unexpect, 44}; };
 
     {
         decltype(auto) result = forward<Expected>(engaged).and_then(succeed);

@@ -784,7 +784,7 @@ public:
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
         } else {
-            return _Uty(unexpect, _STD move(_Unexpected));
+            return _Uty{unexpect, _STD move(_Unexpected)};
         }
     }
 
@@ -803,7 +803,7 @@ public:
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
         } else {
-            return _Uty(unexpect, _STD move(_Unexpected));
+            return _Uty{unexpect, _STD move(_Unexpected)};
         }
     }
 
@@ -858,7 +858,7 @@ public:
             "(N4928 [expected.object.monadic]/15)");
 
         if (_Has_value) {
-            return _Uty(in_place, _STD move(_Value));
+            return _Uty{in_place, _STD move(_Value)};
         } else {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Unexpected));
         }
@@ -877,7 +877,7 @@ public:
             "(N4928 [expected.object.monadic]/15)");
 
         if (_Has_value) {
-            return _Uty(in_place, _STD move(_Value));
+            return _Uty{in_place, _STD move(_Value)};
         } else {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Unexpected));
         }
@@ -1522,7 +1522,7 @@ public:
         if (_Has_value) {
             return _STD forward<_Fn>(_Func)(); // equivalent to invoke()
         } else {
-            return _Uty(unexpect, _STD move(_Unexpected));
+            return _Uty{unexpect, _STD move(_Unexpected)};
         }
     }
 
@@ -1541,7 +1541,7 @@ public:
         if (_Has_value) {
             return _STD forward<_Fn>(_Func)(); // equivalent to invoke()
         } else {
-            return _Uty(unexpect, _STD move(_Unexpected));
+            return _Uty{unexpect, _STD move(_Unexpected)};
         }
     }
 
@@ -1557,7 +1557,7 @@ public:
             "N4928 [expected.void.monadic]/10.");
 
         if (_Has_value) {
-            return _Uty();
+            return _Uty{};
         } else {
             return _STD invoke(_STD forward<_Fn>(_Func), _Unexpected);
         }
@@ -1575,7 +1575,7 @@ public:
             "N4928 [expected.void.monadic]/10.");
 
         if (_Has_value) {
-            return _Uty();
+            return _Uty{};
         } else {
             return _STD invoke(_STD forward<_Fn>(_Func), _Unexpected);
         }
@@ -1593,7 +1593,7 @@ public:
             "N4928 [expected.void.monadic]/13.");
 
         if (_Has_value) {
-            return _Uty();
+            return _Uty{};
         } else {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Unexpected));
         }
@@ -1611,7 +1611,7 @@ public:
             "N4928 [expected.void.monadic]/13.");
 
         if (_Has_value) {
-            return _Uty();
+            return _Uty{};
         } else {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Unexpected));
         }
