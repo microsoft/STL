@@ -1118,8 +1118,8 @@ private:
     // For when transform is called on an expected<void, E> and requires calling _Func with no arg
     template <class _Fn>
     constexpr expected(_Construct_expected_from_invoke_result_tag, _Fn&& _Func) noexcept(
-        noexcept(static_cast<_Ty>(_STD forward<_Fn>(_Func)())))
-        : _Value(_STD forward<_Fn>(_Func)()), _Has_value{true} {}
+        noexcept(static_cast<_Ty>(_STD forward<_Fn>(_Func)()))) // equivalent to invoke()
+        : _Value(_STD forward<_Fn>(_Func)()), _Has_value{true} {} // equivalent to invoke()
 
     template <class _Fn, class _Ux>
     constexpr expected(_Construct_expected_from_invoke_result_tag, unexpect_t, _Fn&& _Func, _Ux&& _Arg) noexcept(
@@ -1482,7 +1482,7 @@ public:
             "(N4928 [expected.void.monadic]/3)");
 
         if (_Has_value) {
-            return _STD invoke(_STD forward<_Fn>(_Func));
+            return _STD forward<_Fn>(_Func)(); // equivalent to invoke()
         } else {
             return _Uty{unexpect, _Unexpected};
         }
@@ -1501,7 +1501,7 @@ public:
             "(N4928 [expected.void.monadic]/3)");
 
         if (_Has_value) {
-            return _STD invoke(_STD forward<_Fn>(_Func));
+            return _STD forward<_Fn>(_Func)(); // equivalent to invoke()
         } else {
             return _Uty{unexpect, _Unexpected};
         }
@@ -1520,7 +1520,7 @@ public:
             "(N4928 [expected.void.monadic]/7)");
 
         if (_Has_value) {
-            return _STD invoke(_STD forward<_Fn>(_Func));
+            return _STD forward<_Fn>(_Func)(); // equivalent to invoke()
         } else {
             return _Uty(unexpect, _STD move(_Unexpected));
         }
@@ -1539,7 +1539,7 @@ public:
             "(N4928 [expected.void.monadic]/7)");
 
         if (_Has_value) {
-            return _STD invoke(_STD forward<_Fn>(_Func));
+            return _STD forward<_Fn>(_Func)(); // equivalent to invoke()
         } else {
             return _Uty(unexpect, _STD move(_Unexpected));
         }
@@ -1633,7 +1633,7 @@ public:
 
         if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
-                _STD invoke(_STD forward<_Fn>(_Func));
+                _STD forward<_Fn>(_Func)(); // equivalent to invoke()
                 return expected<_Uty, _Err>{};
             } else {
                 return expected<_Uty, _Err>{_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func)};
@@ -1659,7 +1659,7 @@ public:
 
         if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
-                _STD invoke(_STD forward<_Fn>(_Func));
+                _STD forward<_Fn>(_Func)(); // equivalent to invoke()
                 return expected<_Uty, _Err>{};
             } else {
                 return expected<_Uty, _Err>{_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func)};
@@ -1685,7 +1685,7 @@ public:
 
         if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
-                _STD invoke(_STD forward<_Fn>(_Func));
+                _STD forward<_Fn>(_Func)(); // equivalent to invoke()
                 return expected<_Uty, _Err>{};
             } else {
                 return expected<_Uty, _Err>{_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func)};
@@ -1711,7 +1711,7 @@ public:
 
         if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
-                _STD invoke(_STD forward<_Fn>(_Func));
+                _STD forward<_Fn>(_Func)(); // equivalent to invoke()
                 return expected<_Uty, _Err>{};
             } else {
                 return expected<_Uty, _Err>{_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func)};
