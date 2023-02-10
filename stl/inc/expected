@@ -1477,6 +1477,9 @@ public:
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void, E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.void.monadic]/3.");
+        static_assert(is_same_v<typename _Uty::error_type, _Err>,
+            "expected<void, E>::and_then(F) requires the error type of the return type of F to be E. "
+            "(N4928 [expected.void.monadic]/3)");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func));
@@ -1493,6 +1496,9 @@ public:
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void, E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.void.monadic]/3.");
+        static_assert(is_same_v<typename _Uty::error_type, _Err>,
+            "expected<void, E>::and_then(F) requires the error type of the return type of F to be E. "
+            "(N4928 [expected.void.monadic]/3)");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func));
@@ -1509,6 +1515,9 @@ public:
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void, E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.void.monadic]/7.");
+        static_assert(is_same_v<typename _Uty::error_type, _Err>,
+            "expected<void, E>::and_then(F) requires the error type of the return type of F to be E. "
+            "(N4928 [expected.void.monadic]/7)");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func));
@@ -1525,6 +1534,9 @@ public:
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void, E>::and_then(F) requires the return type of F to be a specialization of expected "
             "N4928 [expected.void.monadic]/7.");
+        static_assert(is_same_v<typename _Uty::error_type, _Err>,
+            "expected<void, E>::and_then(F) requires the error type of the return type of F to be E. "
+            "(N4928 [expected.void.monadic]/7)");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func));
