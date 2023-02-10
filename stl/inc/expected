@@ -1615,7 +1615,7 @@ public:
         if constexpr (!is_void_v<_Uty>) {
             static_assert(_Is_invoke_constructible<_Fn>, "expected<void, E>::transform(F) requires that the return "
                                                          "type of F is constructible with the result of "
-                                                         "invoking f. (N4928 [expected.object.monadic]/17)");
+                                                         "invoking f. (N4928 [expected.void.monadic]/17)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -1641,7 +1641,7 @@ public:
         if constexpr (!is_void_v<_Uty>) {
             static_assert(_Is_invoke_constructible<_Fn>, "expected<void, E>::transform(F) requires that the return "
                                                          "type of F is constructible with the result of "
-                                                         "invoking f. (N4928 [expected.object.monadic]/17)");
+                                                         "invoking f. (N4928 [expected.void.monadic]/17)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -1667,7 +1667,7 @@ public:
         if constexpr (!is_void_v<_Uty>) {
             static_assert(_Is_invoke_constructible<_Fn>, "expected<void, E>::transform(F) requires that the return "
                                                          "type of F is constructible with the result of "
-                                                         "invoking f. (N4928 [expected.object.monadic]/21)");
+                                                         "invoking f. (N4928 [expected.void.monadic]/21)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -1693,7 +1693,7 @@ public:
         if constexpr (!is_void_v<_Uty>) {
             static_assert(_Is_invoke_constructible<_Fn>, "expected<void, E>::transform(F) requires that the return "
                                                          "type of F is constructible with the result of "
-                                                         "invoking f. (N4928 [expected.object.monadic]/21)");
+                                                         "invoking f. (N4928 [expected.void.monadic]/21)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
