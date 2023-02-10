@@ -483,8 +483,8 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
     }
 }
 
-[[nodiscard]] __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
-    const char* _Tz, const size_t _Tz_len, __std_tzdb_epoch_milli _Sys) noexcept {
+[[nodiscard]] __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info_v2(
+    const char* _Tz, const size_t _Tz_len, __std_tzdb_epoch_milli _Sys, __std_tzdb_sys_info_type _Type) noexcept {
     // On exit---
     //    _Info == nullptr          --> bad_alloc
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
@@ -528,6 +528,10 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
         return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
 
+    if (_Type == __std_tzdb_sys_info_type::_Offset_only) {
+        return _Info.release();
+    }
+
     UDate _Transition{};
     _Info->_Begin = __icu_ucal_getTimeZoneTransitionDate(_Cal.get(),
                         UTimeZoneTransitionType::UCAL_TZ_TRANSITION_PREVIOUS_INCLUSIVE, &_Transition, &_UErr)
@@ -545,6 +549,10 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
         return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
 
+    if (_Type == __std_tzdb_sys_info_type::_Offset_and_range) {
+        return _Info.release();
+    }
+
     int32_t _Abbrev_len{};
     const auto _Abbrev = _Get_timezone_short_id(_Cal.get(), _Is_daylight, _Abbrev_len, _Info->_Err);
     if (_Abbrev == nullptr) {
@@ -557,6 +565,11 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
     }
 
     return _Info.release();
+}
+
+__std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
+    const char* _Tz, const size_t _Tz_len, __std_tzdb_epoch_milli _Sys) noexcept {
+    return __std_tzdb_get_sys_info_v2(_Tz, _Tz_len, _Sys, __std_tzdb_sys_info_type::_Full);
 }
 
 void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* const _Info) noexcept {

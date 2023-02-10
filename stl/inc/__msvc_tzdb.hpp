@@ -66,14 +66,20 @@ struct __std_tzdb_sys_info {
     const char* _Abbrev;
 };
 
+enum class __std_tzdb_sys_info_type {
+    _Full,
+    _Offset_only,
+    _Offset_and_range,
+};
+
 _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noexcept;
 void __stdcall __std_tzdb_delete_time_zones(__std_tzdb_time_zones_info* _Info) noexcept;
 
 _NODISCARD __std_tzdb_current_zone_info* __stdcall __std_tzdb_get_current_zone() noexcept;
 void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* _Info) noexcept;
 
-_NODISCARD __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
-    const char* _Tz, size_t _Tz_len, __std_tzdb_epoch_milli _Local) noexcept;
+_NODISCARD __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info_v2(
+    const char* _Tz, size_t _Tz_len, __std_tzdb_epoch_milli _Local, __std_tzdb_sys_info_type _Type) noexcept;
 void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* _Info) noexcept;
 
 _NODISCARD __std_tzdb_leap_info* __stdcall __std_tzdb_get_leap_seconds(
