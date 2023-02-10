@@ -347,6 +347,7 @@
 // P2474R2 views::repeat
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
+// P2505R5 Monadic Functions For expected
 // P2549R1 unexpected<E>::error()
 // P2602R2 Poison Pills Are Too Toxic
 
@@ -1679,7 +1680,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_containers_ranges 202202L
-#define __cpp_lib_expected          202202L
+#define __cpp_lib_expected          202211L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_forward_like   202207L

@@ -590,6 +590,7 @@ tests\P2467R1_exclusive_mode_fstreams
 tests\P2474R2_views_repeat
 tests\P2474R2_views_repeat_death
 tests\P2494R2_move_only_range_adaptors
+tests\P2505R5_monadic_functions_for_std_expected
 tests\P2517R1_apply_conditional_noexcept
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions
