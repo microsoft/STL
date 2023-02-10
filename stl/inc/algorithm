@@ -9921,70 +9921,6 @@ namespace ranges {
     _EXPORT_STD template <class _Ty>
     using minmax_element_result = min_max_result<_Ty>;
 
-    template <class _It, class _Se, class _Pr, class _Pj>
-    constexpr min_max_result<_It> _Minmax_element_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
-        _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
-        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
-
-#if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
-                      && sized_sentinel_for<_Se, _It>) {
-            if (!_STD is_constant_evaluated()) {
-                const auto _First_ptr = _STD to_address(_First);
-                const auto _Last_ptr  = _First_ptr + (_Last - _First);
-                const auto _Result    = __std_minmax_element(_First_ptr, _Last_ptr);
-                if constexpr (is_pointer_v<_It>) {
-                    return {_Result.first, _Result.second};
-                } else {
-                    return {_First + (_Result.first - _First_ptr), _First + (_Result.second - _First_ptr)};
-                }
-            }
-        }
-#endif // _USE_STD_VECTOR_ALGORITHMS
-
-        min_max_result<_It> _Found{_First, _First};
-
-        if (_First == _Last) {
-            return _Found;
-        }
-
-        while (++_First != _Last) { // process one or two elements
-            _It _Prev = _First;
-            if (++_First == _Last) { // process last element
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found.min))) {
-                    _Found.min = _Prev;
-                } else if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found.max))) {
-                    _Found.max = _Prev;
-                }
-
-                break;
-            }
-
-            // process next two elements
-            if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
-                // test _First for new smallest
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Found.min))) {
-                    _Found.min = _First;
-                }
-
-                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found.max))) {
-                    _Found.max = _Prev;
-                }
-            } else { // test _Prev for new smallest
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found.min))) {
-                    _Found.min = _Prev;
-                }
-
-                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Found.max))) {
-                    _Found.max = _First;
-                }
-            }
-        }
-
-        return _Found;
-    }
-
     class _Minmax_element_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -9993,12 +9929,12 @@ namespace ranges {
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr minmax_element_result<_It> operator()(
             _It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _RANGES _Minmax_element_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _Seek_wrapped(_First, _STD move(_UResult.min));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Minmax_element_fwd_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.min));
             auto _Second = _First;
-            _Seek_wrapped(_Second, _STD move(_UResult.max));
+            _STD _Seek_wrapped(_Second, _STD move(_UResult.max));
             return {_STD move(_First), _STD move(_Second)};
         }
 
@@ -10007,12 +9943,78 @@ namespace ranges {
         _NODISCARD constexpr minmax_element_result<borrowed_iterator_t<_Rng>> operator()(
             _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _RANGES _Minmax_element_unchecked(
-                _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _Seek_wrapped(_First, _STD move(_UResult.min));
+            auto _UResult = _Minmax_element_fwd_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)),
+                _RANGES _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.min));
             auto _Second = _First;
-            _Seek_wrapped(_Second, _STD move(_UResult.max));
+            _STD _Seek_wrapped(_Second, _STD move(_UResult.max));
             return {_STD move(_First), _STD move(_Second)};
+        }
+
+    private:
+        template <class _It, class _Se, class _Pr, class _Pj>
+        _NODISCARD static constexpr min_max_result<_It> _Minmax_element_fwd_unchecked(
+            _It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
+                          && sized_sentinel_for<_Se, _It>) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _First_ptr = _STD to_address(_First);
+                    const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                    const auto _Result    = _CSTD __std_minmax_element(_First_ptr, _Last_ptr);
+                    if constexpr (is_pointer_v<_It>) {
+                        return {_Result.first, _Result.second};
+                    } else {
+                        return {_First + (_Result.first - _First_ptr), _First + (_Result.second - _First_ptr)};
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+            min_max_result<_It> _Found{_First, _First};
+
+            if (_First == _Last) {
+                return _Found;
+            }
+
+            while (++_First != _Last) { // process one or two elements
+                _It _Prev = _First;
+                if (++_First == _Last) { // process last element
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found.min))) {
+                        _Found.min = _Prev;
+                    } else if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found.max))) {
+                        _Found.max = _Prev;
+                    }
+
+                    break;
+                }
+
+                // process next two elements
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
+                    // test _First for new smallest
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Found.min))) {
+                        _Found.min = _First;
+                    }
+
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found.max))) {
+                        _Found.max = _Prev;
+                    }
+                } else { // test _Prev for new smallest
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found.min))) {
+                        _Found.min = _Prev;
+                    }
+
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Found.max))) {
+                        _Found.max = _First;
+                    }
+                }
+            }
+
+            return _Found;
         }
     };
 
@@ -10084,9 +10086,8 @@ namespace ranges {
             const auto _First = _Range.begin();
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
-                "An initializer_list passed to std::ranges::minmax must not be empty. (N4861 [alg.min.max]/21)");
-            const auto _Found = _RANGES _Minmax_element_unchecked(_First, _Last, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return {static_cast<_Ty>(*_Found.min), static_cast<_Ty>(*_Found.max)};
+                "An initializer_list passed to std::ranges::minmax must not be empty. (N4928 [alg.min.max]/21)");
+            return _Minmax_fwd_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
         template <input_range _Rng, class _Pj = identity,
@@ -10094,26 +10095,15 @@ namespace ranges {
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
         _NODISCARD constexpr minmax_result<range_value_t<_Rng>> operator()(
             _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _UFirst = _Ubegin(_Range);
-            auto _ULast  = _Uend(_Range);
+            auto _UFirst = _RANGES _Ubegin(_Range);
+            auto _ULast  = _RANGES _Uend(_Range);
             _STL_ASSERT(
-                _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4861 [alg.min.max]/21)");
-            using _Vty = range_value_t<_Rng>;
+                _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4928 [alg.min.max]/21)");
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
-                const auto _Found = _RANGES _Minmax_element_unchecked(
-                    _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
-                // Avoid repeatedly initializing objects from the result of an iterator dereference when doing so might
-                // not be idempotent. The `if constexpr` avoids the extra branch in cases where it's not needed.
-                if constexpr (!same_as<remove_cvref_t<range_reference_t<_Rng>>, _Vty>
-                              || is_rvalue_reference_v<range_reference_t<_Rng>>) {
-                    if (_Found.min == _Found.max) {
-                        // This initialization is correct, similar to the N4928 [dcl.init.aggr]/6 example
-                        minmax_result<_Vty> _Result = {static_cast<_Vty>(*_Found.min), _Result.min};
-                        return _Result;
-                    }
-                }
-                return {static_cast<_Vty>(*_Found.min), static_cast<_Vty>(*_Found.max)};
+                return _Minmax_fwd_unchecked(
+                    _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             } else {
+                using _Vty = range_value_t<_Rng>;
                 // This initialization is correct, similar to the N4928 [dcl.init.aggr]/6 example
                 minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst), _Found.min};
                 if (_UFirst == _ULast) {
@@ -10155,6 +10145,77 @@ namespace ranges {
 
                 return _Found;
             }
+        }
+
+    private:
+        template <class _It, class _Se, class _Pr, class _Pj>
+        _NODISCARD static constexpr minmax_result<iter_value_t<_It>> _Minmax_fwd_unchecked(
+            _It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
+
+            _STL_INTERNAL_CHECK(_First != _Last);
+
+            using _Vty = iter_value_t<_It>;
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
+                          && sized_sentinel_for<_Se, _It>) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _First_ptr = _STD to_address(_First);
+                    const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                    const auto _Result    = _CSTD __std_minmax_element(_First_ptr, _Last_ptr);
+                    return {static_cast<_Vty>(*_Result.first), static_cast<_Vty>(*_Result.second)};
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+            auto _Found_min = _First;
+            if (++_First == _Last) {
+                // This initialization is correct, similar to the N4928 [dcl.init.aggr]/6 example
+                minmax_result<_Vty> _Result = {static_cast<_Vty>(*_Found_min), _Result.min};
+                return _Result;
+            }
+
+            auto _Found_max = _First;
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Found_max), _STD invoke(_Proj, *_Found_min))) {
+                _RANGES swap(_Found_min, _Found_max);
+            }
+
+            while (++_First != _Last) { // process one or two elements
+                _It _Prev = _First;
+                if (++_First == _Last) { // process last element
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found_min))) {
+                        _Found_min = _Prev;
+                    } else if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found_max))) {
+                        _Found_max = _Prev;
+                    }
+
+                    break;
+                }
+
+                // process two elements
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
+                    // test _First for new smallest
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Found_min))) {
+                        _Found_min = _First;
+                    }
+
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found_max))) {
+                        _Found_max = _Prev;
+                    }
+                } else { // test _Prev for new smallest
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found_min))) {
+                        _Found_min = _Prev;
+                    }
+
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Found_max))) {
+                        _Found_max = _First;
+                    }
+                }
+            }
+
+            return {static_cast<_Vty>(*_Found_min), static_cast<_Vty>(*_Found_max)};
         }
     };
 
