@@ -56,7 +56,11 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 // Controls whether ARM64 ldar/ldapr/stlr should be used
 #ifndef _STD_ATOMIC_USE_ARM64_LDAR_STLR
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_HAS_ARM64_LOAD_ACQUIRE) && _HAS_ARM64_LOAD_ACQUIRE == 1 // TRANSITION, VS 2022 17.7 Preview 1
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 1
+#else // ^^^ updated intrin0.inl.h is available / workaround vvv
+#define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
+#endif // ^^^ workaround ^^^
 #else // ^^^ ARM64/ARM64EC / Other architectures vvv
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
 #endif // defined(_M_ARM64) || defined(_M_ARM64EC)
@@ -130,15 +134,10 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     }
 #endif // hardware
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
 
-#if defined(_HAS_ARM64_LOAD_ACQUIRE) && _HAS_ARM64_LOAD_ACQUIRE == 1
 #define __LOAD_ACQUIRE_ARM64(_Width, _Ptr) \
     __load_acquire##_Width(reinterpret_cast<const volatile unsigned __int##_Width*>(_Ptr))
-#else
-#define __LOAD_ACQUIRE_ARM64(_Width, _Ptr) \
-    __ldar##_Width(reinterpret_cast<const volatile unsigned __int##_Width*>(_Ptr))
-#endif
 
 #define _ATOMIC_LOAD_ARM64(_Result, _Width, _Ptr, _Order_var) \
     switch (_Order_var) {                                     \
@@ -159,7 +158,7 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
         break;                                                \
     }
 
-#endif // defined(_M_ARM64) || defined(_M_ARM64EC)
+#endif // _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
 
 // note: these macros are _not_ always safe to use with a trailing semicolon,
 // we avoid wrapping them in do {} while (0) because MSVC generates code for such loops
