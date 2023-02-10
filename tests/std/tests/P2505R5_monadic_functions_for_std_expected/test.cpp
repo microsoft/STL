@@ -109,6 +109,7 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
         {
             decltype(auto) result = forward<Expected>(unengaged).and_then(&Thingy::x);
             static_assert(is_same_v<decltype(result), expected<int, int>>);
+            assert(!result);
             assert(result.error() == 22);
         }
     }
@@ -138,6 +139,7 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
         {
             decltype(auto) result = forward<Expected>(unengaged).transform(&Thingy::member_func);
             static_assert(is_same_v<decltype(result), expected<int, int>>);
+            assert(!result);
             assert(result.error() == 22);
         }
     }
@@ -188,6 +190,7 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
         decltype(auto) result =
             forward<Expected>(engaged).transform_error(to_thingy).transform_error(&Thingy::member_func);
         static_assert(is_same_v<decltype(result), expected<Val, int>>);
+        assert(result);
         if constexpr (!is_void_v<Val>) {
             assert(result->x == 11);
         }
@@ -204,6 +207,7 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
         {
             decltype(auto) result = forward<Expected>(engaged).transform_error(immov);
             static_assert(is_same_v<decltype(result), expected<Val, Immovable>>);
+            assert(result);
             if constexpr (!is_void_v<Val>) {
                 assert(result->x == 11);
             }
