@@ -392,6 +392,21 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
+    // Validate slide_view::base() const&
+    STATIC_ASSERT(CanMemberBase<const R&> == copy_constructible<V>);
+    if constexpr (copy_constructible<V>) {
+        same_as<V> auto b1 = as_const(r).base();
+        STATIC_ASSERT(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>);
+        assert(*b1.begin() == *begin(*begin(expected)));
+    }
+
+    // Validate slide_view::base() &&
+    same_as<V> auto b2 = move(r).base();
+    STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
+    if (!is_empty) {
+        assert(*b2.begin() == *begin(*begin(expected)));
+    }
+
     return true;
 }
 
