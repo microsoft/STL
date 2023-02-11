@@ -82,6 +82,9 @@ std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_deallocate_ma
 # Too many constexpr operations
 std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
 
+# libc++ has not implemented P2505R5: "Monadic Functions for std::expected"
+std/language.support/support.limits/support.limits.general/expected.version.compile.pass.cpp FAIL
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"

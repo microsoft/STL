@@ -23,7 +23,7 @@ namespace {
         CONDITION_VARIABLE _Condition;
     };
 
-    struct _NODISCARD _Guarded_wait_context : _Wait_context {
+    struct [[nodiscard]] _Guarded_wait_context : _Wait_context {
         _Guarded_wait_context(const void* _Storage_, _Wait_context* const _Head) noexcept
             : _Wait_context{_Storage_, _Head, _Head->_Prev, CONDITION_VARIABLE_INIT} {
             _Prev->_Next = this;
@@ -41,7 +41,7 @@ namespace {
         _Guarded_wait_context& operator=(const _Guarded_wait_context&) = delete;
     };
 
-    class _NODISCARD _SrwLock_guard {
+    class [[nodiscard]] _SrwLock_guard {
     public:
         explicit _SrwLock_guard(SRWLOCK& _Locked_) noexcept : _Locked(&_Locked_) {
             AcquireSRWLockExclusive(_Locked);
@@ -202,8 +202,8 @@ namespace {
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 
-    _NODISCARD unsigned char __std_atomic_compare_exchange_128_fallback(_Inout_bytecount_(16) long long* _Destination,
-        _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
+    [[nodiscard]] unsigned char __std_atomic_compare_exchange_128_fallback(
+        _Inout_bytecount_(16) long long* _Destination, _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
         _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
         static SRWLOCK _Mtx = SRWLOCK_INIT;
         _SrwLock_guard _Guard{_Mtx};
@@ -397,7 +397,7 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
 }
 #pragma warning(pop)
 
-_NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_bytecount_(16) long long* _Destination,
+[[nodiscard]] unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_bytecount_(16) long long* _Destination,
     _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
     _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
 #if !defined(_WIN64)
@@ -413,7 +413,7 @@ _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_byte
 #endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0
 }
 
-_NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept {
+[[nodiscard]] char __stdcall __std_atomic_has_cmpxchg16b() noexcept {
 #if !defined(_WIN64)
     return false;
 #elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
