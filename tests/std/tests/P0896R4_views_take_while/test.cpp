@@ -239,7 +239,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                 assert(sc == s.base());
                 assert(sc == sc.base());
             } else if constexpr (forward_range<V> && is_lvalue_reference_v<Rng>) {
-                auto full_range   = views::take_while(rng, [](auto const&) { return true; });
+                auto full_range   = views::take_while(rng, [](const auto&) { return true; });
                 const auto length = 8; // NB: depends on the test data
                 assert(full_range.end() == next(full_range.begin(), length));
                 assert(full_range.end() == next(as_const(full_range).begin(), length));
@@ -263,8 +263,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     // Validate view_interface::cbegin
     STATIC_ASSERT(CanMemberCBegin<R>);
-    STATIC_ASSERT(CanMemberCBegin<const R> == ranges::range<const R>
-                  && indirect_unary_predicate<const Pred, const_iterator_t<const V>>);
+    STATIC_ASSERT(CanMemberCBegin<const R> == ranges::range<const R>);
+    STATIC_ASSERT(indirect_unary_predicate<const Pred, const_iterator_t<const V>>);
     if (forward_range<V>) { // intentionally not if constexpr
         const same_as<const_iterator_t<R>> auto i = r.cbegin();
         if (!is_empty) {
@@ -277,7 +277,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             const same_as<const_iterator_t<R>> auto i2 = r2.cbegin();
             if (!is_empty) {
                 assert(*i2 == *i);
-                assert(*r2.cbegin() == *i2);
                 assert(*r2.cbegin() == *i2);
             }
         }
@@ -300,8 +299,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     // Validate view_interface::cend
     STATIC_ASSERT(CanMemberCEnd<R>);
-    STATIC_ASSERT(CanMemberCEnd<const R> == ranges::range<const R>
-                  && indirect_unary_predicate<const Pred, const_iterator_t<const V>>);
+    STATIC_ASSERT(CanMemberCEnd<const R> == ranges::range<const R>);
+    STATIC_ASSERT(indirect_unary_predicate<const Pred, const_iterator_t<const V>>);
     STATIC_ASSERT(CanCEnd<const R&> == CanMemberCEnd<const R>);
     STATIC_ASSERT(!common_range<R>);
     STATIC_ASSERT(!common_range<const R>);
@@ -323,7 +322,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                 assert(sc == s.base());
                 assert(sc == sc.base());
             } else if constexpr (forward_range<V> && is_lvalue_reference_v<Rng>) {
-                auto full_range   = views::take_while(rng, [](auto const&) { return true; });
+                auto full_range   = views::take_while(rng, [](const auto&) { return true; });
                 const auto length = 8; // NB: depends on the test data
                 assert(full_range.cend() == next(full_range.cbegin(), length));
                 assert(full_range.cend() == next(as_const(full_range).cbegin(), length));
