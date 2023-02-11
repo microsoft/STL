@@ -44,10 +44,10 @@ void test_file_create_fail(const std::ios_base::openmode bad_mode) {
     assert(!fs::exists(test_file));
 }
 
+// Also test GH-3401: <ios>: std::ios_base::openmode is not a bitmask type
 constexpr bool test_gh_3401() {
-    // <ios>: std::ios_base::openmode is not a bitmask type
+    using IB = std::ios_base;
     {
-        using IB   = std::ios_base;
         auto flags = IB::binary;
         assert(flags & IB::binary);
 
@@ -72,7 +72,6 @@ constexpr bool test_gh_3401() {
         assert(!(flags & IB::app));
     }
     {
-        using IB   = std::ios_base;
         auto flags = IB::dec;
         assert(flags & IB::dec);
 
@@ -97,7 +96,6 @@ constexpr bool test_gh_3401() {
         assert(!(flags & IB::oct));
     }
     {
-        using IB   = std::ios_base;
         auto flags = IB::badbit;
         assert(flags & IB::badbit);
 
@@ -122,7 +120,6 @@ constexpr bool test_gh_3401() {
         assert(!(flags & IB::failbit));
     }
     {
-        using IB   = std::ios_base;
         auto flags = IB::cur;
         assert(flags & IB::cur);
 
