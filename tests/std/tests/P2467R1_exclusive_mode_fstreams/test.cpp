@@ -46,103 +46,35 @@ void test_file_create_fail(const std::ios_base::openmode bad_mode) {
 
 // Also test GH-3401: <ios>: std::ios_base::openmode is not a bitmask type
 constexpr bool test_gh_3401() {
-    using IB = std::ios_base;
-    {
-        auto flags = IB::binary;
-        assert(flags & IB::binary);
+    using IB        = std::ios_base;
+    auto test_flags = [](const auto first, const auto second) {
+        auto flags = first;
+        assert(flags & first);
 
-        flags |= IB::app;
-        assert(flags & IB::binary);
-        assert(flags & IB::app);
+        flags |= second;
+        assert(flags & first);
+        assert(flags & second);
 
-        flags &= ~IB::app;
-        assert(flags & IB::binary);
-        assert(!(flags & IB::app));
+        flags &= ~second;
+        assert(flags & first);
+        assert(!(flags & second));
 
-        flags = IB::binary | IB::app;
-        assert(flags & IB::binary);
-        assert(flags & IB::app);
+        flags = first | second;
+        assert(flags & first);
+        assert(flags & second);
 
-        flags = IB::binary ^ IB::app;
-        assert(flags & IB::binary);
-        assert(flags & IB::app);
+        flags = first ^ second;
+        assert(flags & first);
+        assert(flags & second);
 
-        flags ^= IB::app;
-        assert(flags & IB::binary);
-        assert(!(flags & IB::app));
-    }
-    {
-        auto flags = IB::dec;
-        assert(flags & IB::dec);
-
-        flags |= IB::oct;
-        assert(flags & IB::dec);
-        assert(flags & IB::oct);
-
-        flags &= ~IB::oct;
-        assert(flags & IB::dec);
-        assert(!(flags & IB::oct));
-
-        flags = IB::dec | IB::oct;
-        assert(flags & IB::dec);
-        assert(flags & IB::oct);
-
-        flags = IB::dec ^ IB::oct;
-        assert(flags & IB::dec);
-        assert(flags & IB::oct);
-
-        flags ^= IB::oct;
-        assert(flags & IB::dec);
-        assert(!(flags & IB::oct));
-    }
-    {
-        auto flags = IB::badbit;
-        assert(flags & IB::badbit);
-
-        flags |= IB::failbit;
-        assert(flags & IB::badbit);
-        assert(flags & IB::failbit);
-
-        flags &= ~IB::failbit;
-        assert(flags & IB::badbit);
-        assert(!(flags & IB::failbit));
-
-        flags = IB::failbit | IB::badbit;
-        assert(flags & IB::badbit);
-        assert(flags & IB::failbit);
-
-        flags = IB::badbit ^ IB::failbit;
-        assert(flags & IB::badbit);
-        assert(flags & IB::failbit);
-
-        flags ^= IB::failbit;
-        assert(flags & IB::badbit);
-        assert(!(flags & IB::failbit));
-    }
-    {
-        auto flags = IB::cur;
-        assert(flags & IB::cur);
-
-        flags |= IB::end;
-        assert(flags & IB::cur);
-        assert(flags & IB::end);
-
-        flags &= ~IB::end;
-        assert(flags & IB::cur);
-        assert(!(flags & IB::end));
-
-        flags = IB::end | IB::cur;
-        assert(flags & IB::cur);
-        assert(flags & IB::end);
-
-        flags = IB::cur ^ IB::end;
-        assert(flags & IB::cur);
-        assert(flags & IB::end);
-
-        flags ^= IB::end;
-        assert(flags & IB::cur);
-        assert(!(flags & IB::end));
-    }
+        flags ^= second;
+        assert(flags & first);
+        assert(!(flags & second));
+    };
+    test_flags(IB::binary, IB::app);
+    test_flags(IB::dec, IB::oct);
+    test_flags(IB::badbit, IB::failbit);
+    test_flags(IB::cur, IB::end);
 
     return true;
 }
