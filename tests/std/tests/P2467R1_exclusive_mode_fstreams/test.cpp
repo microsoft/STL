@@ -44,6 +44,112 @@ void test_file_create_fail(const std::ios_base::openmode bad_mode) {
     assert(!fs::exists(test_file));
 }
 
+constexpr bool test_gh_3401() {
+    // <ios>: std::ios_base::openmode is not a bitmask type
+    {
+        using IB   = std::ios_base;
+        auto flags = IB::binary;
+        assert(flags & IB::binary);
+
+        flags |= IB::app;
+        assert(flags & IB::binary);
+        assert(flags & IB::app);
+
+        flags &= ~IB::app;
+        assert(flags & IB::binary);
+        assert(!(flags & IB::app));
+
+        flags = IB::binary | IB::app;
+        assert(flags & IB::binary);
+        assert(flags & IB::app);
+
+        flags = IB::binary ^ IB::app;
+        assert(flags & IB::binary);
+        assert(flags & IB::app);
+
+        flags ^= IB::app;
+        assert(flags & IB::binary);
+        assert(!(flags & IB::app));
+    }
+    {
+        using IB   = std::ios_base;
+        auto flags = IB::dec;
+        assert(flags & IB::dec);
+
+        flags |= IB::oct;
+        assert(flags & IB::dec);
+        assert(flags & IB::oct);
+
+        flags &= ~IB::oct;
+        assert(flags & IB::dec);
+        assert(!(flags & IB::oct));
+
+        flags = IB::dec | IB::oct;
+        assert(flags & IB::dec);
+        assert(flags & IB::oct);
+
+        flags = IB::dec ^ IB::oct;
+        assert(flags & IB::dec);
+        assert(flags & IB::oct);
+
+        flags ^= IB::oct;
+        assert(flags & IB::dec);
+        assert(!(flags & IB::oct));
+    }
+    {
+        using IB   = std::ios_base;
+        auto flags = IB::badbit;
+        assert(flags & IB::badbit);
+
+        flags |= IB::failbit;
+        assert(flags & IB::badbit);
+        assert(flags & IB::failbit);
+
+        flags &= ~IB::failbit;
+        assert(flags & IB::badbit);
+        assert(!(flags & IB::failbit));
+
+        flags = IB::failbit | IB::badbit;
+        assert(flags & IB::badbit);
+        assert(flags & IB::failbit);
+
+        flags = IB::badbit ^ IB::failbit;
+        assert(flags & IB::badbit);
+        assert(flags & IB::failbit);
+
+        flags ^= IB::failbit;
+        assert(flags & IB::badbit);
+        assert(!(flags & IB::failbit));
+    }
+    {
+        using IB   = std::ios_base;
+        auto flags = IB::cur;
+        assert(flags & IB::cur);
+
+        flags |= IB::end;
+        assert(flags & IB::cur);
+        assert(flags & IB::end);
+
+        flags &= ~IB::end;
+        assert(flags & IB::cur);
+        assert(!(flags & IB::end));
+
+        flags = IB::end | IB::cur;
+        assert(flags & IB::cur);
+        assert(flags & IB::end);
+
+        flags = IB::cur ^ IB::end;
+        assert(flags & IB::cur);
+        assert(flags & IB::end);
+
+        flags ^= IB::end;
+        assert(flags & IB::cur);
+        assert(!(flags & IB::end));
+    }
+
+    return true;
+}
+
 int main() {
     using IB = std::ios_base;
 
@@ -65,4 +171,7 @@ int main() {
     test_file_create_fail(IB::in | IB::trunc | IB::noreplace);
     test_file_create_fail(IB::in | IB::binary | IB::noreplace);
     test_file_create_fail(IB::in | IB::binary | IB::trunc | IB::noreplace);
+
+    test_gh_3401();
+    static_assert(test_gh_3401());
 }

@@ -28,7 +28,36 @@ public:
         _Fmtmask = 0xffff,
         _Fmtzero = 0
     };
+    friend constexpr _Fmtflags operator&(_Fmtflags _First, _Fmtflags _Second) noexcept {
+        return static_cast<_Fmtflags>(static_cast<unsigned int>(_First) & static_cast<unsigned int>(_Second));
+    }
 
+    friend constexpr _Fmtflags& operator&=(_Fmtflags& _First, _Fmtflags _Second) noexcept {
+        _First = _First & _Second;
+        return _First;
+    }
+
+    friend constexpr _Fmtflags operator|(_Fmtflags _First, _Fmtflags _Second) noexcept {
+        return static_cast<_Fmtflags>(static_cast<unsigned int>(_First) | static_cast<unsigned int>(_Second));
+    }
+    friend constexpr _Fmtflags& operator|=(_Fmtflags& _First, _Fmtflags _Second) noexcept {
+        _First = _First | _Second;
+        return _First;
+    }
+
+    friend constexpr _Fmtflags operator^(_Fmtflags _First, _Fmtflags _Second) noexcept {
+        return static_cast<_Fmtflags>(static_cast<unsigned int>(_First) ^ static_cast<unsigned int>(_Second));
+    }
+    friend constexpr _Fmtflags& operator^=(_Fmtflags& _First, _Fmtflags _Second) noexcept {
+        _First = _First ^ _Second;
+        return _First;
+    }
+
+    friend constexpr _Fmtflags operator~(_Fmtflags _Mode) noexcept {
+        return static_cast<_Fmtflags>(~static_cast<unsigned int>(_Mode));
+    }
+
+    // These variables should have type std::ios_base::fmtflags, TRANSITION, ABI
     static constexpr _Fmtflags skipws     = static_cast<_Fmtflags>(0x0001);
     static constexpr _Fmtflags unitbuf    = static_cast<_Fmtflags>(0x0002);
     static constexpr _Fmtflags uppercase  = static_cast<_Fmtflags>(0x0004);
@@ -55,7 +84,36 @@ public:
     enum _Iostate { // constants for stream states
         _Statmask = 0x17
     };
+    friend constexpr _Iostate operator&(_Iostate _First, _Iostate _Second) noexcept {
+        return static_cast<_Iostate>(static_cast<unsigned int>(_First) & static_cast<unsigned int>(_Second));
+    }
 
+    friend constexpr _Iostate& operator&=(_Iostate& _First, _Iostate _Second) noexcept {
+        _First = _First & _Second;
+        return _First;
+    }
+
+    friend constexpr _Iostate operator|(_Iostate _First, _Iostate _Second) noexcept {
+        return static_cast<_Iostate>(static_cast<unsigned int>(_First) | static_cast<unsigned int>(_Second));
+    }
+    friend constexpr _Iostate& operator|=(_Iostate& _First, _Iostate _Second) noexcept {
+        _First = _First | _Second;
+        return _First;
+    }
+
+    friend constexpr _Iostate operator^(_Iostate _First, _Iostate _Second) noexcept {
+        return static_cast<_Iostate>(static_cast<unsigned int>(_First) ^ static_cast<unsigned int>(_Second));
+    }
+    friend constexpr _Iostate& operator^=(_Iostate& _First, _Iostate _Second) noexcept {
+        _First = _First ^ _Second;
+        return _First;
+    }
+
+    friend constexpr _Iostate operator~(_Iostate _Mode) noexcept {
+        return static_cast<_Iostate>(~static_cast<unsigned int>(_Mode));
+    }
+
+    // These variables should have type std::ios_base::iostate, TRANSITION, ABI
     static constexpr _Iostate goodbit = static_cast<_Iostate>(0x0);
     static constexpr _Iostate eofbit  = static_cast<_Iostate>(0x1);
     static constexpr _Iostate failbit = static_cast<_Iostate>(0x2);
@@ -65,6 +123,36 @@ public:
         _Openmask = 0xff
     };
 
+    friend constexpr _Openmode operator&(_Openmode _First, _Openmode _Second) noexcept {
+        return static_cast<_Openmode>(static_cast<unsigned int>(_First) & static_cast<unsigned int>(_Second));
+    }
+
+    friend constexpr _Openmode& operator&=(_Openmode& _First, _Openmode _Second) noexcept {
+        _First = _First & _Second;
+        return _First;
+    }
+
+    friend constexpr _Openmode operator|(_Openmode _First, _Openmode _Second) noexcept {
+        return static_cast<_Openmode>(static_cast<unsigned int>(_First) | static_cast<unsigned int>(_Second));
+    }
+    friend constexpr _Openmode& operator|=(_Openmode& _First, _Openmode _Second) noexcept {
+        _First = _First | _Second;
+        return _First;
+    }
+
+    friend constexpr _Openmode operator^(_Openmode _First, _Openmode _Second) noexcept {
+        return static_cast<_Openmode>(static_cast<unsigned int>(_First) ^ static_cast<unsigned int>(_Second));
+    }
+    friend constexpr _Openmode& operator^=(_Openmode& _First, _Openmode _Second) noexcept {
+        _First = _First ^ _Second;
+        return _First;
+    }
+
+    friend constexpr _Openmode operator~(_Openmode _Mode) noexcept {
+        return static_cast<_Openmode>(~static_cast<unsigned int>(_Mode));
+    }
+
+    // These variables should have type std::ios_base::openmode, TRANSITION, ABI
     static constexpr _Openmode in         = static_cast<_Openmode>(0x01);
     static constexpr _Openmode out        = static_cast<_Openmode>(0x02);
     static constexpr _Openmode ate        = static_cast<_Openmode>(0x04);
@@ -83,6 +171,36 @@ public:
         _Seekend
     };
 
+    friend constexpr _Seekdir operator&(_Seekdir _First, _Seekdir _Second) noexcept {
+        return static_cast<_Seekdir>(static_cast<unsigned int>(_First) & static_cast<unsigned int>(_Second));
+    }
+
+    friend constexpr _Seekdir& operator&=(_Seekdir& _First, _Seekdir _Second) noexcept {
+        _First = _First & _Second;
+        return _First;
+    }
+
+    friend constexpr _Seekdir operator|(_Seekdir _First, _Seekdir _Second) noexcept {
+        return static_cast<_Seekdir>(static_cast<unsigned int>(_First) | static_cast<unsigned int>(_Second));
+    }
+    friend constexpr _Seekdir& operator|=(_Seekdir& _First, _Seekdir _Second) noexcept {
+        _First = _First | _Second;
+        return _First;
+    }
+
+    friend constexpr _Seekdir operator^(_Seekdir _First, _Seekdir _Second) noexcept {
+        return static_cast<_Seekdir>(static_cast<unsigned int>(_First) ^ static_cast<unsigned int>(_Second));
+    }
+    friend constexpr _Seekdir& operator^=(_Seekdir& _First, _Seekdir _Second) noexcept {
+        _First = _First ^ _Second;
+        return _First;
+    }
+
+    friend constexpr _Seekdir operator~(_Seekdir _Mode) noexcept {
+        return static_cast<_Seekdir>(~static_cast<unsigned int>(_Mode));
+    }
+
+    // These variables should have type std::ios_base::seekdir, TRANSITION, ABI
     static constexpr _Seekdir beg = _Seekbeg;
     static constexpr _Seekdir cur = _Seekcur;
     static constexpr _Seekdir end = _Seekend;
