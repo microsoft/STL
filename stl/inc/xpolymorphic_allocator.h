@@ -178,10 +178,11 @@ namespace pmr {
     }
 
 #if _HAS_CXX20
+    template <class _Uty>
     struct _NODISCARD _Deallocate_bytes_guard {
         ~_Deallocate_bytes_guard() noexcept {
             if (_Mem_res) {
-                _Mem_res->deallocate(_Pobj, _Length, _Align);
+                _Mem_res->deallocate(_Pobj, sizeof(_Uty), alignof(_Uty));
             }
         }
 
@@ -190,8 +191,6 @@ namespace pmr {
 
         memory_resource* _Mem_res;
         void* _Pobj;
-        size_t _Length;
-        size_t _Align;
     };
 #endif // _HAS_CXX20
 
@@ -262,7 +261,7 @@ namespace pmr {
         _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) _Uty* new_object(_Types&&... _Args) {
             _Uty* const _Ptr = allocate_object<_Uty>();
 
-            _Deallocate_bytes_guard _Guard{_Resource, _Ptr, sizeof(_Uty), alignof(_Uty)};
+            _Deallocate_bytes_guard<_Uty> _Guard{_Resource, _Ptr};
             construct(_Ptr, _STD forward<_Types>(_Args)...);
             _Guard._Mem_res = nullptr;
 
