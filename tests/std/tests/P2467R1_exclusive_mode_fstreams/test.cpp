@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <ios>
+#include <type_traits>
 
 namespace fs = std::filesystem;
 
@@ -46,7 +47,8 @@ void test_file_create_fail(const std::ios_base::openmode bad_mode) {
 
 // Also test GH-3401: <ios>: std::ios_base::openmode is not a bitmask type
 constexpr bool test_gh_3401() {
-    using IB        = std::ios_base;
+    using IB = std::ios_base;
+    using namespace std;
     auto test_flags = [](const auto first, const auto second) {
         auto flags = first;
         assert(flags & first);
@@ -75,6 +77,45 @@ constexpr bool test_gh_3401() {
     test_flags(IB::dec, IB::oct);
     test_flags(IB::badbit, IB::failbit);
     test_flags(IB::cur, IB::end);
+
+    static_assert(is_same_v<remove_const_t<decltype(IB::beg)>, IB::seekdir>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::cur)>, IB::seekdir>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::end)>, IB::seekdir>);
+
+    static_assert(is_same_v<remove_const_t<decltype(IB::in)>, IB::openmode>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::out)>, IB::openmode>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::ate)>, IB::openmode>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::app)>, IB::openmode>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::trunc)>, IB::openmode>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::binary)>, IB::openmode>);
+#if _HAS_CXX23
+    static_assert(is_same_v<remove_const_t<decltype(IB::noreplace)>, IB::openmode>);
+#endif
+
+    static_assert(is_same_v<remove_const_t<decltype(IB::goodbit)>, IB::iostate>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::eofbit)>, IB::iostate>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::failbit)>, IB::iostate>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::badbit)>, IB::iostate>);
+
+    static_assert(is_same_v<remove_const_t<decltype(IB::skipws)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::unitbuf)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::uppercase)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::showbase)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::showpoint)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::showpos)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::left)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::right)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::internal)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::dec)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::oct)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::hex)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::scientific)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::fixed)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::boolalpha)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::adjustfield)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::boolalpha)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::basefield)>, IB::fmtflags>);
+    static_assert(is_same_v<remove_const_t<decltype(IB::floatfield)>, IB::fmtflags>);
 
     return true;
 }
