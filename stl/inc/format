@@ -3417,8 +3417,10 @@ _NODISCARD auto make_wformat_args(_Args&&... _Vals) {
     return _Format_arg_store<wformat_context, _Args...>{_Vals...};
 }
 
-_EXPORT_STD template <output_iterator<const char&> _OutputIt>
-_OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _Args) {
+_EXPORT_STD template <output_iterator<const char&> _OutputIt,
+    class _Sv = string_view> // lazy instantiation, see GH-1926
+_OutputIt vformat_to(_OutputIt _Out, const type_identity_t<_Sv> _Fmt, const format_args _Args) {
+    static_assert(is_same_v<_Sv, string_view>, "misspecified template argument");
     if constexpr (is_same_v<_OutputIt, _Fmt_it>) {
         _Format_handler<char> _Handler(_Out, _Fmt, _Args);
         _Parse_format_string(_Fmt, _Handler);
@@ -3431,8 +3433,10 @@ _OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _
     }
 }
 
-_EXPORT_STD template <output_iterator<const wchar_t&> _OutputIt>
-_OutputIt vformat_to(_OutputIt _Out, const wstring_view _Fmt, const wformat_args _Args) {
+_EXPORT_STD template <output_iterator<const wchar_t&> _OutputIt,
+    class _Sv = wstring_view> // lazy instantiation, see GH-1926
+_OutputIt vformat_to(_OutputIt _Out, const type_identity_t<_Sv> _Fmt, const wformat_args _Args) {
+    static_assert(is_same_v<_Sv, wstring_view>, "misspecified template argument");
     if constexpr (is_same_v<_OutputIt, _Fmt_wit>) {
         _Format_handler<wchar_t> _Handler(_Out, _Fmt, _Args);
         _Parse_format_string(_Fmt, _Handler);
@@ -3445,8 +3449,10 @@ _OutputIt vformat_to(_OutputIt _Out, const wstring_view _Fmt, const wformat_args
     }
 }
 
-_EXPORT_STD template <output_iterator<const char&> _OutputIt>
-_OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const format_args _Args) {
+_EXPORT_STD template <output_iterator<const char&> _OutputIt,
+    class _Sv = string_view> // lazy instantiation, see GH-1926
+_OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const type_identity_t<_Sv> _Fmt, const format_args _Args) {
+    static_assert(is_same_v<_Sv, string_view>, "misspecified template argument");
     if constexpr (is_same_v<_OutputIt, _Fmt_it>) {
         _Format_handler<char> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
         _Parse_format_string(_Fmt, _Handler);
@@ -3459,8 +3465,10 @@ _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt,
     }
 }
 
-_EXPORT_STD template <output_iterator<const wchar_t&> _OutputIt>
-_OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
+_EXPORT_STD template <output_iterator<const wchar_t&> _OutputIt,
+    class _Sv = wstring_view> // lazy instantiation, see GH-1926
+_OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const type_identity_t<_Sv> _Fmt, const wformat_args _Args) {
+    static_assert(is_same_v<_Sv, wstring_view>, "misspecified template argument");
     if constexpr (is_same_v<_OutputIt, _Fmt_wit>) {
         _Format_handler<wchar_t> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
         _Parse_format_string(_Fmt, _Handler);
