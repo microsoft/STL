@@ -73,7 +73,6 @@
 // P1165R1 Consistently Propagating Stateful Allocators In basic_string's operator+()
 // P1902R1 Missing Feature-Test Macros 2017-2019
 // P2401R0 Conditional noexcept For exchange()
-// P2711R1 Making Multi-Param Constructors Of Views explicit
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -286,6 +285,7 @@
 // P2432R1 Fix istream_view
 // P2508R1 basic_format_string, format_string, wformat_string
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
+// P2711R1 Making Multi-Param Constructors Of Views explicit
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
