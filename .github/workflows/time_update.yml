@@ -18,7 +18,7 @@ jobs:
       run: |
         current_year=$(date +%Y)
         current_month=$(date +%m)
-        sed -i -e "s/define _MSVC_STL_UPDATE.*/define _MSVC_STL_UPDATE  $current_year$current_month$()L/" stl\inc\yvals_core.h
+        sed -i -e "s/define _MSVC_STL_UPDATE.*/define _MSVC_STL_UPDATE  $current_year$current_month$()L/" stl/inc/yvals_core.h
     - name: add all
       run: git add -A
     - name: push
