@@ -3,7 +3,7 @@ name: time update
 # copy&edit from https://github.com/Taromati2/stable-mirror/blob/master/.github/workflows/time_update.yml
 
 on:
-  schedule: # 每月的第一天的0点0分
+  schedule: # 0:0 on the first day of the month
     - cron:  '0 0 1 * *'  
   workflow_dispatch:
 
@@ -24,7 +24,7 @@ jobs:
     - name: push
       uses: actions-go/push@master
       with:
-        token: ${{ secrets.BOT_TOKEN }} # 使用bot账号的token来触发其他的workflow
+        token: ${{ secrets.BOT_TOKEN }} # Use the token of the bot account to trigger other workflows
         author-email: taromati2@outlook.com
         author-name: Taromati2
         commit-message: 'time update~'
