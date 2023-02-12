@@ -29,7 +29,6 @@ public:
         _Fmtzero = 0
     };
 
-    // These variables should have type std::ios_base::fmtflags, TRANSITION, ABI
     static constexpr int skipws     = 0x0001;
     static constexpr int unitbuf    = 0x0002;
     static constexpr int uppercase  = 0x0004;
@@ -57,7 +56,6 @@ public:
         _Statmask = 0x17
     };
 
-    // These variables should have type std::ios_base::iostate, TRANSITION, ABI
     static constexpr int goodbit = 0x0;
     static constexpr int eofbit  = 0x1;
     static constexpr int failbit = 0x2;
@@ -67,7 +65,6 @@ public:
         _Openmask = 0xff
     };
 
-    // These variables should have type std::ios_base::openmode, TRANSITION, ABI
     static constexpr int in         = 0x01;
     static constexpr int out        = 0x02;
     static constexpr int ate        = 0x04;
@@ -86,7 +83,6 @@ public:
         _Seekend
     };
 
-    // These variables should have type std::ios_base::seekdir, TRANSITION, ABI
     static constexpr int beg = _Seekbeg;
     static constexpr int cur = _Seekcur;
     static constexpr int end = _Seekend;
