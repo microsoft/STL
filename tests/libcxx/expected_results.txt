@@ -561,6 +561,9 @@ std/language.support/support.limits/support.limits.general/algorithm.version.com
 std/language.support/support.limits/support.limits.general/functional.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/iterator.version.compile.pass.cpp FAIL
 
+# libc++ doesn't implement P2588R3 barrier's Phase Completion Guarantees
+std/language.support/support.limits/support.limits.general/barrier.version.compile.pass.cpp
+
 # Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
 std/language.support/support.limits/support.limits.general/chrono.version.compile.pass.cpp FAIL
 
