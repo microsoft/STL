@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <forward_list>
 #include <iterator>
@@ -110,6 +111,41 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             STATIC_ASSERT(same_as<decltype(std::move(as_const(rng)) | views::as_const), V>);
             STATIC_ASSERT(noexcept(std::move(as_const(rng)) | views::as_const) == is_noexcept);
         }
+    } else if constexpr (_Is_specialization_v<remove_cvref_t<Rng>, ranges::empty_view>) {
+        // range adaptor results in empty_view<const X> reconstructed from empty_view<X>
+        using ConstEmpty = ranges::empty_view<const ranges::range_value_t<Rng>>;
+
+        { // ... with lvalue argument
+            STATIC_ASSERT(same_as<decltype(views::as_const(std::forward<Rng>(rng))), ConstEmpty>);
+            STATIC_ASSERT(noexcept(views::as_const(std::forward<Rng>(rng))));
+
+            STATIC_ASSERT(same_as<decltype(std::forward<Rng>(rng) | views::as_const), ConstEmpty>);
+            STATIC_ASSERT(noexcept(std::forward<Rng>(rng) | views::as_const));
+        }
+
+        { // ... with const lvalue argument
+            STATIC_ASSERT(same_as<decltype(views::as_const(as_const(rng))), ConstEmpty>);
+            STATIC_ASSERT(noexcept(views::as_const(as_const(rng))));
+
+            STATIC_ASSERT(same_as<decltype(as_const(rng) | views::as_const), ConstEmpty>);
+            STATIC_ASSERT(noexcept(as_const(rng) | views::as_const));
+        }
+
+        { // ... with rvalue argument
+            STATIC_ASSERT(same_as<decltype(views::as_const(std::move(rng))), ConstEmpty>);
+            STATIC_ASSERT(noexcept(views::as_const(std::move(rng))));
+
+            STATIC_ASSERT(same_as<decltype(std::move(rng) | views::as_const), ConstEmpty>);
+            STATIC_ASSERT(noexcept(std::move(rng) | views::as_const));
+        }
+
+        { // ... with const rvalue argument
+            STATIC_ASSERT(same_as<decltype(views::as_const(std::move(as_const(rng)))), ConstEmpty>);
+            STATIC_ASSERT(noexcept(views::as_const(std::move(as_const(rng)))));
+
+            STATIC_ASSERT(same_as<decltype(std::move(as_const(rng)) | views::as_const), ConstEmpty>);
+            STATIC_ASSERT(noexcept(std::move(as_const(rng)) | views::as_const));
+        }
     } else if constexpr (_Is_span_v<Rng>) { // range adaptor results in span<const X, E> reconstructed from span<X, E>
         using ConstSpan = span<const typename V::element_type, V::extent>;
 
@@ -179,7 +215,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             STATIC_ASSERT(same_as<decltype(std::move(std::as_const(rng)) | views::as_const), ReconstructedRefView>);
             STATIC_ASSERT(noexcept(std::move(std::as_const(rng)) | views::as_const));
         }
-
     } else if constexpr (is_lvalue_reference_v<Rng> && constant_range<const remove_cvref_t<Rng>>
                          && !is_view) { // range adaptor results in ref_view<const X>
         using ConstRefView = ranges::ref_view<const remove_cvref_t<Rng>>;
@@ -543,6 +578,14 @@ int main() {
         static constexpr int one_int[1] = {333};
         STATIC_ASSERT(test_one(views::single(333), one_int));
         test_one(views::single(333), one_int);
+    }
+
+    { // Validate empty_view
+        array<int, 0> empty_arr;
+        STATIC_ASSERT(test_one(views::empty<int>, empty_arr));
+        test_one(views::empty<int>, empty_arr);
+        STATIC_ASSERT(test_one(as_const(views::empty<int>), empty_arr));
+        test_one(as_const(views::empty<int>), empty_arr);
     }
 
 #ifndef __clang__ // TRANSITION, LLVM-44833
