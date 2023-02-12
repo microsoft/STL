@@ -730,12 +730,12 @@ inline namespace literals {
             return _CHRONO duration<double, ratio<3600>>(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO minutes(operator""min)(unsigned long long _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO minutes operator""min(unsigned long long _Val) noexcept
         /* strengthened */ {
             return _CHRONO minutes(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, ratio<60>>(operator""min)(long double _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, ratio<60>> operator""min(long double _Val) noexcept
         /* strengthened */ {
             return _CHRONO duration<double, ratio<60>>(_Val);
         }
