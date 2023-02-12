@@ -1,0 +1,31 @@
+name: time update
+
+# copy&edit from https://github.com/Taromati2/stable-mirror/blob/master/.github/workflows/time_update.yml
+
+on:
+  schedule: # 每月的第一天的0点0分
+    - cron:  '0 0 1 * *'  
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+    - name: disable auto crlf
+      uses: steve02081504/disable-autocrlf@v1
+    - uses: actions/checkout@v2
+    - name: Update file
+      run: |
+        current_year=$(date +%Y)
+        current_month=$(date +%m)
+        sed -i -e "s/define _MSVC_STL_UPDATE.*/define _MSVC_STL_UPDATE  $current_year$current_month$()L/" stl\inc\yvals_core.h
+    - name: add all
+      run: git add -A
+    - name: push
+      uses: actions-go/push@master
+      with:
+        token: ${{ secrets.BOT_TOKEN }} # 使用bot账号的token来触发其他的workflow
+        author-email: taromati2@outlook.com
+        author-name: Taromati2
+        commit-message: 'time update~'
+        remote: origin
