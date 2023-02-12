@@ -85,6 +85,12 @@ utilities\charconv\charconv.to.chars\integral.pass.cpp
 # libc++ has not implemented P2505R5: "Monadic Functions for std::expected"
 language.support\support.limits\support.limits.general\expected.version.compile.pass.cpp
 
+# libc++ doesn't implement P2711R1 Making Multi-Param Constructors Of Views explicit
+ranges\range.adaptors\range.drop.while\ctor.view.pass.cpp
+ranges\range.adaptors\range.filter\ctor.view_pred.pass.cpp
+ranges\range.adaptors\range.take.while\ctor.view.pass.cpp
+ranges\range.adaptors\range.transform\ctor.view_function.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -657,12 +663,6 @@ ranges\range.access\end.pass.cpp
 ranges\range.access\rbegin.pass.cpp
 ranges\range.access\rend.pass.cpp
 ranges\range.access\size.pass.cpp
-
-# libc++ doesn't implement P2711R1 Making Multi-Param Constructors Of Views explicit
-ranges\range.adaptors\range.drop.while\ctor.view.pass.cpp
-ranges\range.adaptors\range.filter\ctor.view_pred.pass.cpp
-ranges\range.adaptors\range.take.while\ctor.view.pass.cpp
-ranges\range.adaptors\range.transform\ctor.view_function.pass.cpp
 
 # warning C5101: use of preprocessor directive in function-like macro argument list is undefined behavior
 time\time.syn\formatter.year_month.pass.cpp
