@@ -1307,7 +1307,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Wi>&& is_nothrow_default_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_Value_)) {}
 
-        constexpr iota_view(type_identity_t<_Wi> _Value_, type_identity_t<_Bo> _Bound_) noexcept(
+        constexpr explicit iota_view(type_identity_t<_Wi> _Value_, type_identity_t<_Bo> _Bound_) noexcept(
             is_nothrow_move_constructible_v<_Wi>&& is_nothrow_move_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_Value_)), _Bound(_STD move(_Bound_)) {
             if constexpr (totally_ordered_with<_Wi, _Bo>) {
@@ -1316,7 +1316,7 @@ namespace ranges {
             }
         }
 
-        constexpr iota_view(_It _First, _Se _Last) noexcept(
+        constexpr explicit iota_view(_It _First, _Se _Last) noexcept(
             is_nothrow_move_constructible_v<_Wi>&& is_nothrow_move_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_First._Current)), _Bound(_STD move(_Bound_from(_Last))) {}
 
@@ -2223,7 +2223,7 @@ namespace ranges {
         filter_view() requires default_initializable<_Vw> && default_initializable<_Pr> = default;
         // clang-format on
 
-        constexpr filter_view(_Vw _Range_, _Pr _Pred_) noexcept(
+        constexpr explicit filter_view(_Vw _Range_, _Pr _Pred_) noexcept(
             is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pr>) // strengthened
             : _Range(_STD move(_Range_)), _Pred{in_place, _STD move(_Pred_)} {}
 
@@ -2654,7 +2654,7 @@ namespace ranges {
         transform_view() requires default_initializable<_Vw> && default_initializable<_Fn> = default;
         // clang-format on
 
-        constexpr transform_view(_Vw _Range_, _Fn _Fun_) noexcept(
+        constexpr explicit transform_view(_Vw _Range_, _Fn _Fun_) noexcept(
             is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Fn>) // strengthened
             : _Range(_STD move(_Range_)), _Fun{in_place, _STD move(_Fun_)} {}
 
@@ -2836,7 +2836,7 @@ namespace ranges {
         take_view() requires default_initializable<_Vw> = default;
         // clang-format on
 
-        constexpr take_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
+        constexpr explicit take_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
             is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)), _Count{_Count_} {}
 
@@ -3131,7 +3131,7 @@ namespace ranges {
         take_while_view() requires default_initializable<_Vw> && default_initializable<_Pr> = default;
         // clang-format on
 
-        constexpr take_while_view(_Vw _Range_, _Pr _Pred_) noexcept(
+        constexpr explicit take_while_view(_Vw _Range_, _Pr _Pred_) noexcept(
             is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pr>) // strengthened
             : _Range(_STD move(_Range_)), _Pred{in_place, _STD move(_Pred_)} {}
 
@@ -3254,7 +3254,7 @@ namespace ranges {
         drop_view() requires default_initializable<_Vw> = default;
         // clang-format on
 
-        constexpr drop_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
+        constexpr explicit drop_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
             is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -4305,14 +4305,14 @@ namespace ranges {
         join_with_view() requires default_initializable<_Vw> && default_initializable<_Pat> = default;
         // clang-format on
 
-        constexpr join_with_view(_Vw _Range_, _Pat _Pattern_) noexcept(
+        constexpr explicit join_with_view(_Vw _Range_, _Pat _Pattern_) noexcept(
             is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pat>) // strengthened
             : _Range{_STD move(_Range_)}, _Pattern{_STD move(_Pattern_)} {}
 
         template <input_range _Rng>
             requires constructible_from<_Vw, views::all_t<_Rng>>
                       && constructible_from<_Pat, single_view<range_value_t<_InnerRng<false>>>>
-        constexpr join_with_view(_Rng&& _Range_, range_value_t<_InnerRng<false>> _Elem) noexcept(
+        constexpr explicit join_with_view(_Rng&& _Range_, range_value_t<_InnerRng<false>> _Elem) noexcept(
             noexcept(_Vw(views::all(_STD forward<_Rng>(_Range_)))) && noexcept(
                 _Pat(views::single(_STD move(_Elem))))) // strengthened
             : _Range(views::all(_STD forward<_Rng>(_Range_))), _Pattern(views::single(_STD move(_Elem))) {}
@@ -4736,7 +4736,7 @@ namespace ranges {
         lazy_split_view() requires default_initializable<_Vw> && default_initializable<_Pat> = default;
         // clang-format on
 
-        constexpr lazy_split_view(_Vw _Range_, _Pat _Pattern_) noexcept(
+        constexpr explicit lazy_split_view(_Vw _Range_, _Pat _Pattern_) noexcept(
             is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pat>) // strengthened
             : _Range(_STD move(_Range_)), _Pattern(_STD move(_Pattern_)) {}
 
@@ -4744,7 +4744,7 @@ namespace ranges {
         template <input_range _Rng>
             requires constructible_from<_Vw, views::all_t<_Rng>>
                 && constructible_from<_Pat, single_view<range_value_t<_Rng>>>
-        constexpr lazy_split_view(_Rng&& _Range_, range_value_t<_Rng> _Elem)
+        constexpr explicit lazy_split_view(_Rng&& _Range_, range_value_t<_Rng> _Elem)
             noexcept(noexcept(_Vw(views::all(_STD forward<_Rng>(_Range_))))
                 && noexcept(_Pat(views::single(_STD move(_Elem))))) // strengthened
             : _Range(views::all(_STD forward<_Rng>(_Range_))), _Pattern(views::single(_STD move(_Elem))) {}
@@ -4949,7 +4949,7 @@ namespace ranges {
         split_view() requires default_initializable<_Vw> && default_initializable<_Pat> = default;
         // clang-format on
 
-        constexpr split_view(_Vw _Range_, _Pat _Pattern_) noexcept(
+        constexpr explicit split_view(_Vw _Range_, _Pat _Pattern_) noexcept(
             is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pat>) // strengthened
             : _Range(_STD move(_Range_)), _Pattern(_STD move(_Pattern_)) {}
 
@@ -4957,7 +4957,7 @@ namespace ranges {
         template <forward_range _Rng>
             requires constructible_from<_Vw, views::all_t<_Rng>>
                 && constructible_from<_Pat, single_view<range_value_t<_Rng>>>
-        constexpr split_view(_Rng&& _Range_, range_value_t<_Rng> _Elem)
+        constexpr explicit split_view(_Rng&& _Range_, range_value_t<_Rng> _Elem)
             noexcept(is_nothrow_constructible_v<_Vw, views::all_t<_Rng>>
                 && is_nothrow_constructible_v<_Pat, single_view<range_value_t<_Rng>>>
                 && is_nothrow_move_constructible_v<range_value_t<_Rng>>) // strengthened
