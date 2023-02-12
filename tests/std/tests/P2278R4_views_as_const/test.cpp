@@ -38,6 +38,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using ranges::ref_view, ranges::as_const_view, ranges::begin, ranges::end, ranges::iterator_t, ranges::sentinel_t,
         ranges::prev, ranges::forward_range, ranges::bidirectional_range, ranges::random_access_range,
         ranges::contiguous_range, ranges::common_range, ranges::sized_range, ranges::constant_range;
+
     using V = views::all_t<Rng>;
     using R = as_const_view<V>;
 
@@ -48,7 +49,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(forward_range<R> == forward_range<V>);
     STATIC_ASSERT(bidirectional_range<R> == bidirectional_range<V>);
     STATIC_ASSERT(random_access_range<R> == random_access_range<V>);
-    STATIC_ASSERT(contiguous_range<R> == contiguous_range<V>);
+    STATIC_ASSERT(contiguous_range<R>
+                  == (contiguous_range<V> && is_lvalue_reference_v<iter_const_reference_t<ranges::iterator_t<V>>>) );
     STATIC_ASSERT(constant_range<R>);
 
     STATIC_ASSERT(!indirectly_writable<iterator_t<R>, ranges::range_value_t<Rng>>);
@@ -113,7 +115,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     } else if constexpr (_Is_specialization_v<remove_cvref_t<Rng>, ranges::empty_view>) {
         // range adaptor results in empty_view<const X> reconstructed from empty_view<X>
-        using ConstEmpty = ranges::empty_view<const ranges::range_value_t<Rng>>;
+        using ConstEmpty = ranges::empty_view<const remove_reference_t<ranges::range_reference_t<Rng>>>;
 
         { // ... with lvalue argument
             STATIC_ASSERT(same_as<decltype(views::as_const(forward<Rng>(rng))), ConstEmpty>);
@@ -338,6 +340,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     {
         const same_as<iterator_t<R>> auto i = r.begin();
         if (!is_empty) {
+            // (static analyzer doesn't realize that `i == nullptr` implies `is_empty`)
 #pragma warning(suppress : 6011) // Dereferencing NULL pointer 'i'
             assert(*i == *begin(expected));
         }
@@ -412,17 +415,17 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate view_interface::data
-    STATIC_ASSERT(CanMemberData<R> == contiguous_range<V>);
-    STATIC_ASSERT(CanData<R&> == contiguous_range<V>);
-    if constexpr (contiguous_range<V>) {
+    STATIC_ASSERT(CanMemberData<R> == contiguous_range<R>);
+    STATIC_ASSERT(CanData<R&> == contiguous_range<R>);
+    if constexpr (contiguous_range<R>) {
         const same_as<const remove_reference_t<ranges::range_reference_t<V>>*> auto ptr = r.data();
         assert(ptr == to_address(r.begin()));
     }
 
     // Validate view_interface::data (const)
-    STATIC_ASSERT(CanMemberData<const R> == contiguous_range<const V>);
-    STATIC_ASSERT(CanData<const R&> == contiguous_range<const V>);
-    if constexpr (contiguous_range<const V>) {
+    STATIC_ASSERT(CanMemberData<const R> == contiguous_range<const R>);
+    STATIC_ASSERT(CanData<const R&> == contiguous_range<const R>);
+    if constexpr (contiguous_range<const R>) {
         const same_as<const remove_reference_t<ranges::range_reference_t<const V>>*> auto ptr = as_const(r).data();
         assert(ptr == to_address(as_const(r).begin()));
     }
@@ -586,10 +589,26 @@ int main() {
 
     { // Validate empty_view
         array<int, 0> empty_arr;
+
         STATIC_ASSERT(test_one(views::empty<int>, empty_arr));
         test_one(views::empty<int>, empty_arr);
         STATIC_ASSERT(test_one(as_const(views::empty<int>), empty_arr));
         test_one(as_const(views::empty<int>), empty_arr);
+
+        STATIC_ASSERT(test_one(views::empty<const int>, empty_arr));
+        test_one(views::empty<const int>, empty_arr);
+        STATIC_ASSERT(test_one(as_const(views::empty<const int>), empty_arr));
+        test_one(as_const(views::empty<const int>), empty_arr);
+
+        STATIC_ASSERT(test_one(views::empty<volatile int>, empty_arr));
+        test_one(views::empty<volatile int>, empty_arr);
+        STATIC_ASSERT(test_one(as_const(views::empty<volatile int>), empty_arr));
+        test_one(as_const(views::empty<volatile int>), empty_arr);
+
+        STATIC_ASSERT(test_one(views::empty<const volatile int>, empty_arr));
+        test_one(views::empty<const volatile int>, empty_arr);
+        STATIC_ASSERT(test_one(as_const(views::empty<const volatile int>), empty_arr));
+        test_one(as_const(views::empty<const volatile int>), empty_arr);
     }
 
 #ifndef __clang__ // TRANSITION, LLVM-44833
