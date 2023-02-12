@@ -67,11 +67,11 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         if constexpr (CanViewAsConst<Rng&>) {
             constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::forward<Rng>(rng))), V>);
-            STATIC_ASSERT(noexcept(views::as_const(std::forward<Rng>(rng))) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(views::as_const(forward<Rng>(rng))), V>);
+            STATIC_ASSERT(noexcept(views::as_const(forward<Rng>(rng))) == is_noexcept);
 
-            STATIC_ASSERT(same_as<decltype(std::forward<Rng>(rng) | views::as_const), V>);
-            STATIC_ASSERT(noexcept(std::forward<Rng>(rng) | views::as_const) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(forward<Rng>(rng) | views::as_const), V>);
+            STATIC_ASSERT(noexcept(forward<Rng>(rng) | views::as_const) == is_noexcept);
         }
 
         // ... with const lvalue argument
@@ -93,11 +93,11 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             using VS                   = views::all_t<remove_reference_t<Rng>>;
             constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
 
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::move(rng))), VS>);
-            STATIC_ASSERT(noexcept(views::as_const(std::move(rng))) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(views::as_const(move(rng))), VS>);
+            STATIC_ASSERT(noexcept(views::as_const(move(rng))) == is_noexcept);
 
-            STATIC_ASSERT(same_as<decltype(std::move(rng) | views::as_const), VS>);
-            STATIC_ASSERT(noexcept(std::move(rng) | views::as_const) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(move(rng) | views::as_const), VS>);
+            STATIC_ASSERT(noexcept(move(rng) | views::as_const) == is_noexcept);
         }
 
         // ... with const rvalue argument
@@ -105,22 +105,22 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         if constexpr (CanViewAsConst<const remove_reference_t<Rng>>) {
             constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::move(as_const(rng)))), V>);
-            STATIC_ASSERT(noexcept(views::as_const(std::move(as_const(rng)))) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(views::as_const(move(as_const(rng)))), V>);
+            STATIC_ASSERT(noexcept(views::as_const(move(as_const(rng)))) == is_noexcept);
 
-            STATIC_ASSERT(same_as<decltype(std::move(as_const(rng)) | views::as_const), V>);
-            STATIC_ASSERT(noexcept(std::move(as_const(rng)) | views::as_const) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | views::as_const), V>);
+            STATIC_ASSERT(noexcept(move(as_const(rng)) | views::as_const) == is_noexcept);
         }
     } else if constexpr (_Is_specialization_v<remove_cvref_t<Rng>, ranges::empty_view>) {
         // range adaptor results in empty_view<const X> reconstructed from empty_view<X>
         using ConstEmpty = ranges::empty_view<const ranges::range_value_t<Rng>>;
 
         { // ... with lvalue argument
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::forward<Rng>(rng))), ConstEmpty>);
-            STATIC_ASSERT(noexcept(views::as_const(std::forward<Rng>(rng))));
+            STATIC_ASSERT(same_as<decltype(views::as_const(forward<Rng>(rng))), ConstEmpty>);
+            STATIC_ASSERT(noexcept(views::as_const(forward<Rng>(rng))));
 
-            STATIC_ASSERT(same_as<decltype(std::forward<Rng>(rng) | views::as_const), ConstEmpty>);
-            STATIC_ASSERT(noexcept(std::forward<Rng>(rng) | views::as_const));
+            STATIC_ASSERT(same_as<decltype(forward<Rng>(rng) | views::as_const), ConstEmpty>);
+            STATIC_ASSERT(noexcept(forward<Rng>(rng) | views::as_const));
         }
 
         { // ... with const lvalue argument
@@ -132,88 +132,88 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
 
         { // ... with rvalue argument
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::move(rng))), ConstEmpty>);
-            STATIC_ASSERT(noexcept(views::as_const(std::move(rng))));
+            STATIC_ASSERT(same_as<decltype(views::as_const(move(rng))), ConstEmpty>);
+            STATIC_ASSERT(noexcept(views::as_const(move(rng))));
 
-            STATIC_ASSERT(same_as<decltype(std::move(rng) | views::as_const), ConstEmpty>);
-            STATIC_ASSERT(noexcept(std::move(rng) | views::as_const));
+            STATIC_ASSERT(same_as<decltype(move(rng) | views::as_const), ConstEmpty>);
+            STATIC_ASSERT(noexcept(move(rng) | views::as_const));
         }
 
         { // ... with const rvalue argument
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::move(as_const(rng)))), ConstEmpty>);
-            STATIC_ASSERT(noexcept(views::as_const(std::move(as_const(rng)))));
+            STATIC_ASSERT(same_as<decltype(views::as_const(move(as_const(rng)))), ConstEmpty>);
+            STATIC_ASSERT(noexcept(views::as_const(move(as_const(rng)))));
 
-            STATIC_ASSERT(same_as<decltype(std::move(as_const(rng)) | views::as_const), ConstEmpty>);
-            STATIC_ASSERT(noexcept(std::move(as_const(rng)) | views::as_const));
+            STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | views::as_const), ConstEmpty>);
+            STATIC_ASSERT(noexcept(move(as_const(rng)) | views::as_const));
         }
     } else if constexpr (_Is_span_v<Rng>) { // range adaptor results in span<const X, E> reconstructed from span<X, E>
         using ConstSpan = span<const typename V::element_type, V::extent>;
 
         { // ... with lvalue argument
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::forward<Rng>(rng))), ConstSpan>);
-            STATIC_ASSERT(noexcept(views::as_const(std::forward<Rng>(rng))));
+            STATIC_ASSERT(same_as<decltype(views::as_const(forward<Rng>(rng))), ConstSpan>);
+            STATIC_ASSERT(noexcept(views::as_const(forward<Rng>(rng))));
 
-            STATIC_ASSERT(same_as<decltype(std::forward<Rng>(rng) | views::as_const), ConstSpan>);
-            STATIC_ASSERT(noexcept(std::forward<Rng>(rng) | views::as_const));
+            STATIC_ASSERT(same_as<decltype(forward<Rng>(rng) | views::as_const), ConstSpan>);
+            STATIC_ASSERT(noexcept(forward<Rng>(rng) | views::as_const));
         }
 
         { // ... with const lvalue argument
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::as_const(rng))), ConstSpan>);
-            STATIC_ASSERT(noexcept(views::as_const(std::as_const(rng))));
+            STATIC_ASSERT(same_as<decltype(views::as_const(as_const(rng))), ConstSpan>);
+            STATIC_ASSERT(noexcept(views::as_const(as_const(rng))));
 
-            STATIC_ASSERT(same_as<decltype(std::as_const(rng) | views::as_const), ConstSpan>);
-            STATIC_ASSERT(noexcept(std::as_const(rng) | views::as_const));
+            STATIC_ASSERT(same_as<decltype(as_const(rng) | views::as_const), ConstSpan>);
+            STATIC_ASSERT(noexcept(as_const(rng) | views::as_const));
         }
 
         { // ... with rvalue argument
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::move(rng))), ConstSpan>);
-            STATIC_ASSERT(noexcept(views::as_const(std::move(rng))));
+            STATIC_ASSERT(same_as<decltype(views::as_const(move(rng))), ConstSpan>);
+            STATIC_ASSERT(noexcept(views::as_const(move(rng))));
 
-            STATIC_ASSERT(same_as<decltype(std::move(rng) | views::as_const), ConstSpan>);
-            STATIC_ASSERT(noexcept(std::move(rng) | views::as_const));
+            STATIC_ASSERT(same_as<decltype(move(rng) | views::as_const), ConstSpan>);
+            STATIC_ASSERT(noexcept(move(rng) | views::as_const));
         }
 
         { // ... with const rvalue argument
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::move(std::as_const(rng)))), ConstSpan>);
-            STATIC_ASSERT(noexcept(views::as_const(std::move(std::as_const(rng)))));
+            STATIC_ASSERT(same_as<decltype(views::as_const(move(as_const(rng)))), ConstSpan>);
+            STATIC_ASSERT(noexcept(views::as_const(move(as_const(rng)))));
 
-            STATIC_ASSERT(same_as<decltype(std::move(std::as_const(rng)) | views::as_const), ConstSpan>);
-            STATIC_ASSERT(noexcept(std::move(std::as_const(rng)) | views::as_const));
+            STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | views::as_const), ConstSpan>);
+            STATIC_ASSERT(noexcept(move(as_const(rng)) | views::as_const));
         }
     } else if constexpr (CanReconstructRefView<Rng>) {
         // range adaptor results in ref_view<const X> reconstructed from ref_view<X>
         using ReconstructedRefView = ref_view<const typename RefViewUnderlyingType<V>::type>;
 
         { // ... with lvalue argument
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::forward<Rng>(rng))), ReconstructedRefView>);
-            STATIC_ASSERT(noexcept(views::as_const(std::forward<Rng>(rng))));
+            STATIC_ASSERT(same_as<decltype(views::as_const(forward<Rng>(rng))), ReconstructedRefView>);
+            STATIC_ASSERT(noexcept(views::as_const(forward<Rng>(rng))));
 
-            STATIC_ASSERT(same_as<decltype(std::forward<Rng>(rng) | views::as_const), ReconstructedRefView>);
-            STATIC_ASSERT(noexcept(std::forward<Rng>(rng) | views::as_const));
+            STATIC_ASSERT(same_as<decltype(forward<Rng>(rng) | views::as_const), ReconstructedRefView>);
+            STATIC_ASSERT(noexcept(forward<Rng>(rng) | views::as_const));
         }
 
         { // ... with const lvalue argument
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::as_const(rng))), ReconstructedRefView>);
-            STATIC_ASSERT(noexcept(views::as_const(std::as_const(rng))));
+            STATIC_ASSERT(same_as<decltype(views::as_const(as_const(rng))), ReconstructedRefView>);
+            STATIC_ASSERT(noexcept(views::as_const(as_const(rng))));
 
-            STATIC_ASSERT(same_as<decltype(std::as_const(rng) | views::as_const), ReconstructedRefView>);
-            STATIC_ASSERT(noexcept(std::as_const(rng) | views::as_const));
+            STATIC_ASSERT(same_as<decltype(as_const(rng) | views::as_const), ReconstructedRefView>);
+            STATIC_ASSERT(noexcept(as_const(rng) | views::as_const));
         }
 
         { //... with rvalue argument
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::move(rng))), ReconstructedRefView>);
-            STATIC_ASSERT(noexcept(views::as_const(std::move(rng))));
+            STATIC_ASSERT(same_as<decltype(views::as_const(move(rng))), ReconstructedRefView>);
+            STATIC_ASSERT(noexcept(views::as_const(move(rng))));
 
-            STATIC_ASSERT(same_as<decltype(std::move(rng) | views::as_const), ReconstructedRefView>);
-            STATIC_ASSERT(noexcept(std::move(rng) | views::as_const));
+            STATIC_ASSERT(same_as<decltype(move(rng) | views::as_const), ReconstructedRefView>);
+            STATIC_ASSERT(noexcept(move(rng) | views::as_const));
         }
 
         { // ... with const rvalue argument
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::move(std::as_const(rng)))), ReconstructedRefView>);
-            STATIC_ASSERT(noexcept(views::as_const(std::move(std::as_const(rng)))));
+            STATIC_ASSERT(same_as<decltype(views::as_const(move(as_const(rng)))), ReconstructedRefView>);
+            STATIC_ASSERT(noexcept(views::as_const(move(as_const(rng)))));
 
-            STATIC_ASSERT(same_as<decltype(std::move(std::as_const(rng)) | views::as_const), ReconstructedRefView>);
-            STATIC_ASSERT(noexcept(std::move(std::as_const(rng)) | views::as_const));
+            STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | views::as_const), ReconstructedRefView>);
+            STATIC_ASSERT(noexcept(move(as_const(rng)) | views::as_const));
         }
     } else if constexpr (is_lvalue_reference_v<Rng> && constant_range<const remove_cvref_t<Rng>>
                          && !is_view) { // range adaptor results in ref_view<const X>
@@ -222,11 +222,11 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         // ... with lvalue argument
         STATIC_ASSERT(CanViewAsConst<Rng&> == copy_constructible<V>);
         if constexpr (CanViewAsConst<Rng&>) {
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::forward<Rng>(rng))), ConstRefView>);
-            STATIC_ASSERT(noexcept(views::as_const(std::forward<Rng>(rng))));
+            STATIC_ASSERT(same_as<decltype(views::as_const(forward<Rng>(rng))), ConstRefView>);
+            STATIC_ASSERT(noexcept(views::as_const(forward<Rng>(rng))));
 
-            STATIC_ASSERT(same_as<decltype(std::forward<Rng>(rng) | views::as_const), ConstRefView>);
-            STATIC_ASSERT(noexcept(std::forward<Rng>(rng) | views::as_const));
+            STATIC_ASSERT(same_as<decltype(forward<Rng>(rng) | views::as_const), ConstRefView>);
+            STATIC_ASSERT(noexcept(forward<Rng>(rng) | views::as_const));
         }
 
         // ... with const lvalue argument
@@ -244,11 +244,11 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         if constexpr (CanViewAsConst<Rng&>) {
             constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::forward<Rng>(rng))), R>);
-            STATIC_ASSERT(noexcept(views::as_const(std::forward<Rng>(rng))) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(views::as_const(forward<Rng>(rng))), R>);
+            STATIC_ASSERT(noexcept(views::as_const(forward<Rng>(rng))) == is_noexcept);
 
-            STATIC_ASSERT(same_as<decltype(std::forward<Rng>(rng) | views::as_const), R>);
-            STATIC_ASSERT(noexcept(std::forward<Rng>(rng) | views::as_const) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(forward<Rng>(rng) | views::as_const), R>);
+            STATIC_ASSERT(noexcept(forward<Rng>(rng) | views::as_const) == is_noexcept);
         }
 
         // ... with const lvalue argument
@@ -258,11 +258,11 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             using RC                   = as_const_view<views::all_t<const remove_reference_t<Rng>&>>;
             constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::as_const(rng))), RC>);
-            STATIC_ASSERT(noexcept(views::as_const(std::as_const(rng))) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(views::as_const(as_const(rng))), RC>);
+            STATIC_ASSERT(noexcept(views::as_const(as_const(rng))) == is_noexcept);
 
-            STATIC_ASSERT(same_as<decltype(std::as_const(rng) | views::as_const), RC>);
-            STATIC_ASSERT(noexcept(std::as_const(rng) | views::as_const) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(as_const(rng) | views::as_const), RC>);
+            STATIC_ASSERT(noexcept(as_const(rng) | views::as_const) == is_noexcept);
         }
 
         // ... with rvalue argument
@@ -271,11 +271,11 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             using RS                   = as_const_view<views::all_t<remove_reference_t<Rng>>>;
             constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
 
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::move(rng))), RS>);
-            STATIC_ASSERT(noexcept(views::as_const(std::move(rng))) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(views::as_const(move(rng))), RS>);
+            STATIC_ASSERT(noexcept(views::as_const(move(rng))) == is_noexcept);
 
-            STATIC_ASSERT(same_as<decltype(std::move(rng) | views::as_const), RS>);
-            STATIC_ASSERT(noexcept(std::move(rng) | views::as_const) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(move(rng) | views::as_const), RS>);
+            STATIC_ASSERT(noexcept(move(rng) | views::as_const) == is_noexcept);
         }
 
         // ... with const rvalue argument
@@ -283,16 +283,16 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         if constexpr (CanViewAsConst<const remove_reference_t<Rng>>) {
             constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
-            STATIC_ASSERT(same_as<decltype(views::as_const(std::move(std::as_const(rng)))), R>);
-            STATIC_ASSERT(noexcept(views::as_const(std::move(std::as_const(rng)))) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(views::as_const(move(as_const(rng)))), R>);
+            STATIC_ASSERT(noexcept(views::as_const(move(as_const(rng)))) == is_noexcept);
 
-            STATIC_ASSERT(same_as<decltype(std::move(std::as_const(rng)) | views::as_const), R>);
-            STATIC_ASSERT(noexcept(std::move(std::as_const(rng)) | views::as_const) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | views::as_const), R>);
+            STATIC_ASSERT(noexcept(move(as_const(rng)) | views::as_const) == is_noexcept);
         }
     }
 
     // Validate deduction guide
-    same_as<R> auto r = as_const_view{std::forward<Rng>(rng)};
+    same_as<R> auto r = as_const_view{forward<Rng>(rng)};
 
     // Validate as_const_view::size
     STATIC_ASSERT(CanMemberSize<R> == sized_range<V>);
@@ -472,8 +472,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate as_const_view::base() &&
-    same_as<V> auto b2 = std::move(r).base();
-    STATIC_ASSERT(noexcept(std::move(r).base()) == is_nothrow_move_constructible_v<V>);
+    same_as<V> auto b2 = move(r).base();
+    STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
     if (!is_empty) {
         assert(*b2.begin() == *begin(expected));
     }
