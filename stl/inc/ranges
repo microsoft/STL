@@ -3459,7 +3459,7 @@ namespace ranges {
         drop_while_view() requires default_initializable<_Vw> && default_initializable<_Pr> = default;
         // clang-format on
 
-        constexpr drop_while_view(_Vw _Range_, _Pr _Pred_) noexcept(
+        constexpr explicit drop_while_view(_Vw _Range_, _Pr _Pred_) noexcept(
             is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pr>) // strengthened
             : _Range(_STD move(_Range_)), _Pred{in_place, _STD move(_Pred_)} {}
 
