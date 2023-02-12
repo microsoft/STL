@@ -261,10 +261,10 @@ STATIC_ASSERT(__cpp_lib_atomic_wait == 201907L);
 #if _HAS_CXX20
 #ifndef __cpp_lib_barrier
 #error __cpp_lib_barrier is not defined
-#elif __cpp_lib_barrier != 201907L
-#error __cpp_lib_barrier is not 201907L
+#elif __cpp_lib_barrier != 202302L
+#error __cpp_lib_barrier is not 202302L
 #else
-STATIC_ASSERT(__cpp_lib_barrier == 201907L);
+STATIC_ASSERT(__cpp_lib_barrier == 202302L);
 #endif
 #else
 #ifdef __cpp_lib_barrier
