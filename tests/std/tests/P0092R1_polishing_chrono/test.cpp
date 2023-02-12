@@ -166,7 +166,7 @@ namespace floating_point_conversions {
 // Make sure round() handles cases where taking half the divisor itself
 // truncates.
 using odd_divisor = duration<intmax_t, ratio<1, 7>>;
-inline constexpr odd_divisor operator"" _odd(unsigned long long val) {
+inline constexpr odd_divisor operator""_odd(unsigned long long val) {
     return odd_divisor(val);
 }
 

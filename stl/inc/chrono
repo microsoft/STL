@@ -6019,10 +6019,10 @@ namespace chrono {
 
 inline namespace literals {
     inline namespace chrono_literals {
-        _EXPORT_STD _NODISCARD constexpr _CHRONO day operator"" d(unsigned long long _Day) noexcept {
+        _EXPORT_STD _NODISCARD constexpr _CHRONO day operator""d(unsigned long long _Day) noexcept {
             return _CHRONO day{static_cast<unsigned int>(_Day)};
         }
-        _EXPORT_STD _NODISCARD constexpr _CHRONO year operator"" y(unsigned long long _Year) noexcept {
+        _EXPORT_STD _NODISCARD constexpr _CHRONO year operator""y(unsigned long long _Year) noexcept {
             return _CHRONO year{static_cast<int>(_Year)};
         }
     } // namespace chrono_literals
