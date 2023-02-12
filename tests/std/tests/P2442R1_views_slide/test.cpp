@@ -403,9 +403,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     // Validate slide_view::base() &&
     same_as<V> auto b2 = move(r).base();
     STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
-    if (!is_empty) {
-        assert(*b2.begin() == *begin(*begin(expected)));
-    }
+    assert(*b2.begin() == *begin(*begin(expected)));
 
     return true;
 }
