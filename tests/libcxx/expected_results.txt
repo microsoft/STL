@@ -659,10 +659,10 @@ std/ranges/range.access/rend.pass.cpp FAIL
 std/ranges/range.access/size.pass.cpp FAIL
 
 # libc++ doesn't implement P2711R1 Making Multi-Param Constructors Of Views explicit
-std/ranges/range.adaptors/range.drop.while/ctor.view.pass.cpp
-std/ranges/range.adaptors/range.filter/ctor.view_pred.pass.cpp
-std/ranges/range.adaptors/range.take.while/ctor.view.pass.cpp
-std/ranges/range.adaptors/range.transform/ctor.view_function.pass.cpp
+std/ranges/range.adaptors/range.drop.while/ctor.view.pass.cpp FAIL
+std/ranges/range.adaptors/range.filter/ctor.view_pred.pass.cpp FAIL
+std/ranges/range.adaptors/range.take.while/ctor.view.pass.cpp FAIL
+std/ranges/range.adaptors/range.transform/ctor.view_function.pass.cpp FAIL
 
 # warning C5101: use of preprocessor directive in function-like macro argument list is undefined behavior
 std/time/time.syn/formatter.year_month.pass.cpp:0 FAIL
