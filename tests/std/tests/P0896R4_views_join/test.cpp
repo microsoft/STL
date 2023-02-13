@@ -143,7 +143,8 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
         // Validate join_view::begin
         static_assert(CanMemberBegin<R>);
-        static_assert(CanMemberBegin<const R> == (input_range<const V> && is_reference_v<range_reference_t<const V>>) );
+        static_assert(
+            CanMemberBegin<const R> == (forward_range<const V> && is_reference_v<range_reference_t<const V>>) );
         if (forward_range<R>) {
             const iterator_t<R> i = r.begin();
             if (!is_empty) {
@@ -177,7 +178,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
         // Validate join_view::end
         static_assert(CanMemberEnd<R>);
-        static_assert(CanMemberEnd<const R> == (input_range<const V> && is_reference_v<range_reference_t<const V>>) );
+        static_assert(CanMemberEnd<const R> == (forward_range<const V> && is_reference_v<range_reference_t<const V>>) );
         // clang-format off
         static_assert(common_range<R> == (forward_range<V> && is_reference_v<range_reference_t<V>> && common_range<V>
                                           && forward_range<Inner> && common_range<Inner>) );
