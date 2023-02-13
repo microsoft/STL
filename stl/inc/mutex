@@ -48,16 +48,8 @@ public:
         _Check_C_return(_Mtx_lock(_Mymtx()));
     }
 
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock() {
-        const auto _Res = _Mtx_trylock(_Mymtx());
-        switch (_Res) {
-        case _Thrd_success:
-            return true;
-        case _Thrd_busy:
-            return false;
-        default:
-            _Throw_C_error(_Res);
-        }
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept /* strengthened */ {
+        return _Mtx_trylock(_Mymtx()) == _Thrd_success;
     }
 
     void unlock() noexcept /* strengthened */ {
@@ -66,7 +58,7 @@ public:
 
     using native_handle_type = void*;
 
-    _NODISCARD native_handle_type native_handle() {
+    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ {
         return _Mtx_getconcrtcs(_Mymtx());
     }
 
@@ -92,7 +84,8 @@ public:
 
 _EXPORT_STD class recursive_mutex : public _Mutex_base { // class for recursive mutual exclusion
 public:
-    recursive_mutex() : _Mutex_base(_Mtx_recursive) {}
+    recursive_mutex() noexcept // strengthened
+        : _Mutex_base(_Mtx_recursive) {}
 
     _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept {
         return _Mutex_base::try_lock();
@@ -123,7 +116,7 @@ class unique_lock { // whizzy class with destructor that unlocks mutex
 public:
     using mutex_type = _Mutex;
 
-    unique_lock() noexcept : _Pmtx(nullptr), _Owns(false) {}
+    unique_lock() noexcept = default;
 
     _NODISCARD_CTOR_LOCK explicit unique_lock(_Mutex& _Mtx)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) { // construct and lock
@@ -131,7 +124,7 @@ public:
         _Owns = true;
     }
 
-    _NODISCARD_CTOR_LOCK unique_lock(_Mutex& _Mtx, adopt_lock_t)
+    _NODISCARD_CTOR_LOCK unique_lock(_Mutex& _Mtx, adopt_lock_t) noexcept // strengthened
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) {} // construct and assume already locked
 
     unique_lock(_Mutex& _Mtx, defer_lock_t) noexcept
@@ -255,8 +248,8 @@ public:
     }
 
 private:
-    _Mutex* _Pmtx;
-    bool _Owns;
+    _Mutex* _Pmtx = nullptr;
+    bool _Owns    = false;
 
     void _Validate() const { // check if the mutex can be locked
         if (!_Pmtx) {
@@ -455,7 +448,8 @@ public:
         _MyMutex.lock();
     }
 
-    lock_guard(_Mutex& _Mtx, adopt_lock_t) : _MyMutex(_Mtx) {} // construct but don't lock
+    lock_guard(_Mutex& _Mtx, adopt_lock_t) noexcept // strengthened
+        : _MyMutex(_Mtx) {} // construct but don't lock
 
     ~lock_guard() noexcept {
         _MyMutex.unlock();
@@ -476,7 +470,8 @@ public:
         _STD lock(_Mtxes...);
     }
 
-    explicit scoped_lock(adopt_lock_t, _Mutexes&... _Mtxes) : _MyMutexes(_Mtxes...) {} // construct but don't lock
+    explicit scoped_lock(adopt_lock_t, _Mutexes&... _Mtxes) noexcept // strengthened
+        : _MyMutexes(_Mtxes...) {} // construct but don't lock
 
     ~scoped_lock() noexcept {
         _STD apply([](_Mutexes&... _Mtxes) { (..., (void) _Mtxes.unlock()); }, _MyMutexes);
@@ -498,7 +493,8 @@ public:
         _MyMutex.lock();
     }
 
-    explicit scoped_lock(adopt_lock_t, _Mutex& _Mtx) : _MyMutex(_Mtx) {} // construct but don't lock
+    explicit scoped_lock(adopt_lock_t, _Mutex& _Mtx) noexcept // strengthened
+        : _MyMutex(_Mtx) {} // construct but don't lock
 
     ~scoped_lock() noexcept {
         _MyMutex.unlock();
@@ -514,9 +510,8 @@ private:
 template <>
 class scoped_lock<> {
 public:
-    explicit scoped_lock() {}
-    explicit scoped_lock(adopt_lock_t) {}
-    ~scoped_lock() noexcept {}
+    explicit scoped_lock() = default;
+    explicit scoped_lock(adopt_lock_t) noexcept /* strengthened */ {}
 
     scoped_lock(const scoped_lock&)            = delete;
     scoped_lock& operator=(const scoped_lock&) = delete;
@@ -600,7 +595,7 @@ _EXPORT_STD class condition_variable { // class for waiting for conditions
 public:
     using native_handle_type = _Cnd_t;
 
-    condition_variable() {
+    condition_variable() noexcept /* strengthened */ {
         _Cnd_init_in_situ(_Mycnd());
     }
 
@@ -619,7 +614,7 @@ public:
         _Cnd_broadcast(_Mycnd());
     }
 
-    void wait(unique_lock<mutex>& _Lck) { // wait for signal
+    void wait(unique_lock<mutex>& _Lck) noexcept /* strengthened */ { // wait for signal
         // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
         _Cnd_wait(_Mycnd(), _Lck.mutex()->_Mymtx());
     }
@@ -711,15 +706,15 @@ public:
         return _Wait_until1(_Lck, _Abs_time, _Pred);
     }
 
-    _NODISCARD native_handle_type native_handle() {
+    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ {
         return _Mycnd();
     }
 
-    void _Register(unique_lock<mutex>& _Lck, int* _Ready) { // register this object for release at thread exit
+    void _Register(unique_lock<mutex>& _Lck, int* _Ready) noexcept { // register this object for release at thread exit
         _Cnd_register_at_thread_exit(_Mycnd(), _Lck.release()->_Mymtx(), _Ready);
     }
 
-    void _Unregister(mutex& _Mtx) { // unregister this object for release at thread exit
+    void _Unregister(mutex& _Mtx) noexcept { // unregister this object for release at thread exit
         _Cnd_unregister_at_thread_exit(_Mtx._Mymtx());
     }
 
@@ -765,14 +760,14 @@ private:
 struct _UInt_is_zero {
     const unsigned int& _UInt;
 
-    _NODISCARD bool operator()() const {
+    _NODISCARD bool operator()() const noexcept {
         return _UInt == 0;
     }
 };
 
 _EXPORT_STD class timed_mutex { // class for timed mutual exclusion
 public:
-    timed_mutex() noexcept : _My_locked(0) {}
+    timed_mutex() = default;
 
     timed_mutex(const timed_mutex&)            = delete;
     timed_mutex& operator=(const timed_mutex&) = delete;
@@ -786,7 +781,7 @@ public:
         _My_locked = UINT_MAX;
     }
 
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept { // try to lock the mutex
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept /* strengthened */ { // try to lock the mutex
         lock_guard<mutex> _Lock(_My_mutex);
         if (_My_locked != 0) {
             return false;
@@ -838,12 +833,12 @@ public:
 private:
     mutex _My_mutex;
     condition_variable _My_cond;
-    unsigned int _My_locked;
+    unsigned int _My_locked = 0;
 };
 
 _EXPORT_STD class recursive_timed_mutex { // class for recursive timed mutual exclusion
 public:
-    recursive_timed_mutex() noexcept : _My_locked(0) {}
+    recursive_timed_mutex() = default;
 
     recursive_timed_mutex(const recursive_timed_mutex&)            = delete;
     recursive_timed_mutex& operator=(const recursive_timed_mutex&) = delete;
@@ -953,7 +948,7 @@ public:
 private:
     mutex _My_mutex;
     condition_variable _My_cond;
-    unsigned int _My_locked;
+    unsigned int _My_locked = 0;
     thread::id _My_owner;
 };
 _STD_END
