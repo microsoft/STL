@@ -809,7 +809,7 @@ public:
             }
 
             const auto _Num = static_cast<difference_type>(_Mysize() - _Oldsize);
-            _STD reverse(begin(), begin() + _Num); // Per LWG-3742
+            _STD reverse(begin(), begin() + _Num);
         }
         _Guard._Container = nullptr;
     }

@@ -1701,7 +1701,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
 #define __cpp_lib_ranges_contains         202207L
-#define __cpp_lib_ranges_find_last        202207L // per LWG-3807
+#define __cpp_lib_ranges_find_last        202207L
 #define __cpp_lib_ranges_fold             202207L
 #define __cpp_lib_ranges_iota             202202L
 #define __cpp_lib_ranges_join_with        202202L

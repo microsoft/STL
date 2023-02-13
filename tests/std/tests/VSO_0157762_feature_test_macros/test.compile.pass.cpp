@@ -1597,7 +1597,7 @@ STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
 #endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-#ifndef __cpp_lib_ranges_find_last // per LWG-3807
+#ifndef __cpp_lib_ranges_find_last
 #error __cpp_lib_ranges_find_last is not defined
 #elif __cpp_lib_ranges_find_last != 202207L
 #error __cpp_lib_ranges_find_last is not 202207L

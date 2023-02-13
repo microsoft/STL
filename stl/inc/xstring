@@ -54,7 +54,7 @@ struct _Char_traits { // properties of a string or stream element
 #else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS / !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
-            // pre: [_First1, _First1 + _Count) and [_First2, _First2 + _Count) do not overlap; see LWG-3085
+            // pre: [_First1, _First1 + _Count) and [_First2, _First2 + _Count) do not overlap
             for (size_t _Idx = 0; _Idx != _Count; ++_Idx) {
                 _First1[_Idx] = _First2[_Idx];
             }
@@ -1257,10 +1257,10 @@ public:
             && _RANGES contiguous_range<_Range>
             && _RANGES sized_range<_Range>
             && same_as<_RANGES range_value_t<_Range>, _Elem>
-            && (!is_convertible_v<_Range, const _Elem*>)
-            && (!requires(remove_cvref_t<_Range>& _Rng) {
+            && !is_convertible_v<_Range, const _Elem*>
+            && !requires(remove_cvref_t<_Range>& _Rng) {
                 _Rng.operator _STD basic_string_view<_Elem, _Traits>();
-            })) // doesn't check member type traits_type, per LWG-3857
+            })
     constexpr explicit basic_string_view(_Range&& _Rng) noexcept(
         noexcept(_RANGES data(_Rng)) && noexcept(_RANGES size(_Rng))) // strengthened
         : _Mydata(_RANGES data(_Rng)), _Mysize(static_cast<size_t>(_RANGES size(_Rng))) {}
