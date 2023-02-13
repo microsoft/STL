@@ -20,8 +20,6 @@ typedef struct {
 } Str;
 
 void test_cpp() { // test C++ header
-    ptrdiff_t zero                  = 0;
-    static char* pc                 = (char*) zero;
     static const STDx size_t offs[] = {offsetof(Str, f1), offsetof(Str, f2), offsetof(Str, f3)};
     wchar_t wc                      = L'Z';
     Str x                           = {1, {2}, 3};
@@ -29,7 +27,7 @@ void test_cpp() { // test C++ header
     STDx ptrdiff_t pdiff            = &ps[INT_MAX] - &ps[0];
 
     CHECK_INT(sizeof(STDx size_t), sizeof(sizeof(char)));
-    CHECK_INT(pdiff, &pc[INT_MAX] - &pc[0]);
+    CHECK_INT(pdiff, &ps[INT_MAX] - &ps[0]);
     CHECK_INT(wc, L'Z');
     CHECK(offs[0] < offs[1]);
     CHECK_INT((long) *(float*) (ps + offs[1]), 2);
