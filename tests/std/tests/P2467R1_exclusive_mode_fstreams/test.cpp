@@ -47,8 +47,8 @@ void test_file_create_fail(const std::ios_base::openmode bad_mode) {
 
 // Also test GH-3401: <ios>: std::ios_base::openmode is not a bitmask type
 constexpr bool test_gh_3401() {
-    using IB = std::ios_base;
     using namespace std;
+    using IB        = ios_base;
     auto test_flags = [](const auto first, const auto second) {
         auto flags = first;
         assert(flags & first);
@@ -113,7 +113,6 @@ constexpr bool test_gh_3401() {
     static_assert(is_same_v<remove_const_t<decltype(IB::fixed)>, IB::fmtflags>);
     static_assert(is_same_v<remove_const_t<decltype(IB::boolalpha)>, IB::fmtflags>);
     static_assert(is_same_v<remove_const_t<decltype(IB::adjustfield)>, IB::fmtflags>);
-    static_assert(is_same_v<remove_const_t<decltype(IB::boolalpha)>, IB::fmtflags>);
     static_assert(is_same_v<remove_const_t<decltype(IB::basefield)>, IB::fmtflags>);
     static_assert(is_same_v<remove_const_t<decltype(IB::floatfield)>, IB::fmtflags>);
 
