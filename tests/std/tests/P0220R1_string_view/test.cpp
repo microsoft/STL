@@ -373,7 +373,6 @@ constexpr bool test_case_range_constructor() {
     static_assert(!is_convertible_v<string_view, basic_string_view<char, constexpr_char_traits>>);
     static_assert(!is_convertible_v<basic_string_view<char, constexpr_char_traits>, string>);
 
-    // LWG-3857 basic_string_view should allow explicit conversion when only traits vary
     static_assert(is_constructible_v<string_view, basic_string<char, constexpr_char_traits>>);
     static_assert(is_constructible_v<basic_string_view<char, constexpr_char_traits>, string_view>);
 
