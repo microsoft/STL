@@ -876,7 +876,7 @@ std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.bin/eval.pass.cpp FAIL
 # Not analyzed. Runs forever
 std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp SKIPPED
 
-# Not analyzed. This test seemly fails for ARM/ARM64 platforms because MSVC STL considers `tinyness_before` to be
+# Not analyzed. This test seemingly fails for ARM/ARM64 platforms because MSVC STL considers `tinyness_before` to be
 # always `false` even for ARM, but libc++ considers it to be `true` for floating-point types on ARM.
 # I don't know which is right.
 std/language.support/support.limits/limits/numeric.limits.members/tinyness_before.pass.cpp SKIPPED
