@@ -480,11 +480,9 @@ protected:
 
     void _Tidy() noexcept { // discard any allocated buffer and clear pointers
         if (_Mystate & _Allocated) {
-            if (_Mysb::eback() != nullptr) {
-                _Al.deallocate(_Ptr_traits::pointer_to(*_Mysb::eback()),
-                    static_cast<typename allocator_traits<allocator_type>::size_type>(
-                        (_Mysb::pptr() ? _Mysb::epptr() : _Mysb::egptr()) - _Mysb::eback()));
-            }
+            _Al.deallocate(_Ptr_traits::pointer_to(*_Mysb::eback()),
+                static_cast<typename allocator_traits<allocator_type>::size_type>(
+                    (_Mysb::pptr() ? _Mysb::epptr() : _Mysb::egptr()) - _Mysb::eback()));
         }
 
         _Mysb::setg(nullptr, nullptr, nullptr);
@@ -523,7 +521,7 @@ private:
 
     // TRANSITION, ABI, see GH-938
     _Elem* _Seekhigh; // the high-water pointer in character array
-    int _Mystate; // the stream state
+    int _Mystate = 0; // the stream state
     allocator_type _Al; // the allocator object
 };
 
