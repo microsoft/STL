@@ -3560,6 +3560,11 @@ namespace ranges {
                            && input_range<range_reference_t<const _Rng>>;
 #endif // ^^^ workaround ^^^
 
+    template <class _Ty>
+    _NODISCARD constexpr _Ty& _As_lvalue(_Ty&& _Val) noexcept {
+        return static_cast<_Ty&>(_Val);
+    }
+
     template <class _Vw>
         requires is_reference_v<range_reference_t<_Vw>>
     class _Join_view_base<_Vw> : public view_interface<join_view<_Vw>> {};
@@ -3683,7 +3688,7 @@ namespace ranges {
                 _STL_VERIFY(_Get_outer() != _RANGES end(_Parent->_Range), "cannot dereference join_view end iterator");
                 sentinel_t<_InnerRng<_Const>> _Last;
                 if constexpr (_Deref_is_glvalue) {
-                    _Last = _RANGES end(*_Get_outer());
+                    _Last = _RANGES end(_As_lvalue(*_Get_outer()));
                 } else {
                     _Last = _RANGES end((*_Parent->_Inner)._Val);
                 }
@@ -3751,7 +3756,7 @@ namespace ranges {
             constexpr _Iterator& operator++() {
                 auto& _Outer = _Get_outer();
                 if constexpr (_Deref_is_glvalue) {
-                    if (++*_Inner == _RANGES end(*_Outer)) {
+                    if (++*_Inner == _RANGES end(_As_lvalue(*_Outer))) {
                         ++_Outer;
                         _Satisfy();
                     }
@@ -3782,11 +3787,11 @@ namespace ranges {
                 auto& _Outer = _Get_outer();
                 if (_Outer == _RANGES end(_Parent->_Range)) {
                     --_Outer;
-                    _Inner = _RANGES end(*_Outer);
+                    _Inner = _RANGES end(_As_lvalue(*_Outer));
                 }
-                while (*_Inner == _RANGES begin(*_Outer)) {
+                while (*_Inner == _RANGES begin(_As_lvalue(*_Outer))) {
                     --_Outer;
-                    *_Inner = _RANGES end(*_Outer);
+                    *_Inner = _RANGES end(_As_lvalue(*_Outer));
                 }
                 --*_Inner;
                 return *this;
@@ -4089,8 +4094,7 @@ namespace ranges {
                 requires forward_range<_Base>
                 : _Mybase{_STD move(_Outer_)}, _Parent{_STD addressof(_Parent_)} {
                 if (this->_Outer_it != _RANGES end(_Parent->_Range)) {
-                    auto&& _Inner = _Update_inner();
-                    _Inner_it._Emplace_second(_RANGES begin(_Inner));
+                    _Inner_it._Emplace_second(_RANGES begin(_Update_inner()));
                     _Satisfy();
                 }
             }
@@ -4099,8 +4103,7 @@ namespace ranges {
                 requires (!forward_range<_Base>)
                 : _Parent{_STD addressof(_Parent_)} {
                 if (*_Parent->_Outer_it != _RANGES end(_Parent->_Range)) {
-                    auto&& _Inner = _Update_inner();
-                    _Inner_it._Emplace_second(_RANGES begin(_Inner));
+                    _Inner_it._Emplace_second(_RANGES begin(_Update_inner()));
                     _Satisfy();
                 }
             }
@@ -4121,17 +4124,17 @@ namespace ranges {
                 }
             }
 
-            _NODISCARD constexpr auto&& _Update_inner() {
+            _NODISCARD constexpr auto& _Update_inner() {
                 if constexpr (_Deref_is_glvalue) {
-                    return *_Get_outer();
+                    return _As_lvalue(*_Get_outer());
                 } else {
                     return _Parent->_Inner._Emplace(_Not_quite_object::_Construct_tag{}, _Get_outer())._Val;
                 }
             }
 
-            _NODISCARD constexpr auto&& _Get_inner() noexcept {
+            _NODISCARD constexpr auto& _Get_inner() noexcept {
                 if constexpr (_Deref_is_glvalue) {
-                    return *_Get_outer();
+                    return _As_lvalue(*_Get_outer());
                 } else {
                     return (*_Parent->_Inner)._Val;
                 }
@@ -4155,13 +4158,11 @@ namespace ranges {
                             break;
                         }
 
-                        auto&& _Inner = _Update_inner();
-                        _Inner_it._Emplace_second(_RANGES begin(_Inner));
+                        _Inner_it._Emplace_second(_RANGES begin(_Update_inner()));
                     } else {
                         _STL_INTERNAL_CHECK(_Inner_it._Contains == _Variantish_state::_Holds_second);
 
-                        auto&& _Inner = _Get_inner();
-                        if (_Inner_it._Second != _RANGES end(_Inner)) {
+                        if (_Inner_it._Second != _RANGES end(_Get_inner())) {
                             break;
                         }
 
