@@ -3556,7 +3556,8 @@ namespace ranges {
 
 #ifdef __clang__
     template <class _Rng> // TRANSITION, LLVM-47414
-    concept _Can_const_join = forward_range<const _Rng> && is_reference_v<range_reference_t<const _Rng>>;
+    concept _Can_const_join = forward_range<const _Rng> && is_reference_v<range_reference_t<const _Rng>>
+                           && input_range<range_reference_t<const _Rng>>;
 #endif // ^^^ workaround ^^^
 
     template <class _Vw>
@@ -3912,7 +3913,7 @@ namespace ranges {
 #ifdef __clang__ // TRANSITION, LLVM-47414
             requires _Can_const_join<_Vw>
 #else // ^^^ workaround / no workaround vvv
-            requires forward_range<const _Vw> && is_reference_v<_InnerRng<true>>
+            requires forward_range<const _Vw> && is_reference_v<_InnerRng<true>> && input_range<_InnerRng<true>>
 #endif // TRANSITION, LLVM-47414
         {
             return _Iterator<true>{*this, _RANGES begin(_Range)};
@@ -3931,7 +3932,7 @@ namespace ranges {
 #ifdef __clang__ // TRANSITION, LLVM-47414
             requires _Can_const_join<_Vw>
 #else // ^^^ workaround / no workaround vvv
-            requires forward_range<const _Vw> && is_reference_v<_InnerRng<true>>
+            requires forward_range<const _Vw> && is_reference_v<_InnerRng<true>> && input_range<_InnerRng<true>>
 #endif // TRANSITION, LLVM-47414
         {
             if constexpr (forward_range<_InnerRng<true>> && common_range<const _Vw> && common_range<_InnerRng<true>>) {
@@ -3972,7 +3973,8 @@ namespace ranges {
 #ifdef __clang__
     template <class _Rng, class _Pat> // TRANSITION, LLVM-47414
     concept _Can_const_join_with =
-        forward_range<const _Rng> && forward_range<const _Pat> && is_reference_v<range_reference_t<const _Rng>>;
+        forward_range<const _Rng> && forward_range<const _Pat> && is_reference_v<range_reference_t<const _Rng>>
+        && input_range<range_reference_t<const _Rng>>;
 #endif // ^^^ workaround ^^^
 
     _EXPORT_STD template <input_range _Vw, forward_range _Pat>
@@ -4437,6 +4439,7 @@ namespace ranges {
             requires _Can_const_join_with<_Vw, _Pat>
 #else // ^^^ workaround / no workaround vvv
             requires forward_range<const _Vw> && forward_range<const _Pat> && is_reference_v<_InnerRng<true>>
+                  && input_range<_InnerRng<true>>
 #endif // TRANSITION, LLVM-47414
         {
             return _Iterator<true>{*this, _RANGES begin(_Range)};
@@ -4458,6 +4461,7 @@ namespace ranges {
             requires _Can_const_join_with<_Vw, _Pat>
 #else // ^^^ workaround / no workaround vvv
             requires forward_range<const _Vw> && forward_range<const _Pat> && is_reference_v<_InnerRng<true>>
+                  && input_range<_InnerRng<true>>
 #endif // TRANSITION, LLVM-47414
         {
             if constexpr (forward_range<_InnerRng<true>> && common_range<_Vw> && common_range<_InnerRng<true>>) {
