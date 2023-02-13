@@ -85,6 +85,9 @@ std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
 # libc++ has not implemented P2505R5: "Monadic Functions for std::expected"
 std/language.support/support.limits/support.limits.general/expected.version.compile.pass.cpp FAIL
 
+# libc++ doesn't implement P2588R3 barrier's Phase Completion Guarantees
+std/language.support/support.limits/support.limits.general/barrier.version.compile.pass.cpp FAIL
+
 # libc++ doesn't implement P2711R1 Making Multi-Param Constructors Of Views explicit
 std/ranges/range.adaptors/range.drop.while/ctor.view.pass.cpp FAIL
 std/ranges/range.adaptors/range.filter/ctor.view_pred.pass.cpp FAIL
