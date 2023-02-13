@@ -1561,12 +1561,16 @@ namespace ranges {
         }
         template <class... _TArgs, class... _BArgs>
             requires constructible_from<_Ty, _TArgs...> && constructible_from<_Bo, _BArgs...>
-        // clang-format off
-        _NODISCARD_CTOR constexpr explicit repeat_view(piecewise_construct_t,
-            tuple<_TArgs...> _Val_args, tuple<_BArgs...> _Bound_args = tuple<>{})
-            noexcept(is_nothrow_constructible_v<_Ty, _TArgs...>) // strengthened
-            // clang-format on
-            : repeat_view(_Val_args, index_sequence_for<_TArgs...>{}, _STD make_from_tuple<_Bo>(_Bound_args)) {}
+        _NODISCARD_CTOR constexpr explicit repeat_view(piecewise_construct_t, tuple<_TArgs...> _Val_args,
+            tuple<_BArgs...> _Bound_args = tuple<>{}) noexcept(is_nothrow_constructible_v<_Ty,
+            _TArgs...>&& noexcept(_STD make_from_tuple<_Bo>(_Bound_args))) // strengthened
+            : repeat_view(_Val_args, index_sequence_for<_TArgs...>{}, _STD make_from_tuple<_Bo>(_Bound_args)) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            if constexpr (_Signed_integer_like<_Bo>) {
+                _STL_VERIFY(_Bound >= 0, "Bound must be >= 0");
+            }
+#endif
+        }
 
         _NODISCARD constexpr _Iterator begin() const noexcept /* strengthened */ {
             return _Iterator{_STD addressof(*_Value)};
