@@ -269,7 +269,7 @@ protected:
 
         _Mysb::setp(_Newptr, _New_pnext, _Newptr + _Newsize);
         if (_Mystate & _Noread) { // maintain eback() == allocated pointer invariant
-            _Mysb::setg(_Newptr, nullptr, _Newptr);
+            _Mysb::setg(_Newptr, _Newptr, _Newptr);
         } else { // if readable, set the get area to initialized region
             _Mysb::setg(_Newptr, _Newptr + (_Mysb::gptr() - _Oldptr), _Seekhigh);
         }
@@ -480,9 +480,11 @@ protected:
 
     void _Tidy() noexcept { // discard any allocated buffer and clear pointers
         if (_Mystate & _Allocated) {
-            _Al.deallocate(_Ptr_traits::pointer_to(*_Mysb::eback()),
-                static_cast<typename allocator_traits<allocator_type>::size_type>(
-                    (_Mysb::pptr() ? _Mysb::epptr() : _Mysb::egptr()) - _Mysb::eback()));
+            if (_Mysb::eback() != nullptr) {
+                _Al.deallocate(_Ptr_traits::pointer_to(*_Mysb::eback()),
+                    static_cast<typename allocator_traits<allocator_type>::size_type>(
+                        (_Mysb::pptr() ? _Mysb::epptr() : _Mysb::egptr()) - _Mysb::eback()));
+            }
         }
 
         _Mysb::setg(nullptr, nullptr, nullptr);

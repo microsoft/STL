@@ -58,7 +58,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-enum _Meta_type { // meta character representations for parser
+enum _Meta_type : int { // meta character representations for parser
     _Meta_lpar  = '(',
     _Meta_rpar  = ')',
     _Meta_dlr   = '$',
