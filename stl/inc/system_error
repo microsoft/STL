@@ -643,7 +643,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
 #elif defined(__clang__)
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
-    [[clang::require_constant_initialization]] static _Ty _Static;
+    [[_Clang::__require_constant_initialization__]] static _Ty _Static;
     return _Static;
 }
 #elif !defined(_M_CEE) // TRANSITION, VSO-1153256

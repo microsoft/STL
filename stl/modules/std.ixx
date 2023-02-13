@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// In a module-file, the optional `module;` must appear first; see [cpp.pre].
+module;
+
 // This named module expects to be built with classic headers, not header units.
 #define _BUILD_STD_MODULE
-
-module;
 
 // The subset of "C headers" [tab:c.headers] corresponding to
 // the "C++ headers for C library facilities" [tab:headers.cpp.c]
