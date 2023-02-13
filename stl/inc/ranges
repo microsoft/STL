@@ -3566,19 +3566,6 @@ namespace ranges {
     _EXPORT_STD template <input_range _Vw>
         requires view<_Vw> && input_range<range_reference_t<_Vw>>
     class join_view : public _Join_view_base<_Vw> {
-
-#ifndef _USE_JOIN_VIEW_INPUT_RANGE
-        static_assert(forward_range<_Vw>,
-            "Due to a design flaw, join_view can misbehave "
-            "with some input-only ranges (see https://wg21.link/lwg3698). "
-            "We believe that WG21 will be unable to fix this problem without breaking ABI. "
-            "To minimize breakage when a fix is implemented, "
-            "we are temporarily disabling potentially problematic cases. "
-            "You can define _USE_JOIN_VIEW_INPUT_RANGE to suppress this error, "
-            "but be aware that you will almost certainly need to recompile "
-            "when we release a fix.");
-#endif // _USE_JOIN_VIEW_INPUT_RANGE
-
     private:
         template <bool _Const>
         using _InnerRng = range_reference_t<_Maybe_const<_Const, _Vw>>;
