@@ -3419,13 +3419,15 @@ _NODISCARD auto make_wformat_args(_Args&&... _Vals) {
 
 _EXPORT_STD template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _Args) {
+    // Make `_Parse_format_string` type-dependent to defer instantiation:
+    using _Dependent_char = decltype((void) _Out, char{});
     if constexpr (is_same_v<_OutputIt, _Fmt_it>) {
-        _Format_handler<char> _Handler(_Out, _Fmt, _Args);
+        _Format_handler<_Dependent_char> _Handler(_Out, _Fmt, _Args);
         _Parse_format_string(_Fmt, _Handler);
         return _Out;
     } else {
         _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
-        _Format_handler<char> _Handler(_Fmt_it{_Buf}, _Fmt, _Args);
+        _Format_handler<_Dependent_char> _Handler(_Fmt_it{_Buf}, _Fmt, _Args);
         _Parse_format_string(_Fmt, _Handler);
         return _Buf._Out();
     }
@@ -3433,13 +3435,15 @@ _OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _
 
 _EXPORT_STD template <output_iterator<const wchar_t&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const wstring_view _Fmt, const wformat_args _Args) {
+    // Make `_Parse_format_string` type-dependent to defer instantiation:
+    using _Dependent_char = decltype((void) _Out, wchar_t{});
     if constexpr (is_same_v<_OutputIt, _Fmt_wit>) {
-        _Format_handler<wchar_t> _Handler(_Out, _Fmt, _Args);
+        _Format_handler<_Dependent_char> _Handler(_Out, _Fmt, _Args);
         _Parse_format_string(_Fmt, _Handler);
         return _Out;
     } else {
         _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
-        _Format_handler<wchar_t> _Handler(_Fmt_wit{_Buf}, _Fmt, _Args);
+        _Format_handler<_Dependent_char> _Handler(_Fmt_wit{_Buf}, _Fmt, _Args);
         _Parse_format_string(_Fmt, _Handler);
         return _Buf._Out();
     }
@@ -3447,13 +3451,15 @@ _OutputIt vformat_to(_OutputIt _Out, const wstring_view _Fmt, const wformat_args
 
 _EXPORT_STD template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const format_args _Args) {
+    // Make `_Parse_format_string` type-dependent to defer instantiation:
+    using _Dependent_char = decltype((void) _Out, char{});
     if constexpr (is_same_v<_OutputIt, _Fmt_it>) {
-        _Format_handler<char> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
+        _Format_handler<_Dependent_char> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
         _Parse_format_string(_Fmt, _Handler);
         return _Out;
     } else {
         _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
-        _Format_handler<char> _Handler(_Fmt_it{_Buf}, _Fmt, _Args, _Lazy_locale{_Loc});
+        _Format_handler<_Dependent_char> _Handler(_Fmt_it{_Buf}, _Fmt, _Args, _Lazy_locale{_Loc});
         _Parse_format_string(_Fmt, _Handler);
         return _Buf._Out();
     }
@@ -3461,13 +3467,15 @@ _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt,
 
 _EXPORT_STD template <output_iterator<const wchar_t&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
+    // Make `_Parse_format_string` type-dependent to defer instantiation:
+    using _Dependent_char = decltype((void) _Out, wchar_t{});
     if constexpr (is_same_v<_OutputIt, _Fmt_wit>) {
-        _Format_handler<wchar_t> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
+        _Format_handler<_Dependent_char> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
         _Parse_format_string(_Fmt, _Handler);
         return _Out;
     } else {
         _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
-        _Format_handler<wchar_t> _Handler(_Fmt_wit{_Buf}, _Fmt, _Args, _Lazy_locale{_Loc});
+        _Format_handler<_Dependent_char> _Handler(_Fmt_wit{_Buf}, _Fmt, _Args, _Lazy_locale{_Loc});
         _Parse_format_string(_Fmt, _Handler);
         return _Buf._Out();
     }
