@@ -489,6 +489,7 @@ set(CMAKE_SHARED_LINKER_FLAGS "/DEBUG:FULL /WX /RELEASE /SUBSYSTEM:Console /NODE
 set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "")
 
+# Toolset options must appear before add_library() for the options to take effect.
 add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1 _STL_CONCRT_SUPPORT)
 
 add_compile_options(/WX /Gy
@@ -502,9 +503,9 @@ include_directories(BEFORE
     "${TOOLSET_ROOT_DIR}/crt/src/vcruntime"
 )
 
-####################################################################################################################
-# CMake is order-sensitive! add_compile_options() must appear before add_library() for the options to take effect. #
-####################################################################################################################
+###########################
+# End of toolset options. #
+###########################
 
 if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(x86|x64)$")
     add_library(stl_alias_objects OBJECT ${ALIAS_SOURCES_X86_X64})
