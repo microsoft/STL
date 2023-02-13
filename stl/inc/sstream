@@ -440,7 +440,7 @@ protected:
                 _Mysb::setp(_Pnew, (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew, _Seekhigh);
 
                 if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
-                    _Mysb::setg(_Pnew, nullptr, _Pnew);
+                    _Mysb::setg(_Pnew, _Pnew, _Pnew);
                 }
             }
 
@@ -469,7 +469,7 @@ protected:
 
         _Mysb::setp(_Pnew, _Next, _End_buffer);
         if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
-            _Mysb::setg(_Pnew, nullptr, _Pnew);
+            _Mysb::setg(_Pnew, _Pnew, _Pnew);
         } else {
             _Mysb::setg(_Pnew, _Pnew, _Seekhigh);
         }
