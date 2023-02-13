@@ -5408,7 +5408,7 @@ namespace ranges {
 
         class _As_const_fn : public _Pipe::_Base<_As_const_fn> {
         private:
-            enum class _St { _None, _All, _Reconstruct_span, _Reconstruct_ref, _Ref, _As_const };
+            enum class _St { _None, _All, _Empty, _Reconstruct_span, _Reconstruct_ref, _Ref, _As_const };
 
             template <class>
             static constexpr bool _Can_reconstruct_ref_view_v = false;
@@ -5423,6 +5423,8 @@ namespace ranges {
 
                 if constexpr (constant_range<views::all_t<_Rng>>) {
                     return {_St::_All, noexcept(views::all(_STD declval<_Rng>()))};
+                } else if constexpr (_Is_specialization_v<_Ty, empty_view>) {
+                    return {_St::_Empty, true};
                 } else if constexpr (_Is_span_v<_Ty>) {
                     return {_St::_Reconstruct_span, true};
                 } else if constexpr (_Can_reconstruct_ref_view_v<_Ty>) {
@@ -5448,6 +5450,8 @@ namespace ranges {
 
                 if constexpr (_Strat == _St::_All) {
                     return views::all(_STD forward<_Rng>(_Range));
+                } else if constexpr (_Strat == _St::_Empty) {
+                    return empty_view<const remove_reference_t<range_reference_t<_Rng>>>{};
                 } else if constexpr (_Strat == _St::_Reconstruct_span) {
                     return span<const typename _Ty::element_type, _Ty::extent>{_STD forward<_Rng>(_Range)};
                 } else if constexpr (_Strat == _St::_Reconstruct_ref) {
