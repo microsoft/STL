@@ -3131,15 +3131,15 @@ namespace ranges {
         template <class _It, sentinel_for<_It> _Se>
             requires (!sized_sentinel_for<_Se, _It>)
         _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last) const
-            noexcept(noexcept(_Distance_unchecked(
-                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last))))) /* strengthened */ {
+            noexcept(noexcept(_Distance_unchecked(_Get_unwrapped(_STD move(_First)),
+                _Get_unwrapped(_STD move(_Last))))) /* strengthened */ { // Per LWG-3664
             _Adl_verify_range(_First, _Last);
             return _Distance_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)));
         }
 
         template <class _It, sized_sentinel_for<decay_t<_It>> _Se>
         _NODISCARD constexpr iter_difference_t<decay_t<_It>> operator()(_It&& _First, const _Se _Last) const
-            noexcept(noexcept(_Last - static_cast<const decay_t<_It>&>(_First))) /* strengthened */ {
+            noexcept(noexcept(_Last - static_cast<const decay_t<_It>&>(_First))) /* strengthened */ { // Per LWG-3664
             return _Last - static_cast<const decay_t<_It>&>(_First);
         }
 
