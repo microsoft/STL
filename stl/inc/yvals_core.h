@@ -285,6 +285,8 @@
 // P2432R1 Fix istream_view
 // P2508R1 basic_format_string, format_string, wformat_string
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
+// P2588R3 barrier's Phase Completion Guarantees
+// P2711R1 Making Multi-Param Constructors Of Views explicit
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -346,6 +348,7 @@
 // P2474R2 views::repeat
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
+// P2505R5 Monadic Functions For expected
 // P2549R1 unexpected<E>::error()
 // P2602R2 Poison Pills Are Too Toxic
 
@@ -811,7 +814,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202301L
+#define _MSVC_STL_UPDATE  202302L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1584,7 +1587,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_atomic_ref                    201806L
 #define __cpp_lib_atomic_shared_ptr             201711L
 #define __cpp_lib_atomic_wait                   201907L
-#define __cpp_lib_barrier                       201907L
+#define __cpp_lib_barrier                       202302L
 #define __cpp_lib_bind_front                    201907L
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
@@ -1678,7 +1681,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_containers_ranges 202202L
-#define __cpp_lib_expected          202202L
+#define __cpp_lib_expected          202211L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_forward_like   202207L
@@ -1699,7 +1702,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
 #define __cpp_lib_ranges_contains         202207L
-#define __cpp_lib_ranges_find_last        202207L // per LWG-3807
+#define __cpp_lib_ranges_find_last        202207L
 #define __cpp_lib_ranges_fold             202207L
 #define __cpp_lib_ranges_iota             202202L
 #define __cpp_lib_ranges_join_with        202202L
