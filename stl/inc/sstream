@@ -67,12 +67,12 @@ public:
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : basic_stringbuf(_Str, _Mode, _Alloc{}) {}
 
-    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al_) : _Al(_Al_), _Mystate(_Right & ~_Allocated) {
+    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al_) : _Al(_Al_), _Mystate(_Right._Mystate & ~_Allocated) {
         _Assign_rv(_STD move(_Right));
     }
 #endif // _HAS_CXX20
 
-    basic_stringbuf(basic_stringbuf&& _Right) : _Mystate(_Right & ~_Allocated) {
+    basic_stringbuf(basic_stringbuf&& _Right) : _Mystate(_Right._Mystate & ~_Allocated) {
         _Assign_rv(_STD move(_Right));
     }
 
