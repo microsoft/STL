@@ -871,7 +871,8 @@ constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) noexcept(
 }
 
 template <class _Ty, class _Tuple, size_t... _Indices>
-constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>) {
+constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>) noexcept(
+    is_nothrow_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>) {
     // construct _Ty from the elements of _Tpl
     static_assert(is_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>,
         "the target type must be constructible from the fields of the argument tuple (N4892 [tuple.apply]/2).");
@@ -879,7 +880,9 @@ constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>) 
 }
 
 _EXPORT_STD template <class _Ty, class _Tuple>
-_NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) { // construct _Ty from the elements of _Tpl
+_NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) noexcept(noexcept(_Make_from_tuple_impl<_Ty>(
+    _STD forward<_Tuple>(_Tpl), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{}))) /* strengthened */ {
+    // construct _Ty from the elements of _Tpl
     return _Make_from_tuple_impl<_Ty>(
         _STD forward<_Tuple>(_Tpl), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
 }
