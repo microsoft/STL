@@ -330,7 +330,7 @@ protected:
         off_type _Off, ios_base::seekdir _Way, ios_base::openmode _Mode = ios_base::in | ios_base::out) override {
         if ((((_Mode & ios_base::in) == ios_base::in) && ((_Mystate & _Noread) == _Noread))
             || (((_Mode & ios_base::out) == ios_base::out) && ((_Mystate & _Constant) == _Constant))) {
-            return pos_type{-1};
+            return pos_type{off_type{-1}};
         }
 
         // change position by _Off, according to _Way, _Mode
@@ -395,7 +395,7 @@ protected:
     pos_type seekpos(pos_type _Pos, ios_base::openmode _Mode = ios_base::in | ios_base::out) override {
         if ((((_Mode & ios_base::in) == ios_base::in) && ((_Mystate & _Noread) == _Noread))
             || (((_Mode & ios_base::out) == ios_base::out) && ((_Mystate & _Constant) == _Constant))) {
-            return pos_type{-1};
+            return pos_type{off_type{-1}};
         }
 
         // change position to _Pos, according to _Mode
