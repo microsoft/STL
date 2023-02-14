@@ -4247,8 +4247,7 @@ namespace ranges {
                 auto& _Outer_it = _Get_outer();
                 if (_Outer_it == _RANGES end(_Parent->_Range)) {
                     --_Outer_it;
-                    auto&& _Inner = *_Outer_it;
-                    _Inner_it._Emplace_second(_RANGES end(_Inner));
+                    _Inner_it._Emplace_second(_RANGES end(_Get_inner()));
                 }
 
                 for (;;) {
@@ -4256,15 +4255,13 @@ namespace ranges {
                         auto& _It = _Inner_it._First;
                         if (_It == _RANGES begin(_Parent->_Pattern)) {
                             --_Outer_it;
-                            auto&& _Inner = *_Outer_it;
-                            _Inner_it._Emplace_second(_RANGES end(_Inner));
+                            _Inner_it._Emplace_second(_RANGES end(_Get_inner()));
                         } else {
                             break;
                         }
                     } else if (_Inner_it._Contains == _Variantish_state::_Holds_second) {
-                        auto& _It     = _Inner_it._Second;
-                        auto&& _Inner = *_Outer_it;
-                        if (_It == _RANGES begin(_Inner)) {
+                        auto& _It = _Inner_it._Second;
+                        if (_It == _RANGES begin(_Get_inner())) {
                             _Inner_it._Emplace_first(_RANGES end(_Parent->_Pattern));
                         } else {
                             break;
