@@ -229,6 +229,12 @@ void test_visit_monostate() {
     assert(visit_format_arg(visitor<Context>, basic_format_arg<Context>()) == Arg_type::none);
 }
 
+template <class Context>
+void test_lwg3810() {
+    [[maybe_unused]] auto args_store = make_format_args<Context>(1, 2, 3);
+    static_assert(same_as<decltype(basic_format_args{args_store}), basic_format_args<Context>>);
+}
+
 int main() {
     test_basic_format_arg<format_context>();
     test_basic_format_arg<wformat_context>();
@@ -236,4 +242,6 @@ int main() {
     test_format_arg_store<wformat_context>();
     test_visit_monostate<format_context>();
     test_visit_monostate<wformat_context>();
+    test_lwg3810<format_context>();
+    test_lwg3810<wformat_context>();
 }

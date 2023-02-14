@@ -207,12 +207,12 @@ namespace this_thread {
 
 class thread::id { // thread id
 public:
-    id() noexcept : _Id(0) {} // id for no thread
+    id() noexcept = default; // id for no thread
 
 private:
-    id(_Thrd_id_t _Other_id) : _Id(_Other_id) {}
+    explicit id(_Thrd_id_t _Other_id) noexcept : _Id(_Other_id) {}
 
-    _Thrd_id_t _Id;
+    _Thrd_id_t _Id = 0;
 
     friend thread::id thread::get_id() const noexcept;
     friend thread::id this_thread::get_id() noexcept;
@@ -228,11 +228,11 @@ private:
 };
 
 _NODISCARD inline thread::id thread::get_id() const noexcept {
-    return _Thr._Id;
+    return thread::id{_Thr._Id};
 }
 
 _EXPORT_STD _NODISCARD inline thread::id this_thread::get_id() noexcept {
-    return _Thrd_id();
+    return thread::id{_Thrd_id()};
 }
 
 _EXPORT_STD inline void swap(thread& _Left, thread& _Right) noexcept {

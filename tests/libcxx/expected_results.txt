@@ -88,6 +88,12 @@ std/language.support/support.limits/support.limits.general/expected.version.comp
 # libc++ doesn't implement P2588R3 barrier's Phase Completion Guarantees
 std/language.support/support.limits/support.limits.general/barrier.version.compile.pass.cpp FAIL
 
+# libc++ doesn't implement P2711R1 Making Multi-Param Constructors Of Views explicit
+std/ranges/range.adaptors/range.drop.while/ctor.view.pass.cpp FAIL
+std/ranges/range.adaptors/range.filter/ctor.view_pred.pass.cpp FAIL
+std/ranges/range.adaptors/range.take.while/ctor.view.pass.cpp FAIL
+std/ranges/range.adaptors/range.transform/ctor.view_function.pass.cpp FAIL
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -667,6 +673,7 @@ std/time/time.syn/formatter.year_month_day_last.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
 
 # unused-variable warning
+std/thread/thread.mutex/thread.lock/thread.lock.scoped/mutex.pass.cpp FAIL
 std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/default.pass.cpp:1 FAIL
 
 

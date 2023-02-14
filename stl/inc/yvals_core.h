@@ -286,6 +286,7 @@
 // P2508R1 basic_format_string, format_string, wformat_string
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 // P2588R3 barrier's Phase Completion Guarantees
+// P2711R1 Making Multi-Param Constructors Of Views explicit
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
