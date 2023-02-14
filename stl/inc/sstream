@@ -67,12 +67,12 @@ public:
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : basic_stringbuf(_Str, _Mode, _Alloc{}) {}
 
-    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al_) : _Al(_Al_) {
+    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al_) : _Al(_Al_), _Mystate(_Right & ~_Allocated) {
         _Assign_rv(_STD move(_Right));
     }
 #endif // _HAS_CXX20
 
-    basic_stringbuf(basic_stringbuf&& _Right) {
+    basic_stringbuf(basic_stringbuf&& _Right) : _Mystate(_Right & ~_Allocated) {
         _Assign_rv(_STD move(_Right));
     }
 
@@ -328,6 +328,12 @@ protected:
 
     pos_type seekoff(
         off_type _Off, ios_base::seekdir _Way, ios_base::openmode _Mode = ios_base::in | ios_base::out) override {
+
+        if ((((_Mode & ios_base::in) == ios_base::in) && ((_Mystate & _Noread) == _Noread))
+            || (((_Mode & ios_base::out) == ios_base::out) && ((_Mystate & _Constant) == _Constant))) {
+            return -1;
+        }
+
         // change position by _Off, according to _Way, _Mode
         const auto _Gptr_old = _Mysb::gptr();
         const auto _Pptr_old = (_Mystate & _Constant) ? nullptr : _Mysb::pptr();
@@ -388,6 +394,11 @@ protected:
     }
 
     pos_type seekpos(pos_type _Pos, ios_base::openmode _Mode = ios_base::in | ios_base::out) override {
+        if ((((_Mode & ios_base::in) == ios_base::in) && ((_Mystate & _Noread) == _Noread))
+            || (((_Mode & ios_base::out) == ios_base::out) && ((_Mystate & _Constant) == _Constant))) {
+            return -1;
+        }
+
         // change position to _Pos, according to _Mode
         const auto _Off      = static_cast<streamoff>(_Pos);
         const auto _Gptr_old = _Mysb::gptr();
@@ -521,7 +532,7 @@ private:
 
     // TRANSITION, ABI, see GH-938
     _Elem* _Seekhigh; // the high-water pointer in character array
-    int _Mystate = 0; // the stream state
+    int _Mystate; // the stream state
     allocator_type _Al; // the allocator object
 };
 
