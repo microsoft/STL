@@ -3624,10 +3624,7 @@ namespace ranges {
         template <bool _Const>
         class _Iterator : public _Iterator_base<_Const> {
         private:
-            template <bool>
-            friend class _Iterator;
-            template <bool>
-            friend class _Sentinel;
+            friend join_view;
 
             using _Mybase    = _Iterator_base<_Const>;
             using _Parent_t  = _Maybe_const<_Const, join_view>;
@@ -3642,6 +3639,22 @@ namespace ranges {
                                                                            // is default-constructible, we don't wrap in
                                                                            // an optional-like.
             _Parent_t* _Parent{};
+
+            constexpr _Iterator(_Parent_t& _Parent_, _OuterIter _Outer_)
+                requires forward_range<_Base>
+                : _Mybase{_STD move(_Outer_)}, _Parent{_STD addressof(_Parent_)} {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _Adl_verify_range(this->_Outer, _RANGES end(_Parent_._Range));
+                _Adl_verify_range(_RANGES begin(_Parent_._Range), this->_Outer);
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                _Satisfy();
+            }
+
+            constexpr explicit _Iterator(_Parent_t& _Parent)
+                requires (!forward_range<_Base>)
+                : _Parent{_STD addressof(_Parent)} {
+                _Satisfy();
+            }
 
             _NODISCARD constexpr _OuterIter& _Get_outer() noexcept {
                 if constexpr (forward_range<_Base>) {
@@ -3714,22 +3727,6 @@ namespace ranges {
             // clang-format off
             _Iterator() requires default_initializable<_OuterIter> = default;
             // clang-format on
-
-            constexpr explicit _Iterator(_Parent_t& _Parent)
-                requires (!forward_range<_Base>)
-                : _Parent{_STD addressof(_Parent)} {
-                _Satisfy();
-            }
-
-            constexpr _Iterator(_Parent_t& _Parent_, _OuterIter _Outer_)
-                requires forward_range<_Base>
-                : _Mybase{_STD move(_Outer_)}, _Parent{_STD addressof(_Parent_)} {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                _Adl_verify_range(this->_Outer, _RANGES end(_Parent_._Range));
-                _Adl_verify_range(_RANGES begin(_Parent_._Range), this->_Outer);
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-                _Satisfy();
-            }
 
             constexpr _Iterator(_Iterator<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, _OuterIter>
