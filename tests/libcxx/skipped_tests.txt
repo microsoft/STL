@@ -94,6 +94,50 @@ ranges\range.adaptors\range.filter\ctor.view_pred.pass.cpp
 ranges\range.adaptors\range.take.while\ctor.view.pass.cpp
 ranges\range.adaptors\range.transform\ctor.view_function.pass.cpp
 
+# Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
+language.support\support.limits\support.limits.general\algorithm.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\functional.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\iterator.version.compile.pass.cpp
+
+# Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
+language.support\support.limits\support.limits.general\chrono.version.compile.pass.cpp
+
+# libc++ doesn't implement P2273R3 constexpr unique_ptr
+language.support\support.limits\support.limits.general\memory.version.compile.pass.cpp
+
+# libc++ doesn't implement P2231R1 Add further constexpr support for variant
+language.support\support.limits\support.limits.general\variant.version.compile.pass.cpp
+
+# libc++ is missing various Ranges DRs
+language.support\support.limits\support.limits.general\ranges.version.compile.pass.cpp
+
+# libc++ is missing various <format> DRs
+language.support\support.limits\support.limits.general\format.version.compile.pass.cpp
+
+# libc++ doesn't implement LWG-3670
+ranges\range.factories\range.iota.view\iterator\member_typedefs.compile.pass.cpp
+
+# libc++ doesn't implement LWG-3857
+strings\string.view\string.view.cons\from_range.pass.cpp
+strings\string.view\string.view.cons\from_string1.compile.fail.cpp
+strings\string.view\string.view.cons\from_string2.compile.fail.cpp
+
+# libc++ doesn't implement P1957R2 "Converting from `T*` to `bool` should be considered narrowing"
+utilities\variant\variant.variant\variant.assign\conv.pass.cpp
+utilities\variant\variant.variant\variant.assign\T.pass.cpp
+utilities\variant\variant.variant\variant.ctor\conv.pass.cpp
+utilities\variant\variant.variant\variant.ctor\T.pass.cpp
+
+# libc++ is missing a requires-clause on variant's operator<=> (LLVM-58192)
+utilities\variant\variant.relops\three_way.pass.cpp
+
+# libc++ doesn't implement P2602R2 "Poison Pills Are Too Toxic"
+ranges\range.access\begin.pass.cpp
+ranges\range.access\end.pass.cpp
+ranges\range.access\rbegin.pass.cpp
+ranges\range.access\rend.pass.cpp
+ranges\range.access\size.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -228,12 +272,12 @@ utilities\tuple\tuple.tuple\tuple.cnstr\recursion_depth.pass.cpp
 
 
 # *** MISSING STL FEATURES ***
+# Missing mbrtoc8 and c8rtomb
+depr\depr.c.headers\uchar_h.compile.pass.cpp
+strings\c.strings\cuchar.compile.pass.cpp
+
 # P1169R4 static operator()
 thread\futures\futures.task\futures.task.members\ctad.static.compile.pass.cpp
-
-# P2321R2 zip
-language.support\support.limits\support.limits.general\tuple.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\utility.version.compile.pass.cpp
 
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 language.support\support.limits\support.limits.general\type_traits.version.compile.pass.cpp
@@ -249,9 +293,9 @@ utilities\format\format.tuple\parse.pass.cpp
 utilities\format\format.tuple\set_brackets.pass.cpp
 utilities\format\format.tuple\set_separator.pass.cpp
 
-# Missing mbrtoc8 and c8rtomb
-depr\depr.c.headers\uchar_h.compile.pass.cpp
-strings\c.strings\cuchar.compile.pass.cpp
+# P2321R2 zip
+language.support\support.limits\support.limits.general\tuple.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\utility.version.compile.pass.cpp
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -274,7 +318,7 @@ thread\futures\futures.task\futures.task.members\make_ready_at_thread_exit.pass.
 # LWG-3120 "Unclear behavior of monotonic_buffer_resource::release()" (vNext)
 utilities\utility\mem.res\mem.res.monotonic.buffer\mem.res.monotonic.buffer.mem\allocate_from_underaligned_buffer.pass.cpp
 
-# LWG-3633 "Atomics are copy constructible and copy assignable from volatile atomics" (Open)
+# libc++ speculatively implements LWG-3633 "Atomics are copy constructible and copy assignable from volatile atomics"
 atomics\atomics.types.generic\copy_semantics_traits.pass.cpp
 
 
@@ -327,7 +371,7 @@ utilities\format\format.fmt.string\get.pass.cpp
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
 
-# Clang doesn't yet implement P0960 "Initializing Aggregates With Parentheses"
+# Clang doesn't implement P0960 "Initializing Aggregates With Parentheses"
 ranges\range.factories\range.iota.view\sentinel\ctor.value.pass.cpp
 
 
@@ -338,10 +382,10 @@ language.support\support.dynamic\new.delete\new.delete.array\sized_delete_array1
 language.support\support.dynamic\new.delete\new.delete.single\sized_delete_fsizeddeallocation.pass.cpp
 language.support\support.dynamic\new.delete\new.delete.single\sized_delete14.pass.cpp
 
-# Not yet analyzed. Clang apparently defines platform macros differently from C1XX.
+# Not analyzed. Clang apparently defines platform macros differently from C1XX.
 language.support\support.limits\limits\numeric.limits.members\traps.pass.cpp
 
-# Not yet analyzed. Possibly C++20 equality operator rewrite issues.
+# Not analyzed. Possibly C++20 equality operator rewrite issues.
 utilities\expected\expected.expected\equality\equality.other_expected.pass.cpp
 utilities\expected\expected.void\equality\equality.other_expected.pass.cpp
 
@@ -444,7 +488,7 @@ utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.runt
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.single.pass.cpp
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move.pass.cpp
 
-# Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
+# Not analyzed, likely bogus tests. Appears to be timing assumptions.
 atomics\atomics.types.operations\atomics.types.operations.wait\atomic_notify_all.pass.cpp
 thread\futures\futures.async\async.pass.cpp
 thread\futures\futures.shared_future\get.pass.cpp
@@ -506,7 +550,7 @@ thread\thread.threads\thread.thread.class\thread.thread.destr\dtor.pass.cpp
 thread\thread.threads\thread.thread.class\thread.thread.member\detach.pass.cpp
 thread\thread.threads\thread.thread.this\sleep_until.pass.cpp
 
-# Not yet analyzed, likely bogus tests. Various assertions, probably POSIX assumptions.
+# Not analyzed, likely bogus tests. Various assertions, probably POSIX assumptions.
 diagnostics\syserr\syserr.compare\eq_error_code_error_code.pass.cpp
 diagnostics\syserr\syserr.errcat\syserr.errcat.derived\message.pass.cpp
 diagnostics\syserr\syserr.errcat\syserr.errcat.objects\system_category.pass.cpp
@@ -565,20 +609,6 @@ iterators\iterator.primitives\iterator.operations\robust_against_adl.pass.cpp
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 input.output\filesystems\fs.filesystem.synopsis\file_time_type_resolution.compile.pass.cpp
 
-# Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
-language.support\support.limits\support.limits.general\algorithm.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\functional.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\iterator.version.compile.pass.cpp
-
-# Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
-language.support\support.limits\support.limits.general\chrono.version.compile.pass.cpp
-
-# libc++ doesn't implement P2273R3 constexpr unique_ptr
-language.support\support.limits\support.limits.general\memory.version.compile.pass.cpp
-
-# libc++ doesn't implement P2231R1 Add further constexpr support for variant
-language.support\support.limits\support.limits.general\variant.version.compile.pass.cpp
-
 # Tests non-portable behavior
 # These formatter tests need to create basic_format_contexts.
 # I believe that if we provide test_format_context_create in test_format_context.h, some of these tests can work.
@@ -603,11 +633,8 @@ utilities\format\format.formatter\format.formatter.spec\formatter.floating_point
 # libc++ chose option A for [time.clock.file.members], and we chose option B.
 time\time.clock\time.clock.file\to_from_sys.pass.cpp
 
-# libc++'s filesystem::path::iterator model bidirectional_iterator, which is not guaranteed by the Standard
+# libc++'s filesystem::path::iterator models bidirectional_iterator, which is not guaranteed by the Standard
 input.output\filesystems\class.path\range_concept_conformance.compile.pass.cpp
-
-# libc++ is missing various Ranges DRs
-language.support\support.limits\support.limits.general\ranges.version.compile.pass.cpp
 
 # MaybePOCCAAllocator doesn't meet the allocator requirements
 containers\sequences\vector\vector.cons\assign_copy.pass.cpp
@@ -622,17 +649,6 @@ ranges\range.utility\range.subrange\primitives.pass.cpp
 
 # libc++ speculatively implements LWG-3645
 strings\basic.string\string.capacity\resize_and_overwrite.pass.cpp
-
-# libc++ is missing various <format> DRs
-language.support\support.limits\support.limits.general\format.version.compile.pass.cpp
-
-# libc++ doesn't yet implement LWG-3670
-ranges\range.factories\range.iota.view\iterator\member_typedefs.compile.pass.cpp
-
-# libc++ doesn't speculatively implement LWG-3857
-strings\string.view\string.view.cons\from_range.pass.cpp
-strings\string.view\string.view.cons\from_string1.compile.fail.cpp
-strings\string.view\string.view.cons\from_string2.compile.fail.cpp
 
 # This test assumes that std::array<int, 4>::iterator is int*, but on MSVC STL it's _Array_iterator.
 # Other std/algorithm test failures likely have the same cause.
@@ -651,22 +667,6 @@ algorithms\alg.modifying.operations\alg.swap\ranges.swap_ranges.pass.cpp
 algorithms\alg.modifying.operations\alg.transform\ranges.transform.pass.cpp
 algorithms\alg.modifying.operations\alg.unique\ranges_unique_copy.pass.cpp
 
-# libc++ doesn't yet implement P1957R2 "Converting from `T*` to `bool` should be considered narrowing"
-utilities\variant\variant.variant\variant.assign\conv.pass.cpp
-utilities\variant\variant.variant\variant.assign\T.pass.cpp
-utilities\variant\variant.variant\variant.ctor\conv.pass.cpp
-utilities\variant\variant.variant\variant.ctor\T.pass.cpp
-
-# libc++ is missing a requires-clause on variant's operator<=> (LLVM-58192)
-utilities\variant\variant.relops\three_way.pass.cpp
-
-# libc++ doesn't yet implement P2602R2 "Poison Pills Are Too Toxic"
-ranges\range.access\begin.pass.cpp
-ranges\range.access\end.pass.cpp
-ranges\range.access\rbegin.pass.cpp
-ranges\range.access\rend.pass.cpp
-ranges\range.access\size.pass.cpp
-
 # warning C5101: use of preprocessor directive in function-like macro argument list is undefined behavior
 time\time.syn\formatter.year_month.pass.cpp
 time\time.syn\formatter.year_month_day_last.pass.cpp
@@ -678,7 +678,7 @@ thread\thread.mutex\thread.mutex.requirements\thread.shared_mutex.requirements\t
 
 
 # *** LIKELY STL BUGS ***
-# Not yet analyzed, likely STL bugs. Various assertions.
+# Not analyzed, likely STL bugs. Various assertions.
 re\re.alg\re.alg.match\awk.pass.cpp
 re\re.alg\re.alg.match\basic.pass.cpp
 re\re.alg\re.alg.match\ecma.pass.cpp
@@ -698,7 +698,7 @@ re\re.regex\re.regex.swap\swap.pass.cpp
 re\re.traits\lookup_collatename.pass.cpp
 re\re.traits\transform_primary.pass.cpp
 
-# Not yet analyzed, likely STL bugs. Various assertions.
+# Not analyzed, likely STL bugs. Various assertions.
 numerics\complex.number\complex.member.ops\divide_equal_complex.pass.cpp
 numerics\complex.number\complex.ops\complex_divide_complex.pass.cpp
 numerics\complex.number\complex.ops\complex_times_complex.pass.cpp
@@ -719,7 +719,7 @@ numerics\complex.number\complex.transcendentals\sinh.pass.cpp
 numerics\complex.number\complex.transcendentals\tanh.pass.cpp
 numerics\complex.number\complex.value.ops\norm.pass.cpp
 
-# Not yet analyzed, likely STL bugs. Many various assertions.
+# Not analyzed, likely STL bugs. Many various assertions.
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_en_US.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_fr_FR.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_ru_RU.pass.cpp
@@ -759,7 +759,7 @@ localization\locales\locale.convenience\conversions\conversions.buffer\pbackfail
 localization\locales\locale.convenience\conversions\conversions.buffer\underflow.pass.cpp
 localization\locales\locale.convenience\conversions\conversions.string\ctor_err_string.pass.cpp
 
-# Not yet analyzed, likely STL bugs. Various assertions.
+# Not analyzed, likely STL bugs. Various assertions.
 input.output\iostream.format\ext.manip\get_money.pass.cpp
 input.output\iostream.format\ext.manip\put_money.pass.cpp
 input.output\iostreams.base\ios\basic.ios.members\copyfmt.pass.cpp
@@ -799,7 +799,7 @@ utilities\utility\mem.res\mem.res.monotonic.buffer\mem.res.monotonic.buffer.mem\
 
 
 # *** NOT YET ANALYZED ***
-# Not yet analyzed. Asserting about alloc_count.
+# Not analyzed. Asserting about alloc_count.
 thread\futures\futures.promise\alloc_ctor.pass.cpp
 thread\futures\futures.promise\move_assign.pass.cpp
 thread\futures\futures.promise\move_ctor.pass.cpp
@@ -807,11 +807,11 @@ thread\futures\futures.promise\swap.pass.cpp
 thread\futures\futures.shared_future\dtor.pass.cpp
 thread\futures\futures.unique_future\dtor.pass.cpp
 
-# Not yet analyzed. libc++ seems to have a different opinion about what tuple_size<const void> should do.
+# Not analyzed. libc++ seems to have a different opinion about what tuple_size<const void> should do.
 utilities\tuple\tuple.tuple\tuple.helper\tuple_size_incomplete.pass.cpp
 utilities\tuple\tuple.tuple\tuple.helper\tuple_size_structured_bindings.pass.cpp
 
-# Not yet analyzed. Possibly testing nonstandard deduction guides.
+# Not analyzed. Possibly testing nonstandard deduction guides.
 containers\associative\map\map.cons\deduct.pass.cpp
 containers\associative\map\map.cons\deduct_const.pass.cpp
 containers\associative\multimap\multimap.cons\deduct.pass.cpp
@@ -824,19 +824,19 @@ containers\unord\unord.multimap\unord.multimap.cnstr\deduct.pass.cpp
 containers\unord\unord.multimap\unord.multimap.cnstr\deduct_const.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\deduct.pass.cpp
 
-# Not yet analyzed. Frequent timeouts
+# Not analyzed. Frequent timeouts
 containers\sequences\deque\deque.modifiers\insert_iter_iter.pass.cpp
 
-# Not yet analyzed. Failing after LLVM-D75622.
+# Not analyzed. Failing after LLVM-D75622.
 re\re.const\re.matchflag\match_prev_avail.pass.cpp
 
-# Not yet analyzed. Many diagnostics.
+# Not analyzed. Many diagnostics.
 input.output\filesystems\class.path\path.member\path.charconv.pass.cpp
 
-# Not yet analyzed. Possibly C1XX constexpr bug.
+# Not analyzed. Possibly C1XX constexpr bug.
 utilities\function.objects\func.invoke\invoke_constexpr.pass.cpp
 
-# Not yet analyzed. Failing for "[a[.ch.]z]".
+# Not analyzed. Failing for "[a[.ch.]z]".
 re\re.alg\re.alg.match\awk.locale.pass.cpp
 re\re.alg\re.alg.match\basic.locale.pass.cpp
 re\re.alg\re.alg.match\ecma.locale.pass.cpp
@@ -846,25 +846,25 @@ re\re.alg\re.alg.search\basic.locale.pass.cpp
 re\re.alg\re.alg.search\ecma.locale.pass.cpp
 re\re.alg\re.alg.search\extended.locale.pass.cpp
 
-# Not yet analyzed. Involves incomplete types.
+# Not analyzed. Involves incomplete types.
 utilities\memory\allocator.traits\allocator.traits.members\construct.pass.cpp
 utilities\memory\allocator.traits\allocator.traits.members\destroy.pass.cpp
 
-# Not yet analyzed. Error mentions allocator<const T>.
+# Not analyzed. Error mentions allocator<const T>.
 utilities\memory\specialized.algorithms\specialized.construct\construct_at.pass.cpp
 
-# Not yet analyzed. Looks like deduction guide SFINAE failure.
+# Not analyzed. Looks like deduction guide SFINAE failure.
 containers\sequences\deque\deque.cons\deduct.pass.cpp
 containers\sequences\forwardlist\forwardlist.cons\deduct.pass.cpp
 containers\sequences\vector\vector.cons\deduct.pass.cpp
 
-# Not yet analyzed. Seems to force a sign conversion error?
+# Not analyzed. Seems to force a sign conversion error?
 iterators\iterator.primitives\iterator.operations\advance.pass.cpp
 
-# Not yet analyzed. Maybe Clang over-eagerly instantiating noexcept-specifier?
+# Not analyzed. Maybe Clang over-eagerly instantiating noexcept-specifier?
 utilities\memory\unique.ptr\iterator_concept_conformance.compile.pass.cpp
 
-# Not yet analyzed. Assertion failed: std::abs((kurtosis - x_kurtosis) / x_kurtosis) < VARIOUS_VALUES
+# Not analyzed. Assertion failed: std::abs((kurtosis - x_kurtosis) / x_kurtosis) < VARIOUS_VALUES
 numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.bin\eval.PR44847.pass.cpp
 numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.geo\eval_param.pass.cpp
 numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.geo\eval.pass.cpp
@@ -879,42 +879,42 @@ numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.gamma\eval_param.pass.cpp
 numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.gamma\eval.pass.cpp
 numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.poisson\eval_param.pass.cpp
 
-# Not yet analyzed. Assertion failed: std::abs((skew - x_skew) / x_skew) < 0.01
+# Not analyzed. Assertion failed: std::abs((skew - x_skew) / x_skew) < 0.01
 numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.bin\eval_param.pass.cpp
 numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.bin\eval.pass.cpp
 
-# Not yet analyzed. Runs forever
+# Not analyzed. Runs forever
 numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
 
-# Not yet analyzed. This test seemly fails for ARM/ARM64 platforms because MSVC STL considers `tinyness_before` to be
+# Not analyzed. This test seemingly fails for ARM/ARM64 platforms because MSVC STL considers `tinyness_before` to be
 # always `false` even for ARM, but libc++ considers it to be `true` for floating-point types on ARM.
 # I don't know which is right.
 language.support\support.limits\limits\numeric.limits.members\tinyness_before.pass.cpp
 
-# Not yet analyzed. the test fails on x64 but passes on x86
+# Not analyzed. the test fails on x64 but passes on x86
 containers\associative\map\map.access\iterator.pass.cpp
 iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.-\sentinel.pass.cpp
 algorithms\alg.modifying.operations\alg.random.shuffle\ranges_shuffle.pass.cpp
 
-# Not yet analyzed. the test fails on x86 but passes on x64
+# Not analyzed. the test fails on x86 but passes on x64
 algorithms\alg.sorting\alg.set.operations\includes\ranges_includes.pass.cpp
 algorithms\alg.modifying.operations\alg.unique\ranges_unique.pass.cpp
 
-# Not yet analyzed. These tests are marked `XFAIL: msvc`, citing DevCom-1660844.
+# Not analyzed. These tests are marked `XFAIL: msvc`, citing DevCom-1660844.
 localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_long_double.hex.pass.cpp
 localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_double.hex.pass.cpp
 
-# Not yet analyzed. These tests use characters that cannot be represented in legacy character encodings
+# Not analyzed. These tests use characters that cannot be represented in legacy character encodings
 utilities\format\format.functions\ascii.pass.cpp
 
-# Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
+# Not analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
 utilities\template.bitset\bitset.members\left_shift_eq.pass.cpp
 utilities\template.bitset\bitset.members\op_and_eq.pass.cpp
 utilities\template.bitset\bitset.members\op_or_eq.pass.cpp
 utilities\template.bitset\bitset.members\right_shift_eq.pass.cpp
 utilities\template.bitset\bitset.members\to_string.pass.cpp
 
-# Not yet analyzed
+# Not analyzed
 algorithms\alg.modifying.operations\alg.random.sample\ranges_sample.pass.cpp
 algorithms\alg.modifying.operations\alg.rotate\ranges_rotate.pass.cpp
 algorithms\alg.nonmodifying\alg.all_of\ranges.all_of.pass.cpp
@@ -1049,7 +1049,7 @@ utilities\meta\meta.unary\meta.unary.prop\is_nothrow_copy_assignable.pass.cpp
 utilities\meta\meta.unary\meta.unary.prop\is_nothrow_move_assignable.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\convert_const_move.pass.cpp
 
-# Not yet analyzed, probably MSVC constexpr issue(s)
+# Not analyzed, probably MSVC constexpr issue(s)
 strings\basic.string\string.modifiers\string_erase\iter.pass.cpp
 strings\basic.string\string.modifiers\string_erase\iter_iter.pass.cpp
 strings\basic.string\string.modifiers\string_insert\iter_iter_iter.pass.cpp
@@ -1061,11 +1061,11 @@ strings\basic.string\string.modifiers\string_replace\iter_iter_size_char.pass.cp
 strings\basic.string\string.modifiers\string_replace\iter_iter_string.pass.cpp
 strings\basic.string\string.modifiers\string_replace\iter_iter_string_view.pass.cpp
 
-# Not yet analyzed, possible path length issue. With a repo root of D:\GitHub\STL (13 characters), fails with:
+# Not analyzed, possible path length issue. With a repo root of D:\GitHub\STL (13 characters), fails with:
 # "error RC2136 : missing '=' in EXSTYLE=<flags>" followed by "LINK : fatal error LNK1327: failure during running rc.exe"
 thread\thread.mutex\thread.mutex.requirements\thread.sharedtimedmutex.requirements\thread.sharedtimedmutex.class\try_lock_until_deadlock_bug.pass.cpp
 
-# Not yet analyzed, possible bug in uses_allocator_construction_args
+# Not analyzed, possible bug in uses_allocator_construction_args
 utilities\utility\mem.res\mem.poly.allocator.class\mem.poly.allocator.mem\construct_piecewise_pair_evil.pass.cpp
 
 
