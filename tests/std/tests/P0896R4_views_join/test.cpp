@@ -549,6 +549,17 @@ void test_lwg3700() { // COMPILE-ONLY
     STATIC_ASSERT(!CanMemberEnd<const J>);
 }
 
+constexpr bool test_lwg3791() {
+    // LWG-3791 "join_view::iterator::operator-- may be ill-formed"
+    // Validate that join_view<V> works when range_reference_t<V> is an rvalue reference
+    using outer = test::range<bidirectional_iterator_tag, mo_inner, test::Sized::no, test::CanDifference::no,
+        test::Common::yes, test::CanCompare::yes, test::ProxyRef::xvalue>;
+
+    instantiator::call<mo_inner, outer>();
+
+    return true;
+}
+
 int main() {
     // Validate views
     constexpr string_view expected = "Hello World!"sv;
@@ -644,4 +655,7 @@ int main() {
 
     STATIC_ASSERT(test_lwg3698());
     assert(test_lwg3698());
+
+    STATIC_ASSERT(test_lwg3791());
+    assert(test_lwg3791());
 }
