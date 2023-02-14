@@ -1991,6 +1991,9 @@ private:
     const _Format_arg_index* _Index_array = nullptr;
 };
 
+template <class _Context, class... _Args>
+basic_format_args(_Format_arg_store<_Context, _Args...>) -> basic_format_args<_Context>;
+
 // _Lazy_locale is used instead of a std::locale so that the locale is only
 // constructed when needed, and is never constructed if the format string does not
 // contain locale-sensitive format specifiers. Note that this means that a new locale
