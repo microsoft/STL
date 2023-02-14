@@ -143,8 +143,10 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
         // Validate join_view::begin
         static_assert(CanMemberBegin<R>);
-        static_assert(
-            CanMemberBegin<const R> == (forward_range<const V> && is_reference_v<range_reference_t<const V>>) );
+        // clang-format off
+        static_assert(CanMemberBegin<const R> == (forward_range<const V> && is_reference_v<range_reference_t<const V>>
+                                                  && input_range<range_reference_t<const V>>) );
+        // clang-format on
         if (forward_range<R>) {
             const iterator_t<R> i = r.begin();
             if (!is_empty) {
@@ -178,8 +180,9 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
         // Validate join_view::end
         static_assert(CanMemberEnd<R>);
-        static_assert(CanMemberEnd<const R> == (forward_range<const V> && is_reference_v<range_reference_t<const V>>) );
         // clang-format off
+        static_assert(CanMemberEnd<const R> == (forward_range<const V> && is_reference_v<range_reference_t<const V>>
+                                                && input_range<range_reference_t<const V>>) );
         static_assert(common_range<R> == (forward_range<V> && is_reference_v<range_reference_t<V>> && common_range<V>
                                           && forward_range<Inner> && common_range<Inner>) );
         static_assert(common_range<const R> == (forward_range<const V> && is_reference_v<range_reference_t<const V>>
@@ -535,6 +538,15 @@ constexpr bool test_lwg3698() {
     assert(*itcopy == 1);
 
     return true;
+}
+
+void test_lwg3700() { // COMPILE-ONLY
+    // LWG-3700 "The const begin of the join_view family does not require InnerRng to be a range"
+    auto r  = views::iota(0, 5) | views::filter([](auto) { return true; });
+    auto j  = views::single(r) | views::join;
+    using J = decltype(j);
+    STATIC_ASSERT(!CanMemberBegin<const J>);
+    STATIC_ASSERT(!CanMemberEnd<const J>);
 }
 
 int main() {
