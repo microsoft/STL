@@ -9,7 +9,39 @@
 #include <type_traits>
 #include <utility>
 
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
 using namespace std;
+
+// nothrow-destructibility required by N4928 [res.on.exception.handling]/3
+STATIC_ASSERT(is_nothrow_destructible_v<lock_guard<mutex>>);
+STATIC_ASSERT(is_nothrow_destructible_v<unique_lock<mutex>>);
+#if _HAS_CXX17
+STATIC_ASSERT(is_nothrow_destructible_v<scoped_lock<>>);
+STATIC_ASSERT(is_nothrow_destructible_v<scoped_lock<mutex>>);
+STATIC_ASSERT(is_nothrow_destructible_v<scoped_lock<mutex, recursive_mutex>>);
+#endif // _HAS_CXX17
+
+// Test mandatory and strengthened exception specification for default construction
+STATIC_ASSERT(is_nothrow_default_constructible_v<unique_lock<mutex>>);
+#if _HAS_CXX17
+STATIC_ASSERT(is_nothrow_default_constructible_v<scoped_lock<>>); // strengthened
+#endif // _HAS_CXX17
+
+// Test strengthened exception specification for adopt_lock construction
+STATIC_ASSERT(is_nothrow_constructible_v<lock_guard<mutex>, mutex&, adopt_lock_t>);
+STATIC_ASSERT(is_nothrow_constructible_v<lock_guard<mutex>, mutex&, const adopt_lock_t&>);
+STATIC_ASSERT(is_nothrow_constructible_v<unique_lock<mutex>, mutex&, adopt_lock_t>);
+STATIC_ASSERT(is_nothrow_constructible_v<unique_lock<mutex>, mutex&, const adopt_lock_t&>);
+#if _HAS_CXX17
+STATIC_ASSERT(is_nothrow_constructible_v<scoped_lock<>, adopt_lock_t>);
+STATIC_ASSERT(is_nothrow_constructible_v<scoped_lock<>, const adopt_lock_t&>);
+STATIC_ASSERT(is_nothrow_constructible_v<scoped_lock<mutex>, adopt_lock_t, mutex&>);
+STATIC_ASSERT(is_nothrow_constructible_v<scoped_lock<mutex>, const adopt_lock_t&, mutex&>);
+STATIC_ASSERT(is_nothrow_constructible_v<scoped_lock<mutex, recursive_mutex>, adopt_lock_t, mutex&, recursive_mutex&>);
+STATIC_ASSERT(
+    is_nothrow_constructible_v<scoped_lock<mutex, recursive_mutex>, const adopt_lock_t&, mutex&, recursive_mutex&>);
+#endif // _HAS_CXX17
 
 // LOCK ORDERING: g_coutMutex is locked after all other locks and synchronizes
 // access to cout.
@@ -161,7 +193,7 @@ void exec_test_scoped_lock_adopts_one_mutex() {
 #if _HAS_CXX17
 // Special case for 0 mutex types.
 void exec_test_scoped_lock_compiles_with_no_mutexes() {
-    scoped_lock<> takeNoLocks;
+    [[maybe_unused]] scoped_lock<> takeNoLocks;
     VERIFY_UNOWNED(g_mutexA);
     VERIFY_UNOWNED(g_mutexB);
     VERIFY_UNOWNED(g_mutexC);

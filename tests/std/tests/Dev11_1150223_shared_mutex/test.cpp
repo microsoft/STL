@@ -9,6 +9,7 @@
 #include <shared_mutex>
 #include <thread>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
@@ -35,10 +36,39 @@ STATIC_ASSERT(is_nothrow_destructible_v<shared_lock<shared_timed_mutex>>);
 STATIC_ASSERT(is_nothrow_destructible_v<condition_variable>);
 
 STATIC_ASSERT(is_nothrow_default_constructible_v<mutex>); // N4928 [thread.mutex.class]
+STATIC_ASSERT(is_nothrow_default_constructible_v<recursive_mutex>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<timed_mutex>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<recursive_timed_mutex>); // strengthened
 STATIC_ASSERT(is_nothrow_default_constructible_v<shared_mutex>); // strengthened
 STATIC_ASSERT(is_nothrow_default_constructible_v<shared_timed_mutex>); // strengthened
 STATIC_ASSERT(is_nothrow_default_constructible_v<shared_lock<shared_mutex>>); // N4928 [thread.lock.shared.cons]/1
 STATIC_ASSERT(is_nothrow_default_constructible_v<shared_lock<shared_timed_mutex>>); // N4928 [thread.lock.shared.cons]/1
+STATIC_ASSERT(is_nothrow_default_constructible_v<condition_variable>); // strengthened
+
+STATIC_ASSERT(is_nothrow_constructible_v<shared_lock<shared_mutex>, shared_mutex&, adopt_lock_t>); // strengthened
+STATIC_ASSERT(
+    is_nothrow_constructible_v<shared_lock<shared_mutex>, shared_mutex&, const adopt_lock_t&>); // strengthened
+STATIC_ASSERT(
+    is_nothrow_constructible_v<shared_lock<shared_timed_mutex>, shared_timed_mutex&, adopt_lock_t>); // strengthened
+STATIC_ASSERT(is_nothrow_constructible_v<shared_lock<shared_timed_mutex>, shared_timed_mutex&,
+    const adopt_lock_t&>); // strengthened
+
+// Also test strengthened exception specification for native_handle().
+STATIC_ASSERT(noexcept(declval<thread&>().native_handle()));
+#if _HAS_CXX20
+STATIC_ASSERT(noexcept(declval<jthread&>().native_handle()));
+#endif // _HAS_CXX20
+STATIC_ASSERT(noexcept(declval<mutex&>().native_handle()));
+STATIC_ASSERT(noexcept(declval<recursive_mutex&>().native_handle()));
+STATIC_ASSERT(noexcept(declval<shared_mutex&>().native_handle()));
+STATIC_ASSERT(noexcept(declval<condition_variable&>().native_handle()));
+
+// Also test mandatory and strengthened exception specification for try_lock().
+STATIC_ASSERT(noexcept(declval<mutex&>().try_lock())); // strengthened
+STATIC_ASSERT(noexcept(declval<recursive_mutex&>().try_lock())); // N4928 [thread.mutex.recursive]
+STATIC_ASSERT(noexcept(declval<timed_mutex&>().try_lock())); // strengthened
+STATIC_ASSERT(noexcept(declval<recursive_timed_mutex&>().try_lock())); // N4928 [thread.timedmutex.recursive]
+STATIC_ASSERT(noexcept(declval<shared_mutex&>().try_lock())); // strengthened
 
 void join_and_clear(vector<thread>& threads) {
     for (auto& t : threads) {

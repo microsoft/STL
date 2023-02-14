@@ -85,6 +85,15 @@ std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
 # libc++ has not implemented P2505R5: "Monadic Functions for std::expected"
 std/language.support/support.limits/support.limits.general/expected.version.compile.pass.cpp FAIL
 
+# libc++ doesn't implement P2588R3 barrier's Phase Completion Guarantees
+std/language.support/support.limits/support.limits.general/barrier.version.compile.pass.cpp FAIL
+
+# libc++ doesn't implement P2711R1 Making Multi-Param Constructors Of Views explicit
+std/ranges/range.adaptors/range.drop.while/ctor.view.pass.cpp FAIL
+std/ranges/range.adaptors/range.filter/ctor.view_pred.pass.cpp FAIL
+std/ranges/range.adaptors/range.take.while/ctor.view.pass.cpp FAIL
+std/ranges/range.adaptors/range.transform/ctor.view_function.pass.cpp FAIL
+
 # Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
 std/language.support/support.limits/support.limits.general/algorithm.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/functional.version.compile.pass.cpp FAIL
@@ -664,6 +673,7 @@ std/time/time.syn/formatter.year_month_day_last.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
 
 # unused-variable warning
+std/thread/thread.mutex/thread.lock/thread.lock.scoped/mutex.pass.cpp FAIL
 std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/default.pass.cpp:1 FAIL
 
 
