@@ -132,7 +132,7 @@ namespace i128_udl_detail {
 } // namespace i128_udl_detail
 
 template <char... Chars>
-[[nodiscard]] CONSTEVAL _Unsigned128 operator"" _u128() noexcept {
+[[nodiscard]] CONSTEVAL _Unsigned128 operator""_u128() noexcept {
     constexpr auto parsed_result = i128_udl_detail::parse_u128<Chars...>::parse();
     static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::invalid,
         "Invalid characters in the integer literal");
@@ -142,7 +142,7 @@ template <char... Chars>
 }
 
 template <char... Chars>
-[[nodiscard]] CONSTEVAL _Signed128 operator"" _i128() noexcept {
+[[nodiscard]] CONSTEVAL _Signed128 operator""_i128() noexcept {
     constexpr auto parsed_result = i128_udl_detail::parse_u128<Chars...>::parse();
     static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::invalid,
         "Invalid characters in the integer literal");
