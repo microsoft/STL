@@ -602,7 +602,7 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
 
 // TRANSITION, VSO-1655299: use a helper function as a workaround
 template <class Category, test::Common IsCommon>
-_NODISCARD constexpr test::CanCompare test_range_can_compare() {
+[[nodiscard]] constexpr test::CanCompare test_range_can_compare() {
     return test::CanCompare{to_bool(IsCommon) || derived_from<Category, forward_iterator_tag>};
 }
 

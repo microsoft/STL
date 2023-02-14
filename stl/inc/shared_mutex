@@ -72,7 +72,7 @@ private:
     static constexpr _Read_cnt_t _Max_readers = static_cast<_Read_cnt_t>(-1);
 
 public:
-    shared_timed_mutex() noexcept /* strengthened */ {}
+    shared_timed_mutex() = default;
 
     shared_timed_mutex(const shared_timed_mutex&)            = delete;
     shared_timed_mutex& operator=(const shared_timed_mutex&) = delete;
@@ -238,7 +238,7 @@ public:
     _NODISCARD_CTOR_LOCK shared_lock(mutex_type& _Mtx, try_to_lock_t)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared()) {} // construct with mutex and try to lock shared
 
-    _NODISCARD_CTOR_LOCK shared_lock(mutex_type& _Mtx, adopt_lock_t)
+    _NODISCARD_CTOR_LOCK shared_lock(mutex_type& _Mtx, adopt_lock_t) noexcept // strengthened
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) {} // construct with mutex and adopt ownership
 
     template <class _Rep, class _Period>

@@ -58,7 +58,7 @@ namespace pmr {
         return _Unaligned_new_delete_resource();
     }
 
-    extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept {
+    extern "C" [[nodiscard]] _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept {
         class _Null_resource final : public _Identity_equal_resource {
             void* do_allocate(size_t, size_t) override { // Sorry, OOM!
                 _Xbad_alloc();
