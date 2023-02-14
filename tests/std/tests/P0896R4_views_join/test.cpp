@@ -502,6 +502,41 @@ void test_non_trivially_destructible_type() { // COMPILE-ONLY
     auto r2 = views::empty<Inner> | views::transform([](Inner& r) { return r; }) | views::join;
 }
 
+constexpr bool test_lwg3698() {
+    // LWG-3698 "regex_iterator and join_view don't work together very well"
+    struct stashing_iterator {
+        using difference_type = int;
+        using value_type      = span<const int>;
+
+        int x = 1;
+
+        constexpr stashing_iterator& operator++() {
+            ++x;
+            return *this;
+        }
+        constexpr void operator++(int) {
+            ++x;
+        }
+        constexpr value_type operator*() const {
+            return {&x, &x + 1};
+        }
+        constexpr bool operator==(default_sentinel_t) const {
+            return x > 3;
+        }
+    };
+
+    auto r   = ranges::subrange{stashing_iterator{}, default_sentinel} | views::join;
+    auto r2  = r;
+    auto it  = r.begin();
+    auto it2 = r2.begin();
+
+    auto itcopy = it;
+    it          = ++it2;
+    assert(*itcopy == 1);
+
+    return true;
+}
+
 int main() {
     // Validate views
     constexpr string_view expected = "Hello World!"sv;
@@ -594,4 +629,7 @@ int main() {
 
     STATIC_ASSERT(instantiation_test());
     instantiation_test();
+
+    STATIC_ASSERT(test_lwg3698());
+    assert(test_lwg3698());
 }

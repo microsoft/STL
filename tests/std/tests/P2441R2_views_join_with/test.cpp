@@ -560,6 +560,41 @@ void test_valueless_iterator() {
     }
 }
 
+constexpr bool test_lwg3698() {
+    // LWG-3698 "regex_iterator and join_view don't work together very well"
+    struct stashing_iterator {
+        using difference_type = int;
+        using value_type      = span<const int>;
+
+        int x = 1;
+
+        constexpr stashing_iterator& operator++() {
+            ++x;
+            return *this;
+        }
+        constexpr void operator++(int) {
+            ++x;
+        }
+        constexpr value_type operator*() const {
+            return {&x, &x + 1};
+        }
+        constexpr bool operator==(default_sentinel_t) const {
+            return x > 3;
+        }
+    };
+
+    auto r   = ranges::subrange{stashing_iterator{}, default_sentinel} | views::join_with(views::empty<int>);
+    auto r2  = r;
+    auto it  = r.begin();
+    auto it2 = r2.begin();
+
+    auto itcopy = it;
+    it          = ++it2;
+    assert(*itcopy == 1);
+
+    return true;
+}
+
 int main() {
     {
         auto filtered_and_joined =
@@ -571,4 +606,7 @@ int main() {
     instantiation_test();
 
     test_valueless_iterator();
+
+    STATIC_ASSERT(test_lwg3698());
+    assert(test_lwg3698());
 }
