@@ -21,13 +21,13 @@ typedef struct {
 
 void test_cpp() { // test C++ header
     static const STDx size_t offs[] = {offsetof(Str, f1), offsetof(Str, f2), offsetof(Str, f3)};
+    STDx ptrdiff_t pdiff            = &offs[2] - &offs[0];
     wchar_t wc                      = L'Z';
     Str x                           = {1, {2}, 3};
     char* ps                        = (char*) &x;
-    STDx ptrdiff_t pdiff            = &ps[INT_MAX] - &ps[0];
 
     CHECK_INT(sizeof(STDx size_t), sizeof(sizeof(char)));
-    CHECK_INT(pdiff, &ps[INT_MAX] - &ps[0]);
+    CHECK_INT(pdiff, &offs[2] - &offs[0]);
     CHECK_INT(wc, L'Z');
     CHECK(offs[0] < offs[1]);
     CHECK_INT((long) *(float*) (ps + offs[1]), 2);
