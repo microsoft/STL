@@ -1,0 +1,33 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+name: Assign New PR
+on:
+  pull_request_target:
+    types: [opened]
+    branch:
+      - main
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  initial-review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    name: Initial Review
+    steps:
+    - name: Assign the New Pull Request
+      uses: srggrs/assign-one-project-github-action@1.3.1
+      with:
+        project: 'https://github.com/microsoft/STL/projects/1'
+        column_name: 'Initial Review'
+  work-in-progress:
+    if: github.event.pull_request.draft == true
+    runs-on: ubuntu-latest
+    name: Work In Progress
+    steps:
+    - name: Assign the New Pull Request
+      uses: srggrs/assign-one-project-github-action@1.3.1
+      with:
+        project: 'https://github.com/microsoft/STL/projects/1'
+        column_name: 'Work In Progress'
