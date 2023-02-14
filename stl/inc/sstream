@@ -328,7 +328,6 @@ protected:
 
     pos_type seekoff(
         off_type _Off, ios_base::seekdir _Way, ios_base::openmode _Mode = ios_base::in | ios_base::out) override {
-
         if ((((_Mode & ios_base::in) == ios_base::in) && ((_Mystate & _Noread) == _Noread))
             || (((_Mode & ios_base::out) == ios_base::out) && ((_Mystate & _Constant) == _Constant))) {
             return -1;
