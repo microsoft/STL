@@ -664,6 +664,7 @@ std/time/time.syn/formatter.year_month_day_last.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
 
 # unused-variable warning
+std/thread/thread.mutex/thread.lock/thread.lock.scoped/mutex.pass.cpp FAIL
 std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/default.pass.cpp:1 FAIL
 
 
