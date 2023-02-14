@@ -138,6 +138,15 @@ ranges\range.access\rbegin.pass.cpp
 ranges\range.access\rend.pass.cpp
 ranges\range.access\size.pass.cpp
 
+# libc++ doesn't implement P2770R0 "Stashing stashing iterators for proper flattening"
+ranges\range.adaptors\range.join.view\end.pass.cpp
+ranges\range.adaptors\range.join.view\iterator\ctor.other.pass.cpp
+ranges\range.adaptors\range.join.view\iterator\ctor.parent.outer.pass.cpp
+ranges\range.adaptors\range.join.view\iterator\eq.pass.cpp
+ranges\range.adaptors\range.join.view\sentinel\eq.pass.cpp
+re\re.iter\re.regiter\iterator_concept_conformance.compile.pass.cpp
+re\re.iter\re.tokiter\iterator_concept_conformance.compile.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
