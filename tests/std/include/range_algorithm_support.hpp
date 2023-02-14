@@ -112,7 +112,7 @@ namespace test {
 
     enum class CanDifference : bool { no, yes };
     enum class CanCompare : bool { no, yes };
-    enum class ProxyRef { no, yes, prvalue };
+    enum class ProxyRef { no, yes, prvalue, xvalue };
     enum class WrappedState {
         wrapped,
         unwrapped,
@@ -402,7 +402,8 @@ namespace test {
         static constexpr bool at_least = derived_from<Category, T>;
 
         using ReferenceType = conditional_t<Proxy == ProxyRef::yes, proxy_reference<Category, Element>,
-            conditional_t<Proxy == ProxyRef::prvalue, std::remove_cv_t<Element>, Element&>>;
+            conditional_t<Proxy == ProxyRef::prvalue, std::remove_cv_t<Element>,
+                conditional_t<Proxy == ProxyRef::xvalue, Element&&, Element&>>>;
 
         struct post_increment_proxy {
             Element* ptr_;
@@ -444,7 +445,7 @@ namespace test {
         }
 
         [[nodiscard]] constexpr ReferenceType operator*() const noexcept {
-            return ReferenceType{*ptr_};
+            return static_cast<ReferenceType>(*ptr_);
         }
 
         template <WrappedState OtherWrapped>
