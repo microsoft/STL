@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <compare>
 #include <forward_list>
 #include <ranges>
 #include <span>
@@ -30,14 +29,14 @@ struct IteratorWithImmovableReference {
     ImmovableReference operator*() const; // not defined
     IteratorWithImmovableReference& operator++(); // not defined
     void operator++(int); // not defined
-
     bool operator==(default_sentinel_t) const; // not defined
 };
 
-using RangeWithImmovableReference = ranges::subrange<IteratorWithImmovableReference, default_sentinel_t>;
-
 static_assert(input_iterator<IteratorWithImmovableReference>);
+
+using RangeWithImmovableReference = ranges::subrange<IteratorWithImmovableReference, default_sentinel_t>;
 static_assert(ranges::input_range<RangeWithImmovableReference>);
+
 static_assert(!CanViewEnumerate<RangeWithImmovableReference>);
 
 template <ranges::input_range Rng, class Expected>
@@ -408,7 +407,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         [[maybe_unused]] same_as<const iterator_t<V>&> decltype(auto) i_base = as_const(i).base();
         STATIC_ASSERT(noexcept(i.base()));
+
         [[maybe_unused]] same_as<iterator_t<V>> decltype(auto) i_base2 = std::move(i).base();
+        STATIC_ASSERT(noexcept(std::move(i).base()) == is_nothrow_move_constructible_v<Rng>); // strengthened
     }
 
     if constexpr (CanMemberBegin<const R>) { // Validate enumerate_view::iterator<const>

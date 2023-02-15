@@ -5912,7 +5912,7 @@ namespace ranges {
         requires _Range_with_movable_references<_Vw>
     class enumerate_view : public view_interface<enumerate_view<_Vw>> {
     private:
-        /* [[no_unique_address]] */ _Vw _Range;
+        /* [[no_unique_address]] */ _Vw _Range{};
 
         template <bool _Const>
         class _Iterator {
@@ -6036,7 +6036,8 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _It, const difference_type _Off) noexcept(
-                noexcept(_STD declval<_Iterator&>() += _Off)) // strengthened
+                is_nothrow_copy_constructible_v<_Iterator>&& noexcept(
+                    _STD declval<_Iterator&>() += _Off)) // strengthened
                 requires random_access_range<_Base_t>
             {
                 auto _Tmp = _It;
@@ -6052,7 +6053,8 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off) noexcept(
-                noexcept(_STD declval<_Iterator&>() -= _Off)) // strengthened
+                is_nothrow_copy_constructible_v<_Iterator>&& noexcept(
+                    _STD declval<_Iterator&>() -= _Off)) // strengthened
                 requires random_access_range<_Base_t>
             {
                 auto _Tmp = _It;
@@ -6105,8 +6107,8 @@ namespace ranges {
                 requires _Const && convertible_to<sentinel_t<_Vw>, _Base_sentinel>
                 : _End(_STD move(_Other._End)) {}
 
-            _NODISCARD constexpr _Base_sentinel base() const noexcept( //
-                is_nothrow_copy_constructible_v<_Base_sentinel>) /* strengthened */ {
+            _NODISCARD constexpr _Base_sentinel base() const
+                noexcept(is_nothrow_copy_constructible_v<_Base_sentinel>) /* strengthened */ {
                 return _End;
             }
 
@@ -6220,10 +6222,10 @@ namespace ranges {
         public:
             template <viewable_range _Rng>
             _NODISCARD constexpr auto operator()(_Rng&& _Range) const
-                noexcept(noexcept(enumerate_view{_STD forward<_Rng>(_Range)}))
-                requires requires { enumerate_view{_STD forward<_Rng>(_Range)}; }
+                noexcept(noexcept(enumerate_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)}))
+                requires requires { enumerate_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)}; }
             {
-                return enumerate_view{_STD forward<_Rng>(_Range)};
+                return enumerate_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)};
             }
         };
 
