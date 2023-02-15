@@ -114,7 +114,7 @@ language.support\support.limits\support.limits.general\ranges.version.compile.pa
 # libc++ is missing various <format> DRs
 language.support\support.limits\support.limits.general\format.version.compile.pass.cpp
 
-# libc++ doesn't implement LWG-2381 (LLVM-60597)
+# libc++ doesn't implement LWG-2381
 localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_double.pass.cpp
 localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_float.pass.cpp
 
