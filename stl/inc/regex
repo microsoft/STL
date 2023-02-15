@@ -2382,7 +2382,9 @@ public:
     using pointer           = const value_type*;
     using reference         = const value_type&;
     using iterator_category = forward_iterator_tag;
-    using iterator_concept  = input_iterator_tag;
+#if _HAS_CXX20
+    using iterator_concept = input_iterator_tag;
+#endif // _HAS_CXX20
 
     regex_iterator() : _MyRe(nullptr) {} // construct end of sequence iterator
 
@@ -2519,7 +2521,9 @@ public:
     using pointer           = const value_type*;
     using reference         = const value_type&;
     using iterator_category = forward_iterator_tag;
-    using iterator_concept  = input_iterator_tag;
+#if _HAS_CXX20
+    using iterator_concept = input_iterator_tag;
+#endif // _HAS_CXX20
 
     regex_token_iterator() : _Res(nullptr) {} // construct end of sequence iterator
 
