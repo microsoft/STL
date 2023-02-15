@@ -49,6 +49,7 @@ public:
             // undefined behavior, only occurs for plain mutexes (N4928 [thread.mutex.requirements.mutex.general]/6)
             _STD _Throw_Cpp_error(_RESOURCE_DEADLOCK_WOULD_OCCUR);
         }
+
         if (_Ownership_levels() == INT_MAX) {
             // only occurs for recursive mutexes (N4928 [thread.mutex.recursive]/3)
             --_Ownership_levels();
@@ -63,11 +64,13 @@ public:
             // undefined behavior, only occurs for plain mutexes (N4928 [thread.mutex.requirements.mutex.general]/6)
             return false;
         }
+
         if (_Ownership_levels() == INT_MAX) {
             // only occurs for recursive mutexes (N4928 [thread.mutex.recursive]/3)
             --_Ownership_levels();
             return false;
         }
+
         return true;
     }
 
@@ -92,7 +95,7 @@ private:
     }
 
     int& _Ownership_levels() noexcept { // the count is denoted by an int subobject at the end of _Mtx_storage
-        return *reinterpret_cast<int*>(reinterpret_cast<unsigned char*>(&_Mtx_storage + 1) - sizeof(int));
+        return reinterpret_cast<int*>(&_Mtx_storage + 1)[-1];
     }
 };
 
