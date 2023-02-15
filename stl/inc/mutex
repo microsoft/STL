@@ -61,7 +61,7 @@ public:
 
     _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept /* strengthened */ {
         if (_Mtx_trylock(_Mymtx()) != _Thrd_success) {
-            // undefined behavior, only occurs for plain mutexes (N4928 [thread.mutex.requirements.mutex.general]/6)
+            // undefined behavior for plain mutexes (N4928 [thread.mutex.requirements.mutex.general]/6)
             return false;
         }
 
