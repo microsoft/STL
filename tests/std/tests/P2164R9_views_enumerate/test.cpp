@@ -329,6 +329,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
 
         same_as<iterator_t<R>> auto i = r.begin();
+        assert(i.index() == 0);
 
         { // Check comparisons
             assert(i == i);
@@ -356,6 +357,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             STATIC_ASSERT(is_void_v<decltype(i++)>);
         }
         assert(*++i == expected[2]);
+        assert(i.index() == 2);
 
         if constexpr (bidirectional_range<R>) {
             assert(*i-- == expected[2]);
@@ -424,6 +426,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         same_as<iterator_t<R>> auto i        = r.begin();
         same_as<iterator_t<const R>> auto ci = as_const(r).begin();
+        assert(ci.index() == 0);
 
         { // Check comparisons
             assert(ci == ci);
@@ -471,6 +474,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             STATIC_ASSERT(is_void_v<decltype(i++)>);
         }
         assert(*++ci == expected[2]);
+        assert(ci.index() == 2);
 
         if constexpr (bidirectional_range<const R>) {
             assert(*ci-- == expected[2]);
