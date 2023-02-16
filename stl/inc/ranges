@@ -6079,7 +6079,7 @@ namespace ranges {
                 return _Current == _Last;
             }
 
-            _NODISCARD constexpr range_difference_t<_Base_t> _Distance_from(const sentinel_t<_Vw>& _Last) const
+            _NODISCARD constexpr difference_type _Distance_from(const sentinel_t<_Vw>& _Last) const
                 noexcept(noexcept(_Last - _Current)) {
                 return _Last - _Current;
             }
@@ -6148,7 +6148,7 @@ namespace ranges {
 
     public:
         // clang-format off
-        constexpr  enumerate_view() requires default_initializable<_Vw> = default;
+        constexpr enumerate_view() requires default_initializable<_Vw> = default;
         // clang-format on
 
         constexpr explicit enumerate_view(_Vw _Range_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
