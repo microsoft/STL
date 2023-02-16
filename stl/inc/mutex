@@ -31,6 +31,34 @@ _STD_BEGIN
 _EXPORT_STD class condition_variable;
 _EXPORT_STD class condition_variable_any;
 
+struct _Mtx_internal_imp_mirror {
+#ifdef _CRT_WINDOWS
+#ifdef _WIN64
+    static constexpr size_t _Critical_section_size = 8;
+#else // _WIN64
+    static constexpr size_t _Critical_section_size = 4;
+#endif // _WIN64
+#else // _CRT_WINDOWS
+#ifdef _WIN64
+    static constexpr size_t _Critical_section_size = 56;
+#else // _WIN64
+    static constexpr size_t _Critical_section_size = 32;
+#endif // _WIN64
+#endif // _CRT_WINDOWS
+
+    int _Type;
+    const void* _Vptr;
+    union {
+        void* _Srw_lock_placeholder;
+        unsigned char _Padding[_Critical_section_size];
+    };
+    long _Thread_id;
+    int _Count;
+};
+
+static_assert(sizeof(_Mtx_internal_imp_mirror) == _Mtx_internal_imp_size, "inconsistent size for mutex");
+static_assert(alignof(_Mtx_internal_imp_mirror) == _Mtx_internal_imp_alignment, "inconsistent alignment for mutex");
+
 class _Mutex_base { // base class for all mutex types
 public:
     _Mutex_base(int _Flags = 0) noexcept {
@@ -50,9 +78,8 @@ public:
             _STD _Throw_Cpp_error(_RESOURCE_DEADLOCK_WOULD_OCCUR);
         }
 
-        if (_Ownership_levels() == INT_MAX) {
+        if (!_Verify_ownership_levels()) {
             // only occurs for recursive mutexes (N4928 [thread.mutex.recursive]/3)
-            --_Ownership_levels();
             // POSIX specifies EAGAIN in the corresponding situation:
             // https://pubs.opengroup.org/onlinepubs/9699919799/functions/pthread_mutex_lock.html
             _STD _Throw_Cpp_error(_RESOURCE_UNAVAILABLE_TRY_AGAIN);
@@ -60,18 +87,8 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept /* strengthened */ {
-        if (_Mtx_trylock(_Mymtx()) != _Thrd_success) {
-            // undefined behavior for plain mutexes (N4928 [thread.mutex.requirements.mutex.general]/6)
-            return false;
-        }
-
-        if (_Ownership_levels() == INT_MAX) {
-            // only occurs for recursive mutexes (N4928 [thread.mutex.recursive]/3)
-            --_Ownership_levels();
-            return false;
-        }
-
-        return true;
+        // false may be from undefined behavior for plain mutexes (N4928 [thread.mutex.requirements.mutex.general]/6)
+        return _Mtx_trylock(_Mymtx()) == _Thrd_success;
     }
 
     void unlock() noexcept /* strengthened */ {
@@ -84,20 +101,33 @@ public:
         return _Mtx_getconcrtcs(_Mymtx());
     }
 
+protected:
+    _NODISCARD_TRY_CHANGE_STATE bool _Verify_ownership_levels() noexcept {
+        if (_Mtx_storage_mirror._Count == INT_MAX) {
+            // only occurs for recursive mutexes (N4928 [thread.mutex.recursive]/3)
+            --_Mtx_storage_mirror._Count;
+            return false;
+        }
+
+        return true;
+    }
+
 private:
     friend condition_variable;
     friend condition_variable_any;
 
-    _Aligned_storage_t<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment> _Mtx_storage;
+    union {
+        _Aligned_storage_t<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment> _Mtx_storage;
+        _Mtx_internal_imp_mirror _Mtx_storage_mirror;
+    };
 
     _Mtx_t _Mymtx() noexcept { // get pointer to _Mtx_internal_imp_t inside _Mtx_storage
         return reinterpret_cast<_Mtx_t>(&_Mtx_storage);
     }
-
-    int& _Ownership_levels() noexcept { // the count is denoted by an int subobject at the end of _Mtx_storage
-        return reinterpret_cast<int*>(&_Mtx_storage + 1)[-1];
-    }
 };
+
+static_assert(sizeof(_Mutex_base) == _Mtx_internal_imp_size, "inconsistent size for mutex");
+static_assert(alignof(_Mutex_base) == _Mtx_internal_imp_alignment, "inconsistent alignment for mutex");
 
 _EXPORT_STD class mutex : public _Mutex_base { // class for mutual exclusion
 public:
@@ -114,7 +144,7 @@ public:
         : _Mutex_base(_Mtx_recursive) {}
 
     _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept {
-        return _Mutex_base::try_lock();
+        return _Mutex_base::try_lock() && _Verify_ownership_levels();
     }
 
     recursive_mutex(const recursive_mutex&)            = delete;
