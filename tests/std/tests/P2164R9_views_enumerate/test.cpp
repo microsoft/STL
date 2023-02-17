@@ -33,12 +33,12 @@ struct IteratorWithImmovableReference {
     bool operator==(default_sentinel_t) const; // not defined
 };
 
-static_assert(input_iterator<IteratorWithImmovableReference>);
+STATIC_ASSERT(input_iterator<IteratorWithImmovableReference>);
 
 using RangeWithImmovableReference = ranges::subrange<IteratorWithImmovableReference, default_sentinel_t>;
-static_assert(ranges::input_range<RangeWithImmovableReference>);
+STATIC_ASSERT(ranges::input_range<RangeWithImmovableReference>);
 
-static_assert(!CanViewEnumerate<RangeWithImmovableReference>);
+STATIC_ASSERT(!CanViewEnumerate<RangeWithImmovableReference>);
 
 template <ranges::input_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
@@ -406,7 +406,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         using IterMoveResult = tuple<range_difference_t<const Rng>, range_rvalue_reference_t<const Rng>>;
         [[maybe_unused]] same_as<IterMoveResult> decltype(auto) moved = ranges::iter_move(i);
-        static_assert(noexcept(ranges::iter_move(i))
+        STATIC_ASSERT(noexcept(ranges::iter_move(i))
                       == (noexcept(ranges::iter_move(i.base()))
                           && is_nothrow_move_constructible_v<range_rvalue_reference_t<const Rng>>) );
 
@@ -526,7 +526,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         using IterMoveResult = tuple<range_difference_t<const Rng>, range_rvalue_reference_t<const Rng>>;
         [[maybe_unused]] same_as<IterMoveResult> decltype(auto) moved = ranges::iter_move(ci);
-        static_assert(noexcept(ranges::iter_move(ci))
+        STATIC_ASSERT(noexcept(ranges::iter_move(ci))
                       == (noexcept(ranges::iter_move(ci.base()))
                           && is_nothrow_move_constructible_v<range_rvalue_reference_t<const Rng>>) );
 
