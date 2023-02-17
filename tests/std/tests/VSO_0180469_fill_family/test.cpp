@@ -53,6 +53,19 @@ void test_case_fill(CharT value, Func fillCall) {
 }
 
 template <typename BuffT, typename CharT>
+void test_fill_unqual() {
+    const CharT testCases[] = {cast<CharT>(-100), cast<CharT>(-1), cast<CharT>(0), cast<CharT>(1), cast<CharT>(100)};
+
+    for (CharT testCase : testCases) {
+        test_case_fill<BuffT>(testCase,
+            [](BuffT* buff, CharT value, size_t start, size_t end) { fill(buff + start, buff + end, value); });
+
+        test_case_fill<BuffT>(testCase,
+            [](BuffT* buff, CharT value, size_t start, size_t end) { fill_n(buff + start, end - start, value); });
+    }
+}
+
+template <typename BuffT, typename CharT>
 void test_fill() {
     const CharT testCases[] = {cast<CharT>(-100), cast<CharT>(-1), cast<CharT>(0), cast<CharT>(1), cast<CharT>(100)};
 
@@ -63,15 +76,13 @@ void test_fill() {
         test_case_fill<BuffT>(testCase,
             [](BuffT* buff, CharT value, size_t start, size_t end) { fill_n(buff + start, end - start, value); });
 
-        if constexpr (!is_const_v<BuffT> && !is_volatile_v<BuffT>) {
-            test_case_fill<BuffT>(testCase, [](BuffT* buff, CharT value, size_t start, size_t end) {
-                uninitialized_fill(buff + start, buff + end, value);
-            });
+        test_case_fill<BuffT>(testCase, [](BuffT* buff, CharT value, size_t start, size_t end) {
+            uninitialized_fill(buff + start, buff + end, value);
+        });
 
-            test_case_fill<BuffT>(testCase, [](BuffT* buff, CharT value, size_t start, size_t end) {
-                uninitialized_fill_n(buff + start, end - start, value);
-            });
-        }
+        test_case_fill<BuffT>(testCase, [](BuffT* buff, CharT value, size_t start, size_t end) {
+            uninitialized_fill_n(buff + start, end - start, value);
+        });
     }
 }
 
@@ -136,9 +147,9 @@ int main() {
     test_fill<int, char>();
     test_fill<char, int>();
 
-    test_fill<volatile char, char>(); // Test GH-1183
+    test_fill_unqual<volatile char, char>(); // Test GH-1183
 #ifdef __cpp_lib_byte
-    test_fill<volatile byte, byte>(); // Test GH-1556
+    test_fill_unqual<volatile byte, byte>(); // Test GH-1556
 #endif // __cpp_lib_byte
 
     test_uninitialized_fill(
