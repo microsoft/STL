@@ -2872,6 +2872,15 @@ _NODISCARD_SMART_PTR_ALLOC
 }
 
 #if _HAS_CXX20
+template <class _PtrTy>
+_NODISCARD void* _Voidify_unfancy(_PtrTy _Ptr) noexcept {
+    if constexpr (is_pointer_v<_PtrTy>) {
+        return static_cast<void*>(_Ptr);
+    } else {
+        return static_cast<void*>(_STD addressof(*_Ptr));
+    }
+}
+
 template <class _Alloc>
 struct _Allocate_n_ptr {
     _Alloc& _Al;
@@ -2930,10 +2939,10 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>>
     _Alblock _Rebound(_Al);
     _Alloc_construct_ptr _Constructor{_Rebound};
     _Constructor._Allocate();
-    ::new (_Voidify_iter(_Constructor._Ptr)) _Refc(_Al);
+    ::new (_STD _Voidify_unfancy(_Constructor._Ptr)) _Refc(_Al);
     shared_ptr<_Ty> _Ret;
     const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
-    _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+    _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _STD _Unfancy(_Constructor._Release()));
     return _Ret;
 }
 
@@ -2946,10 +2955,10 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>>
     _Alblock _Rebound(_Al);
     _Alloc_construct_ptr _Constructor{_Rebound};
     _Constructor._Allocate();
-    ::new (_Voidify_iter(_Constructor._Ptr)) _Refc(_Al, _Val);
+    ::new (_STD _Voidify_unfancy(_Constructor._Ptr)) _Refc(_Al, _Val);
     shared_ptr<_Ty> _Ret;
     const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
-    _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+    _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _STD _Unfancy(_Constructor._Release()));
     return _Ret;
 }
 
@@ -2964,9 +2973,9 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_T
         _Alblock _Rebound(_Al);
         _Alloc_construct_ptr _Constructor{_Rebound};
         _Constructor._Allocate();
-        ::new (_Voidify_iter(_Constructor._Ptr)) _Refc(_Al, _For_overwrite_tag{});
+        ::new (_STD _Voidify_unfancy(_Constructor._Ptr)) _Refc(_Al, _For_overwrite_tag{});
         const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
-        _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+        _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _STD _Unfancy(_Constructor._Release()));
     } else {
         // make a shared_ptr to non-array object
         using _Refoa   = _Ref_count_obj_alloc3<remove_cv_t<_Ty>, _Alloc>;
@@ -2974,9 +2983,9 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_T
         _Alblock _Rebound(_Al);
         _Alloc_construct_ptr<_Alblock> _Constructor{_Rebound};
         _Constructor._Allocate();
-        _Construct_in_place(*_Constructor._Ptr, _Al, _For_overwrite_tag{});
+        _STD _Construct_in_place(*_Constructor._Ptr, _Al, _For_overwrite_tag{});
         const auto _Ptr = reinterpret_cast<_Ty*>(_STD addressof(_Constructor._Ptr->_Storage._Value));
-        _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+        _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _STD _Unfancy(_Constructor._Release()));
     }
 
     return _Ret;
