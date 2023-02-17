@@ -72,17 +72,19 @@ constexpr bool destroy_at_noexcept() {
 #endif // __cpp_lib_concepts
 
 static_assert(can_construct_at<int>);
-static_assert(can_construct_at<const int>);
-static_assert(can_construct_at<volatile int>);
-static_assert(can_construct_at<const volatile int>);
 static_assert(can_construct_at<int, int>);
-static_assert(can_construct_at<const int, int>);
-static_assert(can_construct_at<volatile int, int>);
-static_assert(can_construct_at<const volatile int, int>);
 static_assert(can_construct_at<int, int&>);
-static_assert(can_construct_at<const int, int&>);
-static_assert(can_construct_at<volatile int, int&>);
-static_assert(can_construct_at<const volatile int, int&>);
+#if 0 // TRANSITION, construct_at is underconstrained for cv T*
+static_assert(!can_construct_at<const int>);
+static_assert(!can_construct_at<const int, int>);
+static_assert(!can_construct_at<const int, int&>);
+static_assert(!can_construct_at<volatile int>);
+static_assert(!can_construct_at<volatile int, int>);
+static_assert(!can_construct_at<volatile int, int&>);
+static_assert(!can_construct_at<const volatile int>);
+static_assert(!can_construct_at<const volatile int, int>);
+static_assert(!can_construct_at<const volatile int, int&>);
+#endif // 0
 
 struct X {};
 
@@ -100,9 +102,11 @@ private:
 };
 
 static_assert(can_construct_at<indestructible>);
-static_assert(can_construct_at<const indestructible>);
-static_assert(can_construct_at<volatile indestructible>);
-static_assert(can_construct_at<const volatile indestructible>);
+#if 0 // TRANSITION, construct_at is underconstrained for cv T*
+static_assert(!can_construct_at<const indestructible>);
+static_assert(!can_construct_at<volatile indestructible>);
+static_assert(!can_construct_at<const volatile indestructible>);
+#endif // 0
 
 static_assert(can_construct_at<X>);
 static_assert(can_construct_at<X, X>);
@@ -118,9 +122,11 @@ static_assert(!can_construct_at<string, X>);
 // The following static_asserts test our strengthening of noexcept
 
 static_assert(construct_at_noexcept<int, int>());
-static_assert(construct_at_noexcept<const int, int>());
-static_assert(construct_at_noexcept<volatile int, int>());
-static_assert(construct_at_noexcept<const volatile int, int>());
+#if 0 // TRANSITION, construct_at is underconstrained for cv T*
+static_assert(!construct_at_noexcept<const int, int>());
+static_assert(!construct_at_noexcept<volatile int, int>());
+static_assert(!construct_at_noexcept<const volatile int, int>());
+#endif // 0
 
 static_assert(!construct_at_noexcept<string, const char (&)[6]>());
 static_assert(!construct_at_noexcept<const string, const char (&)[6]>());
@@ -195,21 +201,20 @@ void test_array(const T& val) {
     (void) val;
 
     alignas(T) unsigned char storage[sizeof(T) * N];
-    using U        = conditional_t<is_scalar_v<T>, const volatile T, T>;
-    const auto ptr = reinterpret_cast<U*>(storage);
+    const auto ptr = reinterpret_cast<T*>(storage);
 
     for (auto i = 0; i < N; ++i) {
         construct_at(ptr + i, val);
     }
 
-    destroy_at(reinterpret_cast<U(*)[N]>(ptr));
+    destroy_at(reinterpret_cast<T(*)[N]>(ptr));
 
 #ifdef __cpp_lib_concepts
     for (auto i = 0; i < N; ++i) {
         ranges::construct_at(ptr + i, val);
     }
 
-    ranges::destroy_at(reinterpret_cast<U(*)[N]>(ptr));
+    ranges::destroy_at(reinterpret_cast<T(*)[N]>(ptr));
 #endif // __cpp_lib_concepts
 }
 

@@ -15,6 +15,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 using namespace std;
@@ -62,13 +63,15 @@ void test_fill() {
         test_case_fill<BuffT>(testCase,
             [](BuffT* buff, CharT value, size_t start, size_t end) { fill_n(buff + start, end - start, value); });
 
-        test_case_fill<BuffT>(testCase, [](BuffT* buff, CharT value, size_t start, size_t end) {
-            uninitialized_fill(buff + start, buff + end, value);
-        });
+        if constexpr (!is_const_v<BuffT> && !is_volatile_v<BuffT>) {
+            test_case_fill<BuffT>(testCase, [](BuffT* buff, CharT value, size_t start, size_t end) {
+                uninitialized_fill(buff + start, buff + end, value);
+            });
 
-        test_case_fill<BuffT>(testCase, [](BuffT* buff, CharT value, size_t start, size_t end) {
-            uninitialized_fill_n(buff + start, end - start, value);
-        });
+            test_case_fill<BuffT>(testCase, [](BuffT* buff, CharT value, size_t start, size_t end) {
+                uninitialized_fill_n(buff + start, end - start, value);
+            });
+        }
     }
 }
 
