@@ -81,6 +81,10 @@ utilities\utility\mem.res\mem.res.pool\mem.res.pool.mem\unsync_deallocate_matche
 
 # Too many constexpr operations
 utilities\charconv\charconv.to.chars\integral.pass.cpp
+utilities\template.bitset\bitset.members\left_shift_eq.pass.cpp
+utilities\template.bitset\bitset.members\op_and_eq.pass.cpp
+utilities\template.bitset\bitset.members\op_or_eq.pass.cpp
+utilities\template.bitset\bitset.members\right_shift_eq.pass.cpp
 
 # libc++ has not implemented P2505R5: "Monadic Functions for std::expected"
 language.support\support.limits\support.limits.general\expected.version.compile.pass.cpp
@@ -126,7 +130,7 @@ strings\string.view\string.view.cons\from_string2.compile.fail.cpp
 utilities\memory\specialized.algorithms\uninitialized.construct.default\ranges_uninitialized_default_construct.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.construct.default\ranges_uninitialized_default_construct_n.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.construct.value\ranges_uninitialized_value_construct.pass.cpp
-utilities\memory\specialized.algorithms\uninitialized.construct.value\ranges_uninitialized_value_construct.pass_n.pass.cpp
+utilities\memory\specialized.algorithms\uninitialized.construct.value\ranges_uninitialized_value_construct_n.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy_n.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.fill\ranges_uninitialized_fill.pass.cpp
@@ -918,13 +922,6 @@ localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.memb
 
 # Not analyzed. These tests use characters that cannot be represented in legacy character encodings
 utilities\format\format.functions\ascii.pass.cpp
-
-# Not analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
-utilities\template.bitset\bitset.members\left_shift_eq.pass.cpp
-utilities\template.bitset\bitset.members\op_and_eq.pass.cpp
-utilities\template.bitset\bitset.members\op_or_eq.pass.cpp
-utilities\template.bitset\bitset.members\right_shift_eq.pass.cpp
-utilities\template.bitset\bitset.members\to_string.pass.cpp
 
 # Not analyzed
 algorithms\alg.modifying.operations\alg.random.sample\ranges_sample.pass.cpp
