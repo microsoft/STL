@@ -565,7 +565,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(noexcept(as_const(ci).base()));
 
         [[maybe_unused]] same_as<iterator_t<const V>> decltype(auto) ci_base2 = move(ci).base();
-        STATIC_ASSERT(noexcept(move(i).base()) == is_nothrow_move_constructible_v<iterator_t<Rng>>);
+        STATIC_ASSERT(noexcept(move(ci).base()) == is_nothrow_move_constructible_v<iterator_t<Rng>>);
     }
 
     // Validate enumerate_view::base() const&
