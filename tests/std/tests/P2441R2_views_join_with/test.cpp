@@ -592,6 +592,27 @@ constexpr bool test_lwg3698() {
     it          = ++it2;
     assert(*itcopy == 1);
 
+    struct intricate_range {
+        constexpr stashing_iterator begin() {
+            return {};
+        }
+        constexpr default_sentinel_t end() {
+            return {};
+        }
+        constexpr const span<const int>* begin() const {
+            return ranges::begin(intervals);
+        }
+        constexpr const span<const int>* end() const {
+            return ranges::end(intervals);
+        }
+    };
+
+    auto jv  = intricate_range{} | views::join_with(-1);
+    auto cit = as_const(jv).begin();
+    assert(*++cit == 1);
+    assert(*--cit == 0);
+    assert(ranges::equal(as_const(jv), expected_ints));
+
     return true;
 }
 
