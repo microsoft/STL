@@ -198,6 +198,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         const same_as<sentinel_t<R>> auto s = r.end();
         assert((r.begin() == s) == is_empty);
 
+        if constexpr (sentinel_for<sentinel_t<R>, iterator_t<const R>>) {
+            assert((as_const(r).begin() == s) == is_empty);
+        }
+
         STATIC_ASSERT(common_range<R> == (common_range<V> && sized_range<V>) );
         if constexpr (common_range<V> && sized_range<V> && bidirectional_range<V>) {
             if (!is_empty) {
@@ -218,6 +222,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     if constexpr (CanMemberEnd<const R>) {
         const same_as<sentinel_t<const R>> auto cs = as_const(r).end();
         assert((as_const(r).begin() == cs) == is_empty);
+
+        if constexpr (sentinel_for<sentinel_t<const R>, iterator_t<R>>) {
+            assert((r.begin() == cs) == is_empty);
+        }
 
         STATIC_ASSERT(common_range<const R> == (common_range<const V> && sized_range<const V>) );
         if constexpr (common_range<const V> && sized_range<const V> && bidirectional_range<const V>) {
@@ -404,6 +412,18 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert(diff4 == size);
         }
 
+        if constexpr (sized_sentinel_for<sentinel_t<const V>, iterator_t<V>>) {
+            const auto i2   = r.begin();
+            const auto csen = as_const(r).end();
+            const auto size = ranges::ssize(expected);
+
+            const same_as<range_difference_t<V>> auto diff3 = i2 - csen;
+            assert(diff3 == -size);
+
+            const same_as<range_difference_t<V>> auto diff4 = csen - i2;
+            assert(diff4 == size);
+        }
+
         using IterMoveResult = tuple<range_difference_t<const Rng>, range_rvalue_reference_t<const Rng>>;
         [[maybe_unused]] same_as<IterMoveResult> decltype(auto) moved = ranges::iter_move(i);
         STATIC_ASSERT(noexcept(ranges::iter_move(i))
@@ -512,15 +532,27 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert(diff2 == -2);
         }
 
-        if constexpr (sized_sentinel_for<sentinel_t<const V>, iterator_t<const V>>) {
+        if constexpr (sized_sentinel_for<sentinel_t<V>, iterator_t<const V>>) {
             const auto ci2  = as_const(r).begin();
-            const auto sen  = as_const(r).end();
+            const auto sen  = r.end();
             const auto size = ranges::ssize(expected);
 
             const same_as<range_difference_t<const V>> auto diff3 = ci2 - sen;
             assert(diff3 == -size);
 
             const same_as<range_difference_t<const V>> auto diff4 = sen - ci2;
+            assert(diff4 == size);
+        }
+
+        if constexpr (sized_sentinel_for<sentinel_t<const V>, iterator_t<const V>>) {
+            const auto ci2  = as_const(r).begin();
+            const auto csen = as_const(r).end();
+            const auto size = ranges::ssize(expected);
+
+            const same_as<range_difference_t<const V>> auto diff3 = ci2 - csen;
+            assert(diff3 == -size);
+
+            const same_as<range_difference_t<const V>> auto diff4 = csen - ci2;
             assert(diff4 == size);
         }
 
