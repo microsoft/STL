@@ -179,20 +179,6 @@ void test_runtime(const Ty& val) {
     assert(*asPtrTy == val);
     ranges::destroy_at(asPtrTy);
 #endif // __cpp_lib_concepts
-
-    // test voidify:
-    const auto asCv = static_cast<const volatile Ty*>(asPtrTy);
-    memset(storage, 42, sizeof(Ty));
-    assert(asPtrTy == construct_at(asCv, val));
-    assert(const_cast<const Ty&>(*asCv) == val);
-    destroy_at(asCv);
-
-#ifdef __cpp_lib_concepts
-    memset(storage, 42, sizeof(Ty));
-    assert(asPtrTy == ranges::construct_at(asCv, val));
-    assert(const_cast<const Ty&>(*asCv) == val);
-    ranges::destroy_at(asCv);
-#endif // __cpp_lib_concepts
 }
 
 template <class T>
