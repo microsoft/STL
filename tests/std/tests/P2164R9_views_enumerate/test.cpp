@@ -96,11 +96,11 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         using RS                   = enumerate_view<views::all_t<remove_reference_t<Rng>>>;
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
 
-        STATIC_ASSERT(same_as<decltype(views::enumerate(std::move(rng))), RS>);
-        STATIC_ASSERT(noexcept(views::enumerate(std::move(rng))) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::enumerate(move(rng))), RS>);
+        STATIC_ASSERT(noexcept(views::enumerate(move(rng))) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(std::move(rng) | views::enumerate), RS>);
-        STATIC_ASSERT(noexcept(std::move(rng) | views::enumerate) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(rng) | views::enumerate), RS>);
+        STATIC_ASSERT(noexcept(move(rng) | views::enumerate) == is_noexcept);
     }
 
     // ... with const rvalue argument
@@ -108,15 +108,15 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     if constexpr (CanViewEnumerate<const remove_reference_t<Rng>>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
-        STATIC_ASSERT(same_as<decltype(views::enumerate(std::move(as_const(rng)))), R>);
-        STATIC_ASSERT(noexcept(views::enumerate(std::move(as_const(rng)))) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::enumerate(move(as_const(rng)))), R>);
+        STATIC_ASSERT(noexcept(views::enumerate(move(as_const(rng)))) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(std::move(as_const(rng)) | views::enumerate), R>);
-        STATIC_ASSERT(noexcept(std::move(as_const(rng)) | views::enumerate) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | views::enumerate), R>);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | views::enumerate) == is_noexcept);
     }
 
     // Validate deduction guide
-    same_as<R> auto r = enumerate_view{std::forward<Rng>(rng)};
+    same_as<R> auto r = enumerate_view{forward<Rng>(rng)};
 
     // Validate enumerate_view::size
     STATIC_ASSERT(CanMemberSize<R> == sized_range<V>);
@@ -433,9 +433,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         [[maybe_unused]] same_as<const iterator_t<V>&> decltype(auto) i_base = as_const(i).base();
         STATIC_ASSERT(noexcept(as_const(i).base()));
 
-        [[maybe_unused]] same_as<iterator_t<V>> decltype(auto) i_base2 = std::move(i).base();
-        STATIC_ASSERT(
-            noexcept(std::move(i).base()) == is_nothrow_move_constructible_v<iterator_t<Rng>>); // strengthened
+        [[maybe_unused]] same_as<iterator_t<V>> decltype(auto) i_base2 = move(i).base();
+        STATIC_ASSERT(noexcept(move(i).base()) == is_nothrow_move_constructible_v<iterator_t<Rng>>); // strengthened
     }
 
     if constexpr (CanMemberBegin<const R>) { // Validate enumerate_view::iterator<const>
@@ -565,8 +564,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         [[maybe_unused]] same_as<const iterator_t<const V>&> decltype(auto) ci_base = as_const(ci).base();
         STATIC_ASSERT(noexcept(as_const(ci).base()));
 
-        [[maybe_unused]] same_as<iterator_t<const V>> decltype(auto) ci_base2 = std::move(ci).base();
-        STATIC_ASSERT(noexcept(std::move(i).base()) == is_nothrow_move_constructible_v<iterator_t<Rng>>);
+        [[maybe_unused]] same_as<iterator_t<const V>> decltype(auto) ci_base2 = move(ci).base();
+        STATIC_ASSERT(noexcept(move(i).base()) == is_nothrow_move_constructible_v<iterator_t<Rng>>);
     }
 
     // Validate enumerate_view::base() const&
@@ -578,8 +577,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate enumerate_view::base() &&
-    [[maybe_unused]] same_as<V> auto b2 = std::move(r).base();
-    STATIC_ASSERT(noexcept(std::move(r).base()) == is_nothrow_move_constructible_v<V>); // strengthened
+    [[maybe_unused]] same_as<V> auto b2 = move(r).base();
+    STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>); // strengthened
     assert(*b2.begin() == get<1>(*begin(expected)));
 
     return true;
