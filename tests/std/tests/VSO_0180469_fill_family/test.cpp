@@ -53,7 +53,7 @@ void test_case_fill(CharT value, Func fillCall) {
 }
 
 template <typename BuffT, typename CharT>
-void test_fill_unqual() {
+void test_fill_volatile() {
     const CharT testCases[] = {cast<CharT>(-100), cast<CharT>(-1), cast<CharT>(0), cast<CharT>(1), cast<CharT>(100)};
 
     for (CharT testCase : testCases) {
@@ -147,9 +147,9 @@ int main() {
     test_fill<int, char>();
     test_fill<char, int>();
 
-    test_fill_unqual<volatile char, char>(); // Test GH-1183
+    test_fill_volatile<volatile char, char>(); // Test GH-1183
 #ifdef __cpp_lib_byte
-    test_fill_unqual<volatile byte, byte>(); // Test GH-1556
+    test_fill_volatile<volatile byte, byte>(); // Test GH-1556
 #endif // __cpp_lib_byte
 
     test_uninitialized_fill(

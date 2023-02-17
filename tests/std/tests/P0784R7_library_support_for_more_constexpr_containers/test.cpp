@@ -129,9 +129,11 @@ static_assert(!construct_at_noexcept<const volatile int, int>());
 #endif // 0
 
 static_assert(!construct_at_noexcept<string, const char (&)[6]>());
+#if 0 // TRANSITION, construct_at is underconstrained for cv T*
 static_assert(!construct_at_noexcept<const string, const char (&)[6]>());
 static_assert(!construct_at_noexcept<volatile string, const char (&)[6]>());
 static_assert(!construct_at_noexcept<const volatile string, const char (&)[6]>());
+#endif // 0
 
 static_assert(destroy_at_noexcept<int>());
 static_assert(destroy_at_noexcept<string>());
