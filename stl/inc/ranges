@@ -3609,7 +3609,7 @@ namespace ranges {
             : public _Category_base<_Maybe_const<_Const, _Vw>, _InnerRng<_Const>, is_reference_v<_InnerRng<_Const>>> {};
 
         template <bool _Const>
-            requires forward_range<_Vw>
+            requires forward_range<_Maybe_const<_Const, _Vw>>
         class _Iterator_base<_Const>
             : public _Category_base<_Maybe_const<_Const, _Vw>, _InnerRng<_Const>, is_reference_v<_InnerRng<_Const>>> {
         protected:
@@ -3840,10 +3840,7 @@ namespace ranges {
         template <bool _Const>
         class _Sentinel {
         private:
-            template <bool>
-            friend class _Iterator;
-            template <bool>
-            friend class _Sentinel;
+            friend join_view;
 
             using _Parent_t = _Maybe_const<_Const, join_view>;
             using _Base     = _Maybe_const<_Const, _Vw>;
@@ -4056,7 +4053,7 @@ namespace ranges {
         class _Iterator_base : public _Category_base<_Const> {};
 
         template <bool _Const>
-            requires forward_range<_Vw>
+            requires forward_range<_Maybe_const<_Const, _Vw>>
         class _Iterator_base<_Const> : public _Category_base<_Const> {
         protected:
             using _OuterIter = iterator_t<_Maybe_const<_Const, _Vw>>;
@@ -4096,7 +4093,7 @@ namespace ranges {
                 }
             }
 
-            constexpr _Iterator(_Parent_t& _Parent_)
+            constexpr explicit _Iterator(_Parent_t& _Parent_)
                 requires (!forward_range<_Base>)
                 : _Parent{_STD addressof(_Parent_)} {
                 if (*_Parent->_Outer_it != _RANGES end(_Parent->_Range)) {
@@ -4163,8 +4160,9 @@ namespace ranges {
                             break;
                         }
 
-                        ++_Get_outer();
-                        if (_Get_outer() == _RANGES end(_Parent->_Range)) {
+                        auto& _Outer_it = _Get_outer();
+                        ++_Outer_it;
+                        if (_Outer_it == _RANGES end(_Parent->_Range)) {
                             if constexpr (_Deref_is_glvalue) {
                                 _Inner_it._Emplace_first();
                             }
