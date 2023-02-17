@@ -5915,8 +5915,13 @@ namespace ranges {
         /* [[no_unique_address]] */ _Vw _Range{};
 
         template <bool _Const>
+        class _Sentinel;
+
+        template <bool _Const>
         class _Iterator {
         private:
+            template <bool>
+            friend class _Sentinel;
             friend enumerate_view;
 
             using _Base_t         = _Maybe_const<_Const, _Vw>;
@@ -6073,16 +6078,6 @@ namespace ranges {
                 return tuple<difference_type, range_rvalue_reference_t<_Base_t>>{
                     _It._Pos, _RANGES iter_move(_It._Current)};
             }
-
-            _NODISCARD constexpr bool _Equal(const sentinel_t<_Vw>& _Last) const
-                noexcept(noexcept(_Fake_copy_init<bool>(_Current == _Last))) {
-                return _Current == _Last;
-            }
-
-            _NODISCARD constexpr difference_type _Distance_from(const sentinel_t<_Vw>& _Last) const
-                noexcept(noexcept(_Last - _Current)) {
-                return _Last - _Current;
-            }
         };
 
         template <bool _Const>
@@ -6098,6 +6093,20 @@ namespace ranges {
             constexpr explicit _Sentinel(_Base_sentinel _End_) noexcept(
                 is_nothrow_move_constructible_v<_Base_sentinel>) // strengthened
                 : _End(_STD move(_End_)) {}
+
+            template <bool _OtherConst>
+                requires sentinel_for<_Base_sentinel, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
+            _NODISCARD constexpr bool _Equal(const _Iterator<_OtherConst>& _It) const
+                noexcept(noexcept(_Fake_copy_init<bool>(_It._Current == _End))) {
+                return _It._Current == _End;
+            }
+
+            template <bool _OtherConst>
+                requires sized_sentinel_for<_Base_sentinel, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
+            _NODISCARD constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> _Distance_from(
+                const _Iterator<_OtherConst>& _It) const noexcept(noexcept(_End - _It._Current)) {
+                return _End - _It._Current;
+            }
 
         public:
             _Sentinel() = default;
@@ -6115,24 +6124,24 @@ namespace ranges {
             template <bool _OtherConst>
                 requires sentinel_for<_Base_sentinel, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_OtherConst>& _It, const _Sentinel& _Se) //
-                noexcept(noexcept(_It._Equal(_Se._End))) /* strengthened */ {
-                return _It._Equal(_Se._End);
+                noexcept(noexcept(_Se._Equal(_It))) /* strengthened */ {
+                return _Se._Equal(_It);
             }
 
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Base_sentinel, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
             _NODISCARD_FRIEND constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
                 const _Iterator<_OtherConst>& _It, const _Sentinel& _Se) //
-                noexcept(noexcept(_It._Distance_from(_Se._End))) /* strengthened */ {
-                return -_It._Distance_from(_Se._End);
+                noexcept(noexcept(_Se._Distance_from(_It))) /* strengthened */ {
+                return -_Se._Distance_from(_It);
             }
 
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Base_sentinel, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
             _NODISCARD_FRIEND constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
                 const _Sentinel& _Se, const _Iterator<_OtherConst>& _It) //
-                noexcept(noexcept(_It._Distance_from(_Se._End))) /* strengthened */ {
-                return _It._Distance_from(_Se._End);
+                noexcept(noexcept(_Se._Distance_from(_It))) /* strengthened */ {
+                return _Se._Distance_from(_It);
             }
         };
 
