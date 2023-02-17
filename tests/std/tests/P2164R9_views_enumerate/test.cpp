@@ -6,6 +6,7 @@
 #include <forward_list>
 #include <ranges>
 #include <span>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -236,7 +237,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     // Validate view_interface::cbegin
     STATIC_ASSERT(CanMemberCBegin<R>);
     STATIC_ASSERT(CanMemberCBegin<const R&> == ranges::range<const V>);
-    if (forward_range<V>) { // intentionally not if constexpr
+    {
         const same_as<const_iterator_t<R>> auto i = r.cbegin();
         if (!is_empty) {
             assert(*i == *cbegin(expected));
@@ -333,6 +334,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         { // Check comparisons
             assert(i == i);
+            assert(!(i != i));
             assert(!(i < i));
             assert(i <= i);
             assert(!(i > i));
@@ -341,6 +343,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
             if constexpr (forward_range<R>) {
                 auto i2 = ranges::next(i, 1);
+                assert(!(i == i2));
                 assert(i != i2);
                 assert(i < i2);
                 assert(i <= i2);
@@ -382,10 +385,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             const auto i4 = i3 - 2;
             assert(*i4 == expected[0]);
 
-            const same_as<ranges::range_difference_t<V>> auto diff1 = i2 - i;
+            const same_as<range_difference_t<V>> auto diff1 = i2 - i;
             assert(diff1 == 2);
 
-            const same_as<ranges::range_difference_t<V>> auto diff2 = i - i2;
+            const same_as<range_difference_t<V>> auto diff2 = i - i2;
             assert(diff2 == -2);
         }
 
@@ -394,10 +397,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             const auto sen  = r.end();
             const auto size = ranges::ssize(expected);
 
-            const same_as<ranges::range_difference_t<V>> auto diff3 = i2 - sen;
+            const same_as<range_difference_t<V>> auto diff3 = i2 - sen;
             assert(diff3 == -size);
 
-            const same_as<ranges::range_difference_t<V>> auto diff4 = sen - i2;
+            const same_as<range_difference_t<V>> auto diff4 = sen - i2;
             assert(diff4 == size);
         }
 
@@ -408,10 +411,11 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                           && is_nothrow_move_constructible_v<range_rvalue_reference_t<const Rng>>) );
 
         [[maybe_unused]] same_as<const iterator_t<V>&> decltype(auto) i_base = as_const(i).base();
-        STATIC_ASSERT(noexcept(i.base()));
+        STATIC_ASSERT(noexcept(as_const(i).base()));
 
         [[maybe_unused]] same_as<iterator_t<V>> decltype(auto) i_base2 = std::move(i).base();
-        STATIC_ASSERT(noexcept(std::move(i).base()) == is_nothrow_move_constructible_v<Rng>); // strengthened
+        STATIC_ASSERT(
+            noexcept(std::move(i).base()) == is_nothrow_move_constructible_v<iterator_t<Rng>>); // strengthened
     }
 
     if constexpr (CanMemberBegin<const R>) { // Validate enumerate_view::iterator<const>
@@ -430,6 +434,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         { // Check comparisons
             assert(ci == ci);
+            assert(!(ci != ci));
             assert(!(ci < ci));
             assert(ci <= ci);
             assert(!(ci > ci));
@@ -438,6 +443,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
             if constexpr (forward_range<R>) {
                 auto ci2 = ranges::next(ci, 1);
+                assert(!(ci == ci2));
                 assert(ci != ci2);
                 assert(ci < ci2);
                 assert(ci <= ci2);
@@ -471,7 +477,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         if constexpr (forward_range<const R>) {
             assert(*ci++ == expected[0]);
         } else {
-            STATIC_ASSERT(is_void_v<decltype(i++)>);
+            STATIC_ASSERT(is_void_v<decltype(ci++)>);
         }
         assert(*++ci == expected[2]);
         assert(ci.index() == 2);
@@ -499,23 +505,23 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             const auto ci4 = ci3 - 2;
             assert(*ci4 == expected[0]);
 
-            const same_as<ranges::range_difference_t<V>> auto diff1 = ci2 - ci;
+            const same_as<range_difference_t<V>> auto diff1 = ci2 - ci;
             assert(diff1 == 2);
 
-            const same_as<ranges::range_difference_t<V>> auto diff2 = ci - ci2;
+            const same_as<range_difference_t<V>> auto diff2 = ci - ci2;
             assert(diff2 == -2);
+        }
 
-            if constexpr (sized_sentinel_for<sentinel_t<const V>, iterator_t<const V>>) {
-                const auto i2   = as_const(r).begin();
-                const auto sen  = as_const(r).end();
-                const auto size = ranges::ssize(expected);
+        if constexpr (sized_sentinel_for<sentinel_t<const V>, iterator_t<const V>>) {
+            const auto ci2  = as_const(r).begin();
+            const auto sen  = as_const(r).end();
+            const auto size = ranges::ssize(expected);
 
-                const same_as<ranges::range_difference_t<const V>> auto diff3 = i2 - sen;
-                assert(diff3 == -size);
+            const same_as<range_difference_t<const V>> auto diff3 = ci2 - sen;
+            assert(diff3 == -size);
 
-                const same_as<ranges::range_difference_t<const V>> auto diff4 = sen - i2;
-                assert(diff4 == size);
-            }
+            const same_as<range_difference_t<const V>> auto diff4 = sen - ci2;
+            assert(diff4 == size);
         }
 
         using IterMoveResult = tuple<range_difference_t<const Rng>, range_rvalue_reference_t<const Rng>>;
@@ -525,8 +531,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                           && is_nothrow_move_constructible_v<range_rvalue_reference_t<const Rng>>) );
 
         [[maybe_unused]] same_as<const iterator_t<const V>&> decltype(auto) ci_base = as_const(ci).base();
-        STATIC_ASSERT(noexcept(ci.base()));
+        STATIC_ASSERT(noexcept(as_const(ci).base()));
+
         [[maybe_unused]] same_as<iterator_t<const V>> decltype(auto) ci_base2 = std::move(ci).base();
+        STATIC_ASSERT(noexcept(std::move(i).base()) == is_nothrow_move_constructible_v<iterator_t<Rng>>);
     }
 
     // Validate enumerate_view::base() const&
@@ -540,7 +548,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     // Validate enumerate_view::base() &&
     [[maybe_unused]] same_as<V> auto b2 = std::move(r).base();
     STATIC_ASSERT(noexcept(std::move(r).base()) == is_nothrow_move_constructible_v<V>); // strengthened
-    assert(*b2.begin() == get<1>(*ranges::begin(expected)));
+    assert(*b2.begin() == get<1>(*begin(expected)));
 
     return true;
 }
@@ -577,7 +585,7 @@ constexpr void instantiation_test() {
     instantiator::call<test_input_range<test::CanDifference::yes>>();
     instantiator::call<test_input_range<test::CanDifference::no>>();
 
-    // The view is sensitive to category, commonality and size, but oblivious to proxyness and differencing
+    // The view is sensitive to category, commonality, and size, but oblivious to proxyness and differencing
     instantiator::call<test_range<input_iterator_tag, Common::no, Sized::yes>>();
     instantiator::call<test_range<input_iterator_tag, Common::no, Sized::no>>();
     instantiator::call<test_range<input_iterator_tag, Common::yes, Sized::yes>>();
