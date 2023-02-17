@@ -552,7 +552,7 @@ constexpr bool test_lwg3698() {
         }
     };
 
-    auto jv  = intricate_range{} | views::join();
+    auto jv  = intricate_range{} | views::join;
     auto cit = as_const(jv).begin();
     assert(*++cit == 1);
     assert(*--cit == 0);

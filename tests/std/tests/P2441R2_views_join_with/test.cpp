@@ -592,7 +592,11 @@ constexpr bool test_lwg3698() {
     it          = ++it2;
     assert(*itcopy == 1);
 
+    int expected_ints[] = {1, 2, 3, 5, 7};
+
     struct intricate_range {
+        span<const int> intervals[2] = {{expected_ints + 0, expected_ints + 3}, {expected_ints + 3, expected_ints + 5}};
+
         constexpr stashing_iterator begin() {
             return {};
         }
@@ -607,10 +611,10 @@ constexpr bool test_lwg3698() {
         }
     };
 
-    auto jv  = intricate_range{} | views::join_with(-1);
+    auto jv  = intricate_range{} | views::join_with(views::empty<int>);
     auto cit = as_const(jv).begin();
-    assert(*++cit == 1);
-    assert(*--cit == 0);
+    assert(*++cit == 2);
+    assert(*--cit == 1);
     assert(ranges::equal(as_const(jv), expected_ints));
 
     return true;
