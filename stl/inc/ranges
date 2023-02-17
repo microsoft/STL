@@ -7570,6 +7570,12 @@ namespace ranges {
                               && (convertible_to<sentinel_t<_ViewTypes>, sentinel_t<const _ViewTypes>> && ...);
 #endif // ^^^ workaround ^^^
 
+    template <class _Func, class... _Views>
+    concept _Zip_transform_constraints = move_constructible<_Func> && is_object_v<_Func> && (sizeof...(_Views) > 0)
+                                      && (input_range<_Views> && ...) && (view<_Views> && ...)
+                                      && regular_invocable<_Func&, range_reference_t<_Views>...>
+                                      && _Can_reference<invoke_result_t<_Func&, range_reference_t<_Views>...>>;
+
     _EXPORT_STD template <input_range... _ViewTypes>
         requires (view<_ViewTypes> && ...) && (sizeof...(_ViewTypes) > 0)
     class zip_view : public view_interface<zip_view<_ViewTypes...>> {
@@ -7590,10 +7596,8 @@ namespace ranges {
         private:
             friend zip_view;
 
-            template <move_constructible _Func, input_range... _OtherViews>
-                requires ((view<_OtherViews> && ...) && (sizeof...(_OtherViews) > 0)
-                          && is_object_v<_Func> && regular_invocable<_Func&, range_reference_t<_OtherViews>...>
-                          && _Can_reference<invoke_result_t<_Func&, range_reference_t<_OtherViews>...>>)
+            template <class _Func, class... _OtherViews>
+                requires _Zip_transform_constraints<_Func, _OtherViews...>
             friend class zip_transform_view;
 
             using _My_tuple = tuple<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
@@ -7988,10 +7992,8 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Zip_fn zip{};
     } // namespace views
 
-    _EXPORT_STD template <move_constructible _Func, input_range... _ViewTypes>
-        requires ((view<_ViewTypes> && ...) && (sizeof...(_ViewTypes) > 0)
-                  && is_object_v<_Func> && regular_invocable<_Func&, range_reference_t<_ViewTypes>...>
-                  && _Can_reference<invoke_result_t<_Func&, range_reference_t<_ViewTypes>...>>)
+    _EXPORT_STD template <class _Func, class... _ViewTypes>
+        requires _Zip_transform_constraints<_Func, _ViewTypes...>
     class zip_transform_view : public view_interface<zip_transform_view<_Func, _ViewTypes...>> {
     private:
         using _Inner_view = zip_view<_ViewTypes...>;
