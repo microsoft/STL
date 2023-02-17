@@ -5915,13 +5915,8 @@ namespace ranges {
         /* [[no_unique_address]] */ _Vw _Range{};
 
         template <bool _Const>
-        class _Sentinel;
-
-        template <bool _Const>
         class _Iterator {
         private:
-            template <bool>
-            friend class _Sentinel;
             friend enumerate_view;
 
             using _Base_t         = _Maybe_const<_Const, _Vw>;
