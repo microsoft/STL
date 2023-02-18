@@ -328,8 +328,10 @@ protected:
 
     pos_type seekoff(
         off_type _Off, ios_base::seekdir _Way, ios_base::openmode _Mode = ios_base::in | ios_base::out) override {
-        if ((((_Mode & ios_base::in) == ios_base::in) && ((_Mystate & _Noread) == _Noread))
-            || (((_Mode & ios_base::out) == ios_base::out) && ((_Mystate & _Constant) == _Constant))) {
+        const bool _Need_read_but_cant = ((_Mode & ios_base::in) == ios_base::in) && ((_Mystate & _Noread) == _Noread);
+        const bool _Need_write_but_cant =
+            ((_Mode & ios_base::out) == ios_base::out) && ((_Mystate & _Constant) == _Constant);
+        if (_Need_read_but_cant || _Need_write_but_cant) {
             return pos_type{off_type{-1}};
         }
 
@@ -393,8 +395,10 @@ protected:
     }
 
     pos_type seekpos(pos_type _Pos, ios_base::openmode _Mode = ios_base::in | ios_base::out) override {
-        if ((((_Mode & ios_base::in) == ios_base::in) && ((_Mystate & _Noread) == _Noread))
-            || (((_Mode & ios_base::out) == ios_base::out) && ((_Mystate & _Constant) == _Constant))) {
+        const bool _Need_read_but_cant = ((_Mode & ios_base::in) == ios_base::in) && ((_Mystate & _Noread) == _Noread);
+        const bool _Need_write_but_cant =
+            ((_Mode & ios_base::out) == ios_base::out) && ((_Mystate & _Constant) == _Constant);
+        if (_Need_read_but_cant || _Need_write_but_cant) {
             return pos_type{off_type{-1}};
         }
 
