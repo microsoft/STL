@@ -448,7 +448,9 @@ _NODISCARD inline uint32_t _Bit_scan_reverse(const _Big_integer_flt& _Xval) noex
 
     unsigned long _Index; // Intentionally uninitialized for better codegen
 
-    _BitScanReverse(&_Index, _Xval._Mydata[_Bx]); // assumes _Xval._Mydata[_Bx] != 0
+    // assumes _Xval._Mydata[_Bx] != 0
+    _BitScanReverse(
+        &_Index, _Xval._Mydata[_Bx]); // lgtm [cpp/conditionallyuninitializedvariable] _Xval._Mydata[_Bx] != 0
 
     return _Index + 1 + _Bx * _Big_integer_flt::_Element_bits;
 }
