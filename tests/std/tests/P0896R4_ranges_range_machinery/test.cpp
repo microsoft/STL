@@ -399,6 +399,12 @@ constexpr bool test_input_range() {
     STATIC_ASSERT(std::same_as<ranges::range_rvalue_reference_t<Range&>, RvalueReference>);
     STATIC_ASSERT(std::same_as<ranges::range_rvalue_reference_t<Range&&>, RvalueReference>);
 
+    // LWG-3860, validate ranges::range_common_reference_t
+    using RcommonReference = std::iter_common_reference_t<Iterator>;
+    STATIC_ASSERT(std::same_as<ranges::range_common_reference_t<Range>, RcommonReference>);
+    STATIC_ASSERT(std::same_as<ranges::range_common_reference_t<Range&>, RcommonReference>);
+    STATIC_ASSERT(std::same_as<ranges::range_common_reference_t<Range&&>, RcommonReference>);
+
     return true;
 }
 
