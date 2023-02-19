@@ -168,14 +168,14 @@ struct VolatileConstructible {
 
 constexpr bool test_cv() {
     {
-        ranges::single_view<VolatileConstructible> sv{};
-        sv = sv;
-        sv = move(sv);
+        ranges::single_view<VolatileConstructible> sv{}, sv2{};
+        sv = sv2;
+        sv = move(sv2);
     }
     {
-        ranges::single_view<volatile VolatileConstructible> svv{};
-        svv = svv;
-        svv = move(svv);
+        ranges::single_view<volatile VolatileConstructible> svv{}, svv2{};
+        svv = svv2;
+        svv = move(svv2);
     }
     [[maybe_unused]] ranges::single_view<const VolatileConstructible> svc{};
     [[maybe_unused]] ranges::single_view<const volatile VolatileConstructible> svcv{};

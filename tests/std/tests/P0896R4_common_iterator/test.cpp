@@ -406,8 +406,8 @@ void test_volatile() {
     assert(se - it == 0);
 
     swap(it, it);
-    it = it;
-    it = move(it);
+    it = se;
+    it = move(se);
 }
 
 int main() {
