@@ -862,7 +862,7 @@ concept _Use_postfix_proxy = !requires(_Iter& __it) { { *__it++ } -> _Can_refere
 // clang-format on
 
 _EXPORT_STD template <input_or_output_iterator _Iter, sentinel_for<_Iter> _Se>
-    requires(!same_as<_Iter, _Se> && copyable<_Iter>)
+    requires (!same_as<_Iter, _Se> && copyable<_Iter>)
 class common_iterator {
 private:
     struct _Proxy_base {
