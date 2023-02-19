@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#pragma warning(disable : 5215) // volatile function arguments are deprecated in C++20
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wdeprecated-volatile" // volatile function arguments are deprecated in C++20
+#endif // __clang__
+
 #include <cassert>
 #include <concepts>
 #include <iterator>
