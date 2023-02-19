@@ -7850,6 +7850,88 @@ namespace msvc {
 #endif // _HAS_CXX20
         }
     } // namespace gh2770
+
+    namespace assign_cv {
+        template <class T>
+        struct TypeIdentityImpl {
+            using type = T;
+        };
+        template <class T>
+        using TypeIdentity = typename TypeIdentityImpl<T>::type;
+
+        struct CvAssignable {
+            CvAssignable()                               = default;
+            CvAssignable(const CvAssignable&)            = default;
+            CvAssignable(CvAssignable&&)                 = default;
+            CvAssignable& operator=(const CvAssignable&) = default;
+            CvAssignable& operator=(CvAssignable&&)      = default;
+
+            template <class T = CvAssignable>
+            CvAssignable(const volatile TypeIdentity<T>&) noexcept {}
+            template <class T = CvAssignable>
+            CvAssignable(const volatile TypeIdentity<T>&&) noexcept {}
+
+            template <class T = CvAssignable>
+            constexpr CvAssignable& operator=(const volatile TypeIdentity<T>&) noexcept {
+                return *this;
+            }
+            template <class T = CvAssignable>
+            constexpr CvAssignable& operator=(const volatile TypeIdentity<T>&&) noexcept {
+                return *this;
+            }
+
+            template <class T = CvAssignable>
+            constexpr const volatile CvAssignable& operator=(const volatile TypeIdentity<T>&) const volatile noexcept {
+                return *this;
+            }
+            template <class T = CvAssignable>
+            constexpr const volatile CvAssignable& operator=(const volatile TypeIdentity<T>&&) const volatile noexcept {
+                return *this;
+            }
+        };
+
+        void run_test() {
+            using std::swap;
+            {
+                std::variant<const int> oc{};
+                oc.emplace<0>(0);
+                STATIC_ASSERT(!std::is_copy_assignable_v<decltype(oc)>);
+                STATIC_ASSERT(!std::is_move_assignable_v<decltype(oc)>);
+                STATIC_ASSERT(!std::is_swappable_v<decltype(oc)>);
+
+                std::variant<volatile int> ov{};
+                ov.emplace<0>(0);
+                swap(ov, ov);
+                ov = ov;
+                ov = std::move(ov);
+
+                std::variant<const volatile int> ocv{};
+                ocv.emplace<0>(0);
+                STATIC_ASSERT(!std::is_copy_assignable_v<decltype(ocv)>);
+                STATIC_ASSERT(!std::is_move_assignable_v<decltype(ocv)>);
+                STATIC_ASSERT(!std::is_swappable_v<decltype(ocv)>);
+            }
+            {
+                std::variant<const CvAssignable> oc{};
+                oc.emplace<0>(CvAssignable{});
+                swap(oc, oc);
+                oc = oc;
+                oc = std::move(oc);
+
+                std::variant<volatile CvAssignable> ov{};
+                ov.emplace<0>(CvAssignable{});
+                swap(ov, ov);
+                ov = ov;
+                ov = std::move(ov);
+
+                std::variant<const volatile CvAssignable> ocv{};
+                ocv.emplace<0>(CvAssignable{});
+                swap(ocv, ocv);
+                ocv = ocv;
+                ocv = std::move(ocv);
+            }
+        }
+    } // namespace assign_cv
 } // namespace msvc
 
 int main() {
@@ -7916,6 +7998,7 @@ int main() {
     msvc::vso492097::run_test();
     msvc::DevCom1031281::run_test();
     msvc::gh2770::run_test();
+    msvc::assign_cv::run_test();
 }
 #else // ^^^ not x86 or not /analyze / x86 /analyze vvv
 int main() {}
