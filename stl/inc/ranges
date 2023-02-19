@@ -286,7 +286,7 @@ namespace ranges {
             requires copy_constructible<_Ty>
             : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
-                _Construct_in_place(_Val, _That._Val);
+                _STD _Construct_in_place(_Val, static_cast<const _Ty&>(_That._Val));
             }
         }
 
@@ -296,7 +296,7 @@ namespace ranges {
 
         constexpr _Movable_box(_Movable_box&& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
-                _Construct_in_place(_Val, _STD move(_That._Val));
+                _STD _Construct_in_place(_Val, static_cast<_Ty&&>(_That._Val));
             }
         }
 
@@ -311,14 +311,14 @@ namespace ranges {
         {
             if (_Engaged) {
                 if (_That._Engaged) {
-                    _Val = _That._Val;
+                    static_cast<_Ty&>(_Val) = static_cast<const _Ty&>(_That._Val);
                 } else {
                     _Val.~_Ty();
                     _Engaged = false;
                 }
             } else {
                 if (_That._Engaged) {
-                    _Construct_in_place(_Val, _That._Val);
+                    _STD _Construct_in_place(_Val, static_cast<const _Ty&>(_That._Val));
                     _Engaged = true;
                 } else {
                     // nothing to do
@@ -341,7 +341,7 @@ namespace ranges {
             }
 
             if (_That._Engaged) {
-                _Construct_in_place(_Val, _That._Val);
+                _STD _Construct_in_place(_Val, static_cast<const _Ty&>(_That._Val));
                 _Engaged = true;
             }
 
@@ -359,14 +359,14 @@ namespace ranges {
         {
             if (_Engaged) {
                 if (_That._Engaged) {
-                    _Val = _STD move(_That._Val);
+                    static_cast<_Ty&>(_Val) = static_cast<_Ty&&>(_That._Val);
                 } else {
                     _Val.~_Ty();
                     _Engaged = false;
                 }
             } else {
                 if (_That._Engaged) {
-                    _Construct_in_place(_Val, _STD move(_That._Val));
+                    _STD _Construct_in_place(_Val, static_cast<_Ty&&>(_That._Val));
                     _Engaged = true;
                 } else {
                     // nothing to do
@@ -387,7 +387,7 @@ namespace ranges {
             }
 
             if (_That._Engaged) {
-                _Construct_in_place(_Val, _STD move(_That._Val));
+                _STD _Construct_in_place(_Val, static_cast<_Ty&&>(_That._Val));
                 _Engaged = true;
             }
 
@@ -409,7 +409,7 @@ namespace ranges {
 
     private:
         union {
-            _Ty _Val;
+            remove_cv_t<_Ty> _Val;
         };
         bool _Engaged;
     };
@@ -451,7 +451,7 @@ namespace ranges {
         {
             if (_STD addressof(_That) != this) {
                 _Val.~_Ty();
-                _Construct_in_place(_Val, _That._Val);
+                _STD _Construct_in_place(_Val, static_cast<const _Ty&>(_That._Val));
             }
 
             return *this;
@@ -460,7 +460,7 @@ namespace ranges {
         constexpr _Movable_box& operator=(_Movable_box&& _That) noexcept {
             if (_STD addressof(_That) != this) {
                 _Val.~_Ty();
-                _Construct_in_place(_Val, _STD move(_That._Val));
+                _STD _Construct_in_place(_Val, static_cast<_Ty&&>(_That._Val));
             }
 
             return *this;
@@ -478,7 +478,7 @@ namespace ranges {
         }
 
     private:
-        /* [[no_unique_address]] */ _Ty _Val{};
+        /* [[no_unique_address]] */ remove_cv_t<_Ty> _Val{};
     };
 
     template <movable _Ty>
@@ -503,7 +503,7 @@ namespace ranges {
             requires copy_constructible<_Ty>
             : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
-                _Construct_in_place(_Val, _That._Val);
+                _STD _Construct_in_place(_Val, static_cast<const _Ty&>(_That._Val));
             }
         }
 
@@ -513,7 +513,7 @@ namespace ranges {
 
         constexpr _Defaultabox(_Defaultabox&& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
-                _Construct_in_place(_Val, _STD move(_That._Val));
+                _STD _Construct_in_place(_Val, static_cast<_Ty&&>(_That._Val));
             }
         }
 
@@ -521,7 +521,7 @@ namespace ranges {
             requires convertible_to<const _Uty&, _Ty>
         constexpr _Defaultabox(const _Defaultabox<_Uty>& _That) : _Engaged{_That} {
             if (_That) {
-                _Construct_in_place(_Val, *_That);
+                _STD _Construct_in_place(_Val, *_That);
             }
         }
 
@@ -529,7 +529,7 @@ namespace ranges {
             requires convertible_to<_Uty, _Ty>
         constexpr _Defaultabox(_Defaultabox<_Uty>&& _That) : _Engaged{_That} {
             if (_That) {
-                _Construct_in_place(_Val, _STD move(*_That));
+                _STD _Construct_in_place(_Val, _STD move(*_That));
             }
         }
 
@@ -544,14 +544,14 @@ namespace ranges {
         {
             if (_Engaged) {
                 if (_That._Engaged) {
-                    _Val = _That._Val;
+                    static_cast<_Ty&>(_Val) = static_cast<const _Ty&>(_That._Val);
                 } else {
                     _Val.~_Ty();
                     _Engaged = false;
                 }
             } else {
                 if (_That._Engaged) {
-                    _Construct_in_place(_Val, _That._Val);
+                    _STD _Construct_in_place(_Val, static_cast<const _Ty&>(_That._Val));
                     _Engaged = true;
                 } else {
                     // nothing to do
@@ -569,14 +569,14 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) /* strengthened */ {
             if (_Engaged) {
                 if (_That._Engaged) {
-                    _Val = _STD move(_That._Val);
+                    static_cast<_Ty&>(_Val) = static_cast<_Ty&&>(_That._Val);
                 } else {
                     _Val.~_Ty();
                     _Engaged = false;
                 }
             } else {
                 if (_That._Engaged) {
-                    _Construct_in_place(_Val, _STD move(_That._Val));
+                    _STD _Construct_in_place(_Val, static_cast<_Ty&&>(_That._Val));
                     _Engaged = true;
                 } else {
                     // nothing to do
@@ -589,9 +589,9 @@ namespace ranges {
         constexpr _Defaultabox& operator=(_Ty&& _That) noexcept(
             is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) {
             if (_Engaged) {
-                _Val = _STD move(_That);
+                static_cast<_Ty&>(_Val) = _STD move(_That);
             } else {
-                _Construct_in_place(_Val, _STD move(_That));
+                _STD _Construct_in_place(_Val, _STD move(_That));
                 _Engaged = true;
             }
 
@@ -603,9 +603,9 @@ namespace ranges {
             requires copyable<_Ty>
         {
             if (_Engaged) {
-                _Val = _That;
+                static_cast<_Ty&>(_Val) = _That;
             } else {
-                _Construct_in_place(_Val, _That);
+                _STD _Construct_in_place(_Val, _That);
                 _Engaged = true;
             }
 
@@ -632,14 +632,16 @@ namespace ranges {
             }
         }
 
-        _NODISCARD constexpr bool operator==(const _Defaultabox& _That) const noexcept(noexcept(_Val == _That._Val)) {
+        _NODISCARD constexpr bool operator==(const _Defaultabox& _That) const
+            noexcept(noexcept(static_cast<const _Ty&>(_Val) == static_cast<const _Ty&>(_That._Val))) {
             _STL_INTERNAL_STATIC_ASSERT(equality_comparable<_Ty>);
-            return _Engaged == _That._Engaged && (!_Engaged || _Val == _That._Val);
+            return _Engaged == _That._Engaged
+                && (!_Engaged || static_cast<const _Ty&>(_Val) == static_cast<const _Ty&>(_That._Val));
         }
 
     private:
         union {
-            _Ty _Val;
+            remove_cv_t<_Ty> _Val;
         };
         bool _Engaged = false;
     };
@@ -771,7 +773,7 @@ namespace ranges {
                 _Engaged = false;
             }
 
-            _Construct_in_place(_Val, _STD forward<_Types>(_Args)...);
+            _STD _Construct_in_place(_Val, _STD forward<_Types>(_Args)...);
             _Engaged = true;
 
             return _Val;
@@ -779,7 +781,7 @@ namespace ranges {
 
     private:
         union {
-            _Ty _Val;
+            remove_cv_t<_Ty> _Val;
         };
         bool _Engaged = false;
     };
@@ -814,13 +816,13 @@ namespace ranges {
 
         template <class... _Types>
         constexpr _Ty& _Emplace(_Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
-            _Construct_in_place(_Val, _STD forward<_Types>(_Args)...);
+            _STD _Construct_in_place(_Val, _STD forward<_Types>(_Args)...);
             return _Val;
         }
 
     private:
         union {
-            _Ty _Val;
+            remove_cv_t<_Ty> _Val;
         };
     };
 
@@ -4047,18 +4049,18 @@ namespace ranges {
             template <class _Ret = void>
             constexpr _Ret _Visit_inner_it(auto&& _Func) const {
                 if (_Inner_it._Contains == _Variantish_state::_Holds_first) {
-                    return _Func(_Inner_it._First);
+                    return _Func(_Inner_it._Get_first());
                 } else if (_Inner_it._Contains == _Variantish_state::_Holds_second) {
-                    return _Func(_Inner_it._Second);
+                    return _Func(_Inner_it._Get_second());
                 } else {
-                    _Throw_bad_variant_access();
+                    _STD _Throw_bad_variant_access();
                 }
             }
 
             constexpr void _Satisfy() {
                 for (;;) {
                     if (_Inner_it._Contains == _Variantish_state::_Holds_first) {
-                        if (_Inner_it._First != _RANGES end(_Parent->_Pattern)) {
+                        if (_Inner_it._Get_first() != _RANGES end(_Parent->_Pattern)) {
                             break;
                         }
 
@@ -4068,7 +4070,7 @@ namespace ranges {
                         _STL_INTERNAL_CHECK(_Inner_it._Contains == _Variantish_state::_Holds_second);
 
                         auto&& _Inner = _Get_inner();
-                        if (_Inner_it._Second != _RANGES end(_Inner)) {
+                        if (_Inner_it._Get_second() != _RANGES end(_Inner)) {
                             break;
                         }
 
@@ -4107,13 +4109,13 @@ namespace ranges {
                 : _Outer_it{_STD move(_It._Outer_it)}, _Parent{_It._Parent} {
                 switch (_It._Inner_it._Contains) {
                 case _Variantish_state::_Holds_first:
-                    _Inner_it._Emplace_first(_STD move(_It._Inner_it._First));
+                    _Inner_it._Emplace_first(_STD move(_It._Inner_it._Get_first()));
                     break;
                 case _Variantish_state::_Holds_second:
-                    _Inner_it._Emplace_second(_STD move(_It._Inner_it._Second));
+                    _Inner_it._Emplace_second(_STD move(_It._Inner_it._Get_second()));
                     break;
                 case _Variantish_state::_Nothing:
-                    _Throw_bad_variant_access();
+                    _STD _Throw_bad_variant_access();
                 }
             }
 
@@ -4125,13 +4127,13 @@ namespace ranges {
             constexpr _Iterator& operator++() {
                 switch (_Inner_it._Contains) {
                 case _Variantish_state::_Holds_first:
-                    ++_Inner_it._First;
+                    ++_Inner_it._Get_first();
                     break;
                 case _Variantish_state::_Holds_second:
-                    ++_Inner_it._Second;
+                    ++_Inner_it._Get_second();
                     break;
                 case _Variantish_state::_Nothing:
-                    _Throw_bad_variant_access();
+                    _STD _Throw_bad_variant_access();
                 }
                 _Satisfy();
                 return *this;
@@ -4161,7 +4163,7 @@ namespace ranges {
 
                 for (;;) {
                     if (_Inner_it._Contains == _Variantish_state::_Holds_first) {
-                        auto& _It = _Inner_it._First;
+                        auto& _It = _Inner_it._Get_first();
                         if (_It == _RANGES begin(_Parent->_Pattern)) {
                             --_Outer_it;
                             auto&& _Inner = *_Outer_it;
@@ -4170,7 +4172,7 @@ namespace ranges {
                             break;
                         }
                     } else if (_Inner_it._Contains == _Variantish_state::_Holds_second) {
-                        auto& _It     = _Inner_it._Second;
+                        auto& _It     = _Inner_it._Get_second();
                         auto&& _Inner = *_Outer_it;
                         if (_It == _RANGES begin(_Inner)) {
                             _Inner_it._Emplace_first(_RANGES end(_Parent->_Pattern));
@@ -4178,19 +4180,19 @@ namespace ranges {
                             break;
                         }
                     } else {
-                        _Throw_bad_variant_access();
+                        _STD _Throw_bad_variant_access();
                     }
                 }
 
                 switch (_Inner_it._Contains) {
                 case _Variantish_state::_Holds_first:
-                    --_Inner_it._First;
+                    --_Inner_it._Get_first();
                     break;
                 case _Variantish_state::_Holds_second:
-                    --_Inner_it._Second;
+                    --_Inner_it._Get_second();
                     break;
                 case _Variantish_state::_Nothing:
-                    _Throw_bad_variant_access();
+                    _STD _Throw_bad_variant_access();
                 }
                 return *this;
             }
@@ -4217,9 +4219,9 @@ namespace ranges {
 
                 switch (_Left._Inner_it._Contains) {
                 case _Variantish_state::_Holds_first:
-                    return _Left._Inner_it._First == _Right._Inner_it._First;
+                    return _Left._Inner_it._Get_first() == _Right._Inner_it._Get_first();
                 case _Variantish_state::_Holds_second:
-                    return _Left._Inner_it._Second == _Right._Inner_it._Second;
+                    return _Left._Inner_it._Get_second() == _Right._Inner_it._Get_second();
                 case _Variantish_state::_Nothing:
                     return true;
                 }
@@ -4240,9 +4242,9 @@ namespace ranges {
                 case _Variantish_state::_Holds_first:
                     switch (_Right._Inner_it._Contains) {
                     case _Variantish_state::_Holds_first:
-                        return _RANGES iter_swap(_Left._Inner_it._First, _Right._Inner_it._First);
+                        return _RANGES iter_swap(_Left._Inner_it._Get_first(), _Right._Inner_it._Get_first());
                     case _Variantish_state::_Holds_second:
-                        return _RANGES iter_swap(_Left._Inner_it._First, _Right._Inner_it._Second);
+                        return _RANGES iter_swap(_Left._Inner_it._Get_first(), _Right._Inner_it._Get_second());
                     case _Variantish_state::_Nothing:
                         break;
                     }
@@ -4250,9 +4252,9 @@ namespace ranges {
                 case _Variantish_state::_Holds_second:
                     switch (_Right._Inner_it._Contains) {
                     case _Variantish_state::_Holds_first:
-                        return _RANGES iter_swap(_Left._Inner_it._Second, _Right._Inner_it._First);
+                        return _RANGES iter_swap(_Left._Inner_it._Get_second(), _Right._Inner_it._Get_first());
                     case _Variantish_state::_Holds_second:
-                        return _RANGES iter_swap(_Left._Inner_it._Second, _Right._Inner_it._Second);
+                        return _RANGES iter_swap(_Left._Inner_it._Get_second(), _Right._Inner_it._Get_second());
                     case _Variantish_state::_Nothing:
                         break;
                     }
@@ -4261,7 +4263,7 @@ namespace ranges {
                     break;
                 }
 
-                _Throw_bad_variant_access();
+                _STD _Throw_bad_variant_access();
             }
         };
 

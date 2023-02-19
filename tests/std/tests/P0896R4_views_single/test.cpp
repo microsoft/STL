@@ -153,6 +153,36 @@ void test_non_trivially_destructible_type() { // COMPILE-ONLY
     (void) views::single(non_trivially_destructible{});
 }
 
+struct VolatileConstructible {
+    VolatileConstructible()                                        = default;
+    VolatileConstructible(const VolatileConstructible&)            = default;
+    VolatileConstructible(VolatileConstructible&&)                 = default;
+    VolatileConstructible& operator=(const VolatileConstructible&) = default;
+    VolatileConstructible& operator=(VolatileConstructible&&)      = default;
+
+    template <class T = VolatileConstructible>
+    constexpr VolatileConstructible(const volatile type_identity_t<T>&) noexcept {}
+    template <class T = VolatileConstructible>
+    constexpr VolatileConstructible(const volatile type_identity_t<T>&&) noexcept {}
+};
+
+constexpr bool test_cv() {
+    {
+        ranges::single_view<VolatileConstructible> sv{};
+        sv = sv;
+        sv = move(sv);
+    }
+    {
+        ranges::single_view<volatile VolatileConstructible> svv{};
+        svv = svv;
+        svv = move(svv);
+    }
+    [[maybe_unused]] ranges::single_view<const VolatileConstructible> svc{};
+    [[maybe_unused]] ranges::single_view<const volatile VolatileConstructible> svcv{};
+
+    return true;
+}
+
 int main() {
     static_assert(test_one_type(42, 42));
     test_one_type(42, 42);
@@ -162,4 +192,7 @@ int main() {
 
     test_one_type(only_copy_constructible{42}, 42);
     test_one_type(string{"Hello, World!"}, "Hello, World!");
+
+    static_assert(test_cv());
+    assert(test_cv());
 }
