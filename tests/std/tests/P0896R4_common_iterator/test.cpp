@@ -332,6 +332,86 @@ void test_non_trivially_destructible_type() { // COMPILE-ONLY
     common_iterator<non_trivially_destructible_input_iterator, default_sentinel_t> it;
 }
 
+struct VolatileSentinel {
+    VolatileSentinel()                                   = default;
+    VolatileSentinel(const VolatileSentinel&)            = default;
+    VolatileSentinel(VolatileSentinel&&)                 = default;
+    VolatileSentinel& operator=(const VolatileSentinel&) = default;
+    VolatileSentinel& operator=(VolatileSentinel&&)      = default;
+
+    explicit constexpr VolatileSentinel(const char* p) noexcept : ptr_{p} {}
+
+    template <class T = VolatileSentinel>
+    constexpr VolatileSentinel(const volatile type_identity_t<T>& other) noexcept
+        : ptr_{other.ptr_} {}
+    template <class T = VolatileSentinel>
+    constexpr VolatileSentinel(const volatile type_identity_t<T>&& other) noexcept
+        : ptr_{other.ptr_} {}
+
+    template <class T = VolatileSentinel>
+    VolatileSentinel& operator=(volatile type_identity_t<T>& rhs) noexcept {
+        ptr_ = rhs.ptr_;
+        return *this;
+    }
+    template <class T = VolatileSentinel>
+    VolatileSentinel& operator=(volatile type_identity_t<T>&& rhs) noexcept {
+        ptr_ = rhs.ptr_;
+        return *this;
+    }
+    template <class T = VolatileSentinel>
+    VolatileSentinel& operator=(const volatile type_identity_t<T>& rhs) noexcept {
+        ptr_ = rhs.ptr_;
+        return *this;
+    }
+    template <class T = VolatileSentinel>
+    VolatileSentinel& operator=(const volatile type_identity_t<T>&& rhs) noexcept {
+        ptr_ = rhs.ptr_;
+        return *this;
+    }
+
+    template <class T = VolatileSentinel>
+    volatile VolatileSentinel& operator=(const volatile type_identity_t<T>& rhs) volatile noexcept {
+        ptr_ = rhs.ptr_;
+        return *this;
+    }
+    template <class T = VolatileSentinel>
+    volatile VolatileSentinel& operator=(const volatile type_identity_t<T>&& rhs) volatile noexcept {
+        ptr_ = rhs.ptr_;
+        return *this;
+    }
+
+    friend constexpr bool operator==(const char* const lhs, VolatileSentinel rhs) noexcept {
+        return lhs == rhs.ptr_;
+    }
+
+    friend constexpr auto operator-(const char* const lhs, VolatileSentinel rhs) noexcept {
+        return lhs - rhs.ptr_;
+    }
+
+    friend constexpr auto operator-(VolatileSentinel lhs, const char* const rhs) noexcept {
+        return lhs.ptr_ - rhs;
+    }
+
+    const char* ptr_ = nullptr;
+};
+
+// constexpr-incompatible
+void test_volatile() {
+    using std::swap;
+    using ci = common_iterator<const char*, volatile VolatileSentinel>;
+
+    ci it{static_cast<const char*>(nullptr)};
+    ci se{VolatileSentinel{static_cast<const char*>(nullptr)}};
+
+    assert(it == se);
+    assert(it - se == 0);
+    assert(se - it == 0);
+
+    swap(it, it);
+    it = it;
+    it = move(it);
+}
+
 int main() {
     with_writable_iterators<instantiator, P>::call();
     static_assert(with_writable_iterators<instantiator, P>::call());
@@ -344,4 +424,6 @@ int main() {
 
     test_lwg_3574();
     static_assert(test_lwg_3574());
+
+    test_volatile(); // constexpr-incompatible
 }
