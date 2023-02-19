@@ -8275,11 +8275,11 @@ namespace msvc {
                 STATIC_ASSERT(!std::is_move_assignable_v<decltype(oc)>);
                 STATIC_ASSERT(!std::is_swappable_v<decltype(oc)>);
 
-                std::optional<volatile int> ov{};
+                std::optional<volatile int> ov{}, ov2{};
                 ov.emplace(0);
                 swap(ov, ov);
-                ov = ov;
-                ov = std::move(ov);
+                ov = ov2;
+                ov = std::move(ov2);
 
                 std::optional<const volatile int> ocv{};
                 ocv.emplace(0);
@@ -8288,23 +8288,23 @@ namespace msvc {
                 STATIC_ASSERT(!std::is_swappable_v<decltype(ocv)>);
             }
             {
-                std::optional<const CvAssignable> oc{};
+                std::optional<const CvAssignable> oc{}, oc2{};
                 oc.emplace(CvAssignable{});
                 swap(oc, oc);
-                oc = oc;
-                oc = std::move(oc);
+                oc = oc2;
+                oc = std::move(oc2);
 
-                std::optional<volatile CvAssignable> ov{};
+                std::optional<volatile CvAssignable> ov{}, ov2{};
                 ov.emplace(CvAssignable{});
                 swap(ov, ov);
-                ov = ov;
-                ov = std::move(ov);
+                ov = ov2;
+                ov = std::move(ov2);
 
-                std::optional<const volatile CvAssignable> ocv{};
+                std::optional<const volatile CvAssignable> ocv{}, ocv2{};
                 ocv.emplace(CvAssignable{});
                 swap(ocv, ocv);
-                ocv = ocv;
-                ocv = std::move(ocv);
+                ocv = ocv2;
+                ocv = std::move(ocv2);
             }
         }
     } // namespace assign_cv
