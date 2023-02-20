@@ -458,7 +458,7 @@ template <>
 class numeric_limits<wchar_t> : public _Num_int_base {
 public:
     _NODISCARD static constexpr wchar_t(min)() noexcept {
-        return WCHAR_MIN;
+        return 0;
     }
 
     _NODISCARD static constexpr wchar_t(max)() noexcept {
