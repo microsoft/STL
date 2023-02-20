@@ -41,6 +41,12 @@ _EXPORT_STD enum _CXX23_DEPRECATE_DENOM float_denorm_style {
     denorm_present       = 1
 };
 
+// TRANSITION, should be used within class bodies
+_STL_DISABLE_DEPRECATED_WARNING
+_INLINE_VAR constexpr auto _Unwarned_denorm_absent  = denorm_absent;
+_INLINE_VAR constexpr auto _Unwarned_denorm_present = denorm_present;
+_STL_RESTORE_DEPRECATED_WARNING
+
 _EXPORT_STD enum float_round_style { // constants for different IEEE rounding styles
     round_indeterminate       = -1,
     round_toward_zero         = 0,
@@ -49,10 +55,9 @@ _EXPORT_STD enum float_round_style { // constants for different IEEE rounding st
     round_toward_neg_infinity = 3
 };
 
-_STL_DISABLE_DEPRECATED_WARNING
 struct _Num_base { // base for all types, with common defaults
-    _CXX23_DEPRECATE_DENOM static constexpr float_denorm_style has_denorm = denorm_absent;
-    _CXX23_DEPRECATE_DENOM static constexpr bool has_denorm_loss          = false;
+    _CXX23_DEPRECATE_DENOM static constexpr auto has_denorm      = _Unwarned_denorm_absent;
+    _CXX23_DEPRECATE_DENOM static constexpr bool has_denorm_loss = false;
 
     static constexpr bool has_infinity             = false;
     static constexpr bool has_quiet_NaN            = false;
@@ -76,7 +81,6 @@ struct _Num_base { // base for all types, with common defaults
     static constexpr int min_exponent10            = 0;
     static constexpr int radix                     = 0;
 };
-_STL_RESTORE_DEPRECATED_WARNING
 
 _EXPORT_STD template <class _Ty>
 class numeric_limits : public _Num_base { // numeric limits for arbitrary type _Ty (say little or nothing)
@@ -135,9 +139,8 @@ struct _Num_int_base : _Num_base { // base for integer types
     static constexpr int radix           = 2;
 };
 
-_STL_DISABLE_DEPRECATED_WARNING
 struct _Num_float_base : _Num_base { // base for floating-point types
-    _CXX23_DEPRECATE_DENOM static constexpr float_denorm_style has_denorm = denorm_present;
+    _CXX23_DEPRECATE_DENOM static constexpr auto has_denorm = _Unwarned_denorm_present;
 
     static constexpr bool has_infinity             = true;
     static constexpr bool has_quiet_NaN            = true;
@@ -149,7 +152,6 @@ struct _Num_float_base : _Num_base { // base for floating-point types
     static constexpr float_round_style round_style = round_to_nearest;
     static constexpr int radix                     = FLT_RADIX;
 };
-_STL_RESTORE_DEPRECATED_WARNING
 
 template <>
 class numeric_limits<bool> : public _Num_int_base {
