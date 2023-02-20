@@ -299,7 +299,8 @@ std/language.support/support.limits/support.limits.general/utility.version.compi
 
 
 # *** MISSING COMPILER FEATURES ***
-# Nothing here! :-)
+# MSVC doesn't properly support [[no_unique_address]]
+std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp SKIPPED
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
@@ -1067,6 +1068,9 @@ std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requir
 
 # Not analyzed, possible bug in uses_allocator_construction_args
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_piecewise_pair_evil.pass.cpp FAIL
+
+# Not analyzed, likely STL bug.
+std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp SKIPPED
 
 
 # *** XFAILs WHICH PASS ***

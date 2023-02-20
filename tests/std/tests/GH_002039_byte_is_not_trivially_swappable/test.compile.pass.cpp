@@ -7,8 +7,6 @@
 
 using namespace std;
 
-int main() {} // COMPILE-ONLY
-
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 #ifdef __cpp_lib_byte

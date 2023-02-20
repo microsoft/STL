@@ -10,8 +10,6 @@
 
 using namespace std;
 
-int main() {} // COMPILE-ONLY
-
 using test::CanCompare, test::CanDifference, test::WrappedState, test::ProxyRef, test::to_bool;
 
 // Validate test::iterator and test::sentinel

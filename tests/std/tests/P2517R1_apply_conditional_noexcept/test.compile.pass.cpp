@@ -8,8 +8,6 @@
 
 using namespace std;
 
-int main() {} // COMPILE-ONLY
-
 struct NoexceptIf {
     template <bool B, class... Ts>
     void operator()(bool_constant<B>, Ts...) const noexcept(B);

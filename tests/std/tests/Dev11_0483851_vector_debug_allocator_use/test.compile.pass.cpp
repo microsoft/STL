@@ -11,8 +11,6 @@
 #include <unordered_set>
 #include <vector>
 
-int main() {} // COMPILE-ONLY
-
 // Regression test for DevDiv-483851 : [C++11] STL containers must use std::allocator_traits in debug mode
 
 template <typename T, typename Base>
