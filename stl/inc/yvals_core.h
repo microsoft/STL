@@ -286,6 +286,8 @@
 // P2508R1 basic_format_string, format_string, wformat_string
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 // P2588R3 barrier's Phase Completion Guarantees
+// P2602R2 Poison Pills Are Too Toxic
+// P2609R3 Relaxing Ranges Just A Smidge
 // P2711R1 Making Multi-Param Constructors Of Views explicit
 
 // _HAS_CXX20 indirectly controls:
@@ -351,8 +353,6 @@
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2505R5 Monadic Functions For expected
 // P2549R1 unexpected<E>::error()
-// P2602R2 Poison Pills Are Too Toxic
-// P2609R3 Relaxing Ranges Just A Smidge
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
