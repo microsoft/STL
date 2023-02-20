@@ -1389,9 +1389,13 @@ namespace ranges {
     } // namespace views
 
 #if _HAS_CXX23
+    template <class _Ty>
+    concept _Integer_like_with_usable_difference_type = _Signed_integer_like<_Ty>
+                                                     || (_Integer_like<_Ty> && weakly_incrementable<_Ty>);
+
     _EXPORT_STD template <move_constructible _Ty, semiregular _Bo = unreachable_sentinel_t>
         requires (is_object_v<_Ty> && same_as<_Ty, remove_cv_t<_Ty>>
-                  && (_Integer_like<_Bo> || same_as<_Bo, unreachable_sentinel_t>) )
+                  && (_Integer_like_with_usable_difference_type<_Bo> || same_as<_Bo, unreachable_sentinel_t>) )
     class repeat_view : public view_interface<repeat_view<_Ty, _Bo>> {
     private:
         friend views::_Take_fn;
@@ -1412,12 +1416,21 @@ namespace ranges {
                 }
             }
 
+            template <class _Uty>
+            struct _Difference_type {
+                using type = _Iota_diff_t<_Uty>;
+            };
+
+            template <_Signed_integer_like _Uty>
+            struct _Difference_type<_Uty> {
+                using type = _Uty;
+            };
+
         public:
             using iterator_concept  = random_access_iterator_tag;
             using iterator_category = random_access_iterator_tag;
             using value_type        = _Ty;
-            using difference_type =
-                conditional_t<_Signed_integer_like<_Index_type>, _Index_type, _Iota_diff_t<_Index_type>>;
+            using difference_type   = typename _Difference_type<_Index_type>::type;
 
             _Iterator() = default;
 

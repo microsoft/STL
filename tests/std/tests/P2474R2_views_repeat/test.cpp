@@ -325,6 +325,19 @@ constexpr bool test() {
     return true;
 }
 
+// Check LWG-3875
+static_assert(CanViewRepeat<string, long long>);
+static_assert(CanViewRepeat<string, unsigned long long>);
+static_assert(CanViewRepeat<string, _Signed128>);
+static_assert(
+    !CanViewRepeat<string, _Unsigned128>); // _Unsigned128 does not satisfy 'integer-like-with-usable-difference-type'
+
+void test_gh_3392() { // COMPILE-ONLY
+    const auto rice                        = views::repeat("🌾"s, 100ull);
+    [[maybe_unused]] const auto taken_rice = rice | views::take(3);
+    static_assert(ranges::range<decltype(taken_rice)>);
+}
+
 int main() {
     assert(test());
     static_assert(test());
