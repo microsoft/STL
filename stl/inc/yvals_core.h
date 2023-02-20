@@ -1403,7 +1403,33 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4040 is used to warn that "The contents of <any> require static RTTI."
 
-// next warning number: STL4041
+#if _HAS_CXX23 && !defined(_SILENCE_CXX23_DENOM_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+#define _CXX23_DEPRECATE_DENOM                                                                                    \
+    [[deprecated("warning STL4041: "                                                                              \
+                 "std::float_denorm_style, std::numeric_limits::has_denorm, and "                                 \
+                 "std::numeric_limits::has_denorm_loss are deprecated in C++23. They are not well specified and " \
+                 "should not be dependent on. You can define _SILENCE_CXX23_DENOM_WARNING or "                    \
+                 "_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX23_DEPRECATE_DENOM
+#endif // ^^^ warning disabled ^^^
+
+#if _HAS_CXX23 && !defined(_SILENCE_CXX23_UNIX_STREAM_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+#define _CXX23_DEPRECATE_UNIX_STREAM                                                                                   \
+    [[deprecated(                                                                                                      \
+        "warning STL4042: "                                                                                            \
+        "std::errc enumerators std::errc::no_message_available, std::errc::no_stream_resources, "                      \
+        "std::errc::not_a_stream, and std::errc::stream_timeout and their corresponding errno macros ENODATA, ENOSR, " \
+        "ENOSTR and ETIME are deprecated in C++23 by LWG-3869. These errno macros are deprecated in POSIX 2008 and "   \
+        "removed in POSIX 202x. You can define _SILENCE_CXX23_UNIX_STREAM_WARNING or "                                 \
+        "_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX23_DEPRECATE_UNIX_STREAM
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4043
 
 // next error number: STL1006
 
