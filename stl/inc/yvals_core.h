@@ -352,6 +352,7 @@
 // P2505R5 Monadic Functions For expected
 // P2549R1 unexpected<E>::error()
 // P2602R2 Poison Pills Are Too Toxic
+// P2609R3 Relaxing Ranges Just A Smidge
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1762,7 +1763,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #if _HAS_CXX23
-#define __cpp_lib_ranges 202211L // P2602R2 Poison Pills Are Too Toxic
+#define __cpp_lib_ranges 202302L // P2609R3 Relaxing Ranges Just A Smidge
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_ranges 202110L // P2415R2 What Is A view?
 #endif // _HAS_CXX20
