@@ -332,11 +332,8 @@ static_assert(CanViewRepeat<string, _Signed128>);
 static_assert(
     !CanViewRepeat<string, _Unsigned128>); // _Unsigned128 does not satisfy 'integer-like-with-usable-difference-type'
 
-void test_gh_3392() { // COMPILE-ONLY
-    const auto rice                        = views::repeat("🌾"s, 100ull);
-    [[maybe_unused]] const auto taken_rice = rice | views::take(3);
-    static_assert(ranges::range<decltype(taken_rice)>);
-}
+// Check GH-3392
+static_assert(ranges::range<decltype(views::repeat('3', 100ull) | views::take(3))>);
 
 int main() {
     assert(test());
