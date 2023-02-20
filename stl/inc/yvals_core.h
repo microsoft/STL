@@ -313,7 +313,6 @@
 // P1223R5 ranges::find_last, ranges::find_last_if, ranges::find_last_if_not
 // P1272R4 byteswap()
 // P1328R1 constexpr type_info::operator==()
-// P1413R3 Deprecate aligned_storage And aligned_union
 // P1425R4 Iterator Pair Constructors For stack And queue
 // P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
@@ -352,6 +351,10 @@
 // P2505R5 Monadic Functions For expected
 // P2549R1 unexpected<E>::error()
 // P2602R2 Poison Pills Are Too Toxic
+
+// _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
+// P1413R3 Deprecate aligned_storage And aligned_union
+// Other C++23 deprecation warnings
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1403,7 +1406,21 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4040 is used to warn that "The contents of <any> require static RTTI."
 
-// next warning number: STL4041
+#if _HAS_CXX23 && !defined(_SILENCE_CXX23_UNIX_STREAM_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+#define _CXX23_DEPRECATE_UNIX_STREAM                                                                                   \
+    [[deprecated(                                                                                                      \
+        "warning STL4041: "                                                                                            \
+        "std::errc enumerators std::errc::no_message_available, std::errc::no_stream_resources, "                      \
+        "std::errc::not_a_stream, and std::errc::stream_timeout and their corresponding errno macros ENODATA, ENOSR, " \
+        "ENOSTR and ETIME are deprecated in C++23 by LWG-3869. These errno macros are deprecated in POSIX 2008 and "   \
+        "removed in POSIX 202x. You can define _SILENCE_CXX23_UNIX_STREAM_WARNING or "                                 \
+        "_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX23_DEPRECATE_UNIX_STREAM
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4042
 
 // next error number: STL1006
 
