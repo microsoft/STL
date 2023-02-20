@@ -697,12 +697,10 @@ struct projected {
     }
 };
 
-#if _HAS_CXX23
 template <class _It, class _Proj>
 struct _Indirect_value_impl<projected<_It, _Proj>> {
     using type = invoke_result_t<_Proj&, _Indirect_value_t<_It>>;
 };
-#endif // _HAS_CXX23
 
 template <weakly_incrementable _It, class _Proj>
 struct incrementable_traits<projected<_It, _Proj>> {
