@@ -9,7 +9,7 @@
 
 using namespace std;
 
-int main() {
+void test() {
     auto ints                  = views::iota(0, 5);
     auto project_to_unique_ptr = []<movable T>(T v) { return make_unique<T>(move(v)); };
 
