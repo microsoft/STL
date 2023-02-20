@@ -337,6 +337,7 @@
 // P2321R2 zip
 //     (missing views::adjacent_transform)
 // P2322R6 ranges::fold_left, ranges::fold_right, Etc.
+// P2374R4 views::cartesian_product
 // P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2404R3 Move-Only Types For Comparison Concepts
 // P2417R2 More constexpr bitset
@@ -353,6 +354,7 @@
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2505R5 Monadic Functions For expected
+// P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
 // P2652R2 Disallowing User Specialization Of allocator_traits
 
@@ -1723,22 +1725,23 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_out_ptr                 202106L
-#define __cpp_lib_ranges_as_const         202207L
-#define __cpp_lib_ranges_as_rvalue        202207L
-#define __cpp_lib_ranges_chunk            202202L
-#define __cpp_lib_ranges_chunk_by         202202L
-#define __cpp_lib_ranges_contains         202207L
-#define __cpp_lib_ranges_enumerate        202302L
-#define __cpp_lib_ranges_find_last        202207L
-#define __cpp_lib_ranges_fold             202207L
-#define __cpp_lib_ranges_iota             202202L
-#define __cpp_lib_ranges_join_with        202202L
-#define __cpp_lib_ranges_repeat           202207L
-#define __cpp_lib_ranges_slide            202202L
-#define __cpp_lib_ranges_starts_ends_with 202106L
-#define __cpp_lib_ranges_stride           202207L
-#define __cpp_lib_ranges_to_container     202202L
+#define __cpp_lib_out_ptr                  202106L
+#define __cpp_lib_ranges_as_const          202207L
+#define __cpp_lib_ranges_as_rvalue         202207L
+#define __cpp_lib_ranges_cartesian_product 202207L
+#define __cpp_lib_ranges_chunk             202202L
+#define __cpp_lib_ranges_chunk_by          202202L
+#define __cpp_lib_ranges_contains          202207L
+#define __cpp_lib_ranges_enumerate         202302L
+#define __cpp_lib_ranges_find_last         202207L
+#define __cpp_lib_ranges_fold              202207L
+#define __cpp_lib_ranges_iota              202202L
+#define __cpp_lib_ranges_join_with         202202L
+#define __cpp_lib_ranges_repeat            202207L
+#define __cpp_lib_ranges_slide             202202L
+#define __cpp_lib_ranges_starts_ends_with  202106L
+#define __cpp_lib_ranges_stride            202207L
+#define __cpp_lib_ranges_to_container      202202L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream                  202106L
