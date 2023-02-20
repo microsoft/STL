@@ -367,6 +367,9 @@ std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_wit
 # DevCom-10165380: [ICE] constexpr evaluation confused by complicated use of string literals
 std/utilities/format/format.fmt.string/get.pass.cpp:0 FAIL
 
+# DevCom-10284753: Overload resolution is sometimes wrong for templated classes whose template argument are cv void
+std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp SKIPPED
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
@@ -1068,9 +1071,6 @@ std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requir
 
 # Not analyzed, possible bug in uses_allocator_construction_args
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_piecewise_pair_evil.pass.cpp FAIL
-
-# Not analyzed, likely STL bug.
-std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp SKIPPED
 
 
 # *** XFAILs WHICH PASS ***
