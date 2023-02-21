@@ -1619,9 +1619,12 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _In
 #ifdef __cpp_lib_concepts
 namespace ranges {
     template <class _It>
-    concept _No_throw_input_iterator = input_iterator<_It> //
-                                    && is_lvalue_reference_v<iter_reference_t<_It>> //
-                                    && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
+    concept _No_throw_input_iterator =
+        input_iterator<_It> //
+        && is_lvalue_reference_v<iter_reference_t<_It>> //
+        && same_as<remove_cvref_t<iter_reference_t<_It>>, remove_reference_t<iter_reference_t<_It>>> // per LWG-3888
+        && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
+
 
     template <class _Se, class _It>
     concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
