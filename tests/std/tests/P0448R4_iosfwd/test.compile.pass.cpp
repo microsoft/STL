@@ -111,5 +111,3 @@ struct test_forward_declarations {
 test_aliases aliases;
 test_forward_declarations<char> forward_declarations_char;
 test_forward_declarations<wchar_t> forward_declarations_wchar_t;
-
-int main() {} // COMPILE-ONLY

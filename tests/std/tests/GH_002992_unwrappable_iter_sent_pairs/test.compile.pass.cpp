@@ -236,5 +236,3 @@ void test_neither_unwrappable() {
     test_not_unwrappable_views<test::iterator<fwd, Nontrivial>::unwrapping_ignorant, sent_nt>();
     test_not_unwrappable_views<test::iterator<input, Nontrivial>::unwrapping_ignorant, sent_nt>();
 }
-
-int main() {} // COMPILE-ONLY

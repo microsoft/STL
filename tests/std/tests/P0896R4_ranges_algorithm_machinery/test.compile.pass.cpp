@@ -17,8 +17,6 @@
 
 namespace ranges = std::ranges;
 
-int main() {} // COMPILE-ONLY
-
 namespace detail {
     static constexpr bool permissive() {
         return false;

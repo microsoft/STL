@@ -299,7 +299,8 @@ std/language.support/support.limits/support.limits.general/utility.version.compi
 
 
 # *** MISSING COMPILER FEATURES ***
-# Nothing here! :-)
+# MSVC doesn't properly support [[no_unique_address]]
+std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp SKIPPED
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
@@ -365,6 +366,9 @@ std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_wit
 
 # DevCom-10165380: [ICE] constexpr evaluation confused by complicated use of string literals
 std/utilities/format/format.fmt.string/get.pass.cpp:0 FAIL
+
+# DevCom-10284753: Overload resolution is sometimes wrong for templated classes whose template argument are cv void
+std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp SKIPPED
 
 
 # *** CLANG COMPILER BUGS ***

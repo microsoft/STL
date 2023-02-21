@@ -26,5 +26,3 @@ struct meow_category : error_category {
 #if _HAS_CXX20
 [[maybe_unused]] constexpr meow_category meowing_cat;
 #endif // _HAS_CXX20
-
-int main() {} // COMPILE-ONLY

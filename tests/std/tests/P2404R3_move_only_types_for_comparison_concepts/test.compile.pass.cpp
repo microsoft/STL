@@ -51,5 +51,3 @@ template <class T>
 constexpr bool check_diff_cpp20_concepts = !requires(T p) { attempted_equals(p, nullptr); };
 
 static_assert(check_diff_cpp20_concepts<shared_ptr<int>>);
-
-int main() {} // COMPILE-ONLY

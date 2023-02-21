@@ -96,5 +96,3 @@ STATIC_ASSERT(!can_make_any<unique_ptr<int>, const unique_ptr<int>&>);
 STATIC_ASSERT(!can_make_any<int, int, int>);
 STATIC_ASSERT(!can_make_any<int, initializer_list<int>&>);
 #endif // _HAS_CXX17
-
-int main() {} // COMPILE-ONLY
