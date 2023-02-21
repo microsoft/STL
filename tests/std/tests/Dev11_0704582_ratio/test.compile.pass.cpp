@@ -8,8 +8,6 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 STATIC_ASSERT(is_same_v<ratio_add<ratio<30, 8>, ratio<42, 27>>, ratio<191, 36>>);
 STATIC_ASSERT(is_same_v<ratio_subtract<ratio<30, 8>, ratio<42, 27>>, ratio<79, 36>>);
 STATIC_ASSERT(is_same_v<ratio_multiply<ratio<30, 8>, ratio<42, 27>>, ratio<35, 6>>);

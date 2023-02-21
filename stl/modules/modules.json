@@ -2,13 +2,8 @@
     "version": 1,
     "revision": 0,
     "library": "microsoft/STL",
-    "modules": {
-        "std": {
-            "source": "std.ixx"
-        },
-        "std.compat": {
-            "source": "std.compat.ixx",
-            "requires": ["std"]
-        }
-    }
+    "module-sources": [
+        "std.ixx",
+        "std.compat.ixx"
+    ]
 }

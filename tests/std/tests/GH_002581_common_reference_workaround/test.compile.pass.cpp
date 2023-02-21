@@ -41,5 +41,3 @@ static_assert(random_access_iterator<move_iterator<Test* volatile*>>);
 static_assert(random_access_iterator<move_iterator<Test* const volatile*>>);
 static_assert(random_access_iterator<move_iterator<int Test::*volatile*>>);
 static_assert(random_access_iterator<move_iterator<int Test::*const volatile*>>);
-
-int main() {} // COMPILE-ONLY

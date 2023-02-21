@@ -14,5 +14,3 @@ struct CharTraits : char_traits<char> {
 };
 
 struct Streambuf : basic_streambuf<char, CharTraits> {};
-
-int main() {} // COMPILE-ONLY
