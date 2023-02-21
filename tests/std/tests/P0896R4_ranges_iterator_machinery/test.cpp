@@ -11,12 +11,11 @@
 #include <utility>
 #include <vector>
 
+#include <range_algorithm_support.hpp>
+
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 namespace ranges = std::ranges;
-
-template <class>
-inline constexpr bool always_false = false;
 
 template <class T>
 using reference_to = T&;
@@ -3447,6 +3446,15 @@ namespace move_iterator_test {
         !has_greater_eq<move_iterator<simple_random_iter<sentinel_base>>, move_sentinel<std::default_sentinel_t>>);
     STATIC_ASSERT(!three_way_comparable<move_iterator<simple_random_iter<sentinel_base>>,
                   move_sentinel<std::default_sentinel_t>>);
+
+    void test_gh_3014() { // COMPILE-ONLY
+        using S = test::init_list_not_constructible_sentinel<int>;
+        S s;
+        [[maybe_unused]] move_sentinel<S> y{s}; // Check 'move_sentinel(S s)'
+
+        move_sentinel<int*> s2;
+        [[maybe_unused]] move_sentinel<S> z{s2}; // Check 'move_sentinel(const move_sentinel<S2>& s2)'
+    }
 
     constexpr bool test() {
         // Validate iter_move
