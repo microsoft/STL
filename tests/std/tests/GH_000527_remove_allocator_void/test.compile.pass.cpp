@@ -60,5 +60,3 @@ STATIC_ASSERT(has_cxx20 == has_member_pocma<allocator<void>>);
 STATIC_ASSERT(has_cxx20 == has_member_is_always_equal<allocator<void>>);
 STATIC_ASSERT(has_cxx20 == can_allocate<allocator<void>>);
 STATIC_ASSERT(has_cxx20 == is_convertible_v<allocator<int>, allocator<void>>);
-
-int main() {} // COMPILE-ONLY

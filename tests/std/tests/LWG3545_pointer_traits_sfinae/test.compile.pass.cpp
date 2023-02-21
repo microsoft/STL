@@ -88,5 +88,3 @@ STATIC_ASSERT(has_memtype_difference_type<pointer_traits<CheckPriority<char>>>);
 STATIC_ASSERT(is_same_v<pointer_traits<CheckPriority<char>>::element_type, char[42]>);
 STATIC_ASSERT(is_same_v<pointer_traits<CheckPriority<char>>::pointer, CheckPriority<char>>);
 STATIC_ASSERT(is_same_v<pointer_traits<CheckPriority<char>>::difference_type, ptrdiff_t>);
-
-int main() {} // COMPILE-ONLY

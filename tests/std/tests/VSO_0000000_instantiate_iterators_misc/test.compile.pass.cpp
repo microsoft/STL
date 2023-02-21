@@ -109,8 +109,6 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 #ifndef _M_CEE_PURE
 
 #if _HAS_CXX20

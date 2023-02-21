@@ -5,8 +5,6 @@
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 // LIBRARY FEATURE-TEST MACROS
 #if _HAS_CXX23
 #ifndef __cpp_lib_adaptor_iterator_pair_constructor

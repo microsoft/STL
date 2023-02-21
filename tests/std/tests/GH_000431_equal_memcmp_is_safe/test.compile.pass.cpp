@@ -520,5 +520,3 @@ STATIC_ASSERT(assert_equal_memcmp_is_safe<true, counted_iterator<int*>, int*>())
 STATIC_ASSERT(assert_equal_memcmp_is_safe<true, int*, counted_iterator<int*>>());
 STATIC_ASSERT(assert_equal_memcmp_is_safe<true, counted_iterator<int*>, counted_iterator<int*>>());
 #endif // __cpp_lib_concepts
-
-int main() {} // COMPILE-ONLY

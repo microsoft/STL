@@ -250,6 +250,11 @@ constexpr void test_one(It iter) {
     }
 }
 
+void test_lwg3853() { // COMPILE-ONLY
+    basic_const_iterator<volatile int*> it;
+    [[maybe_unused]] same_as<const volatile int*> auto ptr = it.operator->();
+}
+
 static constexpr int some_ints[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 struct instantiator {

@@ -115,5 +115,3 @@ namespace test {
 
 static_assert(std::atomic_thread_fence == atomic_thread_fence);
 static_assert(std::atomic_signal_fence == atomic_signal_fence);
-
-int main() {} // COMPILE-ONLY

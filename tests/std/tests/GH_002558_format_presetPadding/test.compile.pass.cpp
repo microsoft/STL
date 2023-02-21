@@ -10,5 +10,3 @@ using namespace std;
 string test_gh_2558() {
     return format("I have {} cute {} kittens.\n", 1729, "fluffy");
 }
-
-int main() {} // COMPILE-ONLY
