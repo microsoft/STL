@@ -62,7 +62,11 @@ inline constexpr bool can_construct_at = can_construct_at_impl<void, Ty, Types..
 
 template <class T, class... Args>
 constexpr bool construct_at_noexcept() {
-    return noexcept(construct_at(declval<T*>(), declval<Args>()...));
+    if constexpr (can_construct_at<T, Args...>) {
+        return noexcept(construct_at(declval<T*>(), declval<Args>()...));
+    } else {
+        return false;
+    }
 }
 
 template <class T>

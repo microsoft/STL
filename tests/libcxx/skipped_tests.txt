@@ -127,6 +127,7 @@ strings\string.view\string.view.cons\from_string1.compile.fail.cpp
 strings\string.view\string.view.cons\from_string2.compile.fail.cpp
 
 # libc++ doesn't implement LWG-3870
+utilities\memory\specialized.algorithms\specialized.construct\ranges_construct_at.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.construct.default\ranges_uninitialized_default_construct.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.construct.default\ranges_uninitialized_default_construct_n.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.construct.value\ranges_uninitialized_value_construct.pass.cpp

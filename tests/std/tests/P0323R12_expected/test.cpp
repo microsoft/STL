@@ -2083,6 +2083,8 @@ struct CvAssignable {
     }
 };
 
+#pragma warning(push)
+#pragma warning(disable : 5216) // volatile qualified return type
 void test_lwg3891() {
     {
         expected<const int, char> oc{};
@@ -2123,6 +2125,7 @@ void test_lwg3891() {
         ocv = move(ocv2);
     }
 }
+#pragma warning(pop)
 
 int main() {
     test_unexpected::test_all();
