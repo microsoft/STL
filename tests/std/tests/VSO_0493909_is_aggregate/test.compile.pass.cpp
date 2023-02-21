@@ -7,8 +7,6 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 STATIC_ASSERT(!is_aggregate_v<int>);
 STATIC_ASSERT(!is_aggregate_v<const int>);
 STATIC_ASSERT(!is_aggregate_v<void>);

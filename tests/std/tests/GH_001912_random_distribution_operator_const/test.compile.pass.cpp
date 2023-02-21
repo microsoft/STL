@@ -39,5 +39,3 @@ void test_every_distribution() {
     test<piecewise_constant_distribution<double>>();
     test<piecewise_linear_distribution<double>>();
 }
-
-int main() {} // COMPILE-ONLY

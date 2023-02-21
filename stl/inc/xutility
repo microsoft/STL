@@ -1862,7 +1862,7 @@ public:
         return static_cast<_Reference>(*_Current);
     }
 
-    _NODISCARD constexpr const value_type* operator->() const
+    _NODISCARD constexpr const auto* operator->() const
         noexcept(contiguous_iterator<_Iter> || noexcept(*_Current)) /* strengthened */
         requires is_lvalue_reference_v<iter_reference_t<_Iter>>
               && same_as<remove_cvref_t<iter_reference_t<_Iter>>, value_type>

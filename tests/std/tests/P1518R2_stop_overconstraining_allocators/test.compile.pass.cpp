@@ -133,5 +133,3 @@ void test_stack2(pmr::vector<int>& pc) {
     [[maybe_unused]] auto x = SfinaeTester<stack>::test(pc, &mr);
     [[maybe_unused]] auto y = SfinaeTester<stack>::test(move(pc), &mr);
 }
-
-int main() {} // COMPILE-ONLY
