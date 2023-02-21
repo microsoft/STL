@@ -383,6 +383,37 @@ struct std::basic_common_reference<::test::proxy_reference<Cat1, Elem1>, ::test:
 };
 
 namespace test {
+    template <class T>
+    struct init_list_not_constructible_sentinel {
+        init_list_not_constructible_sentinel() = default;
+        init_list_not_constructible_sentinel(T*) {}
+
+        template <class U>
+        init_list_not_constructible_sentinel(std::initializer_list<U>) = delete;
+    };
+
+    template <class T>
+    struct init_list_not_constructible_iterator {
+        using difference_type = int;
+        using value_type      = T;
+
+        init_list_not_constructible_iterator() = default;
+        init_list_not_constructible_iterator(T*) {}
+
+        template <class U>
+        init_list_not_constructible_iterator(std::initializer_list<U>) = delete;
+
+        T operator*() const; // not defined
+        init_list_not_constructible_iterator& operator++(); // not defined
+        init_list_not_constructible_iterator operator++(int); // not defined
+
+        bool operator==(init_list_not_constructible_sentinel<T>) const; // not defined
+    };
+
+    static_assert(std::input_iterator<init_list_not_constructible_iterator<int>>);
+    static_assert(
+        std::sentinel_for<init_list_not_constructible_sentinel<int>, init_list_not_constructible_iterator<int>>);
+
     template <class Category, class Element,
         // Model sized_sentinel_for along with sentinel?
         CanDifference Diff = CanDifference{derived_from<Category, random>},
