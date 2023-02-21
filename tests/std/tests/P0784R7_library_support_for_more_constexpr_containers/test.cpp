@@ -515,8 +515,8 @@ constexpr void test_compiletime_operators() {
 }
 static_assert((test_compiletime_operators(), true));
 
+#ifdef __cpp_lib_concepts
 // Also test LWG-3888 Most ranges uninitialized memory algorithms are underconstrained
-
 template <class Rng>
 concept CanUninitilizedDefaultConstruct = requires(Rng& r) { ranges::uninitialized_default_construct(r); };
 
@@ -621,6 +621,7 @@ static_assert(CanDestroyN<char*>);
 static_assert(!CanDestroyN<const char*>);
 static_assert(!CanDestroyN<volatile char*>);
 static_assert(!CanDestroyN<const volatile char*>);
+#endif // __cpp_lib_concepts
 
 int main() {
     test_runtime(1234);

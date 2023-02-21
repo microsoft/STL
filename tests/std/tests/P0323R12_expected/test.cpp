@@ -3,6 +3,11 @@
 
 #define _CONTAINER_DEBUG_LEVEL 1
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile" // volatile qualified return type
+#endif // __clang__
+
 #include <cassert>
 #include <concepts>
 #include <exception>
@@ -10,6 +15,10 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
 
 using namespace std;
 
@@ -2083,13 +2092,10 @@ struct CvAssignable {
     }
 };
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-volatile" // volatile qualified return type
-#else // ^^^ Clang / MSVC vvv
+#ifndef __clang__
 #pragma warning(push)
 #pragma warning(disable : 5216) // volatile qualified return type
-#endif // ^^^ MSVC ^^^
+#endif // __clang__
 void test_lwg3891() {
     {
         expected<const int, char> oc{};
@@ -2130,11 +2136,9 @@ void test_lwg3891() {
         ocv = move(ocv2);
     }
 }
-#ifdef __clang__
-#pragma clang diagnostic pop
-#else // ^^^ Clang / MSVC vvv
+#ifndef __clang__
 #pragma warning(pop)
-#endif // ^^^ MSVC ^^^
+#endif // __clang__
 
 int main() {
     test_unexpected::test_all();
