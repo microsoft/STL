@@ -2083,8 +2083,13 @@ struct CvAssignable {
     }
 };
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile" // volatile qualified return type
+#else // ^^^ Clang / MSVC vvv
 #pragma warning(push)
 #pragma warning(disable : 5216) // volatile qualified return type
+#endif // ^^^ MSVC ^^^
 void test_lwg3891() {
     {
         expected<const int, char> oc{};
@@ -2125,7 +2130,11 @@ void test_lwg3891() {
         ocv = move(ocv2);
     }
 }
+#ifdef __clang__
+#pragma clang diagnostic pop
+#else // ^^^ Clang / MSVC vvv
 #pragma warning(pop)
+#endif // ^^^ MSVC ^^^
 
 int main() {
     test_unexpected::test_all();

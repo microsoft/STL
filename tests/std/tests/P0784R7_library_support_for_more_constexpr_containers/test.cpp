@@ -36,9 +36,13 @@ inline constexpr bool can_construct_at = [] {
 
 template <class T, class... Args>
 constexpr bool construct_at_noexcept() {
-    constexpr bool result = noexcept(construct_at(declval<T*>(), declval<Args>()...));
-    static_assert(noexcept(ranges::construct_at(declval<T*>(), declval<Args>()...)) == result);
-    return result;
+    if constexpr (can_construct_at<T, Args...>) {
+        constexpr bool result = noexcept(construct_at(declval<T*>(), declval<Args>()...));
+        static_assert(noexcept(ranges::construct_at(declval<T*>(), declval<Args>()...)) == result);
+        return result;
+    } else {
+        return false;
+    }
 }
 
 template <class T>
