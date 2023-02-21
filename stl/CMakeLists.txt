@@ -492,10 +492,12 @@ set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "")
 # Toolset options must appear before add_library() for the options to take effect.
 add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1 _STL_CONCRT_SUPPORT)
 
+# /Z7 for MSVC, /Zi for MASM
+set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
+
 add_compile_options(/WX /Gy
-    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Z7;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
-    # note that /Zi generates debug info inside the object file, it's the same as /Z7 for msvc
-    "$<$<COMPILE_LANGUAGE:ASM_MASM>:/Zi;/W3;/nologo>"
+    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
+    "$<$<COMPILE_LANGUAGE:ASM_MASM>:/W3;/nologo>"
 )
 
 include_directories(BEFORE
