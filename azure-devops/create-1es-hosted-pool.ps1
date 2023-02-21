@@ -284,7 +284,7 @@ $Gallery = New-AzGallery `
 ####################################################################################################
 Display-ProgressBar -Status 'Granting access to 1ES Resource Management'
 
-$ServicePrincipalObjectId = (Get-AzADServicePrincipal -DisplayName '1ES Resource Management').Id
+$ServicePrincipalObjectId = (Get-AzADServicePrincipal -DisplayName '1ES Resource Management' -First 1).Id
 
 New-AzRoleAssignment `
   -ObjectId $ServicePrincipalObjectId `
