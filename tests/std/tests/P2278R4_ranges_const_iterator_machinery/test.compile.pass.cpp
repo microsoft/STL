@@ -192,5 +192,3 @@ struct NotSemiregular {
 };
 
 static_assert(!CanConstSentinel<NotSemiregular>);
-
-int main() {} // COMPILE-ONLY

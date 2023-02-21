@@ -3,6 +3,4 @@
 
 #include <locale>
 
-int main() {} // COMPILE-ONLY
-
 static_assert(std::ctype<char>::table_size == 256, "");
