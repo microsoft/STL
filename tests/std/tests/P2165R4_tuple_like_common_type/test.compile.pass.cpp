@@ -86,5 +86,3 @@ static_assert(test_common_type<volatile tuple<int*, Sentinel>&, const subrange<i
 static_assert(!CanCommonType<tuple<int>, array<int, 2>>);
 static_assert(!CanCommonType<tuple<int>, subrange<int*, int*>>);
 static_assert(!CanCommonType<tuple<int>, pair<int, int>>);
-
-int main() {} // COMPILE-ONLY

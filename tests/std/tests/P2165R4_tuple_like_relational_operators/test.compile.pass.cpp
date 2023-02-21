@@ -119,5 +119,3 @@ constexpr bool test() {
 }
 
 static_assert(test());
-
-int main() {} // COMPILE-ONLY

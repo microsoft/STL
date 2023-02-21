@@ -193,5 +193,3 @@ namespace test_tuple_cat {
 static_assert(test_apply::test());
 static_assert(test_make_from_tuple::test());
 static_assert(test_tuple_cat::test());
-
-int main() {} // COMPILE-ONLY

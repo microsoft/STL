@@ -94,5 +94,3 @@ static_assert(
 static_assert(!CanCommonReference<tuple<int>, array<int, 2>>);
 static_assert(!CanCommonReference<tuple<int>, subrange<int*, int*>>);
 static_assert(!CanCommonReference<tuple<int>, pair<int, int>>);
-
-int main() {} // COMPILE-ONLY
