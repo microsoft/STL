@@ -209,7 +209,7 @@ public:
                   && is_copy_constructible_v<_Ty> && is_copy_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
         if (_Has_value) {
-            _STD construct_at(_STD addressof(_Value), _Other._Value);
+            _STD construct_at(_STD addressof(_Value), static_cast<const _Ty&>(_Other._Value));
         } else {
             _STD construct_at(_STD addressof(_Unexpected), _Other._Unexpected);
         }
@@ -226,7 +226,7 @@ public:
                   && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
         if (_Has_value) {
-            _STD construct_at(_STD addressof(_Value), _STD move(_Other._Value));
+            _STD construct_at(_STD addressof(_Value), static_cast<_Ty&&>(_Other._Value));
         } else {
             _STD construct_at(_STD addressof(_Unexpected), _STD move(_Other._Unexpected));
         }
@@ -259,7 +259,7 @@ public:
                 && is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
         : _Has_value(_Other._Has_value) {
         if (_Has_value) {
-            _STD construct_at(_STD addressof(_Value), _Other._Value);
+            _STD construct_at(_STD addressof(_Value), static_cast<const _Uty&>(_Other._Value));
         } else {
             _STD construct_at(_STD addressof(_Unexpected), _Other._Unexpected);
         }
@@ -272,7 +272,7 @@ public:
             is_nothrow_constructible_v<_Ty, _Uty>&& is_nothrow_constructible_v<_Err, _UErr>) // strengthened
         : _Has_value(_Other._Has_value) {
         if (_Has_value) {
-            _STD construct_at(_STD addressof(_Value), _STD move(_Other._Value));
+            _STD construct_at(_STD addressof(_Value), static_cast<_Uty&&>(_Other._Value));
         } else {
             _STD construct_at(_STD addressof(_Unexpected), _STD move(_Other._Unexpected));
         }
@@ -358,7 +358,7 @@ public:
 
     template <class _First, class _Second, class... _Args>
     static constexpr void _Reinit_expected(_First& _New_val, _Second& _Old_val, _Args&&... _Vals) noexcept(
-        is_nothrow_constructible_v<_First, _Args...>) // strengthened
+        is_nothrow_constructible_v<_First, _Args...>)
     {
         if constexpr (is_nothrow_constructible_v<_First, _Args...>) {
             if constexpr (!is_trivially_destructible_v<_Second>) {
@@ -391,11 +391,11 @@ public:
               && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
     {
         if (_Has_value && _Other._Has_value) {
-            _Value = _Other._Value;
+            static_cast<_Ty&>(_Value) = static_cast<const _Ty&>(_Other._Value);
         } else if (_Has_value) {
             _Reinit_expected(_Unexpected, _Value, _Other._Unexpected);
         } else if (_Other._Has_value) {
-            _Reinit_expected(_Value, _Unexpected, _Other._Value);
+            _Reinit_expected(_Value, _Unexpected, static_cast<const _Ty&>(_Other._Value));
         } else {
             _Unexpected = _Other._Unexpected;
         }
@@ -412,11 +412,11 @@ public:
               && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
     {
         if (_Has_value && _Other._Has_value) {
-            _Value = _STD move(_Other._Value);
+            static_cast<_Ty&>(_Value) = static_cast<_Ty&&>(_Other._Value);
         } else if (_Has_value) {
             _Reinit_expected(_Unexpected, _Value, _STD move(_Other._Unexpected));
         } else if (_Other._Has_value) {
-            _Reinit_expected(_Value, _Unexpected, _STD move(_Other._Value));
+            _Reinit_expected(_Value, _Unexpected, static_cast<_Ty&&>(_Other._Value));
         } else {
             _Unexpected = _STD move(_Other._Unexpected);
         }
@@ -433,7 +433,7 @@ public:
     constexpr expected& operator=(_Uty&& _Other) noexcept(
         is_nothrow_constructible_v<_Ty, _Uty>&& is_nothrow_assignable_v<_Ty&, _Uty>) /* strengthened */ {
         if (_Has_value) {
-            _Value = _STD forward<_Uty>(_Other);
+            static_cast<_Ty&>(_Value) = _STD forward<_Uty>(_Other);
         } else {
             _Reinit_expected(_Value, _Unexpected, _STD forward<_Uty>(_Other));
             _Has_value = true;
@@ -517,7 +517,7 @@ public:
               && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
     {
         if (_Has_value && _Other._Has_value) {
-            _Swap_adl(_Value, _Other._Value);
+            _STD _Swap_adl(static_cast<_Ty&>(_Value), static_cast<_Ty&>(_Other._Value));
         } else if (_Has_value) {
             if constexpr (is_nothrow_move_constructible_v<_Err>) {
                 _Err _Tmp(_STD move(_Other._Unexpected));
@@ -526,10 +526,10 @@ public:
                 }
 
                 if constexpr (is_nothrow_move_constructible_v<_Ty>) {
-                    _STD construct_at(_STD addressof(_Other._Value), _STD move(_Value));
+                    _STD construct_at(_STD addressof(_Other._Value), static_cast<_Ty&&>(_Value));
                 } else {
                     _GuardTy<_Err> _Guard{_STD addressof(_Other._Unexpected), _STD addressof(_Tmp)};
-                    _STD construct_at(_STD addressof(_Other._Value), _STD move(_Value));
+                    _STD construct_at(_STD addressof(_Other._Value), static_cast<_Ty&&>(_Value));
                     _Guard._Target = nullptr;
                 }
 
@@ -558,7 +558,7 @@ public:
         } else if (_Other._Has_value) {
             _Other.swap(*this);
         } else {
-            _Swap_adl(_Unexpected, _Other._Unexpected);
+            _STD _Swap_adl(_Unexpected, _Other._Unexpected);
         }
     }
 
@@ -680,7 +680,7 @@ public:
             is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4928 [expected.object.obs]/16)");
 
         if (_Has_value) {
-            return _Value;
+            return static_cast<const _Ty&>(_Value);
         } else {
             return static_cast<_Ty>(_STD forward<_Uty>(_Other));
         }
@@ -694,7 +694,7 @@ public:
             is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4928 [expected.object.obs]/18)");
 
         if (_Has_value) {
-            return _STD move(_Value);
+            return static_cast<_Ty&&>(_Value);
         } else {
             return static_cast<_Ty>(_STD forward<_Uty>(_Other));
         }
@@ -744,7 +744,7 @@ public:
             "(N4928 [expected.object.monadic]/3)");
 
         if (_Has_value) {
-            return _STD invoke(_STD forward<_Fn>(_Func), _Value);
+            return _STD invoke(_STD forward<_Fn>(_Func), static_cast<_Ty&>(_Value));
         } else {
             return _Uty{unexpect, _Unexpected};
         }
@@ -763,7 +763,7 @@ public:
             "(N4928 [expected.object.monadic]/3)");
 
         if (_Has_value) {
-            return _STD invoke(_STD forward<_Fn>(_Func), _Value);
+            return _STD invoke(_STD forward<_Fn>(_Func), static_cast<const _Ty&>(_Value));
         } else {
             return _Uty{unexpect, _Unexpected};
         }
@@ -782,7 +782,7 @@ public:
             "(N4928 [expected.object.monadic]/7)");
 
         if (_Has_value) {
-            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
+            return _STD invoke(_STD forward<_Fn>(_Func), static_cast<_Ty&&>(_Value));
         } else {
             return _Uty{unexpect, _STD move(_Unexpected)};
         }
@@ -801,7 +801,7 @@ public:
             "(N4928 [expected.object.monadic]/7)");
 
         if (_Has_value) {
-            return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
+            return _STD invoke(_STD forward<_Fn>(_Func), static_cast<const _Ty&&>(_Value));
         } else {
             return _Uty{unexpect, _STD move(_Unexpected)};
         }
@@ -820,7 +820,7 @@ public:
             "(N4928 [expected.object.monadic]/11)");
 
         if (_Has_value) {
-            return _Uty{in_place, _Value};
+            return _Uty{in_place, static_cast<_Ty&>(_Value)};
         } else {
             return _STD invoke(_STD forward<_Fn>(_Func), _Unexpected);
         }
@@ -839,7 +839,7 @@ public:
             "(N4928 [expected.object.monadic]/11)");
 
         if (_Has_value) {
-            return _Uty{in_place, _Value};
+            return _Uty{in_place, static_cast<const _Ty&>(_Value)};
         } else {
             return _STD invoke(_STD forward<_Fn>(_Func), _Unexpected);
         }
@@ -858,7 +858,7 @@ public:
             "(N4928 [expected.object.monadic]/15)");
 
         if (_Has_value) {
-            return _Uty{in_place, _STD move(_Value)};
+            return _Uty{in_place, static_cast<_Ty&&>(_Value)};
         } else {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Unexpected));
         }
@@ -877,7 +877,7 @@ public:
             "(N4928 [expected.object.monadic]/15)");
 
         if (_Has_value) {
-            return _Uty{in_place, _STD move(_Value)};
+            return _Uty{in_place, static_cast<const _Ty&&>(_Value)};
         } else {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Unexpected));
         }
@@ -899,11 +899,11 @@ public:
 
         if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
-                _STD invoke(_STD forward<_Fn>(_Func), _Value);
+                _STD invoke(_STD forward<_Fn>(_Func), static_cast<_Ty&>(_Value));
                 return expected<_Uty, _Err>{};
             } else {
                 return expected<_Uty, _Err>{
-                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _Value};
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), static_cast<_Ty&>(_Value)};
             }
         } else {
             return expected<_Uty, _Err>{unexpect, _Unexpected};
@@ -926,11 +926,11 @@ public:
 
         if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
-                _STD invoke(_STD forward<_Fn>(_Func), _Value);
+                _STD invoke(_STD forward<_Fn>(_Func), static_cast<const _Ty&>(_Value));
                 return expected<_Uty, _Err>{};
             } else {
-                return expected<_Uty, _Err>{
-                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _Value};
+                return expected<_Uty, _Err>{_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func),
+                    static_cast<const _Ty&>(_Value)};
             }
         } else {
             return expected<_Uty, _Err>{unexpect, _Unexpected};
@@ -953,11 +953,11 @@ public:
 
         if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
-                _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
+                _STD invoke(_STD forward<_Fn>(_Func), static_cast<_Ty&&>(_Value));
                 return expected<_Uty, _Err>{};
             } else {
                 return expected<_Uty, _Err>{
-                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _STD move(_Value)};
+                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), static_cast<_Ty&&>(_Value)};
             }
         } else {
             return expected<_Uty, _Err>{unexpect, _STD move(_Unexpected)};
@@ -980,11 +980,11 @@ public:
 
         if (_Has_value) {
             if constexpr (is_void_v<_Uty>) {
-                _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
+                _STD invoke(_STD forward<_Fn>(_Func), static_cast<const _Ty&&>(_Value));
                 return expected<_Uty, _Err>{};
             } else {
-                return expected<_Uty, _Err>{
-                    _Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _STD move(_Value)};
+                return expected<_Uty, _Err>{_Construct_expected_from_invoke_result_tag{}, _STD forward<_Fn>(_Func),
+                    static_cast<const _Ty&&>(_Value)};
             }
         } else {
             return expected<_Uty, _Err>{unexpect, _STD move(_Unexpected)};
@@ -1004,7 +1004,7 @@ public:
         static_assert(_Check_unexpected_argument<_Uty>::value);
 
         if (_Has_value) {
-            return expected<_Ty, _Uty>{in_place, _Value};
+            return expected<_Ty, _Uty>{in_place, static_cast<_Ty&>(_Value)};
         } else {
             return expected<_Ty, _Uty>{
                 _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), _Unexpected};
@@ -1025,7 +1025,7 @@ public:
         static_assert(_Check_unexpected_argument<_Uty>::value);
 
         if (_Has_value) {
-            return expected<_Ty, _Uty>{in_place, _Value};
+            return expected<_Ty, _Uty>{in_place, static_cast<const _Ty&>(_Value)};
         } else {
             return expected<_Ty, _Uty>{
                 _Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func), _Unexpected};
@@ -1045,7 +1045,7 @@ public:
         static_assert(_Check_unexpected_argument<_Uty>::value);
 
         if (_Has_value) {
-            return expected<_Ty, _Uty>{in_place, _STD move(_Value)};
+            return expected<_Ty, _Uty>{in_place, static_cast<_Ty&&>(_Value)};
         } else {
             return expected<_Ty, _Uty>{_Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func),
                 _STD move(_Unexpected)};
@@ -1066,7 +1066,7 @@ public:
         static_assert(_Check_unexpected_argument<_Uty>::value);
 
         if (_Has_value) {
-            return expected<_Ty, _Uty>{in_place, _STD move(_Value)};
+            return expected<_Ty, _Uty>{in_place, static_cast<const _Ty&&>(_Value)};
         } else {
             return expected<_Ty, _Uty>{_Construct_expected_from_invoke_result_tag{}, unexpect, _STD forward<_Fn>(_Func),
                 _STD move(_Unexpected)};
@@ -1077,12 +1077,12 @@ public:
     template <class _Uty, class _UErr>
         requires (!is_void_v<_Uty>)
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
-        noexcept(_Fake_copy_init<bool>(_Left._Value == *_Right)) && noexcept(
-            _Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
+        noexcept(_STD _Fake_copy_init<bool>(static_cast<const _Ty&>(_Left._Value) == *_Right)) && noexcept(
+            _STD _Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value != _Right.has_value()) {
             return false;
         } else if (_Left._Has_value) {
-            return _Left._Value == *_Right;
+            return static_cast<const _Ty&>(_Left._Value) == *_Right;
         } else {
             return _Left._Unexpected == _Right.error();
         }
@@ -1090,9 +1090,9 @@ public:
 
     template <class _Uty>
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const _Uty& _Right) noexcept(
-        noexcept(static_cast<bool>(_Left._Value == _Right))) /* strengthened */ {
+        noexcept(static_cast<bool>(static_cast<const _Ty&>(_Left._Value) == _Right))) /* strengthened */ {
         if (_Left._Has_value) {
-            return static_cast<bool>(_Left._Value == _Right);
+            return static_cast<bool>(static_cast<const _Ty&>(_Left._Value) == _Right);
         } else {
             return false;
         }
@@ -1140,7 +1140,7 @@ private:
     }
 
     union {
-        _Ty _Value;
+        remove_cv_t<_Ty> _Value; // per LWG-3891
         _Err _Unexpected;
     };
     bool _Has_value;
