@@ -334,6 +334,7 @@ static_assert(
 
 // Check GH-3392
 static_assert(ranges::range<decltype(views::repeat('3', 100ull) | views::take(3))>);
+static_assert(ranges::range<decltype(views::repeat('3', 100ull) | views::drop(3))>);
 
 int main() {
     assert(test());
