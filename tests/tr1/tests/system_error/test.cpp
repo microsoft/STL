@@ -4,7 +4,7 @@
 // test <system_error>
 #define TEST_NAME "<system_error>"
 
-#define _SILENCE_CXX23_UNIX_STREAM_DEPRECATION_WARNING
+#define _SILENCE_CXX23_UNIX_STREAMS_DEPRECATION_WARNING
 
 #include "tdefs.h"
 #include <stdexcept>
