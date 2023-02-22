@@ -3692,7 +3692,7 @@ namespace ranges {
             constexpr _Iterator(_Iterator<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, _OuterIter>
                           && convertible_to<iterator_t<_InnerRng<false>>, _InnerIter>
-                : _Outer{_STD move(_It._Outer)}, _Inner{_STD move(_It._Inner)}, _Parent{_It._Parent} {}
+                : _Outer(_STD move(_It._Outer)), _Inner(_STD move(_It._Inner)), _Parent(_It._Parent) {}
 
             _NODISCARD constexpr decltype(auto) operator*() const noexcept(noexcept(**_Inner)) /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0

@@ -503,6 +503,26 @@ void test_non_trivially_destructible_type() { // COMPILE-ONLY
     auto r2 = views::empty<Inner> | views::transform([](Inner& r) { return r; }) | views::join;
 }
 
+// GH-3014 "<ranges>: list-initialization is misused"
+void test_gh_3014() { // COMPILE-ONLY
+    struct InRange {
+        string* begin() {
+            return nullptr;
+        }
+
+        test::init_list_not_constructible_iterator<string> begin() const {
+            return nullptr;
+        }
+
+        unreachable_sentinel_t end() const {
+            return {};
+        }
+    };
+
+    auto r                                           = InRange{} | views::join;
+    [[maybe_unused]] decltype(as_const(r).begin()) i = r.begin(); // Check 'iterator(iterator<!Const> i)'
+}
+
 int main() {
     // Validate views
     constexpr string_view expected = "Hello World!"sv;

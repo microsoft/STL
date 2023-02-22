@@ -403,7 +403,7 @@ namespace test {
         template <class U>
         init_list_not_constructible_iterator(std::initializer_list<U>) = delete;
 
-        T operator*() const; // not defined
+        T& operator*() const; // not defined
         init_list_not_constructible_iterator& operator++(); // not defined
         init_list_not_constructible_iterator operator++(int); // not defined
 
