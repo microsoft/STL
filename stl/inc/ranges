@@ -2380,12 +2380,10 @@ namespace ranges {
 #endif // _ITERATOR_DEBUG_LEVEL != 0
             }
 
-            // clang-format off
-            constexpr _Iterator(_Iterator<!_Const> _It)
-                noexcept(is_nothrow_constructible_v<iterator_t<_Base>, iterator_t<_Vw>>) // strengthened
+            constexpr _Iterator(_Iterator<!_Const> _It) noexcept(
+                is_nothrow_constructible_v<iterator_t<_Base>, iterator_t<_Vw>>) // strengthened
                 requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_Base>>
-                : _Current{_STD move(_It._Current)}, _Parent{_It._Parent} {}
-            // clang-format on
+                : _Current(_STD move(_It._Current)), _Parent(_It._Parent) {}
 
             _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept {
                 return _Current;
