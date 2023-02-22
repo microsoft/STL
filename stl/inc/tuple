@@ -810,11 +810,12 @@ public:
         return _Result;
     }
 
-    template <_Tuple_like _Other, class _Return_type = _Three_way_comparison_result_with_tuple_like_t<tuple, _Other>>
+    template <_Tuple_like _Other>
 #ifndef __clang__ // TRANSITION, DevCom-10265322
         requires _Different_from<_Other, tuple>
 #endif // __clang__
-    _NODISCARD_FRIEND constexpr _Return_type operator<=>(const tuple& _Left, const _Other& _Right) {
+    _NODISCARD_FRIEND constexpr auto operator<=>(const tuple& _Left, const _Other& _Right)
+        -> _Three_way_comparison_result_with_tuple_like_t<tuple, _Other> {
         return _Left._Three_way_compare_with_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
     }
 #endif // _HAS_CXX23
