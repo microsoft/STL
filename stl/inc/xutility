@@ -2071,16 +2071,19 @@ public:
 };
 
 template <class _Ty1, common_with<_Ty1> _Ty2>
+    requires input_iterator<common_type_t<_Ty1, _Ty2>>
 struct common_type<basic_const_iterator<_Ty1>, _Ty2> {
     using type = basic_const_iterator<common_type_t<_Ty1, _Ty2>>;
 };
 
 template <class _Ty1, common_with<_Ty1> _Ty2>
+    requires input_iterator<common_type_t<_Ty1, _Ty2>>
 struct common_type<_Ty2, basic_const_iterator<_Ty1>> {
     using type = basic_const_iterator<common_type_t<_Ty1, _Ty2>>;
 };
 
 template <class _Ty1, common_with<_Ty1> _Ty2>
+    requires input_iterator<common_type_t<_Ty1, _Ty2>>
 struct common_type<basic_const_iterator<_Ty1>, basic_const_iterator<_Ty2>> {
     using type = basic_const_iterator<common_type_t<_Ty1, _Ty2>>;
 };
