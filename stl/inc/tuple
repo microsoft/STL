@@ -707,12 +707,12 @@ public:
 
     template <_Tuple_like _Other, size_t... _Indices>
     constexpr void _Assign_tuple_like(_Other&& _Right, index_sequence<_Indices...>) {
-        (static_cast<void>(_STD get<_Indices>(*this) = _STD get<_Indices>(_STD forward<_Other>(_Right))), ...);
+        ((void) (_STD get<_Indices>(*this) = _STD get<_Indices>(_STD forward<_Other>(_Right))), ...);
     }
 
     template <_Tuple_like _Other, size_t... _Indices>
     constexpr void _Assign_tuple_like(_Other&& _Right, index_sequence<_Indices...>) const {
-        (static_cast<void>(_STD get<_Indices>(*this) = _STD get<_Indices>(_STD forward<_Other>(_Right))), ...);
+        ((void) (_STD get<_Indices>(*this) = _STD get<_Indices>(_STD forward<_Other>(_Right))), ...);
     }
 
     template <_Tuple_like _Other>
