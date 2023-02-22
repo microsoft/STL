@@ -396,7 +396,6 @@ constexpr void instantiation_test() {
 
 // GH-3014 "<ranges>: list-initialization is misused"
 void test_gh_3014() { // COMPILE-ONLY
-    using P = pair<int, int>;
     struct InRange {
         P* begin() {
             return nullptr;

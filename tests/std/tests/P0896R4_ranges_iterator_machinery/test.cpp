@@ -13,10 +13,6 @@
 
 #include <range_algorithm_support.hpp>
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
-namespace ranges = std::ranges;
-
 template <class T>
 using reference_to = T&;
 template <class T>
