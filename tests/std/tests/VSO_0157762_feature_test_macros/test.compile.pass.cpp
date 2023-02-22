@@ -1505,10 +1505,10 @@ STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
-#elif __cpp_lib_ranges != 202211L
-#error __cpp_lib_ranges is not 202211L
+#elif __cpp_lib_ranges != 202302L
+#error __cpp_lib_ranges is not 202302L
 #else
-STATIC_ASSERT(__cpp_lib_ranges == 202211L);
+STATIC_ASSERT(__cpp_lib_ranges == 202302L);
 #endif
 #elif _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
