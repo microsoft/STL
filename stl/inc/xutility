@@ -1758,6 +1758,9 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 _EXPORT_STD template <indirectly_readable _Ty>
 using iter_const_reference_t = common_reference_t<const iter_value_t<_Ty>&&, iter_reference_t<_Ty>>;
 
+template <indirectly_readable _Iter>
+using _Iter_const_rvalue_reference_t = common_reference_t<const iter_value_t<_Iter>&&, iter_rvalue_reference_t<_Iter>>;
+
 template <class _Ty>
 concept _Constant_iterator = input_iterator<_Ty> && same_as<iter_const_reference_t<_Ty>, iter_reference_t<_Ty>>;
 
@@ -1810,7 +1813,8 @@ class basic_const_iterator : public _Basic_const_iterator_category<_Iter> {
 private:
     /* [[no_unique_address]] */ _Iter _Current{};
 
-    using _Reference = iter_const_reference_t<_Iter>;
+    using _Reference        = iter_const_reference_t<_Iter>;
+    using _Rvalue_reference = _Iter_const_rvalue_reference_t<_Iter>;
 
     _NODISCARD static _CONSTEVAL auto _Get_iter_concept() noexcept {
         if constexpr (contiguous_iterator<_Iter>) {
@@ -2058,6 +2062,11 @@ public:
     _NODISCARD_FRIEND constexpr difference_type operator-(const _Sent& _Se, const basic_const_iterator& _It) noexcept(
         noexcept(_Se - _It._Current)) /* strengthened */ {
         return _Se - _It._Current;
+    }
+
+    _NODISCARD_FRIEND constexpr _Rvalue_reference iter_move(const basic_const_iterator& _It) noexcept(
+        noexcept(static_cast<_Rvalue_reference>(_RANGES iter_move(_It._Current)))) {
+        return static_cast<_Rvalue_reference>(_RANGES iter_move(_It._Current));
     }
 };
 
