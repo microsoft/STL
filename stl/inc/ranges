@@ -8402,9 +8402,9 @@ namespace ranges {
     _EXPORT_STD template <class _Container, input_range _Rng, class... _Types>
         requires (!view<_Container>)
     _NODISCARD constexpr _Container to(_Rng&& _Range, _Types&&... _Args) {
-        static_assert(!is_const_v<_Container>, "C must not be const. (N4928 [range.utility.conv.to])");
-        static_assert(!is_volatile_v<_Container>, "C must not be volatile. (N4928 [range.utility.conv.to])");
-        static_assert(is_class_v<_Container>, "C must be a class type. (N4928 [range.utility.conv.to])");
+        static_assert(!is_const_v<_Container>, "C must not be const. ([range.utility.conv.to])");
+        static_assert(!is_volatile_v<_Container>, "C must not be volatile. ([range.utility.conv.to])");
+        static_assert(is_class_v<_Container>, "C must be a class type. ([range.utility.conv.to])");
         if constexpr (_Converts_direct_constructible<_Rng, _Container, _Types...>) {
             return _Container(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
         } else if constexpr (_Converts_tag_constructible<_Rng, _Container, _Types...>) {
@@ -8446,9 +8446,9 @@ namespace ranges {
     _EXPORT_STD template <class _Container, class... _Types>
         requires (!view<_Container>)
     _NODISCARD constexpr auto to(_Types&&... _Args) {
-        static_assert(!is_const_v<_Container>, "C must not be const. (N4928 [range.utility.conv.adaptors])");
-        static_assert(!is_volatile_v<_Container>, "C must not be volatile. (N4928 [range.utility.conv.adaptors])");
-        static_assert(is_class_v<_Container>, "C must be a class type. (N4928 [range.utility.conv.to])");
+        static_assert(!is_const_v<_Container>, "C must not be const. ([range.utility.conv.adaptors])");
+        static_assert(!is_volatile_v<_Container>, "C must not be volatile. ([range.utility.conv.adaptors])");
+        static_assert(is_class_v<_Container>, "C must be a class type. ([range.utility.conv.adaptors])");
         return _Range_closure<_To_class_fn<_Container>, decay_t<_Types>...>{_STD forward<_Types>(_Args)...};
     }
 
