@@ -5539,7 +5539,7 @@ namespace ranges {
             constexpr _Iterator(_Iterator<!_Const> _It) noexcept(
                 is_nothrow_constructible_v<iterator_t<_Base>, iterator_t<_Vw>>) // strengthened
                 requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_Base>>
-                : _Current{_STD move(_It._Current)} {}
+                : _Current(_STD move(_It._Current)) {}
 
             _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept {
                 return _Current;
