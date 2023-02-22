@@ -806,7 +806,7 @@ public:
     _NODISCARD constexpr auto _Three_way_compare_with_tuple_like(
         const _Other& _Right, index_sequence<_Indices...>) const {
         _Three_way_comparison_result_with_tuple_like_t<tuple, _Other> _Result = strong_ordering::equal;
-        (void) (((_Result = _Synth_three_way{}(_STD get<_Indices>(*this), _STD get<_Indices>(_Right))) != 0) || ...);
+        (void) (((_Result = _Synth_three_way{}(_STD get<_Indices>(*this), _STD get<_Indices>(_Right))) == 0) && ...);
         return _Result;
     }
 
