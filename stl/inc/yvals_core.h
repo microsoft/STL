@@ -1414,7 +1414,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
         "std::errc enumerators std::errc::no_message_available, std::errc::no_stream_resources, "                      \
         "std::errc::not_a_stream, and std::errc::stream_timeout and their corresponding errno macros ENODATA, ENOSR, " \
         "ENOSTR and ETIME are deprecated in C++23 by LWG-3869. These errno macros are deprecated in POSIX 2008 and "   \
-        "removed in POSIX 202x. You can define _SILENCE_CXX23_UNIX_STREAM_WARNING or "                                 \
+        "removed in POSIX 202x. You can define _SILENCE_CXX23_UNIX_STREAM_DEPRECATION_WARNING or "                     \
         "_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to suppress this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
 #define _CXX23_DEPRECATE_UNIX_STREAM
