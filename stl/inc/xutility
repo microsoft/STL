@@ -3614,39 +3614,49 @@ _EXPORT_STD template <size_t _Index, class... _Types>
 _NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept;
 
 namespace ranges {
-    // clang-format off
     template <class _From, class _To>
     concept _Uses_nonqualification_pointer_conversion =
         is_pointer_v<_From> && is_pointer_v<_To>
-        && !convertible_to<remove_pointer_t<_From>(*)[], remove_pointer_t<_To>(*)[]>;
+        && (!convertible_to<remove_pointer_t<_From> (*)[], remove_pointer_t<_To> (*)[]>);
 
     template <class _From, class _To>
     concept _Convertible_to_non_slicing = convertible_to<_From, _To>
-        && !_Uses_nonqualification_pointer_conversion<decay_t<_From>, decay_t<_To>>;
+                                       && (!_Uses_nonqualification_pointer_conversion<decay_t<_From>, decay_t<_To>>);
 
     template <class _Ty>
-    concept _Pair_like = !is_reference_v<_Ty> && requires(_Ty __t) {
-        typename tuple_size<_Ty>::type;
-        requires derived_from<tuple_size<_Ty>, integral_constant<size_t, 2>>;
-        typename tuple_element_t<0, remove_const_t<_Ty>>;
-        typename tuple_element_t<1, remove_const_t<_Ty>>;
-        { _STD get<0>(__t) } -> convertible_to<const tuple_element_t<0, _Ty>&>;
-        { _STD get<1>(__t) } -> convertible_to<const tuple_element_t<1, _Ty>&>;
-    };
+    concept _Pair_like =
+        (!is_reference_v<_Ty>) && requires(_Ty __t) {
+                                      typename tuple_size<_Ty>::type;
+                                      requires derived_from<tuple_size<_Ty>, integral_constant<size_t, 2>>;
+                                      typename tuple_element_t<0, remove_const_t<_Ty>>;
+                                      typename tuple_element_t<1, remove_const_t<_Ty>>;
+                                      { _STD get<0>(__t) } -> convertible_to<const tuple_element_t<0, _Ty>&>;
+                                      { _STD get<1>(__t) } -> convertible_to<const tuple_element_t<1, _Ty>&>;
+                                  };
 
     template <class _Ty, class _First, class _Second>
-    concept _Pair_like_convertible_from = !range<_Ty> && _Pair_like<_Ty>
-        && constructible_from<_Ty, _First, _Second>
-        && _Convertible_to_non_slicing<_First, tuple_element_t<0, _Ty>>
-        && convertible_to<_Second, tuple_element_t<1, _Ty>>;
-    // clang-format on
+    concept _Pair_like_convertible_from = (!range<_Ty>) && _Pair_like<_Ty> && constructible_from<_Ty, _First, _Second>
+                                       && _Convertible_to_non_slicing<_First, tuple_element_t<0, _Ty>>
+                                       && convertible_to<_Second, tuple_element_t<1, _Ty>>;
 
-    template <class _It, class _Se, subrange_kind _Ki,
-        bool _Store = _Ki == subrange_kind::sized && !sized_sentinel_for<_Se, _It>>
-    class _Subrange_base : public view_interface<subrange<_It, _Se, _Ki>> { // TRANSITION, [[no_unique_address]]
+    template <class _It, class _Se, subrange_kind _Ki>
+    concept _Store_size = (_Ki == subrange_kind::sized) && (!sized_sentinel_for<_Se, _It>);
+
+    template <class _It, class _Se, subrange_kind _Ki>
+    class _Subrange_base : public view_interface<subrange<_It, _Se, _Ki>> {
     protected:
-        using _Size_type                  = _Make_unsigned_like_t<iter_difference_t<_It>>;
-        static constexpr bool _Store_size = true;
+        using _Size_type = _Make_unsigned_like_t<iter_difference_t<_It>>;
+
+    public:
+        _Subrange_base() = default;
+        constexpr explicit _Subrange_base(const _Size_type&) noexcept {}
+    };
+
+    template <class _It, class _Se, subrange_kind _Ki>
+        requires _Store_size<_It, _Se, _Ki>
+    class _Subrange_base<_It, _Se, _Ki> : public view_interface<subrange<_It, _Se, _Ki>> {
+    protected:
+        using _Size_type = _Make_unsigned_like_t<iter_difference_t<_It>>;
 
         _Size_type _Size = 0;
 
@@ -3655,58 +3665,48 @@ namespace ranges {
         constexpr explicit _Subrange_base(const _Size_type& _Size_) noexcept : _Size(_Size_) {}
     };
 
-    template <class _It, class _Se, subrange_kind _Ki>
-    class _Subrange_base<_It, _Se, _Ki, false> : public view_interface<subrange<_It, _Se, _Ki>> {
-    protected:
-        using _Size_type                  = _Make_unsigned_like_t<iter_difference_t<_It>>;
-        static constexpr bool _Store_size = false;
-
-    public:
-        _Subrange_base() = default;
-        constexpr explicit _Subrange_base(const _Size_type&) noexcept {}
-    };
-
 #if 1 // TRANSITION, VSO-1695918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-#endif // TRANSITION, VSO-1695918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
+#endif // ^^^ workaround ^^^
     _EXPORT_STD template <input_or_output_iterator _It, sentinel_for<_It> _Se, subrange_kind _Ki>
         requires (_Ki == subrange_kind::sized || !sized_sentinel_for<_Se, _It>)
     class subrange : public _Subrange_base<_It, _Se, _Ki> {
     private:
-        using _Mybase = _Subrange_base<_It, _Se, _Ki>;
-        using _Mybase::_Store_size;
-        using typename _Mybase::_Size_type;
+        using _Size_type = _Make_unsigned_like_t<iter_difference_t<_It>>;
 
         // TRANSITION, [[no_unique_address]]:
         /* [[no_unique_address]] */ _It _First{};
         /* [[no_unique_address]] */ _Se _Last{};
-        // [[no_unique_address]] conditional_t<_Store_size, _Size_type, _Nil> _Size{};
+        // [[no_unique_address]] conditional_t<_Store_size<_It, _Se, _Ki>, _Size_type, _Nil> _Size{};
 
         template <class _Rng>
         constexpr subrange(true_type, _Rng&& _Val)
             : subrange(_STD forward<_Rng>(_Val), static_cast<_Size_type>(_RANGES size(_Val))) {
             // delegation target for subrange(_Rng&&) when we must store the range size
-            _STL_INTERNAL_STATIC_ASSERT(_Store_size);
+            _STL_INTERNAL_STATIC_ASSERT(_Store_size<_It, _Se, _Ki>);
         }
 
         template <class _Rng>
         constexpr subrange(false_type, _Rng&& _Val) : subrange(_RANGES begin(_Val), _RANGES end(_Val)) {
             // delegation target for subrange(_Rng&&) when we need not store the range size
-            _STL_INTERNAL_STATIC_ASSERT(!_Store_size);
+            _STL_INTERNAL_STATIC_ASSERT(!_Store_size<_It, _Se, _Ki>);
         }
 
     public:
         // clang-format off
         subrange() requires default_initializable<_It> = default;
+        // clang-format on
 
         template <_Convertible_to_non_slicing<_It> _It2>
-        constexpr subrange(_It2 _First_, _Se _Last_) requires (!_Store_size)
+        constexpr subrange(_It2 _First_, _Se _Last_)
+            requires (!_Store_size<_It, _Se, _Ki>)
             : _First(_STD move(_First_)), _Last(_STD move(_Last_)) {}
 
         template <_Convertible_to_non_slicing<_It> _It2>
-        constexpr subrange(_It2 _First_, _Se _Last_, const _Size_type _Size_) requires (_Ki == subrange_kind::sized)
-            : _Mybase(_Size_), _First(_STD move(_First_)), _Last(_STD move(_Last_)) {
+        constexpr subrange(_It2 _First_, _Se _Last_, const _Size_type _Size_)
+            requires (_Ki == subrange_kind::sized)
+            : _Subrange_base<_It, _Se, _Ki>(_Size_), _First(_STD move(_First_)), _Last(_STD move(_Last_)) {
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 _STL_ASSERT(_Size_ == static_cast<_Size_type>(_Last - _First),
                     "This constructor's third argument should be equal to the distance "
@@ -3715,17 +3715,17 @@ namespace ranges {
         }
 
         template <_Different_from<subrange> _Rng>
-            requires borrowed_range<_Rng>
-                && _Convertible_to_non_slicing<iterator_t<_Rng>, _It>
-                && convertible_to<sentinel_t<_Rng>, _Se>
-        constexpr subrange(_Rng&& _Val) requires (!_Store_size || sized_range<_Rng>)
-            : subrange{bool_constant<_Store_size>{}, _STD forward<_Rng>(_Val)} {}
+            requires (borrowed_range<_Rng> && _Convertible_to_non_slicing<iterator_t<_Rng>, _It>
+                      && convertible_to<sentinel_t<_Rng>, _Se>)
+        constexpr subrange(_Rng&& _Val)
+            requires (!_Store_size<_It, _Se, _Ki> || sized_range<_Rng>)
+            : subrange{bool_constant<_Store_size<_It, _Se, _Ki>>{}, _STD forward<_Rng>(_Val)} {}
 
         template <borrowed_range _Rng>
-            requires _Convertible_to_non_slicing<iterator_t<_Rng>, _It> && convertible_to<sentinel_t<_Rng>, _Se>
-        constexpr subrange(_Rng&& _Val, const _Size_type _Count) requires (_Ki == subrange_kind::sized)
+            requires (_Convertible_to_non_slicing<iterator_t<_Rng>, _It> && convertible_to<sentinel_t<_Rng>, _Se>)
+        constexpr subrange(_Rng&& _Val, const _Size_type _Count)
+            requires (_Ki == subrange_kind::sized)
             : subrange{_RANGES begin(_Val), _RANGES end(_Val), _Count} {}
-        // clang-format on
 
         template <_Different_from<subrange> _Pair_like>
             requires _Pair_like_convertible_from<_Pair_like, const _It&, const _Se&>
@@ -3738,9 +3738,9 @@ namespace ranges {
         {
             return _First;
         }
-        // clang-format off
-        _NODISCARD constexpr _It begin() requires (!copyable<_It>) {
-            // clang-format on
+        _NODISCARD constexpr _It begin()
+            requires (!copyable<_It>)
+        {
             return _STD move(_First);
         }
 
@@ -3752,10 +3752,10 @@ namespace ranges {
             return _First == _Last;
         }
 
-        // clang-format off
-        _NODISCARD constexpr _Size_type size() const requires (_Ki == subrange_kind::sized) {
-            // clang-format on
-            if constexpr (_Store_size) {
+        _NODISCARD constexpr _Size_type size() const
+            requires (_Ki == subrange_kind::sized)
+        {
+            if constexpr (_Store_size<_It, _Se, _Ki>) {
                 return this->_Size;
             } else {
                 return static_cast<_Size_type>(_Last - _First);
@@ -3768,7 +3768,7 @@ namespace ranges {
             auto _Tmp = *this;
             if (_Tmp._First != _Tmp._Last) {
                 ++_Tmp._First;
-                if constexpr (_Store_size) {
+                if constexpr (_Store_size<_It, _Se, _Ki>) {
                     --_Tmp._Size;
                 }
             }
@@ -3785,7 +3785,7 @@ namespace ranges {
         _NODISCARD constexpr subrange next() && {
             if (_First != _Last) {
                 ++_First;
-                if constexpr (_Store_size) {
+                if constexpr (_Store_size<_It, _Se, _Ki>) {
                     --this->_Size;
                 }
             }
@@ -3801,7 +3801,7 @@ namespace ranges {
         {
             auto _Tmp = *this;
             --_Tmp._First;
-            if constexpr (_Store_size) {
+            if constexpr (_Store_size<_It, _Se, _Ki>) {
                 ++_Tmp._Size;
             }
             return _Tmp;
@@ -3818,7 +3818,7 @@ namespace ranges {
             if constexpr (bidirectional_iterator<_It>) {
                 if (_Count < 0) {
                     _RANGES advance(_First, _Count);
-                    if constexpr (_Store_size) {
+                    if constexpr (_Store_size<_It, _Se, _Ki>) {
                         this->_Size += static_cast<_Size_type>(-_Count);
                     }
                     return *this;
@@ -3826,7 +3826,7 @@ namespace ranges {
             }
 
             const auto _Remainder = _RANGES advance(_First, _Count, _Last);
-            if constexpr (_Store_size) {
+            if constexpr (_Store_size<_It, _Se, _Ki>) {
                 this->_Size -= static_cast<_Size_type>(_Count - _Remainder);
             }
             return *this;
@@ -3834,7 +3834,7 @@ namespace ranges {
     };
 #if 1 // TRANSITION, VSO-1695918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
 #pragma warning(pop)
-#endif // TRANSITION, VSO-1695918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
+#endif // ^^^ workaround ^^^
 
     template <input_or_output_iterator _It, sentinel_for<_It> _Se>
     subrange(_It, _Se) -> subrange<_It, _Se>;
