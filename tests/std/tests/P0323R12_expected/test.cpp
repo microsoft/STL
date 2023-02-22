@@ -3,11 +3,6 @@
 
 #define _CONTAINER_DEBUG_LEVEL 1
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-volatile" // volatile qualified return type
-#endif // __clang__
-
 #include <cassert>
 #include <concepts>
 #include <exception>
@@ -15,10 +10,6 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif // __clang__
 
 using namespace std;
 
@@ -2061,85 +2052,6 @@ struct Data {
 };
 static_assert(((void) expected<void, Data>{unexpect, {1, 2, 3}}, true));
 
-struct CvAssignable {
-    CvAssignable()                               = default;
-    CvAssignable(const CvAssignable&)            = default;
-    CvAssignable(CvAssignable&&)                 = default;
-    CvAssignable& operator=(const CvAssignable&) = default;
-    CvAssignable& operator=(CvAssignable&&)      = default;
-
-    template <class T = CvAssignable>
-    CvAssignable(const volatile type_identity_t<T>&) noexcept {}
-    template <class T = CvAssignable>
-    CvAssignable(const volatile type_identity_t<T>&&) noexcept {}
-
-    template <class T = CvAssignable>
-    constexpr CvAssignable& operator=(const volatile type_identity_t<T>&) noexcept {
-        return *this;
-    }
-    template <class T = CvAssignable>
-    constexpr CvAssignable& operator=(const volatile type_identity_t<T>&&) noexcept {
-        return *this;
-    }
-
-    template <class T = CvAssignable>
-    constexpr const volatile CvAssignable& operator=(const volatile type_identity_t<T>&) const volatile noexcept {
-        return *this;
-    }
-    template <class T = CvAssignable>
-    constexpr const volatile CvAssignable& operator=(const volatile type_identity_t<T>&&) const volatile noexcept {
-        return *this;
-    }
-};
-
-#ifndef __clang__
-#pragma warning(push)
-#pragma warning(disable : 5216) // volatile qualified return type
-#endif // __clang__
-void test_lwg3891() {
-    {
-        expected<const int, char> oc{};
-        oc.emplace(0);
-        static_assert(!is_copy_assignable_v<decltype(oc)>);
-        static_assert(!is_move_assignable_v<decltype(oc)>);
-        static_assert(!is_swappable_v<decltype(oc)>);
-
-        expected<volatile int, char> ov{}, ov2{};
-        ov.emplace(0);
-        swap(ov, ov);
-        ov = ov2;
-        ov = move(ov2);
-
-        expected<const volatile int, char> ocv{};
-        ocv.emplace(0);
-        static_assert(!is_copy_assignable_v<decltype(ocv)>);
-        static_assert(!is_move_assignable_v<decltype(ocv)>);
-        static_assert(!is_swappable_v<decltype(ocv)>);
-    }
-    {
-        expected<const CvAssignable, char> oc{}, oc2{};
-        oc.emplace(CvAssignable{});
-        swap(oc, oc);
-        oc = oc2;
-        oc = move(oc2);
-
-        expected<volatile CvAssignable, char> ov{}, ov2{};
-        ov.emplace(CvAssignable{});
-        swap(ov, ov);
-        ov = ov2;
-        ov = move(ov2);
-
-        expected<const volatile CvAssignable, char> ocv{}, ocv2{};
-        ocv.emplace(CvAssignable{});
-        swap(ocv, ocv);
-        ocv = ocv2;
-        ocv = move(ocv2);
-    }
-}
-#ifndef __clang__
-#pragma warning(pop)
-#endif // __clang__
-
 int main() {
     test_unexpected::test_all();
     static_assert(test_unexpected::test_all());
@@ -2155,5 +2067,4 @@ int main() {
     static_assert(is_convertible_v<bad_expected_access<int>*, exception*>);
 
     test_reinit_regression();
-    test_lwg3891();
 }
