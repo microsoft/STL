@@ -3447,6 +3447,7 @@ namespace move_iterator_test {
     STATIC_ASSERT(!three_way_comparable<move_iterator<simple_random_iter<sentinel_base>>,
                   move_sentinel<std::default_sentinel_t>>);
 
+    // GH-3014 "<ranges>: list-initialization is misused"
     void test_gh_3014() { // COMPILE-ONLY
         using S = test::init_list_not_constructible_sentinel<int>;
         S s;
