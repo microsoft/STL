@@ -171,11 +171,6 @@ void test(const char* s) {
 }
 
 // Also test LWG-3204: sub_match::swap only swaps the base class
-struct ThrowSwappable {
-    ThrowSwappable() = default;
-    ThrowSwappable(ThrowSwappable&&) noexcept(false) {}
-};
-
 void test_lwg3204() {
     csub_match sm1{};
     sm1.first   = "hello";
