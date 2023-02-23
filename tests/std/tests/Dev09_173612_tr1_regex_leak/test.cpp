@@ -12,6 +12,8 @@
 
 using namespace std;
 
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 
 const int N = 1000;
@@ -169,26 +171,33 @@ void test(const char* s) {
 }
 
 // Also test LWG-3204: sub_match::swap only swaps the base class
+struct ThrowSwappable {
+    ThrowSwappable() = default;
+    ThrowSwappable(ThrowSwappable&&) noexcept(false) {}
+};
+
 void test_lwg3204() {
-    csub_match m1{};
-    m1.first   = "hello";
-    m1.second  = "world";
-    m1.matched = true;
+    csub_match sm1{};
+    sm1.first   = "hello";
+    sm1.second  = "world";
+    sm1.matched = true;
 
-    csub_match m2{};
-    m2.first   = "fluffy";
-    m2.second  = "cat";
-    m2.matched = false;
+    csub_match sm2{};
+    sm2.first   = "fluffy";
+    sm2.second  = "cat";
+    sm2.matched = false;
 
-    m1.swap(m2);
+    sm1.swap(sm2);
 
-    assert(strcmp(m1.first, "fluffy") == 0);
-    assert(strcmp(m1.second, "cat") == 0);
-    assert(!m1.matched);
+    assert(strcmp(sm1.first, "fluffy") == 0);
+    assert(strcmp(sm1.second, "cat") == 0);
+    assert(!sm1.matched);
 
-    assert(strcmp(m2.first, "hello") == 0);
-    assert(strcmp(m2.second, "world") == 0);
-    assert(m2.matched);
+    assert(strcmp(sm2.first, "hello") == 0);
+    assert(strcmp(sm2.second, "world") == 0);
+    assert(sm2.matched);
+
+    STATIC_ASSERT(noexcept(sm1.swap(sm2)));
 }
 
 
