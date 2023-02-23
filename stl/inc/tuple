@@ -697,13 +697,15 @@ public:
     template <bool _Const_assignment, class _Other, class _Indices = index_sequence_for<_Rest...>>
     static constexpr bool _Can_assign_values_from_tuple_like_v = false;
 
-    template <bool _Const_assignment, _Tuple_like _Other, size_t... _Indices>
-    static constexpr bool _Can_assign_values_from_tuple_like_v<_Const_assignment, _Other, index_sequence<_Indices...>> =
-        conjunction_v< //
-            is_assignable<conditional_t<_Const_assignment, const _This&, _This&>,
-                decltype(_STD get<0>(_STD declval<_Other>()))>,
-            is_assignable<conditional_t<_Const_assignment, const _Rest&, _Rest&>,
-                decltype(_STD get<_Indices + 1>(_STD declval<_Other>()))>...>;
+    template <_Tuple_like _Other, size_t... _Indices>
+    static constexpr bool _Can_assign_values_from_tuple_like_v<false, _Other, index_sequence<_Indices...>> =
+        conjunction_v<is_assignable<_This&, decltype(_STD get<0>(_STD declval<_Other>()))>,
+            is_assignable<_Rest&, decltype(_STD get<_Indices + 1>(_STD declval<_Other>()))>...>;
+
+    template <_Tuple_like _Other, size_t... _Indices>
+    static constexpr bool _Can_assign_values_from_tuple_like_v<true, _Other, index_sequence<_Indices...>> =
+        conjunction_v<is_assignable<const _This&, decltype(_STD get<0>(_STD declval<_Other>()))>,
+            is_assignable<const _Rest&, decltype(_STD get<_Indices + 1>(_STD declval<_Other>()))>...>;
 
     template <_Tuple_like _Other, size_t... _Indices>
     constexpr void _Assign_tuple_like(_Other&& _Right, index_sequence<_Indices...>) {
