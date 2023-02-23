@@ -8388,7 +8388,8 @@ namespace ranges {
     template <class _Rng, class _Container, class... _Types>
     concept _Converts_and_common_constructible =
         _Ref_converts<_Rng, _Container> && common_range<_Rng> //
-        && _Cpp17_input_iterator<iterator_t<_Rng>> //
+        && requires { typename iterator_traits<iterator_t<_Rng>>::iterator_category; }
+        && derived_from<typename iterator_traits<iterator_t<_Rng>>::iterator_category, input_iterator_tag>
         && constructible_from<_Container, iterator_t<_Rng>, iterator_t<_Rng>, _Types...>;
 
     template <class _Container, class _Reference>
