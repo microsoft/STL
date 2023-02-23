@@ -32,6 +32,8 @@ public:
         friend bitset<_Bits>;
 
     public:
+        _CONSTEXPR23 reference(const reference&) noexcept = default;
+
         _CONSTEXPR23 ~reference() noexcept {} // TRANSITION, ABI
 
         _CONSTEXPR23 reference& operator=(const bool _Val) noexcept {
