@@ -3,6 +3,8 @@
 
 // system_error message mapping
 
+#define _SILENCE_CXX23_UNIX_STREAMS_DEPRECATION_WARNING
+
 #include <algorithm>
 #include <functional>
 #include <system_error>
