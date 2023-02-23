@@ -45,5 +45,3 @@ static_assert(CanSize<ranges::iota_view<char16_t, _Signed128>>);
 static_assert(CanSize<ranges::iota_view<char16_t, _Unsigned128>>);
 static_assert(CanSize<ranges::iota_view<char32_t, _Signed128>>);
 static_assert(CanSize<ranges::iota_view<char32_t, _Unsigned128>>);
-
-int main() {} // COMPILE-ONLY

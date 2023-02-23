@@ -9,8 +9,6 @@
 #include <cvt/utf8>
 #include <cvt/utf8_utf16>
 
-int main() {} // COMPILE-ONLY
-
 // Regression test for DevDiv-453373 : codecvt_one_one compile errors
 
 // Make sure we can instantiate the types from the problem headers:

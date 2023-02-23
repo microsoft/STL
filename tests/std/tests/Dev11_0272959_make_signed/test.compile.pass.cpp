@@ -8,8 +8,6 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 enum e1 : signed char {};
 enum e2 : short {};
 enum e3 : int {};

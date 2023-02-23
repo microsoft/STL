@@ -22,5 +22,3 @@ void test_recursive(recursive_directory_iterator dir) {
     [[maybe_unused]] auto first_5_files = dir | views::take(5);
     static_assert(borrowed_range<recursive_directory_iterator>);
 }
-
-int main() {} // COMPILE-ONLY

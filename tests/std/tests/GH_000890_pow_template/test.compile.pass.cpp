@@ -6,8 +6,6 @@
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 constexpr long double ld = 10.0l;
 constexpr double d       = 10.0;
 constexpr float f        = 10.0f;

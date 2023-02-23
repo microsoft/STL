@@ -24,5 +24,3 @@ STATIC_ASSERT(std::is_same_v<decltype(abs(0.0)), double>);
 STATIC_ASSERT(std::is_same_v<decltype(abs(0.0L)), long double>);
 
 #undef STATIC_ASSERT
-
-int main() {} // COMPILE-ONLY
