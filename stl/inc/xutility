@@ -493,24 +493,33 @@ _EXPORT_STD template <class _Ty>
         { _RANGES iter_move(__t) } -> _Can_reference;
     }
 using iter_rvalue_reference_t = decltype(_RANGES iter_move(_STD declval<_Ty&>()));
+// clang-format on
 
 template <class _It>
-concept _Indirectly_readable_impl = requires(const _It __i) {
-    typename iter_value_t<_It>;
-    typename iter_reference_t<_It>;
-    typename iter_rvalue_reference_t<_It>;
-    { *__i } -> same_as<iter_reference_t<_It>>;
-    { _RANGES iter_move(__i) } -> same_as<iter_rvalue_reference_t<_It>>;
-} && common_reference_with<iter_reference_t<_It>&&, iter_value_t<_It>&>
-  && common_reference_with<iter_reference_t<_It>&&, iter_rvalue_reference_t<_It>&&>
-  && common_reference_with<iter_rvalue_reference_t<_It>&&, const iter_value_t<_It>&>;
+concept _Indirectly_readable_impl =
+    requires(const _It __i) {
+        typename iter_value_t<_It>;
+        typename iter_reference_t<_It>;
+        typename iter_rvalue_reference_t<_It>;
+        { *__i } -> same_as<iter_reference_t<_It>>;
+        { _RANGES iter_move(__i) } -> same_as<iter_rvalue_reference_t<_It>>;
+    } && common_reference_with<iter_reference_t<_It>&&, iter_value_t<_It>&>
+    && common_reference_with<iter_reference_t<_It>&&, iter_rvalue_reference_t<_It>&&>
+    && common_reference_with<iter_rvalue_reference_t<_It>&&, const iter_value_t<_It>&>;
 
 _EXPORT_STD template <class _It>
 concept indirectly_readable = _Indirectly_readable_impl<remove_cvref_t<_It>>;
-// clang-format on
+
+template <class _Ty>
+struct _Indirect_value_impl {
+    using type = iter_value_t<_Ty>&;
+};
+
+template <indirectly_readable _It>
+using _Indirect_value_t = typename _Indirect_value_impl<_It>::type;
 
 _EXPORT_STD template <indirectly_readable _Ty>
-using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, iter_value_t<_Ty>&>;
+using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, _Indirect_value_t<_Ty>>;
 
 _EXPORT_STD template <class _It, class _Ty>
 concept indirectly_writable =
@@ -629,69 +638,56 @@ concept contiguous_iterator = random_access_iterator<_It>
     && requires(const _It& __i) {
         { _STD to_address(__i) } -> same_as<add_pointer_t<iter_reference_t<_It>>>;
     };
+// clang-format on
 
 _EXPORT_STD template <class _Fn, class _It>
-concept indirectly_unary_invocable = indirectly_readable<_It>
-    && copy_constructible<_Fn>
-    && invocable<_Fn&, iter_value_t<_It>&>
-    && invocable<_Fn&, iter_reference_t<_It>>
-    && invocable<_Fn&, iter_common_reference_t<_It>>
-    && common_reference_with<
-        invoke_result_t<_Fn&, iter_value_t<_It>&>,
+concept indirectly_unary_invocable =
+    indirectly_readable<_It> && copy_constructible<_Fn> && invocable<_Fn&, _Indirect_value_t<_It>>
+    && invocable<_Fn&, iter_reference_t<_It>> && invocable<_Fn&, iter_common_reference_t<_It>>
+    && common_reference_with<invoke_result_t<_Fn&, _Indirect_value_t<_It>>,
         invoke_result_t<_Fn&, iter_reference_t<_It>>>;
 
 _EXPORT_STD template <class _Fn, class _It>
-concept indirectly_regular_unary_invocable = indirectly_readable<_It>
-    && copy_constructible<_Fn>
-    && regular_invocable<_Fn&, iter_value_t<_It>&>
-    && regular_invocable<_Fn&, iter_reference_t<_It>>
-    && regular_invocable<_Fn&, iter_common_reference_t<_It>>
-    && common_reference_with<
-        invoke_result_t<_Fn&, iter_value_t<_It>&>,
+concept indirectly_regular_unary_invocable =
+    indirectly_readable<_It> && copy_constructible<_Fn> && regular_invocable<_Fn&, _Indirect_value_t<_It>>
+    && regular_invocable<_Fn&, iter_reference_t<_It>> && regular_invocable<_Fn&, iter_common_reference_t<_It>>
+    && common_reference_with<invoke_result_t<_Fn&, _Indirect_value_t<_It>>,
         invoke_result_t<_Fn&, iter_reference_t<_It>>>;
 
 _EXPORT_STD template <class _Fn, class _It>
-concept indirect_unary_predicate = indirectly_readable<_It>
-    && copy_constructible<_Fn>
-    && predicate<_Fn&, iter_value_t<_It>&>
-    && predicate<_Fn&, iter_reference_t<_It>>
-    && predicate<_Fn&, iter_common_reference_t<_It>>;
+concept indirect_unary_predicate =
+    indirectly_readable<_It> && copy_constructible<_Fn> && predicate<_Fn&, _Indirect_value_t<_It>>
+    && predicate<_Fn&, iter_reference_t<_It>> && predicate<_Fn&, iter_common_reference_t<_It>>;
 
 _EXPORT_STD template <class _Fn, class _It1, class _It2>
-concept indirect_binary_predicate = indirectly_readable<_It1>
-    && indirectly_readable<_It2>
-    && copy_constructible<_Fn>
-    && predicate<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
-    && predicate<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
-    && predicate<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
-    && predicate<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
-    && predicate<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
+concept indirect_binary_predicate = indirectly_readable<_It1> && indirectly_readable<_It2> && copy_constructible<_Fn>
+                                 && predicate<_Fn&, _Indirect_value_t<_It1>, _Indirect_value_t<_It2>>
+                                 && predicate<_Fn&, _Indirect_value_t<_It1>, iter_reference_t<_It2>>
+                                 && predicate<_Fn&, iter_reference_t<_It1>, _Indirect_value_t<_It2>>
+                                 && predicate<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
+                                 && predicate<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
 
 _EXPORT_STD template <class _Fn, class _It1, class _It2 = _It1>
-concept indirect_equivalence_relation = indirectly_readable<_It1>
-    && indirectly_readable<_It2>
-    && copy_constructible<_Fn>
-    && equivalence_relation<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
-    && equivalence_relation<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
-    && equivalence_relation<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
+concept indirect_equivalence_relation =
+    indirectly_readable<_It1> && indirectly_readable<_It2> && copy_constructible<_Fn>
+    && equivalence_relation<_Fn&, _Indirect_value_t<_It1>, _Indirect_value_t<_It2>>
+    && equivalence_relation<_Fn&, _Indirect_value_t<_It1>, iter_reference_t<_It2>>
+    && equivalence_relation<_Fn&, iter_reference_t<_It1>, _Indirect_value_t<_It2>>
     && equivalence_relation<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
     && equivalence_relation<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
 
 _EXPORT_STD template <class _Fn, class _It1, class _It2 = _It1>
-concept indirect_strict_weak_order = indirectly_readable<_It1>
-    && indirectly_readable<_It2>
-    && copy_constructible<_Fn>
-    && strict_weak_order<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
-    && strict_weak_order<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
-    && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
+concept indirect_strict_weak_order =
+    indirectly_readable<_It1> && indirectly_readable<_It2> && copy_constructible<_Fn>
+    && strict_weak_order<_Fn&, _Indirect_value_t<_It1>, _Indirect_value_t<_It2>>
+    && strict_weak_order<_Fn&, _Indirect_value_t<_It1>, iter_reference_t<_It2>>
+    && strict_weak_order<_Fn&, iter_reference_t<_It1>, _Indirect_value_t<_It2>>
     && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
     && strict_weak_order<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
 
 _EXPORT_STD template <class _Fn, class... _Its>
-    requires (indirectly_readable<_Its> && ...)
-        && invocable<_Fn, iter_reference_t<_Its>...>
+    requires (indirectly_readable<_Its> && ...) && invocable<_Fn, iter_reference_t<_Its>...>
 using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Its>...>;
-// clang-format on
 
 _EXPORT_STD template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
 struct projected {
@@ -699,6 +695,11 @@ struct projected {
     indirect_result_t<_Proj&, _It> operator*() const {
         _CSTD abort();
     }
+};
+
+template <class _It, class _Proj>
+struct _Indirect_value_impl<projected<_It, _Proj>> {
+    using type = invoke_result_t<_Proj&, _Indirect_value_t<_It>>;
 };
 
 template <weakly_incrementable _It, class _Proj>
