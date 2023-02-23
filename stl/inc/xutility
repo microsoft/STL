@@ -2459,6 +2459,9 @@ namespace ranges {
     _EXPORT_STD template <range _Rng>
     using range_rvalue_reference_t = iter_rvalue_reference_t<iterator_t<_Rng>>;
 
+    _EXPORT_STD template <range _Rng>
+    using range_common_reference_t = iter_common_reference_t<iterator_t<_Rng>>;
+
 #if _HAS_CXX23
     _EXPORT_STD template <class _Rng>
     concept constant_range = input_range<_Rng> && _Constant_iterator<iterator_t<_Rng>>;
