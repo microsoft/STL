@@ -113,8 +113,20 @@ constexpr bool test_invoke_r() {
 union Union {
     int x;
 };
+static_assert(is_invocable_v<int Union::*, Union>);
 static_assert(is_invocable_v<int Union::*, Union&>);
+static_assert(is_invocable_v<int Union::*, const Union>);
+static_assert(is_invocable_v<int Union::*, const Union&>);
+
+static_assert(is_invocable_v<void (Union::*)(), Union>);
 static_assert(is_invocable_v<void (Union::*)(), Union&>);
+static_assert(!is_invocable_v<void (Union::*)(), const Union>);
+static_assert(!is_invocable_v<void (Union::*)(), const Union&>);
+
+static_assert(is_invocable_v<void (Union::*)() const, Union>);
+static_assert(is_invocable_v<void (Union::*)() const, Union&>);
+static_assert(is_invocable_v<void (Union::*)() const, const Union>);
+static_assert(is_invocable_v<void (Union::*)() const, const Union&>);
 
 int main() {
     test_invoke_r();
