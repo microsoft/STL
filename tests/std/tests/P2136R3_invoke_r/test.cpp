@@ -110,11 +110,11 @@ constexpr bool test_invoke_r() {
 }
 
 // LWG-3655: The INVOKE operation and union types
-union Foo {
+union Union {
     int x;
 };
-static_assert(is_invocable_v<int Foo::*, Foo&>);
-static_assert(is_invocable_v<void (Foo::*)(), Foo&>);
+static_assert(is_invocable_v<int Union::*, Union&>);
+static_assert(is_invocable_v<void (Union::*)(), Union&>);
 
 int main() {
     test_invoke_r();
