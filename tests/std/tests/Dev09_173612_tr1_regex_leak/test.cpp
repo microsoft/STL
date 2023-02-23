@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <locale>
 #include <new>
 #include <regex>
@@ -166,6 +168,29 @@ void test(const char* s) {
     }
 }
 
+// Also test LWG-3204: sub_match::swap only swaps the base class
+void test_lwg3204() {
+    csub_match m1{};
+    m1.first   = "hello";
+    m1.second  = "world";
+    m1.matched = true;
+
+    csub_match m2{};
+    m2.first   = "fluffy";
+    m2.second  = "cat";
+    m2.matched = false;
+
+    m1.swap(m2);
+
+    assert(strcmp(m1.first, "fluffy") == 0);
+    assert(strcmp(m1.second, "cat") == 0);
+    assert(!m1.matched);
+
+    assert(strcmp(m2.first, "hello") == 0);
+    assert(strcmp(m2.second, "world") == 0);
+    assert(m2.matched);
+}
+
 
 int main() {
     // Perform any locale allocations before we begin the tests.
@@ -207,4 +232,6 @@ int main() {
     test("Huck[[:alpha:]]+");
     test("Tom|Sawyer|Huckleberry|Finn");
     test("Twain");
+
+    test_lwg3204();
 }
