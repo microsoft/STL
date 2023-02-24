@@ -41,7 +41,7 @@ decltype(auto) _Scoped_outermost(_Alloc& _Al) { // gets the outermost allocator
 }
 
 template <class _Alloc>
-using _Scoped_outermost_t = remove_reference_t<decltype(_Scoped_outermost(_STD declval<_Alloc&>()))>;
+using _Scoped_outermost_t = remove_reference_t<decltype(_STD _Scoped_outermost(_STD declval<_Alloc&>()))>;
 
 template <class _Alloc>
 using _Scoped_outermost_traits = allocator_traits<_Scoped_outermost_t<_Alloc>>;
@@ -230,17 +230,23 @@ public:
         _STD apply(
             [_Ptr, this](auto&&... _New_args) {
                 _Scoped_outermost_traits<scoped_allocator_adaptor>::construct(
-                    _Scoped_outermost(*this), _Ptr, _STD forward<decltype(_New_args)>(_New_args)...);
+                    _STD _Scoped_outermost(*this), _Ptr, _STD forward<decltype(_New_args)>(_New_args)...);
             },
             _STD uses_allocator_construction_args<_Ty>(inner_allocator(), _STD forward<_Types>(_Args)...));
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        _Uses_allocator_construct(_Ptr, _Scoped_outermost(*this), inner_allocator(), _STD forward<_Types>(_Args)...);
+        if constexpr (_Is_cv_pair<_Ty>) {
+            _STD _Uses_alloc_construct_pair(
+                _Ptr, _STD _Scoped_outermost(*this), inner_allocator(), _STD forward<_Types>(_Args)...);
+        } else {
+            _STD _Uses_alloc_construct_non_pair(
+                _Ptr, _STD _Scoped_outermost(*this), inner_allocator(), _STD forward<_Types>(_Args)...);
+        }
 #endif // ^^^ !_HAS_CXX20 ^^^
     }
 
     template <class _Ty>
     void destroy(_Ty* _Ptr) { // destroy object at _Ptr
-        _Scoped_outermost_traits<scoped_allocator_adaptor>::destroy(_Scoped_outermost(*this), _Ptr);
+        _Scoped_outermost_traits<scoped_allocator_adaptor>::destroy(_STD _Scoped_outermost(*this), _Ptr);
     }
 
     // select_on_container_copy_construction comes from _Scoped_base
