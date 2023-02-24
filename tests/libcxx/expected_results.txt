@@ -147,6 +147,9 @@ std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp FAIL
 std/re/re.iter/re.regiter/iterator_concept_conformance.compile.pass.cpp FAIL
 std/re/re.iter/re.tokiter/iterator_concept_conformance.compile.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-3865 Sorting a range of pairs
+std/utilities/tuple/tuple.tuple/tuple.apply/make_from_tuple.pass.cpp FAIL
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -372,9 +375,6 @@ std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
 
 # DevCom-10026599: conditional expression has two different types
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
-
-# DevCom-10165380: [ICE] constexpr evaluation confused by complicated use of string literals
-std/utilities/format/format.fmt.string/get.pass.cpp:0 FAIL
 
 # DevCom-10284753: Overload resolution is sometimes wrong for templated classes whose template argument are cv void
 std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp SKIPPED
@@ -656,9 +656,6 @@ std/containers/sequences/vector/vector.cons/assign_copy.pass.cpp FAIL
 std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp SKIPPED
 std/utilities/format/format.functions/escaped_output.ascii.pass.cpp SKIPPED
 std/utilities/variant/variant.variant/implicit_ctad.pass.cpp SKIPPED
-
-# MoveOnlyForwardIterator (a misnomer) has mixed-type comparisons and conversions
-std/ranges/range.utility/range.subrange/primitives.pass.cpp:0 FAIL
 
 # libc++ speculatively implements LWG-3645
 std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL

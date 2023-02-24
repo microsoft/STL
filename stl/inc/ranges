@@ -1389,9 +1389,23 @@ namespace ranges {
     } // namespace views
 
 #if _HAS_CXX23
+    template <class _Ty>
+    concept _Integer_like_with_usable_difference_type = _Signed_integer_like<_Ty>
+                                                     || (_Integer_like<_Ty> && weakly_incrementable<_Ty>);
+
+    template <class _Ty>
+    struct _Repeat_view_difference_type {
+        using type = _Iota_diff_t<_Ty>;
+    };
+
+    template <_Signed_integer_like _Ty>
+    struct _Repeat_view_difference_type<_Ty> {
+        using type = _Ty;
+    };
+
     _EXPORT_STD template <move_constructible _Ty, semiregular _Bo = unreachable_sentinel_t>
         requires (is_object_v<_Ty> && same_as<_Ty, remove_cv_t<_Ty>>
-                  && (_Integer_like<_Bo> || same_as<_Bo, unreachable_sentinel_t>) )
+                  && (_Integer_like_with_usable_difference_type<_Bo> || same_as<_Bo, unreachable_sentinel_t>) )
     class repeat_view : public view_interface<repeat_view<_Ty, _Bo>> {
     private:
         friend views::_Take_fn;
@@ -1416,8 +1430,7 @@ namespace ranges {
             using iterator_concept  = random_access_iterator_tag;
             using iterator_category = random_access_iterator_tag;
             using value_type        = _Ty;
-            using difference_type =
-                conditional_t<_Signed_integer_like<_Index_type>, _Index_type, _Iota_diff_t<_Index_type>>;
+            using difference_type   = typename _Repeat_view_difference_type<_Index_type>::type;
 
             _Iterator() = default;
 
@@ -7657,6 +7670,12 @@ namespace ranges {
                               && (convertible_to<sentinel_t<_ViewTypes>, sentinel_t<const _ViewTypes>> && ...);
 #endif // ^^^ workaround ^^^
 
+    template <class _Func, class... _Views>
+    concept _Zip_transform_constraints = move_constructible<_Func> && is_object_v<_Func> && (sizeof...(_Views) > 0)
+                                      && (input_range<_Views> && ...) && (view<_Views> && ...)
+                                      && regular_invocable<_Func&, range_reference_t<_Views>...>
+                                      && _Can_reference<invoke_result_t<_Func&, range_reference_t<_Views>...>>;
+
     _EXPORT_STD template <input_range... _ViewTypes>
         requires (view<_ViewTypes> && ...) && (sizeof...(_ViewTypes) > 0)
     class zip_view : public view_interface<zip_view<_ViewTypes...>> {
@@ -7677,10 +7696,8 @@ namespace ranges {
         private:
             friend zip_view;
 
-            template <move_constructible _Func, input_range... _OtherViews>
-                requires ((view<_OtherViews> && ...) && (sizeof...(_OtherViews) > 0)
-                          && is_object_v<_Func> && regular_invocable<_Func&, range_reference_t<_OtherViews>...>
-                          && _Can_reference<invoke_result_t<_Func&, range_reference_t<_OtherViews>...>>)
+            template <class _Func, class... _OtherViews>
+                requires _Zip_transform_constraints<_Func, _OtherViews...>
             friend class zip_transform_view;
 
             using _My_tuple = tuple<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
@@ -8075,10 +8092,8 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Zip_fn zip{};
     } // namespace views
 
-    _EXPORT_STD template <move_constructible _Func, input_range... _ViewTypes>
-        requires ((view<_ViewTypes> && ...) && (sizeof...(_ViewTypes) > 0)
-                  && is_object_v<_Func> && regular_invocable<_Func&, range_reference_t<_ViewTypes>...>
-                  && _Can_reference<invoke_result_t<_Func&, range_reference_t<_ViewTypes>...>>)
+    _EXPORT_STD template <class _Func, class... _ViewTypes>
+        requires _Zip_transform_constraints<_Func, _ViewTypes...>
     class zip_transform_view : public view_interface<zip_transform_view<_Func, _ViewTypes...>> {
     private:
         using _Inner_view = zip_view<_ViewTypes...>;
@@ -8489,6 +8504,9 @@ namespace ranges {
     _EXPORT_STD template <class _Container, input_range _Rng, class... _Types>
         requires (!view<_Container>)
     _NODISCARD constexpr _Container to(_Rng&& _Range, _Types&&... _Args) {
+        static_assert(!is_const_v<_Container>, "C must not be const. ([range.utility.conv.to])");
+        static_assert(!is_volatile_v<_Container>, "C must not be volatile. ([range.utility.conv.to])");
+        static_assert(is_class_v<_Container>, "C must be a class type. ([range.utility.conv.to])");
         if constexpr (_Converts_direct_constructible<_Rng, _Container, _Types...>) {
             return _Container(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
         } else if constexpr (_Converts_tag_constructible<_Rng, _Container, _Types...>) {
@@ -8514,6 +8532,9 @@ namespace ranges {
 
     template <class _Container>
     struct _To_class_fn {
+        _STL_INTERNAL_STATIC_ASSERT(!is_const_v<_Container>);
+        _STL_INTERNAL_STATIC_ASSERT(!is_volatile_v<_Container>);
+        _STL_INTERNAL_STATIC_ASSERT(is_class_v<_Container>);
         _STL_INTERNAL_STATIC_ASSERT(!view<_Container>);
 
         template <input_range _Rng, class... _Types>
@@ -8527,6 +8548,9 @@ namespace ranges {
     _EXPORT_STD template <class _Container, class... _Types>
         requires (!view<_Container>)
     _NODISCARD constexpr auto to(_Types&&... _Args) {
+        static_assert(!is_const_v<_Container>, "C must not be const. ([range.utility.conv.adaptors])");
+        static_assert(!is_volatile_v<_Container>, "C must not be volatile. ([range.utility.conv.adaptors])");
+        static_assert(is_class_v<_Container>, "C must be a class type. ([range.utility.conv.adaptors])");
         return _Range_closure<_To_class_fn<_Container>, decay_t<_Types>...>{_STD forward<_Types>(_Args)...};
     }
 
