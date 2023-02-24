@@ -2393,12 +2393,10 @@ namespace ranges {
 #endif // _ITERATOR_DEBUG_LEVEL != 0
             }
 
-            // clang-format off
-            constexpr _Iterator(_Iterator<!_Const> _It)
-                noexcept(is_nothrow_constructible_v<iterator_t<_Base>, iterator_t<_Vw>>) // strengthened
+            constexpr _Iterator(_Iterator<!_Const> _It) noexcept(
+                is_nothrow_constructible_v<iterator_t<_Base>, iterator_t<_Vw>>) // strengthened
                 requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_Base>>
-                : _Current{_STD move(_It._Current)}, _Parent{_It._Parent} {}
-            // clang-format on
+                : _Current(_STD move(_It._Current)), _Parent(_It._Parent) {}
 
             _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept {
                 return _Current;
@@ -3707,7 +3705,7 @@ namespace ranges {
             constexpr _Iterator(_Iterator<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, _OuterIter>
                           && convertible_to<iterator_t<_InnerRng<false>>, _InnerIter>
-                : _Outer{_STD move(_It._Outer)}, _Inner{_STD move(_It._Inner)}, _Parent{_It._Parent} {}
+                : _Outer(_STD move(_It._Outer)), _Inner(_STD move(_It._Inner)), _Parent(_It._Parent) {}
 
             _NODISCARD constexpr decltype(auto) operator*() const noexcept(noexcept(**_Inner)) /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -4033,7 +4031,7 @@ namespace ranges {
             _Variantish<_PatternIter, _InnerIter> _Inner_it{};
 
             constexpr _Iterator(_Parent_t& _Parent_, iterator_t<_Base> _Outer_)
-                : _Parent{_STD addressof(_Parent_)}, _Outer_it{_STD move(_Outer_)} {
+                : _Parent(_STD addressof(_Parent_)), _Outer_it(_STD move(_Outer_)) {
                 if (_Outer_it != _RANGES end(_Parent->_Range)) {
                     auto&& _Inner = _Update_inner();
                     _Inner_it._Emplace_second(_RANGES begin(_Inner));
@@ -4117,7 +4115,7 @@ namespace ranges {
                           && convertible_to<iterator_t<_Vw>, _OuterIter> //
                           && convertible_to<iterator_t<_InnerRng<false>>, _InnerIter> //
                           && convertible_to<iterator_t<_Pat>, _PatternIter> //
-                : _Outer_it{_STD move(_It._Outer_it)}, _Parent{_It._Parent} {
+                : _Parent(_It._Parent), _Outer_it(_STD move(_It._Outer_it)) {
                 switch (_It._Inner_it._Contains) {
                 case _Variantish_state::_Holds_first:
                     _Inner_it._Emplace_first(_STD move(_It._Inner_it._First));
@@ -4307,7 +4305,7 @@ namespace ranges {
             constexpr _Sentinel(_Sentinel<!_Const> _Se) noexcept(
                 is_nothrow_constructible_v<sentinel_t<_Base>, sentinel_t<_Vw>>) // strengthened
                 requires _Const && convertible_to<sentinel_t<_Vw>, sentinel_t<_Base>>
-                : _Last{_STD move(_Se._Last)} {}
+                : _Last(_STD move(_Se._Last)) {}
 
             template <bool _OtherConst>
                 requires sentinel_for<sentinel_t<_Base>, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
@@ -5558,7 +5556,7 @@ namespace ranges {
             constexpr _Iterator(_Iterator<!_Const> _It) noexcept(
                 is_nothrow_constructible_v<iterator_t<_Base>, iterator_t<_Vw>>) // strengthened
                 requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_Base>>
-                : _Current{_STD move(_It._Current)} {}
+                : _Current(_STD move(_It._Current)) {}
 
             _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept {
                 return _Current;
