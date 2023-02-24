@@ -5488,13 +5488,17 @@ namespace ranges {
 #endif // _HAS_CXX23
 
     template <class _Tuple, size_t _Index>
-    concept _Has_tuple_element = //
+    concept _Has_tuple_element =
+#if _HAS_CXX23
+        _Tuple_like<_Tuple> && _Index < tuple_size_v<_Tuple>;
+#else // ^^^ C++23 / C++20 vvv
         requires(_Tuple __t) {
             typename tuple_size<_Tuple>::type;
             requires _Index < tuple_size_v<_Tuple>;
             typename tuple_element_t<_Index, _Tuple>;
             { _STD get<_Index>(__t) } -> convertible_to<const tuple_element_t<_Index, _Tuple>&>;
         };
+#endif // C++20
 
     template <class _Tuple, size_t _Index>
     concept _Returnable_element = is_reference_v<_Tuple> || move_constructible<tuple_element_t<_Index, _Tuple>>;

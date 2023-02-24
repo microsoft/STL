@@ -651,6 +651,20 @@ void test_map_or_multimap() {
     static_assert(is_same_v<decltype(m15), M<long, char, MyGreater>>);
     static_assert(is_same_v<decltype(m16), M<long, char, MyGreater, MyAlloc<CPurr>>>);
     static_assert(is_same_v<decltype(m17), M<long, char, less<long>, MyAlloc<CPurr>>>);
+
+    { // Verify changes from P2165R4
+        using TupleIter = tuple<int, double>*;
+        static_assert(is_same_v<decltype(M{TupleIter{}, TupleIter{}}), M<int, double>>);
+
+        using PairIter = pair<int, float>*;
+        static_assert(is_same_v<decltype(M{PairIter{}, PairIter{}}), M<int, float>>);
+
+        using ArrayIter = array<int, 2>*;
+        static_assert(is_same_v<decltype(M{ArrayIter{}, ArrayIter{}}), M<int, int>>);
+
+        using SubrangeIter = ranges::subrange<int*, int*>*;
+        static_assert(is_same_v<decltype(M{SubrangeIter{}, SubrangeIter{}}), M<int*, int*>>);
+    }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 }
 
