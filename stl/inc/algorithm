@@ -932,17 +932,10 @@ namespace ranges {
                 // We've trimmed matching prefixes and matching suffixes.
                 // Now we need to compare each range's prefix to the other range's suffix.
 
-#ifdef _M_CEE // TRANSITION, VSO-1663257
-                const auto _ProjectedPred = [&](auto&& _Left, auto&& _Right) -> bool {
-                    return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<decltype(_Left)>(_Left)),
-                        _STD invoke(_Proj2, _STD forward<decltype(_Right)>(_Right)));
-                };
-#else // ^^^ workaround / no workaround vvv
                 const auto _ProjectedPred = [&]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) -> bool {
                     return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<_Ty1>(_Left)),
                         _STD invoke(_Proj2, _STD forward<_Ty2>(_Right)));
                 };
-#endif // ^^^ no workaround ^^^
 
                 const _TrimResult _Res = _Trim_completely(_First1, _Final1, _First2, _Final2, _ProjectedPred);
 
@@ -1028,17 +1021,10 @@ namespace ranges {
                 // We've trimmed matching prefixes and matching suffixes.
                 // Now we need to compare each range's prefix to the other range's suffix.
 
-#ifdef _M_CEE // TRANSITION, VSO-1663257
-                const auto _ProjectedPred = [&](auto&& _Left, auto&& _Right) -> bool {
-                    return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<decltype(_Left)>(_Left)),
-                        _STD invoke(_Proj2, _STD forward<decltype(_Right)>(_Right)));
-                };
-#else // ^^^ workaround / no workaround vvv
                 const auto _ProjectedPred = [&]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) -> bool {
                     return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<_Ty1>(_Left)),
                         _STD invoke(_Proj2, _STD forward<_Ty2>(_Right)));
                 };
-#endif // ^^^ no workaround ^^^
 
                 const _TrimResult _Res = _Trim_completely(_First1, _Final1, _First2, _Final2, _ProjectedPred);
 
