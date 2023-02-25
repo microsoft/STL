@@ -777,6 +777,7 @@ public:
     }
 
 #if _HAS_CXX23
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1753916
     template <class _Other, class _Indices = make_index_sequence<1 + sizeof...(_Rest)>>
     static constexpr bool _Can_equal_compare_with_tuple_like_v = false;
 
@@ -785,6 +786,7 @@ public:
         (requires(const tuple& _Left, const _Other& _Right) {
              { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) } -> _Boolean_testable;
          } && ...);
+#endif // ^^^ no workaround ^^^
 
     template <class _Other, size_t... _Indices>
     _NODISCARD constexpr bool _Equals_to_tuple_like(const _Other& _Right, index_sequence<_Indices...>) const {
@@ -798,9 +800,11 @@ public:
     _NODISCARD_FRIEND constexpr bool operator==(const tuple& _Left, const _Other& _Right) {
         static_assert(1 + sizeof...(_Rest) == tuple_size_v<_Other>,
             "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1753916
         static_assert(_Can_equal_compare_with_tuple_like_v<_Other>,
             "For all i, where 0 <= i < sizeof...(TTypes), get<i>(t) == get<i>(u) must be a valid expression (N4928 "
             "[tuple.rel]/2).");
+#endif // ^^^ no workaround ^^^
         return _Left._Equals_to_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
     }
 
@@ -1048,7 +1052,11 @@ struct _Tuple_cat2<_Ty, index_sequence<_Kx...>, index_sequence<_Ix...>, _Ix_next
           index_sequence<_Ix..., (_Ix_next + 0 * _Kx_next)...>, // repeat _Ix_next, ignoring the elements of _Kx_next
           _Ix_next + 1, _Rest...> {};
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+template <_Tuple_like... _Tuples>
+#else // ^^^ C++23 / C++20 vvv
 template <class... _Tuples>
+#endif // C++20
 using _Tuple_cat1 = _Tuple_cat2<tuple<_Tuples&&...>, index_sequence<>, index_sequence<>, 0,
     make_index_sequence<tuple_size_v<_Remove_cvref_t<_Tuples>>>...>;
 
@@ -1062,7 +1070,7 @@ _EXPORT_STD template <_Tuple_like... _Tuples>
 #else // ^^^ C++23 / C++20 vvv
 _EXPORT_STD template <class... _Tuples>
 #endif // C++20
-_NODISCARD constexpr auto tuple_cat(_Tuples&&... _Tpls) { // concatenate tuples
+_NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::_Ret tuple_cat(_Tuples&&... _Tpls) { // concatenate tuples
     using _Cat1   = _Tuple_cat1<_Tuples...>;
     using _Ret    = typename _Cat1::_Ret;
     using _Kx_seq = typename _Cat1::_Kx_seq;
