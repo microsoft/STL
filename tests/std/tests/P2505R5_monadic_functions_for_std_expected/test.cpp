@@ -389,7 +389,7 @@ template <class T>
     requires is_specialization_of<remove_cvref_t<T>, expected>
 using expected_error_t = typename remove_cvref_t<T>::error_type;
 
-template<class R>
+template <class R>
 struct DefaultTransformer {
     constexpr R operator()() const {
         return R();
@@ -442,7 +442,7 @@ struct State {
     // clang-format on
 
     template <class U = State>
-        requires(!static_cast<bool>(ConstCopyStatus) && static_cast<bool>(ConstMoveStatus))
+        requires (!static_cast<bool>(ConstCopyStatus) && static_cast<bool>(ConstMoveStatus))
     constexpr State(const type_identity_t<U>&&) noexcept {}
 
     State& operator=(const State&) = default;
