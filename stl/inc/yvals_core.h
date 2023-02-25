@@ -295,6 +295,7 @@
 // Other C++20 deprecation warnings
 
 // _HAS_CXX23 directly controls:
+// P0009R18 <mdspan>
 // P0288R9 move_only_function
 // P0323R12 <expected>
 // P0401R6 Providing Size Feedback In The Allocator Interface
@@ -349,7 +350,11 @@
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2505R5 Monadic Functions For expected
 // P2549R1 unexpected<E>::error()
+// P2599R2 mdspan: index_type, size_type
 // P2602R2 Poison Pills Are Too Toxic
+// P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
+// P2613R1 mdspan: empty()
+// P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1687,6 +1692,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_invoke_r       202106L
 #define __cpp_lib_ios_noreplace  202207L
 #define __cpp_lib_is_scoped_enum 202011L
+#define __cpp_lib_mdspan         202207L
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules
 #define __cpp_lib_modules 202207L

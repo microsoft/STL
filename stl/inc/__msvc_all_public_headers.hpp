@@ -106,6 +106,7 @@
 #include <list>
 #include <locale>
 #include <map>
+#include <mdspan>
 #include <memory>
 #include <memory_resource>
 #include <new>
