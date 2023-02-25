@@ -75,6 +75,7 @@ void test_shared_ptr() {
         assert(count == 1);
         assert(*int_ptr == 32);
     }
+
     // LWG-3734 Inconsistency in inout_ptr and out_ptr for empty case
     {
         const auto f = [](void** ptr) { *ptr = new int(42); };
@@ -131,6 +132,7 @@ void test_smart_ptr(Args&&... args) {
 
         assert(*int_ptr == 19);
     }
+
     // LWG-3734 Inconsistency in inout_ptr and out_ptr for empty case
     {
         const auto f = [](void** ptr) { *ptr = new int(42); };
