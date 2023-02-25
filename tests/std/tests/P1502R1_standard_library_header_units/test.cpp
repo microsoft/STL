@@ -46,6 +46,7 @@ import <limits>;
 import <list>;
 import <locale>;
 import <map>;
+import <mdspan>;
 import <memory>;
 import <memory_resource>;
 import <mutex>;
