@@ -769,11 +769,13 @@ public:
         : _Ptr{_Ptr_}, _Map{_Map_}, _Acc{_Acc_} {}
 
     template <class _OtherElementType, class _OtherExtents, class _OtherLayoutPolicy, class _OtherAccessor,
-        enable_if_t<is_constructible_v<mapping_type, const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&>
-                        && is_constructible_v<accessor_type, const _OtherAccessor&>,
+        enable_if_t<
+            is_constructible_v<mapping_type, const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&>
+                && is_constructible_v<accessor_type, const _OtherAccessor&>,
             int> = 0>
-    constexpr explicit(!is_convertible_v<const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&, mapping_type>
-                       || !is_convertible_v<const _OtherAccessor&, accessor_type>)
+    constexpr explicit(
+        !is_convertible_v<const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&, mapping_type>
+        || !is_convertible_v<const _OtherAccessor&, accessor_type>)
         mdspan(const mdspan<_OtherElementType, _OtherExtents, _OtherLayoutPolicy, _OtherAccessor>& _Other)
         : _Ptr{_Other._Ptr}, _Map{_Other._Map}, _Acc{_Other._Acc} {
         static_assert(is_constructible_v<data_handle_type, const typename _OtherAccessor ::data_handle_type&>);

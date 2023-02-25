@@ -1030,7 +1030,7 @@ void mdspan_tests_assign() {
 }
 
 void mdspan_tests_observers() {
-    using E             = extents<size_t, dynamic_extent, 3>;
+    using E                    = extents<size_t, dynamic_extent, 3>;
     static constexpr int arr[] = {0, 1, 2, 3, 4, 5, 6, 7};
     constexpr mdspan<const int, E, layout_stride> mds{arr, layout_stride::mapping<E>{E{2}, array<size_t, 2>{1, 3}}};
 
