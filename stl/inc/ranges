@@ -6023,7 +6023,7 @@ namespace ranges {
                 noexcept(_Current[_Off]) && is_nothrow_copy_constructible_v<range_reference_t<_Base_t>>) // strengthened
                 requires random_access_range<_Base_t>
             {
-                return _Reference_type{_Pos + _Off, _Current[_Off]};
+                return _Reference_type{static_cast<difference_type>(_Pos + _Off), _Current[_Off]};
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept {
@@ -6141,12 +6141,12 @@ namespace ranges {
         };
 
         template <class _Rng>
-        static constexpr bool _Is_end_nothrow_v = is_nothrow_move_constructible_v<iterator_t<_Rng>> //
+        static constexpr bool _Is_end_nothrow_v = is_nothrow_move_constructible_v<sentinel_t<_Rng>> //
             && noexcept(_RANGES end(_STD declval<_Rng&>()));
 
         template <class _Rng>
             requires common_range<_Rng> && sized_range<_Rng>
-        static constexpr bool _Is_end_nothrow_v<_Rng> = is_nothrow_move_constructible_v<iterator_t<_Rng>> //
+        static constexpr bool _Is_end_nothrow_v<_Rng> = is_nothrow_move_constructible_v<sentinel_t<_Rng>> //
             && noexcept(_RANGES end(_STD declval<_Rng&>())) //
                 && noexcept(_RANGES distance(_STD declval<_Rng&>()));
 
