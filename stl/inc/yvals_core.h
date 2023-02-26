@@ -324,6 +324,7 @@
 // P1989R2 Range Constructor For string_view
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
 // P2136R3 invoke_r()
+// P2164R9 views::enumerate
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
@@ -1720,6 +1721,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
 #define __cpp_lib_ranges_contains         202207L
+#define __cpp_lib_ranges_enumerate        202302L
 #define __cpp_lib_ranges_find_last        202207L
 #define __cpp_lib_ranges_fold             202207L
 #define __cpp_lib_ranges_iota             202202L

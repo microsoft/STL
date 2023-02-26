@@ -551,6 +551,7 @@ tests\P1899R3_views_stride_death
 tests\P1951R1_default_arguments_pair_forward_ctor
 tests\P2136R3_invoke_r
 tests\P2162R2_std_visit_for_derived_classes_from_variant
+tests\P2164R9_views_enumerate
 tests\P2165R4_tuple_like_common_reference
 tests\P2165R4_tuple_like_common_type
 tests\P2165R4_tuple_like_operations
