@@ -137,6 +137,27 @@ constexpr bool test_nested_range() {
     return true;
 }
 
+struct ContainerLike {
+    template <std::input_iterator Iter>
+    constexpr ContainerLike(Iter first, Iter last) : dist(static_cast<std::ptrdiff_t>(ranges::distance(first, last))) {}
+
+    constexpr char* begin() {
+        return nullptr;
+    }
+    constexpr char* end() {
+        return nullptr;
+    }
+
+    std::ptrdiff_t dist;
+};
+
+constexpr bool test_lwg3733() {
+    auto nul_termination = std::views::take_while([](char ch) { return ch != '\0'; });
+    auto c               = nul_termination("1729") | std::views::common | ranges::to<ContainerLike>();
+    assert(c.dist == 4);
+    return true;
+}
+
 constexpr bool test_lwg3785() {
     std::vector<int> vec{42, 1729};
 
@@ -170,6 +191,9 @@ int main() {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1588614
     static_assert(test_nested_range());
 #endif // defined(__clang__) || defined(__EDG__)
+
+    test_lwg3733();
+    static_assert(test_lwg3733());
 
     test_lwg3785();
     static_assert(test_lwg3785());

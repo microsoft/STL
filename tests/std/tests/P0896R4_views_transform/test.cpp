@@ -811,6 +811,26 @@ void test_gh_1709() {
     }
 }
 
+// GH-3014 "<ranges>: list-initialization is misused"
+void test_gh_3014() { // COMPILE-ONLY
+    struct InRange {
+        int* begin() {
+            return nullptr;
+        }
+
+        test::init_list_not_constructible_iterator<int> begin() const {
+            return nullptr;
+        }
+
+        unreachable_sentinel_t end() const {
+            return {};
+        }
+    };
+
+    auto r                                           = InRange{} | views::transform(identity{});
+    [[maybe_unused]] decltype(as_const(r).begin()) i = r.begin(); // Check 'iterator(iterator<!Const> i)'
+}
+
 int main() {
     { // Validate copyable views
         constexpr span<const int> s{some_ints};

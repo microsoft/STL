@@ -1554,7 +1554,8 @@ struct _Invoker1;
 
 template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, true, false>
-    : conditional_t<is_base_of_v<typename _Is_memfunptr<_Removed_cvref>::_Class_type, remove_reference_t<_Ty1>>,
+    : conditional_t<is_same_v<typename _Is_memfunptr<_Removed_cvref>::_Class_type, _Remove_cvref_t<_Ty1>>
+                        || is_base_of_v<typename _Is_memfunptr<_Removed_cvref>::_Class_type, _Remove_cvref_t<_Ty1>>,
           _Invoker_pmf_object,
           conditional_t<_Is_specialization_v<_Remove_cvref_t<_Ty1>, reference_wrapper>, _Invoker_pmf_refwrap,
               _Invoker_pmf_pointer>> {}; // pointer to member function
@@ -1562,7 +1563,8 @@ struct _Invoker1<_Callable, _Ty1, _Removed_cvref, true, false>
 template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, true>
     : conditional_t<
-          is_base_of_v<typename _Is_member_object_pointer<_Removed_cvref>::_Class_type, remove_reference_t<_Ty1>>,
+          is_same_v<typename _Is_member_object_pointer<_Removed_cvref>::_Class_type, _Remove_cvref_t<_Ty1>>
+              || is_base_of_v<typename _Is_member_object_pointer<_Removed_cvref>::_Class_type, _Remove_cvref_t<_Ty1>>,
           _Invoker_pmd_object,
           conditional_t<_Is_specialization_v<_Remove_cvref_t<_Ty1>, reference_wrapper>, _Invoker_pmd_refwrap,
               _Invoker_pmd_pointer>> {}; // pointer to member data
