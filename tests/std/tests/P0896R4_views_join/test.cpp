@@ -477,6 +477,13 @@ void test_non_trivially_destructible_type() { // COMPILE-ONLY
         using difference_type = int;
         using value_type      = int;
 
+        // Provide some way to construct this type.
+        non_trivially_destructible_input_iterator(double, double) {}
+
+        non_trivially_destructible_input_iterator(const non_trivially_destructible_input_iterator&) = default;
+        non_trivially_destructible_input_iterator& operator=(
+            const non_trivially_destructible_input_iterator&) = default;
+
         ~non_trivially_destructible_input_iterator() {}
 
         // To test the correct specialization of _Defaultabox, this type must not be default constructible.
