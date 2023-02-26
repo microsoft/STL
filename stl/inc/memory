@@ -4185,7 +4185,7 @@ public:
             _Smart_ptr.reset();
         } else {
             static_assert(is_constructible_v<_SmartPtr>, "the adapted pointer type must be default constructible.");
-            _Smart_ptr = _SmartPtr{};
+            _Smart_ptr = _SmartPtr();
         }
     }
 
