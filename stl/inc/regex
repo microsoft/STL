@@ -627,6 +627,11 @@ public:
         return _Compare(_Ptr, _Traits::length(_Ptr));
     }
 
+    void swap(sub_match& _Other) noexcept(_Is_nothrow_swappable<_BidIt>::value) {
+        this->_Mybase::swap(_Other);
+        _STD swap(matched, _Other.matched);
+    }
+
     int _Compare(const value_type* const _Ptr, const _Size_type _Count) const {
         // compare *this to array [_Ptr, _Ptr + _Count)
         const _Mybase _Range(_Effective_range());
