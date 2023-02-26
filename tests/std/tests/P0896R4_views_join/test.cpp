@@ -514,7 +514,7 @@ void test_non_trivially_destructible_type() { // COMPILE-ONLY
 
 // GH-3014 "<ranges>: list-initialization is misused"
 void test_gh_3014() { // COMPILE-ONLY
-    struct InRange {
+    struct FwdRange {
         string* begin() {
             return nullptr;
         }
@@ -528,7 +528,7 @@ void test_gh_3014() { // COMPILE-ONLY
         }
     };
 
-    auto r                                           = InRange{} | views::join;
+    auto r                                           = FwdRange{} | views::join;
     [[maybe_unused]] decltype(as_const(r).begin()) i = r.begin(); // Check 'iterator(iterator<!Const> i)'
 }
 

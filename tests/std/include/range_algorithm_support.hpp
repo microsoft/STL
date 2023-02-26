@@ -394,8 +394,9 @@ namespace test {
 
     template <class T>
     struct init_list_not_constructible_iterator {
-        using difference_type = int;
-        using value_type      = T;
+        using iterator_category = std::forward_iterator_tag;
+        using difference_type   = int;
+        using value_type        = T;
 
         init_list_not_constructible_iterator() = default;
         init_list_not_constructible_iterator(T*) {}
@@ -407,10 +408,11 @@ namespace test {
         init_list_not_constructible_iterator& operator++(); // not defined
         init_list_not_constructible_iterator operator++(int); // not defined
 
+        bool operator==(init_list_not_constructible_iterator) const; // not defined
         bool operator==(init_list_not_constructible_sentinel<T>) const; // not defined
     };
 
-    static_assert(std::input_iterator<init_list_not_constructible_iterator<int>>);
+    static_assert(std::forward_iterator<init_list_not_constructible_iterator<int>>);
     static_assert(
         std::sentinel_for<init_list_not_constructible_sentinel<int>, init_list_not_constructible_iterator<int>>);
 

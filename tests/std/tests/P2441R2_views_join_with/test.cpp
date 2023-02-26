@@ -572,7 +572,7 @@ struct FakeStr {
 };
 
 void test_gh_3014() { // COMPILE-ONLY
-    struct InRange {
+    struct FwdRange {
         FakeStr* begin() {
             return nullptr;
         }
@@ -590,7 +590,7 @@ void test_gh_3014() { // COMPILE-ONLY
         }
     };
 
-    auto r                                           = InRange{} | views::join_with('-');
+    auto r                                           = FwdRange{} | views::join_with('-');
     [[maybe_unused]] decltype(as_const(r).begin()) i = r.begin(); // Check 'iterator(iterator<!Const> i)'
     [[maybe_unused]] decltype(as_const(r).end()) s   = r.end(); // Check 'sentinel(sentinel<!Const> s)'
 }

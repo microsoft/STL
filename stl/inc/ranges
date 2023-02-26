@@ -3624,7 +3624,7 @@ namespace ranges {
             using _OuterIter = iterator_t<_Maybe_const<_Const, _Vw>>;
 
             _Iterator_base() = default;
-            constexpr explicit _Iterator_base(_OuterIter&& _Outer_) : _Outer{_STD move(_Outer_)} {}
+            constexpr explicit _Iterator_base(_OuterIter&& _Outer_) : _Outer(_STD move(_Outer_)) {}
 
             /* [[no_unique_address]] */ _OuterIter _Outer{};
         };
@@ -4064,7 +4064,7 @@ namespace ranges {
             using _OuterIter = iterator_t<_Maybe_const<_Const, _Vw>>;
 
             _Iterator_base() = default;
-            constexpr explicit _Iterator_base(_OuterIter&& _Outer_it_) : _Outer_it{_STD move(_Outer_it_)} {}
+            constexpr explicit _Iterator_base(_OuterIter&& _Outer_it_) : _Outer_it(_STD move(_Outer_it_)) {}
 
             /* [[no_unique_address]] */ _OuterIter _Outer_it{};
         };
