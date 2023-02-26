@@ -12,6 +12,6 @@
   skipped-tests-comment-list-files:
     - 'magic_comments.txt'
   skipped-tests-list-files:
-    - 'skipped_tests.txt'
+    - 'expected_results.txt'
   configuration-files:
     - 'usual_matrix.lst'

@@ -5,8 +5,6 @@
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 // LIBRARY FEATURE-TEST MACROS
 #if _HAS_CXX23
 #ifndef __cpp_lib_adaptor_iterator_pair_constructor
@@ -1507,10 +1505,10 @@ STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
-#elif __cpp_lib_ranges != 202211L
-#error __cpp_lib_ranges is not 202211L
+#elif __cpp_lib_ranges != 202302L
+#error __cpp_lib_ranges is not 202302L
 #else
-STATIC_ASSERT(__cpp_lib_ranges == 202211L);
+STATIC_ASSERT(__cpp_lib_ranges == 202302L);
 #endif
 #elif _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
@@ -2168,6 +2166,20 @@ STATIC_ASSERT(__cpp_lib_transparent_operators == 201510L);
 #error __cpp_lib_tuple_element_t is not 201402L
 #else
 STATIC_ASSERT(__cpp_lib_tuple_element_t == 201402L);
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_tuple_like
+#error __cpp_lib_tuple_like is not defined
+#elif __cpp_lib_tuple_like != 202207L
+#error __cpp_lib_tuple_like is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_tuple_like == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_tuple_like
+#error __cpp_lib_tuple_like is defined
+#endif
 #endif
 
 #ifndef __cpp_lib_tuples_by_type

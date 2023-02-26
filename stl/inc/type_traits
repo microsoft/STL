@@ -615,8 +615,8 @@ struct has_unique_object_representations : bool_constant<__has_unique_object_rep
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool has_unique_object_representations_v = __has_unique_object_representations(_Ty);
 
-// TRANSITION, Clang 16, VSO-1690654, and VS17.6p1
-#if defined(__clang__) || defined(__EDG__) || !defined(_MSVC_INTERNAL_TESTING)
+// TRANSITION, Clang 16 and VSO-1690654
+#if defined(__clang__) || defined(__EDG__)
 template <class _Ty>
 struct _Is_aggregate_impl : bool_constant<__is_aggregate(_Ty)> {};
 
@@ -1554,7 +1554,8 @@ struct _Invoker1;
 
 template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, true, false>
-    : conditional_t<is_base_of_v<typename _Is_memfunptr<_Removed_cvref>::_Class_type, remove_reference_t<_Ty1>>,
+    : conditional_t<is_same_v<typename _Is_memfunptr<_Removed_cvref>::_Class_type, _Remove_cvref_t<_Ty1>>
+                        || is_base_of_v<typename _Is_memfunptr<_Removed_cvref>::_Class_type, _Remove_cvref_t<_Ty1>>,
           _Invoker_pmf_object,
           conditional_t<_Is_specialization_v<_Remove_cvref_t<_Ty1>, reference_wrapper>, _Invoker_pmf_refwrap,
               _Invoker_pmf_pointer>> {}; // pointer to member function
@@ -1562,7 +1563,8 @@ struct _Invoker1<_Callable, _Ty1, _Removed_cvref, true, false>
 template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, true>
     : conditional_t<
-          is_base_of_v<typename _Is_member_object_pointer<_Removed_cvref>::_Class_type, remove_reference_t<_Ty1>>,
+          is_same_v<typename _Is_member_object_pointer<_Removed_cvref>::_Class_type, _Remove_cvref_t<_Ty1>>
+              || is_base_of_v<typename _Is_member_object_pointer<_Removed_cvref>::_Class_type, _Remove_cvref_t<_Ty1>>,
           _Invoker_pmd_object,
           conditional_t<_Is_specialization_v<_Remove_cvref_t<_Ty1>, reference_wrapper>, _Invoker_pmd_refwrap,
               _Invoker_pmd_pointer>> {}; // pointer to member data

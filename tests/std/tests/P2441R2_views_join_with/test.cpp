@@ -558,6 +558,41 @@ void test_valueless_iterator() {
     }
 }
 
+// GH-3014 "<ranges>: list-initialization is misused"
+struct FakeStr {
+    const char* begin() {
+        return nullptr;
+    }
+
+    unreachable_sentinel_t end() {
+        return {};
+    }
+};
+
+void test_gh_3014() { // COMPILE-ONLY
+    struct InRange {
+        FakeStr* begin() {
+            return nullptr;
+        }
+
+        test::init_list_not_constructible_iterator<FakeStr> begin() const {
+            return nullptr;
+        }
+
+        FakeStr* end() {
+            return nullptr;
+        }
+
+        test::init_list_not_constructible_sentinel<FakeStr> end() const {
+            return nullptr;
+        }
+    };
+
+    auto r                                           = InRange{} | views::join_with('-');
+    [[maybe_unused]] decltype(as_const(r).begin()) i = r.begin(); // Check 'iterator(iterator<!Const> i)'
+    [[maybe_unused]] decltype(as_const(r).end()) s   = r.end(); // Check 'sentinel(sentinel<!Const> s)'
+}
+
 int main() {
     {
         auto filtered_and_joined =

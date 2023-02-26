@@ -4,5 +4,3 @@
 #define MEOW_ANGLE(X) <X>
 
 #include MEOW_ANGLE(MEOW_HEADER)
-
-int main() {} // COMPILE-ONLY

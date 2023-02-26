@@ -482,5 +482,3 @@ void iter_cat_test_cases() {
     test_iter_cat_for_containers<false, array<int, 8>, array<volatile int, 8>>();
     test_iter_cat_for_containers<false, array<volatile int, 8>, array<volatile int, 8>>();
 }
-
-int main() {} // COMPILE-ONLY

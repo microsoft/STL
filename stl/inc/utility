@@ -480,15 +480,16 @@ constexpr void swap(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Righ
 }
 #endif // _HAS_CXX23
 
-_EXPORT_STD template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool operator==(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
+_EXPORT_STD template <class _Ty1, class _Ty2, class _Uty1, class _Uty2>
+_NODISCARD constexpr bool operator==(const pair<_Ty1, _Ty2>& _Left, const pair<_Uty1, _Uty2>& _Right) {
     return _Left.first == _Right.first && _Left.second == _Right.second;
 }
 
 #ifdef __cpp_lib_concepts
-_EXPORT_STD template <class _Ty1, class _Ty2>
-_NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_Ty1>, _Synth_three_way_result<_Ty2>>
-    operator<=>(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
+_EXPORT_STD template <class _Ty1, class _Ty2, class _Uty1, class _Uty2>
+_NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_Ty1, _Uty1>,
+    _Synth_three_way_result<_Ty2, _Uty2>>
+    operator<=>(const pair<_Ty1, _Ty2>& _Left, const pair<_Uty1, _Uty2>& _Right) {
     if (auto _Result = _Synth_three_way{}(_Left.first, _Right.first); _Result != 0) {
         return _Result;
     }
@@ -496,34 +497,34 @@ _NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_Ty1>,
 }
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 #if !_HAS_CXX20
-template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool operator!=(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
+template <class _Ty1, class _Ty2, class _Uty1, class _Uty2>
+_NODISCARD constexpr bool operator!=(const pair<_Ty1, _Ty2>& _Left, const pair<_Uty1, _Uty2>& _Right) {
     return !(_Left == _Right);
 }
 #endif // !_HAS_CXX20
 
-template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool operator<(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
+template <class _Ty1, class _Ty2, class _Uty1, class _Uty2>
+_NODISCARD constexpr bool operator<(const pair<_Ty1, _Ty2>& _Left, const pair<_Uty1, _Uty2>& _Right) {
     return _Left.first < _Right.first || (!(_Right.first < _Left.first) && _Left.second < _Right.second);
 }
 
-template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool operator>(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
+template <class _Ty1, class _Ty2, class _Uty1, class _Uty2>
+_NODISCARD constexpr bool operator>(const pair<_Ty1, _Ty2>& _Left, const pair<_Uty1, _Uty2>& _Right) {
     return _Right < _Left;
 }
 
-template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool operator<=(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
+template <class _Ty1, class _Ty2, class _Uty1, class _Uty2>
+_NODISCARD constexpr bool operator<=(const pair<_Ty1, _Ty2>& _Left, const pair<_Uty1, _Uty2>& _Right) {
     return !(_Right < _Left);
 }
 
-template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool operator>=(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
+template <class _Ty1, class _Ty2, class _Uty1, class _Uty2>
+_NODISCARD constexpr bool operator>=(const pair<_Ty1, _Ty2>& _Left, const pair<_Uty1, _Uty2>& _Right) {
     return !(_Left < _Right);
 }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
 template <class _Ty1, class _Ty2, class _Uty1, class _Uty2, template <class> class _TQual,
     template <class> class _UQual>
     requires requires {
@@ -539,7 +540,7 @@ template <class _Ty1, class _Ty2, class _Uty1, class _Uty2>
 struct common_type<pair<_Ty1, _Ty2>, pair<_Uty1, _Uty2>> {
     using type = pair<common_type_t<_Ty1, _Uty1>, common_type_t<_Ty2, _Uty2>>;
 };
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <class _Ty>
 struct _Unrefwrap_helper { // leave unchanged if not a reference_wrapper

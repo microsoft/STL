@@ -286,6 +286,8 @@
 // P2508R1 basic_format_string, format_string, wformat_string
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 // P2588R3 barrier's Phase Completion Guarantees
+// P2602R2 Poison Pills Are Too Toxic
+// P2609R3 Relaxing Ranges Just A Smidge
 // P2711R1 Making Multi-Param Constructors Of Views explicit
 
 // _HAS_CXX20 indirectly controls:
@@ -313,7 +315,6 @@
 // P1223R5 ranges::find_last, ranges::find_last_if, ranges::find_last_if_not
 // P1272R4 byteswap()
 // P1328R1 constexpr type_info::operator==()
-// P1413R3 Deprecate aligned_storage And aligned_union
 // P1425R4 Iterator Pair Constructors For stack And queue
 // P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
@@ -325,7 +326,6 @@
 // P2136R3 invoke_r()
 // P2164R9 views::enumerate
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
-//     (changes to views::zip and pair only)
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
@@ -352,7 +352,10 @@
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2505R5 Monadic Functions For expected
 // P2549R1 unexpected<E>::error()
-// P2602R2 Poison Pills Are Too Toxic
+
+// _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
+// P1413R3 Deprecate aligned_storage And aligned_union
+// Other C++23 deprecation warnings
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -830,8 +833,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or new
 _EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 15.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1935 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.35 or newer.");
+#if _MSC_VER < 1936 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.36 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1404,7 +1407,21 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4040 is used to warn that "The contents of <any> require static RTTI."
 
-// next warning number: STL4041
+#if _HAS_CXX23 && !defined(_SILENCE_CXX23_UNIX_STREAMS_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+#define _CXX23_DEPRECATE_UNIX_STREAMS                                                                                  \
+    [[deprecated(                                                                                                      \
+        "warning STL4041: "                                                                                            \
+        "std::errc enumerators std::errc::no_message_available, std::errc::no_stream_resources, "                      \
+        "std::errc::not_a_stream, and std::errc::stream_timeout and their corresponding errno macros ENODATA, ENOSR, " \
+        "ENOSTR, and ETIME are deprecated in C++23 by LWG-3869. These errno macros are deprecated in POSIX 2008 and "  \
+        "removed in POSIX 202x. You can define _SILENCE_CXX23_UNIX_STREAMS_DEPRECATION_WARNING or "                    \
+        "_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX23_DEPRECATE_UNIX_STREAMS
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4042
 
 // next error number: STL1006
 
@@ -1722,7 +1739,12 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_string_contains             202011L
 #define __cpp_lib_string_resize_and_overwrite 202110L
 #define __cpp_lib_to_underlying               202102L
-#define __cpp_lib_unreachable                 202202L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_tuple_like 202207L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_unreachable 202202L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
@@ -1764,7 +1786,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #if _HAS_CXX23
-#define __cpp_lib_ranges 202211L // P2602R2 Poison Pills Are Too Toxic
+#define __cpp_lib_ranges 202302L // P2609R3 Relaxing Ranges Just A Smidge
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_ranges 202110L // P2415R2 What Is A view?
 #endif // _HAS_CXX20

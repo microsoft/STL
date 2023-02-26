@@ -9,6 +9,8 @@ struct Val {
     unsigned int canary;
     Val() : value(0), canary(0xDEADBEEF) {}
     Val(int val) : value(val), canary(0x600DF00D) {}
+    Val(const Val&)            = default;
+    Val& operator=(const Val&) = default;
     ~Val() {
         canary = 0xDEADBEEF;
     }
