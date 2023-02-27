@@ -4884,7 +4884,6 @@ _CONSTEXPR20 _BidIt2 move_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest)
     return _Dest;
 }
 
-
 template <class _Ty>
 struct _Is_character : false_type {}; // by default, not a character type
 
