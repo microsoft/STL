@@ -29,7 +29,7 @@ void test_dll() {
     HMODULE hLibrary = LoadLibraryExW(L"testdll.dll", nullptr, 0);
     assert(hLibrary != nullptr);
     typedef void (*TheFuncProc)();
-    TheFuncProc pFunc = (TheFuncProc) GetProcAddress(hLibrary, "DllTest");
+    TheFuncProc pFunc = reinterpret_cast<TheFuncProc>(GetProcAddress(hLibrary, "DllTest"));
     assert(pFunc != nullptr);
     pFunc();
     FreeLibrary(hLibrary);
