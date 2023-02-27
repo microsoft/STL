@@ -10,9 +10,10 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstdint>
-#include _STL_INTRIN_HEADER
 #include <limits>
 #include <type_traits>
+
+#include _STL_INTRIN_HEADER
 
 #if _HAS_CXX20
 #include <bit>
