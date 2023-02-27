@@ -752,7 +752,7 @@ namespace ranges {
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
-    // default-initialize all elements in [_First, _First + _Count_raw)
+    // default-initialize all elements in [_First, _First + _Count)
     using _Ty                      = _Iter_value_t<_NoThrowFwdIt>;
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
@@ -886,7 +886,7 @@ namespace ranges {
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
-    // value-initialize all elements in [_First, _First + _Count_raw)
+    // value-initialize all elements in [_First, _First + _Count)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
         return _First;

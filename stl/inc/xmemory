@@ -2022,7 +2022,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_value_construct_n(
 
 template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt _Uninitialized_value_construct_n_unchecked1(_NoThrowFwdIt _UFirst, _Diff _Count) {
-    // value-initialize all elements in [_UFirst, _UFirst + _Count_raw)
+    // value-initialize all elements in [_UFirst, _UFirst + _Count)
     _STL_INTERNAL_CHECK(_Count >= 0);
     if constexpr (_Use_memset_value_construct_v<_NoThrowFwdIt>) {
         return _Zero_range(_UFirst, _UFirst + _Count);
