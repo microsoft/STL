@@ -898,7 +898,7 @@ _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff 
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NoThrowFwdIt uninitialized_value_construct_n(
-    _ExPo&& _Exec, _NoThrowFwdIt _First, const _Diff _Count_raw) noexcept; // terminates
+    _ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) noexcept; // terminates
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
