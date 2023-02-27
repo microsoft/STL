@@ -139,7 +139,7 @@ struct
     static constexpr void _Knuth_4_3_1_M(
         const uint32_t (&__u)[__m], const uint32_t (&__v)[__n], uint32_t (&__w)[__n + __m]) noexcept {
 #ifdef _ENABLE_STL_INTERNAL_CHECK
-        constexpr auto _Int_max = size_t{(numeric_limits<int>::max)()};
+        constexpr auto _Int_max = static_cast<size_t>((numeric_limits<int>::max)());
         _STL_INTERNAL_STATIC_ASSERT(__m <= _Int_max);
         _STL_INTERNAL_STATIC_ASSERT(__n <= _Int_max);
 #endif // _ENABLE_STL_INTERNAL_CHECK
@@ -188,7 +188,7 @@ struct
     static constexpr void _Knuth_4_3_1_D(uint32_t* const __u, const size_t __u_size, const uint32_t* const __v,
         const size_t __v_size, uint32_t* const __q) noexcept {
         // Pre: __u + [0, __u_size), __v + [0, __v_size), and __q + [0, __u_size - __v_size) are all valid ranges
-        // constexpr auto _Int_max = size_t{(numeric_limits<int>::max)()};
+        // constexpr auto _Int_max = static_cast<size_t>((numeric_limits<int>::max)());
         // _STL_INTERNAL_CHECK(__v_size <= _Int_max);
         const int __n = static_cast<int>(__v_size);
         // _STL_INTERNAL_CHECK(__u_size > __v_size);
