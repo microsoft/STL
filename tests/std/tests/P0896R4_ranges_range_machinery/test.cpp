@@ -129,7 +129,7 @@ STATIC_ASSERT(test_cpo(ranges::views::as_rvalue));
 // STATIC_ASSERT(test_cpo(ranges::views::cartesian_product));
 STATIC_ASSERT(test_cpo(ranges::views::chunk));
 STATIC_ASSERT(test_cpo(ranges::views::chunk_by));
-// STATIC_ASSERT(test_cpo(ranges::views::enumerate));
+STATIC_ASSERT(test_cpo(ranges::views::enumerate));
 STATIC_ASSERT(test_cpo(ranges::views::join_with));
 // STATIC_ASSERT(test_cpo(ranges::views::pairwise));
 // STATIC_ASSERT(test_cpo(ranges::views::pairwise_transform));
