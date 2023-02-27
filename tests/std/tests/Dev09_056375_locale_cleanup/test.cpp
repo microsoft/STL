@@ -51,9 +51,6 @@ void test_exe_part2() {
 }
 
 int main() {
-#ifdef _M_CEE
-    using namespace System;
-#endif
     test_exe_part1();
     test_dll();
     test_exe_part2();
