@@ -3080,7 +3080,6 @@ private:
         _My_data._Myres  = _Right_data._Myres;
         _My_data._Mysize = _Right_data._Mysize;
 
-
         _Right._Tidy_init();
     }
 
