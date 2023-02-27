@@ -1546,6 +1546,19 @@ namespace {
             al.construct(static_cast<const volatile PairType*>(raw_ptr), mem_pair_conv{});
         }
     } // namespace map_containers
+
+    void test_gh3408() {
+        // We ignored the possibility that max_blocks_per_chunk could be less than _Default_next_capacity
+        recording_resource upstream;
+        std::pmr::pool_options options{};
+        options.max_blocks_per_chunk = 1;
+        std::pmr::unsynchronized_pool_resource res{options, &upstream};
+        const std::size_t size = 0x8009;
+        (void) res.allocate(size);
+        const allocation& alloc = upstream.allocations_[upstream.allocations_.size() - 1];
+        CHECK(alloc.size >= 0x10000);
+        CHECK(alloc.size < 2 * 0x10000);
+    }
 } // unnamed namespace
 
 int main() {
@@ -1591,4 +1604,6 @@ int main() {
     map_containers::test();
 
     map_containers::lwg3677_test();
+
+    test_gh3408();
 }
