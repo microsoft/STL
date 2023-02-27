@@ -177,6 +177,44 @@ constexpr bool test_P0591R4() {
     }
 #endif // _HAS_CXX23
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    { // pair(PairLike&&) overload
+        tuple tpl(i, i);
+        auto tuple14 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, tpl);
+        static_assert(
+            is_same_v<decltype(tuple14), tuple<piecewise_construct_t, tuple<int&&>, MovedAllocatorArgConstructArgs>>);
+
+        auto tuple15 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, tpl);
+        static_assert(
+            is_same_v<decltype(tuple15), tuple<piecewise_construct_t, MovedAllocatorConstructArgs, tuple<int&&>>>);
+
+        auto tuple16 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, move(tpl));
+        static_assert(
+            is_same_v<decltype(tuple16), tuple<piecewise_construct_t, tuple<int&&>, MovedAllocatorArgConstructArgs>>);
+
+        auto tuple17 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, move(tpl));
+        static_assert(
+            is_same_v<decltype(tuple17), tuple<piecewise_construct_t, MovedAllocatorConstructArgs, tuple<int&&>>>);
+
+        auto tuple18 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, as_const(tpl));
+        static_assert(is_same_v<decltype(tuple18),
+            tuple<piecewise_construct_t, tuple<const int&&>, MovedConstAllocatorArgConstructArgs>>);
+
+        auto tuple19 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, as_const(tpl));
+        static_assert(is_same_v<decltype(tuple19),
+            tuple<piecewise_construct_t, MovedConstAllocatorConstructArgs, tuple<const int&&>>>);
+
+        auto tuple20 =
+            uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, move(as_const(tpl)));
+        static_assert(is_same_v<decltype(tuple20),
+            tuple<piecewise_construct_t, tuple<const int&&>, MovedConstAllocatorArgConstructArgs>>);
+
+        auto tuple21 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, move(as_const(tpl)));
+        static_assert(is_same_v<decltype(tuple21),
+            tuple<piecewise_construct_t, MovedConstAllocatorConstructArgs, tuple<const int&&>>>);
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     {
         auto obj1 = make_obj_using_allocator<AllocatorArgConstructible>(alloc, i);
         static_assert(is_same_v<decltype(obj1), AllocatorArgConstructible>);

@@ -2304,8 +2304,13 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>&& _Pair) noexcept;
 #endif // _HAS_CXX23
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
+    requires _Is_cv_pair<_Ty> && (_Pair_like<_Uty> || !_Is_deducible_as_pair<_Uty&>)
+#else // ^^^ C++23 with concepts / C++20 or no concepts vvv
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty,
     enable_if_t<_Is_cv_pair<_Ty> && !_Is_deducible_as_pair<_Uty&>, int> = 0>
+#endif // ^^^ C++20 or no concepts ^^^
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept;
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_cv_pair<_Ty>, int> = 0>
@@ -2390,41 +2395,58 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
 }
 #endif // _HAS_CXX23
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
+    requires _Is_cv_pair<_Ty> && (_Pair_like<_Uty> || !_Is_deducible_as_pair<_Uty&>)
+#else // ^^^ C++23 with concepts / C++20 or no concepts vvv
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty,
     enable_if_t<_Is_cv_pair<_Ty> && !_Is_deducible_as_pair<_Uty&>, int>>
+#endif // ^^^ C++20 or no concepts ^^^
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
-    struct _Pair_remaker {
-        const _Alloc& _Al;
-        _Uty& _Ux;
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+    if constexpr (_Pair_like<_Uty> && !_Is_subrange_v<remove_cvref_t<_Ty>>) {
+        // equivalent to
+        // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
+        //     _STD forward_as_tuple(_STD get<0>(_STD move(_Ux)), _STD forward_as_tuple(_STD get<1>(_STD move(_Ux)));
+        return _STD make_tuple(piecewise_construct,
+            _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD get<0>(_STD move(_Ux))),
+            _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD get<1>(_STD move(_Ux))));
+    } else
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+    {
+        struct _Pair_remaker {
+            const _Alloc& _Al;
+            _Uty& _Ux;
 
-        constexpr operator remove_cv_t<_Ty>() const {
-            using _Pair_t = remove_cv_t<_Ty>;
-            static_assert(_Is_normally_bindable<_Pair_t, _Uty>,
-                "The argument must be bindable to a reference to the std::pair type.");
+            constexpr operator remove_cv_t<_Ty>() const {
+                using _Pair_t = remove_cv_t<_Ty>;
+                static_assert(_Is_normally_bindable<_Pair_t, _Uty>,
+                    "The argument must be bindable to a reference to the std::pair type.");
 
-            using _Pair_first_t   = typename _Pair_t::first_type;
-            using _Pair_second_t  = typename _Pair_t::second_type;
-            using _Pair_ref_t     = _Normally_bound_ref<_Pair_t, _Uty>;
-            _Pair_ref_t _Pair_ref = _STD forward<_Uty>(_Ux);
-            if constexpr (is_same_v<_Pair_ref_t, const _Pair_t&>) {
-                // equivalent to
-                // return _STD make_obj_using_allocator<_Pair_t>(_Al, _Pair_ref);
-                return _Pair_t{piecewise_construct,
-                    _STD uses_allocator_construction_args<_Pair_first_t>(_Al, _Pair_ref.first),
-                    _STD uses_allocator_construction_args<_Pair_second_t>(_Al, _Pair_ref.second)};
-            } else {
-                // equivalent to
-                // return _STD make_obj_using_allocator<_Pair_t>(_Al, _STD move(_Pair_ref));
-                return _Pair_t{piecewise_construct,
-                    _STD uses_allocator_construction_args<_Pair_first_t>(_Al, _STD get<0>(_STD move(_Pair_ref))),
-                    _STD uses_allocator_construction_args<_Pair_second_t>(_Al, _STD get<1>(_STD move(_Pair_ref)))};
+                using _Pair_first_t   = typename _Pair_t::first_type;
+                using _Pair_second_t  = typename _Pair_t::second_type;
+                using _Pair_ref_t     = _Normally_bound_ref<_Pair_t, _Uty>;
+                _Pair_ref_t _Pair_ref = _STD forward<_Uty>(_Ux);
+                if constexpr (is_same_v<_Pair_ref_t, const _Pair_t&>) {
+                    // equivalent to
+                    // return _STD make_obj_using_allocator<_Pair_t>(_Al, _Pair_ref);
+                    return _Pair_t{piecewise_construct,
+                        _STD uses_allocator_construction_args<_Pair_first_t>(_Al, _Pair_ref.first),
+                        _STD uses_allocator_construction_args<_Pair_second_t>(_Al, _Pair_ref.second)};
+                } else {
+                    // equivalent to
+                    // return _STD make_obj_using_allocator<_Pair_t>(_Al, _STD move(_Pair_ref));
+                    return _Pair_t{piecewise_construct,
+                        _STD uses_allocator_construction_args<_Pair_first_t>(_Al, _STD get<0>(_STD move(_Pair_ref))),
+                        _STD uses_allocator_construction_args<_Pair_second_t>(_Al, _STD get<1>(_STD move(_Pair_ref)))};
+                }
             }
-        }
-    };
+        };
 
-    // equivalent to
-    // return _STD make_tuple(_Pair_remaker{_Al, _Ux});
-    return tuple<_Pair_remaker>({_Al, _Ux});
+        // equivalent to
+        // return _STD make_tuple(_Pair_remaker{_Al, _Ux});
+        return tuple<_Pair_remaker>({_Al, _Ux});
+    }
 }
 
 _EXPORT_STD template <class _Ty, class _Alloc, class... _Types>
