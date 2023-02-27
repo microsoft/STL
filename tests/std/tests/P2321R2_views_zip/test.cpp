@@ -679,28 +679,25 @@ private:
         (Diff == test::CanDifference::yes ? test::CanDifference::no : test::CanDifference::yes)>;
 
     template <class ContainerType>
-    static constexpr void test_single_range(ContainerType&& container) {
+    static constexpr void test_single_range(ContainerType&& single_element_container) {
         // Create a copy of the container. That way, we can always test iter_swap,
         // even if container has const elements.
-        auto writable_single_element_container = container;
-        auto single_range =
-            tuple_element_t<0, standard_range_tuple_type>{writable_single_element_container.get_element_span()};
+        auto writable = single_element_container;
+        tuple_element_t<0, standard_range_tuple_type> single_range{writable.get_element_span()};
 
-        test_one(writable_single_element_container, single_range);
+        test_one(writable, single_range);
     }
 
     template <class DifferingRangeType, class ContainerType>
-    static constexpr void test_three_ranges(ContainerType&& container) {
+    static constexpr void test_three_ranges(ContainerType&& three_element_container) {
         // Create a copy of the container. That way, we can always test iter_swap,
         // even if container has const elements.
-        auto writable_three_element_container = container;
-        auto first_range  = DifferingRangeType{writable_three_element_container.template get_element_span<0>()};
-        auto second_range = tuple_element_t<1, standard_range_tuple_type>{
-            writable_three_element_container.template get_element_span<1>()};
-        auto third_range = tuple_element_t<2, standard_range_tuple_type>{
-            writable_three_element_container.template get_element_span<2>()};
+        auto writable = three_element_container;
+        DifferingRangeType first_range{writable.template get_element_span<0>()};
+        tuple_element_t<1, standard_range_tuple_type> second_range{writable.template get_element_span<1>()};
+        tuple_element_t<2, standard_range_tuple_type> third_range{writable.template get_element_span<2>()};
 
-        test_one(writable_three_element_container, first_range, second_range, third_range);
+        test_one(writable, first_range, second_range, third_range);
     }
 
 public:
