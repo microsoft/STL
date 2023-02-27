@@ -306,7 +306,6 @@ namespace Concurrency {
                 case APTTYPE_STA:
                 case APTTYPE_MAINSTA:
                     return true;
-                    break;
                 case APTTYPE_NA:
                     switch (_AptTypeQualifier) {
                         // A thread executing in a neutral apartment is either STA or MTA. To find out if this thread is
@@ -316,7 +315,6 @@ namespace Concurrency {
                     case APTTYPEQUALIFIER_NA_ON_STA:
                     case APTTYPEQUALIFIER_NA_ON_MAINSTA:
                         return true;
-                        break;
                     }
                     break;
                 }
