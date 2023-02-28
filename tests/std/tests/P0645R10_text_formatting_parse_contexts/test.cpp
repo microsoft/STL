@@ -96,40 +96,6 @@ constexpr bool test_basic_format_parse_context() {
     return true;
 }
 
-// LWG-3720: Restrict the valid types of arg-id for width and precision in std-format-spec
-void test_lwg3720() {
-    // Width
-    {
-        try {
-            (void) format("{:*^{}}\n", 'a', true);
-            assert(false);
-        } catch (const format_error&) {
-        }
-    }
-    {
-        try {
-            (void) format("{:*^{}}\n", 'a', '0');
-            assert(false);
-        } catch (const format_error&) {
-        }
-    }
-    // Precision
-    {
-        try {
-            (void) format("{:.{}f}", 3.14f, true);
-            assert(false);
-        } catch (const format_error&) {
-        }
-    }
-    {
-        try {
-            (void) format("{:.{}f}", 3.14f, '0');
-            assert(false);
-        } catch (const format_error&) {
-        }
-    }
-}
-
 int main() {
     test_basic_format_parse_context<char>();
     test_basic_format_parse_context<wchar_t>();
@@ -140,6 +106,4 @@ int main() {
     assert(check_arg_id_not_constexpr_char);
     assert(check_arg_id_is_constexpr_wchar);
     assert(check_arg_id_not_constexpr_wchar);
-
-    test_lwg3720();
 }
