@@ -1360,9 +1360,8 @@ void libfmt_formatter_test_runtime_width() {
 
     // LWG-3720: Restrict the valid types of arg-id for width and precision in std-format-spec
     throw_helper(STR("{:*^{}}"), 'a', true);
-#ifdef _NATIVE_WCHAR_T_DEFINED
     throw_helper(STR("{:*^{}}"), 'a', '0');
-#endif
+    assert(format(STR("{:*^{}}"), 'a', static_cast<signed char>(2)) == STR("a*"));
 
     assert(format(STR("{0:{1}}"), 42, 0) == STR("42")); // LWG-3721: zero dynamic width is OK
 
@@ -1414,9 +1413,8 @@ void libfmt_formatter_test_runtime_precision() {
 
     // LWG-3720: Restrict the valid types of arg-id for width and precision in std-format-spec
     throw_helper(STR("{:.{}f}"), 3.14f, true);
-#ifdef _NATIVE_WCHAR_T_DEFINED
     throw_helper(STR("{:.{}f}"), 3.14f, '0');
-#endif
+    assert(format(STR("{:.{}f}"), 3.14f, static_cast<signed char>(2)) == STR("3.14"));
 }
 
 template <class charT>
