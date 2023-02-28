@@ -2103,20 +2103,21 @@ concept convertible_to =
     && requires { static_cast<_To>(_STD declval<_From>()); };
 
 template <class _RefWrap, class _Ty, class _RefWrapQ, class _TyQ>
-concept _Has_ref_wrap_common_reference = _Is_specialization_v<_RefWrap, reference_wrapper>
-                                      && requires { typename common_reference_t<typename _RefWrap::type&, _TyQ>; }
-                                      && convertible_to<_RefWrapQ, common_reference_t<typename _RefWrap::type&, _TyQ>>;
+concept _Ref_wrap_common_reference_exists_with =
+    _Is_specialization_v<_RefWrap, reference_wrapper>
+    && requires { typename common_reference_t<typename _RefWrap::type&, _TyQ>; }
+    && convertible_to<_RefWrapQ, common_reference_t<typename _RefWrap::type&, _TyQ>>;
 
 template <class _RefWrap, class _Ty, template <class> class _RefWrapQual, template <class> class _TyQual>
-    requires (_Has_ref_wrap_common_reference<_RefWrap, _Ty, _RefWrapQual<_RefWrap>, _TyQual<_Ty>>
-              && !_Has_ref_wrap_common_reference<_Ty, _RefWrap, _TyQual<_Ty>, _RefWrapQual<_RefWrap>>)
+    requires (_Ref_wrap_common_reference_exists_with<_RefWrap, _Ty, _RefWrapQual<_RefWrap>, _TyQual<_Ty>>
+              && !_Ref_wrap_common_reference_exists_with<_Ty, _RefWrap, _TyQual<_Ty>, _RefWrapQual<_RefWrap>>)
 struct basic_common_reference<_RefWrap, _Ty, _RefWrapQual, _TyQual> {
     using type = common_reference_t<typename _RefWrap::type&, _TyQual<_Ty>>;
 };
 
 template <class _Ty, class _RefWrap, template <class> class _TyQual, template <class> class _RefWrapQual>
-    requires (_Has_ref_wrap_common_reference<_RefWrap, _Ty, _RefWrapQual<_RefWrap>, _TyQual<_Ty>>
-              && !_Has_ref_wrap_common_reference<_Ty, _RefWrap, _TyQual<_Ty>, _RefWrapQual<_RefWrap>>)
+    requires (_Ref_wrap_common_reference_exists_with<_RefWrap, _Ty, _RefWrapQual<_RefWrap>, _TyQual<_Ty>>
+              && !_Ref_wrap_common_reference_exists_with<_Ty, _RefWrap, _TyQual<_Ty>, _RefWrapQual<_RefWrap>>)
 struct basic_common_reference<_Ty, _RefWrap, _TyQual, _RefWrapQual> {
     using type = common_reference_t<typename _RefWrap::type&, _TyQual<_Ty>>;
 };
