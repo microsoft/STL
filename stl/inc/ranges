@@ -8755,7 +8755,7 @@ namespace ranges {
             constexpr _Iterator(_Iterator<!_Const>& _Other, index_sequence<_Indices...>) noexcept(
                 is_nothrow_convertible_v<iterator_t<_Vw>, _Base_iterator>)
                 requires _Const && convertible_to<iterator_t<_Vw>, _Base_iterator>
-                : _Current{std::move(_Other._Current[_Indices])...} {}
+                : _Current{_STD move(_Other._Current[_Indices])...} {}
 
         public:
             using iterator_category = input_iterator_tag;
