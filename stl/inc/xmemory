@@ -2407,10 +2407,12 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
     if constexpr (_Pair_like<_Uty> && !_Is_subrange_v<remove_cvref_t<_Ty>>) {
         // equivalent to
         // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
-        //     _STD forward_as_tuple(_STD get<0>(_STD move(_Ux)), _STD forward_as_tuple(_STD get<1>(_STD move(_Ux)));
+        //     _STD forward_as_tuple(_STD get<0>(_STD forward<_Uty>(_Ux)),
+        //     _STD forward_as_tuple(_STD get<1>(_STD forward<_Uty>(_Ux)));
         return _STD make_tuple(piecewise_construct,
-            _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD get<0>(_STD move(_Ux))),
-            _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD get<1>(_STD move(_Ux))));
+            _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD get<0>(_STD forward<_Uty>(_Ux))),
+            _STD uses_allocator_construction_args<typename _Ty::second_type>(
+                _Al, _STD get<1>(_STD forward<_Uty>(_Ux))));
     } else
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
     {
