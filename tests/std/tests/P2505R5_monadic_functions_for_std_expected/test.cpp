@@ -427,7 +427,7 @@ enum class HasMutMove : bool { No, Yes };
 
 enum class HasConstMove : bool { No, Yes };
 
-template <HasMutCopy MutCopyStatus, enum HasConstCopy ConstCopyStatus, HasMutMove MutMoveStatus,
+template <HasMutCopy MutCopyStatus, HasConstCopy ConstCopyStatus, HasMutMove MutMoveStatus,
     HasConstMove ConstMoveStatus>
 struct State {
     State() = default;
