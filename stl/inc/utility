@@ -288,9 +288,9 @@ struct pair { // store a pair of values
     template <class _Other, enable_if_t<_Can_construct_from_pair_like<_Other, _Ty1, _Ty2>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
     template <_Pair_like _Other>
-        requires conjunction_v<is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
-                     is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>,
-                     bool_constant<!_Is_subrange_v<remove_cvref_t<_Other>>>>
+        requires conjunction_v<bool_constant<!_Is_subrange_v<remove_cvref_t<_Other>>>,
+                     is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
+                     is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
 #endif // __clang__
     constexpr explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
                        is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>)
