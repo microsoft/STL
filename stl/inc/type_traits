@@ -2108,15 +2108,15 @@ concept _Has_ref_wrap_common_reference = _Is_specialization_v<_RefWrap, referenc
                                       && convertible_to<_RefWrapQ, common_reference_t<typename _RefWrap::type&, _TyQ>>;
 
 template <class _RefWrap, class _Ty, template <class> class _RefWrapQual, template <class> class _TyQual>
-    requires(_Has_ref_wrap_common_reference<_RefWrap, _Ty, _RefWrapQual<_RefWrap>, _TyQual<_Ty>>
-             && !_Has_ref_wrap_common_reference<_Ty, _RefWrap, _TyQual<_Ty>, _RefWrapQual<_RefWrap>>)
+    requires (_Has_ref_wrap_common_reference<_RefWrap, _Ty, _RefWrapQual<_RefWrap>, _TyQual<_Ty>>
+              && !_Has_ref_wrap_common_reference<_Ty, _RefWrap, _TyQual<_Ty>, _RefWrapQual<_RefWrap>>)
 struct basic_common_reference<_RefWrap, _Ty, _RefWrapQual, _TyQual> {
     using type = common_reference_t<typename _RefWrap::type&, _TyQual<_Ty>>;
 };
 
 template <class _Ty, class _RefWrap, template <class> class _TyQual, template <class> class _RefWrapQual>
-    requires(_Has_ref_wrap_common_reference<_RefWrap, _Ty, _RefWrapQual<_RefWrap>, _TyQual<_Ty>>
-             && !_Has_ref_wrap_common_reference<_Ty, _RefWrap, _TyQual<_Ty>, _RefWrapQual<_RefWrap>>)
+    requires (_Has_ref_wrap_common_reference<_RefWrap, _Ty, _RefWrapQual<_RefWrap>, _TyQual<_Ty>>
+              && !_Has_ref_wrap_common_reference<_Ty, _RefWrap, _TyQual<_Ty>, _RefWrapQual<_RefWrap>>)
 struct basic_common_reference<_Ty, _RefWrap, _TyQual, _RefWrapQual> {
     using type = common_reference_t<typename _RefWrap::type&, _TyQual<_Ty>>;
 };
