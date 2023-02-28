@@ -182,11 +182,10 @@ constexpr bool test_P0591R4() {
         tuple tpl(i, i);
         auto tuple14 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, tpl);
         static_assert(
-            is_same_v<decltype(tuple14), tuple<piecewise_construct_t, tuple<int&&>, MovedAllocatorArgConstructArgs>>);
+            is_same_v<decltype(tuple14), tuple<piecewise_construct_t, tuple<int&>, AllocatorArgConstructArgs>>);
 
         auto tuple15 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, tpl);
-        static_assert(
-            is_same_v<decltype(tuple15), tuple<piecewise_construct_t, MovedAllocatorConstructArgs, tuple<int&&>>>);
+        static_assert(is_same_v<decltype(tuple15), tuple<piecewise_construct_t, AllocatorConstructArgs, tuple<int&>>>);
 
         auto tuple16 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, move(tpl));
         static_assert(
@@ -198,11 +197,11 @@ constexpr bool test_P0591R4() {
 
         auto tuple18 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, as_const(tpl));
         static_assert(is_same_v<decltype(tuple18),
-            tuple<piecewise_construct_t, tuple<const int&&>, MovedConstAllocatorArgConstructArgs>>);
+            tuple<piecewise_construct_t, tuple<const int&>, ConstAllocatorArgConstructArgs>>);
 
         auto tuple19 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, as_const(tpl));
-        static_assert(is_same_v<decltype(tuple19),
-            tuple<piecewise_construct_t, MovedConstAllocatorConstructArgs, tuple<const int&&>>>);
+        static_assert(
+            is_same_v<decltype(tuple19), tuple<piecewise_construct_t, ConstAllocatorConstructArgs, tuple<const int&>>>);
 
         auto tuple20 =
             uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, move(as_const(tpl)));
