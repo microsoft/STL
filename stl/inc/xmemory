@@ -2404,7 +2404,7 @@ _EXPORT_STD template <class _Ty, class _Alloc, class _Uty,
 #endif // ^^^ C++20 or no concepts ^^^
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
-    if constexpr (_Pair_like<_Uty> && !_Is_subrange_v<remove_cvref_t<_Ty>>) {
+    if constexpr (_Pair_like<_Uty> && !_Is_subrange_v<remove_cvref_t<_Uty>>) {
         // equivalent to
         // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
         //     _STD forward_as_tuple(_STD get<0>(_STD forward<_Uty>(_Ux)),
