@@ -1960,12 +1960,7 @@ public:
     _NODISCARD size_t _Estimate_required_capacity() const noexcept {
         using _CharT        = typename _Context::char_type;
         size_t _Result      = 0;
-#ifdef _M_CEE // TRANSITION, VSO-1663257
-        const auto _Visitor = [&_Result](const auto _Arg) noexcept {
-            using _ArgTy = remove_const_t<decltype(_Arg)>;
-#else // ^^^ workaround / no workaround vvv
         const auto _Visitor = [&_Result]<class _ArgTy>(const _ArgTy _Arg) noexcept {
-#endif // ^^^ no workaround ^^^
             if constexpr (is_same_v<_ArgTy, basic_string_view<_CharT>>) {
                 _Result += _Arg.size();
             } else if constexpr (is_same_v<_ArgTy, const _CharT*>) {

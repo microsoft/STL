@@ -1609,6 +1609,20 @@ STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
 #endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_enumerate
+#error __cpp_lib_ranges_enumerate is not defined
+#elif __cpp_lib_ranges_enumerate != 202302L
+#error __cpp_lib_ranges_enumerate is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_enumerate == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_enumerate
+#error __cpp_lib_ranges_enumerate is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges_find_last
 #error __cpp_lib_ranges_find_last is not defined
 #elif __cpp_lib_ranges_find_last != 202207L
@@ -2166,6 +2180,20 @@ STATIC_ASSERT(__cpp_lib_transparent_operators == 201510L);
 #error __cpp_lib_tuple_element_t is not 201402L
 #else
 STATIC_ASSERT(__cpp_lib_tuple_element_t == 201402L);
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_tuple_like
+#error __cpp_lib_tuple_like is not defined
+#elif __cpp_lib_tuple_like != 202207L
+#error __cpp_lib_tuple_like is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_tuple_like == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_tuple_like
+#error __cpp_lib_tuple_like is defined
+#endif
 #endif
 
 #ifndef __cpp_lib_tuples_by_type

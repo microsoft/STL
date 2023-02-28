@@ -8,6 +8,7 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -228,9 +229,56 @@ void test_lwg_3527() { // COMPILE-ONLY
     [[maybe_unused]] auto t = uses_allocator_construction_args<pair<MoveOnlyType&&, MoveOnlyType&&>>(alloc, move(p));
 }
 
+template <class T>
+class payloaded_allocator {
+private:
+    int payload = 0;
+
+public:
+    payloaded_allocator() = default;
+
+    constexpr explicit payloaded_allocator(int n) noexcept : payload{n} {}
+
+    template <class U>
+    constexpr explicit payloaded_allocator(payloaded_allocator<U> a) noexcept : payload{a.get_payload()} {}
+
+    friend bool operator==(payloaded_allocator, payloaded_allocator) = default;
+
+    template <class U>
+    friend constexpr bool operator==(payloaded_allocator x, payloaded_allocator<U> y) noexcept {
+        return x.payload == y.payload;
+    }
+
+    using value_type = T;
+
+    constexpr T* allocate(size_t n) {
+        return allocator<T>{}.allocate(n);
+    }
+
+    constexpr void deallocate(T* p, size_t n) {
+        return allocator<T>{}.deallocate(p, n);
+    }
+
+    constexpr int get_payload() const noexcept {
+        return payload;
+    }
+};
+
+constexpr bool test_lwg3677() {
+    using my_allocator = payloaded_allocator<int>;
+    using my_pair      = pair<int, vector<int, my_allocator>>;
+
+    constexpr int in_v = 42;
+    auto out_v = make_obj_using_allocator<const my_pair>(my_allocator{in_v}).second.get_allocator().get_payload();
+    return in_v == out_v;
+}
+
 int main() {
     test_P0475R1();
 
     assert(test_P0591R4());
     static_assert(test_P0591R4());
+
+    assert(test_lwg3677());
+    static_assert(test_lwg3677());
 }
