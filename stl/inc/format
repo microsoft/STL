@@ -1411,8 +1411,8 @@ _NODISCARD constexpr basic_format_arg<_Context> _Get_arg(const _Context& _Ctx, c
 }
 
 template <class _Ty>
-constexpr bool _Standard_signed_or_unsigned_integer = _Is_any_of_v<remove_cv_t<_Ty>, signed char, unsigned char, short,
-    unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long>;
+inline constexpr bool _Standard_signed_or_unsigned_integer = _Is_any_of_v<remove_cv_t<_Ty>, signed char, unsigned char,
+    short, unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long>;
 
 // Checks that the type and value of an argument associated with a dynamic
 // width specifier are valid.
