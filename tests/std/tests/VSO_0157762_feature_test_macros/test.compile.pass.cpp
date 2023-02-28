@@ -40,6 +40,30 @@ STATIC_ASSERT(__cpp_lib_algorithm_iterator_requirements == 202207L);
 #ifdef __cpp_lib_algorithm_iterator_requirements
 #error __cpp_lib_algorithm_iterator_requirements is defined
 #endif
+
+#ifndef __cpp_lib_common_reference
+#error __cpp_lib_common_reference is not defined
+#elif __cpp_lib_common_reference != 202302L
+#error __cpp_lib_common_reference is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_common_reference == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_common_reference
+#error __cpp_lib_common_reference is defined
+#endif
+
+#ifndef __cpp_lib_common_reference_wrapper
+#error __cpp_lib_common_reference_wrapper is not defined
+#elif __cpp_lib_common_reference_wrapper != 202302L
+#error __cpp_lib_common_reference_wrapper is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_common_reference_wrapper == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_common_reference_wrapper
+#error __cpp_lib_common_reference_wrapper is defined
+#endif
 #endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395

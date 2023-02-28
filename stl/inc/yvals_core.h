@@ -288,6 +288,7 @@
 // P2588R3 barrier's Phase Completion Guarantees
 // P2602R2 Poison Pills Are Too Toxic
 // P2609R3 Relaxing Ranges Just A Smidge
+// P2655R3 common_reference_t Of reference_wrapper Should Be A Reference Type
 // P2711R1 Making Multi-Param Constructors Of Views explicit
 
 // _HAS_CXX20 indirectly controls:
@@ -1597,6 +1598,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_algorithm_iterator_requirements 202207L
+#define __cpp_lib_common_reference                202302L
+#define __cpp_lib_common_reference_wrapper        202302L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_assume_aligned                201811L

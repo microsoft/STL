@@ -5,6 +5,7 @@
 #define _SILENCE_CXX17_IS_LITERAL_TYPE_DEPRECATION_WARNING
 #define _SILENCE_CXX20_IS_POD_DEPRECATION_WARNING
 
+#include <functional>
 #include <type_traits>
 #include <utility>
 
@@ -1340,11 +1341,11 @@ template <class... Ts, class... Us, template <class> class TQual, template <clas
 struct basic_common_reference<tuple_ish<Ts...>, tuple_ish<Us...>, TQual, UQual>
     : tuple_ish_helper<void, tuple_ish<TQual<Ts>...>, tuple_ish<UQual<Us>...>> {};
 
-// N4810 [meta.trans.other]/5.1: If sizeof...(T) is zero, there shall be no member type.
+// N4928 [meta.trans.other]/5.1: If sizeof...(T) is zero, there shall be no member type.
 STATIC_ASSERT(!is_trait<common_reference<>>);
 
 
-// N4810 [meta.trans.other]/5.2: Otherwise, if sizeof...(T) is one, let T0 denote the sole type in the pack T. The
+// N4928 [meta.trans.other]/5.2: Otherwise, if sizeof...(T) is one, let T0 denote the sole type in the pack T. The
 // member typedef type shall denote the same type as T0.
 STATIC_ASSERT(is_same_v<common_reference_t<void>, void>);
 STATIC_ASSERT(is_same_v<common_reference_t<int>, int>);
@@ -1421,7 +1422,7 @@ constexpr bool strict_only_common_reference_cases() {
 STATIC_ASSERT(strict_only_common_reference_cases());
 
 
-// N4810 [meta.trans.other]/5.3.2: Otherwise, if basic_common_reference<remove_cvref_t<T1>, remove_cvref_t<T2>,
+// N4928 [meta.trans.other]/5.3.2: Otherwise, if basic_common_reference<remove_cvref_t<T1>, remove_cvref_t<T2>,
 // XREF(T1), XREF(T2)>::type is well-formed, then the member typedef type denotes that type.
 STATIC_ASSERT(is_same_v<common_reference_t<tuple_ish<int, short> const&, tuple_ish<int&, short volatile&>>,
     tuple_ish<int const&, short const volatile&>>);
@@ -1429,7 +1430,7 @@ STATIC_ASSERT(is_same_v<common_reference_t<tuple_ish<int, short> volatile&, tupl
     tuple_ish<int, short> const volatile&>);
 
 
-// N4810 [meta.trans.other]/5.3.3: Otherwise, if COND_RES(T1, T2) is well-formed, then the member typedef type
+// N4928 [meta.trans.other]/5.3.3: Otherwise, if COND_RES(T1, T2) is well-formed, then the member typedef type
 // denotes that type.
 STATIC_ASSERT(is_same_v<common_reference_t<void, void>, void>);
 STATIC_ASSERT(is_same_v<common_reference_t<void const, void>, void>);
@@ -1450,7 +1451,7 @@ STATIC_ASSERT(is_same_v<common_reference_t<int (&)[10], int (&)[11]>, int*>);
 STATIC_ASSERT(is_same_v<common_reference_t<int&, converts_from<int&>>, converts_from<int&>>);
 
 
-// N4810 [meta.trans.other]/5.3.4: Otherwise, if common_type_t<T1, T2> is well-formed, then the member typedef type
+// N4928 [meta.trans.other]/5.3.4: Otherwise, if common_type_t<T1, T2> is well-formed, then the member typedef type
 // denotes that type.
 STATIC_ASSERT(is_same_v<common_reference_t<interconvertible<0>&, interconvertible<1> const&>, interconvertible<2>>);
 
@@ -1459,7 +1460,7 @@ STATIC_ASSERT(is_same_v<common_reference_t<derives_from<move_only> const&, move_
 STATIC_ASSERT(is_same_v<common_reference_t<move_only const&, derives_from<move_only>>, move_only>);
 
 
-// N4810 [meta.trans.other]/5.3.5: Otherwise, there shall be no member type.
+// N4928 [meta.trans.other]/5.3.5: Otherwise, there shall be no member type.
 STATIC_ASSERT(!is_trait<common_reference<tuple_ish<short> volatile&, tuple_ish<int, short> const&>>);
 
 STATIC_ASSERT(!is_trait<common_reference<void() volatile, void() volatile>>);
@@ -1471,10 +1472,10 @@ STATIC_ASSERT(!is_trait<common_reference<void() &&, int (&)()>>);
 STATIC_ASSERT(!is_trait<common_reference<void() volatile, void() &&>>);
 
 
-// N4810 [meta.trans.other]/5.4: Otherwise, if sizeof...(T) is greater than two, let T1, T2, and Rest, respectively,
+// N4928 [meta.trans.other]/5.4: Otherwise, if sizeof...(T) is greater than two, let T1, T2, and Rest, respectively,
 // denote the first, second, and (pack of) remaining types comprising T. Let C be the type
 // common_reference_t<T1, T2>. Then:
-// N4810 [meta.trans.other]/5.4.1: If there is such a type C, the member typedef type shall denote the same type, if
+// N4928 [meta.trans.other]/5.4.1: If there is such a type C, the member typedef type shall denote the same type, if
 // any, as common_reference_t<C, Rest...>.
 STATIC_ASSERT(is_same_v<common_reference_t<int, int, int>, int>);
 STATIC_ASSERT(is_same_v<common_reference_t<int&&, int const&, int volatile&>, int const volatile&>);
@@ -1485,7 +1486,7 @@ STATIC_ASSERT(
     is_same_v<common_reference_t<simple_base&, simple_derived&, simple_base&, simple_derived&>, simple_base&>);
 
 
-// N4810 [meta.trans.other]/5.4.2: Otherwise, there shall be no member type.
+// N4928 [meta.trans.other]/5.4.2: Otherwise, there shall be no member type.
 STATIC_ASSERT(!is_trait<common_reference<int, short, int, char*>>);
 
 template <class T>
@@ -1495,9 +1496,14 @@ struct bad_reference_wrapper {
     operator T&() const;
 };
 
-// N4810 [meta.trans.other]/3.3.4 (per the proposed resolution of LWG-3205): Otherwise, if
+// N4928 [meta.trans.other]/3.3.4 (per the proposed resolution of LWG-3205): Otherwise, if
 //   remove_cvref_t<decltype(false ? declval<const D1&>() : declval<const D2&>())>
 // denotes a type, let C denote that type.
 STATIC_ASSERT(is_same_v<common_type_t<int, bad_reference_wrapper<int>>, int>);
 STATIC_ASSERT(is_same_v<common_type_t<bad_reference_wrapper<double>, double>, double>);
+
+// P2655R3 common_reference_t Of reference_wrapper Should Be A Reference Type
+STATIC_ASSERT(is_same_v<common_reference_t<int&, reference_wrapper<int>>, int&>);
+STATIC_ASSERT(is_same_v<common_reference_t<int&, reference_wrapper<int>&>, int&>);
+STATIC_ASSERT(is_same_v<common_reference_t<int&, const reference_wrapper<int>&>, int&>);
 #endif // _HAS_CXX20
