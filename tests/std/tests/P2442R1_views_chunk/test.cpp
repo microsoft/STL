@@ -597,26 +597,26 @@ using move_only_view = test::range<Category, const int, test::Sized{is_random}, 
 
 // Check LWG-3851: 'chunk_view::inner-iterator missing custom iter_move and iter_swap'
 void test_lwg3851() {
-#if 0 // FIXME Requires #3466 (Implement P2770R0 "Stashing stashing iterators for proper flattening")
-    { // Check 'iter_move' (example from LWG-3851)
+    { // Check 'iter_move'
         istringstream ints{"0 1 2 3 4"};
-        vector<string> vs{"the", "quick", "brown", "fox"};
-        auto r = views::zip(vs, views::istream<int>(ints)) | views::chunk(2) | views::join;
-        vector<tuple<string, int>> res;
-        ranges::copy(move_iterator(r.begin()), move_sentinel(r.end()), back_inserter(res));
-        assert(vs.front().empty()); // Implementation defined: moved out string shall be empty
+        auto v = views::istream<int>(ints) | views::chunk(2);
+        auto o = v.begin();
+        auto c = *o;
+        auto i = c.begin();
+
+        same_as<int&&> decltype(auto) rval = iter_move(i);
+        assert(rval == 0);
     }
-#endif
 
     { // Check 'iter_swap'
-        istringstream s1{"0 1 2 3 4"};
-        auto v1 = views::istream<int>(s1) | views::chunk(2);
+        istringstream ints1{"0 1 2 3 4"};
+        auto v1 = views::istream<int>(ints1) | views::chunk(2);
         auto o1 = v1.begin();
         auto c1 = *o1;
         auto i1 = c1.begin();
 
-        istringstream s2{"5 6 7 8 9"};
-        auto v2 = views::istream<int>(s2) | views::chunk(2);
+        istringstream ints2{"5 6 7 8 9"};
+        auto v2 = views::istream<int>(ints2) | views::chunk(2);
         auto o2 = v2.begin();
         auto c2 = *o2;
         auto i2 = c2.begin();
