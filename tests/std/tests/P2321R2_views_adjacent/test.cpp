@@ -484,7 +484,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert(diff2 == size);
         }
 
-        if constexpr (sized_sentinel_for<sentinel_t<const R>, I>) { // Check differencing with const sentinel<const>
+        if constexpr (sized_sentinel_for<sentinel_t<const R>, I>) { // Check differencing with sentinel<const>
             const auto s                                    = as_const(r).end();
             const auto size                                 = ranges::ssize(expected);
             const same_as<range_difference_t<V>> auto diff1 = i - s;
@@ -700,7 +700,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert(diff2 == size);
         }
 
-        if constexpr (sized_sentinel_for<sentinel_t<const R>, CI>) { // Check differencing with const sentinel<const>
+        if constexpr (sized_sentinel_for<sentinel_t<const R>, CI>) { // Check differencing with sentinel<const>
             const auto s                                          = as_const(r).end();
             const auto size                                       = ranges::ssize(expected);
             const same_as<range_difference_t<const V>> auto diff1 = ci - s;
