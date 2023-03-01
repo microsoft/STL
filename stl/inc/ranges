@@ -9030,7 +9030,7 @@ namespace ranges {
         _NODISCARD constexpr auto end() const
             requires range<const _Vw>
         {
-            if constexpr (common_range<_Vw>) {
+            if constexpr (common_range<const _Vw>) {
                 return _Iterator<true>{_As_sentinel{}, _RANGES begin(_Range), _RANGES end(_Range)};
             } else {
                 return _Sentinel<true>{_RANGES end(_Range)};
