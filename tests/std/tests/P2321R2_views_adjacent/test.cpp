@@ -493,7 +493,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert(diff2 == size);
         }
 
-        { // Check iter_move (hidden friend available via ADL)
+        { // Check iter_move
             same_as<repeated_tuple<iter_rvalue_reference_t<BI>, N>> decltype(auto) rval = iter_move(as_const(i));
             assert(rval == expected[0]);
             STATIC_ASSERT(noexcept(iter_move(i))
@@ -501,8 +501,11 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                               && is_nothrow_move_constructible_v<iter_rvalue_reference_t<BI>>) );
         }
 
-        { // Check iter_swap (hidden friend available via ADL), other tests are defined in test_iter_swap function
-            STATIC_ASSERT(is_void_v<decltype(iter_swap(as_const(i), as_const(i)))>);
+        if constexpr (indirectly_swappable<BI>) { // Check iter_swap
+            STATIC_ASSERT(is_void_v<decltype(ranges::iter_swap(as_const(i), as_const(i)))>);
+            STATIC_ASSERT(
+                noexcept(iter_swap(i, i)) == noexcept(ranges::iter_swap(declval<const BI&>(), declval<const BI&>())));
+            // Note: other tests are defined in 'test_iter_swap' function
         }
     }
 
@@ -706,7 +709,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert(diff2 == size);
         }
 
-        { // Check iter_move (hidden friend available via ADL)
+        { // Check iter_move
             same_as<repeated_tuple<iter_rvalue_reference_t<CBI>, N>> decltype(auto) rval = iter_move(as_const(ci));
             assert(rval == expected[0]);
             STATIC_ASSERT(noexcept(iter_move(ci))
@@ -714,8 +717,11 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                               && is_nothrow_move_constructible_v<iter_rvalue_reference_t<CBI>>) );
         }
 
-        { // Check iter_swap (hidden friend available via ADL), other tests are defined in test_iter_swap function
-            STATIC_ASSERT(is_void_v<decltype(iter_swap(as_const(ci), as_const(ci)))>);
+        if constexpr (indirectly_swappable<CBI>) { // Check iter_swap
+            STATIC_ASSERT(is_void_v<decltype(ranges::iter_swap(as_const(ci), as_const(ci)))>);
+            STATIC_ASSERT(noexcept(iter_swap(ci, ci))
+                          == noexcept(ranges::iter_swap(declval<const CBI&>(), declval<const CBI&>())));
+            // Note: other tests are defined in 'test_iter_swap' function
         }
     }
 
@@ -785,9 +791,9 @@ constexpr void test_adjacent0(Rng&& rng) {
 }
 
 template <size_t N, ranges::input_range Rng>
-    requires (!ranges::constant_range<Rng&>)
+    requires indirectly_swappable<ranges::iterator_t<Rng>>
 constexpr void test_iter_swap(Rng& rng) {
-    // This test implies that ranges::size(views::adjacent<N>(rng)) is at least 2
+    // This test assumes that 'ranges::size(views::adjacent<N>(rng))' is at least 2
     auto r = views::adjacent<N>(rng);
 
     { // Check iter_swap for adjacent_view::iterator<not const>
@@ -806,8 +812,8 @@ constexpr void test_iter_swap(Rng& rng) {
         assert(*j == second);
     }
 
-    if constexpr (CanMemberBegin<const decltype(r)>
-                  && !ranges::constant_range<const Rng&>) { // Check iter_swap for adjacent_view::iterator<const>
+    // Check iter_swap for adjacent_view::iterator<const>
+    if constexpr (CanMemberBegin<const decltype(r)> && indirectly_swappable<ranges::iterator_t<const Rng>>) {
         auto i      = as_const(r).begin();
         auto first  = *i;
         auto j      = ranges::next(i);
