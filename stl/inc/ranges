@@ -8935,7 +8935,7 @@ namespace ranges {
             using _Base          = _Maybe_const<_Const, _Vw>;
             using _Base_sentinel = sentinel_t<_Base>;
 
-            /* [[no_unique_address]] */ _Base_sentinel _End;
+            /* [[no_unique_address]] */ _Base_sentinel _End{};
 
             constexpr explicit _Sentinel(_Base_sentinel _Last_) noexcept(
                 is_nothrow_move_constructible_v<_Base_sentinel>) // strengthened
