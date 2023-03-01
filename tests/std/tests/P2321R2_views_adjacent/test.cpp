@@ -36,12 +36,12 @@ struct repeated_tuple_impl<T, index_sequence<Indices...>> {
 template <class T, size_t N>
 using repeated_tuple = typename repeated_tuple_impl<T, make_index_sequence<N>>::type;
 
-static_assert(same_as<repeated_tuple<int, 0>, tuple<>>);
-static_assert(same_as<repeated_tuple<int, 3>, tuple<int, int, int>>);
-static_assert(same_as<repeated_tuple<int, 5>, tuple<int, int, int, int, int>>);
+STATIC_ASSERT(same_as<repeated_tuple<int, 0>, tuple<>>);
+STATIC_ASSERT(same_as<repeated_tuple<int, 3>, tuple<int, int, int>>);
+STATIC_ASSERT(same_as<repeated_tuple<int, 5>, tuple<int, int, int, int, int>>);
 
 // Check views::pairwise
-static_assert(same_as<decltype(views::pairwise), decltype(views::adjacent<2>)>);
+STATIC_ASSERT(same_as<decltype(views::pairwise), decltype(views::adjacent<2>)>);
 
 template <size_t N, ranges::input_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
@@ -332,7 +332,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     { // Check adjacent_view::iterator<not const>
         using BI = iterator_t<V>;
         using I  = iterator_t<R>;
-        static_assert(forward_iterator<I>);
+        STATIC_ASSERT(forward_iterator<I>);
 
         // Check iterator_category
         STATIC_ASSERT(same_as<typename I::iterator_category, input_iterator_tag>);
@@ -345,7 +345,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT((forward_range<V> && !bidirectional_range<V>) == same_as<IterConcept, forward_iterator_tag>);
 
         // Check value_type
-        static_assert(same_as<typename I::value_type, repeated_tuple<range_value_t<V>, N>>);
+        STATIC_ASSERT(same_as<typename I::value_type, repeated_tuple<range_value_t<V>, N>>);
 
         // Check default-initializability
         STATIC_ASSERT(default_initializable<I>);
@@ -496,13 +496,13 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         { // Check iter_move (hidden friend available via ADL)
             same_as<repeated_tuple<iter_rvalue_reference_t<BI>, N>> decltype(auto) rval = iter_move(as_const(i));
             assert(rval == expected[0]);
-            static_assert(noexcept(iter_move(i))
+            STATIC_ASSERT(noexcept(iter_move(i))
                           == (noexcept(ranges::iter_move(declval<BI>()))
                               && is_nothrow_move_constructible_v<iter_rvalue_reference_t<BI>>) );
         }
 
         { // Check iter_swap (hidden friend available via ADL), other tests are defined in test_iter_swap function
-            static_assert(is_void_v<decltype(iter_swap(as_const(i), as_const(i)))>);
+            STATIC_ASSERT(is_void_v<decltype(iter_swap(as_const(i), as_const(i)))>);
         }
     }
 
@@ -510,7 +510,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     if constexpr (CanMemberBegin<const R>) {
         using CBI = iterator_t<const V>;
         using CI  = iterator_t<const R>;
-        static_assert(forward_iterator<CI>);
+        STATIC_ASSERT(forward_iterator<CI>);
 
         // Check iterator_category
         STATIC_ASSERT(same_as<typename CI::iterator_category, input_iterator_tag>);
@@ -523,7 +523,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT((forward_range<V> && !bidirectional_range<V>) == same_as<IterConcept, forward_iterator_tag>);
 
         // Check value_type
-        static_assert(same_as<typename CI::value_type, repeated_tuple<range_value_t<const V>, N>>);
+        STATIC_ASSERT(same_as<typename CI::value_type, repeated_tuple<range_value_t<const V>, N>>);
 
         // Check default-initializability
         STATIC_ASSERT(default_initializable<CI>);
@@ -709,13 +709,13 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         { // Check iter_move (hidden friend available via ADL)
             same_as<repeated_tuple<iter_rvalue_reference_t<CBI>, N>> decltype(auto) rval = iter_move(as_const(ci));
             assert(rval == expected[0]);
-            static_assert(noexcept(iter_move(ci))
+            STATIC_ASSERT(noexcept(iter_move(ci))
                           == (noexcept(ranges::iter_move(declval<CBI>()))
                               && is_nothrow_move_constructible_v<iter_rvalue_reference_t<CBI>>) );
         }
 
         { // Check iter_swap (hidden friend available via ADL), other tests are defined in test_iter_swap function
-            static_assert(is_void_v<decltype(iter_swap(as_const(ci), as_const(ci)))>);
+            STATIC_ASSERT(is_void_v<decltype(iter_swap(as_const(ci), as_const(ci)))>);
         }
     }
 
@@ -735,7 +735,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
 template <ranges::input_range Rng>
 constexpr void test_adjacent0(Rng&& rng) {
-    static_assert(!CanConstructAdjacentView<Rng, 0>);
+    STATIC_ASSERT(!CanConstructAdjacentView<Rng, 0>);
     using V = views::all_t<Rng>;
     using E = ranges::empty_view<tuple<>>;
 
