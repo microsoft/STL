@@ -8921,7 +8921,7 @@ namespace ranges {
                 noexcept(_RANGES iter_swap(_STD declval<_Base_iterator>(), _STD declval<_Base_iterator>())))
                 requires indirectly_swappable<_Base_iterator>
             {
-                for (size_t _Ix = 0; _Ix < _Left._Current.size(); ++_Ix) {
+                for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
                     _RANGES iter_swap(_Left._Current[_Ix], _Right._Current[_Ix]);
                 }
             }
