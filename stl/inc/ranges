@@ -9043,7 +9043,7 @@ namespace ranges {
             using _Size_type        = decltype(_RANGES size(_Range));
             using _Common_size_type = common_type_t<_Size_type, size_t>;
             auto _Size              = static_cast<_Common_size_type>(_RANGES size(_Range));
-            _Size -= _STD min<_Common_size_type>(_Size, _Nx - 1);
+            _Size -= (_STD min)(_Size, static_cast<_Common_size_type>(_Nx - 1));
             return static_cast<_Size_type>(_Size);
         }
 
@@ -9053,7 +9053,7 @@ namespace ranges {
             using _Size_type        = decltype(_RANGES size(_Range));
             using _Common_size_type = common_type_t<_Size_type, size_t>;
             auto _Size              = static_cast<_Common_size_type>(_RANGES size(_Range));
-            _Size -= _STD min<_Common_size_type>(_Size, _Nx - 1);
+            _Size -= (_STD min)(_Size, static_cast<_Common_size_type>(_Nx - 1));
             return static_cast<_Size_type>(_Size);
         }
     };
