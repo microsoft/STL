@@ -520,10 +520,11 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         // Check iterator_concept
         using IterConcept = typename CI::iterator_concept;
-        STATIC_ASSERT(random_access_range<V> == same_as<IterConcept, random_access_iterator_tag>);
+        STATIC_ASSERT(random_access_range<const V> == same_as<IterConcept, random_access_iterator_tag>);
+        STATIC_ASSERT((bidirectional_range<const V> && !random_access_range<const V>)
+                      == same_as<IterConcept, bidirectional_iterator_tag>);
         STATIC_ASSERT(
-            (bidirectional_range<V> && !random_access_range<V>) == same_as<IterConcept, bidirectional_iterator_tag>);
-        STATIC_ASSERT((forward_range<V> && !bidirectional_range<V>) == same_as<IterConcept, forward_iterator_tag>);
+            (forward_range<const V> && !bidirectional_range<const V>) == same_as<IterConcept, forward_iterator_tag>);
 
         // Check value_type
         STATIC_ASSERT(same_as<typename CI::value_type, repeated_tuple<range_value_t<const V>, N>>);
