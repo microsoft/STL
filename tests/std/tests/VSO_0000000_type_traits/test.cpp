@@ -1363,8 +1363,10 @@ STATIC_ASSERT(is_same_v<common_reference_t<void() volatile>, void() volatile>);
 STATIC_ASSERT(is_same_v<common_reference_t<void() &&>, void() &&>);
 
 
-// N4810 [meta.trans.other]/5.3.1: If T1 and T2 are reference types and COMMON_REF(T1, T2) is well-formed, then the
-// member typedef type denotes that type.
+// N4928 [meta.trans.other]/5.3.1 as updated by P2655R3 (TRANSITION, cite new WP here):
+// "Let R be COMMON-REF(T1, T2). If T1 and T2 are reference types, R is well-formed, and
+// is_convertible_v<add_pointer_t<T1>, add_pointer_t<R>> && is_convertible_v<add_pointer_t<T2>, add_pointer_t<R>>
+// is true, then the member typedef type denotes R."
 STATIC_ASSERT(is_same_v<common_reference_t<simple_base&, simple_derived&>, simple_base&>);
 STATIC_ASSERT(is_same_v<common_reference_t<simple_base&, simple_derived const&>, simple_base const&>);
 STATIC_ASSERT(is_same_v<common_reference_t<simple_base&, simple_derived&&>, simple_base const&>);

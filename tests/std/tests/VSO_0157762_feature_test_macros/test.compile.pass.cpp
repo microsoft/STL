@@ -448,7 +448,7 @@ STATIC_ASSERT(__cpp_lib_clamp == 201603L);
 #endif
 #endif
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_common_reference
 #error __cpp_lib_common_reference is not defined
 #elif __cpp_lib_common_reference != 202302L
@@ -462,7 +462,7 @@ STATIC_ASSERT(__cpp_lib_common_reference == 202302L);
 #endif
 #endif
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_common_reference_wrapper
 #error __cpp_lib_common_reference_wrapper is not defined
 #elif __cpp_lib_common_reference_wrapper != 202302L

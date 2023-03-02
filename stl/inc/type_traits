@@ -1368,7 +1368,10 @@ struct _Common_reference2B<_Ty1, _Ty2, void_t<_Basic_specialization<_Ty1, _Ty2>>
     using type = _Basic_specialization<_Ty1, _Ty2>;
 };
 
-// N4928 [meta.trans.other]/5.3.1: "If T1 and T2 are reference types and COMMON_REF(T1, T2) is well-formed..."
+// N4928 [meta.trans.other]/5.3.1 as updated by P2655R3 (TRANSITION, cite new WP here):
+// "Let R be COMMON-REF(T1, T2). If T1 and T2 are reference types, R is well-formed, and
+// is_convertible_v<add_pointer_t<T1>, add_pointer_t<R>> && is_convertible_v<add_pointer_t<T2>, add_pointer_t<R>>
+// is true, then the member typedef type denotes R."
 template <class _Ty1, class _Ty2, class = void>
 struct _Common_reference2A : _Common_reference2B<_Ty1, _Ty2> {};
 
@@ -1472,7 +1475,7 @@ _EXPORT_STD template <class _Ty>
 class reference_wrapper;
 
 // std::invoke isn't constexpr in C++17, and normally implementers are forbidden from "strengthening" constexpr
-// (WG21-N4928 [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and have
+// (N4928 [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and have
 // invoke-like behavior. As a result, we've chosen to apply the part of P1065R2 resolving LWG-2894 as a defect report.
 
 enum class _Invoker_strategy {
