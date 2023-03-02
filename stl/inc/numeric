@@ -623,12 +623,11 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
 
             _Nx_magnitude -= _Mx_magnitude;
             if (_Nx_magnitude == 0U) {
-                break;
+                return static_cast<_Common>(_Mx_magnitude << _Common_factors_of_2);
             }
 
             _Nx_trailing_zeroes = static_cast<unsigned long>(_Countr_zero_impl(_Nx_magnitude));
         }
-        return static_cast<_Common>(_Mx_magnitude << _Common_factors_of_2);
     });
 }
 
