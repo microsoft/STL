@@ -65,6 +65,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     // Validate borrowed_range
     STATIC_ASSERT(ranges::borrowed_range<R> == ranges::borrowed_range<V>);
 
+    // Validate range closure object
     // ... with lvalue argument
     STATIC_ASSERT(CanViewEnumerate<Rng&> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewEnumerate<Rng&>) {
@@ -610,7 +611,7 @@ constexpr void instantiation_test() {
 #ifdef TEST_EVERYTHING
     test_in<instantiator, const int>();
 #else // ^^^ test all input range permutations / test only "interesting" permutations vvv
-    using test::Common, test::Sized, test::ProxyRef;
+    using test::Common, test::Sized;
 
     // When the base range is an input range, the view is sensitive to differencing
     instantiator::call<test_input_range<test::CanDifference::yes>>();
