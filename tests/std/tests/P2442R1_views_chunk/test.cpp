@@ -467,7 +467,7 @@ constexpr bool test_input(Rng&& rng, Expected&& expected) {
     using ranges::chunk_view, ranges::equal, ranges::iterator_t, ranges::sentinel_t;
 
     using V  = views::all_t<Rng>;
-    using BI = ranges::iterator_t<V>;
+    using BI = iterator_t<V>;
     using R  = chunk_view<V>;
 
     same_as<R> auto r = chunk_view{forward<Rng>(rng), 2};
