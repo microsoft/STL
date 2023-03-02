@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
-#ifndef _XMTX
-#define _XMTX
+
 #include <yvals.h>
 
 #include <cstdlib>
@@ -28,5 +27,3 @@ _MRTIMP2 void __cdecl _Mtxunlock(_Rmtx*) noexcept;
 #endif // _M_CEE_PURE
 
 _END_EXTERN_C_UNLESS_PURE
-
-#endif // _XMTX
