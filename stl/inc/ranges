@@ -6377,6 +6377,10 @@ namespace ranges {
                 return (_STD min)(_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current);
             }
 
+            _NODISCARD constexpr const iterator_t<_Vw>& _Get_current() const noexcept {
+                return *_Parent->_Current;
+            }
+
         public:
             using iterator_concept = input_iterator_tag;
             using difference_type  = range_difference_t<_Vw>;
@@ -6442,6 +6446,18 @@ namespace ranges {
                 requires sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>>
             {
                 return -_Left._Get_size();
+            }
+
+            _NODISCARD_FRIEND constexpr range_rvalue_reference_t<_Vw> iter_move(const _Inner_iterator& _It) noexcept(
+                noexcept(_RANGES iter_move(_It._Get_current()))) {
+                return _RANGES iter_move(_It._Get_current());
+            }
+
+            friend constexpr void iter_swap(const _Inner_iterator& _Left, const _Inner_iterator& _Right) noexcept(
+                noexcept(_RANGES iter_swap(_Left._Get_current(), _Right._Get_current())))
+                requires indirectly_swappable<iterator_t<_Vw>>
+            {
+                _RANGES iter_swap(_Left._Get_current(), _Right._Get_current());
             }
         };
 
