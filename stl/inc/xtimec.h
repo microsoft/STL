@@ -27,7 +27,6 @@ struct xtime { // store time with nanosecond resolution
 
 _CRTIMP2_PURE int __cdecl xtime_get(xtime*, int);
 
-_CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis(const xtime*);
 _CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis2(const xtime*, const xtime*);
 _CRTIMP2_PURE long long __cdecl _Xtime_get_ticks();
 
