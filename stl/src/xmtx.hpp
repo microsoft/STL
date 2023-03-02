@@ -10,11 +10,6 @@
 
 #include <Windows.h>
 
-#pragma pack(push, _CRT_PACKING)
-#pragma warning(push, 3)
-#pragma push_macro("new")
-#undef new
-
 _EXTERN_C_UNLESS_PURE
 
 using _Rmtx = CRITICAL_SECTION;
@@ -34,7 +29,4 @@ _MRTIMP2 void __cdecl _Mtxunlock(_Rmtx*) noexcept;
 
 _END_EXTERN_C_UNLESS_PURE
 
-#pragma pop_macro("new")
-#pragma warning(pop)
-#pragma pack(pop)
 #endif // _XMTX
