@@ -448,6 +448,34 @@ STATIC_ASSERT(__cpp_lib_clamp == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_common_reference
+#error __cpp_lib_common_reference is not defined
+#elif __cpp_lib_common_reference != 202302L
+#error __cpp_lib_common_reference is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_common_reference == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_common_reference
+#error __cpp_lib_common_reference is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_common_reference_wrapper
+#error __cpp_lib_common_reference_wrapper is not defined
+#elif __cpp_lib_common_reference_wrapper != 202302L
+#error __cpp_lib_common_reference_wrapper is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_common_reference_wrapper == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_common_reference_wrapper
+#error __cpp_lib_common_reference_wrapper is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_complex_udls
 #error __cpp_lib_complex_udls is not defined
 #elif __cpp_lib_complex_udls != 201309L
