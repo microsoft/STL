@@ -129,7 +129,6 @@ enum { // constants for error codes
     _RESOURCE_UNAVAILABLE_TRY_AGAIN
 };
 
-extern "C++" [[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_C_error(int _Code);
 extern "C++" [[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_Cpp_error(int _Code);
 _STD_END
 #pragma pop_macro("new")
