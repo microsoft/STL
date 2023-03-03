@@ -7409,7 +7409,7 @@ void _Inplace_merge_buffer_right(
 
 template <class _BidIt, class _Pr>
 void _Buffered_inplace_merge_unchecked(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Iter_diff_t<_BidIt> _Count1,
-    _Iter_diff_t<_BidIt> _Count2, _Iter_value_t<_BidIt>* const _Temp_ptr, const ptrdiff_t _Capacity, _Pr _Pred);
+    _Iter_diff_t<_BidIt> _Count2, _Iter_value_t<_BidIt>* _Temp_ptr, ptrdiff_t _Capacity, _Pr _Pred);
 
 template <class _BidIt, class _Pr>
 void _Buffered_inplace_merge_divide_and_conquer2(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Iter_diff_t<_BidIt> _Count1,
