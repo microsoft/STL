@@ -17,7 +17,7 @@
 using namespace std;
 
 template <class... RangeTypes>
-concept CanViewZip = requires(RangeTypes&&... ranges) { views::zip(std::forward<RangeTypes>(ranges)...); };
+concept CanViewZip = requires(RangeTypes&&... rngs) { views::zip(std::forward<RangeTypes>(rngs)...); };
 
 template <class RangeType>
 using AllView = views::all_t<RangeType>;
@@ -226,7 +226,7 @@ constexpr bool do_tuples_reference_same_objects(const LHSTupleType& lhs_tuple, c
 #pragma warning(disable : 4100) // unreferenced formal parameter
 
 template <class TestContainerType, ranges::input_range... RangeTypes>
-constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... ranges) {
+constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... rngs) {
     // Ignore instances where one of the generated test ranges does not model
     // ranges::viewable_range.
     if constexpr ((ranges::viewable_range<RangeTypes&> && ...)) {
@@ -258,8 +258,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             using ExpectedZipType      = ZipType;
             constexpr bool is_noexcept = (is_nothrow_copy_constructible_v<AllView<RangeTypes>> && ...);
 
-            STATIC_ASSERT(same_as<decltype(views::zip(ranges...)), ExpectedZipType>);
-            STATIC_ASSERT(noexcept(views::zip(ranges...)) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(views::zip(rngs...)), ExpectedZipType>);
+            STATIC_ASSERT(noexcept(views::zip(rngs...)) == is_noexcept);
         }
 
         // ... with const lvalue arguments
@@ -269,8 +269,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             using ExpectedZipType      = ranges::zip_view<AllView<const remove_reference_t<RangeTypes>&>...>;
             constexpr bool is_noexcept = (is_nothrow_copy_constructible_v<AllView<RangeTypes>> && ...);
 
-            STATIC_ASSERT(same_as<decltype(views::zip(as_const(ranges)...)), ExpectedZipType>);
-            STATIC_ASSERT(noexcept(views::zip(as_const(ranges)...)) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(views::zip(as_const(rngs)...)), ExpectedZipType>);
+            STATIC_ASSERT(noexcept(views::zip(as_const(rngs)...)) == is_noexcept);
         }
 
         // ... with rvalue argument
@@ -280,8 +280,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             using ExpectedZipType      = ranges::zip_view<AllView<remove_reference_t<RangeTypes>>...>;
             constexpr bool is_noexcept = (is_nothrow_move_constructible_v<AllView<RangeTypes>> && ...);
 
-            STATIC_ASSERT(same_as<decltype(views::zip(std::move(ranges)...)), ExpectedZipType>);
-            STATIC_ASSERT(noexcept(views::zip(std::move(ranges)...)) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(views::zip(std::move(rngs)...)), ExpectedZipType>);
+            STATIC_ASSERT(noexcept(views::zip(std::move(rngs)...)) == is_noexcept);
         }
 
         // ... with const rvalue argument
@@ -291,12 +291,12 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             using ExpectedZipType      = ranges::zip_view<AllView<const remove_reference_t<RangeTypes>>...>;
             constexpr bool is_noexcept = (is_nothrow_copy_constructible_v<AllView<RangeTypes>> && ...);
 
-            STATIC_ASSERT(same_as<decltype(views::zip(std::move(as_const(ranges))...)), ExpectedZipType>);
-            STATIC_ASSERT(noexcept(views::zip(std::move(as_const(ranges))...)) == is_noexcept);
+            STATIC_ASSERT(same_as<decltype(views::zip(std::move(as_const(rngs))...)), ExpectedZipType>);
+            STATIC_ASSERT(noexcept(views::zip(std::move(as_const(rngs))...)) == is_noexcept);
         }
 
         // Validate deduction guide
-        same_as<ZipType> auto zipped_range = ranges::zip_view{std::forward<RangeTypes>(ranges)...};
+        same_as<ZipType> auto zipped_range = ranges::zip_view{std::forward<RangeTypes>(rngs)...};
         const auto tuple_element_arr       = test_container.get_element_tuple_arr();
         const auto const_tuple_element_arr = as_const(test_container).get_element_tuple_arr();
 
