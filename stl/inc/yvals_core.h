@@ -290,6 +290,7 @@
 // P2609R3 Relaxing Ranges Just A Smidge
 // P2655R3 common_reference_t Of reference_wrapper Should Be A Reference Type
 // P2711R1 Making Multi-Param Constructors Of Views explicit
+// P2770R0 Stashing Stashing Iterators For Proper Flattening
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features

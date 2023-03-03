@@ -813,7 +813,7 @@ void test_gh_1709() {
 
 // GH-3014 "<ranges>: list-initialization is misused"
 void test_gh_3014() { // COMPILE-ONLY
-    struct InRange {
+    struct FwdRange {
         int* begin() {
             return nullptr;
         }
@@ -827,7 +827,7 @@ void test_gh_3014() { // COMPILE-ONLY
         }
     };
 
-    auto r                                           = InRange{} | views::transform(identity{});
+    auto r                                           = FwdRange{} | views::transform(identity{});
     [[maybe_unused]] decltype(as_const(r).begin()) i = r.begin(); // Check 'iterator(iterator<!Const> i)'
 }
 
