@@ -137,10 +137,8 @@ public:
             _Throw_Cpp_error(_INVALID_ARGUMENT);
         }
 
-        const int _Res = _Thrd_detach(_Thr);
-
-        if (_Res != _Thrd_success) {
-            _Throw_C_error(_Res);
+        if (_Thrd_detach(_Thr) != _Thrd_success) {
+            _Throw_Cpp_error(_INVALID_ARGUMENT);
         }
 
         _Thr = {};
