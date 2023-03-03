@@ -8719,7 +8719,9 @@ namespace ranges {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
 
-        struct _As_sentinel {};
+        struct _As_sentinel {
+            explicit _As_sentinel() = default;
+        };
 
         template <bool _Const>
         class _Iterator {
@@ -8808,7 +8810,7 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator+=(const difference_type _Off) noexcept(
-                noexcept(_STD declval<_Base_iterator&>() += _Off)) // strengthened
+                noexcept(_Current.back() += _Off)) // strengthened
                 requires random_access_range<_Base>
             {
                 for (_Base_iterator& _It : _Current) {
@@ -8818,7 +8820,7 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator-=(const difference_type _Off) noexcept(
-                noexcept(_STD declval<_Base_iterator&>() -= _Off)) // strengthened
+                noexcept(_Current.back() -= _Off)) // strengthened
                 requires random_access_range<_Base>
             {
                 for (_Base_iterator& _It : _Current) {
@@ -8834,12 +8836,12 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Left._Current.back() == _Right._Current.back())) /* strengthened */ {
+                noexcept(_Fake_copy_init<bool>(_Left._Current.back() == _Right._Current.back()))) /* strengthened */ {
                 return _Left._Current.back() == _Right._Current.back();
             }
 
             _NODISCARD_FRIEND constexpr bool operator<(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Left._Current.back() < _Right._Current.back())) // strengthened
+                noexcept(_Fake_copy_init<bool>(_Left._Current.back() < _Right._Current.back()))) // strengthened
                 requires random_access_range<_Base>
             {
                 return _Left._Current.back() < _Right._Current.back();
