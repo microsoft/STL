@@ -30,7 +30,7 @@ namespace Concurrency {
 
         class stl_critical_section_win7 final : public stl_critical_section_interface {
         public:
-            stl_critical_section_win7() {}
+            stl_critical_section_win7() = default;
 
             ~stl_critical_section_win7()                                           = delete;
             stl_critical_section_win7(const stl_critical_section_win7&)            = delete;
