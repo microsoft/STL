@@ -260,6 +260,22 @@ StatementMacros:
   - _END_EXTERN_C
   - _EXTERN_C_UNLESS_PURE
   - _END_EXTERN_C_UNLESS_PURE
+  # SAL
+  - _When_
+  # Concurrency SAL
+  - _Requires_lock_held_
+  - _Requires_exclusive_lock_held_
+  - _Requires_shared_lock_held_
+  - _Requires_lock_not_held_
+  - _Requires_no_locks
+  - _Acquires_lock_
+  - _Acquires_exclusive_lock_
+  - _Acquires_shared_lock_
+  - _Releases_lock_
+  - _Releases_exclusive_lock_
+  - _Releases_shared_lock_
+  - _Acquires_nonreentrant_lock_
+  - _Releases_nonreentrant_lock_
 # TabWidth:        8
 # UseCRLF:         false
 UseCRLF:         true
