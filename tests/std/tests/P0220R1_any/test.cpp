@@ -1211,6 +1211,8 @@ namespace modifiers::emplace {
 struct Tracked {
   static int count;
   Tracked()  {++count;}
+  Tracked(Tracked const&) noexcept {++count;}
+  Tracked& operator=(Tracked const&) = default;
   ~Tracked() { --count; }
 };
 int Tracked::count = 0;
@@ -2976,6 +2978,10 @@ namespace msvc {
             Tracked() {
                 ++count;
             }
+            Tracked(Tracked const&) noexcept {
+                ++count;
+            }
+            Tracked& operator=(Tracked const&) = default;
             ~Tracked() {
                 --count;
             }

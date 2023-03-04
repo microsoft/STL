@@ -8,6 +8,7 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -176,6 +177,43 @@ constexpr bool test_P0591R4() {
     }
 #endif // _HAS_CXX23
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    { // pair(PairLike&&) overload
+        tuple tpl(i, i);
+        auto tuple14 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, tpl);
+        static_assert(
+            is_same_v<decltype(tuple14), tuple<piecewise_construct_t, tuple<int&>, AllocatorArgConstructArgs>>);
+
+        auto tuple15 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, tpl);
+        static_assert(is_same_v<decltype(tuple15), tuple<piecewise_construct_t, AllocatorConstructArgs, tuple<int&>>>);
+
+        auto tuple16 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, move(tpl));
+        static_assert(
+            is_same_v<decltype(tuple16), tuple<piecewise_construct_t, tuple<int&&>, MovedAllocatorArgConstructArgs>>);
+
+        auto tuple17 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, move(tpl));
+        static_assert(
+            is_same_v<decltype(tuple17), tuple<piecewise_construct_t, MovedAllocatorConstructArgs, tuple<int&&>>>);
+
+        auto tuple18 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, as_const(tpl));
+        static_assert(is_same_v<decltype(tuple18),
+            tuple<piecewise_construct_t, tuple<const int&>, ConstAllocatorArgConstructArgs>>);
+
+        auto tuple19 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, as_const(tpl));
+        static_assert(
+            is_same_v<decltype(tuple19), tuple<piecewise_construct_t, ConstAllocatorConstructArgs, tuple<const int&>>>);
+
+        auto tuple20 =
+            uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, move(as_const(tpl)));
+        static_assert(is_same_v<decltype(tuple20),
+            tuple<piecewise_construct_t, tuple<const int&&>, MovedConstAllocatorArgConstructArgs>>);
+
+        auto tuple21 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, move(as_const(tpl)));
+        static_assert(is_same_v<decltype(tuple21),
+            tuple<piecewise_construct_t, MovedConstAllocatorConstructArgs, tuple<const int&&>>>);
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     {
         auto obj1 = make_obj_using_allocator<AllocatorArgConstructible>(alloc, i);
         static_assert(is_same_v<decltype(obj1), AllocatorArgConstructible>);
@@ -228,9 +266,56 @@ void test_lwg_3527() { // COMPILE-ONLY
     [[maybe_unused]] auto t = uses_allocator_construction_args<pair<MoveOnlyType&&, MoveOnlyType&&>>(alloc, move(p));
 }
 
+template <class T>
+class payloaded_allocator {
+private:
+    int payload = 0;
+
+public:
+    payloaded_allocator() = default;
+
+    constexpr explicit payloaded_allocator(int n) noexcept : payload{n} {}
+
+    template <class U>
+    constexpr explicit payloaded_allocator(payloaded_allocator<U> a) noexcept : payload{a.get_payload()} {}
+
+    friend bool operator==(payloaded_allocator, payloaded_allocator) = default;
+
+    template <class U>
+    friend constexpr bool operator==(payloaded_allocator x, payloaded_allocator<U> y) noexcept {
+        return x.payload == y.payload;
+    }
+
+    using value_type = T;
+
+    constexpr T* allocate(size_t n) {
+        return allocator<T>{}.allocate(n);
+    }
+
+    constexpr void deallocate(T* p, size_t n) {
+        return allocator<T>{}.deallocate(p, n);
+    }
+
+    constexpr int get_payload() const noexcept {
+        return payload;
+    }
+};
+
+constexpr bool test_lwg3677() {
+    using my_allocator = payloaded_allocator<int>;
+    using my_pair      = pair<int, vector<int, my_allocator>>;
+
+    constexpr int in_v = 42;
+    auto out_v = make_obj_using_allocator<const my_pair>(my_allocator{in_v}).second.get_allocator().get_payload();
+    return in_v == out_v;
+}
+
 int main() {
     test_P0475R1();
 
     assert(test_P0591R4());
     static_assert(test_P0591R4());
+
+    assert(test_lwg3677());
+    static_assert(test_lwg3677());
 }

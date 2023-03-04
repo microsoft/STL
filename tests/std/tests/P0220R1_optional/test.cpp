@@ -2372,6 +2372,8 @@ public:
     static bool dtor_called;
     Y() = default;
     Y(int) { TEST_THROW(6);}
+    Y(const Y&) = default;
+    Y& operator=(const Y&) = default;
     ~Y() {dtor_called = true;}
 };
 
@@ -2659,6 +2661,8 @@ public:
     constexpr X(int i, bool& dtor_called) : i_(i), dtor_called_(&dtor_called) {}
     constexpr X(std::initializer_list<int> il, bool& dtor_called)
     : i_(il.begin()[0]), j_(il.begin()[1]), dtor_called_(&dtor_called) {}
+    X(const X&) = default;
+    X& operator=(const X&) = default;
     TEST_CONSTEXPR_CXX20 ~X() {*dtor_called_ = true;}
 
     friend constexpr bool operator==(const X& x, const X& y)
@@ -2688,6 +2692,8 @@ public:
     Z(int i) : i_(i) {}
     Z(std::initializer_list<int> il) : i_(il.begin()[0]), j_(il.begin()[1])
         { TEST_THROW(6);}
+    Z(const Z&) = default;
+    Z& operator=(const Z&) = default;
     ~Z() {dtor_called = true;}
 
     friend bool operator==(const Z& x, const Z& y)
@@ -5336,6 +5342,8 @@ class X
 public:
     static bool dtor_called;
     X() = default;
+    X(const X&) = default;
+    X& operator=(const X&) = default;
     ~X() {dtor_called = true;}
 };
 
@@ -5401,6 +5409,9 @@ using std::optional;
 struct X
 {
     static bool dtor_called;
+    X() = default;
+    X(const X&) = default;
+    X& operator=(const X&) = default;
     ~X() {dtor_called = true;}
 };
 
