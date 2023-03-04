@@ -711,7 +711,7 @@ public:
         !is_array_v<_ElementType>, "ElementType cannot be an array type (N4928 [mdspan.mdspan.overview]/2.1).");
     static_assert("Extents must be a specialization of extents (N4928 [mdspan.mdspan.overview]/2.2).");
     static_assert(is_same_v<_ElementType, typename _AccessorPolicy::element_type>,
-        "Expression is_same_v<ElementType, typename AccessorPolicy::element_type> should be true (N4928 "
+        "Expression is_same_v<ElementType, typename AccessorPolicy::element_type> must be true (N4928 "
         "[mdspan.mdspan.overview]/2.3).");
 
     _NODISCARD static constexpr rank_type rank() noexcept {
@@ -790,10 +790,10 @@ public:
         mdspan(const mdspan<_OtherElementType, _OtherExtents, _OtherLayoutPolicy, _OtherAccessor>& _Other)
         : _Ptr{_Other._Ptr}, _Map{_Other._Map}, _Acc{_Other._Acc} {
         static_assert(is_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>,
-            "Expression is_constructible_v<data_handle_type, const typename OtherAccessor::data_handle_type&> should "
+            "Expression is_constructible_v<data_handle_type, const typename OtherAccessor::data_handle_type&> must "
             "be true (N4928 [mdspan.mdspan.cons]/20.1).");
         static_assert(is_constructible_v<extents_type, _OtherExtents>,
-            "Expression is_constructible_v<extents_type, _OtherExtents> should be true (N4928 "
+            "Expression is_constructible_v<extents_type, OtherExtents> must be true (N4928 "
             "[mdspan.mdspan.cons]/20.2).");
     }
 
