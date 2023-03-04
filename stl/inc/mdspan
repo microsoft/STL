@@ -226,6 +226,14 @@ public:
             }
         }
     }
+
+    _NODISCARD static constexpr bool _Is_index_space_size_representable() {
+        if constexpr (rank_dynamic() == 0 && rank() > 0) {
+            return _STD in_range<index_type>((_Extents * ...));
+        } else {
+            return true;
+        }
+    }
 };
 
 template <class _IndexType, size_t _Rank>
@@ -286,6 +294,12 @@ public:
     using size_type    = typename _Extents::size_type;
     using rank_type    = typename _Extents::rank_type;
     using layout_type  = layout_left;
+
+    static_assert(
+        _Is_extents<_Extents>, "Extents must be a specialization of extents (N4928 [mdspan.layout.left.overview]/2).");
+    static_assert(_Extents::_Is_index_space_size_representable(),
+        "If Extends::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() is "
+        "representable as a value of type typename Extends::index_type.");
 
     constexpr mapping() noexcept               = default;
     constexpr mapping(const mapping&) noexcept = default;
@@ -391,6 +405,12 @@ public:
     using size_type    = typename _Extents::size_type;
     using rank_type    = typename _Extents::rank_type;
     using layout_type  = layout_right;
+
+    static_assert(
+        _Is_extents<_Extents>, "Extents must be a specialization of extents (N4928 [mdspan.layout.right.overview]/2).");
+    static_assert(_Extents::_Is_index_space_size_representable(),
+        "If Extends::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() is "
+        "representable as a value of type typename Extends::index_type.");
 
     constexpr mapping() noexcept               = default;
     constexpr mapping(const mapping&) noexcept = default;
@@ -498,6 +518,12 @@ public:
     using size_type    = typename _Extents::size_type;
     using rank_type    = typename _Extents::rank_type;
     using layout_type  = layout_stride;
+
+    static_assert(_Is_extents<_Extents>,
+        "Extents must be a specialization of extents (N4928 [mdspan.layout.stride.overview]/2).");
+    static_assert(_Extents::_Is_index_space_size_representable(),
+        "If Extends::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() is "
+        "representable as a value of type typename Extends::index_type.");
 
     constexpr mapping() noexcept               = default;
     constexpr mapping(const mapping&) noexcept = default;
@@ -709,7 +735,8 @@ public:
         !is_abstract_v<_ElementType>, "ElementType cannot be an abstract type (N4928 [mdspan.mdspan.overview]/2.1).");
     static_assert(
         !is_array_v<_ElementType>, "ElementType cannot be an array type (N4928 [mdspan.mdspan.overview]/2.1).");
-    static_assert("Extents must be a specialization of extents (N4928 [mdspan.mdspan.overview]/2.2).");
+    static_assert(
+        _Is_extents<_Extents>, "Extents must be a specialization of extents (N4928 [mdspan.mdspan.overview]/2.2).");
     static_assert(is_same_v<_ElementType, typename _AccessorPolicy::element_type>,
         "Expression is_same_v<ElementType, typename AccessorPolicy::element_type> must be true (N4928 "
         "[mdspan.mdspan.overview]/2.3).");

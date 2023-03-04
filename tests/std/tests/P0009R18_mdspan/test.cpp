@@ -31,14 +31,14 @@ struct Convertible {
 };
 
 struct ConstructibleAndConvertible {
-    // convertible and noexcept constuctible
+    // convertible and noexcept constructible
     constexpr operator size_t() noexcept {
         return size_t{0};
     };
 };
 
 struct ConstructibleAndConvertibleConst {
-    // convertible and noexcept constuctible
+    // convertible and noexcept constructible
     constexpr operator size_t() const noexcept {
         return size_t{0};
     };
@@ -180,13 +180,13 @@ void extent_tests_copy_ctor_other() {
     static_assert(!is_constructible_v<extents<size_t, 2, 3>, extents<size_t, 2>>);
     static_assert(!is_constructible_v<extents<size_t, 2, 3>, extents<size_t, 3, 2>>);
 
-    // Static extents are constuctible, but not convertible, from dynamic extents.
+    // Static extents are constructible, but not convertible, from dynamic extents.
     // static_assert(is_constructible_v<extents<size_t, 2, 3>, extents<size_t, 2, dynamic_extent>>);
     constexpr extents<size_t, 2, 3> ex0{extents<size_t, 2, dynamic_extent>{}};
     (void) ex0;
     static_assert(!is_convertible_v<extents<size_t, 2, dynamic_extent>, extents<size_t, 2, 3>>);
 
-    // Dynamic extents are constuctible and convertible from static extents.
+    // Dynamic extents are constructible and convertible from static extents.
     static_assert(is_constructible_v<extents<size_t, 2, dynamic_extent>, extents<size_t, 2, 3>>);
     extents<size_t, 2, dynamic_extent>{extents<size_t, 2, 3>{}};
     static_assert(is_convertible_v<extents<size_t, 2, 3>, extents<size_t, 2, dynamic_extent>>);
@@ -776,8 +776,8 @@ void layout_stride_tests_ctor_other_extents() {
     constexpr extents<size_t, 2, dynamic_extent> e2{3};
     constexpr array<size_t, 2> s{3, 1};
 
-    constexpr layout_stride::mapping<decltype(e1)> m1(e1, s);
-    constexpr layout_stride::mapping<decltype(e2)> m2(m1);
+    constexpr layout_stride::mapping<remove_const_t<decltype(e1)>> m1(e1, s);
+    constexpr layout_stride::mapping<remove_const_t<decltype(e2)>> m2(m1);
 
     static_assert(m2.extents() == e1);
     static_assert(m2.strides() == s);
@@ -928,10 +928,11 @@ void mdspan_tests_ctor_sizes() {
     static_assert((mds1.extents() == extents<size_t, 2, 3>{}));
     static_assert(mds1.is_exhaustive());
 
-    static_assert(!is_constructible_v<mdspan<int, Pathological::Extents, Pathological::Layout>, int*,
-                  Pathological::Empty>); // Empty not convertible to size_type
+    // TRANSITION: fix with concepts -> this is hard error per [mdspan.mdspan.overview]/2.2
+    // static_assert(!is_constructible_v<mdspan<int, Pathological::Extents, Pathological::Layout>, int*,
+    //              Pathological::Empty>); // Empty not convertible to size_type
 
-    // TRANSITION: this assert should be true
+    // TRANSITION: fix with concepts -> this is hard error per [mdspan.mdspan.overview]/2.2
     // static_assert(!is_constructible_v<mdspan<int, Pathological::Extents, Pathological::Layout>, int*,
     //              int>); // Pathological::Extents not constructible from int
 
@@ -949,11 +950,13 @@ void mdspan_tests_ctor_array() {
     static_assert(mds1.data_handle() == arr);
     static_assert(mds1.extents() == extents<size_t, 2, 3>{});
 
-    static_assert(!is_constructible_v<mdspan<int, Pathological::Extents, Pathological::Layout>, int*,
-                  array<Pathological::Empty, 1>>); // Empty not convertible to size_type
+    // TRANSITION: fix with concepts -> this is hard error per [mdspan.mdspan.overview]/2.2
+    // static_assert(!is_constructible_v<mdspan<int, Pathological::Extents, Pathological::Layout>, int*,
+    //              array<Pathological::Empty, 1>>); // Empty not convertible to size_type
 
-    static_assert(!is_constructible_v<mdspan<int, Pathological::Extents, Pathological::Layout>, int*,
-                  array<int, 1>>); // Pathological::Extents not constructible from int
+    // TRANSITION: fix with concepts -> this is hard error per [mdspan.mdspan.overview]/2.2
+    // static_assert(!is_constructible_v<mdspan<int, Pathological::Extents, Pathological::Layout>, int*,
+    //              array<int, 1>>); // Pathological::Extents not constructible from int
 
     static_assert(!is_constructible_v<mdspan<int, extents<size_t, dynamic_extent>, Pathological::Layout>, int*,
                   array<int, 1>>); // Pathological::Layout not constructible from extents<size_t, dynamic_extent>
