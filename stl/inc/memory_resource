@@ -513,6 +513,10 @@ namespace pmr {
 
             void _Increase_capacity(unsynchronized_pool_resource& _Pool_resource) {
                 // this pool has no free blocks; get a new chunk from upstream
+                if (_Next_capacity > _Pool_resource._Options.max_blocks_per_chunk) {
+                    // This is a fresh pool, _Next_capacity hasn't yet been bounded by max_blocks_per_chunk:
+                    _Next_capacity = _Pool_resource._Options.max_blocks_per_chunk;
+                }
                 const size_t _Size               = _Size_for_capacity(_Next_capacity);
                 memory_resource* const _Resource = _Pool_resource.upstream_resource();
                 void* const _Ptr                 = _Resource->allocate(_Size, _Block_size);
