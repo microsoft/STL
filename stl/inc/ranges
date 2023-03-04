@@ -3549,6 +3549,17 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Drop_while_fn drop_while;
     } // namespace views
 
+#ifdef __clang__
+    template <class _Rng> // TRANSITION, LLVM-47414
+    concept _Can_const_join = forward_range<const _Rng> && is_reference_v<range_reference_t<const _Rng>>
+                           && input_range<range_reference_t<const _Rng>>;
+#endif // ^^^ workaround ^^^
+
+    template <class _Ty>
+    _NODISCARD constexpr _Ty& _As_lvalue(_Ty&& _Val) noexcept {
+        return static_cast<_Ty&>(_Val);
+    }
+
     _EXPORT_STD template <input_range _Vw>
         requires view<_Vw> && input_range<range_reference_t<_Vw>>
     class join_view;
@@ -3568,17 +3579,6 @@ namespace ranges {
     protected:
         /* [[no_unique_address]] */ _Non_propagating_cache<_Cache_wrapper, false> _Inner{};
     };
-
-#ifdef __clang__
-    template <class _Rng> // TRANSITION, LLVM-47414
-    concept _Can_const_join = forward_range<const _Rng> && is_reference_v<range_reference_t<const _Rng>>
-                           && input_range<range_reference_t<const _Rng>>;
-#endif // ^^^ workaround ^^^
-
-    template <class _Ty>
-    _NODISCARD constexpr _Ty& _As_lvalue(_Ty&& _Val) noexcept {
-        return static_cast<_Ty&>(_Val);
-    }
 
     template <class _Vw>
         requires is_reference_v<range_reference_t<_Vw>>
