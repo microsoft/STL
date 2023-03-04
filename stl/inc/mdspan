@@ -260,7 +260,7 @@ template <class _Mapping>
 struct _Layout_mapping_alike : bool_constant<_Layout_mapping_alike_helper<_Mapping>::value> {};
 
 template <class _Layout, class _Mapping>
-constexpr bool _Is_mapping_of =
+inline constexpr bool _Is_mapping_of =
     is_same_v<typename _Layout::template mapping<typename _Mapping::extents_type>, _Mapping>;
 
 struct layout_left {
