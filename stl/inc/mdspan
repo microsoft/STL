@@ -240,10 +240,10 @@ extents(_Integrals... _Ext)
     -> extents<size_t, conditional_t<true, integral_constant<size_t, dynamic_extent>, _Integrals>::value...>;
 
 template <class _Type>
-constexpr bool _Is_extents_v = false;
+inline constexpr bool _Is_extents_v = false;
 
 template <class _IndexType, size_t... _Args>
-constexpr bool _Is_extents_v<extents<_IndexType, _Args...>> = true;
+inline constexpr bool _Is_extents_v<extents<_IndexType, _Args...>> = true;
 
 template <class _Mapping, class = void>
 struct _Layout_mapping_alike_helper : false_type {};
