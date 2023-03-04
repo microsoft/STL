@@ -125,13 +125,11 @@ public:
     using size_type  = make_unsigned_t<index_type>;
     using rank_type  = size_t;
 
-    // TRANSITION: doesn't account for extended integer types
-    static_assert(_Is_any_of_v<remove_cv_t<_IndexType>, signed char, unsigned char, short, unsigned short, int,
-                      unsigned int, long, unsigned long, long long, unsigned long long>,
-        "N4928 [mdspan.extents.overview]/2 "
-        "requires that extents::index_type be a signed or unsigned integer type.");
-
-    static_assert(((_Extents == dynamic_extent || _Extents <= (numeric_limits<_IndexType>::max)()) && ...));
+    static_assert(_Is_standard_integer<_IndexType>,
+        "IndexType must be a signed or unsigned integer type (N4928 [mdspan.extents.overview]/1.1).");
+    static_assert(((_Extents == dynamic_extent || _STD in_range<_IndexType>(_Extents)) && ...),
+        "Each element of Extents must be either equal to dynamic_extent, or must be representable as a value of type "
+        "IndexType (N4928 [mdspan.extents.overview]/1.2).");
 
     _NODISCARD static constexpr rank_type rank() noexcept {
         return sizeof...(_Extents);
@@ -242,10 +240,10 @@ extents(_Integrals... _Ext)
     -> extents<size_t, conditional_t<true, integral_constant<size_t, dynamic_extent>, _Integrals>::value...>;
 
 template <class _Type>
-constexpr bool _Is_extents = false;
+constexpr bool _Is_extents_v = false;
 
 template <class _IndexType, size_t... _Args>
-constexpr bool _Is_extents<extents<_IndexType, _Args...>> = true;
+constexpr bool _Is_extents_v<extents<_IndexType, _Args...>> = true;
 
 template <class _Mapping, class = void>
 struct _Layout_mapping_alike_helper : false_type {};
@@ -256,7 +254,7 @@ struct _Layout_mapping_alike_helper<_Mapping,
         is_same<bool, decltype(_Mapping::is_always_exhaustive())>,
         is_same<bool, decltype(_Mapping::is_always_unique())>, bool_constant<_Mapping::is_always_strided()>,
         bool_constant<_Mapping::is_always_exhaustive()>, bool_constant<_Mapping::is_always_unique()>>>
-    : bool_constant<_Is_extents<typename _Mapping::extents_type>> {};
+    : bool_constant<_Is_extents_v<typename _Mapping::extents_type>> {};
 
 template <class _Mapping>
 struct _Layout_mapping_alike : bool_constant<_Layout_mapping_alike_helper<_Mapping>::value> {};
@@ -292,12 +290,12 @@ public:
     constexpr mapping() noexcept               = default;
     constexpr mapping(const mapping&) noexcept = default;
 
-    constexpr mapping(const _Extents& e) noexcept : _Myext(e){};
+    constexpr mapping(const _Extents& _Ext) noexcept : _Myext(_Ext) {}
 
     template <class _OtherExtents, enable_if_t<is_constructible_v<_Extents, _OtherExtents>, int> = 0>
     constexpr explicit(!is_convertible_v<_OtherExtents, _Extents>)
         mapping(const mapping<_OtherExtents>& _Other) noexcept
-        : _Myext{_Other.extents()} {};
+        : _Myext{_Other.extents()} {}
 
     template <class _OtherExtents,
         enable_if_t<_Extents::rank() <= 1 && is_constructible_v<_Extents, _OtherExtents>, int> = 0>
@@ -367,8 +365,8 @@ public:
         return _Result;
     }
 
-    template <class OtherExtents>
-    _NODISCARD friend constexpr bool operator==(const mapping& _Left, const mapping<OtherExtents>& _Right) noexcept {
+    template <class _OtherExtents>
+    _NODISCARD_FRIEND constexpr bool operator==(const mapping& _Left, const mapping<_OtherExtents>& _Right) noexcept {
         return _Left.extents() == _Right.extents();
     }
 
@@ -397,12 +395,12 @@ public:
     constexpr mapping() noexcept               = default;
     constexpr mapping(const mapping&) noexcept = default;
 
-    constexpr mapping(const _Extents& e) noexcept : _Myext(e){};
+    constexpr mapping(const _Extents& _Ext) noexcept : _Myext(_Ext) {}
 
     template <class _OtherExtents, enable_if_t<is_constructible_v<_Extents, _OtherExtents>, int> = 0>
     constexpr explicit(!is_convertible_v<_OtherExtents, _Extents>)
         mapping(const mapping<_OtherExtents>& _Other) noexcept
-        : _Myext{_Other.extents()} {};
+        : _Myext{_Other.extents()} {}
 
     template <class _OtherExtents,
         enable_if_t<_Extents::rank() <= 1 && is_constructible_v<_Extents, _OtherExtents>, int> = 0>
@@ -472,8 +470,8 @@ public:
         return _Result;
     }
 
-    template <class OtherExtents>
-    _NODISCARD friend constexpr bool operator==(const mapping& _Left, const mapping<OtherExtents>& _Right) noexcept {
+    template <class _OtherExtents>
+    _NODISCARD_FRIEND constexpr bool operator==(const mapping& _Left, const mapping<_OtherExtents>& _Right) noexcept {
         return _Left.extents() == _Right.extents();
     }
 
@@ -618,7 +616,7 @@ public:
                                                    && extents_type::rank() == _OtherMapping::extents_type::rank()
                                                    && _OtherMapping::is_always_strided(),
                                        int> = 0>
-    _NODISCARD friend constexpr bool operator==(const mapping& _Left, const _OtherMapping& _Right) noexcept {
+    _NODISCARD_FRIEND constexpr bool operator==(const mapping& _Left, const _OtherMapping& _Right) noexcept {
         if (_Left.extents() != _Right.extents()) {
             return false;
         }
@@ -705,6 +703,17 @@ public:
     using data_handle_type = typename accessor_type::data_handle_type;
     using reference        = typename accessor_type::reference;
 
+    static_assert(
+        sizeof(_ElementType) > 0, "ElementType must be a complete type (N4928 [mdspan.mdspan.overview]/2.1).");
+    static_assert(
+        !is_abstract_v<_ElementType>, "ElementType cannot be an abstract type (N4928 [mdspan.mdspan.overview]/2.1).");
+    static_assert(
+        !is_array_v<_ElementType>, "ElementType cannot be an array type (N4928 [mdspan.mdspan.overview]/2.1).");
+    static_assert("Extents must be a specialization of extents (N4928 [mdspan.mdspan.overview]/2.2).");
+    static_assert(is_same_v<_ElementType, typename _AccessorPolicy::element_type>,
+        "Expression is_same_v<ElementType, typename AccessorPolicy::element_type> should be true (N4928 "
+        "[mdspan.mdspan.overview]/2.3).");
+
     _NODISCARD static constexpr rank_type rank() noexcept {
         return _Extents::rank();
     }
@@ -713,8 +722,8 @@ public:
         return _Extents::rank_dynamic();
     }
 
-    _NODISCARD static constexpr size_t static_extent(const rank_type r) noexcept {
-        return _Extents::static_extent(r);
+    _NODISCARD static constexpr size_t static_extent(const rank_type _Rank) noexcept {
+        return _Extents::static_extent(_Rank);
     }
 
     template <class _Mapping = mapping_type,
@@ -723,8 +732,8 @@ public:
             int>             = 0>
     constexpr mdspan() {}
 
-    constexpr mdspan(const mdspan& rhs) = default;
-    constexpr mdspan(mdspan&& rhs)      = default;
+    constexpr mdspan(const mdspan&) = default;
+    constexpr mdspan(mdspan&&)      = default;
 
     template <class _Mapping = mapping_type,
         enable_if_t<(rank() == 0 || rank_dynamic() == 0)
@@ -780,12 +789,16 @@ public:
         || !is_convertible_v<const _OtherAccessor&, accessor_type>)
         mdspan(const mdspan<_OtherElementType, _OtherExtents, _OtherLayoutPolicy, _OtherAccessor>& _Other)
         : _Ptr{_Other._Ptr}, _Map{_Other._Map}, _Acc{_Other._Acc} {
-        static_assert(is_constructible_v<data_handle_type, const typename _OtherAccessor ::data_handle_type&>);
-        static_assert(is_constructible_v<extents_type, _OtherExtents>);
+        static_assert(is_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>,
+            "Expression is_constructible_v<data_handle_type, const typename OtherAccessor::data_handle_type&> should "
+            "be true (N4928 [mdspan.mdspan.cons]/20.1).");
+        static_assert(is_constructible_v<extents_type, _OtherExtents>,
+            "Expression is_constructible_v<extents_type, _OtherExtents> should be true (N4928 "
+            "[mdspan.mdspan.cons]/20.2).");
     }
 
-    constexpr mdspan& operator=(const mdspan& rhs) = default;
-    constexpr mdspan& operator=(mdspan&& rhs)      = default;
+    constexpr mdspan& operator=(const mdspan&) = default;
+    constexpr mdspan& operator=(mdspan&&)      = default;
 
     // TRANSITION operator[](const _OtherIndexTypes... _Indices)
     template <class... _OtherIndexTypes,
@@ -823,9 +836,9 @@ public:
         return _Acc;
     }
 
-    _NODISCARD constexpr index_type extent(const rank_type r) const noexcept {
+    _NODISCARD constexpr index_type extent(const rank_type _Rank) const noexcept {
         const auto& _Ext = _Map.extents();
-        return _Ext.extent(r);
+        return _Ext.extent(_Rank);
     }
 
     _NODISCARD constexpr size_type size() const noexcept {

@@ -897,6 +897,7 @@ namespace Pathological {
     };
 
     struct Accessor {
+        using element_type     = int;
         using data_handle_type = int*;
         using reference        = int&;
         Accessor(int) {}
@@ -994,6 +995,7 @@ void mdspan_tests_ctor_mapping() {
 
 template <class Type>
 struct stateful_accessor {
+    using element_type     = Type;
     using data_handle_type = Type*;
     using reference        = Type&;
 
