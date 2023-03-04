@@ -732,7 +732,7 @@ public:
 
     // [expected.object.monadic]
     template <class _Fn>
-        requires is_copy_constructible_v<_Err>
+        requires is_constructible_v<_Err, _Err&>
     constexpr auto and_then(_Fn&& _Func) & {
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Ty&>>;
 
@@ -789,7 +789,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Err>
+        requires is_constructible_v<_Err, const _Err>
     constexpr auto and_then(_Fn&& _Func) const&& {
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Ty>>;
 
@@ -808,7 +808,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_copy_constructible_v<_Ty>
+        requires is_constructible_v<_Ty, _Ty&>
     constexpr auto or_else(_Fn&& _Func) & {
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Err&>>;
 
@@ -865,7 +865,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Ty>
+        requires is_constructible_v<_Ty, const _Ty>
     constexpr auto or_else(_Fn&& _Func) const&& {
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Err>>;
 
@@ -884,7 +884,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_copy_constructible_v<_Err>
+        requires is_constructible_v<_Err, _Err&>
     constexpr auto transform(_Fn&& _Func) & {
         static_assert(invocable<_Fn, _Ty&>, "expected<T, E>::transform(F) requires that F is invocable with T. "
                                             "(N4928 [expected.object.monadic]/19)");
@@ -965,7 +965,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Err>
+        requires is_constructible_v<_Err, const _Err>
     constexpr auto transform(_Fn&& _Func) const&& {
         static_assert(invocable<_Fn, const _Ty>, "expected<T, E>::transform(F) requires that F is invocable with T. "
                                                  "(N4928 [expected.object.monadic]/23)");
@@ -992,7 +992,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_copy_constructible_v<_Ty>
+        requires is_constructible_v<_Ty, _Ty&>
     constexpr auto transform_error(_Fn&& _Func) & {
         static_assert(invocable<_Fn, _Err&>, "expected<T, E>::transform_error(F) requires that F is invocable with E. "
                                              "(N4928 [expected.object.monadic]/27)");
@@ -1053,7 +1053,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Ty>
+        requires is_constructible_v<_Ty, const _Ty>
     constexpr auto transform_error(_Fn&& _Func) const&& {
         static_assert(invocable<_Fn, const _Err>,
             "expected<T, E>::transform_error(F) requires that F is invocable with E. "
@@ -1470,7 +1470,7 @@ public:
 
     // [expected.void.monadic]
     template <class _Fn>
-        requires is_copy_constructible_v<_Err>
+        requires is_constructible_v<_Err, _Err&>
     constexpr auto and_then(_Fn&& _Func) & {
         using _Uty = remove_cvref_t<invoke_result_t<_Fn>>;
 
@@ -1527,7 +1527,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Err>
+        requires is_constructible_v<_Err, const _Err>
     constexpr auto and_then(_Fn&& _Func) const&& {
         using _Uty = remove_cvref_t<invoke_result_t<_Fn>>;
 
@@ -1618,7 +1618,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_copy_constructible_v<_Err>
+        requires is_constructible_v<_Err, _Err&>
     constexpr auto transform(_Fn&& _Func) & {
         static_assert(invocable<_Fn>, "expected<void, E>::transform(F) requires that F is invocable with no arguments. "
                                       "(N4928 [expected.void.monadic]/17)");
@@ -1696,7 +1696,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Err>
+        requires is_constructible_v<_Err, const _Err>
     constexpr auto transform(_Fn&& _Func) const&& {
         static_assert(invocable<_Fn>, "expected<void, E>::transform(F) requires that F is invocable with no arguments. "
                                       "(N4928 [expected.void.monadic]/21)");
