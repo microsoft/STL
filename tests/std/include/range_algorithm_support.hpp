@@ -112,7 +112,7 @@ namespace test {
 
     enum class CanDifference : bool { no, yes };
     enum class CanCompare : bool { no, yes };
-    enum class ProxyRef { no, yes, prvalue };
+    enum class ProxyRef { no, yes, prvalue, xvalue };
     enum class WrappedState {
         wrapped,
         unwrapped,
@@ -394,8 +394,9 @@ namespace test {
 
     template <class T>
     struct init_list_not_constructible_iterator {
-        using difference_type = int;
-        using value_type      = T;
+        using iterator_category = std::forward_iterator_tag;
+        using difference_type   = int;
+        using value_type        = T;
 
         init_list_not_constructible_iterator() = default;
         init_list_not_constructible_iterator(T*) {}
@@ -407,10 +408,11 @@ namespace test {
         init_list_not_constructible_iterator& operator++(); // not defined
         init_list_not_constructible_iterator operator++(int); // not defined
 
+        bool operator==(init_list_not_constructible_iterator) const; // not defined
         bool operator==(init_list_not_constructible_sentinel<T>) const; // not defined
     };
 
-    static_assert(std::input_iterator<init_list_not_constructible_iterator<int>>);
+    static_assert(std::forward_iterator<init_list_not_constructible_iterator<int>>);
     static_assert(
         std::sentinel_for<init_list_not_constructible_sentinel<int>, init_list_not_constructible_iterator<int>>);
 
@@ -433,7 +435,8 @@ namespace test {
         static constexpr bool at_least = derived_from<Category, T>;
 
         using ReferenceType = conditional_t<Proxy == ProxyRef::yes, proxy_reference<Category, Element>,
-            conditional_t<Proxy == ProxyRef::prvalue, std::remove_cv_t<Element>, Element&>>;
+            conditional_t<Proxy == ProxyRef::prvalue, std::remove_cv_t<Element>,
+                conditional_t<Proxy == ProxyRef::xvalue, Element&&, Element&>>>;
 
         struct post_increment_proxy {
             Element* ptr_;
@@ -475,7 +478,7 @@ namespace test {
         }
 
         [[nodiscard]] constexpr ReferenceType operator*() const noexcept {
-            return ReferenceType{*ptr_};
+            return static_cast<ReferenceType>(*ptr_);
         }
 
         template <WrappedState OtherWrapped>

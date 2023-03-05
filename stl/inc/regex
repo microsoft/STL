@@ -983,9 +983,19 @@ public:
     using char_type       = typename iterator_traits<_BidIt>::value_type;
     using string_type     = basic_string<char_type>;
 
-    match_results() : _Org(), _Ready(false) {}
+    match_results() = default;
 
-    explicit match_results(const _Alloc& _Al) : _Org(), _Ready(false), _Matches(_Al) {}
+    explicit match_results(const _Alloc& _Al) : _Matches(_Al) {}
+
+    match_results(const match_results& _Other, const _Alloc& _Al)
+        : _Org(_Other._Org), _Ready(_Other._Ready), _Matches(_Other._Matches, _Al), _Prefix(_Other._Prefix),
+          _Suffix(_Other._Suffix), _Null_elem(_Other._Null_elem) {}
+
+    match_results(match_results&& _Other, const _Alloc& _Al) noexcept(
+        conjunction_v<typename _Mytraits::is_always_equal, is_nothrow_move_constructible<_BidIt>>) // strengthened
+        : _Org(_STD move(_Other._Org)), _Ready(_Other._Ready), _Matches(_STD move(_Other._Matches), _Al),
+          _Prefix(_STD move(_Other._Prefix)), _Suffix(_STD move(_Other._Suffix)),
+          _Null_elem(_STD move(_Other._Null_elem)) {}
 
     _NODISCARD bool ready() const noexcept /* strengthened */ {
         return _Ready;
@@ -1126,8 +1136,8 @@ public:
         return _Matches[_Sub];
     }
 
-    _BidIt _Org;
-    bool _Ready;
+    _BidIt _Org = _BidIt();
+    bool _Ready = false;
 
 private:
     _MyCont _Matches;
@@ -2387,6 +2397,9 @@ public:
     using pointer           = const value_type*;
     using reference         = const value_type&;
     using iterator_category = forward_iterator_tag;
+#if _HAS_CXX20
+    using iterator_concept = input_iterator_tag;
+#endif // _HAS_CXX20
 
     regex_iterator() : _MyRe(nullptr) {} // construct end of sequence iterator
 
@@ -2523,6 +2536,9 @@ public:
     using pointer           = const value_type*;
     using reference         = const value_type&;
     using iterator_category = forward_iterator_tag;
+#if _HAS_CXX20
+    using iterator_concept = input_iterator_tag;
+#endif // _HAS_CXX20
 
     regex_token_iterator() : _Res(nullptr) {} // construct end of sequence iterator
 

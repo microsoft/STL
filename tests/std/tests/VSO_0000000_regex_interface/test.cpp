@@ -10,6 +10,11 @@
 #include <regex>
 #include <sstream>
 #include <string>
+#include <type_traits>
+
+#if _HAS_CXX17
+#include <memory_resource>
+#endif // _HAS_CXX17
 
 using namespace std;
 using namespace std::regex_constants;
@@ -154,6 +159,41 @@ void test_devdiv_903531_regex_should_have_correct_suffix_matching() {
 void test_dev10_505773_default_constructed_regex_should_not_match_empty_string() {
     regex r;
     assert(!regex_match("", r));
+}
+
+void test_LWG_2195_allocator_extended_ctors_for_match_result() {
+    constexpr char input[] = {'a', 'b', '\0', 'c', 'd'};
+    const regex pattern(".(.).*");
+
+    {
+        cmatch results;
+        assert(regex_match(begin(input), end(input), results, pattern));
+
+        cmatch r1{results, cmatch::allocator_type{}};
+        assert(r1 == results);
+
+        cmatch r2{move(results), cmatch::allocator_type{}};
+        assert(r2 == r1);
+
+        // strengthened exception specification
+        static_assert(is_nothrow_constructible_v<cmatch, cmatch, cmatch::allocator_type>,
+            "Allocator-extended move construction should be noexcept when the allocator is stateless.");
+    }
+#if _HAS_CXX17
+    {
+        pmr::cmatch results;
+        assert(regex_match(begin(input), end(input), results, pattern));
+
+        pmr::cmatch r1{results, pmr::cmatch::allocator_type{}};
+        assert(r1 == results);
+
+        pmr::cmatch r2{move(results), pmr::cmatch::allocator_type{}};
+        assert(r2 == r1);
+
+        static_assert(!is_nothrow_constructible_v<pmr::cmatch, pmr::cmatch, pmr::cmatch::allocator_type>,
+            "Allocator-extended move construction shouldn't be noexcept when the allocator is stateful.");
+    }
+#endif // _HAS_CXX17
 }
 
 template <typename ContainerT>
@@ -393,6 +433,7 @@ int main() {
     test_dev10_900584_should_handle_quantified_alternates();
     test_devdiv_903531_regex_should_have_correct_suffix_matching();
     test_dev10_505773_default_constructed_regex_should_not_match_empty_string();
+    test_LWG_2195_allocator_extended_ctors_for_match_result();
     test_LWG_2217_sub_match_should_not_slice_nulls<string>();
     test_LWG_2217_sub_match_should_not_slice_nulls<list<char>>();
     test_VSO_177524_sub_match_compare_should_not_construct_unnecessary_basic_strings<string>();

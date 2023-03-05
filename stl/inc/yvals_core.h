@@ -288,7 +288,9 @@
 // P2588R3 barrier's Phase Completion Guarantees
 // P2602R2 Poison Pills Are Too Toxic
 // P2609R3 Relaxing Ranges Just A Smidge
+// P2655R3 common_reference_t Of reference_wrapper Should Be A Reference Type
 // P2711R1 Making Multi-Param Constructors Of Views explicit
+// P2770R0 Stashing Stashing Iterators For Proper Flattening
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -334,7 +336,7 @@
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
-//     (missing views::adjacent and views::adjacent_transform)
+//     (missing views::adjacent_transform)
 // P2322R6 ranges::fold_left, ranges::fold_right, Etc.
 // P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2404R3 Move-Only Types For Comparison Concepts
@@ -824,7 +826,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202302L
+#define _MSVC_STL_UPDATE  202303L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1616,20 +1618,26 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
-#define __cpp_lib_constexpr_algorithms          201806L
-#define __cpp_lib_constexpr_complex             201711L
-#define __cpp_lib_constexpr_dynamic_alloc       201907L
-#define __cpp_lib_constexpr_functional          201907L
-#define __cpp_lib_constexpr_iterator            201811L
-#define __cpp_lib_constexpr_numeric             201911L
-#define __cpp_lib_constexpr_string              201907L
-#define __cpp_lib_constexpr_string_view         201811L
-#define __cpp_lib_constexpr_tuple               201811L
-#define __cpp_lib_constexpr_utility             201811L
-#define __cpp_lib_constexpr_vector              201907L
-#define __cpp_lib_destroying_delete             201806L
-#define __cpp_lib_endian                        201907L
-#define __cpp_lib_erase_if                      202002L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_common_reference         202302L
+#define __cpp_lib_common_reference_wrapper 202302L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_constexpr_algorithms    201806L
+#define __cpp_lib_constexpr_complex       201711L
+#define __cpp_lib_constexpr_dynamic_alloc 201907L
+#define __cpp_lib_constexpr_functional    201907L
+#define __cpp_lib_constexpr_iterator      201811L
+#define __cpp_lib_constexpr_numeric       201911L
+#define __cpp_lib_constexpr_string        201907L
+#define __cpp_lib_constexpr_string_view   201811L
+#define __cpp_lib_constexpr_tuple         201811L
+#define __cpp_lib_constexpr_utility       201811L
+#define __cpp_lib_constexpr_vector        201907L
+#define __cpp_lib_destroying_delete       201806L
+#define __cpp_lib_endian                  201907L
+#define __cpp_lib_erase_if                202002L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_format 202207L
