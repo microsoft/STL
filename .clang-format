@@ -260,6 +260,7 @@ StatementMacros:
   - _END_EXTERN_C
   - _EXTERN_C_UNLESS_PURE
   - _END_EXTERN_C_UNLESS_PURE
+  - _NODISCARD_TRY_CHANGE_STATE
   # SAL
   - _When_
   # Concurrency SAL
