@@ -4167,7 +4167,6 @@ namespace ranges {
                     } else {
                         _STL_INTERNAL_CHECK(_Inner_it._Contains == _Variantish_state::_Holds_second);
 
-                        auto&& _Inner = _Get_inner();
                         if (_Inner_it._Get_second() != _RANGES end(_Get_inner())) {
                             break;
                         }
