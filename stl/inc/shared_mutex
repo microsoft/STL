@@ -122,8 +122,7 @@ public:
     _NODISCARD_TRY_CHANGE_STATE
     _When_(return != false, _Acquires_shared_lock_(this))
     _When_(return != false, _Acquires_nonreentrant_lock_(this))
-    bool try_lock_for(
-        const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
+    bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
@@ -232,8 +231,7 @@ public:
     _NODISCARD_TRY_CHANGE_STATE
     _When_(return != false, _Acquires_shared_lock_(this))
     _When_(return != false, _Acquires_nonreentrant_lock_(this))
-    bool try_lock_shared_until(
-        const xtime* _Abs_time) { // try to lock non-exclusive until absolute time
+    bool try_lock_shared_until(const xtime* _Abs_time) { // try to lock non-exclusive until absolute time
         return _Try_lock_shared_until(_Abs_time);
     }
 
@@ -350,7 +348,7 @@ public:
         return _Owns;
     }
 
-    template<class _Rep, class _Period>
+    template <class _Rep, class _Period>
     _NODISCARD_TRY_CHANGE_STATE
     _When_(return != false, _Acquires_shared_lock_(this))
     _When_(return != false, _Acquires_nonreentrant_lock_(this))
