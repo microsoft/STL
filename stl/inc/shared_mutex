@@ -91,7 +91,7 @@ public:
     shared_timed_mutex(const shared_timed_mutex&)            = delete;
     shared_timed_mutex& operator=(const shared_timed_mutex&) = delete;
 
-    _Acquires_shared_lock_(this)
+    _Acquires_exclusive_lock_(this)
     _Acquires_nonreentrant_lock_(this)
     void lock() { // lock exclusive
         unique_lock<mutex> _Lock(_Mymtx);
@@ -106,7 +106,7 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE
-    _When_(return != false, _Acquires_shared_lock_(this))
+    _When_(return != false, _Acquires_exclusive_lock_(this))
     _When_(return != false, _Acquires_nonreentrant_lock_(this))
     bool try_lock() { // try to lock exclusive
         lock_guard<mutex> _Lock(_Mymtx);
@@ -120,7 +120,7 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD_TRY_CHANGE_STATE
-    _When_(return != false, _Acquires_shared_lock_(this))
+    _When_(return != false, _Acquires_exclusive_lock_(this))
     _When_(return != false, _Acquires_nonreentrant_lock_(this))
     bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
         return try_lock_until(_To_absolute_time(_Rel_time));
@@ -128,7 +128,7 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD_TRY_CHANGE_STATE
-    _When_(return != false, _Acquires_shared_lock_(this))
+    _When_(return != false, _Acquires_exclusive_lock_(this))
     _When_(return != false, _Acquires_nonreentrant_lock_(this))
     bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // try to lock until time point
@@ -155,7 +155,7 @@ public:
         return true;
     }
 
-    _Releases_shared_lock_(this)
+    _Releases_exclusive_lock_(this)
     _Releases_nonreentrant_lock_(this)
     void unlock() { // unlock exclusive
         { // unlock before notifying, for efficiency
@@ -273,6 +273,8 @@ public:
     _NODISCARD_CTOR_LOCK
     _Acquires_shared_lock_(_Mtx)
     _Acquires_nonreentrant_lock_(_Mtx)
+    _Acquires_shared_lock_(*this->_Pmtx)
+    _Acquires_nonreentrant_lock_(*this->_Pmtx)
     explicit shared_lock(mutex_type& _Mtx)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) { // construct with mutex and lock shared
         _Mtx.lock_shared();
@@ -282,23 +284,23 @@ public:
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) {} // construct with unlocked mutex
 
     _NODISCARD_CTOR_LOCK
-     shared_lock(mutex_type& _Mtx, try_to_lock_t)
+    shared_lock(mutex_type& _Mtx, try_to_lock_t)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared()) {} // construct with mutex and try to lock shared
 
     _NODISCARD_CTOR_LOCK
-     shared_lock(mutex_type& _Mtx, adopt_lock_t) noexcept // strengthened
+    shared_lock(mutex_type& _Mtx, adopt_lock_t) noexcept // strengthened
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) {} // construct with mutex and adopt ownership
 
     template <class _Rep, class _Period>
     _NODISCARD_CTOR_LOCK
-     shared_lock(mutex_type& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
+    shared_lock(mutex_type& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_for(_Rel_time)) {
         // construct with mutex and try to lock for relative time
     }
 
     template <class _Clock, class _Duration>
     _NODISCARD_CTOR_LOCK
-     shared_lock(mutex_type& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
+    shared_lock(mutex_type& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_until(_Abs_time)) {
         // construct with mutex and try to lock until absolute time
 #if _HAS_CXX20
@@ -306,8 +308,8 @@ public:
 #endif // _HAS_CXX20
     }
 
-    _Releases_shared_lock_(this)
-    _Releases_nonreentrant_lock_(this)
+    _Releases_shared_lock_(*this->_Pmtx)
+    _Releases_nonreentrant_lock_(*this->_Pmtx)
     ~shared_lock() noexcept {
         if (_Owns) {
             _Pmtx->unlock_shared();
@@ -315,13 +317,13 @@ public:
     }
 
     _NODISCARD_CTOR_LOCK
-     shared_lock(shared_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
+    shared_lock(shared_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
         _Other._Pmtx = nullptr;
         _Other._Owns = false;
     }
 
-    _Releases_shared_lock_(this)
-    _Releases_nonreentrant_lock_(this)
+    _Releases_shared_lock_(*this->_Pmtx)
+    _Releases_nonreentrant_lock_(*this->_Pmtx)
     shared_lock& operator=(shared_lock&& _Right) noexcept {
         if (_Owns) {
             _Pmtx->unlock_shared();
@@ -337,8 +339,8 @@ public:
     shared_lock(const shared_lock&)            = delete;
     shared_lock& operator=(const shared_lock&) = delete;
 
-    _Acquires_shared_lock_(this)
-    _Acquires_nonreentrant_lock_(this)
+    _Acquires_shared_lock_(*this->_Pmtx)
+    _Acquires_nonreentrant_lock_(*this->_Pmtx)
     void lock() { // lock the mutex
         _Validate();
         _Pmtx->lock_shared();
@@ -346,8 +348,8 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE
-    _When_(return != false, _Acquires_shared_lock_(this))
-    _When_(return != false, _Acquires_nonreentrant_lock_(this))
+    _When_(return != false, _Acquires_shared_lock_(*this->_Pmtx))
+    _When_(return != false, _Acquires_nonreentrant_lock_(*this->_Pmtx))
     bool try_lock() { // try to lock the mutex
         _Validate();
         _Owns = _Pmtx->try_lock_shared();
@@ -356,8 +358,8 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD_TRY_CHANGE_STATE
-    _When_(return != false, _Acquires_shared_lock_(this))
-    _When_(return != false, _Acquires_nonreentrant_lock_(this))
+    _When_(return != false, _Acquires_shared_lock_(*this->_Pmtx))
+    _When_(return != false, _Acquires_nonreentrant_lock_(*this->_Pmtx))
     bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         // try to lock the mutex for _Rel_time
         _Validate();
@@ -367,8 +369,8 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD_TRY_CHANGE_STATE
-    _When_(return != false, _Acquires_shared_lock_(this))
-    _When_(return != false, _Acquires_nonreentrant_lock_(this))
+    _When_(return != false, _Acquires_shared_lock_(*this->_Pmtx))
+    _When_(return != false, _Acquires_nonreentrant_lock_(*this->_Pmtx))
     bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // try to lock the mutex until _Abs_time
 #if _HAS_CXX20
@@ -379,8 +381,8 @@ public:
         return _Owns;
     }
 
-    _Releases_shared_lock_(this)
-    _Releases_nonreentrant_lock_(this)
+    _Releases_shared_lock_(*this->_Pmtx)
+    _Releases_nonreentrant_lock_(*this->_Pmtx)
     void unlock() { // try to unlock the mutex
         if (!_Pmtx || !_Owns) {
             _Throw_system_error(errc::operation_not_permitted);
