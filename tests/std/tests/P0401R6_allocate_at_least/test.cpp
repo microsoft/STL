@@ -66,11 +66,11 @@ struct huge_allocator {
     using size_type  = uint64_t;
 
     [[nodiscard]] constexpr int* allocate(const size_type count) {
-        return allocator<int>{}.allocate(count);
+        return allocator<int>{}.allocate(static_cast<size_t>(count));
     }
 
     constexpr void deallocate(int* ptr, const size_type count) {
-        allocator<int>{}.deallocate(ptr, count);
+        allocator<int>{}.deallocate(ptr, static_cast<size_t>(count));
     }
 };
 
