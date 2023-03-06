@@ -460,6 +460,15 @@ template <class _Ty>
 struct _Is_default_allocator<allocator<_Ty>, void_t<typename allocator<_Ty>::_From_primary>>
     : is_same<typename allocator<_Ty>::_From_primary, allocator<_Ty>>::type {};
 
+#if _HAS_CXX23
+template <class _Alloc, class _SizeTy, class = void>
+inline constexpr bool _Has_member_allocate_at_least = false;
+
+template <class _Alloc, class _SizeTy>
+inline constexpr bool _Has_member_allocate_at_least<_Alloc, _SizeTy,
+    void_t<decltype(_STD declval<_Alloc&>().allocate_at_least(_STD declval<_SizeTy&>()))>> = true;
+#endif // _HAS_CXX23
+
 template <class _Void, class... _Types>
 struct _Has_no_allocator_construct : true_type {};
 
@@ -511,6 +520,14 @@ template <class _Alloc>
 struct _Has_select_on_container_copy_construction<_Alloc,
     void_t<decltype(_STD declval<const _Alloc&>().select_on_container_copy_construction())>> : true_type {};
 
+#if _HAS_CXX23
+_EXPORT_STD template <class _Ptr, class _SizeTy = size_t>
+struct allocation_result {
+    _Ptr ptr;
+    _SizeTy count;
+};
+#endif // _HAS_CXX23
+
 _EXPORT_STD template <class _Alloc>
 struct allocator_traits;
 
@@ -552,6 +569,17 @@ struct _Normal_allocator_traits { // defines traits for allocators
             return _Al.allocate(_Count);
         }
     }
+
+#if _HAS_CXX23
+    _NODISCARD_RAW_PTR_ALLOC constexpr static allocation_result<pointer, size_type> allocate_at_least(
+        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
+        if constexpr (_Has_member_allocate_at_least<_Alloc, size_type>) {
+            return _Al.allocate_at_least(_Count);
+        } else {
+            return {_Al.allocate(_Count), _Count};
+        }
+    }
+#endif // _HAS_CXX23
 
     static _CONSTEXPR20 void deallocate(_Alloc& _Al, pointer _Ptr, size_type _Count) {
         _Al.deallocate(_Ptr, _Count);
@@ -653,6 +681,13 @@ struct _Default_allocator_traits { // traits for std::allocator
         }
     }
 
+#if _HAS_CXX23
+    _NODISCARD_RAW_PTR_ALLOC constexpr static allocation_result<pointer, size_type> allocate_at_least(
+        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
+        return _Al.allocate_at_least(_Count);
+    }
+#endif // _HAS_CXX23
+
     static _CONSTEXPR20 void deallocate(_Alloc& _Al, const pointer _Ptr, const size_type _Count) {
         // no overflow check on the following multiply; we assume _Allocate did that check
 #if _HAS_CXX20 // TRANSITION, GH-1532
@@ -746,29 +781,6 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
     using pointer         = value_type*;
     using const_pointer   = const value_type*;
 };
-
-#if _HAS_CXX23
-_EXPORT_STD template <class _Ptr>
-struct allocation_result {
-    _Ptr ptr;
-    size_t count;
-};
-
-#ifdef __cpp_lib_concepts
-template <class _Alloc>
-concept _Has_member_allocate_at_least = requires(_Alloc _Al, size_t _Count) { _Al.allocate_at_least(_Count); };
-
-_EXPORT_STD template <class _Alloc>
-_NODISCARD constexpr allocation_result<typename allocator_traits<_Alloc>::pointer> allocate_at_least(
-    _Alloc& _Al, const size_t _Count) {
-    if constexpr (_Has_member_allocate_at_least<_Alloc>) {
-        return _Al.allocate_at_least(_Count);
-    } else {
-        return {_Al.allocate(_Count), _Count};
-    }
-}
-#endif // __cpp_lib_concepts
-#endif // _HAS_CXX23
 
 // The number of user bytes a single byte of ASAN shadow memory can track.
 _INLINE_VAR constexpr size_t _Asan_granularity      = 8;
