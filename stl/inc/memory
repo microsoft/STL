@@ -3261,10 +3261,8 @@ public:
 
     template <class _Dx2 = _Dx, enable_if_t<is_move_assignable_v<_Dx2>, int> = 0>
     _CONSTEXPR23 unique_ptr& operator=(unique_ptr&& _Right) noexcept {
-        if (this != _STD addressof(_Right)) {
-            reset(_Right.release());
-            _Mypair._Get_first() = _STD forward<_Dx>(_Right._Mypair._Get_first());
-        }
+        reset(_Right.release());
+        _Mypair._Get_first() = _STD forward<_Dx>(_Right._Mypair._Get_first());
         return *this;
     }
 
