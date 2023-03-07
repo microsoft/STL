@@ -388,7 +388,7 @@ public:
             _Throw_system_error(errc::operation_not_permitted);
         }
 
-        _Pmtx->unlock_shared();
+        _Pragma("warning(suppress: 26110)") _Pmtx->unlock_shared();
         _Owns = false;
     }
 
