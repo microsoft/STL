@@ -135,6 +135,8 @@ protected:
     }
 };
 
+class bad_array_new_length;
+
 class bad_alloc : public exception { // base of all bad allocation exceptions
 public:
     __CLR_OR_THIS_CALL bad_alloc() noexcept
@@ -143,7 +145,7 @@ public:
     __CLR_OR_THIS_CALL ~bad_alloc() noexcept override {}
 
 private:
-    friend class bad_array_new_length;
+    friend bad_array_new_length;
 
     __CLR_OR_THIS_CALL bad_alloc(const char* _Message) noexcept
         : exception(_Message, 1) {} // construct from message string with no memory allocation

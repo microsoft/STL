@@ -628,7 +628,7 @@ public:
     }
 
     void swap(sub_match& _Other) noexcept(_Is_nothrow_swappable<_BidIt>::value) {
-        this->_Mybase::swap(_Other);
+        _Mybase::swap(_Other);
         _STD swap(matched, _Other.matched);
     }
 

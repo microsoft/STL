@@ -1665,7 +1665,6 @@ namespace filesystem {
             return _Result;
         }
 
-
         const iterator _This_end   = _This.end();
         const iterator _Base_begin = _Base.begin();
         const iterator _Base_end   = _Base.end();
@@ -2081,6 +2080,9 @@ namespace filesystem {
     using file_time_type = _CHRONO time_point<filesystem::_File_time_clock>;
 #endif // ^^^ !_HAS_CXX20
 
+    struct _Dir_enum_impl;
+    struct _Recursive_dir_enum_impl;
+
     _EXPORT_STD class directory_entry {
     public:
         // [fs.dir.entry.cons], constructors and destructor
@@ -2473,8 +2475,8 @@ namespace filesystem {
             return _Error;
         }
 
-        friend struct _Dir_enum_impl;
-        friend struct _Recursive_dir_enum_impl;
+        friend _Dir_enum_impl;
+        friend _Recursive_dir_enum_impl;
         friend void _Copy_impl(
             const directory_entry& _From, const _STD filesystem::path& _To, copy_options _Options, error_code& _Ec);
 

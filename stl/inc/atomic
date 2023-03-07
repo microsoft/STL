@@ -2088,7 +2088,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 };
 
-
 template <class _Ty>
 struct _Atomic_pointer<_Ty&> : _Atomic_storage<_Ty&> {
     using _Base           = _Atomic_storage<_Ty&>;
@@ -2142,7 +2141,6 @@ struct _Atomic_pointer<_Ty&> : _Atomic_storage<_Ty&> {
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff))) - _Diff;
     }
 };
-
 
 #define ATOMIC_VAR_INIT(_Value) \
     { _Value }
@@ -2884,7 +2882,6 @@ _EXPORT_STD struct atomic_flag { // flag with test-and-set semantics
     atomic<bool> _Storage;
 #endif // TRANSITION, ABI
 };
-
 
 #if _HAS_CXX20
 _EXPORT_STD _NODISCARD inline bool atomic_flag_test(const volatile atomic_flag* const _Flag) noexcept {
