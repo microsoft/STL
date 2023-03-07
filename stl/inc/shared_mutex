@@ -40,6 +40,7 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE
+    _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_exclusive_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock() noexcept /* strengthened */ { // try to lock exclusive
@@ -59,6 +60,7 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE
+    _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_shared_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock_shared() noexcept /* strengthened */ { // try to lock non-exclusive
@@ -106,6 +108,7 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE
+    _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_exclusive_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock() { // try to lock exclusive
@@ -120,6 +123,7 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD_TRY_CHANGE_STATE
+    _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_exclusive_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
@@ -128,6 +132,7 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD_TRY_CHANGE_STATE
+    _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_exclusive_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
@@ -179,6 +184,7 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE
+    _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_shared_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock_shared() { // try to lock non-exclusive
@@ -193,6 +199,7 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD_TRY_CHANGE_STATE
+    _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_shared_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock_shared_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
@@ -218,6 +225,7 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD_TRY_CHANGE_STATE
+    _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_shared_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock_shared_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
@@ -229,6 +237,7 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE
+    _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_shared_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock_shared_until(const xtime* _Abs_time) { // try to lock non-exclusive until absolute time
@@ -377,6 +386,7 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE
+    _Requires_lock_not_held_(*this->_Pmtx)
     _Pre_satisfies_(_Owns == true)
     _Pre_satisfies_(_Pmtx != nullptr)
     _When_(_Owns == false, _Analysis_noreturn_)
@@ -391,6 +401,7 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD_TRY_CHANGE_STATE
+    _Requires_lock_not_held_(*this->_Pmtx)
     _Pre_satisfies_(_Owns == true)
     _Pre_satisfies_(_Pmtx != nullptr)
     _When_(_Owns == false, _Analysis_noreturn_)
@@ -406,6 +417,7 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD_TRY_CHANGE_STATE
+    _Requires_lock_not_held_(*this->_Pmtx)
     _Pre_satisfies_(_Owns == true)
     _Pre_satisfies_(_Pmtx != nullptr)
     _When_(_Owns == false, _Analysis_noreturn_)
@@ -456,18 +468,23 @@ public:
         return _Res;
     }
 
-    _Post_satisfies_(_Owns)
-    _NODISCARD bool owns_lock() const noexcept {
+    _NODISCARD
+    _When_(_Owns == true, _Post_satisfies_(return == true))
+    _When_(_Owns == false, _Post_satisfies_(return == false))
+    bool owns_lock() const noexcept {
         return _Owns;
     }
 
-    _Post_satisfies_(_Owns)
+    _When_(_Owns == true, _Post_satisfies_(return == true))
+    _When_(_Owns == false, _Post_satisfies_(return == false))
     explicit operator bool() const noexcept {
         return _Owns;
     }
 
-    _Post_satisfies_(_Pmtx)
-    _NODISCARD mutex_type* mutex() const noexcept {
+    _NODISCARD
+    _When_(_Pmtx != nullptr, _Post_satisfies_(return != nullptr))
+    _When_(_Pmtx == nullptr, _Post_satisfies_(return == nullptr))
+    mutex_type* mutex() const noexcept {
         return _Pmtx;
     }
 
