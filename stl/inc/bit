@@ -160,7 +160,7 @@ _NODISCARD constexpr _Ty rotl(const _Ty _Val, const int _Rotation) noexcept {
     }
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
+_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> /* = 0 */>
 _NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
     constexpr auto _Digits = numeric_limits<_Ty>::digits;
 
@@ -304,7 +304,7 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
 }
 #endif // defined(_M_ARM) || defined(_M_ARM64)
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
+_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> /* = 0 */>
 _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
 #if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
     if (!_STD is_constant_evaluated()) {
@@ -329,7 +329,7 @@ _NODISCARD constexpr int countr_zero(const _Ty _Val) noexcept {
     return _Countr_zero(_Val);
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
+_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int countr_one(const _Ty _Val) noexcept {
     return _Countr_zero(static_cast<_Ty>(~_Val));
 }
