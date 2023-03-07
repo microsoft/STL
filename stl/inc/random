@@ -1197,7 +1197,8 @@ public:
     }
 
 protected:
-    _Post_satisfies_(this->_Idx == 0) void _Refill_lower() {
+    _Post_satisfies_(this->_Idx == 0)
+    void _Refill_lower() {
         // compute values for the lower half of the history array
         constexpr size_t _Wrap_bound_one = _Nx - _One_mod_n;
         constexpr size_t _Wrap_bound_m   = _Nx - _M_mod_n;
