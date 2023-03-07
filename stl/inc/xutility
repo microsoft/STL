@@ -375,7 +375,7 @@ struct _Ref_fn { // pass function object by value as a reference
 };
 
 template <class _Fn>
-constexpr auto _Pass_fn(_Fn& _Func) noexcept {
+_NODISCARD constexpr auto _Pass_fn(_Fn& _Func) noexcept {
     constexpr bool _Pass_by_value = conjunction_v<bool_constant<sizeof(_Fn) <= sizeof(void*)>,
         is_trivially_copy_constructible<_Fn>, is_trivially_destructible<_Fn>>;
     if constexpr (_Pass_by_value) {

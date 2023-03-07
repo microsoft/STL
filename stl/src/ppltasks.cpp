@@ -39,7 +39,9 @@ namespace Concurrency {
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_CRT_APP)
             if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
 #endif
+            {
                 __fastfail(FAST_FAIL_INVALID_ARG);
+            }
 
             std::terminate();
         }

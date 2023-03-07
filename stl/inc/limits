@@ -11,9 +11,10 @@
 #include <cfloat>
 #include <climits>
 #include <cwchar>
-#include _STL_INTRIN_HEADER
 #include <isa_availability.h>
 #include <xstddef>
+
+#include _STL_INTRIN_HEADER
 
 // TRANSITION, GH-2129, move down to _Arm64_popcount
 #if (defined(_M_ARM64) || defined(_M_ARM64EC)) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
