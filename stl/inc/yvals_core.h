@@ -335,7 +335,6 @@
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
-//     (missing views::adjacent_transform)
 // P2322R6 ranges::fold_left, ranges::fold_right, Etc.
 // P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2404R3 Move-Only Types For Comparison Concepts
