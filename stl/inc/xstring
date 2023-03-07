@@ -69,9 +69,9 @@ struct _Char_traits { // properties of a string or stream element
         return _First1;
     }
 
-    _Pre_satisfies_(_Dest_size >= _Count) static _CONSTEXPR20 _Elem* _Copy_s(_Out_writes_all_(_Dest_size)
-                                                                                 _Elem* const _First1,
-        const size_t _Dest_size, _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept {
+    _Pre_satisfies_(_Dest_size >= _Count)
+    static _CONSTEXPR20 _Elem* _Copy_s(_Out_writes_all_(_Dest_size) _Elem* const _First1, const size_t _Dest_size,
+        _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept {
         // copy [_First2, _First2 + _Count) to [_First1, _First1 + _Dest_size)
         _STL_VERIFY(_Count <= _Dest_size, "invalid argument");
         return copy(_First1, _First2, _Count);
@@ -1395,9 +1395,9 @@ public:
         return _Count;
     }
 
-    _Pre_satisfies_(_Dest_size >= _Count) _CONSTEXPR20 size_type
-        _Copy_s(_Out_writes_all_(_Dest_size) _Elem* const _Dest, const size_type _Dest_size, size_type _Count,
-            const size_type _Off = 0) const {
+    _Pre_satisfies_(_Dest_size >= _Count)
+    _CONSTEXPR20 size_type _Copy_s(_Out_writes_all_(_Dest_size) _Elem* const _Dest, const size_type _Dest_size,
+        size_type _Count, const size_type _Off = 0) const {
         // copy [_Off, _Off + _Count) to [_Dest, _Dest + _Count)
         _Check_offset(_Off);
         _Count = _Clamp_suffix_size(_Off, _Count);
@@ -4275,9 +4275,9 @@ public:
         return _Count;
     }
 
-    _CONSTEXPR20 _Pre_satisfies_(_Dest_size >= _Count) size_type
-        _Copy_s(_Out_writes_all_(_Dest_size) _Elem* const _Dest, const size_type _Dest_size, size_type _Count,
-            const size_type _Off = 0) const {
+    _CONSTEXPR20 _Pre_satisfies_(_Dest_size >= _Count)
+    size_type _Copy_s(_Out_writes_all_(_Dest_size) _Elem* const _Dest, const size_type _Dest_size, size_type _Count,
+        const size_type _Off = 0) const {
         // copy [_Off, _Off + _Count) to [_Dest, _Dest + _Dest_size)
         _Mypair._Myval2._Check_offset(_Off);
         _Count = _Mypair._Myval2._Clamp_suffix_size(_Off, _Count);
