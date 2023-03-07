@@ -3131,7 +3131,6 @@ namespace chrono {
             return (_Bits & ~_Optional) == _Must_set;
         }
 
-
         template <class _Ty>
         static constexpr _Ty _Invalid_time_field{numeric_limits<_Ty>::lowest()};
 
@@ -4692,7 +4691,6 @@ _NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const
 }
 
 #define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
-
 
 // clang-format off
 template <class _Ty, class _CharT>

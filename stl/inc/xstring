@@ -1715,7 +1715,6 @@ _NODISCARD constexpr bool operator!=(
     return !_Lhs._Equal(_Rhs);
 }
 
-
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator<(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1733,7 +1732,6 @@ _NODISCARD constexpr bool operator<(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) < 0;
 }
-
 
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator>(
@@ -1753,7 +1751,6 @@ _NODISCARD constexpr bool operator>(
     return _Lhs.compare(_Rhs) > 0;
 }
 
-
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator<=(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1771,7 +1768,6 @@ _NODISCARD constexpr bool operator<=(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) <= 0;
 }
-
 
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator>=(
@@ -1830,7 +1826,6 @@ _EXPORT_STD using u16string_view = basic_string_view<char16_t>;
 _EXPORT_STD using u32string_view = basic_string_view<char32_t>;
 _EXPORT_STD using wstring_view   = basic_string_view<wchar_t>;
 
-
 template <class _Elem>
 struct hash<basic_string_view<_Elem>> : _Conditionally_enabled_hash<basic_string_view<_Elem>, _Is_EcharT<_Elem>> {
     _NODISCARD static size_t _Do_hash(const basic_string_view<_Elem> _Keyval) noexcept {
@@ -1843,7 +1838,6 @@ basic_ostream<_Elem, _Traits>& operator<<(
     basic_ostream<_Elem, _Traits>& _Ostr, const basic_string_view<_Elem, _Traits> _Str) {
     return _Insert_string(_Ostr, _Str.data(), _Str.size());
 }
-
 
 inline namespace literals {
     inline namespace string_view_literals {
@@ -3079,7 +3073,6 @@ private:
 
         _My_data._Myres  = _Right_data._Myres;
         _My_data._Mysize = _Right_data._Mysize;
-
 
         _Right._Tidy_init();
     }

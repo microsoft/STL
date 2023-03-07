@@ -58,7 +58,6 @@ namespace {
         SRWLOCK* _Locked;
     };
 
-
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
     struct alignas(_STD hardware_destructive_interference_size) _Wait_table_entry {
@@ -106,7 +105,6 @@ namespace {
 #define __crtWakeByAddressAll    WakeByAddressAll
 
 #else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE / !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
-
 
     struct _Wait_functions_table {
         _STD atomic<decltype(&::WaitOnAddress)> _Pfn_WaitOnAddress{nullptr};
@@ -220,7 +218,6 @@ namespace {
         }
     }
 } // unnamed namespace
-
 
 _EXTERN_C
 int __stdcall __std_atomic_wait_direct(const void* const _Storage, void* const _Comparand, const size_t _Size,

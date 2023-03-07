@@ -204,7 +204,6 @@ _EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(char* const _First, char* cons
 
 _EXPORT_STD to_chars_result to_chars(char* _First, char* _Last, bool _Value, int _Base = 10) = delete;
 
-
 _EXPORT_STD struct from_chars_result {
     const char* ptr;
     errc ec;
@@ -932,7 +931,6 @@ _NODISCARD inline uint64_t _Divide(_Big_integer_flt& _Numerator, const _Big_inte
 }
 
 // ^^^^^^^^^^ DERIVED FROM corecrt_internal_big_integer.h ^^^^^^^^^^
-
 
 // vvvvvvvvvv DERIVED FROM corecrt_internal_strtox.h vvvvvvvvvv
 
@@ -2274,7 +2272,6 @@ _NODISCARD to_chars_result _Floating_to_chars_hex_shortest(
     // We've already printed '-' if necessary, so static_cast<uint32_t> avoids testing that again.
     return _STD to_chars(_First, _Last, static_cast<uint32_t>(_Unbiased_exponent));
 }
-
 
 template <class _Floating>
 _NODISCARD inline to_chars_result _Floating_to_chars_general_precision(

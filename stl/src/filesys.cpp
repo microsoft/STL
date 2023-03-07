@@ -101,7 +101,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _To_byte(const wchar_t* _Wsrc, char* _Bdest)
     return WideCharToMultiByte(_Filesys_code_page(), 0, _Wsrc, -1, _Bdest, _MAX_FILESYS_NAME, nullptr, nullptr);
 }
 
-
 _FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(
     wchar_t (&_Dest)[_MAX_FILESYS_NAME], const wchar_t* _Dirname, int& _Errno, file_type& _Ftype) {
     // open a directory for reading
@@ -139,7 +138,6 @@ _FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(
     return _Handle;
 }
 
-
 _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME]) {
     // get current working directory
     _Strcpy(_Dest, L"");
@@ -171,7 +169,6 @@ _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Temp_get(wchar_t (&_Dest)[_MAX_FILESYS
     wchar_t _Dentry[MAX_PATH];
     return _Strcpy(_Dest, __crtGetTempPath2W(MAX_PATH, _Dentry) != 0 ? _Dentry : L".");
 }
-
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Make_dir(const wchar_t* _Fname, const wchar_t*) {
     // make a new directory (ignore attributes)
@@ -218,7 +215,6 @@ _FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Stat(const wchar_t* _Fname, perms* _P
     }
 }
 
-
 _FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Lstat(const wchar_t* _Fname, perms* _Pmode) {
     // get symlink file status
     return _Stat(_Fname, _Pmode); // symlink not supported
@@ -249,7 +245,6 @@ _FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _Hard_links(const wchar_t* _Fname) {
 #endif // _CRT_APP
 }
 
-
 _FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fname) { // get file size
     WIN32_FILE_ATTRIBUTE_DATA _Data;
 
@@ -260,7 +255,6 @@ _FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fname) { //
     }
 }
 
-
 // 3 centuries with 24 leap years each:
 // 1600 is excluded, 1700/1800 are not leap years
 // 1 partial century with 17 leap years:
@@ -269,10 +263,8 @@ _FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fname) { //
 // 1908 is leap year number 2
 // 1968 is leap year number 17
 
-
 constexpr uint64_t _Win_ticks_per_second = 10000000ULL;
 constexpr uint64_t _Win_ticks_from_epoch = ((1970 - 1601) * 365 + 3 * 24 + 17) * 86400ULL * _Win_ticks_per_second;
-
 
 _FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t* _Fname) { // get last write time
     WIN32_FILE_ATTRIBUTE_DATA _Data;
@@ -286,7 +278,6 @@ _FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t* _Fname) 
         static_cast<uint64_t>(_Data.ftLastWriteTime.dwHighDateTime) << 32 | _Data.ftLastWriteTime.dwLowDateTime;
     return static_cast<int64_t>(_Wtime - _Win_ticks_from_epoch);
 }
-
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Set_last_write_time(const wchar_t* _Fname, int64_t _When) {
     // set last write time
@@ -305,7 +296,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Set_last_write_time(const wchar_t* _Fname, 
     CloseHandle(_Handle);
     return _Result;
 }
-
 
 _FS_DLL space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t* _Fname) {
     // get space information for volume
@@ -327,7 +317,6 @@ _FS_DLL space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t* _Fname) {
     }
     return _Ans;
 }
-
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
     const wchar_t* _Fname1, const wchar_t* _Fname2) { // test for equivalent file names
@@ -387,7 +376,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
 #endif // _CRT_APP
 }
 
-
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t* _Fname2) {
     // link _Fname2 to _Fname1
 #ifdef _CRT_APP
@@ -432,7 +420,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t* _Fname, uintmax_t _Ne
     return _Ok ? 0 : GetLastError();
 }
 
-
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t* _Fname) { // unlink _Fname
     return _wremove(_Fname) == 0 ? 0 : GetLastError();
 }
@@ -455,7 +442,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t* _Fname1, const wch
     return CopyFileW(_Fname1, _Fname2, 0) ? 0 : GetLastError();
 #endif // defined(_ONECORE)
 }
-
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t* _Fname, perms _Newmode) {
     // change file mode to _Newmode

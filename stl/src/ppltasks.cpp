@@ -86,7 +86,6 @@ namespace Concurrency {
         using namespace Microsoft::WRL;
         using namespace Microsoft::WRL::Wrappers;
 
-
         class AsyncCausalityTracer {
             IAsyncCausalityTracerStatics* m_causalityAPIs;
             std::once_flag m_stateFlag;

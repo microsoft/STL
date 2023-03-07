@@ -118,7 +118,6 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
     _Analysis_assume_(m > 0);
     _Analysis_assume_(m <= _MP_len - n);
 
-
     // Knuth, vol. 2, p. 272, Algorithm D
     // D1: [Normalize.]
     unsigned long long d = maxVal / (v[n - 1] + 1);

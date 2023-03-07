@@ -1592,8 +1592,7 @@ namespace ranges {
         _NODISCARD constexpr _Iterator begin() const noexcept /* strengthened */ {
             return _Iterator{_STD addressof(*_Value)};
         }
-        _NODISCARD constexpr auto end() const noexcept // strengthened
-        {
+        _NODISCARD constexpr auto end() const noexcept /* strengthened */ {
             if constexpr (same_as<_Bo, unreachable_sentinel_t>) {
                 return unreachable_sentinel;
             } else {
