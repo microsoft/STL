@@ -141,6 +141,15 @@ std/ranges/range.access/rbegin.pass.cpp FAIL
 std/ranges/range.access/rend.pass.cpp FAIL
 std/ranges/range.access/size.pass.cpp FAIL
 
+# libc++ doesn't implement P2770R0 "Stashing stashing iterators for proper flattening"
+std/ranges/range.adaptors/range.join.view/end.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.view/iterator/ctor.other.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.view/iterator/ctor.parent.outer.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.view/iterator/eq.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp FAIL
+std/re/re.iter/re.regiter/iterator_concept_conformance.compile.pass.cpp FAIL
+std/re/re.iter/re.tokiter/iterator_concept_conformance.compile.pass.cpp FAIL
+
 # libc++ doesn't implement LWG-3865 Sorting a range of pairs
 std/utilities/tuple/tuple.tuple/tuple.apply/make_from_tuple.pass.cpp FAIL
 
