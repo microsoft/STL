@@ -2149,7 +2149,6 @@ private:
     param_type _Par;
 };
 
-
 // Returns smallest _Flt such that static_cast<_Ty>(_Result) > _Val.
 // First truncate to largest _Flt <= _Val, then add ceil(ulp).
 
@@ -5063,7 +5062,6 @@ _EXPORT_STD using ranlux48      = discard_block_engine<ranlux48_base, 389, 11>;
 _EXPORT_STD using knuth_b       = shuffle_order_engine<minstd_rand0, 256>;
 
 _EXPORT_STD using default_random_engine = mt19937;
-
 
 extern "C++" _CRTIMP2_PURE unsigned int __CLRCALL_PURE_OR_CDECL _Random_device();
 

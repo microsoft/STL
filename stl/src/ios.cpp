@@ -20,7 +20,6 @@ _PGLOBAL _CRTDATA2_IMPORT const streamoff _BADOFF = -1; // initialize constant f
 __PURE_APPDOMAIN_GLOBAL int ios_base::_Index = 0; // initialize source of unique indexes
 __PURE_APPDOMAIN_GLOBAL bool ios_base::_Sync = true; // initialize synchronization flag
 
-
 __PURE_APPDOMAIN_GLOBAL static ios_base* stdstr[_Nstdstr + 2] = {
     nullptr}; // [1, _Nstdstr] hold pointers to standard streams
 __PURE_APPDOMAIN_GLOBAL static char stdopens[_Nstdstr + 2] = {0}; // [1, _Nstdstr] hold open counts for standard streams

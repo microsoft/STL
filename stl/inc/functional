@@ -2314,7 +2314,6 @@ private:
     _Compressed_pair<_Pred_eq, pair<_FwdItPat, _FwdItPat>> _Data;
 };
 
-
 template <class _RanItPat, class _Hash_ty, class _Pred_eq>
 struct _Boyer_moore_hash_delta_1_table { // stores the Boyer-Moore delta_1 table using a hash table
     using _Value_t = _Iter_value_t<_RanItPat>;
@@ -2349,7 +2348,6 @@ struct _Boyer_moore_hash_delta_1_table { // stores the Boyer-Moore delta_1 table
 private:
     unordered_map<_Value_t, _Diff, _Hash_ty, _Pred_eq> _Map;
 };
-
 
 template <class _RanItPat, _Iter_diff_t<_RanItPat> _Limit>
 struct _Boyer_moore_flat_delta_1_table { // stores the Boyer-Moore delta_1 table using a plain array lookup
@@ -2482,7 +2480,6 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
     }
 }
 
-
 template <class _Delta1_t, class _RanItHaystack>
 pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
     const _Delta1_t& _Delta1, typename _Delta1_t::_Diff* _Delta2, _RanItHaystack _First, _RanItHaystack _Last) {
@@ -2524,7 +2521,6 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
     return {_First, _Last};
 }
 
-
 template <class _Delta1_t, class _RanItHaystack>
 pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_horspool_search(
     const _Delta1_t& _Delta1, _RanItHaystack _First, _RanItHaystack _Last) {
@@ -2561,7 +2557,6 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_horspool_search(
     _Seek_wrapped(_First, _ULast);
     return {_First, _Last};
 }
-
 
 template <class _RanItPat, class _Hash_ty, class _Pred_eq, class _Delta1_t>
 struct _Single_delta1_type_boyer_moore_traits {
@@ -2768,7 +2763,6 @@ using _Boyer_moore_traits =
             _Boyer_moore_traits_wchar_t_mode<_RanItPat>>,
         _Boyer_moore_traits_general_mode<_RanItPat, _Hash_ty, _Pred_eq>>;
 
-
 _EXPORT_STD template <class _RanItPat, class _Hash_ty = hash<_Iter_value_t<_RanItPat>>, class _Pred_eq = equal_to<>>
 class boyer_moore_searcher {
 public:
@@ -2806,7 +2800,6 @@ private:
     using _Traits = _Boyer_moore_traits<_RanItPat, _Hash_ty, _Pred_eq>;
     void* _Data;
 };
-
 
 _EXPORT_STD template <class _RanItPat, class _Hash_ty = hash<_Iter_value_t<_RanItPat>>, class _Pred_eq = equal_to<>>
 class boyer_moore_horspool_searcher { // equivalent to Boyer-Moore without the second table

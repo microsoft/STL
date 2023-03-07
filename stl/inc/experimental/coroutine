@@ -190,7 +190,6 @@ namespace experimental {
         return !(_Left < _Right);
     }
 
-
     struct suspend_if {
         bool _Ready;
 
