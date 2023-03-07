@@ -354,6 +354,7 @@
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2505R5 Monadic Functions For expected
 // P2549R1 unexpected<E>::error()
+// P2652R2 Disallowing User Specialization Of allocator_traits
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
