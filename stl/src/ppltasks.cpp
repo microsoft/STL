@@ -131,7 +131,8 @@ namespace Concurrency {
                     this);
                 return m_isSupported;
             }
-        } asyncCausalityTracer;
+        };
+        AsyncCausalityTracer asyncCausalityTracer;
 
         // GUID used for identifying causality logs from PPLTask
         const GUID PPLTaskCausalityPlatformID = {

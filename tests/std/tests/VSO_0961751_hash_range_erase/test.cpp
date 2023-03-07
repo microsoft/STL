@@ -57,7 +57,8 @@ struct erase_fixture {
         ~liveness_empty_asserter() {
             assert(liveness_alive_objects == 0);
         }
-    } instance_empty; // destroyed after theHash
+    };
+    liveness_empty_asserter instance_empty; // destroyed after theHash
 
     using container = unordered_set<int, hash<int>, equal_to<>, liveness_allocator<int>>;
     using iterator  = container::iterator;
@@ -72,7 +73,8 @@ struct erase_fixture {
                    == (_ITERATOR_DEBUG_LEVEL != 0) * 2 + 1 + theHash.size() + theHash.bucket_count() * 2);
             theHash._Stl_internal_check_container_invariants();
         }
-    } instance_nonempty; // destroyed before theHash
+    };
+    post_asserter instance_nonempty; // destroyed before theHash
 
     void assert_iterators_consistent(const vector<iterator>& iterators) {
         assert(theHash.size() == iterators.size() - 1);
@@ -293,7 +295,8 @@ struct erase_bucket_consistency_fixture {
         ~liveness_empty_asserter() {
             assert(liveness_alive_objects == 0);
         }
-    } instance_empty; // destroyed after theHash
+    };
+    liveness_empty_asserter instance_empty; // destroyed after theHash
 
     using container = unordered_set<elem, hash<elem>, equal_to<>, liveness_allocator<elem>>;
     container theHash;
@@ -308,7 +311,8 @@ struct erase_bucket_consistency_fixture {
             assert(distance(theHash.begin(), theHash.end()) == static_cast<ptrdiff_t>(theHash.size()));
             theHash._Stl_internal_check_container_invariants();
         }
-    } instance_nonempty; // destroyed before theHash
+    };
+    post_asserter instance_nonempty; // destroyed before theHash
 
     size_t zeroBucket;
     size_t midBucket;
