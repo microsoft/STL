@@ -5273,6 +5273,11 @@ namespace pmr {
 #endif // _HAS_CXX17
 _STD_END
 
+#undef _ASAN_STRING_REMOVE
+#undef _ASAN_STRING_CREATE
+#undef _ASAN_STRING_MODIFY
+#undef _INSERT_STRING_ANNOTATION
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
