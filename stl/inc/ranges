@@ -1592,8 +1592,7 @@ namespace ranges {
         _NODISCARD constexpr _Iterator begin() const noexcept /* strengthened */ {
             return _Iterator{_STD addressof(*_Value)};
         }
-        _NODISCARD constexpr auto end() const noexcept // strengthened
-        {
+        _NODISCARD constexpr auto end() const noexcept /* strengthened */ {
             if constexpr (same_as<_Bo, unreachable_sentinel_t>) {
                 return unreachable_sentinel;
             } else {
@@ -2332,9 +2331,6 @@ namespace ranges {
         /* [[no_unique_address]] */ _Movable_box<_Fn> _Fun{};
 
         template <bool _Const>
-        class _Sentinel;
-
-        template <bool _Const>
         struct _Category_base {};
 
         template <bool _Const>
@@ -2351,10 +2347,7 @@ namespace ranges {
         template <bool _Const>
         class _Iterator : public _Category_base<_Const> {
         private:
-            template <bool>
-            friend class _Iterator;
-            template <bool>
-            friend class _Sentinel;
+            friend transform_view;
 
             using _Parent_t = _Maybe_const<_Const, transform_view>;
             using _Base     = _Maybe_const<_Const, _Vw>;
@@ -2604,8 +2597,7 @@ namespace ranges {
         template <bool _Const>
         class _Sentinel {
         private:
-            template <bool>
-            friend class _Sentinel;
+            friend transform_view;
 
             using _Parent_t = _Maybe_const<_Const, transform_view>;
             using _Base     = _Maybe_const<_Const, _Vw>;
@@ -2777,8 +2769,7 @@ namespace ranges {
         template <bool _Const, bool _Wrapped = true>
         class _Sentinel {
         private:
-            template <bool, bool>
-            friend class _Sentinel;
+            friend take_view;
 
             using _Base_t        = _Maybe_const<_Const, _Vw>;
             using _Base_sentinel = _Maybe_wrapped<_Wrapped, sentinel_t<_Base_t>>;
@@ -3071,8 +3062,7 @@ namespace ranges {
         template <bool _Const, bool _Wrapped = true>
         class _Sentinel {
         private:
-            template <bool, bool>
-            friend class _Sentinel;
+            friend take_while_view;
 
             using _Base_t        = _Maybe_const<_Const, _Vw>;
             using _Base_iterator = _Maybe_wrapped<_Wrapped, iterator_t<_Base_t>>;
@@ -3549,6 +3539,17 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Drop_while_fn drop_while;
     } // namespace views
 
+#ifdef __clang__
+    template <class _Rng> // TRANSITION, LLVM-47414
+    concept _Can_const_join = forward_range<const _Rng> && is_reference_v<range_reference_t<const _Rng>>
+                           && input_range<range_reference_t<const _Rng>>;
+#endif // ^^^ workaround ^^^
+
+    template <class _Ty>
+    _NODISCARD constexpr _Ty& _As_lvalue(_Ty&& _Val) noexcept {
+        return static_cast<_Ty&>(_Val);
+    }
+
     _EXPORT_STD template <input_range _Vw>
         requires view<_Vw> && input_range<range_reference_t<_Vw>>
     class join_view;
@@ -3568,17 +3569,6 @@ namespace ranges {
     protected:
         /* [[no_unique_address]] */ _Non_propagating_cache<_Cache_wrapper, false> _Inner{};
     };
-
-#ifdef __clang__
-    template <class _Rng> // TRANSITION, LLVM-47414
-    concept _Can_const_join = forward_range<const _Rng> && is_reference_v<range_reference_t<const _Rng>>
-                           && input_range<range_reference_t<const _Rng>>;
-#endif // ^^^ workaround ^^^
-
-    template <class _Ty>
-    _NODISCARD constexpr _Ty& _As_lvalue(_Ty&& _Val) noexcept {
-        return static_cast<_Ty&>(_Val);
-    }
 
     template <class _Vw>
         requires is_reference_v<range_reference_t<_Vw>>
@@ -4563,9 +4553,7 @@ namespace ranges {
         template <bool _Const>
         class _Outer_iter : public _Outer_iter_base<iterator_t<_Maybe_const<_Const, _Vw>>> {
         private:
-            template <bool>
-            friend class _Inner_iter;
-            friend _Outer_iter<true>;
+            friend lazy_split_view;
 
             using _Mybase   = _Outer_iter_base<iterator_t<_Maybe_const<_Const, _Vw>>>;
             using _ParentTy = _Maybe_const<_Const, lazy_split_view>;
@@ -4935,11 +4923,9 @@ namespace ranges {
         /* [[no_unique_address]] */ _Pat _Pattern{};
         _Non_propagating_cache<subrange<iterator_t<_Vw>>> _Next{};
 
-        class _Sentinel;
-
         class _Iterator {
         private:
-            friend _Sentinel;
+            friend split_view;
 
             split_view* _Parent             = nullptr;
             iterator_t<_Vw> _Current        = {};
@@ -5602,9 +5588,6 @@ namespace ranges {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
 
-        template <bool _Const>
-        class _Sentinel;
-
         template <class _Base>
         struct _Category_base {};
 
@@ -5620,10 +5603,7 @@ namespace ranges {
         template <bool _Const>
         class _Iterator : public _Category_base<_Maybe_const<_Const, _Vw>> {
         private:
-            template <bool>
-            friend class _Iterator;
-            template <bool>
-            friend class _Sentinel;
+            friend elements_view;
 
             using _Base = _Maybe_const<_Const, _Vw>;
 
@@ -5851,8 +5831,7 @@ namespace ranges {
         template <bool _Const>
         class _Sentinel {
         private:
-            template <bool>
-            friend class _Sentinel;
+            friend elements_view;
 
             using _Base = _Maybe_const<_Const, _Vw>;
             template <bool _OtherConst>
@@ -6360,10 +6339,9 @@ namespace ranges {
         range_difference_t<_Vw> _Remainder = 0;
         _Non_propagating_cache<iterator_t<_Vw>> _Current{};
 
-        class _Outer_iterator;
         class _Inner_iterator {
         private:
-            friend struct _Outer_iterator::value_type;
+            friend chunk_view;
             chunk_view* _Parent{};
 
             constexpr explicit _Inner_iterator(chunk_view* _Parent_) noexcept : _Parent(_Parent_) {}

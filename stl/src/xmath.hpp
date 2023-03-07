@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef _XMATH
-#define _XMATH
+#pragma once
+
 #include <cerrno>
 #include <cmath>
 #include <limits>
@@ -205,5 +205,3 @@ template <typename T>
 #ifndef _M_CEE_PURE
 #pragma float_control(pop)
 #endif
-
-#endif // _XMATH

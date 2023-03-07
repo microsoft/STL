@@ -141,6 +141,9 @@ std/ranges/range.access/rbegin.pass.cpp FAIL
 std/ranges/range.access/rend.pass.cpp FAIL
 std/ranges/range.access/size.pass.cpp FAIL
 
+# libc++ doesn't implement P2652R2 "Disallowing User Specialization Of allocator_traits"
+std/utilities/memory/allocator.traits/allocate_at_least.pass.cpp FAIL
+
 # libc++ doesn't implement P2770R0 "Stashing stashing iterators for proper flattening"
 std/ranges/range.adaptors/range.join.view/end.pass.cpp FAIL
 std/ranges/range.adaptors/range.join.view/iterator/ctor.other.pass.cpp FAIL

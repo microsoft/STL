@@ -3004,7 +3004,7 @@ DEFINE_TEST_SPECIALIZATION(
 //
 //
 
-// Adhoc tests for exception specifications of std::vector<bool, Alloc> (LWG-3778)
+// Ad hoc tests for exception specifications of std::vector<bool, Alloc> (LWG-3778)
 template <class Alloc>
 void assert_vector_bool_noexcept_impl() {
     using vec_bool = std::vector<bool, Alloc>;

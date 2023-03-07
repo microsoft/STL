@@ -353,6 +353,7 @@
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2505R5 Monadic Functions For expected
 // P2549R1 unexpected<E>::error()
+// P2652R2 Disallowing User Specialization Of allocator_traits
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -1488,7 +1489,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifndef _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 #define _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20 (_HAS_FEATURES_REMOVED_IN_CXX20)
 #endif // _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
-
 
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX23
 #define _HAS_FEATURES_REMOVED_IN_CXX23 (!_HAS_CXX23)

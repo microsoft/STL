@@ -358,8 +358,7 @@ public:
 
     template <class _First, class _Second, class... _Args>
     static constexpr void _Reinit_expected(_First& _New_val, _Second& _Old_val, _Args&&... _Vals) noexcept(
-        is_nothrow_constructible_v<_First, _Args...>) // strengthened
-    {
+        is_nothrow_constructible_v<_First, _Args...>) /* strengthened */ {
         if constexpr (is_nothrow_constructible_v<_First, _Args...>) {
             if constexpr (!is_trivially_destructible_v<_Second>) {
                 _Old_val.~_Second();
