@@ -9428,7 +9428,7 @@ namespace ranges {
 
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Inner_sentinel<_Const>, _Inner_iterator<_OtherConst>>
-            _NODISCARD constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> _Distance_from(
+            _NODISCARD constexpr range_difference_t<_Maybe_const<_OtherConst, _Inner_view>> _Distance_from(
                 const _Iterator<_OtherConst>& _It) const noexcept(noexcept(_Inner - _It._Inner)) {
                 return _Inner - _It._Inner;
             }
