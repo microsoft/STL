@@ -1499,21 +1499,21 @@ namespace {
     } // namespace containers
 
     namespace map_containers {
+        struct pair_conv {
+            operator std::pair<const int, int>() const {
+                return {};
+            }
+        };
+
+        struct mem_pair_conv {
+            std::pair<const int, int> pair_{1, 42};
+            operator const std::pair<const int, int>&() const {
+                return pair_;
+            }
+        };
+
         template <class T>
         void pair_conversion_test() {
-            struct pair_conv {
-                operator std::pair<const int, int>() const {
-                    return {};
-                }
-            };
-
-            struct mem_pair_conv {
-                std::pair<const int, int> pair_{1, 42};
-                operator const std::pair<const int, int>&() const {
-                    return pair_;
-                }
-            };
-
             T cont;
             cont.emplace(pair_conv{});
             cont.emplace(mem_pair_conv{});
@@ -1525,7 +1525,40 @@ namespace {
             pair_conversion_test<std::pmr::unordered_map<int, int>>();
             pair_conversion_test<std::pmr::unordered_multimap<int, int>>();
         }
+
+        // Test cv-qualified source type (LWG-3677)
+        void lwg3677_test() {
+            using PairType = std::pair<const int, int>;
+
+            alignas(PairType) unsigned char buffer[sizeof(PairType)];
+            const auto raw_ptr = reinterpret_cast<PairType*>(buffer);
+
+            std::pmr::polymorphic_allocator<PairType> al;
+
+            al.construct(raw_ptr, pair_conv{});
+            al.construct(static_cast<const PairType*>(raw_ptr), pair_conv{});
+            al.construct(static_cast<volatile PairType*>(raw_ptr), pair_conv{});
+            al.construct(static_cast<const volatile PairType*>(raw_ptr), pair_conv{});
+
+            al.construct(raw_ptr, mem_pair_conv{});
+            al.construct(static_cast<const PairType*>(raw_ptr), mem_pair_conv{});
+            al.construct(static_cast<volatile PairType*>(raw_ptr), mem_pair_conv{});
+            al.construct(static_cast<const volatile PairType*>(raw_ptr), mem_pair_conv{});
+        }
     } // namespace map_containers
+
+    void test_gh3408() {
+        // We ignored the possibility that max_blocks_per_chunk could be less than _Default_next_capacity
+        recording_resource upstream;
+        std::pmr::pool_options options{};
+        options.max_blocks_per_chunk = 1;
+        std::pmr::unsynchronized_pool_resource res{options, &upstream};
+        const std::size_t size = 0x8009;
+        (void) res.allocate(size);
+        const allocation& alloc = upstream.allocations_[upstream.allocations_.size() - 1];
+        CHECK(alloc.size >= 0x10000);
+        CHECK(alloc.size < 2 * 0x10000);
+    }
 } // unnamed namespace
 
 int main() {
@@ -1569,4 +1602,8 @@ int main() {
     containers::test();
 
     map_containers::test();
+
+    map_containers::lwg3677_test();
+
+    test_gh3408();
 }

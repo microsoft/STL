@@ -124,7 +124,6 @@ struct _Unicode_property_data {
 // Codepoint ranges may not overlap, and, within one property, a codepoint may only appear once. Furthermore the
 // codepoint lower bounds appear in sorted (ascending) order.
 
-
 enum class _Grapheme_Break_property_values : uint8_t {
     _CR_value,
     _Control_value,
@@ -338,7 +337,6 @@ inline constexpr _Unicode_property_data<_Grapheme_Break_property_values, 1355> _
         0x2001, 0x9002, 0x2002, 0x1004, 0x202e, 0x2017, 0x2001, 0x9001, 0x2003, 0x9001, 0x2005, 0x1008, 0x2008, 0x2007,
         0x2004, 0x2003, 0x2037, 0x2032, 0x2001, 0x2001, 0x2005, 0x200f, 0x2007, 0x2011, 0x2007, 0x2002, 0x2005, 0x2007,
         0x2001, 0x2004, 0x2007, 0x2007, 0x801a, 0x2005, 0x1020, 0x2060, 0x1080, 0x20f0, 0x1e10}};
-
 
 enum class _Extended_Pictographic_property_values : uint8_t { _Extended_Pictographic_value, _No_value = 255 };
 

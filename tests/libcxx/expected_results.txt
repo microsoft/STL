@@ -82,6 +82,9 @@ std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_deallocate_ma
 # Too many constexpr operations
 std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
 
+# libc++ tests strengthened assignment operators (not compatible with P2165R4: "Compatibility Between tuple, pair, And tuple-like Objects")
+std/utilities/tuple/tuple.tuple/tuple.assign/const_pair.pass.cpp FAIL
+
 # libc++ has not implemented P2505R5: "Monadic Functions for std::expected"
 std/language.support/support.limits/support.limits.general/expected.version.compile.pass.cpp FAIL
 
@@ -137,6 +140,18 @@ std/ranges/range.access/end.pass.cpp FAIL
 std/ranges/range.access/rbegin.pass.cpp FAIL
 std/ranges/range.access/rend.pass.cpp FAIL
 std/ranges/range.access/size.pass.cpp FAIL
+
+# libc++ doesn't implement P2652R2 "Disallowing User Specialization Of allocator_traits"
+std/utilities/memory/allocator.traits/allocate_at_least.pass.cpp FAIL
+
+# libc++ doesn't implement P2770R0 "Stashing stashing iterators for proper flattening"
+std/ranges/range.adaptors/range.join.view/end.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.view/iterator/ctor.other.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.view/iterator/ctor.parent.outer.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.view/iterator/eq.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp FAIL
+std/re/re.iter/re.regiter/iterator_concept_conformance.compile.pass.cpp FAIL
+std/re/re.iter/re.tokiter/iterator_concept_conformance.compile.pass.cpp FAIL
 
 # libc++ doesn't implement LWG-3865 Sorting a range of pairs
 std/utilities/tuple/tuple.tuple/tuple.apply/make_from_tuple.pass.cpp FAIL

@@ -21,7 +21,6 @@ struct double_double {
 };
 struct convertible_bool {
     convertible_bool(bool x) : x_(x) {}
-    ~convertible_bool() = default;
 
     operator bool() const noexcept {
         return x_;

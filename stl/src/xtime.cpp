@@ -42,7 +42,6 @@ static xtime xtime_diff(const xtime* xt,
     return diff;
 }
 
-
 constexpr long long _Epoch      = 0x19DB1DED53E8000LL;
 constexpr long _Nsec100_per_sec = _Nsec_per_sec / 100;
 
@@ -65,6 +64,7 @@ _CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis2(const xtime* xt1, const xtime*
     return static_cast<long>(diff.sec * _Msec_per_sec + (diff.nsec + _Nsec_per_msec - 1) / _Nsec_per_msec);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis(const xtime* xt) { // convert time to milliseconds
     xtime now;
     xtime_get(&now, TIME_UTC);

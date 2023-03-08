@@ -5098,7 +5098,7 @@ void uninitialized_default_construct(_ExPo&& _Exec, const _NoThrowFwdIt _First, 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NoThrowFwdIt uninitialized_default_construct_n(_ExPo&& _Exec, _NoThrowFwdIt _First, const _Diff _Count_raw) noexcept
 /* terminates */ {
-    // default-initialize all elements in [_First, _First + _Count_raw)
+    // default-initialize all elements in [_First, _First + _Count)
     _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
@@ -5163,7 +5163,7 @@ void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NoThrowFwdIt uninitialized_value_construct_n(_ExPo&&, _NoThrowFwdIt _First, const _Diff _Count_raw) noexcept
 /* terminates */ {
-    // value-initialize all elements in [_First, _First + _Count_raw)
+    // value-initialize all elements in [_First, _First + _Count)
     _REQUIRE_PARALLEL_LVALUE_ITERATOR(_NoThrowFwdIt);
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
 

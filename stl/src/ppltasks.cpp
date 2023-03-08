@@ -39,7 +39,9 @@ namespace Concurrency {
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_CRT_APP)
             if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
 #endif
+            {
                 __fastfail(FAST_FAIL_INVALID_ARG);
+            }
 
             std::terminate();
         }
@@ -86,7 +88,6 @@ namespace Concurrency {
         using namespace Microsoft::WRL;
         using namespace Microsoft::WRL::Wrappers;
 
-
         class AsyncCausalityTracer {
             IAsyncCausalityTracerStatics* m_causalityAPIs;
             std::once_flag m_stateFlag;
@@ -132,7 +133,8 @@ namespace Concurrency {
                     this);
                 return m_isSupported;
             }
-        } asyncCausalityTracer;
+        };
+        AsyncCausalityTracer asyncCausalityTracer;
 
         // GUID used for identifying causality logs from PPLTask
         const GUID PPLTaskCausalityPlatformID = {
@@ -306,7 +308,6 @@ namespace Concurrency {
                 case APTTYPE_STA:
                 case APTTYPE_MAINSTA:
                     return true;
-                    break;
                 case APTTYPE_NA:
                     switch (_AptTypeQualifier) {
                         // A thread executing in a neutral apartment is either STA or MTA. To find out if this thread is
@@ -316,7 +317,6 @@ namespace Concurrency {
                     case APTTYPEQUALIFIER_NA_ON_STA:
                     case APTTYPEQUALIFIER_NA_ON_MAINSTA:
                         return true;
-                        break;
                     }
                     break;
                 }

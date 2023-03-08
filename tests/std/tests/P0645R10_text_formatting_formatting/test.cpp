@@ -999,7 +999,7 @@ void test_pointer_specs() {
 template <class charT>
 void test_string_specs() {
     auto cstr = STR("scully");
-    auto view = basic_string_view{cstr};
+    basic_string_view view{cstr};
 
     assert(format(STR("{:}"), cstr) == cstr);
     assert(format(STR("{:}"), view) == cstr);
@@ -1356,9 +1356,12 @@ void libfmt_formatter_test_runtime_width() {
     throw_helper(STR("{0:{1}}"), 0, (int_max + 1u));
     throw_helper(STR("{0:{1}}"), 0, -1l);
     throw_helper(STR("{0:{1}}"), 0, (int_max + 1ul));
-    assert(format(STR("{0:{1}}"), 0, '0')
-           == STR("                                               0")); // behavior differs from libfmt, but conforms
     throw_helper(STR("{0:{1}}"), 0, 0.0);
+
+    // LWG-3720: Restrict the valid types of arg-id for width and precision in std-format-spec
+    throw_helper(STR("{:*^{}}"), 'a', true);
+    throw_helper(STR("{:*^{}}"), 'a', '0');
+    assert(format(STR("{:*^{}}"), 'a', static_cast<signed char>(2)) == STR("a*"));
 
     assert(format(STR("{0:{1}}"), 42, 0) == STR("42")); // LWG-3721: zero dynamic width is OK
 
@@ -1407,6 +1410,11 @@ void libfmt_formatter_test_runtime_precision() {
     throw_helper(STR("{0:.{1}}"), reinterpret_cast<void*>(0xcafe), 2);
     throw_helper(STR("{0:.{1}f}"), reinterpret_cast<void*>(0xcafe), 2);
     assert(format(STR("{0:.{1}}"), STR("str"), 2) == STR("st"));
+
+    // LWG-3720: Restrict the valid types of arg-id for width and precision in std-format-spec
+    throw_helper(STR("{:.{}f}"), 3.14f, true);
+    throw_helper(STR("{:.{}f}"), 3.14f, '0');
+    assert(format(STR("{:.{}f}"), 3.14f, static_cast<signed char>(2)) == STR("3.14"));
 }
 
 template <class charT>

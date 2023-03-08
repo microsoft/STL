@@ -288,7 +288,9 @@
 // P2588R3 barrier's Phase Completion Guarantees
 // P2602R2 Poison Pills Are Too Toxic
 // P2609R3 Relaxing Ranges Just A Smidge
+// P2655R3 common_reference_t Of reference_wrapper Should Be A Reference Type
 // P2711R1 Making Multi-Param Constructors Of Views explicit
+// P2770R0 Stashing Stashing Iterators For Proper Flattening
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -324,8 +326,8 @@
 // P1989R2 Range Constructor For string_view
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
 // P2136R3 invoke_r()
+// P2164R9 views::enumerate
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
-//     (changes to views::zip and pair only)
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
@@ -333,7 +335,7 @@
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
-//     (missing views::adjacent and views::adjacent_transform)
+//     (missing views::adjacent_transform)
 // P2322R6 ranges::fold_left, ranges::fold_right, Etc.
 // P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2404R3 Move-Only Types For Comparison Concepts
@@ -352,6 +354,7 @@
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2505R5 Monadic Functions For expected
 // P2549R1 unexpected<E>::error()
+// P2652R2 Disallowing User Specialization Of allocator_traits
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -819,7 +822,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202302L
+#define _MSVC_STL_UPDATE  202303L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1488,7 +1491,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20 (_HAS_FEATURES_REMOVED_IN_CXX20)
 #endif // _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 
-
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX23
 #define _HAS_FEATURES_REMOVED_IN_CXX23 (!_HAS_CXX23)
 #endif // _HAS_FEATURES_REMOVED_IN_CXX23
@@ -1611,20 +1613,26 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
-#define __cpp_lib_constexpr_algorithms          201806L
-#define __cpp_lib_constexpr_complex             201711L
-#define __cpp_lib_constexpr_dynamic_alloc       201907L
-#define __cpp_lib_constexpr_functional          201907L
-#define __cpp_lib_constexpr_iterator            201811L
-#define __cpp_lib_constexpr_numeric             201911L
-#define __cpp_lib_constexpr_string              201907L
-#define __cpp_lib_constexpr_string_view         201811L
-#define __cpp_lib_constexpr_tuple               201811L
-#define __cpp_lib_constexpr_utility             201811L
-#define __cpp_lib_constexpr_vector              201907L
-#define __cpp_lib_destroying_delete             201806L
-#define __cpp_lib_endian                        201907L
-#define __cpp_lib_erase_if                      202002L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_common_reference         202302L
+#define __cpp_lib_common_reference_wrapper 202302L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_constexpr_algorithms    201806L
+#define __cpp_lib_constexpr_complex       201711L
+#define __cpp_lib_constexpr_dynamic_alloc 201907L
+#define __cpp_lib_constexpr_functional    201907L
+#define __cpp_lib_constexpr_iterator      201811L
+#define __cpp_lib_constexpr_numeric       201911L
+#define __cpp_lib_constexpr_string        201907L
+#define __cpp_lib_constexpr_string_view   201811L
+#define __cpp_lib_constexpr_tuple         201811L
+#define __cpp_lib_constexpr_utility       201811L
+#define __cpp_lib_constexpr_vector        201907L
+#define __cpp_lib_destroying_delete       201806L
+#define __cpp_lib_endian                  201907L
+#define __cpp_lib_erase_if                202002L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_format 202207L
@@ -1721,6 +1729,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
 #define __cpp_lib_ranges_contains         202207L
+#define __cpp_lib_ranges_enumerate        202302L
 #define __cpp_lib_ranges_find_last        202207L
 #define __cpp_lib_ranges_fold             202207L
 #define __cpp_lib_ranges_iota             202202L
@@ -1738,7 +1747,12 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_string_contains             202011L
 #define __cpp_lib_string_resize_and_overwrite 202110L
 #define __cpp_lib_to_underlying               202102L
-#define __cpp_lib_unreachable                 202202L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_tuple_like 202207L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_unreachable 202202L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity

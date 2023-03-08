@@ -358,7 +358,6 @@ public:
     }
 };
 
-
 // Implements a DFA matching the regex on the left side of rule GB11. The DFA is:
 //
 // +---+   ExtPic      +---+    ZWJ        +---+
@@ -1410,13 +1409,17 @@ _NODISCARD constexpr basic_format_arg<_Context> _Get_arg(const _Context& _Ctx, c
     return _Arg;
 }
 
+template <class _Ty>
+inline constexpr bool _Is_signed_or_unsigned_large_integer_t =
+    _Is_any_of_v<remove_cv_t<_Ty>, int, unsigned int, long, unsigned long, long long, unsigned long long>;
+
 // Checks that the type and value of an argument associated with a dynamic
 // width specifier are valid.
 class _Width_checker {
 public:
     template <class _Ty>
     _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
-        if constexpr (is_integral_v<_Ty>) {
+        if constexpr (_Is_signed_or_unsigned_large_integer_t<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
                     _Throw_format_error("Negative width.");
@@ -1435,7 +1438,7 @@ class _Precision_checker {
 public:
     template <class _Ty>
     _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
-        if constexpr (is_integral_v<_Ty>) {
+        if constexpr (_Is_signed_or_unsigned_large_integer_t<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
                     _Throw_format_error("Negative precision.");
@@ -1960,12 +1963,7 @@ public:
     _NODISCARD size_t _Estimate_required_capacity() const noexcept {
         using _CharT        = typename _Context::char_type;
         size_t _Result      = 0;
-#ifdef _M_CEE // TRANSITION, VSO-1663257
-        const auto _Visitor = [&_Result](const auto _Arg) noexcept {
-            using _ArgTy = remove_const_t<decltype(_Arg)>;
-#else // ^^^ workaround / no workaround vvv
         const auto _Visitor = [&_Result]<class _ArgTy>(const _ArgTy _Arg) noexcept {
-#endif // ^^^ no workaround ^^^
             if constexpr (is_same_v<_ArgTy, basic_string_view<_CharT>>) {
                 _Result += _Arg.size();
             } else if constexpr (is_same_v<_ArgTy, const _CharT*>) {
@@ -2550,7 +2548,6 @@ template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, _CharT _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
 
-
 template <class _CharT, class _OutputIt, floating_point _Float>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, _Float _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale);
@@ -3017,7 +3014,6 @@ public:
         return _WrappedIter._Position();
     }
 };
-
 
 class _Measure_string_prefix_iterator_legacy {
 private:
