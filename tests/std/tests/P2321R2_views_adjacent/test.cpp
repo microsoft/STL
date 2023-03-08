@@ -302,13 +302,13 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Check view_interface::front
-    STATIC_ASSERT(CanMemberFront<R> == forward_range<V>);
+    STATIC_ASSERT(CanMemberFront<R>);
     if constexpr (CanMemberFront<R>) {
         assert(r.front() == *begin(expected));
     }
 
     // Check view_interface::front (const)
-    STATIC_ASSERT(CanMemberFront<const R> == forward_range<const V>);
+    STATIC_ASSERT(CanMemberFront<const R>);
     if constexpr (CanMemberFront<const R>) {
         assert(as_const(r).front() == *begin(expected));
     }
