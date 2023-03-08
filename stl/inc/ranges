@@ -8805,31 +8805,21 @@ namespace ranges {
     concept _Regular_invocable_with_repeated_type =
         _Regular_invocable_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>;
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1761088
     template <class _Fn, class _Ty, class _Indices>
     struct _Invoke_result_with_repeated_type_impl;
 
     template <class _Fn, class _Ty, size_t... _Indices>
     struct _Invoke_result_with_repeated_type_impl<_Fn, _Ty, index_sequence<_Indices...>> {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1761088
         using type = invoke_result_t<_Fn, _Repeat_type<_Ty, _Indices>...>;
+#else // ^^^ no workaround / workaround vvv
+        using type = decltype(_STD invoke(_STD declval<_Fn>(), _STD declval<_Repeat_type<_Ty, _Indices>>()...));
+#endif // ^^^ workaround ^^^
     };
 
     template <class _Fn, class _Ty, size_t _Nx>
     using _Invoke_result_with_repeated_type =
         typename _Invoke_result_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>::type;
-#else // ^^^ no workaround / workaround vvv
-    template <class _Fn, class _Ty, size_t _Nx, class... _Repeated>
-    struct _Invoke_result_with_repeated_type_impl
-        : _Invoke_result_with_repeated_type_impl<_Fn, _Ty, _Nx - 1, _Ty, _Repeated...> {};
-
-    template <class _Fn, class _Ty, class... _Repeated>
-    struct _Invoke_result_with_repeated_type_impl<_Fn, _Ty, 0, _Repeated...> {
-        using type = invoke_result_t<_Fn, _Repeated...>;
-    };
-
-    template <class _Fn, class _Ty, size_t _Nx>
-    using _Invoke_result_with_repeated_type = typename _Invoke_result_with_repeated_type_impl<_Fn, _Ty, _Nx>::type;
-#endif // ^^^ workaround ^^^
 
     _EXPORT_STD template <forward_range _Vw, size_t _Nx>
         requires view<_Vw> && (_Nx > 0)

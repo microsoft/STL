@@ -877,9 +877,8 @@ constexpr auto adjacent5_fn     = [](auto... vals) { return (vals - ...); };
 constexpr auto adjacent5_result = array{7, 7};
 constexpr auto adjacent6_fn     = [](auto... vals) { return (... - vals); };
 constexpr auto adjacent6_result = array{-38};
-
-[[maybe_unused]] constexpr auto adjacent7_fn = [](auto...) { return 0; };
-[[maybe_unused]] constexpr array<int, 0> adjacent7_result{};
+constexpr auto adjacent7_fn     = [](auto...) { return 0; };
+constexpr array<int, 0> adjacent7_result{};
 
 template <class Category, test::Common IsCommon, test::Sized IsSized>
 using test_range =
@@ -895,8 +894,8 @@ struct instantiator {
         test_one<2>(r, pairwise_fn, pairwise_result);
 #ifndef _M_IX86 // fatal error C1060: compiler is out of heap space
         test_one<4>(r, adjacent4_fn, adjacent4_result);
+#endif // !defined(_M_IX86)
         test_one<7>(r, adjacent7_fn, adjacent7_result);
-#endif // _M_IX86
         test_adjacent0(r);
     }
 };
