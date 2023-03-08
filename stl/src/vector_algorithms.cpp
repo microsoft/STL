@@ -1266,7 +1266,6 @@ namespace {
         return _Find_trivial_unsized_fallback(_First, _Val);
     }
 
-
     template <class _Traits, class _Ty>
     const void* __stdcall __std_find_trivial(const void* _First, const void* _Last, _Ty _Val) noexcept {
         size_t _Size_bytes = _Byte_length(_First, _Last);

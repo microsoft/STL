@@ -3208,7 +3208,7 @@ namespace reverse_iterator_test {
     constexpr bool test() {
         // Validate iter_move
         int count = 0;
-        auto i    = reverse_iterator{proxy_iterator<0>{&count}};
+        reverse_iterator i{proxy_iterator<0>{&count}};
         assert(ranges::iter_move(i) == 42);
         assert(count == 1);
 
@@ -3456,7 +3456,7 @@ namespace move_iterator_test {
     constexpr bool test() {
         // Validate iter_move
         int count = 0;
-        auto i    = move_iterator{proxy_iterator<0>{&count}};
+        move_iterator i{proxy_iterator<0>{&count}};
         assert(ranges::iter_move(i) == 42);
         assert(count == 1);
 

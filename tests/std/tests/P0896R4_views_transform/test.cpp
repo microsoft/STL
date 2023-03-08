@@ -619,7 +619,7 @@ struct iterator_instantiator {
             assert((0 + I{}).base().peek() == nullptr);
             STATIC_ASSERT(NOEXCEPT_IDL0(2 + i));
 
-            auto vi = I{};
+            I vi{};
             assert(&(i += 5) == &i);
             assert(i.base().peek() == mutable_ints + 5);
             assert(&(vi += 0) == &vi);

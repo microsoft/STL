@@ -368,7 +368,7 @@ struct _Ref_fn { // pass function object by value as a reference
 };
 
 template <class _Fn>
-constexpr auto _Pass_fn(_Fn& _Func) noexcept {
+_NODISCARD constexpr auto _Pass_fn(_Fn& _Func) noexcept {
     constexpr bool _Pass_by_value = conjunction_v<bool_constant<sizeof(_Fn) <= sizeof(void*)>,
         is_trivially_copy_constructible<_Fn>, is_trivially_destructible<_Fn>>;
     if constexpr (_Pass_by_value) {
@@ -4877,7 +4877,6 @@ _CONSTEXPR20 _BidIt2 move_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest)
     return _Dest;
 }
 
-
 template <class _Ty>
 struct _Is_character : false_type {}; // by default, not a character type
 
@@ -5204,7 +5203,7 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
+_NODISCARD bool equal(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2,
     _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
@@ -5261,8 +5260,8 @@ _NODISCARD _CONSTEXPR20 bool equal(
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
-    const _FwdIt2 _Last2, _Pr _Pred) noexcept; // terminates
+_NODISCARD bool equal(
+    _ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _InIt1, class _InIt2>
@@ -5778,7 +5777,7 @@ _NODISCARD _CONSTEXPR20 _InIt find(_InIt _First, const _InIt _Last, const _Ty& _
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
+_NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
@@ -5941,7 +5940,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _Iter_diff_t<_FwdIt> count(
-    _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
+    _ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
 #endif // _HAS_CXX17
 
 template <class _InIt, class _Ty, class _Pr>

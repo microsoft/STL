@@ -115,12 +115,12 @@ public:
         __PURE_APPDOMAIN_GLOBAL static int _Id_cnt;
     };
 
-    class _Locimp;
+    struct _Facet_guard;
 
     class _CRTIMP2_PURE_IMPORT facet : public _Facet_base, public _Crt_new_delete {
         // base class for all locale facets, performs reference counting
     private:
-        friend struct _Facet_guard;
+        friend _Facet_guard;
 
     public:
         static size_t __CLRCALL_OR_CDECL _Getcat(const facet** = nullptr, const locale* = nullptr) {

@@ -252,8 +252,8 @@ public:
     constexpr istream_iterator() noexcept(is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {}
 
 #ifdef __cpp_lib_concepts
-    constexpr istream_iterator(default_sentinel_t) noexcept(is_nothrow_default_constructible_v<_Ty>) // strengthened
-    {}
+    constexpr istream_iterator(default_sentinel_t) noexcept(
+        is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {}
 #endif // __cpp_lib_concepts
 
     istream_iterator(istream_type& _Istr) : _Myistr(_STD addressof(_Istr)) {

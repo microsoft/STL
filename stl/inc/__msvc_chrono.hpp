@@ -417,7 +417,7 @@ namespace chrono {
     }
 #endif // defined(__cpp_lib_concepts)
 
-    _EXPORT_STD template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> _Enabled>
+    _EXPORT_STD template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> /* = 0 */>
     _NODISCARD constexpr _To duration_cast(const duration<_Rep, _Period>& _Dur) noexcept(
         is_arithmetic_v<_Rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // convert duration to another duration; truncate

@@ -748,7 +748,7 @@ constexpr bool test_signed() {
         assert(product._Word[1] == 0x05050505'05050505);
     }
     {
-        auto product = _Signed128{0x01010101'01010101, 0x01010101'01010101};
+        _Signed128 product{0x01010101'01010101, 0x01010101'01010101};
         product *= product;
         assert(product == 0x100f0e0d'0c0b0a09'08070605'04030201_i128);
         assert(product._Word[0] == 0x08070605'04030201);

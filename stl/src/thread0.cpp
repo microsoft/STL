@@ -35,6 +35,7 @@ static constexpr errc codes[] = {
     _THROW(system_error(static_cast<int>(codes[code]), _STD generic_category(), msgs[code]));
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 [[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_C_error(int code) { // throw error object for C error
     switch (code) { // select the exception
     case _Thrd_nomem:
