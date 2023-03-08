@@ -9541,7 +9541,7 @@ namespace ranges {
             template <class _Fn>
                 requires constructible_from<decay_t<_Fn>, _Fn>
             _NODISCARD constexpr auto operator()(_Fn&& _Func) const
-                noexcept(noexcept(is_nothrow_constructible_v<decay_t<_Fn>, _Fn>)) {
+                noexcept(is_nothrow_constructible_v<decay_t<_Fn>, _Fn>) {
                 return _Range_closure<_Adjacent_transform_fn, decay_t<_Fn>>{_STD forward<_Fn>(_Func)};
             }
         };
