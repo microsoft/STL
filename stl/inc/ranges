@@ -9224,8 +9224,8 @@ namespace ranges {
         template <bool _Const>
         using _Inner_sentinel = sentinel_t<_Maybe_const<_Const, _Inner_view>>;
 
-        /* [[no_unique_address]] */ _Inner_view _Inner;
         /* [[no_unique_address]] */ _Movable_box<_Fn> _Func;
+        /* [[no_unique_address]] */ _Inner_view _Inner;
 
         template <bool _Const>
         class _Iterator {
@@ -9469,7 +9469,7 @@ namespace ranges {
 
         constexpr explicit adjacent_transform_view(_Vw _Range_, _Fn _Func_) noexcept(
             is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Fn>) // strengthened
-            : _Inner(_STD move(_Range_)), _Func(in_place, _STD move(_Func_)) {}
+            : _Func(in_place, _STD move(_Func_)), _Inner(_STD move(_Range_)) {}
 
         _NODISCARD constexpr _Vw base() const& noexcept(noexcept(_Inner.base())) // strengthened
             requires copy_constructible<_Inner_view>
