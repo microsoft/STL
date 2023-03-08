@@ -783,8 +783,7 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     STATIC_ASSERT(CanMemberBase<const R&> == copy_constructible<V>);
     if constexpr (copy_constructible<V>) {
         [[maybe_unused]] same_as<V> auto b1 = as_const(r).base();
-        STATIC_ASSERT(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>);
-        // strengthened
+        STATIC_ASSERT(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>); // strengthened
     }
 
     // Check adjacent_transform_view::base() &&
