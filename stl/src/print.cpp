@@ -115,7 +115,7 @@ namespace {
     using _Minimal_string_view  = _Really_basic_string_view<char>;
     using _Minimal_wstring_view = _Really_basic_string_view<wchar_t>;
 
-    static constexpr size_t _Max_str_segment_size = 8192;
+    constexpr size_t _Max_str_segment_size = 8192;
 
     [[nodiscard]] _Minimal_string_view __stdcall _Get_next_utf8_string_segment(
         const char* const _Str, const size_t _Str_size) noexcept {
