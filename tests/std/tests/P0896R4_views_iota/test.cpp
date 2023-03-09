@@ -197,6 +197,14 @@ constexpr void test_integral() {
         static_assert(noexcept(first != last)); // strengthened
         assert(last - first == 8);
         static_assert(noexcept(last - first)); // strengthened
+
+#if _HAS_CXX23
+        const same_as<ranges::const_iterator_t<R>> auto cfirst = rng.cbegin();
+        assert(cfirst == first);
+        const same_as<ranges::const_sentinel_t<R>> auto clast = rng.cend();
+        assert(clast == last);
+        assert(clast - cfirst == 8);
+#endif // _HAS_CXX23
     }
 
     {
@@ -234,6 +242,21 @@ constexpr void test_integral() {
         }
 
         static_assert(!CanSize<ranges::iota_view<T>>);
+
+#if _HAS_CXX23
+        {
+            const same_as<R> auto rng = views::iota(low);
+            const ranges::subrange crng{rng.cbegin(), rng.cend()};
+
+            auto i = low;
+            for (const auto& e : crng) {
+                assert(e == i);
+                if (++i == high) {
+                    break;
+                }
+            }
+        }
+#endif // _HAS_CXX23
     }
 }
 
