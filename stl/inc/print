@@ -116,7 +116,7 @@ void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Type
             ++_Escaped_str_expected_size;
         }
 
-        _Escaped_str.resize_and_overwrite(_Escaped_str_expected_size, [_Old_str](char* _Dest_ptr, const size_t) {
+        _Escaped_str.resize_and_overwrite(_Escaped_str_expected_size, [_Old_str](char* _Dest_ptr, size_t) {
             char _Prev_char           = _Old_str.front();
             size_t _Num_chars_written = 1;
             *_Dest_ptr++              = _Prev_char;
