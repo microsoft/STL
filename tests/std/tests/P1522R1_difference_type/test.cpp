@@ -132,7 +132,7 @@ namespace i128_udl_detail {
 } // namespace i128_udl_detail
 
 template <char... Chars>
-[[nodiscard]] CONSTEVAL _Unsigned128 operator"" _u128() noexcept {
+[[nodiscard]] CONSTEVAL _Unsigned128 operator""_u128() noexcept {
     constexpr auto parsed_result = i128_udl_detail::parse_u128<Chars...>::parse();
     static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::invalid,
         "Invalid characters in the integer literal");
@@ -142,7 +142,7 @@ template <char... Chars>
 }
 
 template <char... Chars>
-[[nodiscard]] CONSTEVAL _Signed128 operator"" _i128() noexcept {
+[[nodiscard]] CONSTEVAL _Signed128 operator""_i128() noexcept {
     constexpr auto parsed_result = i128_udl_detail::parse_u128<Chars...>::parse();
     static_assert(parsed_result.status_code != i128_udl_detail::u128_parse_status::invalid,
         "Invalid characters in the integer literal");
@@ -748,7 +748,7 @@ constexpr bool test_signed() {
         assert(product._Word[1] == 0x05050505'05050505);
     }
     {
-        auto product = _Signed128{0x01010101'01010101, 0x01010101'01010101};
+        _Signed128 product{0x01010101'01010101, 0x01010101'01010101};
         product *= product;
         assert(product == 0x100f0e0d'0c0b0a09'08070605'04030201_i128);
         assert(product._Word[0] == 0x08070605'04030201);

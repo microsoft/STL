@@ -3131,7 +3131,6 @@ namespace chrono {
             return (_Bits & ~_Optional) == _Must_set;
         }
 
-
         template <class _Ty>
         static constexpr _Ty _Invalid_time_field{numeric_limits<_Ty>::lowest()};
 
@@ -4693,7 +4692,6 @@ _NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const
 
 #define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
 
-
 // clang-format off
 template <class _Ty, class _CharT>
 concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
@@ -6019,10 +6017,10 @@ namespace chrono {
 
 inline namespace literals {
     inline namespace chrono_literals {
-        _EXPORT_STD _NODISCARD constexpr _CHRONO day operator"" d(unsigned long long _Day) noexcept {
+        _EXPORT_STD _NODISCARD constexpr _CHRONO day operator""d(unsigned long long _Day) noexcept {
             return _CHRONO day{static_cast<unsigned int>(_Day)};
         }
-        _EXPORT_STD _NODISCARD constexpr _CHRONO year operator"" y(unsigned long long _Year) noexcept {
+        _EXPORT_STD _NODISCARD constexpr _CHRONO year operator""y(unsigned long long _Year) noexcept {
             return _CHRONO year{static_cast<int>(_Year)};
         }
     } // namespace chrono_literals

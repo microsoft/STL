@@ -643,6 +643,10 @@ struct WeirdDeleter {
         delete ptr;
     }
 
+    WeirdDeleter()                               = default;
+    WeirdDeleter(const WeirdDeleter&)            = default;
+    WeirdDeleter& operator=(const WeirdDeleter&) = default;
+
     ~WeirdDeleter() noexcept(false) {}
 };
 static_assert(!is_nothrow_destructible_v<WeirdDeleter<int>>);

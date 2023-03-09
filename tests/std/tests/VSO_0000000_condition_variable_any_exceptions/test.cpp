@@ -172,6 +172,14 @@ void normal_tests() {
     test_case_condition_variable_any_less_accurate_time_points();
 }
 
+// Test strengthened exception specification of condition_variable::wait
+static_assert(noexcept(declval<condition_variable&>().wait(declval<unique_lock<mutex>&>())),
+    "condition_variable::wait that takes no predicate should be noexcept");
+
+// Test strengthened exception specification of notify_all_at_thread_exit
+static_assert(noexcept(notify_all_at_thread_exit(declval<condition_variable&>(), declval<unique_lock<mutex>>())),
+    "notify_all_at_thread_exit should be noexcept");
+
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec(normal_tests);
     exec.add_death_tests({test_case_condition_variable_any_lock_ex_should_terminate});

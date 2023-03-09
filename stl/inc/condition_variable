@@ -160,7 +160,7 @@ private:
     struct _Cv_any_notify_all {
         condition_variable_any* _This;
 
-        explicit _Cv_any_notify_all(condition_variable_any* _This_) : _This{_This_} {}
+        explicit _Cv_any_notify_all(condition_variable_any* _This_) noexcept : _This{_This_} {}
 
         _Cv_any_notify_all(const _Cv_any_notify_all&)            = delete;
         _Cv_any_notify_all& operator=(const _Cv_any_notify_all&) = delete;
@@ -224,16 +224,8 @@ public:
             // but unfortunately our ABI speaks struct xtime, which is relative to the system clock.
             _CSTD xtime _Tgt;
             (void) _To_xtime_10_day_clamped(_Tgt, _Rel_time);
-            const int _Res = _Cnd_timedwait(_Mycnd(), _Myptr->_Mymtx(), &_Tgt);
+            (void) _Cnd_timedwait(_Mycnd(), _Myptr->_Mymtx(), &_Tgt);
             _Guard_unlocks_before_locking_outer.unlock();
-
-            switch (_Res) {
-            case _Thrd_timedout:
-            case _Thrd_success:
-                break;
-            default:
-                _Throw_C_error(_Res);
-            }
         } // relock
 
         return _Pred();
@@ -262,18 +254,16 @@ private:
         const int _Res = _Cnd_timedwait(_Mycnd(), _Ptr->_Mymtx(), _Abs_time);
         _Guard.unlock();
 
-        switch (_Res) {
-        case _Thrd_success:
+        if (_Res == _Thrd_success) {
             return cv_status::no_timeout;
-        case _Thrd_timedout:
+        } else {
             return cv_status::timeout;
-        default:
-            _Throw_C_error(_Res);
         }
     }
 };
 
-_EXPORT_STD inline void notify_all_at_thread_exit(condition_variable& _Cnd, unique_lock<mutex> _Lck) {
+_EXPORT_STD inline void notify_all_at_thread_exit(condition_variable& _Cnd, unique_lock<mutex> _Lck) noexcept
+/* strengthened */ {
     // register _Cnd for release at thread exit
     _Cnd._Register(_Lck, nullptr);
 }

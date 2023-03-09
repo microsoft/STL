@@ -3,7 +3,7 @@
 
 RUNALL_INCLUDE ..\universal_prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/EHsc /MTd /std:c++latest /permissive- /utf-8 /FImsvc_stdlib_force_include.h /wd4643 /D_STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER /D_USE_JOIN_VIEW_INPUT_RANGE"
+PM_CL="/EHsc /MTd /std:c++latest /permissive- /utf-8 /FImsvc_stdlib_force_include.h /wd4643 /D_STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER"
 RUNALL_CROSSLIST
 PM_CL="/analyze:autolog- /Zc:preprocessor /wd6262"
 PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing -Wno-unqualified-std-cast-call"

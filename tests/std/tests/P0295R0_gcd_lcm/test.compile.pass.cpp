@@ -12,8 +12,6 @@ constexpr auto int_max = std::numeric_limits<int>::max();
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 STATIC_ASSERT(gcd(0, 0) == 0);
 STATIC_ASSERT(gcd(0, 1) == 1);
 STATIC_ASSERT(gcd(1, 0) == 1);

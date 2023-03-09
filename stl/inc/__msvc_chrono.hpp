@@ -417,7 +417,7 @@ namespace chrono {
     }
 #endif // defined(__cpp_lib_concepts)
 
-    _EXPORT_STD template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> _Enabled>
+    _EXPORT_STD template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> /* = 0 */>
     _NODISCARD constexpr _To duration_cast(const duration<_Rep, _Period>& _Dur) noexcept(
         is_arithmetic_v<_Rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // convert duration to another duration; truncate
@@ -720,62 +720,62 @@ _NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const _CHRONO duratio
 
 inline namespace literals {
     inline namespace chrono_literals {
-        _EXPORT_STD _NODISCARD constexpr _CHRONO hours operator"" h(unsigned long long _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO hours operator""h(unsigned long long _Val) noexcept
         /* strengthened */ {
             return _CHRONO hours(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, ratio<3600>> operator"" h(long double _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, ratio<3600>> operator""h(long double _Val) noexcept
         /* strengthened */ {
             return _CHRONO duration<double, ratio<3600>>(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO minutes(operator"" min)(unsigned long long _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO minutes operator""min(unsigned long long _Val) noexcept
         /* strengthened */ {
             return _CHRONO minutes(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, ratio<60>>(operator"" min)(long double _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, ratio<60>> operator""min(long double _Val) noexcept
         /* strengthened */ {
             return _CHRONO duration<double, ratio<60>>(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO seconds operator"" s(unsigned long long _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO seconds operator""s(unsigned long long _Val) noexcept
         /* strengthened */ {
             return _CHRONO seconds(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double> operator"" s(long double _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double> operator""s(long double _Val) noexcept
         /* strengthened */ {
             return _CHRONO duration<double>(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO milliseconds operator"" ms(unsigned long long _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO milliseconds operator""ms(unsigned long long _Val) noexcept
         /* strengthened */ {
             return _CHRONO milliseconds(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, milli> operator"" ms(long double _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, milli> operator""ms(long double _Val) noexcept
         /* strengthened */ {
             return _CHRONO duration<double, milli>(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO microseconds operator"" us(unsigned long long _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO microseconds operator""us(unsigned long long _Val) noexcept
         /* strengthened */ {
             return _CHRONO microseconds(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, micro> operator"" us(long double _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, micro> operator""us(long double _Val) noexcept
         /* strengthened */ {
             return _CHRONO duration<double, micro>(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO nanoseconds operator"" ns(unsigned long long _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO nanoseconds operator""ns(unsigned long long _Val) noexcept
         /* strengthened */ {
             return _CHRONO nanoseconds(_Val);
         }
 
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, nano> operator"" ns(long double _Val) noexcept
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, nano> operator""ns(long double _Val) noexcept
         /* strengthened */ {
             return _CHRONO duration<double, nano>(_Val);
         }

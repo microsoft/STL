@@ -578,6 +578,8 @@ void swap(basic_fstream<_Elem, _Traits>& _Left, basic_fstream<_Elem, _Traits>& _
 }
 _STD_END
 
+#undef _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

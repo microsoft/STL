@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-int main() {} // COMPILE-ONLY
-
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 // This test program verifies all of the container requirements for the Standard Library containers,
@@ -3006,7 +3004,7 @@ DEFINE_TEST_SPECIALIZATION(
 //
 //
 
-// Adhoc tests for exception specifications of std::vector<bool, Alloc> (LWG-3778)
+// Ad hoc tests for exception specifications of std::vector<bool, Alloc> (LWG-3778)
 template <class Alloc>
 void assert_vector_bool_noexcept_impl() {
     using vec_bool = std::vector<bool, Alloc>;

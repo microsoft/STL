@@ -5,8 +5,6 @@
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 // LIBRARY FEATURE-TEST MACROS
 #if _HAS_CXX23
 #ifndef __cpp_lib_adaptor_iterator_pair_constructor
@@ -261,10 +259,10 @@ STATIC_ASSERT(__cpp_lib_atomic_wait == 201907L);
 #if _HAS_CXX20
 #ifndef __cpp_lib_barrier
 #error __cpp_lib_barrier is not defined
-#elif __cpp_lib_barrier != 201907L
-#error __cpp_lib_barrier is not 201907L
+#elif __cpp_lib_barrier != 202302L
+#error __cpp_lib_barrier is not 202302L
 #else
-STATIC_ASSERT(__cpp_lib_barrier == 201907L);
+STATIC_ASSERT(__cpp_lib_barrier == 202302L);
 #endif
 #else
 #ifdef __cpp_lib_barrier
@@ -447,6 +445,34 @@ STATIC_ASSERT(__cpp_lib_clamp == 201603L);
 #else
 #ifdef __cpp_lib_clamp
 #error __cpp_lib_clamp is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_common_reference
+#error __cpp_lib_common_reference is not defined
+#elif __cpp_lib_common_reference != 202302L
+#error __cpp_lib_common_reference is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_common_reference == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_common_reference
+#error __cpp_lib_common_reference is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_common_reference_wrapper
+#error __cpp_lib_common_reference_wrapper is not defined
+#elif __cpp_lib_common_reference_wrapper != 202302L
+#error __cpp_lib_common_reference_wrapper is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_common_reference_wrapper == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_common_reference_wrapper
+#error __cpp_lib_common_reference_wrapper is defined
 #endif
 #endif
 
@@ -1521,10 +1547,10 @@ STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
-#elif __cpp_lib_ranges != 202211L
-#error __cpp_lib_ranges is not 202211L
+#elif __cpp_lib_ranges != 202302L
+#error __cpp_lib_ranges is not 202302L
 #else
-STATIC_ASSERT(__cpp_lib_ranges == 202211L);
+STATIC_ASSERT(__cpp_lib_ranges == 202302L);
 #endif
 #elif _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
@@ -1611,7 +1637,21 @@ STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
 #endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-#ifndef __cpp_lib_ranges_find_last // per LWG-3807
+#ifndef __cpp_lib_ranges_enumerate
+#error __cpp_lib_ranges_enumerate is not defined
+#elif __cpp_lib_ranges_enumerate != 202302L
+#error __cpp_lib_ranges_enumerate is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_enumerate == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_enumerate
+#error __cpp_lib_ranges_enumerate is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_find_last
 #error __cpp_lib_ranges_find_last is not defined
 #elif __cpp_lib_ranges_find_last != 202207L
 #error __cpp_lib_ranges_find_last is not 202207L
@@ -2168,6 +2208,20 @@ STATIC_ASSERT(__cpp_lib_transparent_operators == 201510L);
 #error __cpp_lib_tuple_element_t is not 201402L
 #else
 STATIC_ASSERT(__cpp_lib_tuple_element_t == 201402L);
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_tuple_like
+#error __cpp_lib_tuple_like is not defined
+#elif __cpp_lib_tuple_like != 202207L
+#error __cpp_lib_tuple_like is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_tuple_like == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_tuple_like
+#error __cpp_lib_tuple_like is defined
+#endif
 #endif
 
 #ifndef __cpp_lib_tuples_by_type

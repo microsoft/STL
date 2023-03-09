@@ -13,12 +13,13 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <charconv> are available only with C++17 or later.");
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <cstring>
-#include _STL_INTRIN_HEADER
 #include <xbit_ops.h>
 #include <xcharconv.h>
 #include <xcharconv_ryu.h>
 #include <xcharconv_tables.h>
 #include <xutility>
+
+#include _STL_INTRIN_HEADER
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -203,7 +204,6 @@ _EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(char* const _First, char* cons
 }
 
 _EXPORT_STD to_chars_result to_chars(char* _First, char* _Last, bool _Value, int _Base = 10) = delete;
-
 
 _EXPORT_STD struct from_chars_result {
     const char* ptr;
@@ -444,11 +444,10 @@ _NODISCARD inline uint32_t _Bit_scan_reverse(const _Big_integer_flt& _Xval) noex
 
     const uint32_t _Bx = _Xval._Myused - 1;
 
-    _STL_INTERNAL_CHECK(_Xval._Mydata[_Bx] != 0); // _Big_integer_flt should always be trimmed
-
     unsigned long _Index; // Intentionally uninitialized for better codegen
 
-    _BitScanReverse(&_Index, _Xval._Mydata[_Bx]); // assumes _Xval._Mydata[_Bx] != 0
+    _STL_INTERNAL_CHECK(_Xval._Mydata[_Bx] != 0); // _Big_integer_flt should always be trimmed
+    _BitScanReverse(&_Index, _Xval._Mydata[_Bx]); // lgtm [cpp/conditionallyuninitializedvariable]
 
     return _Index + 1 + _Bx * _Big_integer_flt::_Element_bits;
 }
@@ -933,7 +932,6 @@ _NODISCARD inline uint64_t _Divide(_Big_integer_flt& _Numerator, const _Big_inte
 }
 
 // ^^^^^^^^^^ DERIVED FROM corecrt_internal_big_integer.h ^^^^^^^^^^
-
 
 // vvvvvvvvvv DERIVED FROM corecrt_internal_strtox.h vvvvvvvvvv
 
@@ -2275,7 +2273,6 @@ _NODISCARD to_chars_result _Floating_to_chars_hex_shortest(
     // We've already printed '-' if necessary, so static_cast<uint32_t> avoids testing that again.
     return _STD to_chars(_First, _Last, static_cast<uint32_t>(_Unbiased_exponent));
 }
-
 
 template <class _Floating>
 _NODISCARD inline to_chars_result _Floating_to_chars_general_precision(

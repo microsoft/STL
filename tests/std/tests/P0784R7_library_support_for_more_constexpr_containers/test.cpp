@@ -263,8 +263,10 @@ template <class T>
 struct A {
     T value;
 
-    constexpr A() noexcept = default;
-    constexpr ~A()         = default;
+    constexpr A() noexcept                    = default;
+    constexpr A(const A&) noexcept            = default;
+    constexpr A& operator=(const A&) noexcept = default;
+    constexpr ~A()                            = default;
 };
 
 template <class T>
@@ -272,6 +274,8 @@ struct nontrivial_A {
     T value;
 
     constexpr nontrivial_A(T in = T{}) noexcept : value(in) {}
+    constexpr nontrivial_A(const nontrivial_A&) noexcept            = default;
+    constexpr nontrivial_A& operator=(const nontrivial_A&) noexcept = default;
     constexpr ~nontrivial_A() {}
 };
 
