@@ -702,6 +702,30 @@ _EXPORT_STD _NODISCARD inline const error_category& system_category() noexcept {
     return _Immortalize_memcpy_image<_System_error_category>();
 }
 _STD_END
+
+#if _HAS_CXX17
+_EXTERN_C
+enum class __std_win_error : unsigned long;
+_END_EXTERN_C
+
+_STD_BEGIN
+// We would really love to use the proper way of building error_code by specializing
+// is_error_code_enum and make_error_code for __std_win_error, but because:
+//   1. We would like to keep the definition of __std_win_error in xfilesystem_abi.h
+//   2. and xfilesystem_abi.h cannot include <system_error>
+//   3. and specialization of is_error_code_enum and overload of make_error_code
+//      need to be kept together with the enum (see limerick in N4810 [temp.expl.spec]/7)
+// we resort to using this _Make_ec helper.
+_NODISCARD inline error_code _Make_ec(__std_win_error _Errno) noexcept { // make an error_code
+    return {static_cast<int>(_Errno), _STD system_category()};
+}
+
+[[noreturn]] inline void _Throw_system_error_from_std_win_error(const __std_win_error _Errno) {
+    _THROW(system_error{_Make_ec(_Errno)});
+}
+_STD_END
+#endif // _HAS_CXX17
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

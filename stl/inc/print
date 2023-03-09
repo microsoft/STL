@@ -13,10 +13,8 @@ _EMIT_STL_WARNING(STL4038, "The contents of <print> are available only with C++2
 #else // ^^^ !defined(__cpp_lib_print) / defined(__cpp_lib_print) vvv
 
 #include <__msvc_print.hpp>
-#include <chrono>
 #include <cstdio>
 #include <format>
-#include <string>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
