@@ -231,48 +231,6 @@ namespace {
 
         return __std_win_error::_Success;
     }
-
-    class _Critical_section {
-    public:
-        _Critical_section() noexcept {
-            InitializeCriticalSection(&_Mtx);
-        }
-
-        ~_Critical_section() noexcept {
-            DeleteCriticalSection(&_Mtx);
-        }
-
-        _Critical_section(const _Critical_section&)            = delete;
-        _Critical_section& operator=(const _Critical_section&) = delete;
-
-        void _Lock() noexcept {
-            EnterCriticalSection(&_Mtx);
-        }
-
-        void _Unlock() noexcept {
-            LeaveCriticalSection(&_Mtx);
-        }
-
-    private:
-        CRITICAL_SECTION _Mtx;
-    };
-
-    class _Scoped_critical_section_lock {
-    public:
-        explicit _Scoped_critical_section_lock(_Critical_section& _Mtx) noexcept : _Mtx_ptr(&_Mtx) {
-            _Mtx_ptr->_Lock();
-        }
-
-        ~_Scoped_critical_section_lock() noexcept {
-            _Mtx_ptr->_Unlock();
-        }
-
-        _Scoped_critical_section_lock(const _Scoped_critical_section_lock&)            = delete;
-        _Scoped_critical_section_lock& operator=(const _Scoped_critical_section_lock&) = delete;
-
-    private:
-        _Critical_section* _Mtx_ptr;
-    };
 } // unnamed namespace
 
 _EXTERN_C
@@ -300,33 +258,26 @@ _EXTERN_C
         return _Transcoded_str._Error();
     }
 
-    {
-        // We acquire a lock here to prevent multiple threads from writing interleaved text,
-        // since we only print segments of a string to the console at a time.
-        static _Critical_section _Mtx{};
-        const _Scoped_critical_section_lock _Lock{_Mtx};
+    while (true) {
+        const __std_win_error _Write_result = _Write_console(_Actual_console_handle, _Transcoded_str._Value());
 
-        while (true) {
-            const __std_win_error _Write_result = _Write_console(_Actual_console_handle, _Transcoded_str._Value());
+        if (_Write_result != __std_win_error::_Success) [[unlikely]] {
+            return _Write_result;
+        }
 
-            if (_Write_result != __std_win_error::_Success) [[unlikely]] {
-                return _Write_result;
-            }
+        _Remaining_str_size -= _Curr_str_segment._Size();
 
-            _Remaining_str_size -= _Curr_str_segment._Size();
+        if (_Remaining_str_size == 0) {
+            return __std_win_error::_Success;
+        }
 
-            if (_Remaining_str_size == 0) {
-                return __std_win_error::_Success;
-            }
+        _Remaining_str += _Curr_str_segment._Size();
 
-            _Remaining_str += _Curr_str_segment._Size();
+        _Curr_str_segment = _Get_next_utf8_string_segment(_Remaining_str, _Remaining_str_size);
+        _Transcoded_str   = _Transcode_utf8_string(_Allocated_str, _Curr_str_segment);
 
-            _Curr_str_segment = _Get_next_utf8_string_segment(_Remaining_str, _Remaining_str_size);
-            _Transcoded_str   = _Transcode_utf8_string(_Allocated_str, _Curr_str_segment);
-
-            if (!_Transcoded_str._Has_value()) [[unlikely]] {
-                return _Transcoded_str._Error();
-            }
+        if (!_Transcoded_str._Has_value()) [[unlikely]] {
+            return _Transcoded_str._Error();
         }
     }
 }
