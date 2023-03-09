@@ -3256,6 +3256,48 @@ _NODISCARD size_t formatted_size(const locale& _Loc, const wformat_string<_Types
     return _Buf._Count();
 }
 
+#if _HAS_CXX23
+template <bool _Add_newline>
+_NODISCARD string _Escape_braces(const string_view _Old_str) {
+    if (_Old_str.empty()) {
+        return string{};
+    }
+
+    string _Escaped_str;
+    size_t _Escaped_str_expected_size = _Old_str.size();
+
+    if constexpr (_Add_newline) {
+        ++_Escaped_str_expected_size;
+    }
+
+    _Escaped_str.resize_and_overwrite(_Escaped_str_expected_size, [_Old_str](char* _Dest_ptr, size_t) {
+        char _Prev_char           = _Old_str.front();
+        size_t _Num_chars_written = 1;
+        *_Dest_ptr++              = _Prev_char;
+
+        for (const auto _Curr_char : _Old_str.substr(1)) {
+            if ((_Curr_char != '{' || _Prev_char != '{') && (_Curr_char != '}' || _Prev_char != '}')) {
+                *_Dest_ptr++ = _Curr_char;
+                ++_Num_chars_written;
+
+                _Prev_char = _Curr_char;
+            } else {
+                _Prev_char = '\0';
+            }
+        }
+
+        if constexpr (_Add_newline) {
+            *_Dest_ptr = '\n';
+            return _Num_chars_written + 1;
+        } else {
+            return _Num_chars_written;
+        }
+    });
+
+    return _Escaped_str;
+}
+#endif // _HAS_CXX23
+
 _STD_END
 
 #pragma pop_macro("new")

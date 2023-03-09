@@ -103,45 +103,7 @@ void _Vprint_unicode_impl(FILE* const _Stream, const string_view _Fmt_str, const
 
 template <bool _Add_newline, class... _Types>
 void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
-    constexpr bool _Has_format_args       = sizeof...(_Types) > 0;
-    constexpr auto _Escape_braces_closure = [](const string_view _Old_str) {
-        if (_Old_str.empty()) {
-            return string{};
-        }
-
-        string _Escaped_str;
-        size_t _Escaped_str_expected_size = _Old_str.size();
-
-        if constexpr (_Add_newline) {
-            ++_Escaped_str_expected_size;
-        }
-
-        _Escaped_str.resize_and_overwrite(_Escaped_str_expected_size, [_Old_str](char* _Dest_ptr, size_t) {
-            char _Prev_char           = _Old_str.front();
-            size_t _Num_chars_written = 1;
-            *_Dest_ptr++              = _Prev_char;
-
-            for (const auto _Curr_char : _Old_str.substr(1)) {
-                if ((_Curr_char != '{' || _Prev_char != '{') && (_Curr_char != '}' || _Prev_char != '}')) {
-                    *_Dest_ptr++ = _Curr_char;
-                    ++_Num_chars_written;
-
-                    _Prev_char = _Curr_char;
-                } else {
-                    _Prev_char = '\0';
-                }
-            }
-
-            if constexpr (_Add_newline) {
-                *_Dest_ptr = '\n';
-                return _Num_chars_written + 1;
-            } else {
-                return _Num_chars_written;
-            }
-        });
-
-        return _Escaped_str;
-    };
+    constexpr bool _Has_format_args = sizeof...(_Types) > 0;
 
     if constexpr (_Has_format_args) {
         if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
@@ -152,7 +114,7 @@ void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Type
                 _Stream, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
         }
     } else {
-        const string _Escaped_str{_Escape_braces_closure(_Fmt.get())};
+        const string _Escaped_str{_Escape_braces<_Add_newline>(_Fmt.get())};
 
         if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
             _STD _Print_noformat_unicode(_Stream, _Escaped_str);
