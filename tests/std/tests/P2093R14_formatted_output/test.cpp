@@ -100,9 +100,9 @@ namespace test {
 
             // By default, Windows fills console character cells with space characters. We want to remove
             // those space characters which appear after the user's text.
-            const std::size_t lastValidChar = output_str.find_last_not_of(' ');
+            const size_t lastValidChar = output_str.find_last_not_of(' ');
 
-            if (lastValidChar == std::wstring::npos) [[unlikely]] {
+            if (lastValidChar == wstring::npos) [[unlikely]] {
                 output_str.clear();
             } else [[likely]] {
                 output_str = output_str.substr(0, lastValidChar + 1);
@@ -124,7 +124,7 @@ namespace test {
             }
         }
 
-        std::size_t get_line_character_width() const {
+        size_t get_line_character_width() const {
             CONSOLE_SCREEN_BUFFER_INFO screen_buffer_info;
 
             {
