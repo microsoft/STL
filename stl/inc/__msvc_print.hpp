@@ -45,8 +45,9 @@ struct __std_unicode_console_retrieval_result {
 _NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_retrieval_result
     __stdcall __std_get_unicode_console_handle_from_file_stream(_In_ FILE* _Stream) noexcept;
 
-_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error __stdcall __std_print_to_unicode_console(
-    _In_ __std_unicode_console_handle _Console_handle, _In_ const char* _Str, _In_ size_t _Str_size) noexcept;
+_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_print_to_unicode_console(_In_ __std_unicode_console_handle _Console_handle,
+        _In_reads_(_Str_size) const char* _Str, _In_ size_t _Str_size) noexcept;
 
 _END_EXTERN_C
 
