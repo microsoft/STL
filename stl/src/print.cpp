@@ -55,7 +55,8 @@ _EXTERN_C
 
     return __std_unicode_console_retrieval_result{
         ._Console_handle = static_cast<__std_unicode_console_handle>(
-            reinterpret_cast<_STD underlying_type_t<__std_unicode_console_handle>>(_Console_handle))};
+            reinterpret_cast<_STD underlying_type_t<__std_unicode_console_handle>>(_Console_handle)),
+        ._Error = __std_win_error::_Success};
 }
 
 _END_EXTERN_C
