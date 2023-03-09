@@ -470,7 +470,7 @@ void test_stream_flush_file() {
         print(output_file_stream, "Hello, ");
 
         {
-            ifstream input_file_stream = ifstream{temp_file_name_str};
+            ifstream input_file_stream{temp_file_name_str};
 
             string extracted_line_str;
             getline(input_file_stream, extracted_line_str);
@@ -481,7 +481,7 @@ void test_stream_flush_file() {
         println(output_file_stream, "world!");
 
         {
-            ifstream input_file_stream = ifstream{temp_file_name_str};
+            ifstream input_file_stream{temp_file_name_str};
 
             string extracted_line_str;
             getline(input_file_stream, extracted_line_str);
@@ -492,7 +492,7 @@ void test_stream_flush_file() {
         output_file_stream.flush();
 
         {
-            ifstream input_file_stream = ifstream{temp_file_name_str};
+            ifstream input_file_stream{temp_file_name_str};
 
             string extracted_line_str;
             getline(input_file_stream, extracted_line_str);
