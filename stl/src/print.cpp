@@ -117,7 +117,7 @@ namespace {
 
     constexpr size_t _Max_str_segment_size = 8192;
 
-    [[nodiscard]] _Minimal_string_view __stdcall _Get_next_utf8_string_segment(
+    [[nodiscard]] _Minimal_string_view _Get_next_utf8_string_segment(
         const char* const _Str, const size_t _Str_size) noexcept {
         if (_Str_size <= _Max_str_segment_size) [[likely]] {
             return _Minimal_string_view{_Str, _Str_size};
@@ -181,7 +181,7 @@ namespace {
         bool _Successful;
     };
 
-    [[nodiscard]] _Transcode_result __stdcall _Transcode_utf8_string(
+    [[nodiscard]] _Transcode_result _Transcode_utf8_string(
         _Allocated_string& _Dst_str, const _Minimal_string_view _Src_str) noexcept {
         // MultiByteToWideChar() fails if strLength == 0.
         if (_Src_str._Empty()) [[unlikely]] {
