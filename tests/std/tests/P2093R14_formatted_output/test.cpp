@@ -202,7 +202,7 @@ string wstring_to_string(const wstring_view wide_str) {
 
 void maybe_flush_console_file_stream(const test::win_console& console) {
     // std::print() and std::println() should automatically flush the stream if the Unicode
-    // API is being used, according to the C++ specifications. So, as an additional check,
+    // API is being used, according to N4928 [print.fun]/7. So, as an additional check,
     // we'll only call std::fflush() if the ordinary literal encoding is *NOT* UTF-8. This
     // should work fine, assuming that our implementation is correct.
     if constexpr (!_Is_ordinary_literal_encoding_utf8()) {
@@ -211,7 +211,7 @@ void maybe_flush_console_file_stream(const test::win_console& console) {
 }
 
 void initialize_console() {
-    // We want to do things like, e.g., alter the output code page of our console, but we
+    // We want to do things like alter the output code page of our console, but we
     // don't want to affect other tests which run concurrently. So, we want to detach this
     // process from its current console, create a new console, and modify that one instead.
 

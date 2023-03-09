@@ -29,7 +29,7 @@ _EXTERN_C
     const int _Fd = _fileno(_Stream);
 
     if (_Fd == -2) {
-        // _fileno() returns -2 if _File_stream refers to either stdout or stderr and
+        // _fileno() returns -2 if _Stream refers to either stdout or stderr and
         // there is no associated output stream. In that case, there is also no associated
         // console HANDLE. (This might happen, for instance, if a Win32 GUI application is
         // being compiled with /SUBSYSTEM:WINDOWS.)
@@ -187,9 +187,8 @@ namespace {
             return {};
         }
 
-        // The C++ specifications for vprint_unicode() suggest that we replace invalid
-        // code units with U+FFFD. This is done automatically by MultiByteToWideChar(),
-        // so long as we do not use the MB_ERR_INVALID_CHARS flag.
+        // For vprint_unicode(), N4928 [ostream.formatted.print]/4 suggests replacing invalid code units with U+FFFD.
+        // This is done automatically by MultiByteToWideChar(), so long as we do not use the MB_ERR_INVALID_CHARS flag.
         const int32_t _Num_chars_required =
             MultiByteToWideChar(CP_UTF8, 0, _Src_str._Data(), static_cast<int>(_Src_str._Size()), nullptr, 0);
 

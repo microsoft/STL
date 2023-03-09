@@ -14,7 +14,7 @@
 #include <__msvc_filebuf.hpp>
 #include <__msvc_print.hpp>
 #include <format>
-#endif
+#endif // _HAS_CXX23
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -1112,7 +1112,7 @@ void _Vprint_nonunicode_impl(ostream& _Ostr, const string_view _Fmt_str, const f
         _State |= ios_base::badbit;
     } else [[likely]] {
         // This is intentionally kept outside of the try/catch block in _Print_noformat_nonunicode()
-        // (see [ostream.formatted.print/3.2]).
+        // (see N4928 [ostream.formatted.print]/3.2).
         string _Output_str;
         if constexpr (_Add_newline) {
             _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
@@ -1204,7 +1204,7 @@ void _Vprint_unicode_impl(ostream& _Ostr, const string_view _Fmt_str, const form
         _State |= ios_base::badbit;
     } else [[likely]] {
         // This is intentionally kept outside of the try/catch block in _Print_noformat_unicode()
-        // (see [ostream.formatted.print/3.2]).
+        // (see N4928 [ostream.formatted.print]/3.2).
         string _Output_str;
         if constexpr (_Add_newline) {
             _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
@@ -1240,7 +1240,7 @@ void _Print_impl(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&..
     constexpr bool _Has_format_args = sizeof...(_Types) > 0;
 
     // This is intentionally kept outside of the try/catch block in _Print_noformat_*()
-    // (see [ostream.formatted.print/3.2]).
+    // (see N4928 [ostream.formatted.print]/3.2).
     constexpr auto _Escape_braces_closure = [](const string_view _Old_str) {
         if (_Old_str.empty()) {
             return string{};
@@ -1301,9 +1301,6 @@ void print(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&... _Arg
 
 _EXPORT_STD template <class... _Types>
 void println(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&... _Args) {
-    // Equivalent to:
-    //
-    // std::print(_Ostr, "{}\n", std::format(_Fmt, std::forward<_Types>(_Args)...));
     _STD _Print_impl<true>(_Ostr, _Fmt, _STD forward<_Types>(_Args)...);
 }
 

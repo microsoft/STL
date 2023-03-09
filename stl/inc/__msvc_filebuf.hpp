@@ -819,5 +819,5 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif //_STL_COMPILER_PREPROCESSOR
+#endif // _STL_COMPILER_PREPROCESSOR
 #endif // __MSVC_FILEBUF_HPP

@@ -174,9 +174,6 @@ void print(const format_string<_Types...> _Fmt, _Types&&... _Args) {
 
 _EXPORT_STD template <class... _Types>
 void println(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
-    // Equivalent to:
-    //
-    // std::print(_Stream, "{}\n", std::format(_Fmt, std::forward<_Types>(_Args)...));
     _STD _Print_impl<true>(_Stream, _Fmt, _STD forward<_Types>(_Args)...);
 }
 
