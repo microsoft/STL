@@ -252,6 +252,16 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
         assert(cmp_equal(last - first, rng.size()));
         static_assert(noexcept(last - first)); // strengthened
     }
+
+    const same_as<ranges::const_iterator_t<R>> auto cfirst = rng.cbegin();
+    assert(cfirst == first);
+    const same_as<ranges::const_sentinel_t<R>> auto clast = rng.cend();
+    if constexpr (ranges::common_range<R>) {
+        assert(clast == last);
+        assert(cmp_equal(clast - cfirst, rng.size()));
+    } else {
+        static_assert(same_as<remove_const_t<decltype(clast)>, unreachable_sentinel_t>);
+    }
 }
 
 struct move_tester {
