@@ -3259,11 +3259,12 @@ _NODISCARD size_t formatted_size(const locale& _Loc, const wformat_string<_Types
 #if _HAS_CXX23
 template <bool _Add_newline>
 _NODISCARD string _Escape_braces(const string_view _Old_str) {
+    string _Escaped_str;
+
     if (_Old_str.empty()) {
-        return string{};
+        return _Escaped_str;
     }
 
-    string _Escaped_str;
     size_t _Escaped_str_expected_size = _Old_str.size();
 
     if constexpr (_Add_newline) {
