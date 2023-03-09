@@ -6681,7 +6681,7 @@ namespace ranges {
                             "cannot advance chunk_view iterator past end");
                     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                    _RANGES advance(_Current, _Count * (_Off - 1));
+                    _Current += static_cast<difference_type>(_Count * (_Off - 1));
                     _Missing = _RANGES advance(_Current, _Count, _End);
                 } else if (_Off < 0) {
                     _Current += static_cast<difference_type>(_Count * _Off + _Missing);
@@ -7635,7 +7635,7 @@ namespace ranges {
                             "cannot advance stride_view iterator past end");
                     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                    _RANGES advance(_Current, _Stride * (_Off - 1));
+                    _Current += static_cast<difference_type>(_Stride * (_Off - 1));
                     _Missing = _RANGES advance(_Current, _Stride, _End);
                 } else if (_Off < 0) {
                     _Current += static_cast<difference_type>(_Stride * _Off + _Missing);
