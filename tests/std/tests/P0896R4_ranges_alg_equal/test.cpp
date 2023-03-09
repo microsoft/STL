@@ -81,7 +81,7 @@ constexpr void smoke_test() {
     }
     {
         // Validate GH-3550: "<ranges>: ranges::equal does not work for ranges with integer-class range_difference_t"
-        auto v = std::ranges::subrange{std::views::iota(0ull, 10ull)} | std::views::drop(2);
+        auto v = ranges::subrange{std::views::iota(0ull, 10ull)} | std::views::drop(2);
         assert(equal(v, v));
     }
 }
