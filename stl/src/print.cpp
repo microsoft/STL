@@ -155,7 +155,7 @@ namespace {
         _Transcode_result() noexcept : _Transcoded_str(), _Successful(true) {}
 
         _Transcode_result(_Minimal_wstring_view _Result_str) noexcept
-            : _Transcoded_str(_STD move(_Result_str)), _Successful(true) {}
+            : _Transcoded_str(_Result_str), _Successful(true) {}
 
         _Transcode_result(__std_win_error _Result_error) noexcept : _Win_error(_Result_error), _Successful(false) {}
 
