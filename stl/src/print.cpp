@@ -189,6 +189,7 @@ namespace {
 
         // For vprint_unicode(), N4928 [ostream.formatted.print]/4 suggests replacing invalid code units with U+FFFD.
         // This is done automatically by MultiByteToWideChar(), so long as we do not use the MB_ERR_INVALID_CHARS flag.
+        // We transcode up to 8,192 bytes per segment, which easily fits in an int.
         const int32_t _Num_chars_required =
             MultiByteToWideChar(CP_UTF8, 0, _Src_str._Data(), static_cast<int>(_Src_str._Size()), nullptr, 0);
 
