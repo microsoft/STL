@@ -47,7 +47,7 @@ _EXTERN_C
     // We can check if _Console_handle actually refers to a console or not by checking the
     // return value of GetConsoleMode().
     DWORD _Console_mode;
-    const bool _Is_unicode_console = (GetConsoleMode(_Console_handle, &_Console_mode) != 0);
+    const bool _Is_unicode_console = GetConsoleMode(_Console_handle, &_Console_mode) != 0;
 
     if (!_Is_unicode_console) {
         return __std_unicode_console_retrieval_result{._Error = __std_win_error::_File_not_found};
@@ -103,7 +103,7 @@ namespace {
         }
 
         [[nodiscard]] bool _Empty() const noexcept {
-            return (_Size() == 0);
+            return _Size() == 0;
         }
 
     private:
@@ -133,7 +133,7 @@ namespace {
             ++_Grapheme_cluster_itr;
             const char* const _Next_cluster_ptr = _Grapheme_cluster_itr._Position();
 
-            const _STD ptrdiff_t _Num_bytes_required = (_Next_cluster_ptr - _Str);
+            const _STD ptrdiff_t _Num_bytes_required = _Next_cluster_ptr - _Str;
             if (_Num_bytes_required > _Max_str_segment_size) {
                 break;
             }

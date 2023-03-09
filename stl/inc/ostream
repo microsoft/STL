@@ -1094,7 +1094,7 @@ inline ios_base::iostate _Print_noformat_nonunicode(ostream& _Ostr, const string
 
     _TRY_IO_BEGIN
     const bool _Was_insertion_successful =
-        (static_cast<size_t>(_Ostr.rdbuf()->sputn(_Str.data(), static_cast<streamsize>(_Str.size()))) == _Str.size());
+        static_cast<size_t>(_Ostr.rdbuf()->sputn(_Str.data(), static_cast<streamsize>(_Str.size()))) == _Str.size();
     if (!_Was_insertion_successful) [[unlikely]] {
         _State |= ios_base::badbit;
     }
@@ -1180,7 +1180,7 @@ inline ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_vi
 
     if (_Is_unicode_console) {
         _TRY_IO_BEGIN
-        const bool _Was_flush_successful = (_Ostr.rdbuf()->pubsync() != -1);
+        const bool _Was_flush_successful = _Ostr.rdbuf()->pubsync() != -1;
         if (!_Was_flush_successful) [[unlikely]] {
             _State |= ios_base::badbit;
             return _State;
@@ -1241,7 +1241,7 @@ inline void _Print_noformat(ostream& _Ostr, const string_view _Str) {
 
 template <bool _Add_newline, class... _Types>
 void _Print_impl(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&... _Args) {
-    constexpr bool _Has_format_args = (sizeof...(_Types) > 0);
+    constexpr bool _Has_format_args = sizeof...(_Types) > 0;
 
     // This is intentionally kept outside of the try/catch block in _Print_noformat_*()
     // (see [ostream.formatted.print/3.2]).
@@ -1275,7 +1275,7 @@ void _Print_impl(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&..
 
             if constexpr (_Add_newline) {
                 *_Dest_ptr = '\n';
-                return (_Num_chars_written + 1);
+                return _Num_chars_written + 1;
             } else {
                 return _Num_chars_written;
             }

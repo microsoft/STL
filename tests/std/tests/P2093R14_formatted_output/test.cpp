@@ -30,7 +30,7 @@ namespace test {
             //      buffer handle.
             //
             //   2. Call _fdopen() to get a FILE* for the file descriptor.
-            constexpr DWORD screen_buffer_access = (GENERIC_READ | GENERIC_WRITE);
+            constexpr DWORD screen_buffer_access = GENERIC_READ | GENERIC_WRITE;
             console_handle =
                 CreateConsoleScreenBuffer(screen_buffer_access, 0, nullptr, CONSOLE_TEXTMODE_BUFFER, nullptr);
 
@@ -136,7 +136,7 @@ namespace test {
         }
 
         bool is_console_valid() const {
-            return (console_handle != nullptr && console_handle != INVALID_HANDLE_VALUE && file_stream_ptr != nullptr);
+            return console_handle != nullptr && console_handle != INVALID_HANDLE_VALUE && file_stream_ptr != nullptr;
         }
 
     private:
@@ -160,18 +160,18 @@ wstring string_to_wstring(const string_view str) {
 
     mbstate_t conversion_state{};
     const size_t num_chars_required = static_cast<size_t>(
-        facet.length(conversion_state, str.data(), (str.data() + str.size()), (numeric_limits<size_t>::max)()));
+        facet.length(conversion_state, str.data(), str.data() + str.size(), (numeric_limits<size_t>::max)()));
 
     wstring output_str;
     output_str.resize_and_overwrite(num_chars_required, [&](wchar_t* const dest_str_ptr, const size_t output_size) {
         const char* src_end_ptr;
         wchar_t* dest_end_ptr;
-        const codecvt_base::result conversion_result = facet.in(conversion_state, str.data(), (str.data() + str.size()),
-            src_end_ptr, dest_str_ptr, (dest_str_ptr + output_size), dest_end_ptr);
+        const codecvt_base::result conversion_result = facet.in(conversion_state, str.data(), str.data() + str.size(),
+            src_end_ptr, dest_str_ptr, dest_str_ptr + output_size, dest_end_ptr);
 
         assert(conversion_result == codecvt_base::ok);
 
-        return (dest_end_ptr - dest_str_ptr);
+        return dest_end_ptr - dest_str_ptr;
     });
 
     return output_str;
@@ -182,18 +182,18 @@ string wstring_to_string(const wstring_view wide_str) {
     const facet_type& facet{use_facet<facet_type>(get_utf8_locale())};
 
     mbstate_t conversion_state{};
-    const size_t max_chars_required = (wide_str.size() * facet.max_length());
+    const size_t max_chars_required = wide_str.size() * facet.max_length();
 
     string output_str;
     output_str.resize_and_overwrite(max_chars_required, [&](char* const dest_str_ptr, const size_t output_size) {
         const wchar_t* src_end_ptr;
         char* dest_end_ptr;
         const codecvt_base::result conversion_result = facet.out(conversion_state, wide_str.data(),
-            (wide_str.data() + wide_str.size()), src_end_ptr, dest_str_ptr, (dest_str_ptr + output_size), dest_end_ptr);
+            wide_str.data() + wide_str.size(), src_end_ptr, dest_str_ptr, dest_str_ptr + output_size, dest_end_ptr);
 
         assert(conversion_result == codecvt_base::ok);
 
-        return (dest_end_ptr - dest_str_ptr);
+        return dest_end_ptr - dest_str_ptr;
     });
 
     return output_str;
@@ -364,7 +364,7 @@ void test_invalid_code_points_file() {
         file_line_str.resize_and_overwrite(
             printed_str.get().size() + 1, [&](char* const dest_str_ptr, const size_t output_size) {
                 fgets(dest_str_ptr, static_cast<int>(output_size), temp_file_stream);
-                return (output_size - 1);
+                return output_size - 1;
             });
 
         assert(file_line_str == printed_str.get());
