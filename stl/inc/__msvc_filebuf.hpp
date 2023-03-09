@@ -163,9 +163,6 @@ inline bool _Ungetc(const unsigned short& _Wchar, FILE* _File) { // put back an 
 }
 #endif // _CRTBLD
 
-template <class _Elem, class _Traits>
-class basic_ostream;
-
 _EXPORT_STD template <class _Elem, class _Traits>
 class basic_filebuf : public basic_streambuf<_Elem, _Traits> { // stream buffer associated with a C stream
 public:
