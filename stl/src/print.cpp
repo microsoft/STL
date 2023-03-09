@@ -69,7 +69,7 @@ namespace {
         explicit _Allocated_string(__crt_unique_heap_ptr<wchar_t>&& _Other_str, const size_t _Other_capacity) noexcept
             : _Str(_STD move(_Other_str)), _Str_capacity(_Other_capacity) {}
 
-        [[nodiscard]] wchar_t* _Data() noexcept {
+        [[nodiscard]] wchar_t* _Data() const noexcept {
             return _Str.get();
         }
 
