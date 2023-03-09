@@ -10,8 +10,8 @@
 
 #include <__msvc_print.hpp>
 #include <__msvc_unicode_iterators.hpp>
-#include <corecrt_terminate.h>
 #include <cstdio>
+#include <cstdlib>
 #include <internal_shared.h>
 #include <io.h>
 #include <type_traits>
@@ -214,7 +214,7 @@ namespace {
 
         if (_Conversion_result == 0) [[unlikely]] {
             // This shouldn't happen...
-            _CSTD terminate();
+            _CSTD abort();
         }
 
         return _Minimal_wstring_view{_Dst_str._Data(), static_cast<size_t>(_Conversion_result)};
