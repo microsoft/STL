@@ -9,6 +9,7 @@
 #include <format>
 #include <fstream>
 #include <io.h>
+#include <limits>
 #include <locale>
 #include <print>
 #include <sstream>
