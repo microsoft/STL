@@ -244,21 +244,23 @@ _EXTERN_C
 
     const HANDLE _Actual_console_handle = reinterpret_cast<HANDLE>(_Console_handle);
 
-    // We can do the first transcode operation without acquiring the lock. This should also
-    // handle the vast majority of strings, since we transcode in fairly large segments of
-    // 8,192 bytes per segment.
+    // We transcode in fairly large segments of 8,192 bytes per segment,
+    // so one iteration should handle the vast majority of strings.
     const char* _Remaining_str = _Str;
     size_t _Remaining_str_size = _Str_size;
 
-    _Minimal_string_view _Curr_str_segment = _Get_next_utf8_string_segment(_Remaining_str, _Remaining_str_size);
+    _Minimal_string_view _Curr_str_segment{};
     _Allocated_string _Allocated_str{};
-    _Transcode_result _Transcoded_str{_Transcode_utf8_string(_Allocated_str, _Curr_str_segment)};
-
-    if (!_Transcoded_str._Has_value()) [[unlikely]] {
-        return _Transcoded_str._Error();
-    }
+    _Transcode_result _Transcoded_str{};
 
     while (true) {
+        _Curr_str_segment = _Get_next_utf8_string_segment(_Remaining_str, _Remaining_str_size);
+        _Transcoded_str   = _Transcode_utf8_string(_Allocated_str, _Curr_str_segment);
+
+        if (!_Transcoded_str._Has_value()) [[unlikely]] {
+            return _Transcoded_str._Error();
+        }
+
         const __std_win_error _Write_result = _Write_console(_Actual_console_handle, _Transcoded_str._Value());
 
         if (_Write_result != __std_win_error::_Success) [[unlikely]] {
@@ -272,13 +274,6 @@ _EXTERN_C
         }
 
         _Remaining_str += _Curr_str_segment._Size();
-
-        _Curr_str_segment = _Get_next_utf8_string_segment(_Remaining_str, _Remaining_str_size);
-        _Transcoded_str   = _Transcode_utf8_string(_Allocated_str, _Curr_str_segment);
-
-        if (!_Transcoded_str._Has_value()) [[unlikely]] {
-            return _Transcoded_str._Error();
-        }
     }
 }
 
