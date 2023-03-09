@@ -83,7 +83,7 @@ namespace {
 
     private:
         __crt_unique_heap_ptr<wchar_t> _Str;
-        size_t _Str_capacity;
+        size_t _Str_capacity = 0;
     };
 
     template <class _Char_type>
@@ -107,8 +107,8 @@ namespace {
         }
 
     private:
-        const _Char_type* _Str;
-        size_t _Str_size;
+        const _Char_type* _Str = nullptr;
+        size_t _Str_size       = 0;
     };
 
     using _Minimal_string_view  = _Really_basic_string_view<char>;
