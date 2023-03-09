@@ -51,7 +51,7 @@ constexpr bool test_one_type() {
     static_assert(noexcept(ranges::empty(r)));
 
 #if _HAS_CXX23
-    // validate cbegin, and cend
+    // validate members cbegin and cend inherited from view_interface
     static_assert(same_as<decltype(r.cbegin()), const_iterator<T*>>);
     static_assert(r.cbegin() == nullptr);
 
@@ -59,7 +59,7 @@ constexpr bool test_one_type() {
     static_assert(r.cend() == nullptr);
 #endif // _HAS_CXX23
 
-    // validate members inherited from view_interface
+    // validate other members inherited from view_interface
     assert(!r);
 
     return true;

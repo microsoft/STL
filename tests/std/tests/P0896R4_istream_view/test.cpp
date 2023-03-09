@@ -123,7 +123,7 @@ void test_one_type() {
     { // Using ranges::istream_view with const iterators
         istringstream intstream{"0 1 2 3"};
         T input[] = {-1, -1, -1, -1, -1};
-        auto v    = ranges::istream_view<T>(intstream);
+        ranges::istream_view<T> v(intstream);
         ranges::copy(v.cbegin(), v.cend(), input);
         assert(ranges::equal(input, expected_vals));
     }
@@ -131,7 +131,7 @@ void test_one_type() {
     { // Using ranges::wistream_view with const iterators
         wistringstream wintstream{L"0 1 2 3"};
         T input[] = {-1, -1, -1, -1, -1};
-        auto v    = ranges::wistream_view<T>(wintstream);
+        ranges::wistream_view<T> v(wintstream);
         ranges::copy(v.cbegin(), v.cend(), input);
         assert(ranges::equal(input, expected_vals));
     }
