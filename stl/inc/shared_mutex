@@ -299,8 +299,7 @@ public:
     _NODISCARD_CTOR_LOCK
     _When_(this->_Owns == true, _Acquires_shared_lock_(_Mtx))
     _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
-    _When_(this->_Owns == true, _Acquires_shared_lock_(*this->_Pmtx))
-    _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(*this->_Pmtx))
+    _When_(this->_Owns == true, _Post_same_lock_(_Mtx, *this->_Pmtx))
     _Post_satisfies_(_Pmtx == &_Mtx)
     shared_lock(mutex_type& _Mtx, try_to_lock_t)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared()) {} // construct with mutex and try to lock shared
@@ -315,8 +314,7 @@ public:
     _NODISCARD_CTOR_LOCK
     _When_(this->_Owns == true, _Acquires_shared_lock_(_Mtx))
     _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
-    _When_(this->_Owns == true, _Acquires_shared_lock_(*this->_Pmtx))
-    _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(*this->_Pmtx))
+    _When_(this->_Owns == true, _Post_same_lock_(_Mtx, *this->_Pmtx))
     _Post_satisfies_(_Pmtx == &_Mtx)
     shared_lock(mutex_type& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_for(_Rel_time)) {
@@ -327,8 +325,7 @@ public:
     _NODISCARD_CTOR_LOCK
     _When_(this->_Owns == true, _Acquires_shared_lock_(_Mtx))
     _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
-    _When_(this->_Owns == true, _Acquires_shared_lock_(*this->_Pmtx))
-    _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(*this->_Pmtx))
+    _When_(this->_Owns == true, _Post_same_lock_(_Mtx, *this->_Pmtx))
     _Post_satisfies_(_Pmtx == &_Mtx)
     shared_lock(mutex_type& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_until(_Abs_time)) {
@@ -373,9 +370,9 @@ public:
     shared_lock(const shared_lock&)            = delete;
     shared_lock& operator=(const shared_lock&) = delete;
 
-    _Pre_satisfies_(_Owns == true)
+    _Pre_satisfies_(_Owns == false)
     _Pre_satisfies_(_Pmtx != nullptr)
-    _When_(_Owns == false, _Analysis_noreturn_)
+    _When_(_Owns == true, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
     _Acquires_shared_lock_(*this->_Pmtx)
     _Acquires_nonreentrant_lock_(*this->_Pmtx)
@@ -387,9 +384,10 @@ public:
 
     _NODISCARD_TRY_CHANGE_STATE
     _Requires_lock_not_held_(*this->_Pmtx)
-    _Pre_satisfies_(_Owns == true)
+    _Pre_satisfies_(_Owns == false)
     _Pre_satisfies_(_Pmtx != nullptr)
-    _When_(_Owns == false, _Analysis_noreturn_)
+    _Post_satisfies_(return == _Owns)
+    _When_(_Owns == true, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
     _When_(return == true, _Acquires_shared_lock_(*this->_Pmtx))
     _When_(return == true, _Acquires_nonreentrant_lock_(*this->_Pmtx))
@@ -402,9 +400,10 @@ public:
     template <class _Rep, class _Period>
     _NODISCARD_TRY_CHANGE_STATE
     _Requires_lock_not_held_(*this->_Pmtx)
-    _Pre_satisfies_(_Owns == true)
+    _Pre_satisfies_(_Owns == false)
     _Pre_satisfies_(_Pmtx != nullptr)
-    _When_(_Owns == false, _Analysis_noreturn_)
+    _Post_satisfies_(return == _Owns)
+    _When_(_Owns == true, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
     _When_(return == true, _Acquires_shared_lock_(*this->_Pmtx))
     _When_(return == true, _Acquires_nonreentrant_lock_(*this->_Pmtx))
@@ -418,9 +417,10 @@ public:
     template <class _Clock, class _Duration>
     _NODISCARD_TRY_CHANGE_STATE
     _Requires_lock_not_held_(*this->_Pmtx)
-    _Pre_satisfies_(_Owns == true)
+    _Pre_satisfies_(_Owns == false)
     _Pre_satisfies_(_Pmtx != nullptr)
-    _When_(_Owns == false, _Analysis_noreturn_)
+    _Post_satisfies_(return == _Owns)
+    _When_(_Owns == true, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
     _When_(return == true, _Acquires_shared_lock_(*this->_Pmtx))
     _When_(return == true, _Acquires_nonreentrant_lock_(*this->_Pmtx))
@@ -436,6 +436,7 @@ public:
 
     _Pre_satisfies_(_Owns == true)
     _Pre_satisfies_(_Pmtx != nullptr)
+    _Post_satisfies_(_Owns == false)
     _When_(_Owns == false, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
     _When_(_Owns == true, _Releases_shared_lock_(*this->_Pmtx))
@@ -469,21 +470,18 @@ public:
     }
 
     _NODISCARD
-    _When_(_Owns == true, _Post_satisfies_(return == true))
-    _When_(_Owns == false, _Post_satisfies_(return == false))
+    _Post_satisfies_(return == _Owns)
     bool owns_lock() const noexcept {
         return _Owns;
     }
 
-    _When_(_Owns == true, _Post_satisfies_(return == true))
-    _When_(_Owns == false, _Post_satisfies_(return == false))
+    _Post_satisfies_(return == _Owns)
     explicit operator bool() const noexcept {
         return _Owns;
     }
 
     _NODISCARD
-    _When_(_Pmtx != nullptr, _Post_satisfies_(return != nullptr))
-    _When_(_Pmtx == nullptr, _Post_satisfies_(return == nullptr))
+    _Post_satisfies_(return == _Pmtx)
     mutex_type* mutex() const noexcept {
         return _Pmtx;
     }
@@ -492,8 +490,10 @@ private:
     _Mutex* _Pmtx = nullptr;
     bool _Owns    = false;
 
-    _Pre_satisfies_(_Owns == true)
+    _Pre_satisfies_(_Owns == false)
     _Pre_satisfies_(_Pmtx != nullptr)
+    _Post_satisfies_(_Owns == false)
+    _Post_satisfies_(_Pmtx != nullptr)
     _When_(_Owns == false, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
     void _Validate() const { // check if the mutex can be locked
