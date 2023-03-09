@@ -19,6 +19,8 @@
 
 #include <Windows.h>
 
+#include "temp_file_name.hpp"
+
 using namespace std;
 
 namespace test {
@@ -350,8 +352,9 @@ void test_invalid_code_points_file() {
     FILE* temp_file_stream;
 
     {
-        const errno_t tmpfile_result = tmpfile_s(&temp_file_stream);
-        assert(tmpfile_result == 0);
+        const string temp_file_name_str = temp_file_name();
+        const errno_t fopen_result      = fopen_s(&temp_file_stream, temp_file_name_str.c_str(), "w+b");
+        assert(fopen_result == 0);
     }
 
     using printed_string_type = format_string<>;
@@ -451,21 +454,10 @@ void test_stream_flush_console() {
 void test_stream_flush_file() {
     // Regardless of the ordinary literal encoding, neither std::print() nor std::println()
     // should flush file streams which do not refer to consoles.
-    string temp_file_name_str;
+    const string temp_file_name_str = temp_file_name();
 
     {
-        ofstream output_file_stream;
-
-        while (!output_file_stream.is_open()) {
-            temp_file_name_str.resize_and_overwrite(L_tmpnam_s, [](char* const dest_ptr, const size_t allocated_size) {
-                const errno_t tmpnam_result = tmpnam_s(dest_ptr, allocated_size);
-                assert(tmpnam_result == 0);
-
-                return allocated_size;
-            });
-
-            output_file_stream = ofstream{temp_file_name_str};
-        }
+        ofstream output_file_stream{temp_file_name_str};
 
         print(output_file_stream, "Hello, ");
 
