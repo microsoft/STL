@@ -149,7 +149,7 @@ namespace test {
 const locale& get_utf8_locale() {
 #pragma warning(push)
 #pragma warning(disable : 4640) // construction of local static object is not thread-safe
-    static const locale utf8_locale{"en_US.utf8"};
+    static const locale utf8_locale{"en-US.UTF-8"};
 #pragma warning(pop)
 
     return utf8_locale;
