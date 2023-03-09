@@ -58,16 +58,12 @@ inline void _Print_noformat_unicode(FILE* const _Stream, const string_view _Str)
 #pragma warning(disable : 4061) // enumerator not explicitly handled by switch label
     switch (_Unicode_console_retrieval_result._Error) {
     case __std_win_error::_Success:
-        {
-            _Is_unicode_console = true;
-            break;
-        }
+        _Is_unicode_console = true;
+        break;
 
     case __std_win_error::_File_not_found:
-        {
-            _Is_unicode_console = false;
-            break;
-        }
+        _Is_unicode_console = false;
+        break;
 
     case __std_win_error::_Not_supported:
         [[unlikely]] return;
