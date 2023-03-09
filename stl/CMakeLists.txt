@@ -539,7 +539,7 @@ function(generate_satellite_def SATELLITE_NAME D_SUFFIX)
     string(TOUPPER "${full_satellite_name}" upper_full_satellite_name)
     set(satellite_src_def_file_path "${CMAKE_CURRENT_LIST_DIR}/src/msvcp_${SATELLITE_NAME}.src")
     set(satellite_output_def_file_path "${CMAKE_BINARY_DIR}/msvcp_${SATELLITE_NAME}${D_SUFFIX}.def")
-    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${satellite_output_def_file_path}")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${satellite_src_def_file_path}")
 
     # We use the placeholder name "LIBRARYNAME" in the corresponding .src file of a satellite DLL
     # (i.e., we write "LIBRARY LIBRARYNAME" as the first non-commented line in the file).
