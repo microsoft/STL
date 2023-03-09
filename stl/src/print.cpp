@@ -103,7 +103,7 @@ namespace {
         }
 
         [[nodiscard]] bool _Empty() const noexcept {
-            return _Size() == 0;
+            return _Str_size == 0;
         }
 
     private:
