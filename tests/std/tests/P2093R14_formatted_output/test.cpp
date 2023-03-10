@@ -630,5 +630,13 @@ int main(int argc, char* argv[]) {
 
         // Tell the child process that we're done working with its console.
         goodbye_semaphore.release();
+
+        {
+            const BOOL close_process_handle_succeeded = CloseHandle(process_information.hProcess);
+            assert(close_process_handle_succeeded);
+
+            const BOOL close_thread_handle_succeeded = CloseHandle(process_information.hThread);
+            assert(close_thread_handle_succeeded);
+        }
     }
 }
