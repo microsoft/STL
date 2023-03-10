@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cassert>
+#include <cstdint>
 #include <cstdio>
 #include <fcntl.h>
 #include <filesystem>
@@ -146,6 +147,52 @@ namespace test {
         HANDLE console_handle;
         FILE* file_stream_ptr;
     };
+
+    // We use Windows semaphores to synchronize the parent and child processes.
+    class WinSemaphore {
+    public:
+        // Construct a new semaphore in the parent process.
+        WinSemaphore() {
+            SECURITY_ATTRIBUTES semaphore_attributes{
+                .nLength        = sizeof(SECURITY_ATTRIBUTES),
+                .bInheritHandle = TRUE, // The child process will inherit this handle.
+            };
+            m_handle = CreateSemaphoreW(&semaphore_attributes, 0, 1, nullptr);
+            assert(m_handle != nullptr);
+        }
+
+        // Construct an inherited semaphore in the child process.
+        explicit WinSemaphore(const uintptr_t val) : m_handle(reinterpret_cast<HANDLE>(val)) {
+            assert(m_handle != nullptr);
+        }
+
+        WinSemaphore(const WinSemaphore&)            = delete;
+        WinSemaphore& operator=(const WinSemaphore&) = delete;
+
+        ~WinSemaphore() {
+            const BOOL close_handle_succeeded = CloseHandle(m_handle);
+            assert(close_handle_succeeded);
+        }
+
+        // The parent process has to tell the child process what its inherited handles are.
+        [[nodiscard]] uintptr_t to_uintptr() const {
+            return reinterpret_cast<uintptr_t>(m_handle);
+        }
+
+        // WinSemaphore imitates std::counting_semaphore's interface with release() and acquire().
+        void release() {
+            const BOOL release_semaphore_succeeded = ReleaseSemaphore(m_handle, 1, nullptr);
+            assert(release_semaphore_succeeded);
+        }
+
+        void acquire() {
+            const DWORD wait_result = WaitForSingleObject(m_handle, INFINITE);
+            assert(wait_result == WAIT_OBJECT_0);
+        }
+
+    private:
+        HANDLE m_handle;
+    };
 } // namespace test
 
 const locale& get_utf8_locale() {
@@ -210,21 +257,6 @@ void maybe_flush_console_file_stream(const test::win_console& console) {
     if constexpr (!_Is_ordinary_literal_encoding_utf8()) {
         fflush(console.get_file_stream());
     }
-}
-
-void initialize_console() {
-    // We want to do things like alter the output code page of our console, but we
-    // don't want to affect other tests which run concurrently. So, we want to detach this
-    // process from its current console, create a new console, and modify that one instead.
-
-    const BOOL free_console_result = FreeConsole();
-    assert(free_console_result);
-
-    const BOOL attach_console_result = AllocConsole();
-    assert(attach_console_result);
-
-    const BOOL set_output_cp_result = SetConsoleOutputCP(CP_UTF8);
-    assert(set_output_cp_result);
 }
 
 void test_print_optimizations() {
@@ -510,9 +542,7 @@ void test_stream_flush_file() {
     filesystem::remove(temp_file_name_str);
 }
 
-int main() {
-    initialize_console();
-
+void all_tests() {
     test_print_optimizations();
 
     test_invalid_code_points_console();
@@ -520,4 +550,85 @@ int main() {
 
     test_stream_flush_console();
     test_stream_flush_file();
+}
+
+int main(int argc, char* argv[]) {
+    // For clarity, we pass a --child option, instead of just detecting the semaphore values.
+    const bool is_child{argc == 4 && argv[1] == "--child"sv};
+
+    if (is_child) {
+        test::WinSemaphore hello_semaphore{static_cast<uintptr_t>(stoull(argv[2]))};
+        test::WinSemaphore goodbye_semaphore{static_cast<uintptr_t>(stoull(argv[3]))};
+
+        // We use the hello_semaphore to tell the parent process that we're ready for it to attach to our console.
+        hello_semaphore.release();
+
+        // Then, we use the goodbye_semaphore to wait for the parent process to finish its work.
+        goodbye_semaphore.acquire();
+    } else {
+        test::WinSemaphore hello_semaphore{};
+        test::WinSemaphore goodbye_semaphore{};
+
+        // This will receive the child process ID.
+        PROCESS_INFORMATION process_information{};
+
+        {
+            // Get the absolute path of our executable.
+            // This assumes that our test infrastructure doesn't use long paths.
+            wstring module_filename;
+            module_filename.resize_and_overwrite(MAX_PATH, [](wchar_t* const ptr, const size_t n) {
+                // resize_and_overwrite() prepares a buffer of size n + 1.
+                // GetModuleFileNameW() takes that buffer size.
+                const DWORD len = GetModuleFileNameW(nullptr, ptr, static_cast<DWORD>(n + 1));
+                assert(len != 0);
+                return len;
+            });
+
+            // CreateProcessW() requires the command line to be non-const, so we pass command_line.data() below.
+            // We use quotes to defend against module_filename containing spaces.
+            wstring command_line = format(LR"("{}" --child {} {})", module_filename, hello_semaphore.to_uintptr(),
+                goodbye_semaphore.to_uintptr());
+
+            // The entire purpose of this code is to hide the child process's console window,
+            // to avoid rapid flickering during test runs.
+            STARTUPINFOW startup_info{
+                .cb          = sizeof(STARTUPINFOW),
+                .dwFlags     = STARTF_USESHOWWINDOW,
+                .wShowWindow = SW_HIDE,
+            };
+
+            constexpr BOOL inherit_handles = TRUE;
+
+            // https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags
+            // "The new process has a new console, instead of inheriting its parent's console (the default)."
+            constexpr DWORD creation_flags = CREATE_NEW_CONSOLE;
+
+            const BOOL create_process_succeeded = CreateProcessW(module_filename.c_str(), command_line.data(), nullptr,
+                nullptr, inherit_handles, creation_flags, nullptr, nullptr, &startup_info, &process_information);
+            assert(create_process_succeeded);
+        }
+
+        // Wait for the child process to be ready before attaching to its console.
+        hello_semaphore.acquire();
+
+        {
+            // We want to do things like alter the output code page of our console, but we don't want
+            // to affect other tests which run concurrently. So, we want to detach this process from
+            // its current console, attach to the child process's console, and modify that one instead.
+
+            const BOOL free_console_succeeded = FreeConsole();
+            assert(free_console_succeeded);
+
+            const BOOL attach_console_succeeded = AttachConsole(process_information.dwProcessId);
+            assert(attach_console_succeeded);
+
+            const BOOL set_console_output_cp_succeeded = SetConsoleOutputCP(CP_UTF8);
+            assert(set_console_output_cp_succeeded);
+        }
+
+        all_tests();
+
+        // Tell the child process that we're done working with its console.
+        goodbye_semaphore.release();
+    }
 }
