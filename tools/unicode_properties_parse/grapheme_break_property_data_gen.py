@@ -244,10 +244,10 @@ def generate_data_tables() -> str:
     GraphemeBreakProperty.txt and emoji-data.txt.
 
     GraphemeBreakProperty.txt can be found at
-    https://www.unicode.org/Public/14.0.0/ucd/auxiliary/GraphemeBreakProperty.txt
+    https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakProperty.txt
 
     emoji-data.txt can be found at
-    https://www.unicode.org/Public/14.0.0/ucd/emoji/emoji-data.txt
+    https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt
 
     Both files are expected to be in the same directory as this script.
     """
