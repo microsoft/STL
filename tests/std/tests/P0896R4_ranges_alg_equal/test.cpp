@@ -79,6 +79,11 @@ constexpr void smoke_test() {
         assert(!equal(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
         assert(!equal(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
     }
+    {
+        // Validate GH-3550: "<ranges>: ranges::equal does not work for ranges with integer-class range_difference_t"
+        auto v = ranges::subrange{std::views::iota(0ull, 10ull)} | std::views::drop(2);
+        assert(equal(v, v));
+    }
 }
 
 int main() {
