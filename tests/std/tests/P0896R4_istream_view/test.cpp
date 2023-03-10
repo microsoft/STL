@@ -119,6 +119,23 @@ void test_one_type() {
         static_assert(noexcept(views::istream<T>(wintstream)));
         assert(ranges::equal(input, expected_vals));
     }
+#if _HAS_CXX23
+    { // Using ranges::istream_view with const iterators
+        istringstream intstream{"0 1 2 3"};
+        T input[] = {-1, -1, -1, -1, -1};
+        ranges::istream_view<T> v(intstream);
+        ranges::copy(v.cbegin(), v.cend(), input);
+        assert(ranges::equal(input, expected_vals));
+    }
+
+    { // Using ranges::wistream_view with const iterators
+        wistringstream wintstream{L"0 1 2 3"};
+        T input[] = {-1, -1, -1, -1, -1};
+        ranges::wistream_view<T> v(wintstream);
+        ranges::copy(v.cbegin(), v.cend(), input);
+        assert(ranges::equal(input, expected_vals));
+    }
+#endif // _HAS_CXX23
 }
 
 istringstream some_stream{"42"};
