@@ -1403,12 +1403,42 @@ struct _Signed128 : _Base128 {
         return static_cast<int64_t>(_Word[1]) < 0 ? -static_cast<_Ty>(-_Unsigned_self)
                                                   : static_cast<_Ty>(_Unsigned_self);
     }
+    /**
+    // original code, see https://github.com/microsoft/STL/pull/3559#discussion_r1133080097 for why not to use it
     template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
     constexpr explicit _Signed128(const _Ty _Val) noexcept {
         const bool _Negative = _Val < _Ty{};
         const _Ty _Absval    = _Negative ? -_Val : _Val;
         _Word[0]             = static_cast<uint64_t>(_Absval);
         _Word[1]             = static_cast<uint64_t>(_Absval / static_cast<_Ty>(18446744073709551616.0));
+        if (_Negative) {
+            *this = -*this;
+        }
+    }
+    **/
+    constexpr explicit _Signed128(const float _Val) noexcept {
+        const bool _Negative = _Val < 0.0f;
+        const float _Absval  = _Negative ? -_Val : _Val;
+        _Word[0]             = static_cast<uint64_t>(_Absval);
+        _Word[1]             = static_cast<uint64_t>(_Absval / 18446744073709551616.0f);
+        if (_Negative) {
+            *this = -*this;
+        }
+    }
+    constexpr explicit _Signed128(const double _Val) noexcept {
+        const bool _Negative = _Val < 0.0;
+        const double _Absval = _Negative ? -_Val : _Val;
+        _Word[0]             = static_cast<uint64_t>(_Absval);
+        _Word[1]             = static_cast<uint64_t>(_Absval / 18446744073709551616.0);
+        if (_Negative) {
+            *this = -*this;
+        }
+    }
+    constexpr explicit _Signed128(const long double _Val) noexcept {
+        const bool _Negative = _Val < 0.0L;
+        const long double _Absval = _Negative ? -_Val : _Val;
+        _Word[0]                  = static_cast<uint64_t>(_Absval);
+        _Word[1]                  = static_cast<uint64_t>(_Absval / 18446744073709551616.0L);
         if (_Negative) {
             *this = -*this;
         }
