@@ -1003,7 +1003,10 @@ struct _Unsigned128 : _Base128 {
         _Word[0] = static_cast<uint64_t>(_Val);
         _Word[1] = static_cast<uint64_t>(_Val / 18446744073709551616.0);
     }
-    constexpr explicit _Unsigned128(const long double _Val) noexcept : _Unsigned128(static_cast<double>(_Val)) {}
+    constexpr explicit _Unsigned128(const long double _Val) noexcept {
+        _Word[0] = static_cast<uint64_t>(_Val);
+        _Word[1] = static_cast<uint64_t>(_Val / 18446744073709551616.0L);
+    }
 
     // explicit conversion to size_t, we need this because there may have some ice in msvc
     // see https://github.com/microsoft/STL/pull/3559#discussion_r1133067391 for more details
