@@ -992,6 +992,10 @@ struct _Unsigned128 : _Base128 {
         _Word[0] = static_cast<uint64_t>(_Val);
         _Word[1] = static_cast<uint64_t>(_Val / static_cast<_Ty>(18446744073709551616.0));
     }
+
+    _NODISCARD constexpr explicit operator size_t() const noexcept {
+        return static_cast<size_t>(_Word[0]);
+    }
 };
 
 template <>
@@ -1395,6 +1399,10 @@ struct _Signed128 : _Base128 {
         if (_Negative) {
             _Word[1] |= 1ull << 63;
         }
+    }
+
+    _NODISCARD constexpr operator size_t() const noexcept {
+        return static_cast<size_t>(_Word[0]);
     }
 };
 
