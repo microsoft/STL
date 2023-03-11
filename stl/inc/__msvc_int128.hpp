@@ -995,13 +995,12 @@ struct _Unsigned128 : _Base128 {
         return *this;
     }
 
-    _NODISCARD constexpr explicit operator bool() const noexcept {
-        return _Word[0] != 0 || _Word[1] != 0;
+    _NODISCARD constexpr explicit operator long double() const noexcept {
+        return static_cast<long double>(_Word[1]) * 18446744073709551616.0 + static_cast<long double>(_Word[0]);
     }
-
-    //for static_cast<double>
-    _NODISCARD constexpr explicit operator double() const noexcept {
-        return static_cast<double>(_Word[1]) * 18446744073709551616.0 + static_cast<double>(_Word[0]);
+    template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+    _NODISCARD constexpr explicit operator _Ty() const noexcept {
+        return static_cast<_Ty>(static_cast<long double>(*this));
     }
 };
 
@@ -1399,13 +1398,12 @@ struct _Signed128 : _Base128 {
         return static_cast<_Ty>(_Signed128{_Left} >> _Right);
     }
 
-    _NODISCARD constexpr explicit operator bool() const noexcept {
-        return _Word[0] != 0 || _Word[1] != 0;
+    _NODISCARD constexpr explicit operator long double() const noexcept {
+        return static_cast<long double>(_Word[1]) * 18446744073709551616.0 + static_cast<long double>(_Word[0]);
     }
-
-    //for static_cast<double>
-    _NODISCARD constexpr explicit operator double() const noexcept {
-        return static_cast<double>(_Word[1]) * 18446744073709551616.0 + static_cast<double>(_Word[0]);
+    template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+    _NODISCARD constexpr explicit operator _Ty() const noexcept {
+        return static_cast<_Ty>(static_cast<long double>(*this));
     }
 };
 
