@@ -793,6 +793,12 @@ struct _Unsigned128 : _Base128 {
         return *this;
     }
 
+    _TEMPLATE_CLASS_INTEGRAL(_Ty)
+    _NODISCARD_FRIEND constexpr _Ty operator>>(_Ty _Left, const _Unsigned128& _Right) noexcept {
+        _Left >>= _Right._Word[0];
+        return _Left;
+    }
+
     constexpr _Unsigned128& operator++() noexcept {
         if (++_Word[0] == 0) {
             ++_Word[1];
@@ -934,6 +940,13 @@ struct _Unsigned128 : _Base128 {
     _NODISCARD_FRIEND constexpr _Unsigned128 operator%(const _Base128& _Num, const _Base128& _Den) noexcept {
         return _Unsigned128{_Base128::_Modulo(_Num, _Den)};
     }
+    _TEMPLATE_CLASS_INTEGRAL(_Ty)
+    _NODISCARD_FRIEND constexpr _Ty operator%(_Ty _Left, const _Unsigned128& _Right) noexcept {
+        if (_Right._Word[1] == 0) {
+            _Left %= _Right._Word[0];
+        }
+        return _Left;
+    }
 
     _TEMPLATE_CLASS_INTEGRAL(_Ty)
     constexpr _Unsigned128& operator%=(const _Ty _Den) noexcept {
@@ -980,6 +993,15 @@ struct _Unsigned128 : _Base128 {
         _Word[0] |= _That._Word[0];
         _Word[1] |= _That._Word[1];
         return *this;
+    }
+
+    _NODISCARD constexpr explicit operator bool() const noexcept {
+        return _Word[0] != 0 || _Word[1] != 0;
+    }
+
+    //for static_cast<double>
+    _NODISCARD constexpr explicit operator double() const noexcept {
+        return static_cast<double>(_Word[1]) * 18446744073709551616.0 + static_cast<double>(_Word[0]);
     }
 };
 
@@ -1318,6 +1340,10 @@ struct _Signed128 : _Base128 {
     _NODISCARD_FRIEND constexpr _Signed128 operator%(_Signed128 _Left, const _Ty _Right) noexcept {
         return _Left % _Signed128{_Right};
     }
+    _TEMPLATE_CLASS_INTEGRAL(_Ty)
+    _NODISCARD_FRIEND constexpr _Ty operator%(_Ty _Left, const _Signed128& _Right) noexcept {
+        return static_cast<_Ty>(_Signed128{_Left} % _Right);
+    }
 
     _TEMPLATE_CLASS_INTEGRAL(_Ty)
     constexpr _Signed128& operator%=(const _Ty _That) noexcept {
@@ -1366,6 +1392,20 @@ struct _Signed128 : _Base128 {
         _Word[0] |= _That._Word[0];
         _Word[1] |= _That._Word[1];
         return *this;
+    }
+
+    _TEMPLATE_CLASS_INTEGRAL(_Ty)
+    _NODISCARD_FRIEND constexpr _Ty operator>>(_Ty _Left, const _Signed128& _Right) noexcept {
+        return static_cast<_Ty>(_Signed128{_Left} >> _Right);
+    }
+
+    _NODISCARD constexpr explicit operator bool() const noexcept {
+        return _Word[0] != 0 || _Word[1] != 0;
+    }
+
+    //for static_cast<double>
+    _NODISCARD constexpr explicit operator double() const noexcept {
+        return static_cast<double>(_Word[1]) * 18446744073709551616.0 + static_cast<double>(_Word[0]);
     }
 };
 
