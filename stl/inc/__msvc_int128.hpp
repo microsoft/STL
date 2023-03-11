@@ -1382,14 +1382,19 @@ struct _Signed128 : _Base128 {
     template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
     _NODISCARD constexpr explicit operator _Ty() const noexcept {
         bool _Negative = int64_t(_Word[1]) < 0;
-        _Unsigned128 _Abs{_Word[0], abs(int64_t(_Word[1]))};
+        const _Unsigned128 _Abs{_Word[0], abs(int64_t(_Word[1]))};
         auto _Result = static_cast<_Ty>(_Abs);
         return _Negative ? -_Result : _Result;
     }
     template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
     constexpr explicit _Signed128(const _Ty _Val) noexcept {
-        _Word[0] = static_cast<uint64_t>(_Val);
-        _Word[1] = static_cast<int64_t>(_Val / static_cast<_Ty>(18446744073709551616.0));
+        const bool _Negative = _Val < 0;
+        const _Ty _Absval    = _Negative ? -_Val : _Val;
+        _Word[0]             = static_cast<uint64_t>(_Absval);
+        _Word[1]             = static_cast<uint64_t>(_Absval / static_cast<_Ty>(18446744073709551616.0));
+        if (_Negative) {
+            _Word[1] |= 1ull << 63;
+        }
     }
 };
 
