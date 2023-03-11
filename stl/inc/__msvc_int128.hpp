@@ -1005,6 +1005,8 @@ struct _Unsigned128 : _Base128 {
     }
     constexpr explicit _Unsigned128(const long double _Val) noexcept : _Unsigned128(static_cast<double>(_Val)) {}
 
+    // explicit conversion to size_t, we need this because there may have some ice in msvc
+    // see https://github.com/microsoft/STL/pull/3559#discussion_r1133067391 for more details
     _NODISCARD constexpr explicit operator size_t() const noexcept {
         return static_cast<size_t>(_Word[0]);
     }
@@ -1412,6 +1414,8 @@ struct _Signed128 : _Base128 {
         }
     }
 
+    // explicit conversion to size_t, we need this because there may have some ice in msvc
+    // see https://github.com/microsoft/STL/pull/3559#discussion_r1133067391 for more details
     _NODISCARD constexpr explicit operator size_t() const noexcept {
         return static_cast<size_t>(_Word[0]);
     }
