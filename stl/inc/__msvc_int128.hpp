@@ -1392,12 +1392,12 @@ struct _Signed128 : _Base128 {
     }
     template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
     constexpr explicit _Signed128(const _Ty _Val) noexcept {
-        const bool _Negative = _Val < 0;
+        const bool _Negative = _Val < _Ty{};
         const _Ty _Absval    = _Negative ? -_Val : _Val;
         _Word[0]             = static_cast<uint64_t>(_Absval);
         _Word[1]             = static_cast<uint64_t>(_Absval / static_cast<_Ty>(18446744073709551616.0));
         if (_Negative) {
-            _Word[1] |= 1ull << 63;
+            *this = -*this;
         }
     }
 
