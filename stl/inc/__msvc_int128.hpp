@@ -1401,7 +1401,7 @@ struct _Signed128 : _Base128 {
         }
     }
 
-    _NODISCARD constexpr operator size_t() const noexcept {
+    _NODISCARD constexpr explicit operator size_t() const noexcept {
         return static_cast<size_t>(_Word[0]);
     }
 };
