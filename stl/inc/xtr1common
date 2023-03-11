@@ -179,14 +179,13 @@ struct _Signed128;
 struct _Unsigned128;
 
 _EXPORT_STD template <class _Ty>
-_INLINE_VAR constexpr bool is_integral_v = _Is_any_of_v<remove_cv_t<_Ty>, bool, char, signed char, unsigned char,
-    wchar_t,
+_INLINE_VAR constexpr bool is_integral_v =
+    _Is_any_of_v<remove_cv_t<_Ty>, bool, char, signed char, unsigned char, wchar_t,
 #ifdef __cpp_char8_t
-    char8_t,
+        char8_t,
 #endif // __cpp_char8_t
-    char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long,
-    _Signed128, _Unsigned128
->;
+        char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned long, long long,
+        unsigned long long, _Signed128, _Unsigned128>;
 
 _EXPORT_STD template <class _Ty>
 struct is_integral : bool_constant<is_integral_v<_Ty>> {};
