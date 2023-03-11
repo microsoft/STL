@@ -8,9 +8,9 @@
 #define _MDSPAN_
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
-#if !_HAS_CXX23
+#if !_HAS_CXX23 || !defined(__cpp_lib_concepts) // TRANSITION, GH-395
 _EMIT_STL_WARNING(STL4038, "The contents of <mdspan> are available only with C++23 or later.");
-#else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
+#else // ^^^ not supported / supported language mode vvv
 #include <algorithm>
 #include <array>
 #include <span>
@@ -48,26 +48,25 @@ struct _Mdspan_extent_type {
 
     constexpr _Mdspan_extent_type() noexcept = default;
 
-    template <class... _OtherIndexTypes,
-        enable_if_t<sizeof...(_OtherIndexTypes) == _Rank_dynamic && (is_same_v<_OtherIndexTypes, index_type> && ...),
-            int> = 0>
+    template <class... _OtherIndexTypes>
+        requires (sizeof...(_OtherIndexTypes) == _Rank_dynamic) && (is_same_v<_OtherIndexTypes, index_type> && ...)
     constexpr _Mdspan_extent_type(_OtherIndexTypes... _OtherExtents) noexcept : _Dynamic_extents{_OtherExtents...} {}
 
-    template <class _OtherIndexType, size_t _Size, size_t... _Idx, enable_if_t<_Size == _Rank_dynamic, int> = 0>
+    template <class _OtherIndexType, size_t _Size, size_t... _Idx>
+        requires (_Size == _Rank_dynamic)
     constexpr _Mdspan_extent_type(span<_OtherIndexType, _Size> _Data, index_sequence<_Idx...>) noexcept
         : _Dynamic_extents{static_cast<index_type>(_STD as_const(_Data[_Idx]))...} {}
 
-    template <class... _OtherIndexTypes,
-        enable_if_t<sizeof...(_OtherIndexTypes) == sizeof...(_Extents) && sizeof...(_Extents) != _Rank_dynamic
-                        && (is_same_v<_OtherIndexTypes, index_type> && ...),
-            int> = 0>
+    template <class... _OtherIndexTypes>
+        requires (sizeof...(_OtherIndexTypes) == sizeof...(_Extents)) && (sizeof...(_Extents) != _Rank_dynamic)
+              && (is_same_v<_OtherIndexTypes, index_type> && ...)
     constexpr _Mdspan_extent_type(_OtherIndexTypes... _OtherExtents) noexcept {
         auto _It = _Dynamic_extents;
         ((_Extents == dynamic_extent ? void(*_It++ = _OtherExtents) : void(_OtherExtents)), ...);
     }
 
-    template <class _OtherIndexType, size_t _Size, size_t... _Idx,
-        enable_if_t<_Size == sizeof...(_Extents) && sizeof...(_Extents) != _Rank_dynamic, int> = 0>
+    template <class _OtherIndexType, size_t _Size, size_t... _Idx>
+        requires (_Size == sizeof...(_Extents)) && (sizeof...(_Extents) != _Rank_dynamic)
     constexpr _Mdspan_extent_type(span<_OtherIndexType, _Size> _Data, index_sequence<_Idx...>) noexcept
         : _Dynamic_extents{{static_cast<index_type>(_STD as_const(_Data[_Dynamic_indices[_Idx]]))...}} {}
 
@@ -88,11 +87,12 @@ struct _Mdspan_extent_type<_IndexType, 0, _Extents...> {
 
     constexpr _Mdspan_extent_type() noexcept = default;
 
-    template <class... _IndexTypes, enable_if_t<sizeof...(_IndexTypes) == sizeof...(_Extents), int> = 0>
+    template <class... _IndexTypes>
+        requires (sizeof...(_IndexTypes) == sizeof...(_Extents))
     constexpr _Mdspan_extent_type(_IndexTypes... /*_OtherExtents*/) noexcept {}
 
-    template <class _OtherIndexType, size_t _Size, size_t... _Idx,
-        enable_if_t<_Size == sizeof...(_Extents) || _Size == 0, int> = 0>
+    template <class _OtherIndexType, size_t _Size, size_t... _Idx>
+        requires (_Size == sizeof...(_Extents)) || (_Size == 0)
     constexpr _Mdspan_extent_type(span<_OtherIndexType, _Size>, index_sequence<_Idx...>) noexcept {}
 
     constexpr index_type* _Begin_dynamic_extents() noexcept {
@@ -160,13 +160,11 @@ public:
 
     constexpr extents() noexcept = default;
 
-    template <class _OtherIndexType, size_t... _OtherExtents,
-        enable_if_t<sizeof...(_OtherExtents) == sizeof...(_Extents)
-                        && ((_OtherExtents == dynamic_extent || _Extents == dynamic_extent || _OtherExtents == _Extents)
-                            && ...),
-            int> = 0>
+    template <class _OtherIndexType, size_t... _OtherExtents>
+        requires (sizeof...(_OtherExtents) == sizeof...(_Extents))
+              && ((_OtherExtents == dynamic_extent || _Extents == dynamic_extent || _OtherExtents == _Extents) && ...)
     constexpr explicit((((_Extents != dynamic_extent) && (_OtherExtents == dynamic_extent)) || ...)
-                       || numeric_limits<index_type>::max() < numeric_limits<_OtherIndexType>::max())
+                       || (numeric_limits<index_type>::max)() < (numeric_limits<_OtherIndexType>::max)())
         extents(const extents<_OtherIndexType, _OtherExtents...>& _Other) noexcept {
         auto _Dynamic_it = _Mybase::_Begin_dynamic_extents();
         for (rank_type _Dim = 0; _Dim < sizeof...(_Extents); ++_Dim) {
@@ -176,27 +174,24 @@ public:
         }
     }
 
-    template <class... _OtherIndexTypes,
-        enable_if_t<(is_convertible_v<_OtherIndexTypes, index_type> && ...)
-                        && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
-                        && (sizeof...(_OtherIndexTypes) == rank_dynamic() || sizeof...(_OtherIndexTypes) == rank()),
-            int> = 0>
+    template <class... _OtherIndexTypes>
+        requires (is_convertible_v<_OtherIndexTypes, index_type> && ...)
+              && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
+              && (sizeof...(_OtherIndexTypes) == rank_dynamic() || sizeof...(_OtherIndexTypes) == rank())
     constexpr explicit extents(_OtherIndexTypes... _Exts) noexcept
         : _Mybase{static_cast<index_type>(_STD move(_Exts))...} {}
 
-    template <class _OtherIndexType, size_t _Size,
-        enable_if_t<is_convertible_v<const _OtherIndexType&, index_type>
-                        && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
-                        && (_Size == rank_dynamic() || _Size == rank()),
-            int> = 0>
+    template <class _OtherIndexType, size_t _Size>
+        requires is_convertible_v<const _OtherIndexType&, index_type>
+              && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
+              && (_Size == rank_dynamic() || _Size == rank())
     constexpr explicit(_Size != rank_dynamic()) extents(span<_OtherIndexType, _Size> _Exts) noexcept
         : _Mybase{_Exts, _STD make_index_sequence<rank_dynamic()>{}} {}
 
-    template <class _OtherIndexType, size_t _Size,
-        enable_if_t<is_convertible_v<const _OtherIndexType&, index_type>
-                        && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
-                        && (_Size == rank_dynamic() || _Size == rank()),
-            int> = 0>
+    template <class _OtherIndexType, size_t _Size>
+        requires is_convertible_v<const _OtherIndexType&, index_type>
+              && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
+              && (_Size == rank_dynamic() || _Size == rank())
     constexpr explicit(_Size != rank_dynamic()) extents(const array<_OtherIndexType, _Size>& _Exts) noexcept
         : _Mybase{span{_Exts}, _STD make_index_sequence<rank_dynamic()>{}} {}
 
@@ -243,7 +238,8 @@ using dextents =
     }(_IndexType{0}, make_index_sequence<_Rank>{}));
 
 // TRANSITION: why not `((void) _Ext, dynamic_extent)...`?!
-template <class... _Integrals, enable_if_t<(is_convertible_v<_Integrals, size_t> && ...), int> = 0>
+template <class... _Integrals>
+    requires (is_convertible_v<_Integrals, size_t> && ...)
 extents(_Integrals... _Ext)
     -> extents<size_t, conditional_t<true, integral_constant<size_t, dynamic_extent>, _Integrals>::value...>;
 
@@ -295,11 +291,11 @@ public:
     using rank_type    = typename _Extents::rank_type;
     using layout_type  = layout_left;
 
-    static_assert(
-        _Is_extents<_Extents>, "Extents must be a specialization of extents (N4928 [mdspan.layout.left.overview]/2).");
+    static_assert(_Is_extents<_Extents>,
+        "Extents must be a specialization of std::extents (N4928 [mdspan.layout.left.overview]/2).");
     static_assert(_Extents::_Is_index_space_size_representable(),
-        "If Extends::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() is "
-        "representable as a value of type typename Extends::index_type.");
+        "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
+        "representable as a value of type typename Extents::index_type.");
 
     constexpr mapping() noexcept               = default;
     constexpr mapping(const mapping&) noexcept = default;
@@ -406,11 +402,11 @@ public:
     using rank_type    = typename _Extents::rank_type;
     using layout_type  = layout_right;
 
-    static_assert(
-        _Is_extents<_Extents>, "Extents must be a specialization of extents (N4928 [mdspan.layout.right.overview]/2).");
+    static_assert(_Is_extents<_Extents>,
+        "Extents must be a specialization of std::extents (N4928 [mdspan.layout.right.overview]/2).");
     static_assert(_Extents::_Is_index_space_size_representable(),
-        "If Extends::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() is "
-        "representable as a value of type typename Extends::index_type.");
+        "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
+        "representable as a value of type typename Extents::index_type.");
 
     constexpr mapping() noexcept               = default;
     constexpr mapping(const mapping&) noexcept = default;
@@ -520,10 +516,10 @@ public:
     using layout_type  = layout_stride;
 
     static_assert(_Is_extents<_Extents>,
-        "Extents must be a specialization of extents (N4928 [mdspan.layout.stride.overview]/2).");
+        "Extents must be a specialization of std::extents (N4928 [mdspan.layout.stride.overview]/2).");
     static_assert(_Extents::_Is_index_space_size_representable(),
-        "If Extends::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() is "
-        "representable as a value of type typename Extends::index_type.");
+        "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
+        "representable as a value of type typename Extents::index_type.");
 
     constexpr mapping() noexcept               = default;
     constexpr mapping(const mapping&) noexcept = default;
@@ -735,10 +731,10 @@ public:
         !is_abstract_v<_ElementType>, "ElementType cannot be an abstract type (N4928 [mdspan.mdspan.overview]/2.1).");
     static_assert(
         !is_array_v<_ElementType>, "ElementType cannot be an array type (N4928 [mdspan.mdspan.overview]/2.1).");
-    static_assert(
-        _Is_extents<_Extents>, "Extents must be a specialization of extents (N4928 [mdspan.mdspan.overview]/2.2).");
+    static_assert(_Is_extents<_Extents>,
+        "Extents must be a specialization of std::extents (N4928 [mdspan.mdspan.overview]/2.2).");
     static_assert(is_same_v<_ElementType, typename _AccessorPolicy::element_type>,
-        "Expression is_same_v<ElementType, typename AccessorPolicy::element_type> must be true (N4928 "
+        "ElementType and typename AccessorPolicy::element_type must be the same type (N4928 "
         "[mdspan.mdspan.overview]/2.3).");
 
     _NODISCARD static constexpr rank_type rank() noexcept {
@@ -817,11 +813,10 @@ public:
         mdspan(const mdspan<_OtherElementType, _OtherExtents, _OtherLayoutPolicy, _OtherAccessor>& _Other)
         : _Ptr{_Other._Ptr}, _Map{_Other._Map}, _Acc{_Other._Acc} {
         static_assert(is_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>,
-            "Expression is_constructible_v<data_handle_type, const typename OtherAccessor::data_handle_type&> must "
-            "be true (N4928 [mdspan.mdspan.cons]/20.1).");
+            "The data_handle_type must be constructible from const typename OtherAccessor::data_handle_type& (N4928 "
+            "[mdspan.mdspan.cons]/20.1).");
         static_assert(is_constructible_v<extents_type, _OtherExtents>,
-            "Expression is_constructible_v<extents_type, OtherExtents> must be true (N4928 "
-            "[mdspan.mdspan.cons]/20.2).");
+            "The extents_type must be constructible from OtherExtents (N4928 [mdspan.mdspan.cons]/20.2).");
     }
 
     constexpr mdspan& operator=(const mdspan&) = default;
