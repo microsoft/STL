@@ -1385,10 +1385,9 @@ struct _Signed128 : _Base128 {
 
     template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
     _NODISCARD constexpr explicit operator _Ty() const noexcept {
-        bool _Negative = int64_t(_Word[1]) < 0;
-        const _Unsigned128 _Abs{_Word[0], (_Negative ? uint64_t(-int64_t(_Word[1])) : uint64_t(_Word[1]))};
-        auto _Result = static_cast<_Ty>(_Abs);
-        return _Negative ? -_Result : _Result;
+        const auto _Unsigned_self = static_cast<_Unsigned128>(*this);
+        return static_cast<int64_t>(_Word[1]) < 0 ? -static_cast<_Ty>(-_Unsigned_self)
+                                                  : static_cast<_Ty>(_Unsigned_self);
     }
     template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
     constexpr explicit _Signed128(const _Ty _Val) noexcept {
