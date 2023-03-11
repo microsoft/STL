@@ -1377,7 +1377,14 @@ struct _Signed128 : _Base128 {
     }
 
     _NODISCARD constexpr explicit operator long double() const noexcept {
-        return static_cast<long double>(_Word[1]) * 18446744073709551616.0 + static_cast<long double>(_Word[0]);
+        bool _Negative = false;
+        _Signed128 _Copy{*this};
+        _Copy._Strip_negative(_Negative);
+        long double _Result = static_cast<long double>(_Copy._Word[0]) + static_cast<long double>(_Copy._Word[1]) * 18446744073709551616.0;
+        if (_Negative) {
+            _Result = -_Result;
+        }
+        return _Result;
     }
     template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
     _NODISCARD constexpr explicit operator _Ty() const noexcept {
