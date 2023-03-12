@@ -1392,5 +1392,5 @@ int main() {
     test_cross();
     STATIC_ASSERT(test_cross());
     test_floating_point();
-    static_assert(test_floating_point());
+    STATIC_ASSERT(test_floating_point());
 }
