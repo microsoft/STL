@@ -1068,7 +1068,7 @@ struct _Signed128 : _Base128 {
 #ifdef __clang__ // TRANSITION, Clang 16 or 17
     constexpr explicit _Signed128(const float _Val) noexcept {
         const bool _Negative = _Val < 0.0f;
-        const float _Absval = _Negative ? -_Val : _Val;
+        const float _Absval  = _Negative ? -_Val : _Val;
         _Word[0]             = static_cast<uint64_t>(_Absval);
         _Word[1]             = static_cast<uint64_t>(_Absval / 18446744073709551616.0f);
         if (_Negative) {
