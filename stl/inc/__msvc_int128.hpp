@@ -26,11 +26,11 @@
 
 #ifdef __cpp_lib_concepts
 #include <concepts>
-#define _TEMPLATE_CLASS_INTEGRAL(type) template <integral type>
-#define _TEMPLATE_CLASS_FP(type)       template <floating_point type>
+#define _TEMPLATE_CLASS_INTEGRAL(type)       template <integral type>
+#define _TEMPLATE_CLASS_FLOATING_POINT(type) template <floating_point type>
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
-#define _TEMPLATE_CLASS_INTEGRAL(type) template <class type, enable_if_t<is_integral_v<type>, int> = 0>
-#define _TEMPLATE_CLASS_FP(type)       template <class type, enable_if_t<is_floating_point_v<type>, int> = 0>
+#define _TEMPLATE_CLASS_INTEGRAL(type)       template <class type, enable_if_t<is_integral_v<type>, int> = 0>
+#define _TEMPLATE_CLASS_FLOATING_POINT(type) template <class type, enable_if_t<is_floating_point_v<type>, int> = 0>
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #pragma pack(push, _CRT_PACKING)
@@ -731,7 +731,7 @@ struct _Unsigned128 : _Base128 {
 
     constexpr explicit _Unsigned128(const long double _Val) noexcept : _Unsigned128(static_cast<double>(_Val)) {}
 #else // ^^^ workaround / no workaround vvv
-    _TEMPLATE_CLASS_FP(_Ty)
+    _TEMPLATE_CLASS_FLOATING_POINT(_Ty)
     constexpr explicit _Unsigned128(const _Ty _Val) noexcept {
         _Word[0] = static_cast<uint64_t>(_Val);
         _Word[1] = static_cast<uint64_t>(_Val / static_cast<_Ty>(18446744073709551616.0f));
@@ -743,7 +743,7 @@ struct _Unsigned128 : _Base128 {
         return static_cast<_Ty>(_Word[0]);
     }
 
-    _TEMPLATE_CLASS_FP(_Ty)
+    _TEMPLATE_CLASS_FLOATING_POINT(_Ty)
     _NODISCARD constexpr explicit operator _Ty() const noexcept {
         return static_cast<_Ty>(_Word[1]) * static_cast<_Ty>(18446744073709551616.0) + static_cast<_Ty>(_Word[0]);
     }
@@ -1088,7 +1088,7 @@ struct _Signed128 : _Base128 {
 
     constexpr explicit _Signed128(const long double _Val) noexcept : _Signed128(static_cast<double>(_Val)) {}
 #else // ^^^ workaround / no workaround vvv
-    _TEMPLATE_CLASS_FP(_Ty)
+    _TEMPLATE_CLASS_FLOATING_POINT(_Ty)
     constexpr explicit _Signed128(const _Ty _Val) noexcept {
         const bool _Negative = _Val < 0.0f;
         const _Ty _Absval = _Negative ? -_Val : _Val;
@@ -1105,7 +1105,7 @@ struct _Signed128 : _Base128 {
         return static_cast<_Ty>(_Word[0]);
     }
 
-    _TEMPLATE_CLASS_FP(_Ty)
+    _TEMPLATE_CLASS_FLOATING_POINT(_Ty)
     _NODISCARD constexpr explicit operator _Ty() const noexcept {
         const auto _Unsigned_self = static_cast<_Unsigned128>(*this);
         return static_cast<int64_t>(_Word[1]) < 0 ? -static_cast<_Ty>(-_Unsigned_self)
@@ -1501,7 +1501,7 @@ struct common_type<_Unsigned128, _Signed128> {
 
 _STD_END
 
-#undef _TEMPLATE_CLASS_FP
+#undef _TEMPLATE_CLASS_FLOATING_POINT
 #undef _TEMPLATE_CLASS_INTEGRAL
 #undef _ZERO_OR_NO_INIT
 
