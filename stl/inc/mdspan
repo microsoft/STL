@@ -186,14 +186,14 @@ public:
               && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
               && (_Size == rank_dynamic() || _Size == rank())
     constexpr explicit(_Size != rank_dynamic()) extents(span<_OtherIndexType, _Size> _Exts) noexcept
-        : _Mybase{_Exts, _STD make_index_sequence<rank_dynamic()>{}} {}
+        : _Mybase{_Exts, make_index_sequence<rank_dynamic()>{}} {}
 
     template <class _OtherIndexType, size_t _Size>
         requires is_convertible_v<const _OtherIndexType&, index_type>
               && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
               && (_Size == rank_dynamic() || _Size == rank())
     constexpr explicit(_Size != rank_dynamic()) extents(const array<_OtherIndexType, _Size>& _Exts) noexcept
-        : _Mybase{span{_Exts}, _STD make_index_sequence<rank_dynamic()>{}} {}
+        : _Mybase{span{_Exts}, make_index_sequence<rank_dynamic()>{}} {}
 
     template <class _OtherIndexType, size_t... _OtherExtents>
     _NODISCARD_FRIEND constexpr bool operator==(
