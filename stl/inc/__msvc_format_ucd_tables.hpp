@@ -124,6 +124,8 @@ struct _Unicode_property_data {
 // Codepoint ranges may not overlap, and, within one property, a codepoint may only appear once. Furthermore the
 // codepoint lower bounds appear in sorted (ascending) order.
 
+// GraphemeBreakProperty-15.0.0.txt
+// Date: 2022-04-27, 17:07:38 GMT
 enum class _Grapheme_Break_property_values : uint8_t {
     _CR_value,
     _Control_value,
@@ -141,6 +143,8 @@ enum class _Grapheme_Break_property_values : uint8_t {
     _No_value = 255
 };
 
+// GraphemeBreakProperty-15.0.0.txt
+// Date: 2022-04-27, 17:07:38 GMT
 inline constexpr _Unicode_property_data<_Grapheme_Break_property_values, 1371> _Grapheme_Break_property_data{
     {0x0, 0xa, 0xb, 0xd, 0xe, 0x7f, 0xad, 0x300, 0x483, 0x591, 0x5bf, 0x5c1, 0x5c4, 0x5c7, 0x600, 0x610, 0x61c, 0x64b,
         0x670, 0x6d6, 0x6dd, 0x6df, 0x6e7, 0x6ea, 0x70f, 0x711, 0x730, 0x7a6, 0x7eb, 0x7fd, 0x816, 0x81b, 0x825, 0x829,
@@ -340,8 +344,12 @@ inline constexpr _Unicode_property_data<_Grapheme_Break_property_values, 1371> _
         0x2004, 0x2003, 0x2037, 0x2032, 0x2001, 0x2001, 0x2005, 0x200f, 0x2007, 0x2011, 0x2007, 0x2002, 0x2005, 0x2001,
         0x2007, 0x2001, 0x2004, 0x2004, 0x2007, 0x2007, 0x801a, 0x2005, 0x1020, 0x2060, 0x1080, 0x20f0, 0x1e10}};
 
+// emoji-data.txt
+// Date: 2022-08-02, 00:26:10 GMT
 enum class _Extended_Pictographic_property_values : uint8_t { _Extended_Pictographic_value, _No_value = 255 };
 
+// emoji-data.txt
+// Date: 2022-08-02, 00:26:10 GMT
 inline constexpr _Unicode_property_data<_Extended_Pictographic_property_values, 78>
     _Extended_Pictographic_property_data{
         {0xa9, 0xae, 0x203c, 0x2049, 0x2122, 0x2139, 0x2194, 0x21a9, 0x231a, 0x2328, 0x2388, 0x23cf, 0x23e9, 0x23f8,
