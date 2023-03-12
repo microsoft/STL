@@ -429,6 +429,9 @@ namespace ranges {
                 // is_nothrow_move_constructible_v<T> is true.
                 : movable<_Ty> || is_nothrow_move_constructible_v<_Ty>);
 
+    template <class _Ty>
+    concept _Copy_constructible_for_box = is_copy_constructible_v<_Ty>;
+
     template <_Valid_movable_box_object _Ty>
         requires _Use_simple_movable_box_wrapper<_Ty>
     class _Movable_box<_Ty> { // provide the same API more efficiently when we can avoid the disengaged state
@@ -443,14 +446,16 @@ namespace ranges {
             : _Val(_STD forward<_Types>(_Args)...) {}
 
         // clang-format off
-        _Movable_box(const _Movable_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
+        _Movable_box(const _Movable_box&)
+            requires _Copy_constructible_for_box<_Ty> && is_trivially_copy_constructible_v<_Ty> = default;
         _Movable_box(_Movable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
         // clang-format on
 
-        _Movable_box(const _Movable_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>)
+        constexpr _Movable_box(const _Movable_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>)
+            requires _Copy_constructible_for_box<_Ty>
             : _Val(static_cast<const _Ty&>(_That._Val)) {}
 
-        _Movable_box(_Movable_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>)
+        constexpr _Movable_box(_Movable_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>)
             : _Val(static_cast<_Ty&&>(_That._Val)) {}
 
         // clang-format off
