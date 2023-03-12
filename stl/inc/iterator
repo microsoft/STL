@@ -187,13 +187,13 @@ public:
     constexpr move_sentinel() = default;
 
     constexpr explicit move_sentinel(_Se _Val) noexcept(is_nothrow_move_constructible_v<_Se>) // strengthened
-        : _Last{_STD move(_Val)} {}
+        : _Last(_STD move(_Val)) {}
 
     template <class _Se2>
         requires convertible_to<const _Se2&, _Se>
     constexpr move_sentinel(const move_sentinel<_Se2>& _Val) noexcept(
         is_nothrow_constructible_v<_Se, const _Se2&>) // strengthened
-        : _Last{_Val._Get_last()} {}
+        : _Last(_Val._Get_last()) {}
 
     template <class _Se2>
         requires assignable_from<_Se&, const _Se2&>
@@ -252,8 +252,8 @@ public:
     constexpr istream_iterator() noexcept(is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {}
 
 #ifdef __cpp_lib_concepts
-    constexpr istream_iterator(default_sentinel_t) noexcept(is_nothrow_default_constructible_v<_Ty>) // strengthened
-    {}
+    constexpr istream_iterator(default_sentinel_t) noexcept(
+        is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {}
 #endif // __cpp_lib_concepts
 
     istream_iterator(istream_type& _Istr) : _Myistr(_STD addressof(_Istr)) {

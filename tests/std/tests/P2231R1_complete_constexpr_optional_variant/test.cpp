@@ -24,6 +24,8 @@ struct With_nontrivial_destructor {
     int _val = 0;
     constexpr With_nontrivial_destructor(const int val) noexcept : _val(val) {}
     constexpr With_nontrivial_destructor(initializer_list<int> vals) noexcept : _val(*vals.begin()) {}
+    With_nontrivial_destructor(const With_nontrivial_destructor&)            = default;
+    With_nontrivial_destructor& operator=(const With_nontrivial_destructor&) = default;
     constexpr ~With_nontrivial_destructor() {}
 
     constexpr bool operator==(const int right) const noexcept {

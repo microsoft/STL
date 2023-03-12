@@ -137,7 +137,10 @@ public:
             _Throw_Cpp_error(_INVALID_ARGUMENT);
         }
 
-        _Check_C_return(_Thrd_detach(_Thr));
+        if (_Thrd_detach(_Thr) != _Thrd_success) {
+            _Throw_Cpp_error(_INVALID_ARGUMENT);
+        }
+
         _Thr = {};
     }
 

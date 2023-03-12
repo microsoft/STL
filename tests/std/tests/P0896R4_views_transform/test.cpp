@@ -619,7 +619,7 @@ struct iterator_instantiator {
             assert((0 + I{}).base().peek() == nullptr);
             STATIC_ASSERT(NOEXCEPT_IDL0(2 + i));
 
-            auto vi = I{};
+            I vi{};
             assert(&(i += 5) == &i);
             assert(i.base().peek() == mutable_ints + 5);
             assert(&(vi += 0) == &vi);
@@ -809,6 +809,26 @@ void test_gh_1709() {
         test_assign.assign(b, e);
         assert((test_assign == vector{10, 20, 30, 40, 50}));
     }
+}
+
+// GH-3014 "<ranges>: list-initialization is misused"
+void test_gh_3014() { // COMPILE-ONLY
+    struct FwdRange {
+        int* begin() {
+            return nullptr;
+        }
+
+        test::init_list_not_constructible_iterator<int> begin() const {
+            return nullptr;
+        }
+
+        unreachable_sentinel_t end() const {
+            return {};
+        }
+    };
+
+    auto r                                           = FwdRange{} | views::transform(identity{});
+    [[maybe_unused]] decltype(as_const(r).begin()) i = r.begin(); // Check 'iterator(iterator<!Const> i)'
 }
 
 int main() {

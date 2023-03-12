@@ -6,6 +6,8 @@
 #include <forward_list>
 #include <ranges>
 #include <span>
+#include <sstream>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -464,8 +466,9 @@ template <ranges::input_range Rng, class Expected>
 constexpr bool test_input(Rng&& rng, Expected&& expected) {
     using ranges::chunk_view, ranges::equal, ranges::iterator_t, ranges::sentinel_t;
 
-    using V = views::all_t<Rng>;
-    using R = chunk_view<V>;
+    using V  = views::all_t<Rng>;
+    using BI = iterator_t<V>;
+    using R  = chunk_view<V>;
 
     same_as<R> auto r = chunk_view{forward<Rng>(rng), 2};
     auto outer_iter   = r.begin();
@@ -478,6 +481,19 @@ constexpr bool test_input(Rng&& rng, Expected&& expected) {
 
     auto inner_iter                            = val_ty.begin();
     same_as<default_sentinel_t> auto inner_sen = val_ty.end();
+
+    { // Check iter_move (other tests are defined in 'test_lwg3851' function)
+        same_as<ranges::range_rvalue_reference_t<Rng>> decltype(auto) rval = iter_move(as_const(inner_iter));
+        assert(rval == expected[0][0]);
+        STATIC_ASSERT(noexcept(iter_move(inner_iter)) == noexcept(ranges::iter_move(declval<const BI&>())));
+    }
+
+    if constexpr (indirectly_swappable<BI>) { // Check iter_swap (other tests are defined in 'test_lwg3851' function)
+        STATIC_ASSERT(is_void_v<decltype(iter_swap(as_const(inner_iter), as_const(inner_iter)))>);
+        STATIC_ASSERT(noexcept(iter_swap(inner_iter, inner_iter))
+                      == noexcept(ranges::iter_swap(declval<const BI&>(), declval<const BI&>())));
+    }
+
     assert(inner_iter != inner_sen);
     if constexpr (sized_sentinel_for<sentinel_t<Rng>, iterator_t<Rng>>) {
         assert(inner_sen - inner_iter == 2);
@@ -579,6 +595,38 @@ using move_only_view = test::range<Category, const int, test::Sized{is_random}, 
     IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag>},
     test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes, test::Copyability::move_only>;
 
+// Check LWG-3851: 'chunk_view::inner-iterator missing custom iter_move and iter_swap'
+void test_lwg3851() {
+    { // Check 'iter_move'
+        istringstream ints{"0 1 2 3 4"};
+        auto v = views::istream<int>(ints) | views::chunk(2);
+        auto o = v.begin();
+        auto c = *o;
+        auto i = c.begin();
+
+        same_as<int&&> decltype(auto) rval = iter_move(i);
+        assert(rval == 0);
+    }
+
+    { // Check 'iter_swap'
+        istringstream ints1{"0 1 2 3 4"};
+        auto v1 = views::istream<int>(ints1) | views::chunk(2);
+        auto o1 = v1.begin();
+        auto c1 = *o1;
+        auto i1 = c1.begin();
+
+        istringstream ints2{"5 6 7 8 9"};
+        auto v2 = views::istream<int>(ints2) | views::chunk(2);
+        auto o2 = v2.begin();
+        auto c2 = *o2;
+        auto i2 = c2.begin();
+
+        iter_swap(as_const(i1), as_const(i2));
+        assert(*i1 == 5);
+        assert(*i2 == 0);
+    }
+}
+
 int main() {
     { // Validate views
         // ... copyable
@@ -617,4 +665,6 @@ int main() {
 
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
+
+    test_lwg3851();
 }

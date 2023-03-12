@@ -228,9 +228,10 @@ def generate_cpp_data(prop_name: str, ranges: list[PropertyRange]) -> str:
     table = property_ranges_to_table(ranges, prop_values)
     enumerator_values = [PROP_VALUE_ENUMERATOR_TEMPLATE.format(
         x) for x in prop_values]
-    result.write(PROP_VALUE_ENUM_TEMPLATE.format(
+    result.write(PROP_VALUE_ENUM_TEMPLATE.lstrip().format(
         prop_name=prop_name, enumerators=",".join(enumerator_values)))
-    result.write(DATA_ARRAY_TEMPLATE.format(prop_name=prop_name, size=len(table.lower_bounds),
+    result.write("\n")
+    result.write(DATA_ARRAY_TEMPLATE.lstrip().format(prop_name=prop_name, size=len(table.lower_bounds),
                  lower_bounds=",".join(["0x" + format(x, 'x')
                                        for x in table.lower_bounds]),
                  props_and_size=",".join(["0x" + format(x, 'x') for x in table.props_and_range])))

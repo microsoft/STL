@@ -43,7 +43,6 @@
 #define _M_X64
 #endif // defined(_M_ARM64EC)
 
-
 #pragma warning(pop)
 
 namespace {

@@ -39,16 +39,6 @@ _EXPORT_STD template <class _Derived, class _Base>
 concept derived_from = __is_base_of(_Base, _Derived)
     && __is_convertible_to(const volatile _Derived*, const volatile _Base*);
 
-_EXPORT_STD template <class _From, class _To>
-#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
-concept convertible_to = is_convertible_v<_From, _To>
-#else // ^^^ workaround / no workaround vvv
-concept convertible_to = __is_convertible_to(_From, _To)
-#endif // ^^^ no workaround ^^^
-    && requires {
-        static_cast<_To>(_STD declval<_From>());
-    };
-
 template <class _From, class _To>
 concept _Implicitly_convertible_to = is_convertible_v<_From, _To>;
 

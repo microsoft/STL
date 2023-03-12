@@ -23,6 +23,8 @@ void assert_forward_list_resize_empty() {
 
 struct A {
     A(unsigned int value) : _value(value) {}
+    A(const A&)            = default;
+    A& operator=(const A&) = default;
     ~A() {
         _value = 0;
     }

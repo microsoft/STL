@@ -448,6 +448,34 @@ STATIC_ASSERT(__cpp_lib_clamp == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_common_reference
+#error __cpp_lib_common_reference is not defined
+#elif __cpp_lib_common_reference != 202302L
+#error __cpp_lib_common_reference is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_common_reference == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_common_reference
+#error __cpp_lib_common_reference is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_common_reference_wrapper
+#error __cpp_lib_common_reference_wrapper is not defined
+#elif __cpp_lib_common_reference_wrapper != 202302L
+#error __cpp_lib_common_reference_wrapper is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_common_reference_wrapper == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_common_reference_wrapper
+#error __cpp_lib_common_reference_wrapper is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_complex_udls
 #error __cpp_lib_complex_udls is not defined
 #elif __cpp_lib_complex_udls != 201309L
@@ -1505,10 +1533,10 @@ STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
-#elif __cpp_lib_ranges != 202211L
-#error __cpp_lib_ranges is not 202211L
+#elif __cpp_lib_ranges != 202302L
+#error __cpp_lib_ranges is not 202302L
 #else
-STATIC_ASSERT(__cpp_lib_ranges == 202211L);
+STATIC_ASSERT(__cpp_lib_ranges == 202302L);
 #endif
 #elif _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
@@ -1591,6 +1619,20 @@ STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
 #else
 #ifdef __cpp_lib_ranges_contains
 #error __cpp_lib_ranges_contains is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_enumerate
+#error __cpp_lib_ranges_enumerate is not defined
+#elif __cpp_lib_ranges_enumerate != 202302L
+#error __cpp_lib_ranges_enumerate is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_enumerate == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_enumerate
+#error __cpp_lib_ranges_enumerate is defined
 #endif
 #endif
 
@@ -2152,6 +2194,20 @@ STATIC_ASSERT(__cpp_lib_transparent_operators == 201510L);
 #error __cpp_lib_tuple_element_t is not 201402L
 #else
 STATIC_ASSERT(__cpp_lib_tuple_element_t == 201402L);
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_tuple_like
+#error __cpp_lib_tuple_like is not defined
+#elif __cpp_lib_tuple_like != 202207L
+#error __cpp_lib_tuple_like is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_tuple_like == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_tuple_like
+#error __cpp_lib_tuple_like is defined
+#endif
 #endif
 
 #ifndef __cpp_lib_tuples_by_type

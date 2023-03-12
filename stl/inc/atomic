@@ -107,6 +107,10 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     }
 }
 
+// note: these macros are _not_ always safe to use with a trailing semicolon,
+// we avoid wrapping them in do {} while (0) because MSVC generates code for such loops
+// in debug mode.
+
 #if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
     _Check_memory_order(_Order);                                   \
@@ -160,23 +164,20 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
 
 #endif // _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
 
-// note: these macros are _not_ always safe to use with a trailing semicolon,
-// we avoid wrapping them in do {} while (0) because MSVC generates code for such loops
-// in debug mode.
-#define _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(_Order_var) \
-    switch (_Order_var) {                            \
-    case _Atomic_memory_order_relaxed:               \
-        break;                                       \
-    case _Atomic_memory_order_consume:               \
-    case _Atomic_memory_order_acquire:               \
-    case _Atomic_memory_order_seq_cst:               \
-        _Compiler_or_memory_barrier();               \
-        break;                                       \
-    case _Atomic_memory_order_release:               \
-    case _Atomic_memory_order_acq_rel:               \
-    default:                                         \
-        _INVALID_MEMORY_ORDER;                       \
-        break;                                       \
+#define _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(_Order_var) \
+    switch (_Order_var) {                               \
+    case _Atomic_memory_order_relaxed:                  \
+        break;                                          \
+    case _Atomic_memory_order_consume:                  \
+    case _Atomic_memory_order_acquire:                  \
+    case _Atomic_memory_order_seq_cst:                  \
+        _Compiler_or_memory_barrier();                  \
+        break;                                          \
+    case _Atomic_memory_order_release:                  \
+    case _Atomic_memory_order_acq_rel:                  \
+    default:                                            \
+        _INVALID_MEMORY_ORDER;                          \
+        break;                                          \
     }
 
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
@@ -185,13 +186,13 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     _Compiler_barrier();                        \
     __stlr##_Width(reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), (_Desired));
 
-#else
+#else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 ^^^ / vvv _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
 
 #define __STORE_RELEASE(_Width, _Ptr, _Desired) \
     _Compiler_or_memory_barrier();              \
     __iso_volatile_store##_Width((_Ptr), (_Desired));
 
-#endif
+#endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 ^^^
 
 #define _ATOMIC_STORE_PREFIX(_Width, _Ptr, _Desired)      \
     case _Atomic_memory_order_relaxed:                    \
@@ -206,7 +207,6 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     case _Atomic_memory_order_acq_rel:                    \
         _INVALID_MEMORY_ORDER;                            \
         _FALLTHROUGH;
-
 
 #define _ATOMIC_STORE_SEQ_CST_ARM(_Width, _Ptr, _Desired) \
     _Memory_barrier();                                    \
@@ -788,7 +788,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         _ATOMIC_LOAD_ARM64(_As_bytes, 8, _Mem, static_cast<unsigned int>(_Order))
 #else
         _As_bytes = __iso_volatile_load8(_Mem);
-        _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(static_cast<unsigned int>(_Order))
+        _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(static_cast<unsigned int>(_Order))
 #endif
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
@@ -896,7 +896,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         _ATOMIC_LOAD_ARM64(_As_bytes, 16, _Mem, static_cast<unsigned int>(_Order))
 #else
         _As_bytes = __iso_volatile_load16(_Mem);
-        _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(static_cast<unsigned int>(_Order))
+        _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(static_cast<unsigned int>(_Order))
 #endif
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
@@ -1003,7 +1003,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         _ATOMIC_LOAD_ARM64(_As_bytes, 32, _Mem, static_cast<unsigned int>(_Order))
 #else
         _As_bytes = __iso_volatile_load32(_Mem);
-        _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(static_cast<unsigned int>(_Order))
+        _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(static_cast<unsigned int>(_Order))
 #endif
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
@@ -1120,7 +1120,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         _As_bytes = __iso_volatile_load64(_Mem);
 #endif
 
-        _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(static_cast<unsigned int>(_Order))
+        _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(static_cast<unsigned int>(_Order))
 #endif // _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
@@ -2088,7 +2088,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 };
 
-
 template <class _Ty>
 struct _Atomic_pointer<_Ty&> : _Atomic_storage<_Ty&> {
     using _Base           = _Atomic_storage<_Ty&>;
@@ -2142,7 +2141,6 @@ struct _Atomic_pointer<_Ty&> : _Atomic_storage<_Ty&> {
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff))) - _Diff;
     }
 };
-
 
 #define ATOMIC_VAR_INIT(_Value) \
     { _Value }
@@ -2885,7 +2883,6 @@ _EXPORT_STD struct atomic_flag { // flag with test-and-set semantics
 #endif // TRANSITION, ABI
 };
 
-
 #if _HAS_CXX20
 _EXPORT_STD _NODISCARD inline bool atomic_flag_test(const volatile atomic_flag* const _Flag) noexcept {
     return _Flag->test();
@@ -3045,7 +3042,7 @@ _STD_END
 #undef _CMPXCHG_MASK_OUT_PADDING_BITS
 
 #undef _ATOMIC_CHOOSE_INTRINSIC
-#undef _ATOMIC_LOAD_VERIFY_MEMORY_ORDER
+#undef _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED
 #undef _ATOMIC_STORE_PREFIX
 #undef _ATOMIC_STORE_SEQ_CST_ARM
 #undef _ATOMIC_STORE_SEQ_CST_X86_X64

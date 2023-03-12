@@ -39,7 +39,6 @@ using _SMF_control_copy = conditional_t<
     conjunction_v<is_copy_constructible<_Types>..., negation<conjunction<is_trivially_copy_constructible<_Types>...>>>,
     _Non_trivial_copy<_Base>, _Base>;
 
-
 template <class _Base, class... _Types>
 struct _Non_trivial_move : _SMF_control_copy<_Base, _Types...> { // non-trivial move construction facade
     using _Mybase = _SMF_control_copy<_Base, _Types...>;
@@ -59,7 +58,6 @@ template <class _Base, class... _Types>
 using _SMF_control_move = conditional_t<
     conjunction_v<is_move_constructible<_Types>..., negation<conjunction<is_trivially_move_constructible<_Types>...>>>,
     _Non_trivial_move<_Base, _Types...>, _SMF_control_copy<_Base, _Types...>>;
-
 
 template <class _Base, class... _Types>
 struct _Non_trivial_copy_assign : _SMF_control_move<_Base, _Types...> { // non-trivial copy assignment facade
@@ -98,7 +96,6 @@ using _SMF_control_copy_assign =
         conditional_t<conjunction_v<is_copy_constructible<_Types>..., is_copy_assignable<_Types>...>,
             _Non_trivial_copy_assign<_Base, _Types...>, _Deleted_copy_assign<_Base, _Types...>>>;
 
-
 template <class _Base, class... _Types>
 struct _Non_trivial_move_assign : _SMF_control_copy_assign<_Base, _Types...> { // non-trivial move assignment facade
     using _Mybase = _SMF_control_copy_assign<_Base, _Types...>;
@@ -135,7 +132,6 @@ using _SMF_control_move_assign =
         _SMF_control_copy_assign<_Base, _Types...>,
         conditional_t<conjunction_v<is_move_constructible<_Types>..., is_move_assignable<_Types>...>,
             _Non_trivial_move_assign<_Base, _Types...>, _Deleted_move_assign<_Base, _Types...>>>;
-
 
 template <class _Base, class... _Types>
 using _SMF_control = _SMF_control_move_assign<_Base, _Types...>;

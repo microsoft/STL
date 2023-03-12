@@ -9,7 +9,6 @@
 
 #include "awint.hpp"
 
-
 // int __cdecl __crtCompareStringA - Get type information about an ANSI string.
 //
 // Purpose:

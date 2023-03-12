@@ -224,16 +224,8 @@ public:
             // but unfortunately our ABI speaks struct xtime, which is relative to the system clock.
             _CSTD xtime _Tgt;
             (void) _To_xtime_10_day_clamped(_Tgt, _Rel_time);
-            const int _Res = _Cnd_timedwait(_Mycnd(), _Myptr->_Mymtx(), &_Tgt);
+            (void) _Cnd_timedwait(_Mycnd(), _Myptr->_Mymtx(), &_Tgt);
             _Guard_unlocks_before_locking_outer.unlock();
-
-            switch (_Res) {
-            case _Thrd_timedout:
-            case _Thrd_success:
-                break;
-            default:
-                _Throw_C_error(_Res);
-            }
         } // relock
 
         return _Pred();
@@ -262,13 +254,10 @@ private:
         const int _Res = _Cnd_timedwait(_Mycnd(), _Ptr->_Mymtx(), _Abs_time);
         _Guard.unlock();
 
-        switch (_Res) {
-        case _Thrd_success:
+        if (_Res == _Thrd_success) {
             return cv_status::no_timeout;
-        case _Thrd_timedout:
+        } else {
             return cv_status::timeout;
-        default:
-            _Throw_C_error(_Res);
         }
     }
 };
