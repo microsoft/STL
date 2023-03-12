@@ -1345,6 +1345,45 @@ constexpr bool test_cross() {
     return true;
 }
 
+// Extension: explicit conversion from and to floating-point types
+
+template<class Flt>
+constexpr bool test_one_floating_point() {
+    constexpr Flt zero    = Flt{};
+    constexpr Flt one     = Flt{1.0};
+    constexpr Flt neg_one = Flt{-1.0};
+
+    assert(_Unsigned128{zero} == _Unsigned128{});
+    assert(_Unsigned128{zero} == 0);
+    assert(static_cast<Flt>(_Unsigned128{zero}) == Flt{});
+
+    assert(_Unsigned128{one} == _Unsigned128{1});
+    assert(_Unsigned128{one} == 1);
+    assert(static_cast<Flt>(_Unsigned128{one}) == Flt{1.0});
+
+    assert(_Signed128{zero} == _Signed128{});
+    assert(_Signed128{zero} == 0);
+    assert(static_cast<Flt>(_Signed128{zero}) == Flt{});
+
+    assert(_Signed128{one} == _Signed128{1});
+    assert(_Signed128{one} == 1);
+    assert(static_cast<Flt>(_Signed128{one}) == Flt{1.0});
+
+    assert(_Signed128{neg_one} == _Signed128{-1});
+    assert(_Signed128{neg_one} == -1);
+    assert(static_cast<Flt>(_Signed128{neg_one}) == Flt{-1.0});
+
+    return true;
+}
+
+constexpr bool test_floating_point() {
+    assert(test_one_floating_point<float>());
+    assert(test_one_floating_point<double>());
+    assert(test_one_floating_point<long double>());
+
+    return true;
+}
+
 int main() {
     test_unsigned();
     STATIC_ASSERT(test_unsigned());
@@ -1352,4 +1391,6 @@ int main() {
     STATIC_ASSERT(test_signed());
     test_cross();
     STATIC_ASSERT(test_cross());
+    test_floating_point();
+    STATIC_ASSERT(test_floating_point());
 }
