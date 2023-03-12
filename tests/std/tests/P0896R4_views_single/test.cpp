@@ -166,6 +166,26 @@ struct VolatileConstructible {
     constexpr VolatileConstructible(const volatile type_identity_t<T>&&) noexcept {}
 };
 
+struct ConstSelection {
+    ConstSelection()                                 = default;
+    ConstSelection(const ConstSelection&)            = default;
+    ConstSelection(ConstSelection&&)                 = default;
+    ConstSelection& operator=(const ConstSelection&) = default;
+    ConstSelection& operator=(ConstSelection&&)      = default;
+
+    explicit constexpr ConstSelection(int x) noexcept : value{x} {}
+
+    template <class T = ConstSelection>
+    constexpr const ConstSelection& operator=(const type_identity_t<T>&) const noexcept {
+        return *this;
+    }
+
+    int value = 0;
+};
+
+static_assert(is_trivially_copy_assignable_v<ranges::single_view<ConstSelection>>);
+static_assert(!is_trivially_copy_assignable_v<ranges::single_view<const ConstSelection>>);
+
 constexpr bool test_cv() {
     {
         ranges::single_view<VolatileConstructible> sv{}, sv2{};
@@ -179,6 +199,17 @@ constexpr bool test_cv() {
     }
     [[maybe_unused]] ranges::single_view<const VolatileConstructible> svc{};
     [[maybe_unused]] ranges::single_view<const volatile VolatileConstructible> svcv{};
+
+    {
+        ranges::single_view<ConstSelection> svx{in_place, 0}, svy{in_place, 42};
+        svy = svx;
+        assert(svy.front().value == 0);
+    }
+    {
+        ranges::single_view<const ConstSelection> scvx{in_place, 0}, scvy{in_place, 42};
+        scvy = scvx;
+        assert(scvy.front().value == 42);
+    }
 
     return true;
 }

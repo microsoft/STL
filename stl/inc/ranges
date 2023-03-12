@@ -442,31 +442,48 @@ namespace ranges {
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
             : _Val(_STD forward<_Types>(_Args)...) {}
 
-        _Movable_box(const _Movable_box&) = default;
-        _Movable_box(_Movable_box&&)      = default;
-
         // clang-format off
-        _Movable_box& operator=(const _Movable_box&) requires copyable<_Ty> = default;
-        _Movable_box& operator=(_Movable_box&&) requires movable<_Ty> = default;
+        _Movable_box(const _Movable_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
+        _Movable_box(_Movable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Movable_box& operator=(const _Movable_box& _That) noexcept
+        _Movable_box(const _Movable_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>)
+            : _Val(static_cast<const _Ty&>(_That._Val)) {}
+
+        _Movable_box(_Movable_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>)
+            : _Val(static_cast<_Ty&&>(_That._Val)) {}
+
+        // clang-format off
+        _Movable_box& operator=(const _Movable_box&)
+            requires copyable<_Ty> && is_trivially_copy_assignable_v<_Ty> = default;
+        _Movable_box& operator=(_Movable_box&&) requires movable<_Ty> && is_trivially_move_assignable_v<_Ty> = default;
+        // clang-format on
+
+        constexpr _Movable_box& operator=(const _Movable_box& _That) noexcept(
+            is_nothrow_copy_assignable_v<_Ty> || !copyable<_Ty>) // strengthened
             requires copy_constructible<_Ty>
         {
-            if (_STD addressof(_That) != this) {
-                _Val.~_Ty();
-                _STD _Construct_in_place(_Val, static_cast<const _Ty&>(_That._Val));
+            if constexpr (copyable<_Ty>) {
+                static_cast<_Ty&>(_Val) = static_cast<const _Ty&>(_That._Val);
+            } else {
+                if (_STD addressof(_That) != this) {
+                    _Val.~_Ty();
+                    _STD _Construct_in_place(_Val, static_cast<const _Ty&>(_That._Val));
+                }
             }
-
             return *this;
         }
 
-        constexpr _Movable_box& operator=(_Movable_box&& _That) noexcept {
-            if (_STD addressof(_That) != this) {
-                _Val.~_Ty();
-                _STD _Construct_in_place(_Val, static_cast<_Ty&&>(_That._Val));
+        constexpr _Movable_box& operator=(_Movable_box&& _That) noexcept(
+            is_nothrow_move_assignable_v<_Ty> || !movable<_Ty>) /* strengthened */ {
+            if constexpr (movable<_Ty>) {
+                static_cast<_Ty&>(_Val) = static_cast<_Ty&&>(_That._Val);
+            } else {
+                if (_STD addressof(_That) != this) {
+                    _Val.~_Ty();
+                    _STD _Construct_in_place(_Val, static_cast<_Ty&&>(_That._Val));
+                }
             }
-
             return *this;
         }
 

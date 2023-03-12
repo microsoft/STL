@@ -937,15 +937,10 @@ namespace ranges {
 template <class _PtrTy>
 _NODISCARD void* _Voidify_unfancy(_PtrTy _Ptr) noexcept {
     if constexpr (is_pointer_v<_PtrTy>) {
-        return const_cast<void*>(static_cast<const volatile void*>(_Ptr));
+        return _Ptr;
     } else {
-        return const_cast<void*>(static_cast<const volatile void*>(_STD addressof(*_Ptr)));
+        return _STD addressof(*_Ptr);
     }
-}
-
-template <class _Ty, class... _Types>
-void _Construct_cv_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
-    ::new (_STD _Voidify_unfancy(_STD addressof(_Obj))) _Ty(_STD forward<_Types>(_Args)...);
 }
 
 #if _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
@@ -969,12 +964,12 @@ public:
     }
 
     raw_storage_iterator& operator=(const _Ty& _Val) { // construct value designated by stored iterator
-        _STD _Construct_cv_in_place(*_Next, _Val);
+        _STD _Construct_in_place(const_cast<_Remove_cvref_t<decltype(*_Next)>&>(*_Next), _Val);
         return *this;
     }
 
     raw_storage_iterator& operator=(_Ty&& _Val) { // construct value designated by stored iterator
-        _STD _Construct_cv_in_place(*_Next, _STD move(_Val));
+        _STD _Construct_in_place(const_cast<_Remove_cvref_t<decltype(*_Next)>&>(*_Next), _STD move(_Val));
         return *this;
     }
 
@@ -2085,11 +2080,6 @@ _Dx* get_deleter(const shared_ptr<_Ty>&) noexcept = delete; // requires static R
 struct _For_overwrite_tag {
     explicit _For_overwrite_tag() = default;
 };
-
-template <class _Ty>
-void _Default_construct_cv_in_place(_Ty& _Obj) noexcept(is_nothrow_default_constructible_v<_Ty>) {
-    ::new (_STD _Voidify_unfancy(_STD addressof(_Obj))) _Ty;
-}
 #endif // _HAS_CXX20
 
 template <class _Ty>
@@ -2099,12 +2089,12 @@ public:
     explicit _Ref_count_obj2(_Types&&... _Args) : _Ref_count_base() {
 #if _HAS_CXX20
         if constexpr (sizeof...(_Types) == 1 && (is_same_v<_For_overwrite_tag, remove_cvref_t<_Types>> && ...)) {
-            _STD _Default_construct_cv_in_place(_Storage._Value);
+            _STD _Default_construct_in_place(_Storage._Value);
             ((void) _Args, ...);
         } else
 #endif // _HAS_CXX20
         {
-            _STD _Construct_cv_in_place(_Storage._Value, _STD forward<_Types>(_Args)...);
+            _STD _Construct_in_place(_Storage._Value, _STD forward<_Types>(_Args)...);
         }
     }
 
@@ -2117,7 +2107,7 @@ public:
     }
 
     union {
-        _Wrap<_Ty> _Storage;
+        _Wrap<remove_cv_t<_Ty>> _Storage;
     };
 
 private:
@@ -2219,12 +2209,12 @@ struct _NODISCARD _Uninitialized_rev_destroying_backout {
 
     template <class... _Types>
     void _Emplace_back(_Types&&... _Vals) { // construct a new element at *_Last and increment
-        _STD _Construct_cv_in_place(*_Last, _STD forward<_Types>(_Vals)...);
+        _STD _Construct_in_place(*_Last, _STD forward<_Types>(_Vals)...);
         ++_Last;
     }
 
     void _Emplace_back_for_overwrite() {
-        _STD _Default_construct_cv_in_place(*_Last);
+        _STD _Default_construct_in_place(*_Last);
         ++_Last;
     }
 
@@ -2368,7 +2358,7 @@ public:
 
 private:
     union {
-        _Wrap<_Element_type> _Storage; // flexible array must be last member
+        _Wrap<remove_cv_t<_Element_type>> _Storage; // flexible array must be last member
     };
 
     ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
@@ -2416,7 +2406,7 @@ private:
     size_t _Size;
 
     union {
-        _Wrap<_Element_type> _Storage; // flexible array must be last member
+        _Wrap<remove_cv_t<_Element_type>> _Storage; // flexible array must be last member
     };
 
     ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
@@ -2453,7 +2443,7 @@ public:
     }
 
     union {
-        _Wrap<_Ty> _Storage;
+        _Wrap<remove_cv_t<_Ty>> _Storage;
     };
 
 private:
