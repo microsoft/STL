@@ -494,10 +494,6 @@ public:
 private:
     _Extents _Myext{};
 
-    static constexpr size_t _Multiply(size_t _X, size_t _Y) {
-        return _X * _Y;
-    }
-
     template <class... _IndexType, size_t... _Seq>
     constexpr index_type _Index_impl(_IndexType... _Idx, index_sequence<_Seq...>) const noexcept {
         index_type _Result = 0;
