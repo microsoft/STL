@@ -9,7 +9,6 @@
 
 using namespace std;
 
-#ifdef __cpp_lib_concepts
 // A type that's regular and trivially copyable, and also maximally nothrow.
 template <class T>
 using is_regular_trivial_nothrow = std::conjunction<std::bool_constant<std::regular<T>>, is_trivially_copyable<T>,
@@ -18,7 +17,6 @@ using is_regular_trivial_nothrow = std::conjunction<std::bool_constant<std::regu
 
 template <class T>
 inline constexpr bool is_regular_trivial_nothrow_v = is_regular_trivial_nothrow<T>::value;
-#endif // __cpp_lib_concepts
 
 struct Constructible {
     // noexcept constructible for size_t, but not convertible
@@ -46,13 +44,11 @@ struct ConstructibleAndConvertibleConst {
 
 
 void extent_tests_traits() {
-#ifdef __cpp_lib_concepts
     static_assert(is_regular_trivial_nothrow_v<extents<size_t>>);
     static_assert(is_regular_trivial_nothrow_v<extents<size_t, 2, 3>>);
     static_assert(is_regular_trivial_nothrow_v<extents<size_t, dynamic_extent, 3>>);
     static_assert(is_regular_trivial_nothrow_v<extents<size_t, 2, dynamic_extent>>);
     static_assert(is_regular_trivial_nothrow_v<extents<size_t, dynamic_extent, dynamic_extent>>);
-#endif // __cpp_lib_concepts
 
     static_assert(is_same_v<dextents<size_t, 1>, extents<size_t, dynamic_extent>>);
     static_assert(is_same_v<dextents<size_t, 2>, extents<size_t, dynamic_extent, dynamic_extent>>);
@@ -438,12 +434,10 @@ void TestMapping(const Mapping& map) {
 }
 
 void layout_left_tests_traits() {
-#ifdef __cpp_lib_concepts
     static_assert(is_regular_trivial_nothrow_v<layout_left::mapping<extents<size_t, 2, 3>>>);
     static_assert(is_regular_trivial_nothrow_v<layout_left::mapping<extents<size_t, dynamic_extent, 3>>>);
     static_assert(is_regular_trivial_nothrow_v<layout_left::mapping<extents<size_t, 2, dynamic_extent>>>);
     static_assert(is_regular_trivial_nothrow_v<layout_left::mapping<extents<size_t, dynamic_extent, dynamic_extent>>>);
-#endif // __cpp_lib_concepts
 
     using E = extents<int, 2, 3>;
     static_assert(is_same_v<layout_left::mapping<E>::extents_type, E>);
@@ -454,12 +448,10 @@ void layout_left_tests_traits() {
 }
 
 void layout_right_tests_traits() {
-#ifdef __cpp_lib_concepts
     static_assert(is_regular_trivial_nothrow_v<layout_right::mapping<extents<size_t, 2, 3>>>);
     static_assert(is_regular_trivial_nothrow_v<layout_right::mapping<extents<size_t, dynamic_extent, 3>>>);
     static_assert(is_regular_trivial_nothrow_v<layout_right::mapping<extents<size_t, 2, dynamic_extent>>>);
     static_assert(is_regular_trivial_nothrow_v<layout_right::mapping<extents<size_t, dynamic_extent, dynamic_extent>>>);
-#endif // __cpp_lib_concepts
 
     using E = extents<int, 2, 3>;
     static_assert(is_same_v<layout_right::mapping<E>::extents_type, E>);
@@ -470,13 +462,11 @@ void layout_right_tests_traits() {
 }
 
 void layout_stride_tests_traits() {
-#ifdef __cpp_lib_concepts
     static_assert(is_regular_trivial_nothrow_v<layout_stride::mapping<extents<size_t, 2, 3>>>);
     static_assert(is_regular_trivial_nothrow_v<layout_stride::mapping<extents<size_t, dynamic_extent, 3>>>);
     static_assert(is_regular_trivial_nothrow_v<layout_stride::mapping<extents<size_t, 2, dynamic_extent>>>);
     static_assert(
         is_regular_trivial_nothrow_v<layout_stride::mapping<extents<size_t, dynamic_extent, dynamic_extent>>>);
-#endif // __cpp_lib_concepts
 
     using E = extents<int, 2, 3>;
     static_assert(is_same_v<layout_stride::mapping<E>::extents_type, E>);
