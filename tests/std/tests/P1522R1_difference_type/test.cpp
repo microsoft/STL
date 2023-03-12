@@ -1347,7 +1347,7 @@ constexpr bool test_cross() {
 
 // Extension: explicit conversion from and to floating-point types
 
-template<class Flt>
+template <class Flt>
 constexpr bool test_one_floating_point() {
     constexpr Flt zero    = Flt{};
     constexpr Flt one     = Flt{1.0};
