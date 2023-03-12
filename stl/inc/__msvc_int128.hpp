@@ -27,8 +27,10 @@
 #ifdef __cpp_lib_concepts
 #include <concepts>
 #define _TEMPLATE_CLASS_INTEGRAL(type) template <integral type>
+#define _TEMPLATE_CLASS_FP(type)       template <floating_point type>
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 #define _TEMPLATE_CLASS_INTEGRAL(type) template <class type, enable_if_t<is_integral_v<type>, int> = 0>
+#define _TEMPLATE_CLASS_FP(type)       template <class type, enable_if_t<is_floating_point_v<type>, int> = 0>
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #pragma pack(push, _CRT_PACKING)
@@ -308,11 +310,6 @@ struct
     }
 
     constexpr explicit _Base128(const uint64_t _Low, const uint64_t _High) noexcept : _Word{_Low, _High} {}
-
-    _TEMPLATE_CLASS_INTEGRAL(_Ty)
-    _NODISCARD constexpr explicit operator _Ty() const noexcept {
-        return static_cast<_Ty>(_Word[0]);
-    }
 
     _NODISCARD constexpr explicit operator bool() const noexcept {
         return (_Word[0] | _Word[1]) != 0;
@@ -721,6 +718,36 @@ struct _Unsigned128 : _Base128 {
     using _Base128::_Base128;
     constexpr explicit _Unsigned128(const _Base128& _That) noexcept : _Base128{_That} {}
 
+#ifdef __clang__ // TRANSITION, Clang 16 or 17
+    constexpr explicit _Unsigned128(const float _Val) noexcept {
+        _Word[0] = static_cast<uint64_t>(_Val);
+        _Word[1] = static_cast<uint64_t>(_Val / 18446744073709551616.0f);
+    }
+
+    constexpr explicit _Unsigned128(const double _Val) noexcept {
+        _Word[0] = static_cast<uint64_t>(_Val);
+        _Word[1] = static_cast<uint64_t>(_Val / 18446744073709551616.0);
+    }
+
+    constexpr explicit _Unsigned128(const long double _Val) noexcept : _Unsigned128(static_cast<double>(_Val)) {}
+#else // ^^^ workaround / no workaround vvv
+    _TEMPLATE_CLASS_FP(_Ty)
+    constexpr explicit _Unsigned128(const _Ty _Val) noexcept {
+        _Word[0] = static_cast<uint64_t>(_Val);
+        _Word[1] = static_cast<uint64_t>(_Val / static_cast<_Ty>(18446744073709551616.0f));
+    }
+#endif // ^^^ no workaround ^^^
+
+    _TEMPLATE_CLASS_INTEGRAL(_Ty)
+    _NODISCARD constexpr explicit operator _Ty() const noexcept {
+        return static_cast<_Ty>(_Word[0]);
+    }
+
+    _TEMPLATE_CLASS_FP(_Ty)
+    _NODISCARD constexpr explicit operator _Ty() const noexcept {
+        return static_cast<_Ty>(_Word[1]) * static_cast<_Ty>(18446744073709551616.0) + static_cast<_Ty>(_Word[0]);
+    }
+
     constexpr _Unsigned128& operator=(const _Base128& _That) noexcept {
         _Base128::operator=(_That);
         return *this;
@@ -981,38 +1008,6 @@ struct _Unsigned128 : _Base128 {
         _Word[1] |= _That._Word[1];
         return *this;
     }
-
-    template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-    _NODISCARD constexpr explicit operator _Ty() const noexcept {
-        return static_cast<_Ty>(_Word[1]) * static_cast<_Ty>(18446744073709551616.0) + static_cast<_Ty>(_Word[0]);
-    }
-
-    /**
-    // original code, see https://github.com/microsoft/STL/pull/3559#discussion_r1133080097 for why not to use it
-    template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-    constexpr explicit _Unsigned128(const _Ty _Val) noexcept {
-        _Word[0] = static_cast<uint64_t>(_Val);
-        _Word[1] = static_cast<uint64_t>(_Val / static_cast<_Ty>(18446744073709551616.0));
-    }
-    **/
-    constexpr explicit _Unsigned128(const float _Val) noexcept {
-        _Word[0] = static_cast<uint64_t>(_Val);
-        _Word[1] = static_cast<uint64_t>(_Val / 18446744073709551616.0f);
-    }
-    constexpr explicit _Unsigned128(const double _Val) noexcept {
-        _Word[0] = static_cast<uint64_t>(_Val);
-        _Word[1] = static_cast<uint64_t>(_Val / 18446744073709551616.0);
-    }
-    constexpr explicit _Unsigned128(const long double _Val) noexcept {
-        _Word[0] = static_cast<uint64_t>(_Val);
-        _Word[1] = static_cast<uint64_t>(_Val / 18446744073709551616.0L);
-    }
-
-    // explicit conversion to size_t, we need this because there may have some ice in msvc
-    // see https://github.com/microsoft/STL/pull/3559#discussion_r1133067391 for more details
-    _NODISCARD constexpr explicit operator size_t() const noexcept {
-        return static_cast<size_t>(_Word[0]);
-    }
 };
 
 template <>
@@ -1069,6 +1064,53 @@ struct _Signed128 : _Base128 {
 
     using _Base128::_Base128;
     constexpr explicit _Signed128(const _Base128& _That) noexcept : _Base128{_That} {}
+
+#ifdef __clang__ // TRANSITION, Clang 16 or 17
+    constexpr explicit _Signed128(const float _Val) noexcept {
+        const bool _Negative = _Val < 0.0f;
+        const float _Absval = _Negative ? -_Val : _Val;
+        _Word[0]             = static_cast<uint64_t>(_Absval);
+        _Word[1]             = static_cast<uint64_t>(_Absval / 18446744073709551616.0f);
+        if (_Negative) {
+            *this = -*this;
+        }
+    }
+
+    constexpr explicit _Signed128(const double _Val) noexcept {
+        const bool _Negative = _Val < 0.0;
+        const double _Absval = _Negative ? -_Val : _Val;
+        _Word[0]             = static_cast<uint64_t>(_Absval);
+        _Word[1]             = static_cast<uint64_t>(_Absval / 18446744073709551616.0);
+        if (_Negative) {
+            *this = -*this;
+        }
+    }
+
+    constexpr explicit _Signed128(const long double _Val) noexcept : _Signed128(static_cast<double>(_Val)) {}
+#else // ^^^ workaround / no workaround vvv
+    _TEMPLATE_CLASS_FP(_Ty)
+    constexpr explicit _Signed128(const _Ty _Val) noexcept {
+        const bool _Negative = _Val < 0.0f;
+        const _Ty _Absval = _Negative ? -_Val : _Val;
+        _Word[0] = static_cast<uint64_t>(_Absval);
+        _Word[1] = static_cast<uint64_t>(_Absval / static_cast<_Ty>(18446744073709551616.0));
+        if (_Negative) {
+            *this = -*this;
+        }
+    }
+#endif // ^^^ no workaround ^^^
+
+    _TEMPLATE_CLASS_INTEGRAL(_Ty)
+    _NODISCARD constexpr explicit operator _Ty() const noexcept {
+        return static_cast<_Ty>(_Word[0]);
+    }
+
+    _TEMPLATE_CLASS_FP(_Ty)
+    _NODISCARD constexpr explicit operator _Ty() const noexcept {
+        const auto _Unsigned_self = static_cast<_Unsigned128>(*this);
+        return static_cast<int64_t>(_Word[1]) < 0 ? -static_cast<_Ty>(-_Unsigned_self)
+                                                  : static_cast<_Ty>(_Unsigned_self);
+    }
 
     constexpr _Signed128& operator=(const _Base128& _That) noexcept {
         _Base128::operator=(_That);
@@ -1399,59 +1441,6 @@ struct _Signed128 : _Base128 {
         _Word[1] |= _That._Word[1];
         return *this;
     }
-
-    template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-    _NODISCARD constexpr explicit operator _Ty() const noexcept {
-        const auto _Unsigned_self = static_cast<_Unsigned128>(*this);
-        return static_cast<int64_t>(_Word[1]) < 0 ? -static_cast<_Ty>(-_Unsigned_self)
-                                                  : static_cast<_Ty>(_Unsigned_self);
-    }
-    /**
-    // original code, see https://github.com/microsoft/STL/pull/3559#discussion_r1133080097 for why not to use it
-    template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-    constexpr explicit _Signed128(const _Ty _Val) noexcept {
-        const bool _Negative = _Val < _Ty{};
-        const _Ty _Absval    = _Negative ? -_Val : _Val;
-        _Word[0]             = static_cast<uint64_t>(_Absval);
-        _Word[1]             = static_cast<uint64_t>(_Absval / static_cast<_Ty>(18446744073709551616.0));
-        if (_Negative) {
-            *this = -*this;
-        }
-    }
-    **/
-    constexpr explicit _Signed128(const float _Val) noexcept {
-        const bool _Negative = _Val < 0.0f;
-        const float _Absval  = _Negative ? -_Val : _Val;
-        _Word[0]             = static_cast<uint64_t>(_Absval);
-        _Word[1]             = static_cast<uint64_t>(_Absval / 18446744073709551616.0f);
-        if (_Negative) {
-            *this = -*this;
-        }
-    }
-    constexpr explicit _Signed128(const double _Val) noexcept {
-        const bool _Negative = _Val < 0.0;
-        const double _Absval = _Negative ? -_Val : _Val;
-        _Word[0]             = static_cast<uint64_t>(_Absval);
-        _Word[1]             = static_cast<uint64_t>(_Absval / 18446744073709551616.0);
-        if (_Negative) {
-            *this = -*this;
-        }
-    }
-    constexpr explicit _Signed128(const long double _Val) noexcept {
-        const bool _Negative      = _Val < 0.0L;
-        const long double _Absval = _Negative ? -_Val : _Val;
-        _Word[0]                  = static_cast<uint64_t>(_Absval);
-        _Word[1]                  = static_cast<uint64_t>(_Absval / 18446744073709551616.0L);
-        if (_Negative) {
-            *this = -*this;
-        }
-    }
-
-    // explicit conversion to size_t, we need this because there may have some ice in msvc
-    // see https://github.com/microsoft/STL/pull/3559#discussion_r1133067391 for more details
-    _NODISCARD constexpr explicit operator size_t() const noexcept {
-        return static_cast<size_t>(_Word[0]);
-    }
 };
 
 template <>
@@ -1512,6 +1501,7 @@ struct common_type<_Unsigned128, _Signed128> {
 
 _STD_END
 
+#undef _TEMPLATE_CLASS_FP
 #undef _TEMPLATE_CLASS_INTEGRAL
 #undef _ZERO_OR_NO_INIT
 
