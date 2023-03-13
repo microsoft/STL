@@ -9235,7 +9235,7 @@ namespace ranges {
                                                    && (bidirectional_range<_Maybe_const<_Const, _Rest>>
                                                        && _Cartesian_product_common_arg<_Maybe_const<_Const, _Rest>>) );
 
-    template <class _First, class... _Rest>
+    template <class _First>
     concept _Cartesian_product_is_common = _Cartesian_product_common_arg<_First>;
 
     template <class... _Rngs>
@@ -9701,7 +9701,7 @@ namespace ranges {
 
         _NODISCARD constexpr _Iterator<false> end()
             requires ((!_Simple_view<_First> || ... || !_Simple_view<_Rest>)
-                      && _Cartesian_product_is_common<_First, _Rest...>)
+                      && _Cartesian_product_is_common<_First>)
         {
             const bool _Is_empty = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                 return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ...);
@@ -9715,7 +9715,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr _Iterator<true> end() const
-            requires _Cartesian_product_is_common<const _First, const _Rest...>
+            requires _Cartesian_product_is_common<const _First>
         {
             const bool _Is_empty = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                 return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ...);
