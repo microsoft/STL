@@ -11,11 +11,8 @@
 #if !_HAS_CXX23 || !defined(__cpp_lib_concepts) // TRANSITION, GH-395
 _EMIT_STL_WARNING(STL4038, "The contents of <mdspan> are available only with C++23 or later.");
 #else // ^^^ not supported / supported language mode vvv
-#include <algorithm>
 #include <array>
 #include <span>
-#include <tuple>
-#include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -251,20 +248,6 @@ inline constexpr bool _Is_extents = false;
 template <class _IndexType, size_t... _Args>
 inline constexpr bool _Is_extents<extents<_IndexType, _Args...>> = true;
 
-template <class _Mapping, class = void>
-struct _Layout_mapping_alike_helper : false_type {};
-
-template <class _Mapping>
-struct _Layout_mapping_alike_helper<_Mapping,
-    void_t<is_same<bool, decltype(_Mapping::is_always_strided())>,
-        is_same<bool, decltype(_Mapping::is_always_exhaustive())>,
-        is_same<bool, decltype(_Mapping::is_always_unique())>, bool_constant<_Mapping::is_always_strided()>,
-        bool_constant<_Mapping::is_always_exhaustive()>, bool_constant<_Mapping::is_always_unique()>>>
-    : bool_constant<_Is_extents<typename _Mapping::extents_type>> {};
-
-template <class _Mapping>
-struct _Layout_mapping_alike : bool_constant<_Layout_mapping_alike_helper<_Mapping>::value> {};
-
 template <class _Layout, class _Mapping>
 inline constexpr bool _Is_mapping_of =
     is_same_v<typename _Layout::template mapping<typename _Mapping::extents_type>, _Mapping>;
@@ -307,18 +290,20 @@ public:
 
     constexpr mapping(const _Extents& _Ext) noexcept : _Myext(_Ext) {}
 
-    template <class _OtherExtents, enable_if_t<is_constructible_v<_Extents, _OtherExtents>, int> = 0>
+    template <class _OtherExtents>
+        requires is_constructible_v<_Extents, _OtherExtents>
     constexpr explicit(!is_convertible_v<_OtherExtents, _Extents>)
         mapping(const mapping<_OtherExtents>& _Other) noexcept
         : _Myext{_Other.extents()} {}
 
-    template <class _OtherExtents,
-        enable_if_t<_Extents::rank() <= 1 && is_constructible_v<_Extents, _OtherExtents>, int> = 0>
+    template <class _OtherExtents>
+        requires (_Extents::rank() <= 1) && is_constructible_v<_Extents, _OtherExtents>
     constexpr explicit(!is_convertible_v<_OtherExtents, _Extents>)
         mapping(const layout_right::mapping<_OtherExtents>& _Other) noexcept
         : _Myext{_Other.extents()} {}
 
-    template <class _OtherExtents, enable_if_t<is_constructible_v<_Extents, _OtherExtents>, int> = 0>
+    template <class _OtherExtents>
+        requires is_constructible_v<_Extents, _OtherExtents>
     constexpr explicit(_Extents::rank() > 0) mapping(const layout_stride::template mapping<_OtherExtents>& _Other)
         : _Myext{_Other.extents()} {}
 
@@ -337,10 +322,9 @@ public:
         return _Result;
     }
 
-    template <class... _Indices,
-        enable_if_t<sizeof...(_Indices) == _Extents::rank() && (is_convertible_v<_Indices, index_type> && ...)
-                        && (is_nothrow_constructible_v<index_type, _Indices> && ...),
-            int> = 0>
+    template <class... _Indices>
+        requires (sizeof...(_Indices) == extents_type::rank()) && (is_convertible_v<_Indices, index_type> && ...)
+              && (is_nothrow_constructible_v<index_type, _Indices> && ...)
     _NODISCARD constexpr index_type operator()(_Indices... _Idx) const noexcept {
         return _Index_impl<conditional_t<true, index_type, _Indices>...>(
             static_cast<index_type>(_Idx)..., make_index_sequence<_Extents::rank()>{});
@@ -370,8 +354,9 @@ public:
         return true;
     }
 
-    template <class _Ext = _Extents, enable_if_t<(_Ext::rank() > 0), int> = 0>
-    _NODISCARD constexpr index_type stride(const rank_type _Rank) const noexcept {
+    _NODISCARD constexpr index_type stride(const rank_type _Rank) const noexcept
+        requires (extents_type::rank() > 0)
+    {
         index_type _Result = 1;
         for (rank_type _Dim = 0; _Dim < _Rank; ++_Dim) {
             _Result *= _Myext.extent(_Dim);
@@ -381,6 +366,7 @@ public:
     }
 
     template <class _OtherExtents>
+        requires (extents_type::rank() == _OtherExtents::rank())
     _NODISCARD_FRIEND constexpr bool operator==(const mapping& _Left, const mapping<_OtherExtents>& _Right) noexcept {
         return _Left.extents() == _Right.extents();
     }
@@ -418,18 +404,20 @@ public:
 
     constexpr mapping(const _Extents& _Ext) noexcept : _Myext(_Ext) {}
 
-    template <class _OtherExtents, enable_if_t<is_constructible_v<_Extents, _OtherExtents>, int> = 0>
+    template <class _OtherExtents>
+        requires is_constructible_v<extents_type, _OtherExtents>
     constexpr explicit(!is_convertible_v<_OtherExtents, _Extents>)
         mapping(const mapping<_OtherExtents>& _Other) noexcept
         : _Myext{_Other.extents()} {}
 
-    template <class _OtherExtents,
-        enable_if_t<_Extents::rank() <= 1 && is_constructible_v<_Extents, _OtherExtents>, int> = 0>
+    template <class _OtherExtents>
+        requires (extents_type::rank() <= 1) && is_constructible_v<extents_type, _OtherExtents>
     constexpr explicit(!is_convertible_v<_OtherExtents, _Extents>)
         mapping(const layout_left::mapping<_OtherExtents>& _Other) noexcept
         : _Myext{_Other.extents()} {}
 
-    template <class _OtherExtents, enable_if_t<is_constructible_v<_Extents, _OtherExtents>, int> = 0>
+    template <class _OtherExtents>
+        requires is_constructible_v<extents_type, _OtherExtents>
     constexpr explicit(_Extents::rank() > 0) mapping(const layout_stride::template mapping<_OtherExtents>& _Other)
         : _Myext{_Other.extents()} {}
 
@@ -448,10 +436,9 @@ public:
         return _Result;
     }
 
-    template <class... _Indices,
-        enable_if_t<sizeof...(_Indices) == _Extents::rank() && (is_convertible_v<_Indices, index_type> && ...)
-                        && (is_nothrow_constructible_v<index_type, _Indices> && ...),
-            int> = 0>
+    template <class... _Indices>
+        requires (sizeof...(_Indices) == extents_type::rank()) && (is_convertible_v<_Indices, index_type> && ...)
+              && (is_nothrow_constructible_v<index_type, _Indices> && ...)
     _NODISCARD constexpr index_type operator()(_Indices... _Idx) const noexcept {
         return _Index_impl<conditional_t<true, index_type, _Indices>...>(
             static_cast<index_type>(_Idx)..., make_index_sequence<_Extents::rank()>{});
@@ -481,8 +468,9 @@ public:
         return true;
     }
 
-    template <class _Ext = _Extents, enable_if_t<(_Ext::rank() > 0), int> = 0>
-    _NODISCARD constexpr index_type stride(const rank_type _Rank) const noexcept {
+    _NODISCARD constexpr index_type stride(const rank_type _Rank) const noexcept
+        requires (extents_type::rank() > 0)
+    {
         index_type _Result = 1;
         for (rank_type _Dim = _Rank + 1; _Dim < _Extents::rank(); ++_Dim) {
             _Result *= _Myext.extent(_Dim);
@@ -492,6 +480,7 @@ public:
     }
 
     template <class _OtherExtents>
+        requires (extents_type::rank() == _OtherExtents::rank())
     _NODISCARD_FRIEND constexpr bool operator==(const mapping& _Left, const mapping<_OtherExtents>& _Right) noexcept {
         return _Left.extents() == _Right.extents();
     }
@@ -506,6 +495,17 @@ private:
         return _Result;
     }
 };
+
+template <class _Mp>
+concept _Layout_mapping_alike = requires {
+                                    requires _Is_extents<typename _Mp::extents_type>;
+                                    { _Mp::is_always_strided() } -> same_as<bool>;
+                                    { _Mp::is_always_exhaustive() } -> same_as<bool>;
+                                    { _Mp::is_always_unique() } -> same_as<bool>;
+                                    bool_constant<_Mp::is_always_strided()>::value;
+                                    bool_constant<_Mp::is_always_exhaustive()>::value;
+                                    bool_constant<_Mp::is_always_unique()>::value;
+                                };
 
 template <class _Extents>
 class layout_stride::mapping {
@@ -525,38 +525,45 @@ public:
     constexpr mapping() noexcept               = default;
     constexpr mapping(const mapping&) noexcept = default;
 
-    template <class _OtherIndexType, enable_if_t<is_convertible_v<_OtherIndexType, index_type>, int> = 0>
-    constexpr mapping(const _Extents& _E_, const array<_OtherIndexType, _Extents::rank()>& _S_) noexcept : _Myext{_E_} {
-        for (rank_type _Idx = 0; _Idx < _Extents::rank(); ++_Idx) {
-            _Mystrides[_Idx] = _S_[_Idx];
-        }
-    };
-
-    template <class _OtherIndexType, enable_if_t<is_convertible_v<_OtherIndexType, index_type>, int> = 0>
+#ifndef __clang__ // TRANSITION, MSVC messes up CTAD when concepts are used here (needs further investigation)
+    template <class _OtherIndexType, enable_if_t<is_convertible_v<const _OtherIndexType&, index_type>
+                                                     && is_nothrow_constructible_v<index_type, const _OtherIndexType&>,
+                                         int> = 0>
+#else // ^^^ workaround / no workaround vvv
+    template <class _OtherIndexType>
+        requires is_convertible_v<const _OtherIndexType&, index_type>
+              && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
+#endif // ^^^ no workaround ^^^
     constexpr mapping(const _Extents& _E_, const span<_OtherIndexType, _Extents::rank()> _S_) noexcept : _Myext{_E_} {
         for (rank_type _Idx = 0; _Idx < _Extents::rank(); ++_Idx) {
             _Mystrides[_Idx] = _S_[_Idx];
         }
     };
 
-    template <class _OtherExtents, enable_if_t<is_constructible_v<_Extents, _OtherExtents>, int> = 0>
-    constexpr explicit(!is_convertible_v<_OtherExtents, _Extents>)
-        mapping(const mapping<_OtherExtents>& _Other) noexcept
-        : _Myext{_Other.extents()}, _Mystrides{_Other.strides()} {
+#ifndef __clang__ // TRANSITION, MSVC messes up CTAD when concepts are used here (needs further investigation)
+    template <class _OtherIndexType, enable_if_t<is_convertible_v<const _OtherIndexType&, index_type>
+                                                     && is_nothrow_constructible_v<index_type, const _OtherIndexType&>,
+                                         int> = 0>
+#else // ^^^ workaround / no workaround vvv
+    template <class _OtherIndexType>
+        requires is_convertible_v<const _OtherIndexType&, index_type>
+              && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
+#endif // ^^^ no workaround ^^^
+    constexpr mapping(const extents_type& _E_, const array<_OtherIndexType, extents_type::rank()>& _S_) noexcept
+        : _Myext{_E_} {
         for (rank_type _Idx = 0; _Idx < _Extents::rank(); ++_Idx) {
-            _Mystrides[_Idx] = _Other.stride(_Idx);
+            _Mystrides[_Idx] = _S_[_Idx];
         }
-    }
+    };
 
-    template <class _StridedLayoutMapping,
-        enable_if_t<_Layout_mapping_alike<_StridedLayoutMapping>::value
-                        && is_constructible_v<extents_type, typename _StridedLayoutMapping::extents_type>
-                        && _StridedLayoutMapping::is_always_unique() && _StridedLayoutMapping::is_always_strided(),
-            int> = 0>
-    constexpr explicit(
-        !is_convertible_v<typename _StridedLayoutMapping::extents_type, extents_type>
+    template <class _StridedLayoutMapping>
+        requires _Layout_mapping_alike<_StridedLayoutMapping>
+              && is_constructible_v<extents_type, typename _StridedLayoutMapping::extents_type>
+              && (_StridedLayoutMapping::is_always_unique()) && (_StridedLayoutMapping::is_always_strided())
+    constexpr explicit(!(
+        is_convertible_v<typename _StridedLayoutMapping::extents_type, extents_type>
         && (_Is_mapping_of<layout_left, _StridedLayoutMapping> || _Is_mapping_of<layout_right, _StridedLayoutMapping>
-            || _Is_mapping_of<layout_stride, _StridedLayoutMapping>) )
+            || _Is_mapping_of<layout_stride, _StridedLayoutMapping>) ))
         mapping(const _StridedLayoutMapping& _Other) noexcept
         : _Myext(_Other.extents()) {
         for (rank_type _Dim = 0; _Dim < _Extents::rank(); ++_Dim) {
@@ -592,10 +599,9 @@ public:
         }
     }
 
-    template <class... _Indices,
-        enable_if_t<sizeof...(_Indices) == _Extents::rank() && (is_convertible_v<_Indices, index_type> && ...)
-                        && (is_nothrow_constructible_v<index_type, _Indices> && ...),
-            int> = 0>
+    template <class... _Indices>
+        requires (sizeof...(_Indices) == extents_type::rank()) && (is_convertible_v<_Indices, index_type> && ...)
+              && (is_nothrow_constructible_v<index_type, _Indices> && ...)
     _NODISCARD constexpr index_type operator()(_Indices... _Idx) const noexcept {
         return _Index_impl<conditional_t<true, index_type, _Indices>...>(
             static_cast<index_type>(_Idx)..., make_index_sequence<_Extents::rank()>{});
@@ -630,15 +636,13 @@ public:
         return true;
     }
 
-    template <class _Ext = extents_type, enable_if_t<(_Ext::rank() > 0), int> = 0>
     _NODISCARD constexpr index_type stride(const rank_type _Idx) const noexcept {
         return _Mystrides[_Idx];
     }
 
-    template <class _OtherMapping, enable_if_t<_Layout_mapping_alike<_OtherMapping>::value
-                                                   && extents_type::rank() == _OtherMapping::extents_type::rank()
-                                                   && _OtherMapping::is_always_strided(),
-                                       int> = 0>
+    template <class _OtherMapping>
+        requires _Layout_mapping_alike<_OtherMapping> && (extents_type::rank() == _OtherMapping::extents_type::rank())
+              && (_OtherMapping::is_always_strided())
     _NODISCARD_FRIEND constexpr bool operator==(const mapping& _Left, const _OtherMapping& _Right) noexcept {
         if (_Left.extents() != _Right.extents()) {
             return false;
@@ -696,10 +700,8 @@ struct default_accessor {
 
     constexpr default_accessor() noexcept = default;
 
-    template <class _OtherElementType,
-        enable_if_t<
-            is_convertible_v<typename default_accessor<_OtherElementType>::element_type (*)[], _ElementType (*)[]>,
-            int> = 0>
+    template <class _OtherElementType>
+        requires is_convertible_v<_OtherElementType (*)[], element_type (*)[]>
     constexpr default_accessor(default_accessor<_OtherElementType>) noexcept {}
 
     _NODISCARD constexpr data_handle_type offset(data_handle_type _Ptr, size_t _Idx) const noexcept {
@@ -752,64 +754,54 @@ public:
         return _Extents::static_extent(_Rank);
     }
 
-    template <class _Mapping = mapping_type,
-        enable_if_t<(rank_dynamic() > 0) && is_default_constructible_v<data_handle_type>
-                        && is_default_constructible_v<_Mapping> && is_default_constructible_v<accessor_type>,
-            int>             = 0>
-    constexpr mdspan() {}
+    constexpr mdspan()
+        requires (rank_dynamic() > 0) && is_default_constructible_v<data_handle_type>
+              && is_default_constructible_v<mapping_type> && is_default_constructible_v<accessor_type>
+    {}
 
     constexpr mdspan(const mdspan&) = default;
     constexpr mdspan(mdspan&&)      = default;
 
-    template <class _Mapping = mapping_type,
-        enable_if_t<(rank() == 0 || rank_dynamic() == 0)
-                        && is_constructible_v<_Mapping, extents_type> && is_default_constructible_v<accessor_type>,
-            int>             = 0>
-    constexpr explicit mdspan(data_handle_type _Ptr_) : _Ptr{_STD move(_Ptr_)}, _Map{extents_type{}} {}
-
-    template <class... _OtherIndexTypes,
-        enable_if_t<((sizeof...(_OtherIndexTypes) > 0)) && (is_convertible_v<_OtherIndexTypes, index_type> && ...)
-                        && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
-                        //&& (sizeof...(_OtherIndexTypes) == rank() || sizeof...(_OtherIndexTypes) == rank_dynamic())
-                        && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>,
-            int> = 0>
+    template <class... _OtherIndexTypes>
+        requires (is_convertible_v<_OtherIndexTypes, index_type> && ...)
+                  && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
+                  && (sizeof...(_OtherIndexTypes) > 0)
+                  && (sizeof...(_OtherIndexTypes) == rank() || sizeof...(_OtherIndexTypes) == rank_dynamic())
+                  && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
     constexpr explicit mdspan(data_handle_type _Ptr_, _OtherIndexTypes... _Exts)
         : _Ptr{_STD move(_Ptr_)}, _Map{extents_type{static_cast<index_type>(_STD move(_Exts))...}} {}
 
-    template <class _OtherIndexType, size_t _Size,
-        enable_if_t<is_convertible_v<_OtherIndexType, index_type>
-                        && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
-                        && (_Size == rank() || _Size == rank_dynamic())
-                        && is_constructible_v<mapping_type, _Extents> && is_default_constructible_v<accessor_type>,
-            int> = 0>
+    template <class _OtherIndexType, size_t _Size>
+        requires is_convertible_v<_OtherIndexType, index_type>
+                  && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
+                  && (_Size == rank() || _Size == rank_dynamic())
+                  && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
     constexpr explicit(_Size != rank_dynamic()) mdspan(data_handle_type _Ptr_, span<_OtherIndexType, _Size>& _Exts)
         : _Ptr{_Ptr_}, _Map{_Extents{_Exts}} {}
 
-    template <class _OtherIndexType, size_t _Size,
-        enable_if_t<is_convertible_v<_OtherIndexType, index_type>
-                        && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
-                        && (_Size == rank() || _Size == rank_dynamic())
-                        && is_constructible_v<mapping_type, _Extents> && is_default_constructible_v<accessor_type>,
-            int> = 0>
+    template <class _OtherIndexType, size_t _Size>
+        requires is_convertible_v<const _OtherIndexType&, index_type>
+                  && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
+                  && (_Size == rank() || _Size == rank_dynamic())
+                  && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
     constexpr explicit(_Size != rank_dynamic())
         mdspan(data_handle_type _Ptr_, const array<_OtherIndexType, _Size>& _Exts)
         : _Ptr{_Ptr_}, _Map{_Extents{_Exts}} {}
 
-    template <class _Extents2 = _Extents,
-        enable_if_t<is_constructible_v<mapping_type, _Extents2> && is_default_constructible_v<accessor_type>, int> = 0>
-    constexpr mdspan(data_handle_type _Ptr_, const _Extents& _Ext) : _Ptr{_Ptr_}, _Map{_Ext} {}
+    constexpr mdspan(data_handle_type _Ptr_, const extents_type& _Ext)
+        requires is_constructible_v<mapping_type, const extents_type&> && is_default_constructible_v<accessor_type>
+        : _Ptr{_Ptr_}, _Map{_Ext} {}
 
-    template <class _Accessor = accessor_type, enable_if_t<is_default_constructible_v<_Accessor>, int> = 0>
-    constexpr mdspan(data_handle_type _Ptr_, const mapping_type& _Map_) : _Ptr{_Ptr_}, _Map{_Map_} {}
+    constexpr mdspan(data_handle_type _Ptr_, const mapping_type& _Map_)
+        requires is_default_constructible_v<accessor_type>
+        : _Ptr{_Ptr_}, _Map{_Map_} {}
 
     constexpr mdspan(data_handle_type _Ptr_, const mapping_type& _Map_, const accessor_type& _Acc_)
         : _Ptr{_Ptr_}, _Map{_Map_}, _Acc{_Acc_} {}
 
-    template <class _OtherElementType, class _OtherExtents, class _OtherLayoutPolicy, class _OtherAccessor,
-        enable_if_t<
-            is_constructible_v<mapping_type, const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&>
-                && is_constructible_v<accessor_type, const _OtherAccessor&>,
-            int> = 0>
+    template <class _OtherElementType, class _OtherExtents, class _OtherLayoutPolicy, class _OtherAccessor>
+        requires is_constructible_v<mapping_type, const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&>
+                  && is_constructible_v<accessor_type, const _OtherAccessor&>
     constexpr explicit(
         !is_convertible_v<const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&, mapping_type>
         || !is_convertible_v<const _OtherAccessor&, accessor_type>)
@@ -825,22 +817,25 @@ public:
     constexpr mdspan& operator=(const mdspan&) = default;
     constexpr mdspan& operator=(mdspan&&)      = default;
 
-    // TRANSITION operator[](const _OtherIndexTypes... _Indices)
-    template <class... _OtherIndexTypes,
-        enable_if_t<(is_convertible_v<_OtherIndexTypes, index_type> && ...)
-                        && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...),
-            /*&& sizeof...(_OtherIndexTypes) == rank(),*/
-            int> = 0>
+    // TRANSITION, P2128R6 (Multidimensional subscript operator)
+    template <class... _OtherIndexTypes>
+        requires (is_convertible_v<_OtherIndexTypes, index_type> && ...)
+              && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
+              && (sizeof...(_OtherIndexTypes) == rank())
     _NODISCARD constexpr reference operator()(const _OtherIndexTypes... _Indices) const {
         return _Acc.access(_Ptr, _Map(static_cast<index_type>(_STD move(_Indices))...));
     }
 
-    template <class _OtherIndexType, enable_if_t<is_convertible_v<const _OtherIndexType&, index_type>, int> = 0>
+    template <class _OtherIndexType>
+        requires is_convertible_v<const _OtherIndexType&, index_type>
+              && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
     _NODISCARD constexpr reference operator[](span<_OtherIndexType, rank()> _Indices) const {
         return _Index_impl(_Indices, make_index_sequence<rank()>{});
     }
 
-    template <class _OtherIndexType, enable_if_t<is_convertible_v<const _OtherIndexType&, index_type>, int> = 0>
+    template <class _OtherIndexType>
+        requires is_convertible_v<const _OtherIndexType&, index_type>
+              && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
     _NODISCARD constexpr reference operator[](const array<_OtherIndexType, rank()>& _Indices) const {
         return _Index_impl(_Indices, make_index_sequence<rank()>{});
     }
@@ -930,12 +925,43 @@ private:
     accessor_type _Acc{};
 };
 
+template <class _CArray>
+    requires (is_array_v<_CArray> && rank_v<_CArray> == 1)
+mdspan(_CArray&) -> mdspan<remove_all_extents_t<_CArray>, extents<size_t, extent_v<_CArray, 0>>>;
+
+template <class _Pointer>
+    requires (is_pointer_v<remove_reference_t<_Pointer>>)
+mdspan(_Pointer&&) -> mdspan<remove_pointer_t<remove_reference_t<_Pointer>>, extents<size_t>>;
+
+template <class _ElementType, class... _Integrals>
+    requires ((is_convertible_v<_Integrals, size_t> && ...) && sizeof...(_Integrals) > 0)
+explicit mdspan(_ElementType*, _Integrals...) -> mdspan<_ElementType, dextents<size_t, sizeof...(_Integrals)>>;
+
+template <class _ElementType, class _OtherIndexType, size_t _Nx>
+mdspan(_ElementType*, span<_OtherIndexType, _Nx>) -> mdspan<_ElementType, dextents<size_t, _Nx>>;
+
+template <class _ElementType, class _OtherIndexType, size_t _Nx>
+mdspan(_ElementType*, const array<_OtherIndexType, _Nx>&) -> mdspan<_ElementType, dextents<size_t, _Nx>>;
+
+template <class _ElementType, class _IndexType, size_t... _ExtentsPack>
+mdspan(_ElementType*, const extents<_IndexType, _ExtentsPack...>&)
+    -> mdspan<_ElementType, extents<_IndexType, _ExtentsPack...>>;
+
+template <class _ElementType, class _MappingType>
+mdspan(_ElementType*, const _MappingType&)
+    -> mdspan<_ElementType, typename _MappingType::extents_type, typename _MappingType::layout_type>;
+
+template <class _MappingType, class _AccessorType>
+mdspan(const typename _AccessorType::data_handle_type&, const _MappingType&, const _AccessorType&)
+    -> mdspan<typename _AccessorType::element_type, typename _MappingType::extents_type,
+        typename _MappingType::layout_type, _AccessorType>;
+
 _STD_END
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX23
+#endif // ^^^ supported language mode ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _MDSPAN_
