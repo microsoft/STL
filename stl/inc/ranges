@@ -9438,59 +9438,23 @@ namespace ranges {
                     _RANGES begin(_STD get<_Indices + 1>(_Parent->_Bases))...};
             }
 
-            template <size_t _Index>
-            _NODISCARD constexpr _Difference_type<_Const> _Scaled_size() const {
-                if constexpr (_Index <= sizeof...(_Rest)) {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                    _Difference_type<_Const> _Product{};
-                    const bool _Overflow = _Multiply_with_overflow_check(
-                        static_cast<_Difference_type<_Const>>(_RANGES size(_STD get<_Index>(_Parent->_Bases))),
-                        _Scaled_size<_Index + 1>(), _Product);
-                    _STL_VERIFY(!_Overflow, "Scaled-sum cannot be represented by _Difference_type<false> (N4928 "
-                                            "[range.cartesian.iterator]/8).");
-                    return _Product;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL != 0 / _ITERATOR_DEBUG_LEVEL == 0 vvv
-                    return static_cast<_Difference_type<_Const>>(_RANGES size(_STD get<_Index>(_Parent->_Bases)))
-                         * _Scaled_size<_Index + 1>();
-#endif //_ITERATOR_DEBUG_LEVEL == 0
-                } else {
-                    return static_cast<_Difference_type<_Const>>(1);
-                }
-            }
-
-            template <size_t _Index, class _Tuple>
-            _NODISCARD constexpr _Difference_type<_Const> _Scaled_distance(const _Tuple& _Tpl) const {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                _Difference_type<_Const> _Product{};
-                const bool _Overflow = _Multiply_with_overflow_check(
-                    static_cast<_Difference_type<_Const>>(_STD get<_Index>(_Current) - _STD get<_Index>(_Tpl)),
-                    _Scaled_size<_Index + 1>(), _Product);
-                _STL_VERIFY(!_Overflow, "Scaled-sum cannot be represented by _Difference_type<false> (N4928 "
-                                        "[range.cartesian.iterator]/8).");
-                return _Product;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL != 0 / _ITERATOR_DEBUG_LEVEL == 0 vvv
-                return static_cast<_Difference_type<_Const>>(_STD get<_Index>(_Current) - _STD get<_Index>(_Tpl))
-                     * _Scaled_size<_Index + 1>();
-#endif //_ITERATOR_DEBUG_LEVEL == 0
-            }
-
-            template <class _Tuple, size_t... _Indices>
-            _NODISCARD constexpr _Difference_type<_Const> _Scaled_sum(
-                const _Tuple& _Tpl, index_sequence<_Indices...>) const {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                _Difference_type<_Const> _Sum{};
-                const bool _Overflow = (_Add_with_overflow_check(_Sum, _Scaled_distance<_Indices>(_Tpl), _Sum) || ...);
-                _STL_VERIFY(!_Overflow, "Scaled-sum cannot be represented by _Difference_type<false> (N4928 "
-                                        "[range.cartesian.iterator]/8).");
-                return _Sum;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL != 0 / _ITERATOR_DEBUG_LEVEL == 0 vvv
-                return (_Scaled_distance<_Indices>(_Tpl) + ...);
-#endif //_ITERATOR_DEBUG_LEVEL == 0
-            }
-
-            template <class _Tuple>
+            template <size_t _Index = sizeof...(_Rest), class _Tuple>
             _NODISCARD constexpr _Difference_type<_Const> _Distance_from(const _Tuple& _Tpl) const {
-                return _Scaled_sum(_Tpl, make_index_sequence<1 + sizeof...(_Rest)>{});
+                const auto _Diff =
+                    static_cast<_Difference_type<_Const>>(_STD get<_Index>(_Current) - _STD get<_Index>(_Tpl));
+                if constexpr (_Index > 0) {
+                    _Difference_type<_Const> _Result{1};
+                    const auto _Size =
+                        static_cast<_Difference_type<_Const>>(_RANGES size(_STD get<_Index>(_Parent->_Bases)));
+                    const bool _Overflow =
+                        _Multiply_with_overflow_check(_Size, _Distance_from<_Index - 1>(_Tpl), _Result)
+                        || _Add_with_overflow_check(_Result, _Diff, _Result);
+                    _STL_VERIFY(!_Overflow, "Scaled-sum cannot be represented by difference_type (N4928 "
+                                            "[range.cartesian.iterator]/8).");
+                    return _Result;
+                } else {
+                    return _Diff;
+                }
             }
 
             template <size_t... _Indices>
@@ -9700,8 +9664,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr _Iterator<false> end()
-            requires ((!_Simple_view<_First> || ... || !_Simple_view<_Rest>)
-                      && _Cartesian_product_is_common<_First>)
+            requires ((!_Simple_view<_First> || ... || !_Simple_view<_Rest>) && _Cartesian_product_is_common<_First>)
         {
             const bool _Is_empty = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                 return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ...);
