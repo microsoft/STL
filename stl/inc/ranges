@@ -6682,7 +6682,6 @@ namespace ranges {
                     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-                    // Per to-be-filed LWG issue (See GH-2995)
                     if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
                         _Missing = _RANGES advance(_Current, _Count * _Off, _End);
                     } else {
@@ -7642,7 +7641,6 @@ namespace ranges {
                     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-                    // Per to-be-filed LWG issue (See GH-2995)
                     if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
                         _Missing = _RANGES advance(_Current, _Stride * _Off, _End);
                     } else {
