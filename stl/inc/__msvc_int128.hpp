@@ -737,7 +737,7 @@ struct _Unsigned128 : _Base128 {
     _TEMPLATE_CLASS_FLOATING_POINT(_Ty)
     constexpr explicit _Unsigned128(const _Ty _Val) noexcept {
         _Word[0] = static_cast<uint64_t>(_Val);
-        _Word[1] = static_cast<uint64_t>(_Val / static_cast<_Ty>(18446744073709551616.0f));
+        _Word[1] = static_cast<uint64_t>(_Val / static_cast<_Ty>(18446744073709551616.0));
     }
 #endif // ^^^ no workaround ^^^
 
