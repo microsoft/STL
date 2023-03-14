@@ -71,23 +71,6 @@ constexpr bool is_iter_swap_nothrow(index_sequence<Indices...>) {
             && ...&& noexcept(ranges::iter_swap(declval<const iterator_t<Rest>&>())));
 }
 
-template <ranges::input_range R1, ranges::input_range R2>
-constexpr bool test_equal(R1&& r1, R2&& r2) { // TRANSITION, GH-3550
-    auto first1 = ranges::begin(r1);
-    auto last1  = ranges::end(r1);
-    auto first2 = ranges::begin(r2);
-    auto last2  = ranges::end(r2);
-    while (true) {
-        if (first1 == last1) {
-            return first2 == last2;
-        } else if (first2 == last2 || *first1 != *first2) {
-            return false;
-        }
-        ++first1;
-        ++first2;
-    }
-}
-
 template <class Expected, ranges::input_range First, ranges::forward_range... Rest>
 constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest) {
     using ranges::cartesian_product_view, ranges::view, ranges::input_range, ranges::input_range, ranges::forward_range,
@@ -213,7 +196,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         assert(static_cast<bool>(as_const(r)) == !is_empty);
     }
 
-    assert(test_equal(r, expected_range)); // TRANSITION, GH-3550 (use ranges::equal)
+    assert(ranges::equal(r, expected_range));
     if (!forward_range<VFirst>) { // intentionally not if constexpr
         return true;
     }
