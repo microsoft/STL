@@ -297,6 +297,7 @@ public:
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) {} // construct with unlocked mutex
 
     _NODISCARD_CTOR_LOCK
+    _Requires_lock_not_held_(_Mtx)
     _When_(this->_Owns == true, _Acquires_shared_lock_(_Mtx))
     _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
     _When_(this->_Owns == true, _Post_same_lock_(_Mtx, *this->_Pmtx))
@@ -305,6 +306,7 @@ public:
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared()) {} // construct with mutex and try to lock shared
 
     _NODISCARD_CTOR_LOCK
+    _Requires_lock_held_(_Mtx)
     _Post_satisfies_(_Owns == true)
     _Post_satisfies_(_Pmtx == &_Mtx)
     shared_lock(mutex_type& _Mtx, adopt_lock_t) noexcept // strengthened
@@ -312,6 +314,7 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD_CTOR_LOCK
+    _Requires_lock_not_held_(_Mtx)
     _When_(this->_Owns == true, _Acquires_shared_lock_(_Mtx))
     _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
     _When_(this->_Owns == true, _Post_same_lock_(_Mtx, *this->_Pmtx))
@@ -323,6 +326,7 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD_CTOR_LOCK
+    _Requires_lock_not_held_(_Mtx)
     _When_(this->_Owns == true, _Acquires_shared_lock_(_Mtx))
     _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
     _When_(this->_Owns == true, _Post_same_lock_(_Mtx, *this->_Pmtx))
