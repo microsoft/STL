@@ -20,7 +20,7 @@ constexpr bool test_one_type() {
     static_assert(ranges::view<R> && ranges::contiguous_range<R> && ranges::sized_range<R> && ranges::common_range<R>);
     static_assert(ranges::borrowed_range<R>);
     static_assert(same_as<const R, decltype(views::empty<T>)>);
-    auto& r = views::empty<T>;
+    constexpr auto& r = views::empty<T>;
 
     // validate member size
     static_assert(same_as<decltype(R::size()), size_t>);
@@ -50,7 +50,16 @@ constexpr bool test_one_type() {
     static_assert(noexcept(R::empty()));
     static_assert(noexcept(ranges::empty(r)));
 
-    // validate members inherited from view_interface
+#if _HAS_CXX23
+    // validate members cbegin and cend inherited from view_interface
+    static_assert(same_as<decltype(r.cbegin()), const_iterator<T*>>);
+    static_assert(r.cbegin() == nullptr);
+
+    static_assert(same_as<decltype(r.cend()), const_iterator<T*>>);
+    static_assert(r.cend() == nullptr);
+#endif // _HAS_CXX23
+
+    // validate other members inherited from view_interface
     assert(!r);
 
     return true;

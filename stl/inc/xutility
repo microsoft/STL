@@ -6683,10 +6683,9 @@ namespace ranges {
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _First = _RANGES begin(_Range);
-            _Seek_wrapped(_First, _RANGES _Max_element_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)),
-                                      _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj)));
-            return _First;
+            auto _UResult =
+                _RANGES _Max_element_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 
@@ -6878,10 +6877,9 @@ namespace ranges {
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _First = _RANGES begin(_Range);
-            _Seek_wrapped(_First, _RANGES _Min_element_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)),
-                                      _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj)));
-            return _First;
+            auto _UResult =
+                _RANGES _Min_element_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 
