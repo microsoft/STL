@@ -284,6 +284,7 @@ StatementMacros:
   - _Moves_lock_
   - _Replaces_lock_
   - _Swaps_locks_
+  - _Post_same_lock_
 # TabWidth:        8
 # UseCRLF:         false
 UseCRLF:         true
