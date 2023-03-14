@@ -282,8 +282,7 @@ public:
     _NODISCARD_CTOR_LOCK
     _Acquires_shared_lock_(_Mtx)
     _Acquires_nonreentrant_lock_(_Mtx)
-    _Acquires_shared_lock_(*this->_Pmtx)
-    _Acquires_nonreentrant_lock_(*this->_Pmtx)
+    _Post_same_lock_(_Mtx, *this->_Pmtx)
     _Post_satisfies_(_Owns == true)
     _Post_satisfies_(_Pmtx == &_Mtx)
     explicit shared_lock(mutex_type& _Mtx)
