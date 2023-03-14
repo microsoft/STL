@@ -729,10 +729,7 @@ struct _Unsigned128 : _Base128 {
         _Word[1] = static_cast<uint64_t>(_Val / 18446744073709551616.0);
     }
 
-    constexpr explicit _Unsigned128(const long double _Val) noexcept {
-        _Word[0] = static_cast<uint64_t>(_Val);
-        _Word[1] = static_cast<uint64_t>(_Val / 18446744073709551616.0L);
-    }
+    constexpr explicit _Unsigned128(const long double _Val) noexcept : _Unsigned128(static_cast<double>(_Val)) {}
 #else // ^^^ workaround / no workaround vvv
     _TEMPLATE_CLASS_FLOATING_POINT(_Ty)
     constexpr explicit _Unsigned128(const _Ty _Val) noexcept {
@@ -1089,15 +1086,7 @@ struct _Signed128 : _Base128 {
         }
     }
 
-    constexpr explicit _Signed128(const long double _Val) noexcept {
-        const bool _Negative      = _Val < 0.0L;
-        const long double _Absval = _Negative ? -_Val : _Val;
-        _Word[0]                  = static_cast<uint64_t>(_Absval);
-        _Word[1]                  = static_cast<uint64_t>(_Absval / 18446744073709551616.0L);
-        if (_Negative) {
-            *this = -*this;
-        }
-    }
+    constexpr explicit _Signed128(const long double _Val) noexcept : _Signed128(static_cast<double>(_Val)) {}
 #else // ^^^ workaround / no workaround vvv
     _TEMPLATE_CLASS_FLOATING_POINT(_Ty)
     constexpr explicit _Signed128(const _Ty _Val) noexcept {
