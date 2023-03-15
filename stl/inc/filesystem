@@ -632,12 +632,12 @@ namespace filesystem {
 
         enum format { auto_format, native_format, generic_format };
 
-        path()                       = default;
-        path(const path&)            = default;
-        path(path&&)                 = default;
-        ~path()                      = default;
-        path& operator=(const path&) = default;
-        path& operator=(path&&)      = default;
+        path()                           = default;
+        path(const path&)                = default;
+        path(path&&)                     = default;
+        ~path()                          = default;
+        path& operator=(const path&)     = default;
+        path& operator=(path&&) noexcept = default;
 
         path(string_type&& _Source) : _Text(_STD move(_Source)) {}
 
@@ -1905,15 +1905,15 @@ namespace filesystem {
     _EXPORT_STD class file_status {
     public:
         // [fs.file_status.cons], constructors and destructor
-        file_status() = default;
+        file_status() noexcept = default;
         explicit file_status(file_type _Ft, perms _Perms = perms::unknown) noexcept : _Myftype(_Ft), _Myperms(_Perms) {}
-        file_status(const file_status&)     = default;
-        file_status(file_status&&) noexcept = default;
-        ~file_status() noexcept             = default;
+        file_status(const file_status&) noexcept = default;
+        file_status(file_status&&) noexcept      = default;
+        ~file_status() noexcept                  = default;
 
         // assignments
-        file_status& operator=(const file_status&)     = default;
-        file_status& operator=(file_status&&) noexcept = default;
+        file_status& operator=(const file_status&) noexcept = default;
+        file_status& operator=(file_status&&) noexcept      = default;
 
         // [fs.file_status.mods], modifiers
         void type(file_type _Ft) noexcept {
@@ -2088,8 +2088,8 @@ namespace filesystem {
         // [fs.dir.entry.cons], constructors and destructor
         directory_entry() noexcept : _Cached_data{}, _Path() {}
 
-        directory_entry(const directory_entry&) = default;
-        directory_entry(directory_entry&&)      = default;
+        directory_entry(const directory_entry&)     = default;
+        directory_entry(directory_entry&&) noexcept = default;
         explicit directory_entry(const filesystem::path& _Path_arg) : _Cached_data{}, _Path(_Path_arg) {
             refresh();
         }
@@ -2104,8 +2104,8 @@ namespace filesystem {
         ~directory_entry() = default;
 
         // assignments
-        directory_entry& operator=(const directory_entry&) = default;
-        directory_entry& operator=(directory_entry&&)      = default;
+        directory_entry& operator=(const directory_entry&)     = default;
+        directory_entry& operator=(directory_entry&&) noexcept = default;
 
         // [fs.dir.entry.mods], modifiers
         void assign(const filesystem::path& _Path_arg) {
@@ -2615,7 +2615,7 @@ namespace filesystem {
         using reference         = const directory_entry&;
 
         // [fs.dir.itr.members], member functions
-        directory_iterator() = default;
+        directory_iterator() noexcept = default;
         explicit directory_iterator(const path& _Path) {
             const auto _Error = _Dir_enum_impl::_Initialize_dir_enum(_Impl, _Path);
             if (_Error != __std_win_error::_Success) {
@@ -2638,12 +2638,12 @@ namespace filesystem {
             _Ec = _Make_ec(_Dir_enum_impl::_Initialize_dir_enum(_Impl, _Path, _Options));
         }
 
-        directory_iterator(const directory_iterator&)     = default; // strengthened
-        directory_iterator(directory_iterator&&) noexcept = default;
-        ~directory_iterator() noexcept                    = default;
+        directory_iterator(const directory_iterator&) noexcept = default; // strengthened
+        directory_iterator(directory_iterator&&) noexcept      = default;
+        ~directory_iterator() noexcept                         = default;
 
-        directory_iterator& operator=(const directory_iterator&)     = default; // strengthened
-        directory_iterator& operator=(directory_iterator&&) noexcept = default;
+        directory_iterator& operator=(const directory_iterator&) noexcept = default; // strengthened
+        directory_iterator& operator=(directory_iterator&&) noexcept      = default;
 
         _NODISCARD const directory_entry& operator*() const noexcept /* strengthened */ {
             return _Impl->_Entry;
@@ -2840,7 +2840,7 @@ namespace filesystem {
 
         // [fs.rec.dir.itr.members], constructors and destructor
 
-        recursive_directory_iterator() = default;
+        recursive_directory_iterator() noexcept = default;
         explicit recursive_directory_iterator(const path& _Path) {
             const auto _Error = _Dir_enum_impl::_Initialize_dir_enum(_Impl, _Path);
             if (_Error != __std_win_error::_Success) {
@@ -2863,9 +2863,9 @@ namespace filesystem {
             _Ec = _Make_ec(_Dir_enum_impl::_Initialize_dir_enum(_Impl, _Path));
         }
 
-        recursive_directory_iterator(const recursive_directory_iterator&)     = default; // strengthened
-        recursive_directory_iterator(recursive_directory_iterator&&) noexcept = default;
-        ~recursive_directory_iterator() noexcept                              = default;
+        recursive_directory_iterator(const recursive_directory_iterator&) noexcept = default; // strengthened
+        recursive_directory_iterator(recursive_directory_iterator&&) noexcept      = default;
+        ~recursive_directory_iterator() noexcept                                   = default;
 
         // [fs.rec.dir.itr.members], observers
         _NODISCARD directory_options options() const noexcept /* strengthened */ {
@@ -2892,8 +2892,8 @@ namespace filesystem {
         }
 
         // [fs.rec.dir.itr.members], modifiers
-        recursive_directory_iterator& operator=(recursive_directory_iterator&&) noexcept = default;
-        recursive_directory_iterator& operator=(const recursive_directory_iterator&)     = default; // strengthened
+        recursive_directory_iterator& operator=(recursive_directory_iterator&&) noexcept      = default;
+        recursive_directory_iterator& operator=(const recursive_directory_iterator&) noexcept = default; // strengthened
 
         recursive_directory_iterator& operator++() {
             const auto _Error = _Recursive_dir_enum_impl::_Advance_and_reset_if_no_more_files(_Impl);
@@ -3673,7 +3673,7 @@ namespace filesystem {
         uintmax_t available;
 
 #if _HAS_CXX20
-        _NODISCARD_FRIEND constexpr bool operator==(const space_info&, const space_info&) = default;
+        _NODISCARD_FRIEND constexpr bool operator==(const space_info&, const space_info&) noexcept = default;
 #endif // _HAS_CXX20
     };
 
