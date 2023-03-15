@@ -135,8 +135,6 @@ $Workloads = @(
   'Microsoft.VisualStudio.Component.Windows11SDK.22000'
 )
 
-$ReleaseInPath = 'Preview'
-$Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
 $PythonUrl = 'https://www.python.org/ftp/python/3.11.2/python-3.11.2-amd64.exe'
 
