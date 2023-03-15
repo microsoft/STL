@@ -184,19 +184,11 @@ The set of VS workloads to install.
 
 .PARAMETER BootstrapperUrl
 The URL of the Visual Studio installer, i.e. one of vs_*.exe.
-
-.PARAMETER InstallPath
-The path to install Visual Studio at.
-
-.PARAMETER Nickname
-The nickname to give the installation.
 #>
 Function InstallVisualStudio {
   Param(
     [String[]]$Workloads,
-    [String]$BootstrapperUrl,
-    [String]$InstallPath = $null,
-    [String]$Nickname = $null
+    [String]$BootstrapperUrl
   )
 
   try {
@@ -208,16 +200,6 @@ Function InstallVisualStudio {
     foreach ($workload in $Workloads) {
       $args += '--add'
       $args += $workload
-    }
-
-    if (-not ([String]::IsNullOrWhiteSpace($InstallPath))) {
-      $args += '--installpath'
-      $args += $InstallPath
-    }
-
-    if (-not ([String]::IsNullOrWhiteSpace($Nickname))) {
-      $args += '--nickname'
-      $args += $Nickname
     }
 
     $proc = Start-Process -FilePath cmd.exe -ArgumentList $args -Wait -PassThru
