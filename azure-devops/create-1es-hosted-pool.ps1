@@ -11,9 +11,6 @@ See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more
 
 $ErrorActionPreference = 'Stop'
 
-# https://aka.ms/azps-changewarnings
-$Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
-
 $CurrentDate = Get-Date
 
 $Location = 'eastus'
@@ -24,7 +21,7 @@ $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Preparing STL CI pool'
-$TotalProgress = 25
+$TotalProgress = 26
 $CurrentProgress = 1
 
 <#
@@ -120,6 +117,13 @@ function Wait-Shutdown {
   }
 }
 
+####################################################################################################
+Display-ProgressBar -Status 'Silencing breaking change warnings'
+
+# https://aka.ms/azps-changewarnings
+Update-AzConfig `
+  -DisplayBreakingChangeWarning $false `
+  -Scope 'Process' | Out-Null
 
 ####################################################################################################
 Display-ProgressBar -Status 'Setting the subscription context'
