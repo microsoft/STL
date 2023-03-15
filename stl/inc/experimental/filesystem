@@ -129,7 +129,7 @@ public:
         : _Myftype(_Ftype), _Myperms(_Prms) {}
 
     file_status(const file_status&) noexcept            = default;
-    file_status& operator=(const file_status&) = default;
+    file_status& operator=(const file_status&) noexcept = default;
 
     file_status(file_status&&)            = default;
     file_status& operator=(file_status&&) = default;
@@ -1476,7 +1476,7 @@ public:
     _Directory_iterator(const _Directory_iterator&)            = default;
     _Directory_iterator& operator=(const _Directory_iterator&) = default;
 
-    _Directory_iterator(_Directory_iterator&&) noexcept            = default;
+    _Directory_iterator(_Directory_iterator&&) noexcept   = default;
     _Directory_iterator& operator=(_Directory_iterator&&) = default;
 
     _NODISCARD const value_type& operator*() const {
