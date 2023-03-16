@@ -1243,18 +1243,18 @@ template <class _Rx, class... _Types>
 template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>
 _NODISCARD _Rx __stdcall _Function_inv_small(const _Move_only_function_data& _Self, _Types&&... _Args) noexcept(_Noex) {
     if constexpr (is_void_v<_Rx>) {
-        (void) _STD invoke<_Rx>(static_cast<_VtInvQuals>(*_Self._Small_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
+        (void) _STD invoke(static_cast<_VtInvQuals>(*_Self._Small_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
     } else {
-        return _STD invoke<_Rx>(static_cast<_VtInvQuals>(*_Self._Small_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
+        return _STD invoke(static_cast<_VtInvQuals>(*_Self._Small_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
     }
 }
 
 template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>
 _NODISCARD _Rx __stdcall _Function_inv_large(const _Move_only_function_data& _Self, _Types&&... _Args) noexcept(_Noex) {
     if constexpr (is_void_v<_Rx>) {
-        (void) _STD invoke<_Rx>(static_cast<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
+        (void) _STD invoke(static_cast<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
     } else {
-        return _STD invoke<_Rx>(static_cast<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
+        return _STD invoke(static_cast<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
     }
 }
 
