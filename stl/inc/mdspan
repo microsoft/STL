@@ -13,6 +13,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <mdspan> are available only with C++
 #else // ^^^ not supported / supported language mode vvv
 #include <array>
 #include <span>
+#include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
