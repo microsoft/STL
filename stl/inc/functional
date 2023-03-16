@@ -824,8 +824,7 @@ private:
     _Rx _Do_call(_Types&&... _Args) override { // call wrapped function
         if constexpr (is_void_v<_Rx>) {
             (void) _STD invoke(_Callee, _STD forward<_Types>(_Args)...);
-        }
-        else {
+        } else {
             return _STD invoke(_Callee, _STD forward<_Types>(_Args)...);
         }
     }
