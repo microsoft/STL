@@ -27,7 +27,8 @@ constexpr void check_implicit_conversion(T); // not defined
 
 template <class T, class... Args>
 concept NotImplicitlyConstructibleFrom =
-    constructible_from<T, Args...> && !requires(Args... args) { check_implicit_conversion<T>({args...}); };
+    constructible_from<T, Args...>
+    && !requires(Args && ... args) { check_implicit_conversion<T>({forward<Args>(args)...}); };
 
 template <class IndexType, size_t... Extents, size_t... Indices>
 constexpr void do_check_members(index_sequence<Indices...>) {
@@ -60,9 +61,9 @@ constexpr void do_check_members(index_sequence<Indices...>) {
     assert((((ext.extent(Indices) == Extents && Extents != dynamic_extent) || ext.extent(Indices) == 0) && ...));
 
     using OtherIndexType = conditional_t<is_signed_v<IndexType>, long long, unsigned long long>;
+    using Ext2           = extents<OtherIndexType, Extents...>;
 
     { // Check construction from other extents
-        using Ext2 = extents<OtherIndexType, Extents...>;
         Ext2 ext2{ext};
         assert(((ext.extent(Indices) == ext2.extent(Indices)) && ...));
         assert(ext == ext2);
@@ -71,7 +72,6 @@ constexpr void do_check_members(index_sequence<Indices...>) {
     }
 
     { // Check construction from extents pack
-        using Ext2 = extents<OtherIndexType, Extents...>;
         Ext2 ext2{ext.extent(Indices)...};
         assert(((ext.extent(Indices) == ext2.extent(Indices)) && ...));
         assert(ext == ext2);
@@ -80,16 +80,14 @@ constexpr void do_check_members(index_sequence<Indices...>) {
     }
 
     { // Check construction from array and span
-        using Ext2 = extents<OtherIndexType, Extents...>;
-
         auto arr = to_array<IndexType>({ext.extent(Indices)...});
-        Ext ext2a{arr};
+        Ext2 ext2a{arr};
         assert(((ext.extent(Indices) == ext2a.extent(Indices)) && ...));
         assert(ext == ext2a);
         static_assert(is_nothrow_constructible_v<Ext2, decltype(arr)>);
 
         span s{arr};
-        Ext ext2b{s};
+        Ext2 ext2b{s};
         assert(((ext.extent(Indices) == ext2b.extent(Indices)) && ...));
         assert(ext == ext2b);
         static_assert(is_nothrow_constructible_v<Ext2, decltype(s)>);
@@ -275,7 +273,7 @@ constexpr bool all_extents_dynamic<extents<IndexType, Extents...>, ExpectedRank>
     ((Extents == dynamic_extent) && ...) && (sizeof...(Extents) == ExpectedRank);
 
 template <class... Args>
-concept CanDeduceExtents = requires(Args... args) { extents{args...}; };
+concept CanDeduceExtents = requires(Args&&... args) { extents{forward<Args>(args)...}; };
 
 // Check deduction guide
 using DG = decltype(extents{'1', 2, 3u, 4ll, ConvertibleToInt<size_t>{}});

@@ -4,6 +4,7 @@
 #include <array>
 #include <cassert>
 #include <concepts>
+#include <cstdint>
 #include <mdspan>
 #include <string>
 #include <type_traits>
@@ -35,8 +36,8 @@ constexpr void test_one(array<ElementType, 3> elems) {
     }
 
     { // Check 'access' member function
-        same_as<ElementType&> decltype(auto) ref = accessor.access(elems.data(), 1);
-        assert(ref == elems[1]);
+        same_as<ElementType&> decltype(auto) accessed_elem = accessor.access(elems.data(), 1);
+        assert(accessed_elem == elems[1]);
         static_assert(noexcept(accessor.access(elems.data(), 0)));
     }
 
