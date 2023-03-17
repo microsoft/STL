@@ -3258,20 +3258,20 @@ _NODISCARD size_t formatted_size(const locale& _Loc, const wformat_string<_Types
 
 #if _HAS_CXX23
 template <bool _Add_newline>
-_NODISCARD string _Escape_braces(const string_view _Old_str) {
-    string _Escaped_str;
+_NODISCARD string _Unescape_braces(const string_view _Old_str) {
+    string _Unescaped_str;
 
     if (_Old_str.empty()) {
-        return _Escaped_str;
+        return _Unescaped_str;
     }
 
-    size_t _Escaped_str_expected_size = _Old_str.size();
+    size_t _Unescaped_str_expected_size = _Old_str.size();
 
     if constexpr (_Add_newline) {
-        ++_Escaped_str_expected_size;
+        ++_Unescaped_str_expected_size;
     }
 
-    _Escaped_str.resize_and_overwrite(_Escaped_str_expected_size, [_Old_str](char* _Dest_ptr, size_t) {
+    _Unescaped_str.resize_and_overwrite(_Unescaped_str_expected_size, [_Old_str](char* _Dest_ptr, size_t) {
         char _Prev_char           = _Old_str.front();
         size_t _Num_chars_written = 1;
         *_Dest_ptr++              = _Prev_char;
@@ -3295,7 +3295,7 @@ _NODISCARD string _Escape_braces(const string_view _Old_str) {
         }
     });
 
-    return _Escaped_str;
+    return _Unescaped_str;
 }
 #endif // _HAS_CXX23
 

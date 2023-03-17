@@ -112,12 +112,12 @@ void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Type
                 _Stream, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
         }
     } else {
-        const string _Escaped_str{_Escape_braces<_Add_newline>(_Fmt.get())};
+        const string _Unescaped_str{_Unescape_braces<_Add_newline>(_Fmt.get())};
 
         if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
-            _STD _Print_noformat_unicode(_Stream, _Escaped_str);
+            _STD _Print_noformat_unicode(_Stream, _Unescaped_str);
         } else {
-            _STD _Print_noformat_nonunicode(_Stream, _Escaped_str);
+            _STD _Print_noformat_nonunicode(_Stream, _Unescaped_str);
         }
     }
 }
