@@ -202,7 +202,7 @@ public:
         }
 
         for (size_t _Dim = 0; _Dim < sizeof...(_Extents); ++_Dim) {
-            if (_Left.extent(_Dim) != _Right.extent(_Dim)) {
+            if (_STD cmp_not_equal(_Left.extent(_Dim), _Right.extent(_Dim))) {
                 return false;
             }
         }
