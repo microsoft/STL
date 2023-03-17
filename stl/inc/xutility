@@ -2287,9 +2287,8 @@ namespace ranges {
     using sentinel_t = decltype(_RANGES end(_STD declval<_Rng&>()));
 
     template <class _Wrapped>
-    concept _Weakly_unwrappable =
-        same_as<typename remove_cvref_t<_Wrapped>::_Prevent_inheriting_unwrap, remove_cvref_t<_Wrapped>>
-        && requires(_Wrapped&& _Wr) { _STD forward<_Wrapped>(_Wr)._Unwrapped(); };
+    concept _Weakly_unwrappable = _Allow_inheriting_unwrap_v<remove_cvref_t<_Wrapped>>
+                               && requires(_Wrapped&& _Wr) { _STD forward<_Wrapped>(_Wr)._Unwrapped(); };
 
     template <class _Sent>
     concept _Weakly_unwrappable_sentinel = _Weakly_unwrappable<const remove_reference_t<_Sent>&>;
