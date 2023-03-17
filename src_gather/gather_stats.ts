@@ -458,7 +458,7 @@ type Row = {
     sum_wait: number;
 };
 
-function should_emit_data_point(rows: Row[], i: number, key: keyof Row) {
+function should_emit_data_point(rows: Row[], i: number, key: Exclude<keyof Row, 'date'>) {
     return rows[i - 1]?.[key] > 0 || rows[i][key] > 0 || rows[i + 1]?.[key] > 0;
 }
 
@@ -657,7 +657,7 @@ export const daily_table: DailyRow[] = [
         str += `date: '${row.date.toISODate()}', `;
         str += `merged: ${row.merged.toFixed(2)}, `;
 
-        const keys: (keyof Row)[] = ['pr', 'cxx20', 'cxx23', 'lwg', 'issue', 'bug', 'video'];
+        const keys: Exclude<keyof Row, 'date'>[] = ['pr', 'cxx20', 'cxx23', 'lwg', 'issue', 'bug', 'video'];
         for (const key of keys) {
             if (should_emit_data_point(rows, i, key)) {
                 str += `${key}: ${row[key]}, `;
