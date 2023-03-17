@@ -8778,19 +8778,46 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Zip_transform_fn zip_transform{};
     } // namespace views
 
+    template <class _Ty, size_t>
+    using _Repeat_type = _Ty;
+
     template <class _Ty, class _Indices>
     struct _Repeated_tuple_impl;
 
     template <class _Ty, size_t... _Indices>
     struct _Repeated_tuple_impl<_Ty, index_sequence<_Indices...>> {
-        template <size_t>
-        using _Repeat_type = _Ty;
-
-        using type = tuple<_Repeat_type<_Indices>...>;
+        using type = tuple<_Repeat_type<_Ty, _Indices>...>;
     };
 
     template <class _Ty, size_t _Nx>
     using _Repeated_tuple = typename _Repeated_tuple_impl<_Ty, make_index_sequence<_Nx>>::type;
+
+    template <class _Fn, class _Ty, class _Indices>
+    inline constexpr bool _Regular_invocable_with_repeated_type_impl = false;
+
+    template <class _Fn, class _Ty, size_t... _Indices>
+    inline constexpr bool _Regular_invocable_with_repeated_type_impl<_Fn, _Ty, index_sequence<_Indices...>> =
+        regular_invocable<_Fn, _Repeat_type<_Ty, _Indices>...>;
+
+    template <class _Fn, class _Ty, size_t _Nx>
+    concept _Regular_invocable_with_repeated_type =
+        _Regular_invocable_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>;
+
+    template <class _Fn, class _Ty, class _Indices>
+    struct _Invoke_result_with_repeated_type_impl;
+
+    template <class _Fn, class _Ty, size_t... _Indices>
+    struct _Invoke_result_with_repeated_type_impl<_Fn, _Ty, index_sequence<_Indices...>> {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1761088
+        using type = invoke_result_t<_Fn, _Repeat_type<_Ty, _Indices>...>;
+#else // ^^^ no workaround / workaround vvv
+        using type = decltype(_STD invoke(_STD declval<_Fn>(), _STD declval<_Repeat_type<_Ty, _Indices>>()...));
+#endif // ^^^ workaround ^^^
+    };
+
+    template <class _Fn, class _Ty, size_t _Nx>
+    using _Invoke_result_with_repeated_type =
+        typename _Invoke_result_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>::type;
 
     _EXPORT_STD template <forward_range _Vw, size_t _Nx>
         requires view<_Vw> && (_Nx > 0)
@@ -8806,6 +8833,12 @@ namespace ranges {
         class _Iterator {
         private:
             friend adjacent_view;
+
+            template <forward_range _Vw2, move_constructible _Fn, size_t _Nx2>
+                requires view<_Vw2> && (_Nx2 > 0)
+                      && is_object_v<_Fn> && _Regular_invocable_with_repeated_type<_Fn&, range_reference_t<_Vw2>, _Nx2>
+                      && _Can_reference<_Invoke_result_with_repeated_type<_Fn&, range_reference_t<_Vw2>, _Nx2>>
+            friend class adjacent_transform_view;
 
             using _Base          = _Maybe_const<_Const, _Vw>;
             using _Base_iterator = iterator_t<_Base>;
@@ -9165,6 +9198,359 @@ namespace ranges {
         _EXPORT_STD template <size_t _Nx>
         inline constexpr _Adjacent_fn<_Nx> adjacent;
         _EXPORT_STD inline constexpr _Adjacent_fn<2> pairwise;
+    } // namespace views
+
+    _EXPORT_STD template <forward_range _Vw, move_constructible _Fn, size_t _Nx>
+        requires view<_Vw> && (_Nx > 0)
+              && is_object_v<_Fn> && _Regular_invocable_with_repeated_type<_Fn&, range_reference_t<_Vw>, _Nx>
+              && _Can_reference<_Invoke_result_with_repeated_type<_Fn&, range_reference_t<_Vw>, _Nx>>
+    class adjacent_transform_view : public view_interface<adjacent_transform_view<_Vw, _Fn, _Nx>> {
+    private:
+        using _Inner_view = adjacent_view<_Vw, _Nx>;
+        template <bool _Const>
+        using _Inner_iterator = iterator_t<_Maybe_const<_Const, _Inner_view>>;
+        template <bool _Const>
+        using _Inner_sentinel = sentinel_t<_Maybe_const<_Const, _Inner_view>>;
+
+        /* [[no_unique_address]] */ _Movable_box<_Fn> _Func;
+        /* [[no_unique_address]] */ _Inner_view _Inner;
+
+        template <bool _Const>
+        class _Iterator {
+        private:
+            friend adjacent_transform_view;
+
+            using _Parent_t = _Maybe_const<_Const, adjacent_transform_view>;
+            using _Base     = _Maybe_const<_Const, _Vw>;
+
+            _Parent_t* _Parent = nullptr;
+            _Inner_iterator<_Const> _Inner;
+
+            constexpr _Iterator(_Parent_t& _Parent_, _Inner_iterator<_Const> _Inner_) noexcept(
+                is_nothrow_move_constructible_v<_Inner_iterator<_Const>>) // strengthened
+                : _Parent(_STD addressof(_Parent_)), _Inner(_STD move(_Inner_)) {}
+
+            _NODISCARD static consteval auto _Get_iterator_category() noexcept {
+                if constexpr (!is_reference_v<_Invoke_result_with_repeated_type<_Maybe_const<_Const, _Fn>&,
+                                  range_reference_t<_Base>, _Nx>>) {
+                    return input_iterator_tag{};
+                } else {
+                    using _Cat = typename iterator_traits<iterator_t<_Base>>::iterator_category;
+
+                    if constexpr (derived_from<_Cat, random_access_iterator_tag>) {
+                        return random_access_iterator_tag{};
+                    } else if constexpr (derived_from<_Cat, bidirectional_iterator_tag>) {
+                        return bidirectional_iterator_tag{};
+                    } else if constexpr (derived_from<_Cat, forward_iterator_tag>) {
+                        return forward_iterator_tag{};
+                    } else {
+                        return input_iterator_tag{};
+                    }
+                }
+            }
+
+            template <size_t... _Indices>
+            _NODISCARD static consteval bool _Is_indirection_nothrow(index_sequence<_Indices...>) noexcept {
+                return noexcept(_STD invoke(_STD declval<_Maybe_const<_Const, _Fn>&>(),
+                    *_STD get<_Indices>(_STD declval<const _Inner_iterator<_Const>&>()._Current)...));
+            }
+
+        public:
+            using iterator_category = decltype(_Get_iterator_category());
+            using iterator_concept  = typename _Inner_iterator<_Const>::iterator_concept;
+            using value_type        = remove_cvref_t<
+                _Invoke_result_with_repeated_type<_Maybe_const<_Const, _Fn>&, range_reference_t<_Base>, _Nx>>;
+            using difference_type = range_difference_t<_Base>;
+
+            _Iterator() = default;
+
+            constexpr _Iterator(_Iterator<!_Const> _Other)
+                requires _Const && convertible_to<_Inner_iterator<false>, _Inner_iterator<_Const>>
+                : _Parent(_Other._Parent), _Inner(_STD move(_Other._Inner)) {}
+
+            _NODISCARD constexpr decltype(auto) operator*() const
+                noexcept(_Is_indirection_nothrow(make_index_sequence<_Nx>{})) {
+                return _STD apply(
+                    [&](const auto&... _Iters) -> decltype(auto) { return _STD invoke(*_Parent->_Func, *_Iters...); },
+                    _Inner._Current);
+            }
+
+            constexpr _Iterator& operator++() noexcept(noexcept(++_Inner)) /* strengthened */ {
+                ++_Inner;
+                return *this;
+            }
+
+            constexpr _Iterator operator++(int) noexcept(
+                noexcept(++*this) && is_nothrow_copy_constructible_v<_Iterator>) /* strengthened */ {
+                auto _Tmp = *this;
+                ++*this;
+                return _Tmp;
+            }
+
+            constexpr _Iterator& operator--() noexcept(noexcept(--_Inner)) /* strengthened */
+                requires bidirectional_range<_Base>
+            {
+                --_Inner;
+                return *this;
+            }
+
+            constexpr _Iterator operator--(int) noexcept(
+                noexcept(--*this) && is_nothrow_copy_constructible_v<_Iterator>) // strengthened
+                requires bidirectional_range<_Base>
+            {
+                auto _Tmp = *this;
+                --*this;
+                return _Tmp;
+            }
+
+            constexpr _Iterator& operator+=(const difference_type _Off) noexcept(
+                noexcept(_Inner += _Off)) // strengthened
+                requires random_access_range<_Base>
+            {
+                _Inner += _Off;
+                return *this;
+            }
+
+            constexpr _Iterator& operator-=(const difference_type _Off) noexcept(
+                noexcept(_Inner -= _Off)) // strengthened
+                requires random_access_range<_Base>
+            {
+                _Inner -= _Off;
+                return *this;
+            }
+
+            _NODISCARD constexpr decltype(auto) operator[](const difference_type _Off) const
+                requires random_access_range<_Base>
+            {
+                return _STD apply(
+                    [&](const auto&... _Iters) -> decltype(auto) {
+                        return _STD invoke(*_Parent->_Func, _Iters[_Off]...);
+                    },
+                    _Inner._Current);
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Left._Inner == _Right._Inner)) /* strengthened */ {
+                return _Left._Inner == _Right._Inner;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator<(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Left._Inner < _Right._Inner)) // strengthened
+                requires random_access_range<_Base>
+            {
+                return _Left._Inner < _Right._Inner;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Left._Inner > _Right._Inner)) // strengthened
+                requires random_access_range<_Base>
+            {
+                return _Left._Inner > _Right._Inner;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator<=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Left._Inner <= _Right._Inner)) // strengthened
+                requires random_access_range<_Base>
+            {
+                return _Left._Inner <= _Right._Inner;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator>=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Left._Inner >= _Right._Inner)) // strengthened
+                requires random_access_range<_Base>
+            {
+                return _Left._Inner >= _Right._Inner;
+            }
+
+            _NODISCARD_FRIEND constexpr auto operator<=>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Left._Inner <=> _Right._Inner)) // strengthened
+                requires random_access_range<_Base> && three_way_comparable<_Inner_iterator<_Const>>
+            {
+                return _Left._Inner <=> _Right._Inner;
+            }
+
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _It, const difference_type _Off) noexcept(
+                noexcept(_It._Inner + _Off) && is_nothrow_move_constructible_v<_Inner_iterator<_Const>>) // strengthened
+                requires random_access_range<_Base>
+            {
+                return _Iterator{*_It._Parent, _It._Inner + _Off};
+            }
+
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, const _Iterator& _It) noexcept(
+                noexcept(_It._Inner + _Off) && is_nothrow_move_constructible_v<_Inner_iterator<_Const>>) // strengthened
+                requires random_access_range<_Base>
+            {
+                return _Iterator{*_It._Parent, _It._Inner + _Off};
+            }
+
+            _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off) noexcept(
+                noexcept(_It._Inner - _Off) && is_nothrow_move_constructible_v<_Inner_iterator<_Const>>) // strengthened
+                requires random_access_range<_Base>
+            {
+                return _Iterator{*_It._Parent, _It._Inner - _Off};
+            }
+
+            _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left, const _Iterator& _Right) //
+                noexcept(noexcept(_Left._Inner - _Right._Inner)) // strengthened
+                requires sized_sentinel_for<_Inner_iterator<_Const>, _Inner_iterator<_Const>>
+            {
+                return _Left._Inner - _Right._Inner;
+            }
+        };
+
+        template <bool _Const>
+        class _Sentinel {
+        private:
+            friend adjacent_transform_view;
+
+            /* [[no_unique_address]] */ _Inner_sentinel<_Const> _Inner;
+
+            constexpr explicit _Sentinel(_Inner_sentinel<_Const> _Inner_) : _Inner(_Inner_) {}
+
+            template <bool _OtherConst>
+                requires sentinel_for<_Inner_sentinel<_Const>, _Inner_iterator<_OtherConst>>
+            _NODISCARD constexpr bool _Equal(const _Iterator<_OtherConst>& _It) const
+                noexcept(noexcept(_It._Inner == _Inner)) {
+                return _It._Inner == _Inner;
+            }
+
+            template <bool _OtherConst>
+                requires sized_sentinel_for<_Inner_sentinel<_Const>, _Inner_iterator<_OtherConst>>
+            _NODISCARD constexpr range_difference_t<_Maybe_const<_OtherConst, _Inner_view>> _Distance_from(
+                const _Iterator<_OtherConst>& _It) const noexcept(noexcept(_Inner - _It._Inner)) {
+                return _Inner - _It._Inner;
+            }
+
+        public:
+            _Sentinel() = default;
+
+            constexpr _Sentinel(_Sentinel<!_Const> _Other)
+                requires _Const && convertible_to<_Inner_sentinel<false>, _Inner_sentinel<_Const>>
+                : _Inner(_STD move(_Other._Inner)) {}
+
+            template <bool _OtherConst>
+                requires sentinel_for<_Inner_sentinel<_Const>, _Inner_iterator<_OtherConst>>
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_OtherConst>& _It,
+                const _Sentinel& _Se) noexcept(noexcept(_Se._Equal(_It))) /* strengthened */ {
+                return _Se._Equal(_It);
+            }
+
+            template <bool _OtherConst>
+                requires sized_sentinel_for<_Inner_sentinel<_Const>, _Inner_iterator<_OtherConst>>
+            _NODISCARD_FRIEND constexpr range_difference_t<_Maybe_const<_OtherConst, _Inner_view>> operator-(
+                const _Iterator<_OtherConst>& _It, const _Sentinel& _Se) noexcept( //
+                noexcept(_Se._Distance_from(_It))) /* strengthened */ {
+                return -_Se._Distance_from(_It);
+            }
+
+            template <bool _OtherConst>
+                requires sized_sentinel_for<_Inner_sentinel<_Const>, _Inner_iterator<_OtherConst>>
+            _NODISCARD_FRIEND constexpr range_difference_t<_Maybe_const<_OtherConst, _Inner_view>> operator-(
+                const _Sentinel& _Se, const _Iterator<_OtherConst>& _It) noexcept( //
+                noexcept(_Se._Distance_from(_It))) /* strengthened */ {
+                return _Se._Distance_from(_It);
+            }
+        };
+
+    public:
+        adjacent_transform_view() = default;
+
+        constexpr explicit adjacent_transform_view(_Vw _Range_, _Fn _Func_) noexcept(
+            is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Fn>) // strengthened
+            : _Func(in_place, _STD move(_Func_)), _Inner(_STD move(_Range_)) {}
+
+        _NODISCARD constexpr _Vw base() const& noexcept(noexcept(_Inner.base())) // strengthened
+            requires copy_constructible<_Inner_view>
+        {
+            return _Inner.base();
+        }
+
+        _NODISCARD constexpr _Vw base() && noexcept(noexcept(_STD move(_Inner).base())) /* strengthened */ {
+            return _STD move(_Inner).base();
+        }
+
+        _NODISCARD constexpr auto begin() {
+            return _Iterator<false>{*this, _Inner.begin()};
+        }
+
+        _NODISCARD constexpr auto begin() const
+            requires range<const _Inner_view>
+                  && _Regular_invocable_with_repeated_type<const _Fn&, range_reference_t<const _Vw>, _Nx>
+        {
+            return _Iterator<true>{*this, _Inner.begin()};
+        }
+
+        _NODISCARD constexpr auto end() {
+            if constexpr (common_range<_Inner_view>) {
+                return _Iterator<false>{*this, _Inner.end()};
+            } else {
+                return _Sentinel<false>{_Inner.end()};
+            }
+        }
+
+        _NODISCARD constexpr auto end() const
+            requires range<const _Inner_view>
+                  && _Regular_invocable_with_repeated_type<const _Fn&, range_reference_t<const _Vw>, _Nx>
+        {
+            if constexpr (common_range<const _Inner_view>) {
+                return _Iterator<true>{*this, _Inner.end()};
+            } else {
+                return _Sentinel<true>{_Inner.end()};
+            }
+        }
+
+        _NODISCARD constexpr auto size() noexcept(noexcept(_Inner.size())) // strengthened
+            requires sized_range<_Inner_view>
+        {
+            return _Inner.size();
+        }
+
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_Inner.size())) // strengthened
+            requires sized_range<const _Inner_view>
+        {
+            return _Inner.size();
+        }
+    };
+
+    namespace views {
+        template <size_t _Nx>
+        class _Adjacent_transform_fn {
+        public:
+            template <viewable_range _Rng, class _Fn>
+            _NODISCARD constexpr auto operator()(_Rng&&, _Fn&& _Func) const
+                noexcept(noexcept(views::zip_transform(_STD forward<_Fn>(_Func))))
+                requires (_Nx == 0)
+#ifndef __clang__ // TRANSITION, Clang 16
+                         && requires { views::zip_transform(_STD forward<_Fn>(_Func)); }
+#endif // __clang__
+            {
+                return views::zip_transform(_STD forward<_Fn>(_Func));
+            }
+
+            template <viewable_range _Rng, class _Fn>
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, _Fn&& _Func) const
+                noexcept(noexcept(adjacent_transform_view<views::all_t<_Rng>, decay_t<_Fn>, _Nx>(
+                    _STD forward<_Rng>(_Range), _STD forward<_Fn>(_Func))))
+                requires requires {
+                             adjacent_transform_view<views::all_t<_Rng>, decay_t<_Fn>, _Nx>(
+                                 _STD forward<_Rng>(_Range), _STD forward<_Fn>(_Func));
+                         }
+            {
+                return adjacent_transform_view<views::all_t<_Rng>, decay_t<_Fn>, _Nx>(
+                    _STD forward<_Rng>(_Range), _STD forward<_Fn>(_Func));
+            }
+
+            template <class _Fn>
+                requires constructible_from<decay_t<_Fn>, _Fn>
+            _NODISCARD constexpr auto operator()(_Fn&& _Func) const
+                noexcept(is_nothrow_constructible_v<decay_t<_Fn>, _Fn>) {
+                return _Range_closure<_Adjacent_transform_fn, decay_t<_Fn>>{_STD forward<_Fn>(_Func)};
+            }
+        };
+
+        _EXPORT_STD template <size_t _Nx>
+        inline constexpr _Adjacent_transform_fn<_Nx> adjacent_transform;
+        _EXPORT_STD inline constexpr _Adjacent_transform_fn<2> pairwise_transform;
     } // namespace views
 
 #ifdef __cpp_lib_ranges_to_container
