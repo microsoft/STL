@@ -25,10 +25,12 @@ struct NonConvertibleToAnything {};
 template <class T>
 constexpr void check_implicit_conversion(T); // not defined
 
+// clang-format off
 template <class T, class... Args>
 concept NotImplicitlyConstructibleFrom =
     constructible_from<T, Args...>
-    && !requires(Args && ... args) { check_implicit_conversion<T>({forward<Args>(args)...}); };
+    && !requires(Args&& ... args) { check_implicit_conversion<T>({forward<Args>(args)...}); };
+// clang-format on
 
 template <class IndexType, size_t... Extents, size_t... Indices>
 constexpr void do_check_members(index_sequence<Indices...>) {
