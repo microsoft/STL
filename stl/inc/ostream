@@ -1113,11 +1113,9 @@ inline void _Vprint_nonunicode_impl(
     } else [[likely]] {
         // This is intentionally kept outside of the try/catch block in _Print_noformat_nonunicode()
         // (see N4928 [ostream.formatted.print]/3.2).
-        string _Output_str;
+        string _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
         if (_Add_nl == _Add_newline::_Yes) {
-            _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
-        } else {
-            _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
+            _Output_str.push_back('\n');
         }
 
         _State |= _STD _Print_noformat_nonunicode(_Ostr, _Output_str);
@@ -1205,11 +1203,9 @@ inline void _Vprint_unicode_impl(
     } else [[likely]] {
         // This is intentionally kept outside of the try/catch block in _Print_noformat_unicode()
         // (see N4928 [ostream.formatted.print]/3.2).
-        string _Output_str;
+        string _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
         if (_Add_nl == _Add_newline::_Yes) {
-            _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
-        } else {
-            _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
+            _Output_str.push_back('\n');
         }
 
         _State |= _STD _Print_noformat_unicode(_Ostr, _Output_str);

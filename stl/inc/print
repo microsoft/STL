@@ -35,11 +35,9 @@ inline void _Print_noformat_nonunicode(FILE* const _Stream, const string_view _S
 
 inline void _Vprint_nonunicode_impl(
     const _Add_newline _Add_nl, FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
-    string _Output_str;
+    string _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
     if (_Add_nl == _Add_newline::_Yes) {
-        _Output_str = _STD vformat(_Fmt_str, _Fmt_args) + '\n';
-    } else {
-        _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
+        _Output_str.push_back('\n');
     }
 
     _STD _Print_noformat_nonunicode(_Stream, _Output_str);
@@ -89,11 +87,9 @@ inline void _Print_noformat_unicode(FILE* const _Stream, const string_view _Str)
 
 inline void _Vprint_unicode_impl(
     const _Add_newline _Add_nl, FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
-    string _Output_str;
+    string _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
     if (_Add_nl == _Add_newline::_Yes) {
-        _Output_str = _STD vformat(_Fmt_str, _Fmt_args) + '\n';
-    } else {
-        _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
+        _Output_str.push_back('\n');
     }
 
     _STD _Print_noformat_unicode(_Stream, _Output_str);

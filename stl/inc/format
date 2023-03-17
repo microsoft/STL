@@ -3290,10 +3290,10 @@ _NODISCARD inline string _Unescape_braces(const _Add_newline _Add_nl, const stri
 
         if (_Add_nl == _Add_newline::_Yes) {
             *_Dest_ptr = '\n';
-            return _Num_chars_written + 1;
-        } else {
-            return _Num_chars_written;
+            ++_Num_chars_written;
         }
+
+        return _Num_chars_written;
     });
 
     return _Unescaped_str;
