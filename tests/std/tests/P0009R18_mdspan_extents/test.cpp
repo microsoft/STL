@@ -44,7 +44,7 @@ constexpr void do_check_members(index_sequence<Indices...>) {
 
     // Check static observers
     static_assert(Ext::rank() == sizeof...(Extents));
-    static_assert(Ext::rank_dynamic() == ((Extents == dynamic_extent) + ...));
+    static_assert(Ext::rank_dynamic() == ((Extents == dynamic_extent) + ... + 0));
     static_assert(((Ext::static_extent(Indices) == Extents) && ...));
 
     // Check noexceptness of static observers
@@ -255,6 +255,7 @@ constexpr void check_equality_operator() {
 }
 
 constexpr bool test() {
+    // check_members<short>(); // FIXME Definitely a bug.
     check_members<int, 1, 2, 3>();
     check_members<unsigned long long, dynamic_extent, 4, 5>();
     // check_members<short, dynamic_extent, dynamic_extent, 6>(); // FIXME Bug in array/span constructor?
@@ -283,9 +284,9 @@ static_assert(same_as<DG::index_type, size_t>);
 static_assert(!CanDeduceExtents<int, long, short, NonConvertibleToAnything>);
 
 // Check dextents
-static_assert(all_extents_dynamic<dextents<signed char, 1>, 1>);
+static_assert(all_extents_dynamic<dextents<signed char, 0>, 0>);
 static_assert(all_extents_dynamic<dextents<unsigned short, 2>, 2>);
-static_assert(all_extents_dynamic<dextents<int, 4>, 4>);
+static_assert(all_extents_dynamic<dextents<int, 3>, 3>);
 static_assert(all_extents_dynamic<dextents<unsigned long, 5>, 5>);
 
 int main() {
