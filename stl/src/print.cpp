@@ -9,7 +9,6 @@
 // In particular, basic_string must not be included here.
 
 #include <__msvc_print.hpp>
-#include <__msvc_unicode_iterators.hpp>
 #include <cstdio>
 #include <cstdlib>
 #include <internal_shared.h>

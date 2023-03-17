@@ -15,7 +15,6 @@
         "__msvc_sanitizer_annotate_container.hpp",
         "__msvc_system_error_abi.hpp",
         "__msvc_tzdb.hpp",
-        "__msvc_unicode_iterators.hpp",
         "__msvc_xlocinfo_types.hpp",
         "algorithm",
         "any",
