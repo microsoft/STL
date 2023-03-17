@@ -50,7 +50,7 @@ constexpr void test_one(array<ElementType, 3> elems) {
 constexpr bool test() {
     test_one<char>({'a', 'b', 'c'});
     test_one<long>({1, 2, 3});
-    test_one<float>({1.1, 2.2, 3.3});
+    test_one<double>({1.1, 2.2, 3.3});
     test_one<wstring>({L"1", L"2", L"3"});
     test_one<intmax_t>({3, 2, 1});
     return true;
