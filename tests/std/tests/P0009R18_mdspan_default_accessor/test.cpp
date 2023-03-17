@@ -13,29 +13,29 @@ using namespace std;
 
 template <class ElementType>
 constexpr void test_one(array<ElementType, 3> elems) {
-    using DefaultAccessor = default_accessor<ElementType>;
+    using Accessor = default_accessor<ElementType>;
 
     // Check modeled concepts
-    static_assert(is_nothrow_move_constructible_v<DefaultAccessor>);
-    static_assert(is_nothrow_move_assignable_v<DefaultAccessor>);
-    static_assert(is_nothrow_swappable_v<DefaultAccessor>);
-    static_assert(is_trivially_copyable_v<DefaultAccessor>);
-    static_assert(semiregular<DefaultAccessor>);
+    static_assert(is_nothrow_move_constructible_v<Accessor>);
+    static_assert(is_nothrow_move_assignable_v<Accessor>);
+    static_assert(is_nothrow_swappable_v<Accessor>);
+    static_assert(is_trivially_copyable_v<Accessor>);
+    static_assert(semiregular<Accessor>);
 
     // Check nested types
-    static_assert(same_as<typename DefaultAccessor::offset_policy, DefaultAccessor>);
-    static_assert(same_as<typename DefaultAccessor::element_type, ElementType>);
-    static_assert(same_as<typename DefaultAccessor::reference, ElementType&>);
-    static_assert(same_as<typename DefaultAccessor::data_handle_type, ElementType*>);
+    static_assert(same_as<typename Accessor::offset_policy, Accessor>);
+    static_assert(same_as<typename Accessor::element_type, ElementType>);
+    static_assert(same_as<typename Accessor::reference, ElementType&>);
+    static_assert(same_as<typename Accessor::data_handle_type, ElementType*>);
 
     // Check default constructor
-    DefaultAccessor accessor;
-    static_assert(is_nothrow_default_constructible_v<DefaultAccessor>);
+    Accessor accessor;
+    static_assert(is_nothrow_default_constructible_v<Accessor>);
 
     { // Check converting constructor from other accessor
         [[maybe_unused]] default_accessor<const ElementType> const_accessor = accessor;
-        static_assert(is_nothrow_constructible_v<default_accessor<const ElementType>, DefaultAccessor>);
-        static_assert(!is_constructible_v<DefaultAccessor, default_accessor<const ElementType>>);
+        static_assert(is_nothrow_constructible_v<default_accessor<const ElementType>, Accessor>);
+        static_assert(!is_constructible_v<Accessor, default_accessor<const ElementType>>);
     }
 
     { // Check 'access' member function
