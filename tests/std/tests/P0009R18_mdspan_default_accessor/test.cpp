@@ -16,6 +16,9 @@ constexpr void test_one(array<ElementType, 3> elems) {
     using DefaultAccessor = default_accessor<ElementType>;
 
     // Check modeled concepts
+    static_assert(is_nothrow_move_constructible_v<DefaultAccessor>);
+    static_assert(is_nothrow_move_assignable_v<DefaultAccessor>);
+    static_assert(is_nothrow_swappable_v<DefaultAccessor>);
     static_assert(is_trivially_copyable_v<DefaultAccessor>);
     static_assert(semiregular<DefaultAccessor>);
 
