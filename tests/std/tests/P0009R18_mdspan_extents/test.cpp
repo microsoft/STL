@@ -29,7 +29,7 @@ constexpr void check_implicit_conversion(T); // not defined
 template <class T, class... Args>
 concept NotImplicitlyConstructibleFrom =
     constructible_from<T, Args...>
-    && !requires(Args&& ... args) { check_implicit_conversion<T>({forward<Args>(args)...}); };
+    && !requires(Args&&... args) { check_implicit_conversion<T>({forward<Args>(args)...}); };
 // clang-format on
 
 template <class IndexType, size_t... Extents, size_t... Indices>
