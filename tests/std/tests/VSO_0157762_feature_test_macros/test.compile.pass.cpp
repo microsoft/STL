@@ -1776,6 +1776,20 @@ STATIC_ASSERT(__cpp_lib_ranges_to_container == 202202L);
 #endif
 #endif
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_zip
+#error __cpp_lib_ranges_zip is not defined
+#elif __cpp_lib_ranges_zip != 202110L
+#error __cpp_lib_ranges_zip is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_zip == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_zip
+#error __cpp_lib_ranges_zip is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_raw_memory_algorithms
 #error __cpp_lib_raw_memory_algorithms is not defined

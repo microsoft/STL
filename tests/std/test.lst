@@ -570,6 +570,7 @@ tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference
 tests\P2321R2_views_adjacent
+tests\P2321R2_views_adjacent_transform
 tests\P2321R2_views_zip
 tests\P2321R2_views_zip_transform
 tests\P2322R6_ranges_alg_fold

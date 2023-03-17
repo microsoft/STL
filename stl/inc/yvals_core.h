@@ -290,6 +290,7 @@
 // P2609R3 Relaxing Ranges Just A Smidge
 // P2655R3 common_reference_t Of reference_wrapper Should Be A Reference Type
 // P2711R1 Making Multi-Param Constructors Of Views explicit
+// P2736R2 Referencing The Unicode Standard
 // P2770R0 Stashing Stashing Iterators For Proper Flattening
 
 // _HAS_CXX20 indirectly controls:
@@ -336,7 +337,6 @@
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
-//     (missing views::adjacent_transform)
 // P2322R6 ranges::fold_left, ranges::fold_right, Etc.
 // P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2404R3 Move-Only Types For Comparison Concepts
@@ -1742,6 +1742,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_starts_ends_with 202106L
 #define __cpp_lib_ranges_stride           202207L
 #define __cpp_lib_ranges_to_container     202202L
+#define __cpp_lib_ranges_zip              202110L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream                  202106L
