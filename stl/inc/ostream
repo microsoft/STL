@@ -1103,8 +1103,8 @@ inline ios_base::iostate _Print_noformat_nonunicode(ostream& _Ostr, const string
     return _State;
 }
 
-template <bool _Add_newline>
-void _Vprint_nonunicode_impl(ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
+inline void _Vprint_nonunicode_impl(
+    const _Add_newline _Add_nl, ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
     const ostream::sentry _Ok(_Ostr);
     ios_base::iostate _State = ios_base::goodbit;
 
@@ -1114,7 +1114,7 @@ void _Vprint_nonunicode_impl(ostream& _Ostr, const string_view _Fmt_str, const f
         // This is intentionally kept outside of the try/catch block in _Print_noformat_nonunicode()
         // (see N4928 [ostream.formatted.print]/3.2).
         string _Output_str;
-        if constexpr (_Add_newline) {
+        if (_Add_nl == _Add_newline::_Yes) {
             _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
         } else {
             _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
@@ -1195,8 +1195,8 @@ inline ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_vi
     return _State;
 }
 
-template <bool _Add_newline>
-void _Vprint_unicode_impl(ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
+inline void _Vprint_unicode_impl(
+    const _Add_newline _Add_nl, ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
     const ostream::sentry _Ok(_Ostr);
     ios_base::iostate _State = ios_base::goodbit;
 
@@ -1206,7 +1206,7 @@ void _Vprint_unicode_impl(ostream& _Ostr, const string_view _Fmt_str, const form
         // This is intentionally kept outside of the try/catch block in _Print_noformat_unicode()
         // (see N4928 [ostream.formatted.print]/3.2).
         string _Output_str;
-        if constexpr (_Add_newline) {
+        if (_Add_nl == _Add_newline::_Yes) {
             _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args) + '\n';
         } else {
             _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
@@ -1235,8 +1235,8 @@ inline void _Print_noformat(ostream& _Ostr, const string_view _Str) {
     _Ostr.setstate(_State);
 }
 
-template <bool _Add_newline, class... _Types>
-void _Print_impl(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+template <class... _Types>
+void _Print_impl(const _Add_newline _Add_nl, ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&... _Args) {
     constexpr bool _Has_format_args = sizeof...(_Types) > 0;
 
     // This is intentionally kept outside of the try/catch block in _Print_noformat_*()
@@ -1244,36 +1244,36 @@ void _Print_impl(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&..
 
     if constexpr (_Has_format_args) {
         if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
-            _STD _Vprint_unicode_impl<_Add_newline>(
-                _Ostr, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+            _STD _Vprint_unicode_impl(
+                _Add_nl, _Ostr, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
         } else {
-            _STD _Vprint_nonunicode_impl<_Add_newline>(
-                _Ostr, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+            _STD _Vprint_nonunicode_impl(
+                _Add_nl, _Ostr, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
         }
     } else {
-        const string _Unescaped_str{_Unescape_braces<_Add_newline>(_Fmt.get())};
+        const string _Unescaped_str{_Unescape_braces(_Add_nl, _Fmt.get())};
         _STD _Print_noformat(_Ostr, _Unescaped_str);
     }
 }
 
 _EXPORT_STD template <class... _Types>
 void print(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&... _Args) {
-    _STD _Print_impl<false>(_Ostr, _Fmt, _STD forward<_Types>(_Args)...);
+    _STD _Print_impl(_Add_newline::_Nope, _Ostr, _Fmt, _STD forward<_Types>(_Args)...);
 }
 
 _EXPORT_STD template <class... _Types>
 void println(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&... _Args) {
-    _STD _Print_impl<true>(_Ostr, _Fmt, _STD forward<_Types>(_Args)...);
+    _STD _Print_impl(_Add_newline::_Yes, _Ostr, _Fmt, _STD forward<_Types>(_Args)...);
 }
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
 void vprint_unicode(ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
-    _STD _Vprint_unicode_impl<false>(_Ostr, _Fmt_str, _Fmt_args);
+    _STD _Vprint_unicode_impl(_Add_newline::_Nope, _Ostr, _Fmt_str, _Fmt_args);
 }
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
 void vprint_nonunicode(ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
-    _STD _Vprint_nonunicode_impl<false>(_Ostr, _Fmt_str, _Fmt_args);
+    _STD _Vprint_nonunicode_impl(_Add_newline::_Nope, _Ostr, _Fmt_str, _Fmt_args);
 }
 #else // ^^^ _CPPRTTI / !_CPPRTTI vvv
 _EXPORT_STD template <class... _Types>

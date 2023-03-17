@@ -33,10 +33,10 @@ inline void _Print_noformat_nonunicode(FILE* const _Stream, const string_view _S
     }
 }
 
-template <bool _Add_newline>
-void _Vprint_nonunicode_impl(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
+inline void _Vprint_nonunicode_impl(
+    const _Add_newline _Add_nl, FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
     string _Output_str;
-    if constexpr (_Add_newline) {
+    if (_Add_nl == _Add_newline::_Yes) {
         _Output_str = _STD vformat(_Fmt_str, _Fmt_args) + '\n';
     } else {
         _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
@@ -87,10 +87,10 @@ inline void _Print_noformat_unicode(FILE* const _Stream, const string_view _Str)
     }
 }
 
-template <bool _Add_newline>
-void _Vprint_unicode_impl(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
+inline void _Vprint_unicode_impl(
+    const _Add_newline _Add_nl, FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
     string _Output_str;
-    if constexpr (_Add_newline) {
+    if (_Add_nl == _Add_newline::_Yes) {
         _Output_str = _STD vformat(_Fmt_str, _Fmt_args) + '\n';
     } else {
         _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
@@ -99,20 +99,21 @@ void _Vprint_unicode_impl(FILE* const _Stream, const string_view _Fmt_str, const
     _STD _Print_noformat_unicode(_Stream, _Output_str);
 }
 
-template <bool _Add_newline, class... _Types>
-void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+template <class... _Types>
+void _Print_impl(
+    const _Add_newline _Add_nl, FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
     constexpr bool _Has_format_args = sizeof...(_Types) > 0;
 
     if constexpr (_Has_format_args) {
         if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
-            _STD _Vprint_unicode_impl<_Add_newline>(
-                _Stream, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+            _STD _Vprint_unicode_impl(
+                _Add_nl, _Stream, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
         } else {
-            _STD _Vprint_nonunicode_impl<_Add_newline>(
-                _Stream, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+            _STD _Vprint_nonunicode_impl(
+                _Add_nl, _Stream, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
         }
     } else {
-        const string _Unescaped_str{_Unescape_braces<_Add_newline>(_Fmt.get())};
+        const string _Unescaped_str{_Unescape_braces(_Add_nl, _Fmt.get())};
 
         if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
             _STD _Print_noformat_unicode(_Stream, _Unescaped_str);
@@ -124,7 +125,7 @@ void _Print_impl(FILE* const _Stream, const format_string<_Types...> _Fmt, _Type
 
 _EXPORT_STD template <class... _Types>
 void print(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
-    _STD _Print_impl<false>(_Stream, _Fmt, _STD forward<_Types>(_Args)...);
+    _STD _Print_impl(_Add_newline::_Nope, _Stream, _Fmt, _STD forward<_Types>(_Args)...);
 }
 
 _EXPORT_STD template <class... _Types>
@@ -134,7 +135,7 @@ void print(const format_string<_Types...> _Fmt, _Types&&... _Args) {
 
 _EXPORT_STD template <class... _Types>
 void println(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
-    _STD _Print_impl<true>(_Stream, _Fmt, _STD forward<_Types>(_Args)...);
+    _STD _Print_impl(_Add_newline::_Yes, _Stream, _Fmt, _STD forward<_Types>(_Args)...);
 }
 
 _EXPORT_STD template <class... _Types>
@@ -144,7 +145,7 @@ void println(const format_string<_Types...> _Fmt, _Types&&... _Args) {
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
 void vprint_unicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
-    _STD _Vprint_unicode_impl<false>(_Stream, _Fmt_str, _Fmt_args);
+    _STD _Vprint_unicode_impl(_Add_newline::_Nope, _Stream, _Fmt_str, _Fmt_args);
 }
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
@@ -154,7 +155,7 @@ void vprint_unicode(const string_view _Fmt_str, const format_args _Fmt_args) {
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
 void vprint_nonunicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
-    _STD _Vprint_nonunicode_impl<false>(_Stream, _Fmt_str, _Fmt_args);
+    _STD _Vprint_nonunicode_impl(_Add_newline::_Nope, _Stream, _Fmt_str, _Fmt_args);
 }
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
