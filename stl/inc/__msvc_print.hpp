@@ -36,6 +36,9 @@ struct __std_unicode_console_retrieval_result {
     //
     //   - __std_win_error::_Not_supported: The FILE* provided does not actually have an associated output stream. In
     //     this case, the entire print can safely be elided, thanks to the "as-if" rule.
+    //     (We haven't observed this happening in practice. Console applications with stdout redirected to NUL
+    //     and Windows applications both appear to activate the __std_win_error::_File_not_found "valid, but
+    //     not a unicode console" codepath.)
     //
     //   - __std_win_error::_Invalid_parameter: The FILE* provided is invalid. A std::system_error exception should be
     //     thrown if this value is returned within the FILE* overload of vprint_unicode().
