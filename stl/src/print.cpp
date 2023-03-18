@@ -113,40 +113,36 @@ namespace {
     using _Minimal_string_view  = _Really_basic_string_view<char>;
     using _Minimal_wstring_view = _Really_basic_string_view<wchar_t>;
 
-    constexpr size_t _Max_str_segment_size = 8192;
-
     [[nodiscard]] _Minimal_string_view _Get_next_utf8_string_segment(
         const char* const _Str, const size_t _Str_size) noexcept {
+        constexpr size_t _Max_str_segment_size = 8192;
+
         if (_Str_size <= _Max_str_segment_size) [[likely]] {
             return _Minimal_string_view{_Str, _Str_size};
         }
 
-        // We want to find a pointer to the last valid code point _End_ptr such that the number of
-        // bytes in [_Str, _End_ptr] is <= _Max_str_segment_size. However, we also want to make sure
-        // that we end on a complete grapheme cluster to ensure that WriteConsoleW() can correctly
-        // draw Unicode characters which consume more than one code point.
-        _STD _Grapheme_break_property_iterator<char> _Grapheme_cluster_itr{_Str, _Str + _Str_size};
-        size_t _Str_segment_size = 0;
+        // Let's refer to _Max_str_segment_size as M.
+        // Now we know _Str_size > M, so we can read _Str[M].
+        // We might need to shrink this segment down to M - 3 bytes, in this worst case scenario:
 
-        while (_Grapheme_cluster_itr != _STD default_sentinel) {
-            ++_Grapheme_cluster_itr;
-            const char* const _Next_cluster_ptr = _Grapheme_cluster_itr._Position();
+        //  Values:        [byte1][byte2][byte3] | [byte4]
+        // Indices: [M - 4][M - 3][M - 2][M - 1] | [  M  ]
+        //   Sizes: [M - 3][M - 2][M - 1][  M  ] | [M + 1]
+        //              Maximum segment boundary ^
 
-            const _STD ptrdiff_t _Num_bytes_required = _Next_cluster_ptr - _Str;
-            if (_Num_bytes_required > _Max_str_segment_size) {
-                break;
+        for (size_t _Shrink = 0; _Shrink < 3; ++_Shrink) {
+            const size_t _Kx = _Max_str_segment_size - _Shrink; // consider a segment of _Kx bytes
+
+            // The first byte after the segment is at index _Kx, which we can read (see above).
+            // If _Str[_Kx] is a non-trailing byte, then it's the beginning of a code point.
+            const bool _Trailing_byte = (static_cast<unsigned char>(_Str[_Kx]) >> 6) == 0b10;
+
+            if (!_Trailing_byte) {
+                return _Minimal_string_view{_Str, _Kx}; // found a boundary between code points
             }
-
-            _Str_segment_size = _Num_bytes_required;
         }
 
-        // In the highly unlikely event that the entire string is one grapheme cluster larger than
-        // _Max_str_segment_size, then we'll need to just write out that string all at once.
-        if (_Str_segment_size == 0) [[unlikely]] {
-            return _Minimal_string_view{_Str, _Str_size};
-        }
-
-        return _Minimal_string_view{_Str, _Str_segment_size};
+        return _Minimal_string_view{_Str, _Max_str_segment_size - 3}; // worst case scenario
     }
 
     class _Transcode_result {
