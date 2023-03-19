@@ -7193,7 +7193,8 @@ namespace msvc {
                     using std::variant<int, char, double>::variant;
                 };
 
-                my_variant v1{42}, v2{3.14};
+                my_variant v1{42};
+                my_variant v2{3.14};
                 auto visitor1 = [](auto&& x) { return static_cast<double>(x); };
                 assert(std::visit(visitor1, v1) == 42.0);
                 assert(std::visit(visitor1, v2) == 3.14);
