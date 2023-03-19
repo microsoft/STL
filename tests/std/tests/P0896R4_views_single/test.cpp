@@ -94,6 +94,23 @@ constexpr bool test_one_type(T value, Args&&... args) {
     static_assert(noexcept(cr0.end()));
     static_assert(noexcept(ranges::end(cr0)));
 
+#if _HAS_CXX23
+    // validate members cbegin and cend
+    static_assert(same_as<decltype(r0.cbegin()), const T*>);
+    assert(*r0.cbegin() == value);
+    assert(r0.cbegin() == ptr);
+
+    static_assert(same_as<decltype(r0.cend()), const T*>);
+    assert(r0.cend() == ptr + 1);
+
+    static_assert(same_as<decltype(cr0.cbegin()), const T*>);
+    assert(*cr0.cbegin() == value);
+    assert(cr0.cbegin() == cptr);
+
+    static_assert(same_as<decltype(cr0.cend()), const T*>);
+    assert(cr0.cend() == cptr + 1);
+#endif // _HAS_CXX23
+
     // validate CTAD and T&& constructor
     const same_as<R> auto cr1 = ranges::single_view{move(value)};
     assert(cr1.data() != nullptr);

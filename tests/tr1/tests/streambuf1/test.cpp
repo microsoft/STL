@@ -28,7 +28,7 @@ public:
     }
 
     void setp(char* p) { // set pptr
-        Mybase::setp(p, nullptr);
+        Mybase::setp(p, p);
     }
 
     char* getp() const { // get pptr
