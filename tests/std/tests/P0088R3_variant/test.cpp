@@ -7900,7 +7900,8 @@ namespace msvc {
                 STATIC_ASSERT(!std::is_move_assignable_v<decltype(oc)>);
                 STATIC_ASSERT(!std::is_swappable_v<decltype(oc)>);
 
-                std::variant<volatile int> ov{}, ov2{};
+                std::variant<volatile int> ov{};
+                std::variant<volatile int> ov2{};
                 ov.emplace<0>(0);
                 swap(ov, ov);
                 ov = ov2;
@@ -7913,19 +7914,22 @@ namespace msvc {
                 STATIC_ASSERT(!std::is_swappable_v<decltype(ocv)>);
             }
             {
-                std::variant<const CvAssignable> oc{}, oc2{};
+                std::variant<const CvAssignable> oc{};
+                std::variant<const CvAssignable> oc2{};
                 oc.emplace<0>(CvAssignable{});
                 swap(oc, oc);
                 oc = oc2;
                 oc = std::move(oc2);
 
-                std::variant<volatile CvAssignable> ov{}, ov2{};
+                std::variant<volatile CvAssignable> ov{};
+                std::variant<volatile CvAssignable> ov2{};
                 ov.emplace<0>(CvAssignable{});
                 swap(ov, ov);
                 ov = ov2;
                 ov = std::move(ov2);
 
-                std::variant<const volatile CvAssignable> ocv{}, ocv2{};
+                std::variant<const volatile CvAssignable> ocv{};
+                std::variant<const volatile CvAssignable> ocv2{};
                 ocv.emplace<0>(CvAssignable{});
                 swap(ocv, ocv);
                 ocv = ocv2;

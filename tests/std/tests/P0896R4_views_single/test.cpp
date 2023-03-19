@@ -205,12 +205,14 @@ static_assert(!is_trivially_copy_assignable_v<ranges::single_view<const ConstSel
 
 constexpr bool test_cv() {
     {
-        ranges::single_view<VolatileConstructible> sv{}, sv2{};
+        ranges::single_view<VolatileConstructible> sv{};
+        ranges::single_view<VolatileConstructible> sv2{};
         sv = sv2;
         sv = move(sv2);
     }
     {
-        ranges::single_view<volatile VolatileConstructible> svv{}, svv2{};
+        ranges::single_view<volatile VolatileConstructible> svv{};
+        ranges::single_view<volatile VolatileConstructible> svv2{};
         svv = svv2;
         svv = move(svv2);
     }
@@ -218,12 +220,14 @@ constexpr bool test_cv() {
     [[maybe_unused]] ranges::single_view<const volatile VolatileConstructible> svcv{};
 
     {
-        ranges::single_view<ConstSelection> svx{in_place, 0}, svy{in_place, 42};
+        ranges::single_view<ConstSelection> svx{in_place, 0};
+        ranges::single_view<ConstSelection> svy{in_place, 42};
         svy = svx;
         assert(svy.front().value == 0);
     }
     {
-        ranges::single_view<const ConstSelection> scvx{in_place, 0}, scvy{in_place, 42};
+        ranges::single_view<const ConstSelection> scvx{in_place, 0};
+        ranges::single_view<const ConstSelection> scvy{in_place, 42};
         scvy = scvx;
         assert(scvy.front().value == 42);
     }
