@@ -31,14 +31,14 @@ struct partial_ordering;
 struct weak_ordering;
 struct strong_ordering;
 
-void __Literal_zero_is_expected();
+void _Literal_zero_is_expected();
 
 struct _Literal_zero {
 
     consteval _Literal_zero(int _Zero) noexcept {
         // Can't use _STL_VERIFY because this is a core header
         if (_Zero != 0) {
-            __Literal_zero_is_expected();
+            _Literal_zero_is_expected();
         }
     }
 
