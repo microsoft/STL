@@ -27,8 +27,20 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-using _Literal_zero = decltype(nullptr);
-using _Compare_t    = signed char;
+struct partial_ordering;
+struct weak_ordering;
+struct strong_ordering;
+
+struct _Literal_zero {
+
+    consteval _Literal_zero(int _Zero) noexcept {
+        _STL_VERIFY(_Zero == 0, "A literal zero is expected");
+    }
+
+    template <class _Ty, class = enable_if_t<!_Is_any_of_v<_Ty, int, partial_ordering, weak_ordering, strong_ordering>>>
+    _Literal_zero(_Ty) = delete;
+};
+using _Compare_t = signed char;
 
 // These "pretty" enumerator names are safe since they reuse names of user-facing entities.
 enum class _Compare_eq : _Compare_t { equal = 0, equivalent = equal };

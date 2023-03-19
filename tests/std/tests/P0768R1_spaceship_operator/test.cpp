@@ -7,6 +7,10 @@
 #include <compare>
 #include <type_traits>
 
+#ifdef __clang__
+#pragma clang diagnostic error "-Wzero-as-null-pointer-constant"
+#endif // __clang__
+
 enum class comp { equal, less, greater, unordered };
 
 template <comp Z, class T>
