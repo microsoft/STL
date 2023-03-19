@@ -1813,8 +1813,22 @@ namespace chrono {
         _NODISCARD sys_info _Get_info(const _Duration& _Dur, __std_tzdb_sys_info_type _Type) const {
             using _Internal_duration = duration<__std_tzdb_epoch_milli, milli>;
             const auto _Internal_dur = _CHRONO duration_cast<_Internal_duration>(_Dur);
+
+            // TRANSITION, vNext
+            // Because the signature of __std_tzdb_get_sys_info cannot be changed, the option is encoded in the
+            // time zone name. In vNext, this should be a dedicated argument.
+            auto _Tz_arg = _Name;
+            if (_Type == __std_tzdb_sys_info_type::_Offset_only) {
+                _Tz_arg.push_back('!');
+            } else if (_Type == __std_tzdb_sys_info_type::_Offset_and_range) {
+                _Tz_arg.push_back('#');
+            }
+
+            const auto _Tz_len = _Name.length();
+
             const unique_ptr<__std_tzdb_sys_info, _Tzdb_deleter<__std_tzdb_sys_info>> _Info{
-                __std_tzdb_get_sys_info_v2(_Name.c_str(), _Name.length(), _Internal_dur.count(), _Type)};
+                __std_tzdb_get_sys_info(_Tz_arg.c_str(), _Tz_len, _Internal_dur.count())};
+
             if (_Info == nullptr) {
                 _Xbad_alloc();
             } else if (_Info->_Err == __std_tzdb_error::_Win_error) {

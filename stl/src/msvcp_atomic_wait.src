@@ -35,7 +35,6 @@ EXPORTS
     __std_tzdb_delete_time_zones
     __std_tzdb_get_current_zone
     __std_tzdb_get_leap_seconds
-    __std_tzdb_get_sys_info_v2
     __std_tzdb_get_sys_info
     __std_tzdb_get_time_zones
     __std_wait_for_threadpool_work_callbacks

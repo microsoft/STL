@@ -483,8 +483,8 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
     }
 }
 
-[[nodiscard]] __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info_v2(
-    const char* _Tz, const size_t _Tz_len, __std_tzdb_epoch_milli _Sys, __std_tzdb_sys_info_type _Type) noexcept {
+[[nodiscard]] __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
+    const char* _Tz, const size_t _Tz_len, __std_tzdb_epoch_milli _Sys) noexcept {
     // On exit---
     //    _Info == nullptr          --> bad_alloc
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
@@ -502,6 +502,8 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
         return _Report_error(_Info, __std_tzdb_error::_Win_error);
     }
 
+    // TRANSITION, vNext
+    // Profiling shows that _Get_cal is a hot path. Its result should be cached (preferably in the time_zone object).
     const auto _Cal = _Get_cal(_Tz, _Tz_len, _Info->_Err);
     if (_Cal == nullptr) {
         return _Propagate_error(_Info);
@@ -528,7 +530,9 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
         return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
 
-    if (_Type == __std_tzdb_sys_info_type::_Offset_only) {
+    // Additional options could be stored after the time zone name. _Tz[_Tz_len] might be the one-past-the-end element,
+    // but it's safe to read, because _Tz is known to be obtained from a std::string.
+    if (_Tz[_Tz_len] == '!') {
         return _Info.release();
     }
 
@@ -549,7 +553,7 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
         return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
 
-    if (_Type == __std_tzdb_sys_info_type::_Offset_and_range) {
+    if (_Tz[_Tz_len] == '#') {
         return _Info.release();
     }
 
@@ -565,11 +569,6 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
     }
 
     return _Info.release();
-}
-
-__std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
-    const char* _Tz, const size_t _Tz_len, __std_tzdb_epoch_milli _Sys) noexcept {
-    return __std_tzdb_get_sys_info_v2(_Tz, _Tz_len, _Sys, __std_tzdb_sys_info_type::_Full);
 }
 
 void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* const _Info) noexcept {
