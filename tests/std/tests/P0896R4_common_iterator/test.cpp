@@ -345,7 +345,7 @@ struct VolatileSentinel {
     VolatileSentinel& operator=(const VolatileSentinel&) = default;
     VolatileSentinel& operator=(VolatileSentinel&&)      = default;
 
-    explicit constexpr VolatileSentinel(const char* p) noexcept : ptr_{p} {}
+    constexpr explicit VolatileSentinel(const char* p) noexcept : ptr_{p} {}
 
     template <class T = VolatileSentinel>
     constexpr VolatileSentinel(const volatile type_identity_t<T>& other) noexcept : ptr_{other.ptr_} {}

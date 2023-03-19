@@ -190,7 +190,7 @@ struct ConstSelection {
     ConstSelection& operator=(const ConstSelection&) = default;
     ConstSelection& operator=(ConstSelection&&)      = default;
 
-    explicit constexpr ConstSelection(int x) noexcept : value{x} {}
+    constexpr explicit ConstSelection(int x) noexcept : value{x} {}
 
     template <class T = ConstSelection>
     constexpr const ConstSelection& operator=(const type_identity_t<T>&) const noexcept {
