@@ -216,9 +216,10 @@ constexpr bool test_cv() {
         svv = svv2;
         svv = move(svv2);
     }
-    [[maybe_unused]] ranges::single_view<const VolatileConstructible> svc{};
-    [[maybe_unused]] ranges::single_view<const volatile VolatileConstructible> svcv{};
-
+    {
+        [[maybe_unused]] ranges::single_view<const VolatileConstructible> svc{};
+        [[maybe_unused]] ranges::single_view<const volatile VolatileConstructible> svcv{};
+    }
     {
         ranges::single_view<ConstSelection> svx{in_place, 0};
         ranges::single_view<ConstSelection> svy{in_place, 42};
