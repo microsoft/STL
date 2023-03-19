@@ -1637,7 +1637,6 @@ namespace ranges {
         && same_as<remove_cvref_t<iter_reference_t<_It>>, remove_reference_t<iter_reference_t<_It>>> // per LWG-3888
         && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
 
-
     template <class _Se, class _It>
     concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
 
