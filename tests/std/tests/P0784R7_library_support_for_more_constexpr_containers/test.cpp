@@ -522,40 +522,40 @@ static_assert((test_compiletime_operators(), true));
 #ifdef __cpp_lib_concepts
 // Also test LWG-3888 Most ranges uninitialized memory algorithms are underconstrained
 template <class Rng>
-concept CanUninitilizedDefaultConstruct = requires(Rng& r) { ranges::uninitialized_default_construct(r); };
+concept CanUninitializedDefaultConstruct = requires(Rng& r) { ranges::uninitialized_default_construct(r); };
 
 template <class It>
-concept CanUninitilizedDefaultConstructN =
+concept CanUninitializedDefaultConstructN =
     requires(It&& i) { ranges::uninitialized_default_construct_n(forward<It>(i), iter_difference_t<It>{}); };
 
 template <class Rng>
-concept CanUninitilizedValueConstruct = requires(Rng& r) { ranges::uninitialized_value_construct(r); };
+concept CanUninitializedValueConstruct = requires(Rng& r) { ranges::uninitialized_value_construct(r); };
 
 template <class It>
-concept CanUninitilizedValueConstructN =
+concept CanUninitializedValueConstructN =
     requires(It&& i) { ranges::uninitialized_value_construct_n(forward<It>(i), iter_difference_t<It>{}); };
 
 template <class Rng, class T>
-concept CanUninitilizedFill = requires(Rng& r, const T& t) { ranges::uninitialized_fill(r, t); };
+concept CanUninitializedFill = requires(Rng& r, const T& t) { ranges::uninitialized_fill(r, t); };
 
 template <class It, class T>
-concept CanUninitilizedFillN =
+concept CanUninitializedFillN =
     requires(It&& i, const T& t) { ranges::uninitialized_fill_n(forward<It>(i), iter_difference_t<It>{}, t); };
 
 template <class InRng, class OutRng>
-concept CanUninitilizedCopy = requires(InRng& ri, OutRng& ro) { ranges::uninitialized_copy(ri, ro); };
+concept CanUninitializedCopy = requires(InRng& ri, OutRng& ro) { ranges::uninitialized_copy(ri, ro); };
 
 template <class InIt, class OutIt, class S>
-concept CanUninitilizedCopyN =
+concept CanUninitializedCopyN =
     requires(InIt&& ii, OutIt&& io, S&& s) {
         ranges::uninitialized_copy_n(forward<InIt>(ii), iter_difference_t<InIt>{}, forward<OutIt>(io), forward<S>(s));
     };
 
 template <class InRng, class OutRng>
-concept CanUninitilizedMove = requires(InRng& ri, OutRng& ro) { ranges::uninitialized_move(ri, ro); };
+concept CanUninitializedMove = requires(InRng& ri, OutRng& ro) { ranges::uninitialized_move(ri, ro); };
 
 template <class InIt, class OutIt, class S>
-concept CanUninitilizedMoveN =
+concept CanUninitializedMoveN =
     requires(InIt&& ii, OutIt&& io, S&& s) {
         ranges::uninitialized_move_n(forward<InIt>(ii), iter_difference_t<InIt>{}, forward<OutIt>(io), forward<S>(s));
     };
@@ -566,55 +566,55 @@ concept CanDestroy = requires(Rng&& r) { ranges::destroy(forward<Rng>(r)); };
 template <class It>
 concept CanDestroyN = requires(It&& i) { ranges::destroy_n(forward<It>(i), iter_difference_t<It>{}); };
 
-static_assert(CanUninitilizedDefaultConstruct<char[42]>);
-static_assert(!CanUninitilizedDefaultConstruct<const char[42]>);
-static_assert(!CanUninitilizedDefaultConstruct<volatile char[42]>);
-static_assert(!CanUninitilizedDefaultConstruct<const volatile char[42]>);
+static_assert(CanUninitializedDefaultConstruct<char[42]>);
+static_assert(!CanUninitializedDefaultConstruct<const char[42]>);
+static_assert(!CanUninitializedDefaultConstruct<volatile char[42]>);
+static_assert(!CanUninitializedDefaultConstruct<const volatile char[42]>);
 
-static_assert(CanUninitilizedDefaultConstructN<char*>);
-static_assert(!CanUninitilizedDefaultConstructN<const char*>);
-static_assert(!CanUninitilizedDefaultConstructN<volatile char*>);
-static_assert(!CanUninitilizedDefaultConstructN<const volatile char*>);
+static_assert(CanUninitializedDefaultConstructN<char*>);
+static_assert(!CanUninitializedDefaultConstructN<const char*>);
+static_assert(!CanUninitializedDefaultConstructN<volatile char*>);
+static_assert(!CanUninitializedDefaultConstructN<const volatile char*>);
 
-static_assert(CanUninitilizedValueConstruct<char[42]>);
-static_assert(!CanUninitilizedValueConstruct<const char[42]>);
-static_assert(!CanUninitilizedValueConstruct<volatile char[42]>);
-static_assert(!CanUninitilizedValueConstruct<const volatile char[42]>);
+static_assert(CanUninitializedValueConstruct<char[42]>);
+static_assert(!CanUninitializedValueConstruct<const char[42]>);
+static_assert(!CanUninitializedValueConstruct<volatile char[42]>);
+static_assert(!CanUninitializedValueConstruct<const volatile char[42]>);
 
-static_assert(CanUninitilizedValueConstructN<char*>);
-static_assert(!CanUninitilizedValueConstructN<const char*>);
-static_assert(!CanUninitilizedValueConstructN<volatile char*>);
-static_assert(!CanUninitilizedValueConstructN<const volatile char*>);
+static_assert(CanUninitializedValueConstructN<char*>);
+static_assert(!CanUninitializedValueConstructN<const char*>);
+static_assert(!CanUninitializedValueConstructN<volatile char*>);
+static_assert(!CanUninitializedValueConstructN<const volatile char*>);
 
-static_assert(CanUninitilizedFill<char[42], int>);
-static_assert(!CanUninitilizedFill<const char[42], int>);
-static_assert(!CanUninitilizedFill<volatile char[42], int>);
-static_assert(!CanUninitilizedFill<const volatile char[42], int>);
+static_assert(CanUninitializedFill<char[42], int>);
+static_assert(!CanUninitializedFill<const char[42], int>);
+static_assert(!CanUninitializedFill<volatile char[42], int>);
+static_assert(!CanUninitializedFill<const volatile char[42], int>);
 
-static_assert(CanUninitilizedFillN<char*, int>);
-static_assert(!CanUninitilizedFillN<const char*, int>);
-static_assert(!CanUninitilizedFillN<volatile char*, int>);
-static_assert(!CanUninitilizedFillN<const volatile char*, int>);
+static_assert(CanUninitializedFillN<char*, int>);
+static_assert(!CanUninitializedFillN<const char*, int>);
+static_assert(!CanUninitializedFillN<volatile char*, int>);
+static_assert(!CanUninitializedFillN<const volatile char*, int>);
 
-static_assert(CanUninitilizedCopy<const int[42], char[42]>);
-static_assert(!CanUninitilizedCopy<const int[42], const char[42]>);
-static_assert(!CanUninitilizedCopy<const int[42], volatile char[42]>);
-static_assert(!CanUninitilizedCopy<const int[42], const volatile char[42]>);
+static_assert(CanUninitializedCopy<const int[42], char[42]>);
+static_assert(!CanUninitializedCopy<const int[42], const char[42]>);
+static_assert(!CanUninitializedCopy<const int[42], volatile char[42]>);
+static_assert(!CanUninitializedCopy<const int[42], const volatile char[42]>);
 
-static_assert(CanUninitilizedCopyN<const int*, char*, const char*>);
-static_assert(!CanUninitilizedCopyN<const int*, const char*, const char*>);
-static_assert(!CanUninitilizedCopyN<const int*, volatile char*, const char*>);
-static_assert(!CanUninitilizedCopyN<const int*, const volatile char*, const char*>);
+static_assert(CanUninitializedCopyN<const int*, char*, const char*>);
+static_assert(!CanUninitializedCopyN<const int*, const char*, const char*>);
+static_assert(!CanUninitializedCopyN<const int*, volatile char*, const char*>);
+static_assert(!CanUninitializedCopyN<const int*, const volatile char*, const char*>);
 
-static_assert(CanUninitilizedMove<const int[42], char[42]>);
-static_assert(!CanUninitilizedMove<const int[42], const char[42]>);
-static_assert(!CanUninitilizedMove<const int[42], volatile char[42]>);
-static_assert(!CanUninitilizedMove<const int[42], const volatile char[42]>);
+static_assert(CanUninitializedMove<const int[42], char[42]>);
+static_assert(!CanUninitializedMove<const int[42], const char[42]>);
+static_assert(!CanUninitializedMove<const int[42], volatile char[42]>);
+static_assert(!CanUninitializedMove<const int[42], const volatile char[42]>);
 
-static_assert(CanUninitilizedMoveN<const int*, char*, const char*>);
-static_assert(!CanUninitilizedMoveN<const int*, const char*, const char*>);
-static_assert(!CanUninitilizedMoveN<const int*, volatile char*, const char*>);
-static_assert(!CanUninitilizedMoveN<const int*, const volatile char*, const char*>);
+static_assert(CanUninitializedMoveN<const int*, char*, const char*>);
+static_assert(!CanUninitializedMoveN<const int*, const char*, const char*>);
+static_assert(!CanUninitializedMoveN<const int*, volatile char*, const char*>);
+static_assert(!CanUninitializedMoveN<const int*, const volatile char*, const char*>);
 
 static_assert(CanDestroy<char[42]>);
 static_assert(!CanDestroy<const char[42]>);
