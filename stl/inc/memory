@@ -934,6 +934,7 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
 template <class _PtrTy>
 _NODISCARD void* _Voidify_unfancy(_PtrTy _Ptr) noexcept {
     if constexpr (is_pointer_v<_PtrTy>) {
@@ -942,6 +943,7 @@ _NODISCARD void* _Voidify_unfancy(_PtrTy _Ptr) noexcept {
         return _STD addressof(*_Ptr);
     }
 }
+#endif // _HAS_CXX20
 
 #if _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
 _EXPORT_STD template <class _OutIt, class _Ty>
