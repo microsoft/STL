@@ -66,7 +66,7 @@ struct __std_tzdb_sys_info {
     const char* _Abbrev;
 };
 
-enum class __std_tzdb_sys_info_type {
+enum class __std_tzdb_sys_info_type : char {
     _Full,
     _Offset_only,
     _Offset_and_range,

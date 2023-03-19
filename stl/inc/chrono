@@ -1815,14 +1815,9 @@ namespace chrono {
             const auto _Internal_dur = _CHRONO duration_cast<_Internal_duration>(_Dur);
 
             // TRANSITION, vNext
-            // Because the signature of __std_tzdb_get_sys_info cannot be changed, the option is encoded in the
+            // Because the signature of __std_tzdb_get_sys_info cannot be changed, _Type is encoded in the
             // time zone name. In vNext, this should be a dedicated argument.
-            auto _Tz_arg = _Name;
-            if (_Type == __std_tzdb_sys_info_type::_Offset_only) {
-                _Tz_arg.push_back('!');
-            } else if (_Type == __std_tzdb_sys_info_type::_Offset_and_range) {
-                _Tz_arg.push_back('#');
-            }
+            const string _Tz_arg = _Name + static_cast<char>(_Type);
 
             const auto _Tz_len = _Name.length();
 
