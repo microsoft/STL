@@ -31,10 +31,15 @@ struct partial_ordering;
 struct weak_ordering;
 struct strong_ordering;
 
+void __Literal_zero_is_expected();
+
 struct _Literal_zero {
 
     consteval _Literal_zero(int _Zero) noexcept {
-        _STL_VERIFY(_Zero == 0, "A literal zero is expected");
+        // Can't use _STL_VERIFY because this is a core header
+        if (_Zero != 0) {
+            __Literal_zero_is_expected();
+        }
     }
 
     template <class _Ty, class = enable_if_t<!_Is_any_of_v<_Ty, int, partial_ordering, weak_ordering, strong_ordering>>>
