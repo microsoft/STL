@@ -402,10 +402,10 @@ struct VolatileSentinel {
 // constexpr-incompatible
 void test_volatile() {
     using std::swap;
-    using ci = common_iterator<const char*, volatile VolatileSentinel>;
+    using CommonIt = common_iterator<const char*, volatile VolatileSentinel>;
 
-    ci it{static_cast<const char*>(nullptr)};
-    ci se{VolatileSentinel{static_cast<const char*>(nullptr)}};
+    CommonIt it{static_cast<const char*>(nullptr)};
+    CommonIt se{VolatileSentinel{static_cast<const char*>(nullptr)}};
 
     assert(it == se);
     assert(it - se == 0);
