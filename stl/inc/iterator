@@ -783,7 +783,7 @@ public:
                 _RANGES swap(_Left._Get_first(), _Right._Get_first());
                 break;
             case _Variantish_state::_Holds_second:
-                _RANGES swap(_Left._Get_first(), _Right._Get_second());
+                _RANGES swap(_Left._Get_second(), _Right._Get_second());
                 break;
             case _Variantish_state::_Nothing:
                 break;
