@@ -100,6 +100,7 @@ export module std;
 #include <stack>
 #include <stacktrace>
 #include <stdexcept>
+#include <stdfloat>
 #include <stop_token>
 #include <streambuf>
 #include <string>

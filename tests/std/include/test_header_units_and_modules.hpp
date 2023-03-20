@@ -772,6 +772,12 @@ void test_stdexcept() {
     assert(caught_puppies);
 }
 
+void test_stdfloat() {
+    using namespace std;
+    puts("Testing <stdfloat>.");
+    // `namespace std` is available, so we're done.
+}
+
 void test_stop_token() {
     using namespace std;
     puts("Testing <stop_token>.");
@@ -1109,6 +1115,7 @@ void all_cpp_header_tests() {
     test_stack();
     test_stacktrace();
     test_stdexcept();
+    test_stdfloat();
     test_stop_token();
     test_streambuf();
     test_string();

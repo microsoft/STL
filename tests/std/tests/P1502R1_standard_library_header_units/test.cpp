@@ -70,6 +70,7 @@ import <sstream>;
 import <stack>;
 import <stacktrace>;
 import <stdexcept>;
+import <stdfloat>;
 import <stop_token>;
 import <streambuf>;
 import <string>;

@@ -319,6 +319,8 @@
 // P1272R4 byteswap()
 // P1328R1 constexpr type_info::operator==()
 // P1425R4 Iterator Pair Constructors For stack And queue
+// P1467R9 Extended Floating-Point Types
+//     (only the <stdfloat> header; we don't support any optional extended floating-point types)
 // P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
