@@ -9799,9 +9799,9 @@ namespace ranges {
                     _STL_VERIFY(_It_off + _Off >= 0, "Cannot advance cartesian_product_view iterator before begin "
                                                      "(N4928 [range.cartesian.iterator]/19).");
                     if constexpr (sized_range<_Rng>) {
-                        const auto _Range_size = static_cast<_Difference_type<_Const>>(_RANGES ssize(_Range));
-                        _STL_VERIFY(_It_off + _Off < _Range_size
-                                        || (_It_off + _Off == _Range_size
+                        const auto _Size = static_cast<_Difference_type<_Const>>(_RANGES ssize(_Range));
+                        _STL_VERIFY(_It_off + _Off < _Size
+                                        || (_It_off + _Off == _Size
                                             && _Entire_tail_at_begin(make_index_sequence<sizeof...(_Rest)>{})),
                             "Cannot advance cartesian_product_view iterator past end (N4928 "
                             "[range.cartesian.iterator]/19).");
