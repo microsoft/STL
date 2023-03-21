@@ -592,7 +592,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             ci = as_const(r).begin();
         }
 
-        if constexpr (forward_range<VFirst>) { // Check post-incrementation
+        if constexpr (forward_range<const VFirst>) { // Check post-incrementation
             same_as<CI> decltype(auto) ci2 = ci++;
             assert(*ci2 == expected_range[0]);
             if (ci != as_const(r).end()) {
