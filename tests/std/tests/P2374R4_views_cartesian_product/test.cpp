@@ -760,7 +760,8 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             // Check iter_swap, other tests are defined in test_iter_swap function
             static_assert(is_void_v<decltype(iter_swap(as_const(ci), as_const(ci)))>);
             static_assert(noexcept(iter_swap(ci, ci))
-                          == is_iter_swap_nothrow<VFirst, all_t<Rest>...>(make_index_sequence<1 + sizeof...(Rest)>{}));
+                          == is_iter_swap_nothrow<const VFirst, const all_t<Rest>...>(
+                              make_index_sequence<1 + sizeof...(Rest)>{}));
         }
     }
 
