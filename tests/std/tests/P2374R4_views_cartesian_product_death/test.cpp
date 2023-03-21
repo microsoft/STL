@@ -8,6 +8,7 @@
 #include <limits>
 #include <ranges>
 #include <span>
+#include <utility>
 
 #include <test_death.hpp>
 
