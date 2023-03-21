@@ -9693,7 +9693,7 @@ namespace ranges {
     }
 
     template <class _First, class... _Rest>
-    _NODISCARD static consteval auto _Cartesian_product_optimal_size_type() noexcept {
+    _NODISCARD consteval auto _Cartesian_product_optimal_size_type() noexcept {
         constexpr int _Optimal_size_type_bit_width =
             (_Cartesian_product_max_size_bit_width<_First>() + ... + _Cartesian_product_max_size_bit_width<_Rest>());
         if constexpr (_Optimal_size_type_bit_width <= 8) {
