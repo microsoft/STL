@@ -10096,7 +10096,7 @@ namespace ranges {
                     (_Multiply_with_overflow_check(
                          _Product, static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases))), _Product)
                         || ...);
-                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by _Size_type<false> (N4928 "
+                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4928 "
                                         "[range.cartesian.view]/10).");
                 return _Product;
 #else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
@@ -10116,7 +10116,7 @@ namespace ranges {
                     (_Multiply_with_overflow_check(
                          _Product, static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases))), _Product)
                         || ...);
-                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by _Size_type<true> (N4928 "
+                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4928 "
                                         "[range.cartesian.view]/10).");
                 return _Product;
 #else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
