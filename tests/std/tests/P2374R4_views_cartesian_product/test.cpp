@@ -68,9 +68,9 @@ constexpr bool is_iter_move_nothrow(index_sequence<Indices...>) {
 
 template <class First, class... Rest, size_t... Indices>
 constexpr bool is_iter_swap_nothrow(index_sequence<Indices...>) {
-    return (noexcept(ranges::iter_swap(declval<const iterator_t<First>&>()))
+    return (noexcept(ranges::iter_swap(declval<const iterator_t<First>&>(), declval<const iterator_t<First>&>()))
             && ... //
-                && noexcept(ranges::iter_swap(declval<const iterator_t<Rest>&>())));
+                && noexcept(ranges::iter_swap(declval<const iterator_t<Rest>&>(), declval<const iterator_t<Rest>&>())));
 }
 
 template <class Expected, ranges::input_range First, ranges::forward_range... Rest>
