@@ -9995,7 +9995,7 @@ namespace ranges {
                 return _RANGES _Tuple_transform(_RANGES iter_move, _It._Current);
             }
 
-            _NODISCARD_FRIEND constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 _Is_iter_swap_nothrow(make_index_sequence<1 + sizeof...(_Rest)>{}))
                 requires (indirectly_swappable<iterator_t<_Maybe_const<_Const, _First>>> && ...
                           && indirectly_swappable<iterator_t<_Maybe_const<_Const, _Rest>>>)
