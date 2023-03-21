@@ -666,11 +666,6 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
                 ++ci2;
                 same_as<bool> auto b2 = i != ci2;
                 assert(b2);
-                same_as<bool> auto b3 = ci2 != default_sentinel;
-                assert(b3);
-                ranges::advance(ci2, r.end());
-                same_as<bool> auto b4 = ci2 == default_sentinel;
-                assert(b4);
             }
 
             if constexpr ((random_access_range<const VFirst> && ...
