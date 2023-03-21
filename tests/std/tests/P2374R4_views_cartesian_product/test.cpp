@@ -520,11 +520,11 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         STATIC_ASSERT(sized_sentinel_for<default_sentinel_t, I>
                       == CartesianIsSizedSentinel<false, sentinel_t, VFirst, all_t<Rest>...>);
         if constexpr (sized_sentinel_for<default_sentinel_t, I>) { // Check differencing with default_sentinel
-            const auto size                       = ranges::ssize(expected_range);
+            const auto expected_size              = ranges::ssize(expected_range);
             const _Signed_integer_like auto diff1 = i - default_sentinel;
-            assert(diff1 == -size);
+            assert(diff1 == -expected_size);
             const _Signed_integer_like auto diff2 = default_sentinel - i;
-            assert(diff2 == size);
+            assert(diff2 == expected_size);
         }
 
         { // Check iter_move (hidden friend available via ADL)
@@ -744,11 +744,11 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         STATIC_ASSERT(sized_sentinel_for<default_sentinel_t, CI>
                       == CartesianIsSizedSentinel<false, sentinel_t, const VFirst, const all_t<Rest>...>);
         if constexpr (sized_sentinel_for<default_sentinel_t, CI>) { // Check differencing with default_sentinel
-            const auto size                       = ranges::ssize(expected_range);
+            const auto expected_size              = ranges::ssize(expected_range);
             const _Signed_integer_like auto diff1 = ci - default_sentinel;
-            assert(diff1 == -size);
+            assert(diff1 == -expected_size);
             const _Signed_integer_like auto diff2 = default_sentinel - ci;
-            assert(diff2 == size);
+            assert(diff2 == expected_size);
         }
 
         { // Check iter_move
