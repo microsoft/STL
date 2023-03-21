@@ -9582,7 +9582,7 @@ namespace ranges {
         {
             if constexpr (!_Signed_integer_like<_Int>) {
                 _Out = static_cast<_Int>(_Left * _Right);
-                return _Left != 0 && _Right != 0 && (_Out < _Left || _Out < _Right);
+                return _Left != 0 && _Right > (numeric_limits<_Int>::max)() / _Left;
             } else {
                 // vvv Based on llvm::MulOverflow vvv
                 // https://github.com/llvm/llvm-project/blob/88e5206/llvm/include/llvm/Support/MathExtras.h#L725-L750
