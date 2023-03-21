@@ -9785,10 +9785,9 @@ namespace ranges {
                 auto& _It    = _STD get<_Index>(_Current);
                 using _Rng   = remove_reference_t<decltype(_Range)>;
                 using _Iter  = remove_reference_t<decltype(_It)>;
-                using _Diff = _Difference_type<_Const>;
+                using _Diff  = _Difference_type<_Const>;
 
                 if constexpr (_Index > 0) {
-                    _STL_INTERNAL_STATIC_ASSERT(sized_range<_Rng>);
                     const auto _Size       = static_cast<_Diff>(_RANGES ssize(_Range));
                     const auto _Begin      = _RANGES begin(_Range);
                     const auto _It_off     = static_cast<_Diff>(_It - _Begin);
