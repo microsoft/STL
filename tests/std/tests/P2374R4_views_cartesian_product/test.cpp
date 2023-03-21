@@ -773,7 +773,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
 STATIC_ASSERT(same_as<decltype(views::cartesian_product()), decltype(views::single(tuple{}))>);
 
 template <ranges::input_range... Rngs>
-    requires (indirectly_swappable<ranges::iterator_t<Rngs>> && ...)
+    requires (indirectly_swappable<iterator_t<Rngs>> && ...)
 constexpr void test_iter_swap(Rngs&... rngs) {
     // This test assumes that 'ranges::size(rng)' is at least 2 for each rng in rngs
     auto r    = views::cartesian_product(rngs...);
@@ -796,7 +796,7 @@ constexpr void test_iter_swap(Rngs&... rngs) {
     }
 
     // Check iter_swap for cartesian_product_view::iterator<const>
-    if constexpr (((CanMemberBegin<const Rngs&> && indirectly_swappable<ranges::iterator_t<const Rngs&>>) &&...)) {
+    if constexpr (((CanMemberBegin<const Rngs&> && indirectly_swappable<iterator_t<const Rngs&>>) &&...)) {
         using CVal  = ranges::range_value_t<const R>;
         auto i      = as_const(r).begin();
         CVal first  = *i;
