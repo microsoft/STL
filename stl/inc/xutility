@@ -445,7 +445,7 @@ namespace ranges {
             enum class _St { _None, _Custom, _Fallback };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 if constexpr (_Has_ADL<_Ty>) {
                     return {_St::_Custom, noexcept(iter_move(_STD declval<_Ty>()))}; // intentional ADL
                 } else if constexpr (_Can_deref<_Ty>) {
@@ -770,7 +770,7 @@ namespace ranges {
             enum class _St { _None, _Custom, _Swap, _Exchange };
 
             template <class _Ty1, class _Ty2>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 if constexpr (_Has_ADL<_Ty1, _Ty2>) {
                     return {_St::_Custom,
                         noexcept(iter_swap(_STD declval<_Ty1>(), _STD declval<_Ty2>()))}; // intentional ADL
@@ -1833,7 +1833,7 @@ private:
     using _Reference        = iter_const_reference_t<_Iter>;
     using _Rvalue_reference = _Iter_const_rvalue_reference_t<_Iter>;
 
-    _NODISCARD static _CONSTEVAL auto _Get_iter_concept() noexcept {
+    _NODISCARD static consteval auto _Get_iter_concept() noexcept {
         if constexpr (contiguous_iterator<_Iter>) {
             return contiguous_iterator_tag{};
         } else if constexpr (random_access_iterator<_Iter>) {
@@ -2155,7 +2155,7 @@ namespace ranges {
             enum class _St { _None, _Array, _Member, _Non_member };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (is_array_v<remove_reference_t<_Ty>>) {
                     static_assert(_Has_complete_elements<_Ty>,
@@ -2224,7 +2224,7 @@ namespace ranges {
             enum class _St { _None, _Array, _Member, _Non_member };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 using _UnRef = remove_reference_t<_Ty>;
 
@@ -2371,7 +2371,7 @@ namespace ranges {
             enum class _St { _None, _Member, _Unwrap };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     _STL_INTERNAL_STATIC_ASSERT(
@@ -2425,7 +2425,7 @@ namespace ranges {
             enum class _St { _None, _Member, _Unwrap };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_STD declval<_Ty>()._Unchecked_end())};
@@ -2590,7 +2590,7 @@ namespace ranges {
             enum class _St { _None, _Member, _Non_member, _Make_reverse };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().rbegin()))};
@@ -2660,7 +2660,7 @@ namespace ranges {
             enum class _St { _None, _Member, _Non_member, _Make_reverse };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().rend()))};
@@ -2799,7 +2799,7 @@ namespace ranges {
             enum class _St { _None, _Array, _Member, _Non_member, _Subtract };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 using _UnCV = remove_cvref_t<_Ty>;
 
@@ -2869,7 +2869,7 @@ namespace ranges {
             enum class _St { _None, _Member, _Size, _Compare };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (is_unbounded_array_v<remove_reference_t<_Ty>>) {
                     return {_St::_None};
@@ -2933,7 +2933,7 @@ namespace ranges {
             enum class _St { _None, _Member, _Address };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_STD declval<_Ty>().data())};
