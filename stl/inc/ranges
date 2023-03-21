@@ -3366,7 +3366,7 @@ namespace ranges {
             };
 
             template <class _Rng>
-            _NODISCARD static _CONSTconstevalEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 using _Ty = remove_cvref_t<_Rng>;
 
                 if constexpr (_Is_specialization_v<_Ty, empty_view>) {
