@@ -27,24 +27,22 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-struct partial_ordering;
-struct weak_ordering;
-struct strong_ordering;
+_EXPORT_STD struct partial_ordering;
+_EXPORT_STD struct weak_ordering;
+_EXPORT_STD struct strong_ordering;
 
 void _Literal_zero_is_expected();
 
 struct _Literal_zero {
-
-    consteval _Literal_zero(int _Zero) noexcept {
+    template <class _Ty, enable_if_t<is_same_v<_Ty, int>, int> = 0>
+    consteval _Literal_zero(_Ty _Zero) noexcept {
         // Can't use _STL_VERIFY because this is a core header
         if (_Zero != 0) {
             _Literal_zero_is_expected();
         }
     }
-
-    template <class _Ty, class = enable_if_t<!_Is_any_of_v<_Ty, int, partial_ordering, weak_ordering, strong_ordering>>>
-    _Literal_zero(_Ty) = delete;
 };
+
 using _Compare_t = signed char;
 
 // These "pretty" enumerator names are safe since they reuse names of user-facing entities.
