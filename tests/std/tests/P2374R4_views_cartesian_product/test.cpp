@@ -988,6 +988,12 @@ int main() {
         test_one(get<0>(expected_results), s);
     }
 
+    { // ... modifiable elements (so iterators are indirectly swappable)
+        auto arr = get<0>(some_ranges);
+        span<int> s{arr};
+        test_one(get<0>(expected_results), s);
+    }
+
     { // ... move-only
         using test::Common, test::Sized;
         test_one(get<3>(expected_results), //
