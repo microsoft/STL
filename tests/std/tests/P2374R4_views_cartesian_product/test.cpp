@@ -869,7 +869,7 @@ struct instantiator {
             typename R::template type<const int> r1{get<1>(some_ranges)};
             test_one(get<1>(expected_results), r0, r1);
 
-#if !(defined(__clang__) && defined(_DEBUG) && defined(_MT) && !defined(_DLL)) // constexpr limit
+#if !(defined(__clang__) && defined(_DEBUG) && !defined(_DLL)) // constexpr limit
             typename R::template type<const char> r2{get<2>(some_ranges)};
             test_one(get<2>(expected_results), r0, r1, r2);
 #endif // "Clang /MTd" configuration
