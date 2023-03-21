@@ -513,8 +513,8 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         if constexpr (CartesianIsSizedSentinel<false, iterator_t, VFirst, all_t<Rest>...>) { // Check differencing
             _Signed_integer_like auto diff = i - i;
             assert(diff == 0);
-            assert((i - ranges::next(i)) == -1);
-            assert((ranges::next(i) - i) == 1);
+            assert(i - ranges::next(i) == -1);
+            assert(ranges::next(i) - i == 1);
         }
 
         STATIC_ASSERT(sized_sentinel_for<default_sentinel_t, I>
@@ -737,8 +737,8 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
                           const all_t<Rest>...>) { // Check differencing
             _Signed_integer_like auto diff = ci - ci;
             assert(diff == 0);
-            assert((ci - ranges::next(ci)) == -1);
-            assert((ranges::next(ci) - ci) == 1);
+            assert(ci - ranges::next(ci) == -1);
+            assert(ranges::next(ci) - ci == 1);
         }
 
         STATIC_ASSERT(sized_sentinel_for<default_sentinel_t, CI>
