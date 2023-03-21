@@ -9554,7 +9554,7 @@ namespace ranges {
     } // namespace views
 
     template <_Integer_like _Int>
-    _NODISCARD constexpr bool _Add_with_overflow_check(_Int _Left, _Int _Right, _Int& _Out) {
+    _NODISCARD constexpr bool _Add_with_overflow_check(const _Int _Left, const _Int _Right, _Int& _Out) {
 #ifdef __clang__
         if constexpr (integral<_Int>) {
             return __builtin_add_overflow(_Left, _Right, &_Out);
@@ -9573,7 +9573,7 @@ namespace ranges {
     }
 
     template <_Integer_like _Int>
-    _NODISCARD constexpr bool _Multiply_with_overflow_check(_Int _Left, _Int _Right, _Int& _Out) {
+    _NODISCARD constexpr bool _Multiply_with_overflow_check(const _Int _Left, const _Int _Right, _Int& _Out) {
 #ifdef __clang__
         if constexpr (integral<_Int>) {
             return __builtin_mul_overflow(_Left, _Right, &_Out);
