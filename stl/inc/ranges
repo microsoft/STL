@@ -9837,11 +9837,13 @@ namespace ranges {
                     _Difference_type<_Const> _Result{1};
                     const auto _Size =
                         static_cast<_Difference_type<_Const>>(_RANGES size(_STD get<_Index>(_Parent->_Bases)));
-                    const bool _Overflow =
+                    [[maybe_unused]] const bool _Overflow =
                         _Multiply_with_overflow_check(_Size, _Distance_from<_Index - 1>(_Tpl), _Result)
                         || _Add_with_overflow_check(_Result, _Diff, _Result);
+#if _ITERATOR_DEBUG_LEVEL != 0
                     _STL_VERIFY(!_Overflow, "Scaled-sum cannot be represented by difference_type (N4928 "
                                             "[range.cartesian.iterator]/8).");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
                     return _Result;
                 } else {
                     return _Diff;
