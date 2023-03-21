@@ -10094,7 +10094,7 @@ namespace ranges {
                 return _Product;
 #else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
                 return (static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases))) * ...);
-#endif // _CONTAINER_DEBUG_LEVEL == 0
+#endif // ^^^ _CONTAINER_DEBUG_LEVEL == 0 ^^^
             }
             (make_index_sequence<1 + sizeof...(_Rest)>{});
         }
@@ -10114,7 +10114,7 @@ namespace ranges {
                 return _Product;
 #else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
                 return (static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases))) * ...);
-#endif // _CONTAINER_DEBUG_LEVEL == 0
+#endif // ^^^ _CONTAINER_DEBUG_LEVEL == 0 ^^^
             }
             (make_index_sequence<1 + sizeof...(_Rest)>{});
         }
