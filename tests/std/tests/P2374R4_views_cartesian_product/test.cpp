@@ -55,8 +55,8 @@ concept CanViewCartesianProduct = requires(Ranges&&... rs) { views::cartesian_pr
 template <class T>
 concept UnsignedIntegerLike = _Integer_like<T> && (!_Signed_integer_like<T>);
 
-template <class First, class... Rest, size_t... Indices>
-constexpr bool is_iter_move_nothrow(index_sequence<Indices...>) {
+template <class First, class... Rest>
+constexpr bool is_iter_move_nothrow() {
     constexpr bool is_inner_iter_move_nothrow =
         (noexcept(ranges::iter_move(declval<const iterator_t<First>&>()))
             && ... //
@@ -67,8 +67,8 @@ constexpr bool is_iter_move_nothrow(index_sequence<Indices...>) {
     return is_inner_iter_move_nothrow && are_references_nothrow_movable;
 }
 
-template <class First, class... Rest, size_t... Indices>
-constexpr bool is_iter_swap_nothrow(index_sequence<Indices...>) {
+template <class First, class... Rest>
+constexpr bool is_iter_swap_nothrow() {
     return (noexcept(ranges::iter_swap(declval<const iterator_t<First>&>(), declval<const iterator_t<First>&>()))
             && ... //
                 && noexcept(ranges::iter_swap(declval<const iterator_t<Rest>&>(), declval<const iterator_t<Rest>&>())));
@@ -531,16 +531,14 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             same_as<tuple<range_rvalue_reference_t<VFirst>, range_rvalue_reference_t<all_t<Rest>>...>> decltype(auto)
                 rval = iter_move(as_const(i));
             assert(rval == expected_range[0]);
-            static_assert(noexcept(iter_move(i))
-                          == is_iter_move_nothrow<VFirst, all_t<Rest>...>(make_index_sequence<1 + sizeof...(Rest)>{}));
+            static_assert(noexcept(iter_move(i)) == is_iter_move_nothrow<VFirst, all_t<Rest>...>());
         }
 
         if constexpr ((indirectly_swappable<iterator_t<VFirst>> && ...
                           && indirectly_swappable<iterator_t<all_t<Rest>>>) ) {
             // Check iter_swap, other tests are defined in test_iter_swap function
             static_assert(is_void_v<decltype(iter_swap(as_const(i), as_const(i)))>);
-            static_assert(noexcept(iter_swap(i, i))
-                          == is_iter_swap_nothrow<VFirst, all_t<Rest>...>(make_index_sequence<1 + sizeof...(Rest)>{}));
+            static_assert(noexcept(iter_swap(i, i)) == is_iter_swap_nothrow<VFirst, all_t<Rest>...>());
         }
     }
 
@@ -750,18 +748,14 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             same_as<tuple<range_rvalue_reference_t<const VFirst>,
                 range_rvalue_reference_t<const all_t<Rest>>...>> decltype(auto) rval = iter_move(as_const(ci));
             assert(rval == expected_range[0]);
-            static_assert(noexcept(iter_move(ci))
-                          == is_iter_move_nothrow<const VFirst, const all_t<Rest>...>(
-                              make_index_sequence<1 + sizeof...(Rest)>{}));
+            static_assert(noexcept(iter_move(ci)) == is_iter_move_nothrow<const VFirst, const all_t<Rest>...>());
         }
 
         if constexpr ((indirectly_swappable<iterator_t<const VFirst>> && ...
                           && indirectly_swappable<iterator_t<const all_t<Rest>>>) ) {
             // Check iter_swap, other tests are defined in test_iter_swap function
             static_assert(is_void_v<decltype(iter_swap(as_const(ci), as_const(ci)))>);
-            static_assert(noexcept(iter_swap(ci, ci))
-                          == is_iter_swap_nothrow<const VFirst, const all_t<Rest>...>(
-                              make_index_sequence<1 + sizeof...(Rest)>{}));
+            static_assert(noexcept(iter_swap(ci, ci)) == is_iter_swap_nothrow<const VFirst, const all_t<Rest>...>());
         }
     }
 
