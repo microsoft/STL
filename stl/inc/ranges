@@ -9562,7 +9562,7 @@ namespace ranges {
 #endif // __clang__
         {
             if constexpr (!_Signed_integer_like<_Int>) {
-                _Out = _Left + _Right;
+                _Out = static_cast<_Int>(_Left + _Right);
                 return _Out < _Left || _Out < _Right;
             } else {
                 using _UInt = _Make_unsigned_like_t<_Int>;
@@ -9581,7 +9581,7 @@ namespace ranges {
 #endif // __clang__
         {
             if constexpr (!_Signed_integer_like<_Int>) {
-                _Out = _Left * _Right;
+                _Out = static_cast<_Int>(_Left * _Right);
                 return _Left != 0 && _Right != 0 && (_Out < _Left || _Out < _Right);
             } else {
                 // vvv Based on llvm::MulOverflow vvv
@@ -9596,7 +9596,7 @@ namespace ranges {
                 using _UInt          = _Make_unsigned_like_t<_Int>;
                 const _UInt _ULeft   = _Left < 0 ? (0 - static_cast<_UInt>(_Left)) : static_cast<_UInt>(_Left);
                 const _UInt _URight  = _Right < 0 ? (0 - static_cast<_UInt>(_Right)) : static_cast<_UInt>(_Right);
-                const _UInt _UResult = _ULeft * _URight;
+                const _UInt _UResult = static_cast<_UInt>(_ULeft * _URight);
 
                 const bool _Negative = (_Left < 0) != (_Right < 0);
                 _Out                 = static_cast<_Int>(_Negative ? (0 - _UResult) : _UResult);
