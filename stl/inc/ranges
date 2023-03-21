@@ -9597,7 +9597,7 @@ namespace ranges {
                 const _UInt _URight  = _Right < 0 ? (0 - static_cast<_UInt>(_Right)) : static_cast<_UInt>(_Right);
                 const _UInt _UResult = _ULeft * _URight;
 
-                const bool _Negative = (_Left < 0) ^ (_Right < 0);
+                const bool _Negative = (_Left < 0) != (_Right < 0);
                 _Out                 = static_cast<_Int>(_Negative ? (0 - _UResult) : _UResult);
                 if (_ULeft == 0 || _URight == 0) {
                     return false;
