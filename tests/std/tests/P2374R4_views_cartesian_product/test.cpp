@@ -761,7 +761,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
 
         if constexpr ((indirectly_swappable<iterator_t<const VFirst>> && ...
                           && indirectly_swappable<iterator_t<const all_t<Rest>>>) ) {
-            // Check iter_swap other tests are defined in test_iter_swap function
+            // Check iter_swap, other tests are defined in test_iter_swap function
             static_assert(is_void_v<decltype(iter_swap(as_const(ci), as_const(ci)))>);
             static_assert(noexcept(iter_swap(ci, ci))
                           == is_iter_swap_nothrow<VFirst, all_t<Rest>...>(make_index_sequence<1 + sizeof...(Rest)>{}));
@@ -975,7 +975,7 @@ namespace check_recommended_practice_implementation { // MSVC STL specific behav
     STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Vec>>>) <= sizeof(size_t));
     STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Vec>>>) <= sizeof(ptrdiff_t));
 
-    // ...but two vectors will
+    // ... but two vectors will
     STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Vec>, all_t<Vec>>>) > sizeof(size_t));
     STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Vec>, all_t<Vec>>>) > sizeof(ptrdiff_t));
 } // namespace check_recommended_practice_implementation
