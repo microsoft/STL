@@ -95,7 +95,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     constexpr bool is_const_common        = CartesianProductIsCommon<const VFirst, const all_t<Rest>...>;
 
     STATIC_ASSERT(view<R>);
-    STATIC_ASSERT(input_range<R> == input_range<First>);
+    STATIC_ASSERT(input_range<R>);
     STATIC_ASSERT(forward_range<R> == forward_range<First>);
     STATIC_ASSERT(bidirectional_range<R> == is_bidirectional);
     STATIC_ASSERT(random_access_range<R> == is_random_access);
