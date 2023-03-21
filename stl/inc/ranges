@@ -9784,7 +9784,6 @@ namespace ranges {
 
                 auto& _Range = _STD get<_Index>(_Parent->_Bases);
                 auto& _It    = _STD get<_Index>(_Current);
-                using _Rng   = remove_reference_t<decltype(_Range)>;
                 using _Iter  = remove_reference_t<decltype(_It)>;
                 using _Diff  = _Difference_type<_Const>;
 
@@ -9806,7 +9805,7 @@ namespace ranges {
                     const auto _It_off = static_cast<_Diff>(_It - _RANGES begin(_Range));
                     _STL_VERIFY(_It_off + _Off >= 0, "Cannot advance cartesian_product_view iterator before begin "
                                                      "(N4928 [range.cartesian.iterator]/19).");
-                    if constexpr (sized_range<_Rng>) {
+                    if constexpr (sized_range<decltype(_Range)>) {
                         const auto _Size = static_cast<_Diff>(_RANGES ssize(_Range));
                         _STL_VERIFY(_It_off + _Off < _Size
                                         || (_It_off + _Off == _Size
