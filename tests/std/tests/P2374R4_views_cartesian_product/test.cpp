@@ -165,14 +165,14 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     // Check deduction guide
     same_as<R> auto r = cartesian_product_view{forward<First>(first), forward<Rest>(rest)...};
 
-    // Check cartesian_view::size
+    // Check cartesian_product_view::size
     STATIC_ASSERT(CanMemberSize<R> == is_sized);
     if constexpr (CanMemberSize<R>) {
         UnsignedIntegerLike auto s = r.size();
         assert(s == ranges::size(expected_range));
     }
 
-    // Check cartesian_view::size (const)
+    // Check cartesian_product_view::size (const)
     STATIC_ASSERT(CanMemberSize<const R> == is_const_sized);
     if constexpr (CanMemberSize<const R>) {
         UnsignedIntegerLike auto s = as_const(r).size();
@@ -202,7 +202,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         return true;
     }
 
-    // Check cartesian_view::begin
+    // Check cartesian_product_view::begin
     STATIC_ASSERT(CanMemberBegin<R>);
     {
         const same_as<iterator_t<R>> auto i = r.begin();
@@ -219,7 +219,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         }
     }
 
-    // Check cartesian_view::begin (const)
+    // Check cartesian_product_view::begin (const)
     STATIC_ASSERT(CanMemberBegin<const R> == (range<const VFirst> && ... && range<const all_t<Rest>>) );
     if constexpr (CanMemberBegin<const R>) {
         const same_as<iterator_t<const R>> auto ci = as_const(r).begin();
@@ -236,7 +236,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         }
     }
 
-    // Check cartesian_view::end
+    // Check cartesian_product_view::end
     STATIC_ASSERT(CanMemberEnd<R>);
     {
         const same_as<sentinel_t<R>> auto s = r.end();
@@ -260,7 +260,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         }
     }
 
-    // Check cartesian_view::end (const)
+    // Check cartesian_product_view::end (const)
     STATIC_ASSERT(CanMemberEnd<const R>);
     if constexpr (CanMemberEnd<const R>) {
         const same_as<sentinel_t<const R>> auto cs = as_const(r).end();
@@ -370,7 +370,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         assert(as_const(r).back() == *prev(end(expected_range)));
     }
 
-    { // Check cartesian_view::iterator<not const>
+    { // Check cartesian_product_view::iterator<not const>
         using I = iterator_t<R>;
         STATIC_ASSERT(input_iterator<I>);
 
@@ -543,7 +543,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         }
     }
 
-    // Check cartesian_view::iterator<const>
+    // Check cartesian_product_view::iterator<const>
     if constexpr (CanMemberBegin<const R>) {
         using CI = iterator_t<const R>;
         STATIC_ASSERT(input_iterator<CI>);
