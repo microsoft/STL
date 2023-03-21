@@ -9627,7 +9627,7 @@ namespace ranges {
                                                    && (bidirectional_range<_Maybe_const<_Const, _Rest>>
                                                        && _Cartesian_product_common_arg<_Maybe_const<_Const, _Rest>>) );
 
-    template <class _First/*, class... _Rest*/>
+    template <class _First /*, class... _Rest*/>
     concept _Cartesian_product_is_common = _Cartesian_product_common_arg<_First>;
 
     template <class... _Rngs>
