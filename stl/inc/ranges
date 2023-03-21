@@ -9584,8 +9584,14 @@ namespace ranges {
                 _Out = _Left * _Right;
                 return _Left != 0 && _Right != 0 && (_Out < _Left || _Out < _Right);
             } else {
-                // Based on llvm::MulOverflow
-                // See https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/Support/MathExtras.h
+                // vvv Based on llvm::MulOverflow vvv
+                //===----------------------------------------------------------------------===//
+                //
+                // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+                // See https://llvm.org/LICENSE.txt for license information.
+                // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+                //
+                //===----------------------------------------------------------------------===//
                 using _UInt          = _Make_unsigned_like_t<_Int>;
                 const _UInt _ULeft   = _Left < 0 ? (0 - static_cast<_UInt>(_Left)) : static_cast<_UInt>(_Left);
                 const _UInt _URight  = _Right < 0 ? (0 - static_cast<_UInt>(_Right)) : static_cast<_UInt>(_Right);
@@ -9602,6 +9608,7 @@ namespace ranges {
                 } else {
                     return _ULeft > static_cast<_UInt>((numeric_limits<_Int>::max)()) / _URight;
                 }
+                // ^^^ Based on llvm::MulOverflow ^^^
             }
         }
     }
