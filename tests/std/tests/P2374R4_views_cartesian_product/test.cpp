@@ -786,6 +786,8 @@ constexpr void test_iter_swap(Rngs&... rngs) {
         ranges::iter_swap(i, j);
         assert(*i == first);
         assert(*j == second);
+
+        static_assert(noexcept(iter_swap(i, j)) == is_iter_swap_nothrow<Rngs&...>());
     }
 
     // Check iter_swap for cartesian_product_view::iterator<const>
@@ -803,6 +805,8 @@ constexpr void test_iter_swap(Rngs&... rngs) {
         ranges::iter_swap(i, j);
         assert(*i == first);
         assert(*j == second);
+
+        static_assert(noexcept(iter_swap(i, j)) == is_iter_swap_nothrow<const Rngs&...>());
     }
 }
 
