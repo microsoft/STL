@@ -10031,9 +10031,9 @@ namespace ranges {
     public:
         constexpr cartesian_product_view() = default;
 
-        constexpr explicit cartesian_product_view(_First _FirstBase, _Rest... _OtherBases) noexcept(
+        constexpr explicit cartesian_product_view(_First _First_base, _Rest... _Other_bases) noexcept(
             (is_nothrow_move_constructible_v<_First> && ... && is_nothrow_move_constructible_v<_Rest>) ) // strengthened
-            : _Bases(_STD move(_FirstBase), _STD move(_OtherBases)...) {}
+            : _Bases(_STD move(_First_base), _STD move(_Other_bases)...) {}
 
         _NODISCARD constexpr _Iterator<false> begin()
             requires (!_Simple_view<_First> || ... || !_Simple_view<_Rest>)
