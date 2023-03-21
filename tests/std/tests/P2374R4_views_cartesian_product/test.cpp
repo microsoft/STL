@@ -73,10 +73,9 @@ constexpr bool is_iter_swap_nothrow(index_sequence<Indices...>) {
 
 template <class Expected, ranges::input_range First, ranges::forward_range... Rest>
 constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest) {
-    using ranges::cartesian_product_view, ranges::view, ranges::input_range, ranges::input_range, ranges::forward_range,
-        ranges::range, ranges::range_value_t, ranges::range_reference_t, ranges::range_rvalue_reference_t,
-        ranges::range_difference_t, ranges::sentinel_t, ranges::prev, ranges::const_iterator_t,
-        ranges::const_sentinel_t;
+    using ranges::cartesian_product_view, ranges::view, ranges::input_range, ranges::forward_range, ranges::range,
+        ranges::range_value_t, ranges::range_reference_t, ranges::range_rvalue_reference_t, ranges::range_difference_t,
+        ranges::sentinel_t, ranges::prev, ranges::const_iterator_t, ranges::const_sentinel_t;
     using views::all_t;
 
     using VFirst = all_t<First>;
