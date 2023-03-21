@@ -9966,7 +9966,7 @@ namespace ranges {
                 return _It + _Off;
             }
 
-            _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, difference_type _Off)
+            _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off)
                 requires _Cartesian_product_is_random_access<_Const, _First, _Rest...>
             {
                 return _Iterator{_It} -= _Off;
