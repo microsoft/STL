@@ -9585,6 +9585,7 @@ namespace ranges {
                 return _Left != 0 && _Right != 0 && (_Out < _Left || _Out < _Right);
             } else {
                 // vvv Based on llvm::MulOverflow vvv
+                // https://github.com/llvm/llvm-project/blob/88e5206/llvm/include/llvm/Support/MathExtras.h#L725-L750
                 //===----------------------------------------------------------------------===//
                 //
                 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -9626,7 +9627,7 @@ namespace ranges {
                                                    && (bidirectional_range<_Maybe_const<_Const, _Rest>>
                                                        && _Cartesian_product_common_arg<_Maybe_const<_Const, _Rest>>) );
 
-    template <class _First>
+    template <class _First/*, class... _Rest*/>
     concept _Cartesian_product_is_common = _Cartesian_product_common_arg<_First>;
 
     template <class... _Rngs>
