@@ -9935,7 +9935,7 @@ namespace ranges {
             _NODISCARD constexpr reference operator[](const difference_type _Off) const
                 requires _Cartesian_product_is_random_access<_Const, _First, _Rest...>
             {
-                return *((*this) + _Off);
+                return *(*this + _Off);
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right)
