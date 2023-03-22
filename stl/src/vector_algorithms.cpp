@@ -879,7 +879,10 @@ namespace {
                             // Select the smallest vertical indices from the smallest element mask
                             _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_min, _Idx_min_val));
                             unsigned long _H_pos;
-                            _BitScanForward(&_H_pos, _Mask); // Find the smallest horizontal index
+
+                            // Find the smallest horizontal index
+                            _BitScanForward(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
+
                             const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_min, _H_pos); // Extract its vertical index
                             _Res._Min         = _Base + _V_pos * 16 + _H_pos; // Finally, compute the pointer
                         }
@@ -908,7 +911,10 @@ namespace {
                                 const __m128i _Idx_max = _Traits::_H_max_u(_Idx_max_val); // The greatest indices
                                 // Select the greatest vertical indices from the largest element mask
                                 _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_max, _Idx_max_val));
-                                _BitScanReverse(&_H_pos, _Mask); // Find the largest horizontal index
+
+                                // Find the largest horizontal index
+                                _BitScanReverse(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
+
                                 _H_pos -= sizeof(_Cur_max_val) - 1; // Correct from highest val bit to lowest
                             } else {
                                 // Looking for the first occurrence of maximum
@@ -918,7 +924,9 @@ namespace {
                                 const __m128i _Idx_max     = _Traits::_H_min_u(_Idx_max_val); // The smallest indices
                                 // Select the smallest vertical indices from the largest element mask
                                 _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_max, _Idx_max_val));
-                                _BitScanForward(&_H_pos, _Mask); // Find the smallest horizontal index
+
+                                // Find the smallest horizontal index
+                                _BitScanForward(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
                             }
 
                             const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_max, _H_pos); // Extract its vertical index
