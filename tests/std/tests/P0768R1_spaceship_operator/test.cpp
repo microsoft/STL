@@ -7,7 +7,7 @@
 #include <compare>
 #include <type_traits>
 
-// See https://github.com/microsoft/STL/pull/3581 for details
+// See GH-3581 for details
 #ifdef __clang__
 #pragma clang diagnostic error "-Wzero-as-null-pointer-constant"
 #endif // __clang__
