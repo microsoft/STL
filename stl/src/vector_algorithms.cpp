@@ -1245,7 +1245,7 @@ namespace {
             _Bingo &= _Mask;
             if (_Bingo != 0) {
                 unsigned long _Offset;
-                _BitScanForward(&_Offset, _Bingo);
+                _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
                 _Advance_bytes(_First, _Offset);
                 return _First;
             }
@@ -1256,7 +1256,7 @@ namespace {
 
                 if (_Bingo != 0) {
                     unsigned long _Offset;
-                    _BitScanForward(&_Offset, _Bingo);
+                    _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
                     _Advance_bytes(_First, _Offset);
                     return _First;
                 }
@@ -1303,7 +1303,7 @@ namespace {
 
                 if (_Bingo != 0) {
                     unsigned long _Offset;
-                    _BitScanForward(&_Offset, _Bingo);
+                    _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
                     _Advance_bytes(_First, _Offset);
                     return _First;
                 }
