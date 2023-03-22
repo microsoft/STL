@@ -623,12 +623,16 @@ int main(int argc, char* argv[]) {
 
             const BOOL attach_console_succeeded = AttachConsole(process_information.dwProcessId);
             assert(attach_console_succeeded);
+        }
 
+        all_tests(); // Run tests with the original console output codepage.
+
+        {
             const BOOL set_console_output_cp_succeeded = SetConsoleOutputCP(CP_UTF8);
             assert(set_console_output_cp_succeeded);
         }
 
-        all_tests();
+        all_tests(); // Run tests with the console output codepage set to UTF-8.
 
         // Tell the child process that we're done working with its console.
         goodbye_semaphore.release();
