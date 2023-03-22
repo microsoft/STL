@@ -263,10 +263,11 @@ void test_print_optimizations() {
     test::win_console test_console{};
     FILE* const console_file_stream = test_console.get_file_stream();
 
-    const auto get_last_console_line_closure = [&test_console]() {
+    size_t curr_line_number = 0;
+
+    const auto get_last_console_line_closure = [&test_console, &curr_line_number]() {
         maybe_flush_console_file_stream(test_console);
 
-        static size_t curr_line_number = 0;
         return wstring_to_string(test_console.get_console_line(curr_line_number++));
     };
 
