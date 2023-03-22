@@ -318,6 +318,12 @@ void test_print_optimizations() {
 }
 
 void test_invalid_code_points_console() {
+    if constexpr (!_Is_ordinary_literal_encoding_utf8()) {
+        if (GetConsoleOutputCP() != CP_UTF8) {
+            return; // With neither `/utf-8` nor a UTF-8 console output codepage, we can't run this part of the test.
+        }
+    }
+
     test::win_console test_console{};
     FILE* const console_file_stream = test_console.get_file_stream();
     size_t curr_line_number         = 0;
