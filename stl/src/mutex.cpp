@@ -116,7 +116,7 @@ static int mtx_do_lock(_Mtx_t mtx, const xtime* target) { // lock mutex
 
         } else { // check timeout
             xtime now;
-            xtime_get(&now, TIME_UTC);
+            _Xtime_get2(&now);
             while (now.sec < target->sec || now.sec == target->sec && now.nsec < target->nsec) { // time has not expired
                 if (mtx->thread_id == static_cast<long>(GetCurrentThreadId())
                     || mtx->_get_cs()->try_lock_for(_Xtime_diff_to_millis2(target, &now))) { // stop waiting
@@ -126,7 +126,7 @@ static int mtx_do_lock(_Mtx_t mtx, const xtime* target) { // lock mutex
                     res = WAIT_TIMEOUT;
                 }
 
-                xtime_get(&now, TIME_UTC);
+                _Xtime_get2(&now);
             }
         }
 
