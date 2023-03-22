@@ -282,7 +282,8 @@ void test_print_optimizations() {
         print(console_file_stream, escaped_braces_str);
         println(console_file_stream, escaped_braces_str);
 
-        assert(get_last_console_line_closure() == expected_str);
+        const string last_console_line = get_last_console_line_closure();
+        assert(last_console_line == expected_str);
 
         print(test_str_stream, escaped_braces_str);
         println(test_str_stream, escaped_braces_str);
