@@ -149,10 +149,10 @@ namespace test {
     };
 
     // We use Windows semaphores to synchronize the parent and child processes.
-    class WinSemaphore {
+    class win_semaphore {
     public:
         // Construct a new semaphore in the parent process.
-        WinSemaphore() {
+        win_semaphore() {
             SECURITY_ATTRIBUTES semaphore_attributes{
                 .nLength        = sizeof(SECURITY_ATTRIBUTES),
                 .bInheritHandle = TRUE, // The child process will inherit this handle.
@@ -162,14 +162,14 @@ namespace test {
         }
 
         // Construct an inherited semaphore in the child process.
-        explicit WinSemaphore(const uintptr_t val) : m_handle(reinterpret_cast<HANDLE>(val)) {
+        explicit win_semaphore(const uintptr_t val) : m_handle(reinterpret_cast<HANDLE>(val)) {
             assert(m_handle != nullptr);
         }
 
-        WinSemaphore(const WinSemaphore&)            = delete;
-        WinSemaphore& operator=(const WinSemaphore&) = delete;
+        win_semaphore(const win_semaphore&)            = delete;
+        win_semaphore& operator=(const win_semaphore&) = delete;
 
-        ~WinSemaphore() {
+        ~win_semaphore() {
             const BOOL close_handle_succeeded = CloseHandle(m_handle);
             assert(close_handle_succeeded);
         }
@@ -179,7 +179,7 @@ namespace test {
             return reinterpret_cast<uintptr_t>(m_handle);
         }
 
-        // WinSemaphore imitates std::counting_semaphore's interface with release() and acquire().
+        // win_semaphore imitates std::counting_semaphore's interface with release() and acquire().
         void release() {
             const BOOL release_semaphore_succeeded = ReleaseSemaphore(m_handle, 1, nullptr);
             assert(release_semaphore_succeeded);
@@ -557,8 +557,8 @@ int main(int argc, char* argv[]) {
     const bool is_child{argc == 4 && argv[1] == "--child"sv};
 
     if (is_child) {
-        test::WinSemaphore hello_semaphore{static_cast<uintptr_t>(stoull(argv[2]))};
-        test::WinSemaphore goodbye_semaphore{static_cast<uintptr_t>(stoull(argv[3]))};
+        test::win_semaphore hello_semaphore{static_cast<uintptr_t>(stoull(argv[2]))};
+        test::win_semaphore goodbye_semaphore{static_cast<uintptr_t>(stoull(argv[3]))};
 
         // We use the hello_semaphore to tell the parent process that we're ready for it to attach to our console.
         hello_semaphore.release();
@@ -566,8 +566,8 @@ int main(int argc, char* argv[]) {
         // Then, we use the goodbye_semaphore to wait for the parent process to finish its work.
         goodbye_semaphore.acquire();
     } else {
-        test::WinSemaphore hello_semaphore{};
-        test::WinSemaphore goodbye_semaphore{};
+        test::win_semaphore hello_semaphore{};
+        test::win_semaphore goodbye_semaphore{};
 
         // This will receive the child process ID.
         PROCESS_INFORMATION process_information{};
