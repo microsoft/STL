@@ -238,14 +238,15 @@ public:
     // clang-format on
 
     template <class _Uty, class _UErr>
-    static constexpr bool _Allow_unwrapping = !is_constructible_v<_Ty, expected<_Uty, _UErr>&> //
-                                           && !is_constructible_v<_Ty, expected<_Uty, _UErr>> //
-                                           && !is_constructible_v<_Ty, const expected<_Uty, _UErr>&> //
-                                           && !is_constructible_v<_Ty, const expected<_Uty, _UErr>> //
-                                           && !is_convertible_v<expected<_Uty, _UErr>&, _Ty> //
-                                           && !is_convertible_v<expected<_Uty, _UErr>&&, _Ty> //
-                                           && !is_convertible_v<const expected<_Uty, _UErr>&, _Ty> //
-                                           && !is_convertible_v<const expected<_Uty, _UErr>&&, _Ty> //
+    static constexpr bool _Allow_unwrapping = disjunction_v<is_same<remove_cv_t<_Ty>, bool>,
+                                                  negation<disjunction<is_constructible<_Ty, expected<_Uty, _UErr>&>, //
+                                                      is_constructible<_Ty, expected<_Uty, _UErr>>, //
+                                                      is_constructible<_Ty, const expected<_Uty, _UErr>&>, //
+                                                      is_constructible<_Ty, const expected<_Uty, _UErr>>, //
+                                                      is_convertible<expected<_Uty, _UErr>&, _Ty>, //
+                                                      is_convertible<expected<_Uty, _UErr>&&, _Ty>, //
+                                                      is_convertible<const expected<_Uty, _UErr>&, _Ty>, //
+                                                      is_convertible<const expected<_Uty, _UErr>&&, _Ty>>>> //
                                            && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>&> //
                                            && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>> //
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>&> //
@@ -280,7 +281,9 @@ public:
 
     template <class _Uty = _Ty>
         requires (!is_same_v<remove_cvref_t<_Uty>, in_place_t> && !is_same_v<remove_cvref_t<_Uty>, expected>
-                     && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected> && is_constructible_v<_Ty, _Uty>)
+                     && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
+                     && (!is_same_v<remove_cv_t<_Ty>, bool> || !_Is_specialization_v<remove_cvref_t<_Uty>, expected>)
+                     && is_constructible_v<_Ty, _Uty>)
     constexpr explicit(!is_convertible_v<_Uty, _Ty>)
         expected(_Uty&& _Other) noexcept(is_nothrow_constructible_v<_Ty, _Uty>) // strengthened
         : _Value(_STD forward<_Uty>(_Other)), _Has_value(true) {}
