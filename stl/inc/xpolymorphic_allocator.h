@@ -279,7 +279,13 @@ namespace pmr {
         void construct(_Uty* const _Ptr, _Types&&... _Args) {
             // propagate allocator *this if uses_allocator_v<remove_cv_t<_Uty>, polymorphic_allocator>
 #if _HAS_CXX20
-            _STD uninitialized_construct_using_allocator(_Ptr, *this, _STD forward<_Types>(_Args)...);
+            // equivalent to calling uninitialized_construct_using_allocator except for handling of cv-qualification
+            _STD apply(
+                [_Ptr](auto&&... _Construct_args) {
+                    return ::new (const_cast<void*>(static_cast<const volatile void*>(_Ptr)))
+                        _Uty(_STD forward<decltype(_Construct_args)>(_Construct_args)...);
+                },
+                _STD uses_allocator_construction_args<_Ty>(*this, _STD forward<_Types>(_Args)...));
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
             allocator<char> _Al{};
             if constexpr (_Is_cv_pair<_Uty>) {
