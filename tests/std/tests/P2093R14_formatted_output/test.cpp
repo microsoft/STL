@@ -553,6 +553,50 @@ void test_stream_flush_file() {
     filesystem::remove(temp_file_name_str);
 }
 
+void test_empty_strings_and_newlines() {
+    const string temp_file_name_str = temp_file_name();
+
+    {
+        ofstream output_file_stream{temp_file_name_str};
+
+        print(output_file_stream, "NCC-1701");
+        print(output_file_stream, "");
+        print(output_file_stream, "-D\n");
+        print(output_file_stream, "{{}} for {}!\n", "impact");
+
+        println(output_file_stream, "I have {} cute {} kittens.", 1729, "fluffy");
+        println(output_file_stream, "");
+        println(output_file_stream, "What are an orthodontist's favorite characters? '{{' and '}}', of course!");
+        println(output_file_stream, "ONE\nTWO\n");
+        println(output_file_stream, "THREE");
+    }
+
+    {
+        ifstream input_file_stream{temp_file_name_str};
+
+        vector<string> lines;
+        for (string str; getline(input_file_stream, str);) {
+            lines.push_back(str);
+        }
+
+        const vector<string> expected_lines{
+            "NCC-1701-D",
+            "{} for impact!",
+            "I have 1729 cute fluffy kittens.",
+            "",
+            "What are an orthodontist's favorite characters? '{' and '}', of course!",
+            "ONE",
+            "TWO",
+            "",
+            "THREE",
+        };
+
+        assert(lines == expected_lines);
+    }
+
+    filesystem::remove(temp_file_name_str);
+}
+
 void all_tests() {
     test_print_optimizations();
 
@@ -561,6 +605,8 @@ void all_tests() {
 
     test_stream_flush_console();
     test_stream_flush_file();
+
+    test_empty_strings_and_newlines();
 }
 
 int main(int argc, char* argv[]) {
