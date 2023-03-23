@@ -8148,6 +8148,16 @@ namespace msvc {
         STATIC_ASSERT(!is_constructible_v<O, const in_place_t&>);
     } // namespace lwg2842
 
+    namespace lwg3836 {
+        STATIC_ASSERT(std::is_convertible_v<std::optional<int>, std::optional<bool>>);
+        STATIC_ASSERT(std::is_convertible_v<const std::optional<int>&, std::optional<bool>>);
+
+        constexpr std::optional<int> oi = 0;
+        constexpr std::optional<bool> ob = oi;
+        STATIC_ASSERT(!ob.value());
+        STATIC_ASSERT(!std::optional<bool>{std::optional<int>{0}}.value());
+    } // namespace lwg3836
+
     namespace vso406124 {
         // Defend against regression of VSO-406124
         void run_test() {
