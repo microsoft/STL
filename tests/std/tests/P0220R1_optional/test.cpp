@@ -8154,9 +8154,9 @@ namespace msvc {
 
 #if _HAS_CXX20
 #define CONSTEXPR20 constexpr
-#else // ^^^ _HAS_CXX20 / _HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 #define CONSTEXPR20 inline
-#endif // ^^^ _HAS_CXX20 ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
         CONSTEXPR20 bool run_test() {
             std::optional<int> oi  = 0;
             std::optional<bool> ob = oi;
