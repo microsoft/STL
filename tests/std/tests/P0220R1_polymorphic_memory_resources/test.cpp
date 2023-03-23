@@ -1526,7 +1526,6 @@ namespace {
             pair_conversion_test<std::pmr::unordered_multimap<int, int>>();
         }
 
-#if !_HAS_CXX20
         // Test cv-qualified source type (LWG-3677)
         void lwg3677_test() {
             using PairType = std::pair<const int, int>;
@@ -1546,7 +1545,6 @@ namespace {
             al.construct(static_cast<volatile PairType*>(raw_ptr), mem_pair_conv{});
             al.construct(static_cast<const volatile PairType*>(raw_ptr), mem_pair_conv{});
         }
-#endif // !_HAS_CXX20
     } // namespace map_containers
 
     void test_gh3408() {
@@ -1605,9 +1603,7 @@ int main() {
 
     map_containers::test();
 
-#if !_HAS_CXX20
     map_containers::lwg3677_test();
-#endif // !_HAS_CXX20
 
     test_gh3408();
 }
