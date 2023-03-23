@@ -4,6 +4,7 @@
 #include <array>
 #include <cassert>
 #include <concepts>
+#include <cstddef>
 #include <mdspan>
 #include <span>
 #include <type_traits>
@@ -60,7 +61,8 @@ constexpr void do_check_members(index_sequence<Indices...>) {
     static_assert(is_nothrow_default_constructible_v<Ext>);
 
     // Check 'extent' observer
-    assert((((ext.extent(Indices) == Extents && Extents != dynamic_extent) || ext.extent(Indices) == 0) && ...));
+    assert(
+        (((cmp_equal(ext.extent(Indices), Extents) && Extents != dynamic_extent) || ext.extent(Indices) == 0) && ...));
 
     using OtherIndexType = conditional_t<is_signed_v<IndexType>, long long, unsigned long long>;
     using Ext2           = extents<OtherIndexType, Extents...>;
@@ -82,7 +84,7 @@ constexpr void do_check_members(index_sequence<Indices...>) {
     }
 
     { // Check construction from array and span
-        auto arr = to_array<IndexType>({ext.extent(Indices)...});
+        array<IndexType, Ext::rank()> arr = {ext.extent(Indices)...};
         Ext2 ext2a{arr};
         assert(((ext.extent(Indices) == ext2a.extent(Indices)) && ...));
         assert(ext == ext2a);
@@ -160,15 +162,17 @@ constexpr void check_construction_from_extents_pack() {
         static_assert(!is_constructible_v<Ext, int, ConvertibleToInt<int, IsNothrow::no>>);
     }
 
-#if 0 // FIXME Bug in array/span constructor?
-    { // Check postconditions [FIXME]
-        using Ext         = extents<int, dynamic_extent, dynamic_extent, 4>;
-        array<int, 3> arr = {4, 4, 4};
-        Ext ext{arr};
-        Ext ext2{4, 4, 4};
+    { // Check postconditions
+        using Ext = extents<int, dynamic_extent, dynamic_extent, 4>;
+        Ext ext{4, ConvertibleToInt<int>{}, 4};
+        Ext ext2{4, 1, 4};
         assert(ext == ext2);
     }
-#endif // Bug?
+
+    { // Check construciton with integers with mismatched signs
+        using Ext = extents<long long, dynamic_extent>;
+        (void) Ext{4ull};
+    }
 
     { // Check implicit conversions
         static_assert(NotImplicitlyConstructibleFrom<extents<int, 3>, unsigned long long>);
@@ -179,9 +183,9 @@ constexpr void check_construction_from_extents_pack() {
 
 constexpr void check_construction_from_array_and_span() {
     { // Check construction from arrays/spans with elements (not) convertible to index_type
-        using Ext = extents<short, 4, dynamic_extent>;
+        using Ext = extents<short, 1, dynamic_extent>;
 
-        array<int, 2> arr1 = {4, 5};
+        array<int, 2> arr1 = {1, 5};
         Ext ext1a{arr1};
         span s1{arr1};
         Ext ext1b{s1};
@@ -199,6 +203,16 @@ constexpr void check_construction_from_array_and_span() {
 
         static_assert(!is_constructible_v<Ext, array<NonConvertibleToAnything, 2>>);
         static_assert(!is_constructible_v<Ext, span<NonConvertibleToAnything, 2>>);
+    }
+
+    { // Check construciton with integers with mismatched signs
+        using Ext = extents<long long, dynamic_extent>;
+
+        array arr = {4ull};
+        (void) Ext{arr};
+
+        span s{arr};
+        (void) Ext{s};
     }
 
     { // Check construction from arrays/spans with elements that may throw during conversion to index_type
@@ -255,10 +269,10 @@ constexpr void check_equality_operator() {
 }
 
 constexpr bool test() {
-    // check_members<short>(); // FIXME Definitely a bug.
+    check_members<short>();
     check_members<int, 1, 2, 3>();
     check_members<unsigned long long, dynamic_extent, 4, 5>();
-    // check_members<short, dynamic_extent, dynamic_extent, 6>(); // FIXME Bug in array/span constructor?
+    check_members<short, dynamic_extent, dynamic_extent, 6>();
     check_members<unsigned char, dynamic_extent, dynamic_extent, dynamic_extent>();
     check_construction_from_other_extents();
     check_construction_from_extents_pack();
