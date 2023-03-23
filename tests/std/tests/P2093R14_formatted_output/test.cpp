@@ -403,11 +403,12 @@ void test_invalid_code_points_console() {
 void test_invalid_code_points_file() {
     // Unlike for the console API when the ordinary literal encoding is UTF-8, invalid code points shouldn't
     // be replaced when writing to a file.
+    const string temp_file_name_str = temp_file_name();
+
     FILE* temp_file_stream;
 
     {
-        const string temp_file_name_str = temp_file_name();
-        const errno_t fopen_result      = fopen_s(&temp_file_stream, temp_file_name_str.c_str(), "w+b");
+        const errno_t fopen_result = fopen_s(&temp_file_stream, temp_file_name_str.c_str(), "w+b");
         assert(fopen_result == 0);
     }
 
@@ -464,6 +465,8 @@ void test_invalid_code_points_file() {
     test_sequence_closure("\xF0\x28\x8C\x25");
 
     fclose(temp_file_stream);
+
+    filesystem::remove(temp_file_name_str);
 }
 
 void test_stream_flush_console() {
