@@ -8152,10 +8152,24 @@ namespace msvc {
         STATIC_ASSERT(std::is_convertible_v<std::optional<int>, std::optional<bool>>);
         STATIC_ASSERT(std::is_convertible_v<const std::optional<int>&, std::optional<bool>>);
 
-        constexpr std::optional<int> oi  = 0;
-        constexpr std::optional<bool> ob = oi;
-        STATIC_ASSERT(!ob.value());
-        STATIC_ASSERT(!std::optional<bool>{std::optional<int>{0}}.value());
+#if _HAS_CXX20
+#define CONSTEXPR20 constexpr
+#else // ^^^ _HAS_CXX20 / _HAS_CXX20 vvv
+#define CONSTEXPR20 inline
+#endif // ^^^ _HAS_CXX20 ^^^
+        CONSTEXPR20 bool run_test() {
+            std::optional<int> oi  = 0;
+            std::optional<bool> ob = oi;
+            assert(!ob.value());
+            assert(!std::optional<bool>{std::optional<int>{0}}.value());
+
+            return true;
+        }
+#undef CONSTEXPR20
+
+#if _HAS_CXX20
+        STATIC_ASSERT(run_test());
+#endif // _HAS_CXX20
     } // namespace lwg3836
 
     namespace vso406124 {
@@ -8343,6 +8357,8 @@ int main() {
     nonmembers::make_optional_explicit::run_test();
     nonmembers::make_optional_explicit_init_list::run_test();
     nonmembers::swap_::run_test();
+
+    msvc::lwg3836::run_test();
 
     msvc::vso406124::run_test();
     msvc::vso508126::run_test();
