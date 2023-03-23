@@ -3621,6 +3621,10 @@ _NODISCARD inline string _Unescape_braces(const _Add_newline _Add_nl, const stri
     string _Unescaped_str;
 
     if (_Old_str.empty()) {
+        if (_Add_nl == _Add_newline::_Yes) {
+            _Unescaped_str.push_back('\n');
+        }
+
         return _Unescaped_str;
     }
 
