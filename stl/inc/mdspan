@@ -111,7 +111,8 @@ public:
         extents(const extents<_OtherIndexType, _OtherExtents...>& _Other) noexcept {
         auto _It = _Dynamic_extents.begin();
         for (rank_type _Idx = 0; _Idx < rank(); ++_Idx) {
-            _STL_VERIFY(static_extent(_Idx) == dynamic_extent || static_extent(_Idx) == _Other.extent(_Idx),
+            _STL_VERIFY(
+                static_extent(_Idx) == dynamic_extent || _STD cmp_equal(static_extent(_Idx), _Other.extent(_Idx)),
                 "Value of other.extent(r) must be equal to extent(r) for each r for which extent(r) is a static extent "
                 "(N4928 [mdspan.extents.cons]/2.1)");
             _STL_VERIFY(_STD in_range<index_type>(_Other.extent(_Idx)),
@@ -176,12 +177,11 @@ public:
               && is_nothrow_constructible_v<index_type, const _OtherIndexType&> && (_Size == rank())
     constexpr explicit extents(span<_OtherIndexType, _Size> _Exts, index_sequence<_Indices...>) noexcept
         : _Dynamic_extents{static_cast<index_type>(_STD as_const(_Exts[_Dynamic_index_inv(_Indices)]))...} {
-        for (rank_type _Idx = 0; _Idx < rank(); ++_Idx) {
-            _STL_VERIFY(static_extent(_Idx) == dynamic_extent || static_extent(_Idx) == _Exts[_Idx],
-                "Value of exts[r] must be equal to extent(r) for each r for which extent(r) is a static extent (N4928 "
-                "[mdspan.extents.cons]/10.1)");
-
-            if constexpr (_Is_standard_integer<_OtherIndexType> && _Size != 0) {
+        if constexpr (_Is_standard_integer<_OtherIndexType>) {
+            for (rank_type _Idx = 0; _Idx < rank(); ++_Idx) {
+                _STL_VERIFY(static_extent(_Idx) == dynamic_extent || _STD cmp_equal(static_extent(_Idx), _Exts[_Idx]),
+                    "Value of exts[r] must be equal to extent(r) for each r for which extent(r) is a static extent "
+                    "(N4928 [mdspan.extents.cons]/10.1)");
                 _STL_VERIFY(_Exts[_Idx] >= 0 && _STD in_range<index_type>(_Exts[_Idx]),
                     "Either N must be zero or exts[r] must be nonnegative and must be representable as value of type "
                     "index_type for every rank index r (N4928 [mdspan.extents.cons]/10.2)");
