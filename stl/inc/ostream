@@ -1085,7 +1085,8 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
 
 #ifdef __cpp_lib_print
 #ifdef _CPPRTTI
-inline ios_base::iostate _Print_noformat_nonunicode(ostream& _Ostr, const string_view _Str) {
+template <int = 0>
+ios_base::iostate _Print_noformat_nonunicode(ostream& _Ostr, const string_view _Str) {
     // *LOCKED*
     //
     // This function is called from a context in which an ostream::sentry has been
@@ -1103,7 +1104,8 @@ inline ios_base::iostate _Print_noformat_nonunicode(ostream& _Ostr, const string
     return _State;
 }
 
-inline void _Vprint_nonunicode_impl(
+template <int = 0>
+void _Vprint_nonunicode_impl(
     const _Add_newline _Add_nl, ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
     const ostream::sentry _Ok(_Ostr);
     ios_base::iostate _State = ios_base::goodbit;
@@ -1124,7 +1126,8 @@ inline void _Vprint_nonunicode_impl(
     _Ostr.setstate(_State);
 }
 
-inline ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str) {
+template <class _Filebuf_type = filebuf>
+ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str) {
     // *LOCKED*
     //
     // This function is called from a context in which an ostream::sentry has been
@@ -1138,7 +1141,7 @@ inline ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_vi
     // object. This requires the use of a dynamic_cast. (This is also why the std::ostream& overloads of
     // std::print() et al. are deleted when RTTI is disabled.)
     streambuf* const _Streambuf = _Ostr.rdbuf();
-    const auto _Filebuf         = dynamic_cast<filebuf*>(_Streambuf);
+    const auto _Filebuf         = dynamic_cast<_Filebuf_type*>(_Streambuf);
 
     // If we got nullptr, then it probably isn't being used for a unicode console...
     if (_Filebuf == nullptr) {
@@ -1193,7 +1196,8 @@ inline ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_vi
     return _State;
 }
 
-inline void _Vprint_unicode_impl(
+template <int = 0>
+void _Vprint_unicode_impl(
     const _Add_newline _Add_nl, ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
     const ostream::sentry _Ok(_Ostr);
     ios_base::iostate _State = ios_base::goodbit;
@@ -1214,7 +1218,8 @@ inline void _Vprint_unicode_impl(
     _Ostr.setstate(_State);
 }
 
-inline void _Print_noformat(ostream& _Ostr, const string_view _Str) {
+template <int = 0>
+void _Print_noformat(ostream& _Ostr, const string_view _Str) {
     const ostream::sentry _Ok(_Ostr);
     ios_base::iostate _State = ios_base::goodbit;
 
