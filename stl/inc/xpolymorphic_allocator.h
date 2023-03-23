@@ -285,7 +285,7 @@ namespace pmr {
                     return ::new (const_cast<void*>(static_cast<const volatile void*>(_Ptr)))
                         _Uty(_STD forward<decltype(_Construct_args)>(_Construct_args)...);
                 },
-                _STD uses_allocator_construction_args<_Ty>(*this, _STD forward<_Types>(_Args)...));
+                _STD uses_allocator_construction_args<_Uty>(*this, _STD forward<_Types>(_Args)...));
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
             allocator<char> _Al{};
             if constexpr (_Is_cv_pair<_Uty>) {
