@@ -46,8 +46,8 @@ private:
 #pragma warning(push) // TRANSITION, "/analyze:only" BUG?
 #pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
         array<rank_type, rank() + 1> _Result{};
-        size_t _Counter = 0;
-        for (size_t _Idx = 0; _Idx < rank(); ++_Idx) {
+        rank_type _Counter = 0;
+        for (rank_type _Idx = 0; _Idx < rank(); ++_Idx) {
             _Result[_Idx] = _Counter;
             if (_Static_extents[_Idx] == dynamic_extent) {
                 ++_Counter;
@@ -65,17 +65,27 @@ private:
         return _Dynamic_indices[_Idx];
     }
 
-    _NODISCARD static constexpr rank_type _Dynamic_index_inv(rank_type _Idx) noexcept {
-        for (rank_type _Rdx = 0; _Rdx < rank(); ++_Rdx) {
-            if (_Dynamic_index(_Rdx + 1) == _Idx + 1) {
-                return _Rdx;
+    _NODISCARD static _CONSTEVAL auto _Make_dynamic_indices_inv() noexcept {
+        array<rank_type, rank()> _Result{};
+        for (rank_type _Idx = 0; _Idx < rank(); ++_Idx) {
+            for (rank_type _Rdx = 0; _Rdx < rank(); ++_Rdx) {
+                if (_Dynamic_index(_Rdx + 1) == _Idx + 1) {
+                    _Result[_Idx] = _Rdx;
+                    break;
+                }
             }
         }
-        _STD unreachable();
+        return _Result;
+    }
+
+    static constexpr array<rank_type, rank()> _Dynamic_indices_inv = _Make_dynamic_indices_inv();
+
+    _NODISCARD static constexpr rank_type _Dynamic_index_inv(rank_type _Idx) noexcept {
+        return _Dynamic_indices_inv[_Idx];
     }
 
     struct _Static_extents_only {
-        constexpr _Static_extents_only(auto&&...) noexcept {}
+        constexpr explicit _Static_extents_only(auto&&...) noexcept {}
 
         _NODISCARD constexpr index_type* begin() const noexcept {
             return nullptr;
