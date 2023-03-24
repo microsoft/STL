@@ -74,11 +74,20 @@ private:
         _STD unreachable();
     }
 
-    array<index_type, _Dynamic_index(rank())> _Dynamic_extents{};
+    struct _Static_extents_only {
+        constexpr _Static_extents_only(auto&&...) noexcept {}
+
+        _NODISCARD constexpr index_type* begin() const noexcept {
+            return nullptr;
+        }
+    };
+
+    static constexpr rank_type _Rank_dynamic = _Dynamic_index(rank());
+    conditional_t<_Rank_dynamic != 0, array<index_type, _Rank_dynamic>, _Static_extents_only> _Dynamic_extents{};
 
 public:
     _NODISCARD static constexpr rank_type rank_dynamic() noexcept {
-        return _Dynamic_index(rank());
+        return _Rank_dynamic;
     }
 
     _NODISCARD static constexpr size_t static_extent(const rank_type _Idx) noexcept {
