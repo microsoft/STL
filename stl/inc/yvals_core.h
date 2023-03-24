@@ -1694,11 +1694,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 // C++23
 #if _HAS_CXX23
 #define __cpp_lib_adaptor_iterator_pair_constructor 202106L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_allocate_at_least 202106L
-#endif // __cpp_lib_concepts
-
+#define __cpp_lib_allocate_at_least                 202302L
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_bind_back                         202202L
 #define __cpp_lib_byteswap                          202110L
