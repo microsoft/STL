@@ -1350,7 +1350,7 @@ STATIC_ASSERT(__cpp_lib_math_special_functions == 201603L);
 #endif
 #endif
 
-#if _HAS_CXX23
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_mdspan
 #error __cpp_lib_mdspan is not defined
 #elif __cpp_lib_mdspan != 202207L

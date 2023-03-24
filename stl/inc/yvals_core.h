@@ -1724,7 +1724,10 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_invoke_r       202106L
 #define __cpp_lib_ios_noreplace  202207L
 #define __cpp_lib_is_scoped_enum 202011L
-#define __cpp_lib_mdspan         202207L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_mdspan 202207L
+#endif // __cpp_lib_concepts
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules
 #define __cpp_lib_modules 202207L
