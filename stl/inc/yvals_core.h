@@ -319,6 +319,8 @@
 // P1272R4 byteswap()
 // P1328R1 constexpr type_info::operator==()
 // P1425R4 Iterator Pair Constructors For stack And queue
+// P1467R9 Extended Floating-Point Types
+//     (only the <stdfloat> header; we don't support any optional extended floating-point types)
 // P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
@@ -326,6 +328,7 @@
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
+// P2093R14 <print>: Formatted Output
 // P2136R3 invoke_r()
 // P2164R9 views::enumerate
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
@@ -354,6 +357,7 @@
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2505R5 Monadic Functions For expected
+// P2539R4 Synchronizing print() With The Underlying Stream
 // P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
 // P2652R2 Disallowing User Specialization Of allocator_traits
@@ -1726,6 +1730,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                  202106L
+#define __cpp_lib_print                    202207L
 #define __cpp_lib_ranges_as_const          202207L
 #define __cpp_lib_ranges_as_rvalue         202207L
 #define __cpp_lib_ranges_cartesian_product 202207L

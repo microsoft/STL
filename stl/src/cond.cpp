@@ -69,10 +69,10 @@ int _Cnd_timedwait(const _Cnd_t cond, const _Mtx_t mtx, const xtime* const targe
         _Mtx_reset_owner(mtx);
     } else { // target time specified, wait for it
         xtime now;
-        xtime_get(&now, TIME_UTC);
+        _Xtime_get2(&now);
         _Mtx_clear_owner(mtx);
         if (!cond->_get_cv()->wait_for(cs, _Xtime_diff_to_millis2(target, &now))) { // report timeout
-            xtime_get(&now, TIME_UTC);
+            _Xtime_get2(&now);
             if (_Xtime_diff_to_millis2(target, &now) == 0) {
                 res = _Thrd_timedout;
             }

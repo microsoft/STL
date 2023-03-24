@@ -27,8 +27,19 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-using _Literal_zero = decltype(nullptr);
-using _Compare_t    = signed char;
+void _Literal_zero_is_expected();
+
+struct _Literal_zero {
+    template <class _Ty, enable_if_t<is_same_v<_Ty, int>, int> = 0>
+    consteval _Literal_zero(_Ty _Zero) noexcept {
+        // Can't use _STL_VERIFY because this is a core header
+        if (_Zero != 0) {
+            _Literal_zero_is_expected();
+        }
+    }
+};
+
+using _Compare_t = signed char;
 
 // These "pretty" enumerator names are safe since they reuse names of user-facing entities.
 enum class _Compare_eq : _Compare_t { equal = 0, equivalent = equal };
