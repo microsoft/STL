@@ -410,6 +410,10 @@ concept sized_sentinel_for = sentinel_for<_Se, _It>
     };
 // clang-format on
 
+_EXPORT_STD struct default_sentinel_t {};
+
+_EXPORT_STD inline constexpr default_sentinel_t default_sentinel{};
+
 namespace ranges {
     _EXPORT_STD enum class subrange_kind : bool { unsized, sized };
 

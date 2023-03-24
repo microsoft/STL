@@ -492,6 +492,16 @@ void test_ostream() {
     assert(os.rdbuf() == nullptr);
 }
 
+void test_print() {
+    using namespace std;
+    puts("Testing <print>.");
+    println("Hello, world!");
+
+#ifdef _CPPRTTI
+    println(cout, "The answer to life, the universe, and everything: {}", 42);
+#endif // _CPPRTTI
+}
+
 void test_queue() {
     using namespace std;
     puts("Testing <queue>.");
@@ -1093,6 +1103,7 @@ void all_cpp_header_tests() {
     test_numeric();
     test_optional();
     test_ostream();
+    test_print();
     test_queue();
     test_random();
     test_ranges();

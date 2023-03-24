@@ -549,6 +549,7 @@ tests\P1682R3_to_underlying
 tests\P1899R3_views_stride
 tests\P1899R3_views_stride_death
 tests\P1951R1_default_arguments_pair_forward_ctor
+tests\P2093R14_formatted_output
 tests\P2136R3_invoke_r
 tests\P2162R2_std_visit_for_derived_classes_from_variant
 tests\P2164R9_views_enumerate
