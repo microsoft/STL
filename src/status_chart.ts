@@ -407,7 +407,7 @@ function load_charts() {
         ...make_common_options(),
         scales: {
             x: make_xAxis(timeframe_github),
-            mergeAxis: make_yAxis('right', 'PRs / month', 0, 80, 10),
+            mergeAxis: make_yAxis('right', 'PRs / month', 0, 90, 10),
         },
     };
 
