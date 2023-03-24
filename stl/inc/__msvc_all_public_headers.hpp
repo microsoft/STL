@@ -49,6 +49,7 @@
 #include <numbers>
 #include <ratio>
 #include <source_location>
+#include <stdfloat>
 #include <tuple>
 #include <type_traits>
 #include <utility>

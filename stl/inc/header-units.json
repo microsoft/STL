@@ -107,6 +107,7 @@
         "stack",
         "stacktrace",
         "stdexcept",
+        "stdfloat",
         "stop_token",
         "streambuf",
         "string",
