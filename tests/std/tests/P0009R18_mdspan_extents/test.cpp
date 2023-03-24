@@ -271,6 +271,7 @@ constexpr void check_equality_operator() {
 constexpr bool test() {
     check_members<short>();
     check_members<int, 1, 2, 3>();
+    check_members<unsigned short, 4, 4>();
     check_members<unsigned long long, dynamic_extent, 4, 5>();
     check_members<short, dynamic_extent, dynamic_extent, 6>();
     check_members<unsigned char, dynamic_extent, dynamic_extent, dynamic_extent>();
