@@ -311,10 +311,6 @@ std/utilities/format/format.tuple/parse.pass.cpp FAIL
 std/utilities/format/format.tuple/set_brackets.pass.cpp FAIL
 std/utilities/format/format.tuple/set_separator.pass.cpp FAIL
 
-# P2321R2 zip
-std/language.support/support.limits/support.limits.general/tuple.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/utility.version.compile.pass.cpp FAIL
-
 
 # *** MISSING COMPILER FEATURES ***
 # MSVC doesn't properly support [[no_unique_address]]

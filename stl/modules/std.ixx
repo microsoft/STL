@@ -85,6 +85,7 @@ export module std;
 #include <numeric>
 #include <optional>
 #include <ostream>
+#include <print>
 #include <queue>
 #include <random>
 #include <ranges>
@@ -101,6 +102,7 @@ export module std;
 #include <stack>
 #include <stacktrace>
 #include <stdexcept>
+#include <stdfloat>
 #include <stop_token>
 #include <streambuf>
 #include <string>

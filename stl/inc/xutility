@@ -2287,9 +2287,8 @@ namespace ranges {
     using sentinel_t = decltype(_RANGES end(_STD declval<_Rng&>()));
 
     template <class _Wrapped>
-    concept _Weakly_unwrappable =
-        same_as<typename remove_cvref_t<_Wrapped>::_Prevent_inheriting_unwrap, remove_cvref_t<_Wrapped>>
-        && requires(_Wrapped&& _Wr) { _STD forward<_Wrapped>(_Wr)._Unwrapped(); };
+    concept _Weakly_unwrappable = _Allow_inheriting_unwrap_v<remove_cvref_t<_Wrapped>>
+                               && requires(_Wrapped&& _Wr) { _STD forward<_Wrapped>(_Wr)._Unwrapped(); };
 
     template <class _Sent>
     concept _Weakly_unwrappable_sentinel = _Weakly_unwrappable<const remove_reference_t<_Sent>&>;
@@ -4292,10 +4291,6 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) noexc
 template <class _Iter1, class _Iter2>
     requires (!sized_sentinel_for<_Iter1, _Iter2>)
 inline constexpr bool disable_sized_sentinel_for<move_iterator<_Iter1>, move_iterator<_Iter2>> = true;
-
-_EXPORT_STD struct default_sentinel_t {};
-
-_EXPORT_STD inline constexpr default_sentinel_t default_sentinel{};
 
 _EXPORT_STD struct unreachable_sentinel_t;
 namespace _Unreachable_sentinel_detail {
