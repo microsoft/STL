@@ -164,14 +164,23 @@ constexpr void check_construction_from_extents_pack() {
 
     { // Check postconditions
         using Ext = extents<int, dynamic_extent, dynamic_extent, 4>;
-        Ext ext{4, ConvertibleToInt<int>{}, 4};
-        Ext ext2{4, 1, 4};
-        assert(ext == ext2);
+        Ext ext1a{4, ConvertibleToInt<int>{}, 4};
+        Ext ext1b{4, 1, 4};
+        assert(ext1a == ext1b);
+
+        Ext ext2a{4, ConvertibleToInt<int>{}};
+        Ext ext2b{4, 1};
+        assert(ext2a == ext2b);
     }
 
     { // Check construciton with integers with mismatched signs
         using Ext = extents<long long, dynamic_extent>;
         (void) Ext{4ull};
+    }
+
+    { // Check narrowing conversions
+        using Ext = extents<short, dynamic_extent>;
+        (void) Ext{4ll};
     }
 
     { // Check implicit conversions
@@ -182,10 +191,33 @@ constexpr void check_construction_from_extents_pack() {
 }
 
 constexpr void check_construction_from_array_and_span() {
-    { // Check construction from arrays/spans with elements (not) convertible to index_type
+    { // Check construction from arrays/spans where [array/span].size() is equal to rank()
         using Ext = extents<short, 1, dynamic_extent>;
 
         array<int, 2> arr1 = {1, 5};
+        Ext ext1a{arr1};
+        span s1{arr1};
+        Ext ext1b{s1};
+        assert(ext1a == ext1b);
+        static_assert(is_nothrow_constructible_v<Ext, decltype(arr1)>);
+        static_assert(is_nothrow_constructible_v<Ext, decltype(s1)>);
+
+        array<ConvertibleToInt<int>, 2> arr2;
+        Ext ext2a{arr2};
+        span s2{arr2};
+        Ext ext2b{s2};
+        assert(ext2a == ext2b);
+        static_assert(is_nothrow_constructible_v<Ext, decltype(arr2)>);
+        static_assert(is_nothrow_constructible_v<Ext, decltype(s2)>);
+
+        static_assert(!is_constructible_v<Ext, array<NonConvertibleToAnything, 2>>);
+        static_assert(!is_constructible_v<Ext, span<NonConvertibleToAnything, 2>>);
+    }
+
+    { // // Check construction from arrays/spans where [array/span].size() is equal to rank_dynamic()
+        using Ext = extents<unsigned char, 3, dynamic_extent, 3, dynamic_extent>;
+
+        array<int, 2> arr1 = {4, 4};
         Ext ext1a{arr1};
         span s1{arr1};
         Ext ext1b{s1};
@@ -209,6 +241,16 @@ constexpr void check_construction_from_array_and_span() {
         using Ext = extents<long long, dynamic_extent>;
 
         array arr = {4ull};
+        (void) Ext{arr};
+
+        span s{arr};
+        (void) Ext{s};
+    }
+
+    { // Check narrowing conversions
+        using Ext = extents<short, dynamic_extent>;
+
+        array arr = {4ll};
         (void) Ext{arr};
 
         span s{arr};
