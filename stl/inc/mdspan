@@ -68,9 +68,9 @@ private:
     _NODISCARD static _CONSTEVAL auto _Make_dynamic_indices_inv() noexcept {
         array<rank_type, rank()> _Result{};
         for (rank_type _Idx = 0; _Idx < rank(); ++_Idx) {
-            for (rank_type _Rdx = 0; _Rdx < rank(); ++_Rdx) {
-                if (_Dynamic_index(_Rdx + 1) == _Idx + 1) {
-                    _Result[_Idx] = _Rdx;
+            for (rank_type _Idx_inv = 0; _Idx_inv < rank(); ++_Idx_inv) {
+                if (_Dynamic_index(_Idx_inv + 1) == _Idx + 1) {
+                    _Result[_Idx] = _Idx_inv;
                     break;
                 }
             }
