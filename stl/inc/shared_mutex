@@ -122,7 +122,8 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD_TRY_CHANGE_STATE _Requires_lock_not_held_(this)
+    _NODISCARD_TRY_CHANGE_STATE //
+        _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_exclusive_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
@@ -130,7 +131,8 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE _Requires_lock_not_held_(this)
+    _NODISCARD_TRY_CHANGE_STATE //
+        _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_exclusive_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
@@ -196,7 +198,8 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD_TRY_CHANGE_STATE _Requires_lock_not_held_(this)
+    _NODISCARD_TRY_CHANGE_STATE //
+        _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_shared_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock_shared_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
@@ -221,7 +224,8 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE _Requires_lock_not_held_(this)
+    _NODISCARD_TRY_CHANGE_STATE //
+        _Requires_lock_not_held_(this)
     _When_(return == true, _Acquires_shared_lock_(this))
     _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool try_lock_shared_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
@@ -308,7 +312,8 @@ public:
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) {} // construct with mutex and adopt ownership
 
     template <class _Rep, class _Period>
-    _NODISCARD_CTOR_LOCK _Requires_lock_not_held_(_Mtx)
+    _NODISCARD_CTOR_LOCK //
+        _Requires_lock_not_held_(_Mtx)
     _When_(this->_Owns == true, _Acquires_shared_lock_(_Mtx))
     _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
     _When_(this->_Owns == true, _Post_same_lock_(_Mtx, *this->_Pmtx))
@@ -319,7 +324,8 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_CTOR_LOCK _Requires_lock_not_held_(_Mtx)
+    _NODISCARD_CTOR_LOCK //
+        _Requires_lock_not_held_(_Mtx)
     _When_(this->_Owns == true, _Acquires_shared_lock_(_Mtx))
     _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
     _When_(this->_Owns == true, _Post_same_lock_(_Mtx, *this->_Pmtx))
@@ -395,7 +401,8 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD_TRY_CHANGE_STATE _Requires_lock_not_held_(*this->_Pmtx)
+    _NODISCARD_TRY_CHANGE_STATE //
+        _Requires_lock_not_held_(*this->_Pmtx)
     _Pre_satisfies_(_Owns == false)
     _Pre_satisfies_(_Pmtx != nullptr)
     _Post_satisfies_(return == _Owns)
@@ -411,7 +418,8 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE _Requires_lock_not_held_(*this->_Pmtx)
+    _NODISCARD_TRY_CHANGE_STATE //
+        _Requires_lock_not_held_(*this->_Pmtx)
     _Pre_satisfies_(_Owns == false)
     _Pre_satisfies_(_Pmtx != nullptr)
     _Post_satisfies_(return == _Owns)
