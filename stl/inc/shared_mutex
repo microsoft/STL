@@ -356,8 +356,10 @@ public:
         _Other._Owns = false;
     }
 
-    _Releases_shared_lock_(*this->_Pmtx)
-    _Releases_nonreentrant_lock_(*this->_Pmtx)
+    _Moves_lock_(*this->_Pmtx, *_Other._Pmtx)
+    _Post_satisfies_(_Owns == _Other._Owns)
+    _Post_satisfies_(_Other._Pmtx == nullptr)
+    _Post_satisfies_(_Other._Owns == false)
     shared_lock& operator=(shared_lock&& _Right) noexcept {
         if (_Owns) {
             _Pmtx->unlock_shared();
