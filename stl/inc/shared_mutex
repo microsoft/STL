@@ -305,7 +305,7 @@ public:
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared()) {} // construct with mutex and try to lock shared
 
     _NODISCARD_CTOR_LOCK
-    _Requires_lock_held_(_Mtx)
+    _Requires_shared_lock_held_(_Mtx)
     _Post_satisfies_(_Owns == true)
     _Post_satisfies_(_Pmtx == &_Mtx)
     shared_lock(mutex_type& _Mtx, adopt_lock_t) noexcept // strengthened
