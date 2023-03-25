@@ -282,7 +282,7 @@ public:
     _NODISCARD_CTOR_LOCK
     _Acquires_shared_lock_(_Mtx)
     _Acquires_nonreentrant_lock_(_Mtx)
-    _Post_same_lock_(_Mtx, *this->_Pmtx)
+    _Post_same_lock_(_Mtx, *_Pmtx)
     _Post_satisfies_(_Owns == true)
     _Post_satisfies_(_Pmtx == &_Mtx)
     explicit shared_lock(mutex_type& _Mtx)
@@ -297,9 +297,9 @@ public:
 
     _NODISCARD_CTOR_LOCK
     _Requires_lock_not_held_(_Mtx)
-    _When_(this->_Owns == true, _Acquires_shared_lock_(_Mtx))
-    _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
-    _When_(this->_Owns == true, _Post_same_lock_(_Mtx, *this->_Pmtx))
+    _When_(_Owns == true, _Acquires_shared_lock_(_Mtx))
+    _When_(_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
+    _When_(_Owns == true, _Post_same_lock_(_Mtx, *_Pmtx))
     _Post_satisfies_(_Pmtx == &_Mtx)
     shared_lock(mutex_type& _Mtx, try_to_lock_t)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared()) {} // construct with mutex and try to lock shared
@@ -314,9 +314,9 @@ public:
     template <class _Rep, class _Period>
     _NODISCARD_CTOR_LOCK //
         _Requires_lock_not_held_(_Mtx)
-    _When_(this->_Owns == true, _Acquires_shared_lock_(_Mtx))
-    _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
-    _When_(this->_Owns == true, _Post_same_lock_(_Mtx, *this->_Pmtx))
+    _When_(_Owns == true, _Acquires_shared_lock_(_Mtx))
+    _When_(_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
+    _When_(_Owns == true, _Post_same_lock_(_Mtx, *_Pmtx))
     _Post_satisfies_(_Pmtx == &_Mtx)
     shared_lock(mutex_type& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_for(_Rel_time)) {
@@ -326,9 +326,9 @@ public:
     template <class _Clock, class _Duration>
     _NODISCARD_CTOR_LOCK //
         _Requires_lock_not_held_(_Mtx)
-    _When_(this->_Owns == true, _Acquires_shared_lock_(_Mtx))
-    _When_(this->_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
-    _When_(this->_Owns == true, _Post_same_lock_(_Mtx, *this->_Pmtx))
+    _When_(_Owns == true, _Acquires_shared_lock_(_Mtx))
+    _When_(_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
+    _When_(_Owns == true, _Post_same_lock_(_Mtx, *_Pmtx))
     _Post_satisfies_(_Pmtx == &_Mtx)
     shared_lock(mutex_type& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_until(_Abs_time)) {
@@ -338,8 +338,8 @@ public:
 #endif // _HAS_CXX20
     }
 
-    _When_(this->_Owns == true, _Releases_shared_lock_(*this->_Pmtx))
-    _When_(this->_Owns == true, _Releases_nonreentrant_lock_(*this->_Pmtx))
+    _When_(_Owns == true, _Releases_shared_lock_(*_Pmtx))
+    _When_(_Owns == true, _Releases_nonreentrant_lock_(*_Pmtx))
     ~shared_lock() noexcept {
         if (_Owns) {
             _Pmtx->unlock_shared();
@@ -347,7 +347,7 @@ public:
     }
 
     _NODISCARD_CTOR_LOCK
-    _Moves_lock_(*this->_Pmtx, *_Other._Pmtx)
+    _Moves_lock_(*_Pmtx, *_Other._Pmtx)
     _Post_satisfies_(_Owns == _Other._Owns)
     _Post_satisfies_(_Other._Pmtx == nullptr)
     _Post_satisfies_(_Other._Owns == false)
@@ -382,8 +382,8 @@ public:
     _Pre_satisfies_(_Pmtx != nullptr)
     _When_(_Owns == true, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
-    _Acquires_shared_lock_(*this->_Pmtx)
-    _Acquires_nonreentrant_lock_(*this->_Pmtx)
+    _Acquires_shared_lock_(*_Pmtx)
+    _Acquires_nonreentrant_lock_(*_Pmtx)
     void lock() { // lock the mutex
         _Validate();
         _Pmtx->lock_shared();
@@ -391,14 +391,14 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE
-    _Requires_lock_not_held_(*this->_Pmtx)
+    _Requires_lock_not_held_(*_Pmtx)
     _Pre_satisfies_(_Owns == false)
     _Pre_satisfies_(_Pmtx != nullptr)
     _Post_satisfies_(return == _Owns)
     _When_(_Owns == true, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
-    _When_(return == true, _Acquires_shared_lock_(*this->_Pmtx))
-    _When_(return == true, _Acquires_nonreentrant_lock_(*this->_Pmtx))
+    _When_(return == true, _Acquires_shared_lock_(*_Pmtx))
+    _When_(return == true, _Acquires_nonreentrant_lock_(*_Pmtx))
     bool try_lock() { // try to lock the mutex
         _Validate();
         _Owns = _Pmtx->try_lock_shared();
@@ -407,14 +407,14 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD_TRY_CHANGE_STATE //
-        _Requires_lock_not_held_(*this->_Pmtx)
+        _Requires_lock_not_held_(*_Pmtx)
     _Pre_satisfies_(_Owns == false)
     _Pre_satisfies_(_Pmtx != nullptr)
     _Post_satisfies_(return == _Owns)
     _When_(_Owns == true, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
-    _When_(return == true, _Acquires_shared_lock_(*this->_Pmtx))
-    _When_(return == true, _Acquires_nonreentrant_lock_(*this->_Pmtx))
+    _When_(return == true, _Acquires_shared_lock_(*_Pmtx))
+    _When_(return == true, _Acquires_nonreentrant_lock_(*_Pmtx))
     bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         // try to lock the mutex for _Rel_time
         _Validate();
@@ -424,14 +424,14 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD_TRY_CHANGE_STATE //
-        _Requires_lock_not_held_(*this->_Pmtx)
+        _Requires_lock_not_held_(*_Pmtx)
     _Pre_satisfies_(_Owns == false)
     _Pre_satisfies_(_Pmtx != nullptr)
     _Post_satisfies_(return == _Owns)
     _When_(_Owns == true, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
-    _When_(return == true, _Acquires_shared_lock_(*this->_Pmtx))
-    _When_(return == true, _Acquires_nonreentrant_lock_(*this->_Pmtx))
+    _When_(return == true, _Acquires_shared_lock_(*_Pmtx))
+    _When_(return == true, _Acquires_nonreentrant_lock_(*_Pmtx))
     bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // try to lock the mutex until _Abs_time
 #if _HAS_CXX20
@@ -447,8 +447,8 @@ public:
     _Post_satisfies_(_Owns == false)
     _When_(_Owns == false, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
-    _When_(_Owns == true, _Releases_shared_lock_(*this->_Pmtx))
-    _When_(_Owns == true, _Releases_nonreentrant_lock_(*this->_Pmtx))
+    _When_(_Owns == true, _Releases_shared_lock_(*_Pmtx))
+    _When_(_Owns == true, _Releases_nonreentrant_lock_(*_Pmtx))
     void unlock() { // try to unlock the mutex
         if (!_Pmtx || !_Owns) {
             _Throw_system_error(errc::operation_not_permitted);
@@ -459,7 +459,7 @@ public:
         _Owns = false;
     }
 
-    _Swaps_locks_(*this->_Pmtx, *_Right._Pmtx)
+    _Swaps_locks_(*_Pmtx, *_Right._Pmtx)
     _Post_satisfies_(_Owns == _Right._Owns)
     _Post_satisfies_(_Right._Owns == _Owns)
     void swap(shared_lock& _Right) noexcept {
@@ -467,7 +467,7 @@ public:
         _STD swap(_Owns, _Right._Owns);
     }
 
-    _Detaches_lock_(return, *this->_Pmtx)
+    _Detaches_lock_(return, *_Pmtx)
     _Post_satisfies_(_Pmtx == nullptr)
     _Post_satisfies_(_Owns == false)
     mutex_type* release() noexcept {
