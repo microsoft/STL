@@ -358,7 +358,6 @@ public:
     }
 };
 
-
 // Implements a DFA matching the regex on the left side of rule GB11. The DFA is:
 //
 // +---+   ExtPic      +---+    ZWJ        +---+
@@ -2549,7 +2548,6 @@ template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, _CharT _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
 
-
 template <class _CharT, class _OutputIt, floating_point _Float>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, _Float _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale);
@@ -3016,7 +3014,6 @@ public:
         return _WrappedIter._Position();
     }
 };
-
 
 class _Measure_string_prefix_iterator_legacy {
 private:
@@ -3616,6 +3613,54 @@ _NODISCARD size_t formatted_size(const locale& _Loc, const wformat_string<_Types
     _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt.get(), _STD make_wformat_args(_Args...));
     return _Buf._Count();
 }
+
+#if _HAS_CXX23
+enum class _Add_newline : bool { _Nope, _Yes };
+
+_NODISCARD inline string _Unescape_braces(const _Add_newline _Add_nl, const string_view _Old_str) {
+    string _Unescaped_str;
+
+    if (_Old_str.empty()) {
+        if (_Add_nl == _Add_newline::_Yes) {
+            _Unescaped_str.push_back('\n');
+        }
+
+        return _Unescaped_str;
+    }
+
+    size_t _Unescaped_str_expected_size = _Old_str.size();
+
+    if (_Add_nl == _Add_newline::_Yes) {
+        ++_Unescaped_str_expected_size;
+    }
+
+    _Unescaped_str.resize_and_overwrite(_Unescaped_str_expected_size, [_Add_nl, _Old_str](char* _Dest_ptr, size_t) {
+        char _Prev_char           = _Old_str.front();
+        size_t _Num_chars_written = 1;
+        *_Dest_ptr++              = _Prev_char;
+
+        for (const auto _Curr_char : _Old_str.substr(1)) {
+            if ((_Curr_char == '{' && _Prev_char == '{') || (_Curr_char == '}' && _Prev_char == '}')) {
+                _Prev_char = '\0';
+            } else {
+                *_Dest_ptr++ = _Curr_char;
+                ++_Num_chars_written;
+
+                _Prev_char = _Curr_char;
+            }
+        }
+
+        if (_Add_nl == _Add_newline::_Yes) {
+            *_Dest_ptr = '\n';
+            ++_Num_chars_written;
+        }
+
+        return _Num_chars_written;
+    });
+
+    return _Unescaped_str;
+}
+#endif // _HAS_CXX23
 
 _STD_END
 

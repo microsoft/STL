@@ -42,7 +42,6 @@ static xtime xtime_diff(const xtime* xt,
     return diff;
 }
 
-
 constexpr long long _Epoch      = 0x19DB1DED53E8000LL;
 constexpr long _Nsec100_per_sec = _Nsec_per_sec / 100;
 
@@ -54,7 +53,8 @@ _CRTIMP2_PURE long long __cdecl _Xtime_get_ticks() { // get system time in 100-n
     return ((static_cast<long long>(ft.dwHighDateTime)) << 32) + static_cast<long long>(ft.dwLowDateTime) - _Epoch;
 }
 
-static void sys_get_time(xtime* xt) { // get system time with nanosecond resolution
+// Used by several src files, but not dllexported.
+void _Xtime_get2(xtime* xt) { // get system time with nanosecond resolution
     unsigned long long now = _Xtime_get_ticks();
     xt->sec                = static_cast<__time64_t>(now / _Nsec100_per_sec);
     xt->nsec               = static_cast<long>(now % _Nsec100_per_sec) * 100;
@@ -65,17 +65,19 @@ _CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis2(const xtime* xt1, const xtime*
     return static_cast<long>(diff.sec * _Msec_per_sec + (diff.nsec + _Nsec_per_msec - 1) / _Nsec_per_msec);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis(const xtime* xt) { // convert time to milliseconds
     xtime now;
-    xtime_get(&now, TIME_UTC);
+    _Xtime_get2(&now);
     return _Xtime_diff_to_millis2(xt, &now);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE int __cdecl xtime_get(xtime* xt, int type) { // get current time
     if (type != TIME_UTC || xt == nullptr) {
         type = 0;
     } else {
-        sys_get_time(xt);
+        _Xtime_get2(xt);
     }
 
     return type;

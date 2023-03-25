@@ -331,7 +331,7 @@ void test_istream() {
 void test_iterator() {
     using namespace std;
     puts("Testing <iterator>.");
-    constexpr int arr[]{10, 20, 30, 40, 50};
+    static constexpr int arr[]{10, 20, 30, 40, 50};
     constexpr reverse_iterator<const int*> ri{end(arr)};
     assert(*ri == 50);
     assert(*next(ri) == 40);
@@ -490,6 +490,16 @@ void test_ostream() {
     puts("Testing <ostream>.");
     const ostream os{nullptr};
     assert(os.rdbuf() == nullptr);
+}
+
+void test_print() {
+    using namespace std;
+    puts("Testing <print>.");
+    println("Hello, world!");
+
+#ifdef _CPPRTTI
+    println(cout, "The answer to life, the universe, and everything: {}", 42);
+#endif // _CPPRTTI
 }
 
 void test_queue() {
@@ -675,7 +685,7 @@ void test_source_location() {
 void test_span() {
     using namespace std;
     puts("Testing <span>.");
-    constexpr int arr[]{11, 22, 33, 44, 55};
+    static constexpr int arr[]{11, 22, 33, 44, 55};
     constexpr span<const int, 5> whole{arr};
     constexpr span<const int, 3> mid = whole.subspan<1, 3>();
     assert(mid[0] == 22 && mid[1] == 33 && mid[2] == 44);
@@ -770,6 +780,12 @@ void test_stdexcept() {
     }
 
     assert(caught_puppies);
+}
+
+void test_stdfloat() {
+    using namespace std;
+    puts("Testing <stdfloat>.");
+    // `namespace std` is available, so we're done.
 }
 
 void test_stop_token() {
@@ -1093,6 +1109,7 @@ void all_cpp_header_tests() {
     test_numeric();
     test_optional();
     test_ostream();
+    test_print();
     test_queue();
     test_random();
     test_ranges();
@@ -1109,6 +1126,7 @@ void all_cpp_header_tests() {
     test_stack();
     test_stacktrace();
     test_stdexcept();
+    test_stdfloat();
     test_stop_token();
     test_streambuf();
     test_string();

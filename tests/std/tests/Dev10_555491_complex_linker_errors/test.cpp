@@ -292,4 +292,10 @@ int main() {
     assert((proj(-inf) == complex<double>{inf, 0.0}));
 
     test_gh_2728();
+
+    // Also test N4928 [complex.numbers.general]/2:
+    // "Specializations of complex for cv-unqualified floating-point types are trivially-copyable literal types"
+    STATIC_ASSERT(is_trivially_copyable_v<complex<float>>);
+    STATIC_ASSERT(is_trivially_copyable_v<complex<double>>);
+    STATIC_ASSERT(is_trivially_copyable_v<complex<long double>>);
 }

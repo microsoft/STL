@@ -74,10 +74,10 @@ int _Thrd_detach(_Thrd_t thr) { // tell OS to release thread's resources when it
 
 void _Thrd_sleep(const xtime* xt) { // suspend thread until time xt
     xtime now;
-    xtime_get(&now, TIME_UTC);
+    _Xtime_get2(&now);
     do { // sleep and check time
         Sleep(_Xtime_diff_to_millis2(xt, &now));
-        xtime_get(&now, TIME_UTC);
+        _Xtime_get2(&now);
     } while (now.sec < xt->sec || now.sec == xt->sec && now.nsec < xt->nsec);
 }
 

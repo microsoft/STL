@@ -999,7 +999,7 @@ void test_pointer_specs() {
 template <class charT>
 void test_string_specs() {
     auto cstr = STR("scully");
-    auto view = basic_string_view{cstr};
+    basic_string_view view{cstr};
 
     assert(format(STR("{:}"), cstr) == cstr);
     assert(format(STR("{:}"), view) == cstr);

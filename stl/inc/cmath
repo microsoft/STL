@@ -554,7 +554,6 @@ _NODISCARD _Check_return_ inline long double trunc(_In_ long double _Xx) noexcep
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-
 _STD_BEGIN
 template <class _Ty1, class _Ty2>
 using _Common_float_type_t = conditional_t<is_same_v<_Ty1, long double> || is_same_v<_Ty2, long double>, long double,
@@ -711,7 +710,6 @@ _GENERIC_MATH2(fmin)
 #undef _GENERIC_MATH2
 #undef _GENERIC_MATH2I
 #undef _HAS_CMATH_INTRINSICS
-
 
 _STD_BEGIN
 _EXPORT_STD using _CSTD abs;

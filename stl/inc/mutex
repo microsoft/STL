@@ -760,13 +760,11 @@ public:
 
         // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
         const int _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), _Abs_time);
-        switch (_Res) {
-        case _Thrd_success:
+
+        if (_Res == _Thrd_success) {
             return cv_status::no_timeout;
-        case _Thrd_timedout:
+        } else {
             return cv_status::timeout;
-        default:
-            _Throw_C_error(_Res);
         }
     }
 

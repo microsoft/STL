@@ -265,7 +265,8 @@ struct erase_fixture {
         ~liveness_empty_asserter() {
             assert(liveness_alive_objects == 0);
         }
-    } instance_empty; // destroyed after theList
+    };
+    liveness_empty_asserter instance_empty; // destroyed after theList
 
     list<int, liveness_allocator<int>> theList;
 
@@ -278,7 +279,8 @@ struct erase_fixture {
             // tests that the whole container is iterable
             assert(is_sorted(theList.begin(), theList.end()));
         }
-    } instance_nonempty; // destroyed before theList
+    };
+    post_asserter instance_nonempty; // destroyed before theList
 
     void assert_iterators_consistent(const vector<list<int>::const_iterator>& iterators) {
         assert(theList.size() == iterators.size() - 1);
