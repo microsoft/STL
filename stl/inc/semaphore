@@ -139,8 +139,7 @@ public:
         }
     }
 
-    _NODISCARD_TRY_CHANGE_STATE
-    bool try_acquire() noexcept {
+    _NODISCARD_TRY_CHANGE_STATE bool try_acquire() noexcept {
         ptrdiff_t _Current = _Counter.load();
         if (_Current == 0) {
             return false;
@@ -246,8 +245,7 @@ public:
         }
     }
 
-    _NODISCARD_TRY_CHANGE_STATE
-    bool try_acquire() noexcept {
+    _NODISCARD_TRY_CHANGE_STATE bool try_acquire() noexcept {
         // TRANSITION, GH-1133: should be memory_order_acquire
         unsigned char _Prev = _Counter.exchange(0);
         _STL_VERIFY((_Prev & ~1) == 0, "Invariant: semaphore counter is non-negative and doesn't exceed max(), "
