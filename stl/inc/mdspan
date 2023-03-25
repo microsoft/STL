@@ -755,11 +755,11 @@ public:
     using reference        = typename accessor_type::reference;
 
     static_assert(
-        sizeof(_ElementType) > 0, "ElementType must be a complete type (N4944 [mdspan.mdspan.overview]/2.1).");
+        sizeof(element_type) > 0, "ElementType must be a complete type (N4944 [mdspan.mdspan.overview]/2.1).");
     static_assert(
-        !is_abstract_v<_ElementType>, "ElementType cannot be an abstract type (N4944 [mdspan.mdspan.overview]/2.1).");
+        !is_abstract_v<element_type>, "ElementType cannot be an abstract type (N4944 [mdspan.mdspan.overview]/2.1).");
     static_assert(
-        !is_array_v<_ElementType>, "ElementType cannot be an array type (N4944 [mdspan.mdspan.overview]/2.1).");
+        !is_array_v<element_type>, "ElementType cannot be an array type (N4944 [mdspan.mdspan.overview]/2.1).");
     static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4944 [mdspan.mdspan.overview]/2.2).");
     static_assert(is_same_v<element_type, typename accessor_type::element_type>,
