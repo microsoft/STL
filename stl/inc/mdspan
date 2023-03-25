@@ -300,51 +300,50 @@ template <class _Extents>
 class layout_left::mapping {
 public:
     using extents_type = _Extents;
-    using index_type   = typename _Extents::index_type;
-    using size_type    = typename _Extents::size_type;
-    using rank_type    = typename _Extents::rank_type;
+    using index_type   = typename extents_type::index_type;
+    using size_type    = typename extents_type::size_type;
+    using rank_type    = typename extents_type::rank_type;
     using layout_type  = layout_left;
 
-    static_assert(_Is_extents<_Extents>,
+    static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4928 [mdspan.layout.left.overview]/2).");
-    static_assert(_Extents::_Is_index_space_size_representable(),
+    static_assert(extents_type::_Is_index_space_size_representable(),
         "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
         "representable as a value of type typename Extents::index_type.");
 
     constexpr mapping() noexcept               = default;
     constexpr mapping(const mapping&) noexcept = default;
 
-    constexpr mapping(const _Extents& _Ext) noexcept : _Myext(_Ext) {}
+    constexpr mapping(const extents_type& _Exts_) noexcept : _Exts(_Exts_) {}
 
     template <class _OtherExtents>
         requires is_constructible_v<_Extents, _OtherExtents>
-    constexpr explicit(!is_convertible_v<_OtherExtents, _Extents>)
+    constexpr explicit(!is_convertible_v<_OtherExtents, extents_type>)
         mapping(const mapping<_OtherExtents>& _Other) noexcept
-        : _Myext{_Other.extents()} {}
+        : _Exts(_Other.extents()) {}
 
     template <class _OtherExtents>
-        requires (_Extents::rank() <= 1) && is_constructible_v<_Extents, _OtherExtents>
-    constexpr explicit(!is_convertible_v<_OtherExtents, _Extents>)
+        requires (extents_type::rank() <= 1) && is_constructible_v<extents_type, _OtherExtents>
+    constexpr explicit(!is_convertible_v<_OtherExtents, extents_type>)
         mapping(const layout_right::mapping<_OtherExtents>& _Other) noexcept
-        : _Myext{_Other.extents()} {}
+        : _Exts(_Other.extents()) {}
 
     template <class _OtherExtents>
-        requires is_constructible_v<_Extents, _OtherExtents>
-    constexpr explicit(_Extents::rank() > 0) mapping(const layout_stride::template mapping<_OtherExtents>& _Other)
-        : _Myext{_Other.extents()} {}
+        requires is_constructible_v<extents_type, _OtherExtents>
+    constexpr explicit(extents_type::rank() > 0) mapping(const layout_stride::template mapping<_OtherExtents>& _Other)
+        : _Exts(_Other.extents()) {}
 
     constexpr mapping& operator=(const mapping&) noexcept = default;
 
     _NODISCARD constexpr const extents_type& extents() const noexcept {
-        return _Myext;
+        return _Exts;
     }
 
     _NODISCARD constexpr index_type required_span_size() const noexcept {
         index_type _Result = 1;
-        for (rank_type _Dim = 0; _Dim < _Extents::rank(); ++_Dim) {
-            _Result *= _Myext.extent(_Dim);
+        for (rank_type _Dim = 0; _Dim < extents_type::rank(); ++_Dim) {
+            _Result *= _Exts.extent(_Dim);
         }
-
         return _Result;
     }
 
@@ -353,7 +352,7 @@ public:
               && (is_nothrow_constructible_v<index_type, _Indices> && ...)
     _NODISCARD constexpr index_type operator()(_Indices... _Idx) const noexcept {
         return _Index_impl<conditional_t<true, index_type, _Indices>...>(
-            static_cast<index_type>(_Idx)..., make_index_sequence<_Extents::rank()>{});
+            static_cast<index_type>(_Idx)..., make_index_sequence<extents_type::rank()>{});
     }
 
     _NODISCARD static constexpr bool is_always_unique() noexcept {
@@ -385,7 +384,7 @@ public:
     {
         index_type _Result = 1;
         for (rank_type _Dim = 0; _Dim < _Rank; ++_Dim) {
-            _Result *= _Myext.extent(_Dim);
+            _Result *= _Exts.extent(_Dim);
         }
 
         return _Result;
@@ -398,14 +397,14 @@ public:
     }
 
 private:
-    _Extents _Myext{};
+    extents_type _Exts{};
 
     template <class... _IndexType, size_t... _Seq>
     constexpr index_type _Index_impl(_IndexType... _Idx, index_sequence<_Seq...>) const noexcept {
         // return _Extents::rank() > 0 ? ((_Idx * stride(_Seq)) + ... + 0) : 0;
         index_type _Stride = 1;
         index_type _Result = 0;
-        (((_Result += _Idx * _Stride), (void) (_Stride *= _Myext.extent(_Seq))), ...);
+        (((_Result += _Idx * _Stride), (void) (_Stride *= _Exts.extent(_Seq))), ...);
         return _Result;
     }
 };
