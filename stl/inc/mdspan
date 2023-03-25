@@ -281,20 +281,17 @@ template <class _Layout, class _Mapping>
 inline constexpr bool _Is_mapping_of =
     is_same_v<typename _Layout::template mapping<typename _Mapping::extents_type>, _Mapping>;
 
-_EXPORT_STD
-struct layout_left {
+_EXPORT_STD struct layout_left {
     template <class _Extents>
     class mapping;
 };
 
-_EXPORT_STD
-struct layout_right {
+_EXPORT_STD struct layout_right {
     template <class _Extents>
     class mapping;
 };
 
-_EXPORT_STD
-struct layout_stride {
+_EXPORT_STD struct layout_stride {
     template <class _Extents>
     class mapping;
 };
@@ -719,8 +716,7 @@ private:
     }
 };
 
-_EXPORT_STD
-template <class _ElementType>
+_EXPORT_STD template <class _ElementType>
 struct default_accessor {
     using offset_policy    = default_accessor;
     using element_type     = _ElementType;
@@ -742,8 +738,7 @@ struct default_accessor {
     }
 };
 
-_EXPORT_STD
-template <class _ElementType, class _Extents, class _LayoutPolicy = layout_right,
+_EXPORT_STD template <class _ElementType, class _Extents, class _LayoutPolicy = layout_right,
     class _AccessorPolicy = default_accessor<_ElementType>>
 class mdspan {
 public:
