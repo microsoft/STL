@@ -755,27 +755,27 @@ public:
     using reference        = typename accessor_type::reference;
 
     static_assert(
-        sizeof(_ElementType) > 0, "ElementType must be a complete type (N4928 [mdspan.mdspan.overview]/2.1).");
+        sizeof(element_type) > 0, "ElementType must be a complete type (N4928 [mdspan.mdspan.overview]/2.1).");
     static_assert(
-        !is_abstract_v<_ElementType>, "ElementType cannot be an abstract type (N4928 [mdspan.mdspan.overview]/2.1).");
+        !is_abstract_v<element_type>, "ElementType cannot be an abstract type (N4928 [mdspan.mdspan.overview]/2.1).");
     static_assert(
-        !is_array_v<_ElementType>, "ElementType cannot be an array type (N4928 [mdspan.mdspan.overview]/2.1).");
-    static_assert(_Is_extents<_Extents>,
+        !is_array_v<element_type>, "ElementType cannot be an array type (N4928 [mdspan.mdspan.overview]/2.1).");
+    static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4928 [mdspan.mdspan.overview]/2.2).");
-    static_assert(is_same_v<_ElementType, typename _AccessorPolicy::element_type>,
+    static_assert(is_same_v<element_type, typename accessor_type::element_type>,
         "ElementType and typename AccessorPolicy::element_type must be the same type (N4928 "
         "[mdspan.mdspan.overview]/2.3).");
 
     _NODISCARD static constexpr rank_type rank() noexcept {
-        return _Extents::rank();
+        return extents_type::rank();
     }
 
     _NODISCARD static constexpr rank_type rank_dynamic() noexcept {
-        return _Extents::rank_dynamic();
+        return extents_type::rank_dynamic();
     }
 
     _NODISCARD static constexpr size_t static_extent(const rank_type _Rank) noexcept {
-        return _Extents::static_extent(_Rank);
+        return extents_type::static_extent(_Rank);
     }
 
     constexpr mdspan()
@@ -801,7 +801,7 @@ public:
                   && (_Size == rank() || _Size == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
     constexpr explicit(_Size != rank_dynamic()) mdspan(data_handle_type _Ptr_, span<_OtherIndexType, _Size>& _Exts)
-        : _Ptr{_Ptr_}, _Map{_Extents{_Exts}} {}
+        : _Ptr{_Ptr_}, _Map{extents_type{_Exts}} {}
 
     template <class _OtherIndexType, size_t _Size>
         requires is_convertible_v<const _OtherIndexType&, index_type>
@@ -810,7 +810,7 @@ public:
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
     constexpr explicit(_Size != rank_dynamic())
         mdspan(data_handle_type _Ptr_, const array<_OtherIndexType, _Size>& _Exts)
-        : _Ptr{_Ptr_}, _Map{_Extents{_Exts}} {}
+        : _Ptr{_Ptr_}, _Map{extents_type{_Exts}} {}
 
     constexpr mdspan(data_handle_type _Ptr_, const extents_type& _Ext)
         requires is_constructible_v<mapping_type, const extents_type&> && is_default_constructible_v<accessor_type>
