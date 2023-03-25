@@ -499,7 +499,7 @@ private:
     _Pre_satisfies_(_Pmtx != nullptr)
     _Post_satisfies_(_Owns == false)
     _Post_satisfies_(_Pmtx != nullptr)
-    _When_(_Owns == false, _Analysis_noreturn_)
+    _When_(_Owns == true, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
     void _Validate() const { // check if the mutex can be locked
         if (!_Pmtx) {
