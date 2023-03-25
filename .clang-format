@@ -269,7 +269,6 @@ StatementMacros:
   - _Requires_exclusive_lock_held_
   - _Requires_shared_lock_held_
   - _Requires_lock_not_held_
-  - _Requires_no_locks
   - _Acquires_lock_
   - _Acquires_exclusive_lock_
   - _Acquires_shared_lock_
