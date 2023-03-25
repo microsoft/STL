@@ -356,12 +356,15 @@ public:
         _Other._Owns = false;
     }
 
-    _Moves_lock_(*this->_Pmtx, *_Right._Pmtx)
+    _Releases_shared_lock_(*_Pmtx)
+    _Releases_nonreentrant_lock_(*_Pmtx)
+    _Moves_lock_(*_Pmtx, *_Right._Pmtx)
     _Post_satisfies_(_Owns == _Right._Owns)
     _Post_satisfies_(_Right._Pmtx == nullptr)
     _Post_satisfies_(_Right._Owns == false)
     shared_lock& operator=(shared_lock&& _Right) noexcept {
         if (_Owns) {
+            _Analysis_assume_lock_held_(_Pmtx);
             _Pmtx->unlock_shared();
         }
 
