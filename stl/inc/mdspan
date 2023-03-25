@@ -317,7 +317,7 @@ public:
     constexpr mapping(const extents_type& _Exts_) noexcept : _Exts(_Exts_) {}
 
     template <class _OtherExtents>
-        requires is_constructible_v<_Extents, _OtherExtents>
+        requires is_constructible_v<extents_type, _OtherExtents>
     constexpr explicit(!is_convertible_v<_OtherExtents, extents_type>)
         mapping(const mapping<_OtherExtents>& _Other) noexcept
         : _Exts(_Other.extents()) {}
