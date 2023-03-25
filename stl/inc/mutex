@@ -195,13 +195,11 @@ public:
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock()) {} // construct and try to lock
 
     template <class _Rep, class _Period>
-    _NODISCARD_CTOR_LOCK
-    unique_lock(_Mutex& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
+    _NODISCARD_CTOR_LOCK unique_lock(_Mutex& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock_for(_Rel_time)) {} // construct and lock with timeout
 
     template <class _Clock, class _Duration>
-    _NODISCARD_CTOR_LOCK
-    unique_lock(_Mutex& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
+    _NODISCARD_CTOR_LOCK unique_lock(_Mutex& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock_until(_Abs_time)) {
         // construct and lock with timeout
 #if _HAS_CXX20
@@ -258,16 +256,14 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD_TRY_CHANGE_STATE
-    bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         _Validate();
         _Owns = _Pmtx->try_lock_for(_Rel_time);
         return _Owns;
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE
-    bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
@@ -437,8 +433,7 @@ int _Try_lock1(_Lock0& _Lk0, _Lock1& _Lk1) {
 }
 
 _EXPORT_STD template <class _Lock0, class _Lock1, class... _LockN>
-_NODISCARD_TRY_CHANGE_STATE
-int try_lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // try to lock multiple locks
+_NODISCARD_TRY_CHANGE_STATE int try_lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // try to lock multiple locks
     return _Try_lock1(_Lk0, _Lk1, _LkN...);
 }
 
@@ -870,8 +865,8 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD_TRY_CHANGE_STATE
-    bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_for(
+        const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
@@ -887,8 +882,7 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE
-    bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // try to lock the mutex with timeout
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
@@ -978,8 +972,8 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD_TRY_CHANGE_STATE
-    bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_for(
+        const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
@@ -1007,8 +1001,7 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE
-    bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // try to lock the mutex with timeout
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");

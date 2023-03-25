@@ -153,8 +153,7 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD_TRY_CHANGE_STATE
-    bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         auto _Deadline     = _Semaphore_deadline(_Rel_time);
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
@@ -178,8 +177,7 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE
-    bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
@@ -258,8 +256,7 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD_TRY_CHANGE_STATE
-    bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         auto _Deadline = _Semaphore_deadline(_Rel_time);
         for (;;) {
             // "happens after release" ordering is provided by this exchange, so loads and waits can be relaxed
@@ -279,8 +276,7 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE
-    bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
         for (;;) {
             // "happens after release" ordering is provided by this exchange, so loads and waits can be relaxed
