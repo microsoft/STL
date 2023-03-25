@@ -128,7 +128,7 @@ public:
     template <class _OtherIndexType, size_t... _OtherExtents>
         requires (sizeof...(_OtherExtents) == rank())
               && ((_OtherExtents == dynamic_extent || _Extents == dynamic_extent || _OtherExtents == _Extents) && ...)
-    constexpr explicit((((_Extents != dynamic_extent) && (_OtherExtents == dynamic_extent)) || ...)
+    constexpr explicit(((_Extents != dynamic_extent && _OtherExtents == dynamic_extent) || ...)
                        || (numeric_limits<index_type>::max)() < (numeric_limits<_OtherIndexType>::max)())
         extents(const extents<_OtherIndexType, _OtherExtents...>& _Other) noexcept {
         auto _It = _Dynamic_extents.begin();
