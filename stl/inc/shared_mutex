@@ -348,7 +348,7 @@ public:
 
     _NODISCARD_CTOR_LOCK
     _Moves_lock_(*_Pmtx, *_Other._Pmtx)
-    _Post_satisfies_(_Owns == _Other._Owns)
+    _Post_same_lock_(*_Other._Pmtx, nullptr)
     _Post_satisfies_(_Other._Pmtx == nullptr)
     _Post_satisfies_(_Other._Owns == false)
     shared_lock(shared_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
@@ -356,10 +356,10 @@ public:
         _Other._Owns = false;
     }
 
-    _Releases_shared_lock_(*_Pmtx)
-    _Releases_nonreentrant_lock_(*_Pmtx)
-    _Moves_lock_(*_Pmtx, *_Right._Pmtx)
-    _Post_satisfies_(_Owns == _Right._Owns)
+    _When_(_Owns == true, _Releases_shared_lock_(*_Pmtx))
+    _When_(_Owns == true, _Releases_nonreentrant_lock_(*_Pmtx))
+    _Replaces_lock_(*_Pmtx, *_Right._Pmtx)
+    _Post_same_lock_(*_Right._Pmtx, nullptr)
     _Post_satisfies_(_Right._Pmtx == nullptr)
     _Post_satisfies_(_Right._Owns == false)
     shared_lock& operator=(shared_lock&& _Right) noexcept {
