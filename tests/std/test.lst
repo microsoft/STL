@@ -199,6 +199,7 @@ tests\GH_002045_put_time_changes_errno
 tests\GH_002058_debug_iterator_race
 tests\GH_002120_streambuf_seekpos_and_seekoff
 tests\GH_002168_regex_overflow
+tests\GH_002206_unreserved_names
 tests\GH_002299_implicit_sfinae_constraints
 tests\GH_002307_usual_scope_guard
 tests\GH_002334_branchless_clamp
