@@ -140,7 +140,7 @@ public:
     }
 
     template <class _Lock, class _Predicate>
-    bool wait_until(_Lock& _Lck, const _timespec64* const _Abs_time, _Predicate _Pred) {
+    bool _Wait_until_sys_time(_Lock& _Lck, const _timespec64* const _Abs_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
         while (!_Pred()) {
             if (_Wait_until_sys_time(_Lck, _Abs_time) == cv_status::timeout) {
