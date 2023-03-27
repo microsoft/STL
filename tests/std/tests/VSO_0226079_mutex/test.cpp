@@ -339,50 +339,6 @@ struct mutex_test_fixture {
 #endif // TRANSITION, GH-1472
     }
 
-    // nonstandard _timespec64 type
-    template <class Rep, class Period>
-    _timespec64 to_timespec64(const chrono::duration<Rep, Period>& rel_time) { // convert duration to _timespec64
-        _timespec64 ts64;
-        if (rel_time <= chrono::duration<Rep, Period>::zero()) { // negative or zero relative time, return zero
-            ts64.tv_sec  = 0;
-            ts64.tv_nsec = 0;
-        } else { // positive relative time, convert
-            chrono::nanoseconds t0 = chrono::system_clock::now().time_since_epoch();
-            t0 += chrono::duration_cast<chrono::nanoseconds>(rel_time);
-            ts64.tv_sec = chrono::duration_cast<chrono::seconds>(t0).count();
-            t0 -= chrono::seconds(ts64.tv_sec);
-            ts64.tv_nsec = static_cast<long>(t0.count());
-        }
-        return ts64;
-    }
-
-    void test_timed_lockable_xtime() {
-        assert(time_execution([this] {
-            const auto ts64 = to_timespec64(24h);
-            assert(mtx._Try_lock_until_sys_time(&ts64));
-        }) < 1h);
-        mtx.unlock();
-        assert(time_execution([this] {
-            const auto ts64 = to_timespec64(24h);
-            unique_lock<Mutex> ul(mtx, defer_lock);
-            assert(ul._Try_lock_until_sys_time(&ts64));
-        }) < 1h);
-
-#if 0 // TRANSITION, GH-1472
-        ot.lock();
-        assert(time_execution([this] {
-            const auto ts64 = to_timespec64(50ms);
-            assert(!mtx._Try_lock_until_sys_time(&ts64));
-        }) >= 50ms);
-        assert(time_execution([this] {
-            const auto ts64 = to_timespec64(50ms);
-            unique_lock<Mutex> ul(mtx, defer_lock);
-            assert(!ul._Try_lock_until_sys_time(&ts64));
-        }) >= 50ms);
-        ot.unlock();
-#endif // TRANSITION, GH-1472
-    }
-
     void test_recursive_lockable() {
         mtx.lock();
         assert(!ot.try_lock());
