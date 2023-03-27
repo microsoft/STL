@@ -67,7 +67,11 @@ struct __std_tzdb_sys_info {
 };
 
 enum class __std_tzdb_sys_info_type : char {
-    _Full,
+    // TRANSITION, ABI: In order to be compatible with existing object files which do not know about
+    // `__std_tzdb_sys_info_type`, the type is passed in the after-end byte of a string passed with its length to
+    // `__std_tzdb_get_sys_info`. Since older object files always pass the `.c_str()` of a `std::string`
+    // to that function, the after-end byte will always be '\0'.
+    _Full = '\0',
     _Offset_only,
     _Offset_and_range,
 };
