@@ -459,8 +459,8 @@ public:
     }
 
     _Swaps_locks_(*_Pmtx, *_Right._Pmtx)
-    _Post_satisfies_(_Owns == _Right._Owns)
-    _Post_satisfies_(_Right._Owns == _Owns)
+    _Post_satisfies_(_Owns == _Old_(_Right._Owns))
+    _Post_satisfies_(_Right._Owns == _Old_(_Owns))
     void swap(shared_lock& _Right) noexcept {
         _STD swap(_Pmtx, _Right._Pmtx);
         _STD swap(_Owns, _Right._Owns);
