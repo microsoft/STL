@@ -139,33 +139,6 @@ public:
         return wait_until(_Lck, _To_absolute_time(_Rel_time), _STD move(_Pred));
     }
 
-    template <class _Lock, class _Predicate>
-    bool _Wait_until_sys_time(_Lock& _Lck, const _timespec64* const _Abs_time, _Predicate _Pred) {
-        // wait for signal with timeout and check predicate
-        while (!_Pred()) {
-            if (_Wait_until_sys_time(_Lck, _Abs_time) == cv_status::timeout) {
-                return _Pred();
-            }
-        }
-        return true;
-    }
-
-    // wait for signal with timeout
-    template <class _Lock>
-    cv_status _Wait_until_sys_time(_Lock& _Lck, const _timespec64* const _Abs_time) {
-        const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
-        unique_lock<mutex> _Guard{*_Ptr};
-        _Unlock_guard<_Lock> _Unlock_outer{_Lck};
-        const int _Res = _Cnd_timedwait(_Mycnd(), _Ptr->_Mymtx(), _Abs_time);
-        _Guard.unlock();
-
-        if (_Res == _Thrd_success) {
-            return cv_status::no_timeout;
-        } else {
-            return cv_status::timeout;
-        }
-    }
-
 #if _HAS_CXX20
 private:
     struct _Cv_any_notify_all {
@@ -255,6 +228,22 @@ private:
 
     _NODISCARD _Cnd_t _Mycnd() noexcept { // get pointer to _Cnd_internal_imp_t inside _Cnd_storage
         return reinterpret_cast<_Cnd_t>(&_Cnd_storage);
+    }
+
+    template <class _Lock>
+    cv_status _Wait_until_sys_time(_Lock& _Lck, const _timespec64* const _Abs_time) {
+        // wait for signal with timeout
+        const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
+        unique_lock<mutex> _Guard{*_Ptr};
+        _Unlock_guard<_Lock> _Unlock_outer{_Lck};
+        const int _Res = _Cnd_timedwait(_Mycnd(), _Ptr->_Mymtx(), _Abs_time);
+        _Guard.unlock();
+
+        if (_Res == _Thrd_success) {
+            return cv_status::no_timeout;
+        } else {
+            return cv_status::timeout;
+        }
     }
 };
 

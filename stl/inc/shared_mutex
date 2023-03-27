@@ -172,14 +172,8 @@ public:
 
         unique_lock<mutex> _Lock(_Mymtx);
 
-        if constexpr (is_same_v<_Time, const _timespec64*>) {
-            if (!_Write_queue._Wait_until_sys_time(_Lock, _Abs_time, _Can_acquire)) {
-                return false;
-            }
-        } else {
-            if (!_Write_queue.wait_until(_Lock, _Abs_time, _Can_acquire)) {
-                return false;
-            }
+        if (!_Write_queue.wait_until(_Lock, _Abs_time, _Can_acquire)) {
+            return false;
         }
 
         ++_Readers;
@@ -192,11 +186,6 @@ public:
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
-        return _Try_lock_shared_until(_Abs_time);
-    }
-
-    // try to lock non-exclusive until absolute time
-    _NODISCARD_TRY_CHANGE_STATE bool _Try_lock_shared_until_sys_time(const _timespec64* _Abs_time) {
         return _Try_lock_shared_until(_Abs_time);
     }
 

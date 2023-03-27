@@ -181,10 +181,6 @@ namespace this_thread {
         _Thrd_yield();
     }
 
-    inline void _Sleep_until_sys_time(const _timespec64* _Abs_time) {
-        _Thrd_sleep(_Abs_time);
-    }
-
     _EXPORT_STD template <class _Clock, class _Duration>
     void sleep_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
 #if _HAS_CXX20
