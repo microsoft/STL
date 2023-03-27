@@ -382,6 +382,7 @@ public:
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
     _Acquires_shared_lock_(*_Pmtx)
     _Acquires_nonreentrant_lock_(*_Pmtx)
+    _Post_satisfies_(_Owns == true)
     void lock() { // lock the mutex
         _Validate();
         _Pmtx->lock_shared();
