@@ -478,7 +478,6 @@ int main() {
         mutex_test_fixture<timed_mutex> fixture;
         fixture.test_lockable();
         fixture.test_timed_lockable();
-        fixture.test_timed_lockable_xtime();
     }
 
     {
@@ -491,7 +490,6 @@ int main() {
         mutex_test_fixture<recursive_timed_mutex> fixture;
         fixture.test_lockable();
         fixture.test_timed_lockable();
-        fixture.test_timed_lockable_xtime();
         fixture.test_recursive_lockable();
     }
 
