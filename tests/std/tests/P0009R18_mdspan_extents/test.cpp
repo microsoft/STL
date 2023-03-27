@@ -173,7 +173,7 @@ constexpr void check_construction_from_extents_pack() {
         assert(ext2a == ext2b);
     }
 
-    { // Check construciton with integers with mismatched signs
+    { // Check construction from integers with mismatched signs
         using Ext = extents<long long, dynamic_extent>;
         (void) Ext{4ull};
     }
@@ -214,7 +214,7 @@ constexpr void check_construction_from_array_and_span() {
         static_assert(!is_constructible_v<Ext, span<NonConvertibleToAnything, 2>>);
     }
 
-    { // // Check construction from arrays/spans where [array/span].size() is equal to rank_dynamic()
+    { // Check construction from arrays/spans where [array/span].size() is equal to rank_dynamic()
         using Ext = extents<unsigned char, 3, dynamic_extent, 3, dynamic_extent>;
 
         array<int, 2> arr1 = {4, 4};
