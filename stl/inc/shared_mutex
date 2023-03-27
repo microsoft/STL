@@ -445,8 +445,8 @@ public:
     _Post_satisfies_(_Owns == false)
     _When_(_Owns == false, _Analysis_noreturn_)
     _When_(_Pmtx == nullptr, _Analysis_noreturn_)
-    _When_(_Owns == true, _Releases_shared_lock_(*_Pmtx))
-    _When_(_Owns == true, _Releases_nonreentrant_lock_(*_Pmtx))
+    _Releases_shared_lock_(*_Pmtx)
+    _Releases_nonreentrant_lock_(*_Pmtx)
     void unlock() { // try to unlock the mutex
         if (!_Pmtx || !_Owns) {
             _Throw_system_error(errc::operation_not_permitted);
