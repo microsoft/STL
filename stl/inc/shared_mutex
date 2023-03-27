@@ -280,9 +280,9 @@ public:
     _NODISCARD_CTOR_LOCK
     _Acquires_shared_lock_(_Mtx)
     _Acquires_nonreentrant_lock_(_Mtx)
-    _Post_same_lock_(_Mtx, *_Pmtx)
     _Post_satisfies_(_Owns == true)
     _Post_satisfies_(_Pmtx == &_Mtx)
+    _Post_same_lock_(_Mtx, *_Pmtx)
     explicit shared_lock(mutex_type& _Mtx)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) { // construct with mutex and lock shared
         _Mtx.lock_shared();
@@ -290,6 +290,7 @@ public:
 
     _Post_satisfies_(_Owns == false)
     _Post_satisfies_(_Pmtx == &_Mtx)
+    _Post_same_lock_(_Mtx, *_Pmtx)
     shared_lock(mutex_type& _Mtx, defer_lock_t) noexcept
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) {} // construct with unlocked mutex
 
@@ -297,8 +298,8 @@ public:
     _Requires_lock_not_held_(_Mtx)
     _When_(_Owns == true, _Acquires_shared_lock_(_Mtx))
     _When_(_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
-    _When_(_Owns == true, _Post_same_lock_(_Mtx, *_Pmtx))
     _Post_satisfies_(_Pmtx == &_Mtx)
+    _Post_same_lock_(_Mtx, *_Pmtx)
     shared_lock(mutex_type& _Mtx, try_to_lock_t)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared()) {} // construct with mutex and try to lock shared
 
@@ -306,6 +307,7 @@ public:
     _Requires_shared_lock_held_(_Mtx)
     _Post_satisfies_(_Owns == true)
     _Post_satisfies_(_Pmtx == &_Mtx)
+    _Post_same_lock_(_Mtx, *_Pmtx)
     shared_lock(mutex_type& _Mtx, adopt_lock_t) noexcept // strengthened
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) {} // construct with mutex and adopt ownership
 
@@ -314,8 +316,8 @@ public:
         _Requires_lock_not_held_(_Mtx)
     _When_(_Owns == true, _Acquires_shared_lock_(_Mtx))
     _When_(_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
-    _When_(_Owns == true, _Post_same_lock_(_Mtx, *_Pmtx))
     _Post_satisfies_(_Pmtx == &_Mtx)
+    _Post_same_lock_(_Mtx, *_Pmtx)
     shared_lock(mutex_type& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_for(_Rel_time)) {
         // construct with mutex and try to lock for relative time
@@ -326,8 +328,8 @@ public:
         _Requires_lock_not_held_(_Mtx)
     _When_(_Owns == true, _Acquires_shared_lock_(_Mtx))
     _When_(_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
-    _When_(_Owns == true, _Post_same_lock_(_Mtx, *_Pmtx))
     _Post_satisfies_(_Pmtx == &_Mtx)
+    _Post_same_lock_(_Mtx, *_Pmtx)
     shared_lock(mutex_type& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_until(_Abs_time)) {
         // construct with mutex and try to lock until absolute time
