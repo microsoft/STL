@@ -208,8 +208,6 @@ public:
     }
 
     template <class _Time>
-    _When_(return == true, _Acquires_shared_lock_(this))
-    _When_(return == true, _Acquires_nonreentrant_lock_(this))
     bool _Try_lock_shared_until(_Time _Abs_time) { // try to lock non-exclusive until absolute time
         const auto _Can_acquire = [this] { return !_Writing && _Readers < _Max_readers; };
 
