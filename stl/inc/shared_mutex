@@ -275,6 +275,8 @@ class shared_lock { // shareable lock
 public:
     using mutex_type = _Mutex;
 
+    _Post_satisfies_(_Owns == false)
+    _Post_satisfies_(_Pmtx == nullptr)
     shared_lock() noexcept = default;
 
     _NODISCARD_CTOR_LOCK
