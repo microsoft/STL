@@ -349,7 +349,9 @@ public:
     }
 
     _NODISCARD_CTOR_LOCK
-    _Moves_lock_(*_Pmtx, *_Other._Pmtx)
+    _Post_satisfies_(_Pmtx == _Old_(_Other._Pmtx))
+    _Post_satisfies_(_Owns == _Old_(_Other._Owns))
+    _Post_same_lock_(*_Pmtx, *_Old_(_Other._Pmtx))
     _Post_satisfies_(_Other._Pmtx == nullptr)
     _Post_satisfies_(_Other._Owns == false)
     shared_lock(shared_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
