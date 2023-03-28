@@ -359,9 +359,11 @@ public:
         _Other._Owns = false;
     }
 
-    _When_(_Owns == true, _Releases_shared_lock_(*_Pmtx))
-    _When_(_Owns == true, _Releases_nonreentrant_lock_(*_Pmtx))
-    _Replaces_lock_(*_Pmtx, *_Right._Pmtx)
+    _When_(_Old_(_Owns) == true, _Releases_shared_lock_(*_Old_(_Pmtx)))
+    _When_(_Old_(_Owns) == true, _Releases_nonreentrant_lock_(*_Old_(_Pmtx)))
+    _Post_satisfies_(_Pmtx == _Old_(_Right._Pmtx))
+    _Post_satisfies_(_Owns == _Old_(_Right._Owns))
+    _Post_same_lock_(*_Pmtx, *_Old_(_Right._Pmtx))
     _Post_satisfies_(_Right._Pmtx == nullptr)
     _Post_satisfies_(_Right._Owns == false)
     shared_lock& operator=(shared_lock&& _Right) noexcept {
