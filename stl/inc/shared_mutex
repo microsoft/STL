@@ -280,7 +280,11 @@ public:
 
     _Post_satisfies_(_Owns == false)
     _Post_satisfies_(_Pmtx == nullptr)
+#ifdef _PREFAST_ // TRANSITION, DevCom-10325013
+    shared_lock() noexcept : _Pmtx(nullptr), _Owns(false) {}
+#else // ^^^ workaround / no workaround vvv
     shared_lock() noexcept = default;
+#endif // ^^^ no workaround ^^^
 
     _NODISCARD_CTOR_LOCK
     _Acquires_shared_lock_(_Mtx)
