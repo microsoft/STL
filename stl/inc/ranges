@@ -1918,7 +1918,7 @@ namespace ranges {
             enum class _St { _None, _View, _Ref, _Own };
 
             template <class _Rng>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 if constexpr (view<remove_cvref_t<_Rng>>) {
                     if constexpr (convertible_to<_Rng, remove_cvref_t<_Rng>>) {
                         return {_St::_View, is_nothrow_convertible_v<_Rng, remove_cvref_t<_Rng>>};
@@ -2050,7 +2050,7 @@ namespace ranges {
             enum class _St { _None, _All, _As_rvalue };
 
             template <class _Rng>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 if constexpr (same_as<range_rvalue_reference_t<_Rng>, range_reference_t<_Rng>>) {
                     return {_St::_All, noexcept(views::all(_STD declval<_Rng>()))};
                 } else if constexpr (_Can_as_rvalue<_Rng>) {
@@ -2991,7 +2991,7 @@ namespace ranges {
             };
 
             template <class _Rng>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 using _Ty = remove_cvref_t<_Rng>;
 
                 if constexpr (_Is_specialization_v<_Ty, empty_view>) {
@@ -3390,7 +3390,7 @@ namespace ranges {
             };
 
             template <class _Rng>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 using _Ty = remove_cvref_t<_Rng>;
 
                 if constexpr (_Is_specialization_v<_Ty, empty_view>) {
@@ -5139,7 +5139,7 @@ namespace ranges {
             enum class _St { _None, _Span, _Subrange, _Subrange_counted };
 
             template <class _It>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 using _Decayed = decay_t<_It>;
                 _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_Decayed>);
                 if constexpr (contiguous_iterator<_Decayed>) {
@@ -5268,7 +5268,7 @@ namespace ranges {
             enum class _St { _None, _All, _Common };
 
             template <class _Rng>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 if constexpr (common_range<_Rng>) {
                     return {_St::_All, noexcept(views::all(_STD declval<_Rng>()))};
                 } else if constexpr (copyable<iterator_t<_Rng>>) {
@@ -5400,7 +5400,7 @@ namespace ranges {
                 static_cast<int>(_Ki);
 
             template <class _Rng>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 using _Ty = remove_cvref_t<_Rng>;
 
                 if constexpr (_Is_specialization_v<_Ty, reverse_view>) {
@@ -5534,7 +5534,7 @@ namespace ranges {
             static constexpr bool _Can_reconstruct_ref_view_v<ref_view<_Ty>> = true;
 
             template <class _Rng>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 using _Ty = remove_cvref_t<_Rng>;
 
                 if constexpr (constant_range<views::all_t<_Rng>>) {
@@ -8328,7 +8328,7 @@ namespace ranges {
         };
 
         template <bool _IsConst>
-        _NODISCARD static _CONSTEVAL bool _Is_end_noexcept() noexcept {
+        _NODISCARD static consteval bool _Is_end_noexcept() noexcept {
             if constexpr (!_Zip_is_common<_Maybe_const<_IsConst, _ViewTypes>...>) {
                 return noexcept(_Sentinel<_IsConst>{
                     _Tuple_transform(_RANGES end, _STD declval<_Maybe_const<_IsConst, tuple<_ViewTypes...>>&>())});
@@ -8420,7 +8420,7 @@ namespace ranges {
         struct _Zip_fn {
         private:
             template <class... _Types>
-            _NODISCARD static _CONSTEVAL bool _Is_invocation_noexcept() {
+            _NODISCARD static consteval bool _Is_invocation_noexcept() {
                 if constexpr (sizeof...(_Types) == 0) {
                     // NOTE: views::empty<tuple<>> is nothrow copy-constructible.
                     return true;
@@ -8690,7 +8690,7 @@ namespace ranges {
         };
 
         template <bool _IsConst>
-        _NODISCARD static _CONSTEVAL bool _Is_end_noexcept() noexcept {
+        _NODISCARD static consteval bool _Is_end_noexcept() noexcept {
             if constexpr (common_range<_Maybe_const<_IsConst, _Inner_view>>) {
                 return noexcept(_Iterator<_IsConst>{_STD declval<_Maybe_const<_IsConst, zip_transform_view>&>(),
                     _STD declval<_Maybe_const<_IsConst, _Inner_view>&>().end()});

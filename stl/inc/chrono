@@ -2970,7 +2970,7 @@ namespace chrono {
         void_t<decltype(_Conv1{}(_Conv2{}(_Conv3{}(_STD declval<_Tp>()))))>> = true;
 
     template <class _DestClock, class _SourceClock, class _Duration>
-    _NODISCARD _CONSTEVAL _Clock_cast_strategy _Choose_clock_cast() noexcept {
+    _NODISCARD consteval _Clock_cast_strategy _Choose_clock_cast() noexcept {
         using _Tp = const time_point<_SourceClock, _Duration>&;
 
         if constexpr (is_invocable_v<clock_time_conversion<_DestClock, _SourceClock>, _Tp>) {
