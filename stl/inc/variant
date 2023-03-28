@@ -377,7 +377,7 @@ class _Variant_storage_<true, _First, _Rest...> { // Storage for variant alterna
 public:
     static constexpr size_t _Size = 1 + sizeof...(_Rest);
     union {
-        remove_const_t<_First> _Head;
+        remove_cv_t<_First> _Head;
         _Variant_storage<_Rest...> _Tail;
     };
 
@@ -412,7 +412,7 @@ class _Variant_storage_<false, _First, _Rest...> { // Storage for variant altern
 public:
     static constexpr size_t _Size = 1 + sizeof...(_Rest);
     union {
-        remove_const_t<_First> _Head;
+        remove_cv_t<_First> _Head;
         _Variant_storage<_Rest...> _Tail;
     };
 
@@ -457,7 +457,7 @@ public:
 // wrapper to enable minimal hats-in-variants support.
 template <class _Ty>
 struct _Variant_item {
-    remove_const_t<_Ty> _Item;
+    remove_cv_t<_Ty> _Item;
 
     template <class... _Types>
     constexpr _Variant_item(_Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>)

@@ -639,41 +639,6 @@ void test_algorithms(CopyFn copy_fn) {
     }
 }
 
-template <class CopyFn>
-void test_uninitialized_algorithms(CopyFn copy_fn) {
-    test_algorithms(copy_fn);
-
-    { // Test const destination
-        int src[10]      = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
-        int expected[10] = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
-        int dst[10]{};
-
-        copy_fn(begin(src), end(src), cbegin(dst));
-
-        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
-    }
-
-    { // Test move_iterator with const destination
-        int src[10]      = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
-        int expected[10] = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
-        int dst[10]{};
-
-        copy_fn(make_move_iterator(begin(src)), make_move_iterator(end(src)), cbegin(dst));
-
-        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
-    }
-
-    { // Test vector with const destination
-        vector<int> src      = {3, 6, 4, 7, 3};
-        vector<int> expected = {3, 6, 4, 7, 3};
-        vector<int> dst      = {0, 0, 0, 0, 0};
-
-        copy_fn(begin(src), end(src), cbegin(dst));
-
-        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
-    }
-}
-
 int main() {
     test_algorithms([](auto begin, auto end, auto out) { copy(begin, end, out); });
     test_algorithms([](auto begin, auto end, auto out) { copy_n(begin, distance(begin, end), out); });
@@ -682,14 +647,12 @@ int main() {
     test_algorithms([](auto begin, auto end, auto out) { move(begin, end, out); });
     test_algorithms([](auto begin, auto end, auto out) { move_backward(begin, end, next(out, distance(begin, end))); });
 
-    test_uninitialized_algorithms([](auto begin, auto end, auto out) { uninitialized_copy(begin, end, out); });
-    test_uninitialized_algorithms(
-        [](auto begin, auto end, auto out) { uninitialized_copy_n(begin, distance(begin, end), out); });
+    test_algorithms([](auto begin, auto end, auto out) { uninitialized_copy(begin, end, out); });
+    test_algorithms([](auto begin, auto end, auto out) { uninitialized_copy_n(begin, distance(begin, end), out); });
 
 #if _HAS_CXX17
-    test_uninitialized_algorithms([](auto begin, auto end, auto out) { uninitialized_move(begin, end, out); });
-    test_uninitialized_algorithms(
-        [](auto begin, auto end, auto out) { uninitialized_move_n(begin, distance(begin, end), out); });
+    test_algorithms([](auto begin, auto end, auto out) { uninitialized_move(begin, end, out); });
+    test_algorithms([](auto begin, auto end, auto out) { uninitialized_move_n(begin, distance(begin, end), out); });
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
@@ -714,35 +677,35 @@ int main() {
         }
     });
 
-    test_uninitialized_algorithms([](auto begin, auto end, auto out) {
+    test_algorithms([](auto begin, auto end, auto out) {
         ranges::uninitialized_copy(begin, end, out, next(out, distance(begin, end)));
     });
-    test_uninitialized_algorithms(
+    test_algorithms(
         [](auto begin, auto end, auto out) { ranges::uninitialized_copy(begin, end, out, unreachable_sentinel); });
-    test_uninitialized_algorithms([](auto begin, auto end, auto out) {
+    test_algorithms([](auto begin, auto end, auto out) {
         ranges::uninitialized_copy(begin, unreachable_sentinel, out, next(out, distance(begin, end)));
     });
 
-    test_uninitialized_algorithms([](auto begin, auto end, auto out) {
+    test_algorithms([](auto begin, auto end, auto out) {
         ranges::uninitialized_copy_n(begin, distance(begin, end), out, next(out, distance(begin, end)));
     });
-    test_uninitialized_algorithms([](auto begin, auto end, auto out) {
+    test_algorithms([](auto begin, auto end, auto out) {
         ranges::uninitialized_copy_n(begin, distance(begin, end), out, unreachable_sentinel);
     });
 
-    test_uninitialized_algorithms([](auto begin, auto end, auto out) {
+    test_algorithms([](auto begin, auto end, auto out) {
         ranges::uninitialized_move(begin, end, out, next(out, distance(begin, end)));
     });
-    test_uninitialized_algorithms(
+    test_algorithms(
         [](auto begin, auto end, auto out) { ranges::uninitialized_move(begin, end, out, unreachable_sentinel); });
-    test_uninitialized_algorithms([](auto begin, auto end, auto out) {
+    test_algorithms([](auto begin, auto end, auto out) {
         ranges::uninitialized_move(begin, unreachable_sentinel, out, next(out, distance(begin, end)));
     });
 
-    test_uninitialized_algorithms([](auto begin, auto end, auto out) {
+    test_algorithms([](auto begin, auto end, auto out) {
         ranges::uninitialized_move_n(begin, distance(begin, end), out, next(out, distance(begin, end)));
     });
-    test_uninitialized_algorithms([](auto begin, auto end, auto out) {
+    test_algorithms([](auto begin, auto end, auto out) {
         ranges::uninitialized_move_n(begin, distance(begin, end), out, unreachable_sentinel);
     });
 #endif // __cpp_lib_concepts
