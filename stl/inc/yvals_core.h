@@ -1675,15 +1675,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
-
-#ifdef __cpp_consteval
-#define __cpp_lib_source_location 201907L
-#endif // __cpp_consteval
-
-#define __cpp_lib_span             202002L
-#define __cpp_lib_ssize            201902L
-#define __cpp_lib_starts_ends_with 201711L
-#define __cpp_lib_syncbuf          201803L
+#define __cpp_lib_source_location         201907L
+#define __cpp_lib_span                    202002L
+#define __cpp_lib_ssize                   201902L
+#define __cpp_lib_starts_ends_with        201711L
+#define __cpp_lib_syncbuf                 201803L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_three_way_comparison 201907L
@@ -1698,11 +1694,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 // C++23
 #if _HAS_CXX23
 #define __cpp_lib_adaptor_iterator_pair_constructor 202106L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_allocate_at_least 202106L
-#endif // __cpp_lib_concepts
-
+#define __cpp_lib_allocate_at_least                 202302L
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_bind_back                         202202L
 #define __cpp_lib_byteswap                          202110L

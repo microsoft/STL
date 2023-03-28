@@ -530,15 +530,14 @@ namespace ranges {
 
         // clang-format off
         template <class _Ty, class... _Types>
-            requires requires(void* _Void_ptr, _Types&&... _Args) {
-                ::new (_Void_ptr) _Ty(static_cast<_Types&&>(_Args)...);
+            requires requires(_Ty* _Ptr, _Types&&... _Args) {
+                ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types&&>(_Args)...); // per LWG-3888
             }
         constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) const
-            noexcept(noexcept(::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
+            noexcept(noexcept(::new (static_cast<void*>(_Location))
                     _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
             // clang-format on
-            _MSVC_CONSTEXPR return ::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
-                _Ty(_STD forward<_Types>(_Args)...);
+            _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
         }
     };
 
@@ -935,6 +934,17 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+template <class _PtrTy>
+_NODISCARD void* _Voidify_unfancy(_PtrTy _Ptr) noexcept {
+    if constexpr (is_pointer_v<_PtrTy>) {
+        return _Ptr;
+    } else {
+        return _STD addressof(*_Ptr);
+    }
+}
+#endif // _HAS_CXX20
+
 #if _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
 _EXPORT_STD template <class _OutIt, class _Ty>
 class _CXX17_DEPRECATE_RAW_STORAGE_ITERATOR raw_storage_iterator { // wrap stores to raw buffer as output iterator
@@ -956,12 +966,12 @@ public:
     }
 
     raw_storage_iterator& operator=(const _Ty& _Val) { // construct value designated by stored iterator
-        _Construct_in_place(*_Next, _Val);
+        _STD _Construct_in_place(const_cast<_Remove_cvref_t<decltype(*_Next)>&>(*_Next), _Val);
         return *this;
     }
 
     raw_storage_iterator& operator=(_Ty&& _Val) { // construct value designated by stored iterator
-        _Construct_in_place(*_Next, _STD move(_Val));
+        _STD _Construct_in_place(const_cast<_Remove_cvref_t<decltype(*_Next)>&>(*_Next), _STD move(_Val));
         return *this;
     }
 
@@ -2081,12 +2091,12 @@ public:
     explicit _Ref_count_obj2(_Types&&... _Args) : _Ref_count_base() {
 #if _HAS_CXX20
         if constexpr (sizeof...(_Types) == 1 && (is_same_v<_For_overwrite_tag, remove_cvref_t<_Types>> && ...)) {
-            _Default_construct_in_place(_Storage._Value);
+            _STD _Default_construct_in_place(_Storage._Value);
             ((void) _Args, ...);
         } else
 #endif // _HAS_CXX20
         {
-            _Construct_in_place(_Storage._Value, _STD forward<_Types>(_Args)...);
+            _STD _Construct_in_place(_Storage._Value, _STD forward<_Types>(_Args)...);
         }
     }
 
@@ -2099,7 +2109,7 @@ public:
     }
 
     union {
-        _Wrap<_Ty> _Storage;
+        _Wrap<remove_cv_t<_Ty>> _Storage;
     };
 
 private:
@@ -2201,12 +2211,12 @@ struct _NODISCARD _Uninitialized_rev_destroying_backout {
 
     template <class... _Types>
     void _Emplace_back(_Types&&... _Vals) { // construct a new element at *_Last and increment
-        _Construct_in_place(*_Last, _STD forward<_Types>(_Vals)...);
+        _STD _Construct_in_place(*_Last, _STD forward<_Types>(_Vals)...);
         ++_Last;
     }
 
     void _Emplace_back_for_overwrite() {
-        _Default_construct_in_place(*_Last);
+        _STD _Default_construct_in_place(*_Last);
         ++_Last;
     }
 
@@ -2350,7 +2360,7 @@ public:
 
 private:
     union {
-        _Wrap<_Element_type> _Storage; // flexible array must be last member
+        _Wrap<remove_cv_t<_Element_type>> _Storage; // flexible array must be last member
     };
 
     ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
@@ -2398,7 +2408,7 @@ private:
     size_t _Size;
 
     union {
-        _Wrap<_Element_type> _Storage; // flexible array must be last member
+        _Wrap<remove_cv_t<_Element_type>> _Storage; // flexible array must be last member
     };
 
     ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
@@ -2435,7 +2445,7 @@ public:
     }
 
     union {
-        _Wrap<_Ty> _Storage;
+        _Wrap<remove_cv_t<_Ty>> _Storage;
     };
 
 private:
@@ -2927,10 +2937,10 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>>
     _Alblock _Rebound(_Al);
     _Alloc_construct_ptr _Constructor{_Rebound};
     _Constructor._Allocate();
-    ::new (_Voidify_iter(_Constructor._Ptr)) _Refc(_Al);
+    ::new (_STD _Voidify_unfancy(_Constructor._Ptr)) _Refc(_Al);
     shared_ptr<_Ty> _Ret;
     const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
-    _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+    _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _STD _Unfancy(_Constructor._Release()));
     return _Ret;
 }
 
@@ -2943,10 +2953,10 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>>
     _Alblock _Rebound(_Al);
     _Alloc_construct_ptr _Constructor{_Rebound};
     _Constructor._Allocate();
-    ::new (_Voidify_iter(_Constructor._Ptr)) _Refc(_Al, _Val);
+    ::new (_STD _Voidify_unfancy(_Constructor._Ptr)) _Refc(_Al, _Val);
     shared_ptr<_Ty> _Ret;
     const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
-    _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+    _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _STD _Unfancy(_Constructor._Release()));
     return _Ret;
 }
 
@@ -2961,9 +2971,9 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_T
         _Alblock _Rebound(_Al);
         _Alloc_construct_ptr _Constructor{_Rebound};
         _Constructor._Allocate();
-        ::new (_Voidify_iter(_Constructor._Ptr)) _Refc(_Al, _For_overwrite_tag{});
+        ::new (_STD _Voidify_unfancy(_Constructor._Ptr)) _Refc(_Al, _For_overwrite_tag{});
         const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
-        _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+        _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _STD _Unfancy(_Constructor._Release()));
     } else {
         // make a shared_ptr to non-array object
         using _Refoa   = _Ref_count_obj_alloc3<remove_cv_t<_Ty>, _Alloc>;
@@ -2971,9 +2981,9 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_T
         _Alblock _Rebound(_Al);
         _Alloc_construct_ptr<_Alblock> _Constructor{_Rebound};
         _Constructor._Allocate();
-        _Construct_in_place(*_Constructor._Ptr, _Al, _For_overwrite_tag{});
+        _STD _Construct_in_place(*_Constructor._Ptr, _Al, _For_overwrite_tag{});
         const auto _Ptr = reinterpret_cast<_Ty*>(_STD addressof(_Constructor._Ptr->_Storage._Value));
-        _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+        _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _STD _Unfancy(_Constructor._Release()));
     }
 
     return _Ret;

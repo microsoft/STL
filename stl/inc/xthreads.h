@@ -67,7 +67,7 @@ enum { _Thrd_success, _Thrd_nomem, _Thrd_timedout, _Thrd_busy, _Thrd_error };
 // threads
 _CRTIMP2_PURE int __cdecl _Thrd_detach(_Thrd_t);
 _CRTIMP2_PURE int __cdecl _Thrd_join(_Thrd_t, int*);
-_CRTIMP2_PURE void __cdecl _Thrd_sleep(const xtime*);
+_CRTIMP2_PURE void __cdecl _Thrd_sleep(const _timespec64*);
 _CRTIMP2_PURE void __cdecl _Thrd_yield();
 _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency();
 _CRTIMP2_PURE _Thrd_id_t __cdecl _Thrd_id();
@@ -87,7 +87,7 @@ _CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t);
 _CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t);
 _CRTIMP2_PURE int __cdecl _Mtx_lock(_Mtx_t);
 _CRTIMP2_PURE int __cdecl _Mtx_trylock(_Mtx_t);
-_CRTIMP2_PURE int __cdecl _Mtx_timedlock(_Mtx_t, const xtime*);
+_CRTIMP2_PURE int __cdecl _Mtx_timedlock(_Mtx_t, const _timespec64*);
 _CRTIMP2_PURE int __cdecl _Mtx_unlock(_Mtx_t); // TRANSITION, ABI: always returns _Thrd_success
 
 _CRTIMP2_PURE void* __cdecl _Mtx_getconcrtcs(_Mtx_t);
@@ -110,7 +110,7 @@ _CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t);
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t);
 _CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t);
 _CRTIMP2_PURE int __cdecl _Cnd_wait(_Cnd_t, _Mtx_t); // TRANSITION, ABI: Always returns _Thrd_success
-_CRTIMP2_PURE int __cdecl _Cnd_timedwait(_Cnd_t, _Mtx_t, const xtime*);
+_CRTIMP2_PURE int __cdecl _Cnd_timedwait(_Cnd_t, _Mtx_t, const _timespec64*);
 _CRTIMP2_PURE int __cdecl _Cnd_broadcast(_Cnd_t); // TRANSITION, ABI: Always returns _Thrd_success
 _CRTIMP2_PURE int __cdecl _Cnd_signal(_Cnd_t); // TRANSITION, ABI: Always returns _Thrd_success
 _CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t, _Mtx_t, int*);

@@ -244,14 +244,6 @@ public:
         return _Try_lock_shared_until(_Abs_time);
     }
 
-    _NODISCARD_TRY_CHANGE_STATE
-    _Requires_lock_not_held_(*this)
-    _When_(return == true, _Acquires_shared_lock_(*this))
-    _When_(return == true, _Acquires_nonreentrant_lock_(*this))
-    bool try_lock_shared_until(const xtime* _Abs_time) { // try to lock non-exclusive until absolute time
-        return _Try_lock_shared_until(_Abs_time);
-    }
-
     _Releases_shared_lock_(*this)
     _Releases_nonreentrant_lock_(*this)
     void unlock_shared() { // unlock non-exclusive

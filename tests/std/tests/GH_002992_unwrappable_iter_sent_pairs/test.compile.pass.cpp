@@ -29,7 +29,10 @@ void test_algorithms(Rng& rng) {
     (void) ranges::mismatch(rng, other);
     (void) ranges::mismatch(other, rng);
 
-    if constexpr (is_lvalue_reference_v<ranges::range_reference_t<Rng>> && ranges::forward_range<Rng>) {
+    using range_ref_t   = ranges::range_reference_t<Rng>;
+    using range_deref_t = remove_reference_t<range_ref_t>;
+    if constexpr (is_lvalue_reference_v<range_ref_t> && !is_const_v<range_deref_t> && !is_volatile_v<range_deref_t>
+                  && ranges::forward_range<Rng>) {
         (void) ranges::uninitialized_copy(rng.begin(), rng.end(), other.begin(), other.end());
         (void) ranges::uninitialized_copy(other.begin(), other.end(), rng.begin(), rng.end());
         (void) ranges::uninitialized_copy(rng, other);

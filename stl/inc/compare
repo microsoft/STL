@@ -394,7 +394,7 @@ namespace _Strong_order {
         enum class _St { _None, _Adl, _Floating, _Three };
 
         template <class _Ty1, class _Ty2>
-        _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+        _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
             if constexpr (!same_as<decay_t<_Ty1>, decay_t<_Ty2>>) {
                 return {_St::_None};
             } else if constexpr (_Has_ADL<_Ty1, _Ty2>) {
@@ -497,7 +497,7 @@ namespace _Weak_order {
         enum class _St { _None, _Adl, _Floating, _Three, _Strong };
 
         template <class _Ty1, class _Ty2>
-        _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+        _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
             if constexpr (!same_as<decay_t<_Ty1>, decay_t<_Ty2>>) {
                 return {_St::_None};
             } else if constexpr (_Has_ADL<_Ty1, _Ty2>) {
@@ -626,7 +626,7 @@ namespace _Partial_order {
         enum class _St { _None, _Adl, _Three, _Weak, _Strong };
 
         template <class _Ty1, class _Ty2>
-        _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+        _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
             if constexpr (!same_as<decay_t<_Ty1>, decay_t<_Ty2>>) {
                 return {_St::_None};
             } else if constexpr (_Has_ADL<_Ty1, _Ty2>) {
@@ -695,7 +695,7 @@ namespace _Compare_strong_order_fallback {
         enum class _St { _None, _Strong, _Fallback };
 
         template <class _Ty1, class _Ty2>
-        _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+        _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
             if constexpr (!same_as<decay_t<_Ty1>, decay_t<_Ty2>>) {
                 return {_St::_None};
             } else if constexpr (_Can_strong_order<_Ty1, _Ty2>) {
@@ -745,7 +745,7 @@ namespace _Compare_weak_order_fallback {
         enum class _St { _None, _Weak, _Fallback };
 
         template <class _Ty1, class _Ty2>
-        _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+        _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
             if constexpr (!same_as<decay_t<_Ty1>, decay_t<_Ty2>>) {
                 return {_St::_None};
             } else if constexpr (_Can_weak_order<_Ty1, _Ty2>) {
@@ -802,7 +802,7 @@ namespace _Compare_partial_order_fallback {
         enum class _St { _None, _Partial, _Fallback };
 
         template <class _Ty1, class _Ty2>
-        _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+        _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
             if constexpr (!same_as<decay_t<_Ty1>, decay_t<_Ty2>>) {
                 return {_St::_None};
             } else if constexpr (_Can_partial_order<_Ty1, _Ty2>) {
