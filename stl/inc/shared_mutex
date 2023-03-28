@@ -189,11 +189,6 @@ public:
         return _Try_lock_shared_until(_Abs_time);
     }
 
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock_shared_until(
-        const xtime* _Abs_time) { // try to lock non-exclusive until absolute time
-        return _Try_lock_shared_until(_Abs_time);
-    }
-
     void unlock_shared() { // unlock non-exclusive
         _Read_cnt_t _Local_readers;
         bool _Local_writing;

@@ -170,6 +170,72 @@ void test_non_trivially_destructible_type() { // COMPILE-ONLY
     (void) views::single(non_trivially_destructible{});
 }
 
+struct VolatileConstructible {
+    VolatileConstructible()                                        = default;
+    VolatileConstructible(const VolatileConstructible&)            = default;
+    VolatileConstructible(VolatileConstructible&&)                 = default;
+    VolatileConstructible& operator=(const VolatileConstructible&) = default;
+    VolatileConstructible& operator=(VolatileConstructible&&)      = default;
+
+    template <class T = VolatileConstructible>
+    constexpr VolatileConstructible(const volatile type_identity_t<T>&) noexcept {}
+    template <class T = VolatileConstructible>
+    constexpr VolatileConstructible(const volatile type_identity_t<T>&&) noexcept {}
+};
+
+struct ConstSelection {
+    ConstSelection()                                 = default;
+    ConstSelection(const ConstSelection&)            = default;
+    ConstSelection(ConstSelection&&)                 = default;
+    ConstSelection& operator=(const ConstSelection&) = default;
+    ConstSelection& operator=(ConstSelection&&)      = default;
+
+    constexpr explicit ConstSelection(int x) noexcept : value{x} {}
+
+    template <class T = ConstSelection>
+    constexpr const ConstSelection& operator=(const type_identity_t<T>&) const noexcept {
+        return *this;
+    }
+
+    int value = 0;
+};
+
+static_assert(is_trivially_copy_assignable_v<ranges::single_view<ConstSelection>>);
+static_assert(!is_trivially_copy_assignable_v<ranges::single_view<const ConstSelection>>);
+
+constexpr bool test_cv() {
+    {
+        ranges::single_view<VolatileConstructible> sv{};
+        ranges::single_view<VolatileConstructible> sv2{};
+        sv = sv2;
+        sv = move(sv2);
+    }
+    {
+        ranges::single_view<volatile VolatileConstructible> svv{};
+        ranges::single_view<volatile VolatileConstructible> svv2{};
+        svv = svv2;
+        svv = move(svv2);
+    }
+    {
+        [[maybe_unused]] ranges::single_view<const VolatileConstructible> svc{};
+        [[maybe_unused]] ranges::single_view<const volatile VolatileConstructible> svcv{};
+    }
+    {
+        ranges::single_view<ConstSelection> svx{in_place, 0};
+        ranges::single_view<ConstSelection> svy{in_place, 42};
+        svy = svx;
+        assert(svy.front().value == 0);
+    }
+    {
+        ranges::single_view<const ConstSelection> scvx{in_place, 0};
+        ranges::single_view<const ConstSelection> scvy{in_place, 42};
+        scvy = scvx;
+        assert(scvy.front().value == 42);
+    }
+
+    return true;
+}
+
 int main() {
     static_assert(test_one_type(42, 42));
     test_one_type(42, 42);
@@ -179,4 +245,7 @@ int main() {
 
     test_one_type(only_copy_constructible{42}, 42);
     test_one_type(string{"Hello, World!"}, "Hello, World!");
+
+    static_assert(test_cv());
+    assert(test_cv());
 }

@@ -8,9 +8,9 @@
 #define _SOURCE_LOCATION_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#ifndef __cpp_consteval
-_EMIT_STL_WARNING(STL4038, "The contents of <source_location> are available only with C++20 consteval support.");
-#else // ^^^ !defined(__cpp_consteval) / defined(__cpp_consteval) vvv
+#if !_HAS_CXX20
+_EMIT_STL_WARNING(STL4038, "The contents of <source_location> are available only with C++20 or later.");
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <cstdint>
 
@@ -66,6 +66,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // !defined(__cpp_consteval)
+#endif // _HAS_CXX20
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _SOURCE_LOCATION_
