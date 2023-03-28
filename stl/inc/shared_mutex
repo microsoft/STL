@@ -33,42 +33,42 @@ public:
     shared_mutex(const shared_mutex&)            = delete;
     shared_mutex& operator=(const shared_mutex&) = delete;
 
-    _Acquires_exclusive_lock_(this)
-    _Acquires_nonreentrant_lock_(this)
+    _Acquires_exclusive_lock_(*this)
+    _Acquires_nonreentrant_lock_(*this)
     void lock() noexcept /* strengthened */ { // lock exclusive
         _Smtx_lock_exclusive(&_Myhandle);
     }
 
     _NODISCARD_TRY_CHANGE_STATE
-    _Requires_lock_not_held_(this)
-    _When_(return == true, _Acquires_exclusive_lock_(this))
-    _When_(return == true, _Acquires_nonreentrant_lock_(this))
+    _Requires_lock_not_held_(*this)
+    _When_(return == true, _Acquires_exclusive_lock_(*this))
+    _When_(return == true, _Acquires_nonreentrant_lock_(*this))
     bool try_lock() noexcept /* strengthened */ { // try to lock exclusive
         return _Smtx_try_lock_exclusive(&_Myhandle) != 0;
     }
 
-    _Releases_exclusive_lock_(this)
-    _Releases_nonreentrant_lock_(this)
+    _Releases_exclusive_lock_(*this)
+    _Releases_nonreentrant_lock_(*this)
     void unlock() noexcept /* strengthened */ { // unlock exclusive
         _Smtx_unlock_exclusive(&_Myhandle);
     }
 
-    _Acquires_shared_lock_(this)
-    _Acquires_nonreentrant_lock_(this)
+    _Acquires_shared_lock_(*this)
+    _Acquires_nonreentrant_lock_(*this)
     void lock_shared() noexcept /* strengthened */ { // lock non-exclusive
         _Smtx_lock_shared(&_Myhandle);
     }
 
     _NODISCARD_TRY_CHANGE_STATE
-    _Requires_lock_not_held_(this)
-    _When_(return == true, _Acquires_shared_lock_(this))
-    _When_(return == true, _Acquires_nonreentrant_lock_(this))
+    _Requires_lock_not_held_(*this)
+    _When_(return == true, _Acquires_shared_lock_(*this))
+    _When_(return == true, _Acquires_nonreentrant_lock_(*this))
     bool try_lock_shared() noexcept /* strengthened */ { // try to lock non-exclusive
         return _Smtx_try_lock_shared(&_Myhandle) != 0;
     }
 
-    _Releases_shared_lock_(this)
-    _Releases_nonreentrant_lock_(this)
+    _Releases_shared_lock_(*this)
+    _Releases_nonreentrant_lock_(*this)
     void unlock_shared() noexcept /* strengthened */ { // unlock non-exclusive
         _Smtx_unlock_shared(&_Myhandle);
     }
@@ -93,8 +93,8 @@ public:
     shared_timed_mutex(const shared_timed_mutex&)            = delete;
     shared_timed_mutex& operator=(const shared_timed_mutex&) = delete;
 
-    _Acquires_exclusive_lock_(this)
-    _Acquires_nonreentrant_lock_(this)
+    _Acquires_exclusive_lock_(*this)
+    _Acquires_nonreentrant_lock_(*this)
     void lock() { // lock exclusive
         unique_lock<mutex> _Lock(_Mymtx);
         while (_Writing) {
@@ -108,9 +108,9 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE
-    _Requires_lock_not_held_(this)
-    _When_(return == true, _Acquires_exclusive_lock_(this))
-    _When_(return == true, _Acquires_nonreentrant_lock_(this))
+    _Requires_lock_not_held_(*this)
+    _When_(return == true, _Acquires_exclusive_lock_(*this))
+    _When_(return == true, _Acquires_nonreentrant_lock_(*this))
     bool try_lock() { // try to lock exclusive
         lock_guard<mutex> _Lock(_Mymtx);
         if (_Writing || 0 < _Readers) {
@@ -123,18 +123,18 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD_TRY_CHANGE_STATE //
-        _Requires_lock_not_held_(this)
-    _When_(return == true, _Acquires_exclusive_lock_(this))
-    _When_(return == true, _Acquires_nonreentrant_lock_(this))
+        _Requires_lock_not_held_(*this)
+    _When_(return == true, _Acquires_exclusive_lock_(*this))
+    _When_(return == true, _Acquires_nonreentrant_lock_(*this))
     bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
     template <class _Clock, class _Duration>
     _NODISCARD_TRY_CHANGE_STATE //
-        _Requires_lock_not_held_(this)
-    _When_(return == true, _Acquires_exclusive_lock_(this))
-    _When_(return == true, _Acquires_nonreentrant_lock_(this))
+        _Requires_lock_not_held_(*this)
+    _When_(return == true, _Acquires_exclusive_lock_(*this))
+    _When_(return == true, _Acquires_nonreentrant_lock_(*this))
     bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // try to lock until time point
 #if _HAS_CXX20
@@ -160,8 +160,8 @@ public:
         return true;
     }
 
-    _Releases_exclusive_lock_(this)
-    _Releases_nonreentrant_lock_(this)
+    _Releases_exclusive_lock_(*this)
+    _Releases_nonreentrant_lock_(*this)
     void unlock() { // unlock exclusive
         { // unlock before notifying, for efficiency
             lock_guard<mutex> _Lock(_Mymtx);
@@ -172,8 +172,8 @@ public:
         _Write_queue.notify_all();
     }
 
-    _Acquires_shared_lock_(this)
-    _Acquires_nonreentrant_lock_(this)
+    _Acquires_shared_lock_(*this)
+    _Acquires_nonreentrant_lock_(*this)
     void lock_shared() { // lock non-exclusive
         unique_lock<mutex> _Lock(_Mymtx);
         while (_Writing || _Readers == _Max_readers) {
@@ -184,9 +184,9 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE
-    _Requires_lock_not_held_(this)
-    _When_(return == true, _Acquires_shared_lock_(this))
-    _When_(return == true, _Acquires_nonreentrant_lock_(this))
+    _Requires_lock_not_held_(*this)
+    _When_(return == true, _Acquires_shared_lock_(*this))
+    _When_(return == true, _Acquires_nonreentrant_lock_(*this))
     bool try_lock_shared() { // try to lock non-exclusive
         lock_guard<mutex> _Lock(_Mymtx);
         if (_Writing || _Readers == _Max_readers) {
@@ -199,9 +199,9 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD_TRY_CHANGE_STATE //
-        _Requires_lock_not_held_(this)
-    _When_(return == true, _Acquires_shared_lock_(this))
-    _When_(return == true, _Acquires_nonreentrant_lock_(this))
+        _Requires_lock_not_held_(*this)
+    _When_(return == true, _Acquires_shared_lock_(*this))
+    _When_(return == true, _Acquires_nonreentrant_lock_(*this))
     bool try_lock_shared_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         // try to lock non-exclusive for relative time
         return try_lock_shared_until(_To_absolute_time(_Rel_time));
@@ -223,9 +223,9 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD_TRY_CHANGE_STATE //
-        _Requires_lock_not_held_(this)
-    _When_(return == true, _Acquires_shared_lock_(this))
-    _When_(return == true, _Acquires_nonreentrant_lock_(this))
+        _Requires_lock_not_held_(*this)
+    _When_(return == true, _Acquires_shared_lock_(*this))
+    _When_(return == true, _Acquires_nonreentrant_lock_(*this))
     bool try_lock_shared_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // try to lock non-exclusive until absolute time
 #if _HAS_CXX20
@@ -235,15 +235,15 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE
-    _Requires_lock_not_held_(this)
-    _When_(return == true, _Acquires_shared_lock_(this))
-    _When_(return == true, _Acquires_nonreentrant_lock_(this))
+    _Requires_lock_not_held_(*this)
+    _When_(return == true, _Acquires_shared_lock_(*this))
+    _When_(return == true, _Acquires_nonreentrant_lock_(*this))
     bool try_lock_shared_until(const xtime* _Abs_time) { // try to lock non-exclusive until absolute time
         return _Try_lock_shared_until(_Abs_time);
     }
 
-    _Releases_shared_lock_(this)
-    _Releases_nonreentrant_lock_(this)
+    _Releases_shared_lock_(*this)
+    _Releases_nonreentrant_lock_(*this)
     void unlock_shared() { // unlock non-exclusive
         _Read_cnt_t _Local_readers;
         bool _Local_writing;
