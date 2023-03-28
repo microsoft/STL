@@ -37,6 +37,7 @@ public:
     _Acquires_nonreentrant_lock_(*this)
     void lock() noexcept /* strengthened */ { // lock exclusive
         _Smtx_lock_exclusive(&_Myhandle);
+        _Analysis_assume_lock_acquired_(*this);
     }
 
     _NODISCARD_TRY_CHANGE_STATE
@@ -51,12 +52,14 @@ public:
     _Releases_nonreentrant_lock_(*this)
     void unlock() noexcept /* strengthened */ { // unlock exclusive
         _Smtx_unlock_exclusive(&_Myhandle);
+        _Analysis_assume_lock_released_(*this);
     }
 
     _Acquires_shared_lock_(*this)
     _Acquires_nonreentrant_lock_(*this)
     void lock_shared() noexcept /* strengthened */ { // lock non-exclusive
         _Smtx_lock_shared(&_Myhandle);
+        _Analysis_assume_lock_acquired_(*this);
     }
 
     _NODISCARD_TRY_CHANGE_STATE
@@ -71,6 +74,7 @@ public:
     _Releases_nonreentrant_lock_(*this)
     void unlock_shared() noexcept /* strengthened */ { // unlock non-exclusive
         _Smtx_unlock_shared(&_Myhandle);
+        _Analysis_assume_lock_released_(*this);
     }
 
     _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ { // get native handle
@@ -105,6 +109,7 @@ public:
         while (0 < _Readers) {
             _Read_queue.wait(_Lock); // wait for writing, no readers
         }
+        _Analysis_assume_lock_acquired_(*this);
     }
 
     _NODISCARD_TRY_CHANGE_STATE
@@ -117,6 +122,7 @@ public:
             return false;
         } else { // set writing, no readers
             _Writing = true;
+            _Analysis_assume_lock_acquired_(*this);
             return true;
         }
     }
@@ -157,6 +163,7 @@ public:
             return false;
         }
 
+        _Analysis_assume_lock_acquired_(*this);
         return true;
     }
 
@@ -170,6 +177,7 @@ public:
         }
 
         _Write_queue.notify_all();
+        _Analysis_assume_lock_released_(*this);
     }
 
     _Acquires_shared_lock_(*this)
@@ -181,6 +189,7 @@ public:
         }
 
         ++_Readers;
+        _Analysis_assume_lock_acquired_(*this);
     }
 
     _NODISCARD_TRY_CHANGE_STATE
@@ -193,6 +202,7 @@ public:
             return false;
         } else { // count another reader
             ++_Readers;
+            _Analysis_assume_lock_acquired_(*this);
             return true;
         }
     }
@@ -260,6 +270,7 @@ public:
         } else if (!_Local_writing && _Local_readers == _Max_readers - 1) {
             _Write_queue.notify_all();
         }
+        _Analysis_assume_lock_released_(*this);
     }
 
 private:
