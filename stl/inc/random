@@ -2996,7 +2996,7 @@ public:
         }
 
         void _Init(_Ty _Mean0, _Ty _Sigma0) { // set internal state
-            _STL_ASSERT(0.0 < _Sigma0, "invalid sigma argument for normal_distribution");
+            _STL_ASSERT(0.0 <= _Sigma0, "invalid sigma argument for normal_distribution");
             _Mean  = _Mean0;
             _Sigma = _Sigma0;
         }
