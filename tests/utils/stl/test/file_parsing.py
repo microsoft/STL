@@ -59,7 +59,7 @@ def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
     for env_match in _ENV_VAR_MULTI_ITEM_REGEX.finditer(line):
         name = env_match.group("name")
         value = env_match.group("value")
-        result.env[env_match.group("name")] = env_match.group("value")
+        result.env[name] = value
     return result
 
 
