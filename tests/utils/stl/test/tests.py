@@ -13,7 +13,7 @@ import copy
 import os
 import shutil
 
-from lit.Test import Result, SKIPPED, Test, UNRESOLVED, UNSUPPORTED
+from lit.Test import Result, SKIPPED, Test, UNSUPPORTED
 from libcxx.test.dsl import Feature
 import lit
 
