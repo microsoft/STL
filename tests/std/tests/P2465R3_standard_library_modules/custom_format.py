@@ -9,7 +9,7 @@ from stl.test.tests import TestType
 
 class CustomTestFormat(STLTestFormat):
     def getBuildSteps(self, test, litConfig, shared):
-        outputDir, outputBase = test.getTempPaths()
+        _, outputBase = test.getTempPaths()
 
         stdIxx = os.path.join(litConfig.cxx_modules, 'std.ixx')
         stdCompatIxx = os.path.join(litConfig.cxx_modules, 'std.compat.ixx')
