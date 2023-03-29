@@ -166,7 +166,6 @@ class STLTestFormat:
         yield from []
 
     def getBuildSteps(self, test, litConfig, shared):
-        filename = test.path_in_suite[-1]
         _, tmpBase = test.getTempPaths()
 
         shouldFail = TestType.FAIL in test.testType
