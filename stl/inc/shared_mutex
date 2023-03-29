@@ -133,6 +133,8 @@ public:
     _When_(return == true, _Acquires_exclusive_lock_(*this))
     _When_(return == true, _Acquires_nonreentrant_lock_(*this))
     bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
+        _Analysis_suppress_lock_checking_(*this);
+
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
@@ -214,6 +216,8 @@ public:
     _When_(return == true, _Acquires_nonreentrant_lock_(*this))
     bool try_lock_shared_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         // try to lock non-exclusive for relative time
+        _Analysis_suppress_lock_checking_(*this);
+
         return try_lock_shared_until(_To_absolute_time(_Rel_time));
     }
 
@@ -294,6 +298,9 @@ public:
     _Post_same_lock_(_Mtx, *_Pmtx)
     explicit shared_lock(mutex_type& _Mtx)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) { // construct with mutex and lock shared
+        _Analysis_suppress_lock_checking_(_Mtx);
+        _Analysis_suppress_lock_checking_(*_Pmtx);
+
         _Mtx.lock_shared();
     }
 
@@ -309,8 +316,11 @@ public:
     _When_(_Owns == true, _Acquires_nonreentrant_lock_(_Mtx))
     _Post_satisfies_(_Pmtx == &_Mtx)
     _Post_same_lock_(_Mtx, *_Pmtx)
-    shared_lock(mutex_type& _Mtx, try_to_lock_t)
-        : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared()) {} // construct with mutex and try to lock shared
+    shared_lock(mutex_type& _Mtx, try_to_lock_t) : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared()) {
+        // construct with mutex and try to lock shared
+        _Analysis_suppress_lock_checking_(_Mtx);
+        _Analysis_suppress_lock_checking_(*_Pmtx);
+    }
 
     _NODISCARD_CTOR_LOCK
     _Requires_shared_lock_held_(_Mtx)
@@ -330,6 +340,8 @@ public:
     shared_lock(mutex_type& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_for(_Rel_time)) {
         // construct with mutex and try to lock for relative time
+        _Analysis_suppress_lock_checking_(_Mtx);
+        _Analysis_suppress_lock_checking_(*_Pmtx);
     }
 
     template <class _Clock, class _Duration>
@@ -342,6 +354,9 @@ public:
     shared_lock(mutex_type& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_until(_Abs_time)) {
         // construct with mutex and try to lock until absolute time
+        _Analysis_suppress_lock_checking_(_Mtx);
+        _Analysis_suppress_lock_checking_(*_Pmtx);
+
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
@@ -350,6 +365,8 @@ public:
     _When_(_Owns == true, _Releases_shared_lock_(*_Pmtx))
     _When_(_Owns == true, _Releases_nonreentrant_lock_(*_Pmtx))
     ~shared_lock() noexcept {
+        _Analysis_suppress_lock_checking_(*_Pmtx);
+
         if (_Owns) {
             _Pmtx->unlock_shared();
         }
@@ -374,8 +391,9 @@ public:
     _Post_satisfies_(_Right._Pmtx == nullptr)
     _Post_satisfies_(_Right._Owns == false)
     shared_lock& operator=(shared_lock&& _Right) noexcept {
+        _Analysis_suppress_lock_checking_(*_Pmtx);
+
         if (_Owns) {
-            _Analysis_assume_lock_held_(_Pmtx);
             _Pmtx->unlock_shared();
         }
 
@@ -466,7 +484,6 @@ public:
             _Throw_system_error(errc::operation_not_permitted);
         }
 
-        _Analysis_assume_lock_held_(_Pmtx);
         _Pmtx->unlock_shared();
         _Owns = false;
     }
