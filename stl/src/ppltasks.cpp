@@ -28,7 +28,7 @@ static GUID const Local_IID_ICallbackWithNoReentrancyToApplicationSTA = {
 // Introduce stacktrace API for Debug CRT_APP
 #if defined(_CRT_APP) && defined(_DEBUG)
 extern "C" NTSYSAPI WORD NTAPI RtlCaptureStackBackTrace(_In_ DWORD FramesToSkip, _In_ DWORD FramesToCapture,
-    _Out_writes_to_(FramesToCapture, return ) PVOID* BackTrace, _Out_opt_ PDWORD BackTraceHash);
+    _Out_writes_to_(FramesToCapture, return) PVOID* BackTrace, _Out_opt_ PDWORD BackTraceHash);
 #endif
 
 namespace Concurrency {
@@ -39,7 +39,9 @@ namespace Concurrency {
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_CRT_APP)
             if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
 #endif
+            {
                 __fastfail(FAST_FAIL_INVALID_ARG);
+            }
 
             std::terminate();
         }
@@ -86,7 +88,6 @@ namespace Concurrency {
         using namespace Microsoft::WRL;
         using namespace Microsoft::WRL::Wrappers;
 
-
         class AsyncCausalityTracer {
             IAsyncCausalityTracerStatics* m_causalityAPIs;
             std::once_flag m_stateFlag;
@@ -132,7 +133,8 @@ namespace Concurrency {
                     this);
                 return m_isSupported;
             }
-        } asyncCausalityTracer;
+        };
+        AsyncCausalityTracer asyncCausalityTracer;
 
         // GUID used for identifying causality logs from PPLTask
         const GUID PPLTaskCausalityPlatformID = {
@@ -287,6 +289,13 @@ namespace Concurrency {
         }
 
         _CRTIMP2 bool __cdecl _Task_impl_base::_IsNonBlockingThread() {
+// TRANSITION, ABI: This preprocessor directive attempts to fix VSO-1684985 (a bincompat issue affecting VS 2015 code)
+// while preserving as much of GH-2654 as possible. When we can break ABI, we should:
+// * Remove this preprocessor directive - it should be unnecessary after <ppltasks.h> was changed on 2018-01-12.
+// * In <ppltasks.h>, reconsider whether _Task_impl_base::_Wait() should throw invalid_operation;
+//   it's questionable whether that's conforming, and if users want to block their UI threads, we should let them.
+// * Investigate whether we can avoid the ppltasks dependency entirely, making all of these issues irrelevant.
+#if defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
             APTTYPE _AptType;
             APTTYPEQUALIFIER _AptTypeQualifier;
 
@@ -299,7 +308,6 @@ namespace Concurrency {
                 case APTTYPE_STA:
                 case APTTYPE_MAINSTA:
                     return true;
-                    break;
                 case APTTYPE_NA:
                     switch (_AptTypeQualifier) {
                         // A thread executing in a neutral apartment is either STA or MTA. To find out if this thread is
@@ -309,11 +317,12 @@ namespace Concurrency {
                     case APTTYPEQUALIFIER_NA_ON_STA:
                     case APTTYPEQUALIFIER_NA_ON_MAINSTA:
                         return true;
-                        break;
                     }
                     break;
                 }
             }
+#endif // defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
+
             return false;
         }
     } // namespace details

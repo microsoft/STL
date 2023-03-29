@@ -22,6 +22,7 @@ struct has_default {
     has_default(const has_default& v) : x(v.x) {
         ++has_default_objects;
     }
+    has_default& operator=(const has_default&) = default;
 
     ~has_default() {
         --has_default_objects;
@@ -38,6 +39,7 @@ struct no_default {
     no_default(const no_default& v) : x(v.x) {
         ++no_default_objects;
     }
+    no_default& operator=(const no_default&) = default;
 
     ~no_default() {
         --no_default_objects;
@@ -127,6 +129,7 @@ void run_tests() {
         }
     }
 
+#ifndef _M_CEE // TRANSITION, VSO-1659383
     {
         Promise p;
         Future f = p.get_future();
@@ -153,6 +156,7 @@ void run_tests() {
         assert(failures == 7);
         assert(succeeded != -1 && f.get().x == succeeded);
     }
+#endif // _M_CEE
 
     {
         (void) std::async(std::launch::async, [] { return T(16); });

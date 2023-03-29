@@ -6,9 +6,7 @@
 using namespace std;
 
 template <class R>
-concept CanSize = requires(R& r) {
-    ranges::size(r);
-};
+concept CanSize = requires(R& r) { ranges::size(r); };
 
 // Validate standard signed integer types
 static_assert(CanSize<ranges::iota_view<signed char, _Signed128>>);
@@ -47,5 +45,3 @@ static_assert(CanSize<ranges::iota_view<char16_t, _Signed128>>);
 static_assert(CanSize<ranges::iota_view<char16_t, _Unsigned128>>);
 static_assert(CanSize<ranges::iota_view<char32_t, _Signed128>>);
 static_assert(CanSize<ranges::iota_view<char32_t, _Unsigned128>>);
-
-int main() {} // COMPILE-ONLY

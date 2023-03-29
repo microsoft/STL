@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.25.2)
+
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
@@ -42,7 +43,6 @@ if(TARGET run-validate)
 endif()
 
 option(BUILD_TESTING "Enable testing" ON)
-option(STL_BUILD_BENCHMARKING "Enable benchmarking" OFF)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
 option(STL_USE_ANALYZE "Pass the /analyze flag to MSVC" OFF)
@@ -85,7 +85,7 @@ set(STL_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR
 set(STL_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/bin/${VCLIBS_I386_OR_AMD64}")
 add_compile_definitions(
     _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH WIN32_LEAN_AND_MEAN STRICT _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS
-    _CRT_DECLARE_NONSTDC_NAMES=1 _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN10_CO)
+    _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN10_CO)
 
 if(STL_USE_ANALYZE)
     # TRANSITION OS-40109504: Windows SDK: incorrect SAL annotations on functions the STL uses
@@ -114,10 +114,4 @@ add_subdirectory(stl)
 if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
-endif()
-if(STL_BUILD_BENCHMARKING)
-    if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm")
-        message(WARNING "google benchmark does not build on arm32 - this build will likely fail.")
-    endif()
-    add_subdirectory(benchmarks)
 endif()

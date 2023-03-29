@@ -9,6 +9,7 @@
 #include <Windows.h>
 
 #include "awint.hpp"
+#include "init_locks.hpp"
 
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)
@@ -40,7 +41,7 @@ namespace Concurrency {
                 (void) _Flags;
                 (void) _Addr;
                 return nullptr;
-#else // ^^^ defined(_CRT_APP) ^^^ // vvv !defined(_CRT_APP) vvv
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
                 HMODULE _Result;
                 if (!GetModuleHandleExW(_Flags, _Addr, &_Result)) {
                     return nullptr;
@@ -55,7 +56,7 @@ namespace Concurrency {
             _STL_host_status _Get_STL_host_status() {
 #ifdef CRTDLL2
                 return _STL_host_status::_Dll;
-#else // ^^^ CRTDLL2 ^^^ // vvv !CRTDLL2 vvv
+#else // ^^^ CRTDLL2 / !CRTDLL2 vvv
                 HANDLE _HExe = _Call_get_module_handle_ex(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, nullptr);
                 if (_HExe == nullptr) {
                     return _STL_host_status::_Unknown;
@@ -73,7 +74,7 @@ namespace Concurrency {
             // code is sufficient.
             void _Increment_outstanding() {}
             void _Decrement_outstanding() {}
-#else // ^^^ CRTDLL2 ^^^ // vvv !CRTDLL2 vvv
+#else // ^^^ CRTDLL2 / !CRTDLL2 vvv
             size_t _Outstanding_tasks = 0;
             _STD mutex _Task_cv_mutex;
             _STD condition_variable _Task_cv;
@@ -112,7 +113,8 @@ namespace Concurrency {
                     _STD unique_lock<_STD mutex> _Lck(_Task_cv_mutex);
                     _Task_cv.wait(_Lck, [] { return _Outstanding_tasks == 0; });
                 }
-            } _Task_scheduler_main_block_instance;
+            };
+            _Task_scheduler_main_block _Task_scheduler_main_block_instance;
 #endif // CRTDLL2
 
             void CALLBACK _Task_scheduler_callback(PTP_CALLBACK_INSTANCE _Pci, PVOID _Args, PTP_WORK) noexcept {

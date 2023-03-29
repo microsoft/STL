@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <forward_list>
 #include <functional>
 #include <iterator>
 #include <stdexcept>
-#include <stdlib.h>
 #include <vector>
 
 #include <test_death.hpp>
@@ -113,7 +113,7 @@ void test_case_empty_target_bad() {
 struct throw_cmp_less_int {
     size_t remainingCompares;
     explicit throw_cmp_less_int(size_t remainingCompares_) : remainingCompares(remainingCompares_) {}
-    throw_cmp_less_int(const throw_cmp_less_int&) = delete;
+    throw_cmp_less_int(const throw_cmp_less_int&)            = delete;
     throw_cmp_less_int& operator=(const throw_cmp_less_int&) = delete;
 
     bool operator()(int a, int b) /* neither const nor noexcept */ {
@@ -141,7 +141,7 @@ struct throwing_merge_fixture {
 #if _ITERATOR_DEBUG_LEVEL == 0
     static constexpr size_t ensureOrderedF1Size = 0;
     static constexpr size_t ensureOrderedF2Size = 0;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 // _ITERATOR_DEBUG_LEVEL != 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
     static constexpr size_t ensureOrderedF1Size = startF1Size - 1;
     static constexpr size_t ensureOrderedF2Size = startF2Size - 1;
 #endif // _ITERATOR_DEBUG_LEVEL == 0

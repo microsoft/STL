@@ -29,7 +29,7 @@ namespace stdext {
 
             void _Init(_Codecvt* _Pcvt_arg = new _Codecvt) { // initialize the object
                 _Pcvt  = _Pcvt_arg;
-                _Loc   = _STD locale(_Loc, _Pcvt);
+                _Loc   = _STD locale{_Loc, _Pcvt};
                 _Nconv = 0;
             }
 
@@ -65,7 +65,7 @@ namespace stdext {
 
             virtual ~wstring_convert() noexcept {}
 
-            wstring_convert(const wstring_convert&) = delete;
+            wstring_convert(const wstring_convert&)            = delete;
             wstring_convert& operator=(const wstring_convert&) = delete;
 
             _NODISCARD size_t converted() const noexcept { // get conversion count

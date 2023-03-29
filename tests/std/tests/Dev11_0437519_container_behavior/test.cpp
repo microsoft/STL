@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <array>
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
 #include <deque>
 #include <forward_list>
 #include <iterator>
 #include <list>
-#include <stddef.h>
 #include <vector>
 
 using namespace std;
@@ -23,6 +23,8 @@ void assert_forward_list_resize_empty() {
 
 struct A {
     A(unsigned int value) : _value(value) {}
+    A(const A&)            = default;
+    A& operator=(const A&) = default;
     ~A() {
         _value = 0;
     }

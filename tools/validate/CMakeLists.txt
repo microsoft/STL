@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.25.2)
 project(msvc_standard_libraries_validate LANGUAGES CXX)
 
 add_executable(validate-binary validate.cpp)
@@ -9,7 +9,7 @@ add_executable(validate-binary validate.cpp)
 target_compile_options(validate-binary PRIVATE /W4 /WX /analyze)
 set_target_properties(validate-binary
     PROPERTIES
-        CXX_STANDARD 20
+        CXX_STANDARD 23
         CXX_EXTENSIONS OFF
         CXX_STANDARD_REQUIRED ON
         # statically link the standard library

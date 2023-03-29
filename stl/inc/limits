@@ -11,15 +11,16 @@
 #include <cfloat>
 #include <climits>
 #include <cwchar>
-#include <intrin0.h>
 #include <isa_availability.h>
 #include <xstddef>
+
+#include _STL_INTRIN_HEADER
 
 // TRANSITION, GH-2129, move down to _Arm64_popcount
 #if (defined(_M_ARM64) || defined(_M_ARM64EC)) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
     && !defined(__INTEL_COMPILER) && !defined(__clang__) // TRANSITION, LLVM-51488
 #define _HAS_NEON_INTRINSICS 1
-#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_NEON_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
@@ -35,13 +36,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-enum float_denorm_style { // constants for different IEEE float denormalization styles
+_EXPORT_STD enum float_denorm_style { // constants for different IEEE float denormalization styles
     denorm_indeterminate = -1,
     denorm_absent        = 0,
     denorm_present       = 1
 };
 
-enum float_round_style { // constants for different IEEE rounding styles
+_EXPORT_STD enum float_round_style { // constants for different IEEE rounding styles
     round_indeterminate       = -1,
     round_toward_zero         = 0,
     round_to_nearest          = 1,
@@ -75,7 +76,7 @@ struct _Num_base { // base for all types, with common defaults
     static constexpr int radix                     = 0;
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class numeric_limits : public _Num_base { // numeric limits for arbitrary type _Ty (say little or nothing)
 public:
     _NODISCARD static constexpr _Ty(min)() noexcept {
@@ -1054,7 +1055,7 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
 #if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
     && !defined(__INTEL_COMPILER)
 #define _HAS_TZCNT_BSF_INTRINSICS 1
-#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_TZCNT_BSF_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
@@ -1153,7 +1154,7 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 #if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
     && !defined(__INTEL_COMPILER)
 #define _HAS_POPCNT_INTRINSICS 1
-#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_POPCNT_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
@@ -1217,7 +1218,7 @@ constexpr decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
     if (!_STD is_constant_evaluated()) {
 #ifdef __AVX2__
         return _Callback([](_Ty _Val) { return _Countr_zero_tzcnt(_Val); });
-#else // ^^^ AVX2 ^^^ / vvv not AVX2 vvv
+#else // ^^^ AVX2 / not AVX2 vvv
         const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
         if (_Definitely_have_tzcnt) {
             return _Callback([](_Ty _Val) { return _Countr_zero_tzcnt(_Val); });
@@ -1231,7 +1232,7 @@ constexpr decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
     return _Callback([](_Ty _Val) { return _Countr_zero_fallback(_Val); });
 }
 
-template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
 #if _HAS_POPCNT_INTRINSICS || _HAS_NEON_INTRINSICS
 #if _HAS_CXX20
@@ -1240,7 +1241,7 @@ _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
     {
 #if _HAS_POPCNT_INTRINSICS
         return _Checked_x86_x64_popcount(_Val);
-#elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
+#elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available / ARM64 intrinsics available vvv
         return _Arm64_popcount(_Val);
 #endif // ^^^ ARM64 intrinsics available ^^^
     }
@@ -1264,7 +1265,7 @@ _CONSTEXPR20 decltype(auto) _Select_popcount_impl(_Fn _Callback) {
         }
 #endif // !defined(__AVX__)
         return _Callback([](_Ty _Val) { return _Unchecked_x86_x64_popcount(_Val); });
-#elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
+#elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available / ARM64 intrinsics available vvv
         return _Callback([](_Ty _Val) { return _Arm64_popcount(_Val); });
 #endif // ^^^ ARM64 intrinsics available ^^^
     }

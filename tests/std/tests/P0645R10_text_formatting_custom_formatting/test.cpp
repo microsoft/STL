@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <format>
 #include <iterator>
 #include <limits>
@@ -126,7 +126,7 @@ void test_numeric_custom_formattable_type() {
     test_custom_equiv_with_format<T>(STR("{}"), numeric_limits<T>::min());
     test_custom_equiv_with_format<T>(STR("{}"), numeric_limits<T>::max());
     test_custom_equiv_with_format<T>(STR("{:3}"), 1);
-    if constexpr (!is_floating_point_v<T> && !_Is_any_of_v<T, charT, bool>) {
+    if constexpr (!is_floating_point_v<T> && !is_same_v<T, charT> && !is_same_v<T, bool>) {
         test_custom_equiv_with_format<T>(STR("{:#x}"), 255);
         test_custom_equiv_with_format<T>(STR("{:#X}"), 255);
     }
@@ -141,7 +141,7 @@ void test_numeric_mixed_args_custom_formattable_type() {
     test_custom_equiv_with_format_mixed<T>(STR("{}{}"), numeric_limits<T>::max());
     test_custom_equiv_with_format_mixed<T>(STR("{:3}{:4}"), 1);
     test_custom_equiv_with_format_mixed<T>(STR("{0}{0}"), 42);
-    if constexpr (!is_floating_point_v<T> && !_Is_any_of_v<T, charT, bool>) {
+    if constexpr (!is_floating_point_v<T> && !is_same_v<T, charT> && !is_same_v<T, bool>) {
         test_custom_equiv_with_format_mixed<T>(STR("{:#x}{}"), 255);
         test_custom_equiv_with_format_mixed<T>(STR("{:#X}{}"), 255);
     }

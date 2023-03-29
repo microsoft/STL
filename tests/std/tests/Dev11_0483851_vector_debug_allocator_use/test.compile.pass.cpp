@@ -1,17 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cstdlib>
 #include <deque>
 #include <forward_list>
 #include <list>
 #include <map>
 #include <set>
-#include <stdlib.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-int main() {} // COMPILE-ONLY
 
 // Regression test for DevDiv-483851 : [C++11] STL containers must use std::allocator_traits in debug mode
 

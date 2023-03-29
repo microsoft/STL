@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
+#include <cstring>
 #include <initializer_list>
 #include <memory>
 #include <new>
-#include <stddef.h>
-#include <string.h>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -16,7 +16,7 @@ using namespace std;
 
 #ifdef _WIN64
 const size_t bad_size = 0xCCCC'CCCC'CCCC'CCCCULL;
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else // ^^^ _WIN64 / !_WIN64 vvv
 const size_t bad_size = 0xCCCC'CCCCUL;
 #endif // _WIN64
 const unsigned long long default_state = 0xB01DFACEDEBAC1EULL;
@@ -68,7 +68,7 @@ struct garbage_data {
         memset(&data, 0xCC, sizeof(data));
     }
 
-    garbage_data(const garbage_data&) = delete;
+    garbage_data(const garbage_data&)            = delete;
     garbage_data& operator=(const garbage_data&) = delete;
 
     T& get() {

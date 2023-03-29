@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
+#include <cstdio>
 #include <regex>
-#include <stdio.h>
 #include <string>
 
 class regex_fixture {
@@ -189,7 +189,7 @@ public:
         std::regex_constants::syntax_option_type syntax = std::regex_constants::ECMAScript)
         : fixture(fixture), pattern(pattern), syntax(syntax), r(pattern, syntax) {}
 
-    test_regex(const test_regex&) = delete;
+    test_regex(const test_regex&)            = delete;
     test_regex& operator=(const test_regex&) = delete;
 
     void should_search_match(const std::string& subject, const std::string& expected,
@@ -252,7 +252,7 @@ public:
         std::regex_constants::syntax_option_type syntax = std::regex_constants::ECMAScript)
         : fixture(fixture), pattern(pattern), syntax(syntax), r(pattern, syntax) {}
 
-    test_wregex(const test_wregex&) = delete;
+    test_wregex(const test_wregex&)            = delete;
     test_wregex& operator=(const test_wregex&) = delete;
 
     void should_search_match(const std::wstring& subject, const std::wstring& expected,

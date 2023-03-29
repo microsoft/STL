@@ -5,5 +5,5 @@ RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
 PM_CL="/w14640 /Zc:threadSafeInit-"
 RUNALL_CROSSLIST
-PM_CL="/clr /MD /std:c++17"
-PM_CL="/clr /MDd /std:c++17"
+PM_CL="/clr /MD /std:c++20"
+PM_CL="/clr /MDd /std:c++20"

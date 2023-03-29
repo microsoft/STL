@@ -11,11 +11,11 @@
 #include <type_traits>
 #include <utility>
 
+#pragma warning(disable : 4793) // function compiled as native: non-clrcall vcall thunks must be compiled as native
+
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 namespace ranges = std::ranges;
-
-int main() {} // COMPILE-ONLY
 
 namespace detail {
     static constexpr bool permissive() {
@@ -719,8 +719,8 @@ namespace permutable_test {
         using difference_type = int;
 
         struct proxy {
-            proxy()             = default;
-            proxy(proxy const&) = delete;
+            proxy()                        = default;
+            proxy(proxy const&)            = delete;
             proxy& operator=(proxy const&) = delete;
 
             operator int() const;
@@ -823,35 +823,47 @@ namespace mergeable_test {
 
         {
             using Bad_I1 = readable_archetype<int, readable_status::not_input_iter>;
+#ifndef _M_CEE // TRANSITION, VSO-1665670
             STATIC_ASSERT(!input_iterator<Bad_I1>);
+#endif // _M_CEE
             STATIC_ASSERT(input_iterator<I2>);
             STATIC_ASSERT(weakly_incrementable<O>);
             STATIC_ASSERT(indirectly_copyable<Bad_I1, O>);
             STATIC_ASSERT(indirectly_copyable<I2, O>);
             STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<Bad_I1, Pj1>, projected<I2, Pj2>>);
+#ifndef _M_CEE // TRANSITION, VSO-1665670
             STATIC_ASSERT(!mergeable<Bad_I1, I2, O, Pr, Pj1, Pj2>);
+#endif // _M_CEE
         }
 
         {
             using Bad_I2 = readable_archetype<long, readable_status::not_input_iter>;
             STATIC_ASSERT(input_iterator<I1>);
+#ifndef _M_CEE // TRANSITION, VSO-1665670
             STATIC_ASSERT(!input_iterator<Bad_I2>);
+#endif // _M_CEE
             STATIC_ASSERT(weakly_incrementable<O>);
             STATIC_ASSERT(indirectly_copyable<I1, O>);
             STATIC_ASSERT(indirectly_copyable<Bad_I2, O>);
             STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<Bad_I2, Pj2>>);
+#ifndef _M_CEE // TRANSITION, VSO-1665670
             STATIC_ASSERT(!mergeable<I1, Bad_I2, O, Pr, Pj1, Pj2>);
+#endif // _M_CEE
         }
 
         {
             using Bad_O = writable_archetype<writable_status::not_weakly_incrementable>;
             STATIC_ASSERT(input_iterator<I1>);
             STATIC_ASSERT(input_iterator<I2>);
+#ifndef _M_CEE // TRANSITION, VSO-1665670
             STATIC_ASSERT(!weakly_incrementable<Bad_O>);
+#endif // _M_CEE
             STATIC_ASSERT(indirectly_copyable<I1, Bad_O>);
             STATIC_ASSERT(indirectly_copyable<I2, Bad_O>);
             STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+#ifndef _M_CEE // TRANSITION, VSO-1665670
             STATIC_ASSERT(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
+#endif // _M_CEE
         }
 
         {

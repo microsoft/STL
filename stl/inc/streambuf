@@ -18,16 +18,16 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <class _Elem, class _Traits>
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits>
 class basic_streambuf { // control read/write buffers
 protected:
     __CLR_OR_THIS_CALL basic_streambuf() : _Plocale(new locale) {
         _Init();
     }
 
-    __CLR_OR_THIS_CALL basic_streambuf(_Uninitialized) {}
+    __CLR_OR_THIS_CALL basic_streambuf(_Uninitialized) noexcept {}
 
-    __CLR_OR_THIS_CALL basic_streambuf(const basic_streambuf& _Right) : _Plocale(new locale(_Right.getloc())) {
+    __CLR_OR_THIS_CALL basic_streambuf(const basic_streambuf& _Right) : _Plocale(new locale{_Right.getloc()}) {
         _Init();
         setp(_Right.pbase(), _Right.pptr(), _Right.epptr());
         setg(_Right.eback(), _Right.gptr(), _Right.egptr());
@@ -42,7 +42,7 @@ protected:
         return *this;
     }
 
-    void __CLR_OR_THIS_CALL swap(basic_streambuf& _Right) {
+    void __CLR_OR_THIS_CALL swap(basic_streambuf& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Elem* _Pfirst0 = pbase();
             _Elem* _Pnext0  = pptr();
@@ -109,7 +109,7 @@ public:
         return _Oldlocale;
     }
 
-    locale __CLR_OR_THIS_CALL getloc() const { // get locale
+    locale __CLR_OR_THIS_CALL getloc() const noexcept /* strengthened */ { // get locale
         return *_Plocale;
     }
 
@@ -177,88 +177,92 @@ public:
     virtual void __CLR_OR_THIS_CALL _Unlock() {} // clear the thread lock (overridden by basic_filebuf)
 
 protected:
-    _Elem* __CLR_OR_THIS_CALL eback() const {
+    _Elem* __CLR_OR_THIS_CALL eback() const noexcept /* strengthened */ {
         return *_IGfirst;
     }
 
-    _Elem* __CLR_OR_THIS_CALL gptr() const {
+    _Elem* __CLR_OR_THIS_CALL gptr() const noexcept /* strengthened */ {
         return *_IGnext;
     }
 
-    _Elem* __CLR_OR_THIS_CALL pbase() const {
+    _Elem* __CLR_OR_THIS_CALL pbase() const noexcept /* strengthened */ {
         return *_IPfirst;
     }
 
-    _Elem* __CLR_OR_THIS_CALL pptr() const {
+    _Elem* __CLR_OR_THIS_CALL pptr() const noexcept /* strengthened */ {
         return *_IPnext;
     }
 
-    _Elem* __CLR_OR_THIS_CALL egptr() const {
+    _Elem* __CLR_OR_THIS_CALL egptr() const noexcept /* strengthened */ {
         return *_IGnext + *_IGcount;
     }
 
-    void __CLR_OR_THIS_CALL gbump(int _Off) { // alter current position in read buffer by _Off
+    void __CLR_OR_THIS_CALL gbump(int _Off) noexcept /* strengthened */ {
+        // alter current position in read buffer by _Off
         *_IGcount -= _Off;
         *_IGnext += _Off;
     }
 
-    void __CLR_OR_THIS_CALL setg(_Elem* _First, _Elem* _Next, _Elem* _Last) { // set pointers for read buffer
+    void __CLR_OR_THIS_CALL setg(_Elem* _First, _Elem* _Next, _Elem* _Last) noexcept /* strengthened */ {
+        // set pointers for read buffer
         *_IGfirst = _First;
         *_IGnext  = _Next;
         *_IGcount = static_cast<int>(_Last - _Next);
     }
 
-    _Elem* __CLR_OR_THIS_CALL epptr() const {
+    _Elem* __CLR_OR_THIS_CALL epptr() const noexcept /* strengthened */ {
         return *_IPnext + *_IPcount;
     }
 
-    _Elem* __CLR_OR_THIS_CALL _Gndec() { // decrement current position in read buffer
+    _Elem* __CLR_OR_THIS_CALL _Gndec() noexcept { // decrement current position in read buffer
         ++*_IGcount;
         return --*_IGnext;
     }
 
-    _Elem* __CLR_OR_THIS_CALL _Gninc() { // increment current position in read buffer
+    _Elem* __CLR_OR_THIS_CALL _Gninc() noexcept { // increment current position in read buffer
         --*_IGcount;
         return (*_IGnext)++;
     }
 
-    _Elem* __CLR_OR_THIS_CALL _Gnpreinc() { // preincrement current position in read buffer
+    _Elem* __CLR_OR_THIS_CALL _Gnpreinc() noexcept { // preincrement current position in read buffer
         --*_IGcount;
         return ++(*_IGnext);
     }
 
-    streamsize __CLR_OR_THIS_CALL _Gnavail() const { // count number of available elements in read buffer
+    streamsize __CLR_OR_THIS_CALL _Gnavail() const noexcept { // count number of available elements in read buffer
         return *_IGnext ? *_IGcount : 0;
     }
 
-    void __CLR_OR_THIS_CALL pbump(int _Off) { // alter current position in write buffer by _Off
+    void __CLR_OR_THIS_CALL pbump(int _Off) noexcept /* strengthened */ {
+        // alter current position in write buffer by _Off
         *_IPcount -= _Off;
         *_IPnext += _Off;
     }
 
-    void __CLR_OR_THIS_CALL setp(_Elem* _First, _Elem* _Last) { // set pointers for write buffer
+    void __CLR_OR_THIS_CALL setp(_Elem* _First, _Elem* _Last) noexcept /* strengthened */ {
+        // set pointers for write buffer
         *_IPfirst = _First;
         *_IPnext  = _First;
         *_IPcount = static_cast<int>(_Last - _First);
     }
 
-    void __CLR_OR_THIS_CALL setp(
-        _Elem* _First, _Elem* _Next, _Elem* _Last) { // set pointers for write buffer, extended version
+    void __CLR_OR_THIS_CALL setp(_Elem* _First, _Elem* _Next, _Elem* _Last) noexcept /* strengthened */ {
+        // set pointers for write buffer, extended version
         *_IPfirst = _First;
         *_IPnext  = _Next;
         *_IPcount = static_cast<int>(_Last - _Next);
     }
 
-    _Elem* __CLR_OR_THIS_CALL _Pninc() { // increment current position in write buffer
+    _Elem* __CLR_OR_THIS_CALL _Pninc() noexcept { // increment current position in write buffer
         --*_IPcount;
         return (*_IPnext)++;
     }
 
-    streamsize __CLR_OR_THIS_CALL _Pnavail() const { // count number of available positions in write buffer
+    streamsize __CLR_OR_THIS_CALL _Pnavail() const noexcept { // count number of available positions in write buffer
         return *_IPnext ? *_IPcount : 0;
     }
 
-    void __CLR_OR_THIS_CALL _Init() { // initialize buffer parameters for no buffers
+    void __CLR_OR_THIS_CALL _Init() noexcept { // initialize buffer parameters for no buffers
         _IGfirst = &_Gfirst;
         _IPfirst = &_Pfirst;
         _IGnext  = &_Gnext;
@@ -269,7 +273,7 @@ protected:
         setg(nullptr, nullptr, nullptr);
     }
 
-    void __CLR_OR_THIS_CALL _Init(_Elem** _Gf, _Elem** _Gn, int* _Gc, _Elem** _Pf, _Elem** _Pn, int* _Pc) {
+    void __CLR_OR_THIS_CALL _Init(_Elem** _Gf, _Elem** _Gn, int* _Gc, _Elem** _Pf, _Elem** _Pn, int* _Pc) noexcept {
         // initialize buffer parameters as specified
         _IGfirst = _Gf;
         _IPfirst = _Pf;
@@ -357,12 +361,12 @@ protected:
     virtual pos_type __CLR_OR_THIS_CALL seekoff(
         off_type, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out) {
         // change position by offset, according to way and mode
-        return pos_type(off_type(-1));
+        return pos_type{off_type{-1}};
     }
 
     virtual pos_type __CLR_OR_THIS_CALL seekpos(pos_type, ios_base::openmode = ios_base::in | ios_base::out) {
         // change to specified position, according to mode
-        return pos_type(off_type(-1));
+        return pos_type{off_type{-1}};
     }
 
     virtual basic_streambuf* __CLR_OR_THIS_CALL setbuf(_Elem*, streamsize) {

@@ -7,7 +7,7 @@
 #define _SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING
 
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <initializer_list>
 #include <memory>
 #include <type_traits>

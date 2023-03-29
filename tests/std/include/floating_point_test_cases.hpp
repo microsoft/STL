@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include <utility>
 
 constexpr std::pair<const char*, uint64_t> floating_point_test_cases_double[] = {

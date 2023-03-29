@@ -10,13 +10,12 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #if !_HAS_CXX20
-#pragma message("The contents of <span> are available only with C++20 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <span> are available only with C++20 or later.");
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #include <compare>
 #include <cstddef>
 #include <type_traits>
 #include <xutility>
-
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -27,7 +26,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
+_EXPORT_STD inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 
 template <class _Ty>
 struct _Span_iterator {
@@ -120,6 +119,7 @@ struct _Span_iterator {
     }
 
     constexpr _Span_iterator& operator-=(const difference_type _Off) noexcept {
+        _STL_VERIFY(_Off != _Min_possible_v<difference_type>, "integer overflow");
         _Verify_offset(-_Off);
         _Myptr -= _Off;
         return *this;
@@ -222,10 +222,7 @@ struct _Span_extent_type<_Ty, dynamic_extent> {
     size_t _Mysize{0};
 };
 
-template <class _Ty, size_t _Size>
-class array;
-
-template <class _Ty, size_t _Extent>
+_EXPORT_STD template <class _Ty, size_t _Extent>
 class span;
 
 #ifdef __cpp_lib_concepts
@@ -241,12 +238,6 @@ inline constexpr bool _Is_span_v = false;
 
 template <class _Ty, size_t _Extent>
 inline constexpr bool _Is_span_v<span<_Ty, _Extent>> = true;
-
-template <class>
-inline constexpr bool _Is_std_array_v = false;
-
-template <class _Ty, size_t _Size>
-inline constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
 
 // clang-format off
 template <class _It, class _Ty>
@@ -303,7 +294,7 @@ inline constexpr bool _Is_span_compatible_range = conjunction_v< //
 #endif // !__cpp_lib_concepts
 
 // [views.span]
-template <class _Ty, size_t _Extent = dynamic_extent>
+_EXPORT_STD template <class _Ty, size_t _Extent = dynamic_extent>
 class span : private _Span_extent_type<_Ty, _Extent> {
 private:
     using _Mybase = _Span_extent_type<_Ty, _Extent>;
@@ -311,16 +302,20 @@ private:
     using _Mybase::_Mysize;
 
 public:
-    using element_type     = _Ty;
-    using value_type       = remove_cv_t<_Ty>;
-    using size_type        = size_t;
-    using difference_type  = ptrdiff_t;
-    using pointer          = _Ty*;
-    using const_pointer    = const _Ty*;
-    using reference        = _Ty&;
-    using const_reference  = const _Ty&;
-    using iterator         = _Span_iterator<_Ty>;
-    using reverse_iterator = _STD reverse_iterator<iterator>;
+    using element_type           = _Ty;
+    using value_type             = remove_cv_t<_Ty>;
+    using size_type              = size_t;
+    using difference_type        = ptrdiff_t;
+    using pointer                = _Ty*;
+    using const_pointer          = const _Ty*;
+    using reference              = _Ty&;
+    using const_reference        = const _Ty&;
+    using iterator               = _Span_iterator<_Ty>;
+    using reverse_iterator       = _STD reverse_iterator<iterator>;
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+    using const_iterator         = _STD const_iterator<iterator>;
+    using const_reverse_iterator = _STD const_iterator<reverse_iterator>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     static constexpr size_type extent = _Extent;
 
@@ -554,14 +549,16 @@ public:
         return _Mysize;
     }
 
+#pragma warning(push)
+#pragma warning(disable : 4127) // conditional expression is constant
     _NODISCARD constexpr size_type size_bytes() const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-#pragma warning(suppress : 4127) // conditional expression is constant
         _STL_VERIFY(_Mysize <= dynamic_extent / sizeof(element_type),
             "size of span in bytes exceeds std::numeric_limits<size_t>::max()");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Mysize * sizeof(element_type);
     }
+#pragma warning(pop)
 
     _NODISCARD constexpr bool empty() const noexcept {
         return _Mysize == 0;
@@ -575,9 +572,10 @@ public:
         return _Mydata[_Off];
     }
 
+#pragma warning(push)
+#pragma warning(disable : 4127) // conditional expression is constant
     _NODISCARD constexpr reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-#pragma warning(suppress : 4127) // conditional expression is constant
         _STL_VERIFY(_Mysize > 0, "front of empty span");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Mydata[0];
@@ -585,11 +583,11 @@ public:
 
     _NODISCARD constexpr reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-#pragma warning(suppress : 4127) // conditional expression is constant
         _STL_VERIFY(_Mysize > 0, "back of empty span");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Mydata[_Mysize - 1];
     }
+#pragma warning(pop)
 
     _NODISCARD constexpr pointer data() const noexcept {
         return _Mydata;
@@ -599,7 +597,7 @@ public:
     _NODISCARD constexpr iterator begin() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         return {_Mydata, _Mydata, _Mydata + _Mysize};
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return {_Mydata};
 #endif // _ITERATOR_DEBUG_LEVEL
     }
@@ -608,10 +606,20 @@ public:
         const auto _End = _Mydata + _Mysize;
 #if _ITERATOR_DEBUG_LEVEL >= 1
         return {_End, _Mydata, _End};
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return {_End};
 #endif // _ITERATOR_DEBUG_LEVEL
     }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+    _NODISCARD constexpr const_iterator cbegin() const noexcept {
+        return begin();
+    }
+
+    _NODISCARD constexpr const_iterator cend() const noexcept {
+        return end();
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _NODISCARD constexpr reverse_iterator rbegin() const noexcept {
         return reverse_iterator{end()};
@@ -620,6 +628,16 @@ public:
     _NODISCARD constexpr reverse_iterator rend() const noexcept {
         return reverse_iterator{begin()};
     }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+    _NODISCARD constexpr const_reverse_iterator crbegin() const noexcept {
+        return rbegin();
+    }
+
+    _NODISCARD constexpr const_reverse_iterator crend() const noexcept {
+        return rend();
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _NODISCARD constexpr pointer _Unchecked_begin() const noexcept {
         return _Mydata;
@@ -659,13 +677,13 @@ span(const _Rng&) -> span<const typename _Rng::value_type>;
 
 #ifdef __cpp_lib_byte
 // [span.objectrep] Views of object representation
-template <class _Ty, size_t _Extent>
+_EXPORT_STD template <class _Ty, size_t _Extent>
 _NODISCARD auto as_bytes(span<_Ty, _Extent> _Sp) noexcept {
     using _ReturnType = span<const byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent>;
     return _ReturnType{reinterpret_cast<const byte*>(_Sp.data()), _Sp.size_bytes()};
 }
 
-template <class _Ty, size_t _Extent, enable_if_t<!is_const_v<_Ty>, int> = 0>
+_EXPORT_STD template <class _Ty, size_t _Extent, enable_if_t<!is_const_v<_Ty>, int> = 0>
 _NODISCARD auto as_writable_bytes(span<_Ty, _Extent> _Sp) noexcept {
     using _ReturnType = span<byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent>;
     return _ReturnType{reinterpret_cast<byte*>(_Sp.data()), _Sp.size_bytes()};

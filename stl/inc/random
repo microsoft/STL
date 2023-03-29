@@ -9,6 +9,7 @@
 #include <yvals_core.h>
 
 #if _STL_COMPILER_PREPROCESSOR
+#include <__msvc_int128.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -54,20 +55,19 @@ _STD_BEGIN
     _RNG_PROHIBIT_CHAR(_CheckedType)
 
 template <class _Seed_seq, class _Self, class _Engine = _Self>
-using _Enable_if_seed_seq_t = enable_if_t<
-    !is_convertible_v<remove_cv_t<_Seed_seq>,
-        typename _Self::
-            result_type> && !is_same_v<remove_cv_t<_Seed_seq>, _Self> && !is_same_v<remove_cv_t<_Seed_seq>, _Engine>,
-    int>;
+using _Enable_if_seed_seq_t =
+    enable_if_t<!is_convertible_v<remove_cv_t<_Seed_seq>, typename _Self::result_type>
+                    && !is_same_v<remove_cv_t<_Seed_seq>, _Self> && !is_same_v<remove_cv_t<_Seed_seq>, _Engine>,
+        int>;
 
 _INLINE_VAR constexpr long double _Pi    = 3.14159265358979323846264338327950288L;
 _INLINE_VAR constexpr long double _Exp1  = 2.71828182845904523536028747135266250L;
 _INLINE_VAR constexpr long double _Two32 = 4294967296.0L;
 _INLINE_VAR constexpr long double _Two31 = 2147483648.0L;
 
-_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _XLgamma(float);
-_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _XLgamma(double);
-_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double);
+extern "C++" _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _XLgamma(float);
+extern "C++" _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _XLgamma(double);
+extern "C++" _CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double);
 
 _INLINE_VAR constexpr int _Nwords = 4;
 
@@ -147,7 +147,7 @@ private:
     basic_istream<_Elem, _Traits>& _Str;
 };
 
-class seed_seq { // standard sequence of seed values
+_EXPORT_STD class seed_seq { // standard sequence of seed values
 public:
     using result_type = unsigned int;
 
@@ -224,7 +224,7 @@ public:
         return _Myvec.size();
     }
 
-    seed_seq(const seed_seq&) = delete;
+    seed_seq(const seed_seq&)       = delete;
     void operator=(const seed_seq&) = delete;
 
 private:
@@ -268,7 +268,7 @@ _NODISCARD constexpr int _Generate_canonical_iterations(const int _Bits, const u
     return _Ceil;
 }
 
-template <class _Real, size_t _Bits, class _Gen>
+_EXPORT_STD template <class _Real, size_t _Bits, class _Gen>
 _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value from random sequence
     _RNG_REQUIRE_REALTYPE(generate_canonical, _Real);
 
@@ -335,10 +335,10 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
 _INLINE_VAR constexpr int _MP_len = 5;
 using _MP_arr                     = uint64_t[_MP_len];
 
-_NODISCARD _CRTIMP2_PURE uint64_t __CLRCALL_PURE_OR_CDECL _MP_Get(_MP_arr) noexcept;
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Add(_MP_arr, uint64_t) noexcept;
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Mul(_MP_arr, uint64_t, uint64_t) noexcept;
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Rem(_MP_arr, uint64_t) noexcept;
+extern "C++" _NODISCARD _CRTIMP2_PURE uint64_t __CLRCALL_PURE_OR_CDECL _MP_Get(_MP_arr) noexcept;
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Add(_MP_arr, uint64_t) noexcept;
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Mul(_MP_arr, uint64_t, uint64_t) noexcept;
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Rem(_MP_arr, uint64_t) noexcept;
 
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
@@ -427,7 +427,7 @@ _NODISCARD _Uint _Get_linear_congruential_seed_from_seq(_Seed_seq& _Seq) { // N4
     return _Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_Sx);
 }
 
-template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
+_EXPORT_STD template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 class linear_congruential_engine { // a linear congruential generator random engine
 public:
     _RNG_REQUIRE_UINTTYPE(linear_congruential_engine, _Uint);
@@ -790,12 +790,6 @@ protected:
     typename _Swc_Traits::_Cy_t _Carry;
 };
 
-template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
-const size_t _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>::short_lag;
-
-template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
-const size_t _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>::long_lag;
-
 template <class _Ty, _Ty _Mx, size_t _Nw>
 struct _Swc_traits { // traits for subtract_with_carry generator
     using _Cy_t   = int;
@@ -900,7 +894,7 @@ public:
     subtract_with_carry(_Gen& _Gx) : _Mybase(_Gx) {}
 };
 
-template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
+_EXPORT_STD template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class subtract_with_carry_engine : public subtract_with_carry<_Ty, (_Ty{1} << (_Wx - 1)) << 1, _Sx, _Rx> {
     // subtract_with_carry generator
 public:
@@ -1005,6 +999,18 @@ public:
 };
 
 #if _HAS_TR1_NAMESPACE
+_CONSTEVAL double _Cx_exp2(const int _Exp) noexcept {
+    double _Ret = 1.0;
+    for (int _Count = _Exp; _Count > 0; --_Count) {
+        _Ret *= 2.0;
+    }
+    for (int _Count = _Exp; _Count < 0; ++_Count) {
+        _Ret *= 0.5;
+    }
+
+    return _Ret;
+}
+
 template <class _Ty, size_t _Wx, size_t _Rx>
 struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     using _Cy_t   = _Ty;
@@ -1012,9 +1018,9 @@ struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     using _Mod_t  = _Ty;
     using _Seed_t = unsigned int;
 
-    static const _Cy_t _Cy;
-    static const _Mod_t _Mod;
-    static const _Ty _Max;
+    static constexpr _Cy_t _Cy   = static_cast<_Cy_t>(_Cx_exp2(static_cast<int>(-static_cast<ptrdiff_t>(_Wx))));
+    static constexpr _Mod_t _Mod = 1;
+    static constexpr _Ty _Max    = 1;
     static constexpr int _Nwords = (_Wx + 31) / 32;
 
     template <class _Gen>
@@ -1058,23 +1064,9 @@ struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     }
 
 private:
-    static const _Ty _Scale1;
+    static constexpr _Ty _Scale1         = static_cast<_Ty>(_Cx_exp2(_Wx % 32));
     static constexpr unsigned long _Mask = ~((~0UL) << (_Wx % 32));
 };
-
-template <class _Ty, size_t _Wx, size_t _Rx>
-const typename _Swc_01_traits<_Ty, _Wx, _Rx>::_Cy_t
-    _Swc_01_traits<_Ty, _Wx, _Rx>::_Cy = static_cast<typename _Swc_01_traits<_Ty, _Wx, _Rx>::_Cy_t>(
-        _CSTD ldexp(1.0, static_cast<int>(-static_cast<ptrdiff_t>(_Wx))));
-
-template <class _Ty, size_t _Wx, size_t _Rx>
-const typename _Swc_01_traits<_Ty, _Wx, _Rx>::_Mod_t _Swc_01_traits<_Ty, _Wx, _Rx>::_Mod = 1;
-
-template <class _Ty, size_t _Wx, size_t _Rx>
-const _Ty _Swc_01_traits<_Ty, _Wx, _Rx>::_Max = 1;
-
-template <class _Ty, size_t _Wx, size_t _Rx>
-const _Ty _Swc_01_traits<_Ty, _Wx, _Rx>::_Scale1 = static_cast<_Ty>(_CSTD ldexp(1.0, _Wx % 32));
 
 template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class _DEPRECATE_TR1_NAMESPACE subtract_with_carry_01
@@ -1091,12 +1083,6 @@ public:
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, subtract_with_carry_01> = 0>
     subtract_with_carry_01(_Gen& _Gx) : _Mybase(_Gx) {}
 };
-
-_STL_DISABLE_DEPRECATED_WARNING
-template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
-const size_t subtract_with_carry_01<_Ty, _Wx, _Sx, _Rx>::word_size;
-_STL_RESTORE_DEPRECATED_WARNING
-
 #endif // _HAS_TR1_NAMESPACE
 
 template <class _Ty, int _Wx, int _Nx, int _Mx, int _Rx, _Ty _Px, int _Ux, int _Sx, _Ty _Bx, int _Tx, _Ty _Cx, int _Lx>
@@ -1268,8 +1254,8 @@ protected:
     static constexpr int _M_mod_n   = _Mx % _Nx;
 };
 
-template <class _Ty, size_t _Wx, size_t _Nx, size_t _Mx, size_t _Rx, _Ty _Px, size_t _Ux, _Ty _Dx, size_t _Sx, _Ty _Bx,
-    size_t _Tx, _Ty _Cx, size_t _Lx, _Ty _Fx>
+_EXPORT_STD template <class _Ty, size_t _Wx, size_t _Nx, size_t _Mx, size_t _Rx, _Ty _Px, size_t _Ux, _Ty _Dx,
+    size_t _Sx, _Ty _Bx, size_t _Tx, _Ty _Cx, size_t _Lx, _Ty _Fx>
 class mersenne_twister_engine : public mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx> {
 public:
     static constexpr unsigned long long _Max = (((1ULL << (_Wx - 1)) - 1) << 1) + 1;
@@ -1443,13 +1429,7 @@ private:
     int _Nx;
 };
 
-template <class _Engine, int _Px, int _Rx>
-const int discard_block<_Engine, _Px, _Rx>::block_size;
-
-template <class _Engine, int _Px, int _Rx>
-const int discard_block<_Engine, _Px, _Rx>::used_block;
-
-template <class _Engine, size_t _Px, size_t _Rx>
+_EXPORT_STD template <class _Engine, size_t _Px, size_t _Rx>
 class discard_block_engine : public discard_block<_Engine, _Px, _Rx> { // discard_block_engine compound engine
 public:
     static_assert(0 < _Rx && _Rx <= _Px, "invalid template argument for discard_block_engine");
@@ -1477,7 +1457,7 @@ public:
     }
 };
 
-template <class _Engine, size_t _Wx, class _UIntType>
+_EXPORT_STD template <class _Engine, size_t _Wx, class _UIntType>
 class independent_bits_engine { // independent_bits_engine compound engine
 public:
     _RNG_REQUIRE_UINTTYPE(independent_bits_engine, _UIntType);
@@ -1628,7 +1608,7 @@ private:
     _Eres _Yx1; // max value for larger packing word
 };
 
-template <class _Engine, size_t _Kx>
+_EXPORT_STD template <class _Engine, size_t _Kx>
 class shuffle_order_engine { // shuffle_order_engine compound engine
 public:
     static_assert(0 < _Kx, "invalid template argument for shuffle_order_engine");
@@ -1752,6 +1732,128 @@ private:
     double _Scale;
 };
 
+template <class _Diff, class _Urng>
+class _Rng_from_urng_v2 { // wrap a URNG as an RNG
+public:
+    using _Ty0 = make_unsigned_t<_Diff>;
+    using _Ty1 = _Invoke_result_t<_Urng&>;
+
+    using _Udiff                              = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
+    static constexpr unsigned int _Udiff_bits = sizeof(_Udiff) * CHAR_BIT;
+    using _Uprod = conditional_t<_Udiff_bits <= 16, uint32_t, conditional_t<_Udiff_bits <= 32, uint64_t, _Unsigned128>>;
+
+    explicit _Rng_from_urng_v2(_Urng& _Func) : _Ref(_Func) {}
+
+    _Diff operator()(_Diff _Index) { // adapt _Urng closed range to [0, _Index)
+        // From Daniel Lemire, "Fast Random Integer Generation in an Interval", ACM Trans. Model. Comput. Simul. 29 (1),
+        // 2019.
+        //
+        // Algorithm 5 <-> This Code:
+        //   m <-> _Product
+        //   l <-> _Rem
+        //   s <-> _Index
+        //   t <-> _Threshold
+        //   L <-> _Generated_bits
+        //   2^L - 1 <-> _Mask
+
+        _Udiff _Mask        = _Bmask;
+        unsigned int _Niter = 1;
+
+        if constexpr (_Bits < _Udiff_bits) {
+            while (_Mask < static_cast<_Udiff>(_Index - 1)) {
+                _Mask <<= _Bits;
+                _Mask |= _Bmask;
+                ++_Niter;
+            }
+        }
+
+        // x <- random integer in [0, 2^L)
+        // m <- x * s
+        auto _Product = _Get_random_product(_Index, _Niter);
+        // l <- m mod 2^L
+        auto _Rem = static_cast<_Udiff>(_Product) & _Mask;
+
+        if (_Rem < _Index) {
+            // t <- (2^L - s) mod s
+            const auto _Threshold = (_Mask - _Index + 1) % _Index;
+            while (_Rem < _Threshold) {
+                _Product = _Get_random_product(_Index, _Niter);
+                _Rem     = static_cast<_Udiff>(_Product) & _Mask;
+            }
+        }
+
+        unsigned int _Generated_bits;
+        if constexpr (_Bits < _Udiff_bits) {
+            _Generated_bits = static_cast<unsigned int>(_Popcount(_Mask));
+        } else {
+            _Generated_bits = _Udiff_bits;
+        }
+
+        // m / 2^L
+        return static_cast<_Diff>(_Product >> _Generated_bits);
+    }
+
+    _Udiff _Get_all_bits() {
+        _Udiff _Ret = _Get_bits();
+
+        if constexpr (_Bits < _Udiff_bits) {
+            for (unsigned int _Num = _Bits; _Num < _Udiff_bits; _Num += _Bits) { // don't mask away any bits
+                _Ret <<= _Bits;
+                _Ret |= _Get_bits();
+            }
+        }
+
+        return _Ret;
+    }
+
+    _Rng_from_urng_v2(const _Rng_from_urng_v2&)            = delete;
+    _Rng_from_urng_v2& operator=(const _Rng_from_urng_v2&) = delete;
+
+private:
+    _Udiff _Get_bits() { // return a random value within [0, _Bmask]
+        static constexpr auto _Urng_min = (_Urng::min)();
+        for (;;) { // repeat until random value is in range
+            const _Udiff _Val = _Ref() - _Urng_min;
+
+            if (_Val <= _Bmask) {
+                return _Val;
+            }
+        }
+    }
+
+    static constexpr size_t _Calc_bits() {
+        auto _Bits_local  = _Udiff_bits;
+        auto _Bmask_local = static_cast<_Udiff>(-1);
+        for (; (_Urng::max)() - (_Urng::min)() < _Bmask_local; _Bmask_local >>= 1) {
+            --_Bits_local;
+        }
+
+        return _Bits_local;
+    }
+
+    _Uprod _Get_random_product(const _Diff _Index, unsigned int _Niter) {
+        _Udiff _Ret = _Get_bits();
+        if constexpr (_Bits < _Udiff_bits) {
+            while (--_Niter > 0) {
+                _Ret <<= _Bits;
+                _Ret |= _Get_bits();
+            }
+        }
+
+        if constexpr (is_same_v<_Udiff, uint64_t>) {
+            uint64_t _High;
+            const auto _Low = _Base128::_UMul128(_Ret, static_cast<_Udiff>(_Index), _High);
+            return _Uprod{_Low, _High};
+        } else {
+            return _Uprod{_Ret} * _Uprod{_Index};
+        }
+    }
+
+    _Urng& _Ref; // reference to URNG
+    static constexpr size_t _Bits  = _Calc_bits(); // number of random bits generated by _Get_bits()
+    static constexpr _Udiff _Bmask = static_cast<_Udiff>(-1) >> (_Udiff_bits - _Bits); // 2^_Bits - 1
+};
+
 template <class _Ty = int>
 class uniform_int { // uniform integer distribution
 public:
@@ -1864,7 +1966,9 @@ private:
 
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, _Ty _Min, _Ty _Max) const { // compute next value in range [_Min, _Max]
-        _Rng_from_urng<_Uty, _Engine> _Generator(_Eng);
+        conditional_t<_Has_static_min_max<_Engine>::value, _Rng_from_urng_v2<_Uty, _Engine>,
+            _Rng_from_urng<_Uty, _Engine>>
+            _Generator(_Eng);
 
         const _Uty _Umin = _Adjust(static_cast<_Uty>(_Min));
         const _Uty _Umax = _Adjust(static_cast<_Uty>(_Max));
@@ -1882,7 +1986,7 @@ private:
 
     static _Uty _Adjust(_Uty _Uval) { // convert signed ranges to unsigned ranges and vice versa
         if constexpr (is_signed_v<_Ty>) {
-            const _Uty _Adjuster = (static_cast<_Uty>(-1) >> 1) + 1; // 2^(N-1)
+            constexpr _Uty _Adjuster = (static_cast<_Uty>(-1) >> 1) + 1; // 2^(N-1)
 
             if (_Uval < _Adjuster) {
                 return static_cast<_Uty>(_Uval + _Adjuster);
@@ -1897,7 +2001,7 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = int>
+_EXPORT_STD template <class _Ty = int>
 class uniform_int_distribution : public uniform_int<_Ty> { // uniform integer distribution
 public:
     _RNG_REQUIRE_INTTYPE(uniform_int_distribution, _Ty);
@@ -1934,7 +2038,7 @@ public:
 #endif // !_HAS_CXX20
 };
 
-class bernoulli_distribution { // class for bernoulli distribution
+_EXPORT_STD class bernoulli_distribution { // class for bernoulli distribution
 public:
     using result_type = bool;
 
@@ -2045,7 +2149,6 @@ private:
     param_type _Par;
 };
 
-
 // Returns smallest _Flt such that static_cast<_Ty>(_Result) > _Val.
 // First truncate to largest _Flt <= _Val, then add ceil(ulp).
 
@@ -2083,7 +2186,7 @@ _NODISCARD _Flt _Float_upper_bound(_Ty _Val) {
     }
 }
 
-template <class _Ty = int>
+_EXPORT_STD template <class _Ty = int>
 class geometric_distribution { // geometric distribution
 public:
     using _Ty1 = double;
@@ -2232,7 +2335,7 @@ private:
     _Ty1 _Gx0;
 };
 
-template <class _Ty = int>
+_EXPORT_STD template <class _Ty = int>
 class poisson_distribution { // poisson distribution
 public:
     using _Ty1 = double;
@@ -2380,7 +2483,7 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = int>
+_EXPORT_STD template <class _Ty = int>
 class binomial_distribution { // binomial distribution
 public:
     using _Ty1 = double;
@@ -2703,7 +2806,7 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class uniform_real_distribution : public uniform_real<_Ty> { // uniform real distribution
 public:
     _RNG_REQUIRE_REALTYPE(uniform_real_distribution, _Ty);
@@ -2739,7 +2842,7 @@ public:
 #endif // !_HAS_CXX20
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class exponential_distribution { // exponential distribution
 public:
     _RNG_REQUIRE_REALTYPE(exponential_distribution, _Ty);
@@ -2852,7 +2955,7 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class normal_distribution { // normal distribution
 public:
     _RNG_REQUIRE_REALTYPE(normal_distribution, _Ty);
@@ -3040,7 +3143,7 @@ private:
     _Ty _Xx2;
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class gamma_distribution { // gamma distribution
 public:
     _RNG_REQUIRE_REALTYPE(gamma_distribution, _Ty);
@@ -3227,7 +3330,7 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class weibull_distribution { // weibull distribution
 public:
     _RNG_REQUIRE_REALTYPE(weibull_distribution, _Ty);
@@ -3355,7 +3458,7 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class extreme_value_distribution { // extreme value distribution
 public:
     _RNG_REQUIRE_REALTYPE(extreme_value_distribution, _Ty);
@@ -3484,7 +3587,7 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class lognormal_distribution { // lognormal_distribution
 public:
     _RNG_REQUIRE_REALTYPE(lognormal_distribution, _Ty);
@@ -3611,7 +3714,7 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class chi_squared_distribution { // chi squared distribution
 public:
     _RNG_REQUIRE_REALTYPE(chi_squared_distribution, _Ty);
@@ -3724,7 +3827,7 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class cauchy_distribution { // Cauchy distribution
 public:
     _RNG_REQUIRE_REALTYPE(cauchy_distribution, _Ty);
@@ -3910,7 +4013,7 @@ private:
     _Ty _Bx;
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class fisher_f_distribution { // fisher_f distribution
 public:
     _RNG_REQUIRE_REALTYPE(fisher_f_distribution, _Ty);
@@ -4049,7 +4152,7 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class student_t_distribution { // student_t distribution
 public:
     _RNG_REQUIRE_REALTYPE(student_t_distribution, _Ty);
@@ -4177,7 +4280,7 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = int>
+_EXPORT_STD template <class _Ty = int>
 class negative_binomial_distribution { // negative binomial distribution
 public:
     _RNG_REQUIRE_INTTYPE(negative_binomial_distribution, _Ty);
@@ -4312,7 +4415,7 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = int>
+_EXPORT_STD template <class _Ty = int>
 class discrete_distribution { // discrete integer distribution
 public:
     _RNG_REQUIRE_INTTYPE(discrete_distribution, _Ty);
@@ -4507,7 +4610,7 @@ public:
     param_type _Par;
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class piecewise_constant_distribution
     : public discrete_distribution<size_t> { // piecewise constant floating-point distribution
     // TRANSITION: unused _Mypbase subobject from base class
@@ -4579,6 +4682,8 @@ public:
             return _Bvec;
         }
 
+#pragma warning(push)
+#pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data
         _NODISCARD vector<_Ty> densities() const {
             vector<_Ty> _Ans(this->_Pvec.begin(), this->_Pvec.end());
 
@@ -4588,6 +4693,7 @@ public:
 
             return _Ans;
         }
+#pragma warning(pop)
 
         void _Init() { // initialize
             _Mypbase::_Init();
@@ -4693,7 +4799,7 @@ public:
     param_type _Par;
 };
 
-template <class _Ty = double>
+_EXPORT_STD template <class _Ty = double>
 class piecewise_linear_distribution
     : public discrete_distribution<size_t> { // piecewise linear floating-point distribution
     // TRANSITION: unused _Mypbase subobject from base class
@@ -4773,10 +4879,13 @@ public:
             return _Bvec;
         }
 
+#pragma warning(push)
+#pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data
         _NODISCARD vector<_Ty> densities() const {
             vector<_Ty> _Ans(this->_Pvec.begin(), this->_Pvec.end());
             return _Ans;
         }
+#pragma warning(pop)
 
         _NODISCARD double _Piece_probability(const size_t _Idx) const {
             return 0.5 * (this->_Pvec[_Idx] + this->_Pvec[_Idx + 1])
@@ -4924,40 +5033,39 @@ public:
     param_type _Par;
 };
 
-using minstd_rand0 = linear_congruential_engine<unsigned int, 16807, 0, 2147483647>;
-using minstd_rand  = linear_congruential_engine<unsigned int, 48271, 0, 2147483647>;
+_EXPORT_STD using minstd_rand0 = linear_congruential_engine<unsigned int, 16807, 0, 2147483647>;
+_EXPORT_STD using minstd_rand  = linear_congruential_engine<unsigned int, 48271, 0, 2147483647>;
 
-using mt19937 = mersenne_twister_engine<unsigned int, 32, 624, 397, 31, 0x9908b0df, 11, 0xffffffff, 7, 0x9d2c5680, 15,
-    0xefc60000, 18, 1812433253>;
+_EXPORT_STD using mt19937 = mersenne_twister_engine<unsigned int, 32, 624, 397, 31, 0x9908b0df, 11, 0xffffffff, 7,
+    0x9d2c5680, 15, 0xefc60000, 18, 1812433253>;
 
 #if _HAS_TR1_NAMESPACE
 _STL_DISABLE_DEPRECATED_WARNING
-using _Ranbase = subtract_with_carry<unsigned int, 1 << 24, 10, 24>;
-_DEPRECATE_TR1_NAMESPACE typedef discard_block<_Ranbase, 223, 24> ranlux3;
-_DEPRECATE_TR1_NAMESPACE typedef discard_block<_Ranbase, 389, 24> ranlux4;
+using _Ranbase                         = subtract_with_carry<unsigned int, 1 << 24, 10, 24>;
+using ranlux3 _DEPRECATE_TR1_NAMESPACE = discard_block<_Ranbase, 223, 24>;
+using ranlux4 _DEPRECATE_TR1_NAMESPACE = discard_block<_Ranbase, 389, 24>;
 
-_DEPRECATE_TR1_NAMESPACE typedef subtract_with_carry_01<float, 24, 10, 24> ranlux_base_01;
-_DEPRECATE_TR1_NAMESPACE typedef subtract_with_carry_01<double, 48, 5, 12> ranlux64_base_01;
-_DEPRECATE_TR1_NAMESPACE typedef discard_block<ranlux_base_01, 223, 24> ranlux3_01;
-_DEPRECATE_TR1_NAMESPACE typedef discard_block<ranlux_base_01, 389, 24> ranlux4_01;
+using ranlux_base_01 _DEPRECATE_TR1_NAMESPACE   = subtract_with_carry_01<float, 24, 10, 24>;
+using ranlux64_base_01 _DEPRECATE_TR1_NAMESPACE = subtract_with_carry_01<double, 48, 5, 12>;
+using ranlux3_01 _DEPRECATE_TR1_NAMESPACE       = discard_block<ranlux_base_01, 223, 24>;
+using ranlux4_01 _DEPRECATE_TR1_NAMESPACE       = discard_block<ranlux_base_01, 389, 24>;
 _STL_RESTORE_DEPRECATED_WARNING
 #endif // _HAS_TR1_NAMESPACE
 
-using mt19937_64 = mersenne_twister_engine<unsigned long long, 64, 312, 156, 31, 0xb5026f5aa96619e9ULL, 29,
+_EXPORT_STD using mt19937_64 = mersenne_twister_engine<unsigned long long, 64, 312, 156, 31, 0xb5026f5aa96619e9ULL, 29,
     0x5555555555555555ULL, 17, 0x71d67fffeda60000ULL, 37, 0xfff7eee000000000ULL, 43, 6364136223846793005ULL>;
 
-using ranlux24_base = subtract_with_carry_engine<unsigned int, 24, 10, 24>;
-using ranlux48_base = subtract_with_carry_engine<unsigned long long, 48, 5, 12>;
-using ranlux24      = discard_block_engine<ranlux24_base, 223, 23>;
-using ranlux48      = discard_block_engine<ranlux48_base, 389, 11>;
-using knuth_b       = shuffle_order_engine<minstd_rand0, 256>;
+_EXPORT_STD using ranlux24_base = subtract_with_carry_engine<unsigned int, 24, 10, 24>;
+_EXPORT_STD using ranlux48_base = subtract_with_carry_engine<unsigned long long, 48, 5, 12>;
+_EXPORT_STD using ranlux24      = discard_block_engine<ranlux24_base, 223, 23>;
+_EXPORT_STD using ranlux48      = discard_block_engine<ranlux48_base, 389, 11>;
+_EXPORT_STD using knuth_b       = shuffle_order_engine<minstd_rand0, 256>;
 
-using default_random_engine = mt19937;
+_EXPORT_STD using default_random_engine = mt19937;
 
+extern "C++" _CRTIMP2_PURE unsigned int __CLRCALL_PURE_OR_CDECL _Random_device();
 
-_CRTIMP2_PURE unsigned int __CLRCALL_PURE_OR_CDECL _Random_device();
-
-class random_device { // class to generate random numbers (from hardware where available)
+_EXPORT_STD class random_device { // class to generate random numbers (from hardware where available)
 public:
     using result_type = unsigned int;
 
@@ -4981,7 +5089,7 @@ public:
         return _Random_device();
     }
 
-    random_device(const random_device&) = delete;
+    random_device(const random_device&)            = delete;
     random_device& operator=(const random_device&) = delete;
 };
 
@@ -5040,7 +5148,7 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD uniform_int_distribution;
     using _STD uniform_real_distribution;
     using _STD weibull_distribution;
-} // namespace tr1
+} // namespace _DEPRECATE_TR1_NAMESPACE tr1
 _STL_RESTORE_DEPRECATED_WARNING
 #endif // _HAS_TR1_NAMESPACE
 _STD_END

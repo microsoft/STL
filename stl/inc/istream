@@ -20,7 +20,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 #pragma vtordisp(push, 2) // compiler bug workaround
 
-template <class _Elem, class _Traits>
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits>
 class basic_istream : virtual public basic_ios<_Elem, _Traits> { // control extractions from a stream buffer
 public:
     using _Myios = basic_ios<_Elem, _Traits>;
@@ -54,18 +54,18 @@ protected:
         _Right._Chcount = 0;
     }
 
-    basic_istream& __CLR_OR_THIS_CALL operator=(basic_istream&& _Right) {
+    basic_istream& __CLR_OR_THIS_CALL operator=(basic_istream&& _Right) noexcept /* strengthened */ {
         this->swap(_Right);
         return *this;
     }
 
-    void __CLR_OR_THIS_CALL swap(basic_istream& _Right) {
+    void __CLR_OR_THIS_CALL swap(basic_istream& _Right) noexcept /* strengthened */ {
         _Myios::swap(_Right);
         _STD swap(_Chcount, _Right._Chcount);
     }
 
 public:
-    __CLR_OR_THIS_CALL basic_istream(const basic_istream&) = delete;
+    __CLR_OR_THIS_CALL basic_istream(const basic_istream&)            = delete;
     basic_istream& __CLR_OR_THIS_CALL operator=(const basic_istream&) = delete;
 
     __CLR_OR_THIS_CALL ~basic_istream() noexcept override {}
@@ -104,7 +104,7 @@ public:
             return _Ok;
         }
 
-        __CLR_OR_THIS_CALL sentry(const sentry&) = delete;
+        __CLR_OR_THIS_CALL sentry(const sentry&)            = delete;
         sentry& __CLR_OR_THIS_CALL operator=(const sentry&) = delete;
 
     private:
@@ -205,7 +205,7 @@ private:
     }
 
     template <class = void>
-    void _Increment_gcount() {
+    void _Increment_gcount() noexcept {
         if (_Chcount != (numeric_limits<streamsize>::max)()) {
             ++_Chcount;
         }
@@ -605,7 +605,8 @@ public:
         return *this;
     }
 
-    _NODISCARD streamsize __CLR_OR_THIS_CALL gcount() const { // get count from last extraction
+    _NODISCARD streamsize __CLR_OR_THIS_CALL gcount() const noexcept /* strengthened */ {
+        // get count from last extraction
         return _Chcount;
     }
 
@@ -681,7 +682,7 @@ public:
             _CATCH_IO_END
         }
 
-        return pos_type(-1);
+        return pos_type{off_type{-1}};
     }
 
 private:
@@ -721,7 +722,7 @@ template class _CRTIMP2_PURE_IMPORT basic_istream<unsigned short, char_traits<un
 #endif // __FORCE_INSTANCE
 #endif // defined(_DLL_CPPLIB)
 
-template <class _Elem, class _Traits>
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits>
 class basic_iostream : public basic_istream<_Elem, _Traits>,
                        public basic_ostream<_Elem, _Traits> { // control insertions and extractions from a stream buffer
 public:
@@ -743,19 +744,19 @@ protected:
         _Myios::move(_STD move(_Right));
     }
 
-    basic_iostream& __CLR_OR_THIS_CALL operator=(basic_iostream&& _Right) {
+    basic_iostream& __CLR_OR_THIS_CALL operator=(basic_iostream&& _Right) noexcept /* strengthened */ {
         this->swap(_Right);
         return *this;
     }
 
-    void __CLR_OR_THIS_CALL swap(basic_iostream& _Right) {
+    void __CLR_OR_THIS_CALL swap(basic_iostream& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Myios::swap(_Right);
         }
     }
 
 public:
-    __CLR_OR_THIS_CALL basic_iostream(const basic_iostream&) = delete;
+    __CLR_OR_THIS_CALL basic_iostream(const basic_iostream&)            = delete;
     basic_iostream& __CLR_OR_THIS_CALL operator=(const basic_iostream&) = delete;
 
     __CLR_OR_THIS_CALL ~basic_iostream() noexcept override {}
@@ -820,19 +821,19 @@ basic_istream<_Elem, _Traits>& _Istream_extract_into_buffer(
 #if _HAS_CXX20 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
 #pragma warning(push)
 #pragma warning(disable : 6001) // Using uninitialized memory '_Str'.
-template <class _Elem, class _Traits, size_t _Size>
+_EXPORT_STD template <class _Elem, class _Traits, size_t _Size>
 basic_istream<_Elem, _Traits>& operator>>(
     basic_istream<_Elem, _Traits>& _Istr, _Out_writes_z_(_Size) _Elem (&_Str)[_Size]) {
     return _Istream_extract_into_buffer(_Istr, _Size, _Str);
 }
 
-template <class _Traits, size_t _Size>
+_EXPORT_STD template <class _Traits, size_t _Size>
 basic_istream<char, _Traits>& operator>>(
     basic_istream<char, _Traits>& _Istr, _Out_writes_z_(_Size) signed char (&_Str)[_Size]) {
     return _Istream_extract_into_buffer(_Istr, _Size, reinterpret_cast<char*>(_Str));
 }
 
-template <class _Traits, size_t _Size>
+_EXPORT_STD template <class _Traits, size_t _Size>
 basic_istream<char, _Traits>& operator>>(
     basic_istream<char, _Traits>& _Istr, _Out_writes_z_(_Size) unsigned char (&_Str)[_Size]) {
     return _Istream_extract_into_buffer(_Istr, _Size, reinterpret_cast<char*>(_Str));
@@ -855,7 +856,7 @@ basic_istream<char, _Traits>& operator>>(basic_istream<char, _Traits>& _Istr, un
 }
 #endif // _HAS_CXX20
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, _Elem& _Ch) { // extract a character
     using _Myis = basic_istream<_Elem, _Traits>;
 
@@ -878,13 +879,13 @@ basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, 
     return _Istr;
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_istream<char, _Traits>& operator>>(basic_istream<char, _Traits>& _Istr, signed char& _Ch) {
     // extract a signed char
     return _Istr >> reinterpret_cast<char&>(_Ch);
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_istream<char, _Traits>& operator>>(basic_istream<char, _Traits>& _Istr, unsigned char& _Ch) {
     // extract an unsigned char
     return _Istr >> reinterpret_cast<char&>(_Ch);
@@ -896,14 +897,14 @@ struct _Can_stream_in : false_type {};
 template <class _Istr, class _Ty>
 struct _Can_stream_in<_Istr, _Ty, void_t<decltype(_STD declval<_Istr&>() >> _STD declval<_Ty>())>> : true_type {};
 
-template <class _Istr, class _Ty,
+_EXPORT_STD template <class _Istr, class _Ty,
     enable_if_t<conjunction_v<is_convertible<_Istr*, ios_base*>, _Can_stream_in<_Istr, _Ty>>, int> = 0>
 _Istr&& operator>>(_Istr&& _Is, _Ty&& _Val) { // extract from rvalue stream
     _Is >> _STD forward<_Ty>(_Val);
     return _STD move(_Is);
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_istream<_Elem, _Traits>& __CLRCALL_OR_CDECL ws(basic_istream<_Elem, _Traits>& _Istr) { // consume whitespace
     const typename basic_istream<_Elem, _Traits>::sentry _Ok(_Istr, true);
 

@@ -51,8 +51,8 @@ struct NullptrDeleter {
 };
 
 struct ImmobileDeleter {
-    ImmobileDeleter()                  = default;
-    ImmobileDeleter(ImmobileDeleter&&) = delete;
+    ImmobileDeleter()                             = default;
+    ImmobileDeleter(ImmobileDeleter&&)            = delete;
     ImmobileDeleter& operator=(ImmobileDeleter&&) = delete;
 
     void operator()(void*) const {}
@@ -216,8 +216,8 @@ namespace unique_ptr_ {
         fancy_deleter()                = default;
         fancy_deleter(fancy_deleter&&) = default;
 
-        fancy_deleter(const fancy_deleter&) = delete;
-        fancy_deleter& operator=(fancy_deleter&&) = delete;
+        fancy_deleter(const fancy_deleter&)            = delete;
+        fancy_deleter& operator=(fancy_deleter&&)      = delete;
         fancy_deleter& operator=(const fancy_deleter&) = delete;
     };
 

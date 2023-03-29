@@ -4,8 +4,9 @@
 #define _USE_HETEROGENEOUS_ALLOCATOR_COMPARE_IN_INTERNAL_CHECK
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <cstdio>
+#include <cstdlib>
 #include <deque>
 #include <forward_list>
 #include <functional>
@@ -16,7 +17,6 @@
 #include <regex>
 #include <set>
 #include <stdexcept>
-#include <stdlib.h>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>

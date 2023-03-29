@@ -10,7 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #if !_HAS_CXX23
-#pragma message("The contents of <stacktrace> are available only with C++23 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <stacktrace> are available only with C++23 or later.");
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 
 #include <cstdint>
@@ -73,12 +73,12 @@ inline size_t __stdcall _Stacktrace_string_fill_impl(
     }
 }
 
-class stacktrace_entry {
+_EXPORT_STD class stacktrace_entry {
 public:
     using native_handle_type = void*;
 
-    constexpr stacktrace_entry() noexcept                        = default;
-    constexpr stacktrace_entry(const stacktrace_entry&) noexcept = default;
+    constexpr stacktrace_entry() noexcept                                   = default;
+    constexpr stacktrace_entry(const stacktrace_entry&) noexcept            = default;
     constexpr stacktrace_entry& operator=(const stacktrace_entry&) noexcept = default;
 
     ~stacktrace_entry() = default;
@@ -116,7 +116,7 @@ private:
     void* _Address = nullptr;
 };
 
-template <class _Alloc>
+_EXPORT_STD template <class _Alloc>
 class basic_stacktrace {
 private:
     using _Frames_t = vector<stacktrace_entry, _Alloc>;
@@ -191,7 +191,7 @@ public:
     basic_stacktrace(basic_stacktrace&& _Other, const allocator_type& _Al)
         : _Frames(_STD move(_Other._Frames), _Al), _Hash(_Other._Hash) {}
 
-    basic_stacktrace& operator=(const basic_stacktrace&) = default;
+    basic_stacktrace& operator=(const basic_stacktrace&)                 = default;
     basic_stacktrace& operator=(basic_stacktrace&&) noexcept(_Noex_move) = default;
 
     ~basic_stacktrace() = default;
@@ -232,7 +232,7 @@ public:
         return _Frames.crend();
     }
 
-    _NODISCARD bool empty() const noexcept {
+    _NODISCARD_EMPTY_STACKTRACE_MEMBER bool empty() const noexcept {
         return _Frames.empty();
     }
 
@@ -267,7 +267,7 @@ public:
 
 #ifdef __cpp_lib_concepts
         return _STD lexicographical_compare_three_way(_Lhs.begin(), _Lhs.end(), _Rhs.begin(), _Rhs.end());
-#else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
         for (size_t _Ix = 0, _Mx = _Lhs._Frames.size(); _Ix != _Mx; ++_Ix) {
             if (_Lhs._Frames[_Ix] != _Rhs._Frames[_Ix]) {
                 return _Lhs._Frames[_Ix] <=> _Rhs._Frames[_Ix];
@@ -319,38 +319,38 @@ private:
     unsigned long _Hash = 0;
 };
 
-using stacktrace = basic_stacktrace<allocator<stacktrace_entry>>;
+_EXPORT_STD using stacktrace = basic_stacktrace<allocator<stacktrace_entry>>;
 
-template <class _Alloc>
+_EXPORT_STD template <class _Alloc>
 void swap(basic_stacktrace<_Alloc>& _Ax, basic_stacktrace<_Alloc>& _Bx) noexcept(noexcept(_Ax.swap(_Bx))) {
     _Ax.swap(_Bx);
 }
 
-_NODISCARD inline string to_string(const stacktrace_entry& _Fx) {
+_EXPORT_STD _NODISCARD inline string to_string(const stacktrace_entry& _Fx) {
     string _Result;
     __std_stacktrace_address_to_string(_Fx.native_handle(), &_Result, _Stacktrace_string_fill_impl);
     return _Result;
 }
 
-template <class _Alloc>
+_EXPORT_STD template <class _Alloc>
 _NODISCARD string to_string(const basic_stacktrace<_Alloc>& _St) {
     string _Result;
     __std_stacktrace_to_string(_St._To_voidptr_array(), _St.size(), &_Result, _Stacktrace_string_fill_impl);
     return _Result;
 }
 
-template <class _CharT, class _Traits>
-basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const stacktrace_entry& _Fx) {
+_EXPORT_STD template <int = 0>
+ostream& operator<<(ostream& _Os, const stacktrace_entry& _Fx) {
     return _Os << _STD to_string(_Fx);
 }
 
-template <class _CharT, class _Traits, class _Alloc>
-basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const basic_stacktrace<_Alloc>& _St) {
+_EXPORT_STD template <class _Alloc>
+ostream& operator<<(ostream& _Os, const basic_stacktrace<_Alloc>& _St) {
     return _Os << _STD to_string(_St);
 }
 
 namespace pmr {
-    using stacktrace = basic_stacktrace<polymorphic_allocator<stacktrace_entry>>;
+    _EXPORT_STD using stacktrace = basic_stacktrace<polymorphic_allocator<stacktrace_entry>>;
 }
 
 template <>

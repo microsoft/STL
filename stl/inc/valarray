@@ -19,18 +19,18 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-class gslice;
-class slice;
+_EXPORT_STD class gslice;
+_EXPORT_STD class slice;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class gslice_array;
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class indirect_array;
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class mask_array;
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class slice_array;
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class valarray;
 
 template <class _Ty>
@@ -44,7 +44,7 @@ _Ty* _Allocate_for_op_delete(size_t _Count) {
 #ifdef __cpp_aligned_new
     constexpr bool _Extended_alignment = alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__;
     if constexpr (_Extended_alignment) {
-        return static_cast<_Ty*>(::operator new (_Bytes, align_val_t{alignof(_Ty)}));
+        return static_cast<_Ty*>(::operator new(_Bytes, align_val_t{alignof(_Ty)}));
     } else
 #endif // __cpp_aligned_new
     {
@@ -55,7 +55,7 @@ _Ty* _Allocate_for_op_delete(size_t _Count) {
 using _Boolarray = valarray<bool>;
 using _Sizarray  = valarray<size_t>;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class valarray { // store array with various indexing options
 public:
     friend _Tidy_deallocate_guard<valarray>;
@@ -563,7 +563,7 @@ private:
 #ifdef __cpp_aligned_new
             constexpr bool _Extended_alignment = alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__;
             if constexpr (_Extended_alignment) {
-                ::operator delete (static_cast<void*>(_Myptr), align_val_t{alignof(_Ty)});
+                ::operator delete(static_cast<void*>(_Myptr), align_val_t{alignof(_Ty)});
             } else
 #endif // __cpp_aligned_new
             {
@@ -595,32 +595,32 @@ template <class _Ty, size_t _Nx>
 valarray(const _Ty (&)[_Nx], size_t) -> valarray<_Ty>;
 #endif // _HAS_CXX17
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 void swap(valarray<_Ty>& _Left, valarray<_Ty>& _Right) noexcept {
     _Left.swap(_Right);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Ty* begin(valarray<_Ty>& _Array) {
     return _Array._Myptr;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD const _Ty* begin(const valarray<_Ty>& _Array) {
     return _Array._Myptr;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Ty* end(valarray<_Ty>& _Array) {
     return _Array._Myptr + _Array.size();
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD const _Ty* end(const valarray<_Ty>& _Array) {
     return _Array._Myptr + _Array.size();
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator*(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -630,7 +630,7 @@ _NODISCARD valarray<_Ty> operator*(const valarray<_Ty>& _Left, const typename va
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator*(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
@@ -640,7 +640,7 @@ _NODISCARD valarray<_Ty> operator*(const typename valarray<_Ty>::value_type& _Le
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator/(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -650,7 +650,7 @@ _NODISCARD valarray<_Ty> operator/(const valarray<_Ty>& _Left, const typename va
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator/(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
@@ -660,7 +660,7 @@ _NODISCARD valarray<_Ty> operator/(const typename valarray<_Ty>::value_type& _Le
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator%(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -670,7 +670,7 @@ _NODISCARD valarray<_Ty> operator%(const valarray<_Ty>& _Left, const typename va
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator%(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
@@ -680,7 +680,7 @@ _NODISCARD valarray<_Ty> operator%(const typename valarray<_Ty>::value_type& _Le
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator+(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -690,7 +690,7 @@ _NODISCARD valarray<_Ty> operator+(const valarray<_Ty>& _Left, const typename va
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator+(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
@@ -700,7 +700,7 @@ _NODISCARD valarray<_Ty> operator+(const typename valarray<_Ty>::value_type& _Le
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator-(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -710,7 +710,7 @@ _NODISCARD valarray<_Ty> operator-(const valarray<_Ty>& _Left, const typename va
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator-(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
@@ -720,7 +720,7 @@ _NODISCARD valarray<_Ty> operator-(const typename valarray<_Ty>::value_type& _Le
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator^(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -730,7 +730,7 @@ _NODISCARD valarray<_Ty> operator^(const valarray<_Ty>& _Left, const typename va
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator^(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
@@ -740,7 +740,7 @@ _NODISCARD valarray<_Ty> operator^(const typename valarray<_Ty>::value_type& _Le
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator&(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -750,7 +750,7 @@ _NODISCARD valarray<_Ty> operator&(const valarray<_Ty>& _Left, const typename va
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator&(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
@@ -760,7 +760,7 @@ _NODISCARD valarray<_Ty> operator&(const typename valarray<_Ty>::value_type& _Le
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator|(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -770,7 +770,7 @@ _NODISCARD valarray<_Ty> operator|(const valarray<_Ty>& _Left, const typename va
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator|(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
@@ -780,7 +780,7 @@ _NODISCARD valarray<_Ty> operator|(const typename valarray<_Ty>::value_type& _Le
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator<<(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -790,7 +790,7 @@ _NODISCARD valarray<_Ty> operator<<(const valarray<_Ty>& _Left, const typename v
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator<<(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
@@ -800,7 +800,7 @@ _NODISCARD valarray<_Ty> operator<<(const typename valarray<_Ty>::value_type& _L
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator>>(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -810,7 +810,7 @@ _NODISCARD valarray<_Ty> operator>>(const valarray<_Ty>& _Left, const typename v
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator>>(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
@@ -820,7 +820,7 @@ _NODISCARD valarray<_Ty> operator>>(const typename valarray<_Ty>::value_type& _L
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator&&(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -830,7 +830,7 @@ _NODISCARD _Boolarray operator&&(const valarray<_Ty>& _Left, const typename vala
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator&&(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<bool> _Ans(_Size);
@@ -840,7 +840,7 @@ _NODISCARD _Boolarray operator&&(const typename valarray<_Ty>::value_type& _Left
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator||(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -850,7 +850,7 @@ _NODISCARD _Boolarray operator||(const valarray<_Ty>& _Left, const typename vala
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator||(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<bool> _Ans(_Size);
@@ -860,7 +860,7 @@ _NODISCARD _Boolarray operator||(const typename valarray<_Ty>::value_type& _Left
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator*(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -870,7 +870,7 @@ _NODISCARD valarray<_Ty> operator*(const valarray<_Ty>& _Left, const valarray<_T
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator/(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -880,7 +880,7 @@ _NODISCARD valarray<_Ty> operator/(const valarray<_Ty>& _Left, const valarray<_T
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator%(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -890,7 +890,7 @@ _NODISCARD valarray<_Ty> operator%(const valarray<_Ty>& _Left, const valarray<_T
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator+(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -900,7 +900,7 @@ _NODISCARD valarray<_Ty> operator+(const valarray<_Ty>& _Left, const valarray<_T
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator-(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -910,7 +910,7 @@ _NODISCARD valarray<_Ty> operator-(const valarray<_Ty>& _Left, const valarray<_T
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator^(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -920,7 +920,7 @@ _NODISCARD valarray<_Ty> operator^(const valarray<_Ty>& _Left, const valarray<_T
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator&(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -930,7 +930,7 @@ _NODISCARD valarray<_Ty> operator&(const valarray<_Ty>& _Left, const valarray<_T
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator|(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -940,7 +940,7 @@ _NODISCARD valarray<_Ty> operator|(const valarray<_Ty>& _Left, const valarray<_T
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator<<(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -950,7 +950,7 @@ _NODISCARD valarray<_Ty> operator<<(const valarray<_Ty>& _Left, const valarray<_
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator>>(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
@@ -960,7 +960,7 @@ _NODISCARD valarray<_Ty> operator>>(const valarray<_Ty>& _Left, const valarray<_
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator&&(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -970,7 +970,7 @@ _NODISCARD _Boolarray operator&&(const valarray<_Ty>& _Left, const valarray<_Ty>
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator||(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -980,7 +980,7 @@ _NODISCARD _Boolarray operator||(const valarray<_Ty>& _Left, const valarray<_Ty>
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator==(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -990,7 +990,7 @@ _NODISCARD _Boolarray operator==(const valarray<_Ty>& _Left, const typename vala
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator==(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<bool> _Ans(_Size);
@@ -1000,7 +1000,7 @@ _NODISCARD _Boolarray operator==(const typename valarray<_Ty>::value_type& _Left
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator==(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -1010,7 +1010,7 @@ _NODISCARD _Boolarray operator==(const valarray<_Ty>& _Left, const valarray<_Ty>
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator!=(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -1020,7 +1020,7 @@ _NODISCARD _Boolarray operator!=(const valarray<_Ty>& _Left, const typename vala
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator!=(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<bool> _Ans(_Size);
@@ -1030,7 +1030,7 @@ _NODISCARD _Boolarray operator!=(const typename valarray<_Ty>::value_type& _Left
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator!=(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -1040,7 +1040,7 @@ _NODISCARD _Boolarray operator!=(const valarray<_Ty>& _Left, const valarray<_Ty>
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator<(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -1050,7 +1050,7 @@ _NODISCARD _Boolarray operator<(const valarray<_Ty>& _Left, const typename valar
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator<(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<bool> _Ans(_Size);
@@ -1060,7 +1060,7 @@ _NODISCARD _Boolarray operator<(const typename valarray<_Ty>::value_type& _Left,
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator<(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -1070,7 +1070,7 @@ _NODISCARD _Boolarray operator<(const valarray<_Ty>& _Left, const valarray<_Ty>&
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator>(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -1080,7 +1080,7 @@ _NODISCARD _Boolarray operator>(const valarray<_Ty>& _Left, const typename valar
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator>(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<bool> _Ans(_Size);
@@ -1090,7 +1090,7 @@ _NODISCARD _Boolarray operator>(const typename valarray<_Ty>::value_type& _Left,
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator>(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -1100,7 +1100,7 @@ _NODISCARD _Boolarray operator>(const valarray<_Ty>& _Left, const valarray<_Ty>&
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator<=(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -1110,7 +1110,7 @@ _NODISCARD _Boolarray operator<=(const valarray<_Ty>& _Left, const typename vala
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator<=(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<bool> _Ans(_Size);
@@ -1120,7 +1120,7 @@ _NODISCARD _Boolarray operator<=(const typename valarray<_Ty>::value_type& _Left
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator<=(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -1130,7 +1130,7 @@ _NODISCARD _Boolarray operator<=(const valarray<_Ty>& _Left, const valarray<_Ty>
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator>=(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -1140,7 +1140,7 @@ _NODISCARD _Boolarray operator>=(const valarray<_Ty>& _Left, const typename vala
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator>=(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<bool> _Ans(_Size);
@@ -1150,7 +1150,7 @@ _NODISCARD _Boolarray operator>=(const typename valarray<_Ty>::value_type& _Left
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator>=(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
@@ -1161,207 +1161,207 @@ _NODISCARD _Boolarray operator>=(const valarray<_Ty>& _Left, const valarray<_Ty>
 }
 
 // [valarray.transcend] Transcendentals
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> abs(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = abs(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = abs(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> acos(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = acos(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = acos(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> asin(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = asin(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = asin(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> atan(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = atan(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = atan(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> atan2(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = atan2(_Left[_Idx], _Right[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = atan2(_Left[_Idx], _Right[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> atan2(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = atan2(_Left[_Idx], _Right); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = atan2(_Left[_Idx], _Right); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> atan2(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = atan2(_Left, _Right[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = atan2(_Left, _Right[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> cos(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = cos(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = cos(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> cosh(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = cosh(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = cosh(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> exp(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = exp(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = exp(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> log(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = log(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = log(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> log10(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = log10(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = log10(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> pow(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = pow(_Left[_Idx], _Right[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = pow(_Left[_Idx], _Right[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> pow(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = pow(_Left[_Idx], _Right); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = pow(_Left[_Idx], _Right); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> pow(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = pow(_Left, _Right[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = pow(_Left, _Right[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> sin(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = sin(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = sin(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> sinh(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = sinh(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = sinh(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> sqrt(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = sqrt(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = sqrt(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> tan(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = tan(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = tan(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> tanh(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = tanh(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = tanh(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
 
-class slice { // define a slice of a valarray
+_EXPORT_STD class slice { // define a slice of a valarray
 public:
     slice() = default;
 
@@ -1392,7 +1392,7 @@ protected:
     size_t _Stride = 0; // the distance between elements
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class slice_array : public slice { // define a slice of a valarray
 public:
     using value_type = _Ty;
@@ -1506,7 +1506,7 @@ private:
     _Ty* _Myptr; // pointer to valarray contents
 };
 
-class gslice { // define a generalized (multidimensional) slice of a valarray
+_EXPORT_STD class gslice { // define a generalized (multidimensional) slice of a valarray
 public:
     gslice() : _Start(0) {} // construct with all zeros
 
@@ -1568,7 +1568,7 @@ private:
     _Sizarray _Stride; // array of distances between elements
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class gslice_array : public gslice { // define a generalized slice of a valarray
 public:
     using value_type = _Ty;
@@ -1695,7 +1695,7 @@ private:
     _Ty* _Myptr; // pointer to valarray contents
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class mask_array { // define a subset of a valarray with an array of mask bits
 public:
     using value_type = _Ty;
@@ -1844,7 +1844,7 @@ private:
     _Ty* _Myptr; // pointer to valarray contents
 };
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 class indirect_array { // define a subset of a valarray with an array of indexes
 public:
     using value_type = _Ty;

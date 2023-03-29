@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
 #include <format>
 #include <iterator>
 #include <span>
-#include <stddef.h>
+#include <type_traits>
 #include <vector>
 
 using namespace std;
@@ -14,6 +15,8 @@ using namespace std;
 // Generator: tools/unicode_properties_parse/grapheme_break_test_data_gen.py
 // Beginning of generated data - DO NOT EDIT manually!
 
+// GraphemeBreakTest-15.0.0.txt
+// Date: 2022-02-26, 00:38:37 GMT
 template <typename T>
 struct test_case_data {
     vector<T> code_points;
@@ -898,7 +901,7 @@ constexpr bool test_unicode_properties() {
 
 template <typename CharT>
 constexpr void test_utf_decode_spans(const span<const CharT> encoded, const span<const char32_t> decoded) {
-    static_assert(_Is_any_of_v<CharT, char, wchar_t>);
+    static_assert(is_same_v<CharT, char> || is_same_v<CharT, wchar_t>);
     assert(ranges::equal(_Unicode_codepoint_iterator{encoded.data(), encoded.data() + encoded.size()}, default_sentinel,
         decoded.begin(), decoded.end()));
 }

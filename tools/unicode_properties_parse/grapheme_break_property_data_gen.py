@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 from io import StringIO
 from pathlib import Path
 from dataclasses import dataclass, field
@@ -13,15 +14,17 @@ class PropertyRange:
     upper: int = -1
     prop: str = None
 
+
 @dataclass
 class PropertyTable:
     lower_bounds: list[int] = field(default_factory=list)
     props_and_range: list[int] = field(default_factory=list)
 
+
 LINE_REGEX = re.compile(
     r"^(?P<lower>[0-9A-F]{4,5})(?:\.\.(?P<upper>[0-9A-F]{4,5}))?\s*;\s*(?P<prop>\w+)")
 
-def parsePropertyLine(inputLine: str) -> Optional[PropertyRange]:
+def parse_property_line(inputLine: str) -> Optional[PropertyRange]:
     result = PropertyRange()
     if m := LINE_REGEX.match(inputLine):
         lower_str, upper_str, result.prop = m.group("lower", "upper", "prop")
@@ -30,11 +33,11 @@ def parsePropertyLine(inputLine: str) -> Optional[PropertyRange]:
         if upper_str is not None:
             result.upper = int(upper_str, base=16)
         return result
-
     else:
         return None
 
-def compactPropertyRanges(input: list[PropertyRange]) -> list[PropertyRange]:
+
+def compact_property_ranges(input: list[PropertyRange]) -> list[PropertyRange]:
     """
     Merges consecutive ranges with the same property to one range.
 
@@ -56,6 +59,8 @@ def compactPropertyRanges(input: list[PropertyRange]) -> list[PropertyRange]:
 
 PROP_VALUE_ENUMERATOR_TEMPLATE = "_{}_value"
 PROP_VALUE_ENUM_TEMPLATE = """
+{filename}
+{timestamp}
 enum class _{prop_name}_property_values : uint8_t {{
     {enumerators},
     _No_value = 255
@@ -63,6 +68,8 @@ enum class _{prop_name}_property_values : uint8_t {{
 """
 
 DATA_ARRAY_TEMPLATE = """
+{filename}
+{timestamp}
 inline constexpr _Unicode_property_data<_{prop_name}_property_values, {size}> _{prop_name}_property_data{{
     {{{lower_bounds}}},
     {{{props_and_size}}}
@@ -218,21 +225,21 @@ def property_ranges_to_table(ranges: list[PropertyRange], props: list[str]) -> P
         result.props_and_range.append(size | (prop_idx << 12))
     return result
 
-def generate_cpp_data(prop_name: str, ranges: list[PropertyRange]) -> str:
+
+def generate_cpp_data(filename: str, timestamp: str, prop_name: str, ranges: list[PropertyRange]) -> str:
     result = StringIO()
     prop_values = sorted(set(x.prop for x in ranges))
     table = property_ranges_to_table(ranges, prop_values)
     enumerator_values = [PROP_VALUE_ENUMERATOR_TEMPLATE.format(
         x) for x in prop_values]
-    result.write(PROP_VALUE_ENUM_TEMPLATE.format(
-        prop_name=prop_name, enumerators=",".join(enumerator_values)))
-    result.write(DATA_ARRAY_TEMPLATE.format(prop_name=prop_name, size=len(table.lower_bounds),
-                 lower_bounds=",".join(["0x" + format(x, 'x')
-                                       for x in table.lower_bounds]),
+    result.write(PROP_VALUE_ENUM_TEMPLATE.lstrip().format(
+        filename=filename, timestamp=timestamp, prop_name=prop_name, enumerators=",".join(enumerator_values)))
+    result.write("\n")
+    result.write(DATA_ARRAY_TEMPLATE.lstrip().format(filename=filename, timestamp=timestamp, prop_name=prop_name,
+                 size=len(table.lower_bounds),
+                 lower_bounds=",".join(["0x" + format(x, 'x') for x in table.lower_bounds]),
                  props_and_size=",".join(["0x" + format(x, 'x') for x in table.props_and_range])))
     return result.getvalue()
-
-
 
 
 def generate_data_tables() -> str:
@@ -241,26 +248,34 @@ def generate_data_tables() -> str:
     GraphemeBreakProperty.txt and emoji-data.txt.
 
     GraphemeBreakProperty.txt can be found at
-    https://www.unicode.org/Public/14.0.0/ucd/auxiliary/GraphemeBreakProperty.txt
+    https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakProperty.txt
 
     emoji-data.txt can be found at
-    https://www.unicode.org/Public/14.0.0/ucd/emoji/emoji-data.txt
+    https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt
 
     Both files are expected to be in the same directory as this script.
     """
-    gbp_data_path = Path(__file__).absolute(
-    ).with_name("GraphemeBreakProperty.txt")
+    gbp_data_path = Path(__file__).absolute().with_name("GraphemeBreakProperty.txt")
     emoji_data_path = Path(__file__).absolute().with_name("emoji-data.txt")
+    gbp_filename = ""
+    gbp_timestamp = ""
+    emoji_filename = ""
+    emoji_timestamp = ""
     gbp_ranges = list()
     emoji_ranges = list()
     with gbp_data_path.open(encoding='utf-8') as f:
-        gbp_ranges = compactPropertyRanges([x for line in f if (x := parsePropertyLine(line))])
+        gbp_filename = f.readline().replace("#", "//").rstrip()
+        gbp_timestamp = f.readline().replace("#", "//").rstrip()
+        gbp_ranges = compact_property_ranges([x for line in f if (x := parse_property_line(line))])
     with emoji_data_path.open(encoding='utf-8') as f:
-        emoji_ranges = compactPropertyRanges([x for line in f if (x := parsePropertyLine(line))])
-    gpb_cpp_data = generate_cpp_data("Grapheme_Break", gbp_ranges)
-    emoji_cpp_data = generate_cpp_data("Extended_Pictographic", [
+        emoji_filename = f.readline().replace("#", "//").rstrip()
+        emoji_timestamp = f.readline().replace("#", "//").rstrip()
+        emoji_ranges = compact_property_ranges([x for line in f if (x := parse_property_line(line))])
+    gpb_cpp_data = generate_cpp_data(gbp_filename, gbp_timestamp, "Grapheme_Break", gbp_ranges)
+    emoji_cpp_data = generate_cpp_data(emoji_filename, emoji_timestamp, "Extended_Pictographic", [
         x for x in emoji_ranges if x.prop == "Extended_Pictographic"])
     return "\n".join([gpb_cpp_data, emoji_cpp_data])
+
 
 if __name__ == "__main__":
     print(MSVC_FORMAT_UCD_TABLES_HPP_TEMPLATE.lstrip().format(content=generate_data_tables()))

@@ -7,23 +7,9 @@
 #include <thread>
 #include <xatomic_wait.h>
 
-namespace {
-    unsigned char _Atomic_load_uchar(const volatile unsigned char* _Ptr) noexcept {
-        // atomic load of unsigned char, copied from <atomic> except ARM and ARM64 bits
-        unsigned char _Value;
-#if defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
-        _Value = __iso_volatile_load8(reinterpret_cast<const volatile char*>(_Ptr));
-        _ReadWriteBarrier();
-#else
-#error Unsupported architecture
-#endif
-        return _Value;
-    }
-} // unnamed namespace
-
 extern "C" {
 
-_NODISCARD unsigned int __stdcall __std_parallel_algorithms_hw_threads() noexcept {
+[[nodiscard]] unsigned int __stdcall __std_parallel_algorithms_hw_threads() noexcept {
     static int _Cached_hw_concurrency = -1;
     int _Hw_concurrency               = __iso_volatile_load32(&_Cached_hw_concurrency);
     if (_Hw_concurrency == -1) {
@@ -34,7 +20,7 @@ _NODISCARD unsigned int __stdcall __std_parallel_algorithms_hw_threads() noexcep
     return static_cast<unsigned int>(_Hw_concurrency);
 }
 
-_NODISCARD PTP_WORK __stdcall __std_create_threadpool_work(
+[[nodiscard]] PTP_WORK __stdcall __std_create_threadpool_work(
     PTP_WORK_CALLBACK _Callback, void* _Context, PTP_CALLBACK_ENVIRON _Callback_environ) noexcept {
     return CreateThreadpoolWork(_Callback, _Context, _Callback_environ);
 }

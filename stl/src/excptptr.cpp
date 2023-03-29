@@ -52,7 +52,7 @@ namespace {
 
         constexpr _Constexpr_excptptr_immortalize_impl() noexcept : _Storage{} {}
 
-        _Constexpr_excptptr_immortalize_impl(const _Constexpr_excptptr_immortalize_impl&) = delete;
+        _Constexpr_excptptr_immortalize_impl(const _Constexpr_excptptr_immortalize_impl&)            = delete;
         _Constexpr_excptptr_immortalize_impl& operator=(const _Constexpr_excptptr_immortalize_impl&) = delete;
 
         _MSVC_NOOP_DTOR ~_Constexpr_excptptr_immortalize_impl() {
@@ -64,7 +64,7 @@ namespace {
     _Constexpr_excptptr_immortalize_impl<_Ty> _Immortalize_impl;
 
     template <class _Ty>
-    _NODISCARD _Ty& _Immortalize() noexcept {
+    [[nodiscard]] _Ty& _Immortalize() noexcept {
         return _Immortalize_impl<_Ty>._Storage;
     }
 #else // choose immortalize strategy
@@ -169,7 +169,7 @@ namespace {
 
 #if _EH_RELATIVE_TYPEINFO
         const auto _CopyFunc = reinterpret_cast<void*>(_ThrowImageBase + _PType->copyFunction);
-#else // ^^^ _EH_RELATIVE_TYPEINFO // !_EH_RELATIVE_TYPEINFO vvv
+#else // ^^^ _EH_RELATIVE_TYPEINFO / !_EH_RELATIVE_TYPEINFO vvv
         const auto _CopyFunc = _PType->copyFunction;
 #endif // _EH_RELATIVE_TYPEINFO
 
@@ -177,13 +177,13 @@ namespace {
         if (_PType->properties & CT_HasVirtualBase) {
 #ifdef _M_CEE_PURE
             reinterpret_cast<void(__clrcall*)(void*, void*, int)>(_CopyFunc)(_Dest, _Adjusted, 1);
-#else // ^^^ _M_CEE_PURE // !_M_CEE_PURE vvv
+#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
             _CallMemberFunction2(_Dest, _CopyFunc, _Adjusted, 1);
 #endif // _M_CEE_PURE
         } else {
 #ifdef _M_CEE_PURE
             reinterpret_cast<void(__clrcall*)(void*, void*)>(_CopyFunc)(_Dest, _Adjusted);
-#else // ^^^ _M_CEE_PURE // !_M_CEE_PURE vvv
+#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
             _CallMemberFunction1(_Dest, _CopyFunc, _Adjusted);
 #endif // _M_CEE_PURE
         }
@@ -268,7 +268,7 @@ namespace {
                 static_cast<uintptr_t>(_PThrow->pCatchableTypeArray) + _ThrowImageBase);
             const auto _PType = reinterpret_cast<CatchableType*>(
                 static_cast<uintptr_t>(_CatchableTypeArray->arrayOfCatchableTypes[0]) + _ThrowImageBase);
-#else // ^^^ _EH_RELATIVE_TYPEINFO // !_EH_RELATIVE_TYPEINFO vvv
+#else // ^^^ _EH_RELATIVE_TYPEINFO / !_EH_RELATIVE_TYPEINFO vvv
             const auto _PType = _PThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
 #endif // _EH_RELATIVE_TYPEINFO
 
@@ -279,7 +279,7 @@ namespace {
 #elif _EH_RELATIVE_TYPEINFO
                 _CallMemberFunction0(_CppEhRecord.params.pExceptionObject,
                     reinterpret_cast<void*>(_PThrow->pmfnUnwind + _ThrowImageBase));
-#else // ^^^ _EH_RELATIVE_TYPEINFO && !defined(_M_CEE_PURE) // !_EH_RELATIVE_TYPEINFO && !defined(_M_CEE_PURE) vvv
+#else // ^^^ _EH_RELATIVE_TYPEINFO && !defined(_M_CEE_PURE) / !_EH_RELATIVE_TYPEINFO && !defined(_M_CEE_PURE) vvv
                 _CallMemberFunction0(_CppEhRecord.params.pExceptionObject, _PThrow->pmfnUnwind);
 #endif
             } else if (_PType->properties & CT_IsWinRTHandle) {
@@ -335,7 +335,7 @@ namespace {
             static_cast<uintptr_t>(_PThrow->pCatchableTypeArray) + _ThrowImageBase);
         const auto _PType = reinterpret_cast<CatchableType*>(
             static_cast<uintptr_t>(_CatchableTypeArray->arrayOfCatchableTypes[0]) + _ThrowImageBase);
-#else // ^^^ _EH_RELATIVE_TYPEINFO // !_EH_RELATIVE_TYPEINFO vvv
+#else // ^^^ _EH_RELATIVE_TYPEINFO / !_EH_RELATIVE_TYPEINFO vvv
         const auto _PType = _PThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
 #endif // _EH_RELATIVE_TYPEINFO
 
@@ -384,7 +384,7 @@ namespace {
                 static_cast<uintptr_t>(_PInnerThrow->pCatchableTypeArray) + _InnerThrowImageBase);
             const auto _PInnerType = reinterpret_cast<CatchableType*>(
                 static_cast<uintptr_t>(_InnerCatchableTypeArray->arrayOfCatchableTypes[0]) + _InnerThrowImageBase);
-#else // ^^^ _EH_RELATIVE_TYPEINFO // !_EH_RELATIVE_TYPEINFO vvv
+#else // ^^^ _EH_RELATIVE_TYPEINFO / !_EH_RELATIVE_TYPEINFO vvv
             const auto _PInnerType = _PInnerThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
 #endif // _EH_RELATIVE_TYPEINFO
 
@@ -509,7 +509,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
 #if _EH_RELATIVE_TYPEINFO
         const auto _PType = reinterpret_cast<CatchableType*>(
             static_cast<uintptr_t>(_CatchableTypeArray->arrayOfCatchableTypes[0]) + _ThrowImageBase);
-#else // ^^^ _EH_RELATIVE_TYPEINFO // !_EH_RELATIVE_TYPEINFO vvv
+#else // ^^^ _EH_RELATIVE_TYPEINFO / !_EH_RELATIVE_TYPEINFO vvv
         const auto _PType              = _PThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
 #endif // _EH_RELATIVE_TYPEINFO
 

@@ -5,7 +5,8 @@
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
 #include <array>
-#include <assert.h>
+#include <cassert>
+#include <cstring>
 #include <deque>
 #include <experimental/filesystem>
 #include <filesystem>
@@ -17,7 +18,6 @@
 #include <regex>
 #include <set>
 #include <span>
-#include <string.h>
 #include <string>
 #include <type_traits>
 #include <unordered_map>

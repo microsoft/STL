@@ -31,6 +31,7 @@
 // Yes, this is an awkward hand process; notably the required headers can change without notice. We should investigate
 // running the libc++ tests directly in all of our configurations so we needn't replicate this subset of files.
 
+#if !defined(_PREFAST_) || !defined(_M_IX86) // TRANSITION, VSO-1639191
 #ifdef CONSTEXPR_NOTHROW
 #define TEST_WORKAROUND_CONSTEXPR_IMPLIES_NOEXCEPT
 #endif // CONSTEXPR_NOTHROW
@@ -46,7 +47,6 @@
 // clang-format off
 // LLVM SOURCES BEGIN
 // -- BEGIN: test/std/utilities/variant/variant.bad_variant_access/bad_variant_access.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -96,7 +96,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.bad_variant_access/bad_variant_access.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.get/get_if_index.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -233,7 +232,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.get/get_if_index.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.get/get_if_type.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -368,7 +366,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.get/get_if_type.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.get/get_index.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -667,7 +664,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.get/get_index.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.get/get_type.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -966,7 +962,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.get/get_type.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.get/holds_alternative.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -1039,7 +1034,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.hash/enabled_hash.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.hash/hash.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -1066,7 +1060,7 @@ int run_test() {
 namespace std {
 template <> struct hash<::MakeEmptyT> {
   size_t operator()(const ::MakeEmptyT &) const {
-    abort();
+    assert(false);
     return 0;
   }
 };
@@ -1180,16 +1174,20 @@ struct hash<::hash::B> {
 namespace hash {
 void test_hash_variant_enabled() {
   {
+#ifndef __EDG__ // TRANSITION, DevCom-10107834
     test_hash_enabled_for_type<std::variant<int> >();
     test_hash_enabled_for_type<std::variant<int*, long, double, const int> >();
+#endif // TRANSITION, DevCom-10107834
   }
   {
     test_hash_disabled_for_type<std::variant<int, A>>();
     test_hash_disabled_for_type<std::variant<const A, void*>>();
   }
   {
+#ifndef __EDG__ // TRANSITION, DevCom-10107834
     test_hash_enabled_for_type<std::variant<int, B>>();
     test_hash_enabled_for_type<std::variant<const B, int>>();
+#endif // TRANSITION, DevCom-10107834
   }
 }
 
@@ -1205,7 +1203,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.hash/hash.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.helpers/variant_alternative.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -1287,7 +1284,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.helpers/variant_alternative.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.helpers/variant_size.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -1338,7 +1334,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.helpers/variant_size.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.monostate/monostate.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -1373,7 +1368,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.monostate/monostate.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.monostate.relops/relops.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -1433,7 +1427,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.monostate.relops/relops.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.relops/relops.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -1484,27 +1477,27 @@ struct MakeEmptyT {
   MakeEmptyT &operator=(MakeEmptyT &&) { throw 42; }
 };
 inline bool operator==(const MakeEmptyT &, const MakeEmptyT &) {
-  abort();
+  assert(false);
   return false;
 }
 inline bool operator!=(const MakeEmptyT &, const MakeEmptyT &) {
-  abort();
+  assert(false);
   return false;
 }
 inline bool operator<(const MakeEmptyT &, const MakeEmptyT &) {
-  abort();
+  assert(false);
   return false;
 }
 inline bool operator<=(const MakeEmptyT &, const MakeEmptyT &) {
-  abort();
+  assert(false);
   return false;
 }
 inline bool operator>(const MakeEmptyT &, const MakeEmptyT &) {
-  abort();
+  assert(false);
   return false;
 }
 inline bool operator>=(const MakeEmptyT &, const MakeEmptyT &) {
-  abort();
+  assert(false);
   return false;
 }
 
@@ -1512,7 +1505,7 @@ template <class Variant> void makeEmpty(Variant &v) {
   Variant v2(std::in_place_type<MakeEmptyT>);
   try {
     v = std::move(v2);
-    abort();
+    assert(false);
   } catch (...) {
     assert(v.valueless_by_exception());
   }
@@ -1714,7 +1707,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.relops/relops.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.synopsis/variant_npos.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -1742,7 +1734,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.synopsis/variant_npos.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -1783,6 +1774,7 @@ int run_test()
   static_assert(!std::is_assignable<std::variant<int, const bool>, decltype("meow")>::value, "");
   static_assert(!std::is_assignable<std::variant<int, const volatile bool>, decltype("meow")>::value, "");
 
+  // libc++ is missing P1957R2
   static_assert(std::is_assignable<std::variant<bool>, std::true_type>::value, "");
   static_assert(!std::is_assignable<std::variant<bool>, std::unique_ptr<char> >::value, "");
 #ifndef TEST_PERMISSIVE
@@ -1796,7 +1788,6 @@ int run_test()
 // -- END: test/std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.assign/copy.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -1952,9 +1943,9 @@ struct CopyCannotThrow {
   static int alive;
   CopyCannotThrow() { ++alive; }
   CopyCannotThrow(const CopyCannotThrow &) noexcept { ++alive; }
-  CopyCannotThrow(CopyCannotThrow &&) noexcept { abort(); }
+  CopyCannotThrow(CopyCannotThrow &&) noexcept { assert(false); }
   CopyCannotThrow &operator=(const CopyCannotThrow &) noexcept = default;
-  CopyCannotThrow &operator=(CopyCannotThrow &&) noexcept { abort(); return *this; }
+  CopyCannotThrow &operator=(CopyCannotThrow &&) noexcept { assert(false); return *this; }
 };
 
 int CopyCannotThrow::alive = 0;
@@ -1991,7 +1982,7 @@ template <class Variant> void makeEmpty(Variant &v) {
   Variant v2(std::in_place_type<MakeEmptyT>);
   try {
     v = std::move(v2);
-    abort();
+    assert(false);
   } catch (...) {
     assert(v.valueless_by_exception());
   }
@@ -2169,7 +2160,7 @@ void test_copy_assignment_same_index() {
     V v2(std::in_place_type<MET>);
     try {
       v1 = v2;
-      abort();
+      assert(false);
     } catch (...) {
     }
     assert(v1.index() == 1);
@@ -2272,7 +2263,7 @@ void test_copy_assignment_different_index() {
     V v2(std::in_place_type<CopyThrows>);
     try {
       v1 = v2;
-      abort();
+      assert(false);
     } catch (...) { /* ... */
     }
     // Test that copy construction is used directly if move construction may throw,
@@ -2398,7 +2389,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.assign/copy.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.assign/move.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -2740,7 +2730,7 @@ void test_move_assignment_same_index() {
     V v2(std::in_place_type<MET>);
     try {
       v1 = std::move(v2);
-      abort();
+      assert(false);
     } catch (...) {
     }
     assert(v1.index() == 1);
@@ -2825,7 +2815,7 @@ void test_move_assignment_different_index() {
     V v2(std::in_place_type<MET>);
     try {
       v1 = std::move(v2);
-      abort();
+      assert(false);
     } catch (...) {
     }
     assert(v1.valueless_by_exception());
@@ -2916,7 +2906,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.assign/move.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.assign/T.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -2984,8 +2973,8 @@ struct ThrowsCtorT {
 struct MoveCrashes {
   int value;
   MoveCrashes(int v = 0) noexcept : value{v} {}
-  MoveCrashes(MoveCrashes &&) noexcept { abort(); }
-  MoveCrashes &operator=(MoveCrashes &&) noexcept { abort(); return *this; }
+  MoveCrashes(MoveCrashes &&) noexcept { assert(false); }
+  MoveCrashes &operator=(MoveCrashes &&) noexcept { assert(false); return *this; }
   MoveCrashes &operator=(int v) noexcept {
     value = v;
     return *this;
@@ -2996,7 +2985,7 @@ struct ThrowsCtorTandMove {
   int value;
   ThrowsCtorTandMove() : value(0) {}
   ThrowsCtorTandMove(int) noexcept(false) { throw 42; }
-  ThrowsCtorTandMove(ThrowsCtorTandMove &&) noexcept(false) { abort(); }
+  ThrowsCtorTandMove(ThrowsCtorTandMove &&) noexcept(false) { assert(false); }
   ThrowsCtorTandMove &operator=(int v) noexcept {
     value = v;
     return *this;
@@ -3069,6 +3058,7 @@ void test_T_assignment_sfinae() {
     static_assert(!std::is_assignable<V, X>::value,
                   "no boolean conversion in operator=");
 #endif // !__EDG__
+    // libc++ is missing P1957R2
     static_assert(std::is_assignable<V, std::false_type>::value,
                   "no converted to bool in operator=");
   }
@@ -3176,7 +3166,7 @@ void test_T_assignment_performs_construction() {
     V v(std::in_place_type<std::string>, "hello");
     try {
       v = 42;
-      abort();
+      assert(false);
     } catch (...) { /* ... */
     }
     assert(v.index() == 0);
@@ -3214,7 +3204,7 @@ void test_T_assignment_performs_assignment() {
     V v(100);
     try {
       v = 42;
-      abort();
+      assert(false);
     } catch (...) { /* ... */
     }
     assert(v.index() == 0);
@@ -3225,7 +3215,7 @@ void test_T_assignment_performs_assignment() {
     V v(100);
     try {
       v = 42;
-      abort();
+      assert(false);
     } catch (...) { /* ... */
     }
     assert(v.index() == 1);
@@ -3247,7 +3237,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.assign/T.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -3286,6 +3275,8 @@ int run_test()
   static_assert(!std::is_constructible<std::variant<int, bool>, decltype("meow")>::value, "");
   static_assert(!std::is_constructible<std::variant<int, const bool>, decltype("meow")>::value, "");
   static_assert(!std::is_constructible<std::variant<int, const volatile bool>, decltype("meow")>::value, "");
+
+  // libc++ is missing P1957R2
   static_assert(std::is_constructible<std::variant<bool>, std::true_type>::value, "");
   static_assert(!std::is_constructible<std::variant<bool>, std::unique_ptr<char> >::value, "");
 #ifndef TEST_PERMISSIVE
@@ -3299,7 +3290,6 @@ int run_test()
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/copy.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -3395,7 +3385,7 @@ template <class Variant> void makeEmpty(Variant &v) {
   Variant v2(std::in_place_type<MakeEmptyT>);
   try {
     v = std::move(v2);
-    abort();
+    assert(false);
   } catch (...) {
     assert(v.valueless_by_exception());
   }
@@ -3540,15 +3530,15 @@ void test_constexpr_copy_ctor() {
   // Make sure we properly propagate triviality, which implies constexpr-ness (see P0602R4).
 #if TEST_STD_VER > 17
   using V = std::variant<long, void*, const int>;
-#ifdef TEST_WORKAROUND_C1XX_BROKEN_IS_TRIVIALLY_COPYABLE
+#ifdef TEST_WORKAROUND_MSVC_BROKEN_IS_TRIVIALLY_COPYABLE
   static_assert(std::is_trivially_destructible<V>::value, "");
   static_assert(std::is_trivially_copy_constructible<V>::value, "");
   static_assert(std::is_trivially_move_constructible<V>::value, "");
   static_assert(!std::is_copy_assignable<V>::value, "");
   static_assert(!std::is_move_assignable<V>::value, "");
-#else // TEST_WORKAROUND_C1XX_BROKEN_IS_TRIVIALLY_COPYABLE
+#else // TEST_WORKAROUND_MSVC_BROKEN_IS_TRIVIALLY_COPYABLE
   static_assert(std::is_trivially_copyable<V>::value, "");
-#endif // TEST_WORKAROUND_C1XX_BROKEN_IS_TRIVIALLY_COPYABLE
+#endif // TEST_WORKAROUND_MSVC_BROKEN_IS_TRIVIALLY_COPYABLE
   static_assert(test_constexpr_copy_ctor_imp<0>(V(42l)), "");
   static_assert(test_constexpr_copy_ctor_imp<1>(V(nullptr)), "");
   static_assert(test_constexpr_copy_ctor_imp<2>(V(101)), "");
@@ -3576,7 +3566,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/copy.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/default.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -3649,11 +3638,11 @@ void test_default_ctor_throws() {
   using V = std::variant<DefaultCtorThrows, int>;
   try {
     V v;
-    abort();
+    assert(false);
   } catch (const int &ex) {
     assert(ex == 42);
   } catch (...) {
-    abort();
+    assert(false);
   }
 #endif
 }
@@ -3706,7 +3695,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/default.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/in_place_index_args.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -3816,7 +3804,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/in_place_index_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/in_place_index_init_list_args.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -3931,7 +3918,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/in_place_index_init_list_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/in_place_type_args.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -4051,7 +4037,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/in_place_type_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/in_place_type_init_list_args.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -4167,7 +4152,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/in_place_type_init_list_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/move.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -4265,7 +4249,7 @@ template <class Variant> void makeEmpty(Variant &v) {
   Variant v2(std::in_place_type<MakeEmptyT>);
   try {
     v = std::move(v2);
-    abort();
+    assert(false);
   } catch (...) {
     assert(v.valueless_by_exception());
   }
@@ -4478,15 +4462,15 @@ void test_constexpr_move_ctor() {
   // Make sure we properly propagate triviality, which implies constexpr-ness (see P0602R4).
 #if TEST_STD_VER > 17
   using V = std::variant<long, void*, const int>;
-#ifdef TEST_WORKAROUND_C1XX_BROKEN_IS_TRIVIALLY_COPYABLE
+#ifdef TEST_WORKAROUND_MSVC_BROKEN_IS_TRIVIALLY_COPYABLE
   static_assert(std::is_trivially_destructible<V>::value, "");
   static_assert(std::is_trivially_copy_constructible<V>::value, "");
   static_assert(std::is_trivially_move_constructible<V>::value, "");
   static_assert(!std::is_copy_assignable<V>::value, "");
   static_assert(!std::is_move_assignable<V>::value, "");
-#else // TEST_WORKAROUND_C1XX_BROKEN_IS_TRIVIALLY_COPYABLE
+#else // TEST_WORKAROUND_MSVC_BROKEN_IS_TRIVIALLY_COPYABLE
   static_assert(std::is_trivially_copyable<V>::value, "");
-#endif // TEST_WORKAROUND_C1XX_BROKEN_IS_TRIVIALLY_COPYABLE
+#endif // TEST_WORKAROUND_MSVC_BROKEN_IS_TRIVIALLY_COPYABLE
   static_assert(std::is_trivially_move_constructible<V>::value, "");
   static_assert(test_constexpr_ctor_imp<0>(V(42l)), "");
   static_assert(test_constexpr_ctor_imp<1>(V(nullptr)), "");
@@ -4507,7 +4491,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/move.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -4593,6 +4576,7 @@ void test_T_ctor_sfinae() {
     static_assert(!std::is_constructible<V, X>::value,
                   "no boolean conversion in constructor");
 #endif // !__EDG__
+    // libc++ is missing P1957R2
     static_assert(std::is_constructible<V, std::false_type>::value,
                   "no converted to bool in constructor");
   }
@@ -4733,7 +4717,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.dtor/dtor.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -4813,7 +4796,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.dtor/dtor.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.mod/emplace_index_args.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -4978,7 +4960,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.mod/emplace_index_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.mod/emplace_index_init_list_args.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -5076,7 +5057,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.mod/emplace_index_init_list_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.mod/emplace_type_args.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -5241,7 +5221,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.mod/emplace_type_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.mod/emplace_type_init_list_args.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -5339,7 +5318,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.mod/emplace_type_init_list_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.status/index.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -5405,7 +5383,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.status/index.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.status/valueless_by_exception.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -5464,7 +5441,6 @@ int run_test() {
 // -- END: test/std/utilities/variant/variant.variant/variant.status/valueless_by_exception.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.swap/swap.pass.cpp
-// -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -5541,7 +5517,7 @@ struct NothrowTypeImp {
   NothrowTypeImp() = default;
   explicit NothrowTypeImp(int v) : value(v) {}
   NothrowTypeImp(const NothrowTypeImp &o) noexcept(NT_Copy) : value(o.value) {
-    abort();
+    assert(false);
   } // never called by test
   NothrowTypeImp(NothrowTypeImp &&o) noexcept(NT_Move) : value(o.value) {
     ++move_called;
@@ -5549,7 +5525,7 @@ struct NothrowTypeImp {
     o.value = -1;
   }
   NothrowTypeImp &operator=(const NothrowTypeImp &) noexcept(NT_CopyAssign) {
-    abort();
+    assert(false);
     return *this;
   } // never called by the tests
   NothrowTypeImp &operator=(NothrowTypeImp &&o) noexcept(NT_MoveAssign) {
@@ -5621,7 +5597,7 @@ struct NonThrowingNonNoexceptType {
   }
   NonThrowingNonNoexceptType &
   operator=(NonThrowingNonNoexceptType &&) noexcept(false) {
-    abort(); // never called by the tests.
+    assert(false); // never called by the tests.
     return *this;
   }
   int value;
@@ -5639,7 +5615,7 @@ struct ThrowsOnSecondMove {
     o.value = -1;
   }
   ThrowsOnSecondMove &operator=(ThrowsOnSecondMove &&) {
-    abort(); // not called by test
+    assert(false); // not called by test
     return *this;
   }
 };
@@ -5737,7 +5713,7 @@ void test_swap_same_alternative() {
     V v2(std::in_place_index<0>, 100);
     try {
       v1.swap(v2);
-      abort();
+      assert(false);
     } catch (int) {
     }
     assert(T::swap_called == 1);
@@ -5754,7 +5730,7 @@ void test_swap_same_alternative() {
     V v2(std::in_place_index<0>, 100);
     try {
       v1.swap(v2);
-      abort();
+      assert(false);
     } catch (int) {
     }
     assert(T::move_called == 1); // call threw
@@ -5771,7 +5747,7 @@ void test_swap_same_alternative() {
     V v2(std::in_place_index<0>, 100);
     try {
       v1.swap(v2);
-      abort();
+      assert(false);
     } catch (int) {
     }
     assert(T::move_called == 1);
@@ -5818,7 +5794,7 @@ void test_swap_different_alternatives() {
     V v2(std::in_place_index<1>, 100);
     try {
       v1.swap(v2);
-      abort();
+      assert(false);
     } catch (int) {
     }
     assert(T1::swap_called == 0);
@@ -5843,7 +5819,7 @@ void test_swap_different_alternatives() {
     V v2(std::in_place_index<1>, 100);
     try {
       v1.swap(v2);
-      abort();
+      assert(false);
     } catch (int) {
     }
     LIBCPP_ASSERT(T1::move_called == 0);
@@ -5881,7 +5857,7 @@ void test_swap_different_alternatives() {
     V v2(std::in_place_index<1>, 100);
     try {
       v1.swap(v2);
-      abort();
+      assert(false);
     } catch (int) {
     }
     assert(T1::move_called == 1);
@@ -5904,7 +5880,7 @@ void test_swap_different_alternatives() {
     V v2(std::in_place_index<1>, 100);
     try {
       v1.swap(v2);
-      abort();
+      assert(false);
     } catch (int) {
     }
     assert(T1::swap_called == 0);
@@ -5920,7 +5896,7 @@ void test_swap_different_alternatives() {
     T2::reset();
     try {
       v2.swap(v1);
-      abort();
+      assert(false);
     } catch (int) {
     }
     assert(T1::swap_called == 0);
@@ -6061,8 +6037,7 @@ int run_test() {
 } // namespace member_swap
 // -- END: test/std/utilities/variant/variant.variant/variant.swap/swap.pass.cpp
 
-// -- BEGIN: test/std/utilities/variant/variant.visit/visit.pass.cpp
-// -*- C++ -*-
+// -- BEGIN: test/std/utilities/variant/variant.visit/robust_against_adl.pass.cpp
 //===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -6078,6 +6053,56 @@ int run_test() {
 // template <class Visitor, class... Variants>
 // constexpr see below visit(Visitor&& vis, Variants&&... vars);
 
+#include <variant>
+
+#include "test_macros.h"
+
+namespace visit::robust_against_adl {
+struct Incomplete;
+template<class T> struct Holder { T t; };
+
+constexpr bool test(bool do_it)
+{
+    if (do_it) {
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+        std::variant<Holder<Incomplete>*, int> v = nullptr;
+        std::visit([](auto){}, v);
+        std::visit([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
+#if TEST_STD_VER > 17
+        std::visit<void>([](auto){}, v);
+        std::visit<void*>([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
+#endif
+#endif // _M_CEE
+    }
+    return true;
+}
+
+int run_test()
+{
+    test(true);
+#if TEST_STD_VER > 17
+    static_assert(test(true));
+#endif
+    return 0;
+}
+} // namespace visit::robust_against_adl
+// -- END: test/std/utilities/variant/variant.visit/robust_against_adl.pass.cpp
+
+// -- BEGIN: test/std/utilities/variant/variant.visit/visit.pass.cpp
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+// Throwing bad_variant_access is supported starting in macosx10.13
+// XFAIL: use_system_cxx_lib && target={{.+}}-apple-macosx10.{{9|10|11|12}} && !no-exceptions
+
+// <variant>
+// template <class Visitor, class... Variants>
+// constexpr see below visit(Visitor&& vis, Variants&&... vars);
+
 #include <cassert>
 #include <memory>
 #include <string>
@@ -6086,68 +6111,10 @@ int run_test() {
 #include <variant>
 
 #include "test_macros.h"
-#include "type_id.h"
 #include "variant_test_helpers.h"
 
 namespace visit {
-enum CallType : unsigned {
-  CT_None,
-  CT_NonConst = 1,
-  CT_Const = 2,
-  CT_LValue = 4,
-  CT_RValue = 8
-};
-
-inline constexpr CallType operator|(CallType LHS, CallType RHS) {
-  return static_cast<CallType>(static_cast<unsigned>(LHS) |
-                               static_cast<unsigned>(RHS));
-}
-
-struct ForwardingCallObject {
-
-  template <class... Args> bool operator()(Args &&...) & {
-    set_call<Args &&...>(CT_NonConst | CT_LValue);
-    return true;
-  }
-
-  template <class... Args> bool operator()(Args &&...) const & {
-    set_call<Args &&...>(CT_Const | CT_LValue);
-    return true;
-  }
-
-  // Don't allow the call operator to be invoked as an rvalue.
-  template <class... Args> bool operator()(Args &&...) && {
-    set_call<Args &&...>(CT_NonConst | CT_RValue);
-    return true;
-  }
-
-  template <class... Args> bool operator()(Args &&...) const && {
-    set_call<Args &&...>(CT_Const | CT_RValue);
-    return true;
-  }
-
-  template <class... Args> static void set_call(CallType type) {
-    assert(last_call_type == CT_None);
-    assert(last_call_args == nullptr);
-    last_call_type = type;
-    last_call_args = std::addressof(makeArgumentID<Args...>());
-  }
-
-  template <class... Args> static bool check_call(CallType type) {
-    bool result = last_call_type == type && last_call_args &&
-                  *last_call_args == makeArgumentID<Args...>();
-    last_call_type = CT_None;
-    last_call_args = nullptr;
-    return result;
-  }
-
-  static CallType last_call_type;
-  static const TypeID *last_call_args;
-};
-
-CallType ForwardingCallObject::last_call_type = CT_None;
-const TypeID *ForwardingCallObject::last_call_args = nullptr;
-
+#if _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
   Fn obj{};
@@ -6200,6 +6167,30 @@ void test_call_operator_forwarding() {
     std::visit(std::move(cobj), v, v2);
     assert((Fn::check_call<long &, std::string &>(CT_Const | CT_RValue)));
   }
+  {
+    using V = std::variant<int, long, double, std::string>;
+    V v1(42l), v2("hello"), v3(101), v4(1.1);
+    std::visit(obj, v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int &, double &>(CT_NonConst | CT_LValue)));
+    std::visit(cobj, v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int &, double &>(CT_Const | CT_LValue)));
+    std::visit(std::move(obj), v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int &, double &>(CT_NonConst | CT_RValue)));
+    std::visit(std::move(cobj), v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int &, double &>(CT_Const | CT_RValue)));
+  }
+  {
+    using V = std::variant<int, long, double, int*, std::string>;
+    V v1(42l), v2("hello"), v3(nullptr), v4(1.1);
+    std::visit(obj, v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int *&, double &>(CT_NonConst | CT_LValue)));
+    std::visit(cobj, v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int *&, double &>(CT_Const | CT_LValue)));
+    std::visit(std::move(obj), v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int *&, double &>(CT_NonConst | CT_RValue)));
+    std::visit(std::move(cobj), v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int *&, double &>(CT_Const | CT_RValue)));
+  }
 }
 
 void test_argument_forwarding() {
@@ -6248,36 +6239,86 @@ void test_argument_forwarding() {
     std::visit(obj, std::move(cv));
     assert(Fn::check_call<int &&>(Val));
   }
-  { // multi argument - multi variant
-    using S = const std::string &;
-    using V = std::variant<int, S, long &&>;
-    const std::string str = "hello";
-    long l = 43;
-    V v1(42);
-    const V &cv1 = v1;
-    V v2(str);
-    const V &cv2 = v2;
-    V v3(std::move(l));
-    const V &cv3 = v3;
-    std::visit(obj, v1, v2, v3);
-    assert((Fn::check_call<int &, S, long &>(Val)));
-    std::visit(obj, cv1, cv2, std::move(v3));
-    assert((Fn::check_call<const int &, S, long &&>(Val)));
-  }
 #endif
+  { // multi argument - multi variant
+    using V = std::variant<int, std::string, long>;
+    V v1(42), v2("hello"), v3(43l);
+    std::visit(obj, v1, v2, v3);
+    assert((Fn::check_call<int &, std::string &, long &>(Val)));
+    std::visit(obj, std::as_const(v1), std::as_const(v2), std::move(v3));
+    assert((Fn::check_call<const int &, const std::string &, long &&>(Val)));
+  }
+  {
+    using V = std::variant<int, long, double, std::string>;
+    V v1(42l), v2("hello"), v3(101), v4(1.1);
+    std::visit(obj, v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int &, double &>(Val)));
+    std::visit(obj, std::as_const(v1), std::as_const(v2), std::move(v3), std::move(v4));
+    assert((Fn::check_call<const long &, const std::string &, int &&, double &&>(Val)));
+  }
+  {
+    using V = std::variant<int, long, double, int*, std::string>;
+    V v1(42l), v2("hello"), v3(nullptr), v4(1.1);
+    std::visit(obj, v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int *&, double &>(Val)));
+    std::visit(obj, std::as_const(v1), std::as_const(v2), std::move(v3), std::move(v4));
+    assert((Fn::check_call<const long &, const std::string &, int *&&, double &&>(Val)));
+  }
 }
 
-struct ReturnFirst {
-  template <class... Args> constexpr int operator()(int f, Args &&...) const {
-    return f;
+void test_return_type() {
+  using Fn = ForwardingCallObject;
+  Fn obj{};
+  const Fn &cobj = obj;
+  { // test call operator forwarding - no variant
+    static_assert(std::is_same_v<decltype(std::visit(obj)), Fn&>);
+    static_assert(std::is_same_v<decltype(std::visit(cobj)), const Fn&>);
+    static_assert(std::is_same_v<decltype(std::visit(std::move(obj))), Fn&&>);
+    static_assert(std::is_same_v<decltype(std::visit(std::move(cobj))), const Fn&&>);
   }
-};
-
-struct ReturnArity {
-  template <class... Args> constexpr int operator()(Args &&...) const {
-    return sizeof...(Args);
+  { // test call operator forwarding - single variant, single arg
+    using V = std::variant<int>;
+    V v(42);
+    static_assert(std::is_same_v<decltype(std::visit(obj, v)), Fn&>);
+    static_assert(std::is_same_v<decltype(std::visit(cobj, v)), const Fn&>);
+    static_assert(std::is_same_v<decltype(std::visit(std::move(obj), v)), Fn&&>);
+    static_assert(std::is_same_v<decltype(std::visit(std::move(cobj), v)), const Fn&&>);
   }
-};
+  { // test call operator forwarding - single variant, multi arg
+    using V = std::variant<int, long, double>;
+    V v(42l);
+    static_assert(std::is_same_v<decltype(std::visit(obj, v)), Fn&>);
+    static_assert(std::is_same_v<decltype(std::visit(cobj, v)), const Fn&>);
+    static_assert(std::is_same_v<decltype(std::visit(std::move(obj), v)), Fn&&>);
+    static_assert(std::is_same_v<decltype(std::visit(std::move(cobj), v)), const Fn&&>);
+  }
+  { // test call operator forwarding - multi variant, multi arg
+    using V = std::variant<int, long, double>;
+    using V2 = std::variant<int *, std::string>;
+    V v(42l);
+    V2 v2("hello");
+    static_assert(std::is_same_v<decltype(std::visit(obj, v, v2)), Fn&>);
+    static_assert(std::is_same_v<decltype(std::visit(cobj, v, v2)), const Fn&>);
+    static_assert(std::is_same_v<decltype(std::visit(std::move(obj), v, v2)), Fn&&>);
+    static_assert(std::is_same_v<decltype(std::visit(std::move(cobj), v, v2)), const Fn&&>);
+  }
+  {
+    using V = std::variant<int, long, double, std::string>;
+    V v1(42l), v2("hello"), v3(101), v4(1.1);
+    static_assert(std::is_same_v<decltype(std::visit(obj, v1, v2, v3, v4)), Fn&>);
+    static_assert(std::is_same_v<decltype(std::visit(cobj, v1, v2, v3, v4)), const Fn&>);
+    static_assert(std::is_same_v<decltype(std::visit(std::move(obj), v1, v2, v3, v4)), Fn&&>);
+    static_assert(std::is_same_v<decltype(std::visit(std::move(cobj), v1, v2, v3, v4)), const Fn&&>);
+  }
+  {
+    using V = std::variant<int, long, double, int*, std::string>;
+    V v1(42l), v2("hello"), v3(nullptr), v4(1.1);
+    static_assert(std::is_same_v<decltype(std::visit(obj, v1, v2, v3, v4)), Fn&>);
+    static_assert(std::is_same_v<decltype(std::visit(cobj, v1, v2, v3, v4)), const Fn&>);
+    static_assert(std::is_same_v<decltype(std::visit(std::move(obj), v1, v2, v3, v4)), Fn&&>);
+    static_assert(std::is_same_v<decltype(std::visit(std::move(cobj), v1, v2, v3, v4)), const Fn&&>);
+  }
+}
 
 void test_constexpr() {
   constexpr ReturnFirst obj{};
@@ -6309,6 +6350,16 @@ void test_constexpr() {
     constexpr V2 v2(nullptr);
     constexpr V3 v3;
     static_assert(std::visit(aobj, v1, v2, v3) == 3, "");
+  }
+  {
+    using V = std::variant<int, long, double, int *>;
+    constexpr V v1(42l), v2(101), v3(nullptr), v4(1.1);
+    static_assert(std::visit(aobj, v1, v2, v3, v4) == 4, "");
+  }
+  {
+    using V = std::variant<int, long, double, long long, int *>;
+    constexpr V v1(42l), v2(101), v3(nullptr), v4(1.1);
+    static_assert(std::visit(aobj, v1, v2, v3, v4) == 4, "");
   }
 }
 
@@ -6355,10 +6406,25 @@ void test_exceptions() {
     makeEmpty(v2);
     assert(test(v, v2));
   }
+  {
+    using V = std::variant<int, long, double, MakeEmptyT>;
+    V v1(42l), v2(101), v3(202), v4(1.1);
+    makeEmpty(v1);
+    assert(test(v1, v2, v3, v4));
+  }
+  {
+    using V = std::variant<int, long, double, long long, MakeEmptyT>;
+    V v1(42l), v2(101), v3(202), v4(1.1);
+    makeEmpty(v1);
+    makeEmpty(v2);
+    makeEmpty(v3);
+    makeEmpty(v4);
+    assert(test(v1, v2, v3, v4));
+  }
 #endif
 }
 
-// See https://bugs.llvm.org/show_bug.cgi?id=31916
+// See https://llvm.org/PR31916
 void test_caller_accepts_nonconst() {
   struct A {};
   struct Visitor {
@@ -6368,17 +6434,638 @@ void test_caller_accepts_nonconst() {
   std::visit(Visitor{}, v);
 }
 
+struct MyVariant : std::variant<short, long, float> {};
+} // namespace visit
+
+namespace std {
+template <size_t Index>
+void get(const ::visit::MyVariant&) {
+  assert(false);
+}
+} // namespace std
+
+namespace visit {
+void test_derived_from_variant() {
+  auto v1 = MyVariant{42};
+  const auto cv1 = MyVariant{142};
+  std::visit([](auto x) { assert(x == 42); }, v1);
+  std::visit([](auto x) { assert(x == 142); }, cv1);
+  std::visit([](auto x) { assert(x == -1.25f); }, MyVariant{-1.25f});
+  std::visit([](auto x) { assert(x == 42); }, std::move(v1));
+  std::visit([](auto x) { assert(x == 142); }, std::move(cv1));
+
+  // Check that visit does not take index nor valueless_by_exception members from the base class.
+  struct EvilVariantBase {
+    int index;
+    char valueless_by_exception;
+  };
+
+  struct EvilVariant1 : std::variant<int, long, double>,
+                        std::tuple<int>,
+                        EvilVariantBase {
+    using std::variant<int, long, double>::variant;
+  };
+
+  std::visit([](auto x) { assert(x == 12); }, EvilVariant1{12});
+  std::visit([](auto x) { assert(x == 12.3); }, EvilVariant1{12.3});
+
+  // Check that visit unambiguously picks the variant, even if the other base has __impl member.
+  struct ImplVariantBase {
+    struct Callable {
+      bool operator()() const { assert(false); return false; }
+    };
+
+    Callable __impl;
+  };
+
+  struct EvilVariant2 : std::variant<int, long, double>, ImplVariantBase {
+    using std::variant<int, long, double>::variant;
+  };
+
+  std::visit([](auto x) { assert(x == 12); }, EvilVariant2{12});
+  std::visit([](auto x) { assert(x == 12.3); }, EvilVariant2{12.3});
+}
+
+struct any_visitor {
+  template <typename T>
+  void operator()(const T&) const {}
+};
+
+template <typename T, typename = decltype(std::visit(
+                          std::declval<any_visitor&>(), std::declval<T>()))>
+constexpr bool has_visit(int) {
+  return true;
+}
+
+template <typename T>
+constexpr bool has_visit(...) {
+  return false;
+}
+
+void test_sfinae() {
+  struct BadVariant : std::variant<short>, std::variant<long, float> {};
+  struct BadVariant2 : private std::variant<long, float> {};
+  struct GoodVariant : std::variant<long, float> {};
+  struct GoodVariant2 : GoodVariant {};
+
+  static_assert(!has_visit<int>(0));
+  static_assert(!has_visit<BadVariant>(0));
+  static_assert(!has_visit<BadVariant2>(0));
+  static_assert(has_visit<std::variant<int>>(0));
+  static_assert(has_visit<GoodVariant>(0));
+  static_assert(has_visit<GoodVariant2>(0));
+}
+
 int run_test() {
   test_call_operator_forwarding();
   test_argument_forwarding();
+  test_return_type();
   test_constexpr();
   test_exceptions();
   test_caller_accepts_nonconst();
+  test_derived_from_variant();
+  test_sfinae();
 
   return 0;
 }
+#else // ^^ real test / vv workaround
+int run_test() {
+  return 0;
+}
+#endif // _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
+
 } // namespace visit
 // -- END: test/std/utilities/variant/variant.visit/visit.pass.cpp
+
+// -- BEGIN: test/std/utilities/variant/variant.visit/visit_return_type.pass.cpp
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+// Throwing bad_variant_access is supported starting in macosx10.13
+// XFAIL: use_system_cxx_lib && target={{.+}}-apple-macosx10.{{9|10|11|12}} && !no-exceptions
+
+// <variant>
+// template <class R, class Visitor, class... Variants>
+// constexpr R visit(Visitor&& vis, Variants&&... vars);
+
+#include <cassert>
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <variant>
+
+#include "test_macros.h"
+#include "variant_test_helpers.h"
+
+namespace visit::return_type {
+#if _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
+template <typename ReturnType>
+void test_call_operator_forwarding() {
+  using Fn = ForwardingCallObject;
+  Fn obj{};
+  const Fn &cobj = obj;
+  { // test call operator forwarding - no variant
+    std::visit<ReturnType>(obj);
+    assert(Fn::check_call<>(CT_NonConst | CT_LValue));
+    std::visit<ReturnType>(cobj);
+    assert(Fn::check_call<>(CT_Const | CT_LValue));
+    std::visit<ReturnType>(std::move(obj));
+    assert(Fn::check_call<>(CT_NonConst | CT_RValue));
+    std::visit<ReturnType>(std::move(cobj));
+    assert(Fn::check_call<>(CT_Const | CT_RValue));
+  }
+  { // test call operator forwarding - single variant, single arg
+    using V = std::variant<int>;
+    V v(42);
+    std::visit<ReturnType>(obj, v);
+    assert(Fn::check_call<int &>(CT_NonConst | CT_LValue));
+    std::visit<ReturnType>(cobj, v);
+    assert(Fn::check_call<int &>(CT_Const | CT_LValue));
+    std::visit<ReturnType>(std::move(obj), v);
+    assert(Fn::check_call<int &>(CT_NonConst | CT_RValue));
+    std::visit<ReturnType>(std::move(cobj), v);
+    assert(Fn::check_call<int &>(CT_Const | CT_RValue));
+  }
+  { // test call operator forwarding - single variant, multi arg
+    using V = std::variant<int, long, double>;
+    V v(42l);
+    std::visit<ReturnType>(obj, v);
+    assert(Fn::check_call<long &>(CT_NonConst | CT_LValue));
+    std::visit<ReturnType>(cobj, v);
+    assert(Fn::check_call<long &>(CT_Const | CT_LValue));
+    std::visit<ReturnType>(std::move(obj), v);
+    assert(Fn::check_call<long &>(CT_NonConst | CT_RValue));
+    std::visit<ReturnType>(std::move(cobj), v);
+    assert(Fn::check_call<long &>(CT_Const | CT_RValue));
+  }
+  { // test call operator forwarding - multi variant, multi arg
+    using V = std::variant<int, long, double>;
+    using V2 = std::variant<int *, std::string>;
+    V v(42l);
+    V2 v2("hello");
+    std::visit<int>(obj, v, v2);
+    assert((Fn::check_call<long &, std::string &>(CT_NonConst | CT_LValue)));
+    std::visit<ReturnType>(cobj, v, v2);
+    assert((Fn::check_call<long &, std::string &>(CT_Const | CT_LValue)));
+    std::visit<ReturnType>(std::move(obj), v, v2);
+    assert((Fn::check_call<long &, std::string &>(CT_NonConst | CT_RValue)));
+    std::visit<ReturnType>(std::move(cobj), v, v2);
+    assert((Fn::check_call<long &, std::string &>(CT_Const | CT_RValue)));
+  }
+  {
+    using V = std::variant<int, long, double, std::string>;
+    V v1(42l), v2("hello"), v3(101), v4(1.1);
+    std::visit<ReturnType>(obj, v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int &, double &>(CT_NonConst | CT_LValue)));
+    std::visit<ReturnType>(cobj, v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int &, double &>(CT_Const | CT_LValue)));
+    std::visit<ReturnType>(std::move(obj), v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int &, double &>(CT_NonConst | CT_RValue)));
+    std::visit<ReturnType>(std::move(cobj), v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int &, double &>(CT_Const | CT_RValue)));
+  }
+  {
+    using V = std::variant<int, long, double, int*, std::string>;
+    V v1(42l), v2("hello"), v3(nullptr), v4(1.1);
+    std::visit<ReturnType>(obj, v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int *&, double &>(CT_NonConst | CT_LValue)));
+    std::visit<ReturnType>(cobj, v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int *&, double &>(CT_Const | CT_LValue)));
+    std::visit<ReturnType>(std::move(obj), v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int *&, double &>(CT_NonConst | CT_RValue)));
+    std::visit<ReturnType>(std::move(cobj), v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int *&, double &>(CT_Const | CT_RValue)));
+  }
+}
+
+template <typename ReturnType>
+void test_argument_forwarding() {
+  using Fn = ForwardingCallObject;
+  Fn obj{};
+  const auto Val = CT_LValue | CT_NonConst;
+  { // single argument - value type
+    using V = std::variant<int>;
+    V v(42);
+    const V &cv = v;
+    std::visit<ReturnType>(obj, v);
+    assert(Fn::check_call<int &>(Val));
+    std::visit<ReturnType>(obj, cv);
+    assert(Fn::check_call<const int &>(Val));
+    std::visit<ReturnType>(obj, std::move(v));
+    assert(Fn::check_call<int &&>(Val));
+    std::visit<ReturnType>(obj, std::move(cv));
+    assert(Fn::check_call<const int &&>(Val));
+  }
+#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
+  { // single argument - lvalue reference
+    using V = std::variant<int &>;
+    int x = 42;
+    V v(x);
+    const V &cv = v;
+    std::visit<ReturnType>(obj, v);
+    assert(Fn::check_call<int &>(Val));
+    std::visit<ReturnType>(obj, cv);
+    assert(Fn::check_call<int &>(Val));
+    std::visit<ReturnType>(obj, std::move(v));
+    assert(Fn::check_call<int &>(Val));
+    std::visit<ReturnType>(obj, std::move(cv));
+    assert(Fn::check_call<int &>(Val));
+  }
+  { // single argument - rvalue reference
+    using V = std::variant<int &&>;
+    int x = 42;
+    V v(std::move(x));
+    const V &cv = v;
+    std::visit<ReturnType>(obj, v);
+    assert(Fn::check_call<int &>(Val));
+    std::visit<ReturnType>(obj, cv);
+    assert(Fn::check_call<int &>(Val));
+    std::visit<ReturnType>(obj, std::move(v));
+    assert(Fn::check_call<int &&>(Val));
+    std::visit<ReturnType>(obj, std::move(cv));
+    assert(Fn::check_call<int &&>(Val));
+  }
+#endif
+  { // multi argument - multi variant
+    using V = std::variant<int, std::string, long>;
+    V v1(42), v2("hello"), v3(43l);
+    std::visit<ReturnType>(obj, v1, v2, v3);
+    assert((Fn::check_call<int &, std::string &, long &>(Val)));
+    std::visit<ReturnType>(obj, std::as_const(v1), std::as_const(v2), std::move(v3));
+    assert((Fn::check_call<const int &, const std::string &, long &&>(Val)));
+  }
+  {
+    using V = std::variant<int, long, double, std::string>;
+    V v1(42l), v2("hello"), v3(101), v4(1.1);
+    std::visit<ReturnType>(obj, v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int &, double &>(Val)));
+    std::visit<ReturnType>(obj, std::as_const(v1), std::as_const(v2), std::move(v3), std::move(v4));
+    assert((Fn::check_call<const long &, const std::string &, int &&, double &&>(Val)));
+  }
+  {
+    using V = std::variant<int, long, double, int*, std::string>;
+    V v1(42l), v2("hello"), v3(nullptr), v4(1.1);
+    std::visit<ReturnType>(obj, v1, v2, v3, v4);
+    assert((Fn::check_call<long &, std::string &, int *&, double &>(Val)));
+    std::visit<ReturnType>(obj, std::as_const(v1), std::as_const(v2), std::move(v3), std::move(v4));
+    assert((Fn::check_call<const long &, const std::string &, int *&&, double &&>(Val)));
+  }
+}
+
+template <typename ReturnType>
+void test_return_type() {
+  using Fn = ForwardingCallObject;
+  Fn obj{};
+  const Fn &cobj = obj;
+  { // test call operator forwarding - no variant
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(obj)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(cobj)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(std::move(obj))), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(std::move(cobj))), ReturnType>);
+  }
+  { // test call operator forwarding - single variant, single arg
+    using V = std::variant<int>;
+    V v(42);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(obj, v)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(cobj, v)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(std::move(obj), v)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(std::move(cobj), v)), ReturnType>);
+  }
+  { // test call operator forwarding - single variant, multi arg
+    using V = std::variant<int, long, double>;
+    V v(42l);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(obj, v)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(cobj, v)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(std::move(obj), v)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(std::move(cobj), v)), ReturnType>);
+  }
+  { // test call operator forwarding - multi variant, multi arg
+    using V = std::variant<int, long, double>;
+    using V2 = std::variant<int *, std::string>;
+    V v(42l);
+    V2 v2("hello");
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(obj, v, v2)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(cobj, v, v2)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(std::move(obj), v, v2)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(std::move(cobj), v, v2)), ReturnType>);
+  }
+  {
+    using V = std::variant<int, long, double, std::string>;
+    V v1(42l), v2("hello"), v3(101), v4(1.1);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(obj, v1, v2, v3, v4)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(cobj, v1, v2, v3, v4)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(std::move(obj), v1, v2, v3, v4)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(std::move(cobj), v1, v2, v3, v4)), ReturnType>);
+  }
+  {
+    using V = std::variant<int, long, double, int*, std::string>;
+    V v1(42l), v2("hello"), v3(nullptr), v4(1.1);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(obj, v1, v2, v3, v4)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(cobj, v1, v2, v3, v4)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(std::move(obj), v1, v2, v3, v4)), ReturnType>);
+    static_assert(std::is_same_v<decltype(std::visit<ReturnType>(std::move(cobj), v1, v2, v3, v4)), ReturnType>);
+  }
+}
+
+void test_constexpr_void() {
+  constexpr ReturnFirst obj{};
+  constexpr ReturnArity aobj{};
+  {
+    using V = std::variant<int>;
+    constexpr V v(42);
+    static_assert((std::visit<void>(obj, v), 42) == 42, "");
+  }
+  {
+    using V = std::variant<short, long, char>;
+    constexpr V v(42l);
+    static_assert((std::visit<void>(obj, v), 42) == 42, "");
+  }
+  {
+    using V1 = std::variant<int>;
+    using V2 = std::variant<int, char *, long long>;
+    using V3 = std::variant<bool, int, int>;
+    constexpr V1 v1;
+    constexpr V2 v2(nullptr);
+    constexpr V3 v3;
+    static_assert((std::visit<void>(aobj, v1, v2, v3), 3) == 3, "");
+  }
+  {
+    using V1 = std::variant<int>;
+    using V2 = std::variant<int, char *, long long>;
+    using V3 = std::variant<void *, int, int>;
+    constexpr V1 v1;
+    constexpr V2 v2(nullptr);
+    constexpr V3 v3;
+    static_assert((std::visit<void>(aobj, v1, v2, v3), 3) == 3, "");
+  }
+  {
+    using V = std::variant<int, long, double, int *>;
+    constexpr V v1(42l), v2(101), v3(nullptr), v4(1.1);
+    static_assert((std::visit<void>(aobj, v1, v2, v3, v4), 4) == 4, "");
+  }
+  {
+    using V = std::variant<int, long, double, long long, int *>;
+    constexpr V v1(42l), v2(101), v3(nullptr), v4(1.1);
+    static_assert((std::visit<void>(aobj, v1, v2, v3, v4), 4) == 4, "");
+  }
+}
+
+void test_constexpr_int() {
+  constexpr ReturnFirst obj{};
+  constexpr ReturnArity aobj{};
+  {
+    using V = std::variant<int>;
+    constexpr V v(42);
+    static_assert(std::visit<int>(obj, v) == 42, "");
+  }
+  {
+    using V = std::variant<short, long, char>;
+    constexpr V v(42l);
+    static_assert(std::visit<int>(obj, v) == 42, "");
+  }
+  {
+    using V1 = std::variant<int>;
+    using V2 = std::variant<int, char *, long long>;
+    using V3 = std::variant<bool, int, int>;
+    constexpr V1 v1;
+    constexpr V2 v2(nullptr);
+    constexpr V3 v3;
+    static_assert(std::visit<int>(aobj, v1, v2, v3) == 3, "");
+  }
+  {
+    using V1 = std::variant<int>;
+    using V2 = std::variant<int, char *, long long>;
+    using V3 = std::variant<void *, int, int>;
+    constexpr V1 v1;
+    constexpr V2 v2(nullptr);
+    constexpr V3 v3;
+    static_assert(std::visit<int>(aobj, v1, v2, v3) == 3, "");
+  }
+  {
+    using V = std::variant<int, long, double, int *>;
+    constexpr V v1(42l), v2(101), v3(nullptr), v4(1.1);
+    static_assert(std::visit<int>(aobj, v1, v2, v3, v4) == 4, "");
+  }
+  {
+    using V = std::variant<int, long, double, long long, int *>;
+    constexpr V v1(42l), v2(101), v3(nullptr), v4(1.1);
+    static_assert(std::visit<int>(aobj, v1, v2, v3, v4) == 4, "");
+  }
+}
+
+template <typename ReturnType>
+void test_exceptions() {
+#ifndef TEST_HAS_NO_EXCEPTIONS
+  ReturnArity obj{};
+  auto test = [&](auto &&... args) {
+    try {
+      std::visit<ReturnType>(obj, args...);
+    } catch (const std::bad_variant_access &) {
+      return true;
+    } catch (...) {
+    }
+    return false;
+  };
+  {
+    using V = std::variant<int, MakeEmptyT>;
+    V v;
+    makeEmpty(v);
+    assert(test(v));
+  }
+  {
+    using V = std::variant<int, MakeEmptyT>;
+    using V2 = std::variant<long, std::string, void *>;
+    V v;
+    makeEmpty(v);
+    V2 v2("hello");
+    assert(test(v, v2));
+  }
+  {
+    using V = std::variant<int, MakeEmptyT>;
+    using V2 = std::variant<long, std::string, void *>;
+    V v;
+    makeEmpty(v);
+    V2 v2("hello");
+    assert(test(v2, v));
+  }
+  {
+    using V = std::variant<int, MakeEmptyT>;
+    using V2 = std::variant<long, std::string, void *, MakeEmptyT>;
+    V v;
+    makeEmpty(v);
+    V2 v2;
+    makeEmpty(v2);
+    assert(test(v, v2));
+  }
+  {
+    using V = std::variant<int, long, double, MakeEmptyT>;
+    V v1(42l), v2(101), v3(202), v4(1.1);
+    makeEmpty(v1);
+    assert(test(v1, v2, v3, v4));
+  }
+  {
+    using V = std::variant<int, long, double, long long, MakeEmptyT>;
+    V v1(42l), v2(101), v3(202), v4(1.1);
+    makeEmpty(v1);
+    makeEmpty(v2);
+    makeEmpty(v3);
+    makeEmpty(v4);
+    assert(test(v1, v2, v3, v4));
+  }
+#endif
+}
+
+// See https://bugs.llvm.org/show_bug.cgi?id=31916
+template <typename ReturnType>
+void test_caller_accepts_nonconst() {
+  struct A {};
+  struct Visitor {
+    auto operator()(A&) {
+      if constexpr (!std::is_void_v<ReturnType>)
+      {
+        return ReturnType{};
+      }
+    }
+  };
+  std::variant<A> v;
+  std::visit<ReturnType>(Visitor{}, v);
+}
+
+void test_constexpr_explicit_side_effect() {
+  auto test_lambda = [](int arg) constexpr {
+    std::variant<int> v = 101;
+    std::visit<void>([arg](int& x) constexpr { x = arg; }, v);
+    return std::get<int>(v);
+  };
+
+  static_assert(test_lambda(202) == 202, "");
+}
+
+void test_derived_from_variant() {
+  struct MyVariant : std::variant<short, long, float> {};
+
+  std::visit<bool>(
+      [](auto x) {
+        assert(x == 42);
+        return true;
+      },
+      MyVariant{42});
+  std::visit<bool>(
+      [](auto x) {
+        assert(x == -1.3f);
+        return true;
+      },
+      MyVariant{-1.3f});
+
+  // Check that visit does not take index nor valueless_by_exception members from the base class.
+  struct EvilVariantBase {
+    int index;
+    char valueless_by_exception;
+  };
+
+  struct EvilVariant1 : std::variant<int, long, double>,
+                        std::tuple<int>,
+                        EvilVariantBase {
+    using std::variant<int, long, double>::variant;
+  };
+
+  std::visit<bool>(
+      [](auto x) {
+        assert(x == 12);
+        return true;
+      },
+      EvilVariant1{12});
+  std::visit<bool>(
+      [](auto x) {
+        assert(x == 12.3);
+        return true;
+      },
+      EvilVariant1{12.3});
+
+  // Check that visit unambiguously picks the variant, even if the other base has __impl member.
+  struct ImplVariantBase {
+    struct Callable {
+      bool operator()() const { assert(false); return false; }
+    };
+
+    Callable __impl;
+  };
+
+  struct EvilVariant2 : std::variant<int, long, double>, ImplVariantBase {
+    using std::variant<int, long, double>::variant;
+  };
+
+  std::visit<bool>(
+      [](auto x) {
+        assert(x == 12);
+        return true;
+      },
+      EvilVariant2{12});
+  std::visit<bool>(
+      [](auto x) {
+        assert(x == 12.3);
+        return true;
+      },
+      EvilVariant2{12.3});
+}
+
+struct any_visitor {
+  template <typename T>
+  bool operator()(const T&) {
+    return true;
+  }
+};
+
+template <typename T, typename = decltype(std::visit<bool>(
+                          std::declval<any_visitor&>(), std::declval<T>()))>
+constexpr bool has_visit(int) {
+  return true;
+}
+
+template <typename T>
+constexpr bool has_visit(...) {
+  return false;
+}
+
+void test_sfinae() {
+  struct BadVariant : std::variant<short>, std::variant<long, float> {};
+
+  static_assert(has_visit<std::variant<int> >(int()));
+  static_assert(!has_visit<BadVariant>(int()));
+}
+
+int run_test() {
+  test_call_operator_forwarding<void>();
+  test_argument_forwarding<void>();
+  test_return_type<void>();
+  test_constexpr_void();
+  test_exceptions<void>();
+  test_caller_accepts_nonconst<void>();
+  test_call_operator_forwarding<int>();
+  test_argument_forwarding<int>();
+  test_return_type<int>();
+  test_constexpr_int();
+  test_exceptions<int>();
+  test_caller_accepts_nonconst<int>();
+  test_constexpr_explicit_side_effect();
+  test_derived_from_variant();
+  test_sfinae();
+
+  return 0;
+}
+#else // ^^ real tests / vv workaround
+int run_test() {
+  return 0;
+}
+#endif // _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
+} // namespace visit::return_type
+// -- END: test/std/utilities/variant/variant.visit/visit_return_type.pass.cpp
+
 // LLVM SOURCES END
 // clang-format on
 
@@ -6506,7 +7193,8 @@ namespace msvc {
                     using std::variant<int, char, double>::variant;
                 };
 
-                my_variant v1{42}, v2{3.14};
+                my_variant v1{42};
+                my_variant v2{3.14};
                 auto visitor1 = [](auto&& x) { return static_cast<double>(x); };
                 assert(std::visit(visitor1, v1) == 42.0);
                 assert(std::visit(visitor1, v2) == 3.14);
@@ -6582,8 +7270,8 @@ namespace msvc {
 
     template <class Fn>
     struct immobile_visitor : mobile_visitor<Fn> {
-        immobile_visitor()                        = default;
-        immobile_visitor(const immobile_visitor&) = delete;
+        immobile_visitor()                                   = default;
+        immobile_visitor(const immobile_visitor&)            = delete;
         immobile_visitor& operator=(const immobile_visitor&) = delete;
     };
 
@@ -6961,7 +7649,7 @@ namespace msvc {
 
         struct immobile_data : mobile_data {
             using mobile_data::mobile_data;
-            immobile_data(const immobile_data&) = delete;
+            immobile_data(const immobile_data&)            = delete;
             immobile_data& operator=(const immobile_data&) = delete;
         };
 
@@ -6971,6 +7659,28 @@ namespace msvc {
                 using R = immobile_data;
                 assert(std::visit<R>(std::identity{}, std::variant<int, short>{13}).x == 13);
                 assert(std::visit<R>(std::identity{}, std::variant<int, short>{short{42}}).x == 42);
+
+                // Verify that conversions to an object that can't be copied/moved are correctly handled
+                struct convertible_to_immobile_one {
+                    operator immobile_data() const {
+                        return immobile_data{1729};
+                    }
+                };
+
+                struct convertible_to_immobile_other {
+                    operator immobile_data() const {
+                        return immobile_data{1138};
+                    }
+                };
+
+                using VarTestConv = std::variant<convertible_to_immobile_one, convertible_to_immobile_other>;
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10112408
+                assert(std::visit<R>(std::identity{}, VarTestConv{convertible_to_immobile_one{}}).x == 1729);
+                assert(std::visit<R>(std::identity{}, VarTestConv{convertible_to_immobile_other{}}).x == 1138);
+#endif // TRANSITION, DevCom-10112408
+                auto immobile_converter = [](auto src) -> immobile_data { return src; };
+                assert(std::visit<R>(immobile_converter, VarTestConv{convertible_to_immobile_one{}}).x == 1729);
+                assert(std::visit<R>(immobile_converter, VarTestConv{convertible_to_immobile_other{}}).x == 1138);
             }
             {
                 // Verify that a returned object is not copied/moved/modified
@@ -7025,6 +7735,28 @@ namespace msvc {
         void run_test() {}
 #endif // _HAS_CXX20
     } // namespace visit_R
+
+    namespace visit_pointer_to_member {
+        struct base {
+            int x;
+
+            int f() const {
+                return x;
+            }
+        };
+        struct derived : base {
+            int y;
+        };
+
+        void run_test() {
+            using V = std::variant<base, derived>;
+            assert(std::visit(&base::x, V{base{13}}) == 13);
+            assert(std::visit(&base::x, V{derived{{42}, 29}}) == 42);
+
+            assert(std::visit(&base::f, V{base{13}}) == 13);
+            assert(std::visit(&base::f, V{derived{{42}, 29}}) == 42);
+        }
+    } // namespace visit_pointer_to_member
 
     template <class, class = void>
     inline constexpr bool has_type = false;
@@ -7100,6 +7832,111 @@ namespace msvc {
             Overload(42);
         }
     } // namespace DevCom1031281
+
+    namespace gh2770 {
+        // Previous metaprogramming to validate the type requirements for std::visit required typelists too long for
+        // Clang.
+        struct S {
+            template <class T0, class T1, class T2, class T3, class T4>
+            int operator()(T0, T1, T2, T3, T4) const {
+                return 1729;
+            }
+        };
+
+        void run_test() {
+            using V = std::variant<char, int, long, long long>;
+            assert(std::visit(S{}, V{'a'}, V{'b'}, V{10}, V{20L}, V{30LL}) == 1729);
+#if _HAS_CXX20
+            assert(std::visit<int>(S{}, V{'a'}, V{'b'}, V{10}, V{20L}, V{30LL}) == 1729);
+#endif // _HAS_CXX20
+        }
+    } // namespace gh2770
+
+    namespace assign_cv {
+        template <class T>
+        struct TypeIdentityImpl {
+            using type = T;
+        };
+        template <class T>
+        using TypeIdentity = typename TypeIdentityImpl<T>::type;
+
+        struct CvAssignable {
+            CvAssignable()                               = default;
+            CvAssignable(const CvAssignable&)            = default;
+            CvAssignable(CvAssignable&&)                 = default;
+            CvAssignable& operator=(const CvAssignable&) = default;
+            CvAssignable& operator=(CvAssignable&&)      = default;
+
+            template <class T = CvAssignable>
+            CvAssignable(const volatile TypeIdentity<T>&) noexcept {}
+            template <class T = CvAssignable>
+            CvAssignable(const volatile TypeIdentity<T>&&) noexcept {}
+
+            template <class T = CvAssignable>
+            constexpr CvAssignable& operator=(const volatile TypeIdentity<T>&) noexcept {
+                return *this;
+            }
+            template <class T = CvAssignable>
+            constexpr CvAssignable& operator=(const volatile TypeIdentity<T>&&) noexcept {
+                return *this;
+            }
+
+            template <class T = CvAssignable>
+            constexpr const volatile CvAssignable& operator=(const volatile TypeIdentity<T>&) const volatile noexcept {
+                return *this;
+            }
+            template <class T = CvAssignable>
+            constexpr const volatile CvAssignable& operator=(const volatile TypeIdentity<T>&&) const volatile noexcept {
+                return *this;
+            }
+        };
+
+        void run_test() {
+            using std::swap;
+            {
+                std::variant<const int> oc{};
+                oc.emplace<0>(0);
+                STATIC_ASSERT(!std::is_copy_assignable_v<decltype(oc)>);
+                STATIC_ASSERT(!std::is_move_assignable_v<decltype(oc)>);
+                STATIC_ASSERT(!std::is_swappable_v<decltype(oc)>);
+
+                std::variant<volatile int> ov{};
+                std::variant<volatile int> ov2{};
+                ov.emplace<0>(0);
+                swap(ov, ov);
+                ov = ov2;
+                ov = std::move(ov2);
+
+                std::variant<const volatile int> ocv{};
+                ocv.emplace<0>(0);
+                STATIC_ASSERT(!std::is_copy_assignable_v<decltype(ocv)>);
+                STATIC_ASSERT(!std::is_move_assignable_v<decltype(ocv)>);
+                STATIC_ASSERT(!std::is_swappable_v<decltype(ocv)>);
+            }
+            {
+                std::variant<const CvAssignable> oc{};
+                std::variant<const CvAssignable> oc2{};
+                oc.emplace<0>(CvAssignable{});
+                swap(oc, oc);
+                oc = oc2;
+                oc = std::move(oc2);
+
+                std::variant<volatile CvAssignable> ov{};
+                std::variant<volatile CvAssignable> ov2{};
+                ov.emplace<0>(CvAssignable{});
+                swap(ov, ov);
+                ov = ov2;
+                ov = std::move(ov2);
+
+                std::variant<const volatile CvAssignable> ocv{};
+                std::variant<const volatile CvAssignable> ocv2{};
+                ocv.emplace<0>(CvAssignable{});
+                swap(ocv, ocv);
+                ocv = ocv2;
+                ocv = std::move(ocv2);
+            }
+        }
+    } // namespace assign_cv
 } // namespace msvc
 
 int main() {
@@ -7151,15 +7988,23 @@ int main() {
 
     member_swap::run_test();
 
+    visit::robust_against_adl::run_test();
     visit::run_test();
+    visit::return_type::run_test();
 
     msvc::big_variant::run_test();
     msvc::derived_variant::run_test();
     msvc::visit::run_test();
     msvc::visit_R::run_test();
+    msvc::visit_pointer_to_member::run_test();
 
     msvc::vso468746::run_test();
     msvc::vso508126::run_test();
     msvc::vso492097::run_test();
     msvc::DevCom1031281::run_test();
+    msvc::gh2770::run_test();
+    msvc::assign_cv::run_test();
 }
+#else // ^^^ not x86 or not /analyze / x86 /analyze vvv
+int main() {}
+#endif // !defined(_PREFAST_) || !defined(_M_IX86)

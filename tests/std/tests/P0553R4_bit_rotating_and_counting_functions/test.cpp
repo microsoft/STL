@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-#include <assert.h>
 #include <bit>
+#include <cassert>
 #include <limits>
 
 using namespace std;

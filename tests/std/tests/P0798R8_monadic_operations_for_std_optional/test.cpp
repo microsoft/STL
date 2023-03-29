@@ -10,10 +10,10 @@ using namespace std;
 
 struct Immovable {
     constexpr Immovable(int x) : v(x) {}
-    Immovable(const Immovable&) = delete;
-    Immovable(Immovable&&)      = delete;
+    Immovable(const Immovable&)            = delete;
+    Immovable(Immovable&&)                 = delete;
     Immovable& operator=(const Immovable&) = delete;
-    Immovable& operator=(Immovable&&) = delete;
+    Immovable& operator=(Immovable&&)      = delete;
     constexpr ~Immovable() {}
 
     int v;

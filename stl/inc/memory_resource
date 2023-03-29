@@ -10,16 +10,16 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #if !_HAS_CXX17
-#pragma message("The contents of <memory_resource> are available only with C++17 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <memory_resource> are available only with C++17 or later.");
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <vector>
 #include <xbit_ops.h>
 #include <xpolymorphic_allocator.h>
 #include <xutility>
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #include <mutex>
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -35,7 +35,7 @@ namespace pmr {
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_set_default_resource(memory_resource*) noexcept;
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Unaligned_set_default_resource(memory_resource*) noexcept;
 
-    inline memory_resource* set_default_resource(memory_resource* const _Resource) noexcept {
+    _EXPORT_STD inline memory_resource* set_default_resource(memory_resource* const _Resource) noexcept {
 #ifdef __cpp_aligned_new
         return _Aligned_set_default_resource(_Resource);
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
@@ -43,7 +43,7 @@ namespace pmr {
 #endif // __cpp_aligned_new
     }
 
-    extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept;
+    _EXPORT_STD extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept;
 
     class _Identity_equal_resource : public memory_resource {
     protected:
@@ -74,7 +74,7 @@ namespace pmr {
         : public _Identity_equal_resource { // implementation for new_delete_resource with aligned new support
         void* do_allocate(const size_t _Bytes, const size_t _Align) override {
             if (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-                return ::operator new (_Bytes, align_val_t{_Align});
+                return ::operator new(_Bytes, align_val_t{_Align});
             }
 
             return ::operator new(_Bytes);
@@ -83,7 +83,7 @@ namespace pmr {
         void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) noexcept override
         /* strengthened */ {
             if (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-                return ::operator delete (_Ptr, _Bytes, align_val_t{_Align});
+                return ::operator delete(_Ptr, _Bytes, align_val_t{_Align});
             }
 
             ::operator delete(_Ptr, _Bytes);
@@ -92,13 +92,13 @@ namespace pmr {
 
     extern "C" _CRT_SATELLITE_1 _Aligned_new_delete_resource_impl* __cdecl _Aligned_new_delete_resource() noexcept;
 
-    _NODISCARD inline memory_resource* new_delete_resource() noexcept {
+    _EXPORT_STD _NODISCARD inline memory_resource* new_delete_resource() noexcept {
         return _Aligned_new_delete_resource();
     }
 
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
 
-    _NODISCARD inline memory_resource* new_delete_resource() noexcept {
+    _EXPORT_STD _NODISCARD inline memory_resource* new_delete_resource() noexcept {
         return _Unaligned_new_delete_resource();
     }
 #endif // __cpp_aligned_new
@@ -119,7 +119,7 @@ namespace pmr {
             // initialize this list to the empty state
         }
 
-        _Intrusive_list(const _Intrusive_list&) = delete;
+        _Intrusive_list(const _Intrusive_list&)            = delete;
         _Intrusive_list& operator=(const _Intrusive_list&) = delete;
 
         static constexpr _Link_type* _As_link(_Ty* const _Ptr) noexcept {
@@ -215,7 +215,7 @@ namespace pmr {
         _Link_type* _Head = nullptr;
     };
 
-    struct pool_options {
+    _EXPORT_STD struct pool_options {
         size_t max_blocks_per_chunk        = 0;
         size_t largest_required_pool_block = 0;
     };
@@ -227,7 +227,7 @@ namespace pmr {
         (void) _Align;
     }
 
-    struct unsynchronized_pool_resource : _Identity_equal_resource {
+    _EXPORT_STD struct unsynchronized_pool_resource : _Identity_equal_resource {
         unsynchronized_pool_resource() noexcept { // initialize pool with default options and default upstream
             _Setup_options();
         }
@@ -249,7 +249,7 @@ namespace pmr {
             _Setup_options();
         }
 
-        unsynchronized_pool_resource(const unsynchronized_pool_resource&) = delete;
+        unsynchronized_pool_resource(const unsynchronized_pool_resource&)            = delete;
         unsynchronized_pool_resource& operator=(const unsynchronized_pool_resource&) = delete;
 
         ~unsynchronized_pool_resource() noexcept override {
@@ -396,7 +396,7 @@ namespace pmr {
                     // initialize a chunk of _Capacity blocks, all initially free
                 }
 
-                _Chunk(const _Chunk&) = delete;
+                _Chunk(const _Chunk&)            = delete;
                 _Chunk& operator=(const _Chunk&) = delete;
             };
 
@@ -513,6 +513,10 @@ namespace pmr {
 
             void _Increase_capacity(unsynchronized_pool_resource& _Pool_resource) {
                 // this pool has no free blocks; get a new chunk from upstream
+                if (_Next_capacity > _Pool_resource._Options.max_blocks_per_chunk) {
+                    // This is a fresh pool, _Next_capacity hasn't yet been bounded by max_blocks_per_chunk:
+                    _Next_capacity = _Pool_resource._Options.max_blocks_per_chunk;
+                }
                 const size_t _Size               = _Size_for_capacity(_Next_capacity);
                 memory_resource* const _Resource = _Pool_resource.upstream_resource();
                 void* const _Ptr                 = _Resource->allocate(_Size, _Block_size);
@@ -565,33 +569,33 @@ namespace pmr {
         pmr::vector<_Pool> _Pools{}; // pools in order of increasing block size
     };
 
-#ifndef _M_CEE
-    class synchronized_pool_resource : public unsynchronized_pool_resource {
+#ifndef _M_CEE_PURE
+    _EXPORT_STD class synchronized_pool_resource : public unsynchronized_pool_resource {
     public:
         using unsynchronized_pool_resource::unsynchronized_pool_resource;
 
         void release() noexcept /* strengthened */ {
             lock_guard<mutex> _Guard{_Mtx};
-            this->unsynchronized_pool_resource::release();
+            unsynchronized_pool_resource::release();
         }
 
     protected:
         void* do_allocate(const size_t _Bytes, const size_t _Align) override {
             lock_guard<mutex> _Guard{_Mtx};
-            return this->unsynchronized_pool_resource::do_allocate(_Bytes, _Align);
+            return unsynchronized_pool_resource::do_allocate(_Bytes, _Align);
         }
 
         void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) override {
             lock_guard<mutex> _Guard{_Mtx};
-            this->unsynchronized_pool_resource::do_deallocate(_Ptr, _Bytes, _Align);
+            unsynchronized_pool_resource::do_deallocate(_Ptr, _Bytes, _Align);
         }
 
     private:
         mutable mutex _Mtx;
     };
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
-    class monotonic_buffer_resource : public _Identity_equal_resource {
+    _EXPORT_STD class monotonic_buffer_resource : public _Identity_equal_resource {
     public:
         explicit monotonic_buffer_resource(memory_resource* const _Upstream) noexcept // strengthened
             : _Resource{_Upstream} {} // initialize this resource with upstream
@@ -623,7 +627,7 @@ namespace pmr {
             release();
         }
 
-        monotonic_buffer_resource(const monotonic_buffer_resource&) = delete;
+        monotonic_buffer_resource(const monotonic_buffer_resource&)            = delete;
         monotonic_buffer_resource& operator=(const monotonic_buffer_resource&) = delete;
 
         void release() noexcept /* strengthened */ {

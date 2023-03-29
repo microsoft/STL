@@ -52,16 +52,22 @@ _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 4;
 #endif // _WIN64
 #endif // _CRT_WINDOWS
 
-using _Mtx_t = struct _Mtx_internal_imp_t*;
-
-using _Cnd_t = struct _Cnd_internal_imp_t*;
+#ifdef _M_CEE // avoid warning LNK4248: unresolved typeref token for '_Mtx_internal_imp_t'; image may not run
+using _Mtx_t = void*;
+using _Cnd_t = void*;
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
+struct _Mtx_internal_imp_t;
+struct _Cnd_internal_imp_t;
+using _Mtx_t = _Mtx_internal_imp_t*;
+using _Cnd_t = _Cnd_internal_imp_t*;
+#endif // ^^^ !defined(_M_CEE) ^^^
 
 enum { _Thrd_success, _Thrd_nomem, _Thrd_timedout, _Thrd_busy, _Thrd_error };
 
 // threads
 _CRTIMP2_PURE int __cdecl _Thrd_detach(_Thrd_t);
 _CRTIMP2_PURE int __cdecl _Thrd_join(_Thrd_t, int*);
-_CRTIMP2_PURE void __cdecl _Thrd_sleep(const xtime*);
+_CRTIMP2_PURE void __cdecl _Thrd_sleep(const _timespec64*);
 _CRTIMP2_PURE void __cdecl _Thrd_yield();
 _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency();
 _CRTIMP2_PURE _Thrd_id_t __cdecl _Thrd_id();
@@ -81,7 +87,7 @@ _CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t);
 _CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t);
 _CRTIMP2_PURE int __cdecl _Mtx_lock(_Mtx_t);
 _CRTIMP2_PURE int __cdecl _Mtx_trylock(_Mtx_t);
-_CRTIMP2_PURE int __cdecl _Mtx_timedlock(_Mtx_t, const xtime*);
+_CRTIMP2_PURE int __cdecl _Mtx_timedlock(_Mtx_t, const _timespec64*);
 _CRTIMP2_PURE int __cdecl _Mtx_unlock(_Mtx_t); // TRANSITION, ABI: always returns _Thrd_success
 
 _CRTIMP2_PURE void* __cdecl _Mtx_getconcrtcs(_Mtx_t);
@@ -104,7 +110,7 @@ _CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t);
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t);
 _CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t);
 _CRTIMP2_PURE int __cdecl _Cnd_wait(_Cnd_t, _Mtx_t); // TRANSITION, ABI: Always returns _Thrd_success
-_CRTIMP2_PURE int __cdecl _Cnd_timedwait(_Cnd_t, _Mtx_t, const xtime*);
+_CRTIMP2_PURE int __cdecl _Cnd_timedwait(_Cnd_t, _Mtx_t, const _timespec64*);
 _CRTIMP2_PURE int __cdecl _Cnd_broadcast(_Cnd_t); // TRANSITION, ABI: Always returns _Thrd_success
 _CRTIMP2_PURE int __cdecl _Cnd_signal(_Cnd_t); // TRANSITION, ABI: Always returns _Thrd_success
 _CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t, _Mtx_t, int*);
@@ -123,16 +129,7 @@ enum { // constants for error codes
     _RESOURCE_UNAVAILABLE_TRY_AGAIN
 };
 
-[[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_C_error(int _Code);
-[[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_Cpp_error(int _Code);
-
-inline int _Check_C_return(int _Res) { // throw exception on failure
-    if (_Res != _Thrd_success) {
-        _Throw_C_error(_Res);
-    }
-
-    return _Res;
-}
+extern "C++" [[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_Cpp_error(int _Code);
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

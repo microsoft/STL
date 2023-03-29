@@ -14,7 +14,7 @@
 #endif // _M_CEE_PURE
 
 #if !_HAS_CXX20
-#pragma message("The contents of <semaphore> are available only with C++20 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <semaphore> are available only with C++20 or later.");
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <__msvc_chrono.hpp>
@@ -55,7 +55,7 @@ _NODISCARD unsigned long _Semaphore_remaining_timeout(const chrono::time_point<_
 
 inline constexpr ptrdiff_t _Semaphore_max = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
 
-template <ptrdiff_t _Least_max_value = _Semaphore_max>
+_EXPORT_STD template <ptrdiff_t _Least_max_value = _Semaphore_max>
 class counting_semaphore {
 public:
     _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
@@ -68,7 +68,7 @@ public:
             "Precondition: desired >= 0, and desired <= max() (N4861 [thread.sema.cnt]/5)");
     }
 
-    counting_semaphore(const counting_semaphore&) = delete;
+    counting_semaphore(const counting_semaphore&)            = delete;
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
     void release(ptrdiff_t _Update = 1) noexcept /* strengthened */ {
@@ -139,7 +139,7 @@ public:
         }
     }
 
-    _NODISCARD bool try_acquire() noexcept {
+    _NODISCARD_TRY_CHANGE_STATE bool try_acquire() noexcept {
         ptrdiff_t _Current = _Counter.load();
         if (_Current == 0) {
             return false;
@@ -152,7 +152,7 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         auto _Deadline     = _Semaphore_deadline(_Rel_time);
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
@@ -176,7 +176,7 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
@@ -217,7 +217,7 @@ public:
                                           "(N4861 [thread.sema.cnt]/5)");
     }
 
-    counting_semaphore(const counting_semaphore&) = delete;
+    counting_semaphore(const counting_semaphore&)            = delete;
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
     void release(const ptrdiff_t _Update = 1) noexcept /* strengthened */ {
@@ -245,7 +245,7 @@ public:
         }
     }
 
-    _NODISCARD bool try_acquire() noexcept {
+    _NODISCARD_TRY_CHANGE_STATE bool try_acquire() noexcept {
         // TRANSITION, GH-1133: should be memory_order_acquire
         unsigned char _Prev = _Counter.exchange(0);
         _STL_VERIFY((_Prev & ~1) == 0, "Invariant: semaphore counter is non-negative and doesn't exceed max(), "
@@ -254,7 +254,7 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         auto _Deadline = _Semaphore_deadline(_Rel_time);
         for (;;) {
             // "happens after release" ordering is provided by this exchange, so loads and waits can be relaxed
@@ -274,7 +274,7 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
         for (;;) {
             // "happens after release" ordering is provided by this exchange, so loads and waits can be relaxed
@@ -299,7 +299,7 @@ private:
     atomic<unsigned char> _Counter;
 };
 
-using binary_semaphore = counting_semaphore<1>;
+_EXPORT_STD using binary_semaphore = counting_semaphore<1>;
 
 _STD_END
 

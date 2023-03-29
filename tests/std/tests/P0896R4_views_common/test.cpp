@@ -12,14 +12,10 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewCommon = requires(Rng&& r) {
-    views::common(static_cast<Rng&&>(r));
-};
+concept CanViewCommon = requires(Rng&& r) { views::common(static_cast<Rng&&>(r)); };
 
 template <class Rng>
-concept CanViewAll = requires(Rng&& r) {
-    views::all(static_cast<Rng&&>(r));
-};
+concept CanViewAll = requires(Rng&& r) { views::all(static_cast<Rng&&>(r)); };
 
 // Test a silly precomposed range adaptor pipeline
 constexpr auto pipeline = views::all | views::common;
@@ -391,8 +387,128 @@ struct instantiator {
     }
 };
 
+template <class T>
+struct difference_type_only_iterator {
+    static_assert(is_object_v<T>);
+
+    friend constexpr bool operator==(difference_type_only_iterator, difference_type_only_iterator)  = default;
+    friend constexpr auto operator<=>(difference_type_only_iterator, difference_type_only_iterator) = default;
+
+    using iterator_concept = contiguous_iterator_tag;
+    using value_type       = remove_cvref_t<T>;
+
+    constexpr T& operator*() const noexcept {
+        return *ptr_;
+    }
+
+    constexpr T* operator->() const noexcept {
+        return ptr_;
+    }
+
+    constexpr difference_type_only_iterator& operator++() noexcept {
+        ++ptr_;
+        return *this;
+    }
+
+    constexpr difference_type_only_iterator operator++(int) noexcept {
+        auto result = *this;
+        ++*this;
+        return result;
+    }
+
+    constexpr difference_type_only_iterator& operator--() noexcept {
+        --ptr_;
+        return *this;
+    }
+
+    constexpr difference_type_only_iterator operator--(int) noexcept {
+        auto result = *this;
+        --*this;
+        return result;
+    }
+
+    constexpr difference_type_only_iterator& operator+=(same_as<ptrdiff_t> auto n) noexcept {
+        ptr_ += n;
+        return *this;
+    }
+
+    constexpr difference_type_only_iterator& operator-=(same_as<ptrdiff_t> auto n) noexcept {
+        ptr_ -= n;
+        return *this;
+    }
+
+    friend constexpr difference_type_only_iterator operator+(
+        difference_type_only_iterator i, same_as<ptrdiff_t> auto n) noexcept {
+        i += n;
+        return i;
+    }
+
+    friend constexpr difference_type_only_iterator operator+(
+        same_as<ptrdiff_t> auto n, difference_type_only_iterator i) noexcept {
+        i += n;
+        return i;
+    }
+
+    friend constexpr difference_type_only_iterator operator-(
+        difference_type_only_iterator i, same_as<ptrdiff_t> auto n) noexcept {
+        i -= n;
+        return i;
+    }
+
+    friend constexpr ptrdiff_t operator-(difference_type_only_iterator i, difference_type_only_iterator j) noexcept {
+        return i.ptr_ - j.ptr_;
+    }
+
+    constexpr T& operator[](same_as<ptrdiff_t> auto n) const noexcept {
+        return ptr_[n];
+    }
+
+    T* ptr_;
+};
+
+template <class T>
+struct difference_type_only_sentinel {
+    static_assert(is_object_v<T>);
+
+    friend constexpr bool operator==(difference_type_only_iterator<T> i, difference_type_only_sentinel s) noexcept {
+        return i.ptr_ == s.ptr_end_;
+    }
+
+    friend constexpr ptrdiff_t operator-(difference_type_only_iterator<T> i, difference_type_only_sentinel s) noexcept {
+        return i.ptr_ - s.ptr_end_;
+    }
+
+    friend constexpr ptrdiff_t operator-(difference_type_only_sentinel s, difference_type_only_iterator<T> i) noexcept {
+        return s.ptr_end_ - i.ptr_;
+    }
+
+    T* ptr_end_;
+};
+
+template <class T>
+constexpr bool test_lwg3717() {
+    remove_cv_t<T> x{};
+
+    auto cmv_sr = ranges::subrange(difference_type_only_iterator<T>{&x}, difference_type_only_sentinel<T>{&x + 1})
+                | views::common;
+
+    static_assert(ranges::contiguous_range<decltype(cmv_sr)>);
+    static_assert(ranges::contiguous_range<const decltype(cmv_sr)>);
+
+    assert(ranges::end(cmv_sr) == ranges::begin(cmv_sr) + ptrdiff_t{1});
+    assert(ranges::end(as_const(cmv_sr)) == ranges::begin(as_const(cmv_sr)) + ptrdiff_t{1});
+
+    return true;
+}
+
 int main() {
     // Get full instantiation coverage
     static_assert((test_in<instantiator, const int>(), true));
     test_in<instantiator, const int>();
+
+    static_assert(test_lwg3717<int>());
+    static_assert(test_lwg3717<const int>());
+
+    assert(test_lwg3717<int>());
+    assert(test_lwg3717<const int>());
 }

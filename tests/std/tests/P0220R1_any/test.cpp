@@ -57,7 +57,7 @@
 
 // <any>
 
-// any& operator=(any const &);
+// any& operator=(const any&);
 
 // Test copy assignment
 
@@ -69,9 +69,6 @@
 #include "test_macros.h"
 
 namespace assign::copy {
-using std::any;
-using std::any_cast;
-
 template <class LHS, class RHS>
 void test_copy_assign() {
     assert(LHS::count == 0);
@@ -79,8 +76,8 @@ void test_copy_assign() {
     LHS::reset();
     RHS::reset();
     {
-        any lhs(LHS(1));
-        any const rhs(RHS(2));
+        std::any lhs = LHS(1);
+        const std::any rhs = RHS(2);
 
         assert(LHS::count == 1);
         assert(RHS::count == 1);
@@ -104,8 +101,8 @@ void test_copy_assign_empty() {
     assert(LHS::count == 0);
     LHS::reset();
     {
-        any lhs;
-        any const rhs(LHS(42));
+        std::any lhs;
+        const std::any rhs = LHS(42);
 
         assert(LHS::count == 1);
         assert(LHS::copied == 0);
@@ -121,8 +118,8 @@ void test_copy_assign_empty() {
     assert(LHS::count == 0);
     LHS::reset();
     {
-        any lhs(LHS(1));
-        any const rhs;
+        std::any lhs = LHS(1);
+        const std::any rhs;
 
         assert(LHS::count == 1);
         assert(LHS::copied == 0);
@@ -141,18 +138,18 @@ void test_copy_assign_empty() {
 void test_copy_assign_self() {
     // empty
     {
-        any a;
-        a = (any &)a;
+        std::any a;
+        a = (std::any&)a;
         assertEmpty(a);
         assert(globalMemCounter.checkOutstandingNewEq(0));
     }
     assert(globalMemCounter.checkOutstandingNewEq(0));
     // small
     {
-        any a((small(1)));
+        std::any a = small(1);
         assert(small::count == 1);
 
-        a = (any &)a;
+        a = (std::any&)a;
 
         assert(small::count == 1);
         assertContains<small>(a, 1);
@@ -162,10 +159,10 @@ void test_copy_assign_self() {
     assert(globalMemCounter.checkOutstandingNewEq(0));
     // large
     {
-        any a(large(1));
+        std::any a = large(1);
         assert(large::count == 1);
 
-        a = (any &)a;
+        a = (std::any&)a;
 
         assert(large::count == 1);
         assertContains<large>(a, 1);
@@ -180,18 +177,20 @@ void test_copy_assign_throws()
 {
 #if !defined(TEST_HAS_NO_EXCEPTIONS)
     auto try_throw =
-    [](any& lhs, any const& rhs) {
+    [](std::any& lhs, const std::any& rhs) {
         try {
             lhs = rhs;
-            abort();
-        } catch (my_any_exception const &) {
+            assert(false);
+        } catch (const my_any_exception&) {
             // do nothing
+        } catch (...) {
+            assert(false);
         }
     };
     // const lvalue to empty
     {
-        any lhs;
-        any const rhs((Tp(1)));
+        std::any lhs;
+        const std::any rhs = Tp(1);
         assert(Tp::count == 1);
 
         try_throw(lhs, rhs);
@@ -201,8 +200,8 @@ void test_copy_assign_throws()
         assertContains<Tp>(rhs, 1);
     }
     {
-        any lhs((small(2)));
-        any const rhs((Tp(1)));
+        std::any lhs = small(2);
+        const std::any rhs = Tp(1);
         assert(small::count == 1);
         assert(Tp::count == 1);
 
@@ -214,8 +213,8 @@ void test_copy_assign_throws()
         assertContains<Tp>(rhs, 1);
     }
     {
-        any lhs((large(2)));
-        any const rhs((Tp(1)));
+        std::any lhs = large(2);
+        const std::any rhs = Tp(1);
         assert(large::count == 1);
         assert(Tp::count == 1);
 
@@ -230,6 +229,7 @@ void test_copy_assign_throws()
 }
 
 int run_test() {
+    globalMemCounter.reset();
     test_copy_assign<small1, small2>();
     test_copy_assign<large1, large2>();
     test_copy_assign<small, large>();
@@ -270,18 +270,15 @@ int run_test() {
 #include "test_macros.h"
 
 namespace assign::move {
-using std::any;
-using std::any_cast;
-
 template <class LHS, class RHS>
 void test_move_assign() {
     assert(LHS::count == 0);
     assert(RHS::count == 0);
     {
         LHS const s1(1);
-        any a(s1);
+        std::any a = s1;
         RHS const s2(2);
-        any a2(s2);
+        std::any a2 = s2;
 
         assert(LHS::count == 2);
         assert(RHS::count == 2);
@@ -305,8 +302,8 @@ template <class LHS>
 void test_move_assign_empty() {
     assert(LHS::count == 0);
     {
-        any a;
-        any a2((LHS(1)));
+        std::any a;
+        std::any a2 = LHS(1);
 
         assert(LHS::count == 1);
 
@@ -322,8 +319,8 @@ void test_move_assign_empty() {
     }
     assert(LHS::count == 0);
     {
-        any a((LHS(1)));
-        any a2;
+        std::any a = LHS(1);
+        std::any a2;
 
         assert(LHS::count == 1);
 
@@ -338,12 +335,9 @@ void test_move_assign_empty() {
 }
 
 void test_move_assign_noexcept() {
-    any a1;
-    any a2;
-    static_assert(
-        noexcept(a1 = std::move(a2))
-      , "any & operator=(any &&) must be noexcept"
-      );
+    std::any a1;
+    std::any a2;
+    ASSERT_NOEXCEPT(a1 = std::move(a2));
 }
 
 int run_test() {
@@ -387,9 +381,6 @@ int run_test() {
 #include "test_macros.h"
 
 namespace assign::value {
-using std::any;
-using std::any_cast;
-
 template <class LHS, class RHS>
 void test_assign_value() {
     assert(LHS::count == 0);
@@ -397,8 +388,8 @@ void test_assign_value() {
     LHS::reset();
     RHS::reset();
     {
-        any lhs(LHS(1));
-        any const rhs(RHS(2));
+        std::any lhs = LHS(1);
+        const std::any rhs = RHS(2);
 
         assert(LHS::count == 1);
         assert(RHS::count == 1);
@@ -418,8 +409,8 @@ void test_assign_value() {
     LHS::reset();
     RHS::reset();
     {
-        any lhs(LHS(1));
-        any rhs(RHS(2));
+        std::any lhs = LHS(1);
+        std::any rhs = RHS(2);
 
         assert(LHS::count == 1);
         assert(RHS::count == 1);
@@ -446,7 +437,7 @@ void test_assign_value_empty() {
     assert(RHS::count == 0);
     RHS::reset();
     {
-        any lhs;
+        std::any lhs;
         RHS rhs(42);
         assert(RHS::count == 1);
         assert(RHS::copied == 0);
@@ -461,7 +452,7 @@ void test_assign_value_empty() {
     assert(RHS::count == 0);
     RHS::reset();
     {
-        any lhs;
+        std::any lhs;
         RHS rhs(42);
         assert(RHS::count == 1);
         assert(RHS::moved == 0);
@@ -482,18 +473,20 @@ template <class Tp, bool Move = false>
 void test_assign_throws() {
 #if !defined(TEST_HAS_NO_EXCEPTIONS)
     auto try_throw =
-    [](any& lhs, Tp& rhs) {
+    [](std::any& lhs, Tp& rhs) {
         try {
             Move ? lhs = std::move(rhs)
                  : lhs = rhs;
-            abort();
-        } catch (my_any_exception const &) {
+            assert(false);
+        } catch (const my_any_exception&) {
             // do nothing
+        } catch (...) {
+            assert(false);
         }
     };
     // const lvalue to empty
     {
-        any lhs;
+        std::any lhs;
         Tp rhs(1);
         assert(Tp::count == 1);
 
@@ -503,8 +496,8 @@ void test_assign_throws() {
         assertEmpty<Tp>(lhs);
     }
     {
-        any lhs((small(2)));
-        Tp  rhs(1);
+        std::any lhs = small(2);
+        Tp rhs(1);
         assert(small::count == 1);
         assert(Tp::count == 1);
 
@@ -515,7 +508,7 @@ void test_assign_throws() {
         assertContains<small>(lhs, 2);
     }
     {
-        any lhs((large(2)));
+        std::any lhs = large(2);
         Tp rhs(1);
         assert(large::count == 1);
         assert(Tp::count == 1);
@@ -598,21 +591,20 @@ int run_test() {
 #include "test_macros.h"
 
 namespace ctor::copy {
-using std::any;
-using std::any_cast;
-
 template <class Type>
 void test_copy_throws() {
 #if !defined(TEST_HAS_NO_EXCEPTIONS)
     assert(Type::count == 0);
     {
-        any const a((Type(42)));
+        const std::any a = Type(42);
         assert(Type::count == 1);
         try {
-            any const a2(a);
-            abort();
+            const std::any a2(a);
+            assert(false);
         } catch (my_any_exception const &) {
             // do nothing
+        } catch (...) {
+            assert(false);
         }
         assert(Type::count == 1);
         assertContains<Type>(a, 42);
@@ -623,8 +615,8 @@ void test_copy_throws() {
 
 void test_copy_empty() {
     DisableAllocationGuard g; ((void)g); // No allocations should occur.
-    any a1;
-    any a2(a1);
+    std::any a1;
+    std::any a2(a1);
 
     assertEmpty(a1);
     assertEmpty(a2);
@@ -638,11 +630,11 @@ void test_copy()
     assert(Type::count == 0);
     Type::reset();
     {
-        any a((Type(42)));
+        std::any a = Type(42);
         assert(Type::count == 1);
         assert(Type::copied == 0);
 
-        any a2(a);
+        std::any a2(a);
 
         assert(Type::copied == 1);
         assert(Type::count == 2);
@@ -704,10 +696,9 @@ int run_test() {
 namespace ctor::default_ {
 int run_test()
 {
-    using std::any;
     {
         static_assert(
-            std::is_nothrow_default_constructible<any>::value
+            std::is_nothrow_default_constructible<std::any>::value
           , "Must be default constructible"
           );
     }
@@ -722,7 +713,7 @@ int run_test()
     }
     {
         DisableAllocationGuard g; ((void)g);
-        any const a;
+        const std::any a;
         assertEmpty(a);
     }
 
@@ -765,9 +756,6 @@ int run_test()
 #include "test_convertible.h"
 
 namespace ctor::in_place {
-using std::any;
-using std::any_cast;
-
 template <class Type>
 void test_in_place_type() {
     // constructing from a small type should perform no allocations.
@@ -775,7 +763,7 @@ void test_in_place_type() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a(std::in_place_type<Type>);
+        std::any a(std::in_place_type<Type>);
 
         assert(Type::count == 1);
         assert(Type::copied == 0);
@@ -785,7 +773,7 @@ void test_in_place_type() {
     assert(Type::count == 0);
     Type::reset();
     { // Test that the in_place argument is properly decayed
-        any a(std::in_place_type<Type&>);
+        std::any a(std::in_place_type<Type&>);
 
         assert(Type::count == 1);
         assert(Type::copied == 0);
@@ -795,7 +783,7 @@ void test_in_place_type() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a(std::in_place_type<Type>, 101);
+        std::any a(std::in_place_type<Type>, 101);
 
         assert(Type::count == 1);
         assert(Type::copied == 0);
@@ -805,7 +793,7 @@ void test_in_place_type() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a(std::in_place_type<Type>, -1, 42, -1);
+        std::any a(std::in_place_type<Type>, -1, 42, -1);
 
         assert(Type::count == 1);
         assert(Type::copied == 0);
@@ -821,21 +809,21 @@ void test_in_place_type_tracked() {
     // constructing from a small type should perform no allocations.
     DisableAllocationGuard g(isSmallType<Type>()); ((void)g);
     {
-        any a(std::in_place_type<Type>);
+        std::any a(std::in_place_type<Type>);
         assertArgsMatch<Type>(a);
     }
     {
-        any a(std::in_place_type<Type>, -1, 42, -1);
+        std::any a(std::in_place_type<Type>, -1, 42, -1);
         assertArgsMatch<Type, int, int, int>(a);
     }
     // initializer_list constructor tests
     {
-        any a(std::in_place_type<Type>, {-1, 42, -1});
+        std::any a(std::in_place_type<Type>, {-1, 42, -1});
         assertArgsMatch<Type, std::initializer_list<int>>(a);
     }
     {
         int x = 42;
-        any a(std::in_place_type<Type&>, {-1, 42, -1}, x);
+        std::any a(std::in_place_type<Type&>, {-1, 42, -1}, x);
         assertArgsMatch<Type, std::initializer_list<int>, int&>(a);
     }
 }
@@ -846,24 +834,24 @@ void test_in_place_type_decayed() {
     {
         using Type = decltype(test_func);
         using DecayT = void(*)();
-        any a(std::in_place_type<Type>, test_func);
+        std::any a(std::in_place_type<Type>, test_func);
         assert(containsType<DecayT>(a));
-        assert(any_cast<DecayT>(a) == test_func);
+        assert(std::any_cast<DecayT>(a) == test_func);
     }
     {
         int my_arr[5];
         using Type = int(&)[5];
         using DecayT = int*;
-        any a(std::in_place_type<Type>, my_arr);
+        std::any a(std::in_place_type<Type>, my_arr);
         assert(containsType<DecayT>(a));
-        assert(any_cast<DecayT>(a) == my_arr);
+        assert(std::any_cast<DecayT>(a) == my_arr);
     }
     {
         using Type = int[5];
         using DecayT = int*;
-        any a(std::in_place_type<Type>);
+        std::any a(std::in_place_type<Type>);
         assert(containsType<DecayT>(a));
-        assert(any_cast<DecayT>(a) == nullptr);
+        assert(std::any_cast<DecayT>(a) == nullptr);
     }
 }
 
@@ -958,28 +946,26 @@ int run_test() {
 #include "test_macros.h"
 
 namespace ctor::move {
-using std::any;
-using std::any_cast;
-
 // Moves are always noexcept. The throws_on_move object
 // must be stored dynamically so the pointer is moved and
 // not the stored object.
-void test_move_does_not_throw() noexcept
+void test_move_does_not_throw()
 {
 #if !defined(TEST_HAS_NO_EXCEPTIONS)
     assert(throws_on_move::count == 0);
     {
         throws_on_move v(42);
-        any a(v);
+        std::any a = v;
         assert(throws_on_move::count == 2);
         // No allocations should be performed after this point.
         DisableAllocationGuard g; ((void)g);
-        {
-            any const a2(std::move(a));
+        try {
+            const std::any a2 = std::move(a);
             assertEmpty(a);
             assertContains<throws_on_move>(a2, 42);
+        } catch (...) {
+            assert(false);
         }
-
         assert(throws_on_move::count == 1);
         assertEmpty(a);
     }
@@ -990,8 +976,8 @@ void test_move_does_not_throw() noexcept
 void test_move_empty() {
     DisableAllocationGuard g; ((void)g); // no allocations should be performed.
 
-    any a1;
-    any a2(std::move(a1));
+    std::any a1;
+    std::any a2 = std::move(a1);
 
     assertEmpty(a1);
     assertEmpty(a2);
@@ -1002,7 +988,7 @@ void test_move() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a((Type(42)));
+        std::any a = Type(42);
         assert(Type::count == 1);
         assert(Type::copied == 0);
         assert(Type::moved == 1);
@@ -1010,7 +996,7 @@ void test_move() {
         // Moving should not perform allocations since it must be noexcept.
         DisableAllocationGuard g; ((void)g);
 
-        any a2(std::move(a));
+        std::any a2 = std::move(a);
 
         assert(Type::moved == 1 || Type::moved == 2); // zero or more move operations can be performed.
         assert(Type::copied == 0); // no copies can be performed.
@@ -1026,12 +1012,8 @@ void test_move() {
 int run_test()
 {
     // noexcept test
-    {
-        static_assert(
-            std::is_nothrow_move_constructible<any>::value
-          , "any must be nothrow move constructible"
-          );
-    }
+    static_assert(std::is_nothrow_move_constructible<std::any>::value);
+
     test_move<small>();
     test_move<large>();
     test_move_empty();
@@ -1073,24 +1055,22 @@ int run_test()
 #include "test_macros.h"
 
 namespace ctor::value {
-using std::any;
-using std::any_cast;
-
 template <class Type>
 void test_copy_value_throws()
 {
 #if !defined(TEST_HAS_NO_EXCEPTIONS)
     assert(Type::count == 0);
     {
-        Type const t(42);
+        const Type t(42);
         assert(Type::count == 1);
         try {
-            any const a2(t);
-            abort();
-        } catch (my_any_exception const &) {
+            std::any a2 = t;
+            assert(false);
+        } catch (const my_any_exception&) {
             // do nothing
+        } catch (...) {
+            assert(false);
         }
-
         assert(Type::count == 1);
         assert(t.value == 42);
     }
@@ -1106,10 +1086,12 @@ void test_move_value_throws()
         throws_on_move v;
         assert(throws_on_move::count == 1);
         try {
-            any const a(std::move(v));
-            abort();
-        } catch (my_any_exception const &) {
+            std::any a = std::move(v);
+            assert(false);
+        } catch (const my_any_exception&) {
             // do nothing
+        } catch (...) {
+            assert(false);
         }
         assert(throws_on_move::count == 1);
     }
@@ -1127,7 +1109,7 @@ void test_copy_move_value() {
         Type t(42);
         assert(Type::count == 1);
 
-        any a(t);
+        std::any a = t;
 
         assert(Type::count == 2);
         assert(Type::copied == 1);
@@ -1140,7 +1122,7 @@ void test_copy_move_value() {
         Type t(42);
         assert(Type::count == 1);
 
-        any a(std::move(t));
+        std::any a = std::move(t);
 
         assert(Type::count == 2);
         assert(Type::copied == 0);
@@ -1226,12 +1208,11 @@ int run_test() {
 #include "test_macros.h"
 
 namespace modifiers::emplace {
-using std::any;
-using std::any_cast;
-
 struct Tracked {
   static int count;
   Tracked()  {++count;}
+  Tracked(Tracked const&) noexcept {++count;}
+  Tracked& operator=(Tracked const&) = default;
   ~Tracked() { --count; }
 };
 int Tracked::count = 0;
@@ -1243,7 +1224,7 @@ void test_emplace_type() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a(std::in_place_type<Tracked>);
+        std::any a(std::in_place_type<Tracked>);
         assert(Tracked::count == 1);
 
         auto &v = a.emplace<Type>();
@@ -1259,7 +1240,7 @@ void test_emplace_type() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a(std::in_place_type<Tracked>);
+        std::any a(std::in_place_type<Tracked>);
         assert(Tracked::count == 1);
 
         auto &v = a.emplace<Type>(101);
@@ -1275,7 +1256,7 @@ void test_emplace_type() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a(std::in_place_type<Tracked>);
+        std::any a(std::in_place_type<Tracked>);
         assert(Tracked::count == 1);
 
         auto &v = a.emplace<Type>(-1, 42, -1);
@@ -1297,7 +1278,7 @@ void test_emplace_type_tracked() {
     // constructing from a small type should perform no allocations.
     DisableAllocationGuard g(isSmallType<Type>()); ((void)g);
     {
-        any a(std::in_place_type<Tracked>);
+        std::any a(std::in_place_type<Tracked>);
         assert(Tracked::count == 1);
         auto &v = a.emplace<Type>();
         static_assert( std::is_same_v<Type&, decltype(v)>, "" );
@@ -1307,7 +1288,7 @@ void test_emplace_type_tracked() {
         assertArgsMatch<Type>(a);
     }
     {
-        any a(std::in_place_type<Tracked>);
+        std::any a(std::in_place_type<Tracked>);
         assert(Tracked::count == 1);
         auto &v = a.emplace<Type>(-1, 42, -1);
         static_assert( std::is_same_v<Type&, decltype(v)>, "" );
@@ -1318,7 +1299,7 @@ void test_emplace_type_tracked() {
     }
     // initializer_list constructor tests
     {
-        any a(std::in_place_type<Tracked>);
+        std::any a(std::in_place_type<Tracked>);
         assert(Tracked::count == 1);
         auto &v = a.emplace<Type>({-1, 42, -1});
         static_assert( std::is_same_v<Type&, decltype(v)>, "" );
@@ -1329,7 +1310,7 @@ void test_emplace_type_tracked() {
     }
     {
         int x = 42;
-        any a(std::in_place_type<Tracked>);
+        std::any a(std::in_place_type<Tracked>);
         assert(Tracked::count == 1);
         auto &v = a.emplace<Type>({-1, 42, -1}, x);
         static_assert( std::is_same_v<Type&, decltype(v)>, "" );
@@ -1365,7 +1346,7 @@ void test_emplace_throws()
         try {
             auto &v = a.emplace<Type>(101);
             static_assert( std::is_same_v<Type&, decltype(v)>, "" );
-            abort();
+            assert(false);
         } catch (int const&) {
         }
         assert(small::count == 0);
@@ -1376,7 +1357,7 @@ void test_emplace_throws()
         try {
             auto &v = a.emplace<Type>({1, 2, 3}, 101);
             static_assert( std::is_same_v<Type&, decltype(v)>, "" );
-            abort();
+            assert(false);
         } catch (int const&) {
         }
         assert(small::count == 0);
@@ -1388,7 +1369,7 @@ void test_emplace_throws()
         try {
             auto &v = a.emplace<Type>(101);
             static_assert( std::is_same_v<Type&, decltype(v)>, "" );
-            abort();
+            assert(false);
         } catch (int const&) {
         }
         assert(large::count == 0);
@@ -1399,7 +1380,7 @@ void test_emplace_throws()
         try {
             auto &v = a.emplace<Type>({1, 2, 3}, 101);
             static_assert( std::is_same_v<Type&, decltype(v)>, "" );
-            abort();
+            assert(false);
         } catch (int const&) {
         }
         assert(large::count == 0);
@@ -1516,17 +1497,10 @@ int run_test() {
 namespace modifiers::reset {
 int run_test()
 {
-    using std::any;
-    using std::any_cast;
     // empty
     {
-        any a;
-
-        // noexcept check
-        static_assert(
-            noexcept(a.reset())
-          , "any.reset() must be noexcept"
-          );
+        std::any a;
+        ASSERT_NOEXCEPT(a.reset());
 
         assertEmpty(a);
 
@@ -1536,7 +1510,7 @@ int run_test()
     }
     // small object
     {
-        any a((small(1)));
+        std::any a = small(1);
         assert(small::count == 1);
         assertContains<small>(a, 1);
 
@@ -1547,7 +1521,7 @@ int run_test()
     }
     // large object
     {
-        any a(large(1));
+        std::any a = large(1);
         assert(large::count == 1);
         assertContains<large>(a, 1);
 
@@ -1587,16 +1561,13 @@ int run_test()
 #include "any_helpers.h"
 
 namespace modifiers::swap_ {
-using std::any;
-using std::any_cast;
-
 template <class LHS, class RHS>
 void test_swap() {
     assert(LHS::count == 0);
     assert(RHS::count == 0);
     {
-        any a1((LHS(1)));
-        any a2(RHS{2});
+        std::any a1 = LHS(1);
+        std::any a2 = RHS(2);
         assert(LHS::count == 1);
         assert(RHS::count == 1);
 
@@ -1618,8 +1589,8 @@ template <class Tp>
 void test_swap_empty() {
     assert(Tp::count == 0);
     {
-        any a1((Tp(1)));
-        any a2;
+        std::any a1 = Tp(1);
+        std::any a2;
         assert(Tp::count == 1);
 
         a1.swap(a2);
@@ -1631,8 +1602,8 @@ void test_swap_empty() {
     }
     assert(Tp::count == 0);
     {
-        any a1((Tp(1)));
-        any a2;
+        std::any a1 = Tp(1);
+        std::any a2;
         assert(Tp::count == 1);
 
         a2.swap(a1);
@@ -1648,24 +1619,21 @@ void test_swap_empty() {
 
 void test_noexcept()
 {
-    any a1;
-    any a2;
-    static_assert(
-        noexcept(a1.swap(a2))
-      , "any::swap(any&) must be noexcept"
-      );
+    std::any a1;
+    std::any a2;
+    ASSERT_NOEXCEPT(a1.swap(a2));
 }
 
 void test_self_swap() {
     {
         // empty
-        any a;
+        std::any a;
         a.swap(a);
         assertEmpty(a);
     }
     { // small
         using T = small;
-        any a{T{42}};
+        std::any a = T(42);
         T::reset();
         a.swap(a);
         assertContains<T>(a, 42);
@@ -1676,7 +1644,7 @@ void test_self_swap() {
     assert(small::count == 0);
     { // large
         using T = large;
-        any a{T{42}};
+        std::any a = T(42);
         T::reset();
         a.swap(a);
         assertContains<T>(a, 42);
@@ -1726,15 +1694,14 @@ int run_test()
 namespace observers::has_value {
 int run_test()
 {
-    using std::any;
     // noexcept test
     {
-        any a;
-        static_assert(noexcept(a.has_value()), "any::has_value() must be noexcept");
+        std::any a;
+        ASSERT_NOEXCEPT(a.has_value());
     }
     // empty
     {
-        any a;
+        std::any a;
         assert(!a.has_value());
 
         a.reset();
@@ -1745,26 +1712,24 @@ int run_test()
     }
     // small object
     {
-        small const s(1);
-        any a(s);
+        std::any a = small(1);
         assert(a.has_value());
 
         a.reset();
         assert(!a.has_value());
 
-        a = s;
+        a = small(1);
         assert(a.has_value());
     }
     // large object
     {
-        large const l(1);
-        any a(l);
+        std::any a = large(1);
         assert(a.has_value());
 
         a.reset();
         assert(!a.has_value());
 
-        a = l;
+        a = large(1);
         assert(a.has_value());
     }
 
@@ -1798,25 +1763,22 @@ int run_test()
 namespace observers::type {
 int run_test()
 {
-    using std::any;
     {
-        any const a;
+        const std::any a;
         assert(a.type() == typeid(void));
         ASSERT_NOEXCEPT(a.type());
     }
     {
-        small const s(1);
-        any const a(s);
+        std::any a = small(1);
         assert(a.type() == typeid(small));
     }
     {
-        large const l(1);
-        any const a(l);
+        std::any a = large(1);
         assert(a.type() == typeid(large));
     }
     {
         int arr[3];
-        any const a(arr);
+        std::any a = arr;
         assert(a.type() == typeid(int*));  // ensure that it is decayed
     }
 
@@ -1881,61 +1843,58 @@ int run_test() {
 #include "any_helpers.h"
 
 namespace nonmembers::cast::pointer {
-using std::any;
-using std::any_cast;
-
 // Test that the operators are properly noexcept.
 void test_cast_is_noexcept() {
-    any a;
-    ASSERT_NOEXCEPT(any_cast<int>(&a));
+    std::any a;
+    ASSERT_NOEXCEPT(std::any_cast<int>(&a));
 
-    any const& ca = a;
-    ASSERT_NOEXCEPT(any_cast<int>(&ca));
+    const std::any& ca = a;
+    ASSERT_NOEXCEPT(std::any_cast<int>(&ca));
 }
 
 // Test that the return type of any_cast is correct.
 void test_cast_return_type() {
-    any a;
-    ASSERT_SAME_TYPE(decltype(any_cast<int>(&a)),       int*);
-    ASSERT_SAME_TYPE(decltype(any_cast<int const>(&a)), int const*);
+    std::any a;
+    ASSERT_SAME_TYPE(decltype(std::any_cast<int>(&a)),       int*);
+    ASSERT_SAME_TYPE(decltype(std::any_cast<int const>(&a)), int const*);
 
-    any const& ca = a;
-    ASSERT_SAME_TYPE(decltype(any_cast<int>(&ca)),       int const*);
-    ASSERT_SAME_TYPE(decltype(any_cast<int const>(&ca)), int const*);
+    const std::any& ca = a;
+    ASSERT_SAME_TYPE(decltype(std::any_cast<int>(&ca)),       int const*);
+    ASSERT_SAME_TYPE(decltype(std::any_cast<int const>(&ca)), int const*);
 }
 
 // Test that any_cast handles null pointers.
 void test_cast_nullptr() {
-    any* a = nullptr;
-    assert(nullptr == any_cast<int>(a));
-    assert(nullptr == any_cast<int const>(a));
+    std::any *a = nullptr;
+    assert(nullptr == std::any_cast<int>(a));
+    assert(nullptr == std::any_cast<int const>(a));
 
-    any const* ca = nullptr;
-    assert(nullptr == any_cast<int>(ca));
-    assert(nullptr == any_cast<int const>(ca));
+    const std::any *ca = nullptr;
+    assert(nullptr == std::any_cast<int>(ca));
+    assert(nullptr == std::any_cast<int const>(ca));
 }
 
 // Test casting an empty object.
 void test_cast_empty() {
     {
-        any a;
-        assert(nullptr == any_cast<int>(&a));
-        assert(nullptr == any_cast<int const>(&a));
+        std::any a;
+        assert(nullptr == std::any_cast<int>(&a));
+        assert(nullptr == std::any_cast<int const>(&a));
 
-        any const& ca = a;
-        assert(nullptr == any_cast<int>(&ca));
-        assert(nullptr == any_cast<int const>(&ca));
+        const std::any& ca = a;
+        assert(nullptr == std::any_cast<int>(&ca));
+        assert(nullptr == std::any_cast<int const>(&ca));
     }
     // Create as non-empty, then make empty and run test.
     {
-        any a(42);
+        std::any a(42);
         a.reset();
-        assert(nullptr == any_cast<int>(&a));
-        assert(nullptr == any_cast<int const>(&a));
+        assert(nullptr == std::any_cast<int>(&a));
+        assert(nullptr == std::any_cast<int const>(&a));
 
-        any const& ca = a;
-        assert(nullptr == any_cast<int>(&ca));
-        assert(nullptr == any_cast<int const>(&ca));
+        const std::any& ca = a;
+        assert(nullptr == std::any_cast<int>(&ca));
+        assert(nullptr == std::any_cast<int const>(&ca));
     }
 }
 
@@ -1944,24 +1903,24 @@ void test_cast() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a((Type(42)));
-        any const& ca = a;
+        std::any a = Type(42);
+        const std::any& ca = a;
         assert(Type::count == 1);
         assert(Type::copied == 0);
         assert(Type::moved == 1);
 
         // Try a cast to a bad type.
         // NOTE: Type cannot be an int.
-        assert(any_cast<int>(&a) == nullptr);
-        assert(any_cast<int const>(&a) == nullptr);
-        assert(any_cast<int const volatile>(&a) == nullptr);
+        assert(std::any_cast<int>(&a) == nullptr);
+        assert(std::any_cast<int const>(&a) == nullptr);
+        assert(std::any_cast<int const volatile>(&a) == nullptr);
 
         // Try a cast to the right type, but as a pointer.
-        assert(any_cast<Type*>(&a) == nullptr);
-        assert(any_cast<Type const*>(&a) == nullptr);
+        assert(std::any_cast<Type*>(&a) == nullptr);
+        assert(std::any_cast<Type const*>(&a) == nullptr);
 
         // Check getting a unqualified type from a non-const any.
-        Type* v = any_cast<Type>(&a);
+        Type* v = std::any_cast<Type>(&a);
         assert(v != nullptr);
         assert(v->value == 42);
 
@@ -1969,19 +1928,19 @@ void test_cast() {
         v->value = 999;
 
         // Check getting a const qualified type from a non-const any.
-        Type const* cv = any_cast<Type const>(&a);
+        Type const* cv = std::any_cast<Type const>(&a);
         assert(cv != nullptr);
         assert(cv == v);
         assert(cv->value == 999);
 
         // Check getting a unqualified type from a const any.
-        cv = any_cast<Type>(&ca);
+        cv = std::any_cast<Type>(&ca);
         assert(cv != nullptr);
         assert(cv == v);
         assert(cv->value == 999);
 
         // Check getting a const-qualified type from a const any.
-        cv = any_cast<Type const>(&ca);
+        cv = std::any_cast<Type const>(&ca);
         assert(cv != nullptr);
         assert(cv == v);
         assert(cv->value == 999);
@@ -2008,8 +1967,8 @@ void test_cast_non_copyable_type()
 void test_cast_array() {
     int arr[3];
     std::any a(arr);
-    assert(a.type() == typeid(int*)); // contained value is decayed
-//  We can't get an array out
+    RTTI_ASSERT(a.type() == typeid(int*)); // contained value is decayed
+    // We can't get an array out
     int (*p)[3] = std::any_cast<int[3]>(&a);
     assert(p == nullptr);
 }
@@ -2074,62 +2033,58 @@ int run_test() {
 #include "test_macros.h"
 
 namespace nonmembers::cast::reference {
-using std::any;
-using std::any_cast;
-using std::bad_any_cast;
-
-
 // Test that the operators are NOT marked noexcept.
 void test_cast_is_not_noexcept() {
-    any a;
-    static_assert(!noexcept(any_cast<int>(static_cast<any&>(a))), "");
-    static_assert(!noexcept(any_cast<int>(static_cast<any const&>(a))), "");
-    static_assert(!noexcept(any_cast<int>(static_cast<any &&>(a))), "");
+    std::any a;
+    static_assert(!noexcept(std::any_cast<int>(static_cast<std::any&>(a))), "");
+    static_assert(!noexcept(std::any_cast<int>(static_cast<std::any const&>(a))), "");
+    static_assert(!noexcept(std::any_cast<int>(static_cast<std::any &&>(a))), "");
 }
 
 // Test that the return type of any_cast is correct.
 void test_cast_return_type() {
-    any a;
-    static_assert(std::is_same<decltype(any_cast<int>(a)), int>::value, "");
-    static_assert(std::is_same<decltype(any_cast<int const>(a)), int>::value, "");
-    static_assert(std::is_same<decltype(any_cast<int&>(a)), int&>::value, "");
-    static_assert(std::is_same<decltype(any_cast<int const&>(a)), int const&>::value, "");
+    std::any a;
+    static_assert(std::is_same<decltype(std::any_cast<int>(a)), int>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int const>(a)), int>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int&>(a)), int&>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int const&>(a)), int const&>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int&&>(a)), int&&>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int const&&>(a)), int const&&>::value, "");
 
-    static_assert(std::is_same<decltype(any_cast<int&&>(a)), int&&>::value, "");
-    static_assert(std::is_same<decltype(any_cast<int const&&>(a)), int const&&>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int>(std::move(a))), int>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int const>(std::move(a))), int>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int&>(std::move(a))), int&>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int const&>(std::move(a))), int const&>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int&&>(std::move(a))), int&&>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int const&&>(std::move(a))), int const&&>::value, "");
 
-    static_assert(std::is_same<decltype(any_cast<int>(std::move(a))), int>::value, "");
-    static_assert(std::is_same<decltype(any_cast<int const>(std::move(a))), int>::value, "");
-    static_assert(std::is_same<decltype(any_cast<int&>(std::move(a))), int&>::value, "");
-    static_assert(std::is_same<decltype(any_cast<int const&>(std::move(a))), int const&>::value, "");
-
-    static_assert(std::is_same<decltype(any_cast<int&&>(std::move(a))), int&&>::value, "");
-    static_assert(std::is_same<decltype(any_cast<int const&&>(std::move(a))), int const&&>::value, "");
-
-    any const& ca = a;
-    static_assert(std::is_same<decltype(any_cast<int>(ca)), int>::value, "");
-    static_assert(std::is_same<decltype(any_cast<int const>(ca)), int>::value, "");
-    static_assert(std::is_same<decltype(any_cast<int const&>(ca)), int const&>::value, "");
-
-    static_assert(std::is_same<decltype(any_cast<int const&&>(ca)), int const&&>::value, "");
+    const std::any& ca = a;
+    static_assert(std::is_same<decltype(std::any_cast<int>(ca)), int>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int const>(ca)), int>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int const&>(ca)), int const&>::value, "");
+    static_assert(std::is_same<decltype(std::any_cast<int const&&>(ca)), int const&&>::value, "");
 }
 
 template <class Type, class ConstT = Type>
-void checkThrows(any& a)
+void checkThrows(std::any& a)
 {
 #if !defined(TEST_HAS_NO_EXCEPTIONS)
     try {
-        TEST_IGNORE_NODISCARD any_cast<Type>(a);
-        abort();
-    } catch (bad_any_cast const &) {
-            // do nothing
+        TEST_IGNORE_NODISCARD std::any_cast<Type>(a);
+        assert(false);
+    } catch (const std::bad_any_cast&) {
+        // do nothing
+    } catch (...) {
+        assert(false);
     }
 
     try {
-        TEST_IGNORE_NODISCARD any_cast<ConstT>(static_cast<any const&>(a));
-        abort();
-    } catch (bad_any_cast const &) {
-            // do nothing
+        TEST_IGNORE_NODISCARD std::any_cast<ConstT>(static_cast<const std::any&>(a));
+        assert(false);
+    } catch (const std::bad_any_cast&) {
+        // do nothing
+    } catch (...) {
+        assert(false);
     }
 
     try {
@@ -2138,10 +2093,12 @@ void checkThrows(any& a)
             typename std::remove_reference<Type>::type&&,
             Type
         >::type;
-        TEST_IGNORE_NODISCARD any_cast<RefType>(static_cast<any&&>(a));
-        abort();
-    } catch (bad_any_cast const &) {
+        TEST_IGNORE_NODISCARD std::any_cast<RefType>(static_cast<std::any&&>(a));
+        assert(false);
+    } catch (const std::bad_any_cast&) {
             // do nothing
+    } catch (...) {
+        assert(false);
     }
 #else
     (TEST_IGNORE_NODISCARD a);
@@ -2151,7 +2108,7 @@ void checkThrows(any& a)
 void test_cast_empty() {
     // None of these operations should allocate.
     DisableAllocationGuard g; (TEST_IGNORE_NODISCARD g);
-    any a;
+    std::any a;
     checkThrows<int>(a);
 }
 
@@ -2160,8 +2117,8 @@ void test_cast_to_reference() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a((Type(42)));
-        any const& ca = a;
+        std::any a = Type(42);
+        const std::any& ca = a;
         assert(Type::count == 1);
         assert(Type::copied == 0);
         assert(Type::moved == 1);
@@ -2175,47 +2132,47 @@ void test_cast_to_reference() {
 
         // Check getting a type by reference from a non-const lvalue any.
         {
-            Type& v = any_cast<Type&>(a);
+            Type& v = std::any_cast<Type&>(a);
             assert(v.value == 42);
 
-            Type const &cv = any_cast<Type const&>(a);
+            Type const &cv = std::any_cast<Type const&>(a);
             assert(&cv == &v);
         }
         // Check getting a type by reference from a const lvalue any.
         {
-            Type const& v = any_cast<Type const&>(ca);
+            Type const& v = std::any_cast<Type const&>(ca);
             assert(v.value == 42);
 
-            Type const &cv = any_cast<Type const&>(ca);
+            Type const &cv = std::any_cast<Type const&>(ca);
             assert(&cv == &v);
         }
         // Check getting a type by reference from a const rvalue any.
         {
-            Type const& v = any_cast<Type const&>(std::move(ca));
+            Type const& v = std::any_cast<Type const&>(std::move(ca));
             assert(v.value == 42);
 
-            Type const &cv = any_cast<Type const&>(std::move(ca));
+            Type const &cv = std::any_cast<Type const&>(std::move(ca));
             assert(&cv == &v);
         }
         // Check getting a type by reference from a const rvalue any.
         {
-            Type&& v = any_cast<Type&&>(std::move(a));
+            Type&& v = std::any_cast<Type&&>(std::move(a));
             assert(v.value == 42);
-            assert(any_cast<Type&>(a).value == 42);
+            assert(std::any_cast<Type&>(a).value == 42);
 
-            Type&& cv = any_cast<Type&&>(std::move(a));
+            Type&& cv = std::any_cast<Type&&>(std::move(a));
             assert(&cv == &v);
-            assert(any_cast<Type&>(a).value == 42);
+            assert(std::any_cast<Type&>(a).value == 42);
         }
         // Check getting a type by reference from a const rvalue any.
         {
-            Type const&& v = any_cast<Type const&&>(std::move(a));
+            Type const&& v = std::any_cast<Type const&&>(std::move(a));
             assert(v.value == 42);
-            assert(any_cast<Type&>(a).value == 42);
+            assert(std::any_cast<Type&>(a).value == 42);
 
-            Type const&& cv = any_cast<Type const&&>(std::move(a));
+            Type const&& cv = std::any_cast<Type const&&>(std::move(a));
             assert(&cv == &v);
-            assert(any_cast<Type&>(a).value == 42);
+            assert(std::any_cast<Type&>(a).value == 42);
         }
         // Check that the original object hasn't been changed.
         assertContains<Type>(a, 42);
@@ -2233,7 +2190,7 @@ void test_cast_to_value() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a((Type(42)));
+        std::any a = Type(42);
         assert(Type::count == 1);
         assert(Type::copied == 0);
         assert(Type::moved == 1);
@@ -2249,7 +2206,7 @@ void test_cast_to_value() {
         // Check getting Type by value from a non-const lvalue any.
         // This should cause the non-const copy constructor to be called.
         {
-            Type t = any_cast<Type>(a);
+            Type t = std::any_cast<Type>(a);
 
             assert(Type::count == 2);
             assert(Type::copied == 1);
@@ -2263,7 +2220,7 @@ void test_cast_to_value() {
         // Check getting const Type by value from a non-const lvalue any.
         // This should cause the const copy constructor to be called.
         {
-            Type t = any_cast<Type const>(a);
+            Type t = std::any_cast<Type const>(a);
 
             assert(Type::count == 2);
             assert(Type::copied == 1);
@@ -2277,7 +2234,7 @@ void test_cast_to_value() {
         // Check getting Type by value from a non-const lvalue any.
         // This should cause the const copy constructor to be called.
         {
-            Type t = any_cast<Type>(static_cast<any const&>(a));
+            Type t = std::any_cast<Type>(static_cast<const std::any&>(a));
 
             assert(Type::count == 2);
             assert(Type::copied == 1);
@@ -2291,7 +2248,7 @@ void test_cast_to_value() {
         // Check getting Type by value from a non-const rvalue any.
         // This should cause the non-const copy constructor to be called.
         {
-            Type t = any_cast<Type>(static_cast<any &&>(a));
+            Type t = std::any_cast<Type>(static_cast<std::any&&>(a));
 
             assert(Type::count == 2);
             assert(Type::moved == 1);
@@ -2299,15 +2256,15 @@ void test_cast_to_value() {
             assert(Type::const_copied == 0);
             assert(Type::non_const_copied == 0);
             assert(t.value == 42);
-            assert(any_cast<Type&>(a).value == 0);
-            any_cast<Type&>(a).value = 42; // reset the value
+            assert(std::any_cast<Type&>(a).value == 0);
+            std::any_cast<Type&>(a).value = 42; // reset the value
         }
         assert(Type::count == 1);
         Type::reset();
         // Check getting const Type by value from a non-const rvalue any.
         // This should cause the const copy constructor to be called.
         {
-            Type t = any_cast<Type const>(static_cast<any &&>(a));
+            Type t = std::any_cast<Type const>(static_cast<std::any&&>(a));
 
             assert(Type::count == 2);
             assert(Type::copied == 0);
@@ -2315,15 +2272,15 @@ void test_cast_to_value() {
             assert(Type::non_const_copied == 0);
             assert(Type::moved == 1);
             assert(t.value == 42);
-            assert(any_cast<Type&>(a).value == 0);
-            any_cast<Type&>(a).value = 42; // reset the value
+            assert(std::any_cast<Type&>(a).value == 0);
+            std::any_cast<Type&>(a).value = 42; // reset the value
         }
         assert(Type::count == 1);
         Type::reset();
         // Check getting Type by value from a const rvalue any.
         // This should cause the const copy constructor to be called.
         {
-            Type t = any_cast<Type>(static_cast<any const&&>(a));
+            Type t = std::any_cast<Type>(static_cast<const std::any&&>(a));
 
             assert(Type::count == 2);
             assert(Type::copied == 1);
@@ -2331,7 +2288,7 @@ void test_cast_to_value() {
             assert(Type::non_const_copied == 0);
             assert(Type::moved == 0);
             assert(t.value == 42);
-            assert(any_cast<Type&>(a).value == 42);
+            assert(std::any_cast<Type&>(a).value == 42);
         }
         // Ensure we still only have 1 Type object alive.
         assert(Type::count == 1);
@@ -2382,10 +2339,6 @@ int run_test() {
 #include "test_macros.h"
 
 namespace nonmembers::make_any {
-using std::any;
-using std::any_cast;
-
-
 template <class Type>
 void test_make_any_type() {
     // constructing from a small type should perform no allocations.
@@ -2393,7 +2346,7 @@ void test_make_any_type() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a = std::make_any<Type>();
+        std::any a = std::make_any<Type>();
 
         assert(Type::count == 1);
         assert(Type::copied == 0);
@@ -2403,7 +2356,7 @@ void test_make_any_type() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a = std::make_any<Type>(101);
+        std::any a = std::make_any<Type>(101);
 
         assert(Type::count == 1);
         assert(Type::copied == 0);
@@ -2413,7 +2366,7 @@ void test_make_any_type() {
     assert(Type::count == 0);
     Type::reset();
     {
-        any a = std::make_any<Type>(-1, 42, -1);
+        std::any a = std::make_any<Type>(-1, 42, -1);
 
         assert(Type::count == 1);
         assert(Type::copied == 0);
@@ -2429,21 +2382,21 @@ void test_make_any_type_tracked() {
     // constructing from a small type should perform no allocations.
     DisableAllocationGuard g(isSmallType<Type>()); ((void)g);
     {
-        any a = std::make_any<Type>();
+        std::any a = std::make_any<Type>();
         assertArgsMatch<Type>(a);
     }
     {
-        any a = std::make_any<Type>(-1, 42, -1);
+        std::any a = std::make_any<Type>(-1, 42, -1);
         assertArgsMatch<Type, int, int, int>(a);
     }
     // initializer_list constructor tests
     {
-        any a = std::make_any<Type>({-1, 42, -1});
+        std::any a = std::make_any<Type>({-1, 42, -1});
         assertArgsMatch<Type, std::initializer_list<int>>(a);
     }
     {
         int x = 42;
-        any a  = std::make_any<Type>({-1, 42, -1}, x);
+        std::any a  = std::make_any<Type>({-1, 42, -1}, x);
         assertArgsMatch<Type, std::initializer_list<int>, int&>(a);
     }
 }
@@ -2469,14 +2422,14 @@ void test_make_any_throws()
     {
         try {
             TEST_IGNORE_NODISCARD std::make_any<Type>(101);
-            abort();
+            assert(false);
         } catch (int const&) {
         }
     }
     {
         try {
             TEST_IGNORE_NODISCARD std::make_any<Type>({1, 2, 3}, 101);
-            abort();
+            assert(false);
         } catch (int const&) {
         }
     }
@@ -2528,24 +2481,21 @@ int run_test() {
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 namespace nonmembers::swap_ {
-using std::any;
-using std::any_cast;
-
 int run_test()
 {
 
     { // test noexcept
-        any a;
+        std::any a;
         static_assert(noexcept(swap(a, a)), "swap(any&, any&) must be noexcept");
     }
     {
-        any a1(1);
-        any a2(2);
+        std::any a1 = 1;
+        std::any a2 = 2;
 
         swap(a1, a2);
 
-        assert(any_cast<int>(a1) == 2);
-        assert(any_cast<int>(a2) == 1);
+        assert(std::any_cast<int>(a1) == 2);
+        assert(std::any_cast<int>(a2) == 1);
     }
 
   return 0;
@@ -2657,7 +2607,6 @@ namespace msvc {
     namespace overaligned {
         template <std::size_t shift>
         void test_one_alignment() {
-#ifndef _M_CEE // If alignas doesn't work, we don't need to support overaligned types.
             constexpr std::size_t align = __STDCPP_DEFAULT_NEW_ALIGNMENT__ << (1 + shift);
 
             struct aligned_type {
@@ -2686,7 +2635,6 @@ namespace msvc {
                 assert(static_cast<std::size_t>(globalMemCounter.aligned_delete_called) == i + 1);
                 assert(globalMemCounter.last_delete_align == alignof(aligned_type));
             }
-#endif // !_M_CEE
         }
 
         void run_test() {
@@ -3030,6 +2978,10 @@ namespace msvc {
             Tracked() {
                 ++count;
             }
+            Tracked(Tracked const&) noexcept {
+                ++count;
+            }
+            Tracked& operator=(Tracked const&) = default;
             ~Tracked() {
                 --count;
             }

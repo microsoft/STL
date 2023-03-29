@@ -24,10 +24,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C_UNLESS_PURE
 
-_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _Stofx(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long, int*);
-_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Stodx(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long, int*);
-_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _Stoldx(
-    const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long, int*);
 _CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*);
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*);
@@ -73,10 +69,10 @@ inline float _Stofx_v2(const char* _Str, char** _Endptr, int _Pten, int* _Perr) 
 }
 
 template <class _Elem, size_t _Base_size>
-size_t _Find_elem(const _Elem (&_Base)[_Base_size],
-    const _Elem _Ch) { // lookup _Ch in array storing NUL-terminated string _Base
-                       // pre: _Base contains no nulls except for _Base[_Base_size - 1]
-    return static_cast<size_t>(_Find_unchecked(_Base, _Base + (_Base_size - 1), _Ch) - _Base);
+size_t _Find_elem(const _Elem (&_Base)[_Base_size], const _Elem _Ch) {
+    // lookup _Ch in array storing NUL-terminated string _Base
+    // pre: _Base contains no nulls except for _Base[_Base_size - 1]
+    return static_cast<size_t>(_STD _Find_unchecked(_Base, _Base + (_Base_size - 1), _Ch) - _Base);
 }
 
 inline wchar_t* _Maklocwcs(const wchar_t* _Ptr) { // copy NTWCS to allocated storage
@@ -92,7 +88,7 @@ inline wchar_t* _Maklocwcs(const wchar_t* _Ptr) { // copy NTWCS to allocated sto
     return _Ptrdest;
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 class numpunct : public locale::facet { // facet for defining numeric punctuation text
 private:
     friend _Tidy_guard<numpunct>;
@@ -142,7 +138,7 @@ public:
     static size_t _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new numpunct<_Elem>(_Locinfo(_Ploc->c_str()), 0, true);
+            *_Ppf = new numpunct<_Elem>(_Locinfo(_Ploc->_C_str()), 0, true);
         }
         return _X_NUMERIC;
     }
@@ -226,7 +222,7 @@ private:
     const _Elem* _Truename; // name for true, "true" for "C" locale
 };
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 class numpunct_byname : public numpunct<_Elem> { // numpunct for named locale
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
@@ -255,7 +251,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id numpunct<_Elem>::id;
 #endif // __clang__
 #endif // !defined(_CRTBLD) || defined(CRTDLL2) || !defined(_DLL) || defined(_M_CEE_PURE)
 
-template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
+_EXPORT_STD extern "C++" template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class num_get : public locale::facet { // facet for converting text to encoded numbers
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
@@ -263,7 +259,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new num_get<_Elem, _InIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new num_get<_Elem, _InIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_NUMERIC;
@@ -630,7 +626,7 @@ protected:
             char* _Ep;
 #ifdef _WIN64
             _Val = reinterpret_cast<void*>(_CSTD _Stoullx(_Ac, &_Ep, _Base, &_Errno));
-#else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
+#else // ^^^ _WIN64 / !_WIN64 vvv
             _Val = reinterpret_cast<void*>(_CSTD _Stoulx(_Ac, &_Ep, _Base, &_Errno));
 #endif // _WIN64
             if (_Ep == _Ac || _Errno != 0) {
@@ -1161,7 +1157,7 @@ int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fm
     }
 }
 
-template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
+_EXPORT_STD extern "C++" template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class num_put : public locale::facet { // facet for converting encoded numbers to text
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
@@ -1169,7 +1165,7 @@ public:
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
         if (_Ppf && !*_Ppf) {
-            *_Ppf = new num_put<_Elem, _OutIt>(_Locinfo(_Ploc->c_str()));
+            *_Ppf = new num_put<_Elem, _OutIt>(_Locinfo(_Ploc->_C_str()));
         }
 
         return _X_NUMERIC;

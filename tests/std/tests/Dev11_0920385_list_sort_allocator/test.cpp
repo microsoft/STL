@@ -7,7 +7,9 @@
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <deque>
 #include <forward_list>
 #include <functional>
@@ -19,8 +21,6 @@
 #include <random>
 #include <regex>
 #include <set>
-#include <stdlib.h>
-#include <string.h>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -28,9 +28,9 @@
 #include <utility>
 #include <vector>
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #include <future>
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 using namespace std;
 
@@ -231,7 +231,7 @@ int main() {
         shared_ptr<int> sp2 = allocate_shared<int>(alloc, 1729);
     }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
     {
         promise<int> p(allocator_arg, alloc);
         future<int> f = p.get_future();
@@ -277,12 +277,14 @@ int main() {
         f.get();
     }
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
     test_1119194();
     test_1184701();
     test_LWG_2455();
+#if !_HAS_CXX20 // support removed in C++20 by P0619R4
     test_allocator_construct_const();
+#endif // !_HAS_CXX20
 }
 
 // Also test DevDiv-1119194 "The STL should handle allocators that aren't assignable".
@@ -465,6 +467,7 @@ void test_LWG_2455() {
     }
 }
 
+#if !_HAS_CXX20 // support removed in C++20 by P0619R4
 void test_allocator_construct_const() {
     // Annex D actually requires the default allocator to const_cast here
     // See N4659 D.9 [depr.default.allocator]/6
@@ -476,3 +479,4 @@ void test_allocator_construct_const() {
     allocator_traits<allocator<int>>::construct(alloc, exampleCptr, 1729);
     assert(example == 1729);
 }
+#endif // !_HAS_CXX20

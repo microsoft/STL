@@ -20,9 +20,7 @@ using Pred = less<>;
 constexpr Pred pred{};
 
 template <class Rng>
-concept CanViewChunkBy = requires(Rng&& r) {
-    views::chunk_by(forward<Rng>(r), pred);
-};
+concept CanViewChunkBy = requires(Rng&& r) { views::chunk_by(forward<Rng>(r), pred); };
 
 template <ranges::forward_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
@@ -229,6 +227,24 @@ constexpr void instantiation_test() {
     instantiator::call<test_range<contiguous_iterator_tag, Common::no>>();
     instantiator::call<test_range<contiguous_iterator_tag, Common::yes>>();
 #endif // TEST_EVERYTHING
+}
+
+void test_gh_2889() { // COMPILE-ONLY
+    // GH-2889 <ranges>: chunk_by_view's helper lambda does not specify return type
+    struct Bool { // NB: poor model of boolean-testable; don't use in runtime code.
+        Bool()            = default;
+        Bool(const Bool&) = delete;
+        Bool& operator!() {
+            return *this;
+        }
+        operator bool() {
+            return true;
+        }
+    };
+
+    Bool x[3];
+    auto r = x | views::chunk_by([](Bool& b, Bool&) -> Bool& { return b; });
+    (void) r.begin();
 }
 
 template <class Category, test::Common IsCommon, bool is_random = derived_from<Category, random_access_iterator_tag>>

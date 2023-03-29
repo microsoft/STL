@@ -22,7 +22,7 @@ _STL_DISABLE_CLANG_WARNINGS
 // In particular, basic_string must not be included here.
 
 _STD_BEGIN
-class _CRTIMP2_PURE_IMPORT _Facet_base { // code for reference counting a facet
+extern "C++" class _CRTIMP2_PURE_IMPORT _Facet_base { // code for reference counting a facet
 public:
     virtual __CLR_OR_THIS_CALL ~_Facet_base() noexcept {} // ensure that derived classes can be destroyed properly
 
@@ -37,7 +37,7 @@ public:
 void __CLRCALL_OR_CDECL _Facet_Register_m(_Facet_base*);
 
 #else // defined(_M_CEE)
-void __CLRCALL_OR_CDECL _Facet_Register(_Facet_base*);
+extern "C++" void __CLRCALL_OR_CDECL _Facet_Register(_Facet_base*);
 #endif // defined(_M_CEE)
 _STD_END
 #pragma pop_macro("new")

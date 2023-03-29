@@ -50,11 +50,11 @@ namespace Meow {
         using reference         = Evil&;
 
         BasicInIt(int, int) {}
-        BasicInIt(const BasicInIt&) = default;
-        BasicInIt(BasicInIt&&)      = default;
+        BasicInIt(const BasicInIt&)            = default;
+        BasicInIt(BasicInIt&&)                 = default;
         BasicInIt& operator=(const BasicInIt&) = default;
-        BasicInIt& operator=(BasicInIt&&) = default;
-        ~BasicInIt()                      = default;
+        BasicInIt& operator=(BasicInIt&&)      = default;
+        ~BasicInIt()                           = default;
 
         Evil& operator*() const {
             static Evil val{};
@@ -91,12 +91,12 @@ namespace Meow {
         using pointer           = Evil*;
         using reference         = Evil&;
 
-        BasicFwdIt()                  = default;
-        BasicFwdIt(const BasicFwdIt&) = default;
-        BasicFwdIt(BasicFwdIt&&)      = default;
+        BasicFwdIt()                             = default;
+        BasicFwdIt(const BasicFwdIt&)            = default;
+        BasicFwdIt(BasicFwdIt&&)                 = default;
         BasicFwdIt& operator=(const BasicFwdIt&) = default;
-        BasicFwdIt& operator=(BasicFwdIt&&) = default;
-        ~BasicFwdIt()                       = default;
+        BasicFwdIt& operator=(BasicFwdIt&&)      = default;
+        ~BasicFwdIt()                            = default;
 
         Evil& operator*() const {
             static Evil val{};
@@ -133,12 +133,12 @@ namespace Meow {
         using pointer           = Evil*;
         using reference         = Evil&;
 
-        BasicBidIt()                  = default;
-        BasicBidIt(const BasicBidIt&) = default;
-        BasicBidIt(BasicBidIt&&)      = default;
+        BasicBidIt()                             = default;
+        BasicBidIt(const BasicBidIt&)            = default;
+        BasicBidIt(BasicBidIt&&)                 = default;
         BasicBidIt& operator=(const BasicBidIt&) = default;
-        BasicBidIt& operator=(BasicBidIt&&) = default;
-        ~BasicBidIt()                       = default;
+        BasicBidIt& operator=(BasicBidIt&&)      = default;
+        ~BasicBidIt()                            = default;
 
         Evil& operator*() const {
             static Evil val{};
@@ -181,12 +181,12 @@ namespace Meow {
         using pointer           = Evil*;
         using reference         = Evil&;
 
-        BasicRanIt()                  = default;
-        BasicRanIt(const BasicRanIt&) = default;
-        BasicRanIt(BasicRanIt&&)      = default;
+        BasicRanIt()                             = default;
+        BasicRanIt(const BasicRanIt&)            = default;
+        BasicRanIt(BasicRanIt&&)                 = default;
         BasicRanIt& operator=(const BasicRanIt&) = default;
-        BasicRanIt& operator=(BasicRanIt&&) = default;
-        ~BasicRanIt()                       = default;
+        BasicRanIt& operator=(BasicRanIt&&)      = default;
+        ~BasicRanIt()                            = default;
 
         Evil& operator*() const {
             static Evil val{};
@@ -268,11 +268,11 @@ namespace Meow {
         using reference         = void;
 
         BasicOutIt(int, int) {}
-        BasicOutIt(const BasicOutIt&) = default;
-        BasicOutIt(BasicOutIt&&)      = default;
+        BasicOutIt(const BasicOutIt&)            = default;
+        BasicOutIt(BasicOutIt&&)                 = default;
         BasicOutIt& operator=(const BasicOutIt&) = default;
-        BasicOutIt& operator=(BasicOutIt&&) = default;
-        ~BasicOutIt()                       = default;
+        BasicOutIt& operator=(BasicOutIt&&)      = default;
+        ~BasicOutIt()                            = default;
 
         Evil& operator*() const {
             static Evil val{};

@@ -3,7 +3,7 @@
 
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
-#include <assert.h>
+#include <cassert>
 #include <experimental/filesystem>
 #include <fstream>
 #include <ios>

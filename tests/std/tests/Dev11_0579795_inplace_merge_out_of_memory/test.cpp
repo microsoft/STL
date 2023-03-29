@@ -3,27 +3,24 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
+#include <cstdint>
+#include <cstdlib>
+#include <limits>
 #include <new>
-#include <stdint.h>
-#include <stdlib.h>
 
-#if _HAS_CXX17 && !defined(_M_CEE)
-#define HAS_PARALLEL_ALGORITHMS 1
-#else
-#define HAS_PARALLEL_ALGORITHMS 0
-#endif // _HAS_CXX17 && !defined(_M_CEE)
-
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
 #include <execution>
-#endif // HAS_PARALLEL_ALGORITHMS
+#endif // __cpp_lib_execution
 
 using namespace std;
 
+constexpr auto size_max = numeric_limits<size_t>::max();
+
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 
-constexpr size_t prohibit_attempts_to_allocate = SIZE_MAX; // extension provided by our STL
-constexpr size_t max_allocate                  = SIZE_MAX - 1;
+constexpr size_t prohibit_attempts_to_allocate = size_max; // extension provided by our STL
+constexpr size_t max_allocate                  = size_max - 1;
 size_t g_max_memory                            = max_allocate;
 
 void* operator new(size_t size) {
@@ -113,8 +110,8 @@ void test_more() {
 
 struct int_ish {
     /* implicit */ int_ish(int init) : value(init) {}
-    int_ish(const int_ish&) = delete;
-    int_ish(int_ish&&)      = default;
+    int_ish(const int_ish&)            = delete;
+    int_ish(int_ish&&)                 = default;
     int_ish& operator=(const int_ish&) = delete;
 
     int_ish& operator=(int_ish&& rhs) {
@@ -138,7 +135,7 @@ void test_stability() {
             75, 19, 35, 65, 99, 42, 39, 80, 66, 18, 87, 64, 76, 33, 96, 55, 26, 98, 63, 95, 40, 65, 79, 16, 63, 68, 55,
             27, 99, 55, 77, 59, 77, 11, 77, 92, 77, 16, 28, 83, 74, 77, 21, 55, 50, 73, 65, 81, 53, 68, 82, 72, 92, 64,
             30, 94, 80, 86, 21, 37, 20, 90, 56, 71, 41, 15, 42, 70, 50, 90, 26, 72, 47, 41, 46, 41, 58, 94}};
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
         auto b = a;
 #endif
 
@@ -152,7 +149,7 @@ void test_stability() {
 
         assert(a == correct);
 
-#if HAS_PARALLEL_ALGORITHMS
+#ifdef __cpp_lib_execution
         stable_sort(execution::par, b.begin(), b.end(), comp);
 
         assert(b == correct);
@@ -186,7 +183,7 @@ void test_stability() {
         const auto partitionPoint         = stable_partition(a.begin(), a.end(), [&](const int_ish& x) {
             ++predCalls;
             return x.value < 50;
-                });
+        });
         const array<int_ish, 100> correct = {
             {20, 13, 29, 28, 17, 44, 48, 26, 47, 43, 20, 19, 35, 42, 39, 18, 33, 26, 40, 16, 27, 11, 16, 28, 21, 30, 21,
                 37, 20, 41, 15, 42, 26, 47, 41, 46, 41, 58, 85, 91, 99, 64, 60, 86, 89, 51, 96, 66, 75, 65, 99, 80, 66,

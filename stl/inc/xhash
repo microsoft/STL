@@ -9,13 +9,16 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <cmath>
-#include <cstring>
-#include <cwchar>
 #include <list>
 #include <tuple>
 #include <vector>
 #include <xbit_ops.h>
+
+#ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
+#include <cstring>
+#include <cwchar>
 #include <xstring>
+#endif // _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 #if _HAS_CXX17
 #include <xnode_handle.h>
@@ -28,6 +31,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 namespace stdext {
     using _STD basic_string;
     using _STD less;
@@ -88,8 +92,12 @@ namespace stdext {
 } // namespace stdext
 
 _STD_BEGIN
-using stdext::hash_compare; // TRANSITION, protobuf used this until v3.7.0, released Feb 28, 2019
+using stdext::hash_compare; // Non-Standard, for legacy source compatibility
+_STD_END
 
+#endif // _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
+
+_STD_BEGIN
 template <class _Kty, class _Hasher, class _Keyeq, class = void>
 struct _Uhash_choose_transparency {
     // transparency selector for non-transparent hashed containers
@@ -110,8 +118,8 @@ struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq,
 #endif // _HAS_CXX20
 
 template <class _Hasher, class _Kty>
-_INLINE_VAR constexpr bool _Nothrow_hash = noexcept(
-    static_cast<size_t>(_STD declval<const _Hasher&>()(_STD declval<const _Kty&>())));
+_INLINE_VAR constexpr bool _Nothrow_hash =
+    noexcept(static_cast<size_t>(_STD declval<const _Hasher&>()(_STD declval<const _Kty&>())));
 
 template <class _Kty, class _Hasher, class _Keyeq>
 class _Uhash_compare
@@ -215,7 +223,7 @@ struct _List_head_construct_ptr {
         _Mycont._Myhead = _Newhead;
     }
 
-    _List_head_construct_ptr(const _List_head_construct_ptr&) = delete;
+    _List_head_construct_ptr(const _List_head_construct_ptr&)            = delete;
     _List_head_construct_ptr& operator=(const _List_head_construct_ptr&) = delete;
 
     _NODISCARD pointer _Release() noexcept {
@@ -257,7 +265,7 @@ struct _Hash_vec {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Aliter, _Mypair._Get_first()));
     }
 
-    _Hash_vec(const _Hash_vec&) = delete;
+    _Hash_vec(const _Hash_vec&)            = delete;
     _Hash_vec& operator=(const _Hash_vec&) = delete;
 
     _NODISCARD size_type size() const noexcept {
@@ -379,7 +387,7 @@ protected:
           _Maxidx(_Right._Maxidx) {
         // construct hash table by copying _Right
         _Vec._Assign_grow(_Right._Vec.size(), _List._Unchecked_end());
-        insert(_Right._Unchecked_begin(), _Right._Unchecked_end());
+        _Insert_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
 #ifdef _ENABLE_STL_INTERNAL_CHECK
         _Stl_internal_check_container_invariants();
         _Right._Stl_internal_check_container_invariants();
@@ -467,7 +475,7 @@ private:
 
         explicit _Clear_guard(_Hash* const _Target_) : _Target(_Target_) {}
 
-        _Clear_guard(const _Clear_guard&) = delete;
+        _Clear_guard(const _Clear_guard&)            = delete;
         _Clear_guard& operator=(const _Clear_guard&) = delete;
 
         ~_Clear_guard() {
@@ -483,7 +491,7 @@ private:
 
         explicit _Check_container_invariants_guard(const _Hash& _Target_) : _Target(_Target_) {}
 
-        _Check_container_invariants_guard(const _Check_container_invariants_guard&) = delete;
+        _Check_container_invariants_guard(const _Check_container_invariants_guard&)            = delete;
         _Check_container_invariants_guard& operator=(const _Check_container_invariants_guard&) = delete;
 
         ~_Check_container_invariants_guard() {
@@ -822,7 +830,7 @@ public:
         return _List.max_size();
     }
 
-    _NODISCARD bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
         return _List.empty();
     }
 
@@ -937,18 +945,30 @@ public:
         return emplace_hint(_Hint, _STD move(_Val));
     }
 
-    template <class _Iter>
-    void insert(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst      = _Get_unwrapped(_First);
-        const auto _ULast = _Get_unwrapped(_Last);
-        for (; _UFirst != _ULast; ++_UFirst) {
-            emplace(*_UFirst);
+protected:
+    template <class _Iter, class _Sent>
+    void _Insert_range_unchecked(_Iter _First, const _Sent _Last) {
+        for (; _First != _Last; ++_First) {
+            emplace(*_First);
         }
     }
 
+public:
+    template <class _Iter>
+    void insert(_Iter _First, _Iter _Last) {
+        _Adl_verify_range(_First, _Last);
+        _Insert_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+    }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<value_type> _Rng>
+    void insert_range(_Rng&& _Range) {
+        _Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     void insert(initializer_list<value_type> _Ilist) {
-        insert(_Ilist.begin(), _Ilist.end());
+        _Insert_range_unchecked(_Ilist.begin(), _Ilist.end());
     }
 
 private:
@@ -959,7 +979,7 @@ private:
     }
 
     struct _Range_eraser {
-        _Range_eraser(const _Range_eraser&) = delete;
+        _Range_eraser(const _Range_eraser&)            = delete;
         _Range_eraser& operator=(const _Range_eraser&) = delete;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
@@ -979,7 +999,7 @@ private:
         _Mylist& _List;
         const _Nodeptr _First;
         _Nodeptr _Next;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 // _ITERATOR_DEBUG_LEVEL != 2 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
       // Destroy the nodes as we encounter them to avoid a second traversal of the linked list.
         _Range_eraser(_Mylist& _List_, const _Nodeptr _First_) noexcept
             : _List(_List_), _Predecessor(_First_->_Prev), _Next(_First_) {}
@@ -1076,7 +1096,7 @@ private:
 
     template <class _Kx>
     static constexpr bool _Noexcept_heterogeneous_erasure() {
-        return _Nothrow_hash<_Traits, _Kx> //
+        return _Nothrow_hash<_Traits, _Kx>
             && (!_Multi || (_Nothrow_compare<_Traits, key_type, _Kx> && _Nothrow_compare<_Traits, _Kx, key_type>) );
     }
 
@@ -1984,7 +2004,7 @@ template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
 #endif // _HAS_CXX17
 
-template <class _Traits>
+_EXPORT_STD /* TRANSITION, VSO-1538698 */ template <class _Traits>
 _NODISCARD bool _Hash_equal(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right) {
     if (_Left.size() != _Right.size()) {
         return false;

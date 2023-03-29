@@ -4,12 +4,12 @@
 #define _HAS_DEPRECATED_ADAPTOR_TYPEDEFS 1
 #define _SILENCE_CXX17_ADAPTOR_TYPEDEFS_DEPRECATION_WARNING
 
-#include <assert.h>
 #include <bitset>
+#include <cassert>
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <optional>
-#include <stddef.h>
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -19,9 +19,9 @@
 #include <variant>
 #include <vector>
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 #include <thread>
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 using namespace std;
 
@@ -93,9 +93,9 @@ STATIC_ASSERT(standard_hash_enabled<error_condition>());
 STATIC_ASSERT(standard_hash_enabled<type_index>());
 STATIC_ASSERT(standard_hash_enabled<vector<bool>>());
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 STATIC_ASSERT(standard_hash_enabled<thread::id>());
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 struct NotHashable {};
 
@@ -173,7 +173,7 @@ void test_string_T_hash_invariants(const CharT* const exampleStr) {
     hash<basic_string<CharT>> hString;
     hash<basic_string_view<CharT>> hStringView;
     assert(hString(exampleStr) == hStringView(exampleStr));
-#else // ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
     (void) exampleStr;
 #endif // _HAS_CXX17
 }

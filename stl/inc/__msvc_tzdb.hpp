@@ -20,6 +20,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+_EXTERN_C
+
 using __std_tzdb_epoch_milli = double;
 
 struct __std_tzdb_leap_info {
@@ -64,7 +66,15 @@ struct __std_tzdb_sys_info {
     const char* _Abbrev;
 };
 
-_EXTERN_C
+enum class __std_tzdb_sys_info_type : char {
+    // TRANSITION, ABI: In order to be compatible with existing object files which do not know about
+    // `__std_tzdb_sys_info_type`, the type is passed in the after-end byte of a string passed with its length to
+    // `__std_tzdb_get_sys_info`. Since older object files always pass the `.c_str()` of a `std::string`
+    // to that function, the after-end byte will always be '\0'.
+    _Full = '\0',
+    _Offset_only,
+    _Offset_and_range,
+};
 
 _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noexcept;
 void __stdcall __std_tzdb_delete_time_zones(__std_tzdb_time_zones_info* _Info) noexcept;

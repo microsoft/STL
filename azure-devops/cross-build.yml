@@ -12,12 +12,12 @@ parameters:
 - name: buildOutputLocationVar
   type: string
   default: buildOutputLocation
+- name: benchmarkBuildOutputLocationVar
+  type: string
+  default: benchmarkBuildOutputLocation
 - name: numShards
   type: number
   default: 8
-- name: buildBenchmarking
-  type: string
-  default: 'ON'
 jobs:
 - job: '${{ parameters.targetPlatform }}'
   variables:
@@ -41,8 +41,8 @@ jobs:
       targetPlatform: ${{ parameters.targetPlatform }}
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.vsDevCmdArch }}
-      buildBenchmarking: ${{ parameters.buildBenchmarking }}
       cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
+      benchmarkBuildOutputLocationVar: ${{ parameters.benchmarkBuildOutputLocationVar }}
   - template: run-tests.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}

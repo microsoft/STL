@@ -1,11 +1,12 @@
 {
+    "$schema": "https://json.schemastore.org/component-detection-manifest.json",
     "Registrations": [
         {
             "component": {
                 "type": "git",
                 "git": {
-                    "repositoryUrl": "https://github.com/boostorg/boost",
-                    "commitHash": "b143a5b72075f47307a23e680889d8434c8afc54"
+                    "repositoryUrl": "https://github.com/boostorg/math",
+                    "commitHash": "f395de082eca6ee993a15f2bdb90277eda518295"
                 }
             }
         },

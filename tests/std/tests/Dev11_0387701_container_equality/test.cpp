@@ -5,7 +5,8 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
 #include <deque>
 #include <forward_list>
 #include <functional>
@@ -15,7 +16,6 @@
 #include <map>
 #include <random>
 #include <set>
-#include <stddef.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>

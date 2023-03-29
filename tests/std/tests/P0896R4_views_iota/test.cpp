@@ -15,14 +15,10 @@ using namespace std;
 static_assert(ranges::_Advanceable<long long>);
 
 template <class W, class B>
-concept CanViewIota = requires(W w, B b) {
-    views::iota(w, b);
-};
+concept CanViewIota = requires(W w, B b) { views::iota(w, b); };
 
 template <class R>
-concept CanSize = requires(R& r) {
-    ranges::size(r);
-};
+concept CanSize = requires(R& r) { ranges::size(r); };
 
 struct empty_type {};
 
@@ -201,6 +197,14 @@ constexpr void test_integral() {
         static_assert(noexcept(first != last)); // strengthened
         assert(last - first == 8);
         static_assert(noexcept(last - first)); // strengthened
+
+#if _HAS_CXX23
+        const same_as<ranges::const_iterator_t<R>> auto cfirst = rng.cbegin();
+        assert(cfirst == first);
+        const same_as<ranges::const_sentinel_t<R>> auto clast = rng.cend();
+        assert(clast == last);
+        assert(clast - cfirst == 8);
+#endif // _HAS_CXX23
     }
 
     {
@@ -238,6 +242,21 @@ constexpr void test_integral() {
         }
 
         static_assert(!CanSize<ranges::iota_view<T>>);
+
+#if _HAS_CXX23
+        {
+            const same_as<R> auto rng = views::iota(low);
+            const ranges::subrange crng{rng.cbegin(), rng.cend()};
+
+            auto i = low;
+            for (const auto& e : crng) {
+                assert(e == i);
+                if (++i == high) {
+                    break;
+                }
+            }
+        }
+#endif // _HAS_CXX23
     }
 }
 
@@ -290,6 +309,18 @@ constexpr bool test_difference() {
         assert(r.begin() - r.end() == -n); // right > left
         delete[] some_chars;
     }
+
+    return true;
+}
+
+constexpr bool test_gh_3025() {
+#ifndef _M_CEE // TRANSITION, VSO-1666180
+    // GH-3025 <iterator>: ranges::prev maybe ill-formed in debug mode
+    auto r  = views::iota(0ull, 5ull);
+    auto it = r.end();
+    auto pr = ranges::prev(it, 3);
+    assert(*pr == 2ull);
+#endif // _M_CEE
 
     return true;
 }
@@ -362,4 +393,7 @@ int main() {
 
     test_difference();
     static_assert(test_difference());
+
+    test_gh_3025();
+    static_assert(test_gh_3025());
 }

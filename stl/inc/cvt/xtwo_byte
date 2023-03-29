@@ -62,7 +62,7 @@ namespace stdext {
                             _Widecode =
                                 static_cast<unsigned short>(_Bytecode << 8 | static_cast<unsigned char>(*++_Mid1));
                             unsigned long _Lo = 0;
-                            unsigned long _Hi = sizeof(_Table::_Dbvalid) / sizeof(_Table::_Dbvalid[0]);
+                            unsigned long _Hi = static_cast<unsigned long>(_STD size(_Table::_Dbvalid));
 
                             while (_Lo < _Hi) { // test midpoint of remaining interval
                                 unsigned long _Mid = (_Hi + _Lo) / 2;
@@ -110,7 +110,7 @@ namespace stdext {
                         && (_Widecode >= 0x100
                             || _Table::_Btw[_Widecode - _Table::_Nlow] != _Widecode)) { // search for a valid mapping
                         unsigned long _Lo = 0;
-                        unsigned long _Hi = sizeof(_Table::_Wvalid) / sizeof(_Table::_Wvalid[0]);
+                        unsigned long _Hi = static_cast<unsigned long>(_STD size(_Table::_Wvalid));
 
                         while (_Lo < _Hi) { // test midpoint of remaining interval
                             unsigned long _Mid = (_Hi + _Lo) / 2;

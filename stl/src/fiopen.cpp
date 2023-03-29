@@ -10,14 +10,16 @@ namespace {
 
     FILE* _Xfsopen(_In_z_ const char* filename, _In_ int mode, _In_ int prot) {
         static const char* const mods[] = {// fopen mode strings corresponding to valid[i]
-            "r", "w", "w", "a", "rb", "wb", "wb", "ab", "r+", "w+", "a+", "r+b", "w+b", "a+b", nullptr};
+            "r", "w", "w", "a", "rb", "wb", "wb", "ab", "r+", "w+", "a+", "r+b", "w+b", "a+b", "wx", "wx", "w+x", "wbx",
+            "wbx", "w+bx", nullptr};
 
         return _fsopen(filename, mods[mode], prot);
     }
 
     FILE* _Xfsopen(_In_z_ const wchar_t* filename, _In_ int mode, _In_ int prot) {
         static const wchar_t* const mods[] = {// fopen mode strings corresponding to valid[i]
-            L"r", L"w", L"w", L"a", L"rb", L"wb", L"wb", L"ab", L"r+", L"w+", L"a+", L"r+b", L"w+b", L"a+b", nullptr};
+            L"r", L"w", L"w", L"a", L"rb", L"wb", L"wb", L"ab", L"r+", L"w+", L"a+", L"r+b", L"w+b", L"a+b", L"wx",
+            L"wx", L"w+x", L"wbx", L"wbx", L"w+bx", nullptr};
 
         return _wfsopen(filename, mods[mode], prot);
     }
@@ -40,11 +42,16 @@ namespace {
             ios_base::in | ios_base::out | ios_base::binary,
             ios_base::in | ios_base::out | ios_base::trunc | ios_base::binary,
             ios_base::in | ios_base::out | ios_base::app | ios_base::binary,
+            ios_base::out | ios_base::_Noreplace,
+            ios_base::out | ios_base::trunc | ios_base::_Noreplace,
+            ios_base::out | ios_base::in | ios_base::trunc | ios_base::_Noreplace,
+            ios_base::out | ios_base::binary | ios_base::_Noreplace,
+            ios_base::out | ios_base::binary | ios_base::trunc | ios_base::_Noreplace,
+            ios_base::out | ios_base::in | ios_base::trunc | ios_base::binary | ios_base::_Noreplace,
         };
 
-        FILE* fp                     = nullptr;
-        ios_base::openmode atendflag = mode & ios_base::ate;
-        ios_base::openmode norepflag = mode & ios_base::_Noreplace;
+        FILE* fp          = nullptr;
+        const bool at_end = (mode & ios_base::ate) != 0;
 
         if (mode & ios_base::_Nocreate) {
             mode |= ios_base::in; // file must exist
@@ -54,7 +61,7 @@ namespace {
             mode |= ios_base::out; // extension -- app implies out
         }
 
-        mode &= ~(ios_base::ate | ios_base::_Nocreate | ios_base::_Noreplace);
+        mode &= ~(ios_base::ate | ios_base::_Nocreate);
 
         // look for a valid mode
         int n = 0;
@@ -64,21 +71,11 @@ namespace {
             }
         }
 
-        if (norepflag && (mode & (ios_base::out | ios_base::app))
-            && (fp = _Xfsopen(filename, 0, prot)) != nullptr) { // file must not exist, close and fail
-            fclose(fp);
-            return nullptr;
-        }
-
-        if (fp != nullptr && fclose(fp) != 0) {
-            return nullptr; // can't close after test open
-        }
-
         if ((fp = _Xfsopen(filename, n, prot)) == nullptr) {
             return nullptr; // open failed
         }
 
-        if (atendflag && fseek(fp, 0, SEEK_END) != 0) {
+        if (at_end && fseek(fp, 0, SEEK_END) != 0) {
             fclose(fp); // can't position at end
             return nullptr;
         }

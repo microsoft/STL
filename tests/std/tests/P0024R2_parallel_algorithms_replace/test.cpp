@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <execution>
 #include <random>
 #include <vector>
@@ -37,8 +37,10 @@ void test_case_replace_if_parallel(const size_t testSize, mt19937& gen) {
 }
 
 int main() {
+#ifndef _M_CEE // TRANSITION, VSO-1659695
     mt19937 gen(1729);
 
     parallel_test_case(test_case_replace_parallel, gen);
     parallel_test_case(test_case_replace_if_parallel, gen);
+#endif // _M_CEE
 }

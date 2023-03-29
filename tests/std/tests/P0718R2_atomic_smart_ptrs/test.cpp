@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <cstdint>
 #include <memory>
 #include <thread>
@@ -544,13 +544,16 @@ void ensure_nonmember_calls_compile() {
     if (atomic_compare_exchange_weak(&instance, &loaded, loaded)) {
         // intentionally empty
     }
+
     if (atomic_compare_exchange_weak_explicit(
             &instance, &loaded, loaded, memory_order::relaxed, memory_order::relaxed)) {
         // intentionally empty
     }
+
     if (atomic_compare_exchange_strong(&instance, &loaded, loaded)) {
         // intentionally empty
     }
+
     if (atomic_compare_exchange_strong_explicit(
             &instance, &loaded, loaded, memory_order::relaxed, memory_order::relaxed)) {
         // intentionally empty
@@ -571,16 +574,17 @@ void ensure_member_calls_compile() {
     if (instance.compare_exchange_weak(loaded, constInstance)) {
         // intentionally empty
     }
+
     if (instance.compare_exchange_strong(loaded, constInstance)) {
         // intentionally empty
     }
 }
 
-#ifndef __EDG__ // TRANSITION, DevCom-1656924
+#ifndef _M_CEE // TRANSITION, VSO-1664382
 // LWG-3661: constinit atomic<shared_ptr<T>> a(nullptr); should work
 constinit atomic<shared_ptr<bool>> a{};
 constinit atomic<shared_ptr<bool>> b{nullptr};
-#endif // __EDG__
+#endif // _M_CEE
 
 int main() {
     // These values for is_always_lock_free are not required by the standard, but they are true for our implementation.

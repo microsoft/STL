@@ -142,5 +142,3 @@ constexpr bool test_P1328R1_constexpr_type_info_equality() {
 }
 
 static_assert(test_P1328R1_constexpr_type_info_equality());
-
-int main() {} // COMPILE-ONLY

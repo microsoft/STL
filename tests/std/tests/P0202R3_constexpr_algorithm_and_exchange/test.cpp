@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
 #include <functional>
 #include <iterator>
-#include <stddef.h>
 
 using namespace std;
 
@@ -550,6 +550,21 @@ constexpr void test_permutations() {
     }
 }
 
+constexpr void test_adjacent_swap_ranges() {
+    int arr[8]            = {10, 20, 30, 40, 50, 60, 70, 80};
+    const int original[8] = {10, 20, 30, 40, 50, 60, 70, 80};
+    const int modified[8] = {10, 50, 60, 70, 20, 30, 40, 80};
+
+    int* const first = arr + 1;
+    int* const mid   = arr + 4;
+    int* const last  = arr + 7;
+
+    swap_ranges(first, mid, mid);
+    assert(equal(begin(arr), end(arr), begin(modified), end(modified)));
+    swap_ranges(mid, last, first);
+    assert(equal(begin(arr), end(arr), begin(original), end(original)));
+}
+
 constexpr bool test() {
     test_copy<input_pointer<const int>, output_pointer<int>>();
     test_copy<const int*, int*>();
@@ -603,6 +618,7 @@ constexpr bool test() {
     test_make_heap_and_sort_heap();
     test_pop_heap_and_push_heap();
     test_permutations();
+    test_adjacent_swap_ranges();
 
     return true;
 }

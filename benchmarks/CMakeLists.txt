@@ -1,6 +1,42 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+cmake_minimum_required(VERSION 3.25.2)
+project(msvc_standard_libraries_benchmarks LANGUAGES CXX)
+
+if(DEFINED STL_BINARY_DIR)
+    cmake_path(ABSOLUTE_PATH STL_BINARY_DIR
+        BASE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.."
+        NORMALIZE
+    )
+    if(NOT EXISTS "${STL_BINARY_DIR}/out")
+        message(FATAL_ERROR "Invalid STL_BINARY_DIR '${STL_BINARY_DIR}'")
+    endif()
+
+    if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
+        set(VCLIBS_TARGET_ARCHITECTURE "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}")
+    endif()
+
+    string(TOLOWER "${VCLIBS_TARGET_ARCHITECTURE}" VCLIBS_TARGET_ARCHITECTURE)
+
+    if("${VCLIBS_TARGET_ARCHITECTURE}" MATCHES "^x86$")
+        set(VCLIBS_I386_OR_AMD64 "i386")
+    elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^x64$")
+        set(VCLIBS_I386_OR_AMD64 "amd64")
+    elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^armv7$")
+        set(VCLIBS_I386_OR_AMD64 "arm")
+    elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^arm64$")
+        set(VCLIBS_I386_OR_AMD64 "arm64")
+    else()
+        message(FATAL_ERROR "Could not determine target architecture: VCLIBS_TARGET_ARCHITECTURE: ${VCLIBS_TARGET_ARCHITECTURE}")
+    endif()
+
+    include_directories(BEFORE "${STL_BINARY_DIR}/out/inc")
+    link_directories(BEFORE "${STL_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
+else()
+    message(WARNING "STL_BINARY_DIR not set; benchmarking the globally installed standard library")
+endif()
+
 set(STL_BENCHMARK_MSVC_RUNTIME_LIBRARY
     MultiThreaded
     CACHE STRING "The flavor of the standard library to use; see https://cmake.org/cmake/help/latest/variable/CMAKE_MSVC_RUNTIME_LIBRARY.html for more information.")
@@ -32,13 +68,9 @@ endif()
 set(BENCHMARK_ENABLE_DOXYGEN OFF)
 set(BENCHMARK_ENABLE_INSTALL OFF)
 set(BENCHMARK_ENABLE_TESTING OFF)
-set(BUILD_SHARED_LIBS OFF)
 
-# TRANSITION, GH-2816: on some machines, librt is found, despite it being a unix-only library
-set(HAVE_LIB_RT OFF)
-
-include_directories(BEFORE "${CMAKE_BINARY_DIR}/out/inc")
-link_directories(BEFORE "${STL_LIBRARY_OUTPUT_DIRECTORY}")
+set(HAVE_GNU_POSIX_REGEX OFF)
+set(HAVE_POSIX_REGEX OFF)
 
 add_subdirectory(google-benchmark EXCLUDE_FROM_ALL)
 
@@ -69,9 +101,10 @@ function(add_benchmark name)
     target_compile_features(benchmark-${name} PRIVATE cxx_std_${arg_CXX_STANDARD})
     target_include_directories(benchmark-${name} PRIVATE inc)
     target_link_libraries(benchmark-${name} PRIVATE benchmark::benchmark)
+    # TRANSITION, google/benchmark#1450
+    target_compile_definitions(benchmark-${name} PRIVATE BENCHMARK_STATIC_DEFINE)
 endfunction()
 
-add_benchmark(std_copy
-    src/std_copy.cpp
-    CXX_STANDARD 23
-)
+add_benchmark(locale_classic src/locale_classic.cpp)
+add_benchmark(random_integer_generation src/random_integer_generation.cpp)
+add_benchmark(std_copy src/std_copy.cpp)

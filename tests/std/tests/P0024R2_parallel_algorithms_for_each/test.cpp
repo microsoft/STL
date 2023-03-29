@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
 #include <atomic>
+#include <cassert>
 #include <execution>
 #include <forward_list>
 #include <iterator>
@@ -19,11 +19,11 @@ int g_forEachNCalls = 0;
 struct for_each_n_tester {
     int calledCount = 0;
 
-    for_each_n_tester()                         = default;
-    for_each_n_tester(const for_each_n_tester&) = delete;
-    for_each_n_tester(for_each_n_tester&&)      = default;
+    for_each_n_tester()                                    = default;
+    for_each_n_tester(const for_each_n_tester&)            = delete;
+    for_each_n_tester(for_each_n_tester&&)                 = default;
     for_each_n_tester& operator=(const for_each_n_tester&) = delete;
-    for_each_n_tester& operator=(for_each_n_tester&&) = delete;
+    for_each_n_tester& operator=(for_each_n_tester&&)      = delete;
 
     void operator()(const int x) {
         assert(calledCount == g_forEachNCalls);
@@ -69,6 +69,7 @@ struct test_case_for_each_n_parallel {
 };
 
 int main() {
+#ifndef _M_CEE // TRANSITION, VSO-1659695
     test_case_for_each_n();
     parallel_test_case(test_case_for_each_parallel<forward_list>{}, par);
     parallel_test_case(test_case_for_each_parallel<list>{}, par);
@@ -84,4 +85,5 @@ int main() {
     parallel_test_case(test_case_for_each_n_parallel<list>{}, unseq);
     parallel_test_case(test_case_for_each_n_parallel<vector>{}, unseq);
 #endif // _HAS_CXX20
+#endif // _M_CEE
 }

@@ -3,8 +3,8 @@
 
 // Also tests for P1957R2: Converting from T* to bool should be considered narrowing
 
-#include <assert.h>
 #include <bitset>
+#include <cassert>
 #include <functional>
 #include <optional>
 #include <string>
@@ -21,7 +21,6 @@ struct double_double {
 };
 struct convertible_bool {
     convertible_bool(bool x) : x_(x) {}
-    ~convertible_bool() = default;
 
     operator bool() const noexcept {
         return x_;

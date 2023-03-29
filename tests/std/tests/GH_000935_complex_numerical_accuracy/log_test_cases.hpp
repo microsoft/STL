@@ -32,6 +32,10 @@ constexpr complex_unary_test_case<double> log_double_cases[] = {
     {{-0x1.8p-2, +0x1p-1}, {-0x1.e148a1a2726cep-2, +0x1.1b6e192ebbe44p+1}},
     {{-0x1.8p-2, -0x1p-1}, {-0x1.e148a1a2726cep-2, -0x1.1b6e192ebbe44p+1}},
 
+    // DevCom-10088405: Incorrect result for std::complex operations on ARM64 platform
+    {{0.1, 1.2}, {0.18578177821624148, 1.4876550949064553}},
+    {{-1.1698230349239351, 0.46519593659281616}, {0.23025850929940467, 2.763102111592855}},
+
     // special cases
     {{+1.0, +0.0}, {0.0, +0.0}, {true, true}},
     {{+1.0, -0.0}, {0.0, -0.0}, {true, true}},

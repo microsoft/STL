@@ -312,7 +312,7 @@ struct ConstructConstrainingAllocator {
     ConstructConstrainingAllocator() = default;
     template <class Other>
     ConstructConstrainingAllocator(const ConstructConstrainingAllocator<Other, ConstructAssert>&) {}
-    ConstructConstrainingAllocator(const ConstructConstrainingAllocator&) = default;
+    ConstructConstrainingAllocator(const ConstructConstrainingAllocator&)            = default;
     ConstructConstrainingAllocator& operator=(const ConstructConstrainingAllocator&) = delete;
 
     T* allocate(size_t n) {
@@ -642,6 +642,10 @@ struct WeirdDeleter {
     void operator()(T* const ptr) const {
         delete ptr;
     }
+
+    WeirdDeleter()                               = default;
+    WeirdDeleter(const WeirdDeleter&)            = default;
+    WeirdDeleter& operator=(const WeirdDeleter&) = default;
 
     ~WeirdDeleter() noexcept(false) {}
 };

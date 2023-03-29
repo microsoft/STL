@@ -35,8 +35,9 @@ void try_terminate() { // test terminate machinery
     if (setjmp(jbuf) == 0) { // try calling terminate
         int zero = 0;
 
-        if (zero == 0)
+        if (zero == 0) {
             STDx terminate();
+        }
         CHECK_MSG("terminate() doesn't return", 0);
     }
     CHECK(STDx set_terminate(save_hand) == &jmpback);

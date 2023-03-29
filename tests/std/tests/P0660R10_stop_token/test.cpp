@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
 #include <atomic>
+#include <cassert>
 #include <chrono>
+#include <cstdio>
 #include <optional>
-#include <stdio.h>
 #include <stop_token>
 #include <thread>
 #include <utility>
@@ -34,7 +34,7 @@ struct call_counting_functor {
 
     call_counting_functor(atomic<int>* state_) : state(state_) {}
 
-    call_counting_functor(const call_counting_functor&) = delete;
+    call_counting_functor(const call_counting_functor&)            = delete;
     call_counting_functor& operator=(const call_counting_functor&) = delete;
 
     void operator()() && {
@@ -46,7 +46,7 @@ struct cb_destroying_functor {
     optional<stop_callback<cb_destroying_functor>>& owner;
     cb_destroying_functor(optional<stop_callback<cb_destroying_functor>>& owner_) : owner(owner_) {}
 
-    cb_destroying_functor(const cb_destroying_functor&) = delete;
+    cb_destroying_functor(const cb_destroying_functor&)            = delete;
     cb_destroying_functor& operator=(const cb_destroying_functor&) = delete;
 
     void operator()() && {
@@ -55,6 +55,7 @@ struct cb_destroying_functor {
 };
 
 int main() noexcept {
+#ifndef _M_CEE // TRANSITION, VSO-1659408
     reset_new_counters(0);
     { // all the following must not allocate, and must work with a nostopstate source; in rough synopsis order
         stop_token token;
@@ -415,4 +416,5 @@ int main() noexcept {
     reset_new_counters(0);
 
     puts("pass");
+#endif // _M_CEE
 }

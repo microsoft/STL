@@ -28,9 +28,7 @@ using pipeline_t = ranges::drop_while_view<
     ranges::drop_while_view<ranges::drop_while_view<ranges::drop_while_view<V, Pred>, Pred>, Pred>, Pred>;
 
 template <class Rng>
-concept CanViewDropWhile = requires(Rng&& r) {
-    views::drop_while(forward<Rng>(r), is_less_than<3>);
-};
+concept CanViewDropWhile = requires(Rng&& r) { views::drop_while(forward<Rng>(r), is_less_than<3>); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
@@ -214,6 +212,51 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         STATIC_ASSERT(!CanEnd<const R>);
     }
+
+#if _HAS_CXX23
+    using ranges::const_iterator_t, ranges::const_sentinel_t, ranges::cbegin, ranges::cend;
+
+    // Validate view_interface::cbegin
+    STATIC_ASSERT(CanMemberCBegin<R> == ranges::input_range<V>);
+    if (forward_range<V>) { // intentionally not if constexpr
+        const same_as<const_iterator_t<R>> auto i = r.cbegin();
+        if (!is_empty) {
+            assert(*i == *cbegin(expected));
+            assert(*r.cbegin() == *cbegin(expected));
+        }
+
+        if constexpr (copyable<V>) {
+            auto r2                                    = r;
+            const same_as<const_iterator_t<R>> auto i2 = r2.cbegin();
+            if (!is_empty) {
+                assert(*i2 == *i);
+                assert(*r2.cbegin() == *i2);
+            }
+        }
+
+        STATIC_ASSERT(!CanCBegin<const R>);
+    }
+
+    // Validate view_interface::cend
+    STATIC_ASSERT(CanMemberCEnd<R> == ranges::input_range<V>);
+    if (!is_empty) {
+        if constexpr (common_range<V>) {
+            same_as<const_iterator_t<R>> auto i = r.cend();
+            if constexpr (bidirectional_range<V>) {
+                assert(*prev(i) == *prev(cend(expected)));
+            }
+        } else {
+            [[maybe_unused]] same_as<const_sentinel_t<R>> auto s = r.cend();
+        }
+
+        if constexpr (bidirectional_range<V> && common_range<V> && copyable<V>) {
+            auto r2 = r;
+            assert(*prev(r2.cend()) == *prev(cend(expected)));
+        }
+
+        STATIC_ASSERT(!CanCEnd<const R>);
+    }
+#endif // _HAS_CXX23
 
     // Validate view_interface::data
     STATIC_ASSERT(CanMemberData<R> == contiguous_range<V>);

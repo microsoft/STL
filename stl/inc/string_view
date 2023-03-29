@@ -10,7 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #if !_HAS_CXX17
-#pragma message("The contents of <string_view> are available only with C++17 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <string_view> are available only with C++17 or later.");
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <xstring>
 #endif // _HAS_CXX17

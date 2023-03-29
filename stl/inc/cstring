@@ -22,29 +22,29 @@ _STD_BEGIN
 #pragma warning(push)
 #pragma warning(disable : 4995) // name was marked as #pragma deprecated
 
-using _CSTD size_t;
-using _CSTD memchr;
-using _CSTD memcmp;
-using _CSTD memcpy;
-using _CSTD memmove;
-using _CSTD memset;
-using _CSTD strcat;
-using _CSTD strchr;
-using _CSTD strcmp;
-using _CSTD strcoll;
-using _CSTD strcpy;
-using _CSTD strcspn;
-using _CSTD strerror;
-using _CSTD strlen;
-using _CSTD strncat;
-using _CSTD strncmp;
-using _CSTD strncpy;
-using _CSTD strpbrk;
-using _CSTD strrchr;
-using _CSTD strspn;
-using _CSTD strstr;
-using _CSTD strtok;
-using _CSTD strxfrm;
+_EXPORT_STD using _CSTD size_t;
+_EXPORT_STD using _CSTD memchr;
+_EXPORT_STD using _CSTD memcmp;
+_EXPORT_STD using _CSTD memcpy;
+_EXPORT_STD using _CSTD memmove;
+_EXPORT_STD using _CSTD memset;
+_EXPORT_STD using _CSTD strcat;
+_EXPORT_STD using _CSTD strchr;
+_EXPORT_STD using _CSTD strcmp;
+_EXPORT_STD using _CSTD strcoll;
+_EXPORT_STD using _CSTD strcpy;
+_EXPORT_STD using _CSTD strcspn;
+_EXPORT_STD using _CSTD strerror;
+_EXPORT_STD using _CSTD strlen;
+_EXPORT_STD using _CSTD strncat;
+_EXPORT_STD using _CSTD strncmp;
+_EXPORT_STD using _CSTD strncpy;
+_EXPORT_STD using _CSTD strpbrk;
+_EXPORT_STD using _CSTD strrchr;
+_EXPORT_STD using _CSTD strspn;
+_EXPORT_STD using _CSTD strstr;
+_EXPORT_STD using _CSTD strtok;
+_EXPORT_STD using _CSTD strxfrm;
 
 #pragma warning(pop)
 _STD_END

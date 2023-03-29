@@ -16,9 +16,7 @@
 using namespace std;
 
 template <class Rng, class Delimiter>
-concept CanViewSplit = requires(Rng&& r, Delimiter&& d) {
-    views::split(forward<Rng>(r), forward<Delimiter>(d));
-};
+concept CanViewSplit = requires(Rng&& r, Delimiter&& d) { views::split(forward<Rng>(r), forward<Delimiter>(d)); };
 
 constexpr auto equal_ranges    = [](auto&& left, auto&& right) { return ranges::equal(left, right); };
 constexpr auto text            = "This is a test, this is only a test."sv;
@@ -71,8 +69,8 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
     }
 
     // ... with const lvalue argument
-    STATIC_ASSERT(CanViewSplit<const remove_reference_t<Base>&,
-                      Delimiter&> == (!is_view || copy_constructible<remove_cvref_t<Base>>) );
+    STATIC_ASSERT(CanViewSplit<const remove_reference_t<Base>&, Delimiter&>
+                  == (!is_view || copy_constructible<remove_cvref_t<Base>>) );
     if constexpr (is_view && copy_constructible<remove_cvref_t<Base>>) {
         constexpr bool is_noexcept =
             is_nothrow_copy_constructible_v<remove_cvref_t<Base>> && is_nothrow_copy_constructible_v<DV>;
@@ -117,8 +115,8 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
     }
 
     // ... with const rvalue argument
-    STATIC_ASSERT(CanViewSplit<const remove_reference_t<Base>,
-                      Delimiter&> == (is_view && copy_constructible<remove_cvref_t<Base>>) );
+    STATIC_ASSERT(CanViewSplit<const remove_reference_t<Base>, Delimiter&>
+                  == (is_view && copy_constructible<remove_cvref_t<Base>>) );
     if constexpr (is_view && copy_constructible<remove_cvref_t<Base>>) {
         constexpr bool is_noexcept =
             is_nothrow_copy_constructible_v<remove_cvref_t<Base>> && is_nothrow_copy_constructible_v<DV>;
@@ -212,8 +210,8 @@ struct instantiator {
         "This"sv, "is"sv, "a"sv, "test,"sv, "this"sv, "is"sv, "only"sv, "a"sv, "test."sv};
     static constexpr string_view expected_range[]    = {"Th"sv, " "sv, " a test, th"sv, " "sv, " only a test."sv};
     static constexpr string_view expected_empty[]    = {"T"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, "a"sv,
-        " "sv, "t"sv, "e"sv, "s"sv, "t"sv, ","sv, " "sv, "t"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, "o"sv,
-        "n"sv, "l"sv, "y"sv, " "sv, "a"sv, " "sv, "t"sv, "e"sv, "s"sv, "t"sv, "."sv};
+           " "sv, "t"sv, "e"sv, "s"sv, "t"sv, ","sv, " "sv, "t"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, //
+           "o"sv, "n"sv, "l"sv, "y"sv, " "sv, "a"sv, " "sv, "t"sv, "e"sv, "s"sv, "t"sv, "."sv};
     static constexpr string_view expected_trailing[] = {"test"sv, ""sv};
     static constexpr string_view expected_lwg3505[]  = {"x"sv, "x"sv, "x"sv};
 
@@ -331,8 +329,8 @@ constexpr bool test_devcom_1559808() {
 constexpr bool test_LWG_3590() {
     // LWG-3590: "split_view::base() const & is overconstrained"
     struct weird_view : ranges::view_interface<weird_view> {
-        weird_view()                  = default;
-        weird_view(const weird_view&) = default;
+        weird_view()                        = default;
+        weird_view(const weird_view&)       = default;
         weird_view& operator=(weird_view&&) = default;
 
         constexpr const int* begin() const {

@@ -7,8 +7,6 @@
 using namespace std;
 using namespace std::chrono;
 
-int main() {} // COMPILE-ONLY
-
 static_assert(noexcept(year{} / month{}));
 static_assert(noexcept(year{} / 0));
 static_assert(noexcept(month{} / day{}));

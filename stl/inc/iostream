@@ -36,23 +36,23 @@ __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcout;
 __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcerr;
 __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wclog;
 #else // _M_CEE_PURE
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT istream cin;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream cout;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream cerr;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream clog;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT istream* _Ptr_cin;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream* _Ptr_cout;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream* _Ptr_cerr;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream* _Ptr_clog;
+_EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT istream cin;
+_EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT ostream cout;
+_EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT ostream cerr;
+_EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT ostream clog;
+extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT istream* _Ptr_cin;
+extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT ostream* _Ptr_cout;
+extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT ostream* _Ptr_cerr;
+extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT ostream* _Ptr_clog;
 
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wistream wcin;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream wcout;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream wcerr;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream wclog;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wistream* _Ptr_wcin;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wcout;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wcerr;
-__PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wclog;
+_EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT wistream wcin;
+_EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT wostream wcout;
+_EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT wostream wcerr;
+_EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT wostream wclog;
+extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT wistream* _Ptr_wcin;
+extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT wostream* _Ptr_wcout;
+extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT wostream* _Ptr_wcerr;
+extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT wostream* _Ptr_wclog;
 
 #ifdef _CRTBLD // TRANSITION, ABI: _Winit appears to be unused
 class _CRTIMP2_PURE_IMPORT _Winit {

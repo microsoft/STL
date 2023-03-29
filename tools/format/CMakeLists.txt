@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.25.2)
 project(msvc_standard_libraries_format NONE)
 
 set(did_search OFF)
@@ -37,6 +37,7 @@ if(CLANG_FORMAT)
         "../../benchmarks/inc/*"
         "../../benchmarks/src/*"
         "../../stl/inc/*"
+        "../../stl/modules/*"
         "../../stl/src/*"
         "../../tests/*"
         "../../tools/*"
@@ -47,7 +48,7 @@ if(CLANG_FORMAT)
         cmake_path(GET maybe_file FILENAME filename)
         cmake_path(GET maybe_file EXTENSION LAST_ONLY extension)
 
-        if(extension MATCHES [[^(|\.cpp|\.h|\.hpp)$]] AND NOT filename MATCHES [[^\.]])
+        if(extension MATCHES [[^(|\.cpp|\.h|\.hpp|\.ixx)$]] AND NOT filename MATCHES [[^\.]])
             list(APPEND clang_format_files "${maybe_file}")
         endif()
     endforeach()

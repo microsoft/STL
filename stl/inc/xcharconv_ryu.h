@@ -47,12 +47,12 @@
 
 #if defined(_M_X64) && !defined(_M_ARM64EC)
 #define _HAS_CHARCONV_INTRINSICS 1
-#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_CHARCONV_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
 #if _HAS_CHARCONV_INTRINSICS
-#include <intrin0.h> // for _umul128() and __shiftright128()
+#include _STL_INTRIN_HEADER // for _umul128() and __shiftright128()
 #endif // ^^^ intrinsics available ^^^
 
 #if !_HAS_CXX17
@@ -161,7 +161,7 @@ _NODISCARD inline uint64_t __ryu_shiftright128(const uint64_t __lo, const uint64
   return __shiftright128(__lo, __hi, static_cast<unsigned char>(__dist));
 }
 
-#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ intrinsics available / intrinsics unavailable vvv
 
 _NODISCARD __forceinline uint64_t __ryu_umul128(const uint64_t __a, const uint64_t __b, uint64_t* const __productHi) {
   // TRANSITION, VSO-634761
@@ -200,7 +200,7 @@ _NODISCARD inline uint64_t __ryu_shiftright128(const uint64_t __lo, const uint64
 #ifdef _WIN64
   _STL_INTERNAL_CHECK(__dist > 0);
   return (__hi << (64 - __dist)) | (__lo >> __dist);
-#else // ^^^ 64-bit ^^^ / vvv 32-bit vvv
+#else // ^^^ 64-bit / 32-bit vvv
   // Avoid a 64-bit shift by taking advantage of the range of shift values.
   _STL_INTERNAL_CHECK(__dist >= 32);
   return (__hi << (64 - __dist)) | (static_cast<uint32_t>(__lo >> 32) >> (__dist - 32));
@@ -266,7 +266,7 @@ _NODISCARD inline uint32_t __mod1e9(const uint64_t __x) {
   return static_cast<uint32_t>(__x) - 1000000000 * static_cast<uint32_t>(__div1e9(__x));
 }
 
-#else // ^^^ 32-bit ^^^ / vvv 64-bit vvv
+#else // ^^^ 32-bit / 64-bit vvv
 
 _NODISCARD inline uint64_t __div5(const uint64_t __x) {
   return __x / 5;
@@ -383,7 +383,7 @@ _NODISCARD inline uint32_t __mulShift_mod1e9(const uint64_t __m, const uint64_t*
   const uint64_t __shiftedhigh = __s1high >> __dist;
   const uint64_t __shiftedlow = __ryu_shiftright128(__s1low, __s1high, __dist);
   return __uint128_mod1e9(__shiftedhigh, __shiftedlow);
-#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ intrinsics available / intrinsics unavailable vvv
   if (__j < 160) { // __j: [128, 160)
     const uint64_t __r0 = __mod1e9(__s1high);
     const uint64_t __r1 = __mod1e9((__r0 << 32) | (__s1low >> 32));
@@ -904,7 +904,7 @@ _NODISCARD inline to_chars_result __d2exp_buffered_n(char* _First, char* const _
         __roundUp = 1;
       } else {
         if (__roundUp == 1 || __c % 2 != 0) {
-          _Round[0] = __c + 1;
+          _Round[0] = static_cast<char>(__c + 1);
         }
         break;
       }
@@ -1027,7 +1027,7 @@ _NODISCARD inline uint32_t __mulShift(const uint32_t __m, const uint64_t __facto
   __bits1Hi += (__bits1Lo < __bits0Hi);
   const int32_t __s = __shift - 32;
   return (__bits1Hi << (32 - __s)) | (__bits1Lo >> __s);
-#else // ^^^ 32-bit ^^^ / vvv 64-bit vvv
+#else // ^^^ 32-bit / 64-bit vvv
   const uint64_t __sum = (__bits0 >> 32) + __bits1;
   const uint64_t __shiftedSum = __sum >> (__shift - 32);
   _STL_INTERNAL_CHECK(__shiftedSum <= UINT32_MAX);
@@ -1318,7 +1318,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
   chars_format _Fmt, const uint32_t __ieeeMantissa, const uint32_t __ieeeExponent) {
   // Step 5: Print the decimal representation.
   uint32_t _Output = __v.__mantissa;
-  int32_t _Ryu_exponent = __v.__exponent;
+  const int32_t _Ryu_exponent = __v.__exponent;
   const uint32_t __olength = __decimalLength9(_Output);
   int32_t _Scientific_exponent = _Ryu_exponent + static_cast<int32_t>(__olength) - 1;
 
@@ -1681,7 +1681,7 @@ _NODISCARD inline uint64_t __mulShiftAll(const uint64_t __m, const uint64_t* con
   return __mulShift(4 * __m, __mul, __j);
 }
 
-#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ intrinsics available / intrinsics unavailable vvv
 
 _NODISCARD __forceinline uint64_t __mulShiftAll(uint64_t __m, const uint64_t* const __mul, const int32_t __j,
   uint64_t* const __vp, uint64_t* const __vm, const uint32_t __mmShift) { // TRANSITION, VSO-634761
@@ -1926,7 +1926,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
   chars_format _Fmt, const double __f) {
   // Step 5: Print the decimal representation.
   uint64_t _Output = __v.__mantissa;
-  int32_t _Ryu_exponent = __v.__exponent;
+  const int32_t _Ryu_exponent = __v.__exponent;
   const uint32_t __olength = __decimalLength17(_Output);
   int32_t _Scientific_exponent = _Ryu_exponent + static_cast<int32_t>(__olength) - 1;
 
@@ -2050,7 +2050,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
         unsigned long _Trailing_zero_bits;
 #ifdef _WIN64
         (void) _BitScanForward64(&_Trailing_zero_bits, __v.__mantissa); // __v.__mantissa is guaranteed nonzero
-#else // ^^^ 64-bit ^^^ / vvv 32-bit vvv
+#else // ^^^ 64-bit / 32-bit vvv
         const uint32_t _Low_mantissa = static_cast<uint32_t>(__v.__mantissa);
         if (_Low_mantissa != 0) {
           (void) _BitScanForward(&_Trailing_zero_bits, _Low_mantissa);

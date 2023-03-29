@@ -22,7 +22,7 @@ namespace {
             _Is_whitespace['\0'] = true;
         }
 
-        _NODISCARD constexpr bool _Test(const char _Ch) const noexcept {
+        [[nodiscard]] constexpr bool _Test(const char _Ch) const noexcept {
             return _Is_whitespace[static_cast<unsigned char>(_Ch)];
         }
     };
@@ -31,7 +31,7 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-_NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
+[[nodiscard]] size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
     const char* const _Str, size_t _Size) noexcept {
     while (_Size != 0 && _Whitespace_bitmap._Test(_Str[_Size - 1])) {
         --_Size;
@@ -40,7 +40,7 @@ _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_traili
     return _Size;
 }
 
-_NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
+[[nodiscard]] size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
     const unsigned long _Message_id, char** const _Ptr_str) noexcept {
     // convert to name of Windows error, return 0 for failure, otherwise return number of chars in buffer
     // __std_system_error_deallocate_message should be called even if 0 is returned

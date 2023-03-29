@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <iomanip>
 #include <ios>
 #include <locale>
 #include <sstream>
 #include <streambuf>
 #include <string>
-#include <time.h>
 #include <tuple>
 
 using namespace std;
@@ -109,6 +109,7 @@ void test_locale_chinese();
 void test_invalid_argument();
 void test_buffer_resizing();
 void test_gh_2618();
+void test_gh_2848();
 
 int main() {
     assert(read_hour("12 AM") == 0);
@@ -155,6 +156,7 @@ int main() {
     test_invalid_argument();
     test_buffer_resizing();
     test_gh_2618();
+    test_gh_2848();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -872,4 +874,34 @@ void test_gh_2618() {
 
     // 1-digit strings: same as 2-digit
     TestTimeGetYear("1", 2001, 1, 2001);
+}
+
+void test_gh_2848() {
+    // GH-2848 <xloctime>: time_get::get can still assert 'istreambuf_iterator is not dereferenceable' when
+    // the format is longer than the stream
+    {
+        const locale loc{locale::classic()};
+        const auto& tmget{use_facet<time_get<char>>(loc)};
+        ios_base::iostate err{ios_base::goodbit};
+        tm when{};
+        const string fmt{"%X"};
+        istringstream iss{"3:04"};
+        istreambuf_iterator<char> first{iss};
+        const istreambuf_iterator<char> last{};
+        tmget.get(first, last, iss, err, &when, fmt.data(), fmt.data() + fmt.size());
+        assert(err == (ios_base::eofbit | ios_base::failbit));
+    }
+
+    {
+        const locale loc{locale::classic()};
+        const auto& tmget{use_facet<time_get<wchar_t>>(loc)};
+        ios_base::iostate err{ios_base::goodbit};
+        tm when{};
+        const wstring fmt{L"%X"};
+        wistringstream iss{L"3:04"};
+        istreambuf_iterator<wchar_t> first{iss};
+        const istreambuf_iterator<wchar_t> last{};
+        tmget.get(first, last, iss, err, &when, fmt.data(), fmt.data() + fmt.size());
+        assert(err == (ios_base::eofbit | ios_base::failbit));
+    }
 }

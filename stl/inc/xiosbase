@@ -29,50 +29,53 @@ public:
         _Fmtzero = 0
     };
 
-    static constexpr _Fmtflags skipws     = static_cast<_Fmtflags>(0x0001);
-    static constexpr _Fmtflags unitbuf    = static_cast<_Fmtflags>(0x0002);
-    static constexpr _Fmtflags uppercase  = static_cast<_Fmtflags>(0x0004);
-    static constexpr _Fmtflags showbase   = static_cast<_Fmtflags>(0x0008);
-    static constexpr _Fmtflags showpoint  = static_cast<_Fmtflags>(0x0010);
-    static constexpr _Fmtflags showpos    = static_cast<_Fmtflags>(0x0020);
-    static constexpr _Fmtflags left       = static_cast<_Fmtflags>(0x0040);
-    static constexpr _Fmtflags right      = static_cast<_Fmtflags>(0x0080);
-    static constexpr _Fmtflags internal   = static_cast<_Fmtflags>(0x0100);
-    static constexpr _Fmtflags dec        = static_cast<_Fmtflags>(0x0200);
-    static constexpr _Fmtflags oct        = static_cast<_Fmtflags>(0x0400);
-    static constexpr _Fmtflags hex        = static_cast<_Fmtflags>(0x0800);
-    static constexpr _Fmtflags scientific = static_cast<_Fmtflags>(0x1000);
-    static constexpr _Fmtflags fixed      = static_cast<_Fmtflags>(0x2000);
+    static constexpr int skipws     = 0x0001;
+    static constexpr int unitbuf    = 0x0002;
+    static constexpr int uppercase  = 0x0004;
+    static constexpr int showbase   = 0x0008;
+    static constexpr int showpoint  = 0x0010;
+    static constexpr int showpos    = 0x0020;
+    static constexpr int left       = 0x0040;
+    static constexpr int right      = 0x0080;
+    static constexpr int internal   = 0x0100;
+    static constexpr int dec        = 0x0200;
+    static constexpr int oct        = 0x0400;
+    static constexpr int hex        = 0x0800;
+    static constexpr int scientific = 0x1000;
+    static constexpr int fixed      = 0x2000;
 
-    static constexpr _Fmtflags hexfloat = static_cast<_Fmtflags>(0x3000); // added with TR1 (not in C++11)
+    static constexpr int hexfloat = 0x3000; // TRANSITION, ABI, GH-3296
 
-    static constexpr _Fmtflags boolalpha   = static_cast<_Fmtflags>(0x4000);
-    static constexpr _Fmtflags _Stdio      = static_cast<_Fmtflags>(0x8000);
-    static constexpr _Fmtflags adjustfield = static_cast<_Fmtflags>(0x01C0); // left | right | internal
-    static constexpr _Fmtflags basefield   = static_cast<_Fmtflags>(0x0E00); // dec | oct | hex
-    static constexpr _Fmtflags floatfield  = static_cast<_Fmtflags>(0x3000); // scientific | fixed
+    static constexpr int boolalpha   = 0x4000;
+    static constexpr int _Stdio      = 0x8000;
+    static constexpr int adjustfield = 0x01C0; // left | right | internal
+    static constexpr int basefield   = 0x0E00; // dec | oct | hex
+    static constexpr int floatfield  = 0x3000; // scientific | fixed
 
     enum _Iostate { // constants for stream states
         _Statmask = 0x17
     };
 
-    static constexpr _Iostate goodbit = static_cast<_Iostate>(0x0);
-    static constexpr _Iostate eofbit  = static_cast<_Iostate>(0x1);
-    static constexpr _Iostate failbit = static_cast<_Iostate>(0x2);
-    static constexpr _Iostate badbit  = static_cast<_Iostate>(0x4);
+    static constexpr int goodbit = 0x0;
+    static constexpr int eofbit  = 0x1;
+    static constexpr int failbit = 0x2;
+    static constexpr int badbit  = 0x4;
 
     enum _Openmode { // constants for file opening options
         _Openmask = 0xff
     };
 
-    static constexpr _Openmode in         = static_cast<_Openmode>(0x01);
-    static constexpr _Openmode out        = static_cast<_Openmode>(0x02);
-    static constexpr _Openmode ate        = static_cast<_Openmode>(0x04);
-    static constexpr _Openmode app        = static_cast<_Openmode>(0x08);
-    static constexpr _Openmode trunc      = static_cast<_Openmode>(0x10);
-    static constexpr _Openmode _Nocreate  = static_cast<_Openmode>(0x40);
-    static constexpr _Openmode _Noreplace = static_cast<_Openmode>(0x80);
-    static constexpr _Openmode binary     = static_cast<_Openmode>(0x20);
+    static constexpr int in         = 0x01;
+    static constexpr int out        = 0x02;
+    static constexpr int ate        = 0x04;
+    static constexpr int app        = 0x08;
+    static constexpr int trunc      = 0x10;
+    static constexpr int _Nocreate  = 0x40;
+    static constexpr int _Noreplace = 0x80;
+    static constexpr int binary     = 0x20;
+#if _HAS_CXX23
+    static constexpr int noreplace = _Noreplace;
+#endif
 
     enum _Seekdir { // constants for file positioning options
         _Seekbeg,
@@ -80,9 +83,9 @@ public:
         _Seekend
     };
 
-    static constexpr _Seekdir beg = _Seekbeg;
-    static constexpr _Seekdir cur = _Seekcur;
-    static constexpr _Seekdir end = _Seekend;
+    static constexpr int beg = _Seekbeg;
+    static constexpr int cur = _Seekcur;
+    static constexpr int end = _Seekend;
 
     enum { // TRANSITION, ABI
         _Openprot = _SH_DENYNO
@@ -91,83 +94,7 @@ public:
     static constexpr int _Default_open_prot = _SH_DENYNO; // constant for default file opening protection
 };
 
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::skipws;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::unitbuf;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::uppercase;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::showbase;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::showpoint;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::showpos;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::left;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::right;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::internal;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::dec;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::oct;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::hex;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::scientific;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::fixed;
-
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::hexfloat; // added with TR1 (not in C++11)
-
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::boolalpha;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::_Stdio;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::adjustfield;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::basefield;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Fmtflags _Iosb<_Dummy>::floatfield;
-
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Iostate _Iosb<_Dummy>::goodbit;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Iostate _Iosb<_Dummy>::eofbit;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Iostate _Iosb<_Dummy>::failbit;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Iostate _Iosb<_Dummy>::badbit;
-
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Openmode _Iosb<_Dummy>::in;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Openmode _Iosb<_Dummy>::out;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Openmode _Iosb<_Dummy>::ate;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Openmode _Iosb<_Dummy>::app;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Openmode _Iosb<_Dummy>::trunc;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Openmode _Iosb<_Dummy>::_Nocreate;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Openmode _Iosb<_Dummy>::_Noreplace;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Openmode _Iosb<_Dummy>::binary;
-
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Seekdir _Iosb<_Dummy>::beg;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Seekdir _Iosb<_Dummy>::cur;
-template <class _Dummy>
-const typename _Iosb<_Dummy>::_Seekdir _Iosb<_Dummy>::end;
-
-class _CRTIMP2_PURE_IMPORT ios_base : public _Iosb<int> { // base class for ios
+_EXPORT_STD extern "C++" class _CRTIMP2_PURE_IMPORT ios_base : public _Iosb<int> { // base class for ios
 public:
     using fmtflags = int;
     using iostate  = int;
@@ -195,10 +122,10 @@ public:
 
     class failure : public system_error { // base of all iostreams exceptions
     public:
-        explicit failure(const string& _Message, const error_code& _Errcode = make_error_code(io_errc::stream))
+        explicit failure(const string& _Message, const error_code& _Errcode = _STD make_error_code(io_errc::stream))
             : system_error(_Errcode, _Message) {} // construct with message
 
-        explicit failure(const char* _Message, const error_code& _Errcode = make_error_code(io_errc::stream))
+        explicit failure(const char* _Message, const error_code& _Errcode = _STD make_error_code(io_errc::stream))
             : system_error(_Errcode, _Message) {} // construct with message
 
 #if !_HAS_EXCEPTIONS
@@ -228,11 +155,11 @@ public:
         static int& __cdecl _Init_cnt_func();
     };
 
-    explicit __CLR_OR_THIS_CALL operator bool() const {
+    explicit __CLR_OR_THIS_CALL operator bool() const noexcept /* strengthened */ {
         return !fail();
     }
 
-    _NODISCARD bool __CLR_OR_THIS_CALL operator!() const {
+    _NODISCARD bool __CLR_OR_THIS_CALL operator!() const noexcept /* strengthened */ {
         return fail();
     }
 
@@ -268,7 +195,7 @@ public:
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 
-    _NODISCARD iostate __CLR_OR_THIS_CALL rdstate() const {
+    _NODISCARD iostate __CLR_OR_THIS_CALL rdstate() const noexcept /* strengthened */ {
         return _Mystate;
     }
 
@@ -287,23 +214,23 @@ public:
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 
-    _NODISCARD bool __CLR_OR_THIS_CALL good() const {
+    _NODISCARD bool __CLR_OR_THIS_CALL good() const noexcept /* strengthened */ {
         return rdstate() == ios_base::goodbit;
     }
 
-    _NODISCARD bool __CLR_OR_THIS_CALL eof() const {
+    _NODISCARD bool __CLR_OR_THIS_CALL eof() const noexcept /* strengthened */ {
         return rdstate() & ios_base::eofbit;
     }
 
-    _NODISCARD bool __CLR_OR_THIS_CALL fail() const {
+    _NODISCARD bool __CLR_OR_THIS_CALL fail() const noexcept /* strengthened */ {
         return rdstate() & (ios_base::badbit | ios_base::failbit);
     }
 
-    _NODISCARD bool __CLR_OR_THIS_CALL bad() const {
+    _NODISCARD bool __CLR_OR_THIS_CALL bad() const noexcept /* strengthened */ {
         return rdstate() & ios_base::badbit;
     }
 
-    _NODISCARD iostate __CLR_OR_THIS_CALL exceptions() const {
+    _NODISCARD iostate __CLR_OR_THIS_CALL exceptions() const noexcept /* strengthened */ {
         return _Except;
     }
 
@@ -318,54 +245,59 @@ public:
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 
-    _NODISCARD fmtflags __CLR_OR_THIS_CALL flags() const {
+    _NODISCARD fmtflags __CLR_OR_THIS_CALL flags() const noexcept /* strengthened */ {
         return _Fmtfl;
     }
 
-    fmtflags __CLR_OR_THIS_CALL flags(fmtflags _Newfmtflags) { // set format flags to argument
+    fmtflags __CLR_OR_THIS_CALL flags(fmtflags _Newfmtflags) noexcept /* strengthened */ {
+        // set format flags to argument
         const fmtflags _Oldfmtflags = _Fmtfl;
         _Fmtfl                      = _Newfmtflags & _Fmtmask;
         return _Oldfmtflags;
     }
 
-    fmtflags __CLR_OR_THIS_CALL setf(fmtflags _Newfmtflags) { // merge in format flags argument
+    fmtflags __CLR_OR_THIS_CALL setf(fmtflags _Newfmtflags) noexcept /* strengthened */ {
+        // merge in format flags argument
         const ios_base::fmtflags _Oldfmtflags = _Fmtfl;
         _Fmtfl |= _Newfmtflags & _Fmtmask;
         return _Oldfmtflags;
     }
 
-    fmtflags __CLR_OR_THIS_CALL setf(
-        fmtflags _Newfmtflags, fmtflags _Mask) { // merge in format flags argument under mask argument
+    fmtflags __CLR_OR_THIS_CALL setf(fmtflags _Newfmtflags, fmtflags _Mask) noexcept /* strengthened */ {
+        // merge in format flags argument under mask argument
         const ios_base::fmtflags _Oldfmtflags = _Fmtfl;
         _Fmtfl                                = (_Oldfmtflags & ~_Mask) | (_Newfmtflags & _Mask & _Fmtmask);
         return _Oldfmtflags;
     }
 
-    void __CLR_OR_THIS_CALL unsetf(fmtflags _Mask) { // clear format flags under mask argument
+    void __CLR_OR_THIS_CALL unsetf(fmtflags _Mask) noexcept /* strengthened */ {
+        // clear format flags under mask argument
         _Fmtfl &= ~_Mask;
     }
 
-    _NODISCARD streamsize __CLR_OR_THIS_CALL precision() const {
+    _NODISCARD streamsize __CLR_OR_THIS_CALL precision() const noexcept /* strengthened */ {
         return _Prec;
     }
 
-    streamsize __CLR_OR_THIS_CALL precision(streamsize _Newprecision) { // set precision to argument
+    streamsize __CLR_OR_THIS_CALL precision(streamsize _Newprecision) noexcept /* strengthened */ {
+        // set precision to argument
         const streamsize _Oldprecision = _Prec;
         _Prec                          = _Newprecision;
         return _Oldprecision;
     }
 
-    _NODISCARD streamsize __CLR_OR_THIS_CALL width() const {
+    _NODISCARD streamsize __CLR_OR_THIS_CALL width() const noexcept /* strengthened */ {
         return _Wide;
     }
 
-    streamsize __CLR_OR_THIS_CALL width(streamsize _Newwidth) { // set width to argument
+    streamsize __CLR_OR_THIS_CALL width(streamsize _Newwidth) noexcept /* strengthened */ {
+        // set width to argument
         const streamsize _Oldwidth = _Wide;
         _Wide                      = _Newwidth;
         return _Oldwidth;
     }
 
-    _NODISCARD locale __CLR_OR_THIS_CALL getloc() const { // get locale
+    _NODISCARD locale __CLR_OR_THIS_CALL getloc() const noexcept /* strengthened */ { // get locale
         return *_Ploc;
     }
 
@@ -390,8 +322,8 @@ public:
         return _Findarr(_Idx)._Vp;
     }
 
-    void __CLR_OR_THIS_CALL register_callback(event_callback _Pfn,
-        int _Idx) { // register event handler
+    void __CLR_OR_THIS_CALL register_callback(event_callback _Pfn, int _Idx) {
+        // register event handler
         _Calls = new _Fnarray(_Idx, _Pfn, _Calls);
     }
 
@@ -421,8 +353,8 @@ public:
         return *this;
     }
 
-    static bool __CLRCALL_OR_CDECL sync_with_stdio(
-        bool _Newsync = true) { // set C/C++ synchronization flag from argument
+    static bool __CLRCALL_OR_CDECL sync_with_stdio(bool _Newsync = true) {
+        // set C/C++ synchronization flag from argument
         _BEGIN_LOCK(_LOCK_STREAM) // lock thread to ensure atomicity
         const bool _Oldsync = _Sync;
         _Sync               = _Newsync;
@@ -430,7 +362,7 @@ public:
         _END_LOCK()
     }
 
-    void __CLR_OR_THIS_CALL swap(ios_base& _Right) {
+    void __CLR_OR_THIS_CALL swap(ios_base& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _STD swap(_Mystate, _Right._Mystate);
             _STD swap(_Except, _Right._Except);
@@ -551,7 +483,7 @@ private:
     static void __CLRCALL_PURE_OR_CDECL _Ios_base_dtor(ios_base*);
 
 public:
-    ios_base(const ios_base&) = delete;
+    ios_base(const ios_base&)            = delete;
     ios_base& operator=(const ios_base&) = delete;
 };
 _STD_END

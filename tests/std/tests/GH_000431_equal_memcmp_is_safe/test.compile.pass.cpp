@@ -441,7 +441,7 @@ STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, volatile void*, void*, eq
 constexpr bool enable_derived_to_base =
 #ifdef __cpp_lib_is_pointer_interconvertible
     true
-#else // ^^^ __cpp_lib_is_pointer_interconvertible ^^^ / vvv !__cpp_lib_is_pointer_interconvertible vvv
+#else // ^^^ __cpp_lib_is_pointer_interconvertible / !__cpp_lib_is_pointer_interconvertible vvv
     false
 #endif // ^^^ !__cpp_lib_is_pointer_interconvertible ^^^
     ;
@@ -520,5 +520,3 @@ STATIC_ASSERT(assert_equal_memcmp_is_safe<true, counted_iterator<int*>, int*>())
 STATIC_ASSERT(assert_equal_memcmp_is_safe<true, int*, counted_iterator<int*>>());
 STATIC_ASSERT(assert_equal_memcmp_is_safe<true, counted_iterator<int*>, counted_iterator<int*>>());
 #endif // __cpp_lib_concepts
-
-int main() {} // COMPILE-ONLY

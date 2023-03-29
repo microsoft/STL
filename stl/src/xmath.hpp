@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef _XMATH
-#define _XMATH
+#pragma once
+
 #include <cerrno>
 #include <cmath>
 #include <limits>
@@ -189,14 +189,14 @@ _END_EXTERN_C_UNLESS_PURE
 #endif
 
 template <typename T>
-_NODISCARD T _Xfe_overflow(const T sign) noexcept {
+[[nodiscard]] T _Xfe_overflow(const T sign) noexcept {
     static_assert(_STD is_floating_point_v<T>, "Expected is_floating_point_v<T>.");
     constexpr T huge = _STD numeric_limits<T>::max();
     return _STD copysign(huge, sign) * huge;
 }
 
 template <typename T>
-_NODISCARD T _Xfe_underflow(const T sign) noexcept {
+[[nodiscard]] T _Xfe_underflow(const T sign) noexcept {
     static_assert(_STD is_floating_point_v<T>, "Expected is_floating_point_v<T>.");
     constexpr T tiny = _STD numeric_limits<T>::min();
     return _STD copysign(tiny, sign) * tiny;
@@ -205,5 +205,3 @@ _NODISCARD T _Xfe_underflow(const T sign) noexcept {
 #ifndef _M_CEE_PURE
 #pragma float_control(pop)
 #endif
-
-#endif // _XMATH

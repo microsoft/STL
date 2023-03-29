@@ -3,8 +3,8 @@
 
 #define _SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING
 
+#include <cstdlib>
 #include <memory>
-#include <stdlib.h>
 
 #ifndef _M_CEE_PURE
 #include <atomic>
@@ -21,7 +21,7 @@ struct Noisy {
         (void) atomic_load(&g_sp);
     }
 
-    Noisy(const Noisy&) = delete;
+    Noisy(const Noisy&)            = delete;
     Noisy& operator=(const Noisy&) = delete;
 };
 

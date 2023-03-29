@@ -26,10 +26,10 @@ namespace std_testing {
         using my_iter           = const_unchecked_input_iterator;
 
         explicit const_unchecked_input_iterator(const T* val) : m_val(const_cast<T*>(val)) {}
-        const_unchecked_input_iterator(const const_unchecked_input_iterator&) = default;
-        const_unchecked_input_iterator(const_unchecked_input_iterator&&)      = default;
+        const_unchecked_input_iterator(const const_unchecked_input_iterator&)            = default;
+        const_unchecked_input_iterator(const_unchecked_input_iterator&&)                 = default;
         const_unchecked_input_iterator& operator=(const const_unchecked_input_iterator&) = default;
-        const_unchecked_input_iterator& operator=(const_unchecked_input_iterator&&) = default;
+        const_unchecked_input_iterator& operator=(const_unchecked_input_iterator&&)      = default;
 
         reference operator*() const {
             return *m_val;
@@ -70,10 +70,10 @@ namespace std_testing {
         using my_iter           = unchecked_input_iterator;
 
         explicit unchecked_input_iterator(T* val) : const_unchecked_input_iterator<T>(val) {}
-        unchecked_input_iterator(const unchecked_input_iterator&) = default;
-        unchecked_input_iterator(unchecked_input_iterator&&)      = default;
+        unchecked_input_iterator(const unchecked_input_iterator&)            = default;
+        unchecked_input_iterator(unchecked_input_iterator&&)                 = default;
         unchecked_input_iterator& operator=(const unchecked_input_iterator&) = default;
-        unchecked_input_iterator& operator=(unchecked_input_iterator&&) = default;
+        unchecked_input_iterator& operator=(unchecked_input_iterator&&)      = default;
 
         reference operator*() const {
             return *this->m_val;
@@ -101,10 +101,10 @@ namespace std_testing {
         using my_iter           = const_checked_input_iterator;
 
         explicit const_checked_input_iterator(const T* val) : const_unchecked_input_iterator<T>(val) {}
-        const_checked_input_iterator(const const_checked_input_iterator&) = default;
-        const_checked_input_iterator(const_checked_input_iterator&&)      = default;
+        const_checked_input_iterator(const const_checked_input_iterator&)            = default;
+        const_checked_input_iterator(const_checked_input_iterator&&)                 = default;
         const_checked_input_iterator& operator=(const const_checked_input_iterator&) = default;
-        const_checked_input_iterator& operator=(const_checked_input_iterator&&) = default;
+        const_checked_input_iterator& operator=(const_checked_input_iterator&&)      = default;
 
         void _Seek_to(const_unchecked_input_iterator<T> right) {
             this->m_val = right.m_val;
@@ -134,10 +134,10 @@ namespace std_testing {
         using my_iter           = checked_input_iterator;
 
         explicit checked_input_iterator(T* val) : unchecked_input_iterator<T>(val) {}
-        checked_input_iterator(const checked_input_iterator&) = default;
-        checked_input_iterator(checked_input_iterator&&)      = default;
+        checked_input_iterator(const checked_input_iterator&)            = default;
+        checked_input_iterator(checked_input_iterator&&)                 = default;
         checked_input_iterator& operator=(const checked_input_iterator&) = default;
-        checked_input_iterator& operator=(checked_input_iterator&&) = default;
+        checked_input_iterator& operator=(checked_input_iterator&&)      = default;
 
         void _Seek_to(unchecked_input_iterator<T> right) {
             this->m_val = right.m_val;
@@ -174,10 +174,10 @@ namespace std_testing {
         input_iterator_container(std::initializer_list<T> init_list)
             : input_iterator_container(init_list.begin(), init_list.end()) {}
 
-        input_iterator_container(const input_iterator_container&) = default;
-        input_iterator_container(input_iterator_container&&)      = default;
+        input_iterator_container(const input_iterator_container&)            = default;
+        input_iterator_container(input_iterator_container&&)                 = default;
         input_iterator_container& operator=(const input_iterator_container&) = default;
-        input_iterator_container& operator=(input_iterator_container&&) = default;
+        input_iterator_container& operator=(input_iterator_container&&)      = default;
 
         const_iterator begin() const {
             return const_iterator{reinterpret_cast<const T*>(m_val.data())};

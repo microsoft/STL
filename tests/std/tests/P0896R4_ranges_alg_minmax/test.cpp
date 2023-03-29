@@ -9,10 +9,12 @@
 #include <cassert>
 #include <concepts>
 #include <functional>
+#include <memory>
 #include <ranges>
 #include <span>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
@@ -347,11 +349,11 @@ void test_gh_1893() {
     string high          = "n";
     int projection_count = 0;
     const auto clamped   = ranges::clamp(
-          ref(val), ref(low), ref(high), [](auto x, auto y) { return x < y; },
-          [&projection_count](const auto& x) -> decltype(auto) {
+        ref(val), ref(low), ref(high), [](auto x, auto y) { return x < y; },
+        [&projection_count](const auto& x) -> decltype(auto) {
             ++projection_count;
             return x.get();
-          });
+        });
     (void) clamped;
 #ifdef _DEBUG
     ASSERT(projection_count == 5);
@@ -359,6 +361,64 @@ void test_gh_1893() {
     ASSERT(projection_count == 3);
 #endif
     ASSERT(val == "meow");
+}
+
+class input_move_iterator {
+public:
+    using iterator_category = input_iterator_tag;
+    using iterator_concept  = input_iterator_tag;
+    using difference_type   = ptrdiff_t;
+    using value_type        = shared_ptr<int>;
+    using pointer           = shared_ptr<int>*;
+    using reference         = shared_ptr<int>&&;
+
+    input_move_iterator() = default;
+    explicit input_move_iterator(shared_ptr<int>* ptr) : m_ptr(ptr) {}
+
+    reference operator*() const {
+        return ranges::iter_move(m_ptr);
+    }
+    pointer operator->() const {
+        return m_ptr;
+    }
+
+    input_move_iterator& operator++() {
+        ++m_ptr;
+        return *this;
+    }
+    input_move_iterator operator++(int) {
+        input_move_iterator tmp = *this;
+        ++*this;
+        return tmp;
+    }
+
+    friend bool operator==(const input_move_iterator&, const input_move_iterator&) = default;
+
+private:
+    shared_ptr<int>* m_ptr{nullptr};
+};
+
+void test_gh_2900() {
+    // GH-2900: <algorithm>: ranges::minmax initializes minmax_result with the moved value
+    {
+        // check that the random access iterator isn't moved from multiple times
+        const string str{"this long string will be dynamically allocated"};
+        vector<string> v{str};
+        ranges::subrange rng{move_iterator{v.begin()}, move_iterator{v.end()}};
+        auto result = ranges::minmax(rng);
+        assert(result.min == str);
+        assert(result.max == str);
+    }
+    {
+        // check that the input iterator isn't moved from multiple times
+        shared_ptr<int> a[] = {make_shared<int>(42)};
+        ranges::subrange rng{input_move_iterator{a}, input_move_iterator{a + 1}};
+        auto result = ranges::minmax(rng);
+        assert(a[0] == nullptr);
+        assert(result.min != nullptr);
+        assert(result.max == result.min);
+        assert(*result.max == 42);
+    }
 }
 
 int main() {
@@ -378,4 +438,5 @@ int main() {
     test_in<mm, const P>();
 
     test_gh_1893();
+    test_gh_2900();
 }

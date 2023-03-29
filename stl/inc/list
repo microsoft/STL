@@ -292,8 +292,8 @@ struct _List_node { // list node
     _Value_type _Myval = // the stored value, unused if head
         _Returns_exactly<_Value_type>(); // fake a viable constructor to workaround GH-2749
 
-    _List_node()                  = default;
-    _List_node(const _List_node&) = delete;
+    _List_node()                             = default;
+    _List_node(const _List_node&)            = delete;
     _List_node& operator=(const _List_node&) = delete;
 
     template <class _Alnode>
@@ -369,7 +369,7 @@ public:
                 *_Pnext             = *_Pnextnext;
             }
         }
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
         (void) _Ptr;
 #endif // _ITERATOR_DEBUG_LEVEL == 2
     }
@@ -592,7 +592,7 @@ struct _List_node_emplace_op2 : _Alloc_construct_ptr<_Alnode> {
         }
     }
 
-    _List_node_emplace_op2(const _List_node_emplace_op2&) = delete;
+    _List_node_emplace_op2(const _List_node_emplace_op2&)            = delete;
     _List_node_emplace_op2& operator=(const _List_node_emplace_op2&) = delete;
 
     pointer _Transfer_before(const pointer _Insert_before) noexcept {
@@ -617,7 +617,7 @@ struct _List_node_insert_op2 {
 
     explicit _List_node_insert_op2(_Alnode& _Al_) : _Al(_Al_), _Added(0) {}
 
-    _List_node_insert_op2(const _List_node_insert_op2&) = delete;
+    _List_node_insert_op2(const _List_node_insert_op2&)            = delete;
     _List_node_insert_op2& operator=(const _List_node_insert_op2&) = delete;
 
     template <class... _CArgT>
@@ -752,7 +752,7 @@ private:
 template <class _Traits>
 class _Hash;
 
-template <class _Ty, class _Alloc = allocator<_Ty>>
+_EXPORT_STD template <class _Ty, class _Alloc = allocator<_Ty>>
 class list { // bidirectional linked list
 private:
     template <class>
@@ -850,12 +850,12 @@ public:
     }
 
 private:
-    template <class _Iter>
-    void _Construct_range_unchecked(_Iter _First, _Iter _Last) {
+    template <class _Iter, class _Sent>
+    void _Construct_range_unchecked(_Iter _First, const _Sent _Last) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _List_node_insert_op2<_Alnode> _Appended(_Getal());
-        _Appended._Append_range_unchecked(_First, _Last);
+        _Appended._Append_range_unchecked(_STD move(_First), _Last);
         _Appended._Attach_head(_Mypair._Myval2);
         _Proxy._Release();
     }
@@ -882,6 +882,18 @@ public:
         _Construct_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    list(from_range_t, _Rng&& _Range) : _Mypair(_Zero_then_variadic_args_t{}) {
+        _Construct_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<_Ty> _Rng>
+    list(from_range_t, _Rng&& _Range, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        _Construct_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     list(list&& _Right) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
         _Swap_val(_Right);
@@ -900,7 +912,6 @@ public:
         _Swap_val(_Right);
     }
 
-public:
     list& operator=(list&& _Right) noexcept(
         _Choose_pocma_v<_Alnode> == _Pocma_values::_Equal_allocators) /* strengthened */ {
         if (this == _STD addressof(_Right)) {
@@ -970,7 +981,7 @@ public:
 
 #if _HAS_CXX17
         return _Result;
-#else // ^^^ _HAS_CXX17 // !_HAS_CXX17 vvv
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         (void) _Result;
 #endif // _HAS_CXX17
     }
@@ -981,7 +992,7 @@ public:
 
 #if _HAS_CXX17
         return _Result;
-#else // ^^^ _HAS_CXX17 // !_HAS_CXX17 vvv
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         (void) _Result;
 #endif // _HAS_CXX17
     }
@@ -1024,8 +1035,7 @@ public:
         assign(_Ilist.begin(), _Ilist.end());
     }
 
-    iterator insert(const_iterator _Where,
-        initializer_list<_Ty> _Ilist) { // insert initializer_list
+    iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) { // insert initializer_list
         return insert(_Where, _Ilist.begin(), _Ilist.end());
     }
 
@@ -1181,7 +1191,7 @@ public:
             static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alnode_traits::max_size(_Getal()));
     }
 
-    _NODISCARD bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
         return _Mypair._Myval2._Mysize == 0;
     }
 
@@ -1225,6 +1235,15 @@ public:
         _Emplace(_Mypair._Myval2._Myhead->_Next, _Val);
     }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    void prepend_range(_Rng&& _Range) {
+        _List_node_insert_op2<_Alnode> _Op(_Getal());
+        _Op._Append_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        _Op._Attach_before(_Mypair._Myval2, _Mypair._Myval2._Myhead->_Next);
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     void pop_front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "pop_front called on empty list");
@@ -1236,6 +1255,15 @@ public:
     void push_back(const _Ty& _Val) {
         _Emplace(_Mypair._Myval2._Myhead, _Val);
     }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    void append_range(_Rng&& _Range) {
+        _List_node_insert_op2<_Alnode> _Op(_Getal());
+        _Op._Append_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        _Op._Attach_at_end(_Mypair._Myval2);
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     void pop_back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -1272,11 +1300,45 @@ private:
         }
     }
 
+    template <class _Iter, class _Sent>
+    void _Assign_unchecked(_Iter _First, const _Sent _Last) {
+        // assign [_First, _Last)
+        const auto _Myend = _Mypair._Myval2._Myhead;
+        auto _Old         = _Myend->_Next;
+        for (;;) { // attempt to reuse a node
+            if (_First == _Last) {
+                // input sequence exhausted; destroy and deallocate any tail of unneeded nodes
+                _Unchecked_erase(_Old, _Myend);
+                return;
+            }
+
+            if (_Old == _Myend) { // no more nodes to reuse, append the rest
+                _List_node_insert_op2<_Alnode> _Op(_Getal());
+                _Op._Append_range_unchecked(_STD move(_First), _Last);
+                _Op._Attach_at_end(_Mypair._Myval2);
+                return;
+            }
+
+            // reuse the node
+            _Old->_Myval = *_First;
+            _Old         = _Old->_Next;
+            ++_First;
+        }
+    }
+
 public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
-        _Assign_cast<reference>(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _Adl_verify_range(_First, _Last);
+        _Assign_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    void assign_range(_Rng&& _Range) {
+        _Assign_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     void assign(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) { // assign _Count * _Val
         const auto _Myend = _Mypair._Myval2._Myhead;
@@ -1309,8 +1371,8 @@ public:
         return _Make_iter(_Emplace(_Where._Ptr, _Val));
     }
 
-    iterator insert(const_iterator _Where, _CRT_GUARDOVERFLOW size_type _Count,
-        const _Ty& _Val) { // insert _Count * _Val before _Where
+    iterator insert(const_iterator _Where, _CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) {
+        // insert _Count * _Val before _Where
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "list insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
@@ -1330,7 +1392,18 @@ public:
         return _Make_iter(_Op._Attach_before(_Mypair._Myval2, _Where._Ptr));
     }
 
-public:
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    iterator insert_range(const_iterator _Where, _Rng&& _Range) {
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "list insert_range iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+        _List_node_insert_op2<_Alnode> _Op(_Getal());
+        _Op._Append_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        return _Make_iter(_Op._Attach_before(_Mypair._Myval2, _Where._Ptr));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     iterator erase(const const_iterator _Where) noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "list erase iterator outside range");
@@ -1520,7 +1593,7 @@ public:
 
         explicit _List_node_remove_op(list& _List_) noexcept : _List(_List_), _Head(), _Tail(_STD addressof(_Head)) {}
 
-        _List_node_remove_op(const _List_node_remove_op&) = delete;
+        _List_node_remove_op(const _List_node_remove_op&)            = delete;
         _List_node_remove_op& operator=(const _List_node_remove_op&) = delete;
 
         _Nodeptr _Transfer_back(const _Nodeptr _Removed) noexcept {
@@ -1785,12 +1858,18 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
 list(_Iter, _Iter, _Alloc = _Alloc()) -> list<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
-template <class _Ty, class _Alloc>
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
+    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+list(from_range_t, _Rng&&, _Alloc = _Alloc()) -> list<_RANGES range_value_t<_Rng>, _Alloc>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+_EXPORT_STD template <class _Ty, class _Alloc>
 void swap(list<_Ty, _Alloc>& _Left, list<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 
-template <class _Ty, class _Alloc>
+_EXPORT_STD template <class _Ty, class _Alloc>
 _NODISCARD bool operator==(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return _Left.size() == _Right.size()
         && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
@@ -1804,7 +1883,7 @@ _NODISCARD bool operator!=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Allo
 #endif // !_HAS_CXX20
 
 #ifdef __cpp_lib_concepts
-template <class _Ty, class _Alloc>
+_EXPORT_STD template <class _Ty, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Ty> operator<=>(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
         _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
@@ -1833,12 +1912,12 @@ _NODISCARD bool operator>=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Allo
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX20
-template <class _Ty, class _Alloc, class _Uty>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
 typename list<_Ty, _Alloc>::size_type erase(list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
     return _Cont.remove_if([&](_Ty& _Elem) { return _Elem == _Val; });
 }
 
-template <class _Ty, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
 typename list<_Ty, _Alloc>::size_type erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
     return _Cont.remove_if(_Pass_fn(_Pred));
 }
@@ -1846,7 +1925,7 @@ typename list<_Ty, _Alloc>::size_type erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pr
 
 #if _HAS_CXX17
 namespace pmr {
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     using list = _STD list<_Ty, polymorphic_allocator<_Ty>>;
 } // namespace pmr
 #endif // _HAS_CXX17

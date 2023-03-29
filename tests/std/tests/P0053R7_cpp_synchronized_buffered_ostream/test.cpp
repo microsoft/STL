@@ -31,7 +31,7 @@ public:
 
     test_syncbuf(streambuf_type* strbuf, const Alloc& al) : Mybase(strbuf, al) {}
 
-    test_syncbuf(test_syncbuf&&) = default;
+    test_syncbuf(test_syncbuf&&)            = default;
     test_syncbuf& operator=(test_syncbuf&&) = default;
     ~test_syncbuf()                         = default;
 
@@ -42,7 +42,7 @@ public:
         return static_cast<size_type>(pptr() - pbase());
     }
 
-    test_syncbuf(const test_syncbuf&) = delete;
+    test_syncbuf(const test_syncbuf&)            = delete;
     test_syncbuf& operator=(const test_syncbuf&) = delete;
 };
 

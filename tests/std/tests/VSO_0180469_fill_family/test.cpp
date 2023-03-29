@@ -9,12 +9,13 @@
 // Note that this test *should* trigger 4365 inside STL headers, because it
 // calls std::fill and std::uninitialized_fill with (signed*, signed*, unsigned)
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <cstdio>
+#include <cstdlib>
 #include <memory>
-#include <stdio.h>
-#include <stdlib.h>
+#include <type_traits>
 #include <vector>
 
 using namespace std;
@@ -48,6 +49,19 @@ void test_case_fill(CharT value, Func fillCall) {
 
     for (size_t idx = endIndex; idx < 1024; ++idx) {
         assert(buff[idx] == debugValue);
+    }
+}
+
+template <typename BuffT, typename CharT>
+void test_fill_volatile() {
+    const CharT testCases[] = {cast<CharT>(-100), cast<CharT>(-1), cast<CharT>(0), cast<CharT>(1), cast<CharT>(100)};
+
+    for (CharT testCase : testCases) {
+        test_case_fill<BuffT>(testCase,
+            [](BuffT* buff, CharT value, size_t start, size_t end) { fill(buff + start, buff + end, value); });
+
+        test_case_fill<BuffT>(testCase,
+            [](BuffT* buff, CharT value, size_t start, size_t end) { fill_n(buff + start, end - start, value); });
     }
 }
 
@@ -133,9 +147,9 @@ int main() {
     test_fill<int, char>();
     test_fill<char, int>();
 
-    test_fill<volatile char, char>(); // Test GH-1183
+    test_fill_volatile<volatile char, char>(); // Test GH-1183
 #ifdef __cpp_lib_byte
-    test_fill<volatile byte, byte>(); // Test GH-1556
+    test_fill_volatile<volatile byte, byte>(); // Test GH-1556
 #endif // __cpp_lib_byte
 
     test_uninitialized_fill(

@@ -166,20 +166,22 @@ struct Myxctype2 : public STD ctype<wchar_t> { // get protected members
     }
 
     virtual wchar_t do_widen(char ch) const { // widen a character
-        if (ch == '-')
+        if (ch == '-') {
             return L'@';
-        else if (ch == '0')
+        } else if (ch == '0') {
             return L'A';
-        else if (ch == '1')
+        } else if (ch == '1') {
             return L'b';
-        else
+        } else {
             return (wchar_t) ch;
+        }
     }
 
     virtual const char* do_widen(const char* first, const char* last,
         wchar_t* dest) const { // widen a character sequence
-        for (; first != last; ++first, ++dest)
+        for (; first != last; ++first, ++dest) {
             *dest = do_widen(*first);
+        }
         return first;
     }
 };

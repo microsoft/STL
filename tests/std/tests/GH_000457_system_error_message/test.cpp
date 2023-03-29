@@ -4,7 +4,7 @@
 #include <yvals.h>
 
 #include <__msvc_system_error_abi.hpp>
-#include <assert.h>
+#include <cassert>
 
 int main() {
     char example[] = "test string \r\n\t\0 test test";

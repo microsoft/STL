@@ -3,10 +3,10 @@
 
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <hash_map>
 #include <map>
-#include <stdlib.h>
 #include <unordered_map>
 
 using namespace std;

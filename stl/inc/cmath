@@ -12,14 +12,15 @@
 #include <cstdlib>
 #include <xtr1common>
 
-#if !defined(_M_CEE) && !defined(__clang__) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
+#if !defined(__clang__) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER) \
+    && !defined(_M_CEE) // TRANSITION, VSO-1663104
 #define _HAS_CMATH_INTRINSICS 1
-#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_CMATH_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
 #if _HAS_CMATH_INTRINSICS
-#include <intrin0.h>
+#include _STL_INTRIN_HEADER
 #endif // _HAS_CMATH_INTRINSICS
 
 #if _HAS_CXX20
@@ -70,7 +71,7 @@ _NODISCARD _Check_return_ inline float ceil(_In_ float _Xx) noexcept /* strength
     return __ceilf(_Xx);
 #elif defined(__clang__)
     return __builtin_ceilf(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD ceilf(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -80,7 +81,7 @@ _NODISCARD _Check_return_ inline float copysign(_In_ float _Number, _In_ float _
     return __copysignf(_Number, _Sign);
 #elif defined(__clang__)
     return __builtin_copysignf(_Number, _Sign);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD copysignf(_Number, _Sign);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -126,7 +127,7 @@ _NODISCARD _Check_return_ inline float floor(_In_ float _Xx) noexcept /* strengt
     return __floorf(_Xx);
 #elif defined(__clang__)
     return __builtin_floorf(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD floorf(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -240,7 +241,7 @@ _NODISCARD _Check_return_ inline float round(_In_ float _Xx) noexcept /* strengt
     return __roundf(_Xx);
 #elif defined(__clang__)
     return __builtin_roundf(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD roundf(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -282,7 +283,7 @@ _NODISCARD _Check_return_ inline float trunc(_In_ float _Xx) noexcept /* strengt
     return __truncf(_Xx);
 #elif defined(__clang__)
     return __builtin_truncf(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD truncf(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -325,7 +326,7 @@ _NODISCARD _Check_return_ inline long double ceil(_In_ long double _Xx) noexcept
     return __ceil(static_cast<double>(_Xx));
 #elif defined(__clang__)
     return __builtin_ceill(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD ceill(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -336,7 +337,7 @@ _NODISCARD _Check_return_ inline long double copysign(_In_ long double _Number, 
     return __copysign(static_cast<double>(_Number), static_cast<double>(_Sign));
 #elif defined(__clang__)
     return __builtin_copysignl(_Number, _Sign);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD copysignl(_Number, _Sign);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -383,7 +384,7 @@ _NODISCARD _Check_return_ inline long double floor(_In_ long double _Xx) noexcep
     return __floor(static_cast<double>(_Xx));
 #elif defined(__clang__)
     return __builtin_floorl(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD floorl(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -506,7 +507,7 @@ _NODISCARD _Check_return_ inline long double round(_In_ long double _Xx) noexcep
     return __round(static_cast<double>(_Xx));
 #elif defined(__clang__)
     return __builtin_roundl(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD roundl(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -548,11 +549,10 @@ _NODISCARD _Check_return_ inline long double trunc(_In_ long double _Xx) noexcep
     return __trunc(static_cast<double>(_Xx));
 #elif defined(__clang__)
     return __builtin_truncl(_Xx);
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD truncl(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
-
 
 _STD_BEGIN
 template <class _Ty1, class _Ty2>
@@ -605,7 +605,7 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, MSVC_INTRIN)
 #elif defined(__clang__)
 #define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, CLANG_INTRIN)
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
 #define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 
@@ -615,12 +615,17 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
         return _CSTD FUN(static_cast<double>(_Left), _Arg2);                   \
     }
 
+// When the arguments are both floats or both long doubles, overload resolution prefers the
+// non-template overloads to the templates generated from this macro. The templates generated from
+// this macro are only selected by overload resolution when both arguments have integral type, or
+// when the types of the two arguments differ, in which case _Common_float_type_t is either double
+// or long double. Note that double and long double have the same underlying representation on our
+// supported platforms.
 #define _GENERIC_MATH2_BASE(NAME, FUN)                                                                           \
     template <class _Ty1, class _Ty2,                                                                            \
         _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>                     \
     _NODISCARD _STD _Common_float_type_t<_Ty1, _Ty2> NAME(_Ty1 _Left, _Ty2 _Right) noexcept /* strengthened */ { \
-        using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;                                                   \
-        return FUN(static_cast<_Common>(_Left), static_cast<_Common>(_Right));                                   \
+        return FUN(static_cast<double>(_Left), static_cast<double>(_Right));                                     \
     }
 
 #define _GENERIC_MATH2(FUN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
@@ -629,7 +634,7 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, MSVC_INTRIN)
 #elif defined(__clang__)
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, CLANG_INTRIN)
-#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 
@@ -706,201 +711,204 @@ _GENERIC_MATH2(fmin)
 #undef _GENERIC_MATH2I
 #undef _HAS_CMATH_INTRINSICS
 
-
 _STD_BEGIN
-using _CSTD abs;
-using _CSTD acos;
-using _CSTD asin;
-using _CSTD atan;
-using _CSTD atan2;
-using _CSTD ceil;
-using _CSTD cos;
-using _CSTD cosh;
-using _CSTD exp;
-using _CSTD fabs;
-using _CSTD floor;
-using _CSTD fmod;
-using _CSTD frexp;
-using _CSTD ldexp;
-using _CSTD log;
-using _CSTD log10;
-using _CSTD modf;
-using _CSTD pow;
-using _CSTD sin;
-using _CSTD sinh;
-using _CSTD sqrt;
-using _CSTD tan;
-using _CSTD tanh;
+_EXPORT_STD using _CSTD abs;
+_EXPORT_STD using _CSTD acos;
+_EXPORT_STD using _CSTD asin;
+_EXPORT_STD using _CSTD atan;
+_EXPORT_STD using _CSTD atan2;
+_EXPORT_STD using _CSTD ceil;
+_EXPORT_STD using _CSTD cos;
+_EXPORT_STD using _CSTD cosh;
+_EXPORT_STD using _CSTD exp;
+_EXPORT_STD using _CSTD fabs;
+_EXPORT_STD using _CSTD floor;
+_EXPORT_STD using _CSTD fmod;
+_EXPORT_STD using _CSTD frexp;
+_EXPORT_STD using _CSTD ldexp;
+_EXPORT_STD using _CSTD log;
+_EXPORT_STD using _CSTD log10;
+_EXPORT_STD using _CSTD modf;
+_EXPORT_STD using _CSTD pow;
+_EXPORT_STD using _CSTD sin;
+_EXPORT_STD using _CSTD sinh;
+_EXPORT_STD using _CSTD sqrt;
+_EXPORT_STD using _CSTD tan;
+_EXPORT_STD using _CSTD tanh;
 
-using _CSTD acosf;
-using _CSTD asinf;
-using _CSTD atanf;
-using _CSTD atan2f;
-using _CSTD ceilf;
-using _CSTD cosf;
-using _CSTD coshf;
-using _CSTD expf;
-using _CSTD fabsf;
-using _CSTD floorf;
-using _CSTD fmodf;
-using _CSTD frexpf;
-using _CSTD ldexpf;
-using _CSTD logf;
-using _CSTD log10f;
-using _CSTD modff;
-using _CSTD powf;
-using _CSTD sinf;
-using _CSTD sinhf;
-using _CSTD sqrtf;
-using _CSTD tanf;
-using _CSTD tanhf;
+_EXPORT_STD using _CSTD acosf;
+_EXPORT_STD using _CSTD asinf;
+_EXPORT_STD using _CSTD atanf;
+_EXPORT_STD using _CSTD atan2f;
+_EXPORT_STD using _CSTD ceilf;
+_EXPORT_STD using _CSTD cosf;
+_EXPORT_STD using _CSTD coshf;
+_EXPORT_STD using _CSTD expf;
+_EXPORT_STD using _CSTD fabsf;
+_EXPORT_STD using _CSTD floorf;
+_EXPORT_STD using _CSTD fmodf;
+_EXPORT_STD using _CSTD frexpf;
+_EXPORT_STD using _CSTD ldexpf;
+_EXPORT_STD using _CSTD logf;
+_EXPORT_STD using _CSTD log10f;
+_EXPORT_STD using _CSTD modff;
+_EXPORT_STD using _CSTD powf;
+_EXPORT_STD using _CSTD sinf;
+_EXPORT_STD using _CSTD sinhf;
+_EXPORT_STD using _CSTD sqrtf;
+_EXPORT_STD using _CSTD tanf;
+_EXPORT_STD using _CSTD tanhf;
 
-using _CSTD acosl;
-using _CSTD asinl;
-using _CSTD atanl;
-using _CSTD atan2l;
-using _CSTD ceill;
-using _CSTD cosl;
-using _CSTD coshl;
-using _CSTD expl;
-using _CSTD fabsl;
-using _CSTD floorl;
-using _CSTD fmodl;
-using _CSTD frexpl;
-using _CSTD ldexpl;
-using _CSTD logl;
-using _CSTD log10l;
-using _CSTD modfl;
-using _CSTD powl;
-using _CSTD sinl;
-using _CSTD sinhl;
-using _CSTD sqrtl;
-using _CSTD tanl;
-using _CSTD tanhl;
+_EXPORT_STD using _CSTD acosl;
+_EXPORT_STD using _CSTD asinl;
+_EXPORT_STD using _CSTD atanl;
+_EXPORT_STD using _CSTD atan2l;
+_EXPORT_STD using _CSTD ceill;
+_EXPORT_STD using _CSTD cosl;
+_EXPORT_STD using _CSTD coshl;
+_EXPORT_STD using _CSTD expl;
+_EXPORT_STD using _CSTD fabsl;
+_EXPORT_STD using _CSTD floorl;
+_EXPORT_STD using _CSTD fmodl;
+_EXPORT_STD using _CSTD frexpl;
+_EXPORT_STD using _CSTD ldexpl;
+_EXPORT_STD using _CSTD logl;
+_EXPORT_STD using _CSTD log10l;
+_EXPORT_STD using _CSTD modfl;
+_EXPORT_STD using _CSTD powl;
+_EXPORT_STD using _CSTD sinl;
+_EXPORT_STD using _CSTD sinhl;
+_EXPORT_STD using _CSTD sqrtl;
+_EXPORT_STD using _CSTD tanl;
+_EXPORT_STD using _CSTD tanhl;
 
-using _CSTD float_t;
-using _CSTD double_t;
+_EXPORT_STD using _CSTD float_t;
+_EXPORT_STD using _CSTD double_t;
 
-using _CSTD acosh;
-using _CSTD asinh;
-using _CSTD atanh;
-using _CSTD cbrt;
-using _CSTD erf;
-using _CSTD erfc;
-using _CSTD expm1;
-using _CSTD exp2;
-using _CSTD hypot;
-using _CSTD ilogb;
-using _CSTD lgamma;
-using _CSTD log1p;
-using _CSTD log2;
-using _CSTD logb;
-using _CSTD llrint;
-using _CSTD lrint;
-using _CSTD nearbyint;
-using _CSTD rint;
-using _CSTD llround;
-using _CSTD lround;
-using _CSTD fdim;
-using _CSTD fma;
-using _CSTD fmax;
-using _CSTD fmin;
-using _CSTD round;
-using _CSTD trunc;
-using _CSTD remainder;
-using _CSTD remquo;
-using _CSTD copysign;
-using _CSTD nan;
-using _CSTD nextafter;
-using _CSTD scalbn;
-using _CSTD scalbln;
-using _CSTD nexttoward;
-using _CSTD tgamma;
+_EXPORT_STD using _CSTD acosh;
+_EXPORT_STD using _CSTD asinh;
+_EXPORT_STD using _CSTD atanh;
+_EXPORT_STD using _CSTD cbrt;
+_EXPORT_STD using _CSTD erf;
+_EXPORT_STD using _CSTD erfc;
+_EXPORT_STD using _CSTD expm1;
+_EXPORT_STD using _CSTD exp2;
 
-using _CSTD acoshf;
-using _CSTD asinhf;
-using _CSTD atanhf;
-using _CSTD cbrtf;
-using _CSTD erff;
-using _CSTD erfcf;
-using _CSTD expm1f;
-using _CSTD exp2f;
-using _CSTD hypotf;
-using _CSTD ilogbf;
-using _CSTD lgammaf;
-using _CSTD log1pf;
-using _CSTD log2f;
-using _CSTD logbf;
-using _CSTD llrintf;
-using _CSTD lrintf;
-using _CSTD nearbyintf;
-using _CSTD rintf;
-using _CSTD llroundf;
-using _CSTD lroundf;
-using _CSTD fdimf;
-using _CSTD fmaf;
-using _CSTD fmaxf;
-using _CSTD fminf;
-using _CSTD roundf;
-using _CSTD truncf;
-using _CSTD remainderf;
-using _CSTD remquof;
-using _CSTD copysignf;
-using _CSTD nanf;
-using _CSTD nextafterf;
-using _CSTD scalbnf;
-using _CSTD scalblnf;
-using _CSTD nexttowardf;
-using _CSTD tgammaf;
+inline namespace _Binary_hypot {
+    _EXPORT_STD using _CSTD hypot;
+} // namespace _Binary_hypot
 
-using _CSTD acoshl;
-using _CSTD asinhl;
-using _CSTD atanhl;
-using _CSTD cbrtl;
-using _CSTD erfl;
-using _CSTD erfcl;
-using _CSTD expm1l;
-using _CSTD exp2l;
-using _CSTD hypotl;
-using _CSTD ilogbl;
-using _CSTD lgammal;
-using _CSTD log1pl;
-using _CSTD log2l;
-using _CSTD logbl;
-using _CSTD llrintl;
-using _CSTD lrintl;
-using _CSTD nearbyintl;
-using _CSTD rintl;
-using _CSTD llroundl;
-using _CSTD lroundl;
-using _CSTD fdiml;
-using _CSTD fmal;
-using _CSTD fmaxl;
-using _CSTD fminl;
-using _CSTD roundl;
-using _CSTD truncl;
-using _CSTD remainderl;
-using _CSTD remquol;
-using _CSTD copysignl;
-using _CSTD nanl;
-using _CSTD nextafterl;
-using _CSTD scalbnl;
-using _CSTD scalblnl;
-using _CSTD nexttowardl;
-using _CSTD tgammal;
+_EXPORT_STD using _CSTD ilogb;
+_EXPORT_STD using _CSTD lgamma;
+_EXPORT_STD using _CSTD log1p;
+_EXPORT_STD using _CSTD log2;
+_EXPORT_STD using _CSTD logb;
+_EXPORT_STD using _CSTD llrint;
+_EXPORT_STD using _CSTD lrint;
+_EXPORT_STD using _CSTD nearbyint;
+_EXPORT_STD using _CSTD rint;
+_EXPORT_STD using _CSTD llround;
+_EXPORT_STD using _CSTD lround;
+_EXPORT_STD using _CSTD fdim;
+_EXPORT_STD using _CSTD fma;
+_EXPORT_STD using _CSTD fmax;
+_EXPORT_STD using _CSTD fmin;
+_EXPORT_STD using _CSTD round;
+_EXPORT_STD using _CSTD trunc;
+_EXPORT_STD using _CSTD remainder;
+_EXPORT_STD using _CSTD remquo;
+_EXPORT_STD using _CSTD copysign;
+_EXPORT_STD using _CSTD nan;
+_EXPORT_STD using _CSTD nextafter;
+_EXPORT_STD using _CSTD scalbn;
+_EXPORT_STD using _CSTD scalbln;
+_EXPORT_STD using _CSTD nexttoward;
+_EXPORT_STD using _CSTD tgamma;
 
-using _CSTD fpclassify;
-using _CSTD signbit;
-using _CSTD isfinite;
-using _CSTD isinf;
-using _CSTD isnan;
-using _CSTD isnormal;
-using _CSTD isgreater;
-using _CSTD isgreaterequal;
-using _CSTD isless;
-using _CSTD islessequal;
-using _CSTD islessgreater;
-using _CSTD isunordered;
+_EXPORT_STD using _CSTD acoshf;
+_EXPORT_STD using _CSTD asinhf;
+_EXPORT_STD using _CSTD atanhf;
+_EXPORT_STD using _CSTD cbrtf;
+_EXPORT_STD using _CSTD erff;
+_EXPORT_STD using _CSTD erfcf;
+_EXPORT_STD using _CSTD expm1f;
+_EXPORT_STD using _CSTD exp2f;
+_EXPORT_STD using _CSTD hypotf;
+_EXPORT_STD using _CSTD ilogbf;
+_EXPORT_STD using _CSTD lgammaf;
+_EXPORT_STD using _CSTD log1pf;
+_EXPORT_STD using _CSTD log2f;
+_EXPORT_STD using _CSTD logbf;
+_EXPORT_STD using _CSTD llrintf;
+_EXPORT_STD using _CSTD lrintf;
+_EXPORT_STD using _CSTD nearbyintf;
+_EXPORT_STD using _CSTD rintf;
+_EXPORT_STD using _CSTD llroundf;
+_EXPORT_STD using _CSTD lroundf;
+_EXPORT_STD using _CSTD fdimf;
+_EXPORT_STD using _CSTD fmaf;
+_EXPORT_STD using _CSTD fmaxf;
+_EXPORT_STD using _CSTD fminf;
+_EXPORT_STD using _CSTD roundf;
+_EXPORT_STD using _CSTD truncf;
+_EXPORT_STD using _CSTD remainderf;
+_EXPORT_STD using _CSTD remquof;
+_EXPORT_STD using _CSTD copysignf;
+_EXPORT_STD using _CSTD nanf;
+_EXPORT_STD using _CSTD nextafterf;
+_EXPORT_STD using _CSTD scalbnf;
+_EXPORT_STD using _CSTD scalblnf;
+_EXPORT_STD using _CSTD nexttowardf;
+_EXPORT_STD using _CSTD tgammaf;
+
+_EXPORT_STD using _CSTD acoshl;
+_EXPORT_STD using _CSTD asinhl;
+_EXPORT_STD using _CSTD atanhl;
+_EXPORT_STD using _CSTD cbrtl;
+_EXPORT_STD using _CSTD erfl;
+_EXPORT_STD using _CSTD erfcl;
+_EXPORT_STD using _CSTD expm1l;
+_EXPORT_STD using _CSTD exp2l;
+_EXPORT_STD using _CSTD hypotl;
+_EXPORT_STD using _CSTD ilogbl;
+_EXPORT_STD using _CSTD lgammal;
+_EXPORT_STD using _CSTD log1pl;
+_EXPORT_STD using _CSTD log2l;
+_EXPORT_STD using _CSTD logbl;
+_EXPORT_STD using _CSTD llrintl;
+_EXPORT_STD using _CSTD lrintl;
+_EXPORT_STD using _CSTD nearbyintl;
+_EXPORT_STD using _CSTD rintl;
+_EXPORT_STD using _CSTD llroundl;
+_EXPORT_STD using _CSTD lroundl;
+_EXPORT_STD using _CSTD fdiml;
+_EXPORT_STD using _CSTD fmal;
+_EXPORT_STD using _CSTD fmaxl;
+_EXPORT_STD using _CSTD fminl;
+_EXPORT_STD using _CSTD roundl;
+_EXPORT_STD using _CSTD truncl;
+_EXPORT_STD using _CSTD remainderl;
+_EXPORT_STD using _CSTD remquol;
+_EXPORT_STD using _CSTD copysignl;
+_EXPORT_STD using _CSTD nanl;
+_EXPORT_STD using _CSTD nextafterl;
+_EXPORT_STD using _CSTD scalbnl;
+_EXPORT_STD using _CSTD scalblnl;
+_EXPORT_STD using _CSTD nexttowardl;
+_EXPORT_STD using _CSTD tgammal;
+
+_EXPORT_STD using _CSTD fpclassify;
+_EXPORT_STD using _CSTD signbit;
+_EXPORT_STD using _CSTD isfinite;
+_EXPORT_STD using _CSTD isinf;
+_EXPORT_STD using _CSTD isnan;
+_EXPORT_STD using _CSTD isnormal;
+_EXPORT_STD using _CSTD isgreater;
+_EXPORT_STD using _CSTD isgreaterequal;
+_EXPORT_STD using _CSTD isless;
+_EXPORT_STD using _CSTD islessequal;
+_EXPORT_STD using _CSTD islessgreater;
+_EXPORT_STD using _CSTD isunordered;
 _STD_END
 
 #if _HAS_CXX17
@@ -952,280 +960,293 @@ _NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_hypot3f(float, float, floa
 _END_EXTERN_C
 
 _STD_BEGIN
-_NODISCARD inline double assoc_laguerre(
+_EXPORT_STD _NODISCARD inline double assoc_laguerre(
     const unsigned int _Degree, const unsigned int _Order, const double _Value) noexcept /* strengthened */ {
     return __std_smf_assoc_laguerre(_Degree, _Order, _Value);
 }
 
-_NODISCARD inline float assoc_laguerref(
+_EXPORT_STD _NODISCARD inline float assoc_laguerref(
     const unsigned int _Degree, const unsigned int _Order, const float _Value) noexcept /* strengthened */ {
     return __std_smf_assoc_laguerref(_Degree, _Order, _Value);
 }
 
-_NODISCARD inline long double assoc_laguerrel(
+_EXPORT_STD _NODISCARD inline long double assoc_laguerrel(
     const unsigned int _Degree, const unsigned int _Order, const long double _Value) noexcept /* strengthened */ {
     return __std_smf_assoc_laguerre(_Degree, _Order, static_cast<double>(_Value));
 }
 
-_NODISCARD inline double assoc_legendre(
+_EXPORT_STD _NODISCARD inline double assoc_legendre(
     const unsigned int _Degree, const unsigned int _Order, const double _Value) noexcept /* strengthened */ {
     return __std_smf_assoc_legendre(_Degree, _Order, _Value);
 }
 
-_NODISCARD inline float assoc_legendref(
+_EXPORT_STD _NODISCARD inline float assoc_legendref(
     const unsigned int _Degree, const unsigned int _Order, const float _Value) noexcept /* strengthened */ {
     return __std_smf_assoc_legendref(_Degree, _Order, _Value);
 }
 
-_NODISCARD inline long double assoc_legendrel(
+_EXPORT_STD _NODISCARD inline long double assoc_legendrel(
     const unsigned int _Degree, const unsigned int _Order, const long double _Value) noexcept /* strengthened */ {
     return __std_smf_assoc_legendre(_Degree, _Order, static_cast<double>(_Value));
 }
 
-_NODISCARD inline double beta(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double beta(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_beta(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float betaf(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float betaf(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_betaf(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double betal(const long double _Arg1, const long double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline long double betal(const long double _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_beta(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double comp_ellint_1(const double _Arg) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double comp_ellint_1(const double _Arg) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_1(_Arg);
 }
 
-_NODISCARD inline float comp_ellint_1f(const float _Arg) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float comp_ellint_1f(const float _Arg) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_1f(_Arg);
 }
 
-_NODISCARD inline long double comp_ellint_1l(const long double _Arg) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline long double comp_ellint_1l(const long double _Arg) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_1(static_cast<double>(_Arg));
 }
 
-_NODISCARD inline double comp_ellint_2(const double _Arg) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double comp_ellint_2(const double _Arg) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_2(_Arg);
 }
 
-_NODISCARD inline float comp_ellint_2f(const float _Arg) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float comp_ellint_2f(const float _Arg) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_2f(_Arg);
 }
 
-_NODISCARD inline long double comp_ellint_2l(const long double _Arg) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline long double comp_ellint_2l(const long double _Arg) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_2(static_cast<double>(_Arg));
 }
 
-_NODISCARD inline double comp_ellint_3(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double comp_ellint_3(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_3(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float comp_ellint_3f(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float comp_ellint_3f(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_3f(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double comp_ellint_3l(const long double _Arg1, const long double _Arg2) noexcept
+_EXPORT_STD _NODISCARD inline long double comp_ellint_3l(const long double _Arg1, const long double _Arg2) noexcept
 /* strengthened */ {
     return __std_smf_comp_ellint_3(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double cyl_bessel_i(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double cyl_bessel_i(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_bessel_i(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float cyl_bessel_if(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float cyl_bessel_if(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_bessel_if(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double cyl_bessel_il(const long double _Arg1, const long double _Arg2) noexcept
+_EXPORT_STD _NODISCARD inline long double cyl_bessel_il(const long double _Arg1, const long double _Arg2) noexcept
 /* strengthened */ {
     return __std_smf_cyl_bessel_i(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double cyl_bessel_j(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double cyl_bessel_j(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_bessel_j(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float cyl_bessel_jf(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float cyl_bessel_jf(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_bessel_jf(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double cyl_bessel_jl(const long double _Arg1, const long double _Arg2) noexcept
+_EXPORT_STD _NODISCARD inline long double cyl_bessel_jl(const long double _Arg1, const long double _Arg2) noexcept
 /* strengthened */ {
     return __std_smf_cyl_bessel_j(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double cyl_bessel_k(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double cyl_bessel_k(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_bessel_k(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float cyl_bessel_kf(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float cyl_bessel_kf(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_bessel_kf(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double cyl_bessel_kl(const long double _Arg1, const long double _Arg2) noexcept
+_EXPORT_STD _NODISCARD inline long double cyl_bessel_kl(const long double _Arg1, const long double _Arg2) noexcept
 /* strengthened */ {
     return __std_smf_cyl_bessel_k(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double cyl_neumann(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double cyl_neumann(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_neumann(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float cyl_neumannf(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float cyl_neumannf(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_neumannf(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double cyl_neumannl(const long double _Arg1, const long double _Arg2) noexcept
+_EXPORT_STD _NODISCARD inline long double cyl_neumannl(const long double _Arg1, const long double _Arg2) noexcept
 /* strengthened */ {
     return __std_smf_cyl_neumann(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double ellint_1(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double ellint_1(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_ellint_1(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float ellint_1f(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float ellint_1f(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_ellint_1f(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double ellint_1l(const long double _Arg1, const long double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline long double ellint_1l(const long double _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_ellint_1(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double ellint_2(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double ellint_2(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_ellint_2(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float ellint_2f(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float ellint_2f(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_ellint_2f(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double ellint_2l(const long double _Arg1, const long double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline long double ellint_2l(const long double _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_ellint_2(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double ellint_3(const double _Arg1, const double _Arg2, const double _Arg3) noexcept
+_EXPORT_STD _NODISCARD inline double ellint_3(const double _Arg1, const double _Arg2, const double _Arg3) noexcept
 /* strengthened */ {
     return __std_smf_ellint_3(_Arg1, _Arg2, _Arg3);
 }
 
-_NODISCARD inline float ellint_3f(const float _Arg1, const float _Arg2, const float _Arg3) noexcept
+_EXPORT_STD _NODISCARD inline float ellint_3f(const float _Arg1, const float _Arg2, const float _Arg3) noexcept
 /* strengthened */ {
     return __std_smf_ellint_3f(_Arg1, _Arg2, _Arg3);
 }
 
-_NODISCARD inline long double ellint_3l(
+_EXPORT_STD _NODISCARD inline long double ellint_3l(
     const long double _Arg1, const long double _Arg2, const long double _Arg3) noexcept /* strengthened */ {
     return __std_smf_ellint_3(static_cast<double>(_Arg1), static_cast<double>(_Arg2), static_cast<double>(_Arg3));
 }
 
-_NODISCARD inline double expint(const double _Arg) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double expint(const double _Arg) noexcept /* strengthened */ {
     return __std_smf_expint(_Arg);
 }
 
-_NODISCARD inline float expintf(const float _Arg) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float expintf(const float _Arg) noexcept /* strengthened */ {
     return __std_smf_expintf(_Arg);
 }
 
-_NODISCARD inline long double expintl(const long double _Arg) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline long double expintl(const long double _Arg) noexcept /* strengthened */ {
     return __std_smf_expint(static_cast<double>(_Arg));
 }
 
-_NODISCARD inline double hermite(const unsigned int _Arg1, const double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double hermite(const unsigned int _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_hermite(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float hermitef(const unsigned int _Arg1, const float _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float hermitef(const unsigned int _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_hermitef(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double hermitel(const unsigned int _Arg1, const long double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline long double hermitel(const unsigned int _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_hermite(_Arg1, static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double laguerre(const unsigned int _Arg1, const double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double laguerre(const unsigned int _Arg1, const double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_laguerre(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float laguerref(const unsigned int _Arg1, const float _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float laguerref(const unsigned int _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_laguerref(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double laguerrel(const unsigned int _Arg1, const long double _Arg2) noexcept
+_EXPORT_STD _NODISCARD inline long double laguerrel(const unsigned int _Arg1, const long double _Arg2) noexcept
 /* strengthened */ {
     return __std_smf_laguerre(_Arg1, static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double legendre(const unsigned int _Degree, const double _Value) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double legendre(const unsigned int _Degree, const double _Value) noexcept
+/* strengthened */ {
     return __std_smf_legendre(_Degree, _Value);
 }
 
-_NODISCARD inline float legendref(const unsigned int _Degree, const float _Value) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float legendref(const unsigned int _Degree, const float _Value) noexcept
+/* strengthened */ {
     return __std_smf_legendref(_Degree, _Value);
 }
 
-_NODISCARD inline long double legendrel(const unsigned int _Degree, const long double _Value) noexcept
+_EXPORT_STD _NODISCARD inline long double legendrel(const unsigned int _Degree, const long double _Value) noexcept
 /* strengthened */ {
     return __std_smf_legendre(_Degree, static_cast<double>(_Value));
 }
 
-_NODISCARD inline double riemann_zeta(const double _Arg) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double riemann_zeta(const double _Arg) noexcept /* strengthened */ {
     return __std_smf_riemann_zeta(_Arg);
 }
-_NODISCARD inline float riemann_zetaf(const float _Arg) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float riemann_zetaf(const float _Arg) noexcept /* strengthened */ {
     return __std_smf_riemann_zetaf(_Arg);
 }
 
-_NODISCARD inline long double riemann_zetal(const long double _Arg) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline long double riemann_zetal(const long double _Arg) noexcept /* strengthened */ {
     return __std_smf_riemann_zeta(static_cast<double>(_Arg));
 }
 
-_NODISCARD inline double sph_bessel(const unsigned int _Arg1, const double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double sph_bessel(const unsigned int _Arg1, const double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_sph_bessel(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float sph_besself(const unsigned int _Arg1, const float _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float sph_besself(const unsigned int _Arg1, const float _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_sph_besself(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double sph_bessell(const unsigned int _Arg1, const long double _Arg2) noexcept
+_EXPORT_STD _NODISCARD inline long double sph_bessell(const unsigned int _Arg1, const long double _Arg2) noexcept
 /* strengthened */ {
     return __std_smf_sph_bessel(_Arg1, static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double sph_legendre(const unsigned int _Arg1, const unsigned int _Arg2, const double _Theta) noexcept
+_EXPORT_STD _NODISCARD inline double sph_legendre(
+    const unsigned int _Arg1, const unsigned int _Arg2, const double _Theta) noexcept
 /* strengthened */ {
     return __std_smf_sph_legendre(_Arg1, _Arg2, _Theta);
 }
 
-_NODISCARD inline float sph_legendref(const unsigned int _Arg1, const unsigned int _Arg2, const float _Theta) noexcept
+_EXPORT_STD _NODISCARD inline float sph_legendref(
+    const unsigned int _Arg1, const unsigned int _Arg2, const float _Theta) noexcept
 /* strengthened */ {
     return __std_smf_sph_legendref(_Arg1, _Arg2, _Theta);
 }
 
-_NODISCARD inline long double sph_legendrel(
+_EXPORT_STD _NODISCARD inline long double sph_legendrel(
     const unsigned int _Arg1, const unsigned int _Arg2, const long double _Theta) noexcept /* strengthened */ {
     return __std_smf_sph_legendre(_Arg1, _Arg2, static_cast<double>(_Theta));
 }
 
-_NODISCARD inline double sph_neumann(const unsigned int _Arg1, const double _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline double sph_neumann(const unsigned int _Arg1, const double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_sph_neumann(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float sph_neumannf(const unsigned int _Arg1, const float _Arg2) noexcept /* strengthened */ {
+_EXPORT_STD _NODISCARD inline float sph_neumannf(const unsigned int _Arg1, const float _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_sph_neumannf(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double sph_neumannl(const unsigned int _Arg1, const long double _Arg2) noexcept
+_EXPORT_STD _NODISCARD inline long double sph_neumannl(const unsigned int _Arg1, const long double _Arg2) noexcept
 /* strengthened */ {
     return __std_smf_sph_neumann(_Arg1, static_cast<double>(_Arg2));
 }
 
 #define _GENERIC_MATH_SPECIAL1(NAME)                                                  \
-    template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>                  \
+    _EXPORT_STD template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>      \
     _NODISCARD auto NAME(const _Ty _Arg) noexcept /* strengthened */ {                \
         using _Common = conditional_t<is_integral_v<_Ty>, double, _Ty>;               \
         if constexpr (is_same_v<_Common, float>) {                                    \
@@ -1236,7 +1257,8 @@ _NODISCARD inline long double sph_neumannl(const unsigned int _Arg1, const long 
     }
 
 #define _GENERIC_MATH_SPECIAL2(NAME)                                                                               \
-    template <class _Ty1, class _Ty2, enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2>, int> = 0>        \
+    _EXPORT_STD template <class _Ty1, class _Ty2,                                                                  \
+        enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2>, int> = 0>                                      \
     _NODISCARD auto NAME(const _Ty1 _Arg1, const _Ty2 _Arg2) noexcept /* strengthened */ {                         \
         using _Common = _Common_float_type_t<_Ty1, _Ty2>;                                                          \
         if constexpr (is_same_v<_Common, float>) {                                                                 \
@@ -1247,7 +1269,7 @@ _NODISCARD inline long double sph_neumannl(const unsigned int _Arg1, const long 
     }
 
 #define _GENERIC_MATH_SPECIAL3(NAME)                                                                                   \
-    template <class _Ty1, class _Ty2, class _Ty3,                                                                      \
+    _EXPORT_STD template <class _Ty1, class _Ty2, class _Ty3,                                                          \
         enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>                 \
     _NODISCARD auto NAME(const _Ty1 _Arg1, const _Ty2 _Arg2, const _Ty3 _Arg3) noexcept /* strengthened */ {           \
         using _Common = _Common_float_type_t<_Ty1, _Common_float_type_t<_Ty2, _Ty3>>;                                  \
@@ -1260,7 +1282,7 @@ _NODISCARD inline long double sph_neumannl(const unsigned int _Arg1, const long 
     }
 
 #define _GENERIC_MATH_SPECIAL_UINT1(NAME)                                                         \
-    template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>                              \
+    _EXPORT_STD template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>                  \
     _NODISCARD auto NAME(const unsigned int _Arg1, const _Ty _Arg2) noexcept /* strengthened */ { \
         using _Common = conditional_t<is_integral_v<_Ty>, double, _Ty>;                           \
         if constexpr (is_same_v<_Common, float>) {                                                \
@@ -1271,7 +1293,7 @@ _NODISCARD inline long double sph_neumannl(const unsigned int _Arg1, const long 
     }
 
 #define _GENERIC_MATH_SPECIAL_UINT2(NAME)                                                                  \
-    template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>                                       \
+    _EXPORT_STD template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>                           \
     _NODISCARD auto NAME(                                                                                  \
         const unsigned int _Arg1, const unsigned int _Arg2, const _Ty _Arg3) noexcept /* strengthened */ { \
         using _Common = conditional_t<is_integral_v<_Ty>, double, _Ty>;                                    \
@@ -1311,19 +1333,19 @@ _GENERIC_MATH_SPECIAL_UINT1(sph_neumann)
 #undef _GENERIC_MATH_SPECIAL_UINT1
 #undef _GENERIC_MATH_SPECIAL_UINT2
 
-_NODISCARD inline double hypot(const double _Dx, const double _Dy, const double _Dz) {
+_EXPORT_STD _NODISCARD inline double hypot(const double _Dx, const double _Dy, const double _Dz) {
     return __std_smf_hypot3(_Dx, _Dy, _Dz);
 }
 
-_NODISCARD inline float hypot(const float _Dx, const float _Dy, const float _Dz) {
+_EXPORT_STD _NODISCARD inline float hypot(const float _Dx, const float _Dy, const float _Dz) {
     return __std_smf_hypot3f(_Dx, _Dy, _Dz);
 }
 
-_NODISCARD inline long double hypot(const long double _Dx, const long double _Dy, const long double _Dz) {
+_EXPORT_STD _NODISCARD inline long double hypot(const long double _Dx, const long double _Dy, const long double _Dz) {
     return __std_smf_hypot3(static_cast<double>(_Dx), static_cast<double>(_Dy), static_cast<double>(_Dz));
 }
 
-template <class _Ty1, class _Ty2, class _Ty3,
+_EXPORT_STD template <class _Ty1, class _Ty2, class _Ty3,
     enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>
 _NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) {
     // N4910 [cmath.syn]/2 "Sufficient additional overloads"
@@ -1436,20 +1458,21 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
     }
 }
 
-_NODISCARD constexpr inline float lerp(const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
+_EXPORT_STD _NODISCARD constexpr inline float lerp(const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
-_NODISCARD constexpr inline double lerp(const double _ArgA, const double _ArgB, const double _ArgT) noexcept {
+_EXPORT_STD _NODISCARD constexpr inline double lerp(
+    const double _ArgA, const double _ArgB, const double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
-_NODISCARD constexpr inline long double lerp(
+_EXPORT_STD _NODISCARD constexpr inline long double lerp(
     const long double _ArgA, const long double _ArgB, const long double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
-template <class _Ty1, class _Ty2, class _Ty3,
+_EXPORT_STD template <class _Ty1, class _Ty2, class _Ty3,
     enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>
 _NODISCARD constexpr auto lerp(const _Ty1 _ArgA, const _Ty2 _ArgB, const _Ty3 _ArgT) noexcept {
     using _Tgt = conditional_t<_Is_any_of_v<long double, _Ty1, _Ty2, _Ty3>, long double, double>;

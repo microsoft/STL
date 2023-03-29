@@ -14,7 +14,7 @@
 // a value-initialized iterator as the source of a copy or move operation."
 
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <deque>
 #include <forward_list>
 #include <list>

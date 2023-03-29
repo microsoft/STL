@@ -15,9 +15,7 @@
 using namespace std;
 
 template <class Rng>
-concept CanViewReverse = requires(Rng&& r) {
-    views::reverse(forward<Rng>(r));
-};
+concept CanViewReverse = requires(Rng&& r) { views::reverse(forward<Rng>(r)); };
 
 // Test a silly precomposed range adaptor pipeline
 constexpr auto pipeline = views::all | views::reverse | views::all | views::reverse | views::all | views::reverse;

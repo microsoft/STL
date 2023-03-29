@@ -118,7 +118,7 @@ public:
     _NODISCARD strong_ordering operator<=>(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return _Myoff <=> _Right._Myoff;
     }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -363,7 +363,7 @@ public:
         _Compat(_Right);
         return this->_Myoff <=> _Right._Myoff;
     }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Deque_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -407,7 +407,7 @@ public:
     void _Verify_offset(const difference_type _Off) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Off;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         if (_Off != 0) {
             const auto _Mycont = static_cast<const _Mydeque*>(this->_Getcont());
             _STL_VERIFY(_Mycont, "cannot use value-initialized deque iterator");
@@ -439,8 +439,7 @@ private:
     using _Mybase    = _Deque_const_iterator<_Mydeque>;
 
 public:
-    using _Deque_unchecked_type = _Deque_unchecked_iterator<_Mydeque>;
-    using iterator_category     = random_access_iterator_tag;
+    using iterator_category = random_access_iterator_tag;
 
     using value_type      = typename _Mydeque::value_type;
     using difference_type = typename _Mydeque::difference_type;
@@ -570,20 +569,19 @@ public:
     size_type _Mysize; // current length of sequence
 };
 
-template <class _Ty, class _Alloc = allocator<_Ty>>
+_EXPORT_STD template <class _Ty, class _Alloc = allocator<_Ty>>
 class deque {
 private:
     friend _Tidy_guard<deque>;
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Ty, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("deque<T, Allocator>", "T"));
 
-    using _Alty           = _Rebind_alloc_t<_Alloc, _Ty>;
-    using _Alty_traits    = allocator_traits<_Alty>;
-    using _Alpty          = _Rebind_alloc_t<_Alloc, typename _Alty_traits::pointer>;
-    using _Alpty_traits   = allocator_traits<_Alpty>;
-    using _Mapptr         = typename _Alpty_traits::pointer;
-    using _Alproxy_ty     = _Rebind_alloc_t<_Alty, _Container_proxy>;
-    using _Alproxy_traits = allocator_traits<_Alproxy_ty>;
+    using _Alty         = _Rebind_alloc_t<_Alloc, _Ty>;
+    using _Alty_traits  = allocator_traits<_Alty>;
+    using _Alpty        = _Rebind_alloc_t<_Alloc, typename _Alty_traits::pointer>;
+    using _Alpty_traits = allocator_traits<_Alpty>;
+    using _Mapptr       = typename _Alpty_traits::pointer;
+    using _Alproxy_ty   = _Rebind_alloc_t<_Alty, _Container_proxy>;
 
     using _Scary_val = _Deque_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Deque_simple_types<_Ty>,
         _Deque_iter_types<_Ty, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,
@@ -673,12 +671,30 @@ public:
         _Proxy._Release();
     }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    deque(from_range_t, _Rng&& _Range) : _Mypair(_Zero_then_variadic_args_t{}) {
+        _Alproxy_ty _Alproxy(_Getal());
+        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
+        _Construct(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        _Proxy._Release();
+    }
+
+    template <_Container_compatible_range<_Ty> _Rng>
+    deque(from_range_t, _Rng&& _Range, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        _Alproxy_ty _Alproxy(_Getal());
+        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
+        _Construct(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        _Proxy._Release();
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
 private:
-    template <class _Iter>
-    void _Construct(_Iter _First, _Iter _Last) { // initialize from [_First, _Last), input iterators
+    template <class _Iter, class _Sent>
+    void _Construct(_Iter _First, const _Sent _Last) { // initialize from input range [_First, _Last)
         _Tidy_guard<deque> _Guard{this};
         for (; _First != _Last; ++_First) {
-            emplace_back(*_First);
+            _Emplace_back_internal(*_First);
         }
 
         _Guard._Target = nullptr;
@@ -772,10 +788,54 @@ public:
         emplace_front(_STD move(_Val));
     }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    void prepend_range(_Rng&& _Range) {
+        _Orphan_all();
+
+        const auto _Oldsize = _Mysize();
+        _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
+        if constexpr (_RANGES bidirectional_range<_Rng>) {
+            const auto _UFirst = _RANGES _Ubegin(_Range);
+            auto _ULast        = _RANGES _Get_final_iterator_unwrapped(_Range);
+            while (_UFirst != _ULast) {
+                _Emplace_front_internal(*--_ULast); // prepend in order
+            }
+        } else {
+            auto _UFirst      = _RANGES _Ubegin(_Range);
+            const auto _ULast = _RANGES _Uend(_Range);
+            for (; _UFirst != _ULast; ++_UFirst) {
+                _Emplace_front_internal(*_UFirst); // prepend flipped
+            }
+
+            const auto _Num = static_cast<difference_type>(_Mysize() - _Oldsize);
+            _STD reverse(begin(), begin() + _Num);
+        }
+        _Guard._Container = nullptr;
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     void push_back(_Ty&& _Val) {
         _Orphan_all();
         _Emplace_back_internal(_STD move(_Val));
     }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    void append_range(_Rng&& _Range) {
+        _Orphan_all();
+
+        const auto _Oldsize = _Mysize();
+        auto _UFirst        = _RANGES _Ubegin(_Range);
+        const auto _ULast   = _RANGES _Uend(_Range);
+
+        _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
+        for (; _UFirst != _ULast; ++_UFirst) {
+            _Emplace_back_internal(*_UFirst);
+        }
+        _Guard._Container = nullptr;
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     iterator insert(const_iterator _Where, _Ty&& _Val) {
         return emplace(_Where, _STD move(_Val));
@@ -784,23 +844,7 @@ public:
     template <class... _Valty>
     decltype(auto) emplace_front(_Valty&&... _Val) {
         _Orphan_all();
-
-        if (_Myoff() % _Block_size == 0 && _Mapsize() <= (_Mysize() + _Block_size) / _Block_size) {
-            _Growmap(1);
-        }
-        _Myoff() &= _Mapsize() * _Block_size - 1;
-        size_type _Newoff = _Myoff() != 0 ? _Myoff() : _Mapsize() * _Block_size;
-        size_type _Block  = _Getblock(--_Newoff);
-        if (_Map()[_Block] == nullptr) {
-            _Map()[_Block] = _Getal().allocate(_Block_size);
-        }
-
-        _Alty_traits::construct(
-            _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size), _STD forward<_Valty>(_Val)...);
-
-        _Myoff() = _Newoff;
-        ++_Mysize();
-
+        _Emplace_front_internal(_STD forward<_Valty>(_Val)...);
 #if _HAS_CXX17
         return front();
 #endif // _HAS_CXX17
@@ -965,8 +1009,9 @@ public:
     }
 
     void resize(_CRT_GUARDOVERFLOW size_type _Newsize) {
+        _Orphan_all();
         while (_Mysize() < _Newsize) {
-            emplace_back();
+            _Emplace_back_internal();
         }
 
         while (_Mysize() > _Newsize) {
@@ -994,7 +1039,7 @@ public:
             static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alty_traits::max_size(_Getal()));
     }
 
-    _NODISCARD bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
         return _Mysize() == 0;
     }
 
@@ -1115,6 +1160,25 @@ private:
         ++_Mysize();
     }
 
+    template <class... _Tys>
+    void _Emplace_front_internal(_Tys&&... _Vals) {
+        if (_Myoff() % _Block_size == 0 && _Mapsize() <= (_Mysize() + _Block_size) / _Block_size) {
+            _Growmap(1);
+        }
+        _Myoff() &= _Mapsize() * _Block_size - 1;
+        size_type _Newoff      = _Myoff() != 0 ? _Myoff() : _Mapsize() * _Block_size;
+        const size_type _Block = _Getblock(--_Newoff);
+        if (_Map()[_Block] == nullptr) {
+            _Map()[_Block] = _Getal().allocate(_Block_size);
+        }
+
+        _Alty_traits::construct(
+            _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size), _STD forward<_Tys>(_Vals)...);
+
+        _Myoff() = _Newoff;
+        ++_Mysize();
+    }
+
 public:
     void push_back(const _Ty& _Val) {
         _Orphan_all();
@@ -1145,29 +1209,41 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL == 2
     }
 
-    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    void assign(_Iter _First, _Iter _Last) {
+private:
+    template <class _Iter, class _Sent>
+    void _Assign_range(_Iter _First, const _Sent _Last) {
         _Orphan_all();
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst       = _Get_unwrapped(_First);
-        const auto _ULast  = _Get_unwrapped(_Last);
         auto _Myfirst      = _Unchecked_begin();
         const auto _Mylast = _Unchecked_end();
-        for (; _UFirst != _ULast; ++_UFirst) { // try to assign over an element in the container
-            if (_Myfirst == _Mylast) { // container wasn't big enough, insert what's left at end
-                do {
-                    emplace_back(*_UFirst);
-                    ++_UFirst;
-                } while (_UFirst != _ULast);
+        // Reuse existing elements
+        for (; _Myfirst != _Mylast; ++_Myfirst, (void) ++_First) {
+            if (_First == _Last) {
+                _Erase_last_n(static_cast<size_type>(_Mylast - _Myfirst));
                 return;
             }
 
-            *_Myfirst = *_UFirst;
-            ++_Myfirst;
+            *_Myfirst = *_First;
         }
 
-        _Erase_last_n(static_cast<size_type>(_Mylast - _Myfirst));
+        // Allocate new elements for remaining tail of values
+        for (; _First != _Last; ++_First) {
+            _Emplace_back_internal(*_First);
+        }
     }
+
+public:
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
+    void assign(_Iter _First, _Iter _Last) {
+        _Adl_verify_range(_First, _Last);
+        _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+    }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    void assign_range(_Rng&& _Range) {
+        _Assign_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     void assign(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) { // assign _Count * _Val
         _Orphan_all();
@@ -1236,51 +1312,86 @@ private:
         }
     };
 
-public:
-    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
-        // insert [_First, _Last) at _Where, input iterators
-        size_type _Off = static_cast<size_type>(_Where - begin());
+    enum class _Is_bidi : bool { _No, _Yes };
+
+    template <_Is_bidi _Bidi, class _Iter, class _Sent>
+    iterator _Insert_range(const size_type _Off, _Iter _First, _Sent _Last) {
+        // insert [_First, _Last) at begin() + _Off
+        // Pre: _Bidi == _Is_bidi::_Yes implies that _Iter and _Sent are the same type, and that
+        //      _Iter is either a bidirectional_iterator or a Cpp17BidirectionalIterator.
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Mysize() >= _Off, "deque insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst      = _Get_unwrapped(_First);
-        const auto _ULast = _Get_unwrapped(_Last);
-
-        size_type _Oldsize = _Mysize();
-
-        if (_UFirst != _ULast) {
-            if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
-                _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
-                for (; _UFirst != _ULast; ++_UFirst) {
-                    emplace_front(*_UFirst); // prepend flipped
-                }
-
-                _Guard._Container = nullptr;
-
-                size_type _Num = _Mysize() - _Oldsize;
-                _STD reverse(begin(), begin() + static_cast<difference_type>(_Num)); // flip new stuff in place
-                _STD rotate(begin(), begin() + static_cast<difference_type>(_Num),
-                    begin() + static_cast<difference_type>(_Num + _Off));
-            } else { // closer to back
-                _Orphan_all();
-                _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
-                for (; _UFirst != _ULast; ++_UFirst) {
-                    _Emplace_back_internal(*_UFirst);
-                }
-
-                _Guard._Container = nullptr;
-
-                _STD rotate(begin() + static_cast<difference_type>(_Off),
-                    begin() + static_cast<difference_type>(_Oldsize), end());
-            }
+        if (_First == _Last) {
+            return begin() + static_cast<difference_type>(_Off);
         }
+
+        const size_type _Oldsize = _Mysize();
+
+        _Orphan_all();
+        if (_Off <= _Oldsize / 2) { // closer to front, push to front then rotate
+            _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
+            if constexpr (_Bidi == _Is_bidi::_Yes) {
+                while (_First != _Last) {
+                    _Emplace_front_internal(*--_Last); // prepend in order
+                }
+            } else {
+                for (; _First != _Last; ++_First) {
+                    _Emplace_front_internal(*_First); // prepend flipped
+                }
+            }
+
+            _Guard._Container = nullptr;
+
+            const auto _Num     = static_cast<difference_type>(_Mysize() - _Oldsize);
+            const auto _Myfirst = _Unchecked_begin();
+            const auto _Mymid   = _Myfirst + _Num;
+            if constexpr (_Bidi == _Is_bidi::_No) {
+                _STD reverse(_Myfirst, _Mymid); // flip new stuff in place
+            }
+            _STD rotate(_Myfirst, _Mymid, _Mymid + static_cast<difference_type>(_Off));
+            return begin() + static_cast<difference_type>(_Off);
+        }
+
+        _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
+        for (; _First != _Last; ++_First) {
+            _Emplace_back_internal(*_First);
+        }
+
+        _Guard._Container = nullptr;
+
+        const auto _Myfirst = _Unchecked_begin();
+        _STD rotate(_Myfirst + static_cast<difference_type>(_Off), _Myfirst + static_cast<difference_type>(_Oldsize),
+            _Unchecked_end());
 
         return begin() + static_cast<difference_type>(_Off);
     }
+
+public:
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
+    iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
+        // insert [_First, _Last) at _Where
+        _Adl_verify_range(_First, _Last);
+        const size_type _Off = static_cast<size_type>(_Where - begin());
+        return _Insert_range<static_cast<_Is_bidi>(_Is_cpp17_bidi_iter_v<_Iter>)>(
+            _Off, _Get_unwrapped(_First), _Get_unwrapped(_Last));
+    }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    iterator insert_range(const_iterator _Where, _Rng&& _Range) {
+        const size_type _Off = static_cast<size_type>(_Where - begin());
+
+        if constexpr (_RANGES bidirectional_range<_Rng>) {
+            return _Insert_range<_Is_bidi::_Yes>(
+                _Off, _RANGES _Ubegin(_Range), _RANGES _Get_final_iterator_unwrapped(_Range));
+        } else {
+            return _Insert_range<_Is_bidi::_No>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        }
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     iterator erase(const_iterator _Where) noexcept(is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
         return erase(_Where, _Next_iter(_Where));
@@ -1377,7 +1488,7 @@ private:
                 }
 
                 _Mid = begin() + static_cast<difference_type>(_Count);
-                _STD fill(_Mid, _Mid + static_cast<difference_type>(_Off), _Val); // fill in rest of values
+                _STD fill_n(_Mid, _Off, _Val); // fill in rest of values
             } else { // insert not longer than prefix
                 for (_Num = _Count; _Num > 0; --_Num) {
                     push_front(begin()[static_cast<difference_type>(_Count - 1)]); // push part of prefix
@@ -1403,7 +1514,7 @@ private:
                 }
 
                 _Mid = begin() + static_cast<difference_type>(_Off);
-                _STD fill(_Mid, _Mid + static_cast<difference_type>(_Rem), _Val); // fill in rest of values
+                _STD fill_n(_Mid, _Rem, _Val); // fill in rest of values
             } else { // insert not longer than prefix
                 for (_Num = 0; _Num < _Count; ++_Num) {
                     _Emplace_back_internal(
@@ -1414,8 +1525,7 @@ private:
                 _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
                 _STD move_backward(_Mid, _Mid + static_cast<difference_type>(_Rem - _Count),
                     _Mid + static_cast<difference_type>(_Rem)); // copy rest of prefix
-                _STD fill(_Mid, _Mid + static_cast<difference_type>(_Count),
-                    _Tmp._Get_value()); // fill in values
+                _STD fill_n(_Mid, _Count, _Tmp._Get_value()); // fill in values
             }
             _Guard._Container = nullptr;
         }
@@ -1577,12 +1687,18 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
 deque(_Iter, _Iter, _Alloc = _Alloc()) -> deque<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
-template <class _Ty, class _Alloc>
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
+    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+deque(from_range_t, _Rng&&, _Alloc = _Alloc()) -> deque<_RANGES range_value_t<_Rng>, _Alloc>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+_EXPORT_STD template <class _Ty, class _Alloc>
 void swap(deque<_Ty, _Alloc>& _Left, deque<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 
-template <class _Ty, class _Alloc>
+_EXPORT_STD template <class _Ty, class _Alloc>
 _NODISCARD bool operator==(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
     return _Left.size() == _Right.size()
         && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
@@ -1596,7 +1712,7 @@ _NODISCARD bool operator!=(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Al
 #endif // !_HAS_CXX20
 
 #ifdef __cpp_lib_concepts
-template <class _Ty, class _Alloc>
+_EXPORT_STD template <class _Ty, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Ty> operator<=>(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
         _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
@@ -1625,12 +1741,12 @@ _NODISCARD bool operator>=(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Al
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX20
-template <class _Ty, class _Alloc, class _Uty>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
 typename deque<_Ty, _Alloc>::size_type erase(deque<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
     return _Erase_remove(_Cont, _Val);
 }
 
-template <class _Ty, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
 typename deque<_Ty, _Alloc>::size_type erase_if(deque<_Ty, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
 }
@@ -1638,7 +1754,7 @@ typename deque<_Ty, _Alloc>::size_type erase_if(deque<_Ty, _Alloc>& _Cont, _Pr _
 
 #if _HAS_CXX17
 namespace pmr {
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     using deque = _STD deque<_Ty, polymorphic_allocator<_Ty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
