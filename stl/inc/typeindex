@@ -12,6 +12,7 @@
 
 #if _HAS_CXX20
 #include <compare>
+#include <cstring>
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -40,9 +41,12 @@ public:
 
 #if _HAS_CXX20
     _NODISCARD strong_ordering operator<=>(const type_index& _Right) const noexcept {
-        return *_Tptr == *_Right._Tptr      ? strong_ordering::equal
-             : _Tptr->before(*_Right._Tptr) ? strong_ordering::less
-                                            : strong_ordering::greater;
+        // TRANSITION, DevCom-10326599, should rely on a stable interface
+        if (_Tptr == _Right._Tptr) {
+            return strong_ordering::equal;
+        }
+
+        return _CSTD strcmp(_Tptr->raw_name() + 1, _Right._Tptr->raw_name() + 1) <=> 0;
     }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const type_index& _Right) const noexcept {
