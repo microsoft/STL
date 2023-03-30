@@ -69,11 +69,15 @@ concept CheckStaticFunctionsOfLayoutMapping = requires(const M m) {
                                                   bool_constant<M::is_always_unique()>::value;
                                               };
 
+// clang-format off
 template <class M, class... Indices>
-concept CheckCallOperatorOfLayoutMapping = requires(const M m, Indices... i) {
-                                               { m(i...) } -> same_as<typename M::index_type>;
-                                               { m(i...) == m(i...) } -> same_as<bool>;
-                                           };
+concept CheckCallOperatorOfLayoutMapping =
+    requires(const M m, Indices... i) {
+        { m(i...) } -> same_as<typename M::index_type>;
+        { m(i...) == m(static_cast<typename M::index_type>(i)...) } -> same_as<bool>;
+    };
+// clang-format on
+
 template <class M>
 concept CheckStrideMemberFunc = requires(M mapping, typename M::rank_type i) {
                                     { mapping.stride(i) } -> same_as<typename M::index_type>;
