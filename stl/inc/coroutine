@@ -219,7 +219,7 @@ struct coroutine_handle<noop_coroutine_promise> {
 
     _NODISCARD noop_coroutine_promise& promise() const noexcept {
         // Returns a reference to the associated promise
-        return *reinterpret_cast<noop_coroutine_promise*>(__builtin_coro_promise(_Ptr, 0, false));
+        return *static_cast<noop_coroutine_promise*>(__builtin_coro_promise(_Ptr, 0, false));
     }
 
     _NODISCARD constexpr void* address() const noexcept {
