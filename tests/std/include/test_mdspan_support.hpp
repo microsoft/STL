@@ -4,6 +4,7 @@
 #pragma once
 
 #include <concepts>
+#include <cstddef>
 #include <mdspan>
 #include <type_traits>
 #include <utility>
