@@ -81,6 +81,10 @@ std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_deallocate_ma
 
 # Too many constexpr operations
 std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
+std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp FAIL
+std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp FAIL
+std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp FAIL
+std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp FAIL
 
 # libc++ tests strengthened assignment operators (not compatible with P2165R4: "Compatibility Between tuple, pair, And tuple-like Objects")
 std/utilities/tuple/tuple.tuple/tuple.assign/const_pair.pass.cpp FAIL
@@ -120,10 +124,26 @@ std/language.support/support.limits/support.limits.general/format.version.compil
 # libc++ doesn't implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-3836
+std/utilities/expected/expected.expected/ctor/ctor.u.pass.cpp FAIL
+
 # libc++ doesn't implement LWG-3857
 std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
 std/strings/string.view/string.view.cons/from_string1.compile.fail.cpp FAIL
 std/strings/string.view/string.view.cons/from_string2.compile.fail.cpp FAIL
+
+# libc++ doesn't implement LWG-3870
+std/utilities/memory/specialized.algorithms/specialized.construct/ranges_construct_at.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.construct.default/ranges_uninitialized_default_construct.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.construct.default/ranges_uninitialized_default_construct_n.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.construct.value/ranges_uninitialized_value_construct.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.construct.value/ranges_uninitialized_value_construct_n.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy_n.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.fill/ranges_uninitialized_fill.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.fill.n/ranges_uninitialized_fill_n.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move_n.pass.cpp FAIL
 
 # libc++ doesn't implement P1957R2 "Converting from `T*` to `bool` should be considered narrowing"
 std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
@@ -918,13 +938,6 @@ std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.
 
 # Not analyzed. These tests use characters that cannot be represented in legacy character encodings
 std/utilities/format/format.functions/ascii.pass.cpp FAIL
-
-# Not analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
-std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/to_string.pass.cpp:1 FAIL
 
 # Not analyzed
 std/algorithms/alg.modifying.operations/alg.random.sample/ranges_sample.pass.cpp FAIL

@@ -42,13 +42,13 @@ STATIC_ASSERT(__cpp_lib_algorithm_iterator_requirements == 202207L);
 #endif
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 #ifndef __cpp_lib_allocate_at_least
 #error __cpp_lib_allocate_at_least is not defined
-#elif __cpp_lib_allocate_at_least != 202106L
-#error __cpp_lib_allocate_at_least is not 202106L
+#elif __cpp_lib_allocate_at_least != 202302L
+#error __cpp_lib_allocate_at_least is not 202302L
 #else
-STATIC_ASSERT(__cpp_lib_allocate_at_least == 202106L);
+STATIC_ASSERT(__cpp_lib_allocate_at_least == 202302L);
 #endif
 #else
 #ifdef __cpp_lib_allocate_at_least
@@ -1982,7 +1982,7 @@ STATIC_ASSERT(__cpp_lib_smart_ptr_for_overwrite == 202002L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_consteval)
+#if _HAS_CXX20
 #ifndef __cpp_lib_source_location
 #error __cpp_lib_source_location is not defined
 #elif __cpp_lib_source_location != 201907L

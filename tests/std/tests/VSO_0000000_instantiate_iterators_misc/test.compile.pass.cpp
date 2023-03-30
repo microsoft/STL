@@ -1274,7 +1274,8 @@ template <typename RegexTokenIterator>
 void regex_token_iterator_test_impl() {
     using it_type      = typename RegexTokenIterator::value_type::iterator;
     int submatches[10] = {0};
-    it_type start{}, finish{};
+    it_type start{};
+    it_type finish{};
     typename RegexTokenIterator::regex_type rgx{};
     RegexTokenIterator rti0(start, finish, rgx, submatches);
 }
