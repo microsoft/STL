@@ -24,7 +24,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
     // Check layout mapping requirements
     static_assert(check_layout_mapping_policy_requirements<layout_left, Ext>());
 
-    // layout_left​::​mapping<Ext> is a trivially copyable type that models regular for each Ext
+    // layout_left::mapping<Ext> is a trivially copyable type that models regular for each Ext
     static_assert(is_trivially_copyable_v<Ext>);
     static_assert(regular<Ext>);
 
