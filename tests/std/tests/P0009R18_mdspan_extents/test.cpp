@@ -216,7 +216,7 @@ constexpr void check_construction_from_array_and_span() {
         static_assert(!is_constructible_v<Ext, span<NonConvertibleToAnything, 2>>);
     }
 
-    { // Check construciton with integers with mismatched signs
+    { // Check construction with integers with mismatched signs
         using Ext = extents<long long, dynamic_extent>;
 
         array arr = {4ull};
