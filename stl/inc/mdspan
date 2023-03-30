@@ -384,7 +384,7 @@ public:
         requires (sizeof...(_IndexTypes) == extents_type::rank()) && (is_convertible_v<_IndexTypes, index_type> && ...)
               && (is_nothrow_constructible_v<index_type, _IndexTypes> && ...)
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
-        return _Index_impl(make_index_sequence<extents_type::rank()>{}, _Indices...);
+        return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
     }
 
     _NODISCARD static constexpr bool is_always_unique() noexcept {
@@ -430,9 +430,10 @@ private:
 
     template <class... _IndexTypes, size_t... _Seq>
     constexpr index_type _Index_impl(index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
+        _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
         index_type _Stride = 1;
         index_type _Result = 0;
-        (((_Result += static_cast<index_type>(_Indices) * _Stride), (_Stride *= _Exts.extent(_Seq))), ...);
+        (((_Result += _Indices * _Stride), (_Stride *= _Exts.extent(_Seq))), ...);
         return _Result;
     }
 };
