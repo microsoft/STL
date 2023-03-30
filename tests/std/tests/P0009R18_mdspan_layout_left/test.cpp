@@ -11,6 +11,8 @@
 
 #include "test_mdspan_support.hpp"
 
+using namespace std;
+
 template <class Mapping, class... Indices>
 concept CanInvokeCallOperatorOfMapping = requires(Mapping mapping, Indices... i) {
                                              { mapping(i...) } -> same_as<typename Mapping::index_type>;
