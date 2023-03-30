@@ -817,31 +817,29 @@ constexpr tuple some_ranges = {
     array{"4"sv, "2"sv, "0"sv},
 };
 
-constexpr tuple expected_results = {
-    // Expected result of views::cartesian_product(get<0>(some_ranges))
-    to_array<tuple<int>>({{0}, {1}, {2}, {3}, {4}}),
+// Expected result of views::cartesian_product(get<0>(some_ranges))
+constexpr array<tuple<int>, 5> expected_result_0{{{0}, {1}, {2}, {3}, {4}}};
 
-    // Expected result of views::cartesian_product(get<0>(some_ranges), get<1>(some_ranges))
-    to_array<tuple<int, int>>({{0, 11}, {0, 22}, {0, 33}, {1, 11}, {1, 22}, {1, 33}, {2, 11}, {2, 22}, {2, 33}, {3, 11},
-        {3, 22}, {3, 33}, {4, 11}, {4, 22}, {4, 33}}),
+// Expected result of views::cartesian_product(get<0>(some_ranges), get<1>(some_ranges))
+constexpr array<tuple<int, int>, 15> expected_result_1{{{0, 11}, {0, 22}, {0, 33}, {1, 11}, {1, 22}, {1, 33}, {2, 11},
+    {2, 22}, {2, 33}, {3, 11}, {3, 22}, {3, 33}, {4, 11}, {4, 22}, {4, 33}}};
 
-    // Expected result of views::cartesian_product(get<0>(some_ranges), ..., get<2>(some_ranges))
-    to_array<tuple<int, int, char>>(
-        {{0, 11, '7'}, {0, 22, '7'}, {0, 33, '7'}, {1, 11, '7'}, {1, 22, '7'}, {1, 33, '7'}, {2, 11, '7'}, {2, 22, '7'},
-            {2, 33, '7'}, {3, 11, '7'}, {3, 22, '7'}, {3, 33, '7'}, {4, 11, '7'}, {4, 22, '7'}, {4, 33, '7'}}),
+// Expected result of views::cartesian_product(get<0>(some_ranges), ..., get<2>(some_ranges))
+constexpr array<tuple<int, int, char>, 15> expected_result_2{
+    {{0, 11, '7'}, {0, 22, '7'}, {0, 33, '7'}, {1, 11, '7'}, {1, 22, '7'}, {1, 33, '7'}, {2, 11, '7'}, {2, 22, '7'},
+        {2, 33, '7'}, {3, 11, '7'}, {3, 22, '7'}, {3, 33, '7'}, {4, 11, '7'}, {4, 22, '7'}, {4, 33, '7'}}};
 
-    // Expected result of views::cartesian_product(get<0>(some_ranges), ..., get<3>(some_ranges))
-    to_array<tuple<int, int, char, string_view>>(
-        {{0, 11, '7', "4"sv}, {0, 11, '7', "2"sv}, {0, 11, '7', "0"sv}, {0, 22, '7', "4"sv}, {0, 22, '7', "2"sv},
-            {0, 22, '7', "0"sv}, {0, 33, '7', "4"sv}, {0, 33, '7', "2"sv}, {0, 33, '7', "0"sv}, {1, 11, '7', "4"sv},
-            {1, 11, '7', "2"sv}, {1, 11, '7', "0"sv}, {1, 22, '7', "4"sv}, {1, 22, '7', "2"sv}, {1, 22, '7', "0"sv},
-            {1, 33, '7', "4"sv}, {1, 33, '7', "2"sv}, {1, 33, '7', "0"sv}, {2, 11, '7', "4"sv}, {2, 11, '7', "2"sv},
-            {2, 11, '7', "0"sv}, {2, 22, '7', "4"sv}, {2, 22, '7', "2"sv}, {2, 22, '7', "0"sv}, {2, 33, '7', "4"sv},
-            {2, 33, '7', "2"sv}, {2, 33, '7', "0"sv}, {3, 11, '7', "4"sv}, {3, 11, '7', "2"sv}, {3, 11, '7', "0"sv},
-            {3, 22, '7', "4"sv}, {3, 22, '7', "2"sv}, {3, 22, '7', "0"sv}, {3, 33, '7', "4"sv}, {3, 33, '7', "2"sv},
-            {3, 33, '7', "0"sv}, {4, 11, '7', "4"sv}, {4, 11, '7', "2"sv}, {4, 11, '7', "0"sv}, {4, 22, '7', "4"sv},
-            {4, 22, '7', "2"sv}, {4, 22, '7', "0"sv}, {4, 33, '7', "4"sv}, {4, 33, '7', "2"sv}, {4, 33, '7', "0"sv}}),
-};
+// Expected result of views::cartesian_product(get<0>(some_ranges), ..., get<3>(some_ranges))
+constexpr array<tuple<int, int, char, string_view>, 45> expected_result_3{
+    {{0, 11, '7', "4"sv}, {0, 11, '7', "2"sv}, {0, 11, '7', "0"sv}, {0, 22, '7', "4"sv}, {0, 22, '7', "2"sv},
+        {0, 22, '7', "0"sv}, {0, 33, '7', "4"sv}, {0, 33, '7', "2"sv}, {0, 33, '7', "0"sv}, {1, 11, '7', "4"sv},
+        {1, 11, '7', "2"sv}, {1, 11, '7', "0"sv}, {1, 22, '7', "4"sv}, {1, 22, '7', "2"sv}, {1, 22, '7', "0"sv},
+        {1, 33, '7', "4"sv}, {1, 33, '7', "2"sv}, {1, 33, '7', "0"sv}, {2, 11, '7', "4"sv}, {2, 11, '7', "2"sv},
+        {2, 11, '7', "0"sv}, {2, 22, '7', "4"sv}, {2, 22, '7', "2"sv}, {2, 22, '7', "0"sv}, {2, 33, '7', "4"sv},
+        {2, 33, '7', "2"sv}, {2, 33, '7', "0"sv}, {3, 11, '7', "4"sv}, {3, 11, '7', "2"sv}, {3, 11, '7', "0"sv},
+        {3, 22, '7', "4"sv}, {3, 22, '7', "2"sv}, {3, 22, '7', "0"sv}, {3, 33, '7', "4"sv}, {3, 33, '7', "2"sv},
+        {3, 33, '7', "0"sv}, {4, 11, '7', "4"sv}, {4, 11, '7', "2"sv}, {4, 11, '7', "0"sv}, {4, 22, '7', "4"sv},
+        {4, 22, '7', "2"sv}, {4, 22, '7', "0"sv}, {4, 33, '7', "4"sv}, {4, 33, '7', "2"sv}, {4, 33, '7', "0"sv}}};
 
 template <test::CanDifference Difference>
 struct test_input_range {
@@ -863,15 +861,15 @@ struct instantiator {
     template <class R>
     static constexpr void call() {
         typename R::template type<const int> r0{get<0>(some_ranges)};
-        test_one(get<0>(expected_results), r0);
+        test_one(expected_result_0, r0);
 
         if constexpr (ranges::forward_range<typename R::template type<const int>>) {
             typename R::template type<const int> r1{get<1>(some_ranges)};
-            test_one(get<1>(expected_results), r0, r1);
+            test_one(expected_result_1, r0, r1);
 
 #if !(defined(__clang__) && defined(_DEBUG) && !defined(_DLL)) // constexpr limit
             typename R::template type<const char> r2{get<2>(some_ranges)};
-            test_one(get<2>(expected_results), r0, r1, r2);
+            test_one(expected_result_2, r0, r1, r2);
 #endif // "Clang /MTd" configuration
 
             int swap_a1[] = {1, 2, 3};
@@ -979,33 +977,33 @@ int main() {
     // Check views
     { // ... copyable
         constexpr span<const int> s{get<0>(some_ranges)};
-        STATIC_ASSERT(test_one(get<0>(expected_results), s));
-        test_one(get<0>(expected_results), s);
+        STATIC_ASSERT(test_one(expected_result_0, s));
+        test_one(expected_result_0, s);
     }
 
     { // ... modifiable elements (so iterators are indirectly swappable)
         auto arr = get<0>(some_ranges);
         span<int> s{arr};
-        test_one(get<0>(expected_results), s);
+        test_one(expected_result_0, s);
     }
 
     { // ... move-only
         using test::Common, test::Sized;
-        test_one(get<3>(expected_results), //
+        test_one(expected_result_3, //
             move_only_view<int, input_iterator_tag, Common::no, Sized::yes>{get<0>(some_ranges)},
             move_only_view<int, forward_iterator_tag, Common::no, Sized::yes>{get<1>(some_ranges)},
             move_only_view<char, bidirectional_iterator_tag, Common::no, Sized::yes>{get<2>(some_ranges)},
             move_only_view<string_view, random_access_iterator_tag, Common::no, Sized::yes>{get<3>(some_ranges)});
-        test_one(get<3>(expected_results), //
+        test_one(expected_result_3, //
             move_only_view<int, input_iterator_tag, Common::no, Sized::no>{get<0>(some_ranges)},
             move_only_view<int, forward_iterator_tag, Common::no, Sized::no>{get<1>(some_ranges)},
             move_only_view<char, bidirectional_iterator_tag, Common::no, Sized::no>{get<2>(some_ranges)},
             move_only_view<string_view, random_access_iterator_tag, Common::no, Sized::no>{get<3>(some_ranges)});
-        test_one(get<2>(expected_results), //
+        test_one(expected_result_2, //
             move_only_view<int, forward_iterator_tag, Common::yes, Sized::yes>{get<0>(some_ranges)},
             move_only_view<int, bidirectional_iterator_tag, Common::yes, Sized::yes>{get<1>(some_ranges)},
             move_only_view<char, random_access_iterator_tag, Common::yes, Sized::yes>{get<2>(some_ranges)});
-        test_one(get<2>(expected_results), //
+        test_one(expected_result_2, //
             move_only_view<int, forward_iterator_tag, Common::yes, Sized::no>{get<0>(some_ranges)},
             move_only_view<int, bidirectional_iterator_tag, Common::yes, Sized::no>{get<1>(some_ranges)},
             move_only_view<char, random_access_iterator_tag, Common::yes, Sized::no>{get<2>(some_ranges)});
@@ -1014,19 +1012,21 @@ int main() {
     // Check non-views
     {
         constexpr auto& r0 = get<0>(some_ranges);
-        STATIC_ASSERT(test_one(get<0>(expected_results), r0));
-        test_one(get<0>(expected_results), r0);
+        STATIC_ASSERT(test_one(expected_result_0, r0));
+        test_one(expected_result_0, r0);
 
         auto r1 = get<1>(some_ranges) | ranges::to<vector>();
-        test_one(get<1>(expected_results), r0, r1);
+        test_one(expected_result_1, r0, r1);
 
         auto r2 = get<2>(some_ranges) | ranges::to<forward_list>();
-        test_one(get<2>(expected_results), r0, r1, r2);
+        test_one(expected_result_2, r0, r1, r2);
 
         auto r3 = get<3>(some_ranges) | ranges::to<list>();
-        test_one(get<3>(expected_results), r0, r1, r2, r3);
+        test_one(expected_result_3, r0, r1, r2, r3);
     }
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     STATIC_ASSERT((instantiation_test(), true));
+#endif // TRANSITION, GH-1030
     instantiation_test();
 }
