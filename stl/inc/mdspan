@@ -429,7 +429,7 @@ private:
     extents_type _Exts{};
 
     template <class... _IndexTypes, size_t... _Seq>
-    constexpr index_type _Index_impl(index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
+    _NODISCARD constexpr index_type _Index_impl(index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
         index_type _Stride = 1;
         index_type _Result = 0;
