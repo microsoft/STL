@@ -12,8 +12,6 @@
 
 #include "test_mdspan_support.hpp"
 
-using namespace std;
-
 template <class IndexType, size_t... Extents, size_t... Indices>
 constexpr void do_check_members(index_sequence<Indices...>) {
     using Ext = extents<IndexType, Extents...>;
