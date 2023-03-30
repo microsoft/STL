@@ -363,7 +363,6 @@ constexpr bool test() {
     return true;
 }
 
-
 int main() {
     static_assert(test());
     test();
