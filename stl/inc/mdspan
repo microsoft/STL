@@ -587,7 +587,7 @@ public:
               && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
 #endif // ^^^ no workaround ^^^
     constexpr mapping(const extents_type& _Exts_, const span<_OtherIndexType, extents_type::rank()> _Strides_) noexcept
-        : _Exts{_Exts_} {
+        : _Exts(_Exts_) {
         for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
             _Strides[_Idx] = _Strides_[_Idx];
         }
@@ -604,7 +604,7 @@ public:
 #endif // ^^^ no workaround ^^^
     constexpr mapping(
         const extents_type& _Exts_, const array<_OtherIndexType, extents_type::rank()>& _Strides_) noexcept
-        : _Exts{_Exts_} {
+        : _Exts(_Exts_) {
         for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
             _Strides[_Idx] = _Strides_[_Idx];
         }
