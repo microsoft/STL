@@ -1595,6 +1595,20 @@ STATIC_ASSERT(__cpp_lib_ranges_as_rvalue == 202207L);
 #endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_cartesian_product
+#error __cpp_lib_ranges_cartesian_product is not defined
+#elif __cpp_lib_ranges_cartesian_product != 202207L
+#error __cpp_lib_ranges_cartesian_product is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_cartesian_product == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_cartesian_product
+#error __cpp_lib_ranges_cartesian_product is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges_chunk
 #error __cpp_lib_ranges_chunk is not defined
 #elif __cpp_lib_ranges_chunk != 202202L

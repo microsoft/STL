@@ -9254,7 +9254,7 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Inner_iterator<_Const>>) // strengthened
                 : _Parent(_STD addressof(_Parent_)), _Inner(_STD move(_Inner_)) {}
 
-            _NODISCARD static consteval auto _Get_iterator_category() noexcept {
+            _NODISCARD static _CONSTEVAL auto _Get_iterator_category() noexcept {
                 if constexpr (!is_reference_v<_Invoke_result_with_repeated_type<_Maybe_const<_Const, _Fn>&,
                                   range_reference_t<_Base>, _Nx>>) {
                     return input_iterator_tag{};
@@ -9274,7 +9274,7 @@ namespace ranges {
             }
 
             template <size_t... _Indices>
-            _NODISCARD static consteval bool _Is_indirection_nothrow(index_sequence<_Indices...>) noexcept {
+            _NODISCARD static _CONSTEVAL bool _Is_indirection_nothrow(index_sequence<_Indices...>) noexcept {
                 return noexcept(_STD invoke(_STD declval<_Maybe_const<_Const, _Fn>&>(),
                     *_STD get<_Indices>(_STD declval<const _Inner_iterator<_Const>&>()._Current)...));
             }
@@ -9575,6 +9575,604 @@ namespace ranges {
         _EXPORT_STD template <size_t _Nx>
         inline constexpr _Adjacent_transform_fn<_Nx> adjacent_transform;
         _EXPORT_STD inline constexpr _Adjacent_transform_fn<2> pairwise_transform;
+    } // namespace views
+
+    template <_Integer_like _Int>
+    _NODISCARD constexpr bool _Add_with_overflow_check(const _Int _Left, const _Int _Right, _Int& _Out) {
+#ifdef __clang__
+        if constexpr (integral<_Int>) {
+            return __builtin_add_overflow(_Left, _Right, &_Out);
+        } else
+#endif // __clang__
+        {
+            if constexpr (!_Signed_integer_like<_Int>) {
+                _Out = static_cast<_Int>(_Left + _Right);
+                return _Out < _Left || _Out < _Right;
+            } else {
+                using _UInt = _Make_unsigned_like_t<_Int>;
+                _Out        = static_cast<_Int>(static_cast<_UInt>(_Left) + static_cast<_UInt>(_Right));
+                return (_Left > 0 && _Right > 0 && _Out <= 0) || (_Left < 0 && _Right < 0 && _Out >= 0);
+            }
+        }
+    }
+
+    template <_Integer_like _Int>
+    _NODISCARD constexpr bool _Multiply_with_overflow_check(const _Int _Left, const _Int _Right, _Int& _Out) {
+#ifdef __clang__
+        if constexpr (integral<_Int>) {
+            return __builtin_mul_overflow(_Left, _Right, &_Out);
+        } else
+#endif // __clang__
+        {
+            if constexpr (!_Signed_integer_like<_Int>) {
+                _Out = static_cast<_Int>(_Left * _Right);
+                return _Left != 0 && _Right > (numeric_limits<_Int>::max)() / _Left;
+            } else {
+                // vvv Based on llvm::MulOverflow vvv
+                // https://github.com/llvm/llvm-project/blob/88e5206/llvm/include/llvm/Support/MathExtras.h#L725-L750
+                //===----------------------------------------------------------------------===//
+                //
+                // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+                // See https://llvm.org/LICENSE.txt for license information.
+                // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+                //
+                //===----------------------------------------------------------------------===//
+                using _UInt          = _Make_unsigned_like_t<_Int>;
+                const _UInt _ULeft   = _Left < 0 ? (0 - static_cast<_UInt>(_Left)) : static_cast<_UInt>(_Left);
+                const _UInt _URight  = _Right < 0 ? (0 - static_cast<_UInt>(_Right)) : static_cast<_UInt>(_Right);
+                const _UInt _UResult = static_cast<_UInt>(_ULeft * _URight);
+
+                const bool _Negative = (_Left < 0) != (_Right < 0);
+                _Out                 = static_cast<_Int>(_Negative ? (0 - _UResult) : _UResult);
+                if (_ULeft == 0 || _URight == 0) {
+                    return false;
+                }
+
+                if (_Negative) {
+                    return _ULeft > (static_cast<_UInt>((numeric_limits<_Int>::max)()) + _UInt{1}) / _URight;
+                } else {
+                    return _ULeft > static_cast<_UInt>((numeric_limits<_Int>::max)()) / _URight;
+                }
+                // ^^^ Based on llvm::MulOverflow ^^^
+            }
+        }
+    }
+
+    template <bool _Const, class _First, class... _Rest>
+    concept _Cartesian_product_is_random_access = (random_access_range<_Maybe_const<_Const, _First>> && ...
+                                                   && (random_access_range<_Maybe_const<_Const, _Rest>>
+                                                       && sized_range<_Maybe_const<_Const, _Rest>>) );
+
+    template <class _Rng>
+    concept _Cartesian_product_common_arg = common_range<_Rng> || (sized_range<_Rng> && random_access_range<_Rng>);
+
+    template <bool _Const, class _First, class... _Rest>
+    concept _Cartesian_product_is_bidirectional = (bidirectional_range<_Maybe_const<_Const, _First>> && ...
+                                                   && (bidirectional_range<_Maybe_const<_Const, _Rest>>
+                                                       && _Cartesian_product_common_arg<_Maybe_const<_Const, _Rest>>) );
+
+    template <class _First /*, class... _Rest*/>
+    concept _Cartesian_product_is_common = _Cartesian_product_common_arg<_First>;
+
+    template <class... _Rngs>
+    concept _Cartesian_product_is_sized = (sized_range<_Rngs> && ...);
+
+    template <bool _Const, template <class> class _FirstSent, class _First, class... _Rest>
+    concept _Cartesian_is_sized_sentinel =
+        (sized_sentinel_for<_FirstSent<_Maybe_const<_Const, _First>>, iterator_t<_Maybe_const<_Const, _First>>> && ...
+            && (sized_range<_Maybe_const<_Const, _Rest>>
+                && sized_sentinel_for<iterator_t<_Maybe_const<_Const, _Rest>>,
+                    iterator_t<_Maybe_const<_Const, _Rest>>>) );
+
+    template <_Cartesian_product_common_arg _Rng>
+    _NODISCARD constexpr auto _Cartesian_common_arg_end(_Rng& _Range) {
+        if constexpr (common_range<_Rng>) {
+            return _RANGES end(_Range);
+        } else {
+            return _RANGES begin(_Range) + _RANGES distance(_Range);
+        }
+    }
+
+    template <sized_range _Ty>
+    inline constexpr auto _Compile_time_max_size = (numeric_limits<range_size_t<_Ty>>::max)();
+
+    template <class _Ty>
+    concept _Constant_sized_range =
+        sized_range<_Ty> && requires { typename _Require_constant<remove_reference_t<_Ty>::size()>; };
+
+    template <_Constant_sized_range _Ty>
+    inline constexpr auto _Compile_time_max_size<_Ty> = remove_reference_t<_Ty>::size();
+
+    template <class _Ty, size_t _Size>
+    inline constexpr auto _Compile_time_max_size<array<_Ty, _Size>> = _Size;
+
+    template <class _Ty, size_t _Size>
+    inline constexpr auto _Compile_time_max_size<const array<_Ty, _Size>> = _Size;
+
+    template <class _Ty, size_t _Extent>
+        requires (_Extent != dynamic_extent)
+    inline constexpr auto _Compile_time_max_size<span<_Ty, _Extent>> = _Extent;
+
+    template <class _Ty, size_t _Extent>
+        requires (_Extent != dynamic_extent)
+    inline constexpr auto _Compile_time_max_size<const span<_Ty, _Extent>> = _Extent;
+
+    template <class _Ty>
+    inline constexpr auto _Compile_time_max_size<ref_view<_Ty>> = _Compile_time_max_size<_Ty>;
+
+    template <class _Ty>
+        requires sized_range<const _Ty>
+    inline constexpr auto _Compile_time_max_size<const ref_view<_Ty>> = _Compile_time_max_size<const _Ty>;
+
+    template <class _Ty>
+    inline constexpr auto _Compile_time_max_size<owning_view<_Ty>> = _Compile_time_max_size<_Ty>;
+
+    template <class _Ty>
+        requires sized_range<const _Ty>
+    inline constexpr auto _Compile_time_max_size<const owning_view<_Ty>> = _Compile_time_max_size<const _Ty>;
+
+    template <range _Rng>
+    _NODISCARD _CONSTEVAL int _Cartesian_product_max_size_bit_width() noexcept {
+        if constexpr (sized_range<_Rng>) {
+            if constexpr (requires(range_size_t<_Rng> _Val) { _STD bit_width(_Val); }) {
+                return _STD bit_width(_Compile_time_max_size<_Rng>);
+            } else {
+                return numeric_limits<range_size_t<_Rng>>::digits;
+            }
+        } else {
+            return numeric_limits<_Make_unsigned_like_t<range_difference_t<_Rng>>>::digits;
+        }
+    }
+
+    template <class _First, class... _Rest>
+    _NODISCARD _CONSTEVAL auto _Cartesian_product_optimal_size_type() noexcept {
+        constexpr int _Optimal_size_type_bit_width =
+            (_Cartesian_product_max_size_bit_width<_First>() + ... + _Cartesian_product_max_size_bit_width<_Rest>());
+        if constexpr (_Optimal_size_type_bit_width <= 8) {
+            return uint_least8_t{};
+        } else if constexpr (_Optimal_size_type_bit_width <= 16) {
+            return uint_least16_t{};
+        } else if constexpr (_Optimal_size_type_bit_width <= 32) {
+            return uint_least32_t{};
+        } else if constexpr (_Optimal_size_type_bit_width <= 64) {
+            return uint_least64_t{};
+        } else {
+            return _Unsigned128{};
+        }
+    }
+
+    _EXPORT_STD template <input_range _First, forward_range... _Rest>
+        requires (view<_First> && ... && view<_Rest>)
+    class cartesian_product_view : public view_interface<cartesian_product_view<_First, _Rest...>> {
+    private:
+        template <bool _Const>
+        using _Optimal_size_type = decltype(_Cartesian_product_optimal_size_type<_Maybe_const<_Const, _First>,
+            _Maybe_const<_Const, _Rest>...>());
+
+        template <bool _Const>
+        using _Difference_type = common_type_t<_Make_signed_like_t<_Optimal_size_type<_Const>>,
+            range_difference_t<_Maybe_const<_Const, _First>>, range_difference_t<_Maybe_const<_Const, _Rest>>...>;
+
+        template <bool _Const>
+        using _Size_type = common_type_t<_Optimal_size_type<_Const>, range_size_t<_Maybe_const<_Const, _First>>,
+            range_size_t<_Maybe_const<_Const, _Rest>>...>;
+
+        /* [[no_unique_address]] */ tuple<_First, _Rest...> _Bases;
+
+        template <bool _Const>
+        class _Iterator {
+        private:
+            friend cartesian_product_view;
+            using _Parent_t = _Maybe_const<_Const, cartesian_product_view>;
+
+            _Parent_t* _Parent = nullptr;
+            tuple<iterator_t<_Maybe_const<_Const, _First>>, iterator_t<_Maybe_const<_Const, _Rest>>...> _Current;
+
+            template <size_t _Index = sizeof...(_Rest)>
+            constexpr void _Next() {
+                auto& _It = _STD get<_Index>(_Current);
+                ++_It;
+                if constexpr (_Index > 0) {
+                    auto& _Range = _STD get<_Index>(_Parent->_Bases);
+                    if (_It == _RANGES end(_Range)) {
+                        _It = _RANGES begin(_Range);
+                        _Next<_Index - 1>();
+                    }
+                }
+            }
+
+            template <size_t _Index = sizeof...(_Rest)>
+            constexpr void _Prev() {
+                auto& _It = _STD get<_Index>(_Current);
+                if constexpr (_Index > 0) {
+                    auto& _Range = _STD get<_Index>(_Parent->_Bases);
+                    if (_It == _RANGES begin(_Range)) {
+                        _It = _Cartesian_common_arg_end(_Range);
+                        _Prev<_Index - 1>();
+                    }
+                }
+                --_It;
+            }
+
+            template <size_t... _Indices>
+            _NODISCARD constexpr bool _Entire_tail_at_begin(index_sequence<_Indices...>) const {
+                return ((_STD get<_Indices + 1>(_Current) == _RANGES begin(_STD get<_Indices + 1>(_Parent->_Bases)))
+                        && ...);
+            }
+
+            template <size_t _Index = sizeof...(_Rest)>
+            constexpr void _Advance(const _Difference_type<_Const> _Off) {
+                if (_Off == 0) {
+                    return;
+                }
+
+                auto& _Range = _STD get<_Index>(_Parent->_Bases);
+                auto& _It    = _STD get<_Index>(_Current);
+                using _Iter  = remove_reference_t<decltype(_It)>;
+                using _Diff  = _Difference_type<_Const>;
+
+                if constexpr (_Index > 0) {
+                    const auto _Size       = static_cast<_Diff>(_RANGES ssize(_Range));
+                    const auto _Begin      = _RANGES begin(_Range);
+                    const auto _It_off     = static_cast<_Diff>(_It - _Begin);
+                    const auto _It_new_off = static_cast<_Diff>((_It_off + _Off) % _Size);
+                    const auto _Next_off   = static_cast<_Diff>((_It_off + _Off) / _Size);
+                    if (_It_new_off < 0) {
+                        _It = _Begin + static_cast<iter_difference_t<_Iter>>(_It_new_off + _Size);
+                        _Advance<_Index - 1>(_Next_off - 1);
+                    } else {
+                        _It = _Begin + static_cast<iter_difference_t<_Iter>>(_It_new_off);
+                        _Advance<_Index - 1>(_Next_off);
+                    }
+                } else {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                    const auto _It_off = static_cast<_Diff>(_It - _RANGES begin(_Range));
+                    _STL_VERIFY(_It_off + _Off >= 0, "Cannot advance cartesian_product_view iterator before begin "
+                                                     "(N4928 [range.cartesian.iterator]/19).");
+                    if constexpr (sized_range<decltype(_Range)>) {
+                        const auto _Size = static_cast<_Diff>(_RANGES ssize(_Range));
+                        _STL_VERIFY(_It_off + _Off < _Size
+                                        || (_It_off + _Off == _Size
+                                            && _Entire_tail_at_begin(make_index_sequence<sizeof...(_Rest)>{})),
+                            "Cannot advance cartesian_product_view iterator past end (N4928 "
+                            "[range.cartesian.iterator]/19).");
+                    }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                    _It += static_cast<iter_difference_t<_Iter>>(_Off);
+                }
+            }
+
+            template <size_t... _Indices>
+            _NODISCARD constexpr bool _Is_end(index_sequence<_Indices...>) const {
+                return ((_STD get<_Indices>(_Current) == _RANGES end(_STD get<_Indices>(_Parent->_Bases))) || ...);
+            }
+
+            template <size_t... _Indices>
+            _NODISCARD constexpr auto _End_tuple(index_sequence<_Indices...>) const {
+                return tuple{_RANGES end(_STD get<0>(_Parent->_Bases)),
+                    _RANGES begin(_STD get<_Indices + 1>(_Parent->_Bases))...};
+            }
+
+            template <size_t _Index = sizeof...(_Rest), class _Tuple>
+            _NODISCARD constexpr _Difference_type<_Const> _Distance_from(const _Tuple& _Tpl) const {
+                const auto _Diff =
+                    static_cast<_Difference_type<_Const>>(_STD get<_Index>(_Current) - _STD get<_Index>(_Tpl));
+                if constexpr (_Index > 0) {
+                    _Difference_type<_Const> _Result{1};
+                    const auto _Size =
+                        static_cast<_Difference_type<_Const>>(_RANGES size(_STD get<_Index>(_Parent->_Bases)));
+                    [[maybe_unused]] const bool _Overflow =
+                        _Multiply_with_overflow_check(_Size, _Distance_from<_Index - 1>(_Tpl), _Result)
+                        || _Add_with_overflow_check(_Result, _Diff, _Result);
+#if _ITERATOR_DEBUG_LEVEL != 0
+                    _STL_VERIFY(!_Overflow, "Scaled-sum cannot be represented by difference_type (N4928 "
+                                            "[range.cartesian.iterator]/8).");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                    return _Result;
+                } else {
+                    return _Diff;
+                }
+            }
+
+            template <size_t... _Indices>
+            _NODISCARD static _CONSTEVAL bool _Is_iter_move_nothrow(index_sequence<_Indices...>) noexcept {
+                return conjunction_v<
+                           is_nothrow_move_constructible<range_rvalue_reference_t<_Maybe_const<_Const, _First>>>,
+                           is_nothrow_move_constructible<range_rvalue_reference_t<_Maybe_const<_Const, _Rest>>>...>
+                    && (noexcept(_RANGES iter_move(_STD get<_Indices>(_STD declval<const _Iterator&>()._Current)))
+                        && ...);
+            }
+
+            template <size_t... _Indices>
+            _NODISCARD static _CONSTEVAL bool _Is_iter_swap_nothrow(index_sequence<_Indices...>) noexcept {
+                return (noexcept(_RANGES iter_swap(_STD get<_Indices>(_STD declval<const _Iterator&>()._Current),
+                            _STD get<_Indices>(_STD declval<const _Iterator&>()._Current)))
+                        && ...);
+            }
+
+            constexpr _Iterator(_Parent_t& _Parent_,
+                tuple<iterator_t<_Maybe_const<_Const, _First>>, iterator_t<_Maybe_const<_Const, _Rest>>...> _Current_)
+                : _Parent(_STD addressof(_Parent_)), _Current(_STD move(_Current_)) {}
+
+        public:
+            using iterator_category = input_iterator_tag;
+            using iterator_concept  = conditional_t<_Cartesian_product_is_random_access<_Const, _First, _Rest...>,
+                random_access_iterator_tag,
+                conditional_t<_Cartesian_product_is_bidirectional<_Const, _First, _Rest...>, bidirectional_iterator_tag,
+                    conditional_t<forward_range<_Maybe_const<_Const, _First>>, forward_iterator_tag,
+                        input_iterator_tag>>>;
+            using value_type =
+                tuple<range_value_t<_Maybe_const<_Const, _First>>, range_value_t<_Maybe_const<_Const, _Rest>>...>;
+            using reference       = tuple<range_reference_t<_Maybe_const<_Const, _First>>,
+                range_reference_t<_Maybe_const<_Const, _Rest>>...>;
+            using difference_type = _Difference_type<_Const>;
+
+            _Iterator() = default;
+
+            constexpr _Iterator(_Iterator<!_Const> _It)
+                requires _Const
+                          && (convertible_to<iterator_t<_First>, iterator_t<const _First>> && ...
+                              && convertible_to<iterator_t<_Rest>, iterator_t<const _Rest>>)
+                : _Parent(_It._Parent), _Current(_STD move(_It._Current)) {}
+
+            _NODISCARD constexpr auto operator*() const {
+                return _RANGES _Tuple_transform([](auto& _It) -> decltype(auto) { return *_It; }, _Current);
+            }
+
+            constexpr _Iterator& operator++() {
+                _Next();
+                return *this;
+            }
+
+            constexpr void operator++(int) {
+                ++*this;
+            }
+
+            constexpr _Iterator operator++(int)
+                requires forward_range<_Maybe_const<_Const, _First>>
+            {
+                auto _Tmp = *this;
+                ++*this;
+                return _Tmp;
+            }
+
+            constexpr _Iterator& operator--()
+                requires _Cartesian_product_is_bidirectional<_Const, _First, _Rest...>
+            {
+                _Prev();
+                return *this;
+            }
+
+            constexpr _Iterator operator--(int)
+                requires _Cartesian_product_is_bidirectional<_Const, _First, _Rest...>
+            {
+                auto _Tmp = *this;
+                --*this;
+                return _Tmp;
+            }
+
+            constexpr _Iterator& operator+=(const difference_type _Off)
+                requires _Cartesian_product_is_random_access<_Const, _First, _Rest...>
+            {
+                _Advance(_Off);
+                return *this;
+            }
+
+            constexpr _Iterator& operator-=(const difference_type _Off)
+                requires _Cartesian_product_is_random_access<_Const, _First, _Rest...>
+            {
+                _Advance(-_Off);
+                return *this;
+            }
+
+            _NODISCARD constexpr reference operator[](const difference_type _Off) const
+                requires _Cartesian_product_is_random_access<_Const, _First, _Rest...>
+            {
+                return *(*this + _Off);
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right)
+                requires equality_comparable<iterator_t<_Maybe_const<_Const, _First>>>
+            {
+                return _Left._Current == _Right._Current;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _It, default_sentinel_t) {
+                return _It._Is_end(make_index_sequence<1 + sizeof...(_Rest)>{});
+            }
+
+            _NODISCARD_FRIEND constexpr auto operator<=>(const _Iterator& _Left, const _Iterator& _Right)
+                requires _All_random_access<_Const, _First, _Rest...>
+            {
+                return _Left._Current <=> _Right._Current;
+            }
+
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _It, const difference_type _Off)
+                requires _Cartesian_product_is_random_access<_Const, _First, _Rest...>
+            {
+                return _Iterator{_It} += _Off;
+            }
+
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, const _Iterator& _It)
+                requires _Cartesian_product_is_random_access<_Const, _First, _Rest...>
+            {
+                return _It + _Off;
+            }
+
+            _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off)
+                requires _Cartesian_product_is_random_access<_Const, _First, _Rest...>
+            {
+                return _Iterator{_It} -= _Off;
+            }
+
+            _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left, const _Iterator& _Right)
+                requires _Cartesian_is_sized_sentinel<_Const, iterator_t, _First, _Rest...>
+            {
+                return _Left._Distance_from(_Right._Current);
+            }
+
+            _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _It, default_sentinel_t)
+                requires _Cartesian_is_sized_sentinel<_Const, sentinel_t, _First, _Rest...>
+            {
+                return _It._Distance_from(_It._End_tuple(make_index_sequence<sizeof...(_Rest)>{}));
+            }
+
+            _NODISCARD_FRIEND constexpr difference_type operator-(default_sentinel_t _Se, const _Iterator& _It)
+                requires _Cartesian_is_sized_sentinel<_Const, sentinel_t, _First, _Rest...>
+            {
+                return -(_It - _Se);
+            }
+
+            _NODISCARD_FRIEND constexpr auto iter_move(const _Iterator& _It) noexcept(
+                _Is_iter_move_nothrow(make_index_sequence<1 + sizeof...(_Rest)>{})) {
+                return _RANGES _Tuple_transform(_RANGES iter_move, _It._Current);
+            }
+
+            friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                _Is_iter_swap_nothrow(make_index_sequence<1 + sizeof...(_Rest)>{}))
+                requires (indirectly_swappable<iterator_t<_Maybe_const<_Const, _First>>> && ...
+                          && indirectly_swappable<iterator_t<_Maybe_const<_Const, _Rest>>>)
+            {
+                return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+                    return (_RANGES iter_swap(_STD get<_Indices>(_Left._Current), _STD get<_Indices>(_Right._Current)),
+                        ...);
+                }
+                (make_index_sequence<1 + sizeof...(_Rest)>{});
+            }
+        };
+
+        template <size_t _Index>
+        _NODISCARD constexpr auto _Begin_or_first_end([[maybe_unused]] const bool _Is_empty) {
+            if constexpr (_Index == 0) {
+                return _Is_empty ? _RANGES begin(_STD get<_Index>(_Bases))
+                                 : _Cartesian_common_arg_end(_STD get<_Index>(_Bases));
+            } else {
+                return _RANGES begin(_STD get<_Index>(_Bases));
+            }
+        }
+
+        template <size_t _Index>
+        _NODISCARD constexpr auto _Begin_or_first_end([[maybe_unused]] const bool _Is_empty) const {
+            if constexpr (_Index == 0) {
+                return _Is_empty ? _RANGES begin(_STD get<_Index>(_Bases))
+                                 : _Cartesian_common_arg_end(_STD get<_Index>(_Bases));
+            } else {
+                return _RANGES begin(_STD get<_Index>(_Bases));
+            }
+        }
+
+    public:
+        constexpr cartesian_product_view() = default;
+
+        constexpr explicit cartesian_product_view(_First _First_base, _Rest... _Other_bases) noexcept(
+            (is_nothrow_move_constructible_v<_First> && ... && is_nothrow_move_constructible_v<_Rest>) ) // strengthened
+            : _Bases(_STD move(_First_base), _STD move(_Other_bases)...) {}
+
+        _NODISCARD constexpr _Iterator<false> begin()
+            requires (!_Simple_view<_First> || ... || !_Simple_view<_Rest>)
+        {
+            return _Iterator<false>{*this, _RANGES _Tuple_transform(_RANGES begin, _Bases)};
+        }
+
+        _NODISCARD constexpr _Iterator<true> begin() const
+            requires (range<const _First> && ... && range<const _Rest>)
+        {
+            return _Iterator<true>{*this, _RANGES _Tuple_transform(_RANGES begin, _Bases)};
+        }
+
+        _NODISCARD constexpr _Iterator<false> end()
+            requires ((!_Simple_view<_First> || ... || !_Simple_view<_Rest>) && _Cartesian_product_is_common<_First>)
+        {
+            const bool _Is_empty = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+                return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ...);
+            }
+            (make_index_sequence<sizeof...(_Rest)>{});
+
+            const auto _Make_iter_tuple = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+                return tuple{_Begin_or_first_end<_Indices>(_Is_empty)...};
+            };
+            return _Iterator<false>{*this, _Make_iter_tuple(make_index_sequence<1 + sizeof...(_Rest)>{})};
+        }
+
+        _NODISCARD constexpr _Iterator<true> end() const
+            requires _Cartesian_product_is_common<const _First>
+        {
+            const bool _Is_empty = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+                return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ...);
+            }
+            (make_index_sequence<sizeof...(_Rest)>{});
+
+            const auto _Make_iter_tuple = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+                return tuple{_Begin_or_first_end<_Indices>(_Is_empty)...};
+            };
+            return _Iterator<true>{*this, _Make_iter_tuple(make_index_sequence<1 + sizeof...(_Rest)>{})};
+        }
+
+        _NODISCARD constexpr default_sentinel_t end() const noexcept {
+            return default_sentinel;
+        }
+
+        _NODISCARD constexpr auto size()
+            requires _Cartesian_product_is_sized<_First, _Rest...>
+        {
+            return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+                _Size_type<false> _Product{1};
+                const bool _Overflow =
+                    (_Multiply_with_overflow_check(
+                         _Product, static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases))), _Product)
+                        || ...);
+                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4928 "
+                                        "[range.cartesian.view]/10).");
+                return _Product;
+#else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
+                return (static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases))) * ...);
+#endif // ^^^ _CONTAINER_DEBUG_LEVEL == 0 ^^^
+            }
+            (make_index_sequence<1 + sizeof...(_Rest)>{});
+        }
+
+        _NODISCARD constexpr auto size() const
+            requires _Cartesian_product_is_sized<const _First, const _Rest...>
+        {
+            return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+                _Size_type<true> _Product{1};
+                const bool _Overflow =
+                    (_Multiply_with_overflow_check(
+                         _Product, static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases))), _Product)
+                        || ...);
+                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4928 "
+                                        "[range.cartesian.view]/10).");
+                return _Product;
+#else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
+                return (static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases))) * ...);
+#endif // ^^^ _CONTAINER_DEBUG_LEVEL == 0 ^^^
+            }
+            (make_index_sequence<1 + sizeof...(_Rest)>{});
+        }
+    };
+
+    template <class... _Rngs>
+    cartesian_product_view(_Rngs&&...) -> cartesian_product_view<views::all_t<_Rngs>...>;
+
+    namespace views {
+        class _Cartesian_product_fn {
+        public:
+            _NODISCARD constexpr auto operator()() const noexcept {
+                return views::single(tuple{});
+            }
+
+            template <class... _Rngs>
+            _NODISCARD constexpr auto operator()(_Rngs&&... _Ranges) const
+                noexcept(noexcept(cartesian_product_view<views::all_t<_Rngs>...>{_STD forward<_Rngs>(_Ranges)...}))
+                requires requires { cartesian_product_view<views::all_t<_Rngs>...>{_STD forward<_Rngs>(_Ranges)...}; }
+            {
+                return cartesian_product_view<views::all_t<_Rngs>...>{_STD forward<_Rngs>(_Ranges)...};
+            }
+        };
+
+        _EXPORT_STD inline constexpr _Cartesian_product_fn cartesian_product;
     } // namespace views
 
 #ifdef __cpp_lib_ranges_to_container
