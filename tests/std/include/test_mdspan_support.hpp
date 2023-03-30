@@ -109,7 +109,7 @@ constexpr bool check_layout_mapping_requirements() {
 template <class MP, class E>
     requires is_extents_v<E>
 constexpr bool check_layout_mapping_policy_requirements() {
-    using X = MP::template mapping<E>;
+    using X = typename MP::template mapping<E>;
     static_assert(check_layout_mapping_requirements<X>());
     static_assert(same_as<typename X::layout_type, MP>);
     static_assert(same_as<typename X::extents_type, E>);
