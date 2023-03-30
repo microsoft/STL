@@ -14,8 +14,8 @@
 using namespace std;
 
 template <class Mapping, class... Indices>
-concept CanInvokeCallOperatorOfMapping = requires(Mapping mapping, Indices... i) {
-                                             { mapping(i...) } -> same_as<typename Mapping::index_type>;
+concept CanInvokeCallOperatorOfMapping = requires(Mapping m, Indices... i) {
+                                             { m(i...) } -> same_as<typename Mapping::index_type>;
                                          };
 
 template <class IndexType, size_t... Extents, size_t... Indices>
@@ -38,16 +38,16 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
     static_assert(same_as<typename Mapping::layout_type, layout_left>);
 
     { // Check default and copy constructor
-        Mapping mapping;
-        Mapping copy = mapping;
-        assert(copy == mapping);
+        Mapping m;
+        Mapping cpy = m;
+        assert(cpy == m);
         static_assert(is_nothrow_default_constructible_v<Mapping>);
         static_assert(is_nothrow_copy_constructible_v<Mapping>);
     }
 
     { // Check construction from extents_type
-        Mapping mapping{ext};
-        assert(mapping.extents() == ext);
+        Mapping m{ext};
+        assert(m.extents() == ext);
         static_assert(is_nothrow_constructible_v<Mapping, Ext>);
     }
 
@@ -56,9 +56,9 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
     using Mapping2       = layout_left::mapping<Ext2>;
 
     { // Check construction from other layout_left::mapping
-        Mapping mapping{ext};
-        Mapping2 mapping2{mapping};
-        assert(mapping == mapping2);
+        Mapping m1{ext};
+        Mapping2 m2{m1};
+        assert(m1 == m2);
         static_assert(is_nothrow_constructible_v<Mapping2, Mapping>);
         // Other tests are defined in 'check_construction_from_other_left_mapping' function
     }
@@ -67,9 +67,9 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
         using RightMapping = layout_right::mapping<Ext>;
         if constexpr (Ext::rank() <= 1) {
             RightMapping right_mapping{ext};
-            [[maybe_unused]] Mapping mapping{right_mapping};
-            [[maybe_unused]] Mapping2 mapping2{right_mapping};
-            assert(mapping == mapping2);
+            [[maybe_unused]] Mapping m1{right_mapping};
+            [[maybe_unused]] Mapping2 m2{right_mapping};
+            assert(m1 == m2);
             static_assert(is_nothrow_constructible_v<Mapping, RightMapping>);
             static_assert(is_nothrow_constructible_v<Mapping2, RightMapping>);
         } else {
@@ -89,29 +89,29 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
 
         using StrideMapping = layout_stride::mapping<Ext>;
         StrideMapping stride_mapping{ext, strides};
-        [[maybe_unused]] Mapping mapping{stride_mapping};
+        [[maybe_unused]] Mapping m{stride_mapping};
         // Other tests are defined in 'check_construction_from_other_stride_mapping' function
     }
 #pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
 
-    Mapping mapping{ext}; // For later use
+    Mapping m{ext}; // For later use
 
     { // Check 'extents' function
-        assert(mapping.extents() == ext);
-        static_assert(noexcept(mapping.extents()));
+        assert(m.extents() == ext);
+        static_assert(noexcept(m.extents()));
     }
 
     { // Check 'required_span_size' function
         const IndexType expected_value = static_cast<IndexType>((ext.extent(Indices) * ... * 1));
-        assert(mapping.required_span_size() == expected_value);
-        static_assert(noexcept(mapping.required_span_size()));
+        assert(m.required_span_size() == expected_value);
+        static_assert(noexcept(m.required_span_size()));
     }
 
     { // Check operator()
-        assert(mapping(((void) Indices, 0)...) == 0);
-        assert(mapping((ext.extent(Indices) - 1)...) == static_cast<IndexType>((ext.extent(Indices) * ... * 1)) - 1);
-        static_assert(noexcept(mapping(((void) Indices, 0)...)));
-        static_assert(noexcept(mapping((ext.extent(Indices) - 1)...)));
+        assert(m(((void) Indices, 0)...) == 0);
+        assert(m((ext.extent(Indices) - 1)...) == static_cast<IndexType>((ext.extent(Indices) * ... * 1)) - 1);
+        static_assert(noexcept(m(((void) Indices, 0)...)));
+        static_assert(noexcept(m((ext.extent(Indices) - 1)...)));
         // Other tests are defined in 'check_call_operator' function
     }
 
@@ -130,16 +130,16 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
     if constexpr (Ext::rank() > 0) { // Check 'stride' function
         const IndexType expected_value =
             static_cast<IndexType>((ext.extent(Indices) * ... * 1) / ext.extent(Ext::rank() - 1));
-        assert(mapping.stride(Ext::rank() - 1) == expected_value);
-        assert(mapping.stride(0) == 1);
-        static_assert(noexcept(mapping.stride(Ext::rank() - 1)));
-        static_assert(noexcept(mapping.stride(0)));
+        assert(m.stride(Ext::rank() - 1) == expected_value);
+        assert(m.stride(0) == 1);
+        static_assert(noexcept(m.stride(Ext::rank() - 1)));
+        static_assert(noexcept(m.stride(0)));
     } else {
         static_assert(!CheckStrideMemberFunction<Mapping>);
     }
 
     { // Check comparisons
-        assert(mapping == mapping);
+        assert(m == m);
         // Other tests are defined in 'check_comparisons' function
     }
 }
@@ -251,22 +251,22 @@ constexpr void check_call_operator() {
     }
 
     { // Check various mappings
-        layout_left::mapping<extents<short>> mapping1;
-        assert(mapping1() == 0);
+        layout_left::mapping<extents<short>> m1;
+        assert(m1() == 0);
 
-        layout_left::mapping<extents<int, 3>> mapping2;
-        assert(mapping2(0) == 0);
-        assert(mapping2(1) == 1);
-        assert(mapping2(2) == 2);
+        layout_left::mapping<extents<int, 3>> m2;
+        assert(m2(0) == 0);
+        assert(m2(1) == 1);
+        assert(m2(2) == 2);
 
-        layout_left::mapping<dextents<long, 2>> mapping3{dextents<int, 2>{5, 6}};
-        assert(mapping3(0, 0) == 0);
-        assert(mapping3(1, 0) == 1);
-        assert(mapping3(0, 1) == 5);
-        assert(mapping3(1, 1) == 6);
-        assert(mapping3(2, 1) == 7);
-        assert(mapping3(1, 2) == 11);
-        assert(mapping3(4, 5) == 29);
+        layout_left::mapping<dextents<long, 2>> m3{dextents<int, 2>{5, 6}};
+        assert(m3(0, 0) == 0);
+        assert(m3(1, 0) == 1);
+        assert(m3(0, 1) == 5);
+        assert(m3(1, 1) == 6);
+        assert(m3(2, 1) == 7);
+        assert(m3(1, 2) == 11);
+        assert(m3(4, 5) == 29);
     }
 }
 
@@ -281,12 +281,12 @@ constexpr void check_comparisons() {
     }
 
     { // Check correctness
-        StaticMapping mapping1;
-        DynamicMapping mapping2{dextents<int, 1>{3}};
-        DynamicMapping mapping3{dextents<int, 1>{2}};
-        assert(mapping1 == mapping2);
-        assert(mapping2 != mapping3);
-        assert(mapping1 != mapping3);
+        StaticMapping m1;
+        DynamicMapping m2{dextents<int, 1>{3}};
+        DynamicMapping m3{dextents<int, 1>{2}};
+        assert(m1 == m2);
+        assert(m2 != m3);
+        assert(m1 != m3);
     }
 }
 
