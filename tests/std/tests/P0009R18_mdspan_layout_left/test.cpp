@@ -135,7 +135,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
         static_assert(noexcept(mapping.stride(Ext::rank() - 1)));
         static_assert(noexcept(mapping.stride(0)));
     } else {
-        static_assert(!CheckStrideMemberFunc<Mapping>);
+        static_assert(!CheckStrideMemberFunction<Mapping>);
     }
 
     { // Check comparisons

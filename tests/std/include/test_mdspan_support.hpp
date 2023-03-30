@@ -78,9 +78,9 @@ concept CheckCallOperatorOfLayoutMapping =
 // clang-format on
 
 template <class M>
-concept CheckStrideMemberFunc = requires(M mapping, typename M::rank_type i) {
-                                    { mapping.stride(i) } -> std::same_as<typename M::index_type>;
-                                };
+concept CheckStrideMemberFunction = requires(M mapping, typename M::rank_type i) {
+                                        { mapping.stride(i) } -> std::same_as<typename M::index_type>;
+                                    };
 
 template <class M>
 constexpr bool check_layout_mapping_requirements() {
@@ -99,7 +99,7 @@ constexpr bool check_layout_mapping_requirements() {
     (std::make_index_sequence<M::extents_type::rank()>{});
 
     if constexpr (requires(M m, typename M::rank_type i) { m.stride(i); }) {
-        static_assert(CheckStrideMemberFunc<M>);
+        static_assert(CheckStrideMemberFunction<M>);
     }
 
     return true;
