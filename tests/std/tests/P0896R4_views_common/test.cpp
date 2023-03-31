@@ -88,7 +88,7 @@ void non_literal_parts(R& r, E& expected) {
     }
 
     const same_as<const_iterator_t<R>> auto clast = r.cend();
-    if constexpr (bidirectional_iterator<R>) {
+    if constexpr (bidirectional_range<R>) {
         if (!is_empty) {
             assert(*prev(clast) == *prev(end(expected)));
         }
