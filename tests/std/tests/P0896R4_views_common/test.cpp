@@ -95,7 +95,7 @@ void non_literal_parts(R& r, E& expected) {
     }
 
     if constexpr (CanCEnd<const R&>) {
-        const same_as<const_iterator_t<R>> auto clast2 = as_const(r).cend();
+        const same_as<const_iterator_t<const R>> auto clast2 = as_const(r).cend();
         if constexpr (bidirectional_range<const R>) {
             if (!is_empty) {
                 assert(*prev(clast2) == *prev(end(expected)));
