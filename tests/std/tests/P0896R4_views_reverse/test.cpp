@@ -285,7 +285,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert(*prev(as_const(r).cend()) == *prev(end(expected)));
         }
     }
-#endif //_HAS_CXX23
+#endif // _HAS_CXX23
 
     // Validate view_interface::data
     static_assert(!CanData<R>);

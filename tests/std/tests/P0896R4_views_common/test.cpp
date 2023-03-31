@@ -102,7 +102,7 @@ void non_literal_parts(R& r, E& expected) {
             }
         }
     }
-#endif //_HAS_CXX23
+#endif // _HAS_CXX23
 }
 
 template <class Rng, class Expected>
