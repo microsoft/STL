@@ -234,6 +234,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     // Validate view_interface::cbegin
     static_assert(CanMemberCBegin<R>);
     {
+        // Ditto "let's make some extra calls because reverse_view sometimes caches begin"
         const same_as<const_iterator<reverse_iterator<iterator_t<V>>>> auto ci = r.cbegin();
         if (!is_empty) {
             assert(*ci == *begin(expected));
