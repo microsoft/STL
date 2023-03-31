@@ -7,6 +7,7 @@
 
 #include <Windows.h>
 
+#if defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
 #ifndef UNDOCKED_WINDOWS_UCRT
 #pragma warning(push)
 #pragma warning(disable : 4265) // non-virtual destructor in base class
@@ -18,8 +19,7 @@
 #include <ctxtcall.h>
 #include <mutex>
 #include <windows.foundation.diagnostics.h>
-
-#pragma comment(lib, "ole32")
+#endif
 
 // This IID is exported by ole32.dll; we cannot depend on ole32.dll on OneCore.
 static GUID const Local_IID_ICallbackWithNoReentrancyToApplicationSTA = {
@@ -219,6 +219,7 @@ namespace Concurrency {
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemCompleted() {}
 #endif
 
+#if defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
         using namespace ABI::Windows::Foundation;
         using namespace ABI::Windows::Foundation::Diagnostics;
         using namespace Microsoft::WRL;
@@ -316,6 +317,26 @@ namespace Concurrency {
             }
             return false;
         }
+
+#else
+        _CRTIMP2 void __thiscall _ContextCallback::_CallInContext(_CallbackFunction _Func, bool) const {
+            _Func();
+        }
+
+        _CRTIMP2 void __thiscall _ContextCallback::_Capture() {}
+
+        _CRTIMP2 void __thiscall _ContextCallback::_Reset() {}
+
+        _CRTIMP2 void __thiscall _ContextCallback::_Assign(void*) {}
+
+        _CRTIMP2 bool __cdecl _ContextCallback::_IsCurrentOriginSTA() {
+            return false;
+        }
+
+        _CRTIMP2 bool __cdecl _Task_impl_base::_IsNonBlockingThread() {
+            return false;
+        }
+#endif
     } // namespace details
 
 #ifdef _CRT_APP
