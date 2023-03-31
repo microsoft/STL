@@ -10,28 +10,9 @@
 #include <type_traits>
 #include <utility>
 
+#include "test_mdspan_support.hpp"
+
 using namespace std;
-
-enum class IsNothrow : bool { no, yes };
-
-template <class Int, IsNothrow Nothrow = IsNothrow::yes>
-struct ConvertibleToInt {
-    constexpr operator Int() const noexcept(to_underlying(Nothrow)) {
-        return Int{1};
-    }
-};
-
-struct NonConvertibleToAnything {};
-
-template <class T>
-constexpr void check_implicit_conversion(T); // not defined
-
-// clang-format off
-template <class T, class... Args>
-concept NotImplicitlyConstructibleFrom =
-    constructible_from<T, Args...>
-    && !requires(Args&&... args) { check_implicit_conversion<T>({forward<Args>(args)...}); };
-// clang-format on
 
 template <class IndexType, size_t... Extents, size_t... Indices>
 constexpr void do_check_members(index_sequence<Indices...>) {
@@ -237,7 +218,7 @@ constexpr void check_construction_from_array_and_span() {
         static_assert(!is_constructible_v<Ext, span<NonConvertibleToAnything, 2>>);
     }
 
-    { // Check construciton with integers with mismatched signs
+    { // Check construction with integers with mismatched signs
         using Ext = extents<long long, dynamic_extent>;
 
         array arr = {4ull};
