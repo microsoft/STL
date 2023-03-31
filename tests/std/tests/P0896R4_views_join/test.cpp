@@ -277,8 +277,8 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                     assert(*prev(cs2) == *prev(end(expected)));
 
                     if constexpr (copyable<V>) {
-                        const auto r2                               = r;
-                        const same_as<const_sentinel_t<R>> auto cs3 = r2.cend();
+                        const auto r2                                     = r;
+                        const same_as<const_sentinel_t<const R>> auto cs3 = r2.cend();
                         assert(*prev(cs3) == *prev(end(expected)));
                     }
                 }
