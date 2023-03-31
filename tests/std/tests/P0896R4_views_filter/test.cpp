@@ -201,6 +201,54 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(!CanEnd<const F>);
     }
 
+#if _HAS_CXX23
+    using ranges::const_iterator_t, ranges::const_sentinel_t;
+
+    // Validate view_interface::cbegin
+    STATIC_ASSERT(CanMemberCBegin<F>);
+    if (forward_range<V>) { // intentionally not if constexpr
+        // Ditto "let's make some extra calls because memoization"
+        const same_as<const_iterator_t<F>> auto ci = r.cbegin();
+        if (!is_empty) {
+            assert(*ci == *begin(expected));
+        }
+        assert(*r.cbegin() == *begin(expected));
+        assert(*r.cbegin() == *begin(expected));
+
+        if constexpr (copy_constructible<V>) {
+            auto r2                                     = r;
+            const same_as<const_iterator_t<F>> auto ci2 = r2.cbegin();
+            assert(*r2.cbegin() == *ci2);
+            assert(*r2.cbegin() == *ci2);
+            if (!is_empty) {
+                assert(*ci2 == *ci);
+            }
+        }
+
+        STATIC_ASSERT(!CanMemberCBegin<const F>);
+    }
+
+    // Validate view_interface::cend
+    STATIC_ASSERT(CanMemberCEnd<F>);
+    if (!is_empty) {
+        if constexpr (common_range<V>) {
+            same_as<const_iterator_t<F>> auto ci = r.cend();
+            if constexpr (bidirectional_range<V>) {
+                assert(*prev(ci) == *prev(end(expected)));
+            }
+        } else {
+            [[maybe_unused]] same_as<const_sentinel_t<F>> auto cs = r.cend();
+        }
+
+        if constexpr (bidirectional_range<V> && common_range<V> && copy_constructible<V>) {
+            auto r2 = r;
+            assert(*prev(r2.cend()) == *prev(end(expected)));
+        }
+
+        STATIC_ASSERT(!CanMemberCEnd<const F>);
+    }
+#endif // _HAS_CXX23
+
     // Validate view_interface::data
     STATIC_ASSERT(!CanData<F>);
     STATIC_ASSERT(!CanData<const F>);
