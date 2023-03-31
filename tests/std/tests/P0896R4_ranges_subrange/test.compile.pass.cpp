@@ -1036,6 +1036,15 @@ namespace test_subrange {
         STATIC_ASSERT(HasMemberEmpty<Subrange const>);
         STATIC_ASSERT(!copyable<I> || range<Subrange const&>);
 
+#if _HAS_CXX23 // Validate cbegin/cend
+        if constexpr (ranges::input_range<Subrange>) {
+            STATIC_ASSERT(CanMemberCBegin<Subrange>);
+            STATIC_ASSERT(CanMemberCBegin<const Subrange> == ranges::input_range<const Subrange&>);
+            STATIC_ASSERT(CanMemberCEnd<Subrange>);
+            STATIC_ASSERT(CanMemberCEnd<const Subrange> == ranges::input_range<const Subrange&>);
+        }
+#endif // _HAS_CXX23
+
         // Validate size
         STATIC_ASSERT(sized == HasMemberSize<Subrange>);
 
