@@ -250,7 +250,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
 
         static_assert(CanMemberCBegin<const R> == common_range<Rng>);
-        if constexpr (common_range<Rng>) {
+        if constexpr (CanMemberCBegin<const R>) {
             const same_as<const_iterator<reverse_iterator<iterator_t<const V>>>> auto ci3 = as_const(r).cbegin();
             assert(as_const(r).cbegin() == ci3);
             assert(as_const(r).cbegin() == ci3);
@@ -281,7 +281,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
 
         static_assert(CanMemberCEnd<const R> == common_range<Rng>);
-        if constexpr (common_range<Rng>) {
+        if constexpr (CanMemberCEnd<const R>) {
             assert(*prev(as_const(r).cend()) == *prev(end(expected)));
         }
     }
