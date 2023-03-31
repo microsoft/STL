@@ -215,6 +215,77 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
             }
         }
 
+#if _HAS_CXX23
+        using ranges::const_iterator_t, ranges::const_sentinel_t;
+
+        // Validate view_interface::cbegin
+        static_assert(CanMemberCBegin<R>);
+        static_assert(CanMemberCBegin<const R>
+                      == (forward_range<const V> && is_reference_v<range_reference_t<const V>>
+                          && input_range<range_reference_t<const V>>) );
+        if (forward_range<R>) { // intentionally not if constexpr
+            const same_as<const_iterator_t<R>> auto ci = r.cbegin();
+            if (!is_empty) {
+                assert(*ci == *begin(expected));
+            }
+
+            if constexpr (copyable<V>) {
+                auto r2                                     = r;
+                const same_as<const_iterator_t<R>> auto ci2 = r2.cbegin();
+                if (!is_empty) {
+                    assert(*ci2 == *ci);
+                }
+            }
+
+            static_assert(CanMemberCBegin<const R> == CanCBegin<const R&>);
+            if constexpr (CanMemberCBegin<const R>) {
+                const same_as<const_iterator_t<const R>> auto ci2 = as_const(r).cbegin();
+                if (!is_empty) {
+                    assert(*ci2 == *ci);
+                }
+
+                if constexpr (copyable<V>) {
+                    const auto r2                                     = r;
+                    const same_as<const_iterator_t<const R>> auto ci3 = r2.cbegin();
+                    if (!is_empty) {
+                        assert(*ci3 == *ci);
+                    }
+                }
+            }
+        }
+
+        // Validate view_interface::cend
+        static_assert(CanMemberCEnd<R>);
+        static_assert(CanMemberCEnd<const R>
+                      == (forward_range<const V> && is_reference_v<range_reference_t<const V>>
+                          && input_range<range_reference_t<const V>>) );
+        const same_as<const_sentinel_t<R>> auto cs = r.end();
+        if (!is_empty) {
+            if constexpr (bidirectional_range<R> && common_range<R>) {
+                assert(*prev(cs) == *prev(end(expected)));
+
+                if constexpr (copyable<V>) {
+                    auto r2 = r;
+                    assert(*prev(r2.cend()) == *prev(end(expected)));
+                }
+            }
+
+            static_assert(CanMemberCEnd<const R> == CanCEnd<const R&>);
+            if constexpr (CanMemberCEnd<const R>) {
+                const same_as<const_sentinel_t<const R>> auto cs2 = as_const(r).cend();
+                if constexpr (bidirectional_range<R> && common_range<R>) {
+                    assert(*prev(cs2) == *prev(end(expected)));
+
+                    if constexpr (copyable<V>) {
+                        const auto r2                               = r;
+                        const same_as<const_sentinel_t<R>> auto cs3 = r2.cend();
+                        assert(*prev(cs3) == *prev(end(expected)));
+                    }
+                }
+            }
+        }
+#endif // _HAS_CXX23
+
         // Validate view_interface::data
         static_assert(!CanData<R>);
         static_assert(!CanData<const R>);
