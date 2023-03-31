@@ -126,7 +126,7 @@ STATIC_ASSERT(test_cpo(ranges::views::adjacent<3>));
 STATIC_ASSERT(test_cpo(ranges::views::adjacent_transform<3>));
 STATIC_ASSERT(test_cpo(ranges::views::as_const));
 STATIC_ASSERT(test_cpo(ranges::views::as_rvalue));
-// STATIC_ASSERT(test_cpo(ranges::views::cartesian_product));
+STATIC_ASSERT(test_cpo(ranges::views::cartesian_product));
 STATIC_ASSERT(test_cpo(ranges::views::chunk));
 STATIC_ASSERT(test_cpo(ranges::views::chunk_by));
 STATIC_ASSERT(test_cpo(ranges::views::enumerate));
