@@ -354,12 +354,11 @@ public:
         if constexpr (extents_type::rank() > 0) {
             const bool _Verify = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                 index_type _Prod = 1;
-                return (
-                    (_Other.stride(_Indices)
-                        == (_Indices + 1 == extents_type::rank()
-                                ? _Prod
-                                : _STD exchange(_Prod, static_cast<index_type>(_Prod * _Exts.extent(_Indices + 1)))))
-                    && ...);
+                return ((_Other.stride(_Indices)
+                            == (_Indices == extents_type::rank() - 1
+                                    ? _Prod
+                                    : _STD exchange(_Prod, static_cast<index_type>(_Prod * _Exts.extent(_Indices)))))
+                        && ...);
             }
             (make_index_sequence<extents_type::rank()>{});
             _STL_VERIFY(_Verify, "For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to "

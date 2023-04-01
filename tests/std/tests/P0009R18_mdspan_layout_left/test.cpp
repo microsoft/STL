@@ -83,9 +83,12 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
 #pragma warning(push) // TRANSITION, "/analyze:only" BUG?
 #pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
     { // Check construction from layout_stride::mapping
-        array<IndexType, Ext::rank()> strides{1};
-        for (size_t i = 1; i < Ext::rank(); ++i) {
-            strides[i] = static_cast<IndexType>(strides[i - 1] * ext.extent(i));
+        array<IndexType, Ext::rank()> strides{};
+        if constexpr (Ext::rank() > 0) {
+            strides.front() = 1;
+            for (size_t i = 1; i < Ext::rank(); ++i) {
+                strides[i] = static_cast<IndexType>(strides[i - 1] * ext.extent(i - 1));
+            }
         }
 
         using StrideMapping = layout_stride::mapping<Ext>;
@@ -141,6 +144,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
 
     { // Check comparisons
         assert(m == m);
+        assert(!(m != m));
         // Other tests are defined in 'check_comparisons' function
     }
 }
@@ -213,6 +217,12 @@ constexpr void check_construction_from_other_stride_mapping() {
         using Mapping = layout_left::mapping<extents<int, 3>>;
         static_assert(!is_constructible_v<Mapping, layout_stride::mapping<extents<int, 1>>>);
         static_assert(!is_constructible_v<Mapping, layout_stride::mapping<extents<int, 2>>>);
+    }
+
+    { // Check correctness
+        using Ext = extents<int, 4, 3, 2, 3, 4>;
+        layout_stride::mapping<Ext> stride_mapping{Ext{}, array{1, 4, 12, 24, 72}};
+        [[maybe_unused]] layout_left::mapping<Ext> m{stride_mapping};
     }
 
     { // Check implicit conversions
