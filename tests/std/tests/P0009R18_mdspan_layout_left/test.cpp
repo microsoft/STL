@@ -13,11 +13,6 @@
 
 using namespace std;
 
-template <class Mapping, class... Indices>
-concept CanInvokeCallOperatorOfMapping = requires(Mapping m, Indices... i) {
-                                             { m(i...) } -> same_as<typename Mapping::index_type>;
-                                         };
-
 template <class IndexType, size_t... Extents, size_t... Indices>
 constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index_sequence<Indices...>) {
     using Ext     = extents<IndexType, Extents...>;
@@ -240,25 +235,25 @@ constexpr void check_construction_from_other_stride_mapping() {
 constexpr void check_call_operator() {
     { // Check call with invalid amount of indices
         using Mapping = layout_left::mapping<dextents<int, 3>>;
-        static_assert(!CanInvokeCallOperatorOfMapping<Mapping, int>);
-        static_assert(!CanInvokeCallOperatorOfMapping<Mapping, int, int>);
-        static_assert(CanInvokeCallOperatorOfMapping<Mapping, int, int, int>);
-        static_assert(!CanInvokeCallOperatorOfMapping<Mapping, int, int, int, int>);
+        static_assert(!CheckCallOperatorOfLayoutMapping<Mapping, int>);
+        static_assert(!CheckCallOperatorOfLayoutMapping<Mapping, int, int>);
+        static_assert(CheckCallOperatorOfLayoutMapping<Mapping, int, int, int>);
+        static_assert(!CheckCallOperatorOfLayoutMapping<Mapping, int, int, int, int>);
     }
 
     { // Check call with invalid types
         using Mapping = layout_left::mapping<dextents<long, 2>>;
-        static_assert(CanInvokeCallOperatorOfMapping<Mapping, long, long>);
-        static_assert(CanInvokeCallOperatorOfMapping<Mapping, long, short>);
-        static_assert(CanInvokeCallOperatorOfMapping<Mapping, long, ConvertibleToInt<long>>);
-        static_assert(CanInvokeCallOperatorOfMapping<Mapping, long, ConvertibleToInt<short>>);
-        static_assert(!CanInvokeCallOperatorOfMapping<Mapping, long, NonConvertibleToAnything>);
+        static_assert(CheckCallOperatorOfLayoutMapping<Mapping, long, long>);
+        static_assert(CheckCallOperatorOfLayoutMapping<Mapping, long, short>);
+        static_assert(CheckCallOperatorOfLayoutMapping<Mapping, long, ConvertibleToInt<long>>);
+        static_assert(CheckCallOperatorOfLayoutMapping<Mapping, long, ConvertibleToInt<short>>);
+        static_assert(!CheckCallOperatorOfLayoutMapping<Mapping, long, NonConvertibleToAnything>);
     }
 
     { // Check call with types that might throw during conversion
         using Mapping = layout_left::mapping<dextents<long long, 1>>;
-        static_assert(CanInvokeCallOperatorOfMapping<Mapping, ConvertibleToInt<long long, IsNothrow::yes>>);
-        static_assert(!CanInvokeCallOperatorOfMapping<Mapping, ConvertibleToInt<long long, IsNothrow::no>>);
+        static_assert(CheckCallOperatorOfLayoutMapping<Mapping, ConvertibleToInt<long long, IsNothrow::yes>>);
+        static_assert(!CheckCallOperatorOfLayoutMapping<Mapping, ConvertibleToInt<long long, IsNothrow::no>>);
     }
 
     { // Check various mappings

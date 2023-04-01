@@ -235,6 +235,8 @@ tests\P0009R18_mdspan_extents
 tests\P0009R18_mdspan_extents_death
 tests\P0009R18_mdspan_layout_left
 tests\P0009R18_mdspan_layout_left_death
+tests\P0009R18_mdspan_layout_right
+tests\P0009R18_mdspan_layout_right_death
 tests\P0019R8_atomic_ref
 tests\P0024R2_parallel_algorithms_adjacent_difference
 tests\P0024R2_parallel_algorithms_adjacent_find
