@@ -55,11 +55,12 @@ export const video_table: VideoRow[] = [
     { pr_id: 2981, review_date: '2022-08-04' },
     { pr_id: 2211, review_date: '2022-08-25', upload_date: '2022-11-10' },
     { pr_id: 3099, review_date: '2022-09-15' },
-    { pr_id: 3035, review_date: '2022-10-13' },
+    { pr_id: 3035, review_date: '2022-10-13', upload_date: '2023-03-30' },
     { pr_id: 3164, review_date: '2022-11-03' },
     { pr_id: 3268, review_date: '2022-12-08' },
     { pr_id: 3322, review_date: '2023-01-12' },
     { pr_id: 3361, review_date: '2023-02-07' },
     { pr_id: 3353, review_date: '2023-02-23' },
     { pr_id: 3337, review_date: '2023-03-16' },
+    { pr_id: 3364, review_date: '2023-04-06' },
 ];
