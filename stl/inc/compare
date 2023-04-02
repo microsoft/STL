@@ -13,7 +13,6 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <compare> are available only with C++20 or later.");
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #ifdef __cpp_lib_concepts
-#include <bit>
 #include <concepts>
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
 #include <xtr1common>
@@ -427,8 +426,8 @@ namespace _Strong_order {
                 using _Uint_type     = typename _Traits::_Uint_type;
                 using _Sint_type     = make_signed_t<_Uint_type>;
 
-                const auto _Left_uint  = _STD bit_cast<_Uint_type>(_Left);
-                const auto _Right_uint = _STD bit_cast<_Uint_type>(_Right);
+                const auto _Left_uint  = __builtin_bit_cast(_Uint_type, _Left);
+                const auto _Right_uint = __builtin_bit_cast(_Uint_type, _Right);
 
                 // 1. Ultra-fast path: equal representations are equal.
                 if (_Left_uint == _Right_uint) {
@@ -534,8 +533,8 @@ namespace _Weak_order {
                 using _Uint_type     = typename _Traits::_Uint_type;
                 using _Sint_type     = make_signed_t<_Uint_type>;
 
-                auto _Left_uint  = _STD bit_cast<_Uint_type>(_Left);
-                auto _Right_uint = _STD bit_cast<_Uint_type>(_Right);
+                auto _Left_uint  = __builtin_bit_cast(_Uint_type, _Left);
+                auto _Right_uint = __builtin_bit_cast(_Uint_type, _Right);
 
                 // 1. Ultra-fast path: equal representations are equivalent.
                 if (_Left_uint == _Right_uint) {
