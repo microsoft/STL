@@ -9,11 +9,16 @@
 #include <string>
 #include <type_traits>
 
+#include <test_mdspan_support.hpp>
+
 using namespace std;
 
 template <class ElementType>
 constexpr void test_one(array<ElementType, 3> elems) {
     using Accessor = default_accessor<ElementType>;
+
+    // default_accessor meets the accessor policy requirements
+    static_assert(check_accessor_policy_requirements<Accessor>());
 
     // Check modeled concepts
     static_assert(is_nothrow_move_constructible_v<Accessor>);
