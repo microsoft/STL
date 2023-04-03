@@ -504,12 +504,16 @@ int main() {
 #if defined(_M_IX86) || defined(_M_X64)
     disable_instructions(__ISA_AVAILABLE_AVX2);
     test_vector_algorithms(gen);
+    test_various_containers();
+
     disable_instructions(__ISA_AVAILABLE_SSE42);
     test_vector_algorithms(gen);
+    test_various_containers();
 #endif // defined(_M_IX86) || defined(_M_X64)
 #if defined(_M_IX86)
     disable_instructions(__ISA_AVAILABLE_SSE2);
     test_vector_algorithms(gen);
+    test_various_containers();
 #endif // defined(_M_IX86)
 #endif // _M_CEE_PURE
 }
