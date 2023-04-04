@@ -4,7 +4,7 @@
 // class locale basic member functions
 
 // This file is compiled into import library.
-// Limitations apply to what can be included here; see ../../docs/import_library.txt
+// Limitations apply to what can be included here; see /docs/import_library.md
 
 #include <crtdbg.h>
 #include <internal_shared.h>
