@@ -8,8 +8,6 @@ using namespace std;
 #define NOEXCEPT(...)     static_assert(noexcept(__VA_ARGS__), #__VA_ARGS__ " should be noexcept")
 #define NOT_NOEXCEPT(...) static_assert(!noexcept(__VA_ARGS__), #__VA_ARGS__ " should NOT be noexcept")
 
-int main() {} // COMPILE-ONLY
-
 struct throwing_move_ctor {
     throwing_move_ctor(int) noexcept {}
     throwing_move_ctor(throwing_move_ctor&&) noexcept(false) {}

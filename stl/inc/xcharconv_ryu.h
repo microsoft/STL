@@ -1318,7 +1318,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
   chars_format _Fmt, const uint32_t __ieeeMantissa, const uint32_t __ieeeExponent) {
   // Step 5: Print the decimal representation.
   uint32_t _Output = __v.__mantissa;
-  int32_t _Ryu_exponent = __v.__exponent;
+  const int32_t _Ryu_exponent = __v.__exponent;
   const uint32_t __olength = __decimalLength9(_Output);
   int32_t _Scientific_exponent = _Ryu_exponent + static_cast<int32_t>(__olength) - 1;
 
@@ -1926,7 +1926,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
   chars_format _Fmt, const double __f) {
   // Step 5: Print the decimal representation.
   uint64_t _Output = __v.__mantissa;
-  int32_t _Ryu_exponent = __v.__exponent;
+  const int32_t _Ryu_exponent = __v.__exponent;
   const uint32_t __olength = __decimalLength17(_Output);
   int32_t _Scientific_exponent = _Ryu_exponent + static_cast<int32_t>(__olength) - 1;
 

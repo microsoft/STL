@@ -6,8 +6,6 @@
 
 using namespace std;
 
-int main() {} // COMPILE-ONLY
-
 struct incomplete;
 
 template <class T>

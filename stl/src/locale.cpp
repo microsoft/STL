@@ -41,7 +41,6 @@ _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL locale::global(const locale& loc) {
     _END_LOCK()
 }
 
-
 #if STDCPP_IMPLIB || !defined(_M_CEE_PURE)
 // facets associated with C categories
 #define ADDFAC(Facet, cat, ptrimp, ptrloc)                                                                  \
@@ -102,7 +101,6 @@ void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_ctor(
     }
 }
 #endif // STDCPP_IMPLIB || !defined(_M_CEE_PURE)
-
 
 void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_Addfac(
     _Locimp* _This, locale::facet* ptrfac, size_t id) { // add a facet to a locale

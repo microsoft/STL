@@ -14,5 +14,3 @@ void test() {
     (void) p2;
     (void) p3;
 }
-
-int main() {} // COMPILE-ONLY

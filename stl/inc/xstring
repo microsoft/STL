@@ -54,7 +54,7 @@ struct _Char_traits { // properties of a string or stream element
 #else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS / !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
-            // pre: [_First1, _First1 + _Count) and [_First2, _First2 + _Count) do not overlap; see LWG-3085
+            // pre: [_First1, _First1 + _Count) and [_First2, _First2 + _Count) do not overlap
             for (size_t _Idx = 0; _Idx != _Count; ++_Idx) {
                 _First1[_Idx] = _First2[_Idx];
             }
@@ -1257,10 +1257,10 @@ public:
             && _RANGES contiguous_range<_Range>
             && _RANGES sized_range<_Range>
             && same_as<_RANGES range_value_t<_Range>, _Elem>
-            && (!is_convertible_v<_Range, const _Elem*>)
-            && (!requires(remove_cvref_t<_Range>& _Rng) {
+            && !is_convertible_v<_Range, const _Elem*>
+            && !requires(remove_cvref_t<_Range>& _Rng) {
                 _Rng.operator _STD basic_string_view<_Elem, _Traits>();
-            })) // doesn't check member type traits_type, per LWG-3857
+            })
     constexpr explicit basic_string_view(_Range&& _Rng) noexcept(
         noexcept(_RANGES data(_Rng)) && noexcept(_RANGES size(_Rng))) // strengthened
         : _Mydata(_RANGES data(_Rng)), _Mysize(static_cast<size_t>(_RANGES size(_Rng))) {}
@@ -1715,7 +1715,6 @@ _NODISCARD constexpr bool operator!=(
     return !_Lhs._Equal(_Rhs);
 }
 
-
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator<(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1733,7 +1732,6 @@ _NODISCARD constexpr bool operator<(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) < 0;
 }
-
 
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator>(
@@ -1753,7 +1751,6 @@ _NODISCARD constexpr bool operator>(
     return _Lhs.compare(_Rhs) > 0;
 }
 
-
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator<=(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1771,7 +1768,6 @@ _NODISCARD constexpr bool operator<=(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) <= 0;
 }
-
 
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator>=(
@@ -1830,7 +1826,6 @@ _EXPORT_STD using u16string_view = basic_string_view<char16_t>;
 _EXPORT_STD using u32string_view = basic_string_view<char32_t>;
 _EXPORT_STD using wstring_view   = basic_string_view<wchar_t>;
 
-
 template <class _Elem>
 struct hash<basic_string_view<_Elem>> : _Conditionally_enabled_hash<basic_string_view<_Elem>, _Is_EcharT<_Elem>> {
     _NODISCARD static size_t _Do_hash(const basic_string_view<_Elem> _Keyval) noexcept {
@@ -1844,29 +1839,28 @@ basic_ostream<_Elem, _Traits>& operator<<(
     return _Insert_string(_Ostr, _Str.data(), _Str.size());
 }
 
-
 inline namespace literals {
     inline namespace string_view_literals {
-        _EXPORT_STD _NODISCARD constexpr string_view operator"" sv(const char* _Str, size_t _Len) noexcept {
+        _EXPORT_STD _NODISCARD constexpr string_view operator""sv(const char* _Str, size_t _Len) noexcept {
             return string_view(_Str, _Len);
         }
 
-        _EXPORT_STD _NODISCARD constexpr wstring_view operator"" sv(const wchar_t* _Str, size_t _Len) noexcept {
+        _EXPORT_STD _NODISCARD constexpr wstring_view operator""sv(const wchar_t* _Str, size_t _Len) noexcept {
             return wstring_view(_Str, _Len);
         }
 
 #ifdef __cpp_char8_t
-        _EXPORT_STD _NODISCARD constexpr basic_string_view<char8_t> operator"" sv(
+        _EXPORT_STD _NODISCARD constexpr basic_string_view<char8_t> operator""sv(
             const char8_t* _Str, size_t _Len) noexcept {
             return basic_string_view<char8_t>(_Str, _Len);
         }
 #endif // __cpp_char8_t
 
-        _EXPORT_STD _NODISCARD constexpr u16string_view operator"" sv(const char16_t* _Str, size_t _Len) noexcept {
+        _EXPORT_STD _NODISCARD constexpr u16string_view operator""sv(const char16_t* _Str, size_t _Len) noexcept {
             return u16string_view(_Str, _Len);
         }
 
-        _EXPORT_STD _NODISCARD constexpr u32string_view operator"" sv(const char32_t* _Str, size_t _Len) noexcept {
+        _EXPORT_STD _NODISCARD constexpr u32string_view operator""sv(const char32_t* _Str, size_t _Len) noexcept {
             return u32string_view(_Str, _Len);
         }
     } // namespace string_view_literals
@@ -2325,7 +2319,8 @@ public:
         value_type _Buf[_BUF_SIZE];
         pointer _Ptr;
         char _Alias[_BUF_SIZE]; // TRANSITION, ABI: _Alias is preserved for binary compatibility (especially /clr)
-    } _Bx;
+    };
+    _Bxty _Bx;
 
     size_type _Mysize = 0; // current length of string
     size_type _Myres  = 0; // current storage reserved for string
@@ -3079,7 +3074,6 @@ private:
 
         _My_data._Myres  = _Right_data._Myres;
         _My_data._Mysize = _Right_data._Mysize;
-
 
         _Right._Tidy_init();
     }
@@ -5225,25 +5219,25 @@ basic_ostream<_Elem, _Traits>& operator<<(
 
 inline namespace literals {
     inline namespace string_literals {
-        _EXPORT_STD _NODISCARD _CONSTEXPR20 string operator"" s(const char* _Str, size_t _Len) {
+        _EXPORT_STD _NODISCARD _CONSTEXPR20 string operator""s(const char* _Str, size_t _Len) {
             return string{_Str, _Len};
         }
 
-        _EXPORT_STD _NODISCARD _CONSTEXPR20 wstring operator"" s(const wchar_t* _Str, size_t _Len) {
+        _EXPORT_STD _NODISCARD _CONSTEXPR20 wstring operator""s(const wchar_t* _Str, size_t _Len) {
             return wstring{_Str, _Len};
         }
 
 #ifdef __cpp_char8_t
-        _EXPORT_STD _NODISCARD _CONSTEXPR20 basic_string<char8_t> operator"" s(const char8_t* _Str, size_t _Len) {
+        _EXPORT_STD _NODISCARD _CONSTEXPR20 basic_string<char8_t> operator""s(const char8_t* _Str, size_t _Len) {
             return basic_string<char8_t>{_Str, _Len};
         }
 #endif // __cpp_char8_t
 
-        _EXPORT_STD _NODISCARD _CONSTEXPR20 u16string operator"" s(const char16_t* _Str, size_t _Len) {
+        _EXPORT_STD _NODISCARD _CONSTEXPR20 u16string operator""s(const char16_t* _Str, size_t _Len) {
             return u16string{_Str, _Len};
         }
 
-        _EXPORT_STD _NODISCARD _CONSTEXPR20 u32string operator"" s(const char32_t* _Str, size_t _Len) {
+        _EXPORT_STD _NODISCARD _CONSTEXPR20 u32string operator""s(const char32_t* _Str, size_t _Len) {
             return u32string{_Str, _Len};
         }
     } // namespace string_literals
@@ -5278,6 +5272,11 @@ namespace pmr {
 } // namespace pmr
 #endif // _HAS_CXX17
 _STD_END
+
+#undef _ASAN_STRING_REMOVE
+#undef _ASAN_STRING_CREATE
+#undef _ASAN_STRING_MODIFY
+#undef _INSERT_STRING_ANNOTATION
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

@@ -36,9 +36,13 @@ inline constexpr bool can_construct_at = [] {
 
 template <class T, class... Args>
 constexpr bool construct_at_noexcept() {
-    constexpr bool result = noexcept(construct_at(declval<T*>(), declval<Args>()...));
-    static_assert(noexcept(ranges::construct_at(declval<T*>(), declval<Args>()...)) == result);
-    return result;
+    if constexpr (can_construct_at<T, Args...>) {
+        constexpr bool result = noexcept(construct_at(declval<T*>(), declval<Args>()...));
+        static_assert(noexcept(ranges::construct_at(declval<T*>(), declval<Args>()...)) == result);
+        return result;
+    } else {
+        return false;
+    }
 }
 
 template <class T>
@@ -62,7 +66,11 @@ inline constexpr bool can_construct_at = can_construct_at_impl<void, Ty, Types..
 
 template <class T, class... Args>
 constexpr bool construct_at_noexcept() {
-    return noexcept(construct_at(declval<T*>(), declval<Args>()...));
+    if constexpr (can_construct_at<T, Args...>) {
+        return noexcept(construct_at(declval<T*>(), declval<Args>()...));
+    } else {
+        return false;
+    }
 }
 
 template <class T>
@@ -72,17 +80,18 @@ constexpr bool destroy_at_noexcept() {
 #endif // __cpp_lib_concepts
 
 static_assert(can_construct_at<int>);
-static_assert(can_construct_at<const int>);
-static_assert(can_construct_at<volatile int>);
-static_assert(can_construct_at<const volatile int>);
 static_assert(can_construct_at<int, int>);
-static_assert(can_construct_at<const int, int>);
-static_assert(can_construct_at<volatile int, int>);
-static_assert(can_construct_at<const volatile int, int>);
 static_assert(can_construct_at<int, int&>);
-static_assert(can_construct_at<const int, int&>);
-static_assert(can_construct_at<volatile int, int&>);
-static_assert(can_construct_at<const volatile int, int&>);
+// per LWG-3888
+static_assert(!can_construct_at<const int>);
+static_assert(!can_construct_at<const int, int>);
+static_assert(!can_construct_at<const int, int&>);
+static_assert(!can_construct_at<volatile int>);
+static_assert(!can_construct_at<volatile int, int>);
+static_assert(!can_construct_at<volatile int, int&>);
+static_assert(!can_construct_at<const volatile int>);
+static_assert(!can_construct_at<const volatile int, int>);
+static_assert(!can_construct_at<const volatile int, int&>);
 
 struct X {};
 
@@ -100,9 +109,10 @@ private:
 };
 
 static_assert(can_construct_at<indestructible>);
-static_assert(can_construct_at<const indestructible>);
-static_assert(can_construct_at<volatile indestructible>);
-static_assert(can_construct_at<const volatile indestructible>);
+// per LWG-3888
+static_assert(!can_construct_at<const indestructible>);
+static_assert(!can_construct_at<volatile indestructible>);
+static_assert(!can_construct_at<const volatile indestructible>);
 
 static_assert(can_construct_at<X>);
 static_assert(can_construct_at<X, X>);
@@ -118,11 +128,13 @@ static_assert(!can_construct_at<string, X>);
 // The following static_asserts test our strengthening of noexcept
 
 static_assert(construct_at_noexcept<int, int>());
-static_assert(construct_at_noexcept<const int, int>());
-static_assert(construct_at_noexcept<volatile int, int>());
-static_assert(construct_at_noexcept<const volatile int, int>());
+// per LWG-3888
+static_assert(!construct_at_noexcept<const int, int>());
+static_assert(!construct_at_noexcept<volatile int, int>());
+static_assert(!construct_at_noexcept<const volatile int, int>());
 
 static_assert(!construct_at_noexcept<string, const char (&)[6]>());
+// per LWG-3888
 static_assert(!construct_at_noexcept<const string, const char (&)[6]>());
 static_assert(!construct_at_noexcept<volatile string, const char (&)[6]>());
 static_assert(!construct_at_noexcept<const volatile string, const char (&)[6]>());
@@ -173,20 +185,6 @@ void test_runtime(const Ty& val) {
     assert(*asPtrTy == val);
     ranges::destroy_at(asPtrTy);
 #endif // __cpp_lib_concepts
-
-    // test voidify:
-    const auto asCv = static_cast<const volatile Ty*>(asPtrTy);
-    memset(storage, 42, sizeof(Ty));
-    assert(asPtrTy == construct_at(asCv, val));
-    assert(const_cast<const Ty&>(*asCv) == val);
-    destroy_at(asCv);
-
-#ifdef __cpp_lib_concepts
-    memset(storage, 42, sizeof(Ty));
-    assert(asPtrTy == ranges::construct_at(asCv, val));
-    assert(const_cast<const Ty&>(*asCv) == val);
-    ranges::destroy_at(asCv);
-#endif // __cpp_lib_concepts
 }
 
 template <class T>
@@ -195,21 +193,20 @@ void test_array(const T& val) {
     (void) val;
 
     alignas(T) unsigned char storage[sizeof(T) * N];
-    using U        = conditional_t<is_scalar_v<T>, const volatile T, T>;
-    const auto ptr = reinterpret_cast<U*>(storage);
+    const auto ptr = reinterpret_cast<T*>(storage);
 
     for (auto i = 0; i < N; ++i) {
         construct_at(ptr + i, val);
     }
 
-    destroy_at(reinterpret_cast<U(*)[N]>(ptr));
+    destroy_at(reinterpret_cast<T(*)[N]>(ptr));
 
 #ifdef __cpp_lib_concepts
     for (auto i = 0; i < N; ++i) {
         ranges::construct_at(ptr + i, val);
     }
 
-    ranges::destroy_at(reinterpret_cast<U(*)[N]>(ptr));
+    ranges::destroy_at(reinterpret_cast<T(*)[N]>(ptr));
 #endif // __cpp_lib_concepts
 }
 
@@ -263,8 +260,10 @@ template <class T>
 struct A {
     T value;
 
-    constexpr A() noexcept = default;
-    constexpr ~A()         = default;
+    constexpr A() noexcept                    = default;
+    constexpr A(const A&) noexcept            = default;
+    constexpr A& operator=(const A&) noexcept = default;
+    constexpr ~A()                            = default;
 };
 
 template <class T>
@@ -272,6 +271,8 @@ struct nontrivial_A {
     T value;
 
     constexpr nontrivial_A(T in = T{}) noexcept : value(in) {}
+    constexpr nontrivial_A(const nontrivial_A&) noexcept            = default;
+    constexpr nontrivial_A& operator=(const nontrivial_A&) noexcept = default;
     constexpr ~nontrivial_A() {}
 };
 
@@ -517,6 +518,114 @@ constexpr void test_compiletime_operators() {
     }
 }
 static_assert((test_compiletime_operators(), true));
+
+#ifdef __cpp_lib_concepts
+// Also test LWG-3888 Most ranges uninitialized memory algorithms are underconstrained
+template <class Rng>
+concept CanUninitializedDefaultConstruct = requires(Rng& r) { ranges::uninitialized_default_construct(r); };
+
+template <class It>
+concept CanUninitializedDefaultConstructN =
+    requires(It&& i) { ranges::uninitialized_default_construct_n(forward<It>(i), iter_difference_t<It>{}); };
+
+template <class Rng>
+concept CanUninitializedValueConstruct = requires(Rng& r) { ranges::uninitialized_value_construct(r); };
+
+template <class It>
+concept CanUninitializedValueConstructN =
+    requires(It&& i) { ranges::uninitialized_value_construct_n(forward<It>(i), iter_difference_t<It>{}); };
+
+template <class Rng, class T>
+concept CanUninitializedFill = requires(Rng& r, const T& t) { ranges::uninitialized_fill(r, t); };
+
+template <class It, class T>
+concept CanUninitializedFillN =
+    requires(It&& i, const T& t) { ranges::uninitialized_fill_n(forward<It>(i), iter_difference_t<It>{}, t); };
+
+template <class InRng, class OutRng>
+concept CanUninitializedCopy = requires(InRng& ri, OutRng& ro) { ranges::uninitialized_copy(ri, ro); };
+
+template <class InIt, class OutIt, class S>
+concept CanUninitializedCopyN =
+    requires(InIt&& ii, OutIt&& io, S&& s) {
+        ranges::uninitialized_copy_n(forward<InIt>(ii), iter_difference_t<InIt>{}, forward<OutIt>(io), forward<S>(s));
+    };
+
+template <class InRng, class OutRng>
+concept CanUninitializedMove = requires(InRng& ri, OutRng& ro) { ranges::uninitialized_move(ri, ro); };
+
+template <class InIt, class OutIt, class S>
+concept CanUninitializedMoveN =
+    requires(InIt&& ii, OutIt&& io, S&& s) {
+        ranges::uninitialized_move_n(forward<InIt>(ii), iter_difference_t<InIt>{}, forward<OutIt>(io), forward<S>(s));
+    };
+
+template <class Rng>
+concept CanDestroy = requires(Rng&& r) { ranges::destroy(forward<Rng>(r)); };
+
+template <class It>
+concept CanDestroyN = requires(It&& i) { ranges::destroy_n(forward<It>(i), iter_difference_t<It>{}); };
+
+static_assert(CanUninitializedDefaultConstruct<char[42]>);
+static_assert(!CanUninitializedDefaultConstruct<const char[42]>);
+static_assert(!CanUninitializedDefaultConstruct<volatile char[42]>);
+static_assert(!CanUninitializedDefaultConstruct<const volatile char[42]>);
+
+static_assert(CanUninitializedDefaultConstructN<char*>);
+static_assert(!CanUninitializedDefaultConstructN<const char*>);
+static_assert(!CanUninitializedDefaultConstructN<volatile char*>);
+static_assert(!CanUninitializedDefaultConstructN<const volatile char*>);
+
+static_assert(CanUninitializedValueConstruct<char[42]>);
+static_assert(!CanUninitializedValueConstruct<const char[42]>);
+static_assert(!CanUninitializedValueConstruct<volatile char[42]>);
+static_assert(!CanUninitializedValueConstruct<const volatile char[42]>);
+
+static_assert(CanUninitializedValueConstructN<char*>);
+static_assert(!CanUninitializedValueConstructN<const char*>);
+static_assert(!CanUninitializedValueConstructN<volatile char*>);
+static_assert(!CanUninitializedValueConstructN<const volatile char*>);
+
+static_assert(CanUninitializedFill<char[42], int>);
+static_assert(!CanUninitializedFill<const char[42], int>);
+static_assert(!CanUninitializedFill<volatile char[42], int>);
+static_assert(!CanUninitializedFill<const volatile char[42], int>);
+
+static_assert(CanUninitializedFillN<char*, int>);
+static_assert(!CanUninitializedFillN<const char*, int>);
+static_assert(!CanUninitializedFillN<volatile char*, int>);
+static_assert(!CanUninitializedFillN<const volatile char*, int>);
+
+static_assert(CanUninitializedCopy<const int[42], char[42]>);
+static_assert(!CanUninitializedCopy<const int[42], const char[42]>);
+static_assert(!CanUninitializedCopy<const int[42], volatile char[42]>);
+static_assert(!CanUninitializedCopy<const int[42], const volatile char[42]>);
+
+static_assert(CanUninitializedCopyN<const int*, char*, const char*>);
+static_assert(!CanUninitializedCopyN<const int*, const char*, const char*>);
+static_assert(!CanUninitializedCopyN<const int*, volatile char*, const char*>);
+static_assert(!CanUninitializedCopyN<const int*, const volatile char*, const char*>);
+
+static_assert(CanUninitializedMove<const int[42], char[42]>);
+static_assert(!CanUninitializedMove<const int[42], const char[42]>);
+static_assert(!CanUninitializedMove<const int[42], volatile char[42]>);
+static_assert(!CanUninitializedMove<const int[42], const volatile char[42]>);
+
+static_assert(CanUninitializedMoveN<const int*, char*, const char*>);
+static_assert(!CanUninitializedMoveN<const int*, const char*, const char*>);
+static_assert(!CanUninitializedMoveN<const int*, volatile char*, const char*>);
+static_assert(!CanUninitializedMoveN<const int*, const volatile char*, const char*>);
+
+static_assert(CanDestroy<char[42]>);
+static_assert(!CanDestroy<const char[42]>);
+static_assert(!CanDestroy<volatile char[42]>);
+static_assert(!CanDestroy<const volatile char[42]>);
+
+static_assert(CanDestroyN<char*>);
+static_assert(!CanDestroyN<const char*>);
+static_assert(!CanDestroyN<volatile char*>);
+static_assert(!CanDestroyN<const volatile char*>);
+#endif // __cpp_lib_concepts
 
 int main() {
     test_runtime(1234);

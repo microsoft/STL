@@ -64,7 +64,7 @@ namespace {
     _Constexpr_excptptr_immortalize_impl<_Ty> _Immortalize_impl;
 
     template <class _Ty>
-    _NODISCARD _Ty& _Immortalize() noexcept {
+    [[nodiscard]] _Ty& _Immortalize() noexcept {
         return _Immortalize_impl<_Ty>._Storage;
     }
 #else // choose immortalize strategy

@@ -19,8 +19,6 @@
 #include <utility>
 #include <vector>
 
-int main() {} // COMPILE-ONLY
-
 // lets INSTANTIATE macro be used for types that aren't default constructible.
 // Doesn't actually instantiate the type if not default constructible,
 // but it will inspect the type, which is the true purpose.

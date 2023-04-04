@@ -2372,6 +2372,8 @@ public:
     static bool dtor_called;
     Y() = default;
     Y(int) { TEST_THROW(6);}
+    Y(const Y&) = default;
+    Y& operator=(const Y&) = default;
     ~Y() {dtor_called = true;}
 };
 
@@ -2659,6 +2661,8 @@ public:
     constexpr X(int i, bool& dtor_called) : i_(i), dtor_called_(&dtor_called) {}
     constexpr X(std::initializer_list<int> il, bool& dtor_called)
     : i_(il.begin()[0]), j_(il.begin()[1]), dtor_called_(&dtor_called) {}
+    X(const X&) = default;
+    X& operator=(const X&) = default;
     TEST_CONSTEXPR_CXX20 ~X() {*dtor_called_ = true;}
 
     friend constexpr bool operator==(const X& x, const X& y)
@@ -2688,6 +2692,8 @@ public:
     Z(int i) : i_(i) {}
     Z(std::initializer_list<int> il) : i_(il.begin()[0]), j_(il.begin()[1])
         { TEST_THROW(6);}
+    Z(const Z&) = default;
+    Z& operator=(const Z&) = default;
     ~Z() {dtor_called = true;}
 
     friend bool operator==(const Z& x, const Z& y)
@@ -5336,6 +5342,8 @@ class X
 public:
     static bool dtor_called;
     X() = default;
+    X(const X&) = default;
+    X& operator=(const X&) = default;
     ~X() {dtor_called = true;}
 };
 
@@ -5401,6 +5409,9 @@ using std::optional;
 struct X
 {
     static bool dtor_called;
+    X() = default;
+    X(const X&) = default;
+    X& operator=(const X&) = default;
     ~X() {dtor_called = true;}
 };
 
@@ -8137,6 +8148,30 @@ namespace msvc {
         STATIC_ASSERT(!is_constructible_v<O, const in_place_t&>);
     } // namespace lwg2842
 
+    namespace lwg3836 {
+        STATIC_ASSERT(std::is_convertible_v<std::optional<int>, std::optional<bool>>);
+        STATIC_ASSERT(std::is_convertible_v<const std::optional<int>&, std::optional<bool>>);
+
+#if _HAS_CXX20
+#define CONSTEXPR20 constexpr
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#define CONSTEXPR20 inline
+#endif // ^^^ !_HAS_CXX20 ^^^
+        CONSTEXPR20 bool run_test() {
+            std::optional<int> oi  = 0;
+            std::optional<bool> ob = oi;
+            assert(!ob.value());
+            assert(!std::optional<bool>{std::optional<int>{0}}.value());
+
+            return true;
+        }
+#undef CONSTEXPR20
+
+#if _HAS_CXX20
+        STATIC_ASSERT(run_test());
+#endif // _HAS_CXX20
+    } // namespace lwg3836
+
     namespace vso406124 {
         // Defend against regression of VSO-406124
         void run_test() {
@@ -8226,6 +8261,92 @@ namespace msvc {
             testMove<const ConstMovable, action::move>();
         }
     } // namespace gh2458
+
+    namespace assign_cv {
+        template <class T>
+        struct TypeIdentityImpl {
+            using type = T;
+        };
+        template <class T>
+        using TypeIdentity = typename TypeIdentityImpl<T>::type;
+
+        struct CvAssignable {
+            CvAssignable()                               = default;
+            CvAssignable(const CvAssignable&)            = default;
+            CvAssignable(CvAssignable&&)                 = default;
+            CvAssignable& operator=(const CvAssignable&) = default;
+            CvAssignable& operator=(CvAssignable&&)      = default;
+
+            template <class T = CvAssignable>
+            CvAssignable(const volatile TypeIdentity<T>&) noexcept {}
+            template <class T = CvAssignable>
+            CvAssignable(const volatile TypeIdentity<T>&&) noexcept {}
+
+            template <class T = CvAssignable>
+            constexpr CvAssignable& operator=(const volatile TypeIdentity<T>&) noexcept {
+                return *this;
+            }
+            template <class T = CvAssignable>
+            constexpr CvAssignable& operator=(const volatile TypeIdentity<T>&&) noexcept {
+                return *this;
+            }
+
+            template <class T = CvAssignable>
+            constexpr const volatile CvAssignable& operator=(const volatile TypeIdentity<T>&) const volatile noexcept {
+                return *this;
+            }
+            template <class T = CvAssignable>
+            constexpr const volatile CvAssignable& operator=(const volatile TypeIdentity<T>&&) const volatile noexcept {
+                return *this;
+            }
+        };
+
+        void run_test() {
+            using std::swap;
+            {
+                std::optional<const int> oc{};
+                oc.emplace(0);
+                STATIC_ASSERT(!std::is_copy_assignable_v<decltype(oc)>);
+                STATIC_ASSERT(!std::is_move_assignable_v<decltype(oc)>);
+                STATIC_ASSERT(!std::is_swappable_v<decltype(oc)>);
+
+                std::optional<volatile int> ov{};
+                std::optional<volatile int> ov2{};
+                ov.emplace(0);
+                swap(ov, ov);
+                ov = ov2;
+                ov = std::move(ov2);
+
+                std::optional<const volatile int> ocv{};
+                ocv.emplace(0);
+                STATIC_ASSERT(!std::is_copy_assignable_v<decltype(ocv)>);
+                STATIC_ASSERT(!std::is_move_assignable_v<decltype(ocv)>);
+                STATIC_ASSERT(!std::is_swappable_v<decltype(ocv)>);
+            }
+            {
+                std::optional<const CvAssignable> oc{};
+                std::optional<const CvAssignable> oc2{};
+                oc.emplace(CvAssignable{});
+                swap(oc, oc);
+                oc = oc2;
+                oc = std::move(oc2);
+
+                std::optional<volatile CvAssignable> ov{};
+                std::optional<volatile CvAssignable> ov2{};
+                ov.emplace(CvAssignable{});
+                swap(ov, ov);
+                ov = ov2;
+                ov = std::move(ov2);
+
+                std::optional<const volatile CvAssignable> ocv{};
+                std::optional<const volatile CvAssignable> ocv2{};
+                ocv.emplace(CvAssignable{});
+                swap(ocv, ocv);
+                ocv = ocv2;
+                ocv = std::move(ocv2);
+            }
+        }
+    } // namespace assign_cv
 } // namespace msvc
 
 int main() {
@@ -8323,9 +8444,13 @@ int main() {
     nonmembers::make_optional_explicit_init_list::run_test();
     nonmembers::swap_::run_test();
 
+    msvc::lwg3836::run_test();
+
     msvc::vso406124::run_test();
     msvc::vso508126::run_test();
     msvc::vso614907::run_test();
 
     msvc::gh2458::run_test();
+
+    msvc::assign_cv::run_test();
 }

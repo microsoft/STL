@@ -351,7 +351,9 @@ struct use_async_in_a_global_tester {
     ~use_async_in_a_global_tester() {
         (void) async([] { return 1729; }).get();
     }
-} use_async_in_a_global_instance;
+};
+
+use_async_in_a_global_tester use_async_in_a_global_instance;
 #endif // _M_CEE
 
 int main() {

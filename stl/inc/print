@@ -1,0 +1,171 @@
+// print standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _PRINT_
+#define _PRINT_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#ifndef __cpp_lib_print
+_EMIT_STL_WARNING(STL4038, "The contents of <print> are available only with C++23 or later.");
+#else // ^^^ !defined(__cpp_lib_print) / defined(__cpp_lib_print) vvv
+
+#include <__msvc_print.hpp>
+#include <cstdio>
+#include <format>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+
+inline void _Print_noformat_nonunicode(FILE* const _Stream, const string_view _Str) {
+    const bool _Was_write_successful = _CSTD fwrite(_Str.data(), 1, _Str.size(), _Stream) == _Str.size();
+
+    if (!_Was_write_successful) [[unlikely]] {
+        _Throw_system_error(static_cast<errc>(errno));
+    }
+}
+
+inline void _Vprint_nonunicode_impl(
+    const _Add_newline _Add_nl, FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
+    string _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
+    if (_Add_nl == _Add_newline::_Yes) {
+        _Output_str.push_back('\n');
+    }
+
+    _STD _Print_noformat_nonunicode(_Stream, _Output_str);
+}
+
+inline void _Print_noformat_unicode(FILE* const _Stream, const string_view _Str) {
+    const __std_unicode_console_retrieval_result _Unicode_console_retrieval_result{
+        __std_get_unicode_console_handle_from_file_stream(_Stream)};
+
+    // See the documentation for __std_unicode_console_retrieval_result to understand why we do this.
+    bool _Is_unicode_console;
+
+#pragma warning(push)
+#pragma warning(disable : 4061) // enumerator not explicitly handled by switch label
+    switch (_Unicode_console_retrieval_result._Error) {
+    case __std_win_error::_Success:
+        _Is_unicode_console = true;
+        break;
+
+    case __std_win_error::_File_not_found:
+        _Is_unicode_console = false;
+        break;
+
+    case __std_win_error::_Not_supported:
+        [[unlikely]] return;
+
+    default:
+        [[unlikely]] _STD _Throw_system_error_from_std_win_error(_Unicode_console_retrieval_result._Error);
+    }
+#pragma warning(pop)
+
+    if (_Is_unicode_console) {
+        const bool _Was_flush_successful = _CSTD fflush(_Stream) == 0;
+        if (!_Was_flush_successful) [[unlikely]] {
+            _Throw_system_error(static_cast<errc>(errno));
+        }
+
+        const __std_win_error _Console_print_result =
+            __std_print_to_unicode_console(_Unicode_console_retrieval_result._Console_handle, _Str.data(), _Str.size());
+        if (_Console_print_result != __std_win_error::_Success) [[unlikely]] {
+            _STD _Throw_system_error_from_std_win_error(_Console_print_result);
+        }
+    } else {
+        _STD _Print_noformat_nonunicode(_Stream, _Str);
+    }
+}
+
+inline void _Vprint_unicode_impl(
+    const _Add_newline _Add_nl, FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
+    string _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
+    if (_Add_nl == _Add_newline::_Yes) {
+        _Output_str.push_back('\n');
+    }
+
+    _STD _Print_noformat_unicode(_Stream, _Output_str);
+}
+
+template <class... _Types>
+void _Print_impl(
+    const _Add_newline _Add_nl, FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    constexpr bool _Has_format_args = sizeof...(_Types) > 0;
+
+    if constexpr (_Has_format_args) {
+        if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
+            _STD _Vprint_unicode_impl(
+                _Add_nl, _Stream, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+        } else {
+            _STD _Vprint_nonunicode_impl(
+                _Add_nl, _Stream, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+        }
+    } else {
+        const string _Unescaped_str{_Unescape_braces(_Add_nl, _Fmt.get())};
+
+        if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
+            _STD _Print_noformat_unicode(_Stream, _Unescaped_str);
+        } else {
+            _STD _Print_noformat_nonunicode(_Stream, _Unescaped_str);
+        }
+    }
+}
+
+_EXPORT_STD template <class... _Types>
+void print(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    _STD _Print_impl(_Add_newline::_Nope, _Stream, _Fmt, _STD forward<_Types>(_Args)...);
+}
+
+_EXPORT_STD template <class... _Types>
+void print(const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    _STD print(stdout, _Fmt, _STD forward<_Types>(_Args)...);
+}
+
+_EXPORT_STD template <class... _Types>
+void println(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    _STD _Print_impl(_Add_newline::_Yes, _Stream, _Fmt, _STD forward<_Types>(_Args)...);
+}
+
+_EXPORT_STD template <class... _Types>
+void println(const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    _STD println(stdout, _Fmt, _STD forward<_Types>(_Args)...);
+}
+
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void vprint_unicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
+    _STD _Vprint_unicode_impl(_Add_newline::_Nope, _Stream, _Fmt_str, _Fmt_args);
+}
+
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void vprint_unicode(const string_view _Fmt_str, const format_args _Fmt_args) {
+    _STD vprint_unicode(stdout, _Fmt_str, _Fmt_args);
+}
+
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void vprint_nonunicode(FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
+    _STD _Vprint_nonunicode_impl(_Add_newline::_Nope, _Stream, _Fmt_str, _Fmt_args);
+}
+
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void vprint_nonunicode(const string_view _Fmt_str, const format_args _Fmt_args) {
+    _STD vprint_nonunicode(stdout, _Fmt_str, _Fmt_args);
+}
+
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // __cpp_lib_print
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _PRINT_

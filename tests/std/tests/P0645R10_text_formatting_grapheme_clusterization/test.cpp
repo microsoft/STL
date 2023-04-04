@@ -15,6 +15,8 @@ using namespace std;
 // Generator: tools/unicode_properties_parse/grapheme_break_test_data_gen.py
 // Beginning of generated data - DO NOT EDIT manually!
 
+// GraphemeBreakTest-15.0.0.txt
+// Date: 2022-02-26, 00:38:37 GMT
 template <typename T>
 struct test_case_data {
     vector<T> code_points;

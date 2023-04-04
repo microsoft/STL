@@ -5,8 +5,6 @@
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 // LIBRARY FEATURE-TEST MACROS
 #if _HAS_CXX23
 #ifndef __cpp_lib_adaptor_iterator_pair_constructor
@@ -44,13 +42,13 @@ STATIC_ASSERT(__cpp_lib_algorithm_iterator_requirements == 202207L);
 #endif
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 #ifndef __cpp_lib_allocate_at_least
 #error __cpp_lib_allocate_at_least is not defined
-#elif __cpp_lib_allocate_at_least != 202106L
-#error __cpp_lib_allocate_at_least is not 202106L
+#elif __cpp_lib_allocate_at_least != 202302L
+#error __cpp_lib_allocate_at_least is not 202302L
 #else
-STATIC_ASSERT(__cpp_lib_allocate_at_least == 202106L);
+STATIC_ASSERT(__cpp_lib_allocate_at_least == 202302L);
 #endif
 #else
 #ifdef __cpp_lib_allocate_at_least
@@ -261,10 +259,10 @@ STATIC_ASSERT(__cpp_lib_atomic_wait == 201907L);
 #if _HAS_CXX20
 #ifndef __cpp_lib_barrier
 #error __cpp_lib_barrier is not defined
-#elif __cpp_lib_barrier != 201907L
-#error __cpp_lib_barrier is not 201907L
+#elif __cpp_lib_barrier != 202302L
+#error __cpp_lib_barrier is not 202302L
 #else
-STATIC_ASSERT(__cpp_lib_barrier == 201907L);
+STATIC_ASSERT(__cpp_lib_barrier == 202302L);
 #endif
 #else
 #ifdef __cpp_lib_barrier
@@ -450,6 +448,34 @@ STATIC_ASSERT(__cpp_lib_clamp == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_common_reference
+#error __cpp_lib_common_reference is not defined
+#elif __cpp_lib_common_reference != 202302L
+#error __cpp_lib_common_reference is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_common_reference == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_common_reference
+#error __cpp_lib_common_reference is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_common_reference_wrapper
+#error __cpp_lib_common_reference_wrapper is not defined
+#elif __cpp_lib_common_reference_wrapper != 202302L
+#error __cpp_lib_common_reference_wrapper is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_common_reference_wrapper == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_common_reference_wrapper
+#error __cpp_lib_common_reference_wrapper is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_complex_udls
 #error __cpp_lib_complex_udls is not defined
 #elif __cpp_lib_complex_udls != 201309L
@@ -458,7 +484,15 @@ STATIC_ASSERT(__cpp_lib_clamp == 201603L);
 STATIC_ASSERT(__cpp_lib_complex_udls == 201309L);
 #endif
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, GH-395
+#ifndef __cpp_lib_concepts
+#error __cpp_lib_concepts is not defined
+#elif __cpp_lib_concepts != 202207L
+#error __cpp_lib_concepts is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_concepts == 202207L);
+#endif
+#elif _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
 #ifndef __cpp_lib_concepts
 #error __cpp_lib_concepts is not defined
 #elif __cpp_lib_concepts != 202002L
@@ -801,10 +835,10 @@ STATIC_ASSERT(__cpp_lib_execution == 201603L);
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_expected
 #error __cpp_lib_expected is not defined
-#elif __cpp_lib_expected != 202202L
-#error __cpp_lib_expected is not 202202L
+#elif __cpp_lib_expected != 202211L
+#error __cpp_lib_expected is not 202211L
 #else
-STATIC_ASSERT(__cpp_lib_expected == 202202L);
+STATIC_ASSERT(__cpp_lib_expected == 202211L);
 #endif
 #else
 #ifdef __cpp_lib_expected
@@ -1488,6 +1522,20 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 #endif
 #endif
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_print
+#error __cpp_lib_print is not defined
+#elif __cpp_lib_print != 202207L
+#error __cpp_lib_print is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_print == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_print
+#error __cpp_lib_print is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_quoted_string_io
 #error __cpp_lib_quoted_string_io is not defined
 #elif __cpp_lib_quoted_string_io != 201304L
@@ -1499,10 +1547,10 @@ STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
-#elif __cpp_lib_ranges != 202211L
-#error __cpp_lib_ranges is not 202211L
+#elif __cpp_lib_ranges != 202302L
+#error __cpp_lib_ranges is not 202302L
 #else
-STATIC_ASSERT(__cpp_lib_ranges == 202211L);
+STATIC_ASSERT(__cpp_lib_ranges == 202302L);
 #endif
 #elif _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
@@ -1543,6 +1591,20 @@ STATIC_ASSERT(__cpp_lib_ranges_as_rvalue == 202207L);
 #else
 #ifdef __cpp_lib_ranges_as_rvalue
 #error __cpp_lib_ranges_as_rvalue is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_cartesian_product
+#error __cpp_lib_ranges_cartesian_product is not defined
+#elif __cpp_lib_ranges_cartesian_product != 202207L
+#error __cpp_lib_ranges_cartesian_product is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_cartesian_product == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_cartesian_product
+#error __cpp_lib_ranges_cartesian_product is defined
 #endif
 #endif
 
@@ -1589,7 +1651,21 @@ STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
 #endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-#ifndef __cpp_lib_ranges_find_last // per LWG-3807
+#ifndef __cpp_lib_ranges_enumerate
+#error __cpp_lib_ranges_enumerate is not defined
+#elif __cpp_lib_ranges_enumerate != 202302L
+#error __cpp_lib_ranges_enumerate is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_enumerate == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_enumerate
+#error __cpp_lib_ranges_enumerate is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_find_last
 #error __cpp_lib_ranges_find_last is not defined
 #elif __cpp_lib_ranges_find_last != 202207L
 #error __cpp_lib_ranges_find_last is not 202207L
@@ -1641,6 +1717,20 @@ STATIC_ASSERT(__cpp_lib_ranges_join_with == 202202L);
 #else
 #ifdef __cpp_lib_ranges_join_with
 #error __cpp_lib_ranges_join_with is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_repeat
+#error __cpp_lib_ranges_repeat is not defined
+#elif __cpp_lib_ranges_repeat != 202207L
+#error __cpp_lib_ranges_repeat is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_repeat == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_repeat
+#error __cpp_lib_ranges_repeat is defined
 #endif
 #endif
 
@@ -1697,6 +1787,20 @@ STATIC_ASSERT(__cpp_lib_ranges_to_container == 202202L);
 #else
 #ifdef __cpp_lib_ranges_to_container
 #error __cpp_lib_ranges_to_container is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_zip
+#error __cpp_lib_ranges_zip is not defined
+#elif __cpp_lib_ranges_zip != 202110L
+#error __cpp_lib_ranges_zip is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_zip == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_zip
+#error __cpp_lib_ranges_zip is defined
 #endif
 #endif
 
@@ -1878,7 +1982,7 @@ STATIC_ASSERT(__cpp_lib_smart_ptr_for_overwrite == 202002L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_consteval)
+#if _HAS_CXX20
 #ifndef __cpp_lib_source_location
 #error __cpp_lib_source_location is not defined
 #elif __cpp_lib_source_location != 201907L
@@ -2132,6 +2236,20 @@ STATIC_ASSERT(__cpp_lib_transparent_operators == 201510L);
 #error __cpp_lib_tuple_element_t is not 201402L
 #else
 STATIC_ASSERT(__cpp_lib_tuple_element_t == 201402L);
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_tuple_like
+#error __cpp_lib_tuple_like is not defined
+#elif __cpp_lib_tuple_like != 202207L
+#error __cpp_lib_tuple_like is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_tuple_like == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_tuple_like
+#error __cpp_lib_tuple_like is defined
+#endif
 #endif
 
 #ifndef __cpp_lib_tuples_by_type
