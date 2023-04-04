@@ -3,8 +3,9 @@
 
 // class locale basic member functions
 
-// This file is compiled into import library.
-// Limitations apply to what can be included here; see /docs/import_library.md
+// This file is compiled into the import library (via locale0_implib.cpp => locale0.cpp).
+// MAJOR LIMITATIONS apply to what can be included here!
+// Before editing this file, read: /docs/import_library.md
 
 #include <crtdbg.h>
 #include <internal_shared.h>

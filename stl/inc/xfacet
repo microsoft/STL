@@ -3,8 +3,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// This header is used to compile import library.
-// Limitations apply to what can be included here; see /docs/import_library.md
+// This header is used to compile the import library (via locale0_implib.cpp => locale0.cpp => xfacet).
+// MAJOR LIMITATIONS apply to what can be included here!
+// Before editing this file, read: /docs/import_library.md
 
 #pragma once
 #ifndef _XFACET_
