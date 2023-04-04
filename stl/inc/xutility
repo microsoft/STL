@@ -4709,7 +4709,7 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
         if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt>) {
-            return _Copy_vbool(_First, _First + _Count_raw, _Dest);
+            return _Copy_vbool(_First, _First + _Count, _Dest);
         } else {
             auto _UFirst = _Get_unwrapped_n(_First, _Count);
             auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
