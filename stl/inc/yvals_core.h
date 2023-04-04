@@ -3,9 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// This header is used to compile import library.
-// Limitations apply to what can be included here; see /docs/import_library.md
-
 #pragma once
 #ifndef _YVALS_CORE_H_
 #define _YVALS_CORE_H_

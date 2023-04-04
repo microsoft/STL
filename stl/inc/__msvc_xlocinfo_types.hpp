@@ -3,9 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// This header is used to compile import library.
-// Limitations apply to what can be included here; see /docs/import_library.md
-
 #pragma once
 #ifndef __MSVC_XLOCINFO_TYPES_HPP
 #define __MSVC_XLOCINFO_TYPES_HPP
