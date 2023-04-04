@@ -781,6 +781,13 @@ struct default_accessor {
     using reference        = _ElementType&;
     using data_handle_type = _ElementType*;
 
+    static_assert(
+        sizeof(element_type) > 0, "ElementType must be a complete type (N4944 [mdspan.accessor.default.overview]/2).");
+    static_assert(!is_abstract_v<element_type>,
+        "ElementType cannot be an abstract type (N4944 [mdspan.accessor.default.overview]/2).");
+    static_assert(
+        !is_array_v<element_type>, "ElementType cannot be an array type (N4944 [mdspan.accessor.default.overview]/2).");
+
     constexpr default_accessor() noexcept = default;
 
     template <class _OtherElementType>
