@@ -27,8 +27,6 @@
 template <typename T>
 struct always_false : std::false_type {};
 
-int main() {} // COMPILE-ONLY
-
 template <typename Val>
 class fancy_pointer {
 public:
@@ -451,10 +449,9 @@ template class std::basic_osyncstream<char, std::char_traits<char>, fancy_alloca
 STATIC_ASSERT(std::is_standard_layout_v<std::allocation_result<fancy_pointer<int>>>);
 STATIC_ASSERT(!std::is_trivially_copyable_v<std::allocation_result<fancy_pointer<int>>>);
 
-#ifdef __cpp_lib_concepts
-STATIC_ASSERT(std::is_same_v<decltype(std::allocate_at_least(std::declval<fancy_allocator<int>&>(), std::size_t{})),
+STATIC_ASSERT(std::is_same_v<decltype(std::allocator_traits<fancy_allocator<int>>::allocate_at_least(
+                                 std::declval<fancy_allocator<int>&>(), std::size_t{})),
     std::allocation_result<fancy_pointer<int>>>);
-#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
 void instantiate() {

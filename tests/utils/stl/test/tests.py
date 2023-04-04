@@ -13,7 +13,7 @@ import copy
 import os
 import shutil
 
-from lit.Test import Result, SKIPPED, Test, UNRESOLVED, UNSUPPORTED
+from lit.Test import Result, SKIPPED, Test, UNSUPPORTED
 from libcxx.test.dsl import Feature
 import lit
 
@@ -249,8 +249,10 @@ class STLTest(Test):
                 self.requires.append('clr_pure') # TRANSITION, GH-798
             elif flag[1:] == 'clr':
                 self.requires.append('clr') # TRANSITION, GH-797
+            elif flag[1:] == 'fsanitize=undefined':
+                self.requires.append('ubsan') # available for x64, see features.py
             elif flag[1:] == 'BE':
-                self.requires.append('edg') # available for x86, see features.py
+                self.requires.append('edg') # available for x64, see features.py
             elif flag[1:] == 'arch:AVX2':
                 self.requires.append('arch_avx2') # available for x86 and x64, see features.py
             elif flag[1:] == 'arch:IA32':

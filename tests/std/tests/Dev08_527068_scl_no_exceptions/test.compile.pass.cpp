@@ -38,8 +38,6 @@
 #include <exception>
 #include <iostream>
 
-int main() {} // COMPILE-ONLY
-
 // VSO-115482 - Ensure type_info is in namespace std when _HAS_EXCEPTIONS=0.
 using check_typeinfo = std::type_info;
 

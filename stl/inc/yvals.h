@@ -235,7 +235,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _ATOMIC_REF_CHECK_ALIGNMENT(cond, mesg) _Analysis_assume_(cond)
 #endif
 
-
 #include <use_ansi.h>
 
 #ifdef _STATIC_CPPLIB

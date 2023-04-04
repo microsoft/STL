@@ -288,6 +288,13 @@
 // P2432R1 Fix istream_view
 // P2508R1 basic_format_string, format_string, wformat_string
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
+// P2588R3 barrier's Phase Completion Guarantees
+// P2602R2 Poison Pills Are Too Toxic
+// P2609R3 Relaxing Ranges Just A Smidge
+// P2655R3 common_reference_t Of reference_wrapper Should Be A Reference Type
+// P2711R1 Making Multi-Param Constructors Of Views explicit
+// P2736R2 Referencing The Unicode Standard
+// P2770R0 Stashing Stashing Iterators For Proper Flattening
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -314,8 +321,9 @@
 // P1223R5 ranges::find_last, ranges::find_last_if, ranges::find_last_if_not
 // P1272R4 byteswap()
 // P1328R1 constexpr type_info::operator==()
-// P1413R3 Deprecate aligned_storage And aligned_union
 // P1425R4 Iterator Pair Constructors For stack And queue
+// P1467R9 Extended Floating-Point Types
+//     (only the <stdfloat> header; we don't support any optional extended floating-point types)
 // P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
@@ -323,9 +331,10 @@
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
+// P2093R14 <print>: Formatted Output
 // P2136R3 invoke_r()
+// P2164R9 views::enumerate
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
-//     (changes to views::zip and pair only)
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
@@ -333,9 +342,10 @@
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
-//     (missing views::zip_transform, views::adjacent, and views::adjacent_transform)
 // P2322R6 ranges::fold_left, ranges::fold_right, Etc.
+// P2374R4 views::cartesian_product
 // P2387R3 Pipe Support For User-Defined Range Adaptors
+// P2404R3 Move-Only Types For Comparison Concepts
 // P2417R2 More constexpr bitset
 // P2438R2 string::substr() &&
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
@@ -346,10 +356,18 @@
 // P2446R2 views::as_rvalue
 // P2465R3 Standard Library Modules std And std.compat
 // P2467R1 ios_base::noreplace: Exclusive Mode For fstreams
+// P2474R2 views::repeat
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
+// P2505R5 Monadic Functions For expected
+// P2539R4 Synchronizing print() With The Underlying Stream
+// P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
-// P2602R2 Poison Pills Are Too Toxic
+// P2652R2 Disallowing User Specialization Of allocator_traits
+
+// _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
+// P1413R3 Deprecate aligned_storage And aligned_union
+// Other C++23 deprecation warnings
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -813,7 +831,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202212L
+#define _MSVC_STL_UPDATE  202303L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -827,8 +845,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or new
 _EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 15.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1935 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.35 or newer.");
+#if _MSC_VER < 1936 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.36 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1401,7 +1419,21 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4040 is used to warn that "The contents of <any> require static RTTI."
 
-// next warning number: STL4041
+#if _HAS_CXX23 && !defined(_SILENCE_CXX23_UNIX_STREAMS_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+#define _CXX23_DEPRECATE_UNIX_STREAMS                                                                                  \
+    [[deprecated(                                                                                                      \
+        "warning STL4041: "                                                                                            \
+        "std::errc enumerators std::errc::no_message_available, std::errc::no_stream_resources, "                      \
+        "std::errc::not_a_stream, and std::errc::stream_timeout and their corresponding errno macros ENODATA, ENOSR, " \
+        "ENOSTR, and ETIME are deprecated in C++23 by LWG-3869. These errno macros are deprecated in POSIX 2008 and "  \
+        "removed in POSIX 202x. You can define _SILENCE_CXX23_UNIX_STREAMS_DEPRECATION_WARNING or "                    \
+        "_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX23_DEPRECATE_UNIX_STREAMS
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4042
 
 // next error number: STL1006
 
@@ -1467,7 +1499,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifndef _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 #define _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20 (_HAS_FEATURES_REMOVED_IN_CXX20)
 #endif // _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
-
 
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX23
 #define _HAS_FEATURES_REMOVED_IN_CXX23 (!_HAS_CXX23)
@@ -1568,7 +1599,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if _HAS_CXX20
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, GH-395
-#define __cpp_lib_concepts 202002L
+#if _HAS_CXX23 // TRANSITION, GH-395 - move down to "macros with language mode sensitivity" section
+#define __cpp_lib_concepts 202207L // P2404R3 Move-Only Types For Comparison Concepts
+#else // ^^^ C++23 / C++20 vvv
+#define __cpp_lib_concepts 202002L // P1964R2 Replacing boolean With boolean-testable
+#endif // C++20
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
 #ifdef __cpp_lib_concepts
@@ -1582,25 +1617,31 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_atomic_ref                    201806L
 #define __cpp_lib_atomic_shared_ptr             201711L
 #define __cpp_lib_atomic_wait                   201907L
-#define __cpp_lib_barrier                       201907L
+#define __cpp_lib_barrier                       202302L
 #define __cpp_lib_bind_front                    201907L
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
-#define __cpp_lib_constexpr_algorithms          201806L
-#define __cpp_lib_constexpr_complex             201711L
-#define __cpp_lib_constexpr_dynamic_alloc       201907L
-#define __cpp_lib_constexpr_functional          201907L
-#define __cpp_lib_constexpr_iterator            201811L
-#define __cpp_lib_constexpr_numeric             201911L
-#define __cpp_lib_constexpr_string              201907L
-#define __cpp_lib_constexpr_string_view         201811L
-#define __cpp_lib_constexpr_tuple               201811L
-#define __cpp_lib_constexpr_utility             201811L
-#define __cpp_lib_constexpr_vector              201907L
-#define __cpp_lib_destroying_delete             201806L
-#define __cpp_lib_endian                        201907L
-#define __cpp_lib_erase_if                      202002L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_common_reference         202302L
+#define __cpp_lib_common_reference_wrapper 202302L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_constexpr_algorithms    201806L
+#define __cpp_lib_constexpr_complex       201711L
+#define __cpp_lib_constexpr_dynamic_alloc 201907L
+#define __cpp_lib_constexpr_functional    201907L
+#define __cpp_lib_constexpr_iterator      201811L
+#define __cpp_lib_constexpr_numeric       201911L
+#define __cpp_lib_constexpr_string        201907L
+#define __cpp_lib_constexpr_string_view   201811L
+#define __cpp_lib_constexpr_tuple         201811L
+#define __cpp_lib_constexpr_utility       201811L
+#define __cpp_lib_constexpr_vector        201907L
+#define __cpp_lib_destroying_delete       201806L
+#define __cpp_lib_endian                  201907L
+#define __cpp_lib_erase_if                202002L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_format 202207L
@@ -1639,15 +1680,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
-
-#ifdef __cpp_consteval
-#define __cpp_lib_source_location 201907L
-#endif // __cpp_consteval
-
-#define __cpp_lib_span             202002L
-#define __cpp_lib_ssize            201902L
-#define __cpp_lib_starts_ends_with 201711L
-#define __cpp_lib_syncbuf          201803L
+#define __cpp_lib_source_location         201907L
+#define __cpp_lib_span                    202002L
+#define __cpp_lib_ssize                   201902L
+#define __cpp_lib_starts_ends_with        201711L
+#define __cpp_lib_syncbuf                 201803L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_three_way_comparison 201907L
@@ -1662,11 +1699,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 // C++23
 #if _HAS_CXX23
 #define __cpp_lib_adaptor_iterator_pair_constructor 202106L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_allocate_at_least 202106L
-#endif // __cpp_lib_concepts
-
+#define __cpp_lib_allocate_at_least                 202302L
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_bind_back                         202202L
 #define __cpp_lib_byteswap                          202110L
@@ -1676,7 +1709,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_containers_ranges 202202L
-#define __cpp_lib_expected          202202L
+#define __cpp_lib_expected          202211L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_forward_like   202207L
@@ -1691,20 +1724,25 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_out_ptr                 202106L
-#define __cpp_lib_ranges_as_const         202207L
-#define __cpp_lib_ranges_as_rvalue        202207L
-#define __cpp_lib_ranges_chunk            202202L
-#define __cpp_lib_ranges_chunk_by         202202L
-#define __cpp_lib_ranges_contains         202207L
-#define __cpp_lib_ranges_find_last        202207L // per LWG-3807
-#define __cpp_lib_ranges_fold             202207L
-#define __cpp_lib_ranges_iota             202202L
-#define __cpp_lib_ranges_join_with        202202L
-#define __cpp_lib_ranges_slide            202202L
-#define __cpp_lib_ranges_starts_ends_with 202106L
-#define __cpp_lib_ranges_stride           202207L
-#define __cpp_lib_ranges_to_container     202202L
+#define __cpp_lib_out_ptr                  202106L
+#define __cpp_lib_print                    202207L
+#define __cpp_lib_ranges_as_const          202207L
+#define __cpp_lib_ranges_as_rvalue         202207L
+#define __cpp_lib_ranges_cartesian_product 202207L
+#define __cpp_lib_ranges_chunk             202202L
+#define __cpp_lib_ranges_chunk_by          202202L
+#define __cpp_lib_ranges_contains          202207L
+#define __cpp_lib_ranges_enumerate         202302L
+#define __cpp_lib_ranges_find_last         202207L
+#define __cpp_lib_ranges_fold              202207L
+#define __cpp_lib_ranges_iota              202202L
+#define __cpp_lib_ranges_join_with         202202L
+#define __cpp_lib_ranges_repeat            202207L
+#define __cpp_lib_ranges_slide             202202L
+#define __cpp_lib_ranges_starts_ends_with  202106L
+#define __cpp_lib_ranges_stride            202207L
+#define __cpp_lib_ranges_to_container      202202L
+#define __cpp_lib_ranges_zip               202110L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream                  202106L
@@ -1713,7 +1751,12 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_string_contains             202011L
 #define __cpp_lib_string_resize_and_overwrite 202110L
 #define __cpp_lib_to_underlying               202102L
-#define __cpp_lib_unreachable                 202202L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_tuple_like 202207L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_unreachable 202202L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
@@ -1755,7 +1798,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #if _HAS_CXX23
-#define __cpp_lib_ranges 202211L // P2602R2 Poison Pills Are Too Toxic
+#define __cpp_lib_ranges 202302L // P2609R3 Relaxing Ranges Just A Smidge
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_ranges 202110L // P2415R2 What Is A view?
 #endif // _HAS_CXX20

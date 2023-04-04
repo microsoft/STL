@@ -29,9 +29,11 @@ public:
 #pragma warning(pop)
 
     class reference { // proxy for an element
-        friend bitset<_Bits>;
+        friend bitset;
 
     public:
+        _CONSTEXPR23 reference(const reference&) = default;
+
         _CONSTEXPR23 ~reference() noexcept {} // TRANSITION, ABI
 
         _CONSTEXPR23 reference& operator=(const bool _Val) noexcept {
@@ -44,17 +46,17 @@ public:
             return *this;
         }
 
-        _CONSTEXPR23 reference& flip() noexcept {
-            _Pbitset->_Flip_unchecked(_Mypos);
-            return *this;
-        }
-
         _NODISCARD _CONSTEXPR23 bool operator~() const noexcept {
             return !_Pbitset->_Subscript(_Mypos);
         }
 
         _CONSTEXPR23 operator bool() const noexcept {
             return _Pbitset->_Subscript(_Mypos);
+        }
+
+        _CONSTEXPR23 reference& flip() noexcept {
+            _Pbitset->_Flip_unchecked(_Mypos);
+            return *this;
         }
 
     private:

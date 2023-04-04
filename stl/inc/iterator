@@ -187,13 +187,13 @@ public:
     constexpr move_sentinel() = default;
 
     constexpr explicit move_sentinel(_Se _Val) noexcept(is_nothrow_move_constructible_v<_Se>) // strengthened
-        : _Last{_STD move(_Val)} {}
+        : _Last(_STD move(_Val)) {}
 
     template <class _Se2>
         requires convertible_to<const _Se2&, _Se>
     constexpr move_sentinel(const move_sentinel<_Se2>& _Val) noexcept(
         is_nothrow_constructible_v<_Se, const _Se2&>) // strengthened
-        : _Last{_Val._Get_last()} {}
+        : _Last(_Val._Get_last()) {}
 
     template <class _Se2>
         requires assignable_from<_Se&, const _Se2&>
@@ -252,8 +252,8 @@ public:
     constexpr istream_iterator() noexcept(is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {}
 
 #ifdef __cpp_lib_concepts
-    constexpr istream_iterator(default_sentinel_t) noexcept(is_nothrow_default_constructible_v<_Ty>) // strengthened
-    {}
+    constexpr istream_iterator(default_sentinel_t) noexcept(
+        is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {}
 #endif // __cpp_lib_concepts
 
     istream_iterator(istream_type& _Istr) : _Myistr(_STD addressof(_Istr)) {
@@ -585,10 +585,10 @@ public:
         // clang-format on
         switch (_That._Contains) {
         case _Variantish_state::_Holds_first:
-            _Construct_in_place(_First, _That._First);
+            _STD _Construct_in_place(_First, _That._Get_first());
             break;
         case _Variantish_state::_Holds_second:
-            _Construct_in_place(_Second, _That._Second);
+            _STD _Construct_in_place(_Second, _That._Get_second());
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -605,10 +605,10 @@ public:
         : _Contains{_That._Contains} {
         switch (_Contains) {
         case _Variantish_state::_Holds_first:
-            _Construct_in_place(_First, _That._First);
+            _STD _Construct_in_place(_First, _That._Get_first());
             break;
         case _Variantish_state::_Holds_second:
-            _Construct_in_place(_Second, _That._Second);
+            _STD _Construct_in_place(_Second, _That._Get_second());
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -625,10 +625,10 @@ public:
         : _Contains{_That._Contains} {
         switch (_Contains) {
         case _Variantish_state::_Holds_first:
-            _Construct_in_place(_First, _STD move(_That._First));
+            _STD _Construct_in_place(_First, _STD move(_That._Get_first()));
             break;
         case _Variantish_state::_Holds_second:
-            _Construct_in_place(_Second, _STD move(_That._Second));
+            _STD _Construct_in_place(_Second, _STD move(_That._Get_second()));
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -656,10 +656,10 @@ public:
         if (_Contains == _That._Contains) {
             switch (_Contains) {
             case _Variantish_state::_Holds_first:
-                _First = _That._First;
+                _Get_first() = _That._Get_first();
                 break;
             case _Variantish_state::_Holds_second:
-                _Second = _That._Second;
+                _Get_second() = _That._Get_second();
                 break;
             case _Variantish_state::_Nothing:
                 break;
@@ -672,10 +672,10 @@ public:
 
         switch (_That._Contains) {
         case _Variantish_state::_Holds_first:
-            _Construct_in_place(_First, _That._First);
+            _STD _Construct_in_place(_First, _That._Get_first());
             break;
         case _Variantish_state::_Holds_second:
-            _Construct_in_place(_Second, _That._Second);
+            _STD _Construct_in_place(_Second, _That._Get_second());
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -701,10 +701,10 @@ public:
         if (_Contains == _That._Contains) {
             switch (_Contains) {
             case _Variantish_state::_Holds_first:
-                _First = _STD move(_That._First);
+                _Get_first() = _STD move(_That._Get_first());
                 break;
             case _Variantish_state::_Holds_second:
-                _Second = _STD move(_That._Second);
+                _Get_second() = _STD move(_That._Get_second());
                 break;
             case _Variantish_state::_Nothing:
                 break;
@@ -717,10 +717,10 @@ public:
 
         switch (_That._Contains) {
         case _Variantish_state::_Holds_first:
-            _Construct_in_place(_First, _STD move(_That._First));
+            _STD _Construct_in_place(_First, _STD move(_That._Get_first()));
             break;
         case _Variantish_state::_Holds_second:
-            _Construct_in_place(_Second, _STD move(_That._Second));
+            _STD _Construct_in_place(_Second, _STD move(_That._Get_second()));
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -741,10 +741,10 @@ public:
         if (_Contains == _That._Contains) {
             switch (_Contains) {
             case _Variantish_state::_Holds_first:
-                _First = _That._First;
+                _Get_first() = _That._Get_first();
                 break;
             case _Variantish_state::_Holds_second:
-                _Second = _That._Second;
+                _Get_second() = _That._Get_second();
                 break;
             case _Variantish_state::_Nothing:
                 break;
@@ -757,10 +757,10 @@ public:
 
         switch (_That._Contains) {
         case _Variantish_state::_Holds_first:
-            _Construct_in_place(_First, _That._First);
+            _STD _Construct_in_place(_First, _That._Get_first());
             break;
         case _Variantish_state::_Holds_second:
-            _Construct_in_place(_Second, _That._Second);
+            _STD _Construct_in_place(_Second, _That._Get_second());
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -780,10 +780,10 @@ public:
         if (_Left._Contains == _Right._Contains) {
             switch (_Left._Contains) {
             case _Variantish_state::_Holds_first:
-                _RANGES swap(_Left._First, _Right._First);
+                _RANGES swap(_Left._Get_first(), _Right._Get_first());
                 break;
             case _Variantish_state::_Holds_second:
-                _RANGES swap(_Left._Second, _Right._Second);
+                _RANGES swap(_Left._Get_second(), _Right._Get_second());
                 break;
             case _Variantish_state::_Nothing:
                 break;
@@ -810,6 +810,20 @@ public:
         }
     }
 
+    _NODISCARD constexpr _Ty1& _Get_first() noexcept {
+        return _First;
+    }
+    _NODISCARD constexpr const _Ty1& _Get_first() const noexcept {
+        return _First;
+    }
+
+    _NODISCARD constexpr _Ty2& _Get_second() noexcept {
+        return _Second;
+    }
+    _NODISCARD constexpr const _Ty2& _Get_second() const noexcept {
+        return _Second;
+    }
+
     constexpr void _Clear() noexcept {
         _Raw_clear();
         _Contains = _Variantish_state::_Nothing;
@@ -819,7 +833,7 @@ public:
     constexpr void _Emplace_first(_Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty1, _Types...>) {
         _Clear();
 
-        _Construct_in_place(_First, _STD forward<_Types>(_Args)...);
+        _STD _Construct_in_place(_First, _STD forward<_Types>(_Args)...);
         _Contains = _Variantish_state::_Holds_first;
     }
 
@@ -827,13 +841,13 @@ public:
     constexpr void _Emplace_second(_Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty2, _Types...>) {
         _Clear();
 
-        _Construct_in_place(_Second, _STD forward<_Types>(_Args)...);
+        _STD _Construct_in_place(_Second, _STD forward<_Types>(_Args)...);
         _Contains = _Variantish_state::_Holds_second;
     }
 
     union {
-        _Ty1 _First;
-        _Ty2 _Second;
+        remove_cv_t<_Ty1> _First;
+        remove_cv_t<_Ty2> _Second;
     };
 
     _Variantish_state _Contains;
@@ -896,7 +910,7 @@ public:
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return *_Val._First;
+        return *_Val._Get_first();
     }
 
     _NODISCARD constexpr decltype(auto) operator*() const
@@ -906,7 +920,7 @@ public:
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return *_Val._First;
+        return *_Val._Get_first();
     }
 
     // clang-format off
@@ -920,9 +934,9 @@ public:
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (_Has_member_arrow<const _Iter&> || is_pointer_v<_Iter>) {
-            return _Val._First;
+            return _Val._Get_first();
         } else if constexpr (is_reference_v<iter_reference_t<_Iter>>) {
-            auto&& _Tmp = *_Val._First;
+            auto&& _Tmp = *_Val._Get_first();
             return _STD addressof(_Tmp);
         } else {
             class _Arrow_proxy : private _Proxy_base {
@@ -936,7 +950,7 @@ public:
                 }
             };
 
-            return _Arrow_proxy{*_Val._First};
+            return _Arrow_proxy{*_Val._Get_first()};
         }
     }
 
@@ -945,7 +959,7 @@ public:
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be incremented if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        ++_Val._First;
+        ++_Val._Get_first();
         return *this;
     }
 
@@ -956,7 +970,7 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (forward_iterator<_Iter>) {
             common_iterator _Tmp = *this;
-            ++_Val._First;
+            ++_Val._Get_first();
             return _Tmp;
         } else if constexpr (_Use_postfix_proxy<_Iter>) {
             class _Postfix_proxy : private _Proxy_base {
@@ -970,11 +984,11 @@ public:
                 }
             };
 
-            _Postfix_proxy _Tmp{*_Val._First};
-            ++_Val._First;
+            _Postfix_proxy _Tmp{*_Val._Get_first()};
+            ++_Val._Get_first();
             return _Tmp;
         } else {
-            return _Val._First++;
+            return _Val._Get_first()++;
         }
     }
 
@@ -992,16 +1006,16 @@ public:
         if (_Left._Val._Contains == _Variantish_state::_Holds_first) {
             if (_Right_val._Contains == _Variantish_state::_Holds_first) {
                 if constexpr (equality_comparable_with<_Iter, _OIter>) {
-                    return _Left._Val._First == _Right_val._First;
+                    return _Left._Val._Get_first() == _Right_val._Get_first();
                 } else {
                     return true;
                 }
             } else {
-                return _Left._Val._First == _Right_val._Second;
+                return _Left._Val._Get_first() == _Right_val._Get_second();
             }
         } else {
             if (_Right_val._Contains == _Variantish_state::_Holds_first) {
-                return _Left._Val._Second == _Right_val._First;
+                return _Left._Val._Get_second() == _Right_val._Get_first();
             } else {
                 return true;
             }
@@ -1021,13 +1035,13 @@ public:
 
         if (_Left._Val._Contains == _Variantish_state::_Holds_first) {
             if (_Right_val._Contains == _Variantish_state::_Holds_first) {
-                return _Left._Val._First - _Right_val._First;
+                return _Left._Val._Get_first() - _Right_val._Get_first();
             } else {
-                return _Left._Val._First - _Right_val._Second;
+                return _Left._Val._Get_first() - _Right_val._Get_second();
             }
         } else {
             if (_Right_val._Contains == _Variantish_state::_Holds_first) {
-                return _Left._Val._Second - _Right_val._First;
+                return _Left._Val._Get_second() - _Right_val._Get_first();
             } else {
                 return 0;
             }
@@ -1035,26 +1049,26 @@ public:
     }
 
     _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_Iter> iter_move(const common_iterator& _Right) noexcept(
-        noexcept(_RANGES iter_move(_Right._Val._First)))
+        noexcept(_RANGES iter_move(_Right._Val._Get_first())))
         requires input_iterator<_Iter>
     {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Right._Val._Contains == _Variantish_state::_Holds_first,
             "can only iter_move from common_iterator if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return _RANGES iter_move(_Right._Val._First);
+        return _RANGES iter_move(_Right._Val._Get_first());
     }
 
     template <indirectly_swappable<_Iter> _OIter, class _OSe>
     friend constexpr void iter_swap(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) noexcept(
-        noexcept(_RANGES iter_swap(_Left._Val._First, _Right._Get_val()._First))) {
+        noexcept(_RANGES iter_swap(_Left._Val._Get_first(), _Right._Get_val()._Get_first()))) {
         auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Left._Val._Contains == _Variantish_state::_Holds_first
                         && _Right_val._Contains == _Variantish_state::_Holds_first,
             "can only iter_swap common_iterators if both hold iterators");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return _RANGES iter_swap(_Left._Val._First, _Right_val._First);
+        return _RANGES iter_swap(_Left._Val._Get_first(), _Right_val._Get_first());
     }
 
     _NODISCARD constexpr _Variantish<_Iter, _Se>& _Get_val() noexcept {

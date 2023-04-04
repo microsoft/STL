@@ -3,8 +3,6 @@
 
 #include <random>
 
-int main() {} // COMPILE-ONLY
-
 void test() {
     // GH-3105 "<random>: std::piecewise_constant_distribution<float>::densities() gives warning C4244"
     (void) std::piecewise_constant_distribution<float>{}.densities();

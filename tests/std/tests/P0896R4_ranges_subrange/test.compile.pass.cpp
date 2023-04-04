@@ -21,8 +21,6 @@
 using std::output_iterator_tag, std::input_iterator_tag, std::forward_iterator_tag, std::bidirectional_iterator_tag,
     std::random_access_iterator_tag, std::contiguous_iterator_tag;
 
-int main() {} // COMPILE-ONLY
-
 void test_LWG_3470() {
     // LWG-3470 relaxed the "convertible-to-non-slicing" requirements to allow this non-slicing case
     int a[]                 = {1, 2, 3};

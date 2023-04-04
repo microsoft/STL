@@ -1076,7 +1076,7 @@ public:
             } else { // new stuff can all be assigned
                 _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
-                _STD fill(_Whereptr, _Whereptr + _Count, _Tmp);
+                _STD fill_n(_Whereptr, _Count, _Tmp);
             }
             _ASAN_VECTOR_RELEASE_GUARD;
         }
@@ -3458,7 +3458,7 @@ public:
     _CONSTEXPR20 iterator _Insert_n(const_iterator _Where, size_type _Count, const bool& _Val) {
         size_type _Off     = _Insert_x(_Where, _Count);
         const auto _Result = begin() + static_cast<difference_type>(_Off);
-        _STD fill(_Result, _Result + static_cast<difference_type>(_Count), _Val);
+        _STD fill_n(_Result, _Count, _Val);
         return _Result;
     }
 
@@ -3726,7 +3726,6 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _Vb
 #undef _ASAN_VECTOR_CREATE_GUARD
 #undef _ASAN_VECTOR_EXTEND_GUARD
 #undef _ASAN_VECTOR_RELEASE_GUARD
-#undef _ACTIVATE_VECTOR_ANNOTATION
 #undef _INSERT_VECTOR_ANNOTATION
 _STD_END
 

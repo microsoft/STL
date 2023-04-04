@@ -1,14 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <locale>
 #include <new>
 #include <regex>
 
 using namespace std;
+
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 
@@ -166,6 +170,31 @@ void test(const char* s) {
     }
 }
 
+// Also test LWG-3204: sub_match::swap only swaps the base class
+void test_lwg3204() {
+    csub_match sm1{};
+    sm1.first   = "hello";
+    sm1.second  = "world";
+    sm1.matched = true;
+
+    csub_match sm2{};
+    sm2.first   = "fluffy";
+    sm2.second  = "cat";
+    sm2.matched = false;
+
+    sm1.swap(sm2);
+
+    assert(strcmp(sm1.first, "fluffy") == 0);
+    assert(strcmp(sm1.second, "cat") == 0);
+    assert(!sm1.matched);
+
+    assert(strcmp(sm2.first, "hello") == 0);
+    assert(strcmp(sm2.second, "world") == 0);
+    assert(sm2.matched);
+
+    STATIC_ASSERT(noexcept(sm1.swap(sm2)));
+}
+
 
 int main() {
     // Perform any locale allocations before we begin the tests.
@@ -207,4 +236,6 @@ int main() {
     test("Huck[[:alpha:]]+");
     test("Tom|Sawyer|Huckleberry|Finn");
     test("Twain");
+
+    test_lwg3204();
 }

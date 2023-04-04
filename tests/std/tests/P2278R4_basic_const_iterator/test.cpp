@@ -4,6 +4,7 @@
 #include <cassert>
 #include <iterator>
 #include <memory>
+#include <ranges>
 #include <type_traits>
 #include <utility>
 
@@ -239,6 +240,13 @@ constexpr void test_one(It iter) {
         static_assert(noexcept(citer == sent) == noexcept(iter == sent)); // strengthened
     }
 
+    { // Validate basic_const_iterator::iter_move()
+        using Expected = common_reference_t<const iter_value_t<It>&&, iter_rvalue_reference_t<It>>;
+        [[maybe_unused]] same_as<Expected> decltype(auto) val = ranges::iter_move(citer);
+        static_assert(
+            noexcept(ranges::iter_move(citer)) == noexcept(static_cast<Expected>(ranges::iter_move(citer.base()))));
+    }
+
     { // Validate basic_const_iterator::base() const&
         [[maybe_unused]] same_as<const It&> decltype(auto) base = citer.base();
         static_assert(noexcept(citer.base()));
@@ -250,7 +258,16 @@ constexpr void test_one(It iter) {
     }
 }
 
+void test_lwg3853() { // COMPILE-ONLY
+    basic_const_iterator<volatile int*> it;
+    [[maybe_unused]] same_as<const volatile int*> auto ptr = it.operator->();
+}
+
 static constexpr int some_ints[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+// Check LWG-3872
+using Zipped = decltype(views::zip(some_ints) | views::as_const | views::as_rvalue);
+static_assert(same_as<ranges::range_reference_t<Zipped>, tuple<const int&&>>);
 
 struct instantiator {
     template <input_iterator It>

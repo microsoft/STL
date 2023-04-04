@@ -310,7 +310,7 @@ struct _Iter_traits_category2<false> {
 
 // clang-format off
 template <class _It>
-concept _Cpp17_forward_delta = constructible_from<_It> && is_lvalue_reference_v<iter_reference_t<_It>>
+concept _Cpp17_forward_delta = constructible_from<_It> && is_reference_v<iter_reference_t<_It>>
     && same_as<remove_cvref_t<iter_reference_t<_It>>, typename indirectly_readable_traits<_It>::value_type>
     && requires(_It __i) {
         { __i++ } -> convertible_to<const _It&>;
@@ -409,6 +409,10 @@ concept sized_sentinel_for = sentinel_for<_Se, _It>
         { __i - __s } -> same_as<iter_difference_t<_It>>;
     };
 // clang-format on
+
+_EXPORT_STD struct default_sentinel_t {};
+
+_EXPORT_STD inline constexpr default_sentinel_t default_sentinel{};
 
 namespace ranges {
     _EXPORT_STD enum class subrange_kind : bool { unsized, sized };

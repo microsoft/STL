@@ -34,11 +34,20 @@ struct _Non_trivial_copy : _Base { // non-trivial copy construction facade
     _Non_trivial_copy& operator=(_Non_trivial_copy&&)      = default;
 };
 
-template <class _Base, class... _Types>
-using _SMF_control_copy = conditional_t<
-    conjunction_v<is_copy_constructible<_Types>..., negation<conjunction<is_trivially_copy_constructible<_Types>...>>>,
-    _Non_trivial_copy<_Base>, _Base>;
+template <class _Base>
+struct _Deleted_copy : _Base { // deleted copy construction facade
+    using _Base::_Base;
 
+    _Deleted_copy()                                = default;
+    _Deleted_copy(const _Deleted_copy&)            = delete;
+    _Deleted_copy(_Deleted_copy&&)                 = default;
+    _Deleted_copy& operator=(const _Deleted_copy&) = default;
+    _Deleted_copy& operator=(_Deleted_copy&&)      = default;
+};
+
+template <class _Base, class... _Types>
+using _SMF_control_copy = conditional_t<conjunction_v<is_trivially_copy_constructible<_Types>...>, _Base,
+    conditional_t<conjunction_v<is_copy_constructible<_Types>...>, _Non_trivial_copy<_Base>, _Deleted_copy<_Base>>>;
 
 template <class _Base, class... _Types>
 struct _Non_trivial_move : _SMF_control_copy<_Base, _Types...> { // non-trivial move construction facade
@@ -56,10 +65,22 @@ struct _Non_trivial_move : _SMF_control_copy<_Base, _Types...> { // non-trivial 
 };
 
 template <class _Base, class... _Types>
-using _SMF_control_move = conditional_t<
-    conjunction_v<is_move_constructible<_Types>..., negation<conjunction<is_trivially_move_constructible<_Types>...>>>,
-    _Non_trivial_move<_Base, _Types...>, _SMF_control_copy<_Base, _Types...>>;
+struct _Deleted_move : _SMF_control_copy<_Base, _Types...> { // deleted move construction facade
+    using _Mybase = _SMF_control_copy<_Base, _Types...>;
+    using _Mybase::_Mybase;
 
+    _Deleted_move()                                = default;
+    _Deleted_move(const _Deleted_move&)            = default;
+    _Deleted_move(_Deleted_move&&)                 = delete;
+    _Deleted_move& operator=(const _Deleted_move&) = default;
+    _Deleted_move& operator=(_Deleted_move&&)      = default;
+};
+
+template <class _Base, class... _Types>
+using _SMF_control_move =
+    conditional_t<conjunction_v<is_trivially_move_constructible<_Types>...>, _SMF_control_copy<_Base, _Types...>,
+        conditional_t<conjunction_v<is_move_constructible<_Types>...>, _Non_trivial_move<_Base, _Types...>,
+            _Deleted_move<_Base, _Types...>>>;
 
 template <class _Base, class... _Types>
 struct _Non_trivial_copy_assign : _SMF_control_move<_Base, _Types...> { // non-trivial copy assignment facade
@@ -98,7 +119,6 @@ using _SMF_control_copy_assign =
         conditional_t<conjunction_v<is_copy_constructible<_Types>..., is_copy_assignable<_Types>...>,
             _Non_trivial_copy_assign<_Base, _Types...>, _Deleted_copy_assign<_Base, _Types...>>>;
 
-
 template <class _Base, class... _Types>
 struct _Non_trivial_move_assign : _SMF_control_copy_assign<_Base, _Types...> { // non-trivial move assignment facade
     using _Mybase = _SMF_control_copy_assign<_Base, _Types...>;
@@ -135,7 +155,6 @@ using _SMF_control_move_assign =
         _SMF_control_copy_assign<_Base, _Types...>,
         conditional_t<conjunction_v<is_move_constructible<_Types>..., is_move_assignable<_Types>...>,
             _Non_trivial_move_assign<_Base, _Types...>, _Deleted_move_assign<_Base, _Types...>>>;
-
 
 template <class _Base, class... _Types>
 using _SMF_control = _SMF_control_move_assign<_Base, _Types...>;

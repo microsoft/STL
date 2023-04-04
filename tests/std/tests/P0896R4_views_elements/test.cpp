@@ -394,6 +394,26 @@ constexpr void instantiation_test() {
 #endif // TEST_EVERYTHING
 }
 
+// GH-3014 "<ranges>: list-initialization is misused"
+void test_gh_3014() { // COMPILE-ONLY
+    struct FwdRange {
+        P* begin() {
+            return nullptr;
+        }
+
+        test::init_list_not_constructible_iterator<P> begin() const {
+            return nullptr;
+        }
+
+        unreachable_sentinel_t end() const {
+            return {};
+        }
+    };
+
+    auto r                                           = FwdRange{} | views::elements<0>;
+    [[maybe_unused]] decltype(as_const(r).begin()) i = r.begin(); // Check 'iterator(iterator<!Const> i)'
+}
+
 int main() {
     { // Validate copyable views
         constexpr span<const P> s{some_pairs};

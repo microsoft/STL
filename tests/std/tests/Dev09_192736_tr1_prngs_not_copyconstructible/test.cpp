@@ -157,10 +157,10 @@ int main() {
     test_distribution(piecewise_constant_distribution<float>(begin(rangesf), end(rangesf), begin(weightsf)));
     test_distribution(piecewise_linear_distribution<float>(begin(rangesf), end(rangesf), begin(weightsf)));
 
-    vector<double> ranges{0.0, 10.0, 90.0, 100.0};
-    vector<double> weights{1.0, 0.0, 0.0, 1.0};
-    test_distribution(piecewise_constant_distribution<double>(begin(ranges), end(ranges), begin(weights)));
-    test_distribution(piecewise_linear_distribution<double>(begin(ranges), end(ranges), begin(weights)));
+    vector<double> rangesd{0.0, 10.0, 90.0, 100.0};
+    vector<double> weightsd{1.0, 0.0, 0.0, 1.0};
+    test_distribution(piecewise_constant_distribution<double>(begin(rangesd), end(rangesd), begin(weightsd)));
+    test_distribution(piecewise_linear_distribution<double>(begin(rangesd), end(rangesd), begin(weightsd)));
 
     vector<long double> rangesl{0.0l, 10.0l, 90.0l, 100.0l};
     vector<long double> weightsl{1.0l, 0.0l, 0.0l, 1.0l};

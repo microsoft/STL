@@ -31,6 +31,76 @@ static_assert(!CanIterConstRef<int>);
 static_assert(!CanIterConstRef<list<int>>);
 static_assert(!CanIterConstRef<deque<int>>);
 
+namespace test_common_type {
+    struct CommonThing {};
+
+    template <class T>
+    struct InIter {
+        using value_type      = T;
+        using difference_type = ptrdiff_t;
+
+        value_type& operator*() const; // not defined
+        InIter& operator++(); // not defined
+        void operator++(int); // not defined
+        operator CommonThing() const; // not defined
+    };
+
+    static_assert(input_iterator<InIter<int>>);
+    static_assert(input_iterator<InIter<long>>);
+} // namespace test_common_type
+
+template <class T, class U>
+struct std::common_type<test_common_type::InIter<T>, test_common_type::InIter<U>> {
+    using type = test_common_type::CommonThing;
+};
+
+static_assert(common_with<test_common_type::InIter<int>, test_common_type::InIter<long>>);
+
+namespace test_common_type {
+    template <class T, class U>
+    concept CanCommonType = requires { typename common_type_t<T, U>; };
+
+    // Validate invalid common types
+    static_assert(!CanCommonType<basic_const_iterator<int*>, long*>);
+    static_assert(!CanCommonType<int*, basic_const_iterator<long*>>);
+    static_assert(!CanCommonType<basic_const_iterator<int*>, basic_const_iterator<long*>>);
+    static_assert(!CanCommonType<basic_const_iterator<InIter<int>>, InIter<long>>);
+    static_assert(!CanCommonType<InIter<int>, basic_const_iterator<InIter<long>>>);
+    static_assert(!CanCommonType<basic_const_iterator<InIter<int>>, basic_const_iterator<InIter<long>>>);
+
+    // Validate common_type
+    static_assert(same_as<common_type_t<basic_const_iterator<int*>, const int*>, basic_const_iterator<const int*>>);
+    static_assert(same_as<common_type_t<const int*, basic_const_iterator<int*>>, basic_const_iterator<const int*>>);
+    static_assert(same_as<common_type_t<basic_const_iterator<const int*>, int*>, basic_const_iterator<const int*>>);
+    static_assert(same_as<common_type_t<int*, basic_const_iterator<const int*>>, basic_const_iterator<const int*>>);
+    static_assert(same_as<common_type_t<basic_const_iterator<int*>, basic_const_iterator<const int*>>,
+        basic_const_iterator<const int*>>);
+    static_assert(same_as<common_type_t<basic_const_iterator<const int*>, basic_const_iterator<int*>>,
+        basic_const_iterator<const int*>>);
+
+    static_assert(same_as<common_type_t<basic_const_iterator<volatile int*>, const int*>,
+        basic_const_iterator<const volatile int*>>);
+    static_assert(same_as<common_type_t<const int*, basic_const_iterator<volatile int*>>,
+        basic_const_iterator<const volatile int*>>);
+    static_assert(same_as<common_type_t<volatile int*, basic_const_iterator<const int*>>,
+        basic_const_iterator<const volatile int*>>);
+    static_assert(same_as<common_type_t<basic_const_iterator<const int*>, volatile int*>,
+        basic_const_iterator<const volatile int*>>);
+
+    template <class T, class U>
+        requires requires {
+                     typename common_type_t<T, basic_const_iterator<U>>;
+                     typename common_type_t<basic_const_iterator<T>, U>;
+                     typename common_type_t<basic_const_iterator<T>, basic_const_iterator<U>>;
+                 }
+    void test_lwg3862(); // not defined
+
+    template <class T, class U>
+    concept VerifyLWG3862 = requires { test_lwg3862<T, U>(); };
+
+    static_assert(!VerifyLWG3862<InIter<int>, InIter<long>>); // Hard error before LWG-3862
+} // namespace test_common_type
+
 namespace test_pointer {
     using Ptr = int*;
     static_assert(CanIterConstRef<Ptr>);
@@ -50,12 +120,6 @@ namespace test_pointer {
     static_assert(same_as<const_iterator<ConstPtr>, ConstPtr>);
     static_assert(same_as<iter_reference_t<const_iterator<ConstPtr>>, const int&>);
     static_assert(same_as<const_sentinel<ConstPtr>, ConstPtr>);
-
-    // Validate common_type
-    static_assert(same_as<common_type_t<basic_const_iterator<Ptr>, ConstPtr>, basic_const_iterator<ConstPtr>>);
-    static_assert(same_as<common_type_t<ConstPtr, basic_const_iterator<Ptr>>, basic_const_iterator<ConstPtr>>);
-    static_assert(same_as<common_type_t<basic_const_iterator<Ptr>, basic_const_iterator<ConstPtr>>,
-        basic_const_iterator<ConstPtr>>);
 } // namespace test_pointer
 
 namespace test_random_access_iter {
@@ -192,5 +256,3 @@ struct NotSemiregular {
 };
 
 static_assert(!CanConstSentinel<NotSemiregular>);
-
-int main() {} // COMPILE-ONLY

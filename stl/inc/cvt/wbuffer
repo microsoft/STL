@@ -45,7 +45,7 @@ namespace stdext {
                 static state_type _State0;
 
                 _State = _State0;
-                _Loc   = _STD locale(_Loc, _Pcvt);
+                _Loc   = _STD locale{_Loc, _Pcvt};
             }
 
             explicit wbuffer_convert(_Mysb* _Strbuf)
@@ -53,7 +53,7 @@ namespace stdext {
                 static state_type _State0;
 
                 _State = _State0;
-                _Loc   = _STD locale(_Loc, _Pcvt);
+                _Loc   = _STD locale{_Loc, _Pcvt};
             }
 
             wbuffer_convert(_Mysb* _Strbuf, _Codecvt* _Pcvt_arg)
@@ -61,13 +61,13 @@ namespace stdext {
                 static state_type _State0;
 
                 _State = _State0;
-                _Loc   = _STD locale(_Loc, _Pcvt);
+                _Loc   = _STD locale{_Loc, _Pcvt};
             }
 
             wbuffer_convert(_Mysb* _Strbuf, _Codecvt* _Pcvt_arg, state_type _State_arg)
                 : _Pcvt(_Pcvt_arg), _Mystrbuf(_Strbuf), _Status(_Unused), _Nback(0) {
                 _State = _State_arg;
-                _Loc   = _STD locale(_Loc, _Pcvt);
+                _Loc   = _STD locale{_Loc, _Pcvt};
             }
 
             ~wbuffer_convert() noexcept override {
@@ -241,13 +241,13 @@ namespace stdext {
             pos_type seekoff(off_type, _STD ios_base::seekdir,
                 _STD ios_base::openmode = static_cast<_STD ios_base::openmode>(
                     _STD ios_base::in | _STD ios_base::out)) override { // change position by _Off
-                return pos_type(-1); // always fail
+                return pos_type{off_type{-1}}; // always fail
             }
 
             pos_type seekpos(pos_type,
                 _STD ios_base::openmode = static_cast<_STD ios_base::openmode>(
                     _STD ios_base::in | _STD ios_base::out)) override { // change position to _Pos
-                return pos_type(-1); // always fail
+                return pos_type{off_type{-1}}; // always fail
             }
 
         private:

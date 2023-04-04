@@ -236,7 +236,7 @@ _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, 
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _Ty transform_reduce(_ExPo&& _Exec, const _FwdIt _First1, const _FwdIt _Last1, _Ty _Val, _BinOp _Reduce_op,
+_NODISCARD _Ty transform_reduce(_ExPo&& _Exec, _FwdIt _First1, _FwdIt _Last1, _Ty _Val, _BinOp _Reduce_op,
     _UnaryOp _Transform_op) noexcept; // terminates
 #endif // _HAS_CXX17
 
@@ -309,7 +309,7 @@ _CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, const 
 
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp,
     _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt2 exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Ty _Val,
+_FwdIt2 exclusive_scan(_ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Ty _Val,
     _BinOp _Reduce_op) noexcept; // terminates
 
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -411,8 +411,8 @@ _CONSTEXPR20 _OutIt transform_exclusive_scan(
 
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _OutIt, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> = 0>
-_OutIt transform_exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _OutIt _Dest, _Ty _Val,
-    _BinOp _Reduce_op, _UnaryOp _Transform_op) noexcept; // terminates
+_OutIt transform_exclusive_scan(_ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _OutIt _Dest, _Ty _Val, _BinOp _Reduce_op,
+    _UnaryOp _Transform_op) noexcept; // terminates
 
 _EXPORT_STD template <class _InIt, class _OutIt, class _Ty, class _BinOp, class _UnaryOp>
 _CONSTEXPR20 _OutIt transform_inclusive_scan(
@@ -460,13 +460,13 @@ _CONSTEXPR20 _OutIt transform_inclusive_scan(
 
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt2 transform_inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest,
-    _BinOp _Reduce_op, _UnaryOp _Transform_op, _Ty _Val) noexcept; // terminates
+_FwdIt2 transform_inclusive_scan(_ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op,
+    _UnaryOp _Transform_op, _Ty _Val) noexcept; // terminates
 
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt2 transform_inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest,
-    _BinOp _Reduce_op, _UnaryOp _Transform_op) noexcept; // terminates
+_FwdIt2 transform_inclusive_scan(_ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op,
+    _UnaryOp _Transform_op) noexcept; // terminates
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _InIt, class _OutIt, class _BinOp>
@@ -505,7 +505,7 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, c
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 adjacent_difference(
-    _ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Diff_op) noexcept; // terminates
+    _ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Diff_op) noexcept; // terminates
 
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 adjacent_difference(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept
@@ -623,12 +623,11 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
 
             _Nx_magnitude -= _Mx_magnitude;
             if (_Nx_magnitude == 0U) {
-                break;
+                return static_cast<_Common>(_Mx_magnitude << _Common_factors_of_2);
             }
 
             _Nx_trailing_zeroes = static_cast<unsigned long>(_Countr_zero_impl(_Nx_magnitude));
         }
-        return static_cast<_Common>(_Mx_magnitude << _Common_factors_of_2);
     });
 }
 

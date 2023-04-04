@@ -202,7 +202,7 @@ namespace test_expected {
 
         struct payload_default_constructor {
             constexpr payload_default_constructor()
-                requires (should_be_defaultable)
+                requires (IsYes(defaultConstructible))
                 : _val(42) {}
 
             [[nodiscard]] constexpr bool operator==(const int val) const noexcept {
@@ -662,6 +662,14 @@ namespace test_expected {
         test_constructors<IsNothrowConstructible::Not, IsExplicitConstructible::Yes>();
         test_constructors<IsNothrowConstructible::Yes, IsExplicitConstructible::Not>();
         test_constructors<IsNothrowConstructible::Yes, IsExplicitConstructible::Yes>();
+
+        // LWG-3836
+        struct BaseError {};
+        struct DerivedError : BaseError {};
+
+        std::expected<bool, DerivedError> e1(false);
+        std::expected<bool, BaseError> e2(e1);
+        assert(!e2.value());
     }
 
     template <IsNothrowCopyConstructible nothrowCopyConstructible, IsNothrowMoveConstructible nothrowMoveConstructible,

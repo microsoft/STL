@@ -877,7 +877,10 @@ namespace {
                             // Select the smallest vertical indices from the smallest element mask
                             _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_min, _Idx_min_val));
                             unsigned long _H_pos;
-                            _BitScanForward(&_H_pos, _Mask); // Find the smallest horizontal index
+
+                            // Find the smallest horizontal index
+                            _BitScanForward(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
+
                             const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_min, _H_pos); // Extract its vertical index
                             _Res._Min         = _Base + _V_pos * 16 + _H_pos; // Finally, compute the pointer
                         }
@@ -906,7 +909,10 @@ namespace {
                                 const __m128i _Idx_max = _Traits::_H_max_u(_Idx_max_val); // The greatest indices
                                 // Select the greatest vertical indices from the largest element mask
                                 _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_max, _Idx_max_val));
-                                _BitScanReverse(&_H_pos, _Mask); // Find the largest horizontal index
+
+                                // Find the largest horizontal index
+                                _BitScanReverse(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
+
                                 _H_pos -= sizeof(_Cur_max_val) - 1; // Correct from highest val bit to lowest
                             } else {
                                 // Looking for the first occurrence of maximum
@@ -916,7 +922,9 @@ namespace {
                                 const __m128i _Idx_max     = _Traits::_H_min_u(_Idx_max_val); // The smallest indices
                                 // Select the smallest vertical indices from the largest element mask
                                 _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_max, _Idx_max_val));
-                                _BitScanForward(&_H_pos, _Mask); // Find the smallest horizontal index
+
+                                // Find the smallest horizontal index
+                                _BitScanForward(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
                             }
 
                             const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_max, _H_pos); // Extract its vertical index
@@ -1204,7 +1212,8 @@ namespace {
             __m256i _Data       = _mm256_load_si256(static_cast<const __m256i*>(_First));
             unsigned int _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
 
-            if ((_Bingo &= _Mask) != 0) {
+            _Bingo &= _Mask;
+            if (_Bingo != 0) {
                 unsigned long _Offset = _tzcnt_u32(_Bingo);
                 _Advance_bytes(_First, _Offset);
                 return _First;
@@ -1239,9 +1248,10 @@ namespace {
             __m128i _Data       = _mm_load_si128(static_cast<const __m128i*>(_First));
             unsigned int _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
 
-            if ((_Bingo &= _Mask) != 0) {
+            _Bingo &= _Mask;
+            if (_Bingo != 0) {
                 unsigned long _Offset;
-                _BitScanForward(&_Offset, _Bingo);
+                _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
                 _Advance_bytes(_First, _Offset);
                 return _First;
             }
@@ -1252,7 +1262,7 @@ namespace {
 
                 if (_Bingo != 0) {
                     unsigned long _Offset;
-                    _BitScanForward(&_Offset, _Bingo);
+                    _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
                     _Advance_bytes(_First, _Offset);
                     return _First;
                 }
@@ -1263,7 +1273,6 @@ namespace {
 
         return _Find_trivial_unsized_fallback(_First, _Val);
     }
-
 
     template <class _Traits, class _Ty>
     const void* __stdcall __std_find_trivial(const void* _First, const void* _Last, _Ty _Val) noexcept {
@@ -1300,7 +1309,7 @@ namespace {
 
                 if (_Bingo != 0) {
                     unsigned long _Offset;
-                    _BitScanForward(&_Offset, _Bingo);
+                    _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
                     _Advance_bytes(_First, _Offset);
                     return _First;
                 }
