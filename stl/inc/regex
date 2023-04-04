@@ -15,7 +15,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cwchar>
-#include <initializer_list>
 #include <iterator>
 #include <locale>
 #include <memory>
