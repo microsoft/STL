@@ -3,6 +3,8 @@
 
 // class locale basic member functions
 
+#undef _ENFORCE_ONLY_CORE_HEADERS // TRANSITION, <xfacet> should be a core header
+
 #include <crtdbg.h>
 #include <internal_shared.h>
 #include <xatomic.h>
