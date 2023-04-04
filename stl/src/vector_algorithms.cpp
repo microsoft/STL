@@ -884,8 +884,7 @@ namespace {
                             _BitScanForward(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
 
                             const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_min, _H_pos); // Extract its vertical index
-                            _Res._Min =
-                                _Base + static_cast<size_t>(_V_pos) * 16 + _H_pos; // Finally, compute the pointer
+                            _Res._Min         = _Base + size_t{_V_pos} * 16 + _H_pos; // Finally, compute the pointer
                         }
                     }
 
@@ -931,8 +930,7 @@ namespace {
                             }
 
                             const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_max, _H_pos); // Extract its vertical index
-                            _Res._Max =
-                                _Base + static_cast<size_t>(_V_pos) * 16 + _H_pos; // Finally, compute the pointer
+                            _Res._Max         = _Base + size_t{_V_pos} * 16 + _H_pos; // Finally, compute the pointer
                         }
                     }
                     // Horizontal part done, results are saved, now need to see if there is another portion to process
