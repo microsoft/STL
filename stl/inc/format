@@ -44,6 +44,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <format> are available only with C++
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 
 #include <__msvc_format_ucd_tables.hpp>
+#include <bit>
 #include <charconv>
 #include <concepts>
 #include <cstdint>
