@@ -11,8 +11,10 @@
 #undef MRTDLL
 #endif
 
-#include <new>
-_STD_BEGIN
+#include <yvals_core.h>
 
-const nothrow_t nothrow = nothrow_t(); // define nothrow
+#include <vcruntime_new.h>
+
+_STD_BEGIN
+const nothrow_t nothrow = nothrow_t();
 _STD_END
