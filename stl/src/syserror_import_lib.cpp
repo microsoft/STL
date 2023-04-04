@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// This file is compiled into import library.
-// Limitations apply to what can be included here; see /docs/import_library.md
-
 #include <__msvc_system_error_abi.hpp>
 
 #include <Windows.h>

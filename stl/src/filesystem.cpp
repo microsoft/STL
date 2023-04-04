@@ -4,9 +4,6 @@
 // filesystem.cpp -- C++17 <filesystem> implementation
 // (see filesys.cpp for <experimental/filesystem> implementation)
 
-// This file is compiled into import library.
-// Limitations apply to what can be included here; see /docs/import_library.md
-
 #include <clocale>
 #include <corecrt_terminate.h>
 #include <cstdlib>

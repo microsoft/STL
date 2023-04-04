@@ -3,9 +3,6 @@
 
 // Implements a win32 API wrapper for <format>
 
-// This file is compiled into import library.
-// Limitations apply to what can be included here; see /docs/import_library.md
-
 #include <__msvc_xlocinfo_types.hpp>
 #include <xfilesystem_abi.h>
 
