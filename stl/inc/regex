@@ -16,12 +16,12 @@
 #include <cstring>
 #include <cwchar>
 #include <iterator>
+#include <locale>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
-#include <xlocale>
 
 #if _HAS_CXX17
 #include <xpolymorphic_allocator.h>
