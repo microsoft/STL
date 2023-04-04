@@ -12,7 +12,6 @@
 #include <tuple>
 #include <typeinfo>
 #include <xmemory>
-#include <xstddef>
 #if _HAS_CXX17
 #ifdef _LEGACY_CODE_ASSUMES_FUNCTIONAL_INCLUDES_MEMORY
 #include <memory>
@@ -31,7 +30,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// plus, minus, and multiplies are defined in <xstddef>
+// plus, minus, and multiplies are defined in <xutility>
 
 _EXPORT_STD template <class _Ty = void>
 struct divides {
@@ -65,7 +64,8 @@ struct negate {
     }
 };
 
-// equal_to, not_equal_to, greater, less, greater_equal, and less_equal are defined in <xstddef>
+// less is defined in <type_traits>
+// equal_to, not_equal_to, greater, greater_equal, and less_equal are defined in <xutility>
 
 _EXPORT_STD template <class _Ty = void>
 struct logical_and {
@@ -142,7 +142,7 @@ struct bit_not {
     }
 };
 
-// void specializations of plus, minus, and multiplies are defined in <xstddef>
+// void specializations of plus, minus, and multiplies are defined in <xutility>
 
 template <>
 struct divides<void> {
@@ -175,8 +175,8 @@ struct negate<void> {
 
     using is_transparent = int;
 };
-
-// void specializations of equal_to, not_equal_to, greater, less, greater_equal, and less_equal are defined in <xstddef>
+// void specializations of less is defined in <type_traits>
+// void specializations of equal_to, not_equal_to, greater, greater_equal, and less_equal are defined in <xutility>
 
 template <>
 struct logical_and<void> {
@@ -302,6 +302,19 @@ _STL_RESTORE_DEPRECATED_WARNING
 
 #if _HAS_AUTO_PTR_ETC
 _STL_DISABLE_DEPRECATED_WARNING
+_EXPORT_STD template <class _Arg, class _Result>
+struct unary_function { // base class for unary functions
+    using argument_type = _Arg;
+    using result_type   = _Result;
+};
+
+_EXPORT_STD template <class _Arg1, class _Arg2, class _Result>
+struct binary_function { // base class for binary functions
+    using first_argument_type  = _Arg1;
+    using second_argument_type = _Arg2;
+    using result_type          = _Result;
+};
+
 _EXPORT_STD template <class _Fn>
 class binder1st : public unary_function<typename _Fn::second_argument_type,
                       typename _Fn::result_type> { // functor adapter _Func(stored, right)

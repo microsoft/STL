@@ -14,6 +14,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <bit> are available only with C++20 
 
 #include <isa_availability.h>
 #include <limits>
+#include <cstdlib>
 #include <type_traits>
 
 #include _STL_INTRIN_HEADER
