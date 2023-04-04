@@ -3855,7 +3855,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
         auto _CarryVal = *_VbFirst >> _CarryShift;
         ++_VbFirst;
         ++_VbDest;
-        for (; _VbFirst != _VbLast; ++_VbFirst, (void) ++_VbDest) {
+        for (; _VbFirst != _VbLast; ++_VbFirst, ++_VbDest) {
             const auto _SourceVal = *_VbFirst << _SourceShift;
             *_VbDest              = _CarryVal | _SourceVal;
 
