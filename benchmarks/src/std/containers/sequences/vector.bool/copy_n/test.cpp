@@ -10,7 +10,7 @@
 
 using namespace std;
 
-inline static vector<bool> createRandomVector(const size_t size) {
+static vector<bool> createRandomVector(const size_t size) {
     static random_device rd;
     static mt19937 gen{random_device{}()};
     vector<bool> result(size);
