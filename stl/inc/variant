@@ -689,10 +689,12 @@ _NODISCARD constexpr _Variant_raw_visit_t<_Fn, _Storage> _Variant_raw_visit(
 template <class...>
 class _Variant_base;
 
+inline constexpr size_t _Schar_max_as_size = static_cast<unsigned char>(-1) / 2;
+inline constexpr size_t _Short_max_as_size = static_cast<unsigned short>(-1) / 2;
+
 template <size_t _Count>
 using _Variant_index_t = // signed so that conversion of -1 to size_t can cheaply sign extend
-    conditional_t<(_Count < static_cast<size_t>((numeric_limits<signed char>::max)())), signed char,
-        conditional_t<(_Count < static_cast<size_t>((numeric_limits<short>::max)())), short, int>>;
+    conditional_t<(_Count < _Schar_max_as_size), signed char, conditional_t<(_Count < _Short_max_as_size), short, int>>;
 
 template <class... _Types>
 struct _Variant_construct_visitor { // visitor that constructs the same alternative in a target _Variant_base as is
