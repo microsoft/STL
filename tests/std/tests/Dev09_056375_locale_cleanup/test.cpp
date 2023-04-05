@@ -25,15 +25,15 @@ void test_dll() {
         as->GetType("Test")->GetMethod("DllTest")->Invoke(nullptr, nullptr);
         AppDomain::Unload(ad);
     }
-#else
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
     HMODULE hLibrary = LoadLibraryExW(L"testdll.dll", nullptr, 0);
     assert(hLibrary != nullptr);
     typedef void (*TheFuncProc)();
-    TheFuncProc pFunc = (TheFuncProc) GetProcAddress(hLibrary, "DllTest");
+    TheFuncProc pFunc = reinterpret_cast<TheFuncProc>(GetProcAddress(hLibrary, "DllTest"));
     assert(pFunc != nullptr);
     pFunc();
     FreeLibrary(hLibrary);
-#endif
+#endif // ^^^ !defined(_M_CEE) ^^^
 }
 
 void test_exe_part1() {
@@ -51,9 +51,6 @@ void test_exe_part2() {
 }
 
 int main() {
-#ifdef _M_CEE
-    using namespace System;
-#endif
     test_exe_part1();
     test_dll();
     test_exe_part2();

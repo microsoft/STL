@@ -2,18 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
-#ifndef _XMTX
-#define _XMTX
+
 #include <yvals.h>
 
 #include <cstdlib>
 
 #include <Windows.h>
-
-#pragma pack(push, _CRT_PACKING)
-#pragma warning(push, 3)
-#pragma push_macro("new")
-#undef new
 
 _EXTERN_C_UNLESS_PURE
 
@@ -33,8 +27,3 @@ _MRTIMP2 void __cdecl _Mtxunlock(_Rmtx*) noexcept;
 #endif // _M_CEE_PURE
 
 _END_EXTERN_C_UNLESS_PURE
-
-#pragma pop_macro("new")
-#pragma warning(pop)
-#pragma pack(pop)
-#endif // _XMTX

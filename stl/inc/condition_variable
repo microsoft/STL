@@ -122,10 +122,10 @@ public:
         }
 
         // TRANSITION, ABI: The standard says that we should use a steady clock,
-        // but unfortunately our ABI speaks struct xtime, which is relative to the system clock.
-        _CSTD xtime _Tgt;
-        const bool _Clamped     = _To_xtime_10_day_clamped(_Tgt, _Rel_time);
-        const cv_status _Result = _Wait_until(_Lck, &_Tgt);
+        // but unfortunately our ABI relies on the system clock.
+        _timespec64 _Tgt;
+        const bool _Clamped     = _To_timespec64_sys_10_day_clamped(_Tgt, _Rel_time);
+        const cv_status _Result = _Wait_until_sys_time(_Lck, &_Tgt);
         if (_Clamped) {
             return cv_status::no_timeout;
         }
@@ -137,22 +137,6 @@ public:
     bool wait_for(_Lock& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
         return wait_until(_Lck, _To_absolute_time(_Rel_time), _STD move(_Pred));
-    }
-
-    template <class _Lock>
-    cv_status wait_until(_Lock& _Lck, const xtime* const _Abs_time) { // wait for signal with timeout
-        return _Wait_until(_Lck, _Abs_time);
-    }
-
-    template <class _Lock, class _Predicate>
-    bool wait_until(_Lock& _Lck, const xtime* const _Abs_time, _Predicate _Pred) {
-        // wait for signal with timeout and check predicate
-        while (!_Pred()) {
-            if (_Wait_until(_Lck, _Abs_time) == cv_status::timeout) {
-                return _Pred();
-            }
-        }
-        return true;
     }
 
 #if _HAS_CXX20
@@ -221,19 +205,11 @@ public:
 
             const auto _Rel_time = _Abs_time - _Now;
             // TRANSITION, ABI: The standard says that we should use a steady clock,
-            // but unfortunately our ABI speaks struct xtime, which is relative to the system clock.
-            _CSTD xtime _Tgt;
-            (void) _To_xtime_10_day_clamped(_Tgt, _Rel_time);
-            const int _Res = _Cnd_timedwait(_Mycnd(), _Myptr->_Mymtx(), &_Tgt);
+            // but unfortunately our ABI relies on the system clock.
+            _timespec64 _Tgt;
+            (void) _To_timespec64_sys_10_day_clamped(_Tgt, _Rel_time);
+            (void) _Cnd_timedwait(_Mycnd(), _Myptr->_Mymtx(), &_Tgt);
             _Guard_unlocks_before_locking_outer.unlock();
-
-            switch (_Res) {
-            case _Thrd_timedout:
-            case _Thrd_success:
-                break;
-            default:
-                _Throw_C_error(_Res);
-            }
         } // relock
 
         return _Pred();
@@ -255,20 +231,18 @@ private:
     }
 
     template <class _Lock>
-    cv_status _Wait_until(_Lock& _Lck, const xtime* const _Abs_time) { // wait for signal with timeout
+    cv_status _Wait_until_sys_time(_Lock& _Lck, const _timespec64* const _Abs_time) {
+        // wait for signal with timeout
         const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
         unique_lock<mutex> _Guard{*_Ptr};
         _Unlock_guard<_Lock> _Unlock_outer{_Lck};
         const int _Res = _Cnd_timedwait(_Mycnd(), _Ptr->_Mymtx(), _Abs_time);
         _Guard.unlock();
 
-        switch (_Res) {
-        case _Thrd_success:
+        if (_Res == _Thrd_success) {
             return cv_status::no_timeout;
-        case _Thrd_timedout:
+        } else {
             return cv_status::timeout;
-        default:
-            _Throw_C_error(_Res);
         }
     }
 };

@@ -238,14 +238,15 @@ public:
     // clang-format on
 
     template <class _Uty, class _UErr>
-    static constexpr bool _Allow_unwrapping = !is_constructible_v<_Ty, expected<_Uty, _UErr>&> //
-                                           && !is_constructible_v<_Ty, expected<_Uty, _UErr>> //
-                                           && !is_constructible_v<_Ty, const expected<_Uty, _UErr>&> //
-                                           && !is_constructible_v<_Ty, const expected<_Uty, _UErr>> //
-                                           && !is_convertible_v<expected<_Uty, _UErr>&, _Ty> //
-                                           && !is_convertible_v<expected<_Uty, _UErr>&&, _Ty> //
-                                           && !is_convertible_v<const expected<_Uty, _UErr>&, _Ty> //
-                                           && !is_convertible_v<const expected<_Uty, _UErr>&&, _Ty> //
+    static constexpr bool _Allow_unwrapping = disjunction_v<is_same<remove_cv_t<_Ty>, bool>,
+                                                  negation<disjunction<is_constructible<_Ty, expected<_Uty, _UErr>&>, //
+                                                      is_constructible<_Ty, expected<_Uty, _UErr>>, //
+                                                      is_constructible<_Ty, const expected<_Uty, _UErr>&>, //
+                                                      is_constructible<_Ty, const expected<_Uty, _UErr>>, //
+                                                      is_convertible<expected<_Uty, _UErr>&, _Ty>, //
+                                                      is_convertible<expected<_Uty, _UErr>&&, _Ty>, //
+                                                      is_convertible<const expected<_Uty, _UErr>&, _Ty>, //
+                                                      is_convertible<const expected<_Uty, _UErr>&&, _Ty>>>> //
                                            && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>&> //
                                            && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>> //
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>&> //
@@ -280,7 +281,9 @@ public:
 
     template <class _Uty = _Ty>
         requires (!is_same_v<remove_cvref_t<_Uty>, in_place_t> && !is_same_v<remove_cvref_t<_Uty>, expected>
-                     && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected> && is_constructible_v<_Ty, _Uty>)
+                     && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
+                     && (!is_same_v<remove_cv_t<_Ty>, bool> || !_Is_specialization_v<remove_cvref_t<_Uty>, expected>)
+                     && is_constructible_v<_Ty, _Uty>)
     constexpr explicit(!is_convertible_v<_Uty, _Ty>)
         expected(_Uty&& _Other) noexcept(is_nothrow_constructible_v<_Ty, _Uty>) // strengthened
         : _Value(_STD forward<_Uty>(_Other)), _Has_value(true) {}
@@ -358,8 +361,7 @@ public:
 
     template <class _First, class _Second, class... _Args>
     static constexpr void _Reinit_expected(_First& _New_val, _Second& _Old_val, _Args&&... _Vals) noexcept(
-        is_nothrow_constructible_v<_First, _Args...>) // strengthened
-    {
+        is_nothrow_constructible_v<_First, _Args...>) /* strengthened */ {
         if constexpr (is_nothrow_constructible_v<_First, _Args...>) {
             if constexpr (!is_trivially_destructible_v<_Second>) {
                 _Old_val.~_Second();
@@ -732,7 +734,7 @@ public:
 
     // [expected.object.monadic]
     template <class _Fn>
-        requires is_copy_constructible_v<_Err>
+        requires is_constructible_v<_Err, _Err&>
     constexpr auto and_then(_Fn&& _Func) & {
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Ty&>>;
 
@@ -789,7 +791,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Err>
+        requires is_constructible_v<_Err, const _Err>
     constexpr auto and_then(_Fn&& _Func) const&& {
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Ty>>;
 
@@ -808,7 +810,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_copy_constructible_v<_Ty>
+        requires is_constructible_v<_Ty, _Ty&>
     constexpr auto or_else(_Fn&& _Func) & {
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, _Err&>>;
 
@@ -865,7 +867,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Ty>
+        requires is_constructible_v<_Ty, const _Ty>
     constexpr auto or_else(_Fn&& _Func) const&& {
         using _Uty = remove_cvref_t<invoke_result_t<_Fn, const _Err>>;
 
@@ -884,7 +886,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_copy_constructible_v<_Err>
+        requires is_constructible_v<_Err, _Err&>
     constexpr auto transform(_Fn&& _Func) & {
         static_assert(invocable<_Fn, _Ty&>, "expected<T, E>::transform(F) requires that F is invocable with T. "
                                             "(N4928 [expected.object.monadic]/19)");
@@ -965,7 +967,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Err>
+        requires is_constructible_v<_Err, const _Err>
     constexpr auto transform(_Fn&& _Func) const&& {
         static_assert(invocable<_Fn, const _Ty>, "expected<T, E>::transform(F) requires that F is invocable with T. "
                                                  "(N4928 [expected.object.monadic]/23)");
@@ -992,7 +994,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_copy_constructible_v<_Ty>
+        requires is_constructible_v<_Ty, _Ty&>
     constexpr auto transform_error(_Fn&& _Func) & {
         static_assert(invocable<_Fn, _Err&>, "expected<T, E>::transform_error(F) requires that F is invocable with E. "
                                              "(N4928 [expected.object.monadic]/27)");
@@ -1053,7 +1055,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Ty>
+        requires is_constructible_v<_Ty, const _Ty>
     constexpr auto transform_error(_Fn&& _Func) const&& {
         static_assert(invocable<_Fn, const _Err>,
             "expected<T, E>::transform_error(F) requires that F is invocable with E. "
@@ -1470,7 +1472,7 @@ public:
 
     // [expected.void.monadic]
     template <class _Fn>
-        requires is_copy_constructible_v<_Err>
+        requires is_constructible_v<_Err, _Err&>
     constexpr auto and_then(_Fn&& _Func) & {
         using _Uty = remove_cvref_t<invoke_result_t<_Fn>>;
 
@@ -1527,7 +1529,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Err>
+        requires is_constructible_v<_Err, const _Err>
     constexpr auto and_then(_Fn&& _Func) const&& {
         using _Uty = remove_cvref_t<invoke_result_t<_Fn>>;
 
@@ -1618,7 +1620,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_copy_constructible_v<_Err>
+        requires is_constructible_v<_Err, _Err&>
     constexpr auto transform(_Fn&& _Func) & {
         static_assert(invocable<_Fn>, "expected<void, E>::transform(F) requires that F is invocable with no arguments. "
                                       "(N4928 [expected.void.monadic]/17)");
@@ -1696,7 +1698,7 @@ public:
     }
 
     template <class _Fn>
-        requires is_move_constructible_v<_Err>
+        requires is_constructible_v<_Err, const _Err>
     constexpr auto transform(_Fn&& _Func) const&& {
         static_assert(invocable<_Fn>, "expected<void, E>::transform(F) requires that F is invocable with no arguments. "
                                       "(N4928 [expected.void.monadic]/21)");

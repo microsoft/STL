@@ -10,6 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <cstdint>
+
 #include _STL_INTRIN_HEADER
 
 #pragma pack(push, _CRT_PACKING)
@@ -38,9 +39,9 @@ _NODISCARD inline unsigned long _Floor_of_log_2(size_t _Value) noexcept { // ret
 
 #else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
 #ifdef _WIN64
-    _BitScanReverse64(&_Result, _Value);
+    _BitScanReverse64(&_Result, _Value); // lgtm [cpp/conditionallyuninitializedvariable]
 #else // ^^^ 64-bit / 32-bit vvv
-    _BitScanReverse(&_Result, _Value);
+    _BitScanReverse(&_Result, _Value); // lgtm [cpp/conditionallyuninitializedvariable]
 #endif // 64 vs. 32-bit
 #endif // _M_CEE_PURE
 

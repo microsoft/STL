@@ -72,13 +72,13 @@ int _Thrd_detach(_Thrd_t thr) { // tell OS to release thread's resources when it
     return CloseHandle(thr._Hnd) ? _Thrd_success : _Thrd_error;
 }
 
-void _Thrd_sleep(const xtime* xt) { // suspend thread until time xt
-    xtime now;
-    xtime_get(&now, TIME_UTC);
+void _Thrd_sleep(const _timespec64* xt) { // suspend thread until time xt
+    _timespec64 now;
+    _Timespec64_get_sys(&now);
     do { // sleep and check time
         Sleep(_Xtime_diff_to_millis2(xt, &now));
-        xtime_get(&now, TIME_UTC);
-    } while (now.sec < xt->sec || now.sec == xt->sec && now.nsec < xt->nsec);
+        _Timespec64_get_sys(&now);
+    } while (now.tv_sec < xt->tv_sec || now.tv_sec == xt->tv_sec && now.tv_nsec < xt->tv_nsec);
 }
 
 void _Thrd_yield() { // surrender remainder of timeslice

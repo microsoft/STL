@@ -120,7 +120,6 @@ extern "C" int __crt_IsPackagedAppHelper() {
 #endif // defined _ONECORE
 #endif // defined _CRT_APP
 
-
 // __crtIsPackagedApp() - Check if the current app is a Packaged app
 //
 // Purpose:
@@ -153,7 +152,6 @@ extern "C" _CRTIMP2 BOOL __cdecl __crtIsPackagedApp() {
 
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
-
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WS03
 
 // TRANSITION, ABI: preserved for binary compatibility
@@ -177,7 +175,6 @@ extern "C" BOOL __cdecl __crtFlsSetValue(_In_ DWORD const dwFlsIndex, _In_opt_ P
 }
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WS03
-
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
@@ -361,7 +358,6 @@ extern "C" BOOL __cdecl __crtQueueUserWorkItem(_In_ LPTHREAD_START_ROUTINE, _In_
 }
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
-
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
 // TRANSITION, ABI: preserved for binary compatibility
 extern "C" BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(_Inout_ PSRWLOCK const pLock) {
@@ -369,7 +365,6 @@ extern "C" BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(_Inout_ PSRWLOCK cons
 }
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
-
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
@@ -398,7 +393,6 @@ extern "C" _Success_(return > 0 && return < BufferLength) DWORD
     // ...otherwise use GetTempPathW.
     return GetTempPathW(BufferLength, Buffer);
 }
-
 
 // Helper to load all necessary Win32 API function pointers
 

@@ -49,21 +49,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 #if _HAS_CXX17
-// We would really love to use the proper way of building error_code by specializing
-// is_error_code_enum and make_error_code for __std_win_error, but because:
-//   1. We would like to keep the definition of __std_win_error in xfilesystem_abi.h
-//   2. and xfilesystem_abi.h cannot include <system_error>
-//   3. and specialization of is_error_code_enum and overload of make_error_code
-//      need to be kept together with the enum (see limerick in N4810 [temp.expl.spec]/7)
-// we resort to using this _Make_ec helper.
-_NODISCARD inline error_code _Make_ec(__std_win_error _Errno) noexcept { // make an error_code
-    return {static_cast<int>(_Errno), _STD system_category()};
-}
-
-[[noreturn]] inline void _Throw_system_error_from_std_win_error(const __std_win_error _Errno) {
-    _THROW(system_error{_Make_ec(_Errno)});
-}
-
 _NODISCARD inline int _Check_convert_result(const __std_fs_convert_result _Result) {
     if (_Result._Err != __std_win_error::_Success) {
         _Throw_system_error_from_std_win_error(_Result._Err);
@@ -1765,20 +1750,104 @@ namespace chrono {
 
         template <class _Duration>
         _NODISCARD sys_info get_info(const sys_time<_Duration>& _Sys) const {
-            return _Get_info(_Sys.time_since_epoch());
+            return _Get_info(_Sys.time_since_epoch(), __std_tzdb_sys_info_type::_Full);
         }
 
         template <class _Duration>
         _NODISCARD local_info get_info(const local_time<_Duration>& _Local) const {
+            return _Get_local_info(_Local, __std_tzdb_sys_info_type::_Full);
+        }
+
+        template <class _Duration>
+        _NODISCARD sys_time<common_type_t<_Duration, seconds>> to_sys(const local_time<_Duration>& _Local) const {
+            const auto _Info = get_info(_Local);
+            if (_Info.result == local_info::nonexistent) {
+                _Throw_nonexistent_local_time(_Local, _Info);
+            } else if (_Info.result == local_info::ambiguous) {
+                _Throw_ambiguous_local_time(_Local, _Info);
+            }
+
+            return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch() - _Info.first.offset};
+        }
+
+        template <class _Duration>
+        _NODISCARD sys_time<common_type_t<_Duration, seconds>> to_sys(
+            const local_time<_Duration>& _Local, const choose _Choose) const {
+            const auto _Info = _Get_local_info(_Local, __std_tzdb_sys_info_type::_Offset_and_range);
+            if (_Info.result == local_info::nonexistent) {
+                return _Info.first.end;
+            }
+
+            const auto _Offset = (_Info.result == local_info::unique || _Choose == choose::earliest)
+                                   ? _Info.first.offset
+                                   : _Info.second.offset;
+            return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch() - _Offset};
+        }
+
+        template <class _Duration>
+        _NODISCARD local_time<common_type_t<_Duration, seconds>> to_local(const sys_time<_Duration>& _Sys) const {
+            const auto _Info = _Get_info(_Sys.time_since_epoch(), __std_tzdb_sys_info_type::_Offset_only);
+            return local_time<common_type_t<_Duration, seconds>>{_Sys.time_since_epoch() + _Info.offset};
+        }
+
+        static constexpr sys_seconds _Min_seconds{sys_days{(year::min)() / January / 1}};
+        static constexpr sys_seconds _Max_seconds{sys_seconds{sys_days{(year::max)() / December / 32}} - seconds{1}};
+
+    private:
+        template <class _Duration>
+        _NODISCARD sys_info _Get_info(const _Duration& _Dur, __std_tzdb_sys_info_type _Type) const {
+            using _Internal_duration = duration<__std_tzdb_epoch_milli, milli>;
+            const auto _Internal_dur = _CHRONO duration_cast<_Internal_duration>(_Dur);
+
+            // TRANSITION, vNext
+            // Because the signature of __std_tzdb_get_sys_info cannot be changed, _Type is encoded in the
+            // time zone name. In vNext, this should be a dedicated argument.
+            const string _Tz_arg = _Name + static_cast<char>(_Type);
+
+            const auto _Tz_len = _Name.length();
+
+            const unique_ptr<__std_tzdb_sys_info, _Tzdb_deleter<__std_tzdb_sys_info>> _Info{
+                __std_tzdb_get_sys_info(_Tz_arg.c_str(), _Tz_len, _Internal_dur.count())};
+
+            if (_Info == nullptr) {
+                _Xbad_alloc();
+            } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
+                _XGetLastError();
+            } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
+                _Xruntime_error("Internal error loading IANA database information");
+            }
+
+            constexpr auto _Min_internal =
+                _CHRONO duration_cast<_Internal_duration>(_Min_seconds.time_since_epoch()).count();
+            constexpr auto _Max_internal =
+                _CHRONO duration_cast<_Internal_duration>(_Max_seconds.time_since_epoch()).count();
+            const auto _Begin =
+                _Info->_Begin <= _Min_internal
+                    ? _Min_seconds
+                    : sys_seconds{_CHRONO duration_cast<sys_seconds::duration>(_Internal_duration{_Info->_Begin})};
+            const auto _End =
+                _Info->_End >= _Max_internal
+                    ? _Max_seconds
+                    : sys_seconds{_CHRONO duration_cast<sys_seconds::duration>(_Internal_duration{_Info->_End})};
+            return {.begin = _Begin,
+                .end       = _End,
+                .offset    = _CHRONO duration_cast<seconds>(_Internal_duration{_Info->_Offset}),
+                .save      = _CHRONO duration_cast<minutes>(_Internal_duration{_Info->_Save}),
+                .abbrev    = _Info->_Abbrev ? _Info->_Abbrev : ""};
+        }
+
+        template <class _Duration>
+        _NODISCARD local_info _Get_local_info(
+            const local_time<_Duration>& _Local, __std_tzdb_sys_info_type _Type) const {
             local_info _Info{};
             const auto _Time_since_ep = _Local.time_since_epoch();
-            _Info.first               = _Get_info(_Time_since_ep);
+            _Info.first               = _Get_info(_Time_since_ep, _Type);
 
             const sys_seconds _Local_sys{_CHRONO duration_cast<sys_seconds::duration>(_Time_since_ep)};
             const auto _Curr_sys = _Local_sys - _Info.first.offset;
             if (_Info.first.begin != _Min_seconds && _Curr_sys < _Info.first.begin + days{1}) {
                 // get previous transition information
-                _Info.second = get_info(_Info.first.begin - seconds{1});
+                _Info.second = _Get_info((_Info.first.begin - seconds{1}).time_since_epoch(), _Type);
 
                 const auto _Transition = _Info.first.begin;
                 const auto _Prev_sys   = _Local_sys - _Info.second.offset;
@@ -1802,7 +1871,7 @@ namespace chrono {
                 }
             } else if (_Info.first.end != _Max_seconds && _Curr_sys > _Info.first.end - days{1}) {
                 // get next transition information
-                _Info.second = get_info(_Info.first.end + seconds{1});
+                _Info.second = _Get_info((_Info.first.end + seconds{1}).time_since_epoch(), _Type);
 
                 const auto _Transition = _Info.first.end;
                 const auto _Next_sys   = _Local_sys - _Info.second.offset;
@@ -1829,75 +1898,6 @@ namespace chrono {
             }
 
             return _Info;
-        }
-
-        template <class _Duration>
-        _NODISCARD sys_time<common_type_t<_Duration, seconds>> to_sys(const local_time<_Duration>& _Local) const {
-            const auto _Info = get_info(_Local);
-            if (_Info.result == local_info::nonexistent) {
-                _Throw_nonexistent_local_time(_Local, _Info);
-            } else if (_Info.result == local_info::ambiguous) {
-                _Throw_ambiguous_local_time(_Local, _Info);
-            }
-
-            return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch() - _Info.first.offset};
-        }
-
-        template <class _Duration>
-        _NODISCARD sys_time<common_type_t<_Duration, seconds>> to_sys(
-            const local_time<_Duration>& _Local, const choose _Choose) const {
-            const auto _Info = get_info(_Local);
-            if (_Info.result == local_info::nonexistent) {
-                return _Info.first.end;
-            }
-
-            const auto _Offset = (_Info.result == local_info::unique || _Choose == choose::earliest)
-                                   ? _Info.first.offset
-                                   : _Info.second.offset;
-            return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch() - _Offset};
-        }
-
-        template <class _Duration>
-        _NODISCARD local_time<common_type_t<_Duration, seconds>> to_local(const sys_time<_Duration>& _Sys) const {
-            const auto _Info = get_info(_Sys);
-            return local_time<common_type_t<_Duration, seconds>>{_Sys.time_since_epoch() + _Info.offset};
-        }
-
-        static constexpr sys_seconds _Min_seconds{sys_days{(year::min)() / January / 1}};
-        static constexpr sys_seconds _Max_seconds{sys_seconds{sys_days{(year::max)() / December / 32}} - seconds{1}};
-
-    private:
-        template <class _Duration>
-        _NODISCARD sys_info _Get_info(const _Duration& _Dur) const {
-            using _Internal_duration = duration<__std_tzdb_epoch_milli, milli>;
-            const auto _Internal_dur = _CHRONO duration_cast<_Internal_duration>(_Dur);
-            const unique_ptr<__std_tzdb_sys_info, _Tzdb_deleter<__std_tzdb_sys_info>> _Info{
-                __std_tzdb_get_sys_info(_Name.c_str(), _Name.length(), _Internal_dur.count())};
-            if (_Info == nullptr) {
-                _Xbad_alloc();
-            } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
-                _XGetLastError();
-            } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
-                _Xruntime_error("Internal error loading IANA database information");
-            }
-
-            constexpr auto _Min_internal =
-                _CHRONO duration_cast<_Internal_duration>(_Min_seconds.time_since_epoch()).count();
-            constexpr auto _Max_internal =
-                _CHRONO duration_cast<_Internal_duration>(_Max_seconds.time_since_epoch()).count();
-            const auto _Begin =
-                _Info->_Begin <= _Min_internal
-                    ? _Min_seconds
-                    : sys_seconds{_CHRONO duration_cast<sys_seconds::duration>(_Internal_duration{_Info->_Begin})};
-            const auto _End =
-                _Info->_End >= _Max_internal
-                    ? _Max_seconds
-                    : sys_seconds{_CHRONO duration_cast<sys_seconds::duration>(_Internal_duration{_Info->_End})};
-            return {.begin = _Begin,
-                .end       = _End,
-                .offset    = _CHRONO duration_cast<seconds>(_Internal_duration{_Info->_Offset}),
-                .save      = _CHRONO duration_cast<minutes>(_Internal_duration{_Info->_Save}),
-                .abbrev    = _Info->_Abbrev};
         }
 
         string _Name;
@@ -2970,7 +2970,7 @@ namespace chrono {
         void_t<decltype(_Conv1{}(_Conv2{}(_Conv3{}(_STD declval<_Tp>()))))>> = true;
 
     template <class _DestClock, class _SourceClock, class _Duration>
-    _NODISCARD _CONSTEVAL _Clock_cast_strategy _Choose_clock_cast() noexcept {
+    _NODISCARD consteval _Clock_cast_strategy _Choose_clock_cast() noexcept {
         using _Tp = const time_point<_SourceClock, _Duration>&;
 
         if constexpr (is_invocable_v<clock_time_conversion<_DestClock, _SourceClock>, _Tp>) {
@@ -3130,7 +3130,6 @@ namespace chrono {
             const unsigned int _Bits, const unsigned int _Must_set, const unsigned int _Optional = 0) {
             return (_Bits & ~_Optional) == _Must_set;
         }
-
 
         template <class _Ty>
         static constexpr _Ty _Invalid_time_field{numeric_limits<_Ty>::lowest()};
@@ -4692,7 +4691,6 @@ _NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const
 }
 
 #define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
-
 
 // clang-format off
 template <class _Ty, class _CharT>

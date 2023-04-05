@@ -11,12 +11,7 @@
 #include <utility>
 #include <vector>
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
-namespace ranges = std::ranges;
-
-template <class>
-inline constexpr bool always_false = false;
+#include <range_algorithm_support.hpp>
 
 template <class T>
 using reference_to = T&;
@@ -3213,7 +3208,7 @@ namespace reverse_iterator_test {
     constexpr bool test() {
         // Validate iter_move
         int count = 0;
-        auto i    = reverse_iterator{proxy_iterator<0>{&count}};
+        reverse_iterator i{proxy_iterator<0>{&count}};
         assert(ranges::iter_move(i) == 42);
         assert(count == 1);
 
@@ -3448,10 +3443,20 @@ namespace move_iterator_test {
     STATIC_ASSERT(!three_way_comparable<move_iterator<simple_random_iter<sentinel_base>>,
                   move_sentinel<std::default_sentinel_t>>);
 
+    // GH-3014 "<ranges>: list-initialization is misused"
+    void test_gh_3014() { // COMPILE-ONLY
+        using S = test::init_list_not_constructible_sentinel<int>;
+        S s;
+        [[maybe_unused]] move_sentinel<S> y{s}; // Check 'move_sentinel(S s)'
+
+        move_sentinel<int*> s2;
+        [[maybe_unused]] move_sentinel<S> z{s2}; // Check 'move_sentinel(const move_sentinel<S2>& s2)'
+    }
+
     constexpr bool test() {
         // Validate iter_move
         int count = 0;
-        auto i    = move_iterator{proxy_iterator<0>{&count}};
+        move_iterator i{proxy_iterator<0>{&count}};
         assert(ranges::iter_move(i) == 42);
         assert(count == 1);
 

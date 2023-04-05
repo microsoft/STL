@@ -19,5 +19,3 @@ void test_LWG_3146() {
     static_assert(is_same_v<decltype(const_reference), reference_wrapper<const reference_wrapper<int>>>,
         "LWG-3146 is not implemented");
 }
-
-int main() {} // COMPILE-ONLY

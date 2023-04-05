@@ -10,9 +10,10 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <cfloat>
 #include <climits>
-#include _STL_INTRIN_HEADER
 #include <isa_availability.h>
 #include <xstddef>
+
+#include _STL_INTRIN_HEADER
 
 // TRANSITION, GH-2129, move down to _Arm64_popcount
 #if (defined(_M_ARM64) || defined(_M_ARM64EC)) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
@@ -1245,7 +1246,7 @@ constexpr decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
     return _Callback([](_Ty _Val) { return _Countr_zero_fallback(_Val); });
 }
 
-template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
 #if _HAS_POPCNT_INTRINSICS || _HAS_NEON_INTRINSICS
 #if _HAS_CXX20

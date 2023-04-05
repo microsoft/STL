@@ -31,6 +31,34 @@ _STD_BEGIN
 _EXPORT_STD class condition_variable;
 _EXPORT_STD class condition_variable_any;
 
+struct _Mtx_internal_imp_mirror {
+#ifdef _CRT_WINDOWS
+#ifdef _WIN64
+    static constexpr size_t _Critical_section_size = 8;
+#else // _WIN64
+    static constexpr size_t _Critical_section_size = 4;
+#endif // _WIN64
+#else // _CRT_WINDOWS
+#ifdef _WIN64
+    static constexpr size_t _Critical_section_size = 56;
+#else // _WIN64
+    static constexpr size_t _Critical_section_size = 32;
+#endif // _WIN64
+#endif // _CRT_WINDOWS
+
+    int _Type;
+    const void* _Vptr;
+    union {
+        void* _Srw_lock_placeholder;
+        unsigned char _Padding[_Critical_section_size];
+    };
+    long _Thread_id;
+    int _Count;
+};
+
+static_assert(sizeof(_Mtx_internal_imp_mirror) == _Mtx_internal_imp_size, "inconsistent size for mutex");
+static_assert(alignof(_Mtx_internal_imp_mirror) == _Mtx_internal_imp_alignment, "inconsistent alignment for mutex");
+
 class _Mutex_base { // base class for all mutex types
 public:
     _Mutex_base(int _Flags = 0) noexcept {
@@ -45,10 +73,21 @@ public:
     _Mutex_base& operator=(const _Mutex_base&) = delete;
 
     void lock() {
-        _Check_C_return(_Mtx_lock(_Mymtx()));
+        if (_Mtx_lock(_Mymtx()) != _Thrd_success) {
+            // undefined behavior, only occurs for plain mutexes (N4928 [thread.mutex.requirements.mutex.general]/6)
+            _STD _Throw_Cpp_error(_RESOURCE_DEADLOCK_WOULD_OCCUR);
+        }
+
+        if (!_Verify_ownership_levels()) {
+            // only occurs for recursive mutexes (N4928 [thread.mutex.recursive]/3)
+            // POSIX specifies EAGAIN in the corresponding situation:
+            // https://pubs.opengroup.org/onlinepubs/9699919799/functions/pthread_mutex_lock.html
+            _STD _Throw_Cpp_error(_RESOURCE_UNAVAILABLE_TRY_AGAIN);
+        }
     }
 
     _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept /* strengthened */ {
+        // false may be from undefined behavior for plain mutexes (N4928 [thread.mutex.requirements.mutex.general]/6)
         return _Mtx_trylock(_Mymtx()) == _Thrd_success;
     }
 
@@ -62,16 +101,33 @@ public:
         return _Mtx_getconcrtcs(_Mymtx());
     }
 
+protected:
+    _NODISCARD_TRY_CHANGE_STATE bool _Verify_ownership_levels() noexcept {
+        if (_Mtx_storage_mirror._Count == INT_MAX) {
+            // only occurs for recursive mutexes (N4928 [thread.mutex.recursive]/3)
+            --_Mtx_storage_mirror._Count;
+            return false;
+        }
+
+        return true;
+    }
+
 private:
     friend condition_variable;
     friend condition_variable_any;
 
-    _Aligned_storage_t<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment> _Mtx_storage;
+    union {
+        _Aligned_storage_t<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment> _Mtx_storage;
+        _Mtx_internal_imp_mirror _Mtx_storage_mirror;
+    };
 
     _Mtx_t _Mymtx() noexcept { // get pointer to _Mtx_internal_imp_t inside _Mtx_storage
         return reinterpret_cast<_Mtx_t>(&_Mtx_storage);
     }
 };
+
+static_assert(sizeof(_Mutex_base) == _Mtx_internal_imp_size, "inconsistent size for mutex");
+static_assert(alignof(_Mutex_base) == _Mtx_internal_imp_alignment, "inconsistent alignment for mutex");
 
 _EXPORT_STD class mutex : public _Mutex_base { // class for mutual exclusion
 public:
@@ -88,7 +144,7 @@ public:
         : _Mutex_base(_Mtx_recursive) {}
 
     _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept {
-        return _Mutex_base::try_lock();
+        return _Mutex_base::try_lock() && _Verify_ownership_levels();
     }
 
     recursive_mutex(const recursive_mutex&)            = delete;
@@ -146,11 +202,6 @@ public:
 #endif // _HAS_CXX20
     }
 
-    _NODISCARD_CTOR_LOCK unique_lock(_Mutex& _Mtx, const xtime* _Abs_time)
-        : _Pmtx(_STD addressof(_Mtx)), _Owns(false) { // try to lock until _Abs_time
-        _Owns = _Pmtx->try_lock_until(_Abs_time);
-    }
-
     _NODISCARD_CTOR_LOCK unique_lock(unique_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
         _Other._Pmtx = nullptr;
         _Other._Owns = false;
@@ -203,12 +254,6 @@ public:
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
-        _Validate();
-        _Owns = _Pmtx->try_lock_until(_Abs_time);
-        return _Owns;
-    }
-
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const xtime* _Abs_time) {
         _Validate();
         _Owns = _Pmtx->try_lock_until(_Abs_time);
         return _Owns;
@@ -634,10 +679,10 @@ public:
         }
 
         // TRANSITION, ABI: The standard says that we should use a steady clock,
-        // but unfortunately our ABI speaks struct xtime, which is relative to the system clock.
-        _CSTD xtime _Tgt;
-        const bool _Clamped     = _To_xtime_10_day_clamped(_Tgt, _Rel_time);
-        const cv_status _Result = wait_until(_Lck, &_Tgt);
+        // but unfortunately our ABI relies on the system clock.
+        _timespec64 _Tgt;
+        const bool _Clamped     = _To_timespec64_sys_10_day_clamped(_Tgt, _Rel_time);
+        const cv_status _Result = _Wait_until_sys_time(_Lck, &_Tgt);
         if (_Clamped) {
             return cv_status::no_timeout;
         }
@@ -663,9 +708,9 @@ public:
                 return cv_status::timeout;
             }
 
-            _CSTD xtime _Tgt;
-            (void) _To_xtime_10_day_clamped(_Tgt, _Abs_time - _Now);
-            const cv_status _Result = wait_until(_Lck, &_Tgt);
+            _timespec64 _Tgt;
+            (void) _To_timespec64_sys_10_day_clamped(_Tgt, _Abs_time - _Now);
+            const cv_status _Result = _Wait_until_sys_time(_Lck, &_Tgt);
             if (_Result == cv_status::no_timeout) {
                 return cv_status::no_timeout;
             }
@@ -679,30 +724,6 @@ public:
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
-        return _Wait_until1(_Lck, _Abs_time, _Pred);
-    }
-
-    cv_status wait_until(unique_lock<mutex>& _Lck, const xtime* _Abs_time) {
-        // wait for signal with timeout
-        if (!_Mtx_current_owns(_Lck.mutex()->_Mymtx())) {
-            _Throw_Cpp_error(_OPERATION_NOT_PERMITTED);
-        }
-
-        // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
-        const int _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), _Abs_time);
-        switch (_Res) {
-        case _Thrd_success:
-            return cv_status::no_timeout;
-        case _Thrd_timedout:
-            return cv_status::timeout;
-        default:
-            _Throw_C_error(_Res);
-        }
-    }
-
-    template <class _Predicate>
-    bool wait_until(unique_lock<mutex>& _Lck, const xtime* _Abs_time, _Predicate _Pred) {
-        // wait for signal with timeout and check predicate
         return _Wait_until1(_Lck, _Abs_time, _Pred);
     }
 
@@ -725,11 +746,27 @@ private:
         return reinterpret_cast<_Cnd_t>(&_Cnd_storage);
     }
 
+    cv_status _Wait_until_sys_time(unique_lock<mutex>& _Lck, const _timespec64* _Abs_time) {
+        // wait for signal with timeout
+        if (!_Mtx_current_owns(_Lck.mutex()->_Mymtx())) {
+            _Throw_Cpp_error(_OPERATION_NOT_PERMITTED);
+        }
+
+        // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
+        const int _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), _Abs_time);
+
+        if (_Res == _Thrd_success) {
+            return cv_status::no_timeout;
+        } else {
+            return cv_status::timeout;
+        }
+    }
+
     template <class _Predicate>
-    bool _Wait_until1(unique_lock<mutex>& _Lck, const xtime* _Abs_time, _Predicate& _Pred) {
+    bool _Wait_until1(unique_lock<mutex>& _Lck, const _timespec64* _Abs_time, _Predicate& _Pred) {
         // wait for signal with timeout and check predicate
         while (!_Pred()) {
-            if (wait_until(_Lck, _Abs_time) == cv_status::timeout) {
+            if (_Wait_until_sys_time(_Lck, _Abs_time) == cv_status::timeout) {
                 return _Pred();
             }
         }
@@ -746,9 +783,9 @@ private:
                 return false;
             }
 
-            _CSTD xtime _Tgt;
-            const bool _Clamped = _To_xtime_10_day_clamped(_Tgt, _Abs_time - _Now);
-            if (wait_until(_Lck, &_Tgt) == cv_status::timeout && !_Clamped) {
+            _timespec64 _Tgt;
+            const bool _Clamped = _To_timespec64_sys_10_day_clamped(_Tgt, _Abs_time - _Now);
+            if (_Wait_until_sys_time(_Lck, &_Tgt) == cv_status::timeout && !_Clamped) {
                 return _Pred();
             }
         }
@@ -826,10 +863,6 @@ public:
         return _Try_lock_until(_Abs_time);
     }
 
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const xtime* _Abs_time) { // try to lock the mutex with timeout
-        return _Try_lock_until(_Abs_time);
-    }
-
 private:
     mutex _My_mutex;
     condition_variable _My_cond;
@@ -852,7 +885,9 @@ public:
             if (_My_locked < UINT_MAX) {
                 ++_My_locked;
             } else {
-                _Throw_system_error(errc::device_or_resource_busy);
+                // POSIX specifies EAGAIN in the corresponding situation:
+                // https://pubs.opengroup.org/onlinepubs/9699919799/functions/pthread_mutex_lock.html
+                _STD _Throw_system_error(errc::resource_unavailable_try_again);
             }
         } else {
             while (_My_locked != 0) {
@@ -938,10 +973,6 @@ public:
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
-        return _Try_lock_until(_Abs_time);
-    }
-
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const xtime* _Abs_time) { // try to lock the mutex with timeout
         return _Try_lock_until(_Abs_time);
     }
 

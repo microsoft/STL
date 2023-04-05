@@ -10,8 +10,6 @@
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 template <class Stream, class charT, class = void>
 constexpr bool stream_insertable = false;
 template <class Stream, class charT>

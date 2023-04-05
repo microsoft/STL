@@ -45,7 +45,8 @@ void test_ops() {
 
     struct alignas(std::atomic_ref<ValueType>::required_alignment) Padded {
         ValueType vals[unique] = {};
-    } padded;
+    };
+    Padded padded;
 
     auto& vals = padded.vals;
 

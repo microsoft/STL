@@ -137,7 +137,10 @@ public:
             _Throw_Cpp_error(_INVALID_ARGUMENT);
         }
 
-        _Check_C_return(_Thrd_detach(_Thr));
+        if (_Thrd_detach(_Thr) != _Thrd_success) {
+            _Throw_Cpp_error(_INVALID_ARGUMENT);
+        }
+
         _Thr = {};
     }
 
@@ -178,10 +181,6 @@ namespace this_thread {
         _Thrd_yield();
     }
 
-    inline void sleep_until(const xtime* _Abs_time) {
-        _Thrd_sleep(_Abs_time);
-    }
-
     _EXPORT_STD template <class _Clock, class _Duration>
     void sleep_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
 #if _HAS_CXX20
@@ -193,8 +192,8 @@ namespace this_thread {
                 return;
             }
 
-            _CSTD xtime _Tgt;
-            (void) _To_xtime_10_day_clamped(_Tgt, _Abs_time - _Now);
+            _timespec64 _Tgt;
+            (void) _To_timespec64_sys_10_day_clamped(_Tgt, _Abs_time - _Now);
             _Thrd_sleep(&_Tgt);
         }
     }

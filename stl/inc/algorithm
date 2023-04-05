@@ -358,7 +358,7 @@ namespace ranges {
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
+_NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _InIt, class _Pr>
@@ -495,8 +495,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count_if(_InIt _First, _InIt _Last, 
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _Iter_diff_t<_FwdIt> count_if(
-    _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
+_NODISCARD _Iter_diff_t<_FwdIt> count_if(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
@@ -639,7 +638,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <input_iterator _It1, input_iterator _It2, integral _Size, class _Pr, class _Pj1, class _Pj2>
+    template <input_iterator _It1, input_iterator _It2, _Integer_like _Size, class _Pr, class _Pj1, class _Pj2>
         requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
     _NODISCARD constexpr bool _Equal_count(
         _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
@@ -932,17 +931,10 @@ namespace ranges {
                 // We've trimmed matching prefixes and matching suffixes.
                 // Now we need to compare each range's prefix to the other range's suffix.
 
-#ifdef _M_CEE // TRANSITION, VSO-1663257
-                const auto _ProjectedPred = [&](auto&& _Left, auto&& _Right) -> bool {
-                    return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<decltype(_Left)>(_Left)),
-                        _STD invoke(_Proj2, _STD forward<decltype(_Right)>(_Right)));
-                };
-#else // ^^^ workaround / no workaround vvv
                 const auto _ProjectedPred = [&]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) -> bool {
                     return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<_Ty1>(_Left)),
                         _STD invoke(_Proj2, _STD forward<_Ty2>(_Right)));
                 };
-#endif // ^^^ no workaround ^^^
 
                 const _TrimResult _Res = _Trim_completely(_First1, _Final1, _First2, _Final2, _ProjectedPred);
 
@@ -1028,17 +1020,10 @@ namespace ranges {
                 // We've trimmed matching prefixes and matching suffixes.
                 // Now we need to compare each range's prefix to the other range's suffix.
 
-#ifdef _M_CEE // TRANSITION, VSO-1663257
-                const auto _ProjectedPred = [&](auto&& _Left, auto&& _Right) -> bool {
-                    return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<decltype(_Left)>(_Left)),
-                        _STD invoke(_Proj2, _STD forward<decltype(_Right)>(_Right)));
-                };
-#else // ^^^ workaround / no workaround vvv
                 const auto _ProjectedPred = [&]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) -> bool {
                     return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<_Ty1>(_Left)),
                         _STD invoke(_Proj2, _STD forward<_Ty2>(_Right)));
                 };
-#endif // ^^^ no workaround ^^^
 
                 const _TrimResult _Res = _Trim_completely(_First1, _Final1, _First2, _Final2, _ProjectedPred);
 
@@ -1198,7 +1183,7 @@ _NODISCARD _CONSTEXPR20 bool any_of(const _InIt _First, const _InIt _Last, _Pr _
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD bool any_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
+_NODISCARD bool any_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
@@ -1260,7 +1245,7 @@ _NODISCARD _CONSTEXPR20 bool none_of(const _InIt _First, const _InIt _Last, _Pr 
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD bool none_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
+_NODISCARD bool none_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
@@ -1744,7 +1729,7 @@ _NODISCARD _CONSTEXPR20 bool is_partitioned(const _InIt _First, const _InIt _Las
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD bool is_partitioned(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
+_NODISCARD bool is_partitioned(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
@@ -1988,8 +1973,8 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHays
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdItHaystack, class _FwdItPat, class _Pr,
     _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _FwdItHaystack search(_ExPo&& _Exec, const _FwdItHaystack _First1, _FwdItHaystack _Last1,
-    const _FwdItPat _First2, const _FwdItPat _Last2, _Pr _Pred) noexcept; // terminates
+_NODISCARD _FwdItHaystack search(_ExPo&& _Exec, _FwdItHaystack _First1, _FwdItHaystack _Last1, _FwdItPat _First2,
+    _FwdItPat _Last2, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _FwdItHaystack, class _FwdItPat>
@@ -2090,7 +2075,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _Ty, class _Pr,
     _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _FwdIt search_n(_ExPo&& _Exec, const _FwdIt _First, _FwdIt _Last, const _Diff _Count_raw, const _Ty& _Val,
+_NODISCARD _FwdIt search_n(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Diff _Count_raw, const _Ty& _Val,
     _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
@@ -3260,8 +3245,8 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(const _FwdIt1 _First1, const _FwdI
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, _FwdIt1 _Last1, const _FwdIt2 _First2,
-    const _FwdIt2 _Last2, _Pr _Pred) noexcept; // terminates
+_NODISCARD _FwdIt1 find_first_of(
+    _ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept; // terminates
 
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
@@ -3462,8 +3447,7 @@ _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Des
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt2 transform(
-    _ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Fn _Func) noexcept; // terminates
+_FwdIt2 transform(_ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Fn _Func) noexcept; // terminates
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Fn>
@@ -3487,7 +3471,7 @@ _CONSTEXPR20 _OutIt transform(
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Fn,
     _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt3 transform(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, _FwdIt3 _Dest,
+_FwdIt3 transform(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt3 _Dest,
     _Fn _Func) noexcept; // terminates
 #endif // _HAS_CXX17
 
@@ -3615,7 +3599,7 @@ _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _O
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
-void replace(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval,
+void replace(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, const _Ty& _Oldval,
     const _Ty& _Newval) noexcept; // terminates
 #endif // _HAS_CXX17
 
@@ -4152,12 +4136,10 @@ _FwdIt2 remove_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _P
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD_REMOVE_ALG _FwdIt remove(
-    _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
+_NODISCARD_REMOVE_ALG _FwdIt remove(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD_REMOVE_ALG _FwdIt remove_if(
-    _ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
+_NODISCARD_REMOVE_ALG _FwdIt remove_if(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
@@ -5879,7 +5861,7 @@ _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt partition(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
+_FwdIt partition(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
@@ -6941,9 +6923,7 @@ namespace ranges {
             const auto _Count = _RANGES distance(_Range);
             auto _UResult =
                 _RANGES _Lower_bound_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            auto _Result = _RANGES begin(_Range);
-            _Seek_wrapped(_Result, _STD move(_UResult));
-            return _Result;
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 
@@ -6996,9 +6976,7 @@ namespace ranges {
             const auto _Count = _RANGES distance(_Range);
             auto _UResult =
                 _RANGES _Upper_bound_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            auto _Result = _RANGES begin(_Range);
-            _Seek_wrapped(_Result, _STD move(_UResult));
-            return _Result;
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 
@@ -7427,7 +7405,7 @@ void _Inplace_merge_buffer_right(
 
 template <class _BidIt, class _Pr>
 void _Buffered_inplace_merge_unchecked(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Iter_diff_t<_BidIt> _Count1,
-    _Iter_diff_t<_BidIt> _Count2, _Iter_value_t<_BidIt>* const _Temp_ptr, const ptrdiff_t _Capacity, _Pr _Pred);
+    _Iter_diff_t<_BidIt> _Count2, _Iter_value_t<_BidIt>* _Temp_ptr, ptrdiff_t _Capacity, _Pr _Pred);
 
 template <class _BidIt, class _Pr>
 void _Buffered_inplace_merge_divide_and_conquer2(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Iter_diff_t<_BidIt> _Count1,
@@ -8492,7 +8470,7 @@ void stable_sort(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-void stable_sort(_ExPo&& _Exec, const _BidIt _First, const _BidIt _Last, _Pr _Pred) noexcept; // terminates
+void stable_sort(_ExPo&& _Exec, _BidIt _First, _BidIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _BidIt>
@@ -9942,13 +9920,10 @@ namespace ranges {
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr minmax_element_result<borrowed_iterator_t<_Rng>> operator()(
             _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Minmax_element_fwd_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)),
-                _RANGES _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
-            _STD _Seek_wrapped(_First, _STD move(_UResult.min));
-            auto _Second = _First;
-            _STD _Seek_wrapped(_Second, _STD move(_UResult.max));
-            return {_STD move(_First), _STD move(_Second)};
+            auto _UResult = _Minmax_element_fwd_unchecked(
+                _RANGES _Ubegin(_Range), _RANGES _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return {
+                _Rewrap_iterator(_Range, _STD move(_UResult.min)), _Rewrap_iterator(_Range, _STD move(_UResult.max))};
         }
 
     private:
@@ -10537,11 +10512,9 @@ namespace ranges {
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _First  = _RANGES begin(_Range);
-            auto _UFirst = _RANGES _Is_sorted_until_unchecked(
-                _Unwrap_range_iter<_Rng>(_First), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            return _First;
+            auto _UResult =
+                _RANGES _Is_sorted_until_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 
