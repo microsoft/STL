@@ -364,7 +364,7 @@
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
-// P2614R2 Deprecating float_denorm_style, numeric_limits::has_denorm, `numeric_limits::has_denorm_loss
+// P2614R2 Deprecating float_denorm_style, numeric_limits::has_denorm, numeric_limits::has_denorm_loss
 // Other C++23 deprecation warnings
 
 // Parallel Algorithms Notes
