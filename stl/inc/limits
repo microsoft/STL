@@ -38,7 +38,7 @@ _STD_BEGIN
 #ifdef _BUILD_STD_MODULE // TRANSITION, _Pragma("warning(disable : 4996)") doesn't work in modules
 #define _CXX23_DEPRECATE_FLOAT_DENOM_STYLE
 #else // ^^^ defined(_BUILD_STD_MODULE) / !defined(_BUILD_STD_MODULE) vvv
-#define _CXX23_DEPRECATE_FLOAT_DENOM_STYLE _CXX23_DEPRECATE_DENOM
+#define _CXX23_DEPRECATE_FLOAT_DENOM_STYLE _CXX23_DEPRECATE_DENORM
 #endif // ^^^ !defined(_BUILD_STD_MODULE) ^^^
 
 // constants for different IEEE float denormalization styles
@@ -60,8 +60,8 @@ _EXPORT_STD enum float_round_style { // constants for different IEEE rounding st
 
 struct _Num_base { // base for all types, with common defaults
     _STL_DISABLE_DEPRECATED_WARNING
-    _CXX23_DEPRECATE_DENOM static constexpr float_denorm_style has_denorm = denorm_absent;
-    _CXX23_DEPRECATE_DENOM static constexpr bool has_denorm_loss          = false;
+    _CXX23_DEPRECATE_DENORM static constexpr float_denorm_style has_denorm = denorm_absent;
+    _CXX23_DEPRECATE_DENORM static constexpr bool has_denorm_loss          = false;
     _STL_RESTORE_DEPRECATED_WARNING
 
     static constexpr bool has_infinity             = false;
@@ -146,7 +146,7 @@ struct _Num_int_base : _Num_base { // base for integer types
 
 struct _Num_float_base : _Num_base { // base for floating-point types
     _STL_DISABLE_DEPRECATED_WARNING
-    _CXX23_DEPRECATE_DENOM static constexpr float_denorm_style has_denorm = denorm_present;
+    _CXX23_DEPRECATE_DENORM static constexpr float_denorm_style has_denorm = denorm_present;
     _STL_RESTORE_DEPRECATED_WARNING
 
     static constexpr bool has_infinity             = true;

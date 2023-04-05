@@ -364,10 +364,6 @@
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
-// Other C++23 deprecation warnings
-
-// _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
-// P1413R3 Deprecate aligned_storage And aligned_union
 // P2614R2 Deprecating float_denorm_style, numeric_limits::has_denorm, `numeric_limits::has_denorm_loss
 // Other C++23 deprecation warnings
 
@@ -1435,16 +1431,15 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX23_DEPRECATE_UNIX_STREAMS
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX23 && !defined(_SILENCE_CXX23_DENOM_DEPRECATION_WARNING) \
+#if _HAS_CXX23 && !defined(_SILENCE_CXX23_DENORM_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
-#define _CXX23_DEPRECATE_DENOM                                                                                    \
-    [[deprecated("warning STL4042: "                                                                              \
-                 "std::float_denorm_style, std::numeric_limits::has_denorm, and "                                 \
-                 "std::numeric_limits::has_denorm_loss are deprecated in C++23. They are not well specified and " \
-                 "should not be dependent on. You can define _SILENCE_CXX23_DENOM_WARNING or "                    \
+#define _CXX23_DEPRECATE_DENORM                                                                                        \
+    [[deprecated("warning STL4042: "                                                                                   \
+                 "std::float_denorm_style, std::numeric_limits::has_denorm, and std::numeric_limits::has_denorm_loss " \
+                 "are deprecated in C++23. You can define _SILENCE_CXX23_DENORM_DEPRECATION_WARNING or "               \
                  "_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to suppress this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
-#define _CXX23_DEPRECATE_DENOM
+#define _CXX23_DEPRECATE_DENORM
 #endif // ^^^ warning disabled ^^^
 
 // next warning number: STL4043
