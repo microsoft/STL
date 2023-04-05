@@ -11,7 +11,13 @@
 #if !_HAS_CXX17
 _EMIT_STL_WARNING(STL4038, "The contents of <optional> are available only with C++17 or later.");
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
+#if _HAS_CXX20
+#include <compare>
+#endif // _HAS_CXX20
 #include <exception>
+#include <initializer_list>
+#include <type_traits>
+#include <utility>
 #include <xsmf_control.h>
 #include <xutility>
 
@@ -98,7 +104,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
 
     _CONSTEXPR20 ~_Optional_destruct_base() noexcept {
         if (_Has_value) {
-            _Value.~decltype(_Value)();
+            _Value.~_Ty();
         }
     }
 
@@ -123,7 +129,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
 
     _CONSTEXPR20 void reset() noexcept {
         if (_Has_value) {
-            _Value.~decltype(_Value)();
+            _Value.~_Ty();
             _Has_value = false;
         }
     }
