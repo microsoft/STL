@@ -98,7 +98,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
 
     _CONSTEXPR20 ~_Optional_destruct_base() noexcept {
         if (_Has_value) {
-            _Value.~decltype(_Value);
+            _Value.~decltype(_Value)();
         }
     }
 
@@ -123,7 +123,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
 
     _CONSTEXPR20 void reset() noexcept {
         if (_Has_value) {
-            _Value.~decltype(_Value);
+            _Value.~decltype(_Value)();
             _Has_value = false;
         }
     }
