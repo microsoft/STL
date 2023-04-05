@@ -13,12 +13,8 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <variant> are available only with C++17 or later.");
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <exception>
-#include <initializer_list>
-#include <type_traits>
-#include <utility>
-#include <xmemory>
 #include <xsmf_control.h>
-#include <xstddef>
+#include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -808,8 +804,9 @@ public:
     _CONSTEXPR20 void _Destroy() noexcept {
         // destroy the contained value
         // pre: _Idx == index()
-        if constexpr (_Idx != variant_npos && !is_trivially_destructible_v<_Meta_at_c<variant<_Types...>, _Idx>>) {
-            _STD _Destroy_in_place(_STD _Variant_raw_get<_Idx>(_Storage()));
+        using _Indexed_value_type = remove_cv_t<_Meta_at_c<variant<_Types...>, _Idx>>;
+        if constexpr (_Idx != variant_npos && !is_trivially_destructible_v<_Indexed_value_type>) {
+            _STD _Variant_raw_get<_Idx>(_Storage()).~_Indexed_value_type();
         }
     }
 
@@ -817,7 +814,8 @@ public:
         if constexpr (!conjunction_v<is_trivially_destructible<_Types>...>) {
             _STD _Variant_raw_visit(index(), _Storage(), [](auto _Ref) noexcept {
                 if constexpr (decltype(_Ref)::_Idx != variant_npos) {
-                    _STD _Destroy_in_place(_Ref._Val);
+                    using _Indexed_value_type = _Remove_cvref_t<decltype(_Ref._Val)>;
+                    _Ref._Val.~_Indexed_value_type();
                 }
             });
         }
