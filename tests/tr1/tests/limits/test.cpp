@@ -4,7 +4,7 @@
 // test <limits>
 #define TEST_NAME "<limits>"
 
-#define _SILENCE_CXX23_DENOM_DEPRECATION_WARNING
+#define _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
 
 #include "tdefs.h"
 #include <float.h>
