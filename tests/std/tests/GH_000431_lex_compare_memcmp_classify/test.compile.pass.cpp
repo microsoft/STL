@@ -7,7 +7,6 @@
 #include <functional>
 #include <iterator>
 #include <list>
-#include <regex>
 #include <string>
 #include <type_traits>
 #include <vector>
