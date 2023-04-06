@@ -10,6 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <cfloat>
 #include <climits>
+#include <cwchar>
 #include <isa_availability.h>
 #include <xstddef>
 
@@ -465,11 +466,11 @@ template <>
 class numeric_limits<wchar_t> : public _Num_int_base {
 public:
     _NODISCARD static constexpr wchar_t(min)() noexcept {
-        return 0;
+        return WCHAR_MIN;
     }
 
     _NODISCARD static constexpr wchar_t(max)() noexcept {
-        return 0xFFFF;
+        return WCHAR_MAX;
     }
 
     _NODISCARD static constexpr wchar_t lowest() noexcept {
