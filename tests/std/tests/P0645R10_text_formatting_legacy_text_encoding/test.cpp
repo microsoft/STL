@@ -46,6 +46,8 @@ void test_parse_align() {
         {.expected_alignment = _Fmt_align::_Right, .expected_fill = "\x96\x7b"sv});
     test_parse_helper(parse_align_fn, "\x92\x6e^X"sv, false, 3,
         {.expected_alignment = _Fmt_align::_Center, .expected_fill = "\x92\x6e"sv});
+
+    test_parse_helper(parse_align_fn, "\x92\x30<X"sv, true);
 }
 
 void test_width_estimation() {
