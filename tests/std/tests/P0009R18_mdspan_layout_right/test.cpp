@@ -183,12 +183,10 @@ constexpr void check_construction_from_other_left_mapping() {
     }
 
     { // Check implicit conversions
-        static_assert(!NotImplicitlyConstructibleFrom<layout_right::mapping<extents<int, 3>>,
-                      layout_left::mapping<extents<int, 3>>>);
-        static_assert(NotImplicitlyConstructibleFrom<layout_right::mapping<extents<int, 3>>,
-            layout_left::mapping<extents<long long, 3>>>);
-        static_assert(NotImplicitlyConstructibleFrom<layout_right::mapping<extents<int, 3>>,
-            layout_left::mapping<extents<int, dynamic_extent>>>);
+        using Mapping = layout_right::mapping<extents<int, 4>>;
+        static_assert(!NotImplicitlyConstructibleFrom<Mapping, layout_left::mapping<extents<int, 4>>>);
+        static_assert(NotImplicitlyConstructibleFrom<Mapping, layout_left::mapping<extents<long long, 4>>>);
+        static_assert(NotImplicitlyConstructibleFrom<Mapping, layout_left::mapping<extents<int, dynamic_extent>>>);
     }
 }
 
