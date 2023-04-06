@@ -68,7 +68,12 @@ namespace {
     }
 
     // TRANSITION, DevCom-10331414
-    struct _Zeroupper_on_exit {
+    struct [[nodiscard]] _Zeroupper_on_exit {
+        _Zeroupper_on_exit() = default;
+
+        _Zeroupper_on_exit(const _Zeroupper_on_exit&)            = delete;
+        _Zeroupper_on_exit& operator=(const _Zeroupper_on_exit&) = delete;
+
         ~_Zeroupper_on_exit() {
             _mm256_zeroupper();
         }
