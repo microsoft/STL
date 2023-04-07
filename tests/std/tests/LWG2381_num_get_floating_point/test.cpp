@@ -115,7 +115,6 @@ void test() {
         assert(err == instr.goodbit);
         assert(v == 2);
     }
-
     {
         v                     = -1;
         const char* inf_str   = is_same_v<Flt, float> ? "3.40283e+39" : "1.7979e+309"; // unrepresentable
@@ -177,7 +176,6 @@ void test() {
         assert(err == instr.goodbit);
         assert(abs(v - 3.14159265358979e+10) / 3.14159265358979e+10 < 1.e-8);
     }
-
     {
         v                = -1;
         const char str[] = "0x125p-1 ";

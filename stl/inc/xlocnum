@@ -299,6 +299,7 @@ int _Parse_fp_with_ios_base(char* const _Ac, _InIt& _First, _InIt& _Last, ios_ba
             *_Ptr = '\0';
             return 0;
         }
+
         if (*_First == _Atoms[_Offset_lower_x] || *_First == _Atoms[_Offset_upper_x]) { // 0X or 0x
             _Parse_hex = true;
             ++_First; // discard 0X or 0x for further parsing
