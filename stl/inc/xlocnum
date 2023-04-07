@@ -773,14 +773,14 @@ protected:
         _Adl_verify_range(_First, _Last);
         char _Ac[_FLOATING_BUFFER_SIZE];
         int _Hexexp     = _ENABLE_V2_BEHAVIOR;
-        const int _Base = _STD _Parse_fp_with_ios_base<_Elem>(_Ac, _First, _Last, _Iosbase, &_Hexexp); // gather field
+        const int _Pten = _STD _Parse_fp_with_ios_base<_Elem>(_Ac, _First, _Last, _Iosbase, &_Hexexp); // gather field
         if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
             _State = ios_base::failbit;
             _Val   = 0.0f;
         } else {
             int _Errno;
             char* _Ep;
-            _Val = _STD _Stofx_v2(_Ac, &_Ep, _Base, &_Errno); // convert
+            _Val = _STD _Stofx_v2(_Ac, &_Ep, _Pten, &_Errno); // convert
             if (_Ep == _Ac || _Errno != 0) {
                 _State = ios_base::failbit;
             } else if (_Hexexp != _ENABLE_V2_BEHAVIOR && _Hexexp != 0) {
@@ -800,14 +800,14 @@ protected:
         _Adl_verify_range(_First, _Last);
         char _Ac[_FLOATING_BUFFER_SIZE];
         int _Hexexp     = _ENABLE_V2_BEHAVIOR;
-        const int _Base = _STD _Parse_fp_with_ios_base<_Elem>(_Ac, _First, _Last, _Iosbase, &_Hexexp); // gather field
+        const int _Pten = _STD _Parse_fp_with_ios_base<_Elem>(_Ac, _First, _Last, _Iosbase, &_Hexexp); // gather field
         if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
             _State = ios_base::failbit;
             _Val   = 0.0;
         } else {
             int _Errno;
             char* _Ep;
-            _Val = _STD _Stodx_v2(_Ac, &_Ep, _Base, &_Errno); // convert
+            _Val = _STD _Stodx_v2(_Ac, &_Ep, _Pten, &_Errno); // convert
             if (_Ep == _Ac || _Errno != 0) {
                 _State = ios_base::failbit;
             } else if (_Hexexp != _ENABLE_V2_BEHAVIOR && _Hexexp != 0) {
