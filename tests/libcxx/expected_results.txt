@@ -670,7 +670,7 @@ std/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
 # libc++'s filesystem::path::iterator models bidirectional_iterator, which is not guaranteed by the Standard
 std/input.output/filesystems/class.path/range_concept_conformance.compile.pass.cpp FAIL
 
-# libc++ assumes long double is at least as precise as the Intel 80-bit format; also affected by LWG-2381
+# libc++ assumes long double is at least 80-bit; also affected by LWG-2381
 std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp FAIL
 
 # MaybePOCCAAllocator doesn't meet the allocator requirements
