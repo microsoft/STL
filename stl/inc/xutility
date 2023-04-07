@@ -230,26 +230,19 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
     using type = typename _Ty::template rebind<_Other>;
 };
 
-template <class _Iter>
-_NODISCARD constexpr void* _Voidify_iter(_Iter _It) noexcept {
-    if constexpr (is_pointer_v<_Iter>) {
-        return const_cast<void*>(static_cast<const volatile void*>(_It));
-    } else {
-        return const_cast<void*>(static_cast<const volatile void*>(_STD addressof(*_It)));
-    }
-}
-
 #if _HAS_CXX20
 #ifdef __EDG__ // TRANSITION, DevCom-1691516
+// per LWG-3888
 _EXPORT_STD template <class _Ty, class... _Types,
-    class = void_t<decltype(::new(_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>>
+    class = void_t<decltype(::new(static_cast<void*>(_STD declval<_Ty*>())) _Ty(_STD declval<_Types>()...))>>
 #else // ^^^ no workaround / workaround vvv
+// per LWG-3888
 _EXPORT_STD template <class _Ty, class... _Types,
-    void_t<decltype(::new(_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>* = nullptr>
+    void_t<decltype(::new(static_cast<void*>(_STD declval<_Ty*>())) _Ty(_STD declval<_Types>()...))>* = nullptr>
 #endif // TRANSITION, DevCom-1691516
 constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
-    noexcept(::new(_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
-    _MSVC_CONSTEXPR return ::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...);
+    noexcept(::new(static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
+    _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
 }
 #endif // _HAS_CXX20
 
@@ -262,13 +255,13 @@ _CONSTEXPR20 void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(
     } else
 #endif // _HAS_CXX20
     {
-        ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty(_STD forward<_Types>(_Args)...);
+        ::new (static_cast<void*>(_STD addressof(_Obj))) _Ty(_STD forward<_Types>(_Args)...);
     }
 }
 
 template <class _Ty>
 void _Default_construct_in_place(_Ty& _Obj) noexcept(is_nothrow_default_constructible_v<_Ty>) {
-    ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty;
+    ::new (static_cast<void*>(_STD addressof(_Obj))) _Ty;
 }
 
 template <class _Ty, class _Elem>
@@ -445,7 +438,7 @@ namespace ranges {
             enum class _St { _None, _Custom, _Fallback };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 if constexpr (_Has_ADL<_Ty>) {
                     return {_St::_Custom, noexcept(iter_move(_STD declval<_Ty>()))}; // intentional ADL
                 } else if constexpr (_Can_deref<_Ty>) {
@@ -770,7 +763,7 @@ namespace ranges {
             enum class _St { _None, _Custom, _Swap, _Exchange };
 
             template <class _Ty1, class _Ty2>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 if constexpr (_Has_ADL<_Ty1, _Ty2>) {
                     return {_St::_Custom,
                         noexcept(iter_swap(_STD declval<_Ty1>(), _STD declval<_Ty2>()))}; // intentional ADL
@@ -1833,7 +1826,7 @@ private:
     using _Reference        = iter_const_reference_t<_Iter>;
     using _Rvalue_reference = _Iter_const_rvalue_reference_t<_Iter>;
 
-    _NODISCARD static _CONSTEVAL auto _Get_iter_concept() noexcept {
+    _NODISCARD static consteval auto _Get_iter_concept() noexcept {
         if constexpr (contiguous_iterator<_Iter>) {
             return contiguous_iterator_tag{};
         } else if constexpr (random_access_iterator<_Iter>) {
@@ -2155,7 +2148,7 @@ namespace ranges {
             enum class _St { _None, _Array, _Member, _Non_member };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (is_array_v<remove_reference_t<_Ty>>) {
                     static_assert(_Has_complete_elements<_Ty>,
@@ -2224,7 +2217,7 @@ namespace ranges {
             enum class _St { _None, _Array, _Member, _Non_member };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 using _UnRef = remove_reference_t<_Ty>;
 
@@ -2287,9 +2280,8 @@ namespace ranges {
     using sentinel_t = decltype(_RANGES end(_STD declval<_Rng&>()));
 
     template <class _Wrapped>
-    concept _Weakly_unwrappable =
-        same_as<typename remove_cvref_t<_Wrapped>::_Prevent_inheriting_unwrap, remove_cvref_t<_Wrapped>>
-        && requires(_Wrapped&& _Wr) { _STD forward<_Wrapped>(_Wr)._Unwrapped(); };
+    concept _Weakly_unwrappable = _Allow_inheriting_unwrap_v<remove_cvref_t<_Wrapped>>
+                               && requires(_Wrapped&& _Wr) { _STD forward<_Wrapped>(_Wr)._Unwrapped(); };
 
     template <class _Sent>
     concept _Weakly_unwrappable_sentinel = _Weakly_unwrappable<const remove_reference_t<_Sent>&>;
@@ -2372,7 +2364,7 @@ namespace ranges {
             enum class _St { _None, _Member, _Unwrap };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     _STL_INTERNAL_STATIC_ASSERT(
@@ -2426,7 +2418,7 @@ namespace ranges {
             enum class _St { _None, _Member, _Unwrap };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_STD declval<_Ty>()._Unchecked_end())};
@@ -2591,7 +2583,7 @@ namespace ranges {
             enum class _St { _None, _Member, _Non_member, _Make_reverse };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().rbegin()))};
@@ -2661,7 +2653,7 @@ namespace ranges {
             enum class _St { _None, _Member, _Non_member, _Make_reverse };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().rend()))};
@@ -2800,7 +2792,7 @@ namespace ranges {
             enum class _St { _None, _Array, _Member, _Non_member, _Subtract };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 using _UnCV = remove_cvref_t<_Ty>;
 
@@ -2870,7 +2862,7 @@ namespace ranges {
             enum class _St { _None, _Member, _Size, _Compare };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (is_unbounded_array_v<remove_reference_t<_Ty>>) {
                     return {_St::_None};
@@ -2934,7 +2926,7 @@ namespace ranges {
             enum class _St { _None, _Member, _Address };
 
             template <class _Ty>
-            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+            _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_STD declval<_Ty>().data())};
@@ -4292,10 +4284,6 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) noexc
 template <class _Iter1, class _Iter2>
     requires (!sized_sentinel_for<_Iter1, _Iter2>)
 inline constexpr bool disable_sized_sentinel_for<move_iterator<_Iter1>, move_iterator<_Iter2>> = true;
-
-_EXPORT_STD struct default_sentinel_t {};
-
-_EXPORT_STD inline constexpr default_sentinel_t default_sentinel{};
 
 _EXPORT_STD struct unreachable_sentinel_t;
 namespace _Unreachable_sentinel_detail {
@@ -6683,10 +6671,9 @@ namespace ranges {
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _First = _RANGES begin(_Range);
-            _Seek_wrapped(_First, _RANGES _Max_element_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)),
-                                      _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj)));
-            return _First;
+            auto _UResult =
+                _RANGES _Max_element_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 
@@ -6878,10 +6865,9 @@ namespace ranges {
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _First = _RANGES begin(_Range);
-            _Seek_wrapped(_First, _RANGES _Min_element_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)),
-                                      _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj)));
-            return _First;
+            auto _UResult =
+                _RANGES _Min_element_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 

@@ -42,13 +42,13 @@ STATIC_ASSERT(__cpp_lib_algorithm_iterator_requirements == 202207L);
 #endif
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 #ifndef __cpp_lib_allocate_at_least
 #error __cpp_lib_allocate_at_least is not defined
-#elif __cpp_lib_allocate_at_least != 202106L
-#error __cpp_lib_allocate_at_least is not 202106L
+#elif __cpp_lib_allocate_at_least != 202302L
+#error __cpp_lib_allocate_at_least is not 202302L
 #else
-STATIC_ASSERT(__cpp_lib_allocate_at_least == 202106L);
+STATIC_ASSERT(__cpp_lib_allocate_at_least == 202302L);
 #endif
 #else
 #ifdef __cpp_lib_allocate_at_least
@@ -1522,6 +1522,20 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 #endif
 #endif
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_print
+#error __cpp_lib_print is not defined
+#elif __cpp_lib_print != 202207L
+#error __cpp_lib_print is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_print == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_print
+#error __cpp_lib_print is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_quoted_string_io
 #error __cpp_lib_quoted_string_io is not defined
 #elif __cpp_lib_quoted_string_io != 201304L
@@ -1577,6 +1591,20 @@ STATIC_ASSERT(__cpp_lib_ranges_as_rvalue == 202207L);
 #else
 #ifdef __cpp_lib_ranges_as_rvalue
 #error __cpp_lib_ranges_as_rvalue is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_cartesian_product
+#error __cpp_lib_ranges_cartesian_product is not defined
+#elif __cpp_lib_ranges_cartesian_product != 202207L
+#error __cpp_lib_ranges_cartesian_product is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_cartesian_product == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_cartesian_product
+#error __cpp_lib_ranges_cartesian_product is defined
 #endif
 #endif
 
@@ -1762,6 +1790,20 @@ STATIC_ASSERT(__cpp_lib_ranges_to_container == 202202L);
 #endif
 #endif
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_zip
+#error __cpp_lib_ranges_zip is not defined
+#elif __cpp_lib_ranges_zip != 202110L
+#error __cpp_lib_ranges_zip is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_zip == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_zip
+#error __cpp_lib_ranges_zip is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_raw_memory_algorithms
 #error __cpp_lib_raw_memory_algorithms is not defined
@@ -1940,7 +1982,7 @@ STATIC_ASSERT(__cpp_lib_smart_ptr_for_overwrite == 202002L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_consteval)
+#if _HAS_CXX20
 #ifndef __cpp_lib_source_location
 #error __cpp_lib_source_location is not defined
 #elif __cpp_lib_source_location != 201907L

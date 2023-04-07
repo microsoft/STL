@@ -180,7 +180,7 @@ static void t_add_rvalue_reference() { // test add_rvalue_reference<T> for vario
     CHECK_TYPEX(STD add_rvalue_reference<ARR1>::type, ARR1 &&);
 }
 
-typedef enum { red, blue, green } color;
+enum color : int { red, blue, green };
 
 static void t_make_signed() { // test make_signed<T> for various types
     CHECK_TYPE(STD make_signed<signed char>::type, signed char);

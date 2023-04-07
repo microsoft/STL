@@ -502,6 +502,12 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
         return _Report_error(_Info, __std_tzdb_error::_Win_error);
     }
 
+    // Get the option stored after the time zone name. If there's no option, _Tz[_Tz_len] is the null terminator in the
+    // std::string, and will be treated the same as __std_tzdb_sys_info_type::_Full.
+    const auto _Type = static_cast<__std_tzdb_sys_info_type>(_Tz[_Tz_len]);
+
+    // TRANSITION, vNext
+    // Profiling shows that _Get_cal is a hot path. Its result should be cached (preferably in the time_zone object).
     const auto _Cal = _Get_cal(_Tz, _Tz_len, _Info->_Err);
     if (_Cal == nullptr) {
         return _Propagate_error(_Info);
@@ -528,6 +534,10 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
         return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
 
+    if (_Type == __std_tzdb_sys_info_type::_Offset_only) {
+        return _Info.release();
+    }
+
     UDate _Transition{};
     _Info->_Begin = __icu_ucal_getTimeZoneTransitionDate(_Cal.get(),
                         UTimeZoneTransitionType::UCAL_TZ_TRANSITION_PREVIOUS_INCLUSIVE, &_Transition, &_UErr)
@@ -543,6 +553,10 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
                     : U_DATE_MAX;
     if (U_FAILURE(_UErr)) {
         return _Report_error(_Info, __std_tzdb_error::_Icu_error);
+    }
+
+    if (_Type == __std_tzdb_sys_info_type::_Offset_and_range) {
+        return _Info.release();
     }
 
     int32_t _Abbrev_len{};

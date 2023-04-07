@@ -67,12 +67,12 @@ public:
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : basic_stringbuf(_Str, _Mode, _Alloc{}) {}
 
-    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al_) : _Al(_Al_) {
+    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al_) : _Mystate(0), _Al(_Al_) {
         _Assign_rv(_STD move(_Right));
     }
 #endif // _HAS_CXX20
 
-    basic_stringbuf(basic_stringbuf&& _Right) {
+    basic_stringbuf(basic_stringbuf&& _Right) : _Mystate(0) {
         _Assign_rv(_STD move(_Right));
     }
 
@@ -269,7 +269,7 @@ protected:
 
         _Mysb::setp(_Newptr, _New_pnext, _Newptr + _Newsize);
         if (_Mystate & _Noread) { // maintain eback() == allocated pointer invariant
-            _Mysb::setg(_Newptr, nullptr, _Newptr);
+            _Mysb::setg(_Newptr, _Newptr, _Newptr);
         } else { // if readable, set the get area to initialized region
             _Mysb::setg(_Newptr, _Newptr + (_Mysb::gptr() - _Oldptr), _Seekhigh);
         }
@@ -328,6 +328,12 @@ protected:
 
     pos_type seekoff(
         off_type _Off, ios_base::seekdir _Way, ios_base::openmode _Mode = ios_base::in | ios_base::out) override {
+        const bool _Need_read_but_cannot  = (_Mode & ios_base::in) != 0 && (_Mystate & _Noread) != 0;
+        const bool _Need_write_but_cannot = (_Mode & ios_base::out) != 0 && (_Mystate & _Constant) != 0;
+        if (_Need_read_but_cannot || _Need_write_but_cannot) {
+            return pos_type{off_type{-1}};
+        }
+
         // change position by _Off, according to _Way, _Mode
         const auto _Gptr_old = _Mysb::gptr();
         const auto _Pptr_old = (_Mystate & _Constant) ? nullptr : _Mysb::pptr();
@@ -388,6 +394,12 @@ protected:
     }
 
     pos_type seekpos(pos_type _Pos, ios_base::openmode _Mode = ios_base::in | ios_base::out) override {
+        const bool _Need_read_but_cannot  = (_Mode & ios_base::in) != 0 && (_Mystate & _Noread) != 0;
+        const bool _Need_write_but_cannot = (_Mode & ios_base::out) != 0 && (_Mystate & _Constant) != 0;
+        if (_Need_read_but_cannot || _Need_write_but_cannot) {
+            return pos_type{off_type{-1}};
+        }
+
         // change position to _Pos, according to _Mode
         const auto _Off      = static_cast<streamoff>(_Pos);
         const auto _Gptr_old = _Mysb::gptr();
@@ -440,7 +452,7 @@ protected:
                 _Mysb::setp(_Pnew, (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew, _Seekhigh);
 
                 if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
-                    _Mysb::setg(_Pnew, nullptr, _Pnew);
+                    _Mysb::setg(_Pnew, _Pnew, _Pnew);
                 }
             }
 
@@ -469,7 +481,7 @@ protected:
 
         _Mysb::setp(_Pnew, _Next, _End_buffer);
         if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
-            _Mysb::setg(_Pnew, nullptr, _Pnew);
+            _Mysb::setg(_Pnew, _Pnew, _Pnew);
         } else {
             _Mysb::setg(_Pnew, _Pnew, _Seekhigh);
         }

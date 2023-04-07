@@ -142,19 +142,15 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     // Check view_interface::empty and operator bool
     STATIC_ASSERT(CanMemberEmpty<R>);
-    STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
-    if constexpr (CanMemberEmpty<R>) {
-        assert(r.empty() == is_empty);
-        assert(static_cast<bool>(r) == !is_empty);
-    }
+    STATIC_ASSERT(CanBool<R>);
+    assert(r.empty() == is_empty);
+    assert(static_cast<bool>(r) == !is_empty);
 
     // Check view_interface::empty and operator bool (const)
     STATIC_ASSERT(CanMemberEmpty<const R>);
-    STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
-    if constexpr (CanMemberEmpty<const R>) {
-        assert(as_const(r).empty() == is_empty);
-        assert(static_cast<bool>(as_const(r)) == !is_empty);
-    }
+    STATIC_ASSERT(CanBool<const R>);
+    assert(as_const(r).empty() == is_empty);
+    assert(static_cast<bool>(as_const(r)) == !is_empty);
 
     // Check content
     assert(ranges::equal(r, expected));
@@ -306,16 +302,12 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Check view_interface::front
-    STATIC_ASSERT(CanMemberFront<R> == forward_range<V>);
-    if constexpr (CanMemberFront<R>) {
-        assert(r.front() == *begin(expected));
-    }
+    STATIC_ASSERT(CanMemberFront<R>);
+    assert(r.front() == *begin(expected));
 
     // Check view_interface::front (const)
-    STATIC_ASSERT(CanMemberFront<const R> == forward_range<const V>);
-    if constexpr (CanMemberFront<const R>) {
-        assert(as_const(r).front() == *begin(expected));
-    }
+    STATIC_ASSERT(CanMemberFront<const R>);
+    assert(as_const(r).front() == *begin(expected));
 
     // Check view_interface::back
     STATIC_ASSERT(CanMemberBack<R> == (bidirectional_range<V> && common_range<V>) );

@@ -29,7 +29,7 @@ public:
     }
 
     void setp(wchar_t* p) { // set pptr
-        Mybase::setp(p, nullptr);
+        Mybase::setp(p, p);
     }
 
     wchar_t* getp() const { // get pptr

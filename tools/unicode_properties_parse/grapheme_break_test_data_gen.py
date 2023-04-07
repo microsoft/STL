@@ -21,7 +21,7 @@ class EOF:
     pass
 
 
-def parseBreakTestLine(input: TextIO) -> Optional[BreakTestItem]:
+def parse_break_test_line(input: TextIO) -> Optional[BreakTestItem]:
     result = BreakTestItem()
     while True:
         c = input.read(1)
@@ -52,6 +52,8 @@ def parseBreakTestLine(input: TextIO) -> Optional[BreakTestItem]:
 
 
 cpp_template = """
+{0}
+{1}
 template <typename T>
 struct test_case_data {{
     vector<T> code_points;
@@ -59,28 +61,28 @@ struct test_case_data {{
 }};
 
 template <typename T>
-const test_case_data<T> test_data[{0}];
+const test_case_data<T> test_data[{2}];
 
 template <>
-const test_case_data<char32_t> test_data<char32_t>[{0}] = {{
-    {1}
+const test_case_data<char32_t> test_data<char32_t>[{2}] = {{
+    {3}
 }};
 
 template <>
-const test_case_data<char> test_data<char>[{0}] = {{
-    {2}
+const test_case_data<char> test_data<char>[{2}] = {{
+    {4}
 }};
 """
 
 cpp_test_data_line_template = "{{ {{{}}}, {{{}}} }}"
 
-def lineToCppDataLineUtf32(line: BreakTestItem) -> str:
+def line_to_cpp_data_line_utf32(line: BreakTestItem) -> str:
     return cpp_test_data_line_template.format(','.join(
         [f"U'\\x{x:x}'" for x in line.code_points]), ','.join(
         [str(x) for x in line.breaks]))
 
 
-def lineToCppDataLineUtf8(line: BreakTestItem) -> str:
+def line_to_cpp_data_line_utf8(line: BreakTestItem) -> str:
     utf8_rep = str(array('L', line.code_points),
                    encoding='utf-32').encode('utf-8')
     return cpp_test_data_line_template.format(','.join(
@@ -90,20 +92,22 @@ def lineToCppDataLineUtf8(line: BreakTestItem) -> str:
 
 """
 Generate test data from "GraphemeBreakText.txt"
-This file can be downloaded from: https://www.unicode.org/Public/14.0.0/ucd/auxiliary/GraphemeBreakTest.txt
+This file can be downloaded from: https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakTest.txt
 This script looks for GraphemeBreakTest.txt in same directory as this script
 """
 def generate_all() -> str:
-    test_data_path = Path(__file__)
-    test_data_path = test_data_path.absolute()
-    test_data_path = test_data_path.with_name("GraphemeBreakTest.txt")
+    test_data_path = Path(__file__).absolute().with_name("GraphemeBreakTest.txt")
+    filename = ""
+    timestamp = ""
     lines = list()
     with open(test_data_path, mode='rt', encoding='utf-8') as file:
-        while line := parseBreakTestLine(file):
+        filename = file.readline().replace("#", "//").rstrip()
+        timestamp = file.readline().replace("#", "//").rstrip()
+        while line := parse_break_test_line(file):
             if len(line.code_points) > 0:
                 lines.append(line)
-    return cpp_template.format(len(lines), ','.join(map(lineToCppDataLineUtf32, lines)),
-        ','.join(map(lineToCppDataLineUtf8, lines)))
+    return cpp_template.format(filename, timestamp, len(lines), ','.join(map(line_to_cpp_data_line_utf32, lines)),
+        ','.join(map(line_to_cpp_data_line_utf8, lines)))
 
 
 if __name__ == "__main__":

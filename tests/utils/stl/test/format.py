@@ -10,7 +10,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
 import copy
-import errno
 import itertools
 import os
 import re
@@ -167,7 +166,6 @@ class STLTestFormat:
         yield from []
 
     def getBuildSteps(self, test, litConfig, shared):
-        filename = test.path_in_suite[-1]
         _, tmpBase = test.getTempPaths()
 
         shouldFail = TestType.FAIL in test.testType

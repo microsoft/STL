@@ -53,9 +53,9 @@ namespace {
         CHECK_INT(d_i::max(), STD numeric_limits<int>::max());
 
         typedef STD chrono::duration_values<double> d_d;
-        CHECK_INT(d_d::zero(), 0.0);
-        CHECK_INT(d_d::min(), STD numeric_limits<double>::lowest());
-        CHECK_INT(d_d::max(), STD numeric_limits<double>::max());
+        CHECK_DOUBLE(d_d::zero(), 0.0);
+        CHECK_DOUBLE(d_d::min(), STD numeric_limits<double>::lowest());
+        CHECK_DOUBLE(d_d::max(), STD numeric_limits<double>::max());
     }
 
     template <class Rep, class Period>
