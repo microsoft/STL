@@ -263,7 +263,7 @@ void test_int_grouping() {
         const size_t len      = sizeof(sep_str) - 1;
         ios_base::iostate err = instr.goodbit;
 
-        instr.flags(std::ios_base::fmtflags{});
+        instr.flags(ios_base::fmtflags{});
         const char* iter = f.get(sep_str, sep_str + len + 1, instr, err, v);
         assert(iter == sep_str + len);
         assert(err == instr.goodbit);
@@ -275,7 +275,7 @@ void test_int_grouping() {
         const size_t len      = sizeof(sep_str) - 1;
         ios_base::iostate err = instr.goodbit;
 
-        instr.flags(std::ios_base::fmtflags{});
+        instr.flags(ios_base::fmtflags{});
         const char* iter = f.get(sep_str, sep_str + len + 1, instr, err, v);
         assert(iter == sep_str + len);
         assert(err == instr.goodbit);
