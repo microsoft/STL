@@ -7,6 +7,8 @@
 // MAJOR LIMITATIONS apply to what can be included here!
 // Before editing this file, read: /docs/import_library.md
 
+#undef _ENFORCE_ONLY_CORE_HEADERS // TRANSITION, <xfacet> should be a core header
+
 #include <crtdbg.h>
 #include <internal_shared.h>
 #include <xatomic.h>

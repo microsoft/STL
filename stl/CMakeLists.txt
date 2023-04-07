@@ -584,7 +584,7 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
 
     # import library 'statics'
     add_library(msvcp${D_SUFFIX}_implib_objects OBJECT ${IMPLIB_SOURCES})
-    target_compile_definitions(msvcp${D_SUFFIX}_implib_objects PRIVATE _DLL)
+    target_compile_definitions(msvcp${D_SUFFIX}_implib_objects PRIVATE _DLL _ENFORCE_ONLY_CORE_HEADERS)
     target_compile_options(msvcp${D_SUFFIX}_implib_objects PRIVATE /EHsc) # No /GL!
     target_stl_compile_options(msvcp${D_SUFFIX}_implib_objects ${REL_OR_DBG})
 
