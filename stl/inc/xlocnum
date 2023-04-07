@@ -323,7 +323,7 @@ int _Parse_fp_with_ios_base(char* const _Ac, _InIt& _First, _InIt& _Last, ios_ba
     if (_Grouping.empty()) {
         for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
              _Seendigit = true, (void) ++_First) {
-            if (_Max_sig_dig <= _Significant) {
+            if (_Significant >= _Max_sig_dig) {
                 ++_Power_of_rep_base; // just scale by 10 or 16
                 if (_Idx > 0) {
                     _Sticky = true;
