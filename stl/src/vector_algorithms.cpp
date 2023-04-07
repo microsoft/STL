@@ -61,6 +61,19 @@ namespace {
     void _Advance_bytes(const void*& _Target, ptrdiff_t _Offset) noexcept {
         _Target = static_cast<const unsigned char*>(_Target) + _Offset;
     }
+
+    // TRANSITION, DevCom-10331414
+    struct [[nodiscard]] _Zeroupper_on_exit {
+        _Zeroupper_on_exit() = default;
+
+        _Zeroupper_on_exit(const _Zeroupper_on_exit&)            = delete;
+        _Zeroupper_on_exit& operator=(const _Zeroupper_on_exit&) = delete;
+
+        ~_Zeroupper_on_exit() {
+            _mm256_zeroupper();
+        }
+    };
+
 } // unnamed namespace
 
 extern "C" {
@@ -84,6 +97,8 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
             _Advance_bytes(_First1, 32);
             _Advance_bytes(_First2, 32);
         } while (_First1 != _Stop_at);
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
     constexpr size_t _Mask_16 = ~((static_cast<size_t>(1) << 4) - 1);
@@ -169,6 +184,8 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
             _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
     if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
@@ -209,6 +226,8 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
             _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
     if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
@@ -245,6 +264,8 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
             _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
     if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
@@ -279,6 +300,8 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
             _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
     if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
@@ -315,6 +338,8 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
             _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
             _Advance_bytes(_Dest, 32);
         } while (_Dest != _Stop_at);
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
     if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
@@ -350,6 +375,8 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
             _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
             _Advance_bytes(_Dest, 32);
         } while (_Dest != _Stop_at);
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
     if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
@@ -382,6 +409,8 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
             _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
             _Advance_bytes(_Dest, 32);
         } while (_Dest != _Stop_at);
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
     if (_Byte_length(_First, _Last) >= 16 && _Use_sse2()) {
@@ -412,6 +441,8 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
             _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
             _Advance_bytes(_Dest, 32);
         } while (_Dest != _Stop_at);
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
     if (_Byte_length(_First, _Last) >= 16 && _Use_sse2()) {
@@ -1197,6 +1228,8 @@ namespace {
     template <class _Traits, class _Ty>
     const void* __stdcall __std_find_trivial_unsized(const void* _First, const _Ty _Val) noexcept {
         if (_Use_avx2()) {
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
             // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
             // From start partial piece we mask out matches that don't belong to the range.
             // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
@@ -1279,6 +1312,8 @@ namespace {
 
         const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
         if (_Avx_size != 0 && _Use_avx2()) {
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
             const void* _Stop_at     = _First;
             _Advance_bytes(_Stop_at, _Avx_size);
@@ -1338,6 +1373,8 @@ namespace {
                 _Advance_bytes(_First, 32);
             } while (_First != _Stop_at);
             _Size_bytes &= 0x1F;
+
+            _mm256_zeroupper(); // TRANSITION, DevCom-10331414
         }
 
         const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
