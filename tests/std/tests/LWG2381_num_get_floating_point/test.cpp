@@ -296,7 +296,7 @@ void test_gh3375_gh3376() {
             Flt x = 0.0;
 
             stream >> x;
-            assert(bool(stream));
+            assert(static_cast<bool>(stream));
             assert((ostringstream{} << hexfloat << x).str() == "0x1.0000020000000p+0");
         }
         {
@@ -304,7 +304,7 @@ void test_gh3375_gh3376() {
             Flt x = 0.0;
 
             stream >> x;
-            assert(bool(stream));
+            assert(static_cast<bool>(stream));
             assert((ostringstream{} << hexfloat << x).str() == "-0x1.0000020000000p+0");
         }
     } else {
@@ -313,7 +313,7 @@ void test_gh3375_gh3376() {
             Flt x = 0.0;
 
             stream >> x;
-            assert(bool(stream));
+            assert(static_cast<bool>(stream));
             assert((ostringstream{} << hexfloat << x).str() == "0x1.0000000000001p+0");
         }
         {
@@ -321,7 +321,7 @@ void test_gh3375_gh3376() {
             Flt x = 0.0;
 
             stream >> x;
-            assert(bool(stream));
+            assert(static_cast<bool>(stream));
             assert((ostringstream{} << hexfloat << x).str() == "-0x1.0000000000001p+0");
         }
     }
@@ -332,7 +332,7 @@ void test_gh3375_gh3376() {
         Flt x = 0.0;
 
         stream >> x;
-        assert(bool(stream));
+        assert(static_cast<bool>(stream));
         assert((ostringstream{} << x).str() == "0.1");
     }
     {
@@ -340,7 +340,7 @@ void test_gh3375_gh3376() {
         Flt x = 0.0;
 
         stream >> x;
-        assert(bool(stream));
+        assert(static_cast<bool>(stream));
         assert((ostringstream{} << x).str() == "-0.1");
     }
 
@@ -350,7 +350,7 @@ void test_gh3375_gh3376() {
         Flt x = 0.0;
 
         stream >> x;
-        assert(bool(stream));
+        assert(static_cast<bool>(stream));
         assert((ostringstream{} << x).str() == "9");
     }
     {
@@ -358,7 +358,7 @@ void test_gh3375_gh3376() {
         Flt x = 0.0;
 
         stream >> x;
-        assert(bool(stream));
+        assert(static_cast<bool>(stream));
         assert((ostringstream{} << x).str() == "-9");
     }
 
@@ -368,7 +368,7 @@ void test_gh3375_gh3376() {
         Flt x = 0.0;
 
         stream >> x;
-        assert(bool(stream));
+        assert(static_cast<bool>(stream));
         assert((ostringstream{} << x).str() == "1");
     }
     {
@@ -376,7 +376,7 @@ void test_gh3375_gh3376() {
         Flt x = 0.0;
 
         stream >> x;
-        assert(bool(stream));
+        assert(static_cast<bool>(stream));
         assert((ostringstream{} << x).str() == "-1");
     }
     {
@@ -384,7 +384,7 @@ void test_gh3375_gh3376() {
         Flt x = 0.0;
 
         stream >> x;
-        assert(bool(stream));
+        assert(static_cast<bool>(stream));
         assert((ostringstream{} << x).str() == "10");
     }
     {
@@ -392,7 +392,7 @@ void test_gh3375_gh3376() {
         Flt x = 0.0;
 
         stream >> x;
-        assert(bool(stream));
+        assert(static_cast<bool>(stream));
         assert((ostringstream{} << x).str() == "-10");
     }
 
@@ -402,7 +402,7 @@ void test_gh3375_gh3376() {
         Flt x = 0.0;
 
         stream >> x;
-        assert(bool(stream));
+        assert(static_cast<bool>(stream));
         assert((ostringstream{} << x).str() == "1e+38");
     }
     {
@@ -410,7 +410,7 @@ void test_gh3375_gh3376() {
         Flt x = 0.0;
 
         stream >> x;
-        assert(bool(stream));
+        assert(static_cast<bool>(stream));
         assert((ostringstream{} << x).str() == "-1e+38");
     }
     {
@@ -422,7 +422,7 @@ void test_gh3375_gh3376() {
             assert(!stream);
             assert(x == HUGE_VALF);
         } else {
-            assert(bool(stream));
+            assert(static_cast<bool>(stream));
             assert((ostringstream{} << x).str() == "1e+308");
         }
     }
@@ -435,7 +435,7 @@ void test_gh3375_gh3376() {
             assert(!stream);
             assert(x == -HUGE_VALF);
         } else {
-            assert(bool(stream));
+            assert(static_cast<bool>(stream));
             assert((ostringstream{} << x).str() == "-1e+308");
         }
     }
@@ -462,7 +462,7 @@ void test_gh3378() {
 
         Flt x = 0.0;
         stream >> x;
-        assert(bool(stream));
+        assert(static_cast<bool>(stream));
         assert((move(os) << x).str() == "2.2250738585072019e-308");
     }
     {
@@ -483,7 +483,7 @@ void test_gh3378() {
 
         Flt x = 0.0;
         stream >> x;
-        assert(bool(stream));
+        assert(static_cast<bool>(stream));
         assert((move(os) << x).str() == "-2.2250738585072019e-308");
     }
 }
