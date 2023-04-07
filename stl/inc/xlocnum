@@ -300,9 +300,9 @@ int _Parse_fp_with_ios_base(char* const _Ac, _InIt& _First, _InIt& _Last, ios_ba
             return 0;
         }
 
-        if (*_First == _Atoms[_Offset_lower_x] || *_First == _Atoms[_Offset_upper_x]) { // 0X or 0x
+        if (*_First == _Atoms[_Offset_lower_x] || *_First == _Atoms[_Offset_upper_x]) { // 0x or 0X
             _Parse_hex = true;
-            ++_First; // discard 0X or 0x for further parsing
+            ++_First; // discard 0x or 0X for further parsing
             *_Ptr++ = 'x';
         } else {
             ++_Initial_dec_leading_zero;
