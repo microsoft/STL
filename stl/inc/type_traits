@@ -1626,6 +1626,8 @@ _NODISCARD _Ty _Fake_copy_init(_Ty) noexcept;
 #pragma clang diagnostic pop
 #endif // __clang__
 
+#pragma warning(pop)
+
 _EXPORT_STD template <class _Ty>
 class reference_wrapper;
 
@@ -1798,8 +1800,6 @@ inline constexpr bool is_nothrow_convertible_v = _Is_nothrow_convertible_v<_From
 _EXPORT_STD template <class _From, class _To>
 using is_nothrow_convertible = _Is_nothrow_convertible<_From, _To>;
 #endif // _HAS_CXX20
-
-#pragma warning(pop)
 
 template <class _From, class _To, class = void>
 struct _Invoke_convertible : false_type {};
