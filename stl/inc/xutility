@@ -186,14 +186,6 @@ _Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
 
 _STD_BEGIN
 
-template <class _To, class _From,
-    enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
-                    is_trivially_copyable<_From>>,
-        int> = 0>
-_NODISCARD constexpr _To _Bit_cast(const _From& _Val) noexcept {
-    return __builtin_bit_cast(_To, _Val);
-}
-
 template <class _Ty>
 struct _Get_first_parameter;
 

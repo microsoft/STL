@@ -12,6 +12,7 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <mdspan> are available only with C++23 or later.");
 #else // ^^^ not supported / supported language mode vvv
 #include <array>
+#include <limits>
 #include <span>
 #include <type_traits>
 

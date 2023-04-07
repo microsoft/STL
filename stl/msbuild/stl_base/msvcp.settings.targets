@@ -51,8 +51,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <LinkAdditionalOptions Condition="$(DebugBuild) == 'true'">-opt:ref,noicf $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions>-nodefaultlib:libcpmt$(BuildSuffix).lib $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions>-nodefaultlib:$(LibOutputFile) $(LinkAdditionalOptions)</LinkAdditionalOptions>
-        <LinkingWithMinCore Condition="'$(MsvcpFlavor)' == 'app' or '$(MsvcpFlavor)' == 'onecore'">true</LinkingWithMinCore>
-        <LinkAdditionalOptions Condition="'$(LinkingWithMinCore)' != 'true'">ole32.lib $(LinkAdditionalOptions)</LinkAdditionalOptions>
 
         <LinkGenerateMapFile>true</LinkGenerateMapFile>
         <LinkRelease>true</LinkRelease>

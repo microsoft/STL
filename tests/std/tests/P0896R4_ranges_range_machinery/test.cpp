@@ -121,6 +121,25 @@ STATIC_ASSERT(test_cpo(ranges::views::take_while));
 STATIC_ASSERT(test_cpo(ranges::views::transform));
 STATIC_ASSERT(test_cpo(ranges::views::values));
 
+#if _HAS_CXX23
+STATIC_ASSERT(test_cpo(ranges::views::adjacent<3>));
+STATIC_ASSERT(test_cpo(ranges::views::adjacent_transform<3>));
+STATIC_ASSERT(test_cpo(ranges::views::as_const));
+STATIC_ASSERT(test_cpo(ranges::views::as_rvalue));
+STATIC_ASSERT(test_cpo(ranges::views::cartesian_product));
+STATIC_ASSERT(test_cpo(ranges::views::chunk));
+STATIC_ASSERT(test_cpo(ranges::views::chunk_by));
+STATIC_ASSERT(test_cpo(ranges::views::enumerate));
+STATIC_ASSERT(test_cpo(ranges::views::join_with));
+STATIC_ASSERT(test_cpo(ranges::views::pairwise));
+STATIC_ASSERT(test_cpo(ranges::views::pairwise_transform));
+STATIC_ASSERT(test_cpo(ranges::views::repeat));
+STATIC_ASSERT(test_cpo(ranges::views::slide));
+STATIC_ASSERT(test_cpo(ranges::views::stride));
+STATIC_ASSERT(test_cpo(ranges::views::zip));
+STATIC_ASSERT(test_cpo(ranges::views::zip_transform));
+#endif // _HAS_CXX23
+
 void test_cpo_ambiguity() {
     using namespace std::ranges;
 

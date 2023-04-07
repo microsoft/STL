@@ -19,6 +19,8 @@
 #include <ranges>
 #endif
 
+#include "test_min_max_element_support.hpp"
+
 using namespace std;
 
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
@@ -119,103 +121,6 @@ void test_find(mt19937_64& gen) {
         input.push_back(static_cast<T>(dis(gen)));
         test_case_find(input, static_cast<T>(dis(gen)));
     }
-}
-
-template <class FwdIt>
-FwdIt last_known_good_min_element(FwdIt first, FwdIt last) {
-    FwdIt result = first;
-
-    for (; first != last; ++first) {
-        if (*first < *result) {
-            result = first;
-        }
-    }
-
-    return result;
-}
-
-template <class FwdIt>
-FwdIt last_known_good_max_element(FwdIt first, FwdIt last) {
-    FwdIt result = first;
-
-    for (; first != last; ++first) {
-        if (*result < *first) {
-            result = first;
-        }
-    }
-
-    return result;
-}
-
-template <class FwdIt>
-pair<FwdIt, FwdIt> last_known_good_minmax_element(FwdIt first, FwdIt last) {
-    // find smallest and largest elements
-    pair<FwdIt, FwdIt> found(first, first);
-
-    if (first != last) {
-        while (++first != last) { // process one or two elements
-            FwdIt next = first;
-            if (++next == last) { // process last element
-                if (*first < *found.first) {
-                    found.first = first;
-                } else if (!(*first < *found.second)) {
-                    found.second = first;
-                }
-            } else { // process next two elements
-                if (*next < *first) { // test next for new smallest
-                    if (*next < *found.first) {
-                        found.first = next;
-                    }
-
-                    if (!(*first < *found.second)) {
-                        found.second = first;
-                    }
-                } else { // test first for new smallest
-                    if (*first < *found.first) {
-                        found.first = first;
-                    }
-
-                    if (!(*next < *found.second)) {
-                        found.second = next;
-                    }
-                }
-                first = next;
-            }
-        }
-    }
-
-    return found;
-}
-
-template <class T>
-void test_case_min_max_element(const vector<T>& input) {
-    auto expected_min    = last_known_good_min_element(input.begin(), input.end());
-    auto expected_max    = last_known_good_max_element(input.begin(), input.end());
-    auto expected_minmax = last_known_good_minmax_element(input.begin(), input.end());
-    auto actual_min      = min_element(input.begin(), input.end());
-    auto actual_max      = max_element(input.begin(), input.end());
-    auto actual_minmax   = minmax_element(input.begin(), input.end());
-    assert(expected_min == actual_min);
-    assert(expected_max == actual_max);
-    assert(expected_minmax == actual_minmax);
-#ifdef __cpp_lib_concepts
-    using ranges::views::take;
-
-    auto actual_min_range          = ranges::min_element(input);
-    auto actual_max_range          = ranges::max_element(input);
-    auto actual_minmax_range       = ranges::minmax_element(input);
-    auto actual_min_sized_range    = ranges::min_element(take(input, static_cast<ptrdiff_t>(input.size())));
-    auto actual_max_sized_range    = ranges::max_element(take(input, static_cast<ptrdiff_t>(input.size())));
-    auto actual_minmax_sized_range = ranges::minmax_element(take(input, static_cast<ptrdiff_t>(input.size())));
-    assert(expected_min == actual_min_range);
-    assert(expected_max == actual_max_range);
-    assert(expected_minmax.first == actual_minmax_range.min);
-    assert(expected_minmax.second == actual_minmax_range.max);
-    assert(expected_min == actual_min_sized_range);
-    assert(expected_max == actual_max_sized_range);
-    assert(expected_minmax.first == actual_minmax_sized_range.min);
-    assert(expected_minmax.second == actual_minmax_sized_range.max);
-#endif // __cpp_lib_concepts
 }
 
 template <class T>
@@ -504,12 +409,16 @@ int main() {
 #if defined(_M_IX86) || defined(_M_X64)
     disable_instructions(__ISA_AVAILABLE_AVX2);
     test_vector_algorithms(gen);
+    test_various_containers();
+
     disable_instructions(__ISA_AVAILABLE_SSE42);
     test_vector_algorithms(gen);
+    test_various_containers();
 #endif // defined(_M_IX86) || defined(_M_X64)
 #if defined(_M_IX86)
     disable_instructions(__ISA_AVAILABLE_SSE2);
     test_vector_algorithms(gen);
+    test_various_containers();
 #endif // defined(_M_IX86)
 #endif // _M_CEE_PURE
 }
