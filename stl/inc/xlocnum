@@ -311,7 +311,6 @@ int _Parse_fp_with_ios_base(char* const _Ac, _InIt& _First, _InIt& _Last, ios_ba
 
     const int _Max_sig_dig = (*_Phexexp == _ENABLE_V2_BEHAVIOR ? _MAX_SIG_DIG_V2 : _MAX_SIG_DIG_V1);
 
-    size_t _Idx;
     bool _Sticky           = false;
     bool _Seendigit        = false; // seen a digit in input
     bool _Bad              = false;
@@ -321,7 +320,7 @@ int _Parse_fp_with_ios_base(char* const _Ac, _InIt& _First, _InIt& _Last, ios_ba
     const size_t _Offset_digit_end = _Parse_hex ? _Offset_hex_digit_end : _Offset_dec_digit_end;
     const string _Grouping         = _Punct_fac.grouping();
     if (_Grouping.empty()) {
-        for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
+        for (size_t _Idx; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
              _Seendigit = true, (void) ++_First) {
             if (_Significant >= _Max_sig_dig) {
                 ++_Power_of_rep_base; // just scale by 10 or 16
@@ -339,7 +338,8 @@ int _Parse_fp_with_ios_base(char* const _Ac, _InIt& _First, _InIt& _Last, ios_ba
         size_t _Group_index = 0;
 
         for (; _First != _Last; ++_First) {
-            if ((_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end) { // got a digit, add to group size
+            const size_t _Idx = _STD _Find_elem(_Atoms, *_First);
+            if (_Idx < _Offset_digit_end) { // got a digit, add to group size
                 _Seendigit = true;
                 if (_Significant >= _Max_sig_dig) {
                     ++_Power_of_rep_base; // just scale by 10 or 16
@@ -410,7 +410,7 @@ int _Parse_fp_with_ios_base(char* const _Ac, _InIt& _First, _InIt& _Last, ios_ba
         }
     }
 
-    for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
+    for (size_t _Idx; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
          _Seendigit = true, (void) ++_First) {
         if (_Significant < _Max_sig_dig) { // save a significant fraction digit
             *_Ptr++ = _Src[_Idx];
@@ -454,7 +454,7 @@ int _Parse_fp_with_ios_base(char* const _Ac, _InIt& _First, _InIt& _Last, ios_ba
             *_Ptr++ = '0'; // put one back
         }
 
-        for (; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
+        for (size_t _Idx; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
              _Seendigit = true, (void) ++_First) {
             if (_Significant < _MAX_EXP_DIG) { // save a significant exponent digit
                 *_Ptr++ = _Src[_Idx];
