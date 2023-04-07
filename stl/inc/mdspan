@@ -267,16 +267,12 @@ public:
     }
 };
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, REQUIRES REPORT (ICE)
+template <class>
+inline constexpr size_t _Repeat_dynamic_extent = dynamic_extent;
+
 template <class... _Integrals>
     requires (is_convertible_v<_Integrals, size_t> && ...)
-extents(_Integrals... _Exts) -> extents<size_t, ((void) _Exts, dynamic_extent)...>;
-#else // ^^^ no workaround / workaround vvv
-template <class... _Integrals>
-    requires (is_convertible_v<_Integrals, size_t> && ...)
-extents(_Integrals...)
-    -> extents<size_t, conditional_t<true, integral_constant<size_t, dynamic_extent>, _Integrals>::value...>;
-#endif // ^^^ workaround ^^^
+extents(_Integrals...) -> extents<size_t, _Repeat_dynamic_extent<_Integrals>...>;
 
 template <class _IndexType, class _Indices>
 struct _Dextents_impl;
