@@ -590,7 +590,7 @@ protected:
         } else { // get long value
             char _Ac[_MAX_INT_DIG];
             const int _Base = _Getifld(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
-            if (_Ac[0] == '\0') { // Handle N4928 [facet.num.get.virtuals]/3.3.6:
+            if (_Ac[0] == '\0') { // Handle N4944 [facet.num.get.virtuals]/3.9:
                                   //  "zero, if the conversion function does not convert the entire field."
                                   // We should still do numeric conversion with bad digit separators, instead of
                                   // setting 0, but we can't distinguish that from _Getifld's interface, and _Getifld's
@@ -1004,7 +1004,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id num_get<_Elem, _InIt>::id;
 
 template <class _Ty>
 int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fmtflags _Float_flags) {
-    // return the effective precision determined by N4928 [facet.num.put.virtuals]/2.1 and printf's rules
+    // return the effective precision determined by N4944 [facet.num.put.virtuals]/2.1 and printf's rules
     const bool _Is_hex = _Float_flags == (ios_base::fixed | ios_base::scientific);
     if (_Is_hex) {
         // return the number of hexits needed (after the radix point) to represent the floating-point value exactly
