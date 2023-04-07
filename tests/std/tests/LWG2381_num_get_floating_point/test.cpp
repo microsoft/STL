@@ -28,7 +28,7 @@ public:
     mid_zero_numpunct() : numpunct<char>() {}
 
 protected:
-    virtual string do_grouping() const {
+    string do_grouping() const override {
         return "\1\0\2"s;
     }
 };
@@ -38,13 +38,13 @@ public:
     my_numpunct() : numpunct<char>() {}
 
 protected:
-    virtual char_type do_decimal_point() const {
+    char_type do_decimal_point() const override {
         return ';';
     }
-    virtual char_type do_thousands_sep() const {
+    char_type do_thousands_sep() const override {
         return '_';
     }
-    virtual string do_grouping() const {
+    string do_grouping() const override {
         return string("\1\2\3");
     }
 };
