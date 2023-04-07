@@ -9849,7 +9849,8 @@ namespace ranges {
 
             template <size_t... _Indices>
             _NODISCARD constexpr auto _End_tuple(index_sequence<_Indices...>) const {
-                return tuple{_RANGES end(_STD get<0>(_Parent->_Bases)),
+                return tuple<sentinel_t<_Maybe_const<_Const, _First>>, iterator_t<_Maybe_const<_Const, _Rest>>...>{
+                    _RANGES end(_STD get<0>(_Parent->_Bases)),
                     _RANGES begin(_STD get<_Indices + 1>(_Parent->_Bases))...};
             }
 
@@ -10089,7 +10090,7 @@ namespace ranges {
             (make_index_sequence<sizeof...(_Rest)>{});
 
             const auto _Make_iter_tuple = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-                return tuple{_Begin_or_first_end<_Indices>(_Is_empty)...};
+                return tuple<iterator_t<_First>, iterator_t<_Rest>...>{_Begin_or_first_end<_Indices>(_Is_empty)...};
             };
             return _Iterator<false>{*this, _Make_iter_tuple(make_index_sequence<1 + sizeof...(_Rest)>{})};
         }
@@ -10103,7 +10104,8 @@ namespace ranges {
             (make_index_sequence<sizeof...(_Rest)>{});
 
             const auto _Make_iter_tuple = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-                return tuple{_Begin_or_first_end<_Indices>(_Is_empty)...};
+                return tuple<iterator_t<const _First>, iterator_t<const _Rest>...>{
+                    _Begin_or_first_end<_Indices>(_Is_empty)...};
             };
             return _Iterator<true>{*this, _Make_iter_tuple(make_index_sequence<1 + sizeof...(_Rest)>{})};
         }

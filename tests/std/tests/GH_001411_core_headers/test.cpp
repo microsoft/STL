@@ -15,6 +15,7 @@
 #include <xerrc.h>
 
 #if _HAS_CXX17
+#include <xcharconv_tables.h>
 #include <xfilesystem_abi.h>
 #endif // _HAS_CXX17
 

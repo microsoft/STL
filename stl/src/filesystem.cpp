@@ -4,11 +4,6 @@
 // filesystem.cpp -- C++17 <filesystem> implementation
 // (see filesys.cpp for <experimental/filesystem> implementation)
 
-// This must be as small as possible, because its contents are
-// injected into the msvcprt.lib and msvcprtd.lib import libraries.
-// Do not include or define anything else here.
-// In particular, basic_string must not be included here.
-
 #include <clocale>
 #include <corecrt_terminate.h>
 #include <cstdlib>
