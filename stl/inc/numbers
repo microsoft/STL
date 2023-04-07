@@ -94,7 +94,7 @@ namespace numbers {
         using type = _Ty;
     };
 
-    template<class _Ty>
+    template <class _Ty>
     using _Reject_primary_template_t = typename _Reject_primary_template<_Ty>::type;
 
     _EXPORT_STD template <class _Ty>
