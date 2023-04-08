@@ -46,7 +46,7 @@ template <modify_cv Modification, class T>
 using apply_modify_cv_t = typename apply_modify_cv<Modification, T>::type;
 
 template <modify_cv Modification>
-constexpr bool test_cv_floating_point() {
+constexpr void test_cv_floating_point() {
     using F = apply_modify_cv_t<Modification, float>;
     using D = apply_modify_cv_t<Modification, double>;
     using L = apply_modify_cv_t<Modification, long double>;
@@ -102,11 +102,9 @@ constexpr bool test_cv_floating_point() {
     assert(test_case(std::numbers::phi_v<F>, 0x1.9e377ap+0f));
     assert(test_case(std::numbers::phi_v<D>, 0x1.9e3779b97f4a8p+0));
     assert(test_case(std::numbers::phi_v<L>, 0x1.9e3779b97f4a8p+0L));
-
-    return true;
 }
 
-constexpr bool test_double() {
+constexpr void test_double() {
     assert(test_case(std::numbers::e, 0x1.5bf0a8b145769p+1));
     assert(test_case(std::numbers::log2e, 0x1.71547652b82fep+0));
     assert(test_case(std::numbers::log10e, 0x1.bcb7b1526e50ep-2));
@@ -120,8 +118,6 @@ constexpr bool test_double() {
     assert(test_case(std::numbers::inv_sqrt3, 0x1.279a74590331cp-1));
     assert(test_case(std::numbers::egamma, 0x1.2788cfc6fb619p-1));
     assert(test_case(std::numbers::phi, 0x1.9e3779b97f4a8p+0));
-
-    return true;
 }
 
 // N4944 [math.constants]/2: "a program may partially or explicitly specialize a mathematical constant
@@ -157,7 +153,7 @@ inline constexpr Meow std::numbers::egamma_v<Meow>{-120};
 template <>
 inline constexpr Meow std::numbers::phi_v<Meow>{-130};
 
-constexpr bool test_program_defined_specialization() {
+constexpr void test_program_defined_specialization() {
     assert(test_case(std::numbers::e_v<Meow>.val, -10));
     assert(test_case(std::numbers::log2e_v<Meow>.val, -20));
     assert(test_case(std::numbers::log10e_v<Meow>.val, -30));
@@ -171,20 +167,24 @@ constexpr bool test_program_defined_specialization() {
     assert(test_case(std::numbers::inv_sqrt3_v<Meow>.val, -110));
     assert(test_case(std::numbers::egamma_v<Meow>.val, -120));
     assert(test_case(std::numbers::phi_v<Meow>.val, -130));
+}
+
+constexpr bool test_all() {
+    test_cv_floating_point<modify_cv::type_identity>();
+    test_cv_floating_point<modify_cv::add_const>();
+
+    if (!std::is_constant_evaluated()) {
+        test_cv_floating_point<modify_cv::add_volatile>(); // constexpr-incompatible
+        test_cv_floating_point<modify_cv::add_cv>(); // constexpr-incompatible
+    }
+
+    test_double();
+    test_program_defined_specialization();
 
     return true;
 }
 
-STATIC_ASSERT(test_cv_floating_point<modify_cv::type_identity>());
-STATIC_ASSERT(test_cv_floating_point<modify_cv::add_const>());
-STATIC_ASSERT(test_double());
-STATIC_ASSERT(test_program_defined_specialization());
-
 int main() {
-    assert(test_cv_floating_point<modify_cv::type_identity>());
-    assert(test_cv_floating_point<modify_cv::add_const>());
-    assert(test_cv_floating_point<modify_cv::add_volatile>()); // constexpr-incompatible
-    assert(test_cv_floating_point<modify_cv::add_cv>()); // constexpr-incompatible
-    assert(test_double());
-    assert(test_program_defined_specialization());
+    assert(test_all());
+    STATIC_ASSERT(test_all());
 }
