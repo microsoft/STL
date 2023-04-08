@@ -4887,20 +4887,24 @@ struct _Is_character_or_bool : _Is_character<_Ty>::type {};
 template <>
 struct _Is_character_or_bool<bool> : true_type {};
 
-template <class _Ty>
-struct _Is_character_or_byte_or_bool : _Is_character_or_bool<_Ty>::type {};
+template <size_t>
+struct _Is_memset_eligible_size : false_type {};
 
-#ifdef __cpp_lib_byte
 template <>
-struct _Is_character_or_byte_or_bool<byte> : true_type {};
-#endif // __cpp_lib_byte
+struct _Is_memset_eligible_size<1> : true_type {};
+
+template <>
+struct _Is_memset_eligible_size<2> : true_type {};
+
+template <class _Ty>
+using _Is_memset_eligible_type = conjunction<is_trivially_assignable<_Ty&, _Ty>, _Is_memset_eligible_size<sizeof(_Ty)>>;
 
 // _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill.
 // Need to explicitly test for volatile because _Unwrap_enum_t discards qualifiers.
 template <class _FwdIt, class _Ty, bool = _Iterator_is_contiguous<_FwdIt>>
-_INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<is_scalar<_Ty>,
-    _Is_character_or_byte_or_bool<_Unwrap_enum_t<remove_reference_t<_Iter_ref_t<_FwdIt>>>>,
-    negation<is_volatile<remove_reference_t<_Iter_ref_t<_FwdIt>>>>, is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
+_INLINE_VAR constexpr bool _Fill_memset_is_safe =
+    conjunction_v<_Is_memset_eligible_type<_Unwrap_enum_t<remove_reference_t<_Iter_ref_t<_FwdIt>>>>,
+        negation<is_volatile<remove_reference_t<_Iter_ref_t<_FwdIt>>>>, is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
 
 template <class _FwdIt, class _Ty>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
@@ -4917,7 +4921,13 @@ template <class _CtgIt, class _Ty>
 void _Fill_memset(_CtgIt _Dest, const _Ty _Val, const size_t _Count) {
     // implicitly convert (a cast would suppress warnings); also handles _Iter_value_t<_CtgIt> being bool
     _Iter_value_t<_CtgIt> _Dest_val = _Val;
-    _CSTD memset(_To_address(_Dest), static_cast<unsigned char>(_Dest_val), _Count);
+    if constexpr (sizeof(_Dest_val) == 1) {
+        _CSTD memset(_To_address(_Dest), _Bit_cast<unsigned char>(_Dest_val), _Count);
+    } else if constexpr (sizeof(_Dest_val) == 2) {
+        _CSTD wmemset(reinterpret_cast<wchar_t*>(_To_address(_Dest)), _Bit_cast<unsigned short>(_Dest_val), _Count);
+    } else {
+        static_assert(_Always_false<_Ty>, "Unexpected size");
+    }
 }
 
 template <class _CtgIt>
