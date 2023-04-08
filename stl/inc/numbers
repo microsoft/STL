@@ -88,41 +88,41 @@ namespace numbers {
     inline constexpr _Floating phi_v<_Floating> = static_cast<_Floating>(1.618033988749895);
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     template <class _Ty>
-    struct _Reject_primary_template {
+    struct _Reject_invalid {
         static_assert(is_floating_point_v<_Ty>, "A program that instantiates a primary template of a mathematical "
                                                 "constant variable template is ill-formed. (N4944 [math.constants]/3)");
         using type = _Ty;
     };
 
     template <class _Ty>
-    using _Reject_primary_template_t = typename _Reject_primary_template<_Ty>::type;
+    using _Reject_invalid_t = typename _Reject_invalid<_Ty>::type;
 
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty e_v = static_cast<_Reject_primary_template_t<_Ty>>(2.718281828459045);
+    inline constexpr _Ty e_v = static_cast<_Reject_invalid_t<_Ty>>(2.718281828459045);
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty log2e_v = static_cast<_Reject_primary_template_t<_Ty>>(1.4426950408889634);
+    inline constexpr _Ty log2e_v = static_cast<_Reject_invalid_t<_Ty>>(1.4426950408889634);
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty log10e_v = static_cast<_Reject_primary_template_t<_Ty>>(0.4342944819032518);
+    inline constexpr _Ty log10e_v = static_cast<_Reject_invalid_t<_Ty>>(0.4342944819032518);
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty pi_v = static_cast<_Reject_primary_template_t<_Ty>>(3.141592653589793);
+    inline constexpr _Ty pi_v = static_cast<_Reject_invalid_t<_Ty>>(3.141592653589793);
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty inv_pi_v = static_cast<_Reject_primary_template_t<_Ty>>(0.3183098861837907);
+    inline constexpr _Ty inv_pi_v = static_cast<_Reject_invalid_t<_Ty>>(0.3183098861837907);
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty inv_sqrtpi_v = static_cast<_Reject_primary_template_t<_Ty>>(0.5641895835477563);
+    inline constexpr _Ty inv_sqrtpi_v = static_cast<_Reject_invalid_t<_Ty>>(0.5641895835477563);
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty ln2_v = static_cast<_Reject_primary_template_t<_Ty>>(0.6931471805599453);
+    inline constexpr _Ty ln2_v = static_cast<_Reject_invalid_t<_Ty>>(0.6931471805599453);
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty ln10_v = static_cast<_Reject_primary_template_t<_Ty>>(2.302585092994046);
+    inline constexpr _Ty ln10_v = static_cast<_Reject_invalid_t<_Ty>>(2.302585092994046);
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty sqrt2_v = static_cast<_Reject_primary_template_t<_Ty>>(1.4142135623730951);
+    inline constexpr _Ty sqrt2_v = static_cast<_Reject_invalid_t<_Ty>>(1.4142135623730951);
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty sqrt3_v = static_cast<_Reject_primary_template_t<_Ty>>(1.7320508075688772);
+    inline constexpr _Ty sqrt3_v = static_cast<_Reject_invalid_t<_Ty>>(1.7320508075688772);
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty inv_sqrt3_v = static_cast<_Reject_primary_template_t<_Ty>>(0.5773502691896257);
+    inline constexpr _Ty inv_sqrt3_v = static_cast<_Reject_invalid_t<_Ty>>(0.5773502691896257);
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty egamma_v = static_cast<_Reject_primary_template_t<_Ty>>(0.5772156649015329);
+    inline constexpr _Ty egamma_v = static_cast<_Reject_invalid_t<_Ty>>(0.5772156649015329);
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty phi_v = static_cast<_Reject_primary_template_t<_Ty>>(1.618033988749895);
+    inline constexpr _Ty phi_v = static_cast<_Reject_invalid_t<_Ty>>(1.618033988749895);
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     _EXPORT_STD inline constexpr double e          = e_v<double>;
