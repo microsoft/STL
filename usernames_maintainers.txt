@@ -10,4 +10,5 @@ cbezault
 MahmoudGSaleh
 mnatsuhara
 StephanTLavavej
+strega-nil
 strega-nil-ms
