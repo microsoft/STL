@@ -22,7 +22,7 @@ enum class modify_cv {
     add_cv,
 };
 
-template <modify_cv Modfication, class T>
+template <modify_cv Modification, class T>
 struct apply_modify_cv {
     using type = T;
 };
@@ -42,8 +42,8 @@ struct apply_modify_cv<modify_cv::add_cv, T> {
     using type = const volatile T;
 };
 
-template <modify_cv Modfication, class T>
-using apply_modify_cv_t = typename apply_modify_cv<Modfication, T>::type;
+template <modify_cv Modification, class T>
+using apply_modify_cv_t = typename apply_modify_cv<Modification, T>::type;
 
 template <modify_cv Modification>
 constexpr bool test_cv_floating_point() {
