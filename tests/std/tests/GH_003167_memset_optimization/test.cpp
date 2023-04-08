@@ -28,7 +28,7 @@ int main() {
     }
 
     // struct
-    struct tiny_point {
+    struct alignas(2) tiny_point {
         signed char x;
         signed char y;
     };
@@ -38,6 +38,22 @@ int main() {
     tiny_point pts[]{{1, 2}, {3, 4}, {5, 6}};
     fill(begin(pts), end(pts), tiny_point{7, 8}); // implicit conversion
     for (tiny_point pt : pts) {
+        assert(pt.x == 7);
+        assert(pt.y == 8);
+    }
+
+
+    // unaligned struct
+    struct tiny_point_unaligned {
+        signed char x;
+        signed char y;
+    };
+
+    static_assert(!_Fill_memset_is_safe<tiny_point_unaligned*, tiny_point_unaligned>, "shouldn't optimize");
+
+    tiny_point_unaligned pts_u[]{{1, 2}, {3, 4}, {5, 6}};
+    fill(begin(pts_u), end(pts_u), tiny_point_unaligned{7, 8}); // implicit conversion
+    for (tiny_point_unaligned pt : pts_u) {
         assert(pt.x == 7);
         assert(pt.y == 8);
     }
