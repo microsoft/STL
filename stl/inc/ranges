@@ -9254,7 +9254,7 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Inner_iterator<_Const>>) // strengthened
                 : _Parent(_STD addressof(_Parent_)), _Inner(_STD move(_Inner_)) {}
 
-            _NODISCARD static _CONSTEVAL auto _Get_iterator_category() noexcept {
+            _NODISCARD static consteval auto _Get_iterator_category() noexcept {
                 if constexpr (!is_reference_v<_Invoke_result_with_repeated_type<_Maybe_const<_Const, _Fn>&,
                                   range_reference_t<_Base>, _Nx>>) {
                     return input_iterator_tag{};
@@ -9274,7 +9274,7 @@ namespace ranges {
             }
 
             template <size_t... _Indices>
-            _NODISCARD static _CONSTEVAL bool _Is_indirection_nothrow(index_sequence<_Indices...>) noexcept {
+            _NODISCARD static consteval bool _Is_indirection_nothrow(index_sequence<_Indices...>) noexcept {
                 return noexcept(_STD invoke(_STD declval<_Maybe_const<_Const, _Fn>&>(),
                     *_STD get<_Indices>(_STD declval<const _Inner_iterator<_Const>&>()._Current)...));
             }
@@ -9712,7 +9712,7 @@ namespace ranges {
     inline constexpr auto _Compile_time_max_size<const owning_view<_Ty>> = _Compile_time_max_size<const _Ty>;
 
     template <range _Rng>
-    _NODISCARD _CONSTEVAL int _Cartesian_product_max_size_bit_width() noexcept {
+    _NODISCARD consteval int _Cartesian_product_max_size_bit_width() noexcept {
         if constexpr (sized_range<_Rng>) {
             if constexpr (requires(range_size_t<_Rng> _Val) { _STD bit_width(_Val); }) {
                 return _STD bit_width(_Compile_time_max_size<_Rng>);
@@ -9725,7 +9725,7 @@ namespace ranges {
     }
 
     template <class _First, class... _Rest>
-    _NODISCARD _CONSTEVAL auto _Cartesian_product_optimal_size_type() noexcept {
+    _NODISCARD consteval auto _Cartesian_product_optimal_size_type() noexcept {
         constexpr int _Optimal_size_type_bit_width =
             (_Cartesian_product_max_size_bit_width<_First>() + ... + _Cartesian_product_max_size_bit_width<_Rest>());
         if constexpr (_Optimal_size_type_bit_width <= 8) {
@@ -9876,7 +9876,7 @@ namespace ranges {
             }
 
             template <size_t... _Indices>
-            _NODISCARD static _CONSTEVAL bool _Is_iter_move_nothrow(index_sequence<_Indices...>) noexcept {
+            _NODISCARD static consteval bool _Is_iter_move_nothrow(index_sequence<_Indices...>) noexcept {
                 return conjunction_v<
                            is_nothrow_move_constructible<range_rvalue_reference_t<_Maybe_const<_Const, _First>>>,
                            is_nothrow_move_constructible<range_rvalue_reference_t<_Maybe_const<_Const, _Rest>>>...>
@@ -9885,7 +9885,7 @@ namespace ranges {
             }
 
             template <size_t... _Indices>
-            _NODISCARD static _CONSTEVAL bool _Is_iter_swap_nothrow(index_sequence<_Indices...>) noexcept {
+            _NODISCARD static consteval bool _Is_iter_swap_nothrow(index_sequence<_Indices...>) noexcept {
                 return (noexcept(_RANGES iter_swap(_STD get<_Indices>(_STD declval<const _Iterator&>()._Current),
                             _STD get<_Indices>(_STD declval<const _Iterator&>()._Current)))
                         && ...);
