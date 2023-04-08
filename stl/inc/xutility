@@ -4888,17 +4888,17 @@ struct _Is_character_or_bool : _Is_character<_Ty>::type {};
 template <>
 struct _Is_character_or_bool<bool> : true_type {};
 
-template <size_t>
+template <size_t, size_t>
 struct _Is_memset_eligible_size : false_type {};
 
 template <>
-struct _Is_memset_eligible_size<1> : true_type {};
+struct _Is_memset_eligible_size<1, 1> : true_type {};
 
 template <>
-struct _Is_memset_eligible_size<2> : true_type {};
+struct _Is_memset_eligible_size<2, 2> : true_type {};
 
 template <class _Ty>
-using _Is_memset_eligible_type = conjunction<is_trivially_assignable<_Ty&, _Ty>, _Is_memset_eligible_size<sizeof(_Ty)>>;
+using _Is_memset_eligible_type = conjunction<is_trivially_assignable<_Ty&, _Ty>, _Is_memset_eligible_size<sizeof(_Ty), alignof(_Ty)>>;
 
 // _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill.
 // Need to explicitly test for volatile because _Unwrap_enum_t discards qualifiers.
