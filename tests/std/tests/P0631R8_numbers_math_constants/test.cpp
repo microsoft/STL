@@ -107,19 +107,19 @@ constexpr bool test_cv_floating_point() {
 }
 
 constexpr bool test_double() {
-    assert(test_case(std::numbers::e /**/, 0x1.5bf0a8b145769p+1));
-    assert(test_case(std::numbers::log2e /**/, 0x1.71547652b82fep+0));
-    assert(test_case(std::numbers::log10e /**/, 0x1.bcb7b1526e50ep-2));
-    assert(test_case(std::numbers::pi /**/, 0x1.921fb54442d18p+1));
-    assert(test_case(std::numbers::inv_pi /**/, 0x1.45f306dc9c883p-2));
-    assert(test_case(std::numbers::inv_sqrtpi /**/, 0x1.20dd750429b6dp-1));
-    assert(test_case(std::numbers::ln2 /**/, 0x1.62e42fefa39efp-1));
-    assert(test_case(std::numbers::ln10 /**/, 0x1.26bb1bbb55516p+1));
-    assert(test_case(std::numbers::sqrt2 /**/, 0x1.6a09e667f3bcdp+0));
-    assert(test_case(std::numbers::sqrt3 /**/, 0x1.bb67ae8584caap+0));
-    assert(test_case(std::numbers::inv_sqrt3 /**/, 0x1.279a74590331cp-1));
-    assert(test_case(std::numbers::egamma /**/, 0x1.2788cfc6fb619p-1));
-    assert(test_case(std::numbers::phi /**/, 0x1.9e3779b97f4a8p+0));
+    assert(test_case(std::numbers::e, 0x1.5bf0a8b145769p+1));
+    assert(test_case(std::numbers::log2e, 0x1.71547652b82fep+0));
+    assert(test_case(std::numbers::log10e, 0x1.bcb7b1526e50ep-2));
+    assert(test_case(std::numbers::pi, 0x1.921fb54442d18p+1));
+    assert(test_case(std::numbers::inv_pi, 0x1.45f306dc9c883p-2));
+    assert(test_case(std::numbers::inv_sqrtpi, 0x1.20dd750429b6dp-1));
+    assert(test_case(std::numbers::ln2, 0x1.62e42fefa39efp-1));
+    assert(test_case(std::numbers::ln10, 0x1.26bb1bbb55516p+1));
+    assert(test_case(std::numbers::sqrt2, 0x1.6a09e667f3bcdp+0));
+    assert(test_case(std::numbers::sqrt3, 0x1.bb67ae8584caap+0));
+    assert(test_case(std::numbers::inv_sqrt3, 0x1.279a74590331cp-1));
+    assert(test_case(std::numbers::egamma, 0x1.2788cfc6fb619p-1));
+    assert(test_case(std::numbers::phi, 0x1.9e3779b97f4a8p+0));
 
     return true;
 }
