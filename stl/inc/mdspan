@@ -43,7 +43,7 @@ public:
         "IndexType (N4944 [mdspan.extents.overview]/1.2).");
 
 private:
-    _NODISCARD static _CONSTEVAL auto _Make_dynamic_indices() noexcept {
+    _NODISCARD static consteval auto _Make_dynamic_indices() noexcept {
 #pragma warning(push) // TRANSITION, "/analyze:only" BUG?
 #pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
         array<rank_type, rank() + 1> _Result{};
@@ -66,7 +66,7 @@ private:
         return _Dynamic_indices[_Idx];
     }
 
-    _NODISCARD static _CONSTEVAL auto _Make_dynamic_indices_inv() noexcept {
+    _NODISCARD static consteval auto _Make_dynamic_indices_inv() noexcept {
         array<rank_type, rank()> _Result{};
         for (rank_type _Idx = 0; _Idx < rank(); ++_Idx) {
             for (rank_type _Idx_inv = 0; _Idx_inv < rank(); ++_Idx_inv) {
@@ -259,7 +259,7 @@ public:
         return _Result;
     }
 
-    _NODISCARD static _CONSTEVAL bool _Is_index_space_size_representable() {
+    _NODISCARD static consteval bool _Is_index_space_size_representable() {
         if constexpr (rank_dynamic() == 0 && rank() > 0) {
             return _STD in_range<index_type>((_Extents * ...));
         } else {
