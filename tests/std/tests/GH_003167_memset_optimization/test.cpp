@@ -6,8 +6,7 @@
 
 using namespace std;
 
-int main()
-{
+int main() {
     // bool
     static_assert(_Fill_memset_is_safe<bool*, bool>, "should optimize");
 
@@ -33,7 +32,7 @@ int main()
         signed char x;
         signed char y;
     };
-    
+
     static_assert(_Fill_memset_is_safe<tiny_point*, tiny_point>, "should optimize");
 
     tiny_point pts[]{{1, 2}, {3, 4}, {5, 6}};
