@@ -175,7 +175,7 @@ struct negate<void> {
 
     using is_transparent = int;
 };
-// void specializations of less is defined in <type_traits>
+// void specialization of less is defined in <type_traits>
 // void specializations of equal_to, not_equal_to, greater, greater_equal, and less_equal are defined in <xutility>
 
 template <>
