@@ -63,6 +63,46 @@ void non_literal_parts(R& r, E& expected) {
             }
         }
     }
+
+#if _HAS_CXX23
+    using ranges::const_iterator_t;
+
+    const same_as<const_iterator_t<R>> auto cfirst = r.cbegin();
+    if (!is_empty) {
+        assert(*cfirst == *begin(expected));
+    }
+
+    if constexpr (copyable<V>) {
+        auto r2                                         = r;
+        const same_as<const_iterator_t<R>> auto cfirst2 = r2.cbegin();
+        if (!is_empty) {
+            assert(*cfirst2 == *cfirst);
+        }
+    }
+
+    if constexpr (CanCBegin<const R&>) {
+        const same_as<const_iterator_t<const R>> auto cfirst3 = as_const(r).cbegin();
+        if (!is_empty) {
+            assert(*cfirst3 == *cfirst);
+        }
+    }
+
+    const same_as<const_iterator_t<R>> auto clast = r.cend();
+    if constexpr (bidirectional_range<R>) {
+        if (!is_empty) {
+            assert(*prev(clast) == *prev(end(expected)));
+        }
+    }
+
+    if constexpr (CanCEnd<const R&>) {
+        const same_as<const_iterator_t<const R>> auto clast2 = as_const(r).cend();
+        if constexpr (bidirectional_range<const R>) {
+            if (!is_empty) {
+                assert(*prev(clast2) == *prev(end(expected)));
+            }
+        }
+    }
+#endif // _HAS_CXX23
 }
 
 template <class Rng, class Expected>

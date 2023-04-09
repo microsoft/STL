@@ -2525,6 +2525,14 @@ struct _Floating_type_traits<long double> : _Floating_type_traits<double> {};
 
 // ^^^^^^^^^^ DERIVED FROM corecrt_internal_fltintrn.h ^^^^^^^^^^
 
+template <class _To, class _From,
+    enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
+                    is_trivially_copyable<_From>>,
+        int> = 0>
+_NODISCARD constexpr _To _Bit_cast(const _From& _Val) noexcept {
+    return __builtin_bit_cast(_To, _Val);
+}
+
 #if _HAS_TR1_NAMESPACE
 _STL_DISABLE_DEPRECATED_WARNING
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {

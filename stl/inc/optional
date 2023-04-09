@@ -18,8 +18,8 @@ _EMIT_STL_WARNING(STL4038, "The contents of <optional> are available only with C
 #include <initializer_list>
 #include <type_traits>
 #include <utility>
-#include <xmemory>
 #include <xsmf_control.h>
+#include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -104,7 +104,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
 
     _CONSTEXPR20 ~_Optional_destruct_base() noexcept {
         if (_Has_value) {
-            _Destroy_in_place(_Value);
+            _Value.~_Ty();
         }
     }
 
@@ -129,7 +129,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
 
     _CONSTEXPR20 void reset() noexcept {
         if (_Has_value) {
-            _Destroy_in_place(_Value);
+            _Value.~_Ty();
             _Has_value = false;
         }
     }
