@@ -301,7 +301,6 @@ _STL_RESTORE_DEPRECATED_WARNING
 #endif // _HAS_DEPRECATED_NEGATORS
 
 #if _HAS_AUTO_PTR_ETC
-_STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Arg, class _Result>
 struct unary_function { // base class for unary functions
     using argument_type = _Arg;
@@ -315,6 +314,7 @@ struct binary_function { // base class for binary functions
     using result_type          = _Result;
 };
 
+_STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Fn>
 class binder1st : public unary_function<typename _Fn::second_argument_type,
                       typename _Fn::result_type> { // functor adapter _Func(stored, right)
