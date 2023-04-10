@@ -11,7 +11,7 @@ class CustomTestFormat(STLTestFormat):
         exeSource = test.getSourcePath()
         dllSource = os.path.join(os.path.dirname(exeSource), 'TestDll.cpp')
 
-        outputDir, outputBase = test.getTempPaths()
+        outputDir, _ = test.getTempPaths()
         dllOutput = os.path.join(outputDir, 'TestDll.DLL')
 
         cmd = [test.cxx, dllSource, *test.flags, *test.compileFlags, '/Fe' + dllOutput,

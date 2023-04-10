@@ -5,8 +5,8 @@
 
 #include <cassert>
 #include <cfenv>
+#include <cfloat>
 #include <cmath>
-#include <float.h>
 #include <type_traits>
 #include <xutility>
 
@@ -99,7 +99,7 @@ namespace fputil {
             assert(result == 0);
         }
 
-        rounding_guard(const rounding_guard&) = delete;
+        rounding_guard(const rounding_guard&)            = delete;
         rounding_guard& operator=(const rounding_guard&) = delete;
 
     private:
@@ -118,7 +118,7 @@ namespace fputil {
 
         ~rounding_guard() = default;
 
-        rounding_guard(const rounding_guard&) = delete;
+        rounding_guard(const rounding_guard&)            = delete;
         rounding_guard& operator=(const rounding_guard&) = delete;
     };
 

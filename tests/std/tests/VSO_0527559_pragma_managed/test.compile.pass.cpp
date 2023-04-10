@@ -4,5 +4,3 @@
 #pragma managed(push, off)
 #include <__msvc_all_public_headers.hpp>
 #pragma managed(pop)
-
-int main() {} // COMPILE-ONLY

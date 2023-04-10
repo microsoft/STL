@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -20,7 +20,7 @@ struct X {
         --g_objects;
     }
 
-    X(const X&) = delete;
+    X(const X&)            = delete;
     X& operator=(const X&) = delete;
 };
 
@@ -120,8 +120,8 @@ namespace lwg_2905 {
         using T       = int;
         using pointer = int*;
         struct Immobile {
-            Immobile()                = default;
-            Immobile(Immobile const&) = delete;
+            Immobile()                           = default;
+            Immobile(Immobile const&)            = delete;
             Immobile& operator=(Immobile const&) = delete;
 
             void operator()(int*) const {}
@@ -181,6 +181,25 @@ struct incomplete;
 void my_swap(unique_ptr<incomplete>& lhs, unique_ptr<incomplete>& rhs) {
     STATIC_ASSERT(noexcept(swap(lhs, rhs)));
     swap(lhs, rhs);
+}
+
+// also test LWG-3865 Sorting a range of pairs
+constexpr bool test_lwg3865() {
+    const pair<int, int> a{1, 2};
+    const pair<long, long> b{1, 2};
+    const pair<long, long> c{2, 2};
+    assert(a == b);
+    assert(a != c);
+    assert(c >= a);
+    assert(b >= a);
+    assert(c > a);
+    assert(!(b > a));
+    assert(a < c);
+    assert(!(a < b));
+    assert(a <= c);
+    assert(a <= b);
+
+    return true;
 }
 
 int main() {
@@ -271,4 +290,7 @@ int main() {
         };
         (void) make_unique<unique_ptr<S>[]>(42);
     }
+
+    test_lwg3865();
+    STATIC_ASSERT(test_lwg3865());
 }

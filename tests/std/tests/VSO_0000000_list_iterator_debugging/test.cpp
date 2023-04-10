@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <functional>
 #include <iterator>
 #include <list>
 #include <memory>
 #include <stdexcept>
-#include <stdlib.h>
 #include <type_traits>
 #include <vector>
 
@@ -115,7 +115,7 @@ void test_case_empty_target_bad() {
 struct throw_cmp_less_int {
     size_t remainingCompares;
     explicit throw_cmp_less_int(size_t remainingCompares_) : remainingCompares(remainingCompares_) {}
-    throw_cmp_less_int(const throw_cmp_less_int&) = delete;
+    throw_cmp_less_int(const throw_cmp_less_int&)            = delete;
     throw_cmp_less_int& operator=(const throw_cmp_less_int&) = delete;
 
     bool operator()(int a, int b) /* neither const nor noexcept */ {
@@ -143,7 +143,7 @@ struct throwing_merge_fixture {
 #if _ITERATOR_DEBUG_LEVEL == 0
     static constexpr size_t ensureOrderedF1Size = 0;
     static constexpr size_t ensureOrderedF2Size = 0;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 // _ITERATOR_DEBUG_LEVEL != 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
     static constexpr size_t ensureOrderedF1Size = startF1Size - 1;
     static constexpr size_t ensureOrderedF2Size = startF2Size - 1;
 #endif // _ITERATOR_DEBUG_LEVEL == 0
@@ -234,8 +234,8 @@ template <class T>
 struct liveness_allocator {
     using value_type = T;
 
-    liveness_allocator()                          = default;
-    liveness_allocator(const liveness_allocator&) = default;
+    liveness_allocator()                                     = default;
+    liveness_allocator(const liveness_allocator&)            = default;
     liveness_allocator& operator=(const liveness_allocator&) = default;
     template <class U, enable_if_t<!is_same_v<T, U>, int> = 0>
     liveness_allocator(const liveness_allocator<U>&) {}
@@ -265,7 +265,8 @@ struct erase_fixture {
         ~liveness_empty_asserter() {
             assert(liveness_alive_objects == 0);
         }
-    } instance_empty; // destroyed after theList
+    };
+    liveness_empty_asserter instance_empty; // destroyed after theList
 
     list<int, liveness_allocator<int>> theList;
 
@@ -278,7 +279,8 @@ struct erase_fixture {
             // tests that the whole container is iterable
             assert(is_sorted(theList.begin(), theList.end()));
         }
-    } instance_nonempty; // destroyed before theList
+    };
+    post_asserter instance_nonempty; // destroyed before theList
 
     void assert_iterators_consistent(const vector<list<int>::const_iterator>& iterators) {
         assert(theList.size() == iterators.size() - 1);

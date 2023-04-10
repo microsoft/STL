@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <functional>
 #include <vector>
 
@@ -10,8 +10,8 @@ using namespace std;
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 struct S {
-    S()         = delete;
-    S(const S&) = delete;
+    S()                    = delete;
+    S(const S&)            = delete;
     S& operator=(const S&) = delete;
 };
 

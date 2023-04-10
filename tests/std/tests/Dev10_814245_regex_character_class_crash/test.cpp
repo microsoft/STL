@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <regex>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 
 #include <test_regex_support.hpp>

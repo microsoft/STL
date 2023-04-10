@@ -8,6 +8,7 @@
 #include <clocale>
 #include <cstdlib>
 
+#include "init_locks.hpp"
 #include "xmtx.hpp"
 
 _STD_BEGIN

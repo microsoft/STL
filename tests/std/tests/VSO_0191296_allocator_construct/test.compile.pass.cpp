@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-int main() {} // COMPILE-ONLY
-
-// Work around VSO-119998 "/Za's elided-copy-ctor check is still bogus":
-#ifdef _MSC_EXTENSIONS
 // This test is loosely derived from dev11_437519_container_requirements, except the specific condition tested for is
 // use of allocator::construct rather than constructing actual temporaries everywhere. Parts of
 // dev11_437519_container_requirements where regressions of this kind are unlikely and testing of them is very difficult
@@ -63,8 +59,8 @@ struct faux_compare {
 
 template <typename T>
 struct default_constructible_compare {
-    default_constructible_compare()                                     = default;
-    default_constructible_compare(default_constructible_compare const&) = default;
+    default_constructible_compare()                                                = default;
+    default_constructible_compare(default_constructible_compare const&)            = default;
     default_constructible_compare& operator=(default_constructible_compare const&) = delete;
 
     bool operator()(T const&, T const&) const {
@@ -76,7 +72,7 @@ template <typename T>
 struct copy_constructible_compare {
     copy_constructible_compare() = delete;
     copy_constructible_compare(key) {}
-    copy_constructible_compare(copy_constructible_compare const&) = default;
+    copy_constructible_compare(copy_constructible_compare const&)            = default;
     copy_constructible_compare& operator=(copy_constructible_compare const&) = delete;
 
     bool operator()(T const&, T const&) const {
@@ -93,8 +89,8 @@ struct faux_hash {
 
 template <typename T>
 struct default_constructible_hash {
-    default_constructible_hash()                                  = default;
-    default_constructible_hash(default_constructible_hash const&) = default;
+    default_constructible_hash()                                             = default;
+    default_constructible_hash(default_constructible_hash const&)            = default;
     default_constructible_hash& operator=(default_constructible_hash const&) = delete;
 
     bool operator()(T const&, T const&) const {
@@ -106,7 +102,7 @@ template <typename T>
 struct copy_constructible_hash {
     copy_constructible_hash() = delete;
     copy_constructible_hash(key) {}
-    copy_constructible_hash(copy_constructible_hash const&) = default;
+    copy_constructible_hash(copy_constructible_hash const&)            = default;
     copy_constructible_hash& operator=(copy_constructible_hash const&) = delete;
 
     std::size_t operator()(T const&) const {
@@ -1729,4 +1725,3 @@ void assert_all() {
     assert_container<tag_unordered_multiset>();
     assert_container<tag_unordered_set>();
 }
-#endif // _MSC_EXTENSIONS

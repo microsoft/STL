@@ -28,10 +28,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
         <UseMsvcrt>false</UseMsvcrt>
 
-        <LinkGenerateDebugInformation Condition="'$(BLD_REL_NO_DBINFO)' != '1'">true</LinkGenerateDebugInformation>
-        <LinkProgramDataBaseFileName Condition="'$(BLD_REL_NO_DBINFO)' != '1'">$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
+        <LinkGenerateDebugInformation>true</LinkGenerateDebugInformation>
+        <LinkProgramDataBaseFileName>$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
 
-        <LinkAdditionalOptions Condition="'$(BLD_REL_NO_DBINFO)' != '1'">-debugtype:cv,fixup $(LinkAdditionalOptions)</LinkAdditionalOptions>
+        <LinkAdditionalOptions>-debugtype:cv,fixup $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions Condition="$(DebugBuild) != 'true'">-opt:ref,icf=3 $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions Condition="$(DebugBuild) == 'true'">-opt:ref,noicf $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions>-nodefaultlib:libcpmt$(BuildSuffix).lib $(LinkAdditionalOptions)</LinkAdditionalOptions>
@@ -42,15 +42,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+        <ProjectReference
             Include="$(CrtRoot)\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)\msvcp.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+        <ProjectReference
             Include="$(CrtRoot)\github\stl\msbuild\stl_1\$(CrtBuildModel)\msvcp_1_$(MsvcpFlavor)\msvcp_1.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+        <ProjectReference
             Include="$(CrtRoot)\github\stl\msbuild\stl_2\$(CrtBuildModel)\msvcp_2_$(MsvcpFlavor)\msvcp_2.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+        <ProjectReference
             Include="$(CrtRoot)\github\stl\msbuild\stl_codecvt_ids\$(CrtBuildModel)\msvcp_codecvt_ids_$(MsvcpFlavor)\msvcp_codecvt_ids.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+        <ProjectReference
             Include="$(CrtRoot)\github\stl\msbuild\stl_atomic_wait\$(CrtBuildModel)\msvcp_atomic_wait_$(MsvcpFlavor)\msvcp_atomic_wait.nativeproj"/>
         <Lib Include="$(CrtLibPath)\msvcprt_base$(BuildSuffix)$(ClrLibSuffix).lib">
             <IncludeInChameleonLib>false</IncludeInChameleonLib>
@@ -67,8 +67,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <Lib Include="$(CrtLibPath)\msvcprt$(BuildSuffix)_atomic_wait$(ClrLibSuffix).lib">
             <IncludeInChameleonLib>false</IncludeInChameleonLib>
         </Lib>
-        <Lib Include="$(MSBuildThisFileDirectory)\..\..\aliases\$(BuildArchitecture)\std_init_once_begin_initialize.obj" />
-        <Lib Include="$(MSBuildThisFileDirectory)\..\..\aliases\$(BuildArchitecture)\std_init_once_complete.obj" />
     </ItemGroup>
 
     <Import Project="$(VCToolsRootPath)\crt\crt_build.targets"/>

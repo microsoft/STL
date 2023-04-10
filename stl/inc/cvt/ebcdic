@@ -23,9 +23,8 @@ namespace stdext {
         using _Statype = _CSTD mbstate_t;
 
         template <class _Elem, unsigned char _Maxcode = 0xff>
-        class codecvt_ebcdic
-            : public _STD
-                  codecvt<_Elem, char, _Statype> { // facet for converting between ISO-8859-1 _Elem and EBCDIC bytes
+        class codecvt_ebcdic : public _STD codecvt<_Elem, char, _Statype> {
+            // facet for converting between ISO-8859-1 _Elem and EBCDIC bytes
             static const unsigned char _Atoe[0x100];
             static const unsigned char _Etoa[0x100];
 

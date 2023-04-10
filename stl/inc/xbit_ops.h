@@ -1,4 +1,4 @@
-// xbit_ops.h internal header
+// xbit_ops.h internal header (core)
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -6,11 +6,12 @@
 #pragma once
 #ifndef _XBIT_OPS_H
 #define _XBIT_OPS_H
-#include <yvals.h>
+#include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <cstdint>
-#include <intrin0.h>
+
+#include _STL_INTRIN_HEADER
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -28,7 +29,7 @@ _NODISCARD inline unsigned long _Floor_of_log_2(size_t _Value) noexcept { // ret
 #ifdef _M_CEE_PURE
 #ifdef _WIN64
     _Result = 63;
-#else // ^^^ 64-bit ^^^ / vvv 32-bit vvv
+#else // ^^^ 64-bit / 32-bit vvv
     _Result = 31;
 #endif // 64 vs. 32-bit
 
@@ -36,11 +37,11 @@ _NODISCARD inline unsigned long _Floor_of_log_2(size_t _Value) noexcept { // ret
         --_Result;
     }
 
-#else // ^^^ _M_CEE_PURE ^^^ // vvv !_M_CEE_PURE vvv
+#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
 #ifdef _WIN64
-    _BitScanReverse64(&_Result, _Value);
-#else // ^^^ 64-bit ^^^ / vvv 32-bit vvv
-    _BitScanReverse(&_Result, _Value);
+    _BitScanReverse64(&_Result, _Value); // lgtm [cpp/conditionallyuninitializedvariable]
+#else // ^^^ 64-bit / 32-bit vvv
+    _BitScanReverse(&_Result, _Value); // lgtm [cpp/conditionallyuninitializedvariable]
 #endif // 64 vs. 32-bit
 #endif // _M_CEE_PURE
 
@@ -69,7 +70,7 @@ _NODISCARD inline uint32_t _Bit_scan_reverse(const uint64_t _Value) noexcept {
     if (_BitScanReverse64(&_Index, _Value)) {
         return _Index + 1;
     }
-#else // ^^^ 64-bit ^^^ / vvv 32-bit vvv
+#else // ^^^ 64-bit / 32-bit vvv
     uint32_t _Ui32 = static_cast<uint32_t>(_Value >> 32);
 
     if (_BitScanReverse(&_Index, _Ui32)) {

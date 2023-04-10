@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <deque>
 #include <forward_list>
 #include <functional>
@@ -11,8 +13,6 @@
 #include <map>
 #include <new>
 #include <set>
-#include <stdio.h>
-#include <stdlib.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -22,7 +22,7 @@ using namespace std;
 
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 
-// Break std::allocator by making calling new explode
+// Break std::allocator by making calling new fail
 
 void* operator new(size_t) {
     abort();

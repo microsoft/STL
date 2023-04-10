@@ -22,12 +22,11 @@ _In_range_(0, maxsig) int _Stoxflt(
     char buf[_Maxsig + 1]; // worst case, with room for rounding digit
     int nsig = 0; // number of significant digits seen
     int seen = 0; // any valid field characters seen
-    int word = 0; // current long word to fill
 
     const char* pd;
-    static const char digits[] = "0123456789abcdefABCDEF";
-    static const char vals[]   = {// values of hex digits
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 10, 11, 12, 13, 14, 15};
+    static constexpr char digits[] = "0123456789abcdefABCDEF"; // hex digits in both cases
+    static constexpr char vals[]   = {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 10, 11, 12, 13, 14, 15}; // values of hex digits
 
     maxsig *= _Ndig; // convert word count to digit count
     if (_Maxsig < maxsig) {
@@ -63,11 +62,14 @@ _In_range_(0, maxsig) int _Stoxflt(
         }
     }
 
-    for (; (pd = static_cast<const char*>(memchr(&digits[0], *s, 22))) != nullptr; ++s, seen = 1) {
+    while ((pd = static_cast<const char*>(memchr(&digits[0], *s, 22))) != nullptr) {
         if (nsig <= maxsig) { // accumulate a fraction digit
             buf[nsig++] = vals[pd - digits];
             --lo[0];
         }
+
+        ++s;
+        seen = 1;
     }
 
     if (maxsig < nsig) { // discard excess digit after rounding up
@@ -88,6 +90,9 @@ _In_range_(0, maxsig) int _Stoxflt(
     }
 
     lo[0] <<= 2; // change hex exponent to binary exponent
+
+    int word; // current long word to fill
+
     if (seen) { // convert digit sequence to words
         int bufidx  = 0; // next digit in buffer
         int wordidx = _Ndig - nsig % _Ndig; // next digit in word (% _Ndig)
@@ -122,9 +127,7 @@ _In_range_(0, maxsig) int _Stoxflt(
                 s = ssav; // roll back if incomplete exponent
             }
         }
-    }
-
-    if (!seen) {
+    } else {
         word = 0; // return zero if bad parse
     }
 

@@ -7,8 +7,6 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 struct Cat {};
 
 struct ExplicitlyConvertibleFromCat {

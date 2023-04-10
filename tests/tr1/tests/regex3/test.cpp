@@ -254,8 +254,9 @@ static void test_uncoveredfunctions() {
     MyTokIter next(pat, pat + xlen(pat), rx);
     MyTokIter end;
 
-    for (; next != end; ++next)
+    for (; next != end; ++next) {
         CHECKSTR(next->str().c_str(), T("aa"));
+    }
 
     // difference_type length() const
     MySm sub = mr[1];

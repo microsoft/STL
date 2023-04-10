@@ -10,6 +10,12 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <ios>
 
+#if _HAS_CXX23
+#include <__msvc_filebuf.hpp>
+#include <__msvc_print.hpp>
+#include <format>
+#endif // _HAS_CXX23
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -20,7 +26,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 #pragma vtordisp(push, 2) // compiler bug workaround
 
-template <class _Elem, class _Traits>
+_EXPORT_STD extern "C++" template <class _Elem, class _Traits>
 class basic_ostream : virtual public basic_ios<_Elem, _Traits> { // control insertions into a stream buffer
 public:
     using _Myios = basic_ios<_Elem, _Traits>;
@@ -44,19 +50,19 @@ protected:
         _Myios::move(_STD move(_Right));
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL operator=(basic_ostream&& _Right) {
+    basic_ostream& __CLR_OR_THIS_CALL operator=(basic_ostream&& _Right) noexcept /* strengthened */ {
         this->swap(_Right);
         return *this;
     }
 
-    void __CLR_OR_THIS_CALL swap(basic_ostream& _Right) {
+    void __CLR_OR_THIS_CALL swap(basic_ostream& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Myios::swap(_Right);
         }
     }
 
 public:
-    __CLR_OR_THIS_CALL basic_ostream(const basic_ostream&) = delete;
+    __CLR_OR_THIS_CALL basic_ostream(const basic_ostream&)            = delete;
     basic_ostream& __CLR_OR_THIS_CALL operator=(const basic_ostream&) = delete;
 
     __CLR_OR_THIS_CALL ~basic_ostream() noexcept override {}
@@ -124,7 +130,7 @@ public:
             return _Ok;
         }
 
-        __CLR_OR_THIS_CALL sentry(const sentry&) = delete;
+        __CLR_OR_THIS_CALL sentry(const sentry&)            = delete;
         sentry& __CLR_OR_THIS_CALL operator=(const sentry&) = delete;
 
     private:
@@ -147,11 +153,11 @@ public:
     }
 
     // TRANSITION, ABI: non-Standard osfx() is preserved for binary compatibility
-    void __CLR_OR_THIS_CALL osfx() { // perform any wrapup
+    void __CLR_OR_THIS_CALL osfx() noexcept { // perform any wrapup
         _Osfx();
     }
 
-    void __CLR_OR_THIS_CALL _Osfx() { // perform any wrapup
+    void __CLR_OR_THIS_CALL _Osfx() noexcept { // perform any wrapup
         _TRY_BEGIN
         if (this->good() && this->flags() & ios_base::unitbuf) {
             if (_Myios::rdbuf()->pubsync() == -1) { // flush stream as needed
@@ -163,17 +169,19 @@ public:
     }
 
 #ifdef _M_CEE_PURE
-    basic_ostream& __CLR_OR_THIS_CALL operator<<(
-        basic_ostream&(__clrcall* _Pfn)(basic_ostream&) ) { // call basic_ostream manipulator
+    basic_ostream& __CLR_OR_THIS_CALL operator<<(basic_ostream&(__clrcall* _Pfn)(basic_ostream&) ) {
+        // call basic_ostream manipulator
         return _Pfn(*this);
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL operator<<(_Myios&(__clrcall* _Pfn)(_Myios&) ) { // call basic_ios manipulator
+    basic_ostream& __CLR_OR_THIS_CALL operator<<(_Myios&(__clrcall* _Pfn)(_Myios&) ) {
+        // call basic_ios manipulator
         _Pfn(*this);
         return *this;
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL operator<<(ios_base&(__clrcall* _Pfn)(ios_base&) ) { // call ios_base manipulator
+    basic_ostream& __CLR_OR_THIS_CALL operator<<(ios_base&(__clrcall* _Pfn)(ios_base&) ) {
+        // call ios_base manipulator
         _Pfn(*this);
         return *this;
     }
@@ -184,12 +192,14 @@ public:
         return _Pfn(*this);
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL operator<<(_Myios&(__cdecl* _Pfn)(_Myios&) ) { // call basic_ios manipulator
+    basic_ostream& __CLR_OR_THIS_CALL operator<<(_Myios&(__cdecl* _Pfn)(_Myios&) ) {
+        // call basic_ios manipulator
         _Pfn(*this);
         return *this;
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL operator<<(ios_base&(__cdecl* _Pfn)(ios_base&) ) { // call ios_base manipulator
+    basic_ostream& __CLR_OR_THIS_CALL operator<<(ios_base&(__cdecl* _Pfn)(ios_base&) ) {
+        // call ios_base manipulator
         _Pfn(*this);
         return *this;
     }
@@ -608,7 +618,7 @@ public:
             _CATCH_IO_END
         }
 
-        return pos_type(-1);
+        return pos_type{off_type{-1}};
     }
 };
 
@@ -673,7 +683,7 @@ template class _CRTIMP2_PURE_IMPORT basic_ostream<unsigned short, char_traits<un
 #endif // __FORCE_INSTANCE
 #endif // defined(_DLL_CPPLIB)
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const char* _Val) { // insert NTBS
     ios_base::iostate _State = ios_base::goodbit;
     streamsize _Count        = static_cast<streamsize>(_CSTD strlen(_Val));
@@ -717,7 +727,7 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, char _Ch) { // insert a character
     ios_base::iostate _State = ios_base::goodbit;
     const typename basic_ostream<_Elem, _Traits>::sentry _Ok(_Ostr);
@@ -753,7 +763,7 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
     return _Ostr;
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, const char* _Val) {
     // insert NTBS into char stream
     using _Elem = char;
@@ -798,7 +808,7 @@ basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, co
     return _Ostr;
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, char _Ch) {
     // insert a char into char stream
     using _Elem = char;
@@ -836,7 +846,7 @@ basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, ch
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const _Elem* _Val) { // insert NTCS
     using _Myos = basic_ostream<_Elem, _Traits>;
 
@@ -879,7 +889,7 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, _Elem _Ch) { // insert a character
     using _Myos = basic_ostream<_Elem, _Traits>;
 
@@ -915,24 +925,24 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
     return _Ostr;
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, const signed char* _Val) {
     // insert a signed char NTBS
     return _Ostr << reinterpret_cast<const char*>(_Val);
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, signed char _Ch) { // insert a signed char
     return _Ostr << static_cast<char>(_Ch);
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, const unsigned char* _Val) {
     // insert an unsigned char NTBS
     return _Ostr << reinterpret_cast<const char*>(_Val);
 }
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, unsigned char _Ch) {
     // insert an unsigned char
     return _Ostr << static_cast<char>(_Ch);
@@ -940,45 +950,45 @@ basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, un
 
 #ifdef __cpp_char8_t // These deleted overloads are specified in P1423.
 // don't insert a UTF-8 NTBS
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, const char8_t*) = delete;
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, const char8_t*) = delete;
 
 // don't insert a UTF-8 code unit
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, char8_t) = delete;
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, char8_t) = delete;
 #endif // __cpp_char8_t
 
 #if !_HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 #ifdef _NATIVE_WCHAR_T_DEFINED
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, wchar_t) = delete;
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, const wchar_t*) = delete;
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, char16_t) = delete;
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, char32_t) = delete;
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, char16_t) = delete;
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, char32_t) = delete;
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, const char16_t*) = delete;
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, const char32_t*) = delete;
 
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, const char16_t*) = delete;
-template <class _Traits>
+_EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, const char32_t*) = delete;
 #endif // !_HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 
@@ -989,14 +999,14 @@ template <class _Ostr, class _Ty>
 struct _Can_stream_out<_Ostr, _Ty, void_t<decltype(_STD declval<_Ostr&>() << _STD declval<const _Ty&>())>> : true_type {
 };
 
-template <class _Ostr, class _Ty,
+_EXPORT_STD template <class _Ostr, class _Ty,
     enable_if_t<conjunction_v<is_convertible<_Ostr*, ios_base*>, _Can_stream_out<_Ostr, _Ty>>, int> = 0>
 _Ostr&& operator<<(_Ostr&& _Os, const _Ty& _Val) { // insert to rvalue stream
     _Os << _Val;
     return _STD move(_Os);
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL endl(
     basic_ostream<_Elem, _Traits>& _Ostr) { // insert newline and flush stream
     _Ostr.put(_Ostr.widen('\n'));
@@ -1004,13 +1014,13 @@ basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL endl(
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL ends(basic_ostream<_Elem, _Traits>& _Ostr) { // insert null character
     _Ostr.put(_Elem());
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL flush(basic_ostream<_Elem, _Traits>& _Ostr) { // flush stream
     _Ostr.flush();
     return _Ostr;
@@ -1018,7 +1028,7 @@ basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL flush(basic_ostream<_Elem, _Tr
 
 #if _HAS_CXX20
 #ifdef _CPPRTTI
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& emit_on_flush(basic_ostream<_Elem, _Traits>& _Ostr) {
     const auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
     if (_Sync_buf_ptr) {
@@ -1027,7 +1037,7 @@ basic_ostream<_Elem, _Traits>& emit_on_flush(basic_ostream<_Elem, _Traits>& _Ost
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& noemit_on_flush(basic_ostream<_Elem, _Traits>& _Ostr) {
     const auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
     if (_Sync_buf_ptr) {
@@ -1036,30 +1046,248 @@ basic_ostream<_Elem, _Traits>& noemit_on_flush(basic_ostream<_Elem, _Traits>& _O
     return _Ostr;
 }
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>& _Ostr) {
     _Ostr.flush();
     const auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
     if (_Sync_buf_ptr) {
-        _Sync_buf_ptr->_Do_emit();
+        ios_base::iostate _State = ios_base::goodbit;
+        const typename basic_ostream<_Elem, _Traits>::sentry _Ok(_Ostr);
+        if (!_Ok) {
+            _State |= ios_base::badbit;
+        } else {
+            _TRY_IO_BEGIN
+            const bool _Emit_failed = !_Sync_buf_ptr->_Do_emit();
+            if (_Emit_failed) {
+                _State |= ios_base::badbit;
+            }
+            _CATCH_IO_(ios_base, _Ostr)
+        }
+        _Ostr.setstate(_State);
     }
     return _Ostr;
 }
 #else // _CPPRTTI
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& emit_on_flush(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& noemit_on_flush(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
 #endif // _CPPRTTI
 #endif // _HAS_CXX20
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const error_code& _Errcode) {
     // display error code
     return _Ostr << _Errcode.category().name() << ':' << _Errcode.value();
 }
+
+#ifdef __cpp_lib_print
+#ifdef _CPPRTTI
+template <int = 0>
+ios_base::iostate _Print_noformat_nonunicode(ostream& _Ostr, const string_view _Str) {
+    // *LOCKED*
+    //
+    // This function is called from a context in which an ostream::sentry has been
+    // constructed.
+    ios_base::iostate _State = ios_base::goodbit;
+
+    _TRY_IO_BEGIN
+    const auto _Characters_written       = _Ostr.rdbuf()->sputn(_Str.data(), static_cast<streamsize>(_Str.size()));
+    const bool _Was_insertion_successful = static_cast<size_t>(_Characters_written) == _Str.size();
+    if (!_Was_insertion_successful) [[unlikely]] {
+        _State |= ios_base::badbit;
+    }
+    _CATCH_IO_(ios_base, _Ostr)
+
+    return _State;
+}
+
+template <int = 0>
+void _Vprint_nonunicode_impl(
+    const _Add_newline _Add_nl, ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
+    const ostream::sentry _Ok(_Ostr);
+    ios_base::iostate _State = ios_base::goodbit;
+
+    if (!_Ok) [[unlikely]] {
+        _State |= ios_base::badbit;
+    } else [[likely]] {
+        // This is intentionally kept outside of the try/catch block in _Print_noformat_nonunicode()
+        // (see N4928 [ostream.formatted.print]/3.2).
+        string _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
+        if (_Add_nl == _Add_newline::_Yes) {
+            _Output_str.push_back('\n');
+        }
+
+        _State |= _STD _Print_noformat_nonunicode(_Ostr, _Output_str);
+    }
+
+    _Ostr.setstate(_State);
+}
+
+template <class _Filebuf_type = filebuf>
+ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str) {
+    // *LOCKED*
+    //
+    // This function is called from a context in which an ostream::sentry has been
+    // constructed.
+    ios_base::iostate _State = ios_base::goodbit;
+
+    // The std::ostream& overload of vprint_unicode() expects you to determine whether the stream refers
+    // to a unicode console or not based solely on the std::ostream& provided. That class simply doesn't
+    // provide enough information to know this in every case. The best we can do (without breaking ABI)
+    // is check if the underlying std::streambuf object of the std::ostream& actually refers to a std::filebuf
+    // object. This requires the use of a dynamic_cast. (This is also why the std::ostream& overloads of
+    // std::print() et al. are deleted when RTTI is disabled.)
+    streambuf* const _Streambuf = _Ostr.rdbuf();
+    const auto _Filebuf         = dynamic_cast<_Filebuf_type*>(_Streambuf);
+
+    // If we got nullptr, then it probably isn't being used for a unicode console...
+    if (_Filebuf == nullptr) {
+        _State |= _STD _Print_noformat_nonunicode(_Ostr, _Str);
+        return _State;
+    }
+
+    FILE* const _File_stream = _Filebuf->_Myfile;
+    const __std_unicode_console_retrieval_result _Unicode_console_retrieval_result{
+        __std_get_unicode_console_handle_from_file_stream(_File_stream)};
+
+    // See the documentation for __std_unicode_console_retrieval_result to understand why we do this.
+    bool _Is_unicode_console;
+
+#pragma warning(push)
+#pragma warning(disable : 4061) // enumerator not explicitly handled by switch label
+    switch (_Unicode_console_retrieval_result._Error) {
+    case __std_win_error::_Success:
+        _Is_unicode_console = true;
+        break;
+
+    case __std_win_error::_File_not_found:
+        _Is_unicode_console = false;
+        break;
+
+    case __std_win_error::_Not_supported:
+        [[unlikely]] return _State;
+
+    default:
+        [[unlikely]] return ios_base::failbit;
+    }
+#pragma warning(pop)
+
+    if (_Is_unicode_console) {
+        _TRY_IO_BEGIN
+        const bool _Was_flush_successful = _Ostr.rdbuf()->pubsync() != -1;
+        if (!_Was_flush_successful) [[unlikely]] {
+            _State |= ios_base::badbit;
+            return _State;
+        }
+
+        const __std_win_error _Unicode_console_print_result =
+            __std_print_to_unicode_console(_Unicode_console_retrieval_result._Console_handle, _Str.data(), _Str.size());
+        if (_Unicode_console_print_result != __std_win_error::_Success) [[unlikely]] {
+            _State |= ios_base::badbit;
+        }
+        _CATCH_IO_(ios_base, _Ostr)
+    } else {
+        _State |= _STD _Print_noformat_nonunicode(_Ostr, _Str);
+    }
+
+    return _State;
+}
+
+template <int = 0>
+void _Vprint_unicode_impl(
+    const _Add_newline _Add_nl, ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
+    const ostream::sentry _Ok(_Ostr);
+    ios_base::iostate _State = ios_base::goodbit;
+
+    if (!_Ok) [[unlikely]] {
+        _State |= ios_base::badbit;
+    } else [[likely]] {
+        // This is intentionally kept outside of the try/catch block in _Print_noformat_unicode()
+        // (see N4928 [ostream.formatted.print]/3.2).
+        string _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
+        if (_Add_nl == _Add_newline::_Yes) {
+            _Output_str.push_back('\n');
+        }
+
+        _State |= _STD _Print_noformat_unicode(_Ostr, _Output_str);
+    }
+
+    _Ostr.setstate(_State);
+}
+
+template <int = 0>
+void _Print_noformat(ostream& _Ostr, const string_view _Str) {
+    const ostream::sentry _Ok(_Ostr);
+    ios_base::iostate _State = ios_base::goodbit;
+
+    if (!_Ok) [[unlikely]] {
+        _State |= ios_base::badbit;
+    } else [[likely]] {
+        if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
+            _State |= _STD _Print_noformat_unicode(_Ostr, _Str);
+        } else {
+            _State |= _STD _Print_noformat_nonunicode(_Ostr, _Str);
+        }
+    }
+
+    _Ostr.setstate(_State);
+}
+
+template <class... _Types>
+void _Print_impl(const _Add_newline _Add_nl, ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    constexpr bool _Has_format_args = sizeof...(_Types) > 0;
+
+    // This is intentionally kept outside of the try/catch block in _Print_noformat_*()
+    // (see N4928 [ostream.formatted.print]/3.2).
+
+    if constexpr (_Has_format_args) {
+        if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
+            _STD _Vprint_unicode_impl(
+                _Add_nl, _Ostr, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+        } else {
+            _STD _Vprint_nonunicode_impl(
+                _Add_nl, _Ostr, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+        }
+    } else {
+        const string _Unescaped_str{_Unescape_braces(_Add_nl, _Fmt.get())};
+        _STD _Print_noformat(_Ostr, _Unescaped_str);
+    }
+}
+
+_EXPORT_STD template <class... _Types>
+void print(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    _STD _Print_impl(_Add_newline::_Nope, _Ostr, _Fmt, _STD forward<_Types>(_Args)...);
+}
+
+_EXPORT_STD template <class... _Types>
+void println(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&... _Args) {
+    _STD _Print_impl(_Add_newline::_Yes, _Ostr, _Fmt, _STD forward<_Types>(_Args)...);
+}
+
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void vprint_unicode(ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
+    _STD _Vprint_unicode_impl(_Add_newline::_Nope, _Ostr, _Fmt_str, _Fmt_args);
+}
+
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void vprint_nonunicode(ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
+    _STD _Vprint_nonunicode_impl(_Add_newline::_Nope, _Ostr, _Fmt_str, _Fmt_args);
+}
+#else // ^^^ _CPPRTTI / !_CPPRTTI vvv
+_EXPORT_STD template <class... _Types>
+void print(ostream&, format_string<_Types...>, _Types&&...) = delete; // requires /GR option
+
+_EXPORT_STD template <class... _Types>
+void println(ostream&, format_string<_Types...>, _Types&&...) = delete; // requires /GR option
+
+_EXPORT_STD void vprint_unicode(ostream&, string_view, format_args)    = delete; // requires /GR option
+_EXPORT_STD void vprint_nonunicode(ostream&, string_view, format_args) = delete; // requires /GR option
+#endif // !_CPPRTTI
+#endif // __cpp_lib_print
+
 _STD_END
 
 #pragma pop_macro("new")

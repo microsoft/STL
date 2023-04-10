@@ -12,6 +12,7 @@
 
 #if _HAS_CXX20
 #include <compare>
+#include <cstring>
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -22,7 +23,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-class type_index { // wraps a typeinfo for indexing
+_EXPORT_STD class type_index { // wraps a typeinfo for indexing
 public:
     type_index(const type_info& _Tinfo) noexcept : _Tptr(&_Tinfo) {}
 
@@ -40,9 +41,12 @@ public:
 
 #if _HAS_CXX20
     _NODISCARD strong_ordering operator<=>(const type_index& _Right) const noexcept {
-        return *_Tptr == *_Right._Tptr      ? strong_ordering::equal
-             : _Tptr->before(*_Right._Tptr) ? strong_ordering::less
-                                            : strong_ordering::greater;
+        // TRANSITION, DevCom-10326599, should rely on a stable interface
+        if (_Tptr == _Right._Tptr) {
+            return strong_ordering::equal;
+        }
+
+        return _CSTD strcmp(_Tptr->raw_name() + 1, _Right._Tptr->raw_name() + 1) <=> 0;
     }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const type_index& _Right) const noexcept {
@@ -72,8 +76,8 @@ private:
 
 template <>
 struct hash<type_index> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef type_index _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = type_index;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
     _NODISCARD size_t operator()(const type_index& _Keyval) const noexcept {
         return _Keyval.hash_code();

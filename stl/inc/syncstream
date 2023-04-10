@@ -9,7 +9,7 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 #if !_HAS_CXX20
-#pragma message("The contents of <syncstream> are available only with C++20 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <syncstream> are available only with C++20 or later.");
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #include <memory>
 #include <ostream>
@@ -56,7 +56,7 @@ protected:
         _Swap(_Right);
     }
 
-    void _Swap(_Basic_syncbuf_impl& _Right) {
+    void _Swap(_Basic_syncbuf_impl& _Right) noexcept {
         _Mysb::swap(_Right);
         _STD swap(_Emit_on_sync, _Right._Emit_on_sync);
         _STD swap(_Sync_recorded, _Right._Sync_recorded);
@@ -66,7 +66,7 @@ protected:
     bool _Sync_recorded{false};
 };
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 class basic_syncbuf : public _Basic_syncbuf_impl<_Elem, _Traits> {
 public:
     using int_type       = typename _Traits::int_type;
@@ -145,7 +145,7 @@ public:
         return *this;
     }
 
-    void swap(basic_syncbuf& _Right) {
+    void swap(basic_syncbuf& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
             _Swap_except_al(_Right);
@@ -218,11 +218,14 @@ protected:
         }
 
         const _Size_type _New_capacity  = _Calculate_growth(_Buf_size, _Buf_size + 1, _Max_allocation);
-        const _Elem* const _Old_ptr     = streambuf_type::pbase();
+        _Elem* const _Old_ptr           = streambuf_type::pbase();
         const _Size_type _Old_data_size = _Get_data_size();
 
         _Elem* const _New_ptr = _Unfancy(_Al.allocate(_New_capacity));
         _Traits::copy(_New_ptr, _Old_ptr, _Old_data_size);
+        if (0 < _Buf_size) {
+            _Al.deallocate(_Refancy<_Pointer>(_Old_ptr), _Buf_size);
+        }
 
         streambuf_type::setp(_New_ptr, _New_ptr + _Old_data_size, _New_ptr + _New_capacity);
         streambuf_type::sputc(_Traits::to_char_type(_Current_elem));
@@ -252,7 +255,7 @@ private:
         }
     }
 
-    void _Swap_except_al(basic_syncbuf& _Right) {
+    void _Swap_except_al(basic_syncbuf& _Right) noexcept {
         _Mybase::_Swap(_Right);
         _STD swap(_Wrapped, _Right._Wrapped);
         _STD swap(_Get_mutex(), _Right._Get_mutex());
@@ -305,12 +308,13 @@ private:
     _Compressed_pair<_Alloc, shared_mutex*> _Mypair{_Zero_then_variadic_args_t{}, nullptr};
 };
 
-template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) { // LWG-3616
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
+void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     _Left.swap(_Right);
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 class basic_osyncstream : public basic_ostream<_Elem, _Traits> {
 public:
     using char_type      = _Elem;
@@ -323,6 +327,7 @@ public:
     using syncbuf_type   = basic_syncbuf<_Elem, _Traits, _Alloc>;
 
     using _Mybase = basic_ostream<_Elem, _Traits>;
+    using _Myios  = basic_ios<_Elem, _Traits>;
 
     basic_osyncstream(streambuf_type* _Strbuf, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Sync_buf)), _Sync_buf(_Strbuf, _Al) {}
@@ -341,12 +346,21 @@ public:
 
     ~basic_osyncstream() = default;
 
-    basic_osyncstream& operator=(basic_osyncstream&&) noexcept = default;
+    basic_osyncstream& operator=(basic_osyncstream&&) = default;
 
     void emit() {
-        if (!_Sync_buf.emit()) {
-            _Mybase::setstate(ios::badbit);
+        ios_base::iostate _State = ios_base::goodbit;
+        const typename _Mybase::sentry _Ok(*this);
+        if (!_Ok) {
+            _State |= ios_base::badbit;
+        } else {
+            _TRY_IO_BEGIN
+            if (!_Sync_buf.emit()) {
+                _State |= ios_base::badbit;
+            }
+            _CATCH_IO_END
         }
+        _Mybase::setstate(_State);
     }
     _NODISCARD streambuf_type* get_wrapped() const noexcept {
         return _Sync_buf.get_wrapped();

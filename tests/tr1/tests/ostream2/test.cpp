@@ -33,10 +33,11 @@ STD wostream& operator<<(STD wostream& ostr, const Boolx& b) { // insert a Boolx
     const STD wostream::sentry ok(ostr);
 
     if (ok) {
-        if (b.value() != 0)
+        if (b.value() != 0) {
             ostr.rdbuf()->sputc(L'Y');
-        else
+        } else {
             ostr.rdbuf()->sputc(L'N');
+        }
     }
     ostr.setstate(state);
     return ostr;
@@ -331,7 +332,7 @@ void test_main() { // test basic workings of ostream definitions
     outs.str(L"");
     outs << L"some stuff ";
     STD wstreampos pos = outs.tellp();
-    CHECK(pos != (STD wstreampos) (-1));
+    CHECK(pos != (STD wstreampos)(-1));
     outs << istr.rdbuf();
     CHECK_WSTR(outs.str().c_str(), L"some stuff rest of stream\n");
     CHECK_PTR(&outs.seekp(pos), &outs);

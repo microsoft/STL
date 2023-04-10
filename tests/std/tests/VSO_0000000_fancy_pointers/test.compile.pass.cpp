@@ -24,7 +24,8 @@
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
+template <typename T>
+struct always_false : std::false_type {};
 
 template <typename Val>
 class fancy_pointer {
@@ -82,14 +83,24 @@ public:
         return *this;
     }
 
-    void operator++(int) = delete; // avoid postincrement
+    fancy_pointer operator++(int) {
+        static_assert(always_false<Val>::value, "avoid postincrement");
+        fancy_pointer result = *this;
+        ++rep;
+        return result;
+    }
 
     fancy_pointer& operator--() {
         --rep;
         return *this;
     }
 
-    void operator--(int) = delete; // avoid postdecrement
+    fancy_pointer operator--(int) {
+        static_assert(always_false<Val>::value, "avoid postdecrement");
+        fancy_pointer result = *this;
+        --rep;
+        return result;
+    }
 
 #ifdef _WIN64
     fancy_pointer& operator+=(int rhs) {
@@ -278,9 +289,6 @@ namespace std {
     };
 } // namespace std
 
-template <typename T>
-struct always_false : std::false_type {};
-
 template <typename Val>
 struct fancy_allocator {
     fancy_allocator() = default;
@@ -310,10 +318,10 @@ struct fancy_allocator {
     // operator!=(a1, a2) ditto
     // operator==(a, b) ditto
     // operator!=(a, b) ditto
-    fancy_allocator(const fancy_allocator&) = default;
-    fancy_allocator(fancy_allocator&&)      = default;
+    fancy_allocator(const fancy_allocator&)            = default;
+    fancy_allocator(fancy_allocator&&)                 = default;
     fancy_allocator& operator=(const fancy_allocator&) = delete;
-    fancy_allocator& operator=(fancy_allocator&&) = delete;
+    fancy_allocator& operator=(fancy_allocator&&)      = delete;
 
     template <typename U>
     explicit fancy_allocator(const fancy_allocator<U>&) {}
@@ -441,10 +449,9 @@ template class std::basic_osyncstream<char, std::char_traits<char>, fancy_alloca
 STATIC_ASSERT(std::is_standard_layout_v<std::allocation_result<fancy_pointer<int>>>);
 STATIC_ASSERT(!std::is_trivially_copyable_v<std::allocation_result<fancy_pointer<int>>>);
 
-#ifdef __cpp_lib_concepts
-STATIC_ASSERT(std::is_same_v<decltype(std::allocate_at_least(std::declval<fancy_allocator<int>&>(), std::size_t{})),
+STATIC_ASSERT(std::is_same_v<decltype(std::allocator_traits<fancy_allocator<int>>::allocate_at_least(
+                                 std::declval<fancy_allocator<int>&>(), std::size_t{})),
     std::allocation_result<fancy_pointer<int>>>);
-#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
 void instantiate() {

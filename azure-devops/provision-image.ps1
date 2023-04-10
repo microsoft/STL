@@ -91,7 +91,7 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
   $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
 
   # https://github.com/PowerShell/PowerShell/releases/latest
-  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.0/PowerShell-7.2.0-win-x64.zip'
+  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.3.2/PowerShell-7.3.2-win-x64.zip'
   Write-Host "Downloading: $PowerShellZipUrl"
   $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
   $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
@@ -133,23 +133,17 @@ $Workloads = @(
   'Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
+  'Microsoft.VisualStudio.Component.VC.Tools.ARM64EC',
   'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
-  # TRANSITION, LLVM-51128 (Clang 12 targeting ARM64 is incompatible with WinSDK 10.0.20348.0)
-  'Microsoft.VisualStudio.Component.Windows10SDK.19041'
+  'Microsoft.VisualStudio.Component.Windows11SDK.22000'
 )
 
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
-$PythonUrl = 'https://www.python.org/ftp/python/3.10.0/python-3.10.0-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.11.2/python-3.11.2-amd64.exe'
 
-$CudaUrl = `
-  'https://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_426.00_win10.exe'
-$CudaFeatures = 'nvcc_10.1 cuobjdump_10.1 nvprune_10.1 cupti_10.1 gpu_library_advisor_10.1 memcheck_10.1 ' + `
-  'nvdisasm_10.1 nvprof_10.1 visual_profiler_10.1 visual_studio_integration_10.1 cublas_10.1 cublas_dev_10.1 ' + `
-  'cudart_10.1 cufft_10.1 cufft_dev_10.1 curand_10.1 curand_dev_10.1 cusolver_10.1 cusolver_dev_10.1 cusparse_10.1 ' + `
-  'cusparse_dev_10.1 nvgraph_10.1 nvgraph_dev_10.1 npp_10.1 npp_dev_10.1 nvrtc_10.1 nvrtc_dev_10.1 nvml_dev_10.1 ' + `
-  'occupancy_calculator_10.1 fortran_examples_10.1'
+$CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/11.6.0/local_installers/cuda_11.6.0_511.23_windows.exe'
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -272,19 +266,14 @@ Function InstallPython {
 Installs NVIDIA's CUDA Toolkit.
 
 .DESCRIPTION
-InstallCuda installs the CUDA Toolkit with the features specified as a
-space-separated list of strings in $Features.
+InstallCuda installs the CUDA Toolkit.
 
 .PARAMETER Url
 The URL of the CUDA installer.
-
-.PARAMETER Features
-A space-separated list of features to install.
 #>
 Function InstallCuda {
   Param(
-    [String]$Url,
-    [String]$Features
+    [String]$Url
   )
 
   try {
@@ -292,7 +281,7 @@ Function InstallCuda {
     [string]$installerPath = Get-TempFilePath -Extension 'exe'
     curl.exe -L -o $installerPath -s -S $Url
     Write-Host 'Installing CUDA...'
-    $proc = Start-Process -FilePath $installerPath -ArgumentList @('-s ' + $Features) -Wait -PassThru
+    $proc = Start-Process -FilePath $installerPath -ArgumentList @('-s') -Wait -PassThru
     $exitCode = $proc.ExitCode
     if ($exitCode -eq 0) {
       Write-Host 'Installation successful!'
@@ -333,6 +322,9 @@ Function PipInstall {
 
 Write-Host 'AdminUser password not supplied; assuming already running as AdminUser.'
 
+# Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
+cmd /c ver
+
 Write-Host 'Configuring AntiVirus exclusions...'
 Add-MpPreference -ExclusionPath C:\agent
 Add-MpPreference -ExclusionPath D:\
@@ -344,12 +336,12 @@ Add-MpPreference -ExclusionProcess python.exe
 
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
-InstallCuda -Url $CudaUrl -Features $CudaFeatures
+InstallCuda -Url $CudaUrl
 
 Write-Host 'Updating PATH...'
 
 # Step 1: Read the system path, which was just updated by installing Python.
-$currentSystemPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+$currentSystemPath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
 
 # Step 2: Update the local path (for this running script), so PipInstall can run python.exe.
 # Additional directories can be added here (e.g. if we extracted a zip file
@@ -357,7 +349,7 @@ $currentSystemPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
 $Env:PATH="$($currentSystemPath)"
 
 # Step 3: Update the system path, permanently recording any additional directories that were added in the previous step.
-[Environment]::SetEnvironmentVariable("Path", "$Env:PATH", "Machine")
+[Environment]::SetEnvironmentVariable('Path', "$Env:PATH", 'Machine')
 
 Write-Host 'Finished updating PATH!'
 
@@ -371,7 +363,7 @@ Write-Host 'Finished running PipInstall!'
 Write-Host 'Setting other environment variables...'
 
 # The STL's PR/CI builds are totally unrepresentative of customer usage.
-[Environment]::SetEnvironmentVariable("VSCMD_SKIP_SENDTELEMETRY", "1", "Machine")
+[Environment]::SetEnvironmentVariable('VSCMD_SKIP_SENDTELEMETRY', '1', 'Machine')
 
 Write-Host 'Finished setting other environment variables!'
 

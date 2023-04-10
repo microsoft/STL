@@ -339,8 +339,9 @@ void test_istreamit() { // test istream_iterator
     p_traits  = p_traits;
     p_istream = p_istream;
 
-    for (n = 0; n < 5 && iit != iit0; ++n)
+    for (n = 0; n < 5 && iit != iit0; ++n) {
         CHECK_INT(*iit++, n);
+    }
     CHECK(!(iit != iit0));
     CHECK_INT(n, 4);
 }
@@ -385,8 +386,9 @@ void test_istrbufit() { // test istreambuf_iterator
     p_istream   = p_istream;
 
     int n;
-    for (n = 0; n < 5 && iit != iit0; ++n)
+    for (n = 0; n < 5 && iit != iit0; ++n) {
         CHECK_INT(*iit++, n + '0');
+    }
     CHECK(!(iit != iit0));
     CHECK_INT(n, 4);
     CHECK(iit0.equal(iit1));

@@ -137,8 +137,9 @@ static void tminstd_rand0() {
     CHECK_INT(rng_t::modulus, 2147483647);
     rng_t rng;
     Int32 res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK_INT(res, 1043618065);
 }
 
@@ -149,8 +150,9 @@ static void tminstd_rand() {
     CHECK_INT(rng_t::modulus, 2147483647);
     rng_t rng;
     Int32 res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK_INT(res, 399268537);
 }
 
@@ -231,8 +233,9 @@ static void tmt19937() {
     CHECK_INT(rng_t::output_l, 18);
     rng_t rng;
     Int32 res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK_INT(res, (int) 4123659995UL);
 
     rng_t rng0, rng1;
@@ -332,8 +335,9 @@ static void tranlux3() {
     CHECK_INT(rng_t::base_type::short_lag, 10);
     rng_t rng;
     Int32 res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK_INT(res, 5957620);
 }
 
@@ -346,8 +350,9 @@ static void tranlux4() {
     CHECK_INT(rng_t::base_type::short_lag, 10);
     rng_t rng;
     Int32 res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK_INT(res, 8587295);
 }
 
@@ -433,8 +438,9 @@ static void tranlux3_01() {
     CHECK_INT(rng_t::base_type::long_lag, 24);
     rng_t rng;
     float res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK_DOUBLE(res, 5957620 / CSTD pow(2.0f, 24));
 }
 
@@ -447,8 +453,9 @@ static void tranlux4_01() {
     CHECK_INT(rng_t::base_type::long_lag, 24);
     rng_t rng;
     float res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK_DOUBLE(res, 8587295 / STD pow(2.0f, 24));
 }
 #endif // _HAS_TR1_NAMESPACE
@@ -495,8 +502,9 @@ static void tdiscard() {
 
     rng_base_t rng4;
     rng_t rng5;
-    for (i = 0; i < rng_t::used_block; ++i)
+    for (i = 0; i < rng_t::used_block; ++i) {
         CHECK_INT(rng4(), rng5());
+    }
     CHECK(rng4() != rng5());
     for (; i < rng_t::block_size; ++i) {
         (void) rng4();

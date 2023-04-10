@@ -55,7 +55,6 @@ void __CLRCALL_OR_CDECL locale::_Locimp::_Makewloc(const _Locinfo& lobj, locale:
     ADDFAC(_Tw13, cat, ptrimp, ptrloc);
 }
 
-#ifdef _NATIVE_WCHAR_T_DEFINED
 // moved from locale to ease subsetting
 using _Tu1  = ctype<unsigned short>;
 using _Tu2  = num_get<unsigned short>;
@@ -87,6 +86,5 @@ void __CLRCALL_OR_CDECL locale::_Locimp::_Makeushloc(const _Locinfo& lobj, local
     ADDFAC(_Tu12, cat, ptrimp, ptrloc);
     ADDFAC(_Tu13, cat, ptrimp, ptrloc);
 }
-#endif // _NATIVE_WCHAR_T_DEFINED
 
 _STD_END

@@ -12,7 +12,7 @@ class CustomTestFormat(STLTestFormat):
         exeSource = test.getSourcePath()
         test2Source = os.path.join(os.path.dirname(exeSource), 'test2.cpp')
 
-        outputDir, outputBase = test.getTempPaths()
+        _, outputBase = test.getTempPaths()
 
         if TestType.COMPILE in test.testType:
             cmd = [test.cxx, '/c', exeSource, test2Source, *test.flags, *test.compileFlags]

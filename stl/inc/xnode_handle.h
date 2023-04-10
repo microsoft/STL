@@ -75,7 +75,8 @@ private:
     using _Nodeptr       = typename _Alnode_traits::pointer;
 
     _Nodeptr _Ptr{};
-    aligned_union_t<0, _Alloc> _Alloc_storage; // Invariant: contains a live _Alloc iff _Ptr != nullptr
+    _Aligned_storage_t<sizeof(_Alloc), alignof(_Alloc)>
+        _Alloc_storage; // Invariant: contains a live _Alloc iff _Ptr != nullptr
 
     void _Clear() noexcept { // destroy any contained node and return to the empty state
         if (_Ptr != nullptr) {

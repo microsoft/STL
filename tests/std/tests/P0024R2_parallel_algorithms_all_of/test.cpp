@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <execution>
 #include <vector>
 
@@ -23,7 +23,7 @@ void test_case_all_of_parallel(const size_t testSize) {
         assert(!all_of(par, c.begin(), c.end(), read_char_as_bool));
         b = true;
     }
-#else // ^^^ EXHAUSTIVE ^^^ // vvv !EXHAUSTIVE vvv
+#else // ^^^ EXHAUSTIVE / !EXHAUSTIVE vvv
     if (testSize != 0) {
         c[testSize / 2] = false;
         assert(!all_of(par, c.begin(), c.end(), read_char_as_bool));

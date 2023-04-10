@@ -34,11 +34,11 @@ STD wistream& operator>>(STD wistream& istr, Boolx& b) { // extract a Boolx
     if (ok) { // state okay, extract Y or N
         const CSTD wint_t c = istr.rdbuf()->sbumpc();
 
-        if (c == L'Y')
+        if (c == L'Y') {
             b.value(1);
-        else if (c == L'N')
+        } else if (c == L'N') {
             b.value(0);
-        else { // report failure
+        } else { // report failure
             istr.rdbuf()->sputbackc(c);
             state = STD ios::failbit;
         }
@@ -189,7 +189,7 @@ void test_main() { // test basic workings of istream definitions
     wchar_t buf[20];
     STD wstreampos pos = ins.tellg();
 
-    CHECK(pos != (STD wstreampos) (-1));
+    CHECK(pos != (STD wstreampos)(-1));
     CHECK_PTR(&ins.ignore(), &ins);
     CHECK_INT(ins.peek(), L'i');
     CHECK_PTR(&ins.putback(L'l'), &ins);

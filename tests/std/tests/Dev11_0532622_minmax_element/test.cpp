@@ -16,7 +16,7 @@
 // where M is the last iterator in [first,last) such that no iterator in the range refers to a larger element."
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <iterator>
 #include <utility>
 #include <vector>

@@ -7,7 +7,8 @@
 #include <map>
 #include <random>
 
-void Test_GH1001() {
+void test_gh_1001() {
+    // GH-1001 <random>: binomial_distribution is broken
     constexpr int N{1000};
     constexpr double p{.001238};
     constexpr int seed{12345};
@@ -39,5 +40,5 @@ void Test_GH1001() {
 }
 
 int main() {
-    Test_GH1001();
+    test_gh_1001();
 }

@@ -13,17 +13,11 @@
 using namespace std;
 
 template <class Range>
-concept can_empty = requires(Range& r) {
-    ranges::empty(r);
-};
+concept can_empty = requires(Range& r) { ranges::empty(r); };
 template <class Range>
-concept can_data = requires(Range& r) {
-    ranges::data(r);
-};
+concept can_data = requires(Range& r) { ranges::data(r); };
 template <class Range>
-concept can_size = requires(Range& r) {
-    ranges::size(r);
-};
+concept can_size = requires(Range& r) { ranges::size(r); };
 
 struct instantiator {
     template <ranges::range R>
@@ -91,6 +85,26 @@ struct instantiator {
             assert(last.peek() == end(input));
             STATIC_ASSERT(noexcept(as_const(test_view).end()) == noexcept(wrapped_input.end()));
         }
+
+#if _HAS_CXX23
+        if constexpr (ranges::input_range<R>) { // const iterators (from view_interface)
+            R wrapped_input{input};
+            ref_view<R> test_view{wrapped_input};
+            const same_as<ranges::const_iterator_t<R>> auto cfirst = as_const(test_view).cbegin();
+            if constexpr (_Is_specialization_v<remove_const_t<decltype(cfirst)>, basic_const_iterator>) {
+                assert(cfirst.base().peek() == begin(input));
+            } else {
+                assert(cfirst.peek() == begin(input));
+            }
+
+            const same_as<ranges::const_sentinel_t<R>> auto clast = as_const(test_view).cend();
+            if constexpr (_Is_specialization_v<remove_const_t<decltype(clast)>, basic_const_iterator>) {
+                assert(clast.base().peek() == end(input));
+            } else {
+                assert(clast.peek() == end(input));
+            }
+        }
+#endif // _HAS_CXX23
 
         { // state
             STATIC_ASSERT(can_size<ref_view<R>> == ranges::sized_range<R>);

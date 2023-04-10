@@ -39,27 +39,11 @@ struct int_wrapper {
 };
 STATIC_ASSERT(default_initializable<int_wrapper>);
 
-template <class T, size_t N>
-struct holder {
-    STATIC_ASSERT(N < ~size_t{0} / sizeof(T));
-    alignas(T) unsigned char space[N * sizeof(T)];
-
-    auto as_span() {
-        return span<T, N>{reinterpret_cast<T*>(space + 0), N};
-    }
-};
-
-template <class R>
-void not_ranges_destroy(R&& r) { // TRANSITION, ranges::destroy
-    for (auto& e : r) {
-        destroy_at(&e);
-    }
-}
-
 struct instantiator {
     template <ranges::forward_range Write>
     static void call() {
-        using ranges::uninitialized_default_construct_n, ranges::equal, ranges::equal_to, ranges::iterator_t;
+        using ranges::uninitialized_default_construct_n, ranges::destroy, ranges::equal, ranges::equal_to,
+            ranges::iterator_t;
 
         holder<int_wrapper, 3> mem;
         Write wrapped_input{mem.as_span()};
@@ -69,7 +53,7 @@ struct instantiator {
         assert(int_wrapper::constructions == 3);
         assert(int_wrapper::destructions == 0);
         assert(result == wrapped_input.end());
-        not_ranges_destroy(wrapped_input);
+        destroy(wrapped_input);
         assert(int_wrapper::constructions == 3);
         assert(int_wrapper::destructions == 3);
     }

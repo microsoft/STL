@@ -7,6 +7,7 @@
 #include <functional>
 #include <iterator>
 #include <list>
+#include <regex>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -326,5 +327,3 @@ void lex_compare_memcmp_classify_test_cases() {
     test_lex_compare_memcmp_classify_for_pred_helper<void, unsigned char, volatile unsigned char, less<>>();
     test_lex_compare_memcmp_classify_for_pred_helper<void, volatile unsigned char, volatile unsigned char, less<>>();
 }
-
-int main() {} // COMPILE-ONLY

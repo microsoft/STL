@@ -1,33 +1,74 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
 #include <atomic>
+#include <cassert>
 #include <chrono>
+#include <condition_variable>
 #include <mutex>
 #include <shared_mutex>
 #include <thread>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-#ifndef _M_CEE
-#include <condition_variable>
-#endif // _M_CEE
 using namespace std;
 
-#ifndef _M_CEE
-STATIC_ASSERT(is_standard_layout_v<mutex>); // N4296 30.4.1.2.1 [thread.mutex.class]/3
-STATIC_ASSERT(is_standard_layout_v<recursive_mutex>); // N4296 30.4.1.2.2 [thread.mutex.recursive]/2
-STATIC_ASSERT(is_standard_layout_v<timed_mutex>); // N4296 30.4.1.3.1 [thread.timedmutex.class]/2
-STATIC_ASSERT(is_standard_layout_v<recursive_timed_mutex>); // N4296 30.4.1.3.2 [thread.timedmutex.recursive]/2
-#endif // _M_CEE
-STATIC_ASSERT(is_standard_layout_v<shared_mutex>); // N4527 30.4.1.4.1 [thread.sharedmutex.class]/2
-#ifndef _M_CEE
-STATIC_ASSERT(is_standard_layout_v<shared_timed_mutex>); // N4296 30.4.1.4.1 [thread.sharedtimedmutex.class]/2
-STATIC_ASSERT(is_standard_layout_v<condition_variable>); // N4296 30.5.1 [thread.condition.condvar]/1
-#endif // _M_CEE
+STATIC_ASSERT(is_standard_layout_v<mutex>); // N4928 [thread.mutex.class]/3
+STATIC_ASSERT(is_standard_layout_v<recursive_mutex>); // N4928 [thread.mutex.recursive]/2
+STATIC_ASSERT(is_standard_layout_v<timed_mutex>); // N4928 [thread.timedmutex.class]/2
+STATIC_ASSERT(is_standard_layout_v<recursive_timed_mutex>); // N4928 [thread.timedmutex.recursive]/2
+STATIC_ASSERT(is_standard_layout_v<shared_mutex>); // N4928 [thread.sharedmutex.class]/2
+STATIC_ASSERT(is_standard_layout_v<shared_timed_mutex>); // N4928 [thread.sharedtimedmutex.class]/2
+STATIC_ASSERT(is_standard_layout_v<condition_variable>); // N4928 [thread.condition.condvar]/1
+
+// nothrow-destructibility required by N4928 [res.on.exception.handling]/3
+STATIC_ASSERT(is_nothrow_destructible_v<mutex>);
+STATIC_ASSERT(is_nothrow_destructible_v<recursive_mutex>);
+STATIC_ASSERT(is_nothrow_destructible_v<timed_mutex>);
+STATIC_ASSERT(is_nothrow_destructible_v<recursive_timed_mutex>);
+STATIC_ASSERT(is_nothrow_destructible_v<shared_mutex>);
+STATIC_ASSERT(is_nothrow_destructible_v<shared_timed_mutex>);
+STATIC_ASSERT(is_nothrow_destructible_v<shared_lock<shared_mutex>>);
+STATIC_ASSERT(is_nothrow_destructible_v<shared_lock<shared_timed_mutex>>);
+STATIC_ASSERT(is_nothrow_destructible_v<condition_variable>);
+
+STATIC_ASSERT(is_nothrow_default_constructible_v<mutex>); // N4928 [thread.mutex.class]
+STATIC_ASSERT(is_nothrow_default_constructible_v<recursive_mutex>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<timed_mutex>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<recursive_timed_mutex>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<shared_mutex>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<shared_timed_mutex>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<shared_lock<shared_mutex>>); // N4928 [thread.lock.shared.cons]/1
+STATIC_ASSERT(is_nothrow_default_constructible_v<shared_lock<shared_timed_mutex>>); // N4928 [thread.lock.shared.cons]/1
+STATIC_ASSERT(is_nothrow_default_constructible_v<condition_variable>); // strengthened
+
+STATIC_ASSERT(is_nothrow_constructible_v<shared_lock<shared_mutex>, shared_mutex&, adopt_lock_t>); // strengthened
+STATIC_ASSERT(
+    is_nothrow_constructible_v<shared_lock<shared_mutex>, shared_mutex&, const adopt_lock_t&>); // strengthened
+STATIC_ASSERT(
+    is_nothrow_constructible_v<shared_lock<shared_timed_mutex>, shared_timed_mutex&, adopt_lock_t>); // strengthened
+STATIC_ASSERT(is_nothrow_constructible_v<shared_lock<shared_timed_mutex>, shared_timed_mutex&,
+    const adopt_lock_t&>); // strengthened
+
+// Also test strengthened exception specification for native_handle().
+STATIC_ASSERT(noexcept(declval<thread&>().native_handle()));
+#if _HAS_CXX20
+STATIC_ASSERT(noexcept(declval<jthread&>().native_handle()));
+#endif // _HAS_CXX20
+STATIC_ASSERT(noexcept(declval<mutex&>().native_handle()));
+STATIC_ASSERT(noexcept(declval<recursive_mutex&>().native_handle()));
+STATIC_ASSERT(noexcept(declval<shared_mutex&>().native_handle()));
+STATIC_ASSERT(noexcept(declval<condition_variable&>().native_handle()));
+
+// Also test mandatory and strengthened exception specification for try_lock().
+STATIC_ASSERT(noexcept(declval<mutex&>().try_lock())); // strengthened
+STATIC_ASSERT(noexcept(declval<recursive_mutex&>().try_lock())); // N4928 [thread.mutex.recursive]
+STATIC_ASSERT(noexcept(declval<timed_mutex&>().try_lock())); // strengthened
+STATIC_ASSERT(noexcept(declval<recursive_timed_mutex&>().try_lock())); // N4928 [thread.timedmutex.recursive]
+STATIC_ASSERT(noexcept(declval<shared_mutex&>().try_lock())); // strengthened
 
 void join_and_clear(vector<thread>& threads) {
     for (auto& t : threads) {
@@ -187,7 +228,6 @@ void test_try_lock_and_try_lock_shared() {
     }
 }
 
-#ifndef _M_CEE
 void test_timed_behavior() {
     { // Test try_lock_for() and try_lock_shared_for(). No timing assumptions.
         shared_timed_mutex stm;
@@ -331,7 +371,6 @@ void test_timed_behavior() {
         assert(readers == 4);
     }
 }
-#endif // _M_CEE
 
 int main() {
     test_one_writer<shared_mutex>();
@@ -340,7 +379,6 @@ int main() {
     test_readers_blocking_writer<shared_mutex>();
     test_try_lock_and_try_lock_shared<shared_mutex>();
 
-#ifndef _M_CEE
     test_one_writer<shared_timed_mutex>();
     test_multiple_readers<shared_timed_mutex>();
     test_writer_blocking_readers<shared_timed_mutex>();
@@ -348,5 +386,4 @@ int main() {
     test_try_lock_and_try_lock_shared<shared_timed_mutex>();
 
     test_timed_behavior();
-#endif // _M_CEE
 }

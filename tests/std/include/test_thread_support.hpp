@@ -5,13 +5,12 @@
 
 #include <chrono>
 #include <condition_variable>
+#include <cstdio>
+#include <cstdlib>
 #include <mutex>
-#include <stdio.h>
-#include <stdlib.h>
 #include <thread>
-#ifdef _MSC_EXTENSIONS
+
 #include <Windows.h>
-#endif // _MSC_EXTENSIONS
 
 class one_shot {
     bool unblock = false;
@@ -50,16 +49,12 @@ class watchdog {
     }
 
     static void kill_if_not_debugging() {
-#ifdef _MSC_EXTENSIONS
         if (::IsDebuggerPresent()) {
             fprintf(stdout, "Watchdog not terminating because debugger is connected.\n");
             fflush(stdout);
         } else {
             kill();
         }
-#else // ^^^ _MSC_EXTENSIONS ^^^ // vvv !_MSC_EXTENSIONS vvv
-        kill();
-#endif // _MSC_EXTENSIONS
     }
 
 public:

@@ -1,10 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-from collections import namedtuple
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 import itertools
 import os
 import re
@@ -60,7 +59,7 @@ def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
     for env_match in _ENV_VAR_MULTI_ITEM_REGEX.finditer(line):
         name = env_match.group("name")
         value = env_match.group("value")
-        result.env[env_match.group("name")] = env_match.group("value")
+        result.env[name] = value
     return result
 
 

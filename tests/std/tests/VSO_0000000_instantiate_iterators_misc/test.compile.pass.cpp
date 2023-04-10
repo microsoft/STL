@@ -11,7 +11,6 @@
 #define _SILENCE_CXX17_NEGATORS_DEPRECATION_WARNING
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
 #define _SILENCE_CXX17_RAW_STORAGE_ITERATOR_DEPRECATION_WARNING
-#define _SILENCE_CXX17_STRSTREAM_DEPRECATION_WARNING
 #define _SILENCE_CXX17_TEMPORARY_BUFFER_DEPRECATION_WARNING
 #define _SILENCE_CXX20_ATOMIC_INIT_DEPRECATION_WARNING
 #define _SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING
@@ -33,7 +32,6 @@
 #include <cfloat>
 #include <chrono>
 #include <cinttypes>
-#include <ciso646>
 #include <climits>
 #include <clocale>
 #include <cmath>
@@ -95,16 +93,12 @@
 // Headers not allowed with /clr:pure
 #ifndef _M_CEE_PURE
 #include <atomic>
-#endif // _M_CEE_PURE
-
-// Headers not allowed to be used with /clr
-#ifndef _M_CEE
 #include <condition_variable>
 #include <future>
 #include <mutex>
 #include <shared_mutex>
 #include <thread>
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 #include <experimental/filesystem>
 
@@ -114,8 +108,6 @@
 using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
-int main() {} // COMPILE-ONLY
 
 #ifndef _M_CEE_PURE
 
@@ -298,7 +290,7 @@ void chrono_test() {
     (void) (ceil<duration<float>>(time_pt));
 }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 template <typename ConditionVariable>
 void condition_variable_test_impl() {
     ConditionVariable cv{};
@@ -318,7 +310,7 @@ void condition_variable_test_impl() {
 void condition_variable_test() {
     condition_variable_test_impl<condition_variable_any>();
 }
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 void check_nested_exception_impl(const exception& ex) { // unroll nested exceptions
     try {
@@ -335,7 +327,7 @@ void exception_test_impl(const ThrowingFunction& tf) {
         try {
             tf();
         } catch (...) {
-            throw_with_nested("BOOMx2");
+            throw_with_nested("WOOFx2");
         }
     } catch (const exception& e) {
         check_nested_exception_impl(e);
@@ -347,7 +339,7 @@ void exception_test() {
     exception_ptr e_ptr = make_exception_ptr(e);
 
     exception_test_impl([]() { throw 23; }); // can't nest
-    exception_test_impl([]() { throw runtime_error("BOOM"); }); // can nest
+    exception_test_impl([]() { throw runtime_error("WOOF"); }); // can nest
 }
 
 template <typename CharType>
@@ -522,7 +514,7 @@ void functional_test() {
     // volatile binder calls not supported
 }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 template <typename Future>
 void future_test_impl(Future& f) {
     using namespace chrono;
@@ -577,7 +569,7 @@ void future_test() {
     TRAIT_V(uses_allocator, packaged_task<void()>, allocator<double>);
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 }
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 template <typename IoManipIn, typename IoManipOut>
 void iomanip_test_impl(IoManipIn in, IoManipOut out) {
@@ -958,6 +950,7 @@ void memory_test() {
     };
     my_shared_from_this msft{};
     default_delete<void> dd0{default_delete<int>{}};
+    (void) dd0;
     default_delete<int[]> dd1{default_delete<int[]>{}};
     dd1(new int[5]);
 
@@ -973,7 +966,7 @@ void memory_test() {
     owner_less_test_impl(owner_less<void>{}, sptr, wptr);
 }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 template <typename Mutex>
 void timed_mutex_test_impl() {
     Mutex mtx{};
@@ -1003,7 +996,7 @@ void mutex_test() {
     timed_mutex_test_impl<timed_mutex>();
     timed_mutex_test_impl<recursive_timed_mutex>();
 }
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 void ostream_test() {
     stringstream ss{};
@@ -1281,7 +1274,8 @@ template <typename RegexTokenIterator>
 void regex_token_iterator_test_impl() {
     using it_type      = typename RegexTokenIterator::value_type::iterator;
     int submatches[10] = {0};
-    it_type start{}, finish{};
+    it_type start{};
+    it_type finish{};
     typename RegexTokenIterator::regex_type rgx{};
     RegexTokenIterator rti0(start, finish, rgx, submatches);
 }
@@ -1405,7 +1399,7 @@ void scoped_allocator_test() {
     equality_test(saa1, saa7);
 }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 void shared_mutex_test() {
     using namespace chrono;
 
@@ -1422,7 +1416,7 @@ void shared_mutex_test() {
     (void) sl2.try_lock_until(system_clock::now());
     swap_test(sl1);
 }
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 template <typename T>
 void sstream_test_impl() {
@@ -1453,7 +1447,7 @@ void streambuf_test() {
     // istreambuf_iterator and ostreambuf_iterator covered in iterators test
 }
 
-#ifndef _M_CEE
+#ifndef _M_CEE_PURE
 void thread_test() {
     using namespace chrono;
 
@@ -1467,7 +1461,7 @@ void thread_test() {
     cout << thr_id;
     hash_test(thr_id);
 }
-#endif // _M_CEE
+#endif // _M_CEE_PURE
 
 void tuple_test() {
     allocator<double> my_alloc{};

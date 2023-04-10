@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <stdatomic.h>
+#include <__msvc_cxx_stdatomic.hpp>
 
 static_assert(ATOMIC_BOOL_LOCK_FREE == 2);
 static_assert(ATOMIC_CHAR_LOCK_FREE == 2);
@@ -100,6 +100,8 @@ namespace test {
     using ::atomic_fetch_or_explicit;
     using ::atomic_fetch_sub;
     using ::atomic_fetch_sub_explicit;
+    using ::atomic_fetch_xor;
+    using ::atomic_fetch_xor_explicit;
     using ::atomic_flag_clear;
     using ::atomic_flag_clear_explicit;
     using ::atomic_flag_test_and_set;
@@ -113,5 +115,3 @@ namespace test {
 
 static_assert(std::atomic_thread_fence == atomic_thread_fence);
 static_assert(std::atomic_signal_fence == atomic_signal_fence);
-
-int main() {} // COMPILE-ONLY

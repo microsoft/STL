@@ -41,7 +41,6 @@ _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL locale::global(const locale& loc) {
     _END_LOCK()
 }
 
-
 #if STDCPP_IMPLIB || !defined(_M_CEE_PURE)
 // facets associated with C categories
 #define ADDFAC(Facet, cat, ptrimp, ptrloc)                                                                  \
@@ -71,9 +70,7 @@ locale::_Locimp* __CLRCALL_OR_CDECL locale::_Locimp::_Makeloc(
     ADDFAC(_Tc5, cat, ptrimp, ptrloc);
     _Locimp::_Makexloc(lobj, cat, ptrimp, ptrloc);
     _Locimp::_Makewloc(lobj, cat, ptrimp, ptrloc);
-#ifdef _NATIVE_WCHAR_T_DEFINED
     _Locimp::_Makeushloc(lobj, cat, ptrimp, ptrloc);
-#endif
     ptrimp->_Catmask |= cat;
     ptrimp->_Name = lobj._Getname();
     return ptrimp;
@@ -81,7 +78,7 @@ locale::_Locimp* __CLRCALL_OR_CDECL locale::_Locimp::_Makeloc(
 
 void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_ctor(
     locale::_Locimp* _This, const locale::_Locimp& imp) { // construct a _Locimp from a copy
-    if (&imp == _This->_Clocptr) {
+    if (&imp == _Clocptr) {
         _BEGIN_LOCINFO(_Lobj)
         _Makeloc(_Lobj, locale::all, _This, nullptr);
         _END_LOCINFO()
@@ -104,7 +101,6 @@ void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_ctor(
     }
 }
 #endif // STDCPP_IMPLIB || !defined(_M_CEE_PURE)
-
 
 void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_Addfac(
     _Locimp* _This, locale::facet* ptrfac, size_t id) { // add a facet to a locale

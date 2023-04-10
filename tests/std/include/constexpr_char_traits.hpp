@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
-#include <stdio.h>
-#include <wchar.h>
+#include <cstdio>
+#include <cwchar>
 
 struct constexpr_char_traits {
     typedef char char_type;

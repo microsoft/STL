@@ -1,15 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <cmath>
-#include <inttypes.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <limits>
 #include <map>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 using namespace std;
 
@@ -50,7 +49,7 @@ class test_std_pow_against_crt {
         int powfClass = fpclassify(powfOut);
         if (powClass != powfClass) {
             ++badClasses;
-            printf("Bad class for 0x%08" PRIX32 " (%E)\n", baseCandidate, input);
+            printf("Bad class for 0x%08X (%E)\n", static_cast<unsigned int>(baseCandidate), input);
             return;
         }
 
@@ -76,7 +75,8 @@ public:
 
         this->single(numeric_limits<uint32_t>::max());
         for (auto const& p : ulpOff) {
-            printf("%05" PRIu32 " ULP off: %05" PRIu32 " values\n", p.second, p.first);
+            printf(
+                "%05u ULP off: %05u values\n", static_cast<unsigned int>(p.second), static_cast<unsigned int>(p.first));
         }
 
         assert(badClasses == 0);

@@ -18,7 +18,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 class initializer_list {
 public:
     using value_type      = _Elem;
@@ -51,12 +51,12 @@ private:
     const _Elem* _Last;
 };
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD constexpr const _Elem* begin(initializer_list<_Elem> _Ilist) noexcept {
     return _Ilist.begin();
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD constexpr const _Elem* end(initializer_list<_Elem> _Ilist) noexcept {
     return _Ilist.end();
 }

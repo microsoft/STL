@@ -27,7 +27,7 @@ _EXTERN_C
     } // STET
 
 #if 0
-#include <stdio.h>
+#include <cstdio>
 
 static void printit(const char* s, FTYPE* p, int n) { // print xp array
     int i;
@@ -310,16 +310,6 @@ FTYPE* FNAME(Xp_addx)(FTYPE* p, int n, const FTYPE* q, int m) { // add an extend
     return p;
 }
 
-FTYPE* FNAME(Xp_subx)(FTYPE* p, int n, const FTYPE* q, int m) { // subtract an extended precision value
-    int k;
-
-    for (k = 0; k < m && q[k] != FLIT(0.0); ++k) {
-        FNAME(Xp_addh)(p, n, -q[k]);
-    }
-
-    return p;
-}
-
 FTYPE* FNAME(Xp_ldexpx)(FTYPE* p, int n, int m) { // scale an extended precision value
     int k;
     for (k = 0; k < n; ++k) {
@@ -354,80 +344,6 @@ FTYPE* FNAME(Xp_mulx)(FTYPE* p, int n, const FTYPE* q, int m, FTYPE* ptemp2) {
     return p;
 }
 
-FTYPE* FNAME(Xp_invx)(FTYPE* p, int n, FTYPE* ptemp4) { // invert an extended precision value (needs 4 * n temp)
-    short errx;
-
-    if (n != 0) {
-        if (0 <= (errx = FNAME(Dtest)(&p[0]))) { // not finite, return special value
-            if (errx == _INFCODE) {
-                p[0] = FLIT(0.0); // 1/Inf == 0
-            } else if (errx == 0) {
-                p[0] = FCONST(Inf); // 1/0 == Inf
-            }
-            // else 1/NaN == NaN
-        } else { // p[0] is finite nonzero, invert it
-            FTYPE* pac    = ptemp4;
-            FTYPE* py     = ptemp4 + n;
-            FTYPE* ptemp2 = py + n;
-            FTYPE x0      = p[0];
-            int k;
-
-            FNAME(Xp_movx)(py, n, p);
-            FNAME(Xp_mulh)(py, n, -FLIT(1.0)); // py = -x
-
-            if (1 < n) {
-                x0 += p[1];
-            }
-
-            FNAME(Xp_setw)(p, n, FLIT(1.0) / x0); // p = y
-            for (k = 1; k < n; k <<= 1) { // iterate to double previous precision of 1/x
-                FNAME(Xp_movx)(pac, n, p);
-                FNAME(Xp_mulx)(pac, n, py, n, ptemp2);
-                FNAME(Xp_addh)(pac, n, FLIT(1.0)); // 1 - x * y
-                FNAME(Xp_mulx)(pac, n, p, n, ptemp2); // y * (1 - x * y)
-                FNAME(Xp_addx)(p, n, pac, n); // y += y * (1 - x * y)
-            }
-        }
-    }
-
-    return p;
-}
-
-FTYPE* FNAME(Xp_sqrtx)(FTYPE* p, int n, FTYPE* ptemp4) {
-    // find square root of an extended precision value (needs 4 * n temp)
-    if (n != 0) {
-        if (0 <= FNAME(Dtest)(&p[0]) || p[0] < FLIT(0.0)) { // not finite nonnegative, return special value
-            if (p[0] < FLIT(0.0)) { // sqrt(negative), report domain error
-                _Feraise(_FE_INVALID);
-                p[0] = FCONST(Nan);
-            }
-        } else { // worth iterating, compute x * sqrt(1/x)
-            FTYPE* pac    = ptemp4;
-            FTYPE* py     = ptemp4 + n;
-            FTYPE* ptemp2 = py + n;
-            FTYPE x0      = p[0];
-            int k;
-
-            if (1 < n) {
-                x0 += p[1];
-            }
-
-            FNAME(Xp_setw)(py, n, static_cast<FTYPE>(FLIT(1.0) / FFUN(sqrt)(x0))); // py = y
-            for (k = 2; k < n; k <<= 1) { // iterate to double previous precision of sqrt(1/x)
-                FNAME(Xp_movx)(pac, n, py);
-                FNAME(Xp_mulh)(pac, n, -FLIT(0.5));
-                FNAME(Xp_mulx)(pac, n, p, n, ptemp2);
-                FNAME(Xp_mulx)(pac, n, py, n, ptemp2);
-                FNAME(Xp_addh)(pac, n, FLIT(1.5)); // 3/2 - x * y * y / 2
-                FNAME(Xp_mulx)(py, n, pac, n, ptemp2); // y *= 3/2 - x * y * y / 2
-            }
-
-            FNAME(Xp_mulx)(p, n, py, n, ptemp2); // x * sqrt(1/x)
-        }
-    }
-
-    return p;
-}
 #if !defined(MRTDLL)
 _END_EXTERN_C
 #endif // !defined(MRTDLL)

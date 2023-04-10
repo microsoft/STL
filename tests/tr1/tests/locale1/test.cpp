@@ -41,11 +41,12 @@ void test_codecvt() { // test codecvt<char, char, mbstate_t>
 
     int i, j, ok;
 
-    for (ok = 1, i = sizeof(res_tab) / sizeof(res_tab[0]); 0 < i;)
+    for (ok = 1, i = sizeof(res_tab) / sizeof(res_tab[0]); 0 < i;) {
         for (j = --i; 0 < j;) { // test an (i, j) pair
             int testno = i * 0x100 + j;
             ok         = CHECK0(ok, testno, res_tab[i] != res_tab[--j]);
         }
+    }
     CHECK_MSG("codecvt_base::result values are distinct", ok);
 
     const char ibuf[] = "abc";
@@ -187,11 +188,12 @@ void test_ctype() { // test ctype<char>
 
         int i, j, ok;
 
-        for (ok = 1, i = sizeof(masks) / sizeof(masks[0]); 0 < i;)
+        for (ok = 1, i = sizeof(masks) / sizeof(masks[0]); 0 < i;) {
             for (j = --i; 0 < j;) { // test an (i, j) pair
                 int testno = i * 0x100 + j;
                 ok         = CHECK0(ok, testno, masks[i] != masks[--j]);
             }
+        }
         CHECK_MSG("ctype_base::mask values are distinct", ok);
 
         Myxctype* pf3        = new Myxctype(masks);
@@ -231,20 +233,22 @@ struct Myxctype2 : public STD ctype<char> { // get protected members
     }
 
     virtual char do_widen(char ch) const { // widen a character
-        if (ch == '-')
+        if (ch == '-') {
             return '@';
-        else if (ch == '0')
+        } else if (ch == '0') {
             return 'A';
-        else if (ch == '1')
+        } else if (ch == '1') {
             return 'b';
-        else
+        } else {
             return ch;
+        }
     }
 
     virtual const char* do_widen(const char* first, const char* last,
         char* dest) const { // widen a character sequence
-        for (; first != last; ++first, ++dest)
+        for (; first != last; ++first, ++dest) {
             *dest = do_widen(*first);
+        }
         return first;
     }
 };
@@ -451,16 +455,18 @@ void test_main() { // test basic workings of locale definitions
 
     int i, j, ok;
 
-    for (ok = 1, i = sizeof(cats) / sizeof(cats[0]); 0 < i;)
+    for (ok = 1, i = sizeof(cats) / sizeof(cats[0]); 0 < i;) {
         for (j = --i; 0 < j;) { // test an (i, j) pair
             int testno = i * 0x100 + j;
             ok         = CHECK0(ok, testno, cats[i] != cats[--j]);
         }
+    }
     CHECK_MSG("locale::category values are distinct", ok);
 
     STD locale::category allcats = 0;
-    for (i = 1; i < 7; ++i)
+    for (i = 1; i < 7; ++i) {
         allcats |= cats[i];
+    }
     CHECK_INT(cats[7] & allcats, allcats);
 
     STD locale cloc("C");

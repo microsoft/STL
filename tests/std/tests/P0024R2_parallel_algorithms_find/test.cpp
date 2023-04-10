@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <execution>
 #include <forward_list>
 #include <iterator>
@@ -42,7 +42,7 @@ void test_case_find_parallel(const size_t testSize) {
             assert(find_if_not(par, tmp.begin(), tmp.end(), is_zero) == target);
             *target = zero;
         }
-#else // ^^^ EXHAUSTIVE ^^^ // vvv !EXHAUSTIVE vvv
+#else // ^^^ EXHAUSTIVE / !EXHAUSTIVE vvv
         if (testSize != 0) {
             auto middle = tmp.begin();
             advance(middle, static_cast<ptrdiff_t>(testSize / 2));

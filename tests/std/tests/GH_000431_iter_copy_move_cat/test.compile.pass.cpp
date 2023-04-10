@@ -182,10 +182,10 @@ STATIC_ASSERT(!is_trivial_v<TriviallyCopyableStruct>);
 struct TriviallyMovableStruct {
     int i;
     TriviallyMovableStruct();
-    TriviallyMovableStruct(const TriviallyMovableStruct&) = delete;
-    TriviallyMovableStruct(TriviallyMovableStruct&&)      = default;
+    TriviallyMovableStruct(const TriviallyMovableStruct&)            = delete;
+    TriviallyMovableStruct(TriviallyMovableStruct&&)                 = default;
     TriviallyMovableStruct& operator=(const TriviallyMovableStruct&) = delete;
-    TriviallyMovableStruct& operator=(TriviallyMovableStruct&&) = default;
+    TriviallyMovableStruct& operator=(TriviallyMovableStruct&&)      = default;
 };
 STATIC_ASSERT(is_trivially_copyable_v<TriviallyMovableStruct>);
 STATIC_ASSERT(!is_trivial_v<TriviallyMovableStruct>);
@@ -213,7 +213,7 @@ struct TriviallyAssignableStruct {
     TriviallyAssignableStruct(TriviallyAssignableStruct&&);
 
     TriviallyAssignableStruct& operator=(const TriviallyAssignableStruct&) = default;
-    TriviallyAssignableStruct& operator=(TriviallyAssignableStruct&&) = default;
+    TriviallyAssignableStruct& operator=(TriviallyAssignableStruct&&)      = default;
 };
 STATIC_ASSERT(!is_trivially_copy_constructible_v<TriviallyAssignableStruct>);
 STATIC_ASSERT(!is_trivially_move_constructible_v<TriviallyAssignableStruct>);
@@ -387,7 +387,7 @@ void iter_cat_test_cases() {
     constexpr bool enable_derived_to_base =
 #ifdef __cpp_lib_is_pointer_interconvertible
         true
-#else // ^^^ __cpp_lib_is_pointer_interconvertible ^^^ / vvv !__cpp_lib_is_pointer_interconvertible vvv
+#else // ^^^ __cpp_lib_is_pointer_interconvertible / !__cpp_lib_is_pointer_interconvertible vvv
         false
 #endif // ^^^ !__cpp_lib_is_pointer_interconvertible ^^^
         ;
@@ -482,5 +482,3 @@ void iter_cat_test_cases() {
     test_iter_cat_for_containers<false, array<int, 8>, array<volatile int, 8>>();
     test_iter_cat_for_containers<false, array<volatile int, 8>, array<volatile int, 8>>();
 }
-
-int main() {} // COMPILE-ONLY

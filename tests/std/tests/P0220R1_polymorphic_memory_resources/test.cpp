@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING
+#define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
 
 #include <algorithm>
 #include <cmath>
@@ -9,6 +10,8 @@
 #include <cstdlib>
 #include <deque>
 #include <forward_list>
+#include <functional>
+#include <limits>
 #include <list>
 #include <malloc.h>
 #include <map>
@@ -23,6 +26,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+constexpr auto size_max = std::numeric_limits<std::size_t>::max();
 
 #pragma warning(disable : 6326) // Potential comparison of a constant with another constant.
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
@@ -163,6 +168,7 @@ namespace {
             } else {
                 result = std::malloc(bytes);
             }
+
             if (result) {
                 return result;
             }
@@ -194,15 +200,17 @@ namespace {
             } else {
                 bytes_ = bytes;
             }
+
             if (align_ != 0) {
                 CHECK(align == align_);
             } else {
                 align_ = align;
             }
+
             if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 return ptr_ = ::operator new(bytes);
             } else {
-                return ptr_ = ::operator new (bytes, std::align_val_t{align});
+                return ptr_ = ::operator new(bytes, std::align_val_t{align});
             }
         }
 
@@ -214,6 +222,7 @@ namespace {
                 } else {
                     bytes_ = bytes;
                 }
+
                 if (align_ != 0) {
                     CHECK(align == align_);
                 } else {
@@ -223,14 +232,16 @@ namespace {
                 if (bytes_ != 0) {
                     CHECK(bytes == bytes_);
                 }
+
                 if (align_ != 0) {
                     CHECK(align == align_);
                 }
             }
+
             if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 ::operator delete(ptr, bytes);
             } else {
-                ::operator delete (ptr, bytes, std::align_val_t{align});
+                ::operator delete(ptr, bytes, std::align_val_t{align});
             }
         }
 
@@ -251,7 +262,7 @@ namespace {
             CHECK(allocations_.empty());
         }
 
-        recording_resource(recording_resource const&) = delete;
+        recording_resource(recording_resource const&)            = delete;
         recording_resource& operator=(recording_resource const&) = delete;
 
         void release() noexcept {
@@ -284,7 +295,7 @@ namespace {
     };
 
     void analyze_geometric_growth(size_t const* first, size_t const n) {
-        // http://mathworld.wolfram.com/LeastSquaresFittingExponential.html
+        // https://mathworld.wolfram.com/LeastSquaresFittingExponential.html
         // https://en.wikipedia.org/wiki/Pearson_correlation_coefficient#For_a_sample
         double sum_of_x           = 0;
         double sum_of_y           = 0;
@@ -348,7 +359,7 @@ namespace {
                             if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                                 ::operator delete(ptr, size);
                             } else {
-                                ::operator delete (ptr, size, std::align_val_t{align});
+                                ::operator delete(ptr, size, std::align_val_t{align});
                             }
                         }
                     }
@@ -361,7 +372,7 @@ namespace {
                         for (auto align = 1_zu; align <= 512_zu && size % align == 0_zu; align *= 2_zu) {
                             auto ptr = (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__)
                                          ? ::operator new(size)
-                                         : ::operator new (size, std::align_val_t{align});
+                                         : ::operator new(size, std::align_val_t{align});
                             ndr.deallocate(ptr, size, align);
                         }
                     }
@@ -402,12 +413,12 @@ namespace {
                         for (auto align = 1_zu; align <= 512_zu && size % align == 0_zu; align *= 2_zu) {
                             void* ptr = align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__
                                           ? ::operator new(size)
-                                          : ::operator new (size, std::align_val_t{align});
+                                          : ::operator new(size, std::align_val_t{align});
                             nmr.deallocate(ptr, size, align);
                             if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                                 ::operator delete(ptr, size);
                             } else {
-                                ::operator delete (ptr, size, std::align_val_t{align});
+                                ::operator delete(ptr, size, std::align_val_t{align});
                             }
                         }
                     }
@@ -605,7 +616,7 @@ namespace {
                     std::pmr::polymorphic_allocator<T> alloc = &checked;
 
                     try {
-                        (void) alloc.allocate(SIZE_MAX / sizeof(T) + 1);
+                        (void) alloc.allocate(size_max / sizeof(T) + 1);
                         CHECK(false);
                     } catch (std::bad_alloc&) {
                     }
@@ -945,6 +956,45 @@ namespace {
             }
         } // namespace eq
 
+        namespace eq_cvt {
+            void test() {
+                const auto pres                        = std::pmr::get_default_resource();
+                std::pmr::polymorphic_allocator<int> a = pres;
+                const auto ra                          = std::ref(a);
+                const auto cra                         = std::cref(a);
+
+                CHECK(a == pres);
+                CHECK(a == ra);
+                CHECK(a == cra);
+                CHECK(pres == a);
+                CHECK(pres == ra);
+                CHECK(pres == cra);
+                CHECK(ra == a);
+                CHECK(ra == pres);
+                CHECK(ra == ra);
+                CHECK(ra == cra);
+                CHECK(cra == a);
+                CHECK(cra == pres);
+                CHECK(cra == ra);
+                CHECK(cra == cra);
+
+                CHECK(!(a != pres));
+                CHECK(!(a != ra));
+                CHECK(!(a != cra));
+                CHECK(!(pres != a));
+                CHECK(!(pres != ra));
+                CHECK(!(pres != cra));
+                CHECK(!(ra != a));
+                CHECK(!(ra != pres));
+                CHECK(!(ra != ra));
+                CHECK(!(ra != cra));
+                CHECK(!(cra != a));
+                CHECK(!(cra != pres));
+                CHECK(!(cra != ra));
+                CHECK(!(cra != cra));
+            }
+        } // namespace eq_cvt
+
         namespace destroy {
             void test() {
                 bool destroyed = false;
@@ -955,7 +1005,7 @@ namespace {
                     ~S() {
                         destroy_ref = true;
                     }
-                    S(const S&) = delete;
+                    S(const S&)            = delete;
                     S& operator=(const S&) = delete;
                 };
                 std::pmr::polymorphic_allocator<S> a{};
@@ -1200,13 +1250,11 @@ namespace {
                     std::pmr::unsynchronized_pool_resource upr{{0_zu, 64_zu}, &rr};
                     lambda(&upr);
                 }
-#ifndef _M_CEE
                 {
                     recording_resource rr;
                     std::pmr::synchronized_pool_resource upr{{0_zu, 64_zu}, &rr};
                     lambda(&upr);
                 }
-#endif // _M_CEE
             }
 
             void test_medium_allocation() {
@@ -1298,7 +1346,7 @@ namespace {
         } // namespace allocate_deallocate
 
         namespace release {
-            void test() { //
+            void test() {
                 recording_resource rr;
                 std::pmr::unsynchronized_pool_resource upr{{0_zu, sizeof(void*) << 8}, &rr};
 
@@ -1408,9 +1456,7 @@ namespace {
 
             void test() {
                 test_is_equal<std::pmr::unsynchronized_pool_resource>();
-#ifndef _M_CEE
                 test_is_equal<std::pmr::synchronized_pool_resource>();
-#endif // _M_CEE
             }
         } // namespace is_equal
     } // namespace pool
@@ -1451,6 +1497,68 @@ namespace {
             pmr_container_test<std::pmr::wsmatch>();
         }
     } // namespace containers
+
+    namespace map_containers {
+        struct pair_conv {
+            operator std::pair<const int, int>() const {
+                return {};
+            }
+        };
+
+        struct mem_pair_conv {
+            std::pair<const int, int> pair_{1, 42};
+            operator const std::pair<const int, int>&() const {
+                return pair_;
+            }
+        };
+
+        template <class T>
+        void pair_conversion_test() {
+            T cont;
+            cont.emplace(pair_conv{});
+            cont.emplace(mem_pair_conv{});
+        }
+
+        void test() {
+            pair_conversion_test<std::pmr::map<int, int>>();
+            pair_conversion_test<std::pmr::multimap<int, int>>();
+            pair_conversion_test<std::pmr::unordered_map<int, int>>();
+            pair_conversion_test<std::pmr::unordered_multimap<int, int>>();
+        }
+
+        // Test cv-qualified source type (LWG-3677)
+        void lwg3677_test() {
+            using PairType = std::pair<const int, int>;
+
+            alignas(PairType) unsigned char buffer[sizeof(PairType)];
+            const auto raw_ptr = reinterpret_cast<PairType*>(buffer);
+
+            std::pmr::polymorphic_allocator<PairType> al;
+
+            al.construct(raw_ptr, pair_conv{});
+            al.construct(static_cast<const PairType*>(raw_ptr), pair_conv{});
+            al.construct(static_cast<volatile PairType*>(raw_ptr), pair_conv{});
+            al.construct(static_cast<const volatile PairType*>(raw_ptr), pair_conv{});
+
+            al.construct(raw_ptr, mem_pair_conv{});
+            al.construct(static_cast<const PairType*>(raw_ptr), mem_pair_conv{});
+            al.construct(static_cast<volatile PairType*>(raw_ptr), mem_pair_conv{});
+            al.construct(static_cast<const volatile PairType*>(raw_ptr), mem_pair_conv{});
+        }
+    } // namespace map_containers
+
+    void test_gh3408() {
+        // We ignored the possibility that max_blocks_per_chunk could be less than _Default_next_capacity
+        recording_resource upstream;
+        std::pmr::pool_options options{};
+        options.max_blocks_per_chunk = 1;
+        std::pmr::unsynchronized_pool_resource res{options, &upstream};
+        const std::size_t size = 0x8009;
+        (void) res.allocate(size);
+        const allocation& alloc = upstream.allocations_[upstream.allocations_.size() - 1];
+        CHECK(alloc.size >= 0x10000);
+        CHECK(alloc.size < 2 * 0x10000);
+    }
 } // unnamed namespace
 
 int main() {
@@ -1475,6 +1583,7 @@ int main() {
     polymorphic_allocator::mem::select_on_container_copy_construction::test();
     polymorphic_allocator::mem::resource::test();
     polymorphic_allocator::eq::test();
+    polymorphic_allocator::eq_cvt::test();
     polymorphic_allocator::destroy::test();
 
     monotonic::ctor::buffer_upstream::test();
@@ -1491,4 +1600,10 @@ int main() {
     pool::allocate_deallocate::test();
 
     containers::test();
+
+    map_containers::test();
+
+    map_containers::lwg3677_test();
+
+    test_gh3408();
 }

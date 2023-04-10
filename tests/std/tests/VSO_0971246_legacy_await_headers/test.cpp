@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cstdio>
 #include <experimental/generator>
 #include <future>
 #include <optional>
-#include <stdio.h>
 #include <vector>
 
 using namespace std::experimental;
@@ -75,7 +75,7 @@ struct Immovable {
 
     explicit Immovable(int v) : val(v) {}
 
-    Immovable(Immovable const&) = delete;
+    Immovable(Immovable const&)            = delete;
     Immovable& operator=(Immovable const&) = delete;
 };
 

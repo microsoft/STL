@@ -23,7 +23,7 @@ namespace {
         CONDITION_VARIABLE _Condition;
     };
 
-    struct _NODISCARD _Guarded_wait_context : _Wait_context {
+    struct [[nodiscard]] _Guarded_wait_context : _Wait_context {
         _Guarded_wait_context(const void* _Storage_, _Wait_context* const _Head) noexcept
             : _Wait_context{_Storage_, _Head, _Head->_Prev, CONDITION_VARIABLE_INIT} {
             _Prev->_Next = this;
@@ -37,11 +37,11 @@ namespace {
             _Prev->_Next           = _Next_local;
         }
 
-        _Guarded_wait_context(const _Guarded_wait_context&) = delete;
+        _Guarded_wait_context(const _Guarded_wait_context&)            = delete;
         _Guarded_wait_context& operator=(const _Guarded_wait_context&) = delete;
     };
 
-    class _NODISCARD _SrwLock_guard {
+    class [[nodiscard]] _SrwLock_guard {
     public:
         explicit _SrwLock_guard(SRWLOCK& _Locked_) noexcept : _Locked(&_Locked_) {
             AcquireSRWLockExclusive(_Locked);
@@ -51,19 +51,22 @@ namespace {
             ReleaseSRWLockExclusive(_Locked);
         }
 
-        _SrwLock_guard(const _SrwLock_guard&) = delete;
+        _SrwLock_guard(const _SrwLock_guard&)            = delete;
         _SrwLock_guard& operator=(const _SrwLock_guard&) = delete;
 
     private:
         SRWLOCK* _Locked;
     };
 
-
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
     struct alignas(_STD hardware_destructive_interference_size) _Wait_table_entry {
-        SRWLOCK _Lock                 = SRWLOCK_INIT;
-        _Wait_context _Wait_list_head = {nullptr, &_Wait_list_head, &_Wait_list_head, CONDITION_VARIABLE_INIT};
+        SRWLOCK _Lock = SRWLOCK_INIT;
+        // Initialize to all zeros, self-link lazily to optimize for space.
+        // Since _Wait_table_entry is initialized to all zero bytes,
+        // _Atomic_wait_table_entry::wait_table will also be all zero bytes.
+        // It can thus can be stored in the .bss section, and not in the actual binary.
+        _Wait_context _Wait_list_head = {nullptr, nullptr, nullptr, CONDITION_VARIABLE_INIT};
 
         constexpr _Wait_table_entry() noexcept = default;
     };
@@ -88,7 +91,7 @@ namespace {
 #ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 #if _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WIN8
 #define _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE 1
-#else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WIN8 // _STL_WIN32_WINNT < _STL_WIN32_WINNT_WIN8 vvv
+#else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _STL_WIN32_WINNT_WIN8 vvv
 #define _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE 0
 #endif // ^^^ _STL_WIN32_WINNT < _STL_WIN32_WINNT_WIN8 ^^^
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
@@ -102,7 +105,6 @@ namespace {
 #define __crtWakeByAddressAll    WakeByAddressAll
 
 #else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE / !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
-
 
     struct _Wait_functions_table {
         _STD atomic<decltype(&::WaitOnAddress)> _Pfn_WaitOnAddress{nullptr};
@@ -198,8 +200,8 @@ namespace {
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 
-    _NODISCARD unsigned char __std_atomic_compare_exchange_128_fallback(_Inout_bytecount_(16) long long* _Destination,
-        _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
+    [[nodiscard]] unsigned char __std_atomic_compare_exchange_128_fallback(
+        _Inout_bytecount_(16) long long* _Destination, _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
         _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
         static SRWLOCK _Mtx = SRWLOCK_INIT;
         _SrwLock_guard _Guard{_Mtx};
@@ -216,7 +218,6 @@ namespace {
         }
     }
 } // unnamed namespace
-
 
 _EXTERN_C
 int __stdcall __std_atomic_wait_direct(const void* const _Storage, void* const _Comparand, const size_t _Size,
@@ -263,6 +264,11 @@ void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noex
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     _SrwLock_guard _Guard(_Entry._Lock);
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
+
+    if (_Context == nullptr) {
+        return;
+    }
+
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
             // Can't move wake outside SRWLOCKed section: SRWLOCK also protects the _Context itself
@@ -276,6 +282,11 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     _SrwLock_guard _Guard(_Entry._Lock);
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
+
+    if (_Context == nullptr) {
+        return;
+    }
+
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
             // Can't move wake outside SRWLOCKed section: SRWLOCK also protects the _Context itself
@@ -289,6 +300,12 @@ int __stdcall __std_atomic_wait_indirect(const void* _Storage, void* _Comparand,
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
 
     _SrwLock_guard _Guard(_Entry._Lock);
+
+    if (_Entry._Wait_list_head._Next == nullptr) {
+        _Entry._Wait_list_head._Next = &_Entry._Wait_list_head;
+        _Entry._Wait_list_head._Prev = &_Entry._Wait_list_head;
+    }
+
     _Guarded_wait_context _Context{_Storage, &_Entry._Wait_list_head};
     for (;;) {
         if (!_Are_equal(_Storage, _Comparand, _Size, _Param)) { // note: under lock to prevent lost wakes
@@ -340,7 +357,7 @@ __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_lev
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     (void) _Requested_api_level;
     return __std_atomic_api_level::__has_wait_on_address;
-#else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
+#else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE / !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
     switch (_Requested_api_level) {
     case __std_atomic_api_level::__not_set:
     case __std_atomic_api_level::__detecting:
@@ -377,14 +394,14 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
 }
 #pragma warning(pop)
 
-_NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_bytecount_(16) long long* _Destination,
+[[nodiscard]] unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_bytecount_(16) long long* _Destination,
     _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
     _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
 #if !defined(_WIN64)
     return __std_atomic_compare_exchange_128_fallback(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
 #elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
     return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
+#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 / _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
     if (__std_atomic_has_cmpxchg16b()) {
         return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
     }
@@ -393,12 +410,12 @@ _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_byte
 #endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0
 }
 
-_NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept {
+[[nodiscard]] char __stdcall __std_atomic_has_cmpxchg16b() noexcept {
 #if !defined(_WIN64)
     return false;
 #elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
     return true;
-#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
+#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 / _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
     constexpr char _Cmpxchg_Absent  = 0;
     constexpr char _Cmpxchg_Present = 1;
     constexpr char _Cmpxchg_Unknown = 2;

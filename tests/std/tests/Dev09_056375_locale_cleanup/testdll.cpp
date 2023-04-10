@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <locale>
 
 #include <Windows.h>
@@ -15,7 +15,7 @@ ref struct Test {
     static
 #else
 extern "C" {
-_declspec(dllexport)
+__declspec(dllexport)
 #endif
 
         void

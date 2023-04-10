@@ -19,8 +19,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_CXX17_DEPRECATE_C_HEADER typedef int _Header_ctgmath;
-using _Hdr_ctgmath = _Header_ctgmath;
+using _Header_ctgmath _CXX17_DEPRECATE_C_HEADER = int;
+using _Hdr_ctgmath                              = _Header_ctgmath;
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

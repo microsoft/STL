@@ -26,6 +26,7 @@ def getDefaultFeatures(config, litConfig):
     locales = {
       'en_US.UTF-8':     ['en_US.UTF-8', 'en_US.utf8', 'English_United States.1252'],
       'fr_FR.UTF-8':     ['fr_FR.UTF-8', 'fr_FR.utf8', 'French_France.1252'],
+      'ja_JP.UTF-8':     ['ja_JP.UTF-8', 'ja_JP.utf8', 'Japanese_Japan.932'],
       'ru_RU.UTF-8':     ['ru_RU.UTF-8', 'ru_RU.utf8', 'Russian_Russia.1251'],
       'zh_CN.UTF-8':     ['zh_CN.UTF-8', 'zh_CN.utf8', 'Chinese_China.936'],
       'fr_CA.ISO8859-1': ['fr_CA.ISO8859-1', 'French_Canada.1252'],
@@ -48,6 +49,7 @@ def getDefaultFeatures(config, litConfig):
         DEFAULT_FEATURES.append(Feature(name='x86'))
 
     elif litConfig.target_arch.casefold() == 'x64'.casefold():
+        DEFAULT_FEATURES.append(Feature(name='ubsan'))
         DEFAULT_FEATURES.append(Feature(name='edg'))
         DEFAULT_FEATURES.append(Feature(name='arch_avx2'))
         DEFAULT_FEATURES.append(Feature(name='x64'))

@@ -1,0 +1,9 @@
+{
+    "version": 1,
+    "revision": 0,
+    "library": "microsoft/STL",
+    "module-sources": [
+        "std.ixx",
+        "std.compat.ixx"
+    ]
+}

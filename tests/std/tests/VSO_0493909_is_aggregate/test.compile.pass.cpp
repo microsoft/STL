@@ -7,8 +7,6 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-int main() {} // COMPILE-ONLY
-
 STATIC_ASSERT(!is_aggregate_v<int>);
 STATIC_ASSERT(!is_aggregate_v<const int>);
 STATIC_ASSERT(!is_aggregate_v<void>);
@@ -234,6 +232,8 @@ STATIC_ASSERT(!is_aggregate_v<NonAggVirtualBaseFunc>);
 struct NonAggVirtualBaseIndirect : NonAggVirtualBase {};
 STATIC_ASSERT(!is_aggregate_v<NonAggVirtualBaseIndirect>);
 
+struct Incomplete;
+
 STATIC_ASSERT(is_aggregate_v<int[10]>);
 STATIC_ASSERT(is_aggregate_v<int[]>);
 STATIC_ASSERT(is_aggregate_v<Cxx14Agg[]>);
@@ -242,11 +242,14 @@ STATIC_ASSERT(is_aggregate_v<NonAggDefaultCtor[]>);
 STATIC_ASSERT(is_aggregate_v<int* [10]>);
 STATIC_ASSERT(is_aggregate_v<NonAggDefaultCtor[2][3]>);
 STATIC_ASSERT(is_aggregate_v<Empty[10]>);
+STATIC_ASSERT(is_aggregate_v<Incomplete[]>);
+STATIC_ASSERT(is_aggregate_v<Incomplete[10]>);
 
 STATIC_ASSERT(!is_aggregate_v<int&>);
 STATIC_ASSERT(!is_aggregate_v<const int*>);
 STATIC_ASSERT(!is_aggregate_v<const Cxx14Agg&>);
 STATIC_ASSERT(!is_aggregate_v<Cxx14Agg*>);
+STATIC_ASSERT(!is_aggregate_v<Incomplete*>);
 
 template <typename T>
 struct AggTemplateClass {
@@ -278,8 +281,8 @@ template <typename T>
 using NonAggAliasedTemplateClass = NonAggTemplateClassCtor<T>;
 STATIC_ASSERT(!is_aggregate_v<NonAggAliasedTemplateClass<Cxx14Agg>>);
 
-int integral;
-STATIC_ASSERT(!is_aggregate_v<decltype(integral)>);
+int intObj;
+STATIC_ASSERT(!is_aggregate_v<decltype(intObj)>);
 
 Cxx17Agg cxx17AggObj;
 STATIC_ASSERT(is_aggregate_v<decltype(cxx17AggObj)>);

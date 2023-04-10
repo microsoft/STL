@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <locale>
 #include <sstream>
 #include <string>
@@ -16,7 +16,7 @@ using namespace std;
 // In managed code, /clr's metadata merge triggered linker errors.
 // This test uses a facet to drag in locale0_implib.cpp, then uses a string.
 // It's then compiled with lots of different options.
-// This will explode if basic_string sneaks its way into msvcprt[d].lib again.
+// This will fail if basic_string sneaks its way into msvcprt[d].lib again.
 
 int main() {
     use_facet<ctype<char>>(locale::classic());

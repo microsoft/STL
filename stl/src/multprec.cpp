@@ -11,7 +11,7 @@ constexpr int shift                 = _STD numeric_limits<unsigned long long>::d
 constexpr unsigned long long mask   = ~(~0ULL << shift);
 constexpr unsigned long long maxVal = mask + 1;
 
-_NODISCARD unsigned long long __CLRCALL_PURE_OR_CDECL _MP_Get(
+[[nodiscard]] unsigned long long __CLRCALL_PURE_OR_CDECL _MP_Get(
     _MP_arr u) noexcept { // convert multi-word value to scalar value
     return (u[1] << shift) + u[0];
 }
@@ -98,7 +98,7 @@ static void div(_MP_arr u,
     }
 }
 
-_NODISCARD static int limit(const unsigned long long* u, int ulen) noexcept { // get index of last non-zero value
+[[nodiscard]] static int limit(const unsigned long long* u, int ulen) noexcept { // get index of last non-zero value
     while (u[ulen - 1] == 0) {
         --ulen;
     }
@@ -117,7 +117,6 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
     const int m = limit(u, _MP_len) - n;
     _Analysis_assume_(m > 0);
     _Analysis_assume_(m <= _MP_len - n);
-
 
     // Knuth, vol. 2, p. 272, Algorithm D
     // D1: [Normalize.]

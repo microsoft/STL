@@ -1,2 +1,0 @@
-#__std_init_once_begin_initialize #InitOnceBeginInitialize
-__imp___std_init_once_begin_initialize __imp_InitOnceBeginInitialize

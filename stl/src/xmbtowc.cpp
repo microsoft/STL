@@ -90,7 +90,7 @@ _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
     switch (ploc->_Mbcurmax) {
     default:
         _ASSERTE(!"Bad number of encoding units for this code page");
-        // [[fallthrough]];
+        _FALLTHROUGH;
     case 1:
         if (MultiByteToWideChar(ploc->_Page, MB_PRECOMPOSED | MB_ERR_INVALID_CHARS, s, 1, pwc, 1) == 0) {
             errno = EILSEQ;

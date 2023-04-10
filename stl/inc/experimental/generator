@@ -37,9 +37,9 @@ namespace experimental {
     struct generator {
         struct promise_type {
             const _Ty* _Value;
-#ifdef _CPPUNWIND // TRANSITION, VSO-1172852
+#ifdef _CPPUNWIND
             exception_ptr _Exception;
-#endif // TRANSITION, VSO-1172852
+#endif // _CPPUNWIND
 
             generator get_return_object() noexcept {
                 return generator{*this};
@@ -55,27 +55,21 @@ namespace experimental {
 
 #ifndef _KERNEL_MODE
 #ifdef _CPPUNWIND
-#if 1 // TRANSITION, VSO-1172852
             void unhandled_exception() noexcept {
                 _Exception = _STD current_exception();
             }
-#else // ^^^ workaround / no workaround vvv
-            void unhandled_exception() {
-                throw;
-            }
-#endif // TRANSITION, VSO-1172852
 #else // ^^^ defined(_CPPUNWIND) / !defined(_CPPUNWIND) vvv
             void unhandled_exception() noexcept {}
 #endif // _CPPUNWIND
 #endif // _KERNEL_MODE
 
-#ifdef _CPPUNWIND // TRANSITION, VSO-1172852
+#ifdef _CPPUNWIND
             void _Rethrow_if_exception() {
                 if (_Exception) {
                     _STD rethrow_exception(_Exception);
                 }
             }
-#endif // TRANSITION, VSO-1172852
+#endif // _CPPUNWIND
 
             suspend_always yield_value(const _Ty& _Val) noexcept {
                 _Value = _STD addressof(_Val);
@@ -124,11 +118,11 @@ namespace experimental {
             iterator& operator++() {
                 _Coro.resume();
                 if (_Coro.done()) {
-#ifdef _CPPUNWIND // TRANSITION, VSO-1172852
+#ifdef _CPPUNWIND
                     _STD exchange(_Coro, nullptr).promise()._Rethrow_if_exception();
-#else // ^^^ workaround / no workaround vvv
+#else // ^^^ defined(_CPPUNWIND) / !defined(_CPPUNWIND) vvv
                     _Coro = nullptr;
-#endif // TRANSITION, VSO-1172852
+#endif // _CPPUNWIND
                 }
 
                 return *this;
@@ -161,9 +155,9 @@ namespace experimental {
             if (_Coro) {
                 _Coro.resume();
                 if (_Coro.done()) {
-#ifdef _CPPUNWIND // TRANSITION, VSO-1172852
+#ifdef _CPPUNWIND
                     _Coro.promise()._Rethrow_if_exception();
-#endif // TRANSITION, VSO-1172852
+#endif // _CPPUNWIND
                     return {};
                 }
             }

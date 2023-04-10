@@ -10,13 +10,21 @@
 
 using namespace std;
 
+// clang-format off
+template <class I>
+concept Countable = requires { typename iter_difference_t<remove_cvref_t<I>>; }
+    && requires(I&& i, iter_difference_t<remove_cvref_t<I>> n) {
+        views::counted(forward<I>(i), n);
+    };
+// clang-format on
+
 template <input_or_output_iterator Iter>
 struct convertible_difference {
     constexpr convertible_difference(const int _val_) noexcept : _val(_val_) {}
     constexpr operator iter_difference_t<Iter>() const noexcept {
         return iter_difference_t<Iter>{_val};
     }
-    convertible_difference(convertible_difference&&) = delete;
+    convertible_difference(convertible_difference&&)            = delete;
     convertible_difference& operator=(convertible_difference&&) = delete;
 
     int _val = 0;
@@ -30,6 +38,9 @@ struct instantiator {
         using ranges::contiguous_range, ranges::equal, ranges::iterator_t, ranges::random_access_range, ranges::size,
             ranges::subrange;
         int input[] = {13, 42, 1729, -1, -1};
+
+        STATIC_ASSERT(Countable<Iter>);
+        STATIC_ASSERT(Countable<const Iter&> == copy_constructible<Iter>);
 
         auto result = ranges::views::counted(Iter{input}, convertible_difference<Iter>{3});
         if constexpr (contiguous_iterator<Iter>) {

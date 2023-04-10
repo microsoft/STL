@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <chrono>
 #include <clocale>
 #include <concepts>
+#include <cstdio>
 #include <format>
 #include <iostream>
 #include <locale>
 #include <sstream>
-#include <stdio.h>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -255,6 +255,10 @@ void test_duration_formatter() {
     empty_braces_helper(duration<int, ratio<3, 1>>{40}, STR("40[3]s"));
     empty_braces_helper(duration<int, ratio<3, 7>>{40}, STR("40[3/7]s"));
 
+    // formatting small types needs to work as iostreams << VSO-1521926
+    empty_braces_helper(duration<long long, atto>{123}, STR("123as"));
+    assert(format(STR("{:%j}"), duration<long long, atto>{123}) == STR("0"));
+
     assert(format(STR("{:%T}"), 4083007ms) == STR("01:08:03.007"));
     assert(format(STR("{:%T}"), -4083007ms) == STR("-01:08:03.007"));
 
@@ -275,6 +279,8 @@ void test_clock_formatter() {
     empty_braces_helper(gps_seconds{}, STR("1980-01-06 00:00:00"));
     empty_braces_helper(file_time<seconds>{}, STR("1601-01-01 00:00:00"));
     empty_braces_helper(local_seconds{}, STR("1970-01-01 00:00:00"));
+
+    assert(format(STR("{:%j}"), utc_seconds{}) == STR("001"));
 
     assert(format(STR("{:%Z %z %Oz %Ez}"), sys_seconds{}) == STR("UTC +0000 +00:00 +00:00"));
     assert(format(STR("{:%Z %z %Oz %Ez}"), sys_days{}) == STR("UTC +0000 +00:00 +00:00"));
@@ -634,6 +640,9 @@ void test_year_month_day_formatter() {
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 29) == STR("10 2010 52 52 52"));
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 30) == STR("10 2010 52 52 52"));
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 31) == STR("10 2010 52 52 52"));
+
+    // GH-2761, formatter<chrono::year_month_day> is not fully implemented
+    assert(format(STR("{:%x}"), year_month_day{year{2010}, month{5}, day{6}}) == STR("05/06/10"));
 }
 
 template <typename CharT>
@@ -660,6 +669,9 @@ void test_year_month_day_last_formatter() {
     throw_helper(STR("{:%j}"), year{1900} / month{13} / last);
 
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / last) == STR("10 2010 22 22 22"));
+
+    // GH-2761, formatter<chrono::year_month_day> is not fully implemented
+    assert(format(STR("{:%x}"), ymdl1) == STR("04/30/21"));
 }
 
 template <typename CharT>
@@ -691,6 +703,9 @@ void test_year_month_weekday_formatter() {
     throw_helper(STR("{:%j}"), invalid1);
 
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / Monday[5]) == STR("10 2010 22 22 22"));
+
+    // GH-2761, formatter<chrono::year_month_day> is not fully implemented
+    assert(format(STR("{:%x}"), ymwd1) == STR("04/30/21"));
 }
 
 template <typename CharT>
@@ -720,6 +735,9 @@ void test_year_month_weekday_last_formatter() {
     throw_helper(STR("{:%j}"), invalid1);
 
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / Monday[last]) == STR("10 2010 22 22 22"));
+
+    // GH-2761, formatter<chrono::year_month_day> is not fully implemented
+    assert(format(STR("{:%x}"), ymwdl1) == STR("04/30/21"));
 }
 
 template <typename CharT>
@@ -1101,10 +1119,9 @@ void test() {
 
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
     test_locale<wchar_t>();
-#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
+    test_locale<char>();
     assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
     test_locale<char>();
-#endif // _MSVC_INTERNAL_TESTING
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 }
 

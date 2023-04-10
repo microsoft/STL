@@ -226,7 +226,7 @@ void test_main() { // test basic workings of vector definitions
         CHECK_INT(*v0.insert(v0.begin(), 2, 'b'), 'b');
         CHECK_INT(v0.front(), 'b');
         CHECK_INT(*++(p_it = v0.begin()), 'b');
-        CHECK_INT(*++++(p_it = v0.begin()), 'a');
+        CHECK_INT(*++ ++(p_it = v0.begin()), 'a');
         CHECK_INT(*v0.insert(v0.end(), v4.begin(), v4.end()), *v4.begin());
         CHECK_INT(v0.back(), v4.back());
         CHECK_INT(*v0.insert(v0.end(), carr, carr + 3), *carr);

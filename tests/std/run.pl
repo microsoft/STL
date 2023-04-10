@@ -31,6 +31,12 @@ if ($ENV{PM_COMPILER} && $ENV{PM_COMPILER} eq "clang-cl" && $ENV{CLANG_TARGET} &
     $ENV{PM_COMPILER} .= " " . $ENV{CLANG_TARGET};
 }
 
+# add additional compiler flags if the compiler is cl.exe.
+if (not $ENV{PM_COMPILER})
+{
+    $ENV{CL} .= " " . $ENV{PM_CL_MSVC};
+}
+
 my $RunPL = "";
 if ($ENV{PM_CL} && $ENV{PM_CL} =~ m/[\-\/]BE / )
 {

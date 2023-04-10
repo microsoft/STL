@@ -3,11 +3,6 @@
 
 // Implements a win32 API wrapper for <format>
 
-// This must be as small as possible, because its contents are
-// injected into the msvcprt.lib and msvcprtd.lib import libraries.
-// Do not include or define anything else here.
-// In particular, basic_string must not be included here.
-
 #include <__msvc_xlocinfo_types.hpp>
 #include <xfilesystem_abi.h>
 
@@ -22,7 +17,7 @@ extern "C" [[nodiscard]] __std_win_error __stdcall __std_get_cvt(
 
     CPINFOEXW _Info{};
     const DWORD _Flags = 0; // reserved, must be zero
-    if (GetCPInfoExW(static_cast<UINT>(_Codepage), _Flags, &_Info) == 0) {
+    if (!GetCPInfoExW(static_cast<UINT>(_Codepage), _Flags, &_Info)) {
         // NB: the only documented failure mode for GetCPInfoExW is ERROR_INVALID_PARAMETER,
         // so in practice it should never fail for CP_ACP.
         return __std_win_error{GetLastError()};

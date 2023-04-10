@@ -6,6 +6,9 @@
 #include <iostream>
 
 #include <Windows.h>
+
+#include "init_locks.hpp"
+
 _STD_BEGIN
 
 #if defined(_M_CEE) && !defined(_M_CEE_MIXED)

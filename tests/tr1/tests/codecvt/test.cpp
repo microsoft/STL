@@ -24,14 +24,16 @@ void test_write(Cvt*, int maxval = 0x10ffff) { // test codecvt writes
     STD basic_ostream<char_type> sink(&ocvtbuf);
 
     int ch;
-    for (ch = 1; ch <= maxval; ch <<= 1)
+    for (ch = 1; ch <= maxval; ch <<= 1) {
         sink.put((char_type) ch);
+    }
 
     STD stringbuf istrbuf(ostrbuf.str());
     STD wbuffer_convert<Cvt, char_type> icvtbuf(&istrbuf);
     STD basic_istream<char_type> source(&icvtbuf);
-    for (ch = 1; ch <= maxval; ch <<= 1)
+    for (ch = 1; ch <= maxval; ch <<= 1) {
         CHECK_INT(source.get(), ch);
+    }
 }
 
 void test_main() { // test wbuffer_convert

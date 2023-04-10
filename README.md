@@ -15,7 +15,8 @@ If you're a programmer who just wants to use the STL, you **don't** need this re
 and select the "Desktop development with C++" workload.
 
 If you want to participate in the STL's development, welcome! You can report issues, comment on pull requests, and learn
-about what we're working on. You can also submit pull requests to fix bugs or add features (see below).
+about what we're working on. You can also submit pull requests to fix bugs or add features: see [CONTRIBUTING.md][] for
+more information.
 
 Finally, you can take our code and use it in other apps and libraries (according to the terms of our license, like
 everything else).
@@ -57,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4901][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N4944][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -67,10 +68,10 @@ expression specifications.)
 Our primary goals are conformance, performance, usability, and compatibility.
 
 * Conformance: The Working Paper is a moving target; as features and LWG issue resolutions are added, we need to
-implement them. That can involve a lot of work, because the STL is required to behave in very specific ways and to
+implement them. That can involve a lot of work because the STL is required to behave in very specific ways and to
 handle users doing very unusual things.
 
-* Performance: The STL needs to be extremely fast at runtime; speed is one of C++'s core strengths, and most C++
+* Performance: The STL needs to be extremely fast at runtime; speed is one of C++'s core strengths and most C++
 programs use the STL extensively. As a result, we spend more time on optimization than most general-purpose libraries.
 (However, we're wary of changes that improve some scenarios at the expense of others, or changes that make code
 significantly more complicated and fragile. That is, there's a "complexity budget" that must be spent carefully.)
@@ -87,7 +88,7 @@ then the feature is significantly changed before the International Standard is f
 binary compatibility because `/std:c++latest` offers an experimental preview of such features), binary compatibility
 generally overrides all other considerations, even conformance. Source compatibility refers to being able to
 successfully recompile user code without changes. We consider source compatibility to be important, but not
-all-important; breaking source compatibility can be an acceptable cost, if done for the right reasons in the right way
+all-important; breaking source compatibility can be an acceptable cost if done for the right reasons in the right way
 (e.g. in a controlled manner with escape hatches).
 
 # Non-Goals
@@ -121,7 +122,7 @@ reproducing the bug.
 
 * You should be reasonably confident that you're looking at an actual implementation bug, instead of undefined behavior
 or surprising-yet-Standard behavior. Comparing against other implementations can help (but remember that implementations
-can differ while conforming to the Standard); try Godbolt's [Compiler Explorer][] and [Wandbox][]. If you still aren't
+can differ while conforming to the Standard); try [Compiler Explorer][]. If you still aren't
 sure, ask the nearest C++ expert.
 
 * You should prepare a self-contained command-line test case, ideally as small as possible. We need a source file, a
@@ -135,30 +136,32 @@ time-consuming for us to reduce.)
 * A good title is helpful. We prefer "`<header_name>`: Short description of your issue". You don't usually need to
 mention `std::` or C++. For example, "`<type_traits>`: `is_cute` should be true for `enum class FluffyKittens`".
 
-It's okay if you report an apparent STL bug that turns out to be a compiler bug, or surprising-yet-Standard behavior.
+It's okay if you report an apparent STL bug that turns out to be a compiler bug or surprising-yet-Standard behavior.
 Just try to follow these rules, so we can spend more time fixing bugs and implementing features.
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.1 Preview 1 or later.
+1. Install Visual Studio 2022 17.6 Preview 1 or later.
+    * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.21 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.25.2 or later, and [Ninja][] 1.11.0 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
-4. In the terminal, invoke `git submodule update --init --progress llvm-project boost-math`
+4. In the terminal, invoke `git submodule update --init --progress`
 5. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json`.
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.1 Preview 1 or later.
+1. Install Visual Studio 2022 17.6 Preview 1 or later.
+    * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.21 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.25.2 or later, and [Ninja][] 1.11.0 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open a command prompt.
@@ -190,24 +193,24 @@ names of the import and static libraries are the same as those that ship with MS
 
 Should you choose to use the DLL flavors, the DLLs to deploy are built to `bin\{architecture}`. Note that the DLLs
 generated by the CMake build system here have a suffix, defaulting to `_oss`, which distinguishes them from the binaries
-that ship with MSVC. That avoids any conflict with the DLLs installed by the [redistributables][] into System32, and
+that ship with MSVC. That avoids any conflict with the DLLs installed by the [redistributables][] into System32 and
 ensures that other components wanting to be a "guest in your process", like print drivers and shell extensions, see the
 export surface of the STL they were built with. Otherwise, the "`msvcp140.dll`" you deployed in the same directory as
 your .exe would "win" over the versions in System32.
 
-## Complete Example Using x64 DLL Flavor
-
 The compiler looks for include directories according to the `INCLUDE` environment variable, and the linker looks for
 import library directories according to the `LIB` environment variable, and the Windows loader will (eventually) look
-for DLL dependencies according to directories in the `PATH` environment variable. From an
-"x64 Native Tools Command Prompt for VS 2022 Preview":
+for DLL dependencies according to directories in the `PATH` environment variable.
+The build generates a batch script named `set_environment.bat` in the output directory. If you run this script in a VS
+Developer Command Prompt, it will insert the proper directories into the `INCLUDE`, `LIB`, and `PATH` environment
+variables to ensure that the built headers and libraries are used.
+
+## Complete Example Using x64 DLL Flavor
+
+From an "x64 Native Tools Command Prompt for VS 2022 Preview":
 
 ```
-C:\Users\username\Desktop>set INCLUDE=C:\Dev\STL\out\build\x64\out\inc;%INCLUDE%
-
-C:\Users\username\Desktop>set LIB=C:\Dev\STL\out\build\x64\out\lib\amd64;%LIB%
-
-C:\Users\username\Desktop>set PATH=C:\Dev\STL\out\build\x64\out\bin\amd64;%PATH%
+C:\Users\username\Desktop>C:\Dev\STL\out\build\x64\set_environment.bat
 
 C:\Users\username\Desktop>type example.cpp
 #include <iostream>
@@ -222,7 +225,7 @@ example.cpp
 C:\Users\username\Desktop>.\example.exe
 Hello STL OSS world!
 
-C:\Users\username\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
+C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 
@@ -244,24 +247,24 @@ CTest will only display the standard error output of tests that failed. In order
 
 ## Running A Subset Of The Tests
 
-`${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` can be invoked on a subdirectory of a testsuite and will execute
-all the tests under that subdirectory. This can mean executing the entirety of a single testsuite, running all tests
+`${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` can be invoked on a subdirectory of a test suite and will execute
+all the tests under that subdirectory. This can mean executing the entirety of a single test suite, running all tests
 under a category in libcxx, or running a single test in `std` and `tr1`.
 
 ## Examples
 
 These examples assume that your current directory is `C:\Dev\STL\out\build\x64`.
 
-* This command will run all of the testsuites with verbose output.
+* This command will run all of the test suites with verbose output.
   + `ctest -V`
-* This command will also run all of the testsuites.
+* This command will also run all of the test suites.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test ..\..\..\tests\std ..\..\..\tests\tr1`
-* This command will run all of the std testsuite.
+* This command will run all of the std test suite.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std`
-* If you want to run a subset of a testsuite, you need to point it to the right place in the sources. The following
+* If you want to run a subset of a test suite, you need to point it to the right place in the sources. The following
 will run the single test found under VSO_0000000_any_calling_conventions.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std\tests\VSO_0000000_any_calling_conventions`
-* You can invoke `stl-lit` with any arbitrary subdirectory of a testsuite. In libcxx this allows you to have finer
+* You can invoke `stl-lit` with any arbitrary subdirectory of a test suite. In libcxx this allows you to have finer
 control over what category of tests you would like to run. The following will run all the libcxx map tests.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test\std\containers\associative\map`
 
@@ -269,8 +272,8 @@ control over what category of tests you would like to run. The following will ru
 
 ### CTest
 
-When running the tests via CTest, all of the testsuites are considered to be a single test. If any single test in a
-testsuite fails, CTest will simply report that the `stl` test failed.
+When running the tests via CTest, all of the test suites are considered to be a single test. If any single test in a
+test suite fails, CTest will simply report that the `stl` test failed.
 
 Example:
 ```
@@ -284,14 +287,14 @@ The following tests FAILED:
 
 The primary utility of CTest in this case is to conveniently invoke `stl-lit.py` with the correct set of arguments.
 
-CTest will output everything that was sent to stderr for each of the failed testsuites, which can be used to identify
-which individual test within the testsuite failed. It can sometimes be helpful to run CTest with the `-V` option in
+CTest will output everything that was sent to stderr for each of the failed test suites, which can be used to identify
+which individual test within the test suite failed. It can sometimes be helpful to run CTest with the `-V` option in
 order to see the stdout of the tests.
 
 ### stl-lit
 
 When running the tests directly via the generated `stl-lit.py` script the result of each test will be printed. The
-format of each result is `{Result Code}: {Testsuite Name} :: {Test Name}:{Configuration Number}`.
+format of each result is `{Result Code}: {Test Suite Name} :: {Test Name}:{Configuration Number}`.
 
 Example:
 ```
@@ -330,7 +333,7 @@ Testing Time: 3.96s
   Unsupported Tests  : 5
 ```
 
-In the above example we see that 23 tests succeeded and 5 were unsupported.
+In the above example, we see that 23 tests succeeded and 5 were unsupported.
 
 ### Result Code Values
 
@@ -341,14 +344,14 @@ The `PASS` and `FAIL` result codes are self-explanatory. We want our tests to `P
 
 The `XPASS` and `XFAIL` result codes are less obvious. `XPASS` is actually a failure result and indicates that we
 expected a test to fail but it passed. `XFAIL` is a successful result and indicates that we expected the test to fail
-and it did. Typically an `XPASS` result means that the `expected_results.txt` file for the testsuite needs to be
+and it did. Typically an `XPASS` result means that the `expected_results.txt` file for the test suite needs to be
 modified. If the `XPASS` result is a test legitimately passing, the usual course of action would be to remove a `FAIL`
 entry from the `expected_results.txt`. However, some tests from `libcxx` mark themselves as `XFAIL` (meaning they
 expect to fail) for features they have added tests for but have yet to implement in `libcxx`. If the STL implements
 those features first the tests will begin passing unexpectedly for us and return `XPASS` results. In order to resolve
-this it is necessary to add a `PASS` entry to the `expected_results.txt` of the testsuite in question.
+this it is necessary to add a `PASS` entry to the `expected_results.txt` of the test suite in question.
 
-The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently
+The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently,
 all tests which use the `/clr` or `/clr:pure` options are unsupported. Also, the `/BE` option is unsupported for x86.
 
 The `SKIPPED` result code indicates that a given test was explicitly skipped by adding a `SKIPPED` entry to the
@@ -395,6 +398,48 @@ build folder to your path:
 set PATH=C:\STL\out\build\x64\out\bin\amd64;%PATH%
 ```
 
+# Benchmarking
+
+For performance-sensitive code &ndash; containers, algorithms, and the like &ndash;
+you may wish to write and/or run benchmarks, and the STL team will likely
+run any benchmarks we do have in our PR process. Additionally,
+if you are writing a "performance improvement" PR, please add and run benchmarks
+to show that the PR does, in fact, improve performance.
+
+The benchmarking code is located in `benchmarks`. Adding a new benchmark is as easy as adding a new file
+to `benchmarks/src`, and then adding `add_benchmark(<name> <source_file>)`
+to `benchmarks/CMakeLists.txt`.
+You may also modify an existing benchmark file. We use Google's [Benchmark][gbenchmark] library,
+so you may find [their documentation][gbenchmark:docs] helpful, and you can also read the existing code
+for how _we_ use it.
+
+To run benchmarks, you'll need to first build the STL, then build the benchmarks:
+
+```cmd
+cmake -B out\x64 -S . -G Ninja
+cmake --build out\x64
+cmake -B out\benchmark -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\x64
+cmake --build out\benchmark
+```
+
+You can then run your benchmark with:
+
+```cmd
+out\benchmark\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
+```
+
+And then you can copy this CSV file into Excel, or another spreadsheet program. For example:
+
+```cmd
+out\bench\benchmarks\benchmark-std_copy --benchmark_out=benchmark-std_copy-results.csv --benchmark_out_format=csv
+```
+
+If you want to see all the other flags you can pass, run:
+
+```cmd
+out\bench\benchmarks\benchmark-<benchmark-name> --help
+```
+
 # Editing And Testing The Debugger Visualizer
 
 ### Modify The Visualizer
@@ -404,7 +449,7 @@ on how to modify this file, check the [natvis documentation][].
 
 ### Test Your Changes
 
-You can add the natvis file to any Visual Studio C++ project if you right click your project > Add > Existing Item and
+You can add the natvis file to any Visual Studio C++ project if you right-click your project > Add > Existing Item and
 select the STL.natvis file. After doing this you should be able to see your changes in a Visual Studio debugging
 session.
 
@@ -414,7 +459,40 @@ The STL is built atop other compiler support libraries that ship with Windows an
 VCRuntime, and VCStartup. The following diagram describes the dependencies between those components and their ship
 vehicles.
 
-![MSVC Libraries Block Diagram](docs/msvc_libraries.plantuml.svg)
+```mermaid
+flowchart TB
+    classDef default text-align:left
+    subgraph VisualStudioSubgraph[Visual Studio]
+        direction TB
+        STLNode("<b>STL</b>
+        This repo; provides C++ Standard Library headers, separately
+        compiled implementations of most of the iostreams functionality,
+        and a few runtime support components like std::exception_ptr.")
+        subgraph VCRuntimeSubgraph[VCRuntime]
+            direction TB
+            VCStartupNode("<b>VCStartup</b>
+            Provides compiler support mechanisms that
+            live in each binary; such as machinery to
+            call constructors and destructors for global
+            variables, the entry point, and the /GS cookie.
+
+            Merged into static and import libraries of VCRuntime.")
+            VCRuntimeNode("<b>VCRuntime</b>
+            Provides compiler support mechanisms that can be
+            shared between binaries; code that the compiler calls
+            on your behalf, such as the C++ exception handling
+            runtime, string.h intrinsics, math intrinsics, and
+            declarations for CPU-vendor-specific intrinsics.")
+        end
+    end
+    subgraph WindowsSDKSubgraph[Windows SDK]
+        UniversalCRTNode("<b>Universal CRT</b>
+        Windows component that provides C library support, such as printf,
+        C locales, and some POSIX-like shims for the Windows API, like _stat.")
+    end
+    STLNode ==> VCRuntimeSubgraph & UniversalCRTNode
+    VCStartupNode ==> VCRuntimeNode ==> UniversalCRTNode
+```
 
 # Contributing
 
@@ -425,6 +503,8 @@ the rights to use your contribution. For details, visit https://cla.opensource.m
 When you submit a pull request, a CLA bot will automatically determine whether you need to provide
 a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
 provided by the bot. You will only need to do this once across all repos using our CLA.
+
+See [CONTRIBUTING.md][] for more information.
 
 # Code Of Conduct
 
@@ -442,6 +522,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [CMake]: https://cmake.org/download
 [Code of Conduct FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
 [Compiler Explorer]: https://godbolt.org
+[CONTRIBUTING.md]: CONTRIBUTING.md
 [Developer Community]: https://aka.ms/feedback/report?space=62
 [Discord server]: https://discord.gg/XWanNww
 [How To Build With A Native Tools Command Prompt]: #how-to-build-with-a-native-tools-command-prompt
@@ -451,17 +532,18 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4901]: https://wg21.link/n4901
+[N4944]: https://wg21.link/n4944
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
 [Python]: https://www.python.org/downloads/windows/
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Status Chart]: https://microsoft.github.io/STL/
-[Wandbox]: https://wandbox.org
 [bug tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug
 [cxx20 tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20
 [enhancement tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
+[gbenchmark]: https://github.com/google/benchmark
+[gbenchmark:docs]: https://github.com/google/benchmark/blob/main/docs/user_guide.md
 [hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
 [libcxx]: https://libcxx.llvm.org
 [lit]: https://llvm.org/docs/CommandGuide/lit.html

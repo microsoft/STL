@@ -8,10 +8,9 @@
 _EXTERN_C_UNLESS_PURE
 
 short _Dnorm(_Dval* ps) { // normalize double fraction
-    short xchar;
+    short xchar         = 1;
     unsigned short sign = static_cast<unsigned short>(ps->_Sh[_D0] & _DSIGN);
 
-    xchar = 1;
     if ((ps->_Sh[_D0] &= _DFRAC) != 0 || ps->_Sh[_D1] || ps->_Sh[_D2] || ps->_Sh[_D3]) { // nonzero, scale
         for (; ps->_Sh[_D0] == 0; xchar -= 16) { // shift left by 16
             ps->_Sh[_D0] = ps->_Sh[_D1];

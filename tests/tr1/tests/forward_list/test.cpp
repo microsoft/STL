@@ -18,16 +18,18 @@ typedef STD forward_list<char, Myal> Mycont;
 CSTD size_t size(const Mycont& flist) { // get size of list
     CSTD size_t ans           = 0;
     Mycont::const_iterator it = flist.begin();
-    for (; it != flist.end(); ++it)
+    for (; it != flist.end(); ++it) {
         ++ans;
+    }
     return ans;
 }
 
 Mycont::const_iterator before_end(const Mycont& flist) { // get iterator for last element of list
     Mycont::const_iterator it = flist.before_begin();
     Mycont::const_iterator it2;
-    for (it2 = it; ++it2 != flist.end(); it = it2)
+    for (it2 = it; ++it2 != flist.end(); it = it2) {
         ;
+    }
     return it;
 }
 
@@ -241,7 +243,7 @@ void test_main() { // test basic workings of forward_list definitions
     CHECK(it == ++v0.begin());
     CHECK_INT(v0.front(), 'b');
     CHECK_INT(*++v0.begin(), 'b');
-    CHECK_INT(*++++v0.begin(), 'a');
+    CHECK_INT(*++ ++v0.begin(), 'a');
     it = v0.insert_after(before_end(v0), v4.begin(), v4.end());
     CHECK(++it == v0.end());
     CHECK_INT(back(v0), back(v4));

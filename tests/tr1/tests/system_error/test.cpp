@@ -4,6 +4,8 @@
 // test <system_error>
 #define TEST_NAME "<system_error>"
 
+#define _SILENCE_CXX23_UNIX_STREAMS_DEPRECATION_WARNING
+
 #include "tdefs.h"
 #include <stdexcept>
 #include <system_error>
@@ -133,7 +135,7 @@ void test_main() { // run tests
         CHECK(!(ec1 < ec1));
 
         STD error_condition ec0x, ec1x(ERR too_many_links);
-        CHECK(ec0 != ec0x);
+        CHECK(ec0 == ec0x);
         CHECK(ec0 != ec1x);
         CHECK(!STD is_error_code_enum<ERR_ENUM>::value);
         CHECK(ec1 == STD make_error_code(ERR too_many_links));
@@ -167,7 +169,7 @@ void test_main() { // run tests
         CHECK(!(ec1 < ec1));
 
         STD error_code ec0x, ec1x = STD make_error_code(ERR too_many_links);
-        CHECK(ec0 != ec0x);
+        CHECK(ec0 == ec0x);
         CHECK(ec0 != ec1x);
         CHECK(STD is_error_condition_enum<ERR_ENUM>::value);
         CHECK(ec1 == STD make_error_condition(ERR too_many_links));

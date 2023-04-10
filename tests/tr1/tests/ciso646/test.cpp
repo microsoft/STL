@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // test <ciso646>
+#define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 #define TEST_NAME "<ciso646>"
 
 #include "tdefs.h"

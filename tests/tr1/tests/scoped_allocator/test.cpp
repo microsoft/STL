@@ -151,7 +151,7 @@ void t_minimal() { // test against minimal allocator
     myal.destroy(pch);
     myal.deallocate(pch, 1);
 
-    CHECK(myal.max_size() == (STD size_t) (-1));
+    CHECK(myal.max_size() == (STD size_t)(-1));
     CHECK(myal.select_on_container_copy_construction() == myal);
 }
 

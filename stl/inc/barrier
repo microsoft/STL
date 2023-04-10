@@ -14,7 +14,7 @@
 #endif // _M_CEE_PURE
 
 #if !_HAS_CXX20
-#pragma message("The contents of <barrier> are available only with C++20 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <barrier> are available only with C++20 or later.");
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <atomic>
@@ -35,7 +35,7 @@ struct _No_completion_function {
     void operator()() noexcept {}
 };
 
-template <class _Completion_function = _No_completion_function>
+_EXPORT_STD template <class _Completion_function = _No_completion_function>
 class barrier;
 
 inline constexpr ptrdiff_t _Barrier_arrival_token_mask = 1;
@@ -66,7 +66,7 @@ private:
     ptrdiff_t _Value;
 };
 
-template <class _Completion_function>
+_EXPORT_STD template <class _Completion_function>
 class barrier {
 public:
     static_assert(
@@ -85,14 +85,14 @@ public:
             "Precondition: expected >= 0 and expected <= max() (N4861 [thread.barrier.class]/9)");
     }
 
-    barrier(const barrier&) = delete;
+    barrier(const barrier&)            = delete;
     barrier& operator=(const barrier&) = delete;
 
     _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
         return _Barrier_max;
     }
 
-    _NODISCARD arrival_token arrive(ptrdiff_t _Update = 1) noexcept /* strengthened */ {
+    _NODISCARD_BARRIER_TOKEN arrival_token arrive(ptrdiff_t _Update = 1) noexcept /* strengthened */ {
         // Shifting before precondition check, so that exceeding max() will trigger precondition check too
         _Update <<= _Barrier_value_shift;
         _STL_VERIFY(_Update > 0, "Precondition: update > 0 (N4861 [thread.barrier.class]/12)");

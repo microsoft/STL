@@ -11,7 +11,7 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <functional>
 #include <iterator>
 #include <string>
@@ -22,10 +22,10 @@ struct move_only {
     int val;
 
     move_only(int val_) : val(val_) {}
-    move_only(const move_only&) = delete;
-    move_only(move_only&&)      = default;
+    move_only(const move_only&)            = delete;
+    move_only(move_only&&)                 = default;
     move_only& operator=(const move_only&) = delete;
-    move_only& operator=(move_only&&) = default;
+    move_only& operator=(move_only&&)      = default;
 };
 
 bool operator==(const move_only& lhs, const move_only& rhs) {
@@ -343,10 +343,25 @@ namespace test_lexicographical_compare {
 
 namespace test_std_copy {
     void test() {
-        array<int, 4> target{{42, 43, 44, 45}};
-        array<int, 2> input{{1729, 1730}};
-        copy(input.begin(), input.end(), target.begin() + 1);
-        assert((target == array<int, 4>{{42, 1729, 1730, 45}}));
+        {
+            array<int, 4> target{{42, 43, 44, 45}};
+            array<int, 2> input{{1729, 1730}};
+            copy(input.begin(), input.end(), target.begin() + 1);
+            assert((target == array<int, 4>{{42, 1729, 1730, 45}}));
+        }
+        {
+            // GH-177: copy different-element-types ranges.
+            const array<short, 2> input{10, 20};
+            array<int, 2> target;
+            copy(input.begin(), input.end(), target.begin());
+            assert((target == array<int, 2>{{10, 20}}));
+        }
+        {
+            // GH-177: copy partial-overlapping ranges.
+            array<int, 4> input{10, 20, 30, 40};
+            copy(input.begin() + 1, input.end(), input.begin());
+            assert((input == array<int, 4>{{20, 30, 40, 40}}));
+        }
     }
 } // namespace test_std_copy
 

@@ -1,10 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <version> // TRANSITION, P0912R5 Library Support For Coroutines
-#if defined(__cpp_lib_coroutine) && __cpp_lib_coroutine >= 201902L // TRANSITION, P0912R5 Library Support For Coroutines
-
-#include <assert.h>
+#include <cassert>
 #include <coroutine>
 #include <exception>
 using namespace std;
@@ -90,6 +87,7 @@ struct Task {
     coroutine_handle<Promise> coro;
 };
 
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
 Task triangular_number(const int n) {
     if (n == 0) {
         co_return 0;
@@ -97,6 +95,7 @@ Task triangular_number(const int n) {
 
     co_return n + co_await triangular_number(n - 1);
 }
+#endif // TRANSITION, LLVM-56507
 
 void test_noop_handle() { // Validate noop_coroutine_handle
     const noop_coroutine_handle noop = noop_coroutine();
@@ -135,7 +134,16 @@ void test_noop_handle() { // Validate noop_coroutine_handle
 
     assert(noop);
     assert(as_void);
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-undefined-compare"
+#endif // __clang__
+    // Clang notices that this is always true and warns: "reference cannot be bound to dereferenced null pointer
+    // in well-defined C++ code; comparison may be assumed to always evaluate to true"
     assert(&noop.promise() != nullptr);
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
     STATIC_ASSERT(noexcept(noop.promise()));
 
     assert(noop);
@@ -147,6 +155,7 @@ void test_noop_handle() { // Validate noop_coroutine_handle
 }
 
 int main() {
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     assert(g_tasks_destroyed == 0);
 
     {
@@ -171,6 +180,7 @@ int main() {
     }
 
     assert(g_tasks_destroyed == 11); // triangular_number() called for [0, 10]
+#endif // TRANSITION, LLVM-56507
 
     {
         // Also test GH-1422: hash<coroutine_handle<>>::operator() must be const
@@ -180,7 +190,3 @@ int main() {
 
     test_noop_handle();
 }
-
-#else // ^^^ test <coroutine> ^^^ / vvv don't test <coroutine> vvv
-int main() {}
-#endif // TRANSITION, P0912R5 Library Support For Coroutines

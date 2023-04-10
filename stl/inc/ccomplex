@@ -18,8 +18,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_CXX17_DEPRECATE_C_HEADER typedef int _Header_ccomplex;
-using _Hdr_ccomplex = _Header_ccomplex;
+using _Header_ccomplex _CXX17_DEPRECATE_C_HEADER = int;
+using _Hdr_ccomplex                              = _Header_ccomplex;
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

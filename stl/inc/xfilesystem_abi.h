@@ -19,6 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+_EXTERN_C
 inline constexpr size_t __std_fs_max_path      = 260; // #define MAX_PATH          260
 inline constexpr size_t __std_fs_temp_path_max = __std_fs_max_path + 1;
 
@@ -41,6 +42,7 @@ enum class __std_win_error : unsigned long {
     _Already_exists            = 183, // #define ERROR_ALREADY_EXISTS             183L
     _Filename_exceeds_range    = 206, // #define ERROR_FILENAME_EXCED_RANGE       206L
     _Directory_name_is_invalid = 267, // #define ERROR_DIRECTORY                  267L
+    _Reparse_tag_invalid       = 4393L, // #define ERROR_REPARSE_TAG_INVALID        4393L
     _Max                       = ~0UL // sentinel not used by Win32
 };
 
@@ -75,8 +77,15 @@ enum class __std_fs_file_attr : unsigned long {
 
     _Invalid = 0xFFFFFFFF, // #define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
 };
-_BITMASK_OPS(__std_fs_file_attr)
+_END_EXTERN_C
 
+#if 1 // TRANSITION, DevCom-10247495
+_BITMASK_OPS(_EXPORT_STD, __std_fs_file_attr)
+#else // ^^^ workaround / no workaround vvv
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_file_attr)
+#endif // ^^^ no workaround ^^^
+
+_EXTERN_C
 enum class __std_fs_reparse_tag : unsigned long {
     _None        = 0,
     _Mount_point = (0xA0000003L), // #define IO_REPARSE_TAG_MOUNT_POINT              (0xA0000003L)
@@ -117,9 +126,11 @@ enum class __std_fs_stats_flags : unsigned long {
 
     _All_data = _Attributes | _Reparse_tag | _File_size | _Link_count | _Last_write_time
 };
+_END_EXTERN_C
 
-_BITMASK_OPS(__std_fs_stats_flags)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_stats_flags)
 
+_EXTERN_C
 struct __std_fs_stats {
     long long _Last_write_time;
     unsigned long long _File_size;
@@ -129,7 +140,7 @@ struct __std_fs_stats {
     __std_fs_stats_flags _Available; // which fields are available
 
     _NODISCARD __std_fs_file_attr _Symlink_hint_attributes() const noexcept {
-        if (_Bitmask_includes(_Available, __std_fs_stats_flags::_Attributes)) {
+        if (_STD _Bitmask_includes_any(_Available, __std_fs_stats_flags::_Attributes)) {
             return _Attributes;
         }
 
@@ -191,17 +202,21 @@ enum class __std_access_rights : unsigned long {
     //                                   | FILE_WRITE_EA | FILE_APPEND_DATA | SYNCHRONIZE)
     _File_generic_write = 0x00120116,
 };
+_END_EXTERN_C
 
-_BITMASK_OPS(__std_access_rights)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_access_rights)
 
+_EXTERN_C
 enum class __std_fs_file_flags : unsigned long {
     _None               = 0,
     _Backup_semantics   = 0x02000000, // #define FILE_FLAG_BACKUP_SEMANTICS      0x02000000
     _Open_reparse_point = 0x00200000, // #define FILE_FLAG_OPEN_REPARSE_POINT    0x00200000
 };
+_END_EXTERN_C
 
-_BITMASK_OPS(__std_fs_file_flags)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_file_flags)
 
+_EXTERN_C
 enum class __std_fs_file_handle : intptr_t { _Invalid = -1 };
 
 enum class __std_code_page : unsigned int { _Acp = 0, _Utf8 = 65001 };
@@ -224,8 +239,9 @@ enum class __std_fs_copy_options {
     _Overwrite_existing = 0x2,
     _Update_existing    = 0x4,
 };
+_END_EXTERN_C
 
-_BITMASK_OPS(__std_fs_copy_options)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_copy_options)
 
 _EXTERN_C
 _NODISCARD __std_ulong_and_error __stdcall __std_fs_get_full_path_name(_In_z_ const wchar_t* _Source,
@@ -309,6 +325,12 @@ _NODISCARD __std_win_error __stdcall __std_fs_create_symbolic_link(
 _NODISCARD __std_win_error __stdcall __std_fs_read_reparse_data_buffer(_In_ __std_fs_file_handle _Handle,
     _Out_writes_bytes_(_Buffer_size) void* _Buffer, _In_ unsigned long _Buffer_size) noexcept;
 
+_NODISCARD __std_win_error __stdcall __std_fs_write_reparse_data_buffer(
+    _In_ __std_fs_file_handle _Handle, _In_ const __std_fs_reparse_data_buffer* _Buffer) noexcept;
+
+_NODISCARD bool __stdcall __std_fs_is_junction_from_reparse_data_buffer(
+    _In_ const __std_fs_reparse_data_buffer* _Buffer) noexcept;
+
 _NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_fs_read_name_from_reparse_data_buffer(
         _In_ __std_fs_reparse_data_buffer* _Handle, _Out_ wchar_t** _Offset, _Out_ unsigned short* _Length) noexcept;
@@ -348,7 +370,7 @@ struct _Fs_file {
         *_Err = __std_fs_open_handle(&_Raw, _File_name, _Desired_access, _Flags);
     }
 
-    _Fs_file(const _Fs_file&) = delete;
+    _Fs_file(const _Fs_file&)            = delete;
     _Fs_file& operator=(const _Fs_file&) = delete;
 
     ~_Fs_file() {

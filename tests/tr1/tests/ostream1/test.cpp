@@ -32,10 +32,11 @@ STD ostream& operator<<(STD ostream& ostr, const Boolx& b) { // insert a Boolx
     const STD ostream::sentry ok(ostr);
 
     if (ok) {
-        if (b.value() != 0)
+        if (b.value() != 0) {
             ostr.rdbuf()->sputc('Y');
-        else
+        } else {
             ostr.rdbuf()->sputc('N');
+        }
     }
     ostr.setstate(state);
     return ostr;
@@ -337,7 +338,7 @@ void test_main() { // test basic workings of ostream definitions
     outs.str("");
     outs << "some stuff ";
     STD streampos pos = outs.tellp();
-    CHECK(pos != (STD streampos) (-1));
+    CHECK(pos != (STD streampos)(-1));
     outs << istr.rdbuf();
     CHECK_STR(outs.str().c_str(), "some stuff rest of stream\n");
     CHECK_PTR(&outs.seekp(pos), &outs);

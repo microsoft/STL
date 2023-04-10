@@ -1,4 +1,4 @@
-// xatomic.h internal header
+// xatomic.h internal header (core)
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -6,11 +6,12 @@
 #pragma once
 #ifndef _XATOMIC_H
 #define _XATOMIC_H
-#include <yvals.h>
+#include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <intrin0.h>
 #include <type_traits>
+
+#include _STL_INTRIN_HEADER
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -50,10 +51,24 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _MT_INCR(x) _INTRIN_RELAXED(_InterlockedIncrement)(reinterpret_cast<volatile long*>(&x))
 #define _MT_DECR(x) _INTRIN_ACQ_REL(_InterlockedDecrement)(reinterpret_cast<volatile long*>(&x))
 
+// The following macros are SHARED with vcruntime and any updates should be mirrored.
+// Also: if any macros are added they should be #undefed in vcruntime as well.
+#define _Compiler_barrier() _STL_DISABLE_DEPRECATED_WARNING _ReadWriteBarrier() _STL_RESTORE_DEPRECATED_WARNING
+
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#define _Memory_barrier()             __dmb(0xB) // inner shared data memory barrier
+#define _Compiler_or_memory_barrier() _Memory_barrier()
+#elif defined(_M_IX86) || defined(_M_X64)
+// x86/x64 hardware only emits memory barriers inside _Interlocked intrinsics
+#define _Compiler_or_memory_barrier() _Compiler_barrier()
+#else // ^^^ x86/x64 / unsupported hardware vvv
+#error Unsupported hardware
+#endif // hardware
+
 _STD_BEGIN
 
 #if _HAS_CXX20
-enum class memory_order : int {
+_EXPORT_STD enum class memory_order : int {
     relaxed,
     consume,
     acquire,
@@ -69,12 +84,12 @@ enum class memory_order : int {
     memory_order_acq_rel = acq_rel,
     memory_order_seq_cst = seq_cst
 };
-inline constexpr memory_order memory_order_relaxed = memory_order::relaxed;
-inline constexpr memory_order memory_order_consume = memory_order::consume;
-inline constexpr memory_order memory_order_acquire = memory_order::acquire;
-inline constexpr memory_order memory_order_release = memory_order::release;
-inline constexpr memory_order memory_order_acq_rel = memory_order::acq_rel;
-inline constexpr memory_order memory_order_seq_cst = memory_order::seq_cst;
+_EXPORT_STD inline constexpr memory_order memory_order_relaxed = memory_order::relaxed;
+_EXPORT_STD inline constexpr memory_order memory_order_consume = memory_order::consume;
+_EXPORT_STD inline constexpr memory_order memory_order_acquire = memory_order::acquire;
+_EXPORT_STD inline constexpr memory_order memory_order_release = memory_order::release;
+_EXPORT_STD inline constexpr memory_order memory_order_acq_rel = memory_order::acq_rel;
+_EXPORT_STD inline constexpr memory_order memory_order_seq_cst = memory_order::seq_cst;
 #else // _HAS_CXX20
 enum memory_order {
     memory_order_relaxed,
@@ -86,7 +101,7 @@ enum memory_order {
 };
 #endif // _HAS_CXX20
 
-using _Atomic_counter_t = unsigned long;
+_EXPORT_STD /* TRANSITION, VSO-1592329 */ using _Atomic_counter_t = unsigned long;
 
 template <class _Integral, class _Ty>
 _NODISCARD volatile _Integral* _Atomic_address_as(_Ty& _Source) noexcept {

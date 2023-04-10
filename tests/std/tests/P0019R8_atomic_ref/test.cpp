@@ -37,6 +37,7 @@ struct int128 {
 
 template <bool AddViaCas, typename ValueType>
 void test_ops() {
+#ifndef _M_CEE // TRANSITION, VSO-1659408
     constexpr std::size_t unique      = 80; // small to avoid overflow even for char
     constexpr std::size_t repetitions = 8000;
     constexpr std::size_t total       = unique * repetitions;
@@ -44,7 +45,8 @@ void test_ops() {
 
     struct alignas(std::atomic_ref<ValueType>::required_alignment) Padded {
         ValueType vals[unique] = {};
-    } padded;
+    };
+    Padded padded;
 
     auto& vals = padded.vals;
 
@@ -83,6 +85,7 @@ void test_ops() {
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == range * repetitions * 2);
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, xchg0) == range * 2);
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == 0);
+#endif // _M_CEE
 }
 
 template <class Integer>
@@ -270,7 +273,7 @@ void test_ptr_ops() {
 }
 
 // GH-1497 <atomic>: atomic_ref<const T> fails to compile
-void test_gh_1497_const_type() {
+void test_gh_1497() {
     {
         static constexpr int ci{1729}; // static storage duration, so this is stored in read-only memory
         const std::atomic_ref atom{ci};
@@ -340,5 +343,5 @@ int main() {
     test_ptr_ops<char*>();
     test_ptr_ops<long*>();
 
-    test_gh_1497_const_type();
+    test_gh_1497();
 }

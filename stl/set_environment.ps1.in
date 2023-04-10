@@ -1,0 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+$env:PATH="$PSScriptRoot\out\bin\@VCLIBS_I386_OR_AMD64@;$env:PATH"
+$env:INCLUDE="$PSScriptRoot\out\inc;$env:INCLUDE"
+$env:LIB="$PSScriptRoot\out\lib\@VCLIBS_I386_OR_AMD64@;$env:LIB"

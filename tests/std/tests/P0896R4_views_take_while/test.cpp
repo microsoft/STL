@@ -30,9 +30,7 @@ using pipeline_t = ranges::take_while_view<
     ranges::take_while_view<ranges::take_while_view<ranges::take_while_view<V, Pred>, Pred>, Pred>, Pred>;
 
 template <class Rng>
-concept CanViewTakeWhile = requires(Rng&& r) {
-    views::take_while(forward<Rng>(r), is_less_than<3>);
-};
+concept CanViewTakeWhile = requires(Rng&& r) { views::take_while(forward<Rng>(r), is_less_than<3>); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
@@ -241,7 +239,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                 assert(sc == s.base());
                 assert(sc == sc.base());
             } else if constexpr (forward_range<V> && is_lvalue_reference_v<Rng>) {
-                auto full_range   = views::take_while(rng, [](auto const&) { return true; });
+                auto full_range   = views::take_while(rng, [](const auto&) { return true; });
                 const auto length = 8; // NB: depends on the test data
                 assert(full_range.end() == next(full_range.begin(), length));
                 assert(full_range.end() == next(as_const(full_range).begin(), length));
@@ -259,6 +257,90 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             }
         }
     }
+
+#if _HAS_CXX23
+    using ranges::const_iterator_t, ranges::const_sentinel_t, ranges::cbegin, ranges::cend;
+
+    // Validate view_interface::cbegin
+    STATIC_ASSERT(CanMemberCBegin<R>);
+    STATIC_ASSERT(CanMemberCBegin<const R> == ranges::range<const R>);
+    STATIC_ASSERT(indirect_unary_predicate<const Pred, const_iterator_t<const V>>);
+    if (forward_range<V>) { // intentionally not if constexpr
+        const same_as<const_iterator_t<R>> auto i = r.cbegin();
+        if (!is_empty) {
+            assert(*i == *cbegin(expected));
+            assert(*r.cbegin() == *cbegin(expected));
+        }
+
+        if constexpr (copyable<V>) {
+            auto r2                                    = r;
+            const same_as<const_iterator_t<R>> auto i2 = r2.cbegin();
+            if (!is_empty) {
+                assert(*i2 == *i);
+                assert(*r2.cbegin() == *i2);
+            }
+        }
+
+        const same_as<const_iterator_t<const R>> auto ic = as_const(r).cbegin();
+        if (!is_empty) {
+            assert(*ic == *cbegin(expected));
+            assert(*as_const(r).cbegin() == *cbegin(expected));
+        }
+
+        if constexpr (copyable<V>) {
+            auto rc2                                          = as_const(r);
+            const same_as<const_iterator_t<const R>> auto ic2 = rc2.cbegin();
+            if (!is_empty) {
+                assert(*ic2 == *ic);
+                assert(*rc2.cbegin() == *ic2);
+            }
+        }
+    }
+
+    // Validate view_interface::cend
+    STATIC_ASSERT(CanMemberCEnd<R>);
+    STATIC_ASSERT(CanMemberCEnd<const R> == ranges::range<const R>);
+    STATIC_ASSERT(indirect_unary_predicate<const Pred, const_iterator_t<const V>>);
+    STATIC_ASSERT(CanCEnd<const R&> == CanMemberCEnd<const R>);
+    STATIC_ASSERT(!common_range<R>);
+    STATIC_ASSERT(!common_range<const R>);
+    if (!is_empty) {
+        same_as<const_sentinel_t<R>> auto s        = r.cend();
+        same_as<const_sentinel_t<const R>> auto sc = as_const(r).cend();
+
+        if (forward_range<V>) { // intentionally not if constexpr
+            // Compare with const / non-const iterators
+            assert(s != r.cbegin());
+            assert(s != as_const(r).cbegin());
+            assert(sc != r.cbegin());
+            assert(sc != as_const(r).cbegin());
+
+            // Compare with end of range
+            if constexpr (common_range<V>) {
+                assert(s == s.base());
+                assert(s == sc.base());
+                assert(sc == s.base());
+                assert(sc == sc.base());
+            } else if constexpr (forward_range<V> && is_lvalue_reference_v<Rng>) {
+                auto full_range   = views::take_while(rng, [](const auto&) { return true; });
+                const auto length = 8; // NB: depends on the test data
+                assert(full_range.cend() == next(full_range.cbegin(), length));
+                assert(full_range.cend() == next(as_const(full_range).cbegin(), length));
+                assert(as_const(full_range).cend() == next(full_range.cbegin(), length));
+                assert(as_const(full_range).cend() == next(as_const(full_range).cbegin(), length));
+            }
+
+            // Compare with iterator whose predicate evaluates to false
+            if constexpr (forward_range<V>) {
+                const auto length = 4; // NB: depends on the test data
+                assert(s == next(r.cbegin(), length));
+                assert(s == next(as_const(r).cbegin(), length));
+                assert(sc == next(r.cbegin(), length));
+                assert(sc == next(as_const(r).cbegin(), length));
+            }
+        }
+    }
+#endif // _HAS_CXX23
 
     // Validate view_interface::data
     if constexpr (CanData<R&>) {

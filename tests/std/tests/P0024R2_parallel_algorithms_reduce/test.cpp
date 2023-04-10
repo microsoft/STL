@@ -3,7 +3,7 @@
 
 #pragma warning(disable : 4242 4244 4365) // test_case_incorrect_special_case_reasoning tests narrowing on purpose
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <execution>
 #include <iterator>
 #include <memory>
@@ -75,9 +75,11 @@ void test_case_incorrect_special_case_reasoning() {
 }
 
 int main() {
+#ifndef _M_CEE // TRANSITION, VSO-1659695
     mt19937 gen(1729);
     parallel_test_case(test_case_reduce, gen);
     parallel_test_case([](const size_t testSize) { test_case_move_only(seq, testSize); });
     parallel_test_case([](const size_t testSize) { test_case_move_only(par, testSize); });
     test_case_incorrect_special_case_reasoning();
+#endif // _M_CEE
 }

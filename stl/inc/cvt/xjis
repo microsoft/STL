@@ -30,9 +30,8 @@ namespace stdext {
 #define _ESC_CODE 0x1b
 
         template <class _Elem, unsigned long _Maxcode = 0xffff>
-        class codecvt_jis
-            : public _STD
-                  codecvt<_Elem, char, _Statype> { // facet for converting between JIS-X0208 _Elem and UCS-2 bytes
+        class codecvt_jis : public _STD codecvt<_Elem, char, _Statype> {
+            // facet for converting between JIS-X0208 _Elem and UCS-2 bytes
             using _Table = _tab_jis<int>;
 
             bool _Jis_to_ucs(unsigned short& _Ch) const { // convert _Ch from JIS-X0208 to UCS-2
@@ -46,7 +45,7 @@ namespace stdext {
                     }
                 } else { // search for a valid mapping
                     unsigned long _Lo = 0;
-                    unsigned long _Hi = sizeof(_Table::_Dbvalid) / sizeof(_Table::_Dbvalid[0]);
+                    unsigned long _Hi = static_cast<unsigned long>(_STD size(_Table::_Dbvalid));
 
                     while (_Lo < _Hi) { // test midpoint of remaining interval
                         unsigned long _Mid = (_Hi + _Lo) / 2;
@@ -73,7 +72,7 @@ namespace stdext {
 
                 // search for a valid mapping
                 unsigned long _Lo = 0;
-                unsigned long _Hi = sizeof(_Table::_Wvalid) / sizeof(_Table::_Wvalid[0]);
+                unsigned long _Hi = static_cast<unsigned long>(_STD size(_Table::_Wvalid));
 
                 while (_Lo < _Hi) { // test midpoint of remaining interval
                     unsigned long _Mid = (_Hi + _Lo) / 2;
@@ -256,8 +255,9 @@ namespace stdext {
                 case 3: // put third of three bytes
                     *_Pstate = 0;
                     *_Mid2++ = 'B';
+                    _FALLTHROUGH;
 
-                case 0: // fall through
+                case 0:
                     return _Mybase::ok;
                 }
                 return _Mybase::partial;

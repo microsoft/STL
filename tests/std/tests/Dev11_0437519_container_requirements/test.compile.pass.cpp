@@ -1,12 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-int main() {} // COMPILE-ONLY
-
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
-// Work around VSO-119998 "/Za's elided-copy-ctor check is still bogus".
-#ifdef _MSC_EXTENSIONS
 
 // This test program verifies all of the container requirements for the Standard Library containers,
 // including the four non-array sequence containers (deque, forward_list, list, vector), the four
@@ -94,8 +89,8 @@ struct faux_compare {
 
 template <typename T>
 struct default_constructible_compare {
-    default_constructible_compare()                                     = default;
-    default_constructible_compare(default_constructible_compare const&) = default;
+    default_constructible_compare()                                                = default;
+    default_constructible_compare(default_constructible_compare const&)            = default;
     default_constructible_compare& operator=(default_constructible_compare const&) = delete;
 
     bool operator()(T const&, T const&) const noexcept {
@@ -107,7 +102,7 @@ template <typename T>
 struct copy_constructible_compare {
     copy_constructible_compare() = delete;
     copy_constructible_compare(key) {}
-    copy_constructible_compare(copy_constructible_compare const&) = default;
+    copy_constructible_compare(copy_constructible_compare const&)            = default;
     copy_constructible_compare& operator=(copy_constructible_compare const&) = delete;
 
     bool operator()(T const&, T const&) const noexcept {
@@ -124,8 +119,8 @@ struct faux_hash {
 
 template <typename T>
 struct default_constructible_hash {
-    default_constructible_hash()                                  = default;
-    default_constructible_hash(default_constructible_hash const&) = default;
+    default_constructible_hash()                                             = default;
+    default_constructible_hash(default_constructible_hash const&)            = default;
     default_constructible_hash& operator=(default_constructible_hash const&) = delete;
 
     bool operator()(T const&, T const&) const noexcept {
@@ -137,7 +132,7 @@ template <typename T>
 struct copy_constructible_hash {
     copy_constructible_hash() = delete;
     copy_constructible_hash(key) {}
-    copy_constructible_hash(copy_constructible_hash const&) = default;
+    copy_constructible_hash(copy_constructible_hash const&)            = default;
     copy_constructible_hash& operator=(copy_constructible_hash const&) = delete;
 
     std::size_t operator()(T const&) const noexcept {
@@ -163,8 +158,8 @@ struct input_iterator_base {
     typedef std::input_iterator_tag iterator_category;
     typedef std::ptrdiff_t difference_type;
 
-    input_iterator_base()                           = default;
-    input_iterator_base(input_iterator_base const&) = default;
+    input_iterator_base()                                      = default;
+    input_iterator_base(input_iterator_base const&)            = default;
     input_iterator_base& operator=(input_iterator_base const&) = default;
 
     I& operator++() {
@@ -3009,6 +3004,33 @@ DEFINE_TEST_SPECIALIZATION(
 //
 //
 
+// Ad hoc tests for exception specifications of std::vector<bool, Alloc> (LWG-3778)
+template <class Alloc>
+void assert_vector_bool_noexcept_impl() {
+    using vec_bool = std::vector<bool, Alloc>;
+
+    constexpr bool nothrow_on_pocma = std::allocator_traits<Alloc>::propagate_on_container_move_assignment::value
+                                   || std::allocator_traits<Alloc>::is_always_equal::value;
+
+    STATIC_ASSERT(std::is_nothrow_default_constructible_v<vec_bool> == std::is_nothrow_default_constructible_v<Alloc>);
+    STATIC_ASSERT(std::is_nothrow_constructible_v<vec_bool, const Alloc&>);
+    STATIC_ASSERT(std::is_nothrow_move_constructible_v<vec_bool>);
+    STATIC_ASSERT(std::is_nothrow_move_assignable_v<vec_bool> == nothrow_on_pocma);
+    STATIC_ASSERT(std::is_nothrow_destructible_v<vec_bool>);
+
+    STATIC_ASSERT(noexcept(std::declval<vec_bool&>().swap(std::declval<vec_bool&>()))); // strengthened
+    STATIC_ASSERT(noexcept(std::swap(std::declval<vec_bool&>(), std::declval<vec_bool&>()))); // strengthened
+#if _HAS_CXX17
+    STATIC_ASSERT(std::is_nothrow_swappable_v<vec_bool>); // strengthened
+#endif // _HAS_CXX17
+}
+
+void assert_vector_bool_noexcept() {
+    assert_vector_bool_noexcept_impl<std::allocator<bool>>();
+    assert_vector_bool_noexcept_impl<pocma_allocator<bool>>();
+    assert_vector_bool_noexcept_impl<non_pocma_allocator<bool>>();
+}
+
 template <container_tag Tag>
 void assert_container() {
     check_all_container_requirements<Tag>();
@@ -3042,4 +3064,3 @@ void assert_all() {
     assert_container<tag_unordered_multiset>();
     assert_container<tag_unordered_set>();
 }
-#endif // _MSC_EXTENSIONS

@@ -34,15 +34,13 @@ using pipeline_t =
         Fun>;
 
 template <class Rng>
-concept CanViewTransform = requires(Rng&& r) {
-    views::transform(forward<Rng>(r), add8);
-};
+concept CanViewTransform = requires(Rng&& r) { views::transform(forward<Rng>(r), add8); };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using ranges::transform_view, ranges::bidirectional_range, ranges::common_range, ranges::contiguous_range,
         ranges::enable_borrowed_range, ranges::forward_range, ranges::input_range, ranges::iterator_t, ranges::prev,
-        ranges::random_access_range, ranges::range, ranges::range_reference_t, ranges::sentinel_t;
+        ranges::random_access_range, ranges::sized_range, ranges::range, ranges::range_reference_t, ranges::sentinel_t;
 
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
 
@@ -169,7 +167,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     constexpr bool const_invocable = regular_invocable<const Fun&, range_reference_t<const V>>;
 
     // Validate view_interface::empty and operator bool
-    STATIC_ASSERT(CanMemberEmpty<R> == forward_range<Rng>);
+    STATIC_ASSERT(CanMemberEmpty<R> == (sized_range<Rng> || forward_range<Rng>) );
     STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
     if constexpr (CanMemberEmpty<R>) {
         assert(r.empty() == is_empty);
@@ -182,7 +180,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
-    STATIC_ASSERT(CanMemberEmpty<const R> == (forward_range<const Rng> && const_invocable));
+    STATIC_ASSERT(CanMemberEmpty<const R> == ((sized_range<const Rng> || forward_range<const Rng>) &&const_invocable));
     STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
     if constexpr (CanMemberEmpty<const R>) {
         assert(as_const(r).empty() == is_empty);
@@ -251,6 +249,54 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             }
         }
     }
+
+#if _HAS_CXX23
+    using ranges::const_iterator_t, ranges::const_sentinel_t;
+
+    // Validate view_interface::cbegin
+    STATIC_ASSERT(CanMemberCBegin<R>);
+    STATIC_ASSERT(CanMemberCBegin<const R&> == (range<const V> && const_invocable));
+    if (forward_range<V>) { // intentionally not if constexpr
+        const same_as<const_iterator_t<R>> auto ci = r.cbegin();
+        if (!is_empty) {
+            assert(*ci == *begin(expected));
+        }
+
+        if constexpr (copy_constructible<V>) {
+            auto r2                                     = r;
+            const same_as<const_iterator_t<R>> auto ci2 = r2.cbegin();
+            if (!is_empty) {
+                assert(*ci2 == *ci);
+            }
+        }
+
+        if constexpr (CanMemberCBegin<const R&>) {
+            const same_as<const_iterator_t<const R>> auto ci3 = as_const(r).cbegin();
+            if (!is_empty) {
+                assert(*ci3 == *ci);
+            }
+        }
+    }
+
+    // Validate view_interface::cend
+    STATIC_ASSERT(CanMemberCEnd<R>);
+    STATIC_ASSERT(CanMemberCEnd<const R&> == (range<const V> && const_invocable));
+    if (!is_empty) {
+        same_as<const_sentinel_t<R>> auto cs = r.cend();
+        STATIC_ASSERT(is_same_v<const_sentinel_t<R>, const_iterator_t<R>> == common_range<V>);
+        if constexpr (bidirectional_range<R> && common_range<R>) {
+            assert(*prev(cs) == *prev(end(expected)));
+        }
+
+        if constexpr (CanMemberCEnd<const R&>) {
+            same_as<const_sentinel_t<const R>> auto cs2 = as_const(r).cend();
+            STATIC_ASSERT(is_same_v<const_sentinel_t<const R>, const_iterator_t<const R>> == common_range<const V>);
+            if constexpr (bidirectional_range<const R> && common_range<const R>) {
+                assert(*prev(cs2) == *prev(end(expected)));
+            }
+        }
+    }
+#endif // _HAS_CXX23
 
     // Validate view_interface::data
     STATIC_ASSERT(!CanData<TV>);
@@ -321,6 +367,80 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     return true;
 }
 
+// Test a function object whose const and non-const versions behave differently
+struct difference_teller {
+    constexpr auto& operator()(auto&& x) noexcept {
+        auto& ref = x;
+        return ref;
+    }
+
+    constexpr auto operator()(auto&& x) const noexcept {
+        return type_identity<decltype(x)>{};
+    }
+};
+
+template <ranges::input_range Rng>
+constexpr void test_difference_on_const_functor(Rng&& rng) {
+    using ranges::transform_view, ranges::input_range, ranges::forward_range, ranges::bidirectional_range,
+        ranges::random_access_range, ranges::iterator_t, ranges::range_reference_t, ranges::range_value_t;
+
+    using V  = views::all_t<Rng>;
+    using TV = transform_view<V, difference_teller>;
+
+    auto r = forward<Rng>(rng) | views::transform(difference_teller{});
+    STATIC_ASSERT(is_same_v<decltype(r), TV>);
+
+    STATIC_ASSERT(is_lvalue_reference_v<range_reference_t<TV>>);
+    if constexpr (input_range<const TV>) {
+        STATIC_ASSERT(is_object_v<range_reference_t<const TV>>);
+        STATIC_ASSERT(!is_same_v<range_value_t<TV>, range_value_t<const TV>>);
+    }
+
+    if constexpr (forward_range<V>) {
+        using It      = iterator_t<V>;
+        using TVIt    = iterator_t<TV>;
+        using VItCat  = typename iterator_traits<It>::iterator_category;
+        using TVItCat = typename iterator_traits<TVIt>::iterator_category;
+        STATIC_ASSERT(
+            is_same_v<TVItCat, VItCat>
+            || (is_same_v<TVItCat, random_access_iterator_tag> && is_same_v<VItCat, contiguous_iterator_tag>) );
+    }
+
+    if constexpr (forward_range<const V>) {
+        STATIC_ASSERT(is_same_v<typename iterator_traits<iterator_t<const TV>>::iterator_category, input_iterator_tag>);
+    }
+}
+
+// Test xvalue ranges (LWG-3798)
+struct move_fn {
+    constexpr auto&& operator()(auto&& x) const noexcept {
+        return move(x);
+    }
+};
+
+template <ranges::input_range Rng>
+constexpr void test_xvalue_ranges(Rng&& rng) {
+    using ranges::transform_view, ranges::forward_range, ranges::iterator_t, ranges::range_reference_t;
+
+    using V  = views::all_t<Rng>;
+    using TV = transform_view<V, move_fn>;
+
+    auto r = forward<Rng>(rng) | views::transform(move_fn{});
+    STATIC_ASSERT(is_same_v<decltype(r), TV>);
+
+    STATIC_ASSERT(is_rvalue_reference_v<range_reference_t<TV>>);
+
+    if constexpr (forward_range<V>) {
+        using It      = iterator_t<V>;
+        using TVIt    = iterator_t<TV>;
+        using VItCat  = typename iterator_traits<It>::iterator_category;
+        using TVItCat = typename iterator_traits<TVIt>::iterator_category;
+        STATIC_ASSERT(
+            is_same_v<TVItCat, VItCat>
+            || (is_same_v<TVItCat, random_access_iterator_tag> && is_same_v<VItCat, contiguous_iterator_tag>) );
+    }
+}
+
 static constexpr int some_ints[]        = {0, 1, 2, 3, 4, 5, 6, 7};
 static constexpr int transformed_ints[] = {8, 9, 10, 11, 12, 13, 14, 15};
 
@@ -329,6 +449,12 @@ struct instantiator {
     static constexpr void call() {
         R r{some_ints};
         test_one(r, transformed_ints);
+
+        R r2{some_ints};
+        test_difference_on_const_functor(r2);
+
+        R r3{some_ints};
+        test_xvalue_ranges(r3);
     }
 };
 
@@ -490,10 +616,10 @@ struct iterator_instantiator {
             auto r0 = make_view();
             auto i0 = r0.begin();
             assert(*i0 == add8(mutable_ints[0]));
-            STATIC_ASSERT(NOEXCEPT_IDL0(*i0));
+            STATIC_ASSERT(noexcept(*i0));
 
             assert(ranges::iter_move(i0) == add8(mutable_ints[0])); // NB: moving from int leaves it unchanged
-            STATIC_ASSERT(NOEXCEPT_IDL0(ranges::iter_move(i0)));
+            STATIC_ASSERT(noexcept(ranges::iter_move(i0)));
 
             STATIC_ASSERT(!CanIterSwap<decltype(i0)>);
         }
@@ -541,7 +667,7 @@ struct iterator_instantiator {
             assert((0 + I{}).base().peek() == nullptr);
             STATIC_ASSERT(NOEXCEPT_IDL0(2 + i));
 
-            auto vi = I{};
+            I vi{};
             assert(&(i += 5) == &i);
             assert(i.base().peek() == mutable_ints + 5);
             assert(&(vi += 0) == &vi);
@@ -708,6 +834,51 @@ constexpr void iterator_instantiation_test() {
     iterator_instantiator::call<test_iterator<contiguous_iterator_tag, CanDifference::yes>>();
 }
 
+// GH-1709 "Performance issue in handling range iterators in vector constructor"
+void test_gh_1709() {
+    const vector vec{1, 2, 3, 4, 5};
+    const auto transformed{vec | views::transform([](int i) { return i * 10; })};
+    const auto b{ranges::begin(transformed)};
+    const auto e{ranges::end(transformed)};
+
+    {
+        const vector test_construct(b, e);
+        assert((test_construct == vector{10, 20, 30, 40, 50}));
+    }
+
+    {
+        vector test_insert{-6, -7};
+        test_insert.insert(test_insert.end(), b, e);
+        assert((test_insert == vector{-6, -7, 10, 20, 30, 40, 50}));
+    }
+
+    {
+        vector test_assign{-8, -9};
+        test_assign.assign(b, e);
+        assert((test_assign == vector{10, 20, 30, 40, 50}));
+    }
+}
+
+// GH-3014 "<ranges>: list-initialization is misused"
+void test_gh_3014() { // COMPILE-ONLY
+    struct FwdRange {
+        int* begin() {
+            return nullptr;
+        }
+
+        test::init_list_not_constructible_iterator<int> begin() const {
+            return nullptr;
+        }
+
+        unreachable_sentinel_t end() const {
+            return {};
+        }
+    };
+
+    auto r                                           = FwdRange{} | views::transform(identity{});
+    [[maybe_unused]] decltype(as_const(r).begin()) i = r.begin(); // Check 'iterator(iterator<!Const> i)'
+}
+
 int main() {
     { // Validate copyable views
         constexpr span<const int> s{some_ints};
@@ -776,4 +947,6 @@ int main() {
         assert(*i1 == 'e');
         assert(*i2 == 'h');
     }
+
+    test_gh_1709();
 }

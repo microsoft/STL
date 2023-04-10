@@ -4,9 +4,10 @@
 #define _ENABLE_EXTENDED_ALIGNED_STORAGE
 #define _HAS_DEPRECATED_TEMPORARY_BUFFER 1
 #define _SILENCE_CXX17_TEMPORARY_BUFFER_DEPRECATION_WARNING
+#define _SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING
 
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <initializer_list>
 #include <memory>
 #include <type_traits>

@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cstdio>
+#include <cstdlib>
 #include <regex>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 
 #include <test_regex_support.hpp>
@@ -353,7 +353,7 @@ void test_VSO_101318_ECMAScript_identity_escapes_should_be_lax() {
     // Test the ambiguous cases that we now want to accept
     g_regexTester.should_match("z", "\\z");
     g_regexTester.should_match("\xB5", "\\\xB5"); // \xB5 is the micro symbol in Latin-1
-    // ES6 explicitly says "but not c" so this should explode
+    // ES6 explicitly says "but not c" so this should fail
     g_regexTester.should_throw("\\c", error_escape);
     // Make sure w s and d still do what they're supposed to
     g_regexTester.should_match("1", "\\d");
@@ -546,7 +546,8 @@ void test_VSO_226914_word_boundaries() {
     aWordAny.should_search_fail("aa", match_not_bow | match_not_eow);
 }
 
-void test_GH_993_regex_character_class_case_insensitive_search() {
+void test_gh_993() {
+    // GH-993 regex::icase is not handled correctly for some input.
     {
         const wstring subject = L" Copyright";
         const test_wregex case_regex(&g_regexTester, LR"([a-z][a-z])", ECMAScript);
@@ -606,7 +607,7 @@ int main() {
     test_VSO_225160_match_bol_flag();
     test_VSO_225160_match_eol_flag();
     test_VSO_226914_word_boundaries();
-    test_GH_993_regex_character_class_case_insensitive_search();
+    test_gh_993();
 
     return g_regexTester.result();
 }

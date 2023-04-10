@@ -4,12 +4,6 @@
 tests\algorithm
 tests\array
 tests\atomic
-
-# TRANSITION, flaky tests
-# tests\atomic1
-# tests\atomic2
-# tests\atomic4
-
 tests\bitset
 tests\cctype
 tests\cerrno
@@ -25,10 +19,6 @@ tests\codecvt
 tests\complex1
 tests\complex2
 tests\complex3
-
-# TRANSITION, flaky tests
-# tests\condition_variable
-
 tests\csetjmp
 tests\csignal
 tests\cstdarg
@@ -185,10 +175,6 @@ tests\string1
 tests\string2
 tests\strstream
 tests\system_error
-
-# TRANSITION, flaky test (see GH-1642 and GH-718)
-# tests\thread
-
 tests\tuple
 tests\type_traits1
 tests\type_traits2

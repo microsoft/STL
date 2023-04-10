@@ -85,14 +85,14 @@
 // deque<int>::iterator: Previously 12, 16, 16, 12, 8. Now 12, 8, 8, 8, 8.
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
+#include <cstdio>
+#include <cstring>
 #include <deque>
 #include <iterator>
 #include <list>
 #include <set>
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
 #include <vector>
 
 using namespace std;

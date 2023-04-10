@@ -28,8 +28,9 @@ struct test_globals {
         bool mismatched = false;
         for (int i = 0; i < 10; ++i) {
             (void) dist2(rng2);
-            if (dist0(rng0) != dist1(rng1))
+            if (dist0(rng0) != dist1(rng1)) {
                 mismatched = true;
+            }
         }
         CHECK(mismatched);
         STD stringstream str;

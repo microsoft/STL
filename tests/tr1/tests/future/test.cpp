@@ -268,13 +268,13 @@ static void call_promise_setter(STD promise<Ty>* pr, int which) { // try to set 
         pr->set_value(3);
         break;
     case 1:
-        pr->set_exception(STD exception_ptr());
+        pr->set_exception(STD make_exception_ptr(0));
         break;
     case 2:
         pr->set_value_at_thread_exit(3);
         break;
     case 3:
-        pr->set_exception_at_thread_exit(STD exception_ptr());
+        pr->set_exception_at_thread_exit(STD make_exception_ptr(0));
         break;
     }
 }

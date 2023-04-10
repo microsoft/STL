@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# https://releases.llvm.org/12.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+# https://releases.llvm.org/15.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 ---
 # Language:        Cpp
@@ -10,12 +10,34 @@ BasedOnStyle:  LLVM
 AccessModifierOffset: -4
 # AlignAfterOpenBracket: Align
 AlignAfterOpenBracket: DontAlign
-# AlignConsecutiveMacros: None
-AlignConsecutiveMacros: Consecutive
-# AlignConsecutiveAssignments: None
+# AlignArrayOfStructures: None
+# TRANSITION, LLVM-51935 (try using AlignArrayOfStructures after this crash is fixed)
+# AlignConsecutiveAssignments:
+#   Enabled:         false
+#   AcrossEmptyLines: false
+#   AcrossComments:  false
+#   AlignCompound:   false
+#   PadOperators:    true
 AlignConsecutiveAssignments: Consecutive
-# AlignConsecutiveBitFields: None
-# AlignConsecutiveDeclarations: None
+# AlignConsecutiveBitFields:
+#   Enabled:         false
+#   AcrossEmptyLines: false
+#   AcrossComments:  false
+#   AlignCompound:   false
+#   PadOperators:    false
+# AlignConsecutiveDeclarations:
+#   Enabled:         false
+#   AcrossEmptyLines: false
+#   AcrossComments:  false
+#   AlignCompound:   false
+#   PadOperators:    false
+# AlignConsecutiveMacros:
+#   Enabled:         false
+#   AcrossEmptyLines: false
+#   AcrossComments:  false
+#   AlignCompound:   false
+#   PadOperators:    false
+AlignConsecutiveMacros: Consecutive
 # AlignEscapedNewlines: Right
 AlignEscapedNewlines: Left
 # AlignOperands:   Align
@@ -23,7 +45,6 @@ AlignOperands: AlignAfterOperator
 # AlignTrailingComments: true
 AlignTrailingComments: false
 # AllowAllArgumentsOnNextLine: true
-# AllowAllConstructorInitializersOnNextLine: true
 # AllowAllParametersOfDeclarationOnNextLine: true
 # AllowShortEnumsOnASingleLine: true
 # AllowShortBlocksOnASingleLine: Never
@@ -63,7 +84,7 @@ AlwaysBreakTemplateDeclarations: Yes
 #   SplitEmptyNamespace: true
 # BreakBeforeBinaryOperators: None
 BreakBeforeBinaryOperators: NonAssignment
-# BreakBeforeConceptDeclarations: true
+# BreakBeforeConceptDeclarations: Always
 # BreakBeforeBraces: Attach
 # BreakBeforeInheritanceComma: false
 # BreakInheritanceList: BeforeColon
@@ -75,8 +96,8 @@ BreakBeforeBinaryOperators: NonAssignment
 # ColumnLimit:     80
 ColumnLimit:     120
 # CommentPragmas:  '^ IWYU pragma:'
+# QualifierAlignment: Leave
 # CompactNamespaces: false
-# ConstructorInitializerAllOnOneLineOrOnePerLine: false
 # ConstructorInitializerIndentWidth: 4
 # ContinuationIndentWidth: 4
 # Cpp11BracedListStyle: true
@@ -84,15 +105,20 @@ ColumnLimit:     120
 DeriveLineEnding: false
 # DerivePointerAlignment: false
 # DisableFormat:   false
+# EmptyLineAfterAccessModifier: Never
 # EmptyLineBeforeAccessModifier: LogicalBlock
 # ExperimentalAutoDetectBinPacking: false
+# PackConstructorInitializers: BinPack
+# BasedOnStyle:    ''
+# ConstructorInitializerAllOnOneLineOrOnePerLine: false
+# AllowAllConstructorInitializersOnNextLine: true
 # FixNamespaceComments: true
 # ForEachMacros:
 #   - foreach
 #   - Q_FOREACH
 #   - BOOST_FOREACH
-# StatementAttributeLikeMacros:
-#   - Q_EMIT
+# IfMacros:
+#   - KJ_IF_MAYBE
 # IncludeBlocks:   Preserve
 IncludeBlocks:   Regroup
 # IncludeCategories:
@@ -125,22 +151,25 @@ IncludeCategories:
     Priority:        2
 # IncludeIsMainRegex: '(Test)?$'
 # IncludeIsMainSourceRegex: ''
+# IndentAccessModifiers: false
 # IndentCaseLabels: false
 # IndentCaseBlocks: false
 IndentCaseBlocks: true
 # IndentGotoLabels: true
 # IndentPPDirectives: None
 # IndentExternBlock: AfterExternBlock
-# IndentRequires:  false
-IndentRequires:  true
+# IndentRequiresClause: true
 # IndentWidth:     2
 IndentWidth:     4
 # IndentWrappedFunctionNames: false
 IndentWrappedFunctionNames: true
+# InsertBraces:    false
+InsertBraces:    true
 # InsertTrailingCommas: None
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
 # KeepEmptyLinesAtTheStartOfBlocks: true
+# LambdaBodyIndentation: Signature
 # NOTE: MacroBlockBegin/MacroBlockEnd don't work with _CATCH_ALL.
 # MacroBlockBegin: ''
 # MacroBlockEnd:   ''
@@ -157,6 +186,7 @@ NamespaceIndentation: All
 # PenaltyBreakBeforeFirstCallParameter: 19
 # PenaltyBreakComment: 300
 # PenaltyBreakFirstLessLess: 120
+# PenaltyBreakOpenParenthesis: 0
 # PenaltyBreakString: 1000
 # PenaltyBreakTemplateDeclaration: 10
 # PenaltyExcessCharacter: 1000000
@@ -164,8 +194,14 @@ NamespaceIndentation: All
 # PenaltyIndentedWhitespace: 0
 # PointerAlignment: Right
 PointerAlignment: Left
+# PPIndentWidth:   -1
+# ReferenceAlignment: Pointer
 # ReflowComments:  true
-# SortIncludes:    true
+# RemoveBracesLLVM: false
+# RequiresClausePosition: OwnLine
+# SeparateDefinitionBlocks: Leave
+# ShortNamespaceLines: 1
+# SortIncludes:    CaseSensitive
 # SortJavaStaticImport: Before
 # SortUsingDeclarations: true
 # SpaceAfterCStyleCast: false
@@ -178,20 +214,38 @@ SpaceAfterCStyleCast: true
 # SpaceBeforeCtorInitializerColon: true
 # SpaceBeforeInheritanceColon: true
 # SpaceBeforeParens: ControlStatements
+# SpaceBeforeParensOptions:
+#   AfterControlStatements: true
+#   AfterForeachMacros: true
+#   AfterFunctionDefinitionName: false
+#   AfterFunctionDeclarationName: false
+#   AfterIfMacros:   true
+#   AfterOverloadedOperator: false
+#   AfterRequiresInClause: false
+#   AfterRequiresInExpression: false
+#   BeforeNonEmptyParentheses: false
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterRequiresInClause: true
 # SpaceAroundPointerQualifiers: Default
 # SpaceBeforeRangeBasedForLoopColon: true
 # SpaceInEmptyBlock: false
 # SpaceInEmptyParentheses: false
 # SpacesBeforeTrailingComments: 1
-# SpacesInAngles:  false
+# SpacesInAngles:  Never
 # SpacesInConditionalStatement: false
 # SpacesInContainerLiterals: true
 # SpacesInCStyleCastParentheses: false
+# SpacesInLineCommentPrefix:
+#   Minimum:         1
+#   Maximum:         -1
 # SpacesInParentheses: false
 # SpacesInSquareBrackets: false
 # SpaceBeforeSquareBrackets: false
 # BitFieldColonSpacing: Both
 # Standard:        Latest
+# StatementAttributeLikeMacros:
+#   - Q_EMIT
 # StatementMacros:
 #   - Q_UNUSED
 #   - QT_REQUIRE_VERSION

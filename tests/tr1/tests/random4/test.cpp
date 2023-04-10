@@ -283,8 +283,9 @@ static void tdiscard() {
 
     rng_base_t rng4;
     rng_t rng5;
-    for (i = 0; i < rng_t::used_block; ++i)
+    for (i = 0; i < rng_t::used_block; ++i) {
         CHECK_INT(rng4(), rng5());
+    }
     CHECK(rng4() != rng5());
     for (; i < rng_t::block_size; ++i) {
         (void) rng4();
@@ -404,8 +405,9 @@ static void tmt19937_64() {
     typedef STD mt19937_64 rng_t;
     rng_t rng;
     rng_t::result_type res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK(res == 9981545732273789042ULL);
 }
 
@@ -413,8 +415,9 @@ static void tranlux24_base() {
     typedef STD ranlux24_base rng_t;
     rng_t rng;
     rng_t::result_type res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK_INT(res, 7937952);
 }
 
@@ -422,8 +425,9 @@ static void tranlux24() {
     typedef STD ranlux24 rng_t;
     rng_t rng;
     rng_t::result_type res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK_INT(res, 9901578);
 }
 
@@ -431,8 +435,9 @@ static void tranlux48_base() {
     typedef STD ranlux48_base rng_t;
     rng_t rng;
     rng_t::result_type res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK(res == 61839128582725ULL);
 }
 
@@ -440,8 +445,9 @@ static void tranlux48() {
     typedef STD ranlux48 rng_t;
     rng_t rng;
     rng_t::result_type res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK(res == 249142670248501ULL);
 }
 
@@ -449,8 +455,9 @@ static void tknuth() {
     typedef STD knuth_b rng_t;
     rng_t rng;
     rng_t::result_type res = 0;
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 10000; ++i) {
         res = rng();
+    }
     CHECK_INT(res, 1112339016U);
 }
 

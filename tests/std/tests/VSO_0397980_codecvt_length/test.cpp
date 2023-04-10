@@ -4,7 +4,10 @@
 #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 #define _SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING
 
-#include <assert.h>
+#undef _ENFORCE_FACET_SPECIALIZATIONS
+#define _ENFORCE_FACET_SPECIALIZATIONS 0
+
+#include <cassert>
 #include <codecvt>
 #include <cstdlib>
 #include <iterator>

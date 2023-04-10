@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <PropertyGroup>
         <ClProgramDataBaseFileName>$(OutputLibPdbPath)$(OutputName)$(PdbVerName).pdb</ClProgramDataBaseFileName>
         <ClDefines Condition="'$(DependsOnConcRT)' == 'true'">$(ClDefines);_STL_CONCRT_SUPPORT</ClDefines>
-        <ClDefines>$(ClDefines);_VCRT_ALLOW_INTERNALS;_ANNOTATE_VECTOR</ClDefines>
+        <ClDefines>$(ClDefines);_VCRT_ALLOW_INTERNALS;_ANNOTATE_VECTOR;_ANNOTATE_STRING</ClDefines>
     </PropertyGroup>
 
     <Import Project="$(MSBuildThisFileDirectory)\stl.files.settings.targets"/>

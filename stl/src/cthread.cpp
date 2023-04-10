@@ -52,30 +52,33 @@ _CRTIMP2_PURE int _Thrd_start(_Thrd_t* thr, _Thrd_callback_t func, void* b) { //
     return thr->_Hnd == nullptr ? _Thrd_error : _Thrd_success;
 }
 
-int _Thrd_join(_Thrd_t thr, int* code) { // return exit code when thread terminates
-    unsigned long res;
-    if (WaitForSingleObjectEx(thr._Hnd, INFINITE, FALSE) == WAIT_FAILED || GetExitCodeThread(thr._Hnd, &res) == 0) {
+int _Thrd_join(_Thrd_t thr, int* code) { // returns when thread terminates
+    if (WaitForSingleObjectEx(thr._Hnd, INFINITE, FALSE) == WAIT_FAILED) {
         return _Thrd_error;
     }
 
-    if (code) {
+    if (code) { // TRANSITION, ABI: code is preserved for binary compatibility
+        unsigned long res;
+        if (!GetExitCodeThread(thr._Hnd, &res)) {
+            return _Thrd_error;
+        }
         *code = static_cast<int>(res);
     }
 
-    return CloseHandle(thr._Hnd) == 0 ? _Thrd_error : _Thrd_success;
+    return CloseHandle(thr._Hnd) ? _Thrd_success : _Thrd_error;
 }
 
 int _Thrd_detach(_Thrd_t thr) { // tell OS to release thread's resources when it terminates
-    return CloseHandle(thr._Hnd) == 0 ? _Thrd_error : _Thrd_success;
+    return CloseHandle(thr._Hnd) ? _Thrd_success : _Thrd_error;
 }
 
-void _Thrd_sleep(const xtime* xt) { // suspend thread until time xt
-    xtime now;
-    xtime_get(&now, TIME_UTC);
+void _Thrd_sleep(const _timespec64* xt) { // suspend thread until time xt
+    _timespec64 now;
+    _Timespec64_get_sys(&now);
     do { // sleep and check time
         Sleep(_Xtime_diff_to_millis2(xt, &now));
-        xtime_get(&now, TIME_UTC);
-    } while (now.sec < xt->sec || now.sec == xt->sec && now.nsec < xt->nsec);
+        _Timespec64_get_sys(&now);
+    } while (now.tv_sec < xt->tv_sec || now.tv_sec == xt->tv_sec && now.tv_nsec < xt->tv_nsec);
 }
 
 void _Thrd_yield() { // surrender remainder of timeslice

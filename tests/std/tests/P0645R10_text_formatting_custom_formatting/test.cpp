@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <format>
+#include <iterator>
 #include <limits>
+#include <locale>
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 using namespace std;
 
 // copied from the text_formatting_formatting test case
@@ -45,6 +48,13 @@ struct basic_custom_formattable_type {
     string_view string_content;
 };
 
+struct not_const_formattable_type {
+    string_view string_content;
+    explicit not_const_formattable_type(string_view val) : string_content(val) {}
+    not_const_formattable_type(const not_const_formattable_type&) = delete;
+    not_const_formattable_type(not_const_formattable_type&&)      = delete;
+};
+
 template <>
 struct std::formatter<basic_custom_formattable_type, char> {
     basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
@@ -53,7 +63,21 @@ struct std::formatter<basic_custom_formattable_type, char> {
         }
         return parse_ctx.end();
     }
-    format_context::iterator format(const basic_custom_formattable_type& val, format_context& ctx) {
+    format_context::iterator format(const basic_custom_formattable_type& val, format_context& ctx) const {
+        ctx.advance_to(copy(val.string_content.begin(), val.string_content.end(), ctx.out()));
+        return ctx.out();
+    }
+};
+
+template <>
+struct std::formatter<not_const_formattable_type, char> {
+    basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
+        if (parse_ctx.begin() != parse_ctx.end()) {
+            throw format_error{"only empty specs please"};
+        }
+        return parse_ctx.end();
+    }
+    format_context::iterator format(not_const_formattable_type& val, format_context& ctx) const {
         ctx.advance_to(copy(val.string_content.begin(), val.string_content.end(), ctx.out()));
         return ctx.out();
     }
@@ -67,7 +91,7 @@ struct custom_formattable_type {
 template <class T, class charT>
 struct std::formatter<custom_formattable_type<T>, charT> : std::formatter<T, charT> {
     template <class FC>
-    auto format(const custom_formattable_type<T>& val, FC& format_ctx) {
+    auto format(const custom_formattable_type<T>& val, FC& format_ctx) const {
         return std::formatter<T, charT>::format(val.val, format_ctx);
     }
 };
@@ -102,7 +126,7 @@ void test_numeric_custom_formattable_type() {
     test_custom_equiv_with_format<T>(STR("{}"), numeric_limits<T>::min());
     test_custom_equiv_with_format<T>(STR("{}"), numeric_limits<T>::max());
     test_custom_equiv_with_format<T>(STR("{:3}"), 1);
-    if constexpr (!is_floating_point_v<T> && !_Is_any_of_v<T, charT, bool>) {
+    if constexpr (!is_floating_point_v<T> && !is_same_v<T, charT> && !is_same_v<T, bool>) {
         test_custom_equiv_with_format<T>(STR("{:#x}"), 255);
         test_custom_equiv_with_format<T>(STR("{:#X}"), 255);
     }
@@ -117,17 +141,41 @@ void test_numeric_mixed_args_custom_formattable_type() {
     test_custom_equiv_with_format_mixed<T>(STR("{}{}"), numeric_limits<T>::max());
     test_custom_equiv_with_format_mixed<T>(STR("{:3}{:4}"), 1);
     test_custom_equiv_with_format_mixed<T>(STR("{0}{0}"), 42);
-    if constexpr (!is_floating_point_v<T> && !_Is_any_of_v<T, charT, bool>) {
+    if constexpr (!is_floating_point_v<T> && !is_same_v<T, charT> && !is_same_v<T, bool>) {
         test_custom_equiv_with_format_mixed<T>(STR("{:#x}{}"), 255);
         test_custom_equiv_with_format_mixed<T>(STR("{:#X}{}"), 255);
     }
 }
 
+template <class CustomFormattableType>
+void test_format_family_overloads() {
+    string str;
+
+    assert(format("{}", CustomFormattableType{"f"}) == "f"s);
+    assert(format(locale{}, "{}", CustomFormattableType{"f"}) == "f"s);
+    format_to(back_insert_iterator(str), "{}", CustomFormattableType{"f"});
+    assert(str == "f");
+    str.clear();
+    format_to(back_insert_iterator(str), locale{}, "{}", CustomFormattableType{"f"});
+    assert(str == "f");
+    str.clear();
+    format_to_n(back_insert_iterator(str), 5, "{}", CustomFormattableType{"f"});
+    assert(str == "f");
+    str.clear();
+    format_to_n(back_insert_iterator(str), 5, locale{}, "{}", CustomFormattableType{"f"});
+    assert(str == "f");
+    str.clear();
+    assert(formatted_size("{}", CustomFormattableType{"f"}) == 1);
+    assert(formatted_size(locale{}, "{}", CustomFormattableType{"f"}) == 1);
+}
+
 template <class charT>
 void test_custom_formattable_type() {
     test_numeric_custom_formattable_type<int, charT>();
+    test_numeric_custom_formattable_type<long, charT>();
     test_numeric_custom_formattable_type<long long, charT>();
     test_numeric_custom_formattable_type<unsigned int, charT>();
+    test_numeric_custom_formattable_type<unsigned long, charT>();
     test_numeric_custom_formattable_type<unsigned long long, charT>();
     test_numeric_custom_formattable_type<short, charT>();
 #ifdef _NATIVE_WCHAR_T_DEFINED
@@ -135,13 +183,16 @@ void test_custom_formattable_type() {
 #endif
     test_numeric_custom_formattable_type<float, charT>();
     test_numeric_custom_formattable_type<double, charT>();
+    test_numeric_custom_formattable_type<long double, charT>();
 }
 
 template <class charT>
 void test_mixed_custom_formattable_type() {
     test_numeric_mixed_args_custom_formattable_type<int, charT>();
+    test_numeric_mixed_args_custom_formattable_type<long, charT>();
     test_numeric_mixed_args_custom_formattable_type<long long, charT>();
     test_numeric_mixed_args_custom_formattable_type<unsigned int, charT>();
+    test_numeric_mixed_args_custom_formattable_type<unsigned long, charT>();
     test_numeric_mixed_args_custom_formattable_type<unsigned long long, charT>();
     test_numeric_mixed_args_custom_formattable_type<short, charT>();
 #ifdef _NATIVE_WCHAR_T_DEFINED
@@ -149,10 +200,12 @@ void test_mixed_custom_formattable_type() {
 #endif
     test_numeric_mixed_args_custom_formattable_type<float, charT>();
     test_numeric_mixed_args_custom_formattable_type<double, charT>();
+    test_numeric_mixed_args_custom_formattable_type<long double, charT>();
 }
 
 int main() {
-    assert(format("{}", basic_custom_formattable_type{"f"}) == "f"s);
+    test_format_family_overloads<basic_custom_formattable_type>();
+    test_format_family_overloads<not_const_formattable_type>();
     test_custom_formattable_type<char>();
     test_custom_formattable_type<wchar_t>();
     test_mixed_custom_formattable_type<char>();

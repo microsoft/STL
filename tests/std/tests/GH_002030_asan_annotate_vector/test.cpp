@@ -12,7 +12,15 @@
 #include <utility>
 #include <vector>
 
+#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
+#endif // __clang__
+
 using namespace std;
+
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 #ifndef __SANITIZE_ADDRESS__
 #if defined(__clang__) && defined(__has_feature)
@@ -148,19 +156,23 @@ public:
 template <class T, class Alloc>
 bool verify_vector(vector<T, Alloc>& vec) {
 #ifdef __SANITIZE_ADDRESS__
-    size_t buffer_bytes = vec.capacity() * sizeof(T);
-    void* buffer        = vec.data();
-    void* aligned_start = align(8, 1, buffer, buffer_bytes);
+    const void* buffer  = vec.data();
+    const void* buf_end = vec.data() + vec.capacity();
+    _Asan_aligned_pointers aligned;
 
-    if (!aligned_start) {
-        return true;
+    if constexpr ((_Container_allocation_minimum_asan_alignment<vector<T, Alloc>>) >= 8) {
+        aligned = {buffer, buf_end};
+    } else {
+        aligned = _Get_asan_aligned_first_end(buffer, buf_end);
+        if (aligned._First == aligned._End) {
+            return true;
+        }
     }
 
-    void* mid = vec.data() + vec.size();
-    mid       = mid > aligned_start ? mid : aligned_start;
+    const void* const mid       = vec.data() + vec.size();
+    const void* const fixed_mid = aligned._Clamp_to_end(mid);
 
-    void* bad_address =
-        __sanitizer_contiguous_container_find_bad_address(aligned_start, mid, vec.data() + vec.capacity());
+    void* bad_address = __sanitizer_contiguous_container_find_bad_address(aligned._First, fixed_mid, aligned._End);
     if (bad_address == nullptr) {
         return true;
     }
@@ -172,13 +184,15 @@ bool verify_vector(vector<T, Alloc>& vec) {
     }
     cout << "Vector State:" << endl;
     cout << "  begin:         " << buffer << endl;
-    cout << "  aligned begin: " << aligned_start << endl;
-    cout << "  last:          " << reinterpret_cast<void*>(vec.data() + vec.size()) << endl;
-    cout << "  end:           " << reinterpret_cast<void*>(vec.data() + vec.capacity()) << endl;
+    cout << "  aligned begin: " << aligned._First << endl;
+    cout << "  last:          " << mid << endl;
+    cout << "  aligned_last:  " << fixed_mid << endl;
+    cout << "  end:           " << buf_end << endl;
+    cout << "  aligned_end:   " << aligned._End << endl;
     __asan_describe_address(bad_address);
 
     return false;
-#else // ^^^ ASan instrumentation enabled ^^^ // vvv ASan instrumentation disabled vvv
+#else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
     (void) vec;
     return true;
 #endif // Asan instrumentation disabled
@@ -206,7 +220,7 @@ constexpr bool operator!=(
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct aligned_allocator : custom_test_allocator<T, Pocma, Stateless> {
-    static constexpr size_t _Minimum_allocation_alignment = 8;
+    static constexpr size_t _Minimum_asan_allocation_alignment = 8;
 
     aligned_allocator() = default;
     template <class U>
@@ -220,10 +234,11 @@ struct aligned_allocator : custom_test_allocator<T, Pocma, Stateless> {
         delete[] p;
     }
 };
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, aligned_allocator<char>>> == 8);
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct explicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
-    static constexpr size_t _Minimum_allocation_alignment = alignof(T);
+    static constexpr size_t _Minimum_asan_allocation_alignment = alignof(T);
 
     explicit_allocator() = default;
     template <class U>
@@ -235,9 +250,11 @@ struct explicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
     }
 
     void deallocate(T* p, size_t) noexcept {
-        delete[](p - 1);
+        delete[] (p - 1);
     }
 };
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, explicit_allocator<char>>> == 1);
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<wchar_t, explicit_allocator<wchar_t>>> == 2);
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
@@ -251,9 +268,11 @@ struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
     }
 
     void deallocate(T* p, size_t) noexcept {
-        delete[](p - 1);
+        delete[] (p - 1);
     }
 };
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, implicit_allocator<char>>> == 1);
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<wchar_t, implicit_allocator<wchar_t>>> == 2);
 
 template <class Alloc>
 void test_push_pop() {
@@ -922,6 +941,44 @@ void test_insert_n_throw() {
 }
 
 template <class Alloc>
+void test_clear() {
+    using T = typename Alloc::value_type;
+
+    vector<T, Alloc> v;
+    v.push_back(T());
+    v.assign(v.capacity() + 1, T());
+    assert(verify_vector(v));
+    v.clear();
+    assert(verify_vector(v));
+    v.clear();
+    assert(verify_vector(v));
+}
+
+template <class Alloc>
+void test_empty() {
+    using T = typename Alloc::value_type;
+
+    vector<T, Alloc> v1;
+    v1.clear();
+    v1.resize(0);
+    v1.shrink_to_fit();
+    v1.assign(0, T());
+    v1.assign({});
+    v1 = {};
+
+    vector<T, Alloc> v2;
+    v1.assign(v2.begin(), v2.end());
+
+    input_iterator_tester<T, 11> in;
+    auto e = in.end();
+    v1.assign(e, e); // empty range of input iterators
+
+    vector<T, Alloc> v3;
+    v1 = v3;
+    v3 = move(v1);
+}
+
+template <class Alloc>
 void run_tests() {
     test_push_pop<Alloc>();
     test_reserve_shrink<Alloc>();
@@ -933,6 +990,8 @@ void run_tests() {
     test_insert_range<Alloc>();
     test_assign<Alloc>();
     test_resize<Alloc>();
+    test_clear<Alloc>();
+    test_empty<Alloc>();
 }
 
 template <class T, template <class, class, class> class AllocT>

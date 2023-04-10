@@ -9,8 +9,8 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#include <__msvc_chrono.hpp> // for chrono::time_point
 #include <algorithm> // for replace
-#include <chrono> // for chrono::time_point
 #include <codecvt> // for codecvt_utf8_*
 #include <list> // for recursive_directory_iterator stack
 #include <locale> // for wstring_convert
@@ -27,7 +27,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #error The <experimental/filesystem> header providing std::experimental::filesystem is deprecated by Microsoft \
 and will be REMOVED. It is superseded by the C++17 <filesystem> header providing std::filesystem. \
-You can define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING to acknowledge that you have received this warning.
+You can define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING to suppress this error.
 #endif // _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
 #pragma warning(disable : 4365) // conversion from 'type_1' to 'type_2', signed/unsigned mismatch (/Wall)
@@ -89,7 +89,7 @@ enum class copy_options { // names for copy options
     _Unspecified_recursion_prevention_tag = 512
 };
 
-_BITMASK_OPS(copy_options)
+_BITMASK_OPS(_EMPTY_ARGUMENT, copy_options)
 
 enum class directory_options { // names for directory options
     none = 0,
@@ -121,17 +121,17 @@ enum class perms { // names for permissions
     resolve_symlinks = 0x40000
 };
 
-_BITMASK_OPS(perms)
+_BITMASK_OPS(_EMPTY_ARGUMENT, perms)
 
 class file_status { // stores file status
 public:
     explicit file_status(file_type _Ftype = file_type::none, perms _Prms = perms::unknown) noexcept
         : _Myftype(_Ftype), _Myperms(_Prms) {}
 
-    file_status(const file_status&) noexcept = default;
+    file_status(const file_status&) noexcept            = default;
     file_status& operator=(const file_status&) noexcept = default;
 
-    file_status(file_status&&) = default;
+    file_status(file_status&&)            = default;
     file_status& operator=(file_status&&) = default;
 
     _NODISCARD file_type type() const noexcept {
@@ -283,7 +283,7 @@ struct _Path_cvt<char, wchar_t, _Outtraits,
             _Xinvalid_argument("invalid char filename argument");
         }
 
-        return _STD move(_Str.append(&_Fname_wide[0]));
+        return _STD move(_Str.append(_Fname_wide));
     }
 
     static _Outstr&& _Cvt(_Outstr& _Str, const _Inchar* _First, size_t _Size,
@@ -307,7 +307,7 @@ struct _Path_cvt<wchar_t, char, _Outtraits,
             _Xinvalid_argument("invalid wchar_t filename argument");
         }
 
-        return _STD move(_Str.append(&_Fname_byte[0]));
+        return _STD move(_Str.append(_Fname_byte));
     }
 
     static _Outstr&& _Cvt(_Outstr& _Str, const _Inchar* _First, size_t _Size,
@@ -334,12 +334,12 @@ struct _Path_cvt<char, _Char8_t, char_traits<char>,
         }
 
         wstring_convert<codecvt_utf8<wchar_t>, wchar_t> _Wcvt;
-        wchar_t* _Last1 = &_Fname_wide[0];
+        wchar_t* _Last1 = _Fname_wide;
         while (*_Last1 != L'\0') {
             ++_Last1;
         }
 
-        return _STD move(_Str.append(_Wcvt.to_bytes(&_Fname_wide[0], _Last1)));
+        return _STD move(_Str.append(_Wcvt.to_bytes(_Fname_wide, _Last1)));
     }
 };
 
@@ -359,7 +359,7 @@ struct _Path_cvt<_Char8_t, char, _Outtraits,
             _Xinvalid_argument("invalid UTF8 filename argument");
         }
 
-        return _STD move(_Str.append(&_Fname_byte[0]));
+        return _STD move(_Str.append(_Fname_byte));
     }
 };
 
@@ -800,27 +800,27 @@ public:
 
     template <class _InIt>
     path& operator=(_InIt _First) {
-        return *this = path(_First);
+        return *this = path{_First};
     }
 
     template <class _Elem, class _Traits, class _Alloc>
     path& operator=(const basic_string<_Elem, _Traits, _Alloc>& _Str) {
-        return *this = path(_Str);
+        return *this = path{_Str};
     }
 
     template <class _InIt>
     path& assign(_InIt _First, _InIt _Last) {
-        return *this = path(_First, _Last);
+        return *this = path{_First, _Last};
     }
 
     template <class _InIt>
     path& assign(_InIt _First) {
-        return *this = path(_First);
+        return *this = path{_First};
     }
 
     template <class _Elem, class _Traits, class _Alloc>
     path& assign(const basic_string<_Elem, _Traits, _Alloc>& _Str) {
-        return *this = path(_Str);
+        return *this = path{_Str};
     }
 
     path& operator/=(const path& _Path) { // append copy
@@ -829,7 +829,7 @@ public:
 
     template <class _InIt>
     path& operator/=(_InIt _First) { // append NTCTS, given iterator
-        return append(path(_First)._Mystr);
+        return append(path{_First}._Mystr);
     }
 
     template <class _Elem, class _Traits, class _Alloc>
@@ -839,12 +839,12 @@ public:
 
     template <class _InIt>
     path& append(_InIt _First, _InIt _Last) { // append NTCTS
-        return append(path(_First, _Last)._Mystr);
+        return append(path{_First, _Last}._Mystr);
     }
 
     template <class _InIt>
     path& append(_InIt _First) { // append NTCTS
-        return append(path(_First)._Mystr);
+        return append(path{_First}._Mystr);
     }
 
     template <class _Elem, class _Traits, class _Alloc>
@@ -890,7 +890,7 @@ public:
 
     template <class _InIt>
     path& concat(_InIt _First, _InIt _Last) { // concatenate NTCTS
-        return concat(path(_First, _Last)._Mystr);
+        return concat(path{_First, _Last}._Mystr);
     }
 
     template <class _Elem>
@@ -900,12 +900,12 @@ public:
 
     template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     path& concat(_InIt _First) { // concatenate NTCTS
-        return concat(path(_First)._Mystr);
+        return concat(path{_First}._Mystr);
     }
 
     template <class _Elem, enable_if_t<!_Is_iterator_v<_Elem>, int> = 0>
     path& concat(_Elem _Val) { // concatenate element
-        return concat(path(basic_string<_Elem>(1, _Val))._Mystr);
+        return concat(path{basic_string<_Elem>(1, _Val)}._Mystr);
     }
 
     template <class _Elem, class _Traits, class _Alloc>
@@ -956,9 +956,9 @@ public:
 
     path& replace_extension(const path& _Newext = {}) { // replace extension with _Newext
         if (_Newext.empty() || _Newext.c_str()[0] == _FS_PERIOD) {
-            *this = parent_path() / path((stem().native() + _Newext.native()));
+            *this = parent_path() / path{stem().native() + _Newext.native()};
         } else {
-            *this = parent_path() / path((stem().native() + _FS_PERIOD + _Newext.native()));
+            *this = parent_path() / path{stem().native() + _FS_PERIOD + _Newext.native()};
         }
 
         return *this;
@@ -1008,13 +1008,7 @@ public:
         return _Path_cvt<value_type, char16_t>::_Cvt(_Str, _Mystr.c_str(), _Mystr.size());
     }
 
-    _STD u32string u32string() const = delete; // TRANSITION, ABI
-#if 0
-                { // return path as basic_string<char32_t> UTF32
-                    _STD u32string _Str;
-                    return _Path_cvt<value_type, char32_t>::_Cvt(_Str, _Mystr.c_str(), _Mystr.size());
-                }
-#endif // 0
+    _STD u32string u32string() const = delete;
 
     string_type _Make_generic() const { // copy and convert any '\' to '/'
         string_type _Str = _Mystr;
@@ -1055,14 +1049,7 @@ public:
         return _Path_cvt<value_type, char16_t>::_Cvt(_Str, _Genstr.c_str(), _Genstr.size());
     }
 
-    _STD u32string generic_u32string() const = delete; // TRANSITION, ABI
-#if 0
-                { // return path as basic_string<char32_t> UTF32
-                    _STD u32string _Str;
-                    const string_type _Genstr = _Make_generic();
-                    return _Path_cvt<value_type, char32_t>::_Cvt(_Str, _Genstr.c_str(), _Genstr.size());
-                }
-#endif // 0
+    _STD u32string generic_u32string() const = delete;
 
     _NODISCARD int compare(const path& _Path) const noexcept { // compare native() to _Path.native()
         return _Mystr.compare(_Path._Mystr);
@@ -1077,20 +1064,20 @@ public:
     }
 
     _NODISCARD path root_name() const {
-        return path(_Mystr.substr(0, _Prefix_end()));
+        return path{_Mystr.substr(0, _Prefix_end())};
     }
 
     _NODISCARD path root_directory() const {
         const size_t _Idx = _Prefix_end();
         if (_Idx < _Mystr.size() && _FS_ISSEP(_Mystr[_Idx])) {
-            return path(string_type(1, _FS_PREF));
+            return path{string_type(1, _FS_PREF)};
         } else {
             return {};
         }
     }
 
     _NODISCARD path root_path() const {
-        return path(_Mystr.c_str(), _Mystr.c_str() + _Root_end());
+        return path{_Mystr.c_str(), _Mystr.c_str() + _Root_end()};
     }
 
     _NODISCARD path relative_path() const {
@@ -1099,7 +1086,7 @@ public:
             ++_Idx; // skip extra '/' after root
         }
 
-        return path(_Mystr.substr(_Idx));
+        return path{_Mystr.substr(_Idx)};
     }
 
     _NODISCARD path parent_path() const {
@@ -1114,14 +1101,14 @@ public:
     }
 
     _NODISCARD path filename() const {
-        return empty() ? path{} : path(*--end());
+        return empty() ? path{} : path{*--end()};
     }
 
     _NODISCARD path stem() const { // pick off stem (basename) in filename (leaf) before dot
         string_type _Str0 = filename().native();
         string_type _Str1 = extension().native();
         _Str0.resize(_Str0.size() - _Str1.size());
-        return path(_Str0);
+        return path{_Str0};
     }
 
     _NODISCARD path extension() const { // pick off .extension in filename (leaf), including dot
@@ -1131,7 +1118,7 @@ public:
                     || _Str.size() == 1 // only .
                     || (_Str.size() == 2 && _Str[0] == _FS_PERIOD && _Str[1] == _FS_PERIOD) // only ..
                  ? path{}
-                 : path(_Str.substr(_Idx));
+                 : path{_Str.substr(_Idx)};
     }
 
     _NODISCARD bool empty() const noexcept {
@@ -1277,7 +1264,7 @@ template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
 _NODISCARD path u8path(_InIt _First, _InIt _Last) { // make path from [_First, _Last) UTF8, given iterators
     string _Str(_First, _Last);
     path::string_type _Str_out;
-    return path(_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size()));
+    return path{_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
 }
 
 template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
@@ -1288,13 +1275,13 @@ _NODISCARD path u8path(_InIt _First) { // make path from NTBS UTF8, given iterat
     }
 
     path::string_type _Str_out;
-    return path(_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size()));
+    return path{_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
 }
 
 template <class _Traits, class _Alloc>
 _NODISCARD path u8path(const basic_string<char, _Traits, _Alloc>& _Str) { // make path from arbitrary char string UTF8
     path::string_type _Str_out;
-    return path(_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size()));
+    return path{_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
 }
 
 class filesystem_error : public system_error { // base of all filesystem-error exceptions
@@ -1330,7 +1317,7 @@ public:
         return _Mypval2;
     }
 
-    filesystem_error(const filesystem_error&) = default;
+    filesystem_error(const filesystem_error&)            = default;
     filesystem_error& operator=(const filesystem_error&) = default;
 
 private:
@@ -1355,10 +1342,10 @@ public:
 
     directory_entry() : _Mystat(), _Mysymstat() {}
 
-    directory_entry(const directory_entry&) = default;
+    directory_entry(const directory_entry&)            = default;
     directory_entry& operator=(const directory_entry&) = default;
 
-    directory_entry(directory_entry&&) = default;
+    directory_entry(directory_entry&&)            = default;
     directory_entry& operator=(directory_entry&&) = default;
 
     explicit directory_entry(
@@ -1468,7 +1455,7 @@ public:
 
         *_Mypdir = _Open_dir(_Dest, _Path.c_str(), _Errno, _Ftype);
         if (*_Mypdir) {
-            _Form_name(_Dest, _Ftype, _Prefix_directory());
+            _Form_name(_Dest, _Ftype);
         }
     }
 
@@ -1480,16 +1467,16 @@ public:
 
         *_Mypdir = _Open_dir(_Dest, _Path.c_str(), _Errno, _Ftype);
         if (*_Mypdir) {
-            _Form_name(_Dest, _Ftype, _Prefix_directory());
+            _Form_name(_Dest, _Ftype);
         }
 
         _Code = error_code(_Errno, _STD system_category());
     }
 
-    _Directory_iterator(const _Directory_iterator&) = default;
+    _Directory_iterator(const _Directory_iterator&)            = default;
     _Directory_iterator& operator=(const _Directory_iterator&) = default;
 
-    _Directory_iterator(_Directory_iterator&&) = default;
+    _Directory_iterator(_Directory_iterator&&)            = default;
     _Directory_iterator& operator=(_Directory_iterator&&) = default;
 
     _NODISCARD const value_type& operator*() const {
@@ -1555,19 +1542,19 @@ private:
                 _Close_dir(*_Mypdir);
                 *_Mypdir = nullptr; // end of directory
             } else {
-                _Form_name(_Dest, _Ftype, _Prefix_directory());
+                _Form_name(_Dest, _Ftype);
             }
         }
     }
 
-    void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype,
-        true_type) { // set entry to _Mydirpath/_Filename
-        _Myentry.assign(_Mydirpath / path(_Filename), file_status(_Ftype));
-    }
-
-    void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype,
-        false_type) { // set entry to _Filename
-        _Myentry.assign(path(_Filename), file_status(_Ftype));
+    void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype) {
+        if constexpr (_Prefix_directory::value) {
+            // set entry to _Mydirpath/_Filename
+            _Myentry.assign(_Mydirpath / path{_Filename}, file_status{_Ftype});
+        } else {
+            // set entry to _Filename
+            _Myentry.assign(path{_Filename}, file_status{_Ftype});
+        }
     }
 
     shared_ptr<void*> _Mypdir;
@@ -1630,10 +1617,10 @@ public:
         _Get();
     }
 
-    recursive_directory_iterator(const recursive_directory_iterator&) = default;
+    recursive_directory_iterator(const recursive_directory_iterator&)            = default;
     recursive_directory_iterator& operator=(const recursive_directory_iterator&) = default;
 
-    recursive_directory_iterator(recursive_directory_iterator&&) = default;
+    recursive_directory_iterator(recursive_directory_iterator&&)            = default;
     recursive_directory_iterator& operator=(recursive_directory_iterator&&) = default;
 
     _NODISCARD directory_options options() const {
@@ -1649,7 +1636,7 @@ public:
     }
 
     void pop() { // pop a level
-        if (1 < _Mylist.size()) {
+        if (_Mylist.size() > 1) {
             _Mylist.pop_front(); // something to pop, do it
         }
     }
@@ -1683,7 +1670,7 @@ public:
         } else { // push down a subdirectory
             path _Newpath = _Mylist.front().second / _Mylist.front().first->path();
             ++_Mylist.front().first;
-            _Mylist.push_front(_Mypair(_Myiter(_Newpath), _Newpath));
+            _Mylist.emplace_front(_Myiter(_Newpath), _Newpath);
         }
         while (1 < _Mylist.size() && _Mylist.front().first == _Myiter()) {
             pop();
@@ -1914,6 +1901,7 @@ inline void copy(const path& _Oldpval, const path& _Newpval, copy_options _Opts,
         _Oldstat = status(_Oldpval);
         _Newstat = status(_Newpval);
     }
+
     if (!exists(_Oldstat) || equivalent(_Oldpval, _Newpval, _Code2) || is_other(_Oldstat) || is_other(_Newstat)
         || (is_directory(_Oldstat) && is_regular_file(_Newstat))) {
         _Code = make_error_code(errc::operation_not_permitted);
@@ -2167,7 +2155,7 @@ _NODISCARD inline path current_path(error_code& _Code) {
         _Code = make_error_code(errc::operation_not_permitted);
         return {};
     }
-    return path(_Dest);
+    return path{_Dest};
 }
 
 inline void current_path(const path& _Path) { // set current working directory
@@ -2398,7 +2386,7 @@ _NODISCARD inline file_time_type last_write_time(const path& _Path, error_code& 
     _Code.clear();
     if (_Ticks == -1) { // report error
         _Code = make_error_code(errc::operation_not_permitted);
-        return (file_time_type::min) ();
+        return (file_time_type::min)();
     }
     return file_time_type(chrono::system_clock::duration(_Ticks));
 }
@@ -2469,7 +2457,7 @@ _NODISCARD inline path read_symlink(const path& _Path,
         return {};
     }
     _Pchar _Dest[_MAX_FILESYS_NAME];
-    return path(_Symlink_get(_Dest, _Path.c_str()));
+    return path{_Symlink_get(_Dest, _Path.c_str())};
 }
 
 inline bool remove(const path& _Path) { // remove a file
@@ -2625,7 +2613,7 @@ _NODISCARD inline file_status status(const path& _Path, error_code& _Code) noexc
     _Code.clear();
     perms _Mode;
     const file_type _Ftype = _Stat(_Path.c_str(), &_Mode);
-    return file_status(_Ftype, _Mode);
+    return file_status{_Ftype, _Mode};
 }
 
 _NODISCARD inline bool status_known(file_status _Stat) noexcept {
@@ -2642,7 +2630,7 @@ _NODISCARD inline file_status symlink_status(const path& _Path, error_code& _Cod
     const file_type _Ftype = _Lstat(_Path.c_str(), &_Mode);
 
     _Code.clear();
-    return file_status(_Ftype, _Mode);
+    return file_status{_Ftype, _Mode};
 }
 
 _NODISCARD inline path system_complete(const path& _Path) {
