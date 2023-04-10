@@ -907,6 +907,8 @@ class allocator {
 public:
     static_assert(!is_const_v<_Ty>, "The C++ Standard forbids containers of const elements "
                                     "because allocator<const T> is ill-formed.");
+    static_assert(!is_function_v<_Ty>, "The C++ Standard forbids allocators for function elements "
+                                       "because of [allocator.requirements].");
     static_assert(!is_reference_v<_Ty>, "The C++ Standard forbids allocators for reference elements "
                                         "because of [allocator.requirements].");
 
