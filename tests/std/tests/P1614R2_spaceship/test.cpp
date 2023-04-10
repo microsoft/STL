@@ -1023,7 +1023,7 @@ void ordering_test_cases() {
     }
     { // shared_ptr, heterogeneous
         std::shared_ptr<const int> p1{};
-        std::shared_ptr<void> p2{}
+        std::shared_ptr<void> p2{};
         std::shared_ptr<volatile int> p3{};
 
         std::shared_ptr<int> p4{new int};
