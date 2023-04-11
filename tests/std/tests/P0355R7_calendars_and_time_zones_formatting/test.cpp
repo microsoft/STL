@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <format>
 #include <iostream>
+#include <limits>
 #include <locale>
 #include <sstream>
 #include <string>
@@ -19,6 +20,8 @@
 
 using namespace std;
 using namespace chrono;
+
+constexpr auto intmax_max = numeric_limits<intmax_t>::max();
 
 template <typename CharT>
 [[nodiscard]] constexpr const CharT* choose_literal(const char* const str, const wchar_t* const wstr) noexcept {
