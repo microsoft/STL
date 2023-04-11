@@ -56,11 +56,7 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 // Controls whether ARM64 ldar/ldapr/stlr should be used
 #ifndef _STD_ATOMIC_USE_ARM64_LDAR_STLR
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-#if defined(_HAS_ARM64_LOAD_ACQUIRE) && _HAS_ARM64_LOAD_ACQUIRE == 1 // TRANSITION, VS 2022 17.7 Preview 1
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 1
-#else // ^^^ updated intrin0.inl.h is available / workaround vvv
-#define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
-#endif // ^^^ workaround ^^^
 #else // ^^^ ARM64/ARM64EC / Other architectures vvv
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
 #endif // defined(_M_ARM64) || defined(_M_ARM64EC)
