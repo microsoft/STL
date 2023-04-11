@@ -247,13 +247,21 @@ void empty_braces_helper(
 
 template <typename CharT>
 void test_duration_formatter() {
+    using LongRatio = ratio<intmax_max - 1, intmax_max>;
+
     empty_braces_helper(seconds{5}, STR("5s"));
     empty_braces_helper(minutes{7}, STR("7min"));
     empty_braces_helper(hours{9}, STR("9h"));
     empty_braces_helper(days{2}, STR("2d"));
     empty_braces_helper(-seconds{5}, STR("-5s"));
+    empty_braces_helper(duration<int, ratio<2>>{40}, STR("40[2]s"));
     empty_braces_helper(duration<int, ratio<3, 1>>{40}, STR("40[3]s"));
     empty_braces_helper(duration<int, ratio<3, 7>>{40}, STR("40[3/7]s"));
+    empty_braces_helper(duration<int, ratio<1, 2>>{40}, STR("40[1/2]s"));
+    empty_braces_helper(duration<int, ratio<22, 7>>{40}, STR("40[22/7]s"));
+    empty_braces_helper(duration<int, ratio<53, 101>>{40}, STR("40[53/101]s"));
+    empty_braces_helper(duration<int, ratio<201, 2147483647>>{40}, STR("40[201/2147483647]s"));
+    empty_braces_helper(duration<int, LongRatio>{40}, STR("40[9223372036854775806/9223372036854775807]s"));
 
     // formatting small types needs to work as iostreams << VSO-1521926
     empty_braces_helper(duration<long long, atto>{123}, STR("123as"));
