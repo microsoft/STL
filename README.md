@@ -145,7 +145,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.25.2 or later, and [Ninja][] 1.11.0 or later.
+    * Otherwise, install [CMake][] 3.26.0 or later, and [Ninja][] 1.11.0 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
@@ -161,7 +161,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.25.2 or later, and [Ninja][] 1.11.0 or later.
+    * Otherwise, install [CMake][] 3.26.0 or later, and [Ninja][] 1.11.0 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open a command prompt.
