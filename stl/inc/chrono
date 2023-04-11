@@ -4945,8 +4945,8 @@ namespace chrono {
     }
 
     template <class _Duration>
-    _NODISCARD constexpr hh_mm_ss<_Duration> _Hh_mm_ss_part_underflow_to_zero(const _Duration& _Val) {
-        return hh_mm_ss<_Duration>{_Remove_duration_part<days>(_Val)};
+    _NODISCARD constexpr auto _Hh_mm_ss_part_underflow_to_zero(const _Duration& _Val) {
+        return hh_mm_ss<common_type_t<days, _Duration>>{_Remove_duration_part<days>(_Val)};
     }
 
     template <unsigned int _Fractional_width, class _CharT, class _Traits, class _Precision>
