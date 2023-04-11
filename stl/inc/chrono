@@ -4998,7 +4998,7 @@ namespace chrono {
         _Write_seconds(_Os, _Hh_mm_ss_part_underflow_to_zero(_Val));
     }
 
-    _EXPORT_STD /* TRANSITION, VSO-1582358 */ template <class _Ty>
+    template <class _Ty>
     _NODISCARD tm _Fill_tm(const _Ty& _Val) {
         unsigned int _Day   = 0;
         unsigned int _Month = 0;
