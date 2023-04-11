@@ -6011,7 +6011,7 @@ namespace chrono {
     template <class _Duration>
     _NODISCARD string ambiguous_local_time::_Make_string(const local_time<_Duration>& _Tp, const local_info& _Info) {
         ostringstream _Os;
-        _Os << _Tp << " is ambiguous. It could be\n"
+        _Os << _Tp << " is ambiguous.  It could be\n"
             << _Tp << ' ' << _Info.first.abbrev << " == " << _Tp - _Info.first.offset << " UTC or\n"
             << _Tp << ' ' << _Info.second.abbrev << " == " << _Tp - _Info.second.offset << " UTC";
         return _STD move(_Os).str();
