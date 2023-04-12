@@ -352,6 +352,9 @@ constexpr bool test_interface() {
         assert(c2 == 32);
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1799670 (expired storage)
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // modifiers
         vec range_constructed(begin(input), end(input));
 
@@ -442,6 +445,9 @@ constexpr bool test_interface() {
         assert(emplaced.size() == 22);
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1799670 (expired storage)
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     {
         // GH-2440: we were incorrectly reallocating _before_ orphaning iterators
         // (resulting in UB) while inserting ranges of unknown length
@@ -465,6 +471,9 @@ constexpr bool test_interface() {
         assert(equal(second.begin(), second.end(), begin(expected_second), end(expected_second)));
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1799670 (expired storage)
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // erase
         vec erased{false, false, true, false, true};
         erase(erased, false);
