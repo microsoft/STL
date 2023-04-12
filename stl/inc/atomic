@@ -137,7 +137,7 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
 
 #define __LOAD_ACQUIRE_ARM64(_Width, _Ptr) \
-    __load_acquire##_Width(reinterpret_cast<const volatile unsigned __int##_Width*>(_Ptr))
+    static_cast<__int##_Width>(__load_acquire##_Width(reinterpret_cast<const volatile unsigned __int##_Width*>(_Ptr)))
 
 #define _ATOMIC_LOAD_ARM64(_Result, _Width, _Ptr, _Order_var) \
     switch (_Order_var) {                                     \
