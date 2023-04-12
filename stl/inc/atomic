@@ -180,7 +180,8 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
 
 #define __STORE_RELEASE(_Width, _Ptr, _Desired) \
     _Compiler_barrier();                        \
-    __stlr##_Width(reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), (_Desired));
+    __stlr##_Width(                             \
+        reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), static_cast<unsigned __int##_Width>(_Desired));
 
 #else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 ^^^ / vvv _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
 
@@ -210,9 +211,10 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     _Memory_barrier();
 
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
-#define _ATOMIC_STORE_SEQ_CST_ARM64(_Width, _Ptr, _Desired)                               \
-    _Compiler_barrier();                                                                  \
-    __stlr##_Width(reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), (_Desired)); \
+#define _ATOMIC_STORE_SEQ_CST_ARM64(_Width, _Ptr, _Desired)                                                       \
+    _Compiler_barrier();                                                                                          \
+    __stlr##_Width(                                                                                               \
+        reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), static_cast<unsigned __int##_Width>(_Desired)); \
     _Memory_barrier();
 #else
 #define _ATOMIC_STORE_SEQ_CST_ARM64 _ATOMIC_STORE_SEQ_CST_ARM
