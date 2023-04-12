@@ -56,7 +56,11 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 // Controls whether ARM64 ldar/ldapr/stlr should be used
 #ifndef _STD_ATOMIC_USE_ARM64_LDAR_STLR
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
+#ifdef __clang__ // TRANSITION, LLVM-62103
+#define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
+#else // ^^^ Clang doesn't support new intrinsics / __load_acquire/__stlr intrinsics are available vvv
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 1
+#endif // ^^^ __load_acquire/__stlr intrinsics are available ^^^
 #else // ^^^ ARM64/ARM64EC / Other architectures vvv
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
 #endif // defined(_M_ARM64) || defined(_M_ARM64EC)
