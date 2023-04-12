@@ -26,12 +26,18 @@ int main() {
     std::cout << "test failure\n";
 }
 
-C:\Temp>cl /EHsc /W4 /WX .\repro.cpp
-Microsoft (R) C/C++ Optimizing Compiler Version 19.23.28019.1 for x64
+C:\Temp>cl /EHsc /W4 /WX /std:c++latest .\repro.cpp
+Microsoft (R) C/C++ Optimizing Compiler Version 19.36.32522 for x64
 Copyright (C) Microsoft Corporation.  All rights reserved.
 
+/std:c++latest is provided as a preview of language features from the latest C++
+working draft, and we're eager to hear about bugs and suggestions for improvements.
+However, note that these features are provided as-is without support, and subject
+to changes or removal as the working draft evolves. See
+https://go.microsoft.com/fwlink/?linkid=2045807 for details.
+
 repro.cpp
-Microsoft (R) Incremental Linker Version 14.23.28019.1
+Microsoft (R) Incremental Linker Version 14.36.32522.0
 Copyright (C) Microsoft Corporation.  All rights reserved.
 
 /out:repro.exe
@@ -48,11 +54,11 @@ test case above whose failure clearly indicates the problem.
 
 # STL version
 * Option 1: Visual Studio version
-  + Displayed in Help > About Microsoft Visual Studio
+  + Help > About Microsoft Visual Studio > Copy Info, we need only the first two lines
   + Example:
     ```
-    Microsoft Visual Studio Community 2019 Preview
-    Version 16.5.0 Preview 5.0
+    Microsoft Visual Studio Community 2022
+    Version 17.6.0 Preview 3.0
     ```
 * Option 2: git commit hash
   + Example:
