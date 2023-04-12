@@ -7,13 +7,13 @@ assignees: ''
 
 ---
 
-**Describe the bug**
+# Describe the bug
 A clear and concise description of what the bug is. Please check that you've
 read the guidelines for submitting STL bug reports in `README.md`. If you are
 having problems with any component that is not the STL, instructions to get
 to the right place are there.
 
-**Command-line test case**
+# Command-line test case
 ```
 C:\Temp>type repro.cpp
 #include <iostream>
@@ -41,25 +41,24 @@ C:\Temp>.\repro.exe
 test failure
 ```
 
-**Expected behavior**
+# Expected behavior
 A clear and concise description of what you expected to happen.
 Alternatively, include `static_assert` or `assert` lines in your
 test case above whose failure clearly indicates the problem.
 
-**STL version**
+# STL version
 * Option 1: Visual Studio version
-  * Displayed in Help > About Microsoft Visual Studio
-  * Example:
+  + Displayed in Help > About Microsoft Visual Studio
+  + Example:
     ```
     Microsoft Visual Studio Community 2019 Preview
     Version 16.5.0 Preview 5.0
     ```
-
 * Option 2: git commit hash
-  * Example:
+  + Example:
     ```
     https://github.com/microsoft/STL/commit/2195148
     ```
 
-**Additional context**
+# Additional context
 Add any other context about the problem here.
