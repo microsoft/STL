@@ -87,7 +87,7 @@ function load_charts() {
                 new DatasetInfo('avg_age', 'Average Age', 'leftAxis', '--color-neutral-emphasis', true),
                 new DatasetInfo('avg_wait', 'Average Wait', 'leftAxis', '--color-sponsors-emphasis', true),
                 new DatasetInfo('sum_age', 'Combined Age', 'rightAxis', '--color-fg-default'),
-                new DatasetInfo('sum_wait', 'Combined Wait', 'rightAxis', '--color-done-emphasis'),
+                new DatasetInfo('sum_wait', 'Combined Wait', 'rightAxis', '--color-done-emphasis', true),
 
                 new DatasetInfo('merged', 'Line: Sliding Window', 'mergeAxis', '--color-accent-emphasis'),
                 new DatasetInfo('merge_bar', 'Bars: Calendar Months', 'mergeAxis', '--color-border-default'),
