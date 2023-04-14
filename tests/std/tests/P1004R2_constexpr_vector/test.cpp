@@ -326,7 +326,7 @@ constexpr bool test_interface() {
         assert(c2 == 6);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726729 (attempt to access run-time storage)
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1799670 (expired storage)
     if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     { // modifiers
@@ -428,9 +428,6 @@ constexpr bool test_interface() {
         assert(equal(second.begin(), second.end(), begin(expected_second), end(expected_second)));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // erase
         vec erased{1, 2, 3, 4, 2, 3, 2};
         erase(erased, 2);
@@ -490,9 +487,6 @@ constexpr bool test_iterators() {
         assert(*cit == 2);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // advance
         auto it = range_constructed.begin() + 2;
         assert(*it == 2);
@@ -517,9 +511,6 @@ constexpr bool test_iterators() {
         assert(*cit == 4);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // advance back
         auto it = range_constructed.end() - 2;
         assert(*it == 4);
@@ -558,9 +549,6 @@ constexpr bool test_iterators() {
         assert(it3 >= it1);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // access
         const auto it = range_constructed.begin() + 2;
         it[2]         = 3;
@@ -625,15 +613,10 @@ constexpr bool test_growth() {
 
         vector<int> l(3, 47);
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            v.insert(v.end(), l.begin(), l.end());
+        v.insert(v.end(), l.begin(), l.end());
 
-            assert(v.size() == 1003);
-            assert(v.capacity() == 1500);
-        }
+        assert(v.size() == 1003);
+        assert(v.capacity() == 1500);
     }
 
     {
@@ -644,15 +627,10 @@ constexpr bool test_growth() {
 
         vector<int> l(7000, 47);
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            v.insert(v.end(), l.begin(), l.end());
+        v.insert(v.end(), l.begin(), l.end());
 
-            assert(v.size() == 8000);
-            assert(v.capacity() == 8000);
-        }
+        assert(v.size() == 8000);
+        assert(v.capacity() == 8000);
     }
 
     {
@@ -661,15 +639,10 @@ constexpr bool test_growth() {
         assert(v.size() == 1000);
         assert(v.capacity() == 1000);
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            v.insert(v.end(), 3, 47);
+        v.insert(v.end(), 3, 47);
 
-            assert(v.size() == 1003);
-            assert(v.capacity() == 1500);
-        }
+        assert(v.size() == 1003);
+        assert(v.capacity() == 1500);
     }
 
     {
@@ -678,15 +651,10 @@ constexpr bool test_growth() {
         assert(v.size() == 1000);
         assert(v.capacity() == 1000);
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            v.insert(v.end(), 7000, 47);
+        v.insert(v.end(), 7000, 47);
 
-            assert(v.size() == 8000);
-            assert(v.capacity() == 8000);
-        }
+        assert(v.size() == 8000);
+        assert(v.capacity() == 8000);
     }
 
     return true;

@@ -798,11 +798,11 @@ void test_exception_classes() {
         }
 
         assert(s
-                   == "2016-11-06 01:30:00 is ambiguous. It could be\n"
+                   == "2016-11-06 01:30:00 is ambiguous.  It could be\n"
                       "2016-11-06 01:30:00 EDT == 2016-11-06 05:30:00 UTC or\n"
                       "2016-11-06 01:30:00 EST == 2016-11-06 06:30:00 UTC"
                || s
-                      == "2016-11-06 01:30:00 is ambiguous. It could be\n"
+                      == "2016-11-06 01:30:00 is ambiguous.  It could be\n"
                          "2016-11-06 01:30:00 GMT-4 == 2016-11-06 05:30:00 UTC or\n"
                          "2016-11-06 01:30:00 GMT-5 == 2016-11-06 06:30:00 UTC");
     }

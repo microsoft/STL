@@ -27,6 +27,16 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+template <class _Ptrty>
+_NODISCARD constexpr auto _Unfancy(_Ptrty _Ptr) noexcept { // converts from a fancy pointer to a plain pointer
+    return _STD addressof(*_Ptr);
+}
+
+template <class _Ty>
+_NODISCARD constexpr _Ty* _Unfancy(_Ty* _Ptr) noexcept { // do nothing for plain pointers
+    return _Ptr;
+}
+
 template <class _Ty>
 struct _NODISCARD _Tidy_guard { // class with destructor that calls _Tidy
     _Ty* _Target;
@@ -907,6 +917,10 @@ class allocator {
 public:
     static_assert(!is_const_v<_Ty>, "The C++ Standard forbids containers of const elements "
                                     "because allocator<const T> is ill-formed.");
+    static_assert(!is_function_v<_Ty>, "The C++ Standard forbids allocators for function elements "
+                                       "because of [allocator.requirements].");
+    static_assert(!is_reference_v<_Ty>, "The C++ Standard forbids allocators for reference elements "
+                                        "because of [allocator.requirements].");
 
     using _From_primary = allocator;
 
