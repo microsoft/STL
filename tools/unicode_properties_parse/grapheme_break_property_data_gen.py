@@ -242,6 +242,15 @@ def generate_cpp_data(filename: str, timestamp: str, prop_name: str, ranges: lis
     return result.getvalue()
 
 
+def read_file(filename: str) -> list[PropertyRange]:
+    data_path = Path(__file__).absolute().with_name(filename)
+    with data_path.open(encoding='utf-8') as f:
+        filename = f.readline().replace("#", "//").rstrip()
+        timestamp = f.readline().replace("#", "//").rstrip()
+        ranges = compact_property_ranges([x for line in f if (x := parse_property_line(line))])
+        return filename, timestamp, ranges
+
+
 def generate_data_tables() -> str:
     """
     Generate Unicode data for inclusion into <format> from
@@ -255,22 +264,8 @@ def generate_data_tables() -> str:
 
     Both files are expected to be in the same directory as this script.
     """
-    gbp_data_path = Path(__file__).absolute().with_name("GraphemeBreakProperty.txt")
-    emoji_data_path = Path(__file__).absolute().with_name("emoji-data.txt")
-    gbp_filename = ""
-    gbp_timestamp = ""
-    emoji_filename = ""
-    emoji_timestamp = ""
-    gbp_ranges = list()
-    emoji_ranges = list()
-    with gbp_data_path.open(encoding='utf-8') as f:
-        gbp_filename = f.readline().replace("#", "//").rstrip()
-        gbp_timestamp = f.readline().replace("#", "//").rstrip()
-        gbp_ranges = compact_property_ranges([x for line in f if (x := parse_property_line(line))])
-    with emoji_data_path.open(encoding='utf-8') as f:
-        emoji_filename = f.readline().replace("#", "//").rstrip()
-        emoji_timestamp = f.readline().replace("#", "//").rstrip()
-        emoji_ranges = compact_property_ranges([x for line in f if (x := parse_property_line(line))])
+    gbp_filename, gbp_timestamp, gbp_ranges = read_file("GraphemeBreakProperty.txt")
+    emoji_filename, emoji_timestamp, emoji_ranges = read_file("emoji-data.txt")
     gpb_cpp_data = generate_cpp_data(gbp_filename, gbp_timestamp, "Grapheme_Break", gbp_ranges)
     emoji_cpp_data = generate_cpp_data(emoji_filename, emoji_timestamp, "Extended_Pictographic", [
         x for x in emoji_ranges if x.prop == "Extended_Pictographic"])
