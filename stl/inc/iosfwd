@@ -12,7 +12,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cwchar>
-#include <xstddef>
+#include <xtr1common>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
