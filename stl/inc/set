@@ -54,6 +54,8 @@ class set : public _Tree<_Tset_traits<_Kty, _Pr, _Alloc, false>> {
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Kty, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("set<T, Compare, Allocator>", "T"));
+    static_assert(is_object_v<_Kty>, "The C++ Standard forbids containers of non-object types "
+                                     "because of [container.requirements].");
 
     using _Mybase                = _Tree<_Tset_traits<_Kty, _Pr, _Alloc, false>>;
     using key_type               = _Kty;
@@ -265,6 +267,8 @@ class multiset : public _Tree<_Tset_traits<_Kty, _Pr, _Alloc, true>> {
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Kty, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("multiset<T, Compare, Allocator>", "T"));
+    static_assert(is_object_v<_Kty>, "The C++ Standard forbids containers of non-object types "
+                                     "because of [container.requirements].");
 
     using _Mybase                = _Tree<_Tset_traits<_Kty, _Pr, _Alloc, true>>;
     using key_type               = _Kty;
