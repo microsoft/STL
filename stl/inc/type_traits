@@ -8,8 +8,9 @@
 #define _TYPE_TRAITS_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <cstddef>
 #include <cstdint>
-#include <xstddef>
+#include <xtr1common>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -19,6 +20,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+template <class>
+// TRANSITION, CWG-2518: false value attached to a dependent name (for static_assert)
+_INLINE_VAR constexpr bool _Always_false = false;
+
 _EXPORT_STD template <class _Ty, _Ty... _Vals>
 struct integer_sequence { // sequence of integer parameters
     static_assert(is_integral_v<_Ty>, "integer_sequence<T, I...> requires T to be an integral type.");
