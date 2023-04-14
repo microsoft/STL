@@ -8,8 +8,8 @@
 #define _UTILITY_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <initializer_list>
 #include <type_traits>
-#include <xstddef>
 
 #ifdef __cpp_lib_concepts
 #include <concepts>
@@ -18,6 +18,10 @@
 #if _HAS_CXX20
 #include <compare>
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23
+#include <cstdlib>
+#endif // _HAS_CXX23
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

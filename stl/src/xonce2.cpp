@@ -6,11 +6,6 @@
 #include <cstdlib>
 #include <synchapi.h>
 
-// This must be as small as possible, because its contents are
-// injected into the msvcprt.lib and msvcprtd.lib import libraries.
-// Do not include or define anything else here.
-// In particular, basic_string must not be included here.
-
 // Provides forwarders for InitOnceBeginInitialize and InitOnceComplete for
 // environments that can't use /ALTERNATENAME.
 // They were originally specific to /clr but are now used in other scenarios.

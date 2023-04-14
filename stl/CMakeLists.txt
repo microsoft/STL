@@ -502,7 +502,7 @@ set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
 
 add_compile_options(/WX /Gy
     "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
-    "$<$<COMPILE_LANGUAGE:ASM_MASM>:/W3;/nologo>"
+    "$<$<COMPILE_LANGUAGE:ASM_MASM>:/W3;/nologo;/quiet>"
 )
 
 include_directories(BEFORE
@@ -584,7 +584,7 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
 
     # import library 'statics'
     add_library(msvcp${D_SUFFIX}_implib_objects OBJECT ${IMPLIB_SOURCES})
-    target_compile_definitions(msvcp${D_SUFFIX}_implib_objects PRIVATE _DLL)
+    target_compile_definitions(msvcp${D_SUFFIX}_implib_objects PRIVATE _DLL _ENFORCE_ONLY_CORE_HEADERS)
     target_compile_options(msvcp${D_SUFFIX}_implib_objects PRIVATE /EHsc) # No /GL!
     target_stl_compile_options(msvcp${D_SUFFIX}_implib_objects ${REL_OR_DBG})
 

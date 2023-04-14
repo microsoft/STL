@@ -91,7 +91,7 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
   $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
 
   # https://github.com/PowerShell/PowerShell/releases/latest
-  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.3.2/PowerShell-7.3.2-win-x64.zip'
+  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.3.3/PowerShell-7.3.3-win-x64.zip'
   Write-Host "Downloading: $PowerShellZipUrl"
   $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
   $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
@@ -128,9 +128,6 @@ $Workloads = @(
   'Microsoft.VisualStudio.Component.VC.CMake.Project',
   'Microsoft.VisualStudio.Component.VC.CoreIde',
   'Microsoft.VisualStudio.Component.VC.Llvm.Clang',
-  'Microsoft.VisualStudio.Component.VC.Runtimes.ARM.Spectre',
-  'Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre',
-  'Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64EC',
@@ -138,10 +135,8 @@ $Workloads = @(
   'Microsoft.VisualStudio.Component.Windows11SDK.22000'
 )
 
-$ReleaseInPath = 'Preview'
-$Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
-$PythonUrl = 'https://www.python.org/ftp/python/3.11.2/python-3.11.2-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.11.3/python-3.11.3-amd64.exe'
 
 $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/11.6.0/local_installers/cuda_11.6.0_511.23_windows.exe'
 
@@ -187,19 +182,11 @@ The set of VS workloads to install.
 
 .PARAMETER BootstrapperUrl
 The URL of the Visual Studio installer, i.e. one of vs_*.exe.
-
-.PARAMETER InstallPath
-The path to install Visual Studio at.
-
-.PARAMETER Nickname
-The nickname to give the installation.
 #>
 Function InstallVisualStudio {
   Param(
     [String[]]$Workloads,
-    [String]$BootstrapperUrl,
-    [String]$InstallPath = $null,
-    [String]$Nickname = $null
+    [String]$BootstrapperUrl
   )
 
   try {
@@ -211,16 +198,6 @@ Function InstallVisualStudio {
     foreach ($workload in $Workloads) {
       $args += '--add'
       $args += $workload
-    }
-
-    if (-not ([String]::IsNullOrWhiteSpace($InstallPath))) {
-      $args += '--installpath'
-      $args += $InstallPath
-    }
-
-    if (-not ([String]::IsNullOrWhiteSpace($Nickname))) {
-      $args += '--nickname'
-      $args += $Nickname
     }
 
     $proc = Start-Process -FilePath cmd.exe -ArgumentList $args -Wait -PassThru

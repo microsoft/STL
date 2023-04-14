@@ -14,7 +14,6 @@
 #include <cstdio> // TRANSITION, VSO-661721
 #include <cstdlib>
 #include <cwchar>
-#include <xstddef>
 #include <xstring>
 
 #pragma pack(push, _CRT_PACKING)

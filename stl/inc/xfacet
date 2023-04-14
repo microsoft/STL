@@ -3,6 +3,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// This header is used to compile the import library (via locale0_implib.cpp => locale0.cpp => xfacet).
+// MAJOR LIMITATIONS apply to what can be included here!
+// Before editing this file, read: /docs/import_library.md
+
 #pragma once
 #ifndef _XFACET_
 #define _XFACET_
@@ -15,11 +19,6 @@
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
-
-// This must be as small as possible, because its contents are
-// injected into the msvcprt.lib and msvcprtd.lib import libraries.
-// Do not include or define anything else here.
-// In particular, basic_string must not be included here.
 
 _STD_BEGIN
 extern "C++" class _CRTIMP2_PURE_IMPORT _Facet_base { // code for reference counting a facet

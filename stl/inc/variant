@@ -12,13 +12,15 @@
 #if !_HAS_CXX17
 _EMIT_STL_WARNING(STL4038, "The contents of <variant> are available only with C++17 or later.");
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
+#if _HAS_CXX20
+#include <compare>
+#endif // _HAS_CXX20
 #include <exception>
 #include <initializer_list>
 #include <type_traits>
 #include <utility>
-#include <xmemory>
 #include <xsmf_control.h>
-#include <xstddef>
+#include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -693,10 +695,12 @@ _NODISCARD constexpr _Variant_raw_visit_t<_Fn, _Storage> _Variant_raw_visit(
 template <class...>
 class _Variant_base;
 
+inline constexpr size_t _Schar_max_as_size = static_cast<unsigned char>(-1) / 2;
+inline constexpr size_t _Short_max_as_size = static_cast<unsigned short>(-1) / 2;
+
 template <size_t _Count>
 using _Variant_index_t = // signed so that conversion of -1 to size_t can cheaply sign extend
-    conditional_t<(_Count < static_cast<size_t>((numeric_limits<signed char>::max)())), signed char,
-        conditional_t<(_Count < static_cast<size_t>((numeric_limits<short>::max)())), short, int>>;
+    conditional_t<(_Count < _Schar_max_as_size), signed char, conditional_t<(_Count < _Short_max_as_size), short, int>>;
 
 template <class... _Types>
 struct _Variant_construct_visitor { // visitor that constructs the same alternative in a target _Variant_base as is
@@ -808,8 +812,9 @@ public:
     _CONSTEXPR20 void _Destroy() noexcept {
         // destroy the contained value
         // pre: _Idx == index()
-        if constexpr (_Idx != variant_npos && !is_trivially_destructible_v<_Meta_at_c<variant<_Types...>, _Idx>>) {
-            _STD _Destroy_in_place(_STD _Variant_raw_get<_Idx>(_Storage()));
+        using _Indexed_value_type = remove_cv_t<_Meta_at_c<variant<_Types...>, _Idx>>;
+        if constexpr (_Idx != variant_npos && !is_trivially_destructible_v<_Indexed_value_type>) {
+            _STD _Variant_raw_get<_Idx>(_Storage()).~_Indexed_value_type();
         }
     }
 
@@ -817,7 +822,8 @@ public:
         if constexpr (!conjunction_v<is_trivially_destructible<_Types>...>) {
             _STD _Variant_raw_visit(index(), _Storage(), [](auto _Ref) noexcept {
                 if constexpr (decltype(_Ref)::_Idx != variant_npos) {
-                    _STD _Destroy_in_place(_Ref._Val);
+                    using _Indexed_value_type = _Remove_cvref_t<decltype(_Ref._Val)>;
+                    _Ref._Val.~_Indexed_value_type();
                 }
             });
         }

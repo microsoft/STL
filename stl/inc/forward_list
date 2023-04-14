@@ -519,6 +519,8 @@ private:
 
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Ty, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("forward_list<T, Allocator>", "T"));
+    static_assert(is_object_v<_Ty>, "The C++ Standard forbids containers of non-object types "
+                                    "because of [container.requirements].");
 
     using _Scary_val = _Flist_val<conditional_t<_Is_simple_alloc_v<_Alnode>, _Flist_simple_types<_Ty>,
         _Flist_iter_types<_Ty, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,

@@ -12,7 +12,7 @@
 #include <climits>
 #include <cwchar>
 #include <isa_availability.h>
-#include <xstddef>
+#include <xtr1common>
 
 #include _STL_INTRIN_HEADER
 

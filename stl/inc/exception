@@ -9,6 +9,7 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#include <cstdlib>
 #include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)

@@ -776,6 +776,8 @@ private:
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Ty, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("list<T, Allocator>", "T"));
+    static_assert(is_object_v<_Ty>, "The C++ Standard forbids containers of non-object types "
+                                    "because of [container.requirements].");
 
     using value_type      = _Ty;
     using allocator_type  = _Alloc;
