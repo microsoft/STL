@@ -475,7 +475,7 @@ struct _Parallel_choose_max_chunk {
     }
 };
 
-_EXPORT_STD /* TRANSITION, VSO-1592329 */ template <class _Ty>
+template <class _Ty>
 struct alignas(_Ty) alignas(size_t) alignas(_Atomic_counter_t) _Circular_buffer { // work stealing deque extent type
     static_assert(is_trivial_v<_Ty>, "Work stealing deques work only with trivial operations");
 

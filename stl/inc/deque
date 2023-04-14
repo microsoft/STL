@@ -575,6 +575,8 @@ private:
     friend _Tidy_guard<deque>;
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Ty, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("deque<T, Allocator>", "T"));
+    static_assert(is_object_v<_Ty>, "The C++ Standard forbids containers of non-object types "
+                                    "because of [container.requirements].");
 
     using _Alty         = _Rebind_alloc_t<_Alloc, _Ty>;
     using _Alty_traits  = allocator_traits<_Alty>;

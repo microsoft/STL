@@ -132,6 +132,9 @@ std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
 std/strings/string.view/string.view.cons/from_string1.compile.fail.cpp FAIL
 std/strings/string.view/string.view.cons/from_string2.compile.fail.cpp FAIL
 
+# libc++ doesn't implement LWG-3865 Sorting a range of pairs
+std/utilities/tuple/tuple.tuple/tuple.apply/make_from_tuple.pass.cpp FAIL
+
 # libc++ doesn't implement LWG-3870
 std/utilities/memory/specialized.algorithms/specialized.construct/ranges_construct_at.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.construct.default/ranges_uninitialized_default_construct.pass.cpp FAIL
@@ -172,9 +175,6 @@ std/ranges/range.adaptors/range.join.view/iterator/eq.pass.cpp FAIL
 std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp FAIL
 std/re/re.iter/re.regiter/iterator_concept_conformance.compile.pass.cpp FAIL
 std/re/re.iter/re.tokiter/iterator_concept_conformance.compile.pass.cpp FAIL
-
-# libc++ doesn't implement LWG-3865 Sorting a range of pairs
-std/utilities/tuple/tuple.tuple/tuple.apply/make_from_tuple.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -338,6 +338,9 @@ std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp SKIPPED
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
+# LWG-2192 "Validity and return type of std::abs(0u) is unclear" (resolution is missing in UCRT, DevCom-10331466)
+std/depr/depr.c.headers/stdlib_h.pass.cpp FAIL
+
 # LWG-2503 "multiline option should be added to syntax_option_type"
 std/re/re.const/re.matchflag/match_multiline.pass.cpp FAIL
 

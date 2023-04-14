@@ -1883,7 +1883,12 @@ _NODISCARD bool operator==(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD strong_ordering operator<=>(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
+#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-10334808
+    using _Common_ptr_t = decltype(false ? _Left.get() : _Right.get());
+    return static_cast<_Common_ptr_t>(_Left.get()) <=> static_cast<_Common_ptr_t>(_Right.get());
+#else // ^^^ workaround / no workaround vvv
     return _Left.get() <=> _Right.get();
+#endif // ^^^ no workaround ^^^
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty1, class _Ty2>

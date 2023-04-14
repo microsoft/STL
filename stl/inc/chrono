@@ -5005,7 +5005,7 @@ namespace chrono {
         _Write_seconds(_Os, _Hh_mm_ss_part_underflow_to_zero(_Val));
     }
 
-    _EXPORT_STD /* TRANSITION, VSO-1582358 */ template <class _Ty>
+    template <class _Ty>
     _NODISCARD tm _Fill_tm(const _Ty& _Val) {
         unsigned int _Day   = 0;
         unsigned int _Month = 0;
@@ -6018,7 +6018,7 @@ namespace chrono {
     template <class _Duration>
     _NODISCARD string ambiguous_local_time::_Make_string(const local_time<_Duration>& _Tp, const local_info& _Info) {
         ostringstream _Os;
-        _Os << _Tp << " is ambiguous. It could be\n"
+        _Os << _Tp << " is ambiguous.  It could be\n"
             << _Tp << ' ' << _Info.first.abbrev << " == " << _Tp - _Info.first.offset << " UTC or\n"
             << _Tp << ' ' << _Info.second.abbrev << " == " << _Tp - _Info.second.offset << " UTC";
         return _STD move(_Os).str();
