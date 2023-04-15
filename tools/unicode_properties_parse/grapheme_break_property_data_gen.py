@@ -76,6 +76,14 @@ inline constexpr _Unicode_property_data<_{prop_name}_property_values, {size}> _{
 }};
 """
 
+INTERVALS_TEMPLATE = """
+{filename}
+{timestamp}
+inline constexpr char32_t _{prop_name}_ranges[{size}] = {{
+    {data}
+}};
+"""
+
 MSVC_FORMAT_UCD_TABLES_HPP_TEMPLATE = """
 // __msvc_format_ucd_tables.hpp internal header
 
@@ -175,6 +183,17 @@ struct _Unicode_property_data {{
     }}
 }};
 
+_NODISCARD constexpr bool _Has_property(
+    char32_t _Code_point, const char32_t* const _First, const char32_t* const _Last) {{
+    // Returns true if _Code_point has a property value of Yes for the property represented by [_First, _Last).
+    // Each pair of elements in [_First, _Last) represents a range of code points that have that property value.
+    // For example, if the array starts with [0x20, 0x7F, 0xA1, 0xAD], then the ranges are [0x20, 0x7F) and
+    // [0xA1, 0xAD). Thus 0x20, 0x21, ..., 0x7E, 0xA1, 0xA2, ..., 0xAC all have the property value of Yes, while
+    // 0x00, 0x01, ..., 0x1F, 0x7F, 0x80, ..., 0xA0 all have the property value of No.
+    auto _Idx = _STD upper_bound(_First, _Last, _Code_point) - _First;
+    return _Idx % 2 != 0;
+}}
+
 // The following static data tables are generated from the Unicode character database.
 // _Grapheme_Break_property_data comes from ucd/auxiliary/GraphemeBreakProperty.txt.
 //
@@ -242,6 +261,13 @@ def generate_cpp_data(filename: str, timestamp: str, prop_name: str, ranges: lis
     return result.getvalue()
 
 
+def generate_cpp_ranges(filename: str, timestamp: str, prop_name: str, ranges: list[PropertyRange]) -> str:
+    result = StringIO()
+    result.write(INTERVALS_TEMPLATE.lstrip().format(
+        filename=filename, timestamp=timestamp, prop_name=prop_name, size=len(ranges) * 2,
+        data=", ".join(f"{range.lower:#x}, {range.upper + 1:#x}" for range in ranges)))
+    return result.getvalue()
+
 def read_file(filename: str) -> list[PropertyRange]:
     data_path = Path(__file__).absolute().with_name(filename)
     with data_path.open(encoding='utf-8') as f:
@@ -254,7 +280,7 @@ def read_file(filename: str) -> list[PropertyRange]:
 def generate_data_tables() -> str:
     """
     Generate Unicode data for inclusion into <format> from
-    GraphemeBreakProperty.txt and emoji-data.txt.
+    GraphemeBreakProperty.txt, emoji-data.txt, DerivedGeneralCategory.txt, and DerivedCoreProperties.txt
 
     GraphemeBreakProperty.txt can be found at
     https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakProperty.txt
@@ -262,14 +288,35 @@ def generate_data_tables() -> str:
     emoji-data.txt can be found at
     https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt
 
-    Both files are expected to be in the same directory as this script.
+    DerivedGeneralCategory.txt can be found at
+    https://www.unicode.org/Public/UCD/latest/ucd/extracted/DerivedGeneralCategory.txt
+
+    DerivedCoreProperties.txt can be found at
+    https://www.unicode.org/Public/UCD/latest/ucd/DerivedCoreProperties.txt
+
+    All files are expected to be in the same directory as this script.
     """
     gbp_filename, gbp_timestamp, gbp_ranges = read_file("GraphemeBreakProperty.txt")
     emoji_filename, emoji_timestamp, emoji_ranges = read_file("emoji-data.txt")
+    cat_filename, cat_timestamp, cat_ranges = read_file("DerivedGeneralCategory.txt")
+    derived_filename, derived_timestamp, derived_ranges = read_file("DerivedCoreProperties.txt")
+
+    printable_ranges = compact_property_ranges(sorted([
+        PropertyRange(x.lower, x.upper, "Yes")
+        for x in cat_ranges
+        if x.prop not in ('Cc', 'Cf', 'Cs', 'Co', 'Cn', 'Zl', 'Zp', 'Zs') or chr(x.lower) == ' '
+    ], key=lambda x: x.lower))
+
     gpb_cpp_data = generate_cpp_data(gbp_filename, gbp_timestamp, "Grapheme_Break", gbp_ranges)
     emoji_cpp_data = generate_cpp_data(emoji_filename, emoji_timestamp, "Extended_Pictographic", [
         x for x in emoji_ranges if x.prop == "Extended_Pictographic"])
-    return "\n".join([gpb_cpp_data, emoji_cpp_data])
+    # _printable follows a different naming scheme, to indicate that it is a fake Unicode property.
+    printable_cpp_data = generate_cpp_ranges(cat_filename, cat_timestamp, "_printable",
+        printable_ranges)
+    grapheme_extend_cpp_data = generate_cpp_ranges(derived_filename, derived_timestamp, "Grapheme_Extend", [
+        x for x in derived_ranges if x.prop == "Grapheme_Extend"])
+
+    return "\n".join([gpb_cpp_data, emoji_cpp_data, printable_cpp_data, grapheme_extend_cpp_data])
 
 
 if __name__ == "__main__":
