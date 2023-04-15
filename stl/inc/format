@@ -981,6 +981,11 @@ public:
     }
     _NODISCARD _Decode_result<char> _Decode(const char* const _First, const char* const _Last, char32_t& _Val) const {
         _STL_INTERNAL_CHECK(_First < _Last);
+        if (*_First == '\0') {
+            _Val = U'\0';
+            return {_First + 1, true};
+        }
+
         if constexpr (_Is_ordinary_literal_encoding_utf8()) {
             return _Decode_utf(_First, _Last, _Val);
         } else if constexpr (_Is_execution_charset_self_synchronizing()) {
@@ -1647,11 +1652,16 @@ public:
             _Throw_format_error("Invalid type specification.");
         }
         const char _Narrow_type = static_cast<char>(_Type);
-        enum class _Presentation_type_category { _Default, _Integer, _Floating, _String, _Pointer, _Char };
+        enum class _Presentation_type_category { _Default, _Integer, _Floating, _String, _Pointer, _Char, _Escape };
         auto _Cat = _Presentation_type_category::_Default;
         switch (_Narrow_type) {
         case '\0':
             break;
+#if _HAS_CXX23
+        case '?':
+            _Cat = _Presentation_type_category::_Escape;
+            break;
+#endif // _HAS_CXX23
         case 's':
             _Cat = _Presentation_type_category::_String;
             break;
@@ -1701,7 +1711,8 @@ public:
                 _Cat = _Presentation_type_category::_Char;
             }
 
-            if (_Cat != _Presentation_type_category::_Char && _Cat != _Presentation_type_category::_Integer) {
+            if (_Cat != _Presentation_type_category::_Char && _Cat != _Presentation_type_category::_Integer
+                && _Cat != _Presentation_type_category::_Escape) {
                 if constexpr (is_same_v<_CharT, char>) {
                     _Throw_format_error("Invalid presentation type for char");
                 } else {
@@ -1738,7 +1749,7 @@ public:
                 _Cat = _Presentation_type_category::_String;
             }
 
-            if (_Cat != _Presentation_type_category::_String) {
+            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Escape) {
                 _Throw_format_error("Invalid presentation type for string");
             }
             break;
@@ -2573,6 +2584,13 @@ template <class _CharT, class _OutputIt, integral _Integral>
 _NODISCARD _OutputIt _Write_integral(
     _OutputIt _Out, _Integral _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
 
+template <class _CharT, class _OutputIt>
+_NODISCARD _OutputIt _Write_escaped(_OutputIt _Out, basic_string_view<_CharT> _Value, char _Delim);
+
+template <class _CharT, class _OutputIt>
+_NODISCARD _OutputIt _Write_escaped(
+    _OutputIt _Out, basic_string_view<_CharT> _Value, _Basic_format_specs<_CharT> _Specs, char _Delim);
+
 template <class _CharT, class _OutputIt, integral _Integral>
     requires (!_CharT_or_bool<_Integral, _CharT>)
 _NODISCARD _OutputIt
@@ -2740,11 +2758,15 @@ _NODISCARD _OutputIt _Fmt_write(
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale) {
-    if (_Specs._Type != '\0' && _Specs._Type != 'c') {
+    if (_Specs._Type != '\0' && _Specs._Type != 'c' && _Specs._Type != '?') {
         return _Write_integral(_STD move(_Out), _Value, _Specs, _Locale);
     }
 
     _STL_INTERNAL_CHECK(_Specs._Precision == -1);
+
+    if (_Specs._Type == '?') {
+        return _Write_escaped(_STD move(_Out), basic_string_view<_CharT>{&_Value, 1}, _Specs, '\'');
+    }
 
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{&_Value, 1}, _Specs, _Locale);
 }
@@ -3151,13 +3173,124 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     return _Pfx_iter._Position();
 }
 
+_NODISCARD constexpr bool _Is_printable(char32_t _Code_point) {
+    return _Has_property(_Code_point, __printable_ranges, _STD end(__printable_ranges));
+}
+
+_NODISCARD constexpr bool _Is_grapheme_extend(char32_t _Code_point) {
+    return _Has_property(_Code_point, _Grapheme_Extend_ranges, _STD end(_Grapheme_Extend_ranges));
+}
+
+template <class _CharT, class _OutputIt>
+_NODISCARD _OutputIt _Write_escaped(_OutputIt _Out, basic_string_view<_CharT> _Value, char _Delim) {
+    auto _First        = _Value.data();
+    const auto _Last   = _First + _Value.size();
+    const auto& _Codec = _Get_fmt_codec<_CharT>();
+
+    _STL_INTERNAL_CHECK(_Delim == '"' || _Delim == '\'');
+    *_Out++ = static_cast<_CharT>(_Delim);
+
+    bool _Escape_grapheme_extend = true;
+
+    const auto _Write_backslash_and = [&](char _Ch) {
+        *_Out++                 = static_cast<_CharT>('\\');
+        *_Out++                 = static_cast<_CharT>(_Ch);
+        _Escape_grapheme_extend = true;
+    };
+
+    const auto _Write_hex = [&](uint32_t _Val) {
+        char _Buffer[32];
+        const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), _Val, 16);
+        _STL_ASSERT(_Ec == errc{}, "to_chars failed");
+
+        _Out = _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
+    };
+
+    while (_First != _Last) {
+        const auto _Ch = *_First;
+
+        if (_Ch == static_cast<_CharT>('\t')) {
+            _Write_backslash_and('t');
+            ++_First;
+        } else if (_Ch == static_cast<_CharT>('\n')) {
+            _Write_backslash_and('n');
+            ++_First;
+        } else if (_Ch == static_cast<_CharT>('\r')) {
+            _Write_backslash_and('r');
+            ++_First;
+        } else if (_Ch == static_cast<_CharT>(_Delim)) {
+            _Write_backslash_and(_Delim);
+            ++_First;
+        } else if (_Ch == static_cast<_CharT>('\\')) {
+            _Write_backslash_and('\\');
+            ++_First;
+        } else {
+            char32_t _Decoded_ch;
+            const auto [_Next, _Is_usv] = _Codec._Decode(_First, _Last, _Decoded_ch);
+
+            if (_Is_usv) {
+                const bool _Needs_escape =
+                    !_Is_printable(_Decoded_ch) || (_Escape_grapheme_extend && _Is_grapheme_extend(_Decoded_ch));
+
+                if (_Needs_escape) {
+                    _Write_backslash_and('u');
+                    *_Out++ = static_cast<_CharT>('{');
+                    _Write_hex(_Decoded_ch);
+                    *_Out++ = static_cast<_CharT>('}');
+                } else {
+                    _Out                    = _STD _Copy_unchecked(_First, _Next, _STD move(_Out));
+                    _Escape_grapheme_extend = false;
+                }
+
+                _First = _Next;
+            } else {
+                for (; _First != _Next; ++_First) {
+                    _Write_backslash_and('x');
+                    *_Out++ = static_cast<_CharT>('{');
+                    _Write_hex(static_cast<make_unsigned_t<_CharT>>(*_First));
+                    *_Out++ = static_cast<_CharT>('}');
+                }
+            }
+        }
+    }
+
+    *_Out++ = static_cast<_CharT>(_Delim);
+
+    return _STD move(_Out);
+}
+
+template <class _CharT, class _OutputIt>
+_NODISCARD _OutputIt _Write_escaped(
+    _OutputIt _Out, basic_string_view<_CharT> _Value, _Basic_format_specs<_CharT> _Specs, char _Delim) {
+    if (_Specs._Precision < 0 && _Specs._Width <= 0) {
+        return _Write_escaped(_STD move(_Out), _Value, _Delim);
+    }
+
+    basic_string<_CharT> _Temp;
+    {
+        _Fmt_iterator_buffer<back_insert_iterator<basic_string<_CharT>>, _CharT> _Buf(back_insert_iterator{_Temp});
+        (void) _Write_escaped(back_insert_iterator<_Fmt_buffer<_CharT>>{_Buf}, _Value, _Delim);
+    }
+
+    int _Width          = _Specs._Precision;
+    const _CharT* _Last = _Measure_string_prefix<_CharT>(_Temp, _Width);
+
+    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left, [&_Temp, _Last](_OutputIt _Out) {
+        return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Temp.data(), _Last});
+    });
+}
+
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
-    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 'c' || _Specs._Type == 's');
+    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 'c' || _Specs._Type == 's' || _Specs._Type == '?');
     _STL_INTERNAL_CHECK(_Specs._Sgn == _Fmt_sign::_None);
     _STL_INTERNAL_CHECK(!_Specs._Alt);
     _STL_INTERNAL_CHECK(!_Specs._Leading_zero);
+
+    if (_Specs._Type == '?') {
+        return _Write_escaped(_STD move(_Out), _Value, _Specs, '"');
+    }
 
     if (_Specs._Precision < 0 && _Specs._Width <= 0) {
         return _Fmt_write(_STD move(_Out), _Value);
