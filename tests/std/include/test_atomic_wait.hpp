@@ -218,6 +218,29 @@ struct with_padding_bits {
 };
 #pragma warning(pop)
 
+inline void test_gh_3602() {
+    // GH-3602 std::atomic<std::shared_ptr>::wait does not seem to care about control block difference. Is this a bug?
+    {
+        auto sp1    = std::make_shared<char>();
+        auto holder = [sp1] {};
+        auto sp2    = std::make_shared<decltype(holder)>(holder);
+        std::shared_ptr<char> sp3{sp2, sp1.get()};
+
+        std::atomic<std::shared_ptr<char>> asp{sp1};
+        asp.wait(sp3);
+    }
+    {
+        auto sp1    = std::make_shared<char>();
+        auto holder = [sp1] {};
+        auto sp2    = std::make_shared<decltype(holder)>(holder);
+        std::shared_ptr<char> sp3{sp2, sp1.get()};
+        std::weak_ptr<char> wp3{sp3};
+
+        std::atomic<std::weak_ptr<char>> awp{sp1};
+        awp.wait(wp3);
+    }
+}
+
 inline void test_atomic_wait() {
     // wait for all the threads to be waiting; if this value is too small the test might be ineffective but should not
     // fail due to timing assumptions except where otherwise noted; if it is too large the test will only take longer
@@ -308,4 +331,6 @@ inline void test_atomic_wait() {
     test_pad_bits<with_padding_bits<32>>(waiting_duration);
 #endif // ^^^ !ARM ^^^
 #endif // __clang__, TRANSITION, LLVM-46685
+
+    test_gh_3602();
 }
