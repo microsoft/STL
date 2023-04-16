@@ -264,7 +264,7 @@ void test_duration_formatter() {
     empty_braces_helper(duration<int, ratio<22, 7>>{40}, STR("40[22/7]s"));
     empty_braces_helper(duration<int, ratio<53, 101>>{40}, STR("40[53/101]s"));
     empty_braces_helper(duration<int, ratio<201, 2147483647>>{40}, STR("40[201/2147483647]s"));
-    // TRANSITION, duration_cast used in formatting may raise UB
+    // TRANSITION, LWG-3921: duration_cast used in formatting may raise UB
     empty_braces_helper(duration<int, LongRatio>{1}, STR("1[9223372036854775806/9223372036854775807]s"));
 
     // formatting small types needs to work as iostreams << VSO-1521926
