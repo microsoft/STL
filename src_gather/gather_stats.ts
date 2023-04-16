@@ -60,27 +60,12 @@ type RawLabels = {
     nodes: RawLabelNode[];
 };
 
-type RawAuthor = {
-    login: string;
-};
-
-type RawReviewNode = {
-    author: RawAuthor | null;
-    submittedAt: string;
-};
-
-type RawReviews = {
-    totalCount: number;
-    nodes: RawReviewNode[];
-};
-
 type RawPRNode = {
     id: number;
     createdAt: string;
     closedAt: string | null;
     mergedAt: string | null;
     labels: RawLabels;
-    reviews: RawReviews;
 };
 
 type RawIssueNode = {
@@ -245,7 +230,7 @@ type PaginationWarningMessage = (retrieved: number, total: number, id: number) =
 
 function warn_if_pagination_needed<RawNode extends RawPRNode | RawIssueNode>(
     outer_nodes: RawNode[],
-    get_field: (node: RawNode) => RawLabels | RawReviews,
+    get_field: (node: RawNode) => RawLabels,
     message: PaginationWarningMessage
 ) {
     if (outer_nodes.length === 0) {
@@ -268,58 +253,11 @@ function warn_if_pagination_needed<RawNode extends RawPRNode | RawIssueNode>(
     }
 }
 
-function read_trimmed_lines(filename: string) {
-    // Excludes empty lines and comments beginning with '#'.
-    return fs
-        .readFileSync(filename, 'utf8')
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0 && line[0] !== '#');
-}
-
-type DuplicateWarningMessage = (username: string) => string;
-
-function warn_about_duplicates(array: string[], message: DuplicateWarningMessage) {
-    const uniques = new Set<string>();
-    const duplicates = new Set<string>();
-
-    for (const elem of array) {
-        if (!uniques.has(elem)) {
-            uniques.add(elem);
-        } else if (!duplicates.has(elem)) {
-            duplicates.add(elem);
-            console.log(message(elem));
-        }
-    }
-}
-
-function read_usernames() {
-    const maintainer_list = read_trimmed_lines('./usernames_maintainers.txt');
-    const contributor_list = read_trimmed_lines('./usernames_contributors.txt');
-
-    warn_about_duplicates(maintainer_list, (username: string) => `WARNING: Duplicate maintainer "${username}".`);
-    warn_about_duplicates(contributor_list, (username: string) => `WARNING: Duplicate contributor "${username}".`);
-
-    const maintainer_set = new Set(maintainer_list);
-    const contributor_set = new Set(contributor_list);
-
-    warn_about_duplicates(
-        [...maintainer_set, ...contributor_set],
-        (username: string) => `WARNING: Maintainer "${username}" is also listed as a contributor.`
-    );
-
-    return {
-        maintainers: maintainer_set,
-        contributors: contributor_set,
-    };
-}
-
 type CookedPRNode = {
     id: number;
     opened: DateTime;
     closed: DateTime | null;
     merged: DateTime | null;
-    reviews: DateTime[];
 };
 
 function not_uncharted(node: RawPRNode | RawIssueNode) {
@@ -334,43 +272,15 @@ function transform_pr_nodes(pr_nodes: RawPRNode[]) {
         (retrieved: number, total: number, id: number) =>
             `WARNING: Retrieved ${retrieved}/${total} labels for PR #${id}.`
     );
-    warn_if_pagination_needed(
-        pr_nodes,
-        (node: RawPRNode) => node.reviews,
-        (retrieved: number, total: number, id: number) =>
-            `WARNING: Retrieved ${retrieved}/${total} reviews for PR #${id}.`
-    );
-
-    const { maintainers, contributors } = read_usernames();
 
     return pr_nodes //
         .filter(not_uncharted)
         .map(pr_node => {
-            const maintainer_reviews = pr_node.reviews.nodes
-                .filter(review_node => {
-                    if (review_node.author === null) {
-                        return false; // Assume that deleted users were contributors.
-                    }
-
-                    const username = review_node.author.login;
-
-                    const is_maintainer = maintainers.has(username);
-
-                    if (!is_maintainer && !contributors.has(username)) {
-                        contributors.add(username); // Assume that unknown users are contributors.
-                        console.log(`WARNING: Unknown user "${username}" reviewed PR #${pr_node.id}.`);
-                    }
-
-                    return is_maintainer;
-                })
-                .map(review_node => DateTime.fromISO(review_node.submittedAt));
-
             const ret: CookedPRNode = {
                 id: pr_node.id,
                 opened: DateTime.fromISO(pr_node.createdAt),
                 closed: pr_node.closedAt ? DateTime.fromISO(pr_node.closedAt) : null,
                 merged: pr_node.mergedAt ? DateTime.fromISO(pr_node.mergedAt) : null,
-                reviews: maintainer_reviews,
             };
             return ret;
         });
@@ -453,9 +363,7 @@ type Row = {
     bug: number;
     video: number;
     avg_age: number;
-    avg_wait: number;
     sum_age: number;
-    sum_wait: number;
 };
 
 function should_emit_data_point(rows: Row[], i: number, key: Exclude<keyof Row, 'date'>) {
@@ -486,7 +394,6 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
     const events: Event[] = [];
 
     const opened_prs = new Map<number, DateTime>(); // Tracks when currently open PRs were opened
-    const reviewed_prs = new Map<number, DateTime>(); // Tracks when currently open PRs were last reviewed (or opened)
     const merged_prs = new Map<number, DateTime>(); // Tracks when recently merged PRs were merged
 
     for (const pr of all_prs) {
@@ -494,20 +401,14 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
             date: pr.opened,
             action: () => {
                 opened_prs.set(pr.id, pr.opened);
-                reviewed_prs.set(pr.id, pr.opened);
             },
         });
-
-        for (const review of pr.reviews) {
-            events.push({ date: review, action: () => reviewed_prs.set(pr.id, review) });
-        }
 
         if (pr.closed !== null) {
             events.push({
                 date: pr.closed,
                 action: () => {
                     opened_prs.delete(pr.id);
-                    reviewed_prs.delete(pr.id);
                 },
             });
         }
@@ -606,9 +507,6 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
             const combined_pr_age = Array.from(opened_prs.values())
                 .map(t => when.diff(t))
                 .reduce((x, y) => x.plus(y), zero_duration);
-            const combined_pr_wait = Array.from(reviewed_prs.values())
-                .map(t => when.diff(t))
-                .reduce((x, y) => x.plus(y), zero_duration);
 
             rows.push({
                 date: when,
@@ -621,9 +519,7 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
                 bug: num_bug,
                 video: num_video,
                 avg_age: num_pr === 0 ? 0 : combined_pr_age.as('days') / num_pr,
-                avg_wait: num_pr === 0 ? 0 : combined_pr_wait.as('days') / num_pr,
                 sum_age: combined_pr_age.as('months'),
-                sum_wait: combined_pr_wait.as('months'),
             });
 
             progress_bar.increment();
@@ -644,9 +540,7 @@ export type DailyRow = {
     bug: number | null;
     video: number | null;
     avg_age: number;
-    avg_wait: number;
     sum_age: number;
-    sum_wait: number;
 };
 export const daily_table: DailyRow[] = [
 `;
@@ -667,9 +561,7 @@ export const daily_table: DailyRow[] = [
         }
 
         str += `avg_age: ${row.avg_age.toFixed(2)}, `;
-        str += `avg_wait: ${row.avg_wait.toFixed(2)}, `;
         str += `sum_age: ${row.sum_age.toFixed(2)}, `;
-        str += `sum_wait: ${row.sum_wait.toFixed(2)}, `;
         str += '},\n';
     }
 
