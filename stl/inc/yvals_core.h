@@ -273,6 +273,8 @@
 //     (span always provides this behavior)
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
 // P2281R1 Clarifying Range Adaptor Objects
+// P2286R8 Formatting Ranges
+//     (only the '?' format specifier for strings and characters)
 // P2325R3 Views Should Not Be Required To Be Default Constructible
 // P2328R1 join_view Should Join All views Of ranges
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
@@ -362,6 +364,7 @@
 // P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
 // P2652R2 Disallowing User Specialization Of allocator_traits
+// P2713R1 Escaping Improvements In std::format
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
