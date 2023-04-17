@@ -1537,7 +1537,8 @@ public:
             _Ans += _Indexarr[_Idx] * _Stride[_Idx]; // compute offset
         }
 
-        while (0 < _Idx--) {
+        while (0 < _Idx) {
+            --_Idx;
             if (++_Indexarr[_Idx] < _Len[_Idx]) {
                 break; // increment done, quit
             } else {
