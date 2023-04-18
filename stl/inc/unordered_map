@@ -71,8 +71,6 @@ public:
         _MISMATCHED_ALLOCATOR_MESSAGE("unordered_map<Key, Value, Hasher, Eq, Allocator>", "pair<const Key, Value>"));
     static_assert(is_object_v<_Kty>, "The C++ Standard forbids containers of non-object types "
                                      "because of [container.requirements].");
-    static_assert(is_object_v<_Ty>, "The C++ Standard forbids containers of non-object types "
-                                    "because of [container.requirements].");
 
 private:
     using _Mytraits      = _Uhash_compare<_Kty, _Hasher, _Keyeq>;
@@ -563,8 +561,6 @@ public:
             "unordered_multimap<Key, Value, Hasher, Eq, Allocator>", "pair<const Key, Value>"));
     static_assert(is_object_v<_Kty>, "The C++ Standard forbids containers of non-object types "
                                      "because of [container.requirements].");
-    static_assert(is_object_v<_Ty>, "The C++ Standard forbids containers of non-object types "
-                                    "because of [container.requirements].");
 
 private:
     using _Mytraits      = _Uhash_compare<_Kty, _Hasher, _Keyeq>;
