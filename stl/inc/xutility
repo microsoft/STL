@@ -2657,7 +2657,7 @@ namespace ranges {
     concept constant_range = input_range<_Rng> && _Constant_iterator<iterator_t<_Rng>>;
 
     template <input_range _Rng>
-    _NODISCARD constexpr auto& _Possibly_const_range(_Rng& _Range) noexcept {
+    _NODISCARD _MSVC_INTRINSIC constexpr auto& _Possibly_const_range(_Rng& _Range) noexcept {
         if constexpr (constant_range<const _Rng> && !constant_range<_Rng>) {
             return _STD as_const(_Range);
         } else {
@@ -2666,7 +2666,7 @@ namespace ranges {
     }
 
     template <class _Ty>
-    _NODISCARD constexpr auto _As_const_pointer(const _Ty* _Ptr) noexcept {
+    _NODISCARD _MSVC_INTRINSIC constexpr auto _As_const_pointer(const _Ty* _Ptr) noexcept {
         return _Ptr;
     }
 

@@ -3570,7 +3570,7 @@ namespace ranges {
 #endif // ^^^ workaround ^^^
 
     template <class _Ty>
-    _NODISCARD constexpr _Ty& _As_lvalue(_Ty&& _Val) noexcept {
+    _NODISCARD _MSVC_INTRINSIC constexpr _Ty& _As_lvalue(_Ty&& _Val) noexcept {
         return static_cast<_Ty&>(_Val);
     }
 
