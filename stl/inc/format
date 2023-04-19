@@ -3173,6 +3173,17 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     return _Pfx_iter._Position();
 }
 
+template <class _CharT>
+_NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const wchar_t* const _WStr) noexcept {
+    if constexpr (is_same_v<_CharT, char>) {
+        return _Str;
+    } else {
+        return _WStr;
+    }
+}
+
+#define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
+
 _NODISCARD constexpr bool _Is_printable(char32_t _Val) {
     return __printable_property_data._Get_property_for_codepoint(_Val) == __printable_property_values::_Yes_value;
 }
@@ -3195,37 +3206,31 @@ _NODISCARD _OutputIt _Write_escaped(_OutputIt _Out, basic_string_view<_CharT> _V
 
     bool _Escape_grapheme_extend = true;
 
-    const auto _Write_backslash_and = [&](char _Ch) {
-        *_Out++                 = static_cast<_CharT>('\\');
-        *_Out++                 = static_cast<_CharT>(_Ch);
-        _Escape_grapheme_extend = true;
-    };
-
-    const auto _Write_hex = [&](uint32_t _Val) {
-        char _Buffer[32];
-        const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), _Val, 16);
-        _STL_ASSERT(_Ec == errc{}, "to_chars failed");
-
-        _Out = _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
-    };
+    char _Buffer[32];
 
     while (_First != _Last) {
         const auto _Ch = *_First;
 
         if (_Ch == static_cast<_CharT>('\t')) {
-            _Write_backslash_and('t');
+            _Out                    = _Fmt_write(_STD move(_Out), _STATICALLY_WIDEN(_CharT, "\\t"));
+            _Escape_grapheme_extend = true;
             ++_First;
         } else if (_Ch == static_cast<_CharT>('\n')) {
-            _Write_backslash_and('n');
+            _Out                    = _Fmt_write(_STD move(_Out), _STATICALLY_WIDEN(_CharT, "\\n"));
+            _Escape_grapheme_extend = true;
             ++_First;
         } else if (_Ch == static_cast<_CharT>('\r')) {
-            _Write_backslash_and('r');
+            _Out                    = _Fmt_write(_STD move(_Out), _STATICALLY_WIDEN(_CharT, "\\r"));
+            _Escape_grapheme_extend = true;
             ++_First;
         } else if (_Ch == static_cast<_CharT>(_Delim)) {
-            _Write_backslash_and(_Delim);
+            *_Out++                 = static_cast<_CharT>('\\');
+            *_Out++                 = static_cast<_CharT>(_Delim);
+            _Escape_grapheme_extend = true;
             ++_First;
         } else if (_Ch == static_cast<_CharT>('\\')) {
-            _Write_backslash_and('\\');
+            _Out                    = _Fmt_write(_STD move(_Out), _STATICALLY_WIDEN(_CharT, "\\\\"));
+            _Escape_grapheme_extend = true;
             ++_First;
         } else {
             char32_t _Decoded_ch;
@@ -3236,10 +3241,14 @@ _NODISCARD _OutputIt _Write_escaped(_OutputIt _Out, basic_string_view<_CharT> _V
                     !_Is_printable(_Decoded_ch) || (_Escape_grapheme_extend && _Is_grapheme_extend(_Decoded_ch));
 
                 if (_Needs_escape) {
-                    _Write_backslash_and('u');
-                    *_Out++ = static_cast<_CharT>('{');
-                    _Write_hex(_Decoded_ch);
-                    *_Out++ = static_cast<_CharT>('}');
+                    _Out = _Fmt_write(_STD move(_Out), _STATICALLY_WIDEN(_CharT, "\\u{"));
+
+                    const auto [_End, _Ec] =
+                        _STD to_chars(_Buffer, _STD end(_Buffer), static_cast<uint32_t>(_Decoded_ch), 16);
+                    _Out = _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
+
+                    *_Out++                 = static_cast<_CharT>('}');
+                    _Escape_grapheme_extend = true;
                 } else {
                     _Out                    = _STD _Copy_unchecked(_First, _Next, _STD move(_Out));
                     _Escape_grapheme_extend = false;
@@ -3248,11 +3257,15 @@ _NODISCARD _OutputIt _Write_escaped(_OutputIt _Out, basic_string_view<_CharT> _V
                 _First = _Next;
             } else {
                 for (; _First != _Next; ++_First) {
-                    _Write_backslash_and('x');
-                    *_Out++ = static_cast<_CharT>('{');
-                    _Write_hex(static_cast<make_unsigned_t<_CharT>>(*_First));
+                    _Out = _Fmt_write(_STD move(_Out), _STATICALLY_WIDEN(_CharT, "\\x{"));
+
+                    const auto [_End, _Ec] =
+                        _STD to_chars(_Buffer, _STD end(_Buffer), static_cast<make_unsigned_t<_CharT>>(*_First), 16);
+                    _Out = _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
+
                     *_Out++ = static_cast<_CharT>('}');
                 }
+                _Escape_grapheme_extend = true;
             }
         }
     }
