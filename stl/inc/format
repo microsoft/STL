@@ -3173,12 +3173,13 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     return _Pfx_iter._Position();
 }
 
-_NODISCARD constexpr bool _Is_printable(char32_t _Code_point) {
-    return _Has_property(_Code_point, __printable_ranges, _STD end(__printable_ranges));
+_NODISCARD constexpr bool _Is_printable(char32_t _Val) {
+    return __printable_property_data._Get_property_for_codepoint(_Val) == __printable_property_values::_Yes_value;
 }
 
-_NODISCARD constexpr bool _Is_grapheme_extend(char32_t _Code_point) {
-    return _Has_property(_Code_point, _Grapheme_Extend_ranges, _STD end(_Grapheme_Extend_ranges));
+_NODISCARD constexpr bool _Is_grapheme_extend(char32_t _Val) {
+    return _Grapheme_Extend_property_data._Get_property_for_codepoint(_Val)
+        == _Grapheme_Extend_property_values::_Grapheme_Extend_value;
 }
 
 template <class _CharT, class _OutputIt>
