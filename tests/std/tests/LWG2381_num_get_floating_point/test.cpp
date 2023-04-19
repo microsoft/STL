@@ -583,8 +583,7 @@ void test_gh3378() {
 }
 
 #if _HAS_CXX17
-void test_float_from_char_cases()
-{
+void test_float_from_char_cases() {
     for (const auto& test_case : float_from_chars_test_cases) {
         auto repstr =
             test_case.fmt == chars_format::hex ? "0x" + std::string(test_case.input) : std::string(test_case.input);
