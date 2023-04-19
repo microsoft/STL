@@ -3178,6 +3178,8 @@ _NODISCARD constexpr bool _Is_printable(char32_t _Val) {
 }
 
 _NODISCARD constexpr bool _Is_grapheme_extend(char32_t _Val) {
+    // TRANSITION, should reuse _Grapheme_Break_property_data to save space.
+    // (Grapheme_Extend=Yes is Grapheme_Cluster_Break=Extend minus Emoji_Modifier=Yes.)
     return _Grapheme_Extend_property_data._Get_property_for_codepoint(_Val)
         == _Grapheme_Extend_property_values::_Grapheme_Extend_value;
 }
