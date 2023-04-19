@@ -24,6 +24,15 @@
 #include <type_traits>
 #include <utility>
 
+#if _HAS_CXX17
+#include <charconv>
+
+#include "../P0067R5_charconv/test.hpp"
+// ^^^ needs to be included first ^^^
+#include "../P0067R5_charconv/double_from_chars_test_cases.hpp"
+#include "../P0067R5_charconv/float_from_chars_test_cases.hpp"
+#endif // _HAS_CXX17
+
 using namespace std;
 
 class my_facet : public num_get<char, const char*> {
@@ -292,6 +301,83 @@ void test_int_grouping() {
     }
 }
 
+// Also test GH-1582 <xlocnum>: "multiply by power of 10" logic is imprecise
+template <class Flt>
+void test_gh1582() {
+    {
+        istringstream iss{"1" + string(2000, '0') + "e-2000"};
+        Flt x{};
+        assert(iss >> x);
+        assert(x == 1.0);
+    }
+    {
+        istringstream iss{"0." + string(2000, '0') + "1e+2001"};
+        Flt x{};
+        assert(iss >> x);
+        assert(x == 1.0);
+    }
+    {
+        istringstream iss{"0." + string(2000, '0') + "1e2001"};
+        Flt x{};
+        assert(iss >> x);
+        assert(x == 1.0);
+    }
+    {
+        istringstream iss{"2" + string(2000, '0') + "e-2000"};
+        Flt x{};
+        assert(iss >> x);
+        assert(x == 2.0);
+    }
+    {
+        istringstream iss{"0." + string(2000, '0') + "2e+2001"};
+        Flt x{};
+        assert(iss >> x);
+        assert(x == 2.0);
+    }
+    {
+        istringstream iss{"0." + string(2000, '0') + "2e2001"};
+        Flt x{};
+        assert(iss >> x);
+        assert(x == 2.0);
+    }
+    {
+        istringstream iss{"0x1" + string(2000, '0') + "p-8000"};
+        Flt x{};
+        assert(iss >> x);
+        assert(x == 0x1.0p0);
+    }
+    {
+        istringstream iss{"0x0." + string(2000, '0') + "1p+8004"};
+        Flt x{};
+        assert(iss >> x);
+        assert(x == 0x1.0p0);
+    }
+    {
+        istringstream iss{"0x0." + string(2000, '0') + "1p8004"};
+        Flt x{};
+        assert(iss >> x);
+        assert(x == 0x1.0p0);
+    }
+    {
+        istringstream iss{"0xA" + string(2000, '0') + "p-8000"};
+        Flt x{};
+        assert(iss >> x);
+        assert(x == 0xA.0p0);
+    }
+    {
+        istringstream iss{"0x0." + string(2000, '0') + "Ap+8004"};
+        Flt x{};
+        assert(iss >> x);
+        assert(x == 0xA.0p0);
+    }
+    {
+        istringstream iss{"0x0." + string(2000, '0') + "Ap8004"};
+        Flt x{};
+        assert(iss >> x);
+        assert(x == 0xA.0p0);
+    }
+}
+
 // Also test GH-3375 <xlocnum>: Incorrect rounding when parsing long hexadecimal floating point numbers just above
 // midpoints
 // And GH-3376 <xlocnum>: Incorrect result when parsing 9.999999...
@@ -496,6 +582,46 @@ void test_gh3378() {
     }
 }
 
+#if _HAS_CXX17
+void test_float_from_char_cases()
+{
+    for (const auto& test_case : float_from_chars_test_cases) {
+        auto repstr =
+            test_case.fmt == chars_format::hex ? "0x" + std::string(test_case.input) : std::string(test_case.input);
+        istringstream is(repstr);
+        float x = 0.0f;
+
+        const bool expected_no_err = test_case.correct_ec == errc{};
+        const bool tested_no_err   = static_cast<bool>(is >> x);
+        assert(expected_no_err == tested_no_err);
+        // TRANSITION, DevCom-10293606
+        if (x != test_case.correct_value) {
+            char* endptr = nullptr;
+            assert(x == strtof(repstr.c_str(), &endptr));
+        }
+    }
+}
+
+template <class Flt>
+void test_double_from_char_cases() {
+    for (const auto& test_case : double_from_chars_test_cases) {
+        auto repstr =
+            test_case.fmt == chars_format::hex ? "0x" + std::string(test_case.input) : std::string(test_case.input);
+        istringstream is(repstr);
+        Flt x = 0.0;
+
+        const bool expected_no_err = test_case.correct_ec == errc{};
+        const bool tested_no_err   = static_cast<bool>(is >> x);
+        assert(expected_no_err == tested_no_err);
+        // TRANSITION, DevCom-10293606
+        if (x != test_case.correct_value) {
+            char* endptr = nullptr;
+            assert(x == strtod(repstr.c_str(), &endptr));
+        }
+    }
+}
+#endif //_HAS_CXX17
+
 int main() {
     test<float>();
     test<double>();
@@ -507,10 +633,20 @@ int main() {
     test_int_grouping<long long>();
     test_int_grouping<unsigned long long>();
 
+    test_gh1582<float>();
+    test_gh1582<double>();
+    test_gh1582<long double>();
+
     test_gh3375_gh3376<float>();
     test_gh3375_gh3376<double>();
     test_gh3375_gh3376<long double>();
 
     test_gh3378<double>();
     test_gh3378<long double>();
+
+#if _HAS_CXX17
+    test_float_from_char_cases();
+    test_double_from_char_cases<double>();
+    test_double_from_char_cases<long double>();
+#endif //_HAS_CXX17
 }
