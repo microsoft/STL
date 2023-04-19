@@ -41,6 +41,20 @@ void test_parse_align() {
         test_parse_helper(parse_align_fn, "\U0001f3c8^X"sv, false, 5,
             {.expected_alignment = _Fmt_align::_Center, .expected_fill = "\U0001f3c8"sv});
     }
+
+    {
+        test_parse_helper(parse_align_fn, "\xC0\x80<X"sv, true);
+        test_parse_helper(parse_align_fn, "\xF5\x80\x80\x80<X"sv, true);
+        test_parse_helper(parse_align_fn, "\xE0\x80\x80<X"sv, true);
+        test_parse_helper(parse_align_fn, "\xED\xA0\x80<X"sv, true);
+        test_parse_helper(parse_align_fn, "\xF0\x80\x80\x80<X"sv, true);
+        test_parse_helper(parse_align_fn, "\xF4\x90\x80\x80<X"sv, true);
+        test_parse_helper(parse_align_fn, "\xE1\x80<X"sv, true);
+        test_parse_helper(parse_align_fn, "\xE1\x7F\x80<X"sv, true);
+        test_parse_helper(parse_align_fn, "\xE1\xC0\x80<X"sv, true);
+        test_parse_helper(parse_align_fn, "\xE1\x80\x7F<X"sv, true);
+        test_parse_helper(parse_align_fn, "\xE1\x80\xC0<X"sv, true);
+    }
 }
 
 template <class CharT>

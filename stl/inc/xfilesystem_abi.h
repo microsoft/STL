@@ -79,11 +79,7 @@ enum class __std_fs_file_attr : unsigned long {
 };
 _END_EXTERN_C
 
-#if 1 // TRANSITION, DevCom-10247495
-_BITMASK_OPS(_EXPORT_STD, __std_fs_file_attr)
-#else // ^^^ workaround / no workaround vvv
 _BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_file_attr)
-#endif // ^^^ no workaround ^^^
 
 _EXTERN_C
 enum class __std_fs_reparse_tag : unsigned long {

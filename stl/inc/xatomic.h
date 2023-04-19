@@ -101,7 +101,7 @@ enum memory_order {
 };
 #endif // _HAS_CXX20
 
-_EXPORT_STD /* TRANSITION, VSO-1592329 */ using _Atomic_counter_t = unsigned long;
+using _Atomic_counter_t = unsigned long;
 
 template <class _Integral, class _Ty>
 _NODISCARD volatile _Integral* _Atomic_address_as(_Ty& _Source) noexcept {

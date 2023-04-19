@@ -34,6 +34,8 @@ public:
     using container_type  = _Container;
 
     static_assert(is_same_v<_Ty, value_type>, "container adaptors require consistent types");
+    static_assert(is_object_v<_Ty>, "The C++ Standard forbids container adaptors of non-object types "
+                                    "because of [container.requirements].");
 
     queue() = default;
 
@@ -234,6 +236,8 @@ public:
     using value_compare   = _Pr;
 
     static_assert(is_same_v<_Ty, value_type>, "container adaptors require consistent types");
+    static_assert(is_object_v<_Ty>, "The C++ Standard forbids container adaptors of non-object types "
+                                    "because of [container.requirements].");
 
     priority_queue() = default;
 
