@@ -2560,7 +2560,7 @@ namespace chrono {
     _EXPORT_STD template <class _Duration1, class _Duration2, class _TimeZonePtr>
     _NODISCARD bool operator==(
         const zoned_time<_Duration1, _TimeZonePtr>& _Left, const zoned_time<_Duration2, _TimeZonePtr>& _Right) {
-        return _Left.get_time_zone() == _Right.get_time_zone() && _Left.get_sys_time() == _Right.get_sys_time();
+        return *(_Left.get_time_zone()) == *(_Right.get_time_zone()) && _Left.get_sys_time() == _Right.get_sys_time();
     }
 
     // [time.clock.utc]
