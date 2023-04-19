@@ -1022,7 +1022,7 @@ private:
         }
 
         *_Ptr = '\0';
-        return {_Parse_hex ? 16 : 10, _Bad_grouping};
+        return {static_cast<int8_t>(_Parse_hex ? 16 : 10), _Bad_grouping};
     }
 
 // TRANSITION, ABI: Sentinel value used by num_get::do_get()
