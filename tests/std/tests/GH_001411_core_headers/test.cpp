@@ -21,7 +21,6 @@
 
 // <__msvc_iter_core.hpp> is included by <tuple>
 // <xkeycheck.h> should not be included outside of <yvals_core.h>
-// <xstddef> is included by <type_traits>
 // <xtr1common> is included by <cstddef>
 // <yvals_core.h> is included by every public core header
 

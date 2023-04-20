@@ -248,7 +248,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xnode_handle.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xpolymorphic_allocator.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xsmf_control.h
-    ${CMAKE_CURRENT_LIST_DIR}/inc/xstddef
     ${CMAKE_CURRENT_LIST_DIR}/inc/xstring
     ${CMAKE_CURRENT_LIST_DIR}/inc/xthreads.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xtimec.h
