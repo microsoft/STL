@@ -304,77 +304,80 @@ void test_int_grouping() {
 // Also test GH-1582 <xlocnum>: "multiply by power of 10" logic is imprecise
 template <class Flt>
 void test_gh1582() {
-    {
-        istringstream iss{"1" + string(2000, '0') + "e-2000"};
-        Flt x{};
-        assert(iss >> x);
-        assert(x == 1.0);
-    }
-    {
-        istringstream iss{"0." + string(2000, '0') + "1e+2001"};
-        Flt x{};
-        assert(iss >> x);
-        assert(x == 1.0);
-    }
-    {
-        istringstream iss{"0." + string(2000, '0') + "1e2001"};
-        Flt x{};
-        assert(iss >> x);
-        assert(x == 1.0);
-    }
-    {
-        istringstream iss{"2" + string(2000, '0') + "e-2000"};
-        Flt x{};
-        assert(iss >> x);
-        assert(x == 2.0);
-    }
-    {
-        istringstream iss{"0." + string(2000, '0') + "2e+2001"};
-        Flt x{};
-        assert(iss >> x);
-        assert(x == 2.0);
-    }
-    {
-        istringstream iss{"0." + string(2000, '0') + "2e2001"};
-        Flt x{};
-        assert(iss >> x);
-        assert(x == 2.0);
-    }
-    {
-        istringstream iss{"0x1" + string(2000, '0') + "p-8000"};
-        Flt x{};
-        assert(iss >> x);
-        assert(x == 0x1.0p0);
-    }
-    {
-        istringstream iss{"0x0." + string(2000, '0') + "1p+8004"};
-        Flt x{};
-        assert(iss >> x);
-        assert(x == 0x1.0p0);
-    }
-    {
-        istringstream iss{"0x0." + string(2000, '0') + "1p8004"};
-        Flt x{};
-        assert(iss >> x);
-        assert(x == 0x1.0p0);
-    }
-    {
-        istringstream iss{"0xA" + string(2000, '0') + "p-8000"};
-        Flt x{};
-        assert(iss >> x);
-        assert(x == 0xA.0p0);
-    }
-    {
-        istringstream iss{"0x0." + string(2000, '0') + "Ap+8004"};
-        Flt x{};
-        assert(iss >> x);
-        assert(x == 0xA.0p0);
-    }
-    {
-        istringstream iss{"0x0." + string(2000, '0') + "Ap8004"};
-        Flt x{};
-        assert(iss >> x);
-        assert(x == 0xA.0p0);
+    constexpr size_t digit_counts[]{200, 400, 800, 1600, 3200, 6400, 12800};
+    for (const size_t n : digit_counts) {
+        {
+            istringstream iss{"1" + string(n, '0') + "e-" + to_string(n)};
+            Flt x{};
+            assert(iss >> x);
+            assert(x == 1.0);
+        }
+        {
+            istringstream iss{"0." + string(n, '0') + "1e+" + to_string(n + 1)};
+            Flt x{};
+            assert(iss >> x);
+            assert(x == 1.0);
+        }
+        {
+            istringstream iss{"0." + string(n, '0') + "1e" + to_string(n + 1)};
+            Flt x{};
+            assert(iss >> x);
+            assert(x == 1.0);
+        }
+        {
+            istringstream iss{"2" + string(n, '0') + "e-" + to_string(n)};
+            Flt x{};
+            assert(iss >> x);
+            assert(x == 2.0);
+        }
+        {
+            istringstream iss{"0." + string(n, '0') + "2e+" + to_string(n + 1)};
+            Flt x{};
+            assert(iss >> x);
+            assert(x == 2.0);
+        }
+        {
+            istringstream iss{"0." + string(n, '0') + "2e" + to_string(n + 1)};
+            Flt x{};
+            assert(iss >> x);
+            assert(x == 2.0);
+        }
+        {
+            istringstream iss{"0x1" + string(n, '0') + "p-" + to_string(n * 4)};
+            Flt x{};
+            assert(iss >> x);
+            assert(x == 0x1.0p0);
+        }
+        {
+            istringstream iss{"0x0." + string(n, '0') + "1p+" + to_string(n * 4 + 4)};
+            Flt x{};
+            assert(iss >> x);
+            assert(x == 0x1.0p0);
+        }
+        {
+            istringstream iss{"0x0." + string(n, '0') + "1p" + to_string(n * 4 + 4)};
+            Flt x{};
+            assert(iss >> x);
+            assert(x == 0x1.0p0);
+        }
+        {
+            istringstream iss{"0xA" + string(n, '0') + "p-" + to_string(n * 4)};
+            Flt x{};
+            assert(iss >> x);
+            assert(x == 0xA.0p0);
+        }
+        {
+            istringstream iss{"0x0." + string(n, '0') + "Ap+" + to_string(n * 4 + 4)};
+            Flt x{};
+            assert(iss >> x);
+            assert(x == 0xA.0p0);
+        }
+        {
+            istringstream iss{"0x0." + string(n, '0') + "Ap" + to_string(n * 4 + 4)};
+            Flt x{};
+            assert(iss >> x);
+            assert(x == 0xA.0p0);
+        }
     }
 }
 

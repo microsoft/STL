@@ -48,7 +48,7 @@ inline double _Stodx_v3(const char* _Str, char** _Endptr, int* _Perr) noexcept {
     return _Val;
 }
 
-inline float _Stofx_v3(const char* _Str, char** _Endptr, int* _Perr) { // convert string to float
+inline float _Stofx_v3(const char* _Str, char** _Endptr, int* _Perr) noexcept { // convert string to float
     int& _Errno_ref = errno; // Nonzero cost, pay it once
     const int _Orig = _Errno_ref;
 
