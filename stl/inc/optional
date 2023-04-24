@@ -298,7 +298,7 @@ public:
 #if _HAS_CXX23
     template <class _Fn, class _Ux>
     constexpr optional(_Construct_from_invoke_result_tag _Tag, _Fn&& _Func, _Ux&& _Arg) noexcept(
-        is_nothrow_constructible_v<_Ty, invoke_result_t<_Fn, _Ux>>)
+        _Is_nothrow_constructible_from_invocation<_Ty, _Fn, _Ux>)
         : _Mybase(_Tag, _STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg)) {}
 #endif // _HAS_CXX23
 
