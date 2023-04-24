@@ -109,7 +109,26 @@ constexpr bool test() {
     return true;
 }
 
+void test_gh3667() {
+    class unique_exception : public exception {};
+
+    try {
+        optional<int> opt(1);
+        opt.transform([](int) {
+            throw unique_exception{};
+            return 0;
+        });
+    } catch (const unique_exception&) {
+        return;
+    } catch (...) {
+        assert(false); // shouldn't terminate or reach here
+    }
+    assert(false); // shouldn't terminate or reach here
+}
+
 int main() {
     test();
     static_assert(test());
+
+    test_gh3667();
 }
