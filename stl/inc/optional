@@ -68,9 +68,10 @@ struct _Construct_from_invoke_result_tag {
 
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
 template <class _Ty, class _Fn, class... _Args>
-inline constexpr bool _Is_nothrow_constructible_from_invocation = requires(void* __vp, _Fn&& __fx, _Args&&... __args) {
-    { ::new (__vp) _Ty(_STD invoke(_STD forward<_Fn>(__fx), _STD forward<_Args>(__args)...)) } noexcept;
-};
+inline constexpr bool _Is_nothrow_constructible_from_invocation =
+    requires(void* __vp, _Fn&& __fx, _Args&&... __args) {
+        { ::new (__vp) _Ty(_STD invoke(_STD forward<_Fn>(__fx), _STD forward<_Args>(__args)...)) } noexcept;
+    };
 #else // ^^^ no workaround / workaround vvv
 template <class _Void, class _Ty, class _Fn, class... _Args>
 inline constexpr bool _Is_nothrow_constructible_from_invocation_impl = false;
@@ -78,8 +79,8 @@ inline constexpr bool _Is_nothrow_constructible_from_invocation_impl = false;
 template <class _Ty, class _Fn, class... _Args>
 inline constexpr bool _Is_nothrow_constructible_from_invocation_impl<
     void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD invoke(_STD declval<_Fn>(), _STD declval<_Args>()...)))>,
-    _Ty, _Fn, _Args...> = noexcept(::new (_STD declval<void*>())
-        _Ty(_STD invoke(_STD declval<_Fn>(), _STD declval<_Args>()...)));
+    _Ty, _Fn, _Args...> =
+    noexcept(::new (_STD declval<void*>()) _Ty(_STD invoke(_STD declval<_Fn>(), _STD declval<_Args>()...)));
 
 template <class _Ty, class _Fn, class... _Args>
 inline constexpr bool _Is_nothrow_constructible_from_invocation =
