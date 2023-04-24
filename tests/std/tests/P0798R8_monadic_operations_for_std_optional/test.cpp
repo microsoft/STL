@@ -115,10 +115,7 @@ void test_gh3667() {
 
     try {
         optional<int> opt(1);
-        opt.transform([](int) {
-            throw unique_exception{};
-            return 0;
-        });
+        opt.transform([](int) -> int { throw unique_exception{}; });
     } catch (const unique_exception&) {
         return;
     } catch (...) {
