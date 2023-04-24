@@ -110,7 +110,8 @@ constexpr bool test() {
     return true;
 }
 
-void test_gh3667() {
+void test_gh_3667() {
+    // GH-3667 <optional>: Throwing transformers will cause the program to terminate
     class unique_exception : public exception {};
 
     try {
@@ -128,5 +129,5 @@ int main() {
     test();
     static_assert(test());
 
-    test_gh3667();
+    test_gh_3667();
 }
