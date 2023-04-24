@@ -65,6 +65,26 @@ _STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_du
 struct _Construct_from_invoke_result_tag {
     explicit _Construct_from_invoke_result_tag() = default;
 };
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+template <class _Ty, class _Fn, class... _Args>
+inline constexpr bool _Is_nothrow_constructible_from_invocation = requires(void* __vp, _Fn&& __fx, _Args&&... __args) {
+    { ::new (__vp) _Ty(_STD invoke(_STD forward<_Fn>(__fx), _STD forward<_Args>(__args)...)) } noexcept;
+};
+#else // ^^^ no workaround / workaround vvv
+template <class _Void, class _Ty, class _Fn, class... _Args>
+inline constexpr bool _Is_nothrow_constructible_from_invocation_impl = false;
+
+template <class _Ty, class _Fn, class... _Args>
+inline constexpr bool _Is_nothrow_constructible_from_invocation_impl<
+    void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD invoke(_STD declval<_Fn>(), _STD declval<_Args>()...)))>,
+    _Ty, _Fn, _Args...> = noexcept(::new (_STD declval<void*>())
+        _Ty(_STD invoke(_STD declval<_Fn>(), _STD declval<_Args>()...)));
+
+template <class _Ty, class _Fn, class... _Args>
+inline constexpr bool _Is_nothrow_constructible_from_invocation =
+    _Is_nothrow_constructible_from_invocation_impl<void, _Ty, _Fn, _Args...>;
+#endif // ^^^ workaround ^^^
 #endif // _HAS_CXX23
 
 template <class _Ty, bool = is_trivially_destructible_v<_Ty>>
@@ -85,7 +105,7 @@ struct _Optional_destruct_base { // either contains a value of _Ty or is empty (
 #if _HAS_CXX23
     template <class _Fn, class _Ux>
     constexpr _Optional_destruct_base(_Construct_from_invoke_result_tag, _Fn&& _Func, _Ux&& _Arg) noexcept(
-        is_nothrow_constructible_v<_Ty, invoke_result_t<_Fn, _Ux>>)
+        _Is_nothrow_constructible_from_invocation<_Ty, _Fn, _Ux>)
         : _Value(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{true} {}
 #endif // _HAS_CXX23
 
@@ -118,7 +138,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
 #if _HAS_CXX23
     template <class _Fn, class _Ux>
     constexpr _Optional_destruct_base(_Construct_from_invoke_result_tag, _Fn&& _Func, _Ux&& _Arg) noexcept(
-        is_nothrow_constructible_v<_Ty, invoke_result_t<_Fn, _Ux>>)
+        _Is_nothrow_constructible_from_invocation<_Ty, _Fn, _Ux>)
         : _Value(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{true} {}
 #endif // _HAS_CXX23
 
