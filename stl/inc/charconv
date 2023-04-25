@@ -1732,7 +1732,6 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
             const ptrdiff_t _Further_adjustment = (_STD max)(-_Exponent, _Exponent_adjustment);
             _Exponent += _Further_adjustment;
             _Exponent_adjustment -= _Further_adjustment;
-
         }
     } else if (_Exponent < 0 && _Exponent_adjustment > 0) {
         if (_Is_hexadecimal) {
