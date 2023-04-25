@@ -3048,6 +3048,17 @@ void assert_container() {
     check_all_specific_requirements<Tag>();
 }
 
+// MapLike<K, V&> is squirrelly, but appears to be permitted.
+template <template <class...> class MapLike>
+void check_reference_as_mapped_type() {
+    double dbl = 3.14;
+
+    MapLike<int, double&> ml;
+    ml.emplace(10, dbl);
+
+    STATIC_ASSERT(std::is_same_v<decltype(ml.find(10)->second), double&>);
+}
+
 void assert_all() {
     assert_container<tag_deque>();
     assert_container<tag_forward_list>();
@@ -3063,4 +3074,9 @@ void assert_all() {
     assert_container<tag_unordered_multimap>();
     assert_container<tag_unordered_multiset>();
     assert_container<tag_unordered_set>();
+
+    check_reference_as_mapped_type<std::map>();
+    check_reference_as_mapped_type<std::multimap>();
+    check_reference_as_mapped_type<std::unordered_map>();
+    check_reference_as_mapped_type<std::unordered_multimap>();
 }
