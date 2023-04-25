@@ -5,11 +5,13 @@
 #include <chrono>
 #include <clocale>
 #include <concepts>
+#include <cstdint>
 #include <cstdio>
 #include <format>
 #include <iostream>
 #include <limits>
 #include <locale>
+#include <ratio>
 #include <sstream>
 #include <string>
 #include <string_view>
