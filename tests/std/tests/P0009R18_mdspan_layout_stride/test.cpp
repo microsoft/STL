@@ -15,7 +15,7 @@ using namespace std;
 
 template <class IndexType, size_t... Extents, size_t... Indices>
 constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
-    const array<IndexType, sizeof...(Extents)> strs, index_sequence<Indices...>) {
+    const array<IndexType, sizeof...(Extents)>& strs, index_sequence<Indices...>) {
     using Ext     = extents<IndexType, Extents...>;
     using Strides = array<IndexType, sizeof...(Extents)>;
     using Mapping = layout_stride::mapping<Ext>;
@@ -116,7 +116,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
         // Tests of 'is_exhaustive' are defined in 'check_is_exhaustive' function [FIXME]
     }
 
-    { // Check 'stride' function (intentionally not if constexpr)
+    { // Check 'stride' function
         for (size_t i = 0; i < strs.size(); ++i) {
             same_as<IndexType> decltype(auto) s = m.stride(i);
             assert(strs[i] == s);
@@ -132,7 +132,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
 }
 
 template <class IndexType, size_t... Extents>
-constexpr void check_members(extents<IndexType, Extents...> ext, const array<IndexType, sizeof...(Extents)> strides) {
+constexpr void check_members(extents<IndexType, Extents...> ext, const array<IndexType, sizeof...(Extents)>& strides) {
     do_check_members<IndexType, Extents...>(ext, strides, make_index_sequence<sizeof...(Extents)>{});
 }
 
