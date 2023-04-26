@@ -599,7 +599,7 @@ public:
     constexpr mapping() noexcept : _Exts(extents_type{}) {
         if constexpr (extents_type::rank() != 0) {
             _Strides.back() = 1;
-            for (rank_type _Idx = extents_type::rank() - 1; _Idx-- > 0;) {
+            for (rank_type _Idx = extents_type::_Rank - 1; _Idx-- > 0;) {
                 // TRANSITION USE `_Multiply_with_overflow_check` IN DEBUG MODE
                 _Strides[_Idx] = _Strides[_Idx + 1] * _Exts.extent(_Idx + 1);
             }
@@ -615,7 +615,7 @@ public:
     constexpr mapping(const extents_type& _Exts_, span<_OtherIndexType, extents_type::rank()> _Strides_,
         index_sequence<_Indices...>) noexcept
         : _Exts(_Exts_), _Strides{static_cast<index_type>(_STD as_const(_Strides_[_Indices]))...} {
-        for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
+        for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
             // TRANSITION CHECK [mdspan.layout.stride.cons]/4.2 (REQUIRES `_Multiply_with_overflow_check`)
             _STL_VERIFY(_Strides[_Idx] > 0, "Value of s[i] must be greater than 0 for all i in the range [0, rank_) "
                                             "(N4944 [mdspan.layout.stride.cons]/4.1).");
@@ -664,7 +664,7 @@ public:
             "[mdspan.layout.stride.cons]/7.3).");
         _STL_VERIFY(
             _Offset(_Other) == 0, "Value of OFFSET(other) must be equal to 0 (N4944 [mdspan.layout.stride.cons]/7.4).");
-        for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
+        for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
             const auto _Stride = _Other.stride(_Idx);
             _STL_VERIFY(_Stride > 0, "Value of other.stride(r) must be greater than 0 for every rank index r of "
                                      "extents() (N4944 [mdspan.layout.stride.cons]/7.2).");
@@ -689,7 +689,7 @@ public:
             return 1;
         } else {
             index_type _Result = 1;
-            for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
+            for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
                 const index_type _Ext = _Exts.extent(_Idx);
                 if (_Ext == 0) {
                     return 0;
@@ -730,7 +730,7 @@ public:
         if constexpr (extents_type::rank() == 0) {
             return true;
         } else {
-            return required_span_size() == _Exts._Fwd_prod_of_extents(extents_type::rank());
+            return required_span_size() == _Exts._Fwd_prod_of_extents(extents_type::_Rank);
         }
     }
 
@@ -751,7 +751,7 @@ public:
                 return false;
             }
 
-            for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
+            for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
                 if (_Left.stride(_Idx) != _Right.stride(_Idx)) {
                     return false;
                 }
@@ -770,7 +770,7 @@ private:
         if constexpr (extents_type::rank() == 0) {
             return _Mapping();
         } else {
-            for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
+            for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
                 if (_Mapping.extents().extent(_Idx) == 0) {
                     return 0;
                 }
@@ -949,11 +949,11 @@ public:
     }
 
     _NODISCARD constexpr size_type size() const noexcept {
-        return static_cast<size_type>(_Map.extents()._Fwd_prod_of_extents(rank()));
+        return static_cast<size_type>(_Map.extents()._Fwd_prod_of_extents(extents_type::_Rank));
     }
 
     _NODISCARD constexpr bool empty() const noexcept {
-        for (rank_type _Idx = 0; _Idx < rank(); ++_Idx) {
+        for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
             if (_Map.extents().extent(_Idx) == 0) {
                 return true;
             }
