@@ -622,7 +622,7 @@ void test_double_from_char_cases() {
         }
     }
 }
-#endif //_HAS_CXX17
+#endif // _HAS_CXX17
 
 int main() {
     test<float>();
@@ -650,5 +650,5 @@ int main() {
     test_float_from_char_cases();
     test_double_from_char_cases<double>();
     test_double_from_char_cases<long double>();
-#endif //_HAS_CXX17
+#endif // _HAS_CXX17
 }
