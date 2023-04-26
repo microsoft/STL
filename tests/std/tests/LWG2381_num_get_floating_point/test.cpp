@@ -62,7 +62,7 @@ protected:
         return '_';
     }
     string do_grouping() const override {
-        return string("\1\2\3");
+        return "\1\2\3"s;
     }
 };
 
