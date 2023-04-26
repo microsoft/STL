@@ -861,7 +861,7 @@ private:
             }
 
             const char* _Grouping_iter      = _Grouping.data();
-            const char* const _Grouping_end = _Grouping.data() + _Grouping.size();
+            const char* const _Grouping_end = _Grouping_iter + _Grouping.size();
             char _Current_grouping_count    = '\0';
             while (!_Bad_grouping && _Groups_arr_idx > 0) {
                 if (_Grouping_iter != _Grouping_end) { // keep the last value when _Grouping is exhausted
