@@ -553,8 +553,8 @@ protected:
             int _Errno;
             char* _Ep;
             _Val = _STD _Stofx_v3(_Ac, &_Ep, &_Errno); // convert
-            if (_Ep == _Ac || _Errno != 0 // N4944 [facet.num.get.virtual]/3
-                || _Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtual]/4
+            if (_Ep == _Ac || _Errno != 0 // N4944 [facet.num.get.virtuals]/3
+                || _Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtuals]/4
                 _State = ios_base::failbit;
             }
         }
@@ -579,8 +579,8 @@ protected:
             int _Errno;
             char* _Ep;
             _Val = _STD _Stodx_v3(_Ac, &_Ep, &_Errno); // convert
-            if (_Ep == _Ac || _Errno != 0 // N4944 [facet.num.get.virtual]/3
-                || _Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtual]/4
+            if (_Ep == _Ac || _Errno != 0 // N4944 [facet.num.get.virtuals]/3
+                || _Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtuals]/4
                 _State = ios_base::failbit;
             }
         }
