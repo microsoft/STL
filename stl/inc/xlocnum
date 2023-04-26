@@ -749,8 +749,7 @@ private:
     static _Num_get_parse_result _Parse_fp_with_locale(
         char* const _Ac, const int _Max_sig_dig, _InIt& _First, _InIt& _Last, const locale& _Loc) {
         // get floating-point field from [_First, _Last) into _Ac
-        const auto& _Punct_fac = _STD use_facet<numpunct<_Elem>>(_Loc);
-        char* _Ptr             = _Ac;
+        char* _Ptr = _Ac;
 
         constexpr size_t _Offset_dec_digit_end = 10;
         constexpr size_t _Offset_hex_digit_end = 22;
@@ -808,6 +807,7 @@ private:
         ptrdiff_t _Power_of_rep_base   = 0; // power of 10 or 16
 
         const size_t _Offset_digit_end = _Parse_hex ? _Offset_hex_digit_end : _Offset_dec_digit_end;
+        const auto& _Punct_fac         = _STD use_facet<numpunct<_Elem>>(_Loc);
         const string _Grouping         = _Punct_fac.grouping();
         if (_Grouping.empty()) {
             for (size_t _Idx; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
