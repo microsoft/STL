@@ -1037,6 +1037,7 @@ private:
         if (_Parse_result._Base == 0 || _Parse_result._Bad_grouping) { // TRANSITION, ABI, old behavior
             *_Ac = '\0';
         }
+
         if (_Parse_result._Base == 16) {
             *_Phexexp = 0; // power of 16 multiplier, unnecessary now
         }
@@ -1051,6 +1052,7 @@ private:
         if (_Parse_result._Base == 0 || _Parse_result._Bad_grouping) { // TRANSITION, ABI, old behavior
             *_Ac = '\0';
         }
+
         if (_Parse_result._Base == 16) {
             *_Phexexp = 0; // power of 16 multiplier, unnecessary now
         }
