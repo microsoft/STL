@@ -764,7 +764,7 @@ private:
         constexpr size_t _Offset_lower_e       = 20;
         static constexpr char _Src[]           = "0123456789ABCDEFabcdef-+XxPp";
         _Elem _Atoms[sizeof(_Src)];
-        const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Loc);
+        const auto& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Loc);
         _Ctype_fac.widen(_STD begin(_Src), _STD end(_Src), _Atoms);
 
         const _Elem _Positive_sign = _Atoms[_Offset_pos_sign];
