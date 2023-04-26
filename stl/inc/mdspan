@@ -930,7 +930,7 @@ public:
     }
 
     _NODISCARD constexpr size_type size() const noexcept {
-        return _Map.extents()._Fwd_prod_of_extents(rank());
+        return static_cast<size_type>(_Map.extents()._Fwd_prod_of_extents(rank()));
     }
 
     _NODISCARD constexpr bool empty() const noexcept {
