@@ -594,8 +594,33 @@ public:
         "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
         "representable as a value of type typename Extents::index_type (N4944 [mdspan.layout.stride.overview]/4).");
 
-    constexpr mapping() noexcept               = default;
+#pragma warning(push) // TRANSITION, "/analyze:only" BUG?
+#pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+    constexpr mapping() noexcept : _Exts(extents_type{}) {
+        if constexpr (extents_type::rank() != 0) {
+            _Strides.back() = 1;
+            for (rank_type _Idx = extents_type::rank() - 1; _Idx-- > 0;) {
+                // TRANSITION USE `_Multiply_with_overflow_check` IN DEBUG MODE
+                _Strides[_Idx] = _Strides[_Idx + 1] * _Exts.extent(_Idx + 1);
+            }
+        }
+    }
+#pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
+
     constexpr mapping(const mapping&) noexcept = default;
+
+    template <class _OtherIndexType, size_t... _Indices>
+        requires is_convertible_v<const _OtherIndexType&, index_type>
+                  && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
+    constexpr mapping(const extents_type& _Exts_, span<_OtherIndexType, extents_type::rank()> _Strides_,
+        index_sequence<_Indices...>) noexcept
+        : _Exts(_Exts_), _Strides{static_cast<index_type>(_STD as_const(_Strides_[_Indices]))...} {
+        for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
+            // TRANSITION CHECK [mdspan.layout.stride.cons]/4.2 (REQUIRES `_Multiply_with_overflow_check`)
+            _STL_VERIFY(_Strides[_Idx] > 0, "Value of s[i] must be greater than 0 for all i in the range [0, rank_) "
+                                            "(N4944 [mdspan.layout.stride.cons]/4.1).");
+        }
+    }
 
 #ifndef __clang__ // TRANSITION, MSVC messes up CTAD when concepts are used here (needs further investigation)
     template <class _OtherIndexType, enable_if_t<is_convertible_v<const _OtherIndexType&, index_type>
@@ -606,12 +631,9 @@ public:
         requires is_convertible_v<const _OtherIndexType&, index_type>
               && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
 #endif // ^^^ no workaround ^^^
-    constexpr mapping(const extents_type& _Exts_, const span<_OtherIndexType, extents_type::rank()> _Strides_) noexcept
-        : _Exts(_Exts_) {
-        for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
-            _Strides[_Idx] = _Strides_[_Idx];
-        }
-    };
+    constexpr mapping(const extents_type& _Exts_, span<_OtherIndexType, extents_type::rank()> _Strides_) noexcept
+        : mapping(_Exts_, _Strides_, make_index_sequence<extents_type::rank()>{}) {
+    }
 
 #ifndef __clang__ // TRANSITION, MSVC messes up CTAD when concepts are used here (needs further investigation)
     template <class _OtherIndexType, enable_if_t<is_convertible_v<const _OtherIndexType&, index_type>
@@ -624,11 +646,8 @@ public:
 #endif // ^^^ no workaround ^^^
     constexpr mapping(
         const extents_type& _Exts_, const array<_OtherIndexType, extents_type::rank()>& _Strides_) noexcept
-        : _Exts(_Exts_) {
-        for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
-            _Strides[_Idx] = _Strides_[_Idx];
-        }
-    };
+        : mapping(_Exts_, span{_Strides_}, make_index_sequence<extents_type::rank()>{}) {
+    }
 
     template <class _StridedLayoutMapping>
         requires _Layout_mapping_alike<_StridedLayoutMapping>
@@ -640,8 +659,16 @@ public:
             || _Is_mapping_of<layout_stride, _StridedLayoutMapping>) ))
         mapping(const _StridedLayoutMapping& _Other) noexcept
         : _Exts(_Other.extents()) {
-        for (rank_type _Dim = 0; _Dim < extents_type::rank(); ++_Dim) {
-            _Strides[_Dim] = _Other.stride(_Dim);
+        _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
+            "Value of other.required_span_size() must be representable as a value of type index_type (N4944 "
+            "[mdspan.layout.stride.cons]/7.3).");
+        _STL_VERIFY(
+            _Offset(_Other) == 0, "Value of OFFSET(other) must be equal to 0 (N4944 [mdspan.layout.stride.cons]/7.4).");
+        for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
+            const auto _Stride = _Other.stride(_Idx);
+            _STL_VERIFY(_Stride > 0, "Value of other.stride(r) must be greater than 0 for every rank index r of "
+                                     "extents() (N4944 [mdspan.layout.stride.cons]/7.2).");
+            _Strides[_Idx] = static_cast<index_type>(_Stride);
         }
     }
 
@@ -655,30 +682,32 @@ public:
         return _Strides;
     }
 
+#pragma warning(push) // TRANSITION, "/analyze:only" BUG?
+#pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
     _NODISCARD constexpr index_type required_span_size() const noexcept {
-        if (extents_type::rank() > 0) {
+        if constexpr (extents_type::rank() == 0) {
+            return 1;
+        } else {
             index_type _Result = 1;
-            for (rank_type _Dim = 0; _Dim < extents_type::rank(); ++_Dim) {
-                const auto _Ext = _Exts.extent(_Dim);
+            for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
+                const index_type _Ext = _Exts.extent(_Idx);
                 if (_Ext == 0) {
                     return 0;
                 }
 
-                _Result += (_Ext - 1) * _Strides[_Dim];
+                _Result += (_Ext - 1) * _Strides[_Idx];
             }
 
             return _Result;
-        } else {
-            return 1;
         }
     }
+#pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
 
-    template <class... _Indices>
-        requires (sizeof...(_Indices) == extents_type::rank()) && (is_convertible_v<_Indices, index_type> && ...)
-              && (is_nothrow_constructible_v<index_type, _Indices> && ...)
-    _NODISCARD constexpr index_type operator()(_Indices... _Idx) const noexcept {
-        return _Index_impl<conditional_t<true, index_type, _Indices>...>(
-            static_cast<index_type>(_Idx)..., make_index_sequence<extents_type::rank()>{});
+    template <class... _IndexTypes>
+        requires (sizeof...(_IndexTypes) == extents_type::rank()) && (is_convertible_v<_IndexTypes, index_type> && ...)
+              && (is_nothrow_constructible_v<index_type, _IndexTypes> && ...)
+    _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
+        return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
     }
 
     _NODISCARD static constexpr bool is_always_unique() noexcept {
@@ -693,20 +722,19 @@ public:
         return true;
     }
 
-    _NODISCARD constexpr bool is_unique() const noexcept {
+    _NODISCARD static constexpr bool is_unique() noexcept {
         return true;
     }
 
     _NODISCARD constexpr bool is_exhaustive() const noexcept {
-        index_type _Ext_size = 1;
-        for (rank_type _Dim = 0; _Dim < extents_type::rank(); ++_Dim) {
-            _Ext_size *= _Exts.extent(_Dim);
+        if constexpr (extents_type::rank() == 0) {
+            return true;
+        } else {
+            return required_span_size() == _Exts._Fwd_prod_of_extents(extents_type::rank());
         }
-
-        return required_span_size() == _Ext_size;
     }
 
-    _NODISCARD constexpr bool is_strided() const noexcept {
+    _NODISCARD static constexpr bool is_strided() noexcept {
         return true;
     }
 
@@ -718,49 +746,47 @@ public:
         requires _Layout_mapping_alike<_OtherMapping> && (extents_type::rank() == _OtherMapping::extents_type::rank())
               && (_OtherMapping::is_always_strided())
     _NODISCARD_FRIEND constexpr bool operator==(const mapping& _Left, const _OtherMapping& _Right) noexcept {
-        if (_Left.extents() != _Right.extents()) {
-            return false;
-        }
-
-        constexpr rank_type _Rank = extents_type::rank();
-        for (rank_type _Dim = 0; _Dim < _Rank; ++_Dim) {
-            if (_Left.stride(_Dim) != _Right.stride(_Dim)) {
+        if constexpr (extents_type::rank() != 0) {
+            if (_Left.extents() != _Right.extents()) {
                 return false;
             }
-        }
 
-        index_type _Offset;
-        if constexpr (_Rank == 0) {
-            _Offset = _Right();
-        } else {
-            bool _Is_empty = false;
-            for (rank_type _Dim = 0; _Dim < _Rank; ++_Dim) {
-                if (_Left.extents().extent(_Dim) == 0) {
-                    _Is_empty = true;
-                    break;
+            for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
+                if (_Left.stride(_Idx) != _Right.stride(_Idx)) {
+                    return false;
                 }
             }
-
-            if (_Is_empty) {
-                _Offset = 0;
-            } else {
-                _Offset = [&_Right]<size_t... _Idx>(index_sequence<_Idx...>) {
-                    return _Right(((void) _Idx, 0)...);
-                }
-                (make_index_sequence<_Rank>{});
-            }
-
-            return _Offset == 0;
         }
+
+        return _Offset(_Right) == 0;
     }
 
 private:
     extents_type _Exts{};
     array<index_type, extents_type::rank()> _Strides{};
 
-    template <class... _IndexType, size_t... _Seq>
-    constexpr index_type _Index_impl(_IndexType... _Idx, index_sequence<_Seq...>) const noexcept {
-        return ((_Idx * _Strides[_Seq]) + ...);
+    template <class _OtherMapping>
+    _NODISCARD static constexpr typename _OtherMapping::index_type _Offset(_OtherMapping& _Mapping) noexcept {
+        if constexpr (extents_type::rank() == 0) {
+            return _Mapping();
+        } else {
+            for (rank_type _Idx = 0; _Idx < extents_type::rank(); ++_Idx) {
+                if (_Mapping.extents().extent(_Idx) == 0) {
+                    return 0;
+                }
+            }
+
+            return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+                return _Mapping(((void) _Indices, 0)...);
+            }
+            (make_index_sequence<extents_type::rank()>{});
+        }
+    }
+
+    template <class... _IndexTypes, size_t... _Seq>
+    _NODISCARD constexpr index_type _Index_impl(index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
+        _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
+        return ((_Indices * _Strides[_Seq]) + ... + 0);
     }
 };
 
@@ -829,8 +855,12 @@ public:
         return extents_type::_Rank_dynamic;
     }
 
-    _NODISCARD static constexpr size_t static_extent(const rank_type _Rank) noexcept {
-        return extents_type::static_extent(_Rank);
+    _NODISCARD static constexpr size_t static_extent(const rank_type _Idx) noexcept {
+        return extents_type::static_extent(_Idx);
+    }
+
+    _NODISCARD constexpr index_type extent(const rank_type _Idx) const noexcept {
+        return _Map.extents().extent(_Idx);
     }
 
     constexpr mdspan()
@@ -847,7 +877,7 @@ public:
                   && (sizeof...(_OtherIndexTypes) == rank() || sizeof...(_OtherIndexTypes) == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
     constexpr explicit mdspan(data_handle_type _Ptr_, _OtherIndexTypes... _Exts)
-        : _Ptr{_STD move(_Ptr_)}, _Map{extents_type{static_cast<index_type>(_STD move(_Exts))...}} {}
+        : _Ptr(_STD move(_Ptr_)), _Map(extents_type{static_cast<index_type>(_STD move(_Exts))...}), _Acc() {}
 
     template <class _OtherIndexType, size_t _Size>
         requires is_convertible_v<_OtherIndexType, index_type>
@@ -855,7 +885,7 @@ public:
                   && (_Size == rank() || _Size == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
     constexpr explicit(_Size != rank_dynamic()) mdspan(data_handle_type _Ptr_, span<_OtherIndexType, _Size>& _Exts)
-        : _Ptr{_Ptr_}, _Map{extents_type{_Exts}} {}
+        : _Ptr(_STD move(_Ptr_)), _Map(extents_type{_Exts}), _Acc() {}
 
     template <class _OtherIndexType, size_t _Size>
         requires is_convertible_v<const _OtherIndexType&, index_type>
@@ -864,18 +894,18 @@ public:
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
     constexpr explicit(_Size != rank_dynamic())
         mdspan(data_handle_type _Ptr_, const array<_OtherIndexType, _Size>& _Exts)
-        : _Ptr{_Ptr_}, _Map{extents_type{_Exts}} {}
+        : _Ptr(_STD move(_Ptr_)), _Map(extents_type{_Exts}), _Acc() {}
 
     constexpr mdspan(data_handle_type _Ptr_, const extents_type& _Ext)
         requires is_constructible_v<mapping_type, const extents_type&> && is_default_constructible_v<accessor_type>
-        : _Ptr{_Ptr_}, _Map{_Ext} {}
+        : _Ptr(_STD move(_Ptr_)), _Map(_Ext), _Acc() {}
 
     constexpr mdspan(data_handle_type _Ptr_, const mapping_type& _Map_)
         requires is_default_constructible_v<accessor_type>
-        : _Ptr{_Ptr_}, _Map{_Map_} {}
+        : _Ptr(_STD move(_Ptr_)), _Map(_Map_), _Acc() {}
 
     constexpr mdspan(data_handle_type _Ptr_, const mapping_type& _Map_, const accessor_type& _Acc_)
-        : _Ptr{_Ptr_}, _Map{_Map_}, _Acc{_Acc_} {}
+        : _Ptr(_STD move(_Ptr_)), _Map(_Map_), _Acc(_Acc_) {}
 
     template <class _OtherElementType, class _OtherExtents, class _OtherLayoutPolicy, class _OtherAccessor>
         requires is_constructible_v<mapping_type, const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&>
@@ -884,7 +914,7 @@ public:
         !is_convertible_v<const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&, mapping_type>
         || !is_convertible_v<const _OtherAccessor&, accessor_type>)
         mdspan(const mdspan<_OtherElementType, _OtherExtents, _OtherLayoutPolicy, _OtherAccessor>& _Other)
-        : _Ptr{_Other._Ptr}, _Map{_Other._Map}, _Acc{_Other._Acc} {
+        : _Ptr(_Other._Ptr), _Map(_Other._Map), _Acc(_Other._Acc) {
         static_assert(is_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>,
             "The data_handle_type must be constructible from const typename OtherAccessor::data_handle_type& (N4944 "
             "[mdspan.mdspan.cons]/20.1).");
@@ -918,6 +948,25 @@ public:
         return _Index_impl(_Indices, make_index_sequence<rank()>{});
     }
 
+    _NODISCARD constexpr size_type size() const noexcept {
+        return static_cast<size_type>(_Map.extents()._Fwd_prod_of_extents(rank()));
+    }
+
+    _NODISCARD constexpr bool empty() const noexcept {
+        for (rank_type _Idx = 0; _Idx < rank(); ++_Idx) {
+            if (_Map.extents().extent(_Idx) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    friend constexpr void swap(mdspan& _Left, mdspan& _Right) noexcept {
+        swap(_Left._Ptr, _Right._Ptr);
+        swap(_Left._Map, _Right._Map);
+        swap(_Left._Acc, _Right._Acc);
+    }
+
     _NODISCARD constexpr const extents_type& extents() const noexcept {
         return _Map.extents();
     }
@@ -934,62 +983,36 @@ public:
         return _Acc;
     }
 
-    _NODISCARD constexpr index_type extent(const rank_type _Rank) const noexcept {
-        const auto& _Ext = _Map.extents();
-        return _Ext.extent(_Rank);
-    }
-
-    _NODISCARD constexpr size_type size() const noexcept {
-        const auto& _Ext  = _Map.extents();
-        size_type _Result = 1;
-        for (rank_type _Dim = 0; _Dim < extents_type::_Rank; ++_Dim) {
-            _Result *= _Ext.extent(_Dim);
-        }
-        return _Result;
-    }
-
-    _NODISCARD constexpr bool empty() const noexcept {
-        for (rank_type _Dim = 0; _Dim < extents_type::_Rank; ++_Dim) {
-            if (_Map.extents().extent(_Dim) == 0) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    friend constexpr void swap(mdspan& _Left, mdspan& _Right) noexcept {
-        swap(_Left._Ptr, _Right._Ptr);
-        swap(_Left._Map, _Right._Map);
-        swap(_Left._Acc, _Right._Acc);
-    }
-
-    _NODISCARD static constexpr bool is_always_unique() {
+    _NODISCARD static constexpr bool is_always_unique() noexcept(
+        noexcept(mapping_type::is_always_unique())) /* strengthened */ {
         return mapping_type::is_always_unique();
     }
 
-    _NODISCARD static constexpr bool is_always_exhaustive() {
+    _NODISCARD static constexpr bool is_always_exhaustive() noexcept(
+        noexcept(mapping_type::is_always_exhaustive())) /* strengthened */ {
         return mapping_type::is_always_exhaustive();
     }
 
-    _NODISCARD static constexpr bool is_always_strided() {
+    _NODISCARD static constexpr bool is_always_strided() noexcept(
+        noexcept(mapping_type::is_always_strided())) /* strengthened */ {
         return mapping_type::is_always_strided();
     }
 
-    _NODISCARD constexpr bool is_unique() const {
+    _NODISCARD constexpr bool is_unique() const noexcept(noexcept(_Map.is_unique())) /* strengthened */ {
         return _Map.is_unique();
     }
 
-    _NODISCARD constexpr bool is_exhaustive() const {
+    _NODISCARD constexpr bool is_exhaustive() const noexcept(noexcept(_Map.is_exhaustive())) /* strengthened */ {
         return _Map.is_exhaustive();
     }
 
-    _NODISCARD constexpr bool is_strided() const {
+    _NODISCARD constexpr bool is_strided() const noexcept(noexcept(_Map.is_strided())) /* strengthened */ {
         return _Map.is_strided();
     }
 
-    _NODISCARD constexpr index_type stride(const size_t _Dim) const {
-        return _Map.stride(_Dim);
+    _NODISCARD constexpr index_type stride(const rank_type _Idx) const
+        noexcept(noexcept(_Map.stride(_Idx))) /* strengthened */ {
+        return _Map.stride(_Idx);
     }
 
 private:
