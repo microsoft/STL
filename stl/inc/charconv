@@ -1753,6 +1753,7 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
         _Assemble_floating_point_infinity(_Fp_string._Myis_negative, _Value);
         return {_Next, errc::result_out_of_range}; // Overflow example: "1e+9999"
     }
+
     if (_Exponent < _Minimum_temporary_decimal_exponent
         || _Exponent_adjustment
                < (_Is_hexadecimal ? _Minimum_temporary_decimal_exponent / 4 : _Minimum_temporary_decimal_exponent)) {
