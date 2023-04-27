@@ -1593,7 +1593,7 @@ namespace chrono {
             if (_Den != 1) {
                 return 6u;
             }
-            const auto _Result = _STD max(_Power_of_2_in_den, _Power_of_5_in_den);
+            const auto _Result = (_STD max)(_Power_of_2_in_den, _Power_of_5_in_den);
             return _Result > 18u ? 6u : _Result;
         }();
         using precision =
