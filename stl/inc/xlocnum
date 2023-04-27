@@ -746,6 +746,7 @@ private:
         return _Base;
     }
 
+    template <int = 0> // TRANSITION, ABI
     static _Num_get_parse_result _Parse_fp_with_locale(
         char* const _Ac, const int _Max_sig_dig, _InIt& _First, _InIt& _Last, const locale& _Loc) {
         // get floating-point field from [_First, _Last) into _Ac
@@ -1032,6 +1033,9 @@ private:
     int __CLRCALL_OR_CDECL _Getffld(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _Iosbase, int* _Phexexp) const {
         // TRANSITION, ABI, unused now
         // get floating-point field from [_First, _Last) into _Ac
+        static constexpr char _Src[] = "0123456789-+Ee"; // TRANSITION, ABI, was implicitly dllexported
+        const char* volatile _Ptr    = &_Src[0];
+        (void) _Ptr;
         const int _Max_sig_dig   = (*_Phexexp == _ENABLE_V2_BEHAVIOR ? _MAX_SIG_DIG_V2 : _MAX_SIG_DIG_V1);
         const auto _Parse_result = _Parse_fp_with_locale(_Ac, _Max_sig_dig, _First, _Last, _Iosbase.getloc());
         if (_Parse_result._Base == 0 || _Parse_result._Bad_grouping) { // TRANSITION, ABI, old behavior
@@ -1047,6 +1051,9 @@ private:
     int __CLRCALL_OR_CDECL _Getffldx(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _Iosbase, int* _Phexexp) const {
         // TRANSITION, ABI, unused now
         // get floating-point field from [_First, _Last) into _Ac
+        static constexpr char _Src[] = "0123456789ABCDEFabcdef-+XxPp"; // TRANSITION, ABI, was implicitly dllexported
+        const char* volatile _Ptr    = &_Src[0];
+        (void) _Ptr;
         const int _Max_sig_dig   = (*_Phexexp == _ENABLE_V2_BEHAVIOR ? _MAX_SIG_DIG_V2 : _MAX_SIG_DIG_V1);
         const auto _Parse_result = _Parse_fp_with_locale(_Ac, _Max_sig_dig, _First, _Last, _Iosbase.getloc());
         if (_Parse_result._Base == 0 || _Parse_result._Bad_grouping) { // TRANSITION, ABI, old behavior
