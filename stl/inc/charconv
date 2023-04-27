@@ -1745,26 +1745,24 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
         }
     }
 
+    // In hexadecimal floating constants, the exponent is a base 2 exponent. The exponent adjustment computed during
+    // parsing has the same base as the mantissa (so, 16 for hexadecimal floating constants).
+    // We therefore need to scale the base 16 multiplier to base 2 by multiplying by log2(16):
+    const int _Exponent_adjustment_multiplier{_Is_hexadecimal ? 4 : 1};
+
     // And then _Exponent and _Exponent_adjustment are either both non-negative or both non-positive.
     // So we can detect out-of-range cases directly.
     if (_Exponent > _Maximum_temporary_decimal_exponent
-        || _Exponent_adjustment
-               > (_Is_hexadecimal ? _Maximum_temporary_decimal_exponent / 4 : _Maximum_temporary_decimal_exponent)) {
+        || _Exponent_adjustment > _Maximum_temporary_decimal_exponent / _Exponent_adjustment_multiplier) {
         _Assemble_floating_point_infinity(_Fp_string._Myis_negative, _Value);
         return {_Next, errc::result_out_of_range}; // Overflow example: "1e+9999"
     }
 
     if (_Exponent < _Minimum_temporary_decimal_exponent
-        || _Exponent_adjustment
-               < (_Is_hexadecimal ? _Minimum_temporary_decimal_exponent / 4 : _Minimum_temporary_decimal_exponent)) {
+        || _Exponent_adjustment < _Minimum_temporary_decimal_exponent / _Exponent_adjustment_multiplier) {
         _Assemble_floating_point_zero(_Fp_string._Myis_negative, _Value);
         return {_Next, errc::result_out_of_range}; // Underflow example: "1e-9999"
     }
-
-    // In hexadecimal floating constants, the exponent is a base 2 exponent. The exponent adjustment computed during
-    // parsing has the same base as the mantissa (so, 16 for hexadecimal floating constants).
-    // We therefore need to scale the base 16 multiplier to base 2 by multiplying by log2(16):
-    const int _Exponent_adjustment_multiplier{_Is_hexadecimal ? 4 : 1};
 
     _Exponent += _Exponent_adjustment * _Exponent_adjustment_multiplier;
 
