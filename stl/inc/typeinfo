@@ -22,9 +22,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #include <vcruntime_typeinfo.h>
 
-extern "C++" { // attach declarations to the global module, see N4944 [module.unit]/7
-_EXPORT_STD class type_info; // for typeid, MSVC looks for type_info in the global namespace
-} // extern "C++"
+_EXPORT_STD extern "C++" class type_info; // for typeid, MSVC looks for type_info in the global namespace
 
 _STD_BEGIN
 
