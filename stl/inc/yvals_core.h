@@ -273,8 +273,6 @@
 //     (span always provides this behavior)
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
 // P2281R1 Clarifying Range Adaptor Objects
-// P2286R8 Formatting Ranges
-//     (only the '?' format specifier for strings and characters)
 // P2325R3 Views Should Not Be Required To Be Default Constructible
 // P2328R1 join_view Should Join All views Of ranges
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
@@ -339,6 +337,8 @@
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
 // P2278R4 cbegin Should Always Return A Constant Iterator
+// P2286R8 Formatting Ranges
+//     (only the '?' format specifier for strings and characters)
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
