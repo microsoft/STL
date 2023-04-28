@@ -986,10 +986,6 @@ public:
 #if _HAS_CXX23
     _NODISCARD _Decode_result<char> _Decode(const char* const _First, const char* const _Last, char32_t& _Val) const {
         _STL_INTERNAL_CHECK(_First < _Last);
-        if (*_First == '\0') {
-            _Val = U'\0';
-            return {_First + 1, true};
-        }
 
         if constexpr (_Is_ordinary_literal_encoding_utf8()) {
             return _Decode_utf(_First, _Last, _Val);
@@ -1000,6 +996,11 @@ public:
             _Val = _Wide;
             return {_First + 1, _Res._Len != 0};
         } else {
+            if (*_First == '\0') {
+                _Val = U'\0';
+                return {_First + 1, true};
+            }
+
             wchar_t _Wide;
             mbstate_t _St{};
             const auto _Len   = static_cast<size_t>(_Last - _First);
