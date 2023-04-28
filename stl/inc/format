@@ -2585,9 +2585,6 @@ _NODISCARD _OutputIt _Write_integral(
     _OutputIt _Out, _Integral _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write_escaped(_OutputIt _Out, basic_string_view<_CharT> _Value, char _Delim);
-
-template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Write_escaped(
     _OutputIt _Out, basic_string_view<_CharT> _Value, _Basic_format_specs<_CharT> _Specs, char _Delim);
 
