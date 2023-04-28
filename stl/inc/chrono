@@ -1578,16 +1578,23 @@ namespace chrono {
             "N4885 [time.hms.overview]/2 mandates Duration to be a specialization of chrono::duration.");
 
         static constexpr unsigned int fractional_width = [] {
-            auto _Num           = _Duration::period::num;
-            constexpr auto _Den = _Duration::period::den;
             // Returns the number of fractional digits of _Num / _Den in the range [0, 18].
             // If it can't be represented, 6 is returned.
             // Example: _Fractional_width(1, 8) would return 3 for 0.125.
-            _STL_ASSERT(_Num > 0 && _Den > 0, "Numerator and denominator can't be less than 1.");
-            unsigned int _Result = 0;
-            for (; _Num % _Den != 0 && _Result < 19; _Num = _Num % _Den * 10, ++_Result) {
+            auto _Den = _Duration::period::den;
+            _STL_ASSERT(_Duration::period::num > 0 && _Den > 0, "Numerator and denominator can't be less than 1.");
+            unsigned int _Power_of_2_in_den = 0u;
+            unsigned int _Power_of_5_in_den = 0u;
+            for (; _Den % 2 == 0; _Den /= 2, ++_Power_of_2_in_den) {
             }
-            return _Result == 19 ? 6 : _Result;
+            for (; _Den % 5 == 0; _Den /= 5, ++_Power_of_5_in_den) {
+            }
+
+            if (_Den != 1) {
+                return 6u;
+            }
+            const auto _Result = (_STD max)(_Power_of_2_in_den, _Power_of_5_in_den);
+            return _Result > 18u ? 6u : _Result;
         }();
         using precision =
             duration<common_type_t<typename _Duration::rep, seconds::rep>, ratio<1, _Pow10(fractional_width)>>;
@@ -4945,8 +4952,8 @@ namespace chrono {
     }
 
     template <class _Duration>
-    _NODISCARD constexpr hh_mm_ss<_Duration> _Hh_mm_ss_part_underflow_to_zero(const _Duration& _Val) {
-        return hh_mm_ss<_Duration>{_Remove_duration_part<days>(_Val)};
+    _NODISCARD constexpr auto _Hh_mm_ss_part_underflow_to_zero(const _Duration& _Val) {
+        return hh_mm_ss<common_type_t<days, _Duration>>{_Remove_duration_part<days>(_Val)};
     }
 
     template <unsigned int _Fractional_width, class _CharT, class _Traits, class _Precision>
