@@ -2328,6 +2328,9 @@ using _Fmt_wit = back_insert_iterator<_Fmt_buffer<wchar_t>>;
 _EXPORT_STD using format_context  = basic_format_context<_Fmt_it, char>;
 _EXPORT_STD using wformat_context = basic_format_context<_Fmt_wit, wchar_t>;
 
+#if _HAS_CXX23
+inline namespace __p2286 {
+#endif // _HAS_CXX23
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, monostate) {
     _STL_INTERNAL_CHECK(false);
@@ -3485,6 +3488,9 @@ struct _Format_handler {
         return _First;
     }
 };
+#if _HAS_CXX23
+} // inline namespace __p2286
+#endif // _HAS_CXX23
 
 // Generic formatter definition, the deleted default constructor
 // makes it "disabled" as per N4928 [format.formatter.spec]/5
@@ -3495,6 +3501,9 @@ struct formatter {
     formatter operator=(const formatter&) = delete;
 };
 
+#if _HAS_CXX23
+inline namespace __p2286 {
+#endif // _HAS_CXX23
 template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
 struct _Formatter_base {
     using _Pc = basic_format_parse_context<_CharT>;
@@ -3530,6 +3539,9 @@ struct _Formatter_base {
 private:
     _Dynamic_format_specs<_CharT> _Specs;
 };
+#if _HAS_CXX23
+} // inline namespace __p2286
+#endif // _HAS_CXX23
 
 #define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType) \
     template <_Format_supported_charT _CharT>   \
@@ -3624,6 +3636,9 @@ _NODISCARD auto make_wformat_args(_Args&&... _Vals) {
     return _Format_arg_store<wformat_context, _Args...>{_Vals...};
 }
 
+#if _HAS_CXX23
+inline namespace __p2286 {
+#endif // _HAS_CXX23
 _EXPORT_STD template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _Args) {
     // Make `_Parse_format_string` type-dependent to defer instantiation:
@@ -3759,6 +3774,9 @@ _EXPORT_STD template <class... _Types>
 _NODISCARD wstring format(const locale& _Loc, const wformat_string<_Types...> _Fmt, _Types&&... _Args) {
     return _STD vformat(_Loc, _Fmt.get(), _STD make_wformat_args(_Args...));
 }
+#if _HAS_CXX23
+} // inline namespace __p2286
+#endif // _HAS_CXX23
 
 _EXPORT_STD template <class _OutputIt>
 struct format_to_n_result {
@@ -3766,6 +3784,9 @@ struct format_to_n_result {
     iter_difference_t<_OutputIt> size;
 };
 
+#if _HAS_CXX23
+inline namespace __p2286 {
+#endif // _HAS_CXX23
 _EXPORT_STD template <output_iterator<const char&> _OutputIt, class... _Types>
 format_to_n_result<_OutputIt> format_to_n(
     _OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const format_string<_Types...> _Fmt, _Types&&... _Args) {
@@ -3827,6 +3848,8 @@ _NODISCARD size_t formatted_size(const locale& _Loc, const wformat_string<_Types
 }
 
 #if _HAS_CXX23
+} // inline namespace __p2286
+
 enum class _Add_newline : bool { _Nope, _Yes };
 
 _NODISCARD inline string _Unescape_braces(const _Add_newline _Add_nl, const string_view _Old_str) {
