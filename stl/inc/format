@@ -979,6 +979,7 @@ public:
             }
         }
     }
+#if _HAS_CXX23
     _NODISCARD _Decode_result<char> _Decode(const char* const _First, const char* const _Last, char32_t& _Val) const {
         _STL_INTERNAL_CHECK(_First < _Last);
         if (*_First == '\0') {
@@ -1007,6 +1008,7 @@ public:
             }
         }
     }
+#endif // _HAS_CXX23
 };
 
 template <bool _Statically_Utf8>
@@ -1023,10 +1025,12 @@ public:
         _STL_INTERNAL_CHECK(_Next - _First <= 2);
         return _Is_usv ? static_cast<int>(_Next - _First) : -1;
     }
+#if _HAS_CXX23
     _NODISCARD constexpr _Decode_result<wchar_t> _Decode(
         const wchar_t* const _First, const wchar_t* const _Last, char32_t& _Val) const noexcept {
         return _Decode_utf(_First, _Last, _Val);
     }
+#endif // _HAS_CXX23
 };
 
 template <class _CharT>
@@ -1652,7 +1656,17 @@ public:
             _Throw_format_error("Invalid type specification.");
         }
         const char _Narrow_type = static_cast<char>(_Type);
-        enum class _Presentation_type_category { _Default, _Integer, _Floating, _String, _Pointer, _Char, _Escape };
+        enum class _Presentation_type_category {
+            _Default,
+            _Integer,
+            _Floating,
+            _String,
+            _Pointer,
+            _Char,
+#if _HAS_CXX23
+            _Escape,
+#endif // _HAS_CXX23
+        };
         auto _Cat = _Presentation_type_category::_Default;
         switch (_Narrow_type) {
         case '\0':
@@ -1712,7 +1726,10 @@ public:
             }
 
             if (_Cat != _Presentation_type_category::_Char && _Cat != _Presentation_type_category::_Integer
-                && _Cat != _Presentation_type_category::_Escape) {
+#if _HAS_CXX23
+                && _Cat != _Presentation_type_category::_Escape
+#endif // _HAS_CXX23
+            ) {
                 if constexpr (is_same_v<_CharT, char>) {
                     _Throw_format_error("Invalid presentation type for char");
                 } else {
@@ -1749,7 +1766,11 @@ public:
                 _Cat = _Presentation_type_category::_String;
             }
 
-            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Escape) {
+            if (_Cat != _Presentation_type_category::_String
+#if _HAS_CXX23
+                && _Cat != _Presentation_type_category::_Escape
+#endif // _HAS_CXX23
+            ) {
                 _Throw_format_error("Invalid presentation type for string");
             }
             break;
@@ -2584,9 +2605,11 @@ template <class _CharT, class _OutputIt, integral _Integral>
 _NODISCARD _OutputIt _Write_integral(
     _OutputIt _Out, _Integral _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
 
+#if _HAS_CXX23
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Write_escaped(
     _OutputIt _Out, basic_string_view<_CharT> _Value, _Basic_format_specs<_CharT> _Specs, char _Delim);
+#endif // _HAS_CXX23
 
 template <class _CharT, class _OutputIt, integral _Integral>
     requires (!_CharT_or_bool<_Integral, _CharT>)
@@ -2761,9 +2784,11 @@ _NODISCARD _OutputIt _Fmt_write(
 
     _STL_INTERNAL_CHECK(_Specs._Precision == -1);
 
+#if _HAS_CXX23
     if (_Specs._Type == '?') {
         return _Write_escaped(_STD move(_Out), basic_string_view<_CharT>{&_Value, 1}, _Specs, '\'');
     }
+#endif // _HAS_CXX23
 
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{&_Value, 1}, _Specs, _Locale);
 }
@@ -3181,6 +3206,7 @@ _NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const
 
 #define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
 
+#if _HAS_CXX23
 _NODISCARD constexpr bool _Is_printable(char32_t _Val) {
     return __printable_property_data._Get_property_for_codepoint(_Val) == __printable_property_values::_Yes_value;
 }
@@ -3292,6 +3318,7 @@ _NODISCARD _OutputIt _Write_escaped(
         return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Temp.data(), _Last});
     });
 }
+#endif // _HAS_CXX23
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
@@ -3301,9 +3328,11 @@ _NODISCARD _OutputIt _Fmt_write(
     _STL_INTERNAL_CHECK(!_Specs._Alt);
     _STL_INTERNAL_CHECK(!_Specs._Leading_zero);
 
+#if _HAS_CXX23
     if (_Specs._Type == '?') {
         return _Write_escaped(_STD move(_Out), _Value, _Specs, '"');
     }
+#endif // _HAS_CXX23
 
     if (_Specs._Precision < 0 && _Specs._Width <= 0) {
         return _Fmt_write(_STD move(_Out), _Value);
