@@ -173,6 +173,8 @@ template <class _CharT>
 struct _Decode_result {
     const _CharT* _Next_ptr;
     bool _Is_unicode_scalar_value; // Also _Is_usv below, see https://www.unicode.org/glossary/#unicode_scalar_value
+    // _Is_unicode_scalar_value is also used for non-Unicode encodings, to indicate that the input can be converted to
+    // Unicode.
 };
 
 // _Decode_utf decodes UTF-8 or UTF-16 encoded unsigned char or wchar_t strings respectively
