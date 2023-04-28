@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <exception>
 #include <optional>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -109,7 +111,26 @@ constexpr bool test() {
     return true;
 }
 
+template <class T>
+void test_gh_3667() {
+    // GH-3667 <optional>: Throwing transformers will cause the program to terminate
+    class unique_exception : public exception {};
+
+    try {
+        optional<T> opt(in_place);
+        opt.transform([](const T&) -> T { throw unique_exception{}; });
+    } catch (const unique_exception&) {
+        return;
+    } catch (...) {
+        assert(false); // shouldn't terminate or reach here
+    }
+    assert(false); // shouldn't terminate or reach here
+}
+
 int main() {
     test();
     static_assert(test());
+
+    test_gh_3667<int>(); // trivial destructor
+    test_gh_3667<string>(); // non-trivial destructor
 }
