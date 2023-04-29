@@ -7313,8 +7313,11 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 #endif // __clang__
     {
         if constexpr (!_Signed_integer_like<_Int>) {
-            _Out = static_cast<_Int>(_Left * _Right);
-            return _Left != 0 && _Right > (numeric_limits<_Int>::max)() / _Left;
+            const bool _Overflow = _Left != 0 && _Right > (numeric_limits<_Int>::max)() / _Left;
+            if (!_Overflow) {
+                _Out = static_cast<_Int>(_Left * _Right);
+            }
+            return _Overflow;
         } else {
             // vvv Based on llvm::MulOverflow vvv
             // https://github.com/llvm/llvm-project/blob/88e5206/llvm/include/llvm/Support/MathExtras.h#L725-L750
@@ -7325,9 +7328,11 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
             // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             //
             //===----------------------------------------------------------------------===//
-            using _UInt          = _Make_unsigned_like_t<_Int>;
-            const _UInt _ULeft   = _Left < 0 ? (0 - static_cast<_UInt>(_Left)) : static_cast<_UInt>(_Left);
-            const _UInt _URight  = _Right < 0 ? (0 - static_cast<_UInt>(_Right)) : static_cast<_UInt>(_Right);
+            using _UInt = _Make_unsigned_like_t<_Int>;
+            const _UInt _ULeft =
+                static_cast<_UInt>(_Left < 0 ? (0 - static_cast<_UInt>(_Left)) : static_cast<_UInt>(_Left));
+            const _UInt _URight =
+                static_cast<_UInt>(_Right < 0 ? (0 - static_cast<_UInt>(_Right)) : static_cast<_UInt>(_Right));
             const _UInt _UResult = static_cast<_UInt>(_ULeft * _URight);
 
             const bool _Negative = (_Left < 0) != (_Right < 0);
