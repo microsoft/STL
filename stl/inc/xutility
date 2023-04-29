@@ -14,6 +14,10 @@
 #include <cstdlib>
 #include <cstring>
 
+#if _HAS_CXX23
+#include <limits>
+#endif // _HAS_CXX23
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -7279,6 +7283,69 @@ _NODISCARD constexpr bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
 #if _HAS_CXX17
 _EXPORT_STD struct monostate {};
 #endif // _HAS_CXX17
+
+#if _HAS_CXX23
+template <_Integer_like _Int>
+_NODISCARD constexpr bool _Add_overflow(const _Int _Left, const _Int _Right, _Int& _Out) {
+#ifdef __clang__
+    if constexpr (integral<_Int>) {
+        return __builtin_add_overflow(_Left, _Right, &_Out);
+    } else
+#endif // __clang__
+    {
+        if constexpr (!_Signed_integer_like<_Int>) {
+            _Out = static_cast<_Int>(_Left + _Right);
+            return _Out < _Left || _Out < _Right;
+        } else {
+            using _UInt = _Make_unsigned_like_t<_Int>;
+            _Out        = static_cast<_Int>(static_cast<_UInt>(_Left) + static_cast<_UInt>(_Right));
+            return (_Left > 0 && _Right > 0 && _Out <= 0) || (_Left < 0 && _Right < 0 && _Out >= 0);
+        }
+    }
+}
+
+template <_Integer_like _Int>
+_NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _Int& _Out) {
+#ifdef __clang__
+    if constexpr (integral<_Int>) {
+        return __builtin_mul_overflow(_Left, _Right, &_Out);
+    } else
+#endif // __clang__
+    {
+        if constexpr (!_Signed_integer_like<_Int>) {
+            _Out = static_cast<_Int>(_Left * _Right);
+            return _Left != 0 && _Right > (numeric_limits<_Int>::max)() / _Left;
+        } else {
+            // vvv Based on llvm::MulOverflow vvv
+            // https://github.com/llvm/llvm-project/blob/88e5206/llvm/include/llvm/Support/MathExtras.h#L725-L750
+            //===----------------------------------------------------------------------===//
+            //
+            // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+            // See https://llvm.org/LICENSE.txt for license information.
+            // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+            //
+            //===----------------------------------------------------------------------===//
+            using _UInt          = _Make_unsigned_like_t<_Int>;
+            const _UInt _ULeft   = _Left < 0 ? (0 - static_cast<_UInt>(_Left)) : static_cast<_UInt>(_Left);
+            const _UInt _URight  = _Right < 0 ? (0 - static_cast<_UInt>(_Right)) : static_cast<_UInt>(_Right);
+            const _UInt _UResult = static_cast<_UInt>(_ULeft * _URight);
+
+            const bool _Negative = (_Left < 0) != (_Right < 0);
+            _Out                 = static_cast<_Int>(_Negative ? (0 - _UResult) : _UResult);
+            if (_ULeft == 0 || _URight == 0) {
+                return false;
+            }
+
+            if (_Negative) {
+                return _ULeft > (static_cast<_UInt>((numeric_limits<_Int>::max)()) + _UInt{1}) / _URight;
+            } else {
+                return _ULeft > static_cast<_UInt>((numeric_limits<_Int>::max)()) / _URight;
+            }
+            // ^^^ Based on llvm::MulOverflow ^^^
+        }
+    }
+}
+#endif // _HAS_CXX23
 
 _STD_END
 #pragma pop_macro("new")
