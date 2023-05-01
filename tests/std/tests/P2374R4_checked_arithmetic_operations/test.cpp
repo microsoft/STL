@@ -11,55 +11,55 @@ using namespace std;
 
 // Check MSVC-STL internal machinery
 
-template <class Int>
+template <class T>
 constexpr void check_add_overflow() {
-    constexpr bool is_int_signed = numeric_limits<Int>::is_signed;
-    Int out;
-    Int minval = numeric_limits<Int>::min();
-    Int maxval = numeric_limits<Int>::max();
+    constexpr bool is_T_signed = numeric_limits<T>::is_signed;
+    T out;
+    T minval = numeric_limits<T>::min();
+    T maxval = numeric_limits<T>::max();
 
-    assert(!_Add_overflow(Int{1}, Int{1}, out) && out == Int{2});
-    assert(!_Add_overflow(maxval, Int{0}, out) && out == maxval);
-    assert(!_Add_overflow(minval, maxval, out) && out == static_cast<Int>(-1));
-    assert(_Add_overflow(maxval, Int{1}, out));
-    assert(_Add_overflow(static_cast<Int>(maxval / 2), maxval, out));
-    assert(!_Add_overflow(static_cast<Int>(maxval / 2), static_cast<Int>(maxval / 2), out));
+    assert(!_Add_overflow(T{1}, T{1}, out) && out == T{2});
+    assert(!_Add_overflow(maxval, T{0}, out) && out == maxval);
+    assert(!_Add_overflow(minval, maxval, out) && out == static_cast<T>(-1));
+    assert(_Add_overflow(maxval, T{1}, out));
+    assert(_Add_overflow(static_cast<T>(maxval / 2), maxval, out));
+    assert(!_Add_overflow(static_cast<T>(maxval / 2), static_cast<T>(maxval / 2), out));
     assert(_Add_overflow(maxval, maxval, out));
 
-    if constexpr (is_int_signed) {
-        assert(!_Add_overflow(Int{1}, Int{-1}, out) && out == Int{0});
-        assert(_Add_overflow(minval, Int{-1}, out));
-        assert(_Add_overflow(Int{100}, Int{28}, out) == (sizeof(Int) == 1));
+    if constexpr (is_T_signed) {
+        assert(!_Add_overflow(T{1}, T{-1}, out) && out == T{0});
+        assert(_Add_overflow(minval, T{-1}, out));
+        assert(_Add_overflow(T{100}, T{28}, out) == (sizeof(T) == 1));
     } else {
-        assert(_Add_overflow(Int{200}, Int{56}, out) == (sizeof(Int) == 1));
+        assert(_Add_overflow(T{200}, T{56}, out) == (sizeof(T) == 1));
     }
 }
 
-template <class Int>
+template <class T>
 constexpr void check_mul_overflow() {
-    constexpr bool is_int_signed = numeric_limits<Int>::is_signed;
-    Int out;
-    Int minval = numeric_limits<Int>::min();
-    Int maxval = numeric_limits<Int>::max();
+    constexpr bool is_T_signed = numeric_limits<T>::is_signed;
+    T out;
+    T minval = numeric_limits<T>::min();
+    T maxval = numeric_limits<T>::max();
 
-    assert(!_Mul_overflow(Int{1}, Int{1}, out) && out == Int{1});
-    assert(!_Mul_overflow(maxval, Int{0}, out) && out == Int{0});
-    assert(!_Mul_overflow(maxval, Int{1}, out) && out == maxval);
+    assert(!_Mul_overflow(T{1}, T{1}, out) && out == T{1});
+    assert(!_Mul_overflow(maxval, T{0}, out) && out == T{0});
+    assert(!_Mul_overflow(maxval, T{1}, out) && out == maxval);
     assert(_Mul_overflow(maxval, maxval, out));
-    assert(_Mul_overflow(minval, maxval, out) == is_int_signed);
-    assert(!_Mul_overflow(static_cast<Int>(maxval / 2), Int{2}, out));
-    assert(_Mul_overflow(Int{0x77}, Int{0x78}, out) == (sizeof(Int) == 1));
+    assert(_Mul_overflow(minval, maxval, out) == is_T_signed);
+    assert(!_Mul_overflow(static_cast<T>(maxval / 2), T{2}, out));
+    assert(_Mul_overflow(T{0x77}, T{0x78}, out) == (sizeof(T) == 1));
 
-    if constexpr (is_int_signed) {
-        assert(_Mul_overflow(minval, Int{-1}, out));
-        assert(!_Mul_overflow(maxval, Int{-1}, out) && out == minval + 1);
+    if constexpr (is_T_signed) {
+        assert(_Mul_overflow(minval, T{-1}, out));
+        assert(!_Mul_overflow(maxval, T{-1}, out) && out == minval + 1);
     }
 }
 
-template <class Int>
+template <class T>
 constexpr void check_add_and_mul() {
-    check_add_overflow<Int>();
-    check_mul_overflow<Int>();
+    check_add_overflow<T>();
+    check_mul_overflow<T>();
 }
 
 constexpr bool test() {
