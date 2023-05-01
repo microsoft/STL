@@ -23,7 +23,8 @@ constexpr void check_add_overflow() {
     assert(!_Add_overflow(minval, maxval, out) && out == static_cast<T>(-1));
     assert(_Add_overflow(maxval, T{1}, out));
     assert(_Add_overflow(static_cast<T>(maxval / 2), maxval, out));
-    assert(!_Add_overflow(static_cast<T>(maxval / 2), static_cast<T>(maxval / 2), out));
+    assert(!_Add_overflow(static_cast<T>(maxval / 2), static_cast<T>(maxval / 2), out)
+           && out == static_cast<T>(maxval - 1));
     assert(_Add_overflow(maxval, maxval, out));
 
     if constexpr (is_T_signed) {
@@ -47,7 +48,7 @@ constexpr void check_mul_overflow() {
     assert(!_Mul_overflow(maxval, T{1}, out) && out == maxval);
     assert(_Mul_overflow(maxval, maxval, out));
     assert(_Mul_overflow(minval, maxval, out) == is_T_signed);
-    assert(!_Mul_overflow(static_cast<T>(maxval / 2), T{2}, out));
+    assert(!_Mul_overflow(static_cast<T>(maxval / 2), T{2}, out) && out == static_cast<T>(maxval - 1));
     assert(_Mul_overflow(T{0x77}, T{0x78}, out) == (sizeof(T) == 1));
 
     if constexpr (is_T_signed) {
