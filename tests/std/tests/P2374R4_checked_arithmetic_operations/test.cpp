@@ -15,8 +15,8 @@ template <class T>
 constexpr void check_add_overflow() {
     constexpr bool is_T_signed = numeric_limits<T>::is_signed;
     T out;
-    T minval = numeric_limits<T>::min();
-    T maxval = numeric_limits<T>::max();
+    const T minval = numeric_limits<T>::min();
+    const T maxval = numeric_limits<T>::max();
 
     assert(!_Add_overflow(T{1}, T{1}, out) && out == T{2});
     assert(!_Add_overflow(maxval, T{0}, out) && out == maxval);
@@ -39,8 +39,8 @@ template <class T>
 constexpr void check_mul_overflow() {
     constexpr bool is_T_signed = numeric_limits<T>::is_signed;
     T out;
-    T minval = numeric_limits<T>::min();
-    T maxval = numeric_limits<T>::max();
+    const T minval = numeric_limits<T>::min();
+    const T maxval = numeric_limits<T>::max();
 
     assert(!_Mul_overflow(T{1}, T{1}, out) && out == T{1});
     assert(!_Mul_overflow(maxval, T{0}, out) && out == T{0});
