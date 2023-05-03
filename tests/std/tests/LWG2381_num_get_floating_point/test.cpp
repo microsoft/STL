@@ -203,6 +203,56 @@ void test() {
         assert(str_instr.good());
     }
 
+    // "0\n" and its friends
+    {
+        v                = -1;
+        const char str[] = "0 ";
+        istringstream str_instr(str);
+        str_instr >> v;
+        assert(v == 0);
+        assert(str_instr.good());
+    }
+    {
+        v                = -1;
+        const char str[] = "+0 ";
+        istringstream str_instr(str);
+        str_instr >> v;
+        assert(v == 0);
+        assert(str_instr.good());
+    }
+    {
+        v                = -1;
+        const char str[] = "-0 ";
+        istringstream str_instr(str);
+        str_instr >> v;
+        assert(v == 0);
+        assert(str_instr.good());
+    }
+    {
+        v                = -1;
+        const char str[] = "0\n";
+        istringstream str_instr(str);
+        str_instr >> v;
+        assert(v == 0);
+        assert(str_instr.good());
+    }
+    {
+        v                = -1;
+        const char str[] = "+0\n";
+        istringstream str_instr(str);
+        str_instr >> v;
+        assert(v == 0);
+        assert(str_instr.good());
+    }
+    {
+        v                = -1;
+        const char str[] = "-0\n";
+        istringstream str_instr(str);
+        str_instr >> v;
+        assert(v == 0);
+        assert(str_instr.good());
+    }
+
     // Also test non-ending unlimited grouping
     instr.imbue(locale(locale(), new mid_zero_numpunct));
     {

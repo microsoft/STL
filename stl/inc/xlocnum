@@ -784,6 +784,7 @@ private:
         *_Ptr++ = '0'; // backstop carries from sticky bit
 
         bool _Parse_hex                = false;
+        bool _Seendigit                = false; // seen a digit in input
         char _Initial_dec_leading_zero = '\0';
         if (_First != _Last && *_First == _Zero_wc) {
             ++_First;
@@ -797,12 +798,12 @@ private:
                 ++_First; // discard 0x or 0X for further parsing
                 *_Ptr++ = 'x';
             } else {
+                _Seendigit = true;
                 ++_Initial_dec_leading_zero;
             }
         }
 
         bool _Has_unaccumulated_digits = false;
-        bool _Seendigit                = false; // seen a digit in input
         bool _Bad_grouping             = false;
         int _Significant               = 0; // number of significant digits
         ptrdiff_t _Power_of_rep_base   = 0; // power of 10 or 16
