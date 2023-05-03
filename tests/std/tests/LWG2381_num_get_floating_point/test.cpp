@@ -252,9 +252,15 @@ void test() {
         assert(v == 0);
         assert(str_instr.good());
     }
+}
 
-    // Also test non-ending unlimited grouping
+// Also test non-ending unlimited grouping for FP numbers
+template <class Flt, enable_if_t<is_floating_point_v<Flt>, int> = 0>
+void test_nonending_unlimited_grouping() {
+    const my_facet f(1);
+    ios instr(nullptr);
     instr.imbue(locale(locale(), new mid_zero_numpunct));
+    Flt v = 0;
     {
         v                     = -1;
         const char sep_str[]  = "17,2,9.0";
@@ -298,8 +304,8 @@ void test() {
 }
 
 // Also test non-ending unlimited grouping for integers
-template <class Integer>
-void test_int_grouping() {
+template <class Integer, enable_if_t<is_integral_v<Integer>, int> = 0>
+void test_nonending_unlimited_grouping() {
     const my_facet f(1);
     ios instr(nullptr);
     instr.imbue(locale(locale(), new mid_zero_numpunct));
@@ -353,7 +359,7 @@ void test_int_grouping() {
 
 // Also test GH-1582 <xlocnum>: "multiply by power of 10" logic is imprecise
 template <class Flt>
-void test_gh1582() {
+void test_gh_1582() {
     constexpr size_t digit_counts[]{200, 400, 800, 1600, 3200, 6400, 12800};
     for (const size_t n : digit_counts) {
         {
@@ -433,9 +439,8 @@ void test_gh1582() {
 
 // Also test GH-3375 <xlocnum>: Incorrect rounding when parsing long hexadecimal floating point numbers just above
 // midpoints
-// And GH-3376 <xlocnum>: Incorrect result when parsing 9.999999...
 template <class Flt>
-void test_gh3375_gh3376() {
+void test_gh_3375() {
     // Ensure long hexadecimal FP representations just above midpoints are correctly parsed.
     if (is_same_v<Flt, float>) {
         {
@@ -472,6 +477,11 @@ void test_gh3375_gh3376() {
             assert((ostringstream{} << hexfloat << x).str() == "-0x1.0000000000001p+0");
         }
     }
+}
+
+// Also test GH-3376 <xlocnum>: Incorrect result when parsing 9.999999...
+template <class Flt>
+void test_gh_3376() {
 
     // Ensure that "0.0999....999" is still correctly parsed.
     {
@@ -590,7 +600,7 @@ void test_gh3375_gh3376() {
 
 // Also test GH-3378: <xlocnum>: Incorrect rounding when parsing long floating point numbers just below midpoints
 template <class Flt>
-void test_gh3378() {
+void test_gh_3378() {
     {
         // just below 2^-1022 + 2^-1074 + 2^-1075
         istringstream stream(
@@ -677,22 +687,30 @@ int main() {
     test<double>();
     test<long double>();
 
-    test_int_grouping<unsigned int>();
-    test_int_grouping<long>();
-    test_int_grouping<unsigned long>();
-    test_int_grouping<long long>();
-    test_int_grouping<unsigned long long>();
+    test_nonending_unlimited_grouping<float>();
+    test_nonending_unlimited_grouping<double>();
+    test_nonending_unlimited_grouping<long double>();
 
-    test_gh1582<float>();
-    test_gh1582<double>();
-    test_gh1582<long double>();
+    test_nonending_unlimited_grouping<unsigned int>();
+    test_nonending_unlimited_grouping<long>();
+    test_nonending_unlimited_grouping<unsigned long>();
+    test_nonending_unlimited_grouping<long long>();
+    test_nonending_unlimited_grouping<unsigned long long>();
 
-    test_gh3375_gh3376<float>();
-    test_gh3375_gh3376<double>();
-    test_gh3375_gh3376<long double>();
+    test_gh_1582<float>();
+    test_gh_1582<double>();
+    test_gh_1582<long double>();
 
-    test_gh3378<double>();
-    test_gh3378<long double>();
+    test_gh_3375<float>();
+    test_gh_3375<double>();
+    test_gh_3375<long double>();
+
+    test_gh_3376<float>();
+    test_gh_3376<double>();
+    test_gh_3376<long double>();
+
+    test_gh_3378<double>();
+    test_gh_3378<long double>();
 
 #if _HAS_CXX17
     test_float_from_char_cases();
