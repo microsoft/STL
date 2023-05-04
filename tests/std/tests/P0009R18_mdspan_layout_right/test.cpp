@@ -367,18 +367,28 @@ constexpr void check_correctness() {
 }
 
 constexpr bool test() {
-    check_members(extents<short>{});
-    check_members(extents<int, 1, 2, 3>{});
-    check_members(extents<unsigned short, 4, 4>{});
-    check_members(extents<unsigned long long, dynamic_extent, 4, 5>{3});
+    // Check signed integers
+    check_members(extents<signed char>{});
     check_members(extents<short, dynamic_extent, dynamic_extent, 6>{4, 5});
+    check_members(extents<int, 1, 2, 3>{});
+    check_members(extents<long, 3, dynamic_extent, dynamic_extent>{3, 2, 1});
+    check_members(extents<long long, 9, dynamic_extent, 7>{4});
+
+    // Check unsigned integers
     check_members(extents<unsigned char, dynamic_extent, dynamic_extent, dynamic_extent>{3, 3, 3});
+    check_members(extents<unsigned short, 4, 4>{});
+    check_members(extents<unsigned, dynamic_extent, dynamic_extent, dynamic_extent>{7, 5, 3});
+    check_members(extents<unsigned long, 9, 6, dynamic_extent>{3});
+    check_members(extents<unsigned long long, dynamic_extent, 4, 5>{3});
+
+    // Other checks
     check_construction_from_other_right_mapping();
     check_construction_from_other_left_mapping();
     check_construction_from_other_stride_mapping();
     check_call_operator();
     check_comparisons();
     check_correctness();
+
     return true;
 }
 

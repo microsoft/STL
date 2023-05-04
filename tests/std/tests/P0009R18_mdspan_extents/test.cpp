@@ -292,16 +292,26 @@ constexpr void check_equality_operator() {
 }
 
 constexpr bool test() {
-    check_members<short>();
-    check_members<int, 1, 2, 3>();
-    check_members<unsigned short, 4, 4>();
-    check_members<unsigned long long, dynamic_extent, 4, 5>();
-    check_members<short, dynamic_extent, dynamic_extent, 6>();
-    check_members<unsigned char, dynamic_extent, dynamic_extent, dynamic_extent>();
+    // Check signed integers
+    check_members<signed char, 127>();
+    check_members<short, 4, dynamic_extent>();
+    check_members<int, 5, dynamic_extent, 5>();
+    check_members<long, dynamic_extent, dynamic_extent>();
+    check_members<long long, dynamic_extent, dynamic_extent, dynamic_extent, 8>();
+
+    // Check unsigned integers
+    check_members<unsigned char, dynamic_extent>();
+    check_members<unsigned short, dynamic_extent, 4>();
+    check_members<unsigned, dynamic_extent, 5, dynamic_extent>();
+    check_members<unsigned long, 7, 7>();
+    check_members<unsigned long long, 8, 8, 8, dynamic_extent>();
+
+    // Other checks
     check_construction_from_other_extents();
     check_construction_from_extents_pack();
     check_construction_from_array_and_span();
     check_equality_operator();
+
     return true;
 }
 
