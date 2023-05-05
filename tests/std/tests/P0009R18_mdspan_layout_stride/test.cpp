@@ -16,7 +16,7 @@ using namespace std;
 
 struct CmpEqual {
     template <class T, class U>
-    constexpr bool operator()(T t, U u) {
+    [[nodiscard]] constexpr bool operator()(T t, U u) const noexcept {
         return cmp_equal(t, u);
     }
 };

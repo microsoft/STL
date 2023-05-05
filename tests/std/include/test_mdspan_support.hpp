@@ -160,8 +160,8 @@ constexpr bool check_accessor_policy_requirements() {
 }
 
 namespace details {
-    template <size_t... Extents, class TestFn>
-    constexpr void check_members_with_mixed_extents(TestFn&& fn) {
+    template <size_t... Extents, class Fn>
+    constexpr void check_members_with_mixed_extents(Fn&& fn) {
         auto select_extent = [](size_t e) consteval {
             return e == std::dynamic_extent ? std::min<size_t>(sizeof...(Extents), 3) : e;
         };
@@ -181,28 +181,27 @@ namespace details {
         fn(std::extents<unsigned long long, Extents...>{select_extent(Extents)...});
     }
 
-    template <class TestFn, size_t... Seq>
-    constexpr void check_members_with_various_extents_impl(TestFn&& fn, std::index_sequence<Seq...>) {
+    template <class Fn, size_t... Seq>
+    constexpr void check_members_with_various_extents_impl(Fn&& fn, std::index_sequence<Seq...>) {
         auto static_or_dynamic = [](size_t i) consteval {
             return i == 0 ? std::dynamic_extent : std::min<size_t>(sizeof...(Seq), 3);
         };
 
-        // Check with mixed Extents
         if constexpr (sizeof...(Seq) <= 1) {
-            check_members_with_mixed_extents<>(std::forward<TestFn>(fn));
+            check_members_with_mixed_extents<>(std::forward<Fn>(fn));
         } else if constexpr (sizeof...(Seq) <= 2) {
-            (check_members_with_mixed_extents<static_or_dynamic(Seq)>(std::forward<TestFn>(fn)), ...);
+            (check_members_with_mixed_extents<static_or_dynamic(Seq)>(std::forward<Fn>(fn)), ...);
         } else if constexpr (sizeof...(Seq) <= 4) {
             (check_members_with_mixed_extents<static_or_dynamic(Seq & 0x2), static_or_dynamic(Seq & 0x1)>(
-                 std::forward<TestFn>(fn)),
+                 std::forward<Fn>(fn)),
                 ...);
         } else if constexpr (sizeof...(Seq) <= 8) {
             (check_members_with_mixed_extents<static_or_dynamic(Seq & 0x4), static_or_dynamic(Seq & 0x2),
-                 static_or_dynamic(Seq & 0x1)>(std::forward<TestFn>(fn)),
+                 static_or_dynamic(Seq & 0x1)>(std::forward<Fn>(fn)),
                 ...);
         } else if constexpr (sizeof...(Seq) <= 16) {
             (check_members_with_mixed_extents<static_or_dynamic(Seq & 0x8), static_or_dynamic(Seq & 0x4),
-                 static_or_dynamic(Seq & 0x2), static_or_dynamic(Seq & 0x1)>(std::forward<TestFn>(fn)),
+                 static_or_dynamic(Seq & 0x2), static_or_dynamic(Seq & 0x1)>(std::forward<Fn>(fn)),
                 ...);
         } else {
             static_assert(sizeof...(Seq) <= 16, "We don't need more testing.");
@@ -210,13 +209,13 @@ namespace details {
     }
 } // namespace details
 
-template <class TestFn>
-constexpr void check_members_with_various_extents(TestFn&& fn) {
-    details::check_members_with_various_extents_impl(std::forward<TestFn>(fn), std::make_index_sequence<1>{});
-    details::check_members_with_various_extents_impl(std::forward<TestFn>(fn), std::make_index_sequence<2>{});
-    details::check_members_with_various_extents_impl(std::forward<TestFn>(fn), std::make_index_sequence<4>{});
-    details::check_members_with_various_extents_impl(std::forward<TestFn>(fn), std::make_index_sequence<8>{});
+template <class Fn>
+constexpr void check_members_with_various_extents(Fn&& fn) {
+    details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<1>{});
+    details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<2>{});
+    details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<4>{});
+    details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<8>{});
 #if _PREFAST_ == 0
-    details::check_members_with_various_extents_impl(std::forward<TestFn>(fn), std::make_index_sequence<16>{});
+    details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<16>{});
 #endif // _PREFAST_ == 0
 }
