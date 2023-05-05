@@ -3,9 +3,11 @@
 
 #pragma once
 
+#include <algorithm>
 #include <concepts>
 #include <cstddef>
 #include <mdspan>
+#include <span>
 #include <type_traits>
 #include <utility>
 
@@ -155,4 +157,66 @@ constexpr bool check_accessor_policy_requirements() {
     static_assert(detail::CheckNestedTypesOfAccessorPolicy<A>);
     static_assert(detail::CheckMemberFunctionsOfAccessorPolicy<A>);
     return true;
+}
+
+namespace details {
+    template <size_t... Extents, class TestFn>
+    constexpr void check_members_with_mixed_extents(TestFn&& fn) {
+        auto select_extent = [](size_t e) consteval {
+            return e == std::dynamic_extent ? std::min<size_t>(sizeof...(Extents), 3) : e;
+        };
+
+        // Check signed integers
+        fn(std::extents<signed char, Extents...>{select_extent(Extents)...});
+        fn(std::extents<short, Extents...>{select_extent(Extents)...});
+        fn(std::extents<int, Extents...>{select_extent(Extents)...});
+        fn(std::extents<long, Extents...>{select_extent(Extents)...});
+        fn(std::extents<long long, Extents...>{select_extent(Extents)...});
+
+        // Check unsigned integers
+        fn(std::extents<unsigned char, Extents...>{select_extent(Extents)...});
+        fn(std::extents<unsigned short, Extents...>{select_extent(Extents)...});
+        fn(std::extents<unsigned, Extents...>{select_extent(Extents)...});
+        fn(std::extents<unsigned long, Extents...>{select_extent(Extents)...});
+        fn(std::extents<unsigned long long, Extents...>{select_extent(Extents)...});
+    }
+
+    template <class TestFn, size_t... Seq>
+    constexpr void check_members_with_various_extents_impl(TestFn&& fn, std::index_sequence<Seq...>) {
+        auto static_or_dynamic = [](size_t i) consteval {
+            return i == 0 ? std::dynamic_extent : std::min<size_t>(sizeof...(Seq), 3);
+        };
+
+        // Check with mixed Extents
+        if constexpr (sizeof...(Seq) <= 1) {
+            check_members_with_mixed_extents<>(std::forward<TestFn>(fn));
+        } else if constexpr (sizeof...(Seq) <= 2) {
+            (check_members_with_mixed_extents<static_or_dynamic(Seq)>(std::forward<TestFn>(fn)), ...);
+        } else if constexpr (sizeof...(Seq) <= 4) {
+            (check_members_with_mixed_extents<static_or_dynamic(Seq & 0x2), static_or_dynamic(Seq & 0x1)>(
+                 std::forward<TestFn>(fn)),
+                ...);
+        } else if constexpr (sizeof...(Seq) <= 8) {
+            (check_members_with_mixed_extents<static_or_dynamic(Seq & 0x4), static_or_dynamic(Seq & 0x2),
+                 static_or_dynamic(Seq & 0x1)>(std::forward<TestFn>(fn)),
+                ...);
+        } else if constexpr (sizeof...(Seq) <= 16) {
+            (check_members_with_mixed_extents<static_or_dynamic(Seq & 0x8), static_or_dynamic(Seq & 0x4),
+                 static_or_dynamic(Seq & 0x2), static_or_dynamic(Seq & 0x1)>(std::forward<TestFn>(fn)),
+                ...);
+        } else {
+            static_assert(sizeof...(Seq) <= 16, "We don't need more testing.");
+        }
+    }
+} // namespace details
+
+template <class TestFn>
+constexpr void check_members_with_various_extents(TestFn&& fn) {
+    details::check_members_with_various_extents_impl(std::forward<TestFn>(fn), std::make_index_sequence<1>{});
+    details::check_members_with_various_extents_impl(std::forward<TestFn>(fn), std::make_index_sequence<2>{});
+    details::check_members_with_various_extents_impl(std::forward<TestFn>(fn), std::make_index_sequence<4>{});
+    details::check_members_with_various_extents_impl(std::forward<TestFn>(fn), std::make_index_sequence<8>{});
+#if _PREFAST_ == 0
+    details::check_members_with_various_extents_impl(std::forward<TestFn>(fn), std::make_index_sequence<16>{});
+#endif // _PREFAST_ == 0
 }

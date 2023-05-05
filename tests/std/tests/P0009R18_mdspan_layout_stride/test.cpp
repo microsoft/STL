@@ -166,18 +166,18 @@ constexpr void check_members(extents<IndexType, Extents...> ext, const array<int
 
 constexpr bool test() {
     // Check signed integers
-    check_members(extents<signed char, 5>{5}, array<int, 1>{1});
-    check_members(extents<short, 6, 7>{}, array<int, 2>{1, 6});
-    check_members(extents<int, 3, dynamic_extent>{3}, array<int, 2>{1, 3});
-    check_members(extents<long, 4>{}, array<int, 1>{1});
-    check_members(extents<long long, 3, 2, dynamic_extent>{3}, array<int, 3>{1, 3, 6});
+    check_members(extents<signed char, 5>{5}, array{1});
+    check_members(extents<short, 6, 7>{}, array{1, 6});
+    check_members(extents<int, 3, dynamic_extent>{3}, array{1, 3});
+    check_members(extents<long, 4>{}, array{1});
+    check_members(extents<long long, 3, 2, dynamic_extent>{3}, array{1, 3, 6});
 
     // Check unsigned integers
-    check_members(extents<unsigned char, 5>{5}, array<int, 1>{1});
-    check_members(extents<unsigned short, 6, 7>{}, array<int, 2>{1, 6});
-    check_members(extents<unsigned, 3, dynamic_extent>{3}, array<int, 2>{1, 3});
-    check_members(extents<unsigned long, 4>{}, array<int, 1>{1});
-    check_members(extents<unsigned long long, 3, 2, dynamic_extent>{3}, array<int, 3>{1, 3, 6});
+    check_members(extents<unsigned char, 5>{5}, array{1});
+    check_members(extents<unsigned short, 6, 7>{}, array{1, 6});
+    check_members(extents<unsigned, 3, dynamic_extent>{3}, array{1, 3});
+    check_members(extents<unsigned long, 4>{}, array{1});
+    check_members(extents<unsigned long long, 3, 2, dynamic_extent>{3}, array{1, 3, 6});
 
     // TRANSITION more tests
     return true;

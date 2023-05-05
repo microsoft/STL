@@ -14,7 +14,7 @@
 using namespace std;
 
 template <class IndexType, size_t... Extents, size_t... Indices>
-constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index_sequence<Indices...>) {
+constexpr void check_members(const extents<IndexType, Extents...>& ext, index_sequence<Indices...>) {
     using Ext     = extents<IndexType, Extents...>;
     using Mapping = layout_left::mapping<Ext>;
 
@@ -142,11 +142,6 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
         assert(!(m != m));
         // Other tests are defined in 'check_comparisons' function
     }
-}
-
-template <class IndexType, size_t... Extents>
-constexpr void check_members(extents<IndexType, Extents...> ext) {
-    do_check_members<IndexType, Extents...>(ext, make_index_sequence<sizeof...(Extents)>{});
 }
 
 constexpr void check_construction_from_other_left_mapping() {
@@ -356,21 +351,10 @@ constexpr void check_correctness() {
 }
 
 constexpr bool test() {
-    // Check signed integers
-    check_members(extents<signed char, 5>{5});
-    check_members(extents<short>{});
-    check_members(extents<int, 1, 2, 3>{});
-    check_members(extents<long, dynamic_extent, dynamic_extent, 6>{4, 5});
-    check_members(extents<long long, dynamic_extent, dynamic_extent, 6>{4, 5});
-
-    // Check unsigned integers
-    check_members(extents<unsigned char, dynamic_extent, dynamic_extent, dynamic_extent>{3, 3, 3});
-    check_members(extents<unsigned short, 4, 4>{});
-    check_members(extents<unsigned, dynamic_extent, 4>{4, 4});
-    check_members(extents<unsigned long, 1, dynamic_extent, 3>{1, 2, 3});
-    check_members(extents<unsigned long long, dynamic_extent, 4, 5>{3});
-
-    // Other checks
+    check_members_with_various_extents(
+        []<class IndexType, size_t... Extents>(const extents<IndexType, Extents...>& ext) {
+            check_members(ext, make_index_sequence<sizeof...(Extents)>{});
+        });
     check_construction_from_other_left_mapping();
     check_construction_from_other_right_mapping();
     check_construction_from_other_stride_mapping();

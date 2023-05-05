@@ -15,7 +15,7 @@
 using namespace std;
 
 template <class IndexType, size_t... Extents, size_t... Indices>
-constexpr void do_check_members(index_sequence<Indices...>) {
+constexpr void check_members(index_sequence<Indices...>) {
     using Ext = extents<IndexType, Extents...>;
 
     // Each specialization of extents models regular and is trivially copyable
@@ -78,11 +78,6 @@ constexpr void do_check_members(index_sequence<Indices...>) {
         static_assert(is_nothrow_constructible_v<Ext2, decltype(s)>);
         // Other tests are defined in 'check_construction_from_array_and_span' function
     }
-}
-
-template <class IndexType, size_t... Extents>
-constexpr void check_members() {
-    do_check_members<IndexType, Extents...>(make_index_sequence<sizeof...(Extents)>{});
 }
 
 constexpr void check_construction_from_other_extents() {
@@ -292,21 +287,9 @@ constexpr void check_equality_operator() {
 }
 
 constexpr bool test() {
-    // Check signed integers
-    check_members<signed char, 127>();
-    check_members<short, 4, dynamic_extent>();
-    check_members<int, 5, dynamic_extent, 5>();
-    check_members<long, dynamic_extent, dynamic_extent>();
-    check_members<long long, dynamic_extent, dynamic_extent, dynamic_extent, 8>();
-
-    // Check unsigned integers
-    check_members<unsigned char, dynamic_extent>();
-    check_members<unsigned short, dynamic_extent, 4>();
-    check_members<unsigned, dynamic_extent, 5, dynamic_extent>();
-    check_members<unsigned long, 7, 7>();
-    check_members<unsigned long long, 8, 8, 8, dynamic_extent>();
-
-    // Other checks
+    check_members_with_various_extents([]<class IndexType, size_t... Extents>(const extents<IndexType, Extents...>&) {
+        check_members<IndexType, Extents...>(make_index_sequence<sizeof...(Extents)>{});
+    });
     check_construction_from_other_extents();
     check_construction_from_extents_pack();
     check_construction_from_array_and_span();
