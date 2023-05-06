@@ -239,6 +239,24 @@ inline void test_gh_3602() {
         std::atomic<std::weak_ptr<char>> awp{sp1};
         awp.wait(wp3);
     }
+    {
+        auto sp1    = std::make_shared<char>();
+        auto holder = [sp1] {};
+        auto sp2    = std::make_shared<decltype(holder)>(holder);
+        std::shared_ptr<char> sp3{sp2, sp1.get()};
+
+        std::atomic<std::shared_ptr<char>> asp{sp3};
+
+        std::thread t([&] {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            asp = sp1;
+            asp.notify_one();
+        });
+
+        asp.wait(sp3);
+
+        t.join();
+    }
 }
 
 inline void test_atomic_wait() {
