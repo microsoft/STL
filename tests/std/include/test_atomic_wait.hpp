@@ -218,7 +218,7 @@ struct with_padding_bits {
 };
 #pragma warning(pop)
 
-inline void test_gh_3602() {
+inline void test_gh_3602(__std_atomic_api_level level) {
     // GH-3602 std::atomic<std::shared_ptr>::wait does not seem to care about control block difference. Is this a bug?
     {
         auto sp1    = std::make_shared<char>();
@@ -240,26 +240,28 @@ inline void test_gh_3602() {
         awp.wait(wp3);
     }
     {
-        auto sp1    = std::make_shared<char>();
-        auto holder = [sp1] {};
-        auto sp2    = std::make_shared<decltype(holder)>(holder);
-        std::shared_ptr<char> sp3{sp2, sp1.get()};
+        if (level == __std_atomic_api_level::__has_wait_on_address) {
+            auto sp1    = std::make_shared<char>();
+            auto holder = [sp1] {};
+            auto sp2    = std::make_shared<decltype(holder)>(holder);
+            std::shared_ptr<char> sp3{sp2, sp1.get()};
 
-        std::atomic<std::shared_ptr<char>> asp{sp3};
+            std::atomic<std::shared_ptr<char>> asp{sp3};
 
-        std::thread t([&] {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            asp = sp1;
-            asp.notify_one();
-        });
+            std::thread t([&] {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                asp = sp1;
+                asp.notify_one();
+            });
 
-        asp.wait(sp3);
+            asp.wait(sp3);
 
-        t.join();
+            t.join();
+        }
     }
 }
 
-inline void test_atomic_wait() {
+inline void test_atomic_wait(__std_atomic_api_level level) {
     // wait for all the threads to be waiting; if this value is too small the test might be ineffective but should not
     // fail due to timing assumptions except where otherwise noted; if it is too large the test will only take longer
     // than necessary
@@ -350,5 +352,5 @@ inline void test_atomic_wait() {
 #endif // ^^^ !ARM ^^^
 #endif // __clang__, TRANSITION, LLVM-46685
 
-    test_gh_3602();
+    test_gh_3602(level);
 }
