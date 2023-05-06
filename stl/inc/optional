@@ -85,7 +85,7 @@ struct _Optional_destruct_base { // either contains a value of _Ty or is empty (
 #if _HAS_CXX23
     template <class _Fn, class _Ux>
     constexpr _Optional_destruct_base(_Construct_from_invoke_result_tag, _Fn&& _Func, _Ux&& _Arg) noexcept(
-        is_nothrow_constructible_v<_Ty, invoke_result_t<_Fn, _Ux>>)
+        noexcept(static_cast<_Ty>(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg)))))
         : _Value(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{true} {}
 #endif // _HAS_CXX23
 
@@ -118,7 +118,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
 #if _HAS_CXX23
     template <class _Fn, class _Ux>
     constexpr _Optional_destruct_base(_Construct_from_invoke_result_tag, _Fn&& _Func, _Ux&& _Arg) noexcept(
-        is_nothrow_constructible_v<_Ty, invoke_result_t<_Fn, _Ux>>)
+        noexcept(static_cast<_Ty>(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg)))))
         : _Value(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{true} {}
 #endif // _HAS_CXX23
 
@@ -277,7 +277,7 @@ public:
 #if _HAS_CXX23
     template <class _Fn, class _Ux>
     constexpr optional(_Construct_from_invoke_result_tag _Tag, _Fn&& _Func, _Ux&& _Arg) noexcept(
-        is_nothrow_constructible_v<_Ty, invoke_result_t<_Fn, _Ux>>)
+        noexcept(static_cast<_Ty>(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg)))))
         : _Mybase(_Tag, _STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg)) {}
 #endif // _HAS_CXX23
 

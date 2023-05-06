@@ -19,7 +19,7 @@ using namespace std;
 
 template <class UInt>
 void test_case_unsigned(const string& maxValue, const string& maxValuePlusOne) {
-    // See N4727 [facet.num.get.virtuals]/3.6
+    // See N4944 [facet.num.get.virtuals]/3.9
     // * "zero, if the conversion function does not convert the entire field"
     {
         istringstream src("-"s);
@@ -89,7 +89,7 @@ void test_case_unsigned(const string& maxValue, const string& maxValuePlusOne) {
 template <class Int>
 void test_case_signed(
     const string& minValueMinusOne, const string& minValue, const string& maxValue, const string& maxValuePlusOne) {
-    // See N4727 [facet.num.get.virtuals]/3.6
+    // See N4944 [facet.num.get.virtuals]/3.9
     // * "zero, if the conversion function does not convert the entire field"
     {
         istringstream src("-"s);
@@ -176,12 +176,12 @@ void test_case_signed(
 
 template <class Float>
 void test_case_float(const string& outOfRangeValue) {
-    // reals don't get any of the int special cases and always set 0 on failure
+    // reals don't get any of the int special cases and always have the converted value
     {
         istringstream src(outOfRangeValue);
         Float result = 17.49f;
         src >> result;
-        assert(result == static_cast<Float>(0));
+        assert(result == numeric_limits<Float>::infinity());
         assert(src.rdstate() == (ios_base::failbit | ios_base::eofbit));
     }
 
@@ -189,7 +189,7 @@ void test_case_float(const string& outOfRangeValue) {
         istringstream src("-" + outOfRangeValue);
         Float result = 17.49f;
         src >> result;
-        assert(result == static_cast<Float>(0));
+        assert(result == -numeric_limits<Float>::infinity());
         assert(src.rdstate() == (ios_base::failbit | ios_base::eofbit));
     }
 

@@ -937,6 +937,8 @@ void test_typeinfo() {
     const type_info& t3 = typeid(double);
     assert(t1 == t2);
     assert(t1 != t3);
+
+    assert(typeid(double).name() == "double"sv); // also test DevCom-10349749
 }
 
 void test_unordered_map() {
