@@ -300,6 +300,7 @@ void test_good_and_bad_grouping_pointer() {
 
         char buf[32];
         const auto written_end = of.put(buf, ostr, '\0', ptr);
+        *written_end           = '\0';
 
         void* p               = nullptr;
         ios_base::iostate err = instr.goodbit;
@@ -314,6 +315,7 @@ void test_good_and_bad_grouping_pointer() {
 
         char buf[32];
         const auto written_end = of.put(buf, ostr, '\0', ptr);
+        *written_end           = '\0';
 
         void* p               = nullptr;
         ios_base::iostate err = instr.goodbit;
