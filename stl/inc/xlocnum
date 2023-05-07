@@ -244,7 +244,10 @@ __PURE_APPDOMAIN_GLOBAL locale::id numpunct<_Elem>::id;
 #endif // !defined(_CRTBLD) || defined(CRTDLL2) || !defined(_DLL) || defined(_M_CEE_PURE)
 
 struct _Num_get_parse_result {
-    int8_t _Base; // 0 for parsing failure, otherwise 10 or 16
+    // For integers: negative values mean for parsing failure, while the "actual" base (used by _Getifld) is ~_Base.
+    // Otherwise, 0, 8, 10, or 16.
+    // For floating-point numbers: 0 for parsing failure, otherwise 10 or 16.
+    int8_t _Base;
     bool _Bad_grouping;
 };
 
@@ -362,20 +365,19 @@ protected:
             }
         } else { // get long value
             char _Ac[_MAX_INT_DIG];
-            const int _Base = _Getifld(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
-            if (_Ac[0] == '\0') { // Handle N4944 [facet.num.get.virtuals]/3.9:
-                                  //  "zero, if the conversion function does not convert the entire field."
-                                  // We should still do numeric conversion with bad digit separators, instead of
-                                  // setting 0, but we can't distinguish that from _Getifld's interface, and _Getifld's
-                                  // interface can't be changed as it is an exported function.
-                                  // TRANSITION, ABI: Fixing that when ABI allows is tracked by VSO-591516.
+            const auto _Parse_result =
+                _Parse_int_with_locale(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
+            if (_Parse_result._Base < 0) {
+                // N4944 [facet.num.get.virtuals]/3.9:
+                //  "zero, if the conversion function does not convert the entire field."
                 _Val   = false;
                 _State = ios_base::failbit;
             } else {
                 char* _Ep;
                 int _Errno;
-                const long _Ans = _CSTD _Stolx(_Ac, &_Ep, _Base, &_Errno); // convert
-                if (_Ep == _Ac || _Errno != 0) {
+                const long _Ans = _CSTD _Stolx(_Ac, &_Ep, _Parse_result._Base, &_Errno); // convert
+                if (_Ep == _Ac || _Errno != 0 // N4944 [facet.num.get.virtuals]/3
+                    || _Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtuals]/4
                     _Val   = true;
                     _State = ios_base::failbit;
                 } else {
@@ -398,8 +400,9 @@ protected:
         unsigned short& _Val) const { // get unsigned short from [_First, _Last) into _Val
         _Adl_verify_range(_First, _Last);
         char _Ac[_MAX_INT_DIG];
-        const int _Base = _Getifld(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
+        const auto _Parse_result =
+            _Parse_int_with_locale(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
+        if (_Parse_result._Base < 0) { // ditto "fails to convert the entire field"
             _State = ios_base::failbit;
             _Val   = 0;
         } else {
@@ -413,14 +416,18 @@ protected:
 
             char* _Ep;
             int _Errno;
-            const unsigned long _Tmp = _CSTD _Stoulx(_Digits, &_Ep, _Base, &_Errno); // convert
+            const unsigned long _Tmp = _CSTD _Stoulx(_Digits, &_Ep, _Parse_result._Base, &_Errno); // convert
             _Val                     = static_cast<unsigned short>(_Tmp);
-            if (_Ep == _Digits || _Errno != 0 || _Tmp > USHRT_MAX) {
+            if (_Ep == _Digits || _Errno != 0 || _Tmp > USHRT_MAX) { // N4944 [facet.num.get.virtuals]/3
                 _State = ios_base::failbit;
                 _Val   = USHRT_MAX;
             } else if (_Minus) { // C11 7.22.1.4/5:  If the subject sequence begins with a minus sign,
                                  // the value resulting from the conversion is negated (in the return type).
                 _Val = static_cast<unsigned short>(0 - _Val);
+            }
+
+            if (_Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtuals]/4
+                _State = ios_base::failbit;
             }
         }
 
@@ -445,15 +452,17 @@ protected:
         long& _Val) const { // get long from [_First, _Last) into _Val
         _Adl_verify_range(_First, _Last);
         char _Ac[_MAX_INT_DIG];
-        const int _Base = _Getifld(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
+        const auto _Parse_result =
+            _Parse_int_with_locale(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
+        if (_Parse_result._Base < 0) { // ditto "fails to convert the entire field"
             _State = ios_base::failbit;
             _Val   = 0;
         } else {
             char* _Ep;
             int _Errno;
-            _Val = _CSTD _Stolx(_Ac, &_Ep, _Base, &_Errno); // convert
-            if (_Ep == _Ac || _Errno != 0) {
+            _Val = _CSTD _Stolx(_Ac, &_Ep, _Parse_result._Base, &_Errno); // convert
+            if (_Ep == _Ac || _Errno != 0 // N4944 [facet.num.get.virtuals]/3
+                || _Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtuals]/4
                 _State = ios_base::failbit;
             }
         }
@@ -469,15 +478,17 @@ protected:
         unsigned long& _Val) const { // get unsigned long from [_First, _Last) into _Val
         _Adl_verify_range(_First, _Last);
         char _Ac[_MAX_INT_DIG];
-        const int _Base = _Getifld(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
+        const auto _Parse_result =
+            _Parse_int_with_locale(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
+        if (_Parse_result._Base < 0) { // ditto "fails to convert the entire field"
             _State = ios_base::failbit;
             _Val   = 0;
         } else {
             char* _Ep;
             int _Errno;
-            _Val = _CSTD _Stoulx(_Ac, &_Ep, _Base, &_Errno); // convert
-            if (_Ep == _Ac || _Errno != 0) {
+            _Val = _CSTD _Stoulx(_Ac, &_Ep, _Parse_result._Base, &_Errno); // convert
+            if (_Ep == _Ac || _Errno != 0 // N4944 [facet.num.get.virtuals]/3
+                || _Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtuals]/4
                 _State = ios_base::failbit;
             }
         }
@@ -493,15 +504,17 @@ protected:
         long long& _Val) const { // get long long from [_First, _Last) into _Val
         _Adl_verify_range(_First, _Last);
         char _Ac[_MAX_INT_DIG];
-        const int _Base = _Getifld(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc());
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
+        const auto _Parse_result =
+            _Parse_int_with_locale(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
+        if (_Parse_result._Base < 0) { // ditto "fails to convert the entire field"
             _State = ios_base::failbit;
             _Val   = 0;
         } else {
             char* _Ep;
             int _Errno;
-            _Val = _CSTD _Stollx(_Ac, &_Ep, _Base, &_Errno); // convert
-            if (_Ep == _Ac || _Errno != 0) {
+            _Val = _CSTD _Stollx(_Ac, &_Ep, _Parse_result._Base, &_Errno); // convert
+            if (_Ep == _Ac || _Errno != 0 // N4944 [facet.num.get.virtuals]/3
+                || _Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtuals]/4
                 _State = ios_base::failbit;
             }
         }
@@ -517,15 +530,17 @@ protected:
         unsigned long long& _Val) const { // get unsigned long long from [_First, _Last) into _Val
         _Adl_verify_range(_First, _Last);
         char _Ac[_MAX_INT_DIG];
-        const int _Base = _Getifld(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc());
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
+        const auto _Parse_result =
+            _Parse_int_with_locale(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
+        if (_Parse_result._Base < 0) { // ditto "fails to convert the entire field"
             _State = ios_base::failbit;
             _Val   = 0;
         } else {
             int _Errno;
             char* _Ep;
-            _Val = _CSTD _Stoullx(_Ac, &_Ep, _Base, &_Errno); // convert
-            if (_Ep == _Ac || _Errno != 0) {
+            _Val = _CSTD _Stoullx(_Ac, &_Ep, _Parse_result._Base, &_Errno); // convert
+            if (_Ep == _Ac || _Errno != 0 // N4944 [facet.num.get.virtuals]/3
+                || _Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtuals]/4
                 _State = ios_base::failbit;
             }
         }
@@ -606,21 +621,26 @@ protected:
         void*& _Val) const { // get void pointer from [_First, _Last) into _Val
         _Adl_verify_range(_First, _Last);
         char _Ac[_MAX_INT_DIG];
-        const int _Base = _Getifld(_Ac, _First, _Last, ios_base::hex, _Iosbase.getloc()); // gather field
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
+        const auto _Parse_result =
+            _Parse_int_with_locale(_Ac, _First, _Last, ios_base::hex, _Iosbase.getloc()); // gather field
+        if (_Parse_result._Base < 0) { // ditto "fails to convert the entire field"
             _State = ios_base::failbit;
             _Val   = nullptr;
         } else {
             int _Errno;
             char* _Ep;
 #ifdef _WIN64
-            _Val = reinterpret_cast<void*>(_CSTD _Stoullx(_Ac, &_Ep, _Base, &_Errno));
+            _Val = reinterpret_cast<void*>(_CSTD _Stoullx(_Ac, &_Ep, _Parse_result._Base, &_Errno));
 #else // ^^^ _WIN64 / !_WIN64 vvv
-            _Val = reinterpret_cast<void*>(_CSTD _Stoulx(_Ac, &_Ep, _Base, &_Errno));
+            _Val = reinterpret_cast<void*>(_CSTD _Stoulx(_Ac, &_Ep, _Parse_result._Base, &_Errno));
 #endif // _WIN64
-            if (_Ep == _Ac || _Errno != 0) {
+            if (_Ep == _Ac || _Errno != 0) { // N4944 [facet.num.get.virtuals]/3
                 _State = ios_base::failbit;
                 _Val   = nullptr;
+            }
+
+            if (_Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtuals]/4
+                _State = ios_base::failbit;
             }
         }
 
@@ -632,8 +652,10 @@ protected:
     }
 
 private:
-    int __CLRCALL_OR_CDECL _Getifld(char* _Ac, _InIt& _First, _InIt& _Last, ios_base::fmtflags _Basefield,
-        const locale& _Loc) const { // get integer field from [_First, _Last) into _Ac
+    template <int = 0> // TRANSITON, ABI
+    static _Num_get_parse_result _Parse_int_with_locale(
+        char* const _Ac, _InIt& _First, _InIt& _Last, ios_base::fmtflags _Basefield, const locale& _Loc) {
+        // get integer field from [_First, _Last) into _Ac
         const auto& _Punct_fac  = _STD use_facet<numpunct<_Elem>>(_Loc);
         const string _Grouping  = _Punct_fac.grouping();
         const _Elem _Kseparator = _Grouping.empty() ? _Elem{} : _Punct_fac.thousands_sep();
@@ -644,6 +666,16 @@ private:
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Loc);
         _Ctype_fac.widen(_STD begin(_Src), _STD end(_Src), _Atoms);
+
+        bool _Bad_grouping = false;
+
+        // skip leading separators before the sign
+        if (_Kseparator != _Elem{}) {
+            while (_First != _Last && *_First == _Kseparator) {
+                ++_First;
+                _Bad_grouping = true;
+            }
+        }
 
         char* _Ptr = _Ac;
 
@@ -657,9 +689,17 @@ private:
             }
         }
 
+        // skip leading separator before digits
+        if (_Kseparator != _Elem{}) {
+            while (_First != _Last && *_First == _Kseparator) {
+                ++_First;
+                _Bad_grouping = true;
+            }
+        }
+
         _Basefield &= ios_base::basefield;
 
-        int _Base;
+        int8_t _Base;
         if (_Basefield == ios_base::oct) {
             _Base = 8;
         } else if (_Basefield == ios_base::hex) {
@@ -703,8 +743,10 @@ private:
                 if (_Groups[_Groups_arr_idx] != CHAR_MAX) {
                     ++_Groups[_Groups_arr_idx];
                 }
-            } else if (_Groups[_Groups_arr_idx] == '\0' || _Kseparator == _Elem{} || *_First != _Kseparator) {
+            } else if (_Kseparator == _Elem{} || *_First != _Kseparator) {
                 break; // not a group separator, done
+            } else if (_Groups[_Groups_arr_idx] == '\0') {
+                _Bad_grouping = true; // adjacent separators, fail
             } else { // add a new group to _Groups string
                 _Groups.push_back('\0');
                 ++_Groups_arr_idx;
@@ -715,13 +757,21 @@ private:
             if (_Groups[_Groups_arr_idx] > '\0') {
                 ++_Groups_arr_idx; // add trailing group to group count
             } else {
-                _Seendigit = false; // trailing separator, fail
+                _Bad_grouping = true; // trailing separator, fail
+            }
+        }
+
+        // skip trailing separators
+        if (_Kseparator != _Elem{}) {
+            while (_First != _Last && *_First == _Kseparator) {
+                ++_First;
+                _Bad_grouping = true;
             }
         }
 
         const char* _Grouping_iter      = _Grouping.data();
-        const char* const _Grouping_end = _Grouping.data() + _Grouping.size();
-        for (char _Current_grouping_count = '\0'; _Seendigit && _Groups_arr_idx > 0;) {
+        const char* const _Grouping_end = _Grouping_iter + _Grouping.size();
+        for (char _Current_grouping_count = '\0'; _Seendigit && !_Bad_grouping && _Groups_arr_idx > 0;) {
             if (_Grouping_iter != _Grouping_end) { // keep the last value when _Grouping is exhausted
                 _Current_grouping_count = *_Grouping_iter; // if _Grouping is empty, '\0' is used
                 ++_Grouping_iter;
@@ -731,19 +781,21 @@ private:
             if ((_Current_grouping_count > '\0' && _Current_grouping_count != CHAR_MAX)
                 && ((_Groups_arr_idx > 0 && _Groups[_Groups_arr_idx] != _Current_grouping_count)
                     || (_Groups_arr_idx == 0 && _Groups[_Groups_arr_idx] > _Current_grouping_count))) {
-                _Seendigit = false; // bad group size, fail
+                _Bad_grouping = true; // bad group size, fail
             }
             // group size okay, advance to next test
         }
 
-        if (_Seendigit && !_Nonzero) {
+        if (!_Seendigit) {
+            return {static_cast<int8_t>(~_Base), false};
+        }
+
+        if (!_Nonzero) {
             *_Ptr++ = '0'; // zero field, replace stripped zero(s)
-        } else if (!_Seendigit) {
-            _Ptr = _Ac; // roll back pointer to indicate failure
         }
 
         *_Ptr = '\0';
-        return _Base;
+        return {_Base, _Bad_grouping};
     }
 
     template <int = 0> // TRANSITION, ABI
@@ -771,6 +823,20 @@ private:
         const _Elem _Negative_sign = _Atoms[_Offset_neg_sign];
         const _Elem _Zero_wc       = _Atoms[0];
 
+        const auto& _Punct_fac  = _STD use_facet<numpunct<_Elem>>(_Loc);
+        const string _Grouping  = _Punct_fac.grouping();
+        const _Elem _Kseparator = _Grouping.empty() ? _Elem{} : _Punct_fac.thousands_sep();
+
+        bool _Bad_grouping = false;
+
+        // skip leading separators before the sign
+        if (!_Grouping.empty()) {
+            while (_First != _Last && *_First == _Kseparator) {
+                ++_First;
+                _Bad_grouping = true;
+            }
+        }
+
         if (_First != _Last) {
             if (*_First == _Positive_sign) { // gather plus sign
                 *_Ptr++ = '+';
@@ -790,7 +856,7 @@ private:
             ++_First;
             if (_First == _Last) { // "0" only
                 *_Ptr = '\0';
-                return {10, false};
+                return {10, _Bad_grouping};
             }
 
             if (*_First == _Atoms[_Offset_lower_x] || *_First == _Atoms[_Offset_upper_x]) { // 0x or 0X
@@ -804,13 +870,10 @@ private:
         }
 
         bool _Has_unaccumulated_digits = false;
-        bool _Bad_grouping             = false;
         int _Significant               = 0; // number of significant digits
         ptrdiff_t _Power_of_rep_base   = 0; // power of 10 or 16
 
         const size_t _Offset_digit_end = _Parse_hex ? _Offset_hex_digit_end : _Offset_dec_digit_end;
-        const auto& _Punct_fac         = _STD use_facet<numpunct<_Elem>>(_Loc);
-        const string _Grouping         = _Punct_fac.grouping();
         if (_Grouping.empty()) {
             for (size_t _Idx; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
                  _Seendigit = true, (void) ++_First) {
@@ -825,7 +888,12 @@ private:
                 }
             }
         } else {
-            const _Elem _Kseparator = _Punct_fac.thousands_sep();
+            // skip leading separators before digits
+            while (_First != _Last && *_First == _Kseparator) {
+                ++_First;
+                _Bad_grouping = true;
+            }
+
             string _Groups(1, _Initial_dec_leading_zero); // Groups are detected in the reversed order of _Groups.
             size_t _Groups_arr_idx = 0;
 
@@ -846,8 +914,10 @@ private:
                     if (_Groups[_Groups_arr_idx] != CHAR_MAX) {
                         ++_Groups[_Groups_arr_idx];
                     }
-                } else if (_Groups[_Groups_arr_idx] == '\0' || *_First != _Kseparator) {
+                } else if (*_First != _Kseparator) {
                     break; // not a group separator, done
+                } else if (_Groups[_Groups_arr_idx] == '\0') {
+                    _Bad_grouping = true; // adjacent separators, fail
                 } else { // add a new group to _Groups string
                     _Groups.push_back('\0');
                     ++_Groups_arr_idx;
@@ -860,6 +930,12 @@ private:
                 } else {
                     _Bad_grouping = true; // trailing separator, fail
                 }
+            }
+
+            // skip trailing separators
+            while (_First != _Last && *_First == _Kseparator) {
+                ++_First;
+                _Bad_grouping = true;
             }
 
             const char* _Grouping_iter      = _Grouping.data();
@@ -1027,12 +1103,27 @@ private:
         return {static_cast<int8_t>(_Parse_hex ? 16 : 10), _Bad_grouping};
     }
 
+    // TRANSITION, ABI, unused now, tracked by VSO-591516.
+    int __CLRCALL_OR_CDECL _Getifld(
+        char* _Ac, _InIt& _First, _InIt& _Last, ios_base::fmtflags _Basefield, const locale& _Loc) const {
+        // get integer field from [_First, _Last) into _Ac
+        static constexpr char _Src[] = "0123456789ABCDEFabcdef-+Xx"; // TRANSITION, ABI, was implicitly dllexported
+        const char* volatile _Ptr    = _Src;
+        (void) _Ptr;
+
+        const auto _Parse_result = _Parse_int_with_locale(_Ac, _First, _Last, _Basefield, _Loc);
+        if (_Parse_result._Base < 0 || _Parse_result._Bad_grouping) { // TRANSITION, ABI, old behavior
+            *_Ac = '\0';
+        }
+        return _Parse_result._Base < 0 ? ~_Parse_result._Base : _Parse_result._Base;
+    }
+
 // TRANSITION, ABI: Sentinel value used by num_get::do_get()
 // to enable correct "V2" behavior in _Getffld() and _Getffldx()
 #define _ENABLE_V2_BEHAVIOR 1000000000
 
+    // TRANSITION, ABI, unused now
     int __CLRCALL_OR_CDECL _Getffld(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _Iosbase, int* _Phexexp) const {
-        // TRANSITION, ABI, unused now
         // get floating-point field from [_First, _Last) into _Ac
         static constexpr char _Src[] = "0123456789-+Ee"; // TRANSITION, ABI, was implicitly dllexported
         const char* volatile _Ptr    = &_Src[0];
@@ -1049,8 +1140,8 @@ private:
         return 0; // power of 10 multiplier, unnecessary now
     }
 
+    // TRANSITION, ABI, unused now
     int __CLRCALL_OR_CDECL _Getffldx(char* _Ac, _InIt& _First, _InIt& _Last, ios_base& _Iosbase, int* _Phexexp) const {
-        // TRANSITION, ABI, unused now
         // get floating-point field from [_First, _Last) into _Ac
         static constexpr char _Src[] = "0123456789ABCDEFabcdef-+XxPp"; // TRANSITION, ABI, was implicitly dllexported
         const char* volatile _Ptr    = &_Src[0];
