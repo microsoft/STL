@@ -205,7 +205,7 @@ namespace filesystem {
     template <class _Conversion>
     _NODISCARD wstring _Convert_stringoid_to_wide(const wstring_view _Input, _Conversion) {
         static_assert(
-            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
+            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4944 [depr.fs.path.factory]/1");
         return wstring{_Input};
     }
 
@@ -222,14 +222,14 @@ namespace filesystem {
     template <class _Conversion>
     _NODISCARD wstring _Convert_stringoid_to_wide(const u16string_view _Input, _Conversion) {
         static_assert(
-            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
+            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4944 [depr.fs.path.factory]/1");
         return wstring{_Input.data(), _Input.data() + _Input.size()};
     }
 
     template <class _Conversion>
     _NODISCARD wstring _Convert_stringoid_to_wide(const u32string_view _Input, _Conversion) {
         static_assert(
-            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
+            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4944 [depr.fs.path.factory]/1");
         return _Convert_utf32_to_wide(_Input);
     }
 
@@ -327,7 +327,7 @@ namespace filesystem {
                 return _Output;
 
             case codecvt_base::partial:
-                // N4810 28.4.1.4.2 [locale.codecvt.virtuals]/5:
+                // N4944 [locale.codecvt.virtuals]/5:
                 // "A return value of partial, if (from_next == from_end), indicates that either the
                 // destination sequence has not absorbed all the available destination elements,
                 // or that additional source elements are needed before another destination element can be produced."
@@ -653,7 +653,7 @@ namespace filesystem {
         template <class _InIt>
         path(_InIt _First, _InIt _Last, format = auto_format) : _Text(_Convert_range_to_wide(_First, _Last)) {
             // format has no meaning for this implementation, as the generic grammar is acceptable as a native path
-            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
+            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4944 [fs.req]/3");
         }
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
@@ -662,15 +662,14 @@ namespace filesystem {
             // format has no meaning for this implementation, as the generic grammar is acceptable as a native path
             using _Stringoid = decltype(_Stringoid_from_Source(_Source));
             static_assert(is_same_v<typename _Stringoid::value_type, char>,
-                "invalid value_type, see N4810 29.11.7.4.1 [fs.path.construct]/6");
+                "invalid value_type, see N4944 [fs.path.construct]/5");
         }
 
         template <class _InIt>
         path(_InIt _First, _InIt _Last, const locale& _Loc, format = auto_format)
             : _Text(_Convert_stringoid_with_locale_to_wide(_Stringoid_from_range(_First, _Last), _Loc)) {
             // format has no meaning for this implementation, as the generic grammar is acceptable as a native path
-            static_assert(is_same_v<_Iter_value_t<_InIt>, char>,
-                "invalid value_type, see N4810 29.11.7.4.1 [fs.path.construct]/6");
+            static_assert(is_same_v<_Iter_value_t<_InIt>, char>, "invalid value_type, see N4944 [fs.path.construct]/5");
         }
 
         path& operator=(string_type&& _Source) noexcept /* strengthened */ {
@@ -699,7 +698,7 @@ namespace filesystem {
 
         template <class _InIt>
         path& assign(_InIt _First, _InIt _Last) { // set native() to [_First, _Last)
-            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
+            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4944 [fs.req]/3");
             _Text = _Convert_range_to_wide(_First, _Last);
             return *this;
         }
@@ -782,7 +781,7 @@ namespace filesystem {
 
         template <class _InIt>
         path& append(_InIt _First, _InIt _Last) {
-            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
+            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4944 [fs.req]/3");
             return operator/=(path{_First, _Last});
         }
 
@@ -831,7 +830,7 @@ namespace filesystem {
 
         template <class _InIt>
         path& concat(_InIt _First, _InIt _Last) { // concat [_First, _Last) to native()
-            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
+            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4944 [fs.req]/3");
             return operator+=(path{_First, _Last}._Text);
         }
 
@@ -1189,7 +1188,7 @@ namespace filesystem {
             constexpr wstring_view _Dot     = L"."sv;
             constexpr wstring_view _Dot_dot = L".."sv;
 
-            // N4810 29.11.7.1 [fs.path.generic]/6:
+            // N4944 [fs.path.generic]/6:
             // "Normalization of a generic format pathname means:"
 
             // "1. If the path is empty, stop."
@@ -1328,7 +1327,7 @@ namespace filesystem {
             // extract a path from a stream
             basic_string<_Elem, _Traits> _Tmp;
             _Istr >> _STD quoted(_Tmp);
-            _Path = _STD move(_Tmp); // obvious optimization not depicted in N4810 29.11.7.6 [fs.path.io]/3
+            _Path = _STD move(_Tmp); // obvious optimization not depicted in N4944 [fs.path.io]/3
             return _Istr;
         }
 
@@ -1380,7 +1379,7 @@ namespace filesystem {
     _EXPORT_STD template <class _InIt>
     _CXX20_DEPRECATE_U8PATH _NODISCARD path u8path(_InIt _First, _InIt _Last) {
         // construct a path from UTF-8 [_First, _Last)
-        static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
+        static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4944 [fs.req]/3");
         return path{_Convert_range_to_wide(_First, _Last, _Utf8_conversion{})};
     }
 
@@ -1388,7 +1387,7 @@ namespace filesystem {
     class _Path_iterator { // almost bidirectional iterator for path
     public:
         // Note that the path::iterator can be decremented and can be dereferenced multiple times,
-        // but doesn't actually meet the forward iterator requirements. See N4810 29.11.7.5 [fs.path.itr]/2:
+        // but doesn't actually meet the forward iterator requirements. See N4944 [fs.path.itr]/2:
         //  ... for dereferenceable iterators a and b of type path::iterator with a == b, there is no requirement
         //  that *a and *b are bound to the same object
         // This means that you can't give path::iterator to std::reverse_iterator, as operator* there ends
@@ -1678,7 +1677,7 @@ namespace filesystem {
             return _Result;
         }
 
-        { // Skip root-name and root-directory elements, N4810 29.11.7.5 [fs.path.itr]/4.1, 4.2
+        { // Skip root-name and root-directory elements, N4944 [fs.path.itr]/4.1, 4.2
             ptrdiff_t _B_dist = _STD distance(_Base_begin, _B_iter);
 
             const ptrdiff_t _Base_root_dist =
@@ -1695,8 +1694,8 @@ namespace filesystem {
         for (; _B_iter != _Base_end; ++_B_iter) {
             const path& _Elem = *_B_iter;
 
-            if (_Elem.empty()) { // skip empty element, N4810 29.11.7.5 [fs.path.itr]/4.4
-            } else if (_Elem == _Dot) { // skip filename elements that are dot, N4810 29.11.7.4.11 [fs.path.gen]/4.2
+            if (_Elem.empty()) { // skip empty element, N4944 [fs.path.itr]/4.4
+            } else if (_Elem == _Dot) { // skip filename elements that are dot, N4944 [fs.path.gen]/3.6
             } else if (_Elem == _Dot_dot) {
                 --_Num;
             } else {
@@ -4172,7 +4171,7 @@ namespace filesystem {
     _EXPORT_STD _NODISCARD inline path proximate(const path& _Path, error_code& _Ec) {
         // eventually calls GetFinalPathNameByHandleW
         const path _Base = _STD filesystem::current_path(_Ec);
-        // N4810 29.11.14.27 [fs.op.proximate]/1 incorrectly calls current_path()
+        // N4944 [fs.op.proximate]/1 incorrectly calls current_path()
         if (_Ec) {
             return {};
         }
@@ -4208,7 +4207,7 @@ namespace filesystem {
     _EXPORT_STD _NODISCARD inline path relative(const path& _Path, error_code& _Ec) {
         // eventually calls GetFinalPathNameByHandleW
         const path _Base = _STD filesystem::current_path(_Ec);
-        // N4810 29.11.14.29 [fs.op.relative]/1 incorrectly calls current_path()
+        // N4944 [fs.op.relative]/1 incorrectly calls current_path()
         if (_Ec) {
             return {};
         }
@@ -4219,7 +4218,7 @@ namespace filesystem {
     inline void _Copy_impl(
         const directory_entry& _From, const path& _To, const copy_options _Options, error_code& _Ec) {
         // implement copy, does not clear _Ec for callers
-        // Standard quotes herein are relative to N4810
+        // Standard quotes herein are relative to N4944
         // The following parts of LWG-3057 are implemented:
         // * guarding equivalent() from nonexistent to
         // * replacing unspecified recursion prevention tag with copy_options::directories_only

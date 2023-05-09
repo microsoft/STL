@@ -290,7 +290,7 @@ public:
         }
 
         // TRANSITION: `_Retrieved` should be assigned before `_Exception` is thrown so that a `future::get`
-        // that throws a stored exception invalidates the future (N4928 [futures.unique.future]/17)
+        // that throws a stored exception invalidates the future (N4944 [futures.unique.future]/17)
         _Retrieved = true;
         _Maybe_run_deferred_function(_Lock);
         while (!_Ready) {
@@ -361,7 +361,7 @@ public:
         }
 
         _STL_ASSERT(_Exc != nullptr, "promise<T>::set_exception/set_exception_at_thread_exit called with a null "
-                                     "std::exception_ptr, which is invalid per N4928 [futures.promise]/20");
+                                     "std::exception_ptr, which is invalid per N4944 [futures.promise]/20");
         _Exception = _Exc;
         _Do_notify(_Lock, _At_thread_exit);
     }
@@ -879,7 +879,7 @@ private:
 
 public:
     static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
-        "T in future<T> must meet the Cpp17Destructible requirements (N4928 [futures.unique.future]/4).");
+        "T in future<T> must meet the Cpp17Destructible requirements (N4944 [futures.unique.future]/4).");
 
     future() = default;
 
@@ -967,7 +967,7 @@ private:
 
 public:
     static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
-        "T in shared_future<T> must meet the Cpp17Destructible requirements (N4928 [futures.shared.future]/4).");
+        "T in shared_future<T> must meet the Cpp17Destructible requirements (N4944 [futures.shared.future]/4).");
 
     shared_future() = default;
 
@@ -1106,7 +1106,7 @@ _EXPORT_STD template <class _Ty>
 class promise { // class that defines an asynchronous provider that holds a value
 public:
     static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
-        "T in promise<T> must meet the Cpp17Destructible requirements (N4928 [futures.promise]/1).");
+        "T in promise<T> must meet the Cpp17Destructible requirements (N4944 [futures.promise]/1).");
 
     promise() : _MyPromise(new _Associated_state<_Ty>) {}
 

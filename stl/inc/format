@@ -3285,7 +3285,7 @@ struct _Format_handler {
 };
 
 // Generic formatter definition, the deleted default constructor
-// makes it "disabled" as per N4928 [format.formatter.spec]/5
+// makes it "disabled" as per N4944 [format.formatter.spec]/5
 _EXPORT_STD template <class _Ty, class _CharT>
 struct formatter {
     formatter()                           = delete;

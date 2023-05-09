@@ -1575,7 +1575,7 @@ namespace chrono {
     class hh_mm_ss {
     public:
         static_assert(_Is_duration_v<_Duration>,
-            "N4885 [time.hms.overview]/2 mandates Duration to be a specialization of chrono::duration.");
+            "N4944 [time.hms.overview]/2 mandates Duration to be a specialization of chrono::duration.");
 
         static constexpr unsigned int fractional_width = [] {
             // Returns the number of fractional digits of _Num / _Den in the range [0, 18].
@@ -2321,7 +2321,7 @@ namespace chrono {
 
         auto _My_tzdb = static_cast<tzdb_list*>(__std_calloc_crt(1, sizeof(tzdb_list)));
         if (_My_tzdb == nullptr) {
-            _Xruntime_error("bad allocation"); // not bad_alloc, see N4878 [time.zone.db.access]/4
+            _Xruntime_error("bad allocation"); // not bad_alloc, see N4944 [time.zone.db.access]/4
         }
 
         _TRY_BEGIN
@@ -2399,7 +2399,7 @@ namespace chrono {
     class zoned_time {
     private:
         static_assert(_Is_duration_v<_Duration>,
-            "N4885 [time.zone.zonedtime.overview]/2 mandates Duration to be a specialization of chrono::duration.");
+            "N4944 [time.zone.zonedtime.overview]/2 mandates Duration to be a specialization of chrono::duration.");
 
         using _Traits = zoned_traits<_TimeZonePtr>;
 
@@ -2907,7 +2907,7 @@ namespace chrono {
         _NODISCARD auto operator()(const time_point<_SourceClock, _Duration>& _Time) const
             noexcept(noexcept(_SourceClock::to_sys(_Time))) /* strengthened */ {
             static_assert(_Is_time_point_for_clock<decltype(_SourceClock::to_sys(_Time)), system_clock>,
-                "N4885 [time.clock.cast.sys]/2: Mandates: SourceClock::to_sys(t) returns a sys_time<Duration>");
+                "N4944 [time.clock.cast.sys]/2: Mandates: SourceClock::to_sys(t) returns a sys_time<Duration>");
             return _SourceClock::to_sys(_Time);
         }
     };
@@ -2919,7 +2919,7 @@ namespace chrono {
         _NODISCARD auto operator()(const sys_time<_Duration>& _Time) const
             noexcept(noexcept(_DestClock::from_sys(_Time))) /* strengthened */ {
             static_assert(_Is_time_point_for_clock<decltype(_DestClock::from_sys(_Time)), _DestClock>,
-                "N4885 [time.clock.cast.sys]/5: Mandates: DestClock::from_sys(t) returns a "
+                "N4944 [time.clock.cast.sys]/5: Mandates: DestClock::from_sys(t) returns a "
                 "time_point<DestClock, Duration>");
             return _DestClock::from_sys(_Time);
         }
@@ -2935,7 +2935,7 @@ namespace chrono {
         _NODISCARD auto operator()(const time_point<_SourceClock, _Duration>& _Time) const
             noexcept(noexcept(_SourceClock::to_utc(_Time))) /* strengthened */ {
             static_assert(_Is_time_point_for_clock<decltype(_SourceClock::to_utc(_Time)), utc_clock>,
-                "N4885 [time.clock.cast.utc]/2: Mandates: SourceClock::to_utc(t) returns a utc_time<Duration>");
+                "N4944 [time.clock.cast.utc]/2: Mandates: SourceClock::to_utc(t) returns a utc_time<Duration>");
             return _SourceClock::to_utc(_Time);
         }
     };
@@ -2947,7 +2947,7 @@ namespace chrono {
         _NODISCARD auto operator()(const utc_time<_Duration>& _Time) const
             noexcept(noexcept(_DestClock::from_utc(_Time))) /* strengthened */ {
             static_assert(_Is_time_point_for_clock<decltype(_DestClock::from_utc(_Time)), _DestClock>,
-                "N4885 [time.clock.cast.utc]/5: Mandates: DestClock::from_utc(t) returns a "
+                "N4944 [time.clock.cast.utc]/5: Mandates: DestClock::from_utc(t) returns a "
                 "time_point<DestClock, Duration>");
             return _DestClock::from_utc(_Time);
         }
@@ -3052,11 +3052,11 @@ namespace chrono {
         } else if constexpr (_Strat == _Clock_cast_strategy::_Two_step_ambiguous) {
             static_assert(_Always_false<_Duration>,
                 "A two-step clock time conversion is required to be unique, "
-                "either through utc_clock or system_clock, but not both (N4878 [time.clock.cast.fn]/2).");
+                "either through utc_clock or system_clock, but not both (N4944 [time.clock.cast.fn]/2).");
         } else if constexpr (_Strat == _Clock_cast_strategy::_Three_step_ambiguous) {
             static_assert(_Always_false<_Duration>,
                 "A three-step clock time conversion is required to be unique, "
-                "either utc-to-system or system-to-utc, but not both (N4878 [time.clock.cast.fn]/2).");
+                "either utc-to-system or system-to-utc, but not both (N4944 [time.clock.cast.fn]/2).");
         } else {
             static_assert(_Always_false<_Duration>, "should be unreachable");
         }
@@ -4581,7 +4581,7 @@ namespace chrono {
         minutes* _Offset = nullptr) {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
-        // *_Offset is not subtracted from local_time, see N4885 [time.clock.local]/4.
+        // *_Offset is not subtracted from local_time, see N4944 [time.clock.local]/4.
         _Time._Utc_offset.reset();
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
@@ -4933,8 +4933,8 @@ namespace chrono {
         template <class _CharT, class _Traits>
         friend basic_ostream<_CharT, _Traits>& operator<<(
             basic_ostream<_CharT, _Traits>& _Os, const _Local_time_format_t& _Val) {
-            // Doesn't appear in the Standard, but allowed by N4885 [global.functions]/2.
-            // Implements N4885 [time.zone.zonedtime.nonmembers]/2 for zoned_time.
+            // Doesn't appear in the Standard, but allowed by N4944 [global.functions]/2.
+            // Implements N4944 [time.zone.zonedtime.nonmembers]/2 for zoned_time.
             return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%F %T %Z}"), _Val);
         }
     };
@@ -5311,13 +5311,13 @@ namespace chrono {
                 if constexpr (!treat_as_floating_point_v<typename _Ty::rep>) {
                     if (_Specs._Precision != -1) {
                         _THROW(format_error("Precision specification invalid for chrono::duration type with "
-                                            "integral representation type, see N4885 [time.format]/1."));
+                                            "integral representation type, see N4944 [time.format]/1."));
                     }
                 }
             } else {
                 if (_Specs._Precision != -1) {
                     _THROW(format_error("Precision specification invalid for non-chrono::duration type, "
-                                        "see N4885 [time.format]/1."));
+                                        "see N4944 [time.format]/1."));
                 }
             }
 
@@ -5431,7 +5431,7 @@ namespace chrono {
 
             _Stream.imbue(_Specs._Localized ? _FormatCtx.locale() : locale::classic());
             if (_Specs._Chrono_specs_list.empty()) {
-                _Stream << _Val; // N4885 [time.format]/6
+                _Stream << _Val; // N4944 [time.format]/7
             } else {
                 if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                     if (_Val.is_negative()) {

@@ -638,7 +638,7 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 
-// The following order matches N4910 28.7.1 [cmath.syn].
+// The following order matches N4944 [cmath.syn].
 _GENERIC_MATH1(acos)
 _GENERIC_MATH1(asin)
 _GENERIC_MATH1(atan)
@@ -1348,7 +1348,7 @@ _EXPORT_STD _NODISCARD inline long double hypot(const long double _Dx, const lon
 _EXPORT_STD template <class _Ty1, class _Ty2, class _Ty3,
     enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>
 _NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) {
-    // N4910 [cmath.syn]/2 "Sufficient additional overloads"
+    // N4944 [cmath.syn]/3 "Sufficient additional overloads"
     // Note that this template is selected by overload resolution only when at least one
     // argument is double/long double/integral but not all three are double or long double.
     using _Common      = _Common_float_type_t<_Ty1, _Common_float_type_t<_Ty2, _Ty3>>; // TRANSITION, fold expressions

@@ -21,7 +21,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 // We don't support any optional extended floating-point types, but we do need to provide an empty `namespace std`.
-// We don't need to `export` it for modules, as the other headers will implicitly do so (N4928 [module.interface]/2.1).
+// We don't need to `export` it for modules, as the other headers will implicitly do so (N4944 [module.interface]/2.1).
 _STD_BEGIN
 _STD_END
 
