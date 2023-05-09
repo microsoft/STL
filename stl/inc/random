@@ -52,7 +52,7 @@ _STD_BEGIN
 #define _RNG_REQUIRE_UINTTYPE(_RandType, _CheckedType)                                                             \
     static_assert(_Is_any_of_v<_CheckedType, unsigned short, unsigned int, unsigned long, unsigned long long>,     \
         "invalid template argument for " #_RandType ": N4944 [rand.req.genl]/1.6 requires one of unsigned short, " \
-                                                    "unsigned int, unsigned long, or unsigned long long");         \
+        "unsigned int, unsigned long, or unsigned long long");                                                     \
     _RNG_PROHIBIT_CHAR(_CheckedType)
 
 template <class _Seed_seq, class _Self, class _Engine = _Self>
