@@ -389,6 +389,18 @@ void test_map() {
     assert(m[30] == 33);
 }
 
+void test_mdspan() {
+    using namespace std;
+    puts("Testing <mdspan>.");
+    int arr[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+
+    // TRANSITION, check std::mdspan class too (currently constructors and deduction guides does not work with modules)
+    layout_right::mapping<extents<int, 3, 3>> mp;
+    assert(arr[mp(0, 0)] == 1);
+    assert(arr[mp(1, 1)] == 1);
+    assert(arr[mp(2, 2)] == 1);
+}
+
 void test_memory() {
     using namespace std;
     puts("Testing <memory>.");
