@@ -164,6 +164,14 @@ constexpr void check_members(extents<IndexType, Extents...> ext, const array<int
     check_members_with_different_strides_index_type<unsigned long long>(ext, strides);
 }
 
+constexpr void check_ctad() {
+    extents<size_t, 2, 3> e;
+    array<size_t, 2> s{1, 2};
+    layout_stride::mapping m{e, s};
+    assert(m.extents() == e);
+    assert(m.strides() == s);
+}
+
 constexpr bool test() {
     // Check signed integers
     check_members(extents<signed char, 5>{5}, array{1});
@@ -178,6 +186,8 @@ constexpr bool test() {
     check_members(extents<unsigned int, 3, dynamic_extent>{3}, array{1, 3});
     check_members(extents<unsigned long, 4>{}, array{1});
     check_members(extents<unsigned long long, 3, 2, dynamic_extent>{3}, array{1, 3, 6});
+
+    check_ctad();
 
     // TRANSITION more tests
     return true;
