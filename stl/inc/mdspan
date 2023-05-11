@@ -274,7 +274,7 @@ struct _Dextents_impl<_IndexType, index_sequence<_Indices...>> {
 };
 
 _EXPORT_STD template <class _IndexType, size_t _Rank>
-using dextents = typename _Dextents_impl<_IndexType, make_index_sequence<_Rank>>::type;
+using dextents = _Dextents_impl<_IndexType, make_index_sequence<_Rank>>::type;
 
 template <class _Ty>
 inline constexpr bool _Is_extents = false;
@@ -305,9 +305,9 @@ template <class _Extents>
 class layout_left::mapping {
 public:
     using extents_type = _Extents;
-    using index_type   = typename extents_type::index_type;
-    using size_type    = typename extents_type::size_type;
-    using rank_type    = typename extents_type::rank_type;
+    using index_type   = extents_type::index_type;
+    using size_type    = extents_type::size_type;
+    using rank_type    = extents_type::rank_type;
     using layout_type  = layout_left;
 
     static_assert(_Is_extents<extents_type>,
@@ -437,9 +437,9 @@ template <class _Extents>
 class layout_right::mapping {
 public:
     using extents_type = _Extents;
-    using index_type   = typename extents_type::index_type;
-    using size_type    = typename extents_type::size_type;
-    using rank_type    = typename extents_type::rank_type;
+    using index_type   = extents_type::index_type;
+    using size_type    = extents_type::size_type;
+    using rank_type    = extents_type::rank_type;
     using layout_type  = layout_right;
 
     static_assert(_Is_extents<extents_type>,
@@ -580,9 +580,9 @@ template <class _Extents>
 class layout_stride::mapping {
 public:
     using extents_type = _Extents;
-    using index_type   = typename extents_type::index_type;
-    using size_type    = typename extents_type::size_type;
-    using rank_type    = typename extents_type::rank_type;
+    using index_type   = extents_type::index_type;
+    using size_type    = extents_type::size_type;
+    using rank_type    = extents_type::rank_type;
     using layout_type  = layout_stride;
 
     static_assert(_Is_extents<extents_type>,
@@ -757,7 +757,7 @@ private:
     array<index_type, extents_type::rank()> _Strides{};
 
     template <class _OtherMapping>
-    _NODISCARD static constexpr typename _OtherMapping::index_type _Offset(_OtherMapping& _Mapping) noexcept {
+    _NODISCARD static constexpr _OtherMapping::index_type _Offset(_OtherMapping& _Mapping) noexcept {
         if constexpr (extents_type::rank() == 0) {
             return _Mapping();
         } else {
@@ -817,14 +817,14 @@ public:
     using extents_type     = _Extents;
     using layout_type      = _LayoutPolicy;
     using accessor_type    = _AccessorPolicy;
-    using mapping_type     = typename layout_type::template mapping<extents_type>;
+    using mapping_type     = layout_type::template mapping<extents_type>;
     using element_type     = _ElementType;
     using value_type       = remove_cv_t<element_type>;
-    using index_type       = typename extents_type::index_type;
-    using size_type        = typename extents_type::size_type;
-    using rank_type        = typename extents_type::rank_type;
-    using data_handle_type = typename accessor_type::data_handle_type;
-    using reference        = typename accessor_type::reference;
+    using index_type       = extents_type::index_type;
+    using size_type        = extents_type::size_type;
+    using rank_type        = extents_type::rank_type;
+    using data_handle_type = accessor_type::data_handle_type;
+    using reference        = accessor_type::reference;
 
     static_assert(
         sizeof(element_type) > 0, "ElementType must be a complete type (N4944 [mdspan.mdspan.overview]/2.1).");

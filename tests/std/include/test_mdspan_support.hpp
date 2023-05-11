@@ -79,12 +79,12 @@ template <class M, class... Indices>
 concept CheckCallOperatorOfLayoutMapping =
     requires(const M m, Indices... i) {
         { m(i...) } -> std::same_as<typename M::index_type>;
-        { m(i...) == m(static_cast<typename M::index_type>(i)...) } -> std::same_as<bool>;
+        { m(i...) == m(static_cast<M::index_type>(i)...) } -> std::same_as<bool>;
     };
 // clang-format on
 
 template <class M>
-concept CheckStrideMemberFunction = requires(M mapping, typename M::rank_type i) {
+concept CheckStrideMemberFunction = requires(M mapping, M::rank_type i) {
                                         { mapping.stride(i) } -> std::same_as<typename M::index_type>;
                                     };
 
@@ -104,7 +104,7 @@ constexpr bool check_layout_mapping_requirements() {
     }
     (std::make_index_sequence<M::extents_type::rank()>{});
 
-    if constexpr (requires(M m, typename M::rank_type i) { m.stride(i); }) {
+    if constexpr (requires(M m, M::rank_type i) { m.stride(i); }) {
         static_assert(CheckStrideMemberFunction<M>);
     }
 
@@ -114,7 +114,7 @@ constexpr bool check_layout_mapping_requirements() {
 template <class MP, class E>
     requires detail::is_extents_v<E>
 constexpr bool check_layout_mapping_policy_requirements() {
-    using X = typename MP::template mapping<E>;
+    using X = MP::template mapping<E>;
     static_assert(check_layout_mapping_requirements<X>());
     static_assert(std::same_as<typename X::layout_type, MP>);
     static_assert(std::same_as<typename X::extents_type, E>);
@@ -141,7 +141,7 @@ namespace detail {
     // clang-format off
     template <class A>
     concept CheckMemberFunctionsOfAccessorPolicy =
-        requires(const A a, const typename A::data_handle_type p, size_t i) {
+        requires(const A a, const A::data_handle_type p, size_t i) {
             { a.access(p, i) } -> std::same_as<typename A::reference>;
             { a.offset(p, i) } -> std::same_as<typename A::offset_policy::data_handle_type>;
         };
