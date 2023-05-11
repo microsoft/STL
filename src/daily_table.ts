@@ -1359,7 +1359,8 @@ export const daily_table: DailyRow[] = [
     { date: '2023-05-05', merged: 33.06, pr: 11, cxx20: null, cxx23: 12, lwg: 5, issue: 403, bug: 134, video: 29, avg_age: 114.48, avg_wait: 98.83, sum_age: 41.98, sum_wait: 36.24, },
     { date: '2023-05-06', merged: 31.15, pr: 12, cxx20: null, cxx23: 12, lwg: 5, issue: 403, bug: 134, video: 29, avg_age: 105.87, avg_wait: 91.53, sum_age: 42.35, sum_wait: 36.61, },
     { date: '2023-05-07', merged: 29.44, pr: 13, cxx20: null, cxx23: 12, lwg: 5, issue: 403, bug: 134, video: 29, avg_age: 98.70, avg_wait: 85.46, sum_age: 42.77, sum_wait: 37.03, },
-    { date: '2023-05-08', merged: 27.94, pr: 13, cxx20: null, cxx23: 12, lwg: 5, issue: 404, bug: 134, video: 29, avg_age: 99.70, avg_wait: 86.46, sum_age: 43.20, sum_wait: 37.46, },
-    { date: '2023-05-09', merged: 26.49, pr: 15, cxx20: null, cxx23: 12, lwg: 5, issue: 404, bug: 134, video: 29, avg_age: 87.31, avg_wait: 75.84, sum_age: 43.65, sum_wait: 37.92, },
+    { date: '2023-05-08', merged: 27.94, pr: 13, cxx20: null, cxx23: 12, lwg: 5, issue: 404, bug: 135, video: 29, avg_age: 99.70, avg_wait: 86.46, sum_age: 43.20, sum_wait: 37.46, },
+    { date: '2023-05-09', merged: 26.49, pr: 15, cxx20: null, cxx23: 12, lwg: 5, issue: 404, bug: 135, video: 29, avg_age: 87.31, avg_wait: 75.84, sum_age: 43.65, sum_wait: 37.92, },
+    { date: '2023-05-10', merged: 28.08, pr: 15, cxx20: null, cxx23: 12, lwg: 5, issue: 406, bug: 136, video: 29, avg_age: 87.91, avg_wait: 76.44, sum_age: 43.96, sum_wait: 38.22, },
 ];
 // Generated file - DO NOT EDIT manually!
