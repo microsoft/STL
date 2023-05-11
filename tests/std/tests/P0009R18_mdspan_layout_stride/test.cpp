@@ -159,7 +159,7 @@ constexpr void check_members(extents<IndexType, Extents...> ext, const array<int
     // Check unsigned strides
     check_members_with_different_strides_index_type<unsigned char>(ext, strides);
     check_members_with_different_strides_index_type<unsigned short>(ext, strides);
-    check_members_with_different_strides_index_type<unsigned>(ext, strides);
+    check_members_with_different_strides_index_type<unsigned int>(ext, strides);
     check_members_with_different_strides_index_type<unsigned long>(ext, strides);
     check_members_with_different_strides_index_type<unsigned long long>(ext, strides);
 }
@@ -175,7 +175,7 @@ constexpr bool test() {
     // Check unsigned integers
     check_members(extents<unsigned char, 5>{5}, array{1});
     check_members(extents<unsigned short, 6, 7>{}, array{1, 6});
-    check_members(extents<unsigned, 3, dynamic_extent>{3}, array{1, 3});
+    check_members(extents<unsigned int, 3, dynamic_extent>{3}, array{1, 3});
     check_members(extents<unsigned long, 4>{}, array{1});
     check_members(extents<unsigned long long, 3, 2, dynamic_extent>{3}, array{1, 3, 6});
 
