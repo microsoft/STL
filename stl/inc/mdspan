@@ -601,7 +601,7 @@ public:
             _Strides.back() = 1;
             for (rank_type _Idx = extents_type::_Rank - 1; _Idx-- > 0;) {
                 // TRANSITION USE `_Multiply_with_overflow_check` IN DEBUG MODE
-                _Strides[_Idx] = _Strides[_Idx + 1] * _Exts.extent(_Idx + 1);
+                _Strides[_Idx] = static_cast<index_type>(_Strides[_Idx + 1] * _Exts.extent(_Idx + 1));
             }
         }
     }
@@ -752,7 +752,7 @@ public:
             }
 
             for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
-                if (_Left.stride(_Idx) != _Right.stride(_Idx)) {
+                if (_STD cmp_not_equal(_Left.stride(_Idx), _Right.stride(_Idx))) {
                     return false;
                 }
             }
@@ -786,7 +786,7 @@ private:
     template <class... _IndexTypes, size_t... _Seq>
     _NODISCARD constexpr index_type _Index_impl(index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
-        return ((_Indices * _Strides[_Seq]) + ... + 0);
+        return static_cast<index_type>(((_Indices * _Strides[_Seq]) + ... + 0));
     }
 };
 

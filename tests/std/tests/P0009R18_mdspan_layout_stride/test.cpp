@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <concepts>
@@ -13,9 +14,16 @@
 
 using namespace std;
 
-template <class IndexType, size_t... Extents, size_t... Indices>
+struct CmpEqual {
+    template <class T, class U>
+    [[nodiscard]] constexpr bool operator()(T t, U u) const noexcept {
+        return cmp_equal(t, u);
+    }
+};
+
+template <size_t... Extents, class IndexType, class StridesIndexType, size_t... Indices>
 constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
-    const array<IndexType, sizeof...(Extents)>& strs, index_sequence<Indices...>) {
+    const array<StridesIndexType, sizeof...(Extents)>& strs, index_sequence<Indices...>) {
     using Ext     = extents<IndexType, Extents...>;
     using Strides = array<IndexType, sizeof...(Extents)>;
     using Mapping = layout_stride::mapping<Ext>;
@@ -50,16 +58,16 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
     { // Check construction from extents_type and array
         Mapping m{ext, strs};
         assert(m.extents() == ext);
-        assert(m.strides() == strs);
+        assert(ranges::equal(m.strides(), strs, CmpEqual{}));
         static_assert(is_nothrow_constructible_v<Mapping, Ext, Strides>);
         // Other tests are defined in 'check_construction_from_extents_and_array' function [FIXME]
     }
 
     { // Check construction from extents_type and span
-        using Span = span<const IndexType, sizeof...(Extents)>;
+        using Span = span<const StridesIndexType, sizeof...(Extents)>;
         Mapping m{ext, Span{strs}};
         assert(m.extents() == ext);
-        assert(m.strides() == strs);
+        assert(ranges::equal(m.strides(), strs, CmpEqual{}));
         static_assert(is_nothrow_constructible_v<Mapping, Ext, Span>);
         // Other tests are defined in 'check_construction_from_extents_and_array' function [FIXME]
     }
@@ -86,7 +94,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
 
     { // Check 'strides' function
         same_as<Strides> decltype(auto) strs2 = m.strides();
-        assert(strs2 == strs);
+        assert(ranges::equal(strs2, strs, CmpEqual{}));
         static_assert(noexcept(m.strides()));
     }
 
@@ -119,7 +127,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
     { // Check 'stride' function
         for (size_t i = 0; i < strs.size(); ++i) {
             same_as<IndexType> decltype(auto) s = m.stride(i);
-            assert(strs[i] == s);
+            assert(cmp_equal(strs[i], s));
         }
     }
 
@@ -131,15 +139,46 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
 #pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
 }
 
+template <class StridesIndexType, class IndexType, size_t... Extents>
+constexpr void check_members_with_different_strides_index_type(
+    extents<IndexType, Extents...> ext, const array<int, sizeof...(Extents)>& strides) {
+    array<StridesIndexType, sizeof...(Extents)> test_strides;
+    ranges::transform(strides, test_strides.begin(), [](auto i) { return static_cast<StridesIndexType>(i); });
+    do_check_members<Extents...>(ext, test_strides, make_index_sequence<sizeof...(Extents)>{});
+}
+
 template <class IndexType, size_t... Extents>
-constexpr void check_members(extents<IndexType, Extents...> ext, const array<IndexType, sizeof...(Extents)>& strides) {
-    do_check_members<IndexType, Extents...>(ext, strides, make_index_sequence<sizeof...(Extents)>{});
+constexpr void check_members(extents<IndexType, Extents...> ext, const array<int, sizeof...(Extents)>& strides) {
+    // Check signed strides
+    check_members_with_different_strides_index_type<signed char>(ext, strides);
+    check_members_with_different_strides_index_type<short>(ext, strides);
+    check_members_with_different_strides_index_type<int>(ext, strides);
+    check_members_with_different_strides_index_type<long>(ext, strides);
+    check_members_with_different_strides_index_type<long long>(ext, strides);
+
+    // Check unsigned strides
+    check_members_with_different_strides_index_type<unsigned char>(ext, strides);
+    check_members_with_different_strides_index_type<unsigned short>(ext, strides);
+    check_members_with_different_strides_index_type<unsigned int>(ext, strides);
+    check_members_with_different_strides_index_type<unsigned long>(ext, strides);
+    check_members_with_different_strides_index_type<unsigned long long>(ext, strides);
 }
 
 constexpr bool test() {
-    check_members(extents<short>{}, array<short, 0>{});
-    check_members(extents<long, 4>{}, array<long, 1>{1});
-    check_members(extents<int, 3, dynamic_extent>{3}, array<int, 2>{1, 3});
+    // Check signed integers
+    check_members(extents<signed char, 5>{5}, array{1});
+    check_members(extents<short, 6, 7>{}, array{1, 6});
+    check_members(extents<int, 3, dynamic_extent>{3}, array{1, 3});
+    check_members(extents<long, 4>{}, array{1});
+    check_members(extents<long long, 3, 2, dynamic_extent>{3}, array{1, 3, 6});
+
+    // Check unsigned integers
+    check_members(extents<unsigned char, 5>{5}, array{1});
+    check_members(extents<unsigned short, 6, 7>{}, array{1, 6});
+    check_members(extents<unsigned int, 3, dynamic_extent>{3}, array{1, 3});
+    check_members(extents<unsigned long, 4>{}, array{1});
+    check_members(extents<unsigned long long, 3, 2, dynamic_extent>{3}, array{1, 3, 6});
+
     // TRANSITION more tests
     return true;
 }
