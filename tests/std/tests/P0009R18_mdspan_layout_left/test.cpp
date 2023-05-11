@@ -75,14 +75,15 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         // Other tests are defined in 'check_construction_from_other_right_mapping' function
     }
 
-#pragma warning(push) // TRANSITION, "/analyze:only" BUG?
-#pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
     { // Check construction from layout_stride::mapping
         array<IndexType, Ext::rank()> strides{};
         if constexpr (Ext::rank() > 0) {
             strides.front() = 1;
             for (size_t i = 1; i < Ext::rank(); ++i) {
+#pragma warning(push)
+#pragma warning(disable : 28020) // TRANSITION, DevCom-923103
                 strides[i] = static_cast<IndexType>(strides[i - 1] * ext.extent(i - 1));
+#pragma warning(pop)
             }
         }
 
@@ -91,7 +92,6 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         [[maybe_unused]] Mapping m{stride_mapping};
         // Other tests are defined in 'check_construction_from_other_stride_mapping' function
     }
-#pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
 
     Mapping m{ext}; // For later use
 

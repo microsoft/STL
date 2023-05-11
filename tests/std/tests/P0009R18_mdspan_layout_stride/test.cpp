@@ -43,8 +43,6 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
     static_assert(same_as<typename Mapping::rank_type, typename Ext::rank_type>);
     static_assert(same_as<typename Mapping::layout_type, layout_stride>);
 
-#pragma warning(push) // TRANSITION, "/analyze:only" BUG?
-#pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
     { // Check default and copy constructor
         Mapping m;
         const Mapping cpy = m;
@@ -127,7 +125,10 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
     { // Check 'stride' function
         for (size_t i = 0; i < strs.size(); ++i) {
             same_as<IndexType> decltype(auto) s = m.stride(i);
+#pragma warning(push)
+#pragma warning(disable : 28020) // TRANSITION, DevCom-923103
             assert(cmp_equal(strs[i], s));
+#pragma warning(pop)
         }
     }
 
@@ -136,7 +137,6 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
         assert(!(m != m));
         // Other tests are defined in 'check_comparisons' function [FIXME]
     }
-#pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
 }
 
 template <class StridesIndexType, class IndexType, size_t... Extents>

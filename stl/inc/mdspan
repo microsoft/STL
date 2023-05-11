@@ -146,8 +146,6 @@ public:
               && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
               && (sizeof...(_OtherIndexTypes) == rank_dynamic() || sizeof...(_OtherIndexTypes) == rank())
     constexpr explicit extents(_OtherIndexTypes... _Exts) noexcept {
-#pragma warning(push) // TRANSITION, "/analyze:only" BUG?
-#pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
         if constexpr ((_Is_standard_integer<_OtherIndexTypes> && ...)) {
             _STL_VERIFY(sizeof...(_Exts) == 0 || ((_Exts >= 0 && _STD in_range<index_type>(_Exts)) && ...),
                 "Either sizeof...(exts) must be equal to 0 or each element of exts must be nonnegative and must be "
@@ -170,7 +168,6 @@ public:
                 }
             }
         }
-#pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
     }
 
     template <class _OtherIndexType, size_t _Size, size_t... _Indices>
@@ -594,8 +591,6 @@ public:
         "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
         "representable as a value of type typename Extents::index_type (N4944 [mdspan.layout.stride.overview]/4).");
 
-#pragma warning(push) // TRANSITION, "/analyze:only" BUG?
-#pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
     constexpr mapping() noexcept : _Exts(extents_type{}) {
         if constexpr (extents_type::rank() != 0) {
             _Strides.back() = 1;
@@ -605,7 +600,6 @@ public:
             }
         }
     }
-#pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
 
     constexpr mapping(const mapping&) noexcept = default;
 
@@ -682,8 +676,6 @@ public:
         return _Strides;
     }
 
-#pragma warning(push) // TRANSITION, "/analyze:only" BUG?
-#pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
     _NODISCARD constexpr index_type required_span_size() const noexcept {
         if constexpr (extents_type::rank() == 0) {
             return 1;
@@ -701,7 +693,6 @@ public:
             return _Result;
         }
     }
-#pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
 
     template <class... _IndexTypes>
         requires (sizeof...(_IndexTypes) == extents_type::rank()) && (is_convertible_v<_IndexTypes, index_type> && ...)
