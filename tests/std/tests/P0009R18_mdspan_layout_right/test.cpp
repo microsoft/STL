@@ -14,7 +14,7 @@
 using namespace std;
 
 template <class IndexType, size_t... Extents, size_t... Indices>
-constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index_sequence<Indices...>) {
+constexpr void check_members(const extents<IndexType, Extents...>& ext, index_sequence<Indices...>) {
     using Ext     = extents<IndexType, Extents...>;
     using Mapping = layout_right::mapping<Ext>;
 
@@ -51,6 +51,8 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
     using Ext2           = extents<OtherIndexType, Extents...>;
     using Mapping2       = layout_right::mapping<Ext2>;
 
+#pragma warning(push) // TRANSITION, "/analyze:only" BUG?
+#pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
     { // Check construction from other layout_right::mapping
         Mapping m1{ext};
         Mapping2 m2{m1};
@@ -138,11 +140,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
         assert(!(m != m));
         // Other tests are defined in 'check_comparisons' function
     }
-}
-
-template <class IndexType, size_t... Extents>
-constexpr void check_members(extents<IndexType, Extents...> ext) {
-    do_check_members<IndexType, Extents...>(ext, make_index_sequence<sizeof...(Extents)>{});
+#pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
 }
 
 constexpr void check_construction_from_other_right_mapping() {
@@ -367,18 +365,17 @@ constexpr void check_correctness() {
 }
 
 constexpr bool test() {
-    check_members(extents<short>{});
-    check_members(extents<int, 1, 2, 3>{});
-    check_members(extents<unsigned short, 4, 4>{});
-    check_members(extents<unsigned long long, dynamic_extent, 4, 5>{3});
-    check_members(extents<short, dynamic_extent, dynamic_extent, 6>{4, 5});
-    check_members(extents<unsigned char, dynamic_extent, dynamic_extent, dynamic_extent>{3, 3, 3});
+    check_members_with_various_extents(
+        []<class IndexType, size_t... Extents>(const extents<IndexType, Extents...>& ext) {
+            check_members(ext, make_index_sequence<sizeof...(Extents)>{});
+        });
     check_construction_from_other_right_mapping();
     check_construction_from_other_left_mapping();
     check_construction_from_other_stride_mapping();
     check_call_operator();
     check_comparisons();
     check_correctness();
+
     return true;
 }
 
