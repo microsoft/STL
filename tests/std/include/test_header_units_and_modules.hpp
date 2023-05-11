@@ -392,11 +392,11 @@ void test_map() {
 void test_mdspan() {
     using namespace std;
     puts("Testing <mdspan>.");
-    int arr[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    int arr[] = {10, 0, 0, 0, 20, 0, 0, 0, 30};
     layout_right::mapping<extents<int, 3, 3>> mp;
-    assert(arr[mp(0, 0)] == 1);
-    assert(arr[mp(1, 1)] == 1);
-    assert(arr[mp(2, 2)] == 1);
+    assert(arr[mp(0, 0)] == 10);
+    assert(arr[mp(1, 1)] == 20);
+    assert(arr[mp(2, 2)] == 30);
     // TRANSITION, test std::mdspan too (DevCom-10359857)
 }
 
@@ -1108,6 +1108,7 @@ void all_cpp_header_tests() {
     test_list();
     test_locale();
     test_map();
+    test_mdspan();
     test_memory();
     test_memory_resource();
     test_mutex();
