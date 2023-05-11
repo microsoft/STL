@@ -616,7 +616,7 @@ public:
         }
     }
 
-#ifndef __clang__ // TRANSITION, MSVC messes up CTAD when concepts are used here (needs further investigation)
+#ifndef __clang__ // TRANSITION, DevCom-10360833
     template <class _OtherIndexType, enable_if_t<is_convertible_v<const _OtherIndexType&, index_type>
                                                      && is_nothrow_constructible_v<index_type, const _OtherIndexType&>,
                                          int> = 0>
@@ -629,7 +629,7 @@ public:
         : mapping(_Exts_, _Strides_, make_index_sequence<extents_type::rank()>{}) {
     }
 
-#ifndef __clang__ // TRANSITION, MSVC messes up CTAD when concepts are used here (needs further investigation)
+#ifndef __clang__ // TRANSITION, DevCom-10360833
     template <class _OtherIndexType, enable_if_t<is_convertible_v<const _OtherIndexType&, index_type>
                                                      && is_nothrow_constructible_v<index_type, const _OtherIndexType&>,
                                          int> = 0>
