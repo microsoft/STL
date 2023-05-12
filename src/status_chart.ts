@@ -85,9 +85,7 @@ function load_charts() {
                 new DatasetInfo('libcxx', 'Skipped Libcxx Tests', 'largeAxis', '--color-attention-emphasis'),
 
                 new DatasetInfo('avg_age', 'Average Age', 'leftAxis', '--color-neutral-emphasis', true),
-                new DatasetInfo('avg_wait', 'Average Wait', 'leftAxis', '--color-sponsors-emphasis', true),
                 new DatasetInfo('sum_age', 'Combined Age', 'rightAxis', '--color-fg-default'),
-                new DatasetInfo('sum_wait', 'Combined Wait', 'rightAxis', '--color-done-emphasis', true),
 
                 new DatasetInfo('merged', 'Line: Sliding Window', 'mergeAxis', '--color-accent-emphasis'),
                 new DatasetInfo('merge_bar', 'Bars: Calendar Months', 'mergeAxis', '--color-border-default'),
@@ -210,16 +208,8 @@ function load_charts() {
                 ...get_dataset_properties('avg_age'),
             },
             {
-                data: get_daily_values('avg_wait'),
-                ...get_dataset_properties('avg_wait'),
-            },
-            {
                 data: get_daily_values('sum_age'),
                 ...get_dataset_properties('sum_age'),
-            },
-            {
-                data: get_daily_values('sum_wait'),
-                ...get_dataset_properties('sum_wait'),
             },
         ],
     };
@@ -540,9 +530,7 @@ function load_charts() {
         'bug',
         'issue',
         'avg_age',
-        'avg_wait',
         'sum_age',
-        'sum_wait',
         'merged',
     ] as const;
     for (const field of daily_keys) {
