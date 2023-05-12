@@ -83,7 +83,7 @@ _NODISCARD _CONSTEXPR20 _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _V
     }
 
     for (; _UFirst != _ULast; ++_UFirst) {
-        _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4944
+        _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4950
     }
 
     return _Val;
@@ -133,9 +133,9 @@ _NODISCARD _CONSTEXPR20 _Ty inner_product(
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
     for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
 #if _HAS_CXX20
-        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4944
+        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4950
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        _Val = _Reduce_op(_Val, _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4944
+        _Val = _Reduce_op(_Val, _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4950
 #endif // _HAS_CXX20
     }
 
@@ -193,7 +193,7 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
     }
 
     for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
-        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4944
+        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4950
     }
     return _Val;
 }
@@ -213,7 +213,7 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     for (; _UFirst != _ULast; ++_UFirst) {
-        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst)); // Requirement missing from N4944
+        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst)); // Requirement missing from N4950
     }
 
     return _Val;
@@ -293,7 +293,7 @@ _CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
                 break;
             }
 
-            _Val = _STD move(_Tmp); // Requirement missing from N4944
+            _Val = _STD move(_Tmp); // Requirement missing from N4950
         }
     }
 
@@ -327,7 +327,7 @@ _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst) {
-        _Val    = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4944
+        _Val    = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4950
         *_UDest = _Val;
         ++_UDest;
     }
@@ -344,7 +344,7 @@ _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
     if (_UFirst != _ULast) {
-        _Iter_value_t<_InIt> _Val = *_UFirst; // Requirement missing from N4944
+        _Iter_value_t<_InIt> _Val = *_UFirst; // Requirement missing from N4950
         for (;;) {
             *_UDest = _Val;
             ++_UDest;
@@ -353,7 +353,7 @@ _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
                 break;
             }
 
-            _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4944
+            _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4950
         }
     }
 
@@ -401,7 +401,7 @@ _CONSTEXPR20 _OutIt transform_exclusive_scan(
                 break;
             }
 
-            _Val = _STD move(_Tmp); // Requirement missing from N4944
+            _Val = _STD move(_Tmp); // Requirement missing from N4950
         }
     }
 
@@ -423,7 +423,7 @@ _CONSTEXPR20 _OutIt transform_inclusive_scan(
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst) {
-        _Val    = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst)); // Requirement missing from N4944
+        _Val    = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst)); // Requirement missing from N4950
         *_UDest = _Val;
         ++_UDest;
     }
@@ -441,7 +441,7 @@ _CONSTEXPR20 _OutIt transform_inclusive_scan(
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
     if (_UFirst != _ULast) {
-        auto _Val = _Transform_op(*_UFirst); // Requirement missing from N4944, also type to use unclear
+        auto _Val = _Transform_op(*_UFirst); // Requirement missing from N4950, also type to use unclear
         for (;;) {
             *_UDest = _Val;
             ++_UDest;
@@ -450,7 +450,7 @@ _CONSTEXPR20 _OutIt transform_inclusive_scan(
                 break;
             }
 
-            _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst)); // Requirement missing from N4944
+            _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst)); // Requirement missing from N4950
         }
     }
 

@@ -196,7 +196,7 @@ namespace chrono {
         using period   = typename _Duration::period;
 
         static_assert(_Is_duration_v<_Duration>,
-            "N4944 [time.point.general]/1 mandates Duration to be a specialization of chrono::duration.");
+            "N4950 [time.point.general]/1 mandates Duration to be a specialization of chrono::duration.");
 
         constexpr time_point() = default;
 

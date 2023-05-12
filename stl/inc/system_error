@@ -716,7 +716,7 @@ _STD_BEGIN
 //   1. We would like to keep the definition of __std_win_error in xfilesystem_abi.h
 //   2. and xfilesystem_abi.h cannot include <system_error>
 //   3. and specialization of is_error_code_enum and overload of make_error_code
-//      need to be kept together with the enum (see limerick in N4944 [temp.expl.spec]/8)
+//      need to be kept together with the enum (see limerick in N4950 [temp.expl.spec]/8)
 // we resort to using this _Make_ec helper.
 _NODISCARD inline error_code _Make_ec(__std_win_error _Errno) noexcept { // make an error_code
     return {static_cast<int>(_Errno), _STD system_category()};

@@ -860,7 +860,7 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.36 or ne
 #error /GR implies _HAS_STATIC_RTTI.
 #endif // defined(_CPPRTTI) && !_HAS_STATIC_RTTI
 
-// N4944 [dcl.constexpr]/1: "A function or static data member declared with the
+// N4950 [dcl.constexpr]/1: "A function or static data member declared with the
 // constexpr or consteval specifier is implicitly an inline function or variable"
 
 // Functions that became constexpr in C++17
@@ -958,7 +958,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // _ENFORCE_MATCHING_ALLOCATORS
 
 #define _MISMATCHED_ALLOCATOR_MESSAGE(_CONTAINER, _VALUE_TYPE)                                                      \
-    _CONTAINER " requires that Allocator's value_type match " _VALUE_TYPE " (See N4944 [container.alloc.reqmts]/6)" \
+    _CONTAINER " requires that Allocator's value_type match " _VALUE_TYPE " (See N4950 [container.alloc.reqmts]/6)" \
                " Either fix the allocator value_type or define _ENFORCE_MATCHING_ALLOCATORS=0"                      \
                " to suppress this error."
 
@@ -968,7 +968,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // _ENFORCE_FACET_SPECIALIZATIONS
 
 #define _FACET_SPECIALIZATION_MESSAGE                                                  \
-    "Unsupported facet specialization; see N4944 [locale.category]. "                  \
+    "Unsupported facet specialization; see N4950 [locale.category]. "                  \
     "Either use a Standard specialization or define _ENFORCE_FACET_SPECIALIZATIONS=0 " \
     "to suppress this error."
 

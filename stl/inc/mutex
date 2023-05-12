@@ -74,12 +74,12 @@ public:
 
     void lock() {
         if (_Mtx_lock(_Mymtx()) != _Thrd_success) {
-            // undefined behavior, only occurs for plain mutexes (N4944 [thread.mutex.requirements.mutex.general]/6)
+            // undefined behavior, only occurs for plain mutexes (N4950 [thread.mutex.requirements.mutex.general]/6)
             _STD _Throw_Cpp_error(_RESOURCE_DEADLOCK_WOULD_OCCUR);
         }
 
         if (!_Verify_ownership_levels()) {
-            // only occurs for recursive mutexes (N4944 [thread.mutex.recursive]/3)
+            // only occurs for recursive mutexes (N4950 [thread.mutex.recursive]/3)
             // POSIX specifies EAGAIN in the corresponding situation:
             // https://pubs.opengroup.org/onlinepubs/9699919799/functions/pthread_mutex_lock.html
             _STD _Throw_Cpp_error(_RESOURCE_UNAVAILABLE_TRY_AGAIN);
@@ -87,7 +87,7 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept /* strengthened */ {
-        // false may be from undefined behavior for plain mutexes (N4944 [thread.mutex.requirements.mutex.general]/6)
+        // false may be from undefined behavior for plain mutexes (N4950 [thread.mutex.requirements.mutex.general]/6)
         return _Mtx_trylock(_Mymtx()) == _Thrd_success;
     }
 
@@ -104,7 +104,7 @@ public:
 protected:
     _NODISCARD_TRY_CHANGE_STATE bool _Verify_ownership_levels() noexcept {
         if (_Mtx_storage_mirror._Count == INT_MAX) {
-            // only occurs for recursive mutexes (N4944 [thread.mutex.recursive]/3)
+            // only occurs for recursive mutexes (N4950 [thread.mutex.recursive]/3)
             --_Mtx_storage_mirror._Count;
             return false;
         }

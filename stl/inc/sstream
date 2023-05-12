@@ -354,7 +354,7 @@ protected:
         case ios_base::cur:
             {
                 constexpr auto _Both = ios_base::in | ios_base::out;
-                if ((_Mode & _Both) != _Both) { // prohibited by N4944 [tab:stringbuf.seekoff.pos]
+                if ((_Mode & _Both) != _Both) { // prohibited by N4950 [tab:stringbuf.seekoff.pos]
                     if (_Mode & ios_base::in) {
                         if (_Gptr_old || !_Seeklow) {
                             _Newoff = _Gptr_old - _Seeklow;

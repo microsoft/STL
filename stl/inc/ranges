@@ -1339,7 +1339,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Wi>&& is_nothrow_move_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_Value_)), _Bound(_STD move(_Bound_)) {
             if constexpr (totally_ordered_with<_Wi, _Bo>) {
-                _STL_ASSERT(_Value_ <= _Bound_, "Per N4944 [range.iota.view]/8, the first argument must precede the "
+                _STL_ASSERT(_Value_ <= _Bound_, "Per N4950 [range.iota.view]/8, the first argument must precede the "
                                                 "second when their types are totally ordered.");
             }
         }
@@ -2290,7 +2290,7 @@ namespace ranges {
         _NODISCARD constexpr _Iterator begin() {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(
-                _Pred, "N4944 [range.filter.view]/3 forbids calling begin on a filter_view that holds no predicate");
+                _Pred, "N4950 [range.filter.view]/3 forbids calling begin on a filter_view that holds no predicate");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
@@ -3291,7 +3291,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(_Count_ >= 0, "Number of elements to drop must be non-negative (N4944 [range.drop.view]/1");
+            _STL_VERIFY(_Count_ >= 0, "Number of elements to drop must be non-negative (N4950 [range.drop.view]/1");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         }
 
@@ -3515,7 +3515,7 @@ namespace ranges {
         _NODISCARD constexpr auto begin() {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(
-                _Pred, "N4944 [range.drop.while.view]/3 forbids calling begin on a drop_while_view with no predicate");
+                _Pred, "N4950 [range.drop.while.view]/3 forbids calling begin on a drop_while_view with no predicate");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
@@ -7212,7 +7212,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Vw>) /* strengthened */
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(_Count > 0, "The window size must be positive (N4944 [range.slide.view]/1)");
+            _STL_VERIFY(_Count > 0, "The window size must be positive (N4950 [range.slide.view]/1)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         }
 
@@ -8770,7 +8770,7 @@ namespace ranges {
             static constexpr bool _Enable_cpo = []() noexcept {
                 if constexpr (sizeof...(_Types) == 0) {
                     // This is a more efficient implementation of the CPO requirements listed in
-                    // N4944 [range.zip.transform.overview]/2.1.1.
+                    // N4950 [range.zip.transform.overview]/2.1.1.
                     using _Decayed_func = decay_t<_Func>;
                     if constexpr (move_constructible<_Decayed_func> && regular_invocable<_Decayed_func&>) {
                         return !is_void_v<invoke_result_t<_Decayed_func&>>;
@@ -9828,13 +9828,13 @@ namespace ranges {
 #if _ITERATOR_DEBUG_LEVEL != 0
                     const auto _It_off = static_cast<_Diff>(_It - _RANGES begin(_Range));
                     _STL_VERIFY(_It_off + _Off >= 0, "Cannot advance cartesian_product_view iterator before begin "
-                                                     "(N4944 [range.cartesian.iterator]/19).");
+                                                     "(N4950 [range.cartesian.iterator]/19).");
                     if constexpr (sized_range<decltype(_Range)>) {
                         const auto _Size = static_cast<_Diff>(_RANGES ssize(_Range));
                         _STL_VERIFY(_It_off + _Off < _Size
                                         || (_It_off + _Off == _Size
                                             && _Entire_tail_at_begin(make_index_sequence<sizeof...(_Rest)>{})),
-                            "Cannot advance cartesian_product_view iterator past end (N4944 "
+                            "Cannot advance cartesian_product_view iterator past end (N4950 "
                             "[range.cartesian.iterator]/19).");
                     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -9866,7 +9866,7 @@ namespace ranges {
                         _Multiply_with_overflow_check(_Size, _Distance_from<_Index - 1>(_Tpl), _Result)
                         || _Add_with_overflow_check(_Result, _Diff, _Result);
 #if _ITERATOR_DEBUG_LEVEL != 0
-                    _STL_VERIFY(!_Overflow, "Scaled-sum cannot be represented by difference_type (N4944 "
+                    _STL_VERIFY(!_Overflow, "Scaled-sum cannot be represented by difference_type (N4950 "
                                             "[range.cartesian.iterator]/8).");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                     return _Result;
@@ -10124,7 +10124,7 @@ namespace ranges {
                     (_Multiply_with_overflow_check(
                          _Product, static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases))), _Product)
                         || ...);
-                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4944 "
+                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4950 "
                                         "[range.cartesian.view]/10).");
                 return _Product;
 #else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
@@ -10144,7 +10144,7 @@ namespace ranges {
                     (_Multiply_with_overflow_check(
                          _Product, static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases))), _Product)
                         || ...);
-                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4944 "
+                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4950 "
                                         "[range.cartesian.view]/10).");
                 return _Product;
 #else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
@@ -10256,7 +10256,7 @@ namespace ranges {
             };
             return _RANGES to<_Container>(views::transform(_Range, _Xform), _STD forward<_Types>(_Args)...);
         } else {
-            static_assert(_Always_false<_Container>, "the program is ill-formed per N4944 [range.utility.conv.to]/2.3");
+            static_assert(_Always_false<_Container>, "the program is ill-formed per N4950 [range.utility.conv.to]/2.3");
         }
     }
 

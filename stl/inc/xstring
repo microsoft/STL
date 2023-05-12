@@ -576,7 +576,7 @@ constexpr size_t _Traits_find(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits>
     // search [_Haystack, _Haystack + _Hay_size) for [_Needle, _Needle + _Needle_size), at/after _Start_at
     if (_Needle_size > _Hay_size || _Start_at > _Hay_size - _Needle_size) {
         // xpos cannot exist, report failure
-        // N4944 [string.view.find]/3 says:
+        // N4950 [string.view.find]/3 says:
         // 1. _Start_at <= xpos
         // 2. xpos + _Needle_size <= _Hay_size;
         // therefore:
@@ -1170,11 +1170,11 @@ _EXPORT_STD template <class _Elem, class _Traits>
 class basic_string_view { // wrapper for any kind of contiguous character buffer
 public:
     static_assert(is_same_v<_Elem, typename _Traits::char_type>,
-        "Bad char_traits for basic_string_view; N4944 [string.view.template.general]/1 "
+        "Bad char_traits for basic_string_view; N4950 [string.view.template.general]/1 "
         "\"The program is ill-formed if traits::char_type is not the same type as charT.\"");
 
     static_assert(!is_array_v<_Elem> && is_trivial_v<_Elem> && is_standard_layout_v<_Elem>,
-        "The character type of basic_string_view must be a non-array trivial standard-layout type. See N4944 "
+        "The character type of basic_string_view must be a non-array trivial standard-layout type. See N4950 "
         "[strings.general]/1.");
 
     using traits_type            = _Traits;
@@ -1767,7 +1767,7 @@ struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_cat
     using type = typename _Traits::comparison_category;
 
     static_assert(_Is_any_of_v<type, partial_ordering, weak_ordering, strong_ordering>,
-        "N4944 [string.view.comparison]/4: Mandates: R denotes a comparison category type.");
+        "N4950 [string.view.comparison]/4: Mandates: R denotes a comparison category type.");
 };
 
 template <class _Traits>
@@ -2335,11 +2335,11 @@ private:
         _MISMATCHED_ALLOCATOR_MESSAGE("basic_string<T, Traits, Allocator>", "T"));
 
     static_assert(is_same_v<_Elem, typename _Traits::char_type>,
-        "N4944 [string.require]/3 requires that the supplied "
+        "N4950 [string.require]/3 requires that the supplied "
         "char_traits character type match the string's character type.");
 
     static_assert(!is_array_v<_Elem> && is_trivial_v<_Elem> && is_standard_layout_v<_Elem>,
-        "The character type of basic_string must be a non-array trivial standard-layout type. See N4944 "
+        "The character type of basic_string must be a non-array trivial standard-layout type. See N4950 "
         "[strings.general]/1.");
 
 public:
@@ -2369,7 +2369,7 @@ private:
     //   _String_val::_Bx::_Ptr (type is pointer)
     //   _String_val::_Mysize   (type is size_type)
     //   _String_val::_Myres    (type is size_type)
-    // N4944 [strings.general]/1 says _Elem must be trivial standard-layout, so memcpy is safe.
+    // N4950 [strings.general]/1 says _Elem must be trivial standard-layout, so memcpy is safe.
     // We need to ask if pointer is safe to memcpy.
     // size_type must be an unsigned integral type so memcpy is safe.
     // We also need to disable memcpy if the user has supplied _Traits, since
@@ -4970,7 +4970,7 @@ _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     basic_string<_Elem, _Traits, _Alloc>&& _Left, basic_string<_Elem, _Traits, _Alloc>&& _Right) {
 #if _ITERATOR_DEBUG_LEVEL == 2
     _STL_VERIFY(_STD addressof(_Left) != _STD addressof(_Right),
-        "You cannot concatenate the same moved string to itself. See N4944 [res.on.arguments]/1.3: "
+        "You cannot concatenate the same moved string to itself. See N4950 [res.on.arguments]/1.3: "
         "If a function argument is bound to an rvalue reference parameter, the implementation may assume that "
         "this parameter is a unique reference to this argument, except that the argument passed to "
         "a move-assignment operator may be a reference to *this ([lib.types.movedfrom]).");

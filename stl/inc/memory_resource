@@ -234,12 +234,12 @@ namespace pmr {
         unsynchronized_pool_resource(
             const pool_options& _Opts, memory_resource* const _Resource) noexcept // strengthened
             : _Options(_Opts), _Pools{_Resource} { // initialize pool with options _Opts and upstream _Resource
-            _STL_ASSERT(_Resource, "Upstream memory resource must be a valid resource (N4944 [mem.res.pool.ctor]/1)");
+            _STL_ASSERT(_Resource, "Upstream memory resource must be a valid resource (N4950 [mem.res.pool.ctor]/1)");
             _Setup_options();
         }
         explicit unsynchronized_pool_resource(memory_resource* const _Resource) noexcept // strengthened
             : _Pools{_Resource} { // initialize pool with default options and upstream _Resource
-            _STL_ASSERT(_Resource, "Upstream memory resource must be a valid resource (N4944 [mem.res.pool.ctor]/1)");
+            _STL_ASSERT(_Resource, "Upstream memory resource must be a valid resource (N4950 [mem.res.pool.ctor]/1)");
             _Setup_options();
         }
         explicit unsynchronized_pool_resource(const pool_options& _Opts) noexcept // strengthened
