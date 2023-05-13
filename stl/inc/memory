@@ -1511,7 +1511,7 @@ struct _SP_convertible<_Yty, _Uty[_Ext]> : is_convertible<_Yty (*)[_Ext], _Uty (
 template <class _Yty, class _Ty>
 struct _SP_pointer_compatible : is_convertible<_Yty*, _Ty*>::type {
     // N4950 [util.smartptr.shared.general]/6 "a pointer type Y* is said to be compatible
-    // with a pointer type T* " "when either Y* is convertible to T* ..."
+    // with a pointer type T* when either Y* is convertible to T* ..."
 };
 template <class _Uty, size_t _Ext>
 struct _SP_pointer_compatible<_Uty[_Ext], _Uty[]> : true_type {

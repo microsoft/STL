@@ -677,9 +677,9 @@ public:
     _NODISCARD constexpr _Ty value_or(_Uty&& _Other) const& noexcept(
         is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_convertible_v<_Uty, _Ty>) /* strengthened */ {
         static_assert(
-            is_copy_constructible_v<_Ty>, "is_copy_constructible_v<T> must be true. (N4950 [expected.object.obs]/16)");
+            is_copy_constructible_v<_Ty>, "is_copy_constructible_v<T> must be true. (N4950 [expected.object.obs]/18)");
         static_assert(
-            is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4950 [expected.object.obs]/16)");
+            is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4950 [expected.object.obs]/18)");
 
         if (_Has_value) {
             return _Value;
@@ -691,9 +691,9 @@ public:
     _NODISCARD constexpr _Ty value_or(_Uty&& _Other) && noexcept(
         is_nothrow_move_constructible_v<_Ty>&& is_nothrow_convertible_v<_Uty, _Ty>) /* strengthened */ {
         static_assert(
-            is_move_constructible_v<_Ty>, "is_move_constructible_v<T> must be true. (N4950 [expected.object.obs]/18)");
+            is_move_constructible_v<_Ty>, "is_move_constructible_v<T> must be true. (N4950 [expected.object.obs]/20)");
         static_assert(
-            is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4950 [expected.object.obs]/18)");
+            is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4950 [expected.object.obs]/20)");
 
         if (_Has_value) {
             return _STD move(_Value);
@@ -706,9 +706,9 @@ public:
     _NODISCARD constexpr _Err error_or(_Uty&& _Other) const& noexcept(
         is_nothrow_copy_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) /* strengthened */ {
         static_assert(
-            is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. (N4950 [expected.object.obs]/20)");
+            is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. (N4950 [expected.object.obs]/22)");
         static_assert(
-            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4950 [expected.object.obs]/20)");
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4950 [expected.object.obs]/22)");
 
         if (_Has_value) {
             return _STD forward<_Uty>(_Other);
@@ -721,9 +721,9 @@ public:
     _NODISCARD constexpr _Err error_or(_Uty&& _Other) && noexcept(
         is_nothrow_move_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) /* strengthened */ {
         static_assert(
-            is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true. (N4950 [expected.object.obs]/22)");
+            is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true. (N4950 [expected.object.obs]/24)");
         static_assert(
-            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4950 [expected.object.obs]/22)");
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4950 [expected.object.obs]/24)");
 
         if (_Has_value) {
             return _STD forward<_Uty>(_Other);

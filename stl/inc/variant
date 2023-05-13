@@ -967,9 +967,9 @@ class variant : private _SMF_control<_Variant_destroy_layer<_Types...>, _Types..
 public:
     static_assert(conjunction_v<is_object<_Types>..., negation<is_array<_Types>>..., is_destructible<_Types>...>,
         "variant<Types...> requires all of the Types to meet the Cpp17Destructible requirements "
-        "N4950 [variant.variant]/2.");
+        "(N4950 [variant.variant.general]/2).");
     static_assert(sizeof...(_Types) > 0,
-        "variant<> (with no template arguments) may not be instantiated (N4950 [variant.variant]/3).");
+        "variant<> (with no template arguments) may not be instantiated (N4950 [variant.variant.general]/3).");
     using _Mybase = _SMF_control<_Variant_destroy_layer<_Types...>, _Types...>;
 
     template <class _First = _Meta_front<variant>, enable_if_t<is_default_constructible_v<_First>, int> = 0>

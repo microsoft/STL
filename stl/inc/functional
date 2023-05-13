@@ -1847,7 +1847,7 @@ public:
     }
 
     move_only_function& operator=(move_only_function&& _Other)
-    // intentially noexcept(false), leaving the door open to adding allocator support in the future; see GH-2278
+    // intentionally noexcept(false), leaving the door open to adding allocator support in the future; see GH-2278
     {
         if (this != _STD addressof(_Other)) {
             this->_Move_assign(_STD move(_Other));

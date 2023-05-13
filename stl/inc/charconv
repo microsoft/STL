@@ -385,9 +385,10 @@ _EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(const char* const _First, 
 // ([over.match]).
 // The constructor thus selected is called, with an empty argument list, to initialize the object."
 // N4950 [class.base.init]/9, /9.3:
-// "In a non-delegating constructor, if a given potentially constructed subobject is not designated by a
-// mem-initializer-id (including the case where there is no mem-initializer-list because the constructor has no
-// ctor-initializer), then [...] - otherwise, the entity is default-initialized ([dcl.init])."
+// "In a non-delegating constructor other than an implicitly-defined copy/move constructor ([class.copy.ctor]),
+// if a given potentially constructed subobject is not designated by a mem-initializer-id (including the case
+// where there is no mem-initializer-list because the constructor has no ctor-initializer), then [...]
+// - otherwise, the entity is default-initialized ([dcl.init])."
 // N4950 [dcl.init.general]/7, /7.2, /7.3:
 // "To default-initialize an object of type T means: [...]
 // - If T is an array type, each element is default-initialized.
@@ -1692,7 +1693,7 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
     const char* const _Exponent_end = _Next;
 
     if (_Fmt == chars_format::scientific
-        && _Frac_end == _Exponent_end) { // N4950 [charconv.from.chars]/7.2
+        && _Frac_end == _Exponent_end) { // N4950 [charconv.from.chars]/6.2
                                          // "if fmt has chars_format::scientific set but not chars_format::fixed,
                                          // the otherwise optional exponent part shall appear"
         return {_First, errc::invalid_argument};

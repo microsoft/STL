@@ -3523,17 +3523,19 @@ namespace ranges {
     private:
         _NODISCARD constexpr _Derived& _Cast() noexcept {
             static_assert(derived_from<_Derived, view_interface>,
-                "view_interface's template argument D must derive from view_interface<D> (N4950 [view.interface]/2).");
+                "view_interface's template argument D must derive from view_interface<D> "
+                "(N4950 [view.interface.general]/2).");
             static_assert(view<_Derived>,
-                "view_interface's template argument must model the view concept (N4950 [view.interface]/2).");
+                "view_interface's template argument must model the view concept (N4950 [view.interface.general]/2).");
             return static_cast<_Derived&>(*this);
         }
 
         _NODISCARD constexpr const _Derived& _Cast() const noexcept {
             static_assert(derived_from<_Derived, view_interface>,
-                "view_interface's template argument D must derive from view_interface<D> (N4950 [view.interface]/2).");
+                "view_interface's template argument D must derive from view_interface<D> "
+                "(N4950 [view.interface.general]/2).");
             static_assert(view<_Derived>,
-                "view_interface's template argument must model the view concept (N4950 [view.interface]/2).");
+                "view_interface's template argument must model the view concept (N4950 [view.interface.general]/2).");
             return static_cast<const _Derived&>(*this);
         }
 

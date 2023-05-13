@@ -958,7 +958,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // _ENFORCE_MATCHING_ALLOCATORS
 
 #define _MISMATCHED_ALLOCATOR_MESSAGE(_CONTAINER, _VALUE_TYPE)                                                      \
-    _CONTAINER " requires that Allocator's value_type match " _VALUE_TYPE " (See N4950 [container.alloc.reqmts]/6)" \
+    _CONTAINER " requires that Allocator's value_type match " _VALUE_TYPE " (See N4950 [container.alloc.reqmts]/5)" \
                " Either fix the allocator value_type or define _ENFORCE_MATCHING_ALLOCATORS=0"                      \
                " to suppress this error."
 

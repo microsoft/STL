@@ -2907,7 +2907,8 @@ namespace chrono {
         _NODISCARD auto operator()(const time_point<_SourceClock, _Duration>& _Time) const
             noexcept(noexcept(_SourceClock::to_sys(_Time))) /* strengthened */ {
             static_assert(_Is_time_point_for_clock<decltype(_SourceClock::to_sys(_Time)), system_clock>,
-                "N4950 [time.clock.cast.sys]/2: Mandates: SourceClock::to_sys(t) returns a sys_time<Duration>");
+                "N4950 [time.clock.cast.sys]/2: Mandates: SourceClock::to_sys(t) "
+                "returns a sys_time<Duration2> for some type Duration2");
             return _SourceClock::to_sys(_Time);
         }
     };
@@ -2919,8 +2920,8 @@ namespace chrono {
         _NODISCARD auto operator()(const sys_time<_Duration>& _Time) const
             noexcept(noexcept(_DestClock::from_sys(_Time))) /* strengthened */ {
             static_assert(_Is_time_point_for_clock<decltype(_DestClock::from_sys(_Time)), _DestClock>,
-                "N4950 [time.clock.cast.sys]/5: Mandates: DestClock::from_sys(t) returns a "
-                "time_point<DestClock, Duration>");
+                "N4950 [time.clock.cast.sys]/5: Mandates: DestClock::from_sys(t) "
+                "returns a time_point<DestClock, Duration2> for some type Duration2");
             return _DestClock::from_sys(_Time);
         }
     };
@@ -2935,7 +2936,8 @@ namespace chrono {
         _NODISCARD auto operator()(const time_point<_SourceClock, _Duration>& _Time) const
             noexcept(noexcept(_SourceClock::to_utc(_Time))) /* strengthened */ {
             static_assert(_Is_time_point_for_clock<decltype(_SourceClock::to_utc(_Time)), utc_clock>,
-                "N4950 [time.clock.cast.utc]/2: Mandates: SourceClock::to_utc(t) returns a utc_time<Duration>");
+                "N4950 [time.clock.cast.utc]/2: Mandates: SourceClock::to_utc(t) "
+                "returns a utc_time<Duration2> for some type Duration2");
             return _SourceClock::to_utc(_Time);
         }
     };
@@ -2947,8 +2949,8 @@ namespace chrono {
         _NODISCARD auto operator()(const utc_time<_Duration>& _Time) const
             noexcept(noexcept(_DestClock::from_utc(_Time))) /* strengthened */ {
             static_assert(_Is_time_point_for_clock<decltype(_DestClock::from_utc(_Time)), _DestClock>,
-                "N4950 [time.clock.cast.utc]/5: Mandates: DestClock::from_utc(t) returns a "
-                "time_point<DestClock, Duration>");
+                "N4950 [time.clock.cast.utc]/5: Mandates: DestClock::from_utc(t) "
+                "returns a time_point<DestClock, Duration2> for some type Duration2");
             return _DestClock::from_utc(_Time);
         }
     };

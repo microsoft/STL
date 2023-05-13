@@ -217,9 +217,9 @@ private:
 
 public:
     static_assert(!_Is_any_of_v<remove_cv_t<_Ty>, nullopt_t, in_place_t>,
-        "T in optional<T> must be a type other than nullopt_t or in_place_t (N4950 [optional.optional]/3).");
+        "T in optional<T> must be a type other than nullopt_t or in_place_t (N4950 [optional.optional.general]/3).");
     static_assert(is_object_v<_Ty> && is_destructible_v<_Ty> && !is_array_v<_Ty>,
-        "T in optional<T> must meet the Cpp17Destructible requirements (N4950 [optional.optional]/3).");
+        "T in optional<T> must meet the Cpp17Destructible requirements (N4950 [optional.optional.general]/3).");
 
     using value_type = _Ty;
 
@@ -350,7 +350,7 @@ public:
         static_assert(is_move_constructible_v<_Ty>,
             "optional<T>::swap requires T to be move constructible (N4950 [optional.swap]/1).");
         static_assert(!is_move_constructible_v<_Ty> || is_swappable_v<_Ty>,
-            "optional<T>::swap requires T to be swappable (N4950 [optional.swap]/1).");
+            "optional<T>::swap requires T to be swappable (N4950 [optional.swap]/2).");
         if constexpr (_Is_trivially_swappable_v<_Ty>) {
             using _TrivialBaseTy = _Optional_destruct_base<_Ty>;
             _STD swap(static_cast<_TrivialBaseTy&>(*this), static_cast<_TrivialBaseTy&>(_Right));
