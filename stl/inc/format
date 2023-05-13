@@ -2335,7 +2335,7 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _Arithmetic _Value) {
 
     if (_End == _Buffer) {
         const to_chars_result _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value);
-        _STL_ASSERT(_Result.ec == errc{}, "to_chars failed");
+        _STL_INTERNAL_CHECK(_Result.ec == errc{});
         _End = _Result.ptr;
     }
 
@@ -2362,7 +2362,7 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const void* const _Value) {
     // TRANSITION, Reusable buffer
     char _Buffer[_Format_min_buffer_length];
     const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), reinterpret_cast<uintptr_t>(_Value), 16);
-    _STL_ASSERT(_Ec == errc{}, "to_chars failed");
+    _STL_INTERNAL_CHECK(_Ec == errc{});
     *_Out++ = '0';
     *_Out++ = 'x';
     return _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
@@ -2621,7 +2621,7 @@ _NODISCARD _OutputIt _Write_integral(
     // long long -1 representation in binary is 64 bits + sign
     char _Buffer[65];
     const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Base);
-    _STL_ASSERT(_Ec == errc{}, "to_chars failed");
+    _STL_INTERNAL_CHECK(_Ec == errc{});
 
     auto _Buffer_start = _Buffer;
     auto _Width        = static_cast<int>(_End - _Buffer_start);
@@ -2817,7 +2817,7 @@ _NODISCARD _OutputIt _Fmt_write(
             _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format, _Precision);
         }
 
-        _STL_ASSERT(_Result.ec == errc{}, "to_chars failed");
+        _STL_INTERNAL_CHECK(_Result.ec == errc{});
     }
 
     auto _Buffer_start = _Buffer;
