@@ -69,6 +69,19 @@ extern "C" _NODISCARD __std_win_error __stdcall __std_get_cvt(__std_code_page _C
 
 _STD_BEGIN
 
+template <class _CharT>
+_NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const wchar_t* const _WStr) noexcept {
+    if constexpr (is_same_v<_CharT, char>) {
+        return _Str;
+    } else {
+        return _WStr;
+    }
+}
+
+// _STATICALLY_WIDEN is used by <chrono> since C++20 and by <format> since C++23.
+// It's defined here, so that both headers can use this definition.
+#define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
+
 _EXPORT_STD template <class, class>
 class vector;
 
@@ -2789,7 +2802,11 @@ inline namespace __p2286 {
     template <class _CharT, class _OutputIt>
     _NODISCARD _OutputIt _Fmt_write(
         _OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale) {
-        if (_Specs._Type != '\0' && _Specs._Type != 'c' && _Specs._Type != '?') {
+        if (_Specs._Type != '\0' && _Specs._Type != 'c'
+#if _HAS_CXX23
+            && _Specs._Type != '?'
+#endif // _HAS_CXX23
+        ) {
             return _Write_integral(_STD move(_Out), _Value, _Specs, _Locale);
         }
 
@@ -3206,17 +3223,6 @@ inline namespace __p2286 {
         return _Pfx_iter._Position();
     }
 
-    template <class _CharT>
-    _NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const wchar_t* const _WStr) noexcept {
-        if constexpr (is_same_v<_CharT, char>) {
-            return _Str;
-        } else {
-            return _WStr;
-        }
-    }
-
-#define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
-
 #if _HAS_CXX23
     _NODISCARD constexpr bool _Is_printable(char32_t _Val) {
         return __printable_property_data._Get_property_for_codepoint(_Val) == __printable_property_values::_Yes_value;
@@ -3279,7 +3285,7 @@ inline namespace __p2286 {
 
                         const auto [_End, _Ec] =
                             _STD to_chars(_Buffer, _STD end(_Buffer), static_cast<uint32_t>(_Decoded_ch), 16);
-                        _STL_ASSERT(_Ec == errc{}, "to_chars failed");
+                        _STL_INTERNAL_CHECK(_Ec == errc{});
 
                         _Out = _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
 
@@ -3297,7 +3303,7 @@ inline namespace __p2286 {
 
                         const auto [_End, _Ec] = _STD to_chars(
                             _Buffer, _STD end(_Buffer), static_cast<make_unsigned_t<_CharT>>(*_First), 16);
-                        _STL_ASSERT(_Ec == errc{}, "to_chars failed");
+                        _STL_INTERNAL_CHECK(_Ec == errc{});
 
                         _Out = _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
 

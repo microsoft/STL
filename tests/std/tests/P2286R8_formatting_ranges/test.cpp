@@ -5,6 +5,8 @@
 #include <format>
 #include <string>
 #include <string_view>
+#include <type_traits>
+#include <utility>
 
 using namespace std;
 
@@ -45,7 +47,7 @@ void test_escaped_character() {
     assert(format(STR("{:?}"), T(' ')) == STR("' '"));
     assert(format(STR("{:?}"), T('~')) == STR("'~'"));
 
-    if constexpr (std::is_same_v<CharT, wchar_t> && std::is_same_v<T, wchar_t>) {
+    if constexpr (is_same_v<CharT, wchar_t> && is_same_v<T, wchar_t>) {
         assert(format(L"{:?}", L'\xA0') == LR"('\u{a0}')"); // U+00A0 NO-BREAK SPACE
         assert(format(L"{:?}", L'\x300') == LR"('\u{300}')"); // U+0300 COMBINING GRAVE ACCENT
 
@@ -76,7 +78,7 @@ void test_escaped_string() {
     assert(format(STR("[{:?}]"), basic_string_view{STR("\0 \n \t \x02 \x1b"), 9})
            == STR(R"(["\u{0} \n \t \u{2} \u{1b}"])"));
 
-    if constexpr (std::is_same_v<CharT, wchar_t>) {
+    if constexpr (is_same_v<CharT, wchar_t>) {
         assert(format(L"{:?}", L"\xA0") == LR"("\u{a0}")"); // U+00A0 NO-BREAK SPACE
         assert(format(L"{:?}", L"\U0010FFFF") == LR"("\u{10ffff}")"); // noncharacter
         assert(format(L"{:?}", L"\x300") == LR"("\u{300}")"); // U+0300 COMBINING GRAVE ACCENT

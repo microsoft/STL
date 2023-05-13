@@ -174,6 +174,7 @@ struct _Unicode_property_data {{
         --_Upper_idx;
         const uint32_t _Lower_bound = _Lower_bounds[_Upper_idx];
         const uint16_t _Data        = _Props_and_size[_Upper_idx];
+        _STL_INTERNAL_CHECK(_Code_point >= _Lower_bound);
         if constexpr (_Is_binary_property) {{
             if (_Code_point < _Lower_bound + _Data) {{
                 return static_cast<_ValueEnum>(0);
@@ -181,7 +182,6 @@ struct _Unicode_property_data {{
         }} else {{
             const uint16_t _Size   = static_cast<uint16_t>(_Data & 0x0FFF);
             const _ValueEnum _Prop = static_cast<_ValueEnum>((_Data & 0xF000) >> 12);
-            _STL_INTERNAL_CHECK(_Code_point >= _Lower_bound);
             if (_Code_point < _Lower_bound + _Size) {{
                 return _Prop;
             }}
