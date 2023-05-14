@@ -1386,7 +1386,7 @@ public:
             _Left._Has_value  = true;
             _Right._Has_value = false;
         } else {
-            swap(_Left._Unexpected, _Right._Unexpected); // intentional ADL
+            _Swap_adl(_Left._Unexpected, _Right._Unexpected);
         }
     }
 
