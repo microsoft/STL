@@ -83,7 +83,7 @@ public:
     // [expected.un.swap]
     constexpr void swap(unexpected& _Other) noexcept(is_nothrow_swappable_v<_Err>) {
         static_assert(is_swappable_v<_Err>, "E must be swappable");
-        _Swap_adl(_Unexpected, _Other._Unexpected);
+        swap(_Unexpected, _Other._Unexpected); // intentional ADL
     }
 
     friend constexpr void swap(unexpected& _Left, unexpected& _Right) noexcept(is_nothrow_swappable_v<_Err>)
@@ -519,7 +519,7 @@ public:
               && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
     {
         if (_Has_value && _Other._Has_value) {
-            _Swap_adl(_Value, _Other._Value);
+            swap(_Value, _Other._Value); // intentional ADL
         } else if (_Has_value) {
             if constexpr (is_nothrow_move_constructible_v<_Err>) {
                 _Err _Tmp(_STD move(_Other._Unexpected));
@@ -560,7 +560,7 @@ public:
         } else if (_Other._Has_value) {
             _Other.swap(*this);
         } else {
-            _Swap_adl(_Unexpected, _Other._Unexpected);
+            swap(_Unexpected, _Other._Unexpected); // intentional ADL
         }
     }
 
@@ -1361,7 +1361,7 @@ public:
             _Has_value        = true;
             _Other._Has_value = false;
         } else {
-            _Swap_adl(_Unexpected, _Other._Unexpected);
+            swap(_Unexpected, _Other._Unexpected); // intentional ADL
         }
     }
 
@@ -1386,7 +1386,7 @@ public:
             _Left._Has_value  = true;
             _Right._Has_value = false;
         } else {
-            _Swap_adl(_Left._Unexpected, _Right._Unexpected);
+            swap(_Left._Unexpected, _Right._Unexpected); // intentional ADL
         }
     }
 

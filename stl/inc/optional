@@ -358,7 +358,7 @@ public:
             const bool _Engaged = this->_Has_value;
             if (_Engaged == _Right._Has_value) {
                 if (_Engaged) {
-                    _Swap_adl(**this, *_Right);
+                    swap(**this, *_Right); // intentional ADL
                 }
             } else {
                 optional& _Source = _Engaged ? *this : _Right;
