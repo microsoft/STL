@@ -1100,7 +1100,7 @@ public:
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
             _Swap_proxy_and_iterators(_Right);
-            swap(_Mypair._Myval2._Myhead, _Right._Mypair._Myval2._Myhead); // intentional ADL
+            _Swap_adl(_Mypair._Myval2._Myhead, _Right._Mypair._Myval2._Myhead);
         }
     }
 

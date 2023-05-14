@@ -4286,7 +4286,7 @@ public:
 #endif // !defined(_INSERT_STRING_ANNOTATION)
 
         if (_My_large && _Right_large) { // swap buffers, iterators preserved
-            swap(_My_data._Bx._Ptr, _Right_data._Bx._Ptr); // intentional ADL
+            _Swap_adl(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
         } else if (_My_large) { // swap large with small
             _Swap_bx_large_with_small(_My_data, _Right_data);
         } else if (_Right_large) { // swap small with large

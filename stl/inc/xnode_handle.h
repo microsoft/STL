@@ -192,7 +192,7 @@ public:
             _Construct_in_place(_Getal(), _STD move(_That_al));
             _Destroy_in_place(_That_al);
         }
-        swap(_Ptr, _That._Ptr); // intentional ADL
+        _Swap_adl(_Ptr, _That._Ptr);
     }
     friend void swap(_Node_handle& _Left, _Node_handle& _Right) noexcept /* strengthened */ {
         _Left.swap(_Right);

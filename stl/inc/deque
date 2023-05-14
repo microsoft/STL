@@ -1460,7 +1460,7 @@ public:
             auto& _My_data    = _Get_data();
             auto& _Right_data = _Right._Get_data();
             _My_data._Swap_proxy_and_iterators(_Right_data);
-            swap(_My_data._Map, _Right_data._Map); // intentional ADL
+            _Swap_adl(_My_data._Map, _Right_data._Map);
             _STD swap(_My_data._Mapsize, _Right_data._Mapsize);
             _STD swap(_My_data._Myoff, _Right_data._Myoff);
             _STD swap(_My_data._Mysize, _Right_data._Mysize);

@@ -136,7 +136,7 @@ public:
     }
 
     void swap(stack& _Right) noexcept(_Is_nothrow_swappable<_Container>::value) {
-        swap(c, _Right.c); // intentional ADL
+        _Swap_adl(c, _Right.c);
     }
 
     _NODISCARD const _Container& _Get_container() const noexcept {

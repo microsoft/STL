@@ -27,6 +27,7 @@ namespace stdext {
     using _STD swap;
     using _STD _Hash;
     using _STD _Is_nothrow_swappable;
+    using _STD _Swap_adl;
 
     template <class _Kty, // key type (same as value type)
         class _Tr, // comparator predicate type
@@ -78,7 +79,7 @@ namespace stdext {
         }
 
         void swap(_Hset_traits& _Rhs) noexcept(_Is_nothrow_swappable<_Tr>::value) {
-            swap(static_cast<_Tr&>(*this), static_cast<_Tr&>(_Rhs)); // intentional ADL
+            _Swap_adl(static_cast<_Tr&>(*this), static_cast<_Tr&>(_Rhs));
             _STD swap(_Max_buckets, _Rhs._Max_buckets);
         }
 
