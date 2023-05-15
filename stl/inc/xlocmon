@@ -364,7 +364,7 @@ protected:
             const char* _Eb = _Str.c_str();
             char* _Ep;
             int _Errno             = 0;
-            const long double _Ans = _Stodx_v2(_Eb, &_Ep, 0, &_Errno); // convert and "widen" double to long double
+            const long double _Ans = _Stodx_v3(_Eb, &_Ep, &_Errno); // convert and "widen" double to long double
 
             if (_Ep == _Eb || _Errno != 0) {
                 _State |= ios_base::failbit;

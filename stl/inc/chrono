@@ -18,7 +18,6 @@
 
 #if _HAS_CXX20
 #include <__msvc_tzdb.hpp>
-#include <algorithm>
 #include <atomic>
 #include <cmath>
 #include <compare>
@@ -1579,16 +1578,23 @@ namespace chrono {
             "N4885 [time.hms.overview]/2 mandates Duration to be a specialization of chrono::duration.");
 
         static constexpr unsigned int fractional_width = [] {
-            auto _Num           = _Duration::period::num;
-            constexpr auto _Den = _Duration::period::den;
             // Returns the number of fractional digits of _Num / _Den in the range [0, 18].
             // If it can't be represented, 6 is returned.
             // Example: _Fractional_width(1, 8) would return 3 for 0.125.
-            _STL_ASSERT(_Num > 0 && _Den > 0, "Numerator and denominator can't be less than 1.");
-            unsigned int _Result = 0;
-            for (; _Num % _Den != 0 && _Result < 19; _Num = _Num % _Den * 10, ++_Result) {
+            auto _Den = _Duration::period::den;
+            _STL_ASSERT(_Duration::period::num > 0 && _Den > 0, "Numerator and denominator can't be less than 1.");
+            unsigned int _Power_of_2_in_den = 0u;
+            unsigned int _Power_of_5_in_den = 0u;
+            for (; _Den % 2 == 0; _Den /= 2, ++_Power_of_2_in_den) {
             }
-            return _Result == 19 ? 6 : _Result;
+            for (; _Den % 5 == 0; _Den /= 5, ++_Power_of_5_in_den) {
+            }
+
+            if (_Den != 1) {
+                return 6u;
+            }
+            const auto _Result = (_STD max)(_Power_of_2_in_den, _Power_of_5_in_den);
+            return _Result > 18u ? 6u : _Result;
         }();
         using precision =
             duration<common_type_t<typename _Duration::rep, seconds::rep>, ratio<1, _Pow10(fractional_width)>>;
@@ -2250,14 +2256,19 @@ namespace chrono {
             auto [_Leap_sec, _All_ls_positive] = _Tzdb_generate_leap_seconds(_Tzdb_list.front().leap_seconds.size());
             if (!_Leap_sec.empty()) {
                 const auto& _Tzdb = _Tzdb_list.front();
+
                 vector<time_zone> _Zones;
-                _STD transform(_Tzdb.zones.begin(), _Tzdb.zones.end(), _STD back_inserter(_Zones),
-                    [](const auto& _Tz) { return time_zone{_Tz.name()}; });
+                _Zones.reserve(_Tzdb.zones.size());
+                for (const auto& _Tz : _Tzdb.zones) {
+                    _Zones.emplace_back(_Tz.name());
+                }
+
                 vector<time_zone_link> _Links;
-                _STD transform(
-                    _Tzdb.links.begin(), _Tzdb.links.end(), _STD back_inserter(_Links), [](const auto& _Link) {
-                        return time_zone_link{_Link.name(), _Link.target()};
-                    });
+                _Links.reserve(_Tzdb.links.size());
+                for (const auto& _Link : _Tzdb.links) {
+                    _Links.emplace_back(_Link.name(), _Link.target());
+                }
+
                 auto _Version = _Tzdb_update_version(_Tzdb.version, _Leap_sec.size());
                 _Tzdb_list.emplace_front(tzdb{
                     _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
@@ -4941,8 +4952,8 @@ namespace chrono {
     }
 
     template <class _Duration>
-    _NODISCARD constexpr hh_mm_ss<_Duration> _Hh_mm_ss_part_underflow_to_zero(const _Duration& _Val) {
-        return hh_mm_ss<_Duration>{_Remove_duration_part<days>(_Val)};
+    _NODISCARD constexpr auto _Hh_mm_ss_part_underflow_to_zero(const _Duration& _Val) {
+        return hh_mm_ss<common_type_t<days, _Duration>>{_Remove_duration_part<days>(_Val)};
     }
 
     template <unsigned int _Fractional_width, class _CharT, class _Traits, class _Precision>
@@ -4994,7 +5005,7 @@ namespace chrono {
         _Write_seconds(_Os, _Hh_mm_ss_part_underflow_to_zero(_Val));
     }
 
-    _EXPORT_STD /* TRANSITION, VSO-1582358 */ template <class _Ty>
+    template <class _Ty>
     _NODISCARD tm _Fill_tm(const _Ty& _Val) {
         unsigned int _Day   = 0;
         unsigned int _Month = 0;
@@ -6007,7 +6018,7 @@ namespace chrono {
     template <class _Duration>
     _NODISCARD string ambiguous_local_time::_Make_string(const local_time<_Duration>& _Tp, const local_info& _Info) {
         ostringstream _Os;
-        _Os << _Tp << " is ambiguous. It could be\n"
+        _Os << _Tp << " is ambiguous.  It could be\n"
             << _Tp << ' ' << _Info.first.abbrev << " == " << _Tp - _Info.first.offset << " UTC or\n"
             << _Tp << ' ' << _Info.second.abbrev << " == " << _Tp - _Info.second.offset << " UTC";
         return _STD move(_Os).str();

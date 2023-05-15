@@ -406,6 +406,9 @@ struct pointer_traits<_Array_iterator<_Ty, _Size>> {
 _EXPORT_STD template <class _Ty, size_t _Size>
 class array { // fixed size array of values
 public:
+    static_assert(is_object_v<_Ty>, "The C++ Standard forbids containers of non-object types "
+                                    "because of [container.requirements].");
+
     using value_type      = _Ty;
     using size_type       = size_t;
     using difference_type = ptrdiff_t;
@@ -592,6 +595,9 @@ struct _Empty_array_element {};
 template <class _Ty>
 class array<_Ty, 0> {
 public:
+    static_assert(is_object_v<_Ty>, "The C++ Standard forbids containers of non-object types "
+                                    "because of [container.requirements].");
+
     using value_type      = _Ty;
     using size_type       = size_t;
     using difference_type = ptrdiff_t;
@@ -769,11 +775,7 @@ _CONSTEXPR20 void swap(array<_Ty, _Size>& _Left, array<_Ty, _Size>& _Right) noex
 
 _EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator==(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
-#ifdef __EDG__ // TRANSITION, VSO-1161663
-    return _STD equal(_Left.begin(), _Left.end(), _Right.begin());
-#else // ^^^ workaround / no workaround vvv
     return _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
-#endif // ^^^ no workaround ^^^
 }
 
 #if !_HAS_CXX20
@@ -787,23 +789,14 @@ _NODISCARD bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Siz
 _EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
-#ifdef __EDG__ // TRANSITION, VSO-1161663
-    return _STD lexicographical_compare_three_way(
-        _Left.begin(), _Left.end(), _Right.begin(), _Right.end(), _Synth_three_way{});
-#else // ^^^ workaround / no workaround vvv
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
         _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
-#endif // ^^^ no workaround ^^^
 }
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
-#ifdef __EDG__ // TRANSITION, VSO-1161663
-    return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
-#else // ^^^ workaround / no workaround vvv
     return _STD lexicographical_compare(
         _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
-#endif // ^^^ no workaround ^^^
 }
 
 template <class _Ty, size_t _Size>

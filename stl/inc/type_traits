@@ -8,8 +8,9 @@
 #define _TYPE_TRAITS_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <cstddef>
 #include <cstdint>
-#include <xstddef>
+#include <xtr1common>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -19,6 +20,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+template <class>
+// TRANSITION, CWG-2518: false value attached to a dependent name (for static_assert)
+_INLINE_VAR constexpr bool _Always_false = false;
+
 _EXPORT_STD template <class _Ty, _Ty... _Vals>
 struct integer_sequence { // sequence of integer parameters
     static_assert(is_integral_v<_Ty>, "integer_sequence<T, I...> requires T to be an integral type.");
@@ -383,6 +388,133 @@ struct is_compound : bool_constant<!is_fundamental_v<_Ty>> {}; // determine whet
 
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
+
+#define _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) FUNC(__cdecl, OPT1, OPT2, OPT3)
+
+#ifdef _M_CEE
+#define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)
+
+#else // _M_CEE
+#define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3)
+#endif // _M_CEE
+
+#if defined(_M_IX86) && !defined(_M_CEE)
+#define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__fastcall, OPT1, OPT2, OPT3)
+
+#else // defined(_M_IX86) && !defined(_M_CEE)
+#define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3)
+#endif // defined(_M_IX86) && !defined(_M_CEE)
+
+#ifdef _M_IX86
+#define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)  FUNC(__stdcall, OPT1, OPT2, OPT3)
+#define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__thiscall, OPT1, OPT2, OPT3)
+
+#else // _M_IX86
+#define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)
+#define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3)
+#endif // _M_IX86
+
+#if ((defined(_M_IX86) && _M_IX86_FP >= 2) || defined(_M_X64)) && !defined(_M_CEE)
+#define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__vectorcall, OPT1, OPT2, OPT3)
+
+#else // defined(_M_IX86) && _M_IX86_FP >= 2 etc.
+#define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3)
+#endif // defined(_M_IX86) && _M_IX86_FP >= 2 etc.
+
+#define _NON_MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
+    _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)          \
+    _EMIT_CLRCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)        \
+    _EMIT_FASTCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)       \
+    _EMIT_STDCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)        \
+    _EMIT_VECTORCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
+
+#define _NON_MEMBER_CALL_CV(FUNC, REF_OPT, NOEXCEPT_OPT)    \
+    _NON_MEMBER_CALL(FUNC, , REF_OPT, NOEXCEPT_OPT)         \
+    _NON_MEMBER_CALL(FUNC, const, REF_OPT, NOEXCEPT_OPT)    \
+    _NON_MEMBER_CALL(FUNC, volatile, REF_OPT, NOEXCEPT_OPT) \
+    _NON_MEMBER_CALL(FUNC, const volatile, REF_OPT, NOEXCEPT_OPT)
+
+#define _NON_MEMBER_CALL_CV_REF(FUNC, NOEXCEPT_OPT) \
+    _NON_MEMBER_CALL_CV(FUNC, , NOEXCEPT_OPT)       \
+    _NON_MEMBER_CALL_CV(FUNC, &, NOEXCEPT_OPT)      \
+    _NON_MEMBER_CALL_CV(FUNC, &&, NOEXCEPT_OPT)
+
+#ifdef __cpp_noexcept_function_type
+#define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
+    _NON_MEMBER_CALL_CV_REF(FUNC, )            \
+    _NON_MEMBER_CALL_CV_REF(FUNC, noexcept)
+#else // __cpp_noexcept_function_type
+#define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _NON_MEMBER_CALL_CV_REF(FUNC, )
+#endif // __cpp_noexcept_function_type
+
+#define _MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
+    _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)      \
+    _EMIT_CLRCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)    \
+    _EMIT_FASTCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)   \
+    _EMIT_STDCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)    \
+    _EMIT_THISCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)   \
+    _EMIT_VECTORCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
+
+#define _MEMBER_CALL_CV(FUNC, REF_OPT, NOEXCEPT_OPT)    \
+    _MEMBER_CALL(FUNC, , REF_OPT, NOEXCEPT_OPT)         \
+    _MEMBER_CALL(FUNC, const, REF_OPT, NOEXCEPT_OPT)    \
+    _MEMBER_CALL(FUNC, volatile, REF_OPT, NOEXCEPT_OPT) \
+    _MEMBER_CALL(FUNC, const volatile, REF_OPT, NOEXCEPT_OPT)
+
+#define _MEMBER_CALL_CV_REF(FUNC, NOEXCEPT_OPT) \
+    _MEMBER_CALL_CV(FUNC, , NOEXCEPT_OPT)       \
+    _MEMBER_CALL_CV(FUNC, &, NOEXCEPT_OPT)      \
+    _MEMBER_CALL_CV(FUNC, &&, NOEXCEPT_OPT)
+
+#ifdef __cpp_noexcept_function_type
+#define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
+    _MEMBER_CALL_CV_REF(FUNC, )            \
+    _MEMBER_CALL_CV_REF(FUNC, noexcept)
+#else // __cpp_noexcept_function_type
+#define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _MEMBER_CALL_CV_REF(FUNC, )
+#endif // __cpp_noexcept_function_type
+
+#ifdef __cpp_noexcept_function_type
+#define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
+    CLASS(_EMPTY_ARGUMENT)                   \
+    CLASS(const)                             \
+    CLASS(volatile)                          \
+    CLASS(const volatile)                    \
+    CLASS(&)                                 \
+    CLASS(const&)                            \
+    CLASS(volatile&)                         \
+    CLASS(const volatile&)                   \
+    CLASS(&&)                                \
+    CLASS(const&&)                           \
+    CLASS(volatile&&)                        \
+    CLASS(const volatile&&)                  \
+    CLASS(noexcept)                          \
+    CLASS(const noexcept)                    \
+    CLASS(volatile noexcept)                 \
+    CLASS(const volatile noexcept)           \
+    CLASS(&noexcept)                         \
+    CLASS(const& noexcept)                   \
+    CLASS(volatile& noexcept)                \
+    CLASS(const volatile& noexcept)          \
+    CLASS(&&noexcept)                        \
+    CLASS(const&& noexcept)                  \
+    CLASS(volatile&& noexcept)               \
+    CLASS(const volatile&& noexcept)
+#else // __cpp_noexcept_function_type
+#define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
+    CLASS(_EMPTY_ARGUMENT)                   \
+    CLASS(const)                             \
+    CLASS(volatile)                          \
+    CLASS(const volatile)                    \
+    CLASS(&)                                 \
+    CLASS(const&)                            \
+    CLASS(volatile&)                         \
+    CLASS(const volatile&)                   \
+    CLASS(&&)                                \
+    CLASS(const&&)                           \
+    CLASS(volatile&&)                        \
+    CLASS(const volatile&&)
+#endif // __cpp_noexcept_function_type
 
 template <class... _Types>
 struct _Arg_types {}; // provide argument_type, etc. when sizeof...(_Types) is 1 or 2
@@ -1472,6 +1604,36 @@ _NODISCARD _MSVC_INTRINSIC constexpr //
 }
 
 _EXPORT_STD template <class _Ty>
+_NODISCARD constexpr _Ty* addressof(_Ty& _Val) noexcept {
+    return __builtin_addressof(_Val);
+}
+
+_EXPORT_STD template <class _Ty>
+const _Ty* addressof(const _Ty&&) = delete;
+
+#pragma warning(push)
+#pragma warning(disable : 5215) // '%s' a function parameter with a volatile qualified type is deprecated in C++20
+#pragma warning(disable : 5216) // '%s' a volatile qualified return type is deprecated in C++20
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#endif // __clang__
+
+template <class _Ty>
+_NODISCARD _Ty _Fake_copy_init(_Ty) noexcept;
+// _Fake_copy_init<T>(E):
+// (1) has type T [decay_t<decltype((E))> if T is deduced],
+// (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
+// (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
+
+#pragma warning(pop)
+
+_EXPORT_STD template <class _Ty>
 class reference_wrapper;
 
 // std::invoke isn't constexpr in C++17, and normally implementers are forbidden from "strengthening" constexpr
@@ -2294,6 +2456,30 @@ template <class _Kty>
 struct _Is_nothrow_hashable<_Kty, void_t<decltype(hash<_Kty>{}(_STD declval<const _Kty&>()))>>
     : bool_constant<noexcept(hash<_Kty>{}(_STD declval<const _Kty&>()))> {};
 
+_EXPORT_STD template <class _Ty = void>
+struct less {
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
+
+    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left < _Right))) /* strengthened */ {
+        return _Left < _Right;
+    }
+};
+
+template <>
+struct less<void> {
+    template <class _Ty1, class _Ty2>
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+        noexcept(noexcept(static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right))) // strengthened
+        -> decltype(static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right)) {
+        return static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right);
+    }
+
+    using is_transparent = int;
+};
+
 // vvvvvvvvvv DERIVED FROM corecrt_internal_fltintrn.h vvvvvvvvvv
 
 template <class _FloatingType>
@@ -2343,6 +2529,14 @@ template <>
 struct _Floating_type_traits<long double> : _Floating_type_traits<double> {};
 
 // ^^^^^^^^^^ DERIVED FROM corecrt_internal_fltintrn.h ^^^^^^^^^^
+
+template <class _To, class _From,
+    enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
+                    is_trivially_copyable<_From>>,
+        int> = 0>
+_NODISCARD constexpr _To _Bit_cast(const _From& _Val) noexcept {
+    return __builtin_bit_cast(_To, _Val);
+}
 
 #if _HAS_TR1_NAMESPACE
 _STL_DISABLE_DEPRECATED_WARNING

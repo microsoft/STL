@@ -1624,7 +1624,7 @@ void typeindex_test() {
 
 template <typename FunctorArg, typename Arg>
 void functors_test_impl(Arg val) {
-    // Following from <xstddef>:
+    // Following from <type_traits> and <xutility>:
     (void) plus<FunctorArg>()(val, val);
     (void) minus<FunctorArg>()(val, val);
     (void) multiplies<FunctorArg>()(val, val);

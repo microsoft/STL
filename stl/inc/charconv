@@ -1579,6 +1579,8 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
     }
     const char* const _Leading_zero_end = _Next;
 
+    bool _Has_zero_tail = true;
+
     // Scan the integer part of the mantissa:
     for (; _Next != _Last; ++_Next) {
         const unsigned char _Digit_value = _Digit_from_char(*_Next);
@@ -1589,20 +1591,18 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
 
         if (_Mantissa_it != _Mantissa_last) {
             *_Mantissa_it++ = _Digit_value;
+        } else {
+            _Has_zero_tail = _Has_zero_tail && _Digit_value == 0;
         }
     }
     const char* const _Whole_end = _Next;
-
-    // Defend against _Exponent_adjustment integer overflow. (These values don't need to be strict.)
-    constexpr ptrdiff_t _Maximum_adjustment = 1'000'000;
-    constexpr ptrdiff_t _Minimum_adjustment = -1'000'000;
 
     // The exponent adjustment holds the number of digits in the mantissa buffer that appeared before the radix point.
     // It can be negative, and leading zeroes in the integer part are ignored. Examples:
     // For "03333.111", it is 4.
     // For "00000.111", it is 0.
     // For "00000.001", it is -2.
-    int _Exponent_adjustment = static_cast<int>((_STD min)(_Whole_end - _Leading_zero_end, _Maximum_adjustment));
+    ptrdiff_t _Exponent_adjustment = _Whole_end - _Leading_zero_end;
 
     // [_Whole_end, _Dot_end) will contain 0 or 1 '.' characters
     if (_Next != _Last && *_Next == '.') {
@@ -1618,12 +1618,10 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
         for (; _Next != _Last && *_Next == '0'; ++_Next) {
         }
 
-        _Exponent_adjustment = static_cast<int>((_STD max)(_Dot_end - _Next, _Minimum_adjustment));
+        _Exponent_adjustment = _Dot_end - _Next;
     }
 
     // Scan the fractional part of the mantissa:
-    bool _Has_zero_tail = true;
-
     for (; _Next != _Last; ++_Next) {
         const unsigned char _Digit_value = _Digit_from_char(*_Next);
 
@@ -1647,7 +1645,8 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
     const char _Exponent_prefix{_Is_hexadecimal ? 'p' : 'e'};
 
     bool _Exponent_is_negative = false;
-    int _Exponent              = 0;
+    bool _Exp_abs_too_large    = false;
+    ptrdiff_t _Exponent        = 0;
 
     constexpr int _Maximum_temporary_decimal_exponent = 5200;
     constexpr int _Minimum_temporary_decimal_exponent = -5200;
@@ -1672,8 +1671,10 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
 
             // found decimal digit
 
-            if (_Exponent <= _Maximum_temporary_decimal_exponent) {
+            if (_Exponent < PTRDIFF_MAX / 10 || (_Exponent == PTRDIFF_MAX / 10 && _Digit_value <= PTRDIFF_MAX % 10)) {
                 _Exponent = _Exponent * 10 + _Digit_value;
+            } else {
+                _Exp_abs_too_large = true;
             }
 
             ++_Unread;
@@ -1710,22 +1711,58 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
         return {_Next, errc{}};
     }
 
-    // Before we adjust the exponent, handle the case where we detected a wildly
-    // out of range exponent during parsing and clamped the value:
-    if (_Exponent > _Maximum_temporary_decimal_exponent) {
-        _Assemble_floating_point_infinity(_Fp_string._Myis_negative, _Value);
-        return {_Next, errc::result_out_of_range}; // Overflow example: "1e+9999"
+    // Handle exponent of an overly large absolute value.
+    if (_Exp_abs_too_large) {
+        if (_Exponent > 0) {
+            _Assemble_floating_point_infinity(_Fp_string._Myis_negative, _Value);
+            return {_Next, errc::result_out_of_range};
+        } else {
+            _Assemble_floating_point_zero(_Fp_string._Myis_negative, _Value);
+            return {_Next, errc::result_out_of_range};
+        }
     }
 
-    if (_Exponent < _Minimum_temporary_decimal_exponent) {
-        _Assemble_floating_point_zero(_Fp_string._Myis_negative, _Value);
-        return {_Next, errc::result_out_of_range}; // Underflow example: "1e-9999"
+    // Adjust _Exponent and _Exponent_adjustment when they have different signedness to avoid overflow.
+    if (_Exponent > 0 && _Exponent_adjustment < 0) {
+        if (_Is_hexadecimal) {
+            const ptrdiff_t _Further_adjustment = (_STD max)(-((_Exponent - 1) / 4 + 1), _Exponent_adjustment);
+            _Exponent += _Further_adjustment * 4;
+            _Exponent_adjustment -= _Further_adjustment;
+        } else {
+            const ptrdiff_t _Further_adjustment = (_STD max)(-_Exponent, _Exponent_adjustment);
+            _Exponent += _Further_adjustment;
+            _Exponent_adjustment -= _Further_adjustment;
+        }
+    } else if (_Exponent < 0 && _Exponent_adjustment > 0) {
+        if (_Is_hexadecimal) {
+            const ptrdiff_t _Further_adjustment = (_STD min)((-_Exponent - 1) / 4 + 1, _Exponent_adjustment);
+            _Exponent += _Further_adjustment * 4;
+            _Exponent_adjustment -= _Further_adjustment;
+        } else {
+            const ptrdiff_t _Further_adjustment = (_STD min)(-_Exponent, _Exponent_adjustment);
+            _Exponent += _Further_adjustment;
+            _Exponent_adjustment -= _Further_adjustment;
+        }
     }
 
     // In hexadecimal floating constants, the exponent is a base 2 exponent. The exponent adjustment computed during
     // parsing has the same base as the mantissa (so, 16 for hexadecimal floating constants).
     // We therefore need to scale the base 16 multiplier to base 2 by multiplying by log2(16):
     const int _Exponent_adjustment_multiplier{_Is_hexadecimal ? 4 : 1};
+
+    // And then _Exponent and _Exponent_adjustment are either both non-negative or both non-positive.
+    // So we can detect out-of-range cases directly.
+    if (_Exponent > _Maximum_temporary_decimal_exponent
+        || _Exponent_adjustment > _Maximum_temporary_decimal_exponent / _Exponent_adjustment_multiplier) {
+        _Assemble_floating_point_infinity(_Fp_string._Myis_negative, _Value);
+        return {_Next, errc::result_out_of_range}; // Overflow example: "1e+9999"
+    }
+
+    if (_Exponent < _Minimum_temporary_decimal_exponent
+        || _Exponent_adjustment < _Minimum_temporary_decimal_exponent / _Exponent_adjustment_multiplier) {
+        _Assemble_floating_point_zero(_Fp_string._Myis_negative, _Value);
+        return {_Next, errc::result_out_of_range}; // Underflow example: "1e-9999"
+    }
 
     _Exponent += _Exponent_adjustment * _Exponent_adjustment_multiplier;
 
@@ -1741,7 +1778,7 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
         return {_Next, errc::result_out_of_range}; // Underflow example: "0.001e-5199"
     }
 
-    _Fp_string._Myexponent       = _Exponent;
+    _Fp_string._Myexponent       = static_cast<int32_t>(_Exponent);
     _Fp_string._Mymantissa_count = static_cast<uint32_t>(_Mantissa_it - _Mantissa_first);
 
     if (_Is_hexadecimal) {

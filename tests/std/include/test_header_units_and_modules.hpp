@@ -661,11 +661,7 @@ constexpr bool impl_test_source_location() {
     using namespace std;
     const auto sl = source_location::current();
     assert(sl.line() == __LINE__ - 1);
-#if defined(_MSVC_INTERNAL_TESTING) || _MSC_FULL_VER >= 193632502 // TRANSITION, VS 2022 17.6 Preview 2
     assert(sl.column() == 38);
-#else // ^^^ no workaround / workaround vvv
-    assert(sl.column() == 1);
-#endif // ^^^ workaround ^^^
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(sl.function_name() == "impl_test_source_location"sv);
 #else // ^^^ workaround / no workaround vvv
@@ -941,6 +937,8 @@ void test_typeinfo() {
     const type_info& t3 = typeid(double);
     assert(t1 == t2);
     assert(t1 != t3);
+
+    assert(typeid(double).name() == "double"sv); // also test DevCom-10349749
 }
 
 void test_unordered_map() {

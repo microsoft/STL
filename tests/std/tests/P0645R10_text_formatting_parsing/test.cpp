@@ -47,6 +47,12 @@ bool test_parse_align() {
             test_parse_helper(parse_align_fn, L"\U0001F3C8^X"sv, false, 3,
                 {.expected_alignment = _Fmt_align::_Center, .expected_fill = L"\U0001F3C8"sv});
         }
+
+        // test invalid fill characters
+        {
+            test_parse_helper(parse_align_fn, L"\xD800<X"sv, true);
+            test_parse_helper(parse_align_fn, L"\xDC00<X"sv, true);
+        }
     }
 
     return true;

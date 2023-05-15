@@ -285,6 +285,7 @@
 // P2432R1 Fix istream_view
 // P2508R1 basic_format_string, format_string, wformat_string
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
+// P2572R1 std::format Fill Character Allowances
 // P2588R3 barrier's Phase Completion Guarantees
 // P2602R2 Poison Pills Are Too Toxic
 // P2609R3 Relaxing Ranges Just A Smidge
@@ -364,6 +365,7 @@
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
+// P2614R2 Deprecating float_denorm_style, numeric_limits::has_denorm, numeric_limits::has_denorm_loss
 // Other C++23 deprecation warnings
 
 // Parallel Algorithms Notes
@@ -828,7 +830,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202303L
+#define _MSVC_STL_UPDATE  202305L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1430,7 +1432,18 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX23_DEPRECATE_UNIX_STREAMS
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4042
+#if _HAS_CXX23 && !defined(_SILENCE_CXX23_DENORM_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+#define _CXX23_DEPRECATE_DENORM                                                                                        \
+    [[deprecated("warning STL4042: "                                                                                   \
+                 "std::float_denorm_style, std::numeric_limits::has_denorm, and std::numeric_limits::has_denorm_loss " \
+                 "are deprecated in C++23. You can define _SILENCE_CXX23_DENORM_DEPRECATION_WARNING or "               \
+                 "_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX23_DEPRECATE_DENORM
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4043
 
 // next error number: STL1006
 
