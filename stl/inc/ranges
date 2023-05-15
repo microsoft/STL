@@ -8839,6 +8839,16 @@ namespace ranges {
     using _Invoke_result_with_repeated_type =
         typename _Invoke_result_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>::type;
 
+    template <class _Vw, class _Fn, size_t _Nx>
+    concept _Adjacent_transform_constraints =
+        (_Nx > 0) && forward_range<_Vw> && view<_Vw> && is_object_v<_Fn> && move_constructible<_Fn>
+        && _Regular_invocable_with_repeated_type<_Fn&, range_reference_t<_Vw>, _Nx>
+        && _Can_reference<_Invoke_result_with_repeated_type<_Fn&, range_reference_t<_Vw>, _Nx>>;
+
+    _EXPORT_STD template <class _Vw, class _Fn, size_t _Nx>
+        requires _Adjacent_transform_constraints<_Vw, _Fn, _Nx>
+    class adjacent_transform_view;
+
     _EXPORT_STD template <forward_range _Vw, size_t _Nx>
         requires view<_Vw> && (_Nx > 0)
     class adjacent_view : public view_interface<adjacent_view<_Vw, _Nx>> {
@@ -8854,12 +8864,9 @@ namespace ranges {
         private:
             friend adjacent_view;
 
-            template <forward_range _Vw2, move_constructible _Fn, size_t _Nx2>
-                requires view<_Vw2> && (_Nx2 > 0)
-                      && is_object_v<_Fn> && _Regular_invocable_with_repeated_type<_Fn&, range_reference_t<_Vw2>, _Nx2>
-                      && _Can_reference<_Invoke_result_with_repeated_type<_Fn&, range_reference_t<_Vw2>, _Nx2>>
+            template <class _Vw2, class _Fn, size_t _Nx2>
+                requires _Adjacent_transform_constraints<_Vw2, _Fn, _Nx2>
             friend class adjacent_transform_view;
-
             using _Base          = _Maybe_const<_Const, _Vw>;
             using _Base_iterator = iterator_t<_Base>;
 
@@ -9220,10 +9227,8 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Adjacent_fn<2> pairwise;
     } // namespace views
 
-    _EXPORT_STD template <forward_range _Vw, move_constructible _Fn, size_t _Nx>
-        requires view<_Vw> && (_Nx > 0)
-              && is_object_v<_Fn> && _Regular_invocable_with_repeated_type<_Fn&, range_reference_t<_Vw>, _Nx>
-              && _Can_reference<_Invoke_result_with_repeated_type<_Fn&, range_reference_t<_Vw>, _Nx>>
+    template <class _Vw, class _Fn, size_t _Nx>
+        requires _Adjacent_transform_constraints<_Vw, _Fn, _Nx>
     class adjacent_transform_view : public view_interface<adjacent_transform_view<_Vw, _Fn, _Nx>> {
     private:
         using _Inner_view = adjacent_view<_Vw, _Nx>;
