@@ -13,7 +13,6 @@ _EMIT_STL_WARNING(STL4038, "The contents of <bit> are available only with C++20 
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <cstdlib>
-#include <isa_availability.h>
 #include <limits>
 #include <type_traits>
 
@@ -253,7 +252,7 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
 #ifdef __AVX2__
     return _Countl_zero_lzcnt(_Val);
 #else // __AVX2__
-    const bool _Definitely_have_lzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
+    const bool _Definitely_have_lzcnt = __isa_available >= 5; // __ISA_AVAILABLE_AVX2
     if (_Definitely_have_lzcnt) {
         return _Countl_zero_lzcnt(_Val);
     } else {
