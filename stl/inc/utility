@@ -101,11 +101,6 @@ _CONSTEXPR20 void swap(_Ty& _Left, _Ty& _Right) noexcept(
     _Right   = _STD move(_Tmp);
 }
 
-template <class _Ty>
-_CONSTEXPR20 void _Swap_adl(_Ty& _Left, _Ty& _Right) noexcept(_Is_nothrow_swappable<_Ty>::value) {
-    swap(_Left, _Right); // intentional ADL
-}
-
 _EXPORT_STD struct piecewise_construct_t { // tag type for pair tuple arguments
     explicit piecewise_construct_t() = default;
 };
@@ -439,9 +434,10 @@ struct pair { // store a pair of values
 
     _CONSTEXPR20 void swap(pair& _Right) noexcept(
         _Is_nothrow_swappable<_Ty1>::value&& _Is_nothrow_swappable<_Ty2>::value) {
+        using _STD swap;
         if (this != _STD addressof(_Right)) {
-            _Swap_adl(first, _Right.first);
-            _Swap_adl(second, _Right.second);
+            swap(first, _Right.first); // intentional ADL
+            swap(second, _Right.second); // intentional ADL
         }
     }
 
@@ -449,9 +445,10 @@ struct pair { // store a pair of values
     template <int = 0> // see GH-3013
     constexpr void swap(const pair& _Right) const
         noexcept(is_nothrow_swappable_v<const _Ty1>&& is_nothrow_swappable_v<const _Ty2>) {
+        using _STD swap;
         if (this != _STD addressof(_Right)) {
-            _Swap_adl(first, _Right.first);
-            _Swap_adl(second, _Right.second);
+            swap(first, _Right.first); // intentional ADL
+            swap(second, _Right.second); // intentional ADL
         }
     }
 #endif // _HAS_CXX23

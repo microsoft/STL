@@ -164,10 +164,11 @@ public:
 
     void swap(_Uhash_compare& _Rhs) noexcept(
         conjunction_v<_Is_nothrow_swappable<_Hasher>, _Is_nothrow_swappable<_Keyeq>>) {
-        _Swap_adl(_Mypair._Get_first(), _Rhs._Mypair._Get_first());
+        using _STD swap;
+        swap(_Mypair._Get_first(), _Rhs._Mypair._Get_first()); // intentional ADL
         auto& _Lsecond = _Mypair._Myval2;
         auto& _Rsecond = _Rhs._Mypair._Myval2;
-        _Swap_adl(_Lsecond._Get_first(), _Rsecond._Get_first());
+        swap(_Lsecond._Get_first(), _Rsecond._Get_first()); // intentional ADL
         _STD swap(_Lsecond._Myval2, _Rsecond._Myval2);
     }
 

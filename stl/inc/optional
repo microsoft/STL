@@ -351,6 +351,7 @@ public:
             "optional<T>::swap requires T to be move constructible (N4828 [optional.swap]/1).");
         static_assert(!is_move_constructible_v<_Ty> || is_swappable_v<_Ty>,
             "optional<T>::swap requires T to be swappable (N4828 [optional.swap]/1).");
+        using _STD swap;
         if constexpr (_Is_trivially_swappable_v<_Ty>) {
             using _TrivialBaseTy = _Optional_destruct_base<_Ty>;
             _STD swap(static_cast<_TrivialBaseTy&>(*this), static_cast<_TrivialBaseTy&>(_Right));
@@ -358,7 +359,7 @@ public:
             const bool _Engaged = this->_Has_value;
             if (_Engaged == _Right._Has_value) {
                 if (_Engaged) {
-                    _Swap_adl(**this, *_Right);
+                    swap(**this, *_Right); // intentional ADL
                 }
             } else {
                 optional& _Source = _Engaged ? *this : _Right;

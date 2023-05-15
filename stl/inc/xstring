@@ -4259,6 +4259,8 @@ public:
     }
 
     _CONSTEXPR20 void _Swap_data(basic_string& _Right) {
+        using _STD swap;
+
         auto& _My_data    = _Mypair._Myval2;
         auto& _Right_data = _Right._Mypair._Myval2;
 
@@ -4286,7 +4288,7 @@ public:
 #endif // !defined(_INSERT_STRING_ANNOTATION)
 
         if (_My_large && _Right_large) { // swap buffers, iterators preserved
-            _Swap_adl(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
+            swap(_My_data._Bx._Ptr, _Right_data._Bx._Ptr); // intentional ADL
         } else if (_My_large) { // swap large with small
             _Swap_bx_large_with_small(_My_data, _Right_data);
         } else if (_Right_large) { // swap small with large

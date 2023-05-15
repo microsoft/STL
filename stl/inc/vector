@@ -401,10 +401,11 @@ public:
         : _Myfirst(_First), _Mylast(_Last), _Myend(_End) {}
 
     _CONSTEXPR20 void _Swap_val(_Vector_val& _Right) noexcept {
+        using _STD swap;
         this->_Swap_proxy_and_iterators(_Right);
-        _Swap_adl(_Myfirst, _Right._Myfirst);
-        _Swap_adl(_Mylast, _Right._Mylast);
-        _Swap_adl(_Myend, _Right._Myend);
+        swap(_Myfirst, _Right._Myfirst); // intentional ADL
+        swap(_Mylast, _Right._Mylast); // intentional ADL
+        swap(_Myend, _Right._Myend); // intentional ADL
     }
 
     _CONSTEXPR20 void _Take_contents(_Vector_val& _Right) noexcept {

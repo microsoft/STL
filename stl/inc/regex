@@ -1137,8 +1137,9 @@ public:
     }
 
     void swap(match_results& _Right) noexcept(_Is_nothrow_swappable<_BidIt>::value) /* strengthened */ {
+        using _STD swap;
         _STD swap(_Ready, _Right._Ready);
-        _Swap_adl(_Org, _Right._Org);
+        swap(_Org, _Right._Org); // intentional ADL
         _Matches.swap(_Right._Matches);
         _STD swap(_Prefix, _Right._Prefix);
         _STD swap(_Suffix, _Right._Suffix);
@@ -3135,8 +3136,9 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_rep(int _Min, int _Max, bool _Gree
         _Insert_node(_Pos, _If_expr);
 
         if (!_Greedy) {
-            _Swap_adl(_If_expr->_Next->_Prev, _If_empty_str->_Next->_Prev);
-            _Swap_adl(_If_expr->_Next, _If_empty_str->_Next);
+            using _STD swap;
+            swap(_If_expr->_Next->_Prev, _If_empty_str->_Next->_Prev); // intentional ADL
+            swap(_If_expr->_Next, _If_empty_str->_Next); // intentional ADL
         }
     } else {
         _Node_end_rep* _Node0 = new _Node_end_rep();

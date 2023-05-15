@@ -3278,8 +3278,9 @@ public:
     }
 
     _CONSTEXPR23 void swap(unique_ptr& _Right) noexcept {
-        _Swap_adl(_Mypair._Myval2, _Right._Mypair._Myval2);
-        _Swap_adl(_Mypair._Get_first(), _Right._Mypair._Get_first());
+        using _STD swap;
+        swap(_Mypair._Myval2, _Right._Mypair._Myval2); // intentional ADL
+        swap(_Mypair._Get_first(), _Right._Mypair._Get_first()); // intentional ADL
     }
 
     _CONSTEXPR23 ~unique_ptr() noexcept {
@@ -3416,8 +3417,9 @@ public:
     }
 
     _CONSTEXPR23 void swap(unique_ptr& _Right) noexcept {
-        _Swap_adl(_Mypair._Myval2, _Right._Mypair._Myval2);
-        _Swap_adl(_Mypair._Get_first(), _Right._Mypair._Get_first());
+        using _STD swap;
+        swap(_Mypair._Myval2, _Right._Mypair._Myval2); // intentional ADL
+        swap(_Mypair._Get_first(), _Right._Mypair._Get_first()); // intentional ADL
     }
 
     _CONSTEXPR23 ~unique_ptr() noexcept {
