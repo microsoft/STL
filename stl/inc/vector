@@ -3729,9 +3729,9 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
         return _Dest;
     }
 
-    _Vbase* _VbFirst    = const_cast<_Vbase*>(_First._Myptr);
-    _Vbase* _VbLast     = const_cast<_Vbase*>(_Last._Myptr);
-    _Vbase* _VbDest     = const_cast<_Vbase*>(_Dest._Myptr);
+    auto _VbFirst       = _First._Myptr;
+    const auto _VbLast  = _Last._Myptr;
+    auto _VbDest        = const_cast<_Vbase*>(_Dest._Myptr);
     const auto _DestEnd = _Dest + (_Last - _First);
 
     const auto _FirstSourceMask = static_cast<_Vbase>(-1) << _First._Myoff;
@@ -3789,9 +3789,9 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
         if (_UnalignedFirstBits == _UnalignedDestBits) {
             const auto _UnalignedLastBits = _Last._Myoff & _Vbase{7};
 
-            char* _VbFirst_ch = reinterpret_cast<char*>(_VbFirst) + (_First._Myoff - _UnalignedFirstBits) / 8;
-            char* _VbDest_ch  = reinterpret_cast<char*>(_VbDest) + (_Dest._Myoff - _UnalignedFirstBits) / 8;
-            char* _VbLast_ch  = reinterpret_cast<char*>(_VbLast) + (_Last._Myoff - _UnalignedLastBits) / 8;
+            auto _VbFirst_ch      = reinterpret_cast<const char*>(_VbFirst) + (_First._Myoff - _UnalignedFirstBits) / 8;
+            const auto _VbLast_ch = reinterpret_cast<const char*>(_VbLast) + (_Last._Myoff - _UnalignedLastBits) / 8;
+            auto _VbDest_ch       = reinterpret_cast<char*>(_VbDest) + (_Dest._Myoff - _UnalignedDestBits) / 8;
 
             // Copy bits until the next char alignment
             if (_UnalignedFirstBits != 0) {
