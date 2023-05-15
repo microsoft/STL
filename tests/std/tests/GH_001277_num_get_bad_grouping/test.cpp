@@ -272,7 +272,6 @@ void test_good_and_bad_grouping() {
 
 class my_numput : public num_put<char, char*> {
 public:
-public:
     explicit my_numput(size_t refs = 0) : num_put<char, char*>(refs) {}
 };
 

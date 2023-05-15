@@ -244,7 +244,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id numpunct<_Elem>::id;
 #endif // !defined(_CRTBLD) || defined(CRTDLL2) || !defined(_DLL) || defined(_M_CEE_PURE)
 
 struct _Num_get_parse_result {
-    // For integers: negative values mean for parsing failure, while the "actual" base (used by _Getifld) is ~_Base.
+    // For integers: negative values mean parsing failure, while the "actual" base (used by _Getifld) is ~_Base.
     // Otherwise, 0, 8, 10, or 16.
     // For floating-point numbers: 0 for parsing failure, otherwise 10 or 16.
     int8_t _Base;
@@ -652,7 +652,7 @@ protected:
     }
 
 private:
-    template <int = 0> // TRANSITON, ABI
+    template <int = 0> // TRANSITION, ABI
     static _Num_get_parse_result _Parse_int_with_locale(
         char* const _Ac, _InIt& _First, _InIt& _Last, ios_base::fmtflags _Basefield, const locale& _Loc) {
         // get integer field from [_First, _Last) into _Ac
@@ -689,7 +689,7 @@ private:
             }
         }
 
-        // skip leading separator before digits
+        // skip leading separators before digits
         if (_Kseparator != _Elem{}) {
             while (_First != _Last && *_First == _Kseparator) {
                 ++_First;
