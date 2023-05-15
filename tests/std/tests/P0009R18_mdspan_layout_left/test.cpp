@@ -343,14 +343,14 @@ constexpr void check_correctness() {
         assert((tensor[2, 0, 0] == 2));
         assert((tensor[1, 1, 1] == 10));
         assert((tensor[0, 0, 3] == 18));
-        assert((tensor(2, 1, 2) == 17));
+        assert((tensor[2, 1, 2] == 17));
         assert((tensor[2, 1, 3] == 23));
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
         assert((tensor[array{0, 0, 0}] == 0));
         assert((tensor[array{2, 0, 0}] == 2));
         assert((tensor[array{1, 1, 1}] == 10));
         assert((tensor[array{0, 0, 3}] == 18));
-        assert((tensor[array{2, 2, 2}] == 20));
+        assert((tensor[array{2, 1, 2}] == 17));
         assert((tensor[array{2, 1, 3}] == 23));
 #endif // ^^^ !defined(__clang__) ^^^
     }

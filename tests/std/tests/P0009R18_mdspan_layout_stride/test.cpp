@@ -415,10 +415,15 @@ constexpr void check_correctness() {
         layout_stride::mapping<E> m{E{}, array{1}};
         mdspan<const int, extents<int, 3>, layout_stride> vec{vals.data(), m};
 
-        // TRANSITION, use operator[]
-        assert(vec(0) == 1);
-        assert(vec(1) == 2);
-        assert(vec(2) == 3);
+#ifdef __clang__ // TRANSITION, P2128R6
+        assert((vec[0] == 1));
+        assert((vec[1] == 2));
+        assert((vec[2] == 3));
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+        assert((vec[array{0}] == 1));
+        assert((vec[array{1}] == 2));
+        assert((vec[array{2}] == 3));
+#endif // ^^^ !defined(__clang__) ^^^
     }
 
     { // 2x3 matrix with row-major order
@@ -427,13 +432,21 @@ constexpr void check_correctness() {
         layout_stride::mapping<E> m{E{}, array{3, 1}};
         mdspan<const int, E, layout_stride> matrix{vals.data(), m};
 
-        // TRANSITION, use operator[]
-        assert(matrix(0, 0) == 1);
-        assert(matrix(0, 1) == 2);
-        assert(matrix(0, 2) == 3);
-        assert(matrix(1, 0) == 4);
-        assert(matrix(1, 1) == 5);
-        assert(matrix(1, 2) == 6);
+#ifdef __clang__ // TRANSITION, P2128R6
+        assert((matrix[0, 0] == 1));
+        assert((matrix[0, 1] == 2));
+        assert((matrix[0, 2] == 3));
+        assert((matrix[1, 0] == 4));
+        assert((matrix[1, 1] == 5));
+        assert((matrix[1, 2] == 6));
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+        assert((matrix[array{0, 0}] == 1));
+        assert((matrix[array{0, 1}] == 2));
+        assert((matrix[array{0, 2}] == 3));
+        assert((matrix[array{1, 0}] == 4));
+        assert((matrix[array{1, 1}] == 5));
+        assert((matrix[array{1, 2}] == 6));
+#endif // ^^^ !defined(__clang__) ^^^
     }
 
     { // 3x2x2 tensor
@@ -443,19 +456,33 @@ constexpr void check_correctness() {
         assert(!m.is_exhaustive());
         mdspan<const int, E, layout_stride> tensor{vals.data(), m};
 
-        // TRANSITION, use operator[]
-        assert(tensor(0, 0, 0) == 0);
-        assert(tensor(0, 0, 1) == 6);
-        assert(tensor(0, 1, 0) == 1);
-        assert(tensor(0, 1, 1) == 7);
-        assert(tensor(1, 0, 0) == 8);
-        assert(tensor(1, 0, 1) == 14);
-        assert(tensor(1, 1, 0) == 9);
-        assert(tensor(1, 1, 1) == 15);
-        assert(tensor(2, 0, 0) == 16);
-        assert(tensor(2, 0, 1) == 22);
-        assert(tensor(2, 1, 0) == 17);
-        assert(tensor(2, 1, 1) == 23);
+#ifdef __clang__ // TRANSITION, P2128R6
+        assert((tensor[0, 0, 0] == 0));
+        assert((tensor[0, 0, 1] == 6));
+        assert((tensor[0, 1, 0] == 1));
+        assert((tensor[0, 1, 1] == 7));
+        assert((tensor[1, 0, 0] == 8));
+        assert((tensor[1, 0, 1] == 14));
+        assert((tensor[1, 1, 0] == 9));
+        assert((tensor[1, 1, 1] == 15));
+        assert((tensor[2, 0, 0] == 16));
+        assert((tensor[2, 0, 1] == 22));
+        assert((tensor[2, 1, 0] == 17));
+        assert((tensor[2, 1, 1] == 23));
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+        assert((tensor[array{0, 0, 0}] == 0));
+        assert((tensor[array{0, 0, 1}] == 6));
+        assert((tensor[array{0, 1, 0}] == 1));
+        assert((tensor[array{0, 1, 1}] == 7));
+        assert((tensor[array{1, 0, 0}] == 8));
+        assert((tensor[array{1, 0, 1}] == 14));
+        assert((tensor[array{1, 1, 0}] == 9));
+        assert((tensor[array{1, 1, 1}] == 15));
+        assert((tensor[array{2, 0, 0}] == 16));
+        assert((tensor[array{2, 0, 1}] == 22));
+        assert((tensor[array{2, 1, 0}] == 17));
+        assert((tensor[array{2, 1, 1}] == 23));
+#endif // ^^^ !defined(__clang__) ^^^
     }
 
     { // 2x3x3x2 tensor
@@ -466,25 +493,45 @@ constexpr void check_correctness() {
         assert(m.is_exhaustive());
         mdspan<const int, E, layout_stride> tensor{vals.data(), m};
 
-        // TRANSITION, use operator[]
-        assert(tensor(0, 0, 0, 0) == 0);
-        assert(tensor(0, 0, 0, 1) == 9);
-        assert(tensor(0, 0, 1, 0) == 3);
-        assert(tensor(0, 0, 1, 1) == 12);
-        assert(tensor(0, 1, 0, 0) == 1);
-        assert(tensor(0, 1, 0, 1) == 10);
-        assert(tensor(0, 1, 1, 0) == 4);
-        assert(tensor(0, 1, 1, 1) == 13);
-        assert(tensor(1, 0, 0, 0) == 18);
-        assert(tensor(1, 0, 0, 1) == 27);
-        assert(tensor(1, 0, 1, 0) == 21);
-        assert(tensor(1, 0, 1, 1) == 30);
-        assert(tensor(1, 1, 0, 0) == 19);
-        assert(tensor(1, 1, 0, 1) == 28);
-        assert(tensor(1, 1, 1, 0) == 22);
-        assert(tensor(1, 1, 1, 1) == 31);
-        assert(tensor(0, 2, 2, 0) == 8);
-        assert(tensor(1, 2, 2, 1) == 35);
+#ifdef __clang__ // TRANSITION, P2128R6
+        assert((tensor[0, 0, 0, 0] == 0));
+        assert((tensor[0, 0, 0, 1] == 9));
+        assert((tensor[0, 0, 1, 0] == 3));
+        assert((tensor[0, 0, 1, 1] == 12));
+        assert((tensor[0, 1, 0, 0] == 1));
+        assert((tensor[0, 1, 0, 1] == 10));
+        assert((tensor[0, 1, 1, 0] == 4));
+        assert((tensor[0, 1, 1, 1] == 13));
+        assert((tensor[1, 0, 0, 0] == 18));
+        assert((tensor[1, 0, 0, 1] == 27));
+        assert((tensor[1, 0, 1, 0] == 21));
+        assert((tensor[1, 0, 1, 1] == 30));
+        assert((tensor[1, 1, 0, 0] == 19));
+        assert((tensor[1, 1, 0, 1] == 28));
+        assert((tensor[1, 1, 1, 0] == 22));
+        assert((tensor[1, 1, 1, 1] == 31));
+        assert((tensor[0, 2, 2, 0] == 8));
+        assert((tensor[1, 2, 2, 1] == 35));
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+        assert((tensor[array{0, 0, 0, 0}] == 0));
+        assert((tensor[array{0, 0, 0, 1}] == 9));
+        assert((tensor[array{0, 0, 1, 0}] == 3));
+        assert((tensor[array{0, 0, 1, 1}] == 12));
+        assert((tensor[array{0, 1, 0, 0}] == 1));
+        assert((tensor[array{0, 1, 0, 1}] == 10));
+        assert((tensor[array{0, 1, 1, 0}] == 4));
+        assert((tensor[array{0, 1, 1, 1}] == 13));
+        assert((tensor[array{1, 0, 0, 0}] == 18));
+        assert((tensor[array{1, 0, 0, 1}] == 27));
+        assert((tensor[array{1, 0, 1, 0}] == 21));
+        assert((tensor[array{1, 0, 1, 1}] == 30));
+        assert((tensor[array{1, 1, 0, 0}] == 19));
+        assert((tensor[array{1, 1, 0, 1}] == 28));
+        assert((tensor[array{1, 1, 1, 0}] == 22));
+        assert((tensor[array{1, 1, 1, 1}] == 31));
+        assert((tensor[array{0, 2, 2, 0}] == 8));
+        assert((tensor[array{1, 2, 2, 1}] == 35));
+#endif // ^^^ !defined(__clang__) ^^^
     }
 }
 
