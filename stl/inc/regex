@@ -3136,7 +3136,6 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_rep(int _Min, int _Max, bool _Gree
         _Insert_node(_Pos, _If_expr);
 
         if (!_Greedy) {
-            using _STD swap;
             swap(_If_expr->_Next->_Prev, _If_empty_str->_Next->_Prev); // intentional ADL
             swap(_If_expr->_Next, _If_empty_str->_Next); // intentional ADL
         }
