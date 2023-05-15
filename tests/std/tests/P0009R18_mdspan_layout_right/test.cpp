@@ -51,8 +51,7 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
     using Ext2           = extents<OtherIndexType, Extents...>;
     using Mapping2       = layout_right::mapping<Ext2>;
 
-#pragma warning(push) // TRANSITION, "/analyze:only" BUG?
-#pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#ifndef __clang__ // FIXME, Clang suddenly cannot digest this
     { // Check construction from other layout_right::mapping
         Mapping m1{ext};
         Mapping2 m2{m1};
@@ -60,6 +59,7 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         static_assert(is_nothrow_constructible_v<Mapping2, Mapping>);
         // Other tests are defined in 'check_construction_from_other_right_mapping' function
     }
+#endif
 
     { // Check construction from layout_left::mapping
         using LeftMapping = layout_left::mapping<Ext>;
@@ -82,7 +82,10 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         if constexpr (Ext::rank() > 0) {
             strides.back() = 1;
             for (size_t i = Ext::rank() - 1; i-- > 0;) {
+#pragma warning(push)
+#pragma warning(disable : 28020) // TRANSITION, DevCom-923103
                 strides[i] = static_cast<IndexType>(strides[i + 1] * ext.extent(i + 1));
+#pragma warning(pop)
             }
         }
 
@@ -140,7 +143,6 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         assert(!(m != m));
         // Other tests are defined in 'check_comparisons' function
     }
-#pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
 }
 
 constexpr void check_construction_from_other_right_mapping() {

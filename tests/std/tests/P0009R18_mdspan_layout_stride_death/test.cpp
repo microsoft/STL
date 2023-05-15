@@ -27,6 +27,12 @@ void test_construction_from_strided_layout_mapping() {
     [[maybe_unused]] layout_stride::mapping<dextents<unsigned char, 1>> m2{m1};
 }
 
+void test_call_operator() {
+    layout_stride::mapping<extents<unsigned, 5, 3, 4>> m;
+    // Value of extents_type::index-cast(i) must be a multidimensional index in extents_
+    (void) m(4, 3, 3);
+}
+
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
     exec.add_death_tests({
@@ -34,6 +40,7 @@ int main(int argc, char* argv[]) {
         test_construction_from_extents_and_array,
         test_construction_from_extents_and_span,
         test_construction_from_strided_layout_mapping,
+        test_call_operator,
     });
     return exec.run(argc, argv);
 }
