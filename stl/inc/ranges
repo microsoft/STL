@@ -8866,11 +8866,11 @@ namespace ranges {
 
 #ifdef __clang__ // TRANSITION, Clang 17
         public:
-#else // ^^^ Clang / not Clang vvv
+#else // ^^^ workaround / no workaround vvv
             template <class _Vw2, class _Fn, size_t _Nx2>
                 requires _Adjacent_transform_constraints<_Vw2, _Fn, _Nx2>
             friend class adjacent_transform_view;
-#endif // TRANSITION, Clang 17
+#endif // ^^^ no workaround ^^^
             using _Base          = _Maybe_const<_Const, _Vw>;
             using _Base_iterator = iterator_t<_Base>;
 
