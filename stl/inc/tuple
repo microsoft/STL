@@ -189,7 +189,7 @@ inline constexpr bool _Can_construct_values_from_tuple_like_v<tuple<_Types...>, 
 
 #ifdef __clang__ // TRANSITION, LLVM-59827
 template <class _TupleLike, class _Tuple>
-concept _Can_construct_from_tuple_like = _Tuple_like<_TupleLike> && _Different_from<_TupleLike, _Tuple>
+concept _Can_construct_from_tuple_like = _Different_from<_TupleLike, _Tuple> && _Tuple_like<_TupleLike>
                                       && (!_Is_subrange_v<remove_cvref_t<_TupleLike>>)
                                       && (tuple_size_v<_Tuple> == tuple_size_v<remove_cvref_t<_TupleLike>>)
                                       && _Can_construct_values_from_tuple_like_v<_Tuple, _TupleLike>
@@ -214,6 +214,9 @@ struct _Three_way_comparison_result_with_tuple_like<tuple<_TTypes...>, _UTuple, 
 template <class _TTuple, _Tuple_like _UTuple>
 using _Three_way_comparison_result_with_tuple_like_t =
     typename _Three_way_comparison_result_with_tuple_like<_TTuple, _UTuple>::type;
+
+template <class _Ty>
+concept _Tuple_like_non_tuple = (!_Is_specialization_v<_Ty, tuple>) && _Tuple_like<_Ty>;
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <>
@@ -224,8 +227,8 @@ public:
     constexpr tuple(const tuple&) noexcept /* strengthened */ {} // TRANSITION, ABI: should be defaulted
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
-    template <_Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr tuple(_Other&&) noexcept /* strengthened */ {}
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
@@ -236,8 +239,8 @@ public:
     _CONSTEXPR20 tuple(allocator_arg_t, const _Alloc&, const tuple&) noexcept /* strengthened */ {}
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
-    template <class _Alloc, _Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
+    template <class _Alloc, _Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr tuple(allocator_arg_t, const _Alloc&, _Other&&) noexcept /* strengthened */ {}
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
@@ -254,14 +257,14 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    template <_Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr tuple& operator=(_Other&&) noexcept /* strengthened */ {
         return *this;
     }
 
-    template <_Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr const tuple& operator=(_Other&&) const noexcept /* strengthened */ {
         return *this;
     }
@@ -288,13 +291,13 @@ public:
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
-    template <_Tuple_like _Other>
+    template <_Tuple_like_non_tuple _Other>
     _NODISCARD_FRIEND constexpr bool operator==(const tuple&, const _Other&) noexcept /* strengthened */ {
         static_assert(tuple_size_v<_Other> == 0, "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
         return true;
     }
 
-    template <_Tuple_like _Other>
+    template <_Tuple_like_non_tuple _Other>
         requires (tuple_size_v<remove_cvref_t<_Other>> == 0)
     _NODISCARD_FRIEND constexpr strong_ordering operator<=>(const tuple&, const _Other&) noexcept /* strengthened */ {
         return strong_ordering::equal;
@@ -433,8 +436,8 @@ public:
 #ifdef __clang__ // TRANSITION, LLVM-59827
     template <class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
-    template <_Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
               && _Can_construct_values_from_tuple_like_v<tuple, _Other>
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
@@ -541,8 +544,8 @@ public:
 #ifdef __clang__ // TRANSITION, LLVM-59827
     template <class _Alloc, class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
-    template <class _Alloc, _Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+    template <class _Alloc, _Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
               && _Can_construct_values_from_tuple_like_v<tuple, _Other>
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
@@ -711,8 +714,8 @@ public:
         ((void) (_STD get<_Indices>(*this) = _STD get<_Indices>(_STD forward<_Other>(_Right))), ...);
     }
 
-    template <_Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
               && _Can_assign_values_from_tuple_like_v<false, _Other>
     constexpr tuple& operator=(_Other&& _Right) {
@@ -720,8 +723,8 @@ public:
         return *this;
     }
 
-    template <_Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
               && _Can_assign_values_from_tuple_like_v<true, _Other>
     constexpr const tuple& operator=(_Other&& _Right) const {
@@ -785,7 +788,7 @@ public:
         return ((_STD get<_Indices>(*this) == _STD get<_Indices>(_Right)) && ...);
     }
 
-    template <_Tuple_like _Other>
+    template <_Tuple_like_non_tuple _Other>
     _NODISCARD_FRIEND constexpr bool operator==(const tuple& _Left, const _Other& _Right) {
         static_assert(1 + sizeof...(_Rest) == tuple_size_v<_Other>,
             "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
@@ -803,7 +806,7 @@ public:
         return _Result;
     }
 
-    template <_Tuple_like _Other>
+    template <_Tuple_like_non_tuple _Other>
     _NODISCARD_FRIEND constexpr auto operator<=>(const tuple& _Left, const _Other& _Right)
         -> _Three_way_comparison_result_with_tuple_like_t<tuple, _Other> {
         return _Left._Three_way_compare_with_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
