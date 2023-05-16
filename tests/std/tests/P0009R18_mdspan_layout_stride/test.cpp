@@ -215,7 +215,7 @@ constexpr void check_construction_from_other_mappings() {
 }
 
 constexpr void check_required_span_size() {
-    { // Check [mdspan.layout.stride.expo]/1.1: Ext::rank() == 0
+    { // Check N4950 [mdspan.layout.stride.expo]/1.1: Ext::rank() == 0
         using M1 = layout_stride::mapping<extents<int>>;
         static_assert(M1{}.required_span_size() == 1);
 
@@ -223,7 +223,7 @@ constexpr void check_required_span_size() {
         assert(m2.required_span_size() == 1);
     }
 
-    { // Check [mdspan.layout.stride.expo]/1.2: size of the multidimensional index space e is 0
+    { // Check N4950 [mdspan.layout.stride.expo]/1.2: size of the multidimensional index space e is 0
         using M1 = layout_stride::mapping<extents<int, 3, 3, 0, 3>>;
         static_assert(M1{}.required_span_size() == 0);
 
@@ -231,7 +231,7 @@ constexpr void check_required_span_size() {
         assert(m2.required_span_size() == 0);
     }
 
-    { // Check [mdspan.layout.stride.expo]/1.3: final case
+    { // Check N4950 [mdspan.layout.stride.expo]/1.3: final case
         using M1 = layout_stride::mapping<extents<int, 3, 4, 3>>;
         static_assert(M1{}.required_span_size() == 36);
 
@@ -345,7 +345,7 @@ constexpr void check_comparisons() {
         static_assert(!equality_comparable_with<StaticStrideMapping, layout_stride::mapping<dextents<int, 3>>>);
         static_assert(!equality_comparable_with<DynamicStrideMapping, layout_right::mapping<extents<int, 2>>>);
         static_assert(!equality_comparable_with<StaticStrideMapping, layout_left::mapping<dextents<int, 1>>>);
-        // TRANSITION, Check other constraints: [mdspan.layout.stride.obs]/6.1, 6.3
+        // TRANSITION, Check other constraints: N4950 [mdspan.layout.stride.obs]/6.1, 6.3
     }
 
     { // Check correctness: layout_stride::mapping with layout_stride::mapping

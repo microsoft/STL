@@ -59,7 +59,7 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         static_assert(is_nothrow_constructible_v<Mapping2, Mapping>);
         // Other tests are defined in 'check_construction_from_other_right_mapping' function
     }
-#endif
+#endif // __clang__
 
     { // Check construction from layout_left::mapping
         using LeftMapping = layout_left::mapping<Ext>;
