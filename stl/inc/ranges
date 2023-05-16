@@ -9231,7 +9231,7 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Adjacent_fn<2> pairwise;
     } // namespace views
 
-    template <class _Vw, class _Fn, size_t _Nx>
+    _EXPORT_STD template <class _Vw, class _Fn, size_t _Nx>
         requires _Adjacent_transform_constraints<_Vw, _Fn, _Nx>
     class adjacent_transform_view : public view_interface<adjacent_transform_view<_Vw, _Fn, _Nx>> {
     private:
