@@ -9548,10 +9548,7 @@ namespace ranges {
             template <viewable_range _Rng, class _Fn>
             _NODISCARD constexpr auto operator()(_Rng&&, _Fn&& _Func) const
                 noexcept(noexcept(views::zip_transform(_STD forward<_Fn>(_Func))))
-                requires (_Nx == 0)
-#ifndef __clang__ // TRANSITION, Clang 16
-                         && requires { views::zip_transform(_STD forward<_Fn>(_Func)); }
-#endif // __clang__
+                requires (_Nx == 0) && requires { views::zip_transform(_STD forward<_Fn>(_Func)); }
             {
                 return views::zip_transform(_STD forward<_Fn>(_Func));
             }

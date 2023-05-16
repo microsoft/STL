@@ -747,8 +747,8 @@ struct has_unique_object_representations : bool_constant<__has_unique_object_rep
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool has_unique_object_representations_v = __has_unique_object_representations(_Ty);
 
-// TRANSITION, Clang 16 and VSO-1690654
-#if defined(__clang__) || defined(__EDG__)
+// TRANSITION, VSO-1690654
+#ifdef __EDG__
 template <class _Ty>
 struct _Is_aggregate_impl : bool_constant<__is_aggregate(_Ty)> {};
 
