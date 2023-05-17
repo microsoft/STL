@@ -2461,7 +2461,7 @@ private:
     }
 
     void _Destroy() noexcept override { // destroy managed resource
-        _Destroy_in_place(_Storage); // not _Storage._Value, see N4849 [expr.prim.id.dtor]
+        _Destroy_in_place(_Storage._Value);
     }
 
     void _Delete_this() noexcept override { // destroy self
