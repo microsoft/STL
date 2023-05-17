@@ -2461,6 +2461,8 @@ private:
     }
 
     void _Destroy() noexcept override { // destroy managed resource
+        // not _Storage._Value as _Ty is an array type (not a class type or a scalar type),
+        // and thus cannot be used as a pseudo-destructor (N4950 [expr.prim.id.dtor]).
         _Destroy_in_place(_Storage);
     }
 
