@@ -42,8 +42,11 @@ AlignConsecutiveMacros: Consecutive
 AlignEscapedNewlines: Left
 # AlignOperands:   Align
 AlignOperands: AlignAfterOperator
-# AlignTrailingComments: true
-AlignTrailingComments: false
+# AlignTrailingComments:
+#   Kind:            Always
+#   OverEmptyLines:  0
+AlignTrailingComments:
+  Kind:            Never
 # AllowAllArgumentsOnNextLine: true
 # AllowAllParametersOfDeclarationOnNextLine: true
 # AllowShortBlocksOnASingleLine: Never
