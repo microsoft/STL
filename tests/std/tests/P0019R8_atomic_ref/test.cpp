@@ -63,7 +63,7 @@ void test_ops() {
     auto load  = [](const std::atomic_ref<ValueType>& ref) { return static_cast<int>(ref.load()); };
     auto xchg0 = [](std::atomic_ref<ValueType>& ref) { return static_cast<int>(ref.exchange(0)); };
 
-    int (*inc)(std::atomic_ref<ValueType> & ref);
+    int (*inc)(std::atomic_ref<ValueType>& ref);
     if constexpr (AddViaCas) {
         inc = [](std::atomic_ref<ValueType>& ref) {
             for (;;) {

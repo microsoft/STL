@@ -4175,8 +4175,8 @@ using _Pointer_of_or = typename _Pointer_of_or_helper<_Ty, _Uty>::type;
 // TRANSITION, requires expression support
 template <class _SmartPtr, class _Sp, class _Pointer, class... _ArgsT>
 concept _Resettable_pointer = requires(_SmartPtr& _Smart_ptr, _Pointer _Ptr, _ArgsT&&... _Args) {
-                                  _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args)...);
-                              };
+    _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args)...);
+};
 
 _EXPORT_STD template <class _SmartPtr, class _Pointer, class... _ArgsT>
 class out_ptr_t {

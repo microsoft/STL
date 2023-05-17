@@ -20,9 +20,9 @@ concept CanSize = requires(R& r) { ranges::size(r); };
 
 template <class R>
 concept CanTakeDrop = requires(R r) {
-                          forward<R>(r) | views::take(1);
-                          forward<R>(r) | views::drop(1);
-                      };
+    forward<R>(r) | views::take(1);
+    forward<R>(r) | views::drop(1);
+};
 
 struct non_default {
     int value{};

@@ -177,7 +177,7 @@ static void t_add_lvalue_reference() { // test add_lvalue_reference<T> for vario
 static void t_add_rvalue_reference() { // test add_rvalue_reference<T> for various types
     CHECK_TYPEX(STD add_rvalue_reference<int>::type, int&&);
     CHECK_TYPEX(STD add_rvalue_reference<int&>::type, int&);
-    CHECK_TYPEX(STD add_rvalue_reference<ARR1>::type, ARR1 &&);
+    CHECK_TYPEX(STD add_rvalue_reference<ARR1>::type, ARR1&&);
 }
 
 enum color : int { red, blue, green };

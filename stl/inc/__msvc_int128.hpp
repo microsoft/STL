@@ -514,7 +514,7 @@ struct
         return __qhat;
 #else // ^^^ 128-bit intrinsics / no such intrinsics vvv
 #if _HAS_CXX20
-        auto __d = _STD countl_zero(_Den._Word[1]);
+        auto __d                   = _STD countl_zero(_Den._Word[1]);
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         auto __d = _Countl_zero_fallback(_Den._Word[1]);
 #endif // ^^^ !_HAS_CXX20 ^^^
@@ -649,7 +649,7 @@ struct
         }
 #else // ^^^ 128-bit intrinsics / no such intrinsics vvv
 #if _HAS_CXX20
-        auto __d = _STD countl_zero(_Den._Word[1]);
+        auto __d                   = _STD countl_zero(_Den._Word[1]);
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         auto __d = _Countl_zero_fallback(_Den._Word[1]);
 #endif // ^^^ !_HAS_CXX20 ^^^

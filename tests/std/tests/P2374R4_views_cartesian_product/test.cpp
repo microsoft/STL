@@ -25,17 +25,17 @@ using maybe_const = conditional_t<B, const T, T>;
 
 // Helper concepts from [range.cartesian.view]
 template <bool IsConst, class First, class... Rest>
-concept CartesianProductIsRandomAccess = (random_access_range<maybe_const<IsConst, First>> && ...
-                                          && (random_access_range<maybe_const<IsConst, Rest>>
-                                              && sized_range<maybe_const<IsConst, Rest>>) );
+concept CartesianProductIsRandomAccess =
+    (random_access_range<maybe_const<IsConst, First>> && ...
+        && (random_access_range<maybe_const<IsConst, Rest>> && sized_range<maybe_const<IsConst, Rest>>) );
 
 template <class Rng>
 concept CartesianProductCommonArg = common_range<Rng> || (sized_range<Rng> && random_access_range<Rng>);
 
 template <bool IsConst, class First, class... Rest>
-concept CartesianProductIsBidirectional = (bidirectional_range<maybe_const<IsConst, First>> && ...
-                                           && (bidirectional_range<maybe_const<IsConst, Rest>>
-                                               && CartesianProductCommonArg<maybe_const<IsConst, Rest>>) );
+concept CartesianProductIsBidirectional =
+    (bidirectional_range<maybe_const<IsConst, First>> && ...
+        && (bidirectional_range<maybe_const<IsConst, Rest>> && CartesianProductCommonArg<maybe_const<IsConst, Rest>>) );
 
 template <class First, class... Rest>
 concept CartesianProductIsCommon = CartesianProductCommonArg<First>;
