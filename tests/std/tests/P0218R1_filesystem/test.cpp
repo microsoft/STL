@@ -857,7 +857,7 @@ void check_fs_error(const filesystem_error& e, const char* const msg, const stri
     if (ec.has_value()) {
         EXPECT(e.code() == ec.value());
     }
-};
+}
 
 void test_filesystem_error() {
     error_code ec1(22, system_category());

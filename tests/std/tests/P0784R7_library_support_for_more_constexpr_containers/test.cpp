@@ -102,7 +102,7 @@ static_assert(!can_construct_at<X, int>);
 struct indestructible {
     void destroy() {
         this->~indestructible();
-    };
+    }
 
 private:
     ~indestructible() = default;
