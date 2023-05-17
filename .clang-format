@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# https://releases.llvm.org/15.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+# https://releases.llvm.org/16.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 ---
 # Language:        Cpp
