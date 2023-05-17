@@ -88,9 +88,7 @@ AlwaysBreakTemplateDeclarations: Yes
 BreakBeforeBinaryOperators: NonAssignment
 # BreakBeforeConceptDeclarations: Always
 # BreakBeforeBraces: Attach
-# BreakBeforeInheritanceComma: false
 # BreakBeforeTernaryOperators: true
-# BreakConstructorInitializersBeforeComma: false
 # BreakConstructorInitializers: BeforeColon
 # BreakInheritanceList: BeforeColon
 # BreakStringLiterals: true
@@ -108,9 +106,6 @@ DeriveLineEnding: false
 # EmptyLineAfterAccessModifier: Never
 # EmptyLineBeforeAccessModifier: LogicalBlock
 # ExperimentalAutoDetectBinPacking: false
-# BasedOnStyle:    ''
-# ConstructorInitializerAllOnOneLineOrOnePerLine: false
-# AllowAllConstructorInitializersOnNextLine: true
 # FixNamespaceComments: true
 # ForEachMacros:
 #   - foreach
