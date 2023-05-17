@@ -86,11 +86,14 @@ AlwaysBreakTemplateDeclarations: Yes
 #   SplitEmptyFunction: true
 #   SplitEmptyRecord: true
 #   SplitEmptyNamespace: true
+# BreakAfterAttributes: Never
 # BreakAfterJavaFieldAnnotations: false
+# BreakArrays:     true
 # BreakBeforeBinaryOperators: None
 BreakBeforeBinaryOperators: NonAssignment
 # BreakBeforeConceptDeclarations: Always
 # BreakBeforeBraces: Attach
+# BreakBeforeInlineASMColon: OnlyMultiline
 # BreakBeforeTernaryOperators: true
 # BreakConstructorInitializers: BeforeColon
 # BreakInheritanceList: BeforeColon
@@ -161,6 +164,13 @@ IndentWrappedFunctionNames: true
 # InsertBraces:    false
 InsertBraces:    true
 # InsertTrailingCommas: None
+# IntegerLiteralSeparator:
+#   Binary:          0
+#   BinaryMinDigits: 0
+#   Decimal:         0
+#   DecimalMinDigits: 0
+#   Hex:             0
+#   HexMinDigits:    0
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
 # KeepEmptyLinesAtTheStartOfBlocks: true
@@ -198,6 +208,7 @@ PointerAlignment: Left
 # ReflowComments:  true
 # RemoveBracesLLVM: false
 # RequiresClausePosition: OwnLine
+# RequiresExpressionIndentation: OuterScope
 # SeparateDefinitionBlocks: Leave
 # ShortNamespaceLines: 1
 # SortIncludes:    CaseSensitive
