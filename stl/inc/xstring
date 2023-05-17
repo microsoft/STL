@@ -2648,14 +2648,20 @@ private:
         }
 
         _My_data._Myres               = _BUF_SIZE - 1;
-        const size_type _New_capacity = _Calculate_growth(_Count);
-        const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+        const size_type _New_capacity = _Calculate_growth(_Count) + 1;
+        // throws
+#if _HAS_CXX23
+        const auto [_New_ptr, _Allocated] = _Alty_traits::allocate_at_least(_Al, _New_capacity);
+#else // _HAS_CXX23
+        const pointer _New_ptr     = _Al.allocate(_New_capacity);
+        const size_type _Allocated = _New_capacity;
+#endif // _HAS_CXX23
         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
 
-        _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
+        _Start_element_lifetimes(_Unfancy(_New_ptr), _Allocated);
 
         _My_data._Mysize = _Count;
-        _My_data._Myres  = _New_capacity;
+        _My_data._Myres  = _Allocated - 1;
         if constexpr (_Strat == _Construct_strategy::_From_char) {
             _Traits::assign(_Unfancy(_New_ptr), _Count, _Arg);
             _Traits::assign(_Unfancy(_New_ptr)[_Count], _Elem());
@@ -2691,12 +2697,18 @@ private:
             }
 
             if (_Count >= _BUF_SIZE) {
-                const size_type _New_capacity = _Calculate_growth(_Count);
-                const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+                const size_type _New_capacity = _Calculate_growth(_Count) + 1;
+                // throws
+#if _HAS_CXX23
+                const auto [_New_ptr, _Allocated] = _Alty_traits::allocate_at_least(_Al, _New_capacity);
+#else // _HAS_CXX23
+                const pointer _New_ptr     = _Al.allocate(_New_capacity);
+                const size_type _Allocated = _New_capacity;
+#endif // _HAS_CXX23
                 _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
-                _My_data._Myres = _New_capacity;
+                _My_data._Myres = _Allocated - 1;
 
-                _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
+                _Start_element_lifetimes(_Unfancy(_New_ptr), _Allocated);
             }
         }
 
@@ -2709,10 +2721,16 @@ private:
                     }
 
                     const auto _Old_ptr           = _My_data._Myptr();
-                    const size_type _New_capacity = _Calculate_growth(_My_data._Mysize);
-                    const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+                    const size_type _New_capacity = _Calculate_growth(_My_data._Mysize) + 1;
+                    // throws
+#if _HAS_CXX23
+                    const auto [_New_ptr, _Allocated] = _Alty_traits::allocate_at_least(_Al, _New_capacity);
+#else // _HAS_CXX23
+                    const pointer _New_ptr     = _Al.allocate(_New_capacity);
+                    const size_type _Allocated = _New_capacity;
+#endif // _HAS_CXX23
 
-                    _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
+                    _Start_element_lifetimes(_Unfancy(_New_ptr), _Allocated);
                     _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
                     if (_My_data._Myres >= _BUF_SIZE) { // Need to deallocate old storage
                         _Al.deallocate(_My_data._Bx._Ptr, _My_data._Myres + 1);
@@ -2720,7 +2738,7 @@ private:
                     } else {
                         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
                     }
-                    _My_data._Myres = _New_capacity;
+                    _My_data._Myres = _Allocated - 1;
                 }
             }
 
@@ -2792,9 +2810,15 @@ public:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
 
         if (_New_capacity < _New_size) {
-            _New_capacity           = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size());
-            const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
-            _Ptr                    = _Unfancy(_Fancyptr);
+            _New_capacity = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size());
+            // throws
+#if _HAS_CXX23
+            const auto [_Fancyptr, _Allocated] = _Alty_traits::allocate_at_least(_Getal(), _New_capacity + 1);
+            _New_capacity                      = _Allocated - 1;
+#else // _HAS_CXX23
+            const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1);
+#endif // _HAS_CXX23
+            _Ptr = _Unfancy(_Fancyptr);
             _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
 
             _Start_element_lifetimes(_Ptr, _New_capacity + 1);
@@ -2863,15 +2887,21 @@ public:
             _Xlen_string();
         }
 
-        const auto _New_capacity = _Calculate_growth(_New_size, _BUF_SIZE - 1, _Max);
+        const auto _New_capacity = _Calculate_growth(_New_size, _BUF_SIZE - 1, _Max) + 1;
         auto&& _Alproxy          = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
-        const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
+        // throws
+#if _HAS_CXX23
+        const auto [_Fancyptr, _Allocated] = _Alty_traits::allocate_at_least(_Getal(), _New_capacity);
+#else // _HAS_CXX23
+        const pointer _Fancyptr = _Getal().allocate(_New_capacity);
+        const auto _Allocated   = _New_capacity;
+#endif // _HAS_CXX23
         // nothrow hereafter
-        _Start_element_lifetimes(_Unfancy(_Fancyptr), _New_capacity + 1);
+        _Start_element_lifetimes(_Unfancy(_Fancyptr), _Allocated);
         _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
         _My_data._Mysize = _New_size;
-        _My_data._Myres  = _New_capacity;
+        _My_data._Myres  = _Allocated - 1;
         const auto _Ptr  = _Unfancy(_Fancyptr);
         _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
         _Traits::copy(_Ptr + _Left_size, _Right_data._Myptr(), _Right_size + 1);
@@ -2946,9 +2976,15 @@ public:
             _Result._Res = _My_data._Myres + 1;
         } else {
             // use _BUF_SIZE + 1 to avoid SSO, if the buffer is assigned back
-            _Result._Ptr = _Al.allocate(_BUF_SIZE + 1);
+#if _HAS_CXX23
+            const auto [_New_ptr, _Allocated] = _Alty_traits::allocate_at_least(_Al, _BUF_SIZE + 1);
+#else // _HAS_CXX23
+            const pointer _New_ptr     = _Al.allocate(_BUF_SIZE + 1);
+            const size_type _Allocated = _BUF_SIZE + 1;
+#endif // _HAS_CXX23
+            _Result._Ptr = _New_ptr;
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
-            _Result._Res = _BUF_SIZE + 1;
+            _Result._Res = _Allocated;
         }
         _My_data._Orphan_all();
         _Tidy_init();
@@ -3167,9 +3203,15 @@ public:
 
                 if (_Right._Mypair._Myval2._Large_string_engaged()) {
                     const auto _New_size     = _Right._Mypair._Myval2._Mysize;
-                    const auto _New_capacity = _Calculate_growth(_New_size, 0, _Right.max_size());
+                    const auto _New_capacity = _Calculate_growth(_New_size, 0, _Right.max_size()) + 1;
                     auto _Right_al_non_const = _Right_al;
-                    const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity + 1); // throws
+                    // throws
+#if _HAS_CXX23
+                    const auto [_New_ptr, _Allocated] = _Alty_traits::allocate_at_least(_Right_al_non_const, _New_capacity);
+#else // _HAS_CXX23
+                    const auto _New_ptr   = _Right_al_non_const.allocate(_New_capacity);
+                    const auto _Allocated = _New_capacity;
+#endif // _HAS_CXX23
 
                     _Start_element_lifetimes(_Unfancy(_New_ptr), _New_size + 1);
 
@@ -3177,7 +3219,7 @@ public:
                     _Tidy_deallocate();
                     _Mypair._Myval2._Bx._Ptr = _New_ptr;
                     _Mypair._Myval2._Mysize  = _New_size;
-                    _Mypair._Myval2._Myres   = _New_capacity;
+                    _Mypair._Myval2._Myres   = _Allocated - 1;
                 } else {
                     _Copy_assign_val_from_small(_Right);
                 }
@@ -4736,15 +4778,21 @@ private:
         }
 
         const size_type _Old_capacity = _Mypair._Myval2._Myres;
-        const size_type _New_capacity = _Calculate_growth(_New_size);
+        const size_type _New_capacity = _Calculate_growth(_New_size) + 1;
         auto& _Al                     = _Getal();
-        const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+        // throws
+#if _HAS_CXX23
+        const auto [_New_ptr, _Allocated] = _Alty_traits::allocate_at_least(_Al, _New_capacity);
+#else // _HAS_CXX23
+        const pointer _New_ptr     = _Al.allocate(_New_capacity);
+        const size_type _Allocated = _New_capacity;
+#endif // _HAS_CXX23
 
-        _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
+        _Start_element_lifetimes(_Unfancy(_New_ptr), _Allocated);
         _Mypair._Myval2._Orphan_all();
         _ASAN_STRING_REMOVE(*this);
         _Mypair._Myval2._Mysize = _New_size;
-        _Mypair._Myval2._Myres  = _New_capacity;
+        _Mypair._Myval2._Myres  = _Allocated - 1;
         _Fn(_Unfancy(_New_ptr), _New_size, _Args...);
         if (_BUF_SIZE <= _Old_capacity) {
             _Al.deallocate(_Mypair._Myval2._Bx._Ptr, _Old_capacity + 1);
@@ -4769,15 +4817,21 @@ private:
 
         const size_type _New_size     = _Old_size + _Size_increase;
         const size_type _Old_capacity = _My_data._Myres;
-        const size_type _New_capacity = _Calculate_growth(_New_size);
+        const size_type _New_capacity = _Calculate_growth(_New_size) + 1;
         auto& _Al                     = _Getal();
-        const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+        // throws
+#if _HAS_CXX23
+        const auto [_New_ptr, _Allocated] = _Alty_traits::allocate_at_least(_Al, _New_capacity);
+#else // _HAS_CXX23
+        const pointer _New_ptr     = _Al.allocate(_New_capacity);
+        const size_type _Allocated = _New_capacity;
+#endif // _HAS_CXX23
 
-        _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
+        _Start_element_lifetimes(_Unfancy(_New_ptr), _Allocated);
         _My_data._Orphan_all();
         _ASAN_STRING_REMOVE(*this);
         _My_data._Mysize      = _New_size;
-        _My_data._Myres       = _New_capacity;
+        _My_data._Myres       = _Allocated - 1;
         _Elem* const _Raw_new = _Unfancy(_New_ptr);
         if (_BUF_SIZE <= _Old_capacity) {
             const pointer _Old_ptr = _My_data._Bx._Ptr;

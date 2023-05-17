@@ -828,7 +828,12 @@ private:
         const size_type _Newsize     = _Oldsize + 1;
         const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-        const pointer _Newvec           = _Al.allocate(_Newcapacity);
+#if _HAS_CXX23
+        const auto [_Newvec, _Allocated] = _Alty_traits::allocate_at_least(_Al, _Newcapacity);
+#else // _HAS_CXX23
+        const pointer _Newvec      = _Al.allocate(_Newcapacity);
+        const size_type _Allocated = _Newcapacity;
+#endif // _HAS_CXX23
         const pointer _Constructed_last = _Newvec + _Whereoff + 1;
         pointer _Constructed_first      = _Constructed_last;
 
@@ -849,11 +854,11 @@ private:
         }
         _CATCH_ALL
         _Destroy_range(_Constructed_first, _Constructed_last, _Al);
-        _Al.deallocate(_Newvec, _Newcapacity);
+        _Al.deallocate(_Newvec, _Allocated);
         _RERAISE;
         _CATCH_END
 
-        _Change_array(_Newvec, _Newsize, _Newcapacity);
+        _Change_array(_Newvec, _Newsize, _Allocated);
         return _Newvec + _Whereoff;
     }
 
@@ -915,7 +920,12 @@ private:
             const size_type _Newsize     = _Oldsize + _Count;
             const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Al.allocate(_Newcapacity);
+#if _HAS_CXX23
+            const auto [_Newvec, _Allocated] = _Alty_traits::allocate_at_least(_Al, _Newcapacity);
+#else // _HAS_CXX23
+            const pointer _Newvec      = _Al.allocate(_Newcapacity);
+            const size_type _Allocated = _Newcapacity;
+#endif // _HAS_CXX23
             const pointer _Constructed_last = _Newvec + _Oldsize + _Count;
             pointer _Constructed_first      = _Constructed_last;
 
@@ -934,11 +944,11 @@ private:
             }
             _CATCH_ALL
             _Destroy_range(_Constructed_first, _Constructed_last, _Al);
-            _Al.deallocate(_Newvec, _Newcapacity);
+            _Al.deallocate(_Newvec, _Allocated);
             _RERAISE;
             _CATCH_END
 
-            _Change_array(_Newvec, _Newsize, _Newcapacity);
+            _Change_array(_Newvec, _Newsize, _Allocated);
         } else { // Provide the strong guarantee.
                  // Performance note: except for one-at-back, the strong guarantee is unnecessary here.
 
@@ -1036,7 +1046,12 @@ public:
             const size_type _Newsize     = _Oldsize + _Count;
             const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Al.allocate(_Newcapacity);
+#if _HAS_CXX23
+            const auto [_Newvec, _Allocated] = _Alty_traits::allocate_at_least(_Al, _Newcapacity);
+#else // _HAS_CXX23
+            const pointer _Newvec      = _Al.allocate(_Newcapacity);
+            const size_type _Allocated = _Newcapacity;
+#endif // _HAS_CXX23
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
             pointer _Constructed_first      = _Constructed_last;
 
@@ -1057,11 +1072,11 @@ public:
             }
             _CATCH_ALL
             _Destroy_range(_Constructed_first, _Constructed_last, _Al);
-            _Al.deallocate(_Newvec, _Newcapacity);
+            _Al.deallocate(_Newvec, _Allocated);
             _RERAISE;
             _CATCH_END
 
-            _Change_array(_Newvec, _Newsize, _Newcapacity);
+            _Change_array(_Newvec, _Newsize, _Allocated);
         } else if (_One_at_back) { // provide strong guarantee
             _Emplace_back_with_unused_capacity(_Val);
         } else { // provide basic guarantee
@@ -1131,7 +1146,12 @@ private:
             const size_type _Newsize     = _Oldsize + _Count;
             const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Al.allocate(_Newcapacity);
+#if _HAS_CXX23
+            const auto [_Newvec, _Allocated] = _Alty_traits::allocate_at_least(_Al, _Newcapacity);
+#else // _HAS_CXX23
+            const pointer _Newvec      = _Al.allocate(_Newcapacity);
+            const size_type _Allocated = _Newcapacity;
+#endif // _HAS_CXX23
             const auto _Whereoff            = static_cast<size_type>(_Whereptr - _Oldfirst);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
             pointer _Constructed_first      = _Constructed_last;
@@ -1153,11 +1173,11 @@ private:
             }
             _CATCH_ALL
             _Destroy_range(_Constructed_first, _Constructed_last, _Al);
-            _Al.deallocate(_Newvec, _Newcapacity);
+            _Al.deallocate(_Newvec, _Allocated);
             _RERAISE;
             _CATCH_END
 
-            _Change_array(_Newvec, _Newsize, _Newcapacity);
+            _Change_array(_Newvec, _Newsize, _Allocated);
         } else { // Attempt to provide the strong guarantee for EmplaceConstructible failure.
                  // If we encounter copy/move construction/assignment failure, provide the basic guarantee.
                  // (For one-at-back, this provides the strong guarantee.)
@@ -1521,7 +1541,12 @@ private:
         const auto _Oldsize          = static_cast<size_type>(_Mylast - _Myfirst);
         const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-        const pointer _Newvec         = _Al.allocate(_Newcapacity);
+#if _HAS_CXX23
+        const auto [_Newvec, _Allocated] = _Alty_traits::allocate_at_least(_Al, _Newcapacity);
+#else // _HAS_CXX23
+        const pointer _Newvec      = _Al.allocate(_Newcapacity);
+        const size_type _Allocated = _Newcapacity;
+#endif // _HAS_CXX23
         const pointer _Appended_first = _Newvec + _Oldsize;
         pointer _Appended_last        = _Appended_first;
 
@@ -1540,11 +1565,11 @@ private:
         }
         _CATCH_ALL
         _Destroy_range(_Appended_first, _Appended_last, _Al);
-        _Al.deallocate(_Newvec, _Newcapacity);
+        _Al.deallocate(_Newvec, _Allocated);
         _RERAISE;
         _CATCH_END
 
-        _Change_array(_Newvec, _Newsize, _Newcapacity);
+        _Change_array(_Newvec, _Newsize, _Allocated);
     }
 
     template <class _Ty2>
@@ -1598,31 +1623,6 @@ public:
     }
 
 private:
-    _CONSTEXPR20 void _Reallocate_exactly(const size_type _Newcapacity) {
-        // set capacity to _Newcapacity (without geometric growth), provide strong guarantee
-        auto& _Al         = _Getal();
-        auto& _My_data    = _Mypair._Myval2;
-        pointer& _Myfirst = _My_data._Myfirst;
-        pointer& _Mylast  = _My_data._Mylast;
-
-        const auto _Size = static_cast<size_type>(_Mylast - _Myfirst);
-
-        const pointer _Newvec = _Al.allocate(_Newcapacity);
-
-        _TRY_BEGIN
-        if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
-            _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
-        } else {
-            _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
-        }
-        _CATCH_ALL
-        _Al.deallocate(_Newvec, _Newcapacity);
-        _RERAISE;
-        _CATCH_END
-
-        _Change_array(_Newvec, _Size, _Newcapacity);
-    }
-
 #if _ITERATOR_DEBUG_LEVEL != 0 && defined(_ENABLE_STL_INTERNAL_CHECK)
     void _Check_all_orphaned_locked() const noexcept {
         _Lockit _Lock(_LOCK_DEBUG);
@@ -1681,8 +1681,33 @@ public:
             if (_Newcapacity > max_size()) {
                 _Xlength();
             }
+            
+            auto& _Al         = _Getal();
+            auto& _My_data    = _Mypair._Myval2;
+            pointer& _Myfirst = _My_data._Myfirst;
+            pointer& _Mylast  = _My_data._Mylast;
 
-            _Reallocate_exactly(_Newcapacity);
+            const auto _Size = static_cast<size_type>(_Mylast - _Myfirst);
+
+#if _HAS_CXX23
+            const auto [_Newvec, _Allocated] = _Alty_traits::allocate_at_least(_Al, _Newcapacity);
+#else // _HAS_CXX23
+            const pointer _Newvec = _Al.allocate(_Newcapacity);
+            const auto _Allocated = _Newcapacity;
+#endif // _HAS_CXX23
+            
+            _TRY_BEGIN
+            if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+                _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
+            } else {
+                _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
+            }
+            _CATCH_ALL
+            _Al.deallocate(_Newvec, _Allocated);
+            _RERAISE;
+            _CATCH_END
+
+            _Change_array(_Newvec, _Size, _Allocated);
         }
     }
 
@@ -1694,7 +1719,26 @@ public:
             if (_Oldfirst == _Oldlast) {
                 _Tidy();
             } else {
-                _Reallocate_exactly(static_cast<size_type>(_Oldlast - _Oldfirst));
+                auto& _Al         = _Getal();
+                pointer& _Myfirst = _My_data._Myfirst;
+                pointer& _Mylast  = _My_data._Mylast;
+
+                const auto _Size = static_cast<size_type>(_Mylast - _Myfirst);
+
+                const pointer _Newvec = _Al.allocate(_Size);
+
+                _TRY_BEGIN
+                if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+                    _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
+                } else {
+                    _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
+                }
+                _CATCH_ALL
+                _Al.deallocate(_Newvec, _Size);
+                _RERAISE;
+                _CATCH_END
+
+                _Change_array(_Newvec, _Size, _Size);
             }
         }
     }
@@ -1986,10 +2030,15 @@ private:
         _STL_INTERNAL_CHECK(!_Myfirst && !_Mylast && !_Myend); // check that *this is tidy
         _STL_INTERNAL_CHECK(0 < _Newcapacity && _Newcapacity <= max_size());
 
-        const auto _Newvec = _Getal().allocate(_Newcapacity);
+#if _HAS_CXX23
+        const auto [_Newvec, _Allocated] = std::allocator_traits<_Alloc>::allocate_at_least(_Getal(), _Newcapacity);
+#else // _HAS_CXX23
+        const auto _Newvec         = _Getal().allocate(_Newcapacity);
+        const size_type _Allocated = _Newcapacity;
+#endif // _HAS_CXX23
         _Myfirst           = _Newvec;
         _Mylast            = _Newvec;
-        _Myend             = _Newvec + _Newcapacity;
+        _Myend             = _Newvec + _Allocated;
     }
 
     _CONSTEXPR20 void _Buy_nonzero(const size_type _Newcapacity) {

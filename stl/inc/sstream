@@ -261,7 +261,14 @@ protected:
             return _Traits::eof();
         }
 
-        const auto _Newptr = _Unfancy(_Al.allocate(_Newsize));
+#if _HAS_CXX23
+        const auto [_Fancyptr, _Newallocated] = allocator_traits<_Alloc>::allocate_at_least(_Al, _Newsize);
+        _Newsize                              = _Newallocated;
+#else // _HAS_CXX23
+        const auto _Fancyptr = _Al.allocate(_Newsize);
+#endif // _HAS_CXX23
+        const auto _Newptr = _Unfancy(_Fancyptr);
+
         _Traits::copy(_Newptr, _Oldptr, _Oldsize);
 
         const auto _New_pnext = _Newptr + _Oldsize;
@@ -440,9 +447,16 @@ protected:
 
         if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
             // finite buffer that can be read or written, set it up
-            const auto _Pnew = _Unfancy(_Al.allocate(_Count));
+#if _HAS_CXX23
+            const auto [_Fancyptr, _Newcount] = allocator_traits<_Alloc>::allocate_at_least(_Al, _Count);
+#else // _HAS_CXX23
+            const auto _Fancyptr         = _Al.allocate(_Count);
+            const _Mysize_type _Newcount = _Count;
+#endif // _HAS_CXX23
+            const auto _Pnew = _Unfancy(_Fancyptr);
+
             _Traits::copy(_Pnew, _Ptr, _Count);
-            _Seekhigh = _Pnew + _Count;
+            _Seekhigh = _Pnew + _Newcount;
 
             if (!(_State & _Noread)) {
                 _Mysb::setg(_Pnew, _Pnew, _Seekhigh); // setup read buffer
