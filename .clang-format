@@ -202,7 +202,7 @@ PointerAlignment: Left
 # ShortNamespaceLines: 1
 # SortIncludes:    CaseSensitive
 # SortJavaStaticImport: Before
-# SortUsingDeclarations: true
+# SortUsingDeclarations: LexicographicNumeric
 # SpaceAfterCStyleCast: false
 SpaceAfterCStyleCast: true
 # SpaceAfterLogicalNot: false
