@@ -305,7 +305,6 @@ _NODISCARD _CONSTEXPR23 from_chars_result _Integer_from_chars(
     }
 
     _Raw_value = static_cast<_RawTy>(_Value); // congruent to _Value modulo 2^N for negative, N4950 [conv.integral]/3
-                                              // (was implementation-defined in C++17, N4659 [conv.integral]/3)
 
     return {_Next, errc{}};
 }
@@ -374,10 +373,11 @@ _EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(const char* const _First, 
 // N4950 [dcl.init.list]/3.5:
 // "Otherwise, if the initializer list has no elements and T is a class type with a default constructor,
 // the object is value-initialized."
-// N4950 [dcl.init.general]/9, /9.1:
+// N4950 [dcl.init.general]/9, /9.1, /9.1.1:
 // "To value-initialize an object of type T means:
-// - if T is a (possibly cv-qualified) class type ([class]) with either no default constructor ([class.default.ctor])
-// or a default constructor that is user-provided or deleted, then the object is default-initialized;"
+// - if T is a (possibly cv-qualified) class type ([class]), then
+//   - if T has either no default constructor ([class.default.ctor]) or a default constructor
+//   that is user-provided or deleted, then the object is default-initialized;"
 // N4950 [dcl.init.general]/7, /7.1:
 // "To default-initialize an object of type T means:
 // - If T is a (possibly cv-qualified) class type ([class]), constructors are considered. The applicable constructors
