@@ -27,8 +27,8 @@ concept CanPipe = requires(LHS lhs, RHS rhs) { forward<LHS>(lhs) | forward<RHS>(
 
 template <class LHS, class RHS, class Ret>
 concept CanPipe_R = requires(LHS lhs, RHS rhs) {
-                        { forward<LHS>(lhs) | forward<RHS>(rhs) } -> same_as<Ret>;
-                    };
+    { forward<LHS>(lhs) | forward<RHS>(rhs) } -> same_as<Ret>;
+};
 
 using TestRange = array<int, 1>;
 

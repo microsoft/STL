@@ -546,19 +546,17 @@ template <class InRng, class OutRng>
 concept CanUninitializedCopy = requires(InRng& ri, OutRng& ro) { ranges::uninitialized_copy(ri, ro); };
 
 template <class InIt, class OutIt, class S>
-concept CanUninitializedCopyN =
-    requires(InIt&& ii, OutIt&& io, S&& s) {
-        ranges::uninitialized_copy_n(forward<InIt>(ii), iter_difference_t<InIt>{}, forward<OutIt>(io), forward<S>(s));
-    };
+concept CanUninitializedCopyN = requires(InIt&& ii, OutIt&& io, S&& s) {
+    ranges::uninitialized_copy_n(forward<InIt>(ii), iter_difference_t<InIt>{}, forward<OutIt>(io), forward<S>(s));
+};
 
 template <class InRng, class OutRng>
 concept CanUninitializedMove = requires(InRng& ri, OutRng& ro) { ranges::uninitialized_move(ri, ro); };
 
 template <class InIt, class OutIt, class S>
-concept CanUninitializedMoveN =
-    requires(InIt&& ii, OutIt&& io, S&& s) {
-        ranges::uninitialized_move_n(forward<InIt>(ii), iter_difference_t<InIt>{}, forward<OutIt>(io), forward<S>(s));
-    };
+concept CanUninitializedMoveN = requires(InIt&& ii, OutIt&& io, S&& s) {
+    ranges::uninitialized_move_n(forward<InIt>(ii), iter_difference_t<InIt>{}, forward<OutIt>(io), forward<S>(s));
+};
 
 template <class Rng>
 concept CanDestroy = requires(Rng&& r) { ranges::destroy(forward<Rng>(r)); };

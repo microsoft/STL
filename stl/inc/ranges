@@ -1418,8 +1418,8 @@ namespace ranges {
 
 #if _HAS_CXX23
     template <class _Ty>
-    concept _Integer_like_with_usable_difference_type = _Signed_integer_like<_Ty>
-                                                     || (_Integer_like<_Ty> && weakly_incrementable<_Ty>);
+    concept _Integer_like_with_usable_difference_type =
+        _Signed_integer_like<_Ty> || (_Integer_like<_Ty> && weakly_incrementable<_Ty>);
 
     template <class _Ty>
     struct _Repeat_view_difference_type {
@@ -1741,12 +1741,11 @@ namespace ranges {
         concept _Istreamable_impl = derived_from<_Stream, basic_istream<_CharT, _Traits>>
                                  && constructible_from<basic_istream_view<_Elem, _CharT, _Traits>, _Stream&>;
         template <class _Elem, class _Stream>
-        concept _Istreamable =
-            requires {
-                typename _Stream::char_type;
-                typename _Stream::traits_type;
-                requires _Istreamable_impl<_Elem, _Stream, typename _Stream::char_type, typename _Stream::traits_type>;
-            };
+        concept _Istreamable = requires {
+            typename _Stream::char_type;
+            typename _Stream::traits_type;
+            requires _Istreamable_impl<_Elem, _Stream, typename _Stream::char_type, typename _Stream::traits_type>;
+        };
 
         template <class _Ty>
         struct _Istream_fn {
@@ -6951,10 +6950,10 @@ namespace ranges {
     concept _Slide_caches_nothing = random_access_range<_Vw> && sized_range<_Vw>;
 
     template <class _Vw>
-    concept _Slide_caches_last = (!_Slide_caches_nothing<_Vw>) && bidirectional_range<_Vw> && common_range<_Vw>;
+    concept _Slide_caches_last = (!_Slide_caches_nothing<_Vw>) &&bidirectional_range<_Vw> && common_range<_Vw>;
 
     template <class _Vw>
-    concept _Slide_caches_first = (!_Slide_caches_nothing<_Vw>) && (!_Slide_caches_last<_Vw>);
+    concept _Slide_caches_first = (!_Slide_caches_nothing<_Vw>) &&(!_Slide_caches_last<_Vw>);
 
     _EXPORT_STD template <forward_range _Vw>
         requires view<_Vw>
@@ -7981,9 +7980,9 @@ namespace ranges {
         constexpr bool _Is_noexcept = (noexcept(static_cast<_ResultType>(
             _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>())) && ...);
         // clang-format on
-        const auto _Get_smallest_distance_closure =
-            [&_Lhs_tuple, &_Rhs_tuple ]<size_t _FirstIdx /* = 0 */, size_t... _Idxs>(
-                index_sequence<_FirstIdx, _Idxs...>) noexcept(_Is_noexcept) {
+        const auto _Get_smallest_distance_closure = [&_Lhs_tuple,
+                                                        &_Rhs_tuple]<size_t _FirstIdx /* = 0 */, size_t... _Idxs>(
+                                                        index_sequence<_FirstIdx, _Idxs...>) noexcept(_Is_noexcept) {
             const _ResultType _First_size = static_cast<_ResultType>(_STD get<0>(_Lhs_tuple) - _STD get<0>(_Rhs_tuple));
 
             if (_First_size == 0) {
@@ -8006,29 +8005,29 @@ namespace ranges {
         noexcept((noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) && ...)) {
         // clang-format on
         const auto _Evaluate_equality_closure =
-            [&_Lhs_tuple, &_Rhs_tuple ]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(
+            [&_Lhs_tuple, &_Rhs_tuple]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(
                 (noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) && ...)) {
-            return ((_STD get<_Indices>(_Lhs_tuple) == _STD get<_Indices>(_Rhs_tuple)) || ...);
-        };
+                return ((_STD get<_Indices>(_Lhs_tuple) == _STD get<_Indices>(_Rhs_tuple)) || ...);
+            };
 
         return _Evaluate_equality_closure(index_sequence_for<_LHSTupleTypes...>{});
     }
 
 #ifdef __clang__
     template <bool _IsConst, class... _ViewTypes> // TRANSITION, LLVM-47414
-    concept _Zip_iter_converts = _IsConst
-                              && (convertible_to<iterator_t<_ViewTypes>, iterator_t<const _ViewTypes>> && ...);
+    concept _Zip_iter_converts =
+        _IsConst && (convertible_to<iterator_t<_ViewTypes>, iterator_t<const _ViewTypes>> && ...);
 
     template <bool _IsConst, class... _ViewTypes> // TRANSITION, LLVM-47414
-    concept _Zip_sent_converts = _IsConst
-                              && (convertible_to<sentinel_t<_ViewTypes>, sentinel_t<const _ViewTypes>> && ...);
+    concept _Zip_sent_converts =
+        _IsConst && (convertible_to<sentinel_t<_ViewTypes>, sentinel_t<const _ViewTypes>> && ...);
 #endif // ^^^ workaround ^^^
 
     template <class _Func, class... _Views>
-    concept _Zip_transform_constraints = move_constructible<_Func> && is_object_v<_Func> && (sizeof...(_Views) > 0)
-                                      && (input_range<_Views> && ...) && (view<_Views> && ...)
-                                      && regular_invocable<_Func&, range_reference_t<_Views>...>
-                                      && _Can_reference<invoke_result_t<_Func&, range_reference_t<_Views>...>>;
+    concept _Zip_transform_constraints =
+        move_constructible<_Func> && is_object_v<_Func> && (sizeof...(_Views) > 0) && (input_range<_Views> && ...)
+        && (view<_Views> && ...) && regular_invocable<_Func&, range_reference_t<_Views>...>
+        && _Can_reference<invoke_result_t<_Func&, range_reference_t<_Views>...>>;
 
     _EXPORT_STD template <input_range... _ViewTypes>
         requires (view<_ViewTypes> && ...) && (sizeof...(_ViewTypes) > 0)
@@ -8249,11 +8248,12 @@ namespace ranges {
             {
                 // clang-format on
                 const auto _Swap_every_pair_closure =
-                    [&_Lhs, &_Rhs ]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(noexcept(
+                    [&_Lhs, &_Rhs]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(noexcept(
                         ((_RANGES iter_swap(_STD get<_Indices>(_Lhs._Current), _STD get<_Indices>(_Rhs._Current))),
                             ...))) {
-                    ((_RANGES iter_swap(_STD get<_Indices>(_Lhs._Current), _STD get<_Indices>(_Rhs._Current))), ...);
-                };
+                        ((_RANGES iter_swap(_STD get<_Indices>(_Lhs._Current), _STD get<_Indices>(_Rhs._Current))),
+                            ...);
+                    };
 
                 _Swap_every_pair_closure(index_sequence_for<_ViewTypes...>{});
             }
@@ -9558,9 +9558,9 @@ namespace ranges {
                 noexcept(noexcept(adjacent_transform_view<views::all_t<_Rng>, decay_t<_Fn>, _Nx>(
                     _STD forward<_Rng>(_Range), _STD forward<_Fn>(_Func))))
                 requires requires {
-                             adjacent_transform_view<views::all_t<_Rng>, decay_t<_Fn>, _Nx>(
-                                 _STD forward<_Rng>(_Range), _STD forward<_Fn>(_Func));
-                         }
+                    adjacent_transform_view<views::all_t<_Rng>, decay_t<_Fn>, _Nx>(
+                        _STD forward<_Rng>(_Range), _STD forward<_Fn>(_Func));
+                }
             {
                 return adjacent_transform_view<views::all_t<_Rng>, decay_t<_Fn>, _Nx>(
                     _STD forward<_Rng>(_Range), _STD forward<_Fn>(_Func));
@@ -9641,9 +9641,9 @@ namespace ranges {
     }
 
     template <bool _Const, class _First, class... _Rest>
-    concept _Cartesian_product_is_random_access = (random_access_range<_Maybe_const<_Const, _First>> && ...
-                                                   && (random_access_range<_Maybe_const<_Const, _Rest>>
-                                                       && sized_range<_Maybe_const<_Const, _Rest>>) );
+    concept _Cartesian_product_is_random_access =
+        (random_access_range<_Maybe_const<_Const, _First>> && ...
+            && (random_access_range<_Maybe_const<_Const, _Rest>> && sized_range<_Maybe_const<_Const, _Rest>>) );
 
     template <class _Rng>
     concept _Cartesian_product_common_arg = common_range<_Rng> || (sized_range<_Rng> && random_access_range<_Rng>);
@@ -10039,8 +10039,7 @@ namespace ranges {
                 return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                     return (_RANGES iter_swap(_STD get<_Indices>(_Left._Current), _STD get<_Indices>(_Right._Current)),
                         ...);
-                }
-                (make_index_sequence<1 + sizeof...(_Rest)>{});
+                }(make_index_sequence<1 + sizeof...(_Rest)>{});
             }
         };
 
@@ -10088,8 +10087,7 @@ namespace ranges {
         {
             const bool _Is_empty = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                 return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ...);
-            }
-            (make_index_sequence<sizeof...(_Rest)>{});
+            }(make_index_sequence<sizeof...(_Rest)>{});
 
             const auto _Make_iter_tuple = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                 return tuple<iterator_t<_First>, iterator_t<_Rest>...>{_Begin_or_first_end<_Indices>(_Is_empty)...};
@@ -10102,8 +10100,7 @@ namespace ranges {
         {
             const bool _Is_empty = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                 return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ...);
-            }
-            (make_index_sequence<sizeof...(_Rest)>{});
+            }(make_index_sequence<sizeof...(_Rest)>{});
 
             const auto _Make_iter_tuple = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                 return tuple<iterator_t<const _First>, iterator_t<const _Rest>...>{
@@ -10132,8 +10129,7 @@ namespace ranges {
 #else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
                 return (static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases))) * ...);
 #endif // ^^^ _CONTAINER_DEBUG_LEVEL == 0 ^^^
-            }
-            (make_index_sequence<1 + sizeof...(_Rest)>{});
+            }(make_index_sequence<1 + sizeof...(_Rest)>{});
         }
 
         _NODISCARD constexpr auto size() const
@@ -10152,8 +10148,7 @@ namespace ranges {
 #else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
                 return (static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases))) * ...);
 #endif // ^^^ _CONTAINER_DEBUG_LEVEL == 0 ^^^
-            }
-            (make_index_sequence<1 + sizeof...(_Rest)>{});
+            }(make_index_sequence<1 + sizeof...(_Rest)>{});
         }
     };
 
