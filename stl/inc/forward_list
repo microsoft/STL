@@ -1097,10 +1097,11 @@ public:
     }
 
     void swap(forward_list& _Right) noexcept /* strengthened */ {
+        using _STD swap;
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
             _Swap_proxy_and_iterators(_Right);
-            _Swap_adl(_Mypair._Myval2._Myhead, _Right._Mypair._Myval2._Myhead);
+            swap(_Mypair._Myval2._Myhead, _Right._Mypair._Myval2._Myhead); // intentional ADL
         }
     }
 

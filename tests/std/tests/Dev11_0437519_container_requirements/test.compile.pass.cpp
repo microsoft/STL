@@ -829,7 +829,7 @@ void check_all_container_requirements() {
     test_container_swap<Tag>();
     // Copy Assignment is verified in the Allocator-Aware Container Requirements
     test_container_size<Tag>();
-};
+}
 
 
 //

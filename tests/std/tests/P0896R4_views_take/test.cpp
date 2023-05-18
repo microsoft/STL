@@ -603,8 +603,8 @@ void test_lwg3737() {
     static_assert(!ranges::sized_range<const read_some_int_range>);
 
     istringstream stream{"0 1 42 1729"};
-    auto rng =
-        read_some_int_range{counted_iterator{istream_iterator<int>{stream}, 4}, default_sentinel} | views::take(2);
+    read_some_int_range r{counted_iterator{istream_iterator<int>{stream}, 4}, default_sentinel};
+    auto rng = views::take(std::move(r), 2);
 
     using result_range = decltype(rng);
     static_assert(

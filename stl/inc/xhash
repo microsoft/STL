@@ -164,10 +164,11 @@ public:
 
     void swap(_Uhash_compare& _Rhs) noexcept(
         conjunction_v<_Is_nothrow_swappable<_Hasher>, _Is_nothrow_swappable<_Keyeq>>) {
-        _Swap_adl(_Mypair._Get_first(), _Rhs._Mypair._Get_first());
+        using _STD swap;
+        swap(_Mypair._Get_first(), _Rhs._Mypair._Get_first()); // intentional ADL
         auto& _Lsecond = _Mypair._Myval2;
         auto& _Rsecond = _Rhs._Mypair._Myval2;
-        _Swap_adl(_Lsecond._Get_first(), _Rsecond._Get_first());
+        swap(_Lsecond._Get_first(), _Rsecond._Get_first()); // intentional ADL
         _STD swap(_Lsecond._Myval2, _Rsecond._Myval2);
     }
 
@@ -926,7 +927,7 @@ public:
     }
 
     void reserve(size_type _Maxcount) { // rebuild table with room for _Maxcount elements
-        rehash(static_cast<size_type>(static_cast<float>(_Maxcount) / max_load_factor() + 0.5F));
+        rehash(_Min_load_factor_buckets(_Maxcount));
     }
 
     conditional_t<_Multi, iterator, pair<iterator, bool>> insert(const value_type& _Val) {
@@ -1999,7 +2000,7 @@ protected:
 };
 
 #if _HAS_CXX17
-// For constraining deduction guides (N4892 [unord.req]/18.3)
+// For constraining deduction guides (N4950 [unord.req.general]/243.3)
 template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
 #endif // _HAS_CXX17

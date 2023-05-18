@@ -435,23 +435,23 @@ struct _Atomic_padded {
 #else // ^^^ don't break ABI / break ABI vvv
 template <class _Ty>
 struct _Atomic_storage_traits { // properties for how _Ty is stored in an atomic
-    static constexpr size_t _Storage_size = sizeof(_Ty) == 1 ? 1
-                                          : sizeof(_Ty) == 2 ? 2
-                                          : sizeof(_Ty) <= 4 ? 4
-                                          : sizeof(_Ty) <= 8 ? 8
+    static constexpr size_t _Storage_size = sizeof(_Ty) == 1  ? 1
+                                          : sizeof(_Ty) == 2  ? 2
+                                          : sizeof(_Ty) <= 4  ? 4
+                                          : sizeof(_Ty) <= 8  ? 8
 #if defined(_M_X64) || defined(_M_ARM64) || defined(_M_ARM64EC)
                                           : sizeof(_Ty) <= 16 ? 16
 #endif // 64 bits
                                                               : sizeof(_Ty);
 
     static constexpr size_t _Padding_size = _Storage_size - sizeof(_Ty);
-    static constexpr bool _Uses_padding = _Padding_size != 0;
+    static constexpr bool _Uses_padding   = _Padding_size != 0;
 };
 
 template <class _Ty>
 struct _Atomic_storage_traits<_Ty&> { // properties for how _Ty is stored in an atomic_ref
     static constexpr size_t _Storage_size = sizeof(_Ty);
-    static constexpr bool _Uses_padding = false;
+    static constexpr bool _Uses_padding   = false;
 };
 
 template <class _Ty, bool = _Atomic_storage_traits<_Ty>::_Uses_padding>
@@ -1117,7 +1117,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR != 1 vvv
 
 #ifdef _M_ARM
-        _As_bytes = __ldrexd(_Mem);
+        _As_bytes           = __ldrexd(_Mem);
 #else
         _As_bytes = __iso_volatile_load64(_Mem);
 #endif

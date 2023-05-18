@@ -7562,7 +7562,7 @@ namespace msvc {
                 ASSERT_SAME_TYPE(decltype(cb), const simple_base&);
                 assert(cb.x == 42);
                 auto&& rb = std::visit<simple_base&&>(std::identity{}, std::move(v));
-                ASSERT_SAME_TYPE(decltype(rb), simple_base &&);
+                ASSERT_SAME_TYPE(decltype(rb), simple_base&&);
                 assert(rb.x == 42);
                 auto&& crb = std::visit<const simple_base&&>(std::identity{}, std::move(std::as_const(v)));
                 ASSERT_SAME_TYPE(decltype(crb), const simple_base&&);

@@ -25,11 +25,10 @@ using namespace std;
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 template <class Ostream, class Alloc = allocator<stacktrace_entry>>
-concept CanPrintStacktrace =
-    requires(Ostream& os, const stacktrace_entry& f, const basic_stacktrace<Alloc>& st) {
-        { os << f } -> same_as<basic_ostream<typename Ostream::char_type, typename Ostream::traits_type>&>;
-        { os << st } -> same_as<basic_ostream<typename Ostream::char_type, typename Ostream::traits_type>&>;
-    };
+concept CanPrintStacktrace = requires(Ostream& os, const stacktrace_entry& f, const basic_stacktrace<Alloc>& st) {
+    { os << f } -> same_as<basic_ostream<typename Ostream::char_type, typename Ostream::traits_type>&>;
+    { os << st } -> same_as<basic_ostream<typename Ostream::char_type, typename Ostream::traits_type>&>;
+};
 
 template <class CharT>
 struct FancyCharTraits : char_traits<CharT> {};

@@ -5,5 +5,7 @@
 # they can be downloaded from unicode.org.
 # See the documentation in each script for more info.
 emoji-data.txt
+DerivedCoreProperties.txt
+DerivedGeneralCategory.txt
 GraphemeBreakProperty.txt
 GraphemeBreakTest.txt
