@@ -337,6 +337,8 @@
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
 // P2278R4 cbegin Should Always Return A Constant Iterator
+// P2286R8 Formatting Ranges
+//     (only the '?' format specifier for strings and characters)
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
@@ -362,6 +364,7 @@
 // P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
 // P2652R2 Disallowing User Specialization Of allocator_traits
+// P2713R1 Escaping Improvements In std::format
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -860,7 +863,7 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.36 or ne
 #error /GR implies _HAS_STATIC_RTTI.
 #endif // defined(_CPPRTTI) && !_HAS_STATIC_RTTI
 
-// N4842 [dcl.constexpr]/1: "A function or static data member declared with the
+// N4950 [dcl.constexpr]/1: "A function or static data member declared with the
 // constexpr or consteval specifier is implicitly an inline function or variable"
 
 // Functions that became constexpr in C++17
@@ -957,10 +960,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _ENFORCE_MATCHING_ALLOCATORS _HAS_CXX17
 #endif // _ENFORCE_MATCHING_ALLOCATORS
 
-#define _MISMATCHED_ALLOCATOR_MESSAGE(_CONTAINER, _VALUE_TYPE)                                 \
-    _CONTAINER " requires that Allocator's value_type match " _VALUE_TYPE                      \
-               " (See N4659 26.2.1 [container.requirements.general]/16 allocator_type)"        \
-               " Either fix the allocator value_type or define _ENFORCE_MATCHING_ALLOCATORS=0" \
+#define _MISMATCHED_ALLOCATOR_MESSAGE(_CONTAINER, _VALUE_TYPE)                                                      \
+    _CONTAINER " requires that Allocator's value_type match " _VALUE_TYPE " (See N4950 [container.alloc.reqmts]/5)" \
+               " Either fix the allocator value_type or define _ENFORCE_MATCHING_ALLOCATORS=0"                      \
                " to suppress this error."
 
 // Enforcement of Standard facet specializations
@@ -969,7 +971,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // _ENFORCE_FACET_SPECIALIZATIONS
 
 #define _FACET_SPECIALIZATION_MESSAGE                                                  \
-    "Unsupported facet specialization; see N4800 27.3.1.1.1 [locale.category]. "       \
+    "Unsupported facet specialization; see N4950 [locale.category]. "                  \
     "Either use a Standard specialization or define _ENFORCE_FACET_SPECIALIZATIONS=0 " \
     "to suppress this error."
 
@@ -1194,7 +1196,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 // P0482R6 Library Support For char8_t
 // Other C++20 deprecation warnings
 
-// N4810 D.16 [depr.locale.category]
+// N4868 D.23 [depr.locale.category]
 #if _HAS_CXX20 && !defined(_SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
 #define _CXX20_DEPRECATE_CODECVT_FACETS                                                                                \
@@ -1208,7 +1210,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX20_DEPRECATE_CODECVT_FACETS
 #endif // ^^^ warning disabled ^^^
 
-// N4810 D.17 [depr.fs.path.factory]
+// N4868 D.24 [depr.fs.path.factory]
 #if _HAS_CXX20 && defined(__cpp_char8_t) && !defined(_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
 #define _CXX20_DEPRECATE_U8PATH                                                                                      \

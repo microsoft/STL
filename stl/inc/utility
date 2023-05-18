@@ -848,7 +848,7 @@ _NODISCARD consteval _Ty _Min_limit() noexcept { // same as (numeric_limits<_Ty>
     static_assert(_Is_standard_integer<_Ty>); // doesn't attempt to handle all types
     if constexpr (is_signed_v<_Ty>) {
         constexpr auto _Unsigned_max = static_cast<make_unsigned_t<_Ty>>(-1);
-        return static_cast<_Ty>((_Unsigned_max >> 1) + 1); // well-defined, N4861 [conv.integral]/3
+        return static_cast<_Ty>((_Unsigned_max >> 1) + 1); // well-defined, N4950 [conv.integral]/3
     } else {
         return 0;
     }

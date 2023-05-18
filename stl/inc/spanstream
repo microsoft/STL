@@ -44,7 +44,7 @@ public:
     using off_type    = typename _Traits::off_type;
     using traits_type = _Traits;
 
-    // N4928 [spanbuf.cons], constructors
+    // N4950 [spanbuf.cons], constructors
     basic_spanbuf() = default;
 
     explicit basic_spanbuf(ios_base::openmode _Which) : _Mysb(), _Mode(_Which) {}
@@ -61,7 +61,7 @@ public:
         _Right.setg(nullptr, nullptr, nullptr);
     }
 
-    // N4928 [spanbuf.assign], assignment and swap
+    // N4950 [spanbuf.assign], assignment and swap
     basic_spanbuf& operator=(const basic_spanbuf&) = delete;
 
     basic_spanbuf& operator=(basic_spanbuf&& _Right) noexcept /* strengthened */ {
@@ -80,7 +80,7 @@ public:
         _STD swap(_Buf, _Right._Buf);
     }
 
-    // N4928 [spanbuf.members], member functions
+    // N4950 [spanbuf.members], member functions
     _NODISCARD _STD span<_Elem> span() const noexcept {
         if (_Mode & ios_base::out) {
             return _STD span<_Elem>{_Mysb::pbase(), _Mysb::pptr()};
@@ -107,22 +107,22 @@ public:
     }
 
 protected:
-    // N4928 [spanbuf.virtuals], overridden virtual functions
+    // N4950 [spanbuf.virtuals], overridden virtual functions
     pos_type seekoff(
         off_type _Off, ios_base::seekdir _Way, ios_base::openmode _Which = ios_base::in | ios_base::out) override {
         const bool _Sequence_in  = _Which & ios_base::in;
         const bool _Sequence_out = _Which & ios_base::out;
         switch (_Way) {
         case ios_base::beg:
-            // N4928 [spanbuf.virtuals]/4.1 baseoff = 0
+            // N4950 [spanbuf.virtuals]/4.1 baseoff = 0
             if (static_cast<size_t>(_Off) > _Buf.size()) { // negative wraparound to positive to save a compare
-                return pos_type{off_type{-1}}; // N4928 [spanbuf.virtuals]/5 report failure
+                return pos_type{off_type{-1}}; // N4950 [spanbuf.virtuals]/5 report failure
             }
 
             break;
         case ios_base::end:
             {
-                // N4928 [spanbuf.virtuals]/4.3 baseoff =
+                // N4950 [spanbuf.virtuals]/4.3 baseoff =
                 const auto _Baseoff = (_Mode & ios_base::out) && !(_Mode & ios_base::in)
                                         ? static_cast<off_type>(_Mysb::pptr() - _Mysb::pbase())
                                         : static_cast<off_type>(_Buf.size());
@@ -132,7 +132,7 @@ protected:
 
                 _Off += _Baseoff;
                 if (static_cast<size_t>(_Off) > _Buf.size()) { // negative wraparound to positive to save a compare
-                    return pos_type{off_type{-1}}; // N4928 [spanbuf.virtuals]/5 report failure
+                    return pos_type{off_type{-1}}; // N4950 [spanbuf.virtuals]/5 report failure
                 }
 
                 break;
@@ -157,7 +157,7 @@ protected:
             return pos_type{off_type{-1}}; // report failure
         }
 
-        // N4928 [spanbuf.virtuals]/4: For a sequence to be positioned, if its next pointer is a null pointer and newoff
+        // N4950 [spanbuf.virtuals]/4: For a sequence to be positioned, if its next pointer is a null pointer and newoff
         // is not equal to 0, the positioning operation fails.
         if (_Off != 0 && ((_Sequence_in && !_Mysb::gptr()) || (_Sequence_out && !_Mysb::pptr()))) {
             return pos_type{off_type{-1}}; // report failure
@@ -206,7 +206,7 @@ public:
     using off_type    = typename _Traits::off_type;
     using traits_type = _Traits;
 
-    // N4928 [ispanstream.cons], constructors
+    // N4950 [ispanstream.cons], constructors
     explicit basic_ispanstream(_STD span<_Elem> _Span, ios_base::openmode _Which = ios_base::in)
         : _Mybase(_STD addressof(_Buf)), _Buf(_Span, _Which | ios_base::in) {}
 
@@ -235,13 +235,13 @@ public:
         return *this;
     }
 
-    // N4928 [ispanstream.swap], swap
+    // N4950 [ispanstream.swap], swap
     void swap(basic_ispanstream& _Right) noexcept /* strengthened */ {
         _Mybase::swap(_Right);
         _Buf.swap(_Right._Buf);
     }
 
-    // N4928 [ispanstream.members], member functions
+    // N4950 [ispanstream.members], member functions
     _NODISCARD _Mysb* rdbuf() const noexcept {
         return const_cast<_Mysb*>(_STD addressof(_Buf));
     }
@@ -289,7 +289,7 @@ public:
     using off_type    = typename _Traits::off_type;
     using traits_type = _Traits;
 
-    // N4928 [ospanstream.cons], constructors
+    // N4950 [ospanstream.cons], constructors
     explicit basic_ospanstream(_STD span<_Elem> _Span, ios_base::openmode _Which = ios_base::out)
         : _Mybase(_STD addressof(_Buf)), _Buf(_Span, _Which | ios_base::out) {}
 
@@ -307,13 +307,13 @@ public:
         return *this;
     }
 
-    // N4928 [ospanstream.swap], swap
+    // N4950 [ospanstream.swap], swap
     void swap(basic_ospanstream& _Right) noexcept /* strengthened */ {
         _Mybase::swap(_Right);
         _Buf.swap(_Right._Buf);
     }
 
-    // N4928 [ospanstream.members], member functions
+    // N4950 [ospanstream.members], member functions
     _NODISCARD _Mysb* rdbuf() const noexcept {
         return const_cast<_Mysb*>(_STD addressof(_Buf));
     }
@@ -349,7 +349,7 @@ public:
     using off_type    = typename _Traits::off_type;
     using traits_type = _Traits;
 
-    // N4928 [spanstream.cons], constructors
+    // N4950 [spanstream.cons], constructors
     explicit basic_spanstream(_STD span<_Elem> _Span, ios_base::openmode _Which = ios_base::out | ios_base::in)
         : _Mybase(_STD addressof(_Buf)), _Buf(_Span, _Which) {}
 
@@ -367,13 +367,13 @@ public:
         return *this;
     }
 
-    // N4928 [spanstream.swap], swap
+    // N4950 [spanstream.swap], swap
     void swap(basic_spanstream& _Right) noexcept /* strengthened */ {
         _Mybase::swap(_Right);
         _Buf.swap(_Right._Buf);
     }
 
-    // N4928 [spanstream.members], member functions
+    // N4950 [spanstream.members], member functions
     _NODISCARD _Mysb* rdbuf() const noexcept {
         return const_cast<_Mysb*>(_STD addressof(_Buf));
     }

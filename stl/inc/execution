@@ -4009,7 +4009,7 @@ _Ty _Reduce_move_unchecked(_InIt _First, const _InIt _Last, _Ty _Val, _BinOp _Re
         return _Reduce_plus_arithmetic_ranges(_First, _Last, _Val);
     } else {
         for (; _First != _Last; ++_First) {
-            _Val = _Reduce_op(_STD move(_Val), _STD move(*_First)); // Requirement missing from N4713
+            _Val = _Reduce_op(_STD move(_Val), _STD move(*_First)); // Requirement missing from N4950
         }
 
         return _Val;
@@ -4026,7 +4026,7 @@ _Ty _Reduce_at_least_two(const _FwdIt _First, const _FwdIt _Last, _BinOp _Reduce
         auto _Next = _First;
         _Ty _Val   = _Reduce_op(*_First, *++_Next);
         while (++_Next != _Last) {
-            _Val = _Reduce_op(_STD move(_Val), *_Next); // Requirement missing from N4713
+            _Val = _Reduce_op(_STD move(_Val), *_Next); // Requirement missing from N4950
         }
 
         return _Val;
@@ -4137,10 +4137,10 @@ struct _Static_partitioned_transform_reduce_binary2 { // transform-reduction tas
                 _This->_Basis2._Get_first(_Key._Chunk_number, _This->_Team._Get_chunk_offset(_Key._Chunk_number));
             auto _Next1 = _Chunk1._First;
             auto _Next2 = _First2;
-            // Requirement missing from N4713:
+            // Requirement missing from N4950:
             _Ty _Val = _Reduce_op(_Transform_op(*_Chunk1._First, *_First2), _Transform_op(*++_Next1, *++_Next2));
             while (++_Next1 != _Chunk1._Last) {
-                // Requirement missing from N4713:
+                // Requirement missing from N4950:
                 _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_Next1, *++_Next2));
             }
 
@@ -4151,7 +4151,7 @@ struct _Static_partitioned_transform_reduce_binary2 { // transform-reduction tas
                 _Next1 = _Chunk1._First;
                 _Next2 = _First2;
                 for (; _Next1 != _Chunk1._Last; ++_Next1, (void) ++_Next2) {
-                    // Requirement missing from N4713:
+                    // Requirement missing from N4950:
                     _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_Next1, *_Next2));
                 }
             }
@@ -4287,7 +4287,7 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
                     // setup complete, hereafter nothrow or terminate
                     _Work._Submit_for_chunks(_Hw_threads, _Chunks);
                     while (auto _Stolen_key = _Operation._Team._Get_next_key()) {
-                        // keep processing remaining chunks to comply with N4687 [intro.progress]/14
+                        // keep processing remaining chunks to comply with N4950 [intro.progress]/14
                         auto _Chunk = _Operation._Basis._Get_chunk(_Stolen_key);
                         _Val = _STD transform_reduce(_Chunk._First, _Chunk._Last, _STD move(_Val), _Pass_fn(_Reduce_op),
                             _Pass_fn(_Transform_op));

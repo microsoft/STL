@@ -217,9 +217,9 @@ private:
 
 public:
     static_assert(!_Is_any_of_v<remove_cv_t<_Ty>, nullopt_t, in_place_t>,
-        "T in optional<T> must be a type other than nullopt_t or in_place_t (N4828 [optional.optional]/3).");
+        "T in optional<T> must be a type other than nullopt_t or in_place_t (N4950 [optional.optional.general]/3).");
     static_assert(is_object_v<_Ty> && is_destructible_v<_Ty> && !is_array_v<_Ty>,
-        "T in optional<T> must meet the Cpp17Destructible requirements (N4828 [optional.optional]/3).");
+        "T in optional<T> must meet the Cpp17Destructible requirements (N4950 [optional.optional.general]/3).");
 
     using value_type = _Ty;
 
@@ -348,9 +348,9 @@ public:
     _CONSTEXPR20 void swap(optional& _Right) noexcept(
         is_nothrow_move_constructible_v<_Ty>&& is_nothrow_swappable_v<_Ty>) {
         static_assert(is_move_constructible_v<_Ty>,
-            "optional<T>::swap requires T to be move constructible (N4828 [optional.swap]/1).");
+            "optional<T>::swap requires T to be move constructible (N4950 [optional.swap]/1).");
         static_assert(!is_move_constructible_v<_Ty> || is_swappable_v<_Ty>,
-            "optional<T>::swap requires T to be swappable (N4828 [optional.swap]/1).");
+            "optional<T>::swap requires T to be swappable (N4950 [optional.swap]/2).");
         using _STD swap;
         if constexpr (_Is_trivially_swappable_v<_Ty>) {
             using _TrivialBaseTy = _Optional_destruct_base<_Ty>;
@@ -425,9 +425,9 @@ public:
     _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Ty2&& _Right) const& {
         static_assert(is_convertible_v<const _Ty&, remove_cv_t<_Ty>>,
             "The const overload of optional<T>::value_or requires const T& to be convertible to remove_cv_t<T> "
-            "(N4885 [optional.observe]/17 as modified by LWG-3424).");
+            "(N4950 [optional.observe]/15 as modified by LWG-3424).");
         static_assert(is_convertible_v<_Ty2, _Ty>,
-            "optional<T>::value_or(U) requires U to be convertible to T (N4828 [optional.observe]/18).");
+            "optional<T>::value_or(U) requires U to be convertible to T (N4950 [optional.observe]/15).");
 
         if (this->_Has_value) {
             return static_cast<const _Ty&>(this->_Value);
@@ -439,9 +439,9 @@ public:
     _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Ty2&& _Right) && {
         static_assert(is_convertible_v<_Ty, remove_cv_t<_Ty>>,
             "The rvalue overload of optional<T>::value_or requires T to be convertible to remove_cv_t<T> "
-            "(N4885 [optional.observe]/19 as modified by LWG-3424).");
+            "(N4950 [optional.observe]/17 as modified by LWG-3424).");
         static_assert(is_convertible_v<_Ty2, _Ty>,
-            "optional<T>::value_or(U) requires U to be convertible to T (N4828 [optional.observe]/20).");
+            "optional<T>::value_or(U) requires U to be convertible to T (N4950 [optional.observe]/17).");
 
         if (this->_Has_value) {
             return static_cast<_Ty&&>(this->_Value);
@@ -457,7 +457,7 @@ public:
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
             "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
-            "(N4901 [optional.monadic]/2).");
+            "(N4950 [optional.monadic]/2).");
 
         if (this->_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), static_cast<_Ty&>(this->_Value));
@@ -472,7 +472,7 @@ public:
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
             "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
-            "(N4901 [optional.monadic]/2).");
+            "(N4950 [optional.monadic]/2).");
 
         if (this->_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), static_cast<const _Ty&>(this->_Value));
@@ -487,7 +487,7 @@ public:
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
             "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
-            "(N4901 [optional.monadic]/5).");
+            "(N4950 [optional.monadic]/5).");
 
         if (this->_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), static_cast<_Ty&&>(this->_Value));
@@ -502,7 +502,7 @@ public:
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
             "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
-            "(N4901 [optional.monadic]/5).");
+            "(N4950 [optional.monadic]/5).");
 
         if (this->_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), static_cast<const _Ty&&>(this->_Value));
@@ -517,10 +517,10 @@ public:
 
         static_assert(!_Is_any_of_v<_Uty, nullopt_t, in_place_t>,
             "optional<T>::transform(F) requires the return type of F to be a type other than nullopt_t or in_place_t "
-            "(N4901 [optional.monadic]/8).");
+            "(N4950 [optional.monadic]/8).");
         static_assert(is_object_v<_Uty> && !is_array_v<_Uty>,
             "optional<T>::transform(F) requires the return type of F to be a non-array object type "
-            "(N4901 [optional.monadic]/8).");
+            "(N4950 [optional.monadic]/8).");
 
         if (this->_Has_value) {
             return optional<_Uty>{
@@ -536,10 +536,10 @@ public:
 
         static_assert(!_Is_any_of_v<_Uty, nullopt_t, in_place_t>,
             "optional<T>::transform(F) requires the return type of F to be a type other than nullopt_t or in_place_t "
-            "(N4901 [optional.monadic]/8).");
+            "(N4950 [optional.monadic]/8).");
         static_assert(is_object_v<_Uty> && !is_array_v<_Uty>,
             "optional<T>::transform(F) requires the return type of F to be a non-array object type "
-            "(N4901 [optional.monadic]/8).");
+            "(N4950 [optional.monadic]/8).");
 
         if (this->_Has_value) {
             return optional<_Uty>{
@@ -555,10 +555,10 @@ public:
 
         static_assert(!_Is_any_of_v<_Uty, nullopt_t, in_place_t>,
             "optional<T>::transform(F) requires the return type of F to be a type other than nullopt_t or in_place_t "
-            "(N4901 [optional.monadic]/11).");
+            "(N4950 [optional.monadic]/11).");
         static_assert(is_object_v<_Uty> && !is_array_v<_Uty>,
             "optional<T>::transform(F) requires the return type of F to be a non-array object type "
-            "(N4901 [optional.monadic]/11).");
+            "(N4950 [optional.monadic]/11).");
 
         if (this->_Has_value) {
             return optional<_Uty>{
@@ -574,10 +574,10 @@ public:
 
         static_assert(!_Is_any_of_v<_Uty, nullopt_t, in_place_t>,
             "optional<T>::transform(F) requires the return type of F to be a type other than nullopt_t or in_place_t "
-            "(N4901 [optional.monadic]/11).");
+            "(N4950 [optional.monadic]/11).");
         static_assert(is_object_v<_Uty> && !is_array_v<_Uty>,
             "optional<T>::transform(F) requires the return type of F to be a non-array object type "
-            "(N4901 [optional.monadic]/11).");
+            "(N4950 [optional.monadic]/11).");
 
         if (this->_Has_value) {
             return optional<_Uty>{
@@ -592,7 +592,7 @@ public:
         requires copy_constructible<_Ty>
     constexpr optional or_else(_Fn&& _Func) const& {
         static_assert(is_same_v<remove_cvref_t<invoke_result_t<_Fn>>, optional>,
-            "optional<T>::or_else(F) requires F to return an optional<T> (N4901 [optional.monadic]/14).");
+            "optional<T>::or_else(F) requires F to return an optional<T> (N4950 [optional.monadic]/14).");
 
         if (this->_Has_value) {
             return *this;
@@ -605,7 +605,7 @@ public:
         requires move_constructible<_Ty>
     constexpr optional or_else(_Fn&& _Func) && {
         static_assert(is_same_v<remove_cvref_t<invoke_result_t<_Fn>>, optional>,
-            "optional<T>::or_else(F) requires F to return an optional<T> (N4901 [optional.monadic]/17).");
+            "optional<T>::or_else(F) requires F to return an optional<T> (N4950 [optional.monadic]/17).");
 
         if (this->_Has_value) {
             return _STD move(*this);

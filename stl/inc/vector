@@ -884,7 +884,7 @@ private:
         // insert range [_First, _Last) at end
 
         // For one-at-back, provide strong guarantee.
-        // Otherwise, provide basic guarantee (despite N4928 [vector.modifiers]/2).
+        // Otherwise, provide basic guarantee (despite N4950 [vector.modifiers]/2).
         // Performance note: except for one-at-back, _Emplace_one_at_back()'s strong guarantee is unnecessary here.
 
         for (; _First != _Last; ++_First) {
@@ -1766,7 +1766,7 @@ public:
         if (_Myfirst == _Mylast) { // already empty, nothing to do
             // This is an optimization for debug mode: we can avoid taking the debug lock to invalidate iterators.
             // Note that when clearing an empty vector, this will preserve past-the-end iterators, which is allowed by
-            // N4928 [sequence.reqmts]/54 "a.clear() [...] may invalidate the past-the-end iterator".
+            // N4950 [sequence.reqmts]/54 "a.clear() [...] may invalidate the past-the-end iterator".
             return;
         }
 
