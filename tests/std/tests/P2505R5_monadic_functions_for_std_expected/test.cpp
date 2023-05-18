@@ -375,23 +375,23 @@ struct DefaultTransformer {
 };
 
 template <class T>
-concept CanAndThen =
-    is_specialization_of<remove_cvref_t<T>, expected>
-    && requires(T&& t) { forward<T>(t).and_then(DefaultTransformer<expected<void, expected_error_t<T>>>{}); };
+concept CanAndThen = is_specialization_of<remove_cvref_t<T>, expected> && requires(T&& t) {
+    forward<T>(t).and_then(DefaultTransformer<expected<void, expected_error_t<T>>>{});
+};
 
 template <class T>
-concept CanOrElse =
-    is_specialization_of<remove_cvref_t<T>, expected>
-    && requires(T&& t) { forward<T>(t).or_else(DefaultTransformer<expected<expected_value_t<T>, char>>{}); };
+concept CanOrElse = is_specialization_of<remove_cvref_t<T>, expected> && requires(T&& t) {
+    forward<T>(t).or_else(DefaultTransformer<expected<expected_value_t<T>, char>>{});
+};
 
 template <class T>
 concept CanTransform = is_specialization_of<remove_cvref_t<T>, expected>
                     && requires(T&& t) { forward<T>(t).transform(DefaultTransformer<expected_value_t<T>>{}); };
 
 template <class T>
-concept CanTransformError =
-    is_specialization_of<remove_cvref_t<T>, expected>
-    && requires(T&& t) { forward<T>(t).transform_error(DefaultTransformer<expected_error_t<T>>{}); };
+concept CanTransformError = is_specialization_of<remove_cvref_t<T>, expected> && requires(T&& t) {
+    forward<T>(t).transform_error(DefaultTransformer<expected_error_t<T>>{});
+};
 
 enum class HasMutCopy : bool { No, Yes };
 

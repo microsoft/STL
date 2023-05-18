@@ -200,33 +200,33 @@ namespace test {
 
     template <class T, class U>
     concept CanEq = requires(T const& t, U const& u) {
-                        { t == u } -> convertible_to<bool>;
-                    };
+        { t == u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanNEq = requires(T const& t, U const& u) {
-                         { t != u } -> convertible_to<bool>;
-                     };
+        { t != u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanLt = requires(T const& t, U const& u) {
-                        { t < u } -> convertible_to<bool>;
-                    };
+        { t < u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanLtE = requires(T const& t, U const& u) {
-                         { t <= u } -> convertible_to<bool>;
-                     };
+        { t <= u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanGt = requires(T const& t, U const& u) {
-                        { t > u } -> convertible_to<bool>;
-                    };
+        { t > u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanGtE = requires(T const& t, U const& u) {
-                         { t >= u } -> convertible_to<bool>;
-                     };
+        { t >= u } -> convertible_to<bool>;
+    };
 
     template <class Category, class Element>
     class proxy_reference {

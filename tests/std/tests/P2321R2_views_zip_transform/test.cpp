@@ -32,11 +32,10 @@ constexpr auto& maybe_as_const(T& value) {
 }
 
 template <class Function, class... RangeTypes>
-concept CanZipTransform = (ranges::viewable_range<RangeTypes> && ...)
-                       && requires(Function&& func, RangeTypes&&... test_ranges) {
-                              views::zip_transform(
-                                  std::forward<Function>(func), std::forward<RangeTypes>(test_ranges)...);
-                          };
+concept CanZipTransform =
+    (ranges::viewable_range<RangeTypes> && ...) && requires(Function&& func, RangeTypes&&... test_ranges) {
+        views::zip_transform(std::forward<Function>(func), std::forward<RangeTypes>(test_ranges)...);
+    };
 
 template <class RangeType>
 concept HasIteratorCategory = requires { typename ranges::iterator_t<RangeType>::iterator_category; };

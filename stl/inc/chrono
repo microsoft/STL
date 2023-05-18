@@ -2538,7 +2538,7 @@ namespace chrono {
         sys_time<duration> _Tp{};
     };
 
-    zoned_time()->zoned_time<seconds>;
+    zoned_time() -> zoned_time<seconds>;
 
     template <class _Duration>
     zoned_time(sys_time<_Duration>) -> zoned_time<common_type_t<_Duration, seconds>>;
@@ -2644,7 +2644,7 @@ namespace chrono {
 #ifdef __cpp_lib_concepts
             const auto _Leap_cmp = _Utc_leap_second <=> _Time_floor;
 #else // ^^^ __cpp_lib_concepts / TRANSITION, GH-395 workaround vvv
-            const auto _Leap_cmp = _Utc_leap_second > _Time_floor ? strong_ordering::greater
+            const auto _Leap_cmp = _Utc_leap_second > _Time_floor  ? strong_ordering::greater
                                  : _Utc_leap_second == _Time_floor ? strong_ordering::equal
                                                                    : strong_ordering::less;
 #endif // ^^^ workaround
@@ -4709,8 +4709,8 @@ concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
 
 template <class _Ty>
 concept _Has_ok = requires(_Ty _At) {
-                      { _At.ok() } -> same_as<bool>;
-                  };
+    { _At.ok() } -> same_as<bool>;
+};
 
 // A chrono spec is either a type (with an optional modifier), OR a literal character, never both.
 template <class _CharT>

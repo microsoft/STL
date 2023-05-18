@@ -166,9 +166,9 @@ struct _Construct_expected_from_invoke_result_tag {
 
 template <class _Fn, class... _Tys>
 concept _Is_invoke_constructible = requires(_Fn&& _Func, _Tys&&... _Vals) {
-                                       static_cast<remove_cvref_t<invoke_result_t<_Fn, _Tys...>>>(
-                                           _STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Tys>(_Vals)...));
-                                   };
+    static_cast<remove_cvref_t<invoke_result_t<_Fn, _Tys...>>>(
+        _STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Tys>(_Vals)...));
+};
 
 template <class _Ty>
 struct _Check_expected_argument : true_type {

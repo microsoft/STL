@@ -311,9 +311,9 @@ struct pointer_traits<_Ty*> {
 #ifdef __cpp_lib_concepts
 template <class _Ty>
 concept _Has_to_address = requires(const _Ty& _Val) {
-                              typename pointer_traits<_Ty>;
-                              pointer_traits<_Ty>::to_address(_Val);
-                          };
+    typename pointer_traits<_Ty>;
+    pointer_traits<_Ty>::to_address(_Val);
+};
 #else // ^^^ Use concept / use variable template vvv
 template <class _Ty, class = void>
 inline constexpr bool _Has_to_address = false; // determines whether pointer_traits<_Ty> has to_address
@@ -592,10 +592,9 @@ template <template <class...> class _Template, class... _Args>
 void _Derived_from_specialization_impl(const _Template<_Args...>&);
 
 template <class _Ty, template <class...> class _Template>
-concept _Derived_from_specialization_of =
-    requires(const _Ty& _Obj) {
-        _STD _Derived_from_specialization_impl<_Template>(_Obj); // qualified: avoid ADL, handle incomplete types
-    };
+concept _Derived_from_specialization_of = requires(const _Ty& _Obj) {
+    _STD _Derived_from_specialization_impl<_Template>(_Obj); // qualified: avoid ADL, handle incomplete types
+};
 
 namespace ranges {
     namespace _Iter_move {
@@ -699,13 +698,12 @@ _EXPORT_STD template <indirectly_readable _Ty>
 using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, _Indirect_value_t<_Ty>>;
 
 _EXPORT_STD template <class _It, class _Ty>
-concept indirectly_writable =
-    requires(_It && __i, _Ty&& __t) {
-        *__i                                                                = static_cast<_Ty&&>(__t);
-        *static_cast<_It&&>(__i)                                            = static_cast<_Ty&&>(__t);
-        const_cast<const iter_reference_t<_It>&&>(*__i)                     = static_cast<_Ty&&>(__t);
-        const_cast<const iter_reference_t<_It>&&>(*static_cast<_It&&>(__i)) = static_cast<_Ty&&>(__t);
-    };
+concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
+    *__i                                                                = static_cast<_Ty&&>(__t);
+    *static_cast<_It&&>(__i)                                            = static_cast<_Ty&&>(__t);
+    const_cast<const iter_reference_t<_It>&&>(*__i)                     = static_cast<_Ty&&>(__t);
+    const_cast<const iter_reference_t<_It>&&>(*static_cast<_It&&>(__i)) = static_cast<_Ty&&>(__t);
+};
 
 template <bool _Is_integer_class>
 struct _Make_unsigned_like_impl {
@@ -742,8 +740,8 @@ using _Make_signed_like_t = typename _Make_signed_like_impl<_Integer_class<_Ty>>
 
 _EXPORT_STD template <class _Ty>
 concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {
-                                                                         { __t++ } -> same_as<_Ty>;
-                                                                     };
+    { __t++ } -> same_as<_Ty>;
+};
 
 template <bool _Iterator_category_present>
 struct _Iter_concept_impl2 {
@@ -2318,8 +2316,8 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-                                  { _Fake_copy_init(__t.begin()) } -> input_or_output_iterator;
-                              };
+            { _Fake_copy_init(__t.begin()) } -> input_or_output_iterator;
+        };
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> //
@@ -2387,8 +2385,8 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-                                  { _Fake_copy_init(__t.end()) } -> sentinel_for<iterator_t<_Ty>>;
-                              };
+            { _Fake_copy_init(__t.end()) } -> sentinel_for<iterator_t<_Ty>>;
+        };
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> //
@@ -2452,10 +2450,10 @@ namespace ranges {
     }
 
     _EXPORT_STD template <class _Rng>
-    concept range = requires(_Rng & __r) {
-                        _RANGES begin(__r);
-                        _RANGES end(__r);
-                    };
+    concept range = requires(_Rng& __r) {
+        _RANGES begin(__r);
+        _RANGES end(__r);
+    };
 
     _EXPORT_STD template <class _Rng>
     concept input_range = range<_Rng> && input_iterator<iterator_t<_Rng>>;
@@ -2537,8 +2535,8 @@ namespace ranges {
     namespace _Unchecked_begin {
         template <class _Ty>
         concept _Has_member = requires(_Ty& __t) {
-                                  { __t._Unchecked_begin() } -> input_or_output_iterator;
-                              };
+            { __t._Unchecked_begin() } -> input_or_output_iterator;
+        };
 
         template <class _Ty>
         concept _Can_begin = requires(_Ty& __t) { _Unwrap_range_iter<_Ty>(_RANGES begin(__t)); };
@@ -2588,11 +2586,10 @@ namespace ranges {
 
     namespace _Unchecked_end {
         template <class _Ty>
-        concept _Has_member = _Unchecked_begin::_Has_member<_Ty>
-                           && requires(_Ty& __t) {
-                                  __t._Unchecked_begin(); // required explicitly for better diagnostics
-                                  { __t._Unchecked_end() } -> sentinel_for<decltype(__t._Unchecked_begin())>;
-                              };
+        concept _Has_member = _Unchecked_begin::_Has_member<_Ty> && requires(_Ty& __t) {
+            __t._Unchecked_begin(); // required explicitly for better diagnostics
+            { __t._Unchecked_end() } -> sentinel_for<decltype(__t._Unchecked_begin())>;
+        };
 
         template <class _Ty>
         concept _Can_end = requires(_Ty& __t) { _Unwrap_range_sent<_Ty>(_RANGES end(__t)); };
@@ -2678,20 +2675,18 @@ namespace ranges {
 
     // TRANSITION, LLVM-55945
     template <class _Ty>
-    concept _Range_accessible_and_begin_adaptable =
-        _Should_range_access<_Ty>
-        && requires(
-            _Ty& _Val) { const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))}; };
+    concept _Range_accessible_and_begin_adaptable = _Should_range_access<_Ty> && requires(_Ty& _Val) {
+        const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
+    };
 
     template <class _Ty>
     using _End_on_const = decltype(_RANGES end(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
 
     // TRANSITION, LLVM-55945
     template <class _Ty>
-    concept _Range_accessible_and_end_adaptable =
-        _Should_range_access<_Ty>
-        && requires(
-            _Ty& _Val) { const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))}; };
+    concept _Range_accessible_and_end_adaptable = _Should_range_access<_Ty> && requires(_Ty& _Val) {
+        const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
+    };
 #endif // _HAS_CXX23
 
     struct _Cbegin_fn {
@@ -2747,8 +2742,8 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-                                  { _Fake_copy_init(__t.rbegin()) } -> input_or_output_iterator;
-                              };
+            { _Fake_copy_init(__t.rbegin()) } -> input_or_output_iterator;
+        };
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> //
@@ -2758,9 +2753,9 @@ namespace ranges {
 
         template <class _Ty>
         concept _Can_make_reverse = requires(_Ty __t) {
-                                        { _RANGES begin(__t) } -> bidirectional_iterator;
-                                        { _RANGES end(__t) } -> same_as<decltype(_RANGES begin(__t))>;
-                                    };
+            { _RANGES begin(__t) } -> bidirectional_iterator;
+            { _RANGES end(__t) } -> same_as<decltype(_RANGES begin(__t))>;
+        };
 
         class _Cpo {
         private:
@@ -2816,8 +2811,8 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-                                  { _Fake_copy_init(__t.rend()) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
-                              };
+            { _Fake_copy_init(__t.rend()) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
+        };
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> //
@@ -2828,9 +2823,9 @@ namespace ranges {
 
         template <class _Ty>
         concept _Can_make_reverse = requires(_Ty __t) {
-                                        { _RANGES begin(__t) } -> bidirectional_iterator;
-                                        { _RANGES end(__t) } -> same_as<decltype(_RANGES begin(__t))>;
-                                    };
+            { _RANGES begin(__t) } -> bidirectional_iterator;
+            { _RANGES end(__t) } -> same_as<decltype(_RANGES begin(__t))>;
+        };
 
         class _Cpo {
         private:
@@ -2883,20 +2878,18 @@ namespace ranges {
 
     // TRANSITION, LLVM-55945
     template <class _Ty>
-    concept _Range_accessible_and_rbegin_adaptable =
-        _Should_range_access<_Ty>
-        && requires(
-            _Ty& _Val) { const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))}; };
+    concept _Range_accessible_and_rbegin_adaptable = _Should_range_access<_Ty> && requires(_Ty& _Val) {
+        const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
+    };
 
     template <class _Ty>
     using _Rend_on_const = decltype(_RANGES rend(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
 
     // TRANSITION, LLVM-55945
     template <class _Ty>
-    concept _Range_accessible_and_rend_adaptable =
-        _Should_range_access<_Ty>
-        && requires(
-            _Ty& _Val) { const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))}; };
+    concept _Range_accessible_and_rend_adaptable = _Should_range_access<_Ty> && requires(_Ty& _Val) {
+        const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
+    };
 #endif // _HAS_CXX23
 
     struct _Crbegin_fn {
@@ -2955,21 +2948,22 @@ namespace ranges {
 
         template <class _Ty, class _UnCV>
         concept _Has_member = (!disable_sized_range<_UnCV>) //
-                           && requires(_Ty __t) {
-                                  { _Fake_copy_init(__t.size()) } -> _Integer_like;
-                              };
+            &&requires(_Ty __t) {
+                { _Fake_copy_init(__t.size()) } -> _Integer_like;
+            };
 
         template <class _Ty, class _UnCV>
-        concept _Has_ADL = _Has_class_or_enum_type<_Ty> && (!disable_sized_range<_UnCV>) //
-                        && requires(_Ty __t) {
-                               { _Fake_copy_init(size(__t)) } -> _Integer_like; // intentional ADL
-                           };
+        concept _Has_ADL = _Has_class_or_enum_type<_Ty>
+                        && (!disable_sized_range<_UnCV>) //
+                        &&requires(_Ty __t) {
+                            { _Fake_copy_init(size(__t)) } -> _Integer_like; // intentional ADL
+                        };
 
         template <class _Ty>
         concept _Can_difference = requires(_Ty __t) {
-                                      { _RANGES begin(__t) } -> forward_iterator;
-                                      { _RANGES end(__t) } -> sized_sentinel_for<decltype(_RANGES begin(__t))>;
-                                  };
+            { _RANGES begin(__t) } -> forward_iterator;
+            { _RANGES end(__t) } -> sized_sentinel_for<decltype(_RANGES begin(__t))>;
+        };
 
         class _Cpo {
         private:
@@ -3037,9 +3031,9 @@ namespace ranges {
 
         template <class _Ty>
         concept _Can_begin_end = requires(_Ty __t) {
-                                     { _RANGES begin(__t) } -> forward_iterator;
-                                     _RANGES end(__t);
-                                 };
+            { _RANGES begin(__t) } -> forward_iterator;
+            _RANGES end(__t);
+        };
 
         class _Cpo {
         private:
@@ -3097,13 +3091,13 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-                                  { _Fake_copy_init(__t.data()) } -> _Points_to_object;
-                              };
+            { _Fake_copy_init(__t.data()) } -> _Points_to_object;
+        };
 
         template <class _Ty>
         concept _Has_contiguous_iterator = requires(_Ty __t) {
-                                               { _RANGES begin(__t) } -> contiguous_iterator;
-                                           };
+            { _RANGES begin(__t) } -> contiguous_iterator;
+        };
 
         class _Cpo {
         private:
@@ -3148,9 +3142,9 @@ namespace ranges {
 #if _HAS_CXX23
     // TRANSITION, LLVM-55945
     template <class _Ty>
-    concept _Range_accessible_and_data_adaptable =
-        _Should_range_access<_Ty>
-        && requires(_Ty& _Val) { _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val))); };
+    concept _Range_accessible_and_data_adaptable = _Should_range_access<_Ty> && requires(_Ty& _Val) {
+        _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
+    };
 #endif // _HAS_CXX23
 
     struct _Cdata_fn {
@@ -3176,7 +3170,7 @@ namespace ranges {
     }
 
     _EXPORT_STD template <class _Rng>
-    concept sized_range = range<_Rng> && requires(_Rng & __r) { _RANGES size(__r); };
+    concept sized_range = range<_Rng> && requires(_Rng& __r) { _RANGES size(__r); };
 
     _EXPORT_STD template <sized_range _Rng>
     using range_size_t = decltype(_RANGES size(_STD declval<_Rng&>()));
@@ -3211,10 +3205,9 @@ namespace ranges {
     concept random_access_range = range<_Rng> && random_access_iterator<iterator_t<_Rng>>;
 
     _EXPORT_STD template <class _Rng>
-    concept contiguous_range = range<_Rng> && contiguous_iterator<iterator_t<_Rng>>
-                            && requires(_Rng & __r) {
-                                   { _RANGES data(__r) } -> same_as<add_pointer_t<range_reference_t<_Rng>>>;
-                               };
+    concept contiguous_range = range<_Rng> && contiguous_iterator<iterator_t<_Rng>> && requires(_Rng& __r) {
+        { _RANGES data(__r) } -> same_as<add_pointer_t<range_reference_t<_Rng>>>;
+    };
 
     class _Not_quite_object {
     public:
@@ -3544,14 +3537,8 @@ namespace ranges {
         }
 
     public:
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr bool empty()
-            requires sized_range<_Dx> || forward_range<_Dx>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr bool empty()
             requires sized_range<_Derived> || forward_range<_Derived>
-#endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
             if constexpr (sized_range<_Derived>) {
@@ -3561,14 +3548,8 @@ namespace ranges {
             }
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr bool empty() const
-            requires sized_range<const _Dx> || forward_range<const _Dx>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr bool empty() const
             requires sized_range<const _Derived> || forward_range<const _Derived>
-#endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
             if constexpr (sized_range<const _Derived>) {
@@ -3579,138 +3560,72 @@ namespace ranges {
         }
 
 #if _HAS_CXX23
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr auto cbegin()
-            requires input_range<_Dx>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr auto cbegin()
             requires input_range<_Derived>
-#endif // TRANSITION, LLVM-44833
         {
             return _RANGES cbegin(_Cast());
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr auto cbegin() const
-            requires input_range<const _Dx>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr auto cbegin() const
             requires input_range<const _Derived>
-#endif // TRANSITION, LLVM-44833
         {
             return _RANGES cbegin(_Cast());
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr auto cend()
-            requires input_range<_Dx>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr auto cend()
             requires input_range<_Derived>
-#endif // TRANSITION, LLVM-44833
         {
             return _RANGES cend(_Cast());
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr auto cend() const
-            requires input_range<const _Dx>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr auto cend() const
             requires input_range<const _Derived>
-#endif // TRANSITION, LLVM-44833
         {
             return _RANGES cend(_Cast());
         }
 #endif // _HAS_CXX23
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        constexpr explicit operator bool()
-            requires _Can_empty<_Dx>
-#else // ^^^ workaround / no workaround vvv
         constexpr explicit operator bool()
             requires _Can_empty<_Derived>
-#endif // TRANSITION, LLVM-44833
         {
             return !_RANGES empty(_Cast());
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        constexpr explicit operator bool() const
-            requires _Can_empty<const _Dx>
-#else // ^^^ workaround / no workaround vvv
         constexpr explicit operator bool() const
             requires _Can_empty<const _Derived>
-#endif // TRANSITION, LLVM-44833
         {
             return !_RANGES empty(_Cast());
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr auto data()
-            requires contiguous_iterator<iterator_t<_Dx>>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr auto data()
             requires contiguous_iterator<iterator_t<_Derived>>
-#endif // TRANSITION, LLVM-44833
         {
             return _STD to_address(_RANGES begin(_Cast()));
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr auto data() const
-            requires range<const _Dx> && contiguous_iterator<iterator_t<const _Dx>>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr auto data() const
             requires range<const _Derived> && contiguous_iterator<iterator_t<const _Derived>>
-#endif // TRANSITION, LLVM-44833
         {
             return _STD to_address(_RANGES begin(_Cast()));
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr auto size()
-            requires forward_range<_Dx> && sized_sentinel_for<sentinel_t<_Dx>, iterator_t<_Dx>>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr auto size()
             requires forward_range<_Derived> && sized_sentinel_for<sentinel_t<_Derived>, iterator_t<_Derived>>
-#endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
             return _STD _To_unsigned_like(_RANGES end(_Self) - _RANGES begin(_Self));
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr auto size() const
-            requires forward_range<const _Dx> && sized_sentinel_for<sentinel_t<const _Dx>, iterator_t<const _Dx>>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr auto size() const
             requires forward_range<const _Derived>
                   && sized_sentinel_for<sentinel_t<const _Derived>, iterator_t<const _Derived>>
-#endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
             return _STD _To_unsigned_like(_RANGES end(_Self) - _RANGES begin(_Self));
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr decltype(auto) front()
-            requires forward_range<_Dx>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr decltype(auto) front()
             requires forward_range<_Derived>
-#endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -3719,14 +3634,8 @@ namespace ranges {
             return *_RANGES begin(_Self);
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr decltype(auto) front() const
-            requires forward_range<const _Dx>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr decltype(auto) front() const
             requires forward_range<const _Derived>
-#endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -3735,14 +3644,8 @@ namespace ranges {
             return *_RANGES begin(_Self);
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr decltype(auto) back()
-            requires bidirectional_range<_Dx> && common_range<_Dx>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr decltype(auto) back()
             requires bidirectional_range<_Derived> && common_range<_Derived>
-#endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -3752,14 +3655,8 @@ namespace ranges {
             return *--_Last;
         }
 
-#ifdef __clang__ // TRANSITION, LLVM-44833
-        template <class _Dx = _Derived>
-        _NODISCARD constexpr decltype(auto) back() const
-            requires bidirectional_range<const _Dx> && common_range<const _Dx>
-#else // ^^^ workaround / no workaround vvv
         _NODISCARD constexpr decltype(auto) back() const
             requires bidirectional_range<const _Derived> && common_range<const _Derived>
-#endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -3804,30 +3701,30 @@ namespace ranges {
         && (!convertible_to<remove_pointer_t<_From> (*)[], remove_pointer_t<_To> (*)[]>);
 
     template <class _From, class _To>
-    concept _Convertible_to_non_slicing = convertible_to<_From, _To>
-                                       && (!_Uses_nonqualification_pointer_conversion<decay_t<_From>, decay_t<_To>>);
+    concept _Convertible_to_non_slicing =
+        convertible_to<_From, _To> && (!_Uses_nonqualification_pointer_conversion<decay_t<_From>, decay_t<_To>>);
 
 #if !_HAS_CXX23
     template <class _Ty>
-    concept _Pair_like =
-        (!is_reference_v<_Ty>) && requires(_Ty __t) {
-                                      typename tuple_size<_Ty>::type;
-                                      requires derived_from<tuple_size<_Ty>, integral_constant<size_t, 2>>;
-                                      typename tuple_element_t<0, remove_const_t<_Ty>>;
-                                      typename tuple_element_t<1, remove_const_t<_Ty>>;
-                                      { _STD get<0>(__t) } -> convertible_to<const tuple_element_t<0, _Ty>&>;
-                                      { _STD get<1>(__t) } -> convertible_to<const tuple_element_t<1, _Ty>&>;
-                                  };
+    concept _Pair_like = (!is_reference_v<_Ty>) &&requires(_Ty __t) {
+        typename tuple_size<_Ty>::type;
+        requires derived_from<tuple_size<_Ty>, integral_constant<size_t, 2>>;
+        typename tuple_element_t<0, remove_const_t<_Ty>>;
+        typename tuple_element_t<1, remove_const_t<_Ty>>;
+        { _STD get<0>(__t) } -> convertible_to<const tuple_element_t<0, _Ty>&>;
+        { _STD get<1>(__t) } -> convertible_to<const tuple_element_t<1, _Ty>&>;
+    };
 #endif // !_HAS_CXX23
 
     template <class _Ty, class _First, class _Second>
-    concept _Pair_like_convertible_from = (!range<_Ty>)
+    concept _Pair_like_convertible_from =
+        (!range<_Ty>)
 #if _HAS_CXX23
-                                       && (!is_reference_v<_Ty>)
+        &&(!is_reference_v<_Ty>)
 #endif // _HAS_CXX23
-                                       && _Pair_like<_Ty> && constructible_from<_Ty, _First, _Second>
-                                       && _Convertible_to_non_slicing<_First, tuple_element_t<0, _Ty>>
-                                       && convertible_to<_Second, tuple_element_t<1, _Ty>>;
+        &&_Pair_like<_Ty>
+        && constructible_from<_Ty, _First, _Second> && _Convertible_to_non_slicing<_First, tuple_element_t<0, _Ty>>
+        && convertible_to<_Second, tuple_element_t<1, _Ty>>;
 
     template <class _It, class _Se, subrange_kind _Ki>
     concept _Store_size = (_Ki == subrange_kind::sized) && (!sized_sentinel_for<_Se, _It>);
@@ -5967,8 +5864,8 @@ namespace ranges {
     concept _Sized_or_unreachable_sentinel_for = sized_sentinel_for<_Se, _It> || same_as<_Se, unreachable_sentinel_t>;
 
     template <class _Rng>
-    concept _Sized_or_infinite_range = range<_Rng>
-                                    && (sized_range<_Rng> || same_as<sentinel_t<_Rng>, unreachable_sentinel_t>);
+    concept _Sized_or_infinite_range =
+        range<_Rng> && (sized_range<_Rng> || same_as<sentinel_t<_Rng>, unreachable_sentinel_t>);
 
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>

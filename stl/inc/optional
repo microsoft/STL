@@ -627,8 +627,8 @@ _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const optional
     noexcept(_Fake_copy_init<bool>(*_Left == *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires {
-                 { *_Left == *_Right } -> _Implicitly_convertible_to<bool>;
-             }
+        { *_Left == *_Right } -> _Implicitly_convertible_to<bool>;
+    }
 #endif // __cpp_lib_concepts
 {
     const bool _Left_has_value  = _Left.has_value();
@@ -644,8 +644,8 @@ _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const optional
     noexcept(_Fake_copy_init<bool>(*_Left != *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires {
-                 { *_Left != *_Right } -> _Implicitly_convertible_to<bool>;
-             }
+        { *_Left != *_Right } -> _Implicitly_convertible_to<bool>;
+    }
 #endif // __cpp_lib_concepts
 {
     const bool _Left_has_value  = _Left.has_value();
@@ -661,8 +661,8 @@ _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const optional<
     noexcept(_Fake_copy_init<bool>(*_Left < *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires {
-                 { *_Left < *_Right } -> _Implicitly_convertible_to<bool>;
-             }
+        { *_Left < *_Right } -> _Implicitly_convertible_to<bool>;
+    }
 #endif // __cpp_lib_concepts
 {
     const bool _Left_has_value  = _Left.has_value();
@@ -678,8 +678,8 @@ _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const optional<
     noexcept(_Fake_copy_init<bool>(*_Left > *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires {
-                 { *_Left > *_Right } -> _Implicitly_convertible_to<bool>;
-             }
+        { *_Left > *_Right } -> _Implicitly_convertible_to<bool>;
+    }
 #endif // __cpp_lib_concepts
 {
     const bool _Left_has_value  = _Left.has_value();
@@ -695,8 +695,8 @@ _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const optional
     noexcept(_Fake_copy_init<bool>(*_Left <= *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires(const _Ty1& _Elem1, const _Ty2& _Elem2) {
-                 { *_Left <= *_Right } -> _Implicitly_convertible_to<bool>;
-             }
+        { *_Left <= *_Right } -> _Implicitly_convertible_to<bool>;
+    }
 #endif // __cpp_lib_concepts
 {
     const bool _Left_has_value  = _Left.has_value();
@@ -712,8 +712,8 @@ _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const optional
     noexcept(_Fake_copy_init<bool>(*_Left >= *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires {
-                 { *_Left >= *_Right } -> _Implicitly_convertible_to<bool>;
-             }
+        { *_Left >= *_Right } -> _Implicitly_convertible_to<bool>;
+    }
 #endif // __cpp_lib_concepts
 {
     const bool _Left_has_value  = _Left.has_value();

@@ -417,8 +417,8 @@ namespace pmr {
             _Pool(_Pool&& _That) noexcept
                 : _Unfull_chunk{_STD exchange(_That._Unfull_chunk, nullptr)}, _All_chunks{_STD move(_That._All_chunks)},
                   _Next_capacity{_STD exchange(_That._Next_capacity, _Default_next_capacity)},
-                  _Block_size{_That._Block_size}, _Log_of_size{_That._Log_of_size}, _Empty_chunk{_STD exchange(
-                                                                                        _That._Empty_chunk, nullptr)} {}
+                  _Block_size{_That._Block_size}, _Log_of_size{_That._Log_of_size},
+                  _Empty_chunk{_STD exchange(_That._Empty_chunk, nullptr)} {}
 
             _Pool& operator=(_Pool&& _That) noexcept {
                 _Unfull_chunk  = _STD exchange(_That._Unfull_chunk, nullptr);

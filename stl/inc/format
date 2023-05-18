@@ -558,10 +558,9 @@ template <class _CharT>
 concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;
 
 template <class _Ty, class _Context>
-concept _Has_formatter =
-    requires(_Ty& _Val, _Context& _Ctx) {
-        _STD declval<typename _Context::template formatter_type<remove_cvref_t<_Ty>>>().format(_Val, _Ctx);
-    };
+concept _Has_formatter = requires(_Ty& _Val, _Context& _Ctx) {
+    _STD declval<typename _Context::template formatter_type<remove_cvref_t<_Ty>>>().format(_Val, _Ctx);
+};
 
 template <class _Ty, class _Context>
 concept _Has_const_formatter = _Has_formatter<const remove_reference_t<_Ty>, _Context>;
@@ -2636,8 +2635,8 @@ inline namespace __p2286 {
 
     template <class _CharT, class _OutputIt, integral _Integral>
         requires (!_CharT_or_bool<_Integral, _CharT>)
-    _NODISCARD _OutputIt
-        _Fmt_write(_OutputIt _Out, _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale);
+    _NODISCARD _OutputIt _Fmt_write(
+        _OutputIt _Out, _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale);
 
     template <class _CharT, class _OutputIt>
     _NODISCARD _OutputIt _Fmt_write(
@@ -3445,8 +3444,8 @@ inline namespace __p2286 {
         _ParseFunc _Parse_funcs[_Num_args > 0 ? _Num_args : 1];
 
         consteval explicit _Format_checker(basic_string_view<_CharT> _Fmt) noexcept
-            : _Parse_context(_Fmt, _Num_args), _Parse_funcs{
-                                                   &_Compile_time_parse_format_specs<_Args, _ParseContext>...} {}
+            : _Parse_context(_Fmt, _Num_args),
+              _Parse_funcs{&_Compile_time_parse_format_specs<_Args, _ParseContext>...} {}
         constexpr void _On_text(const _CharT*, const _CharT*) const noexcept {}
         constexpr void _On_replacement_field(size_t, const _CharT*) const noexcept {}
         constexpr const _CharT* _On_format_specs(const size_t _Id, const _CharT* _First, const _CharT*) {
