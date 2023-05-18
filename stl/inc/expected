@@ -30,12 +30,12 @@ class unexpected;
 
 template <class _Err>
 struct _Check_unexpected_argument : true_type {
-    static_assert(is_object_v<_Err>, "E must be an object type. (N4928 [expected.un.general]/2)");
-    static_assert(!is_array_v<_Err>, "E must not be an array type. (N4928 [expected.un.general]/2)");
-    static_assert(!is_const_v<_Err>, "E must not be const. (N4928 [expected.un.general]/2)");
-    static_assert(!is_volatile_v<_Err>, "E must not be volatile. (N4928 [expected.un.general]/2)");
+    static_assert(is_object_v<_Err>, "E must be an object type. (N4950 [expected.un.general]/2)");
+    static_assert(!is_array_v<_Err>, "E must not be an array type. (N4950 [expected.un.general]/2)");
+    static_assert(!is_const_v<_Err>, "E must not be const. (N4950 [expected.un.general]/2)");
+    static_assert(!is_volatile_v<_Err>, "E must not be volatile. (N4950 [expected.un.general]/2)");
     static_assert(!_Is_specialization_v<_Err, unexpected>,
-        "E must not be a specialization of unexpected. (N4928 [expected.un.general]/2)");
+        "E must not be a specialization of unexpected. (N4950 [expected.un.general]/2)");
 };
 
 // [expected.un.general]
@@ -83,7 +83,8 @@ public:
     // [expected.un.swap]
     constexpr void swap(unexpected& _Other) noexcept(is_nothrow_swappable_v<_Err>) {
         static_assert(is_swappable_v<_Err>, "E must be swappable");
-        _Swap_adl(_Unexpected, _Other._Unexpected);
+        using _STD swap;
+        swap(_Unexpected, _Other._Unexpected); // intentional ADL
     }
 
     friend constexpr void swap(unexpected& _Left, unexpected& _Right) noexcept(is_nothrow_swappable_v<_Err>)
@@ -165,21 +166,21 @@ struct _Construct_expected_from_invoke_result_tag {
 
 template <class _Fn, class... _Tys>
 concept _Is_invoke_constructible = requires(_Fn&& _Func, _Tys&&... _Vals) {
-                                       static_cast<remove_cvref_t<invoke_result_t<_Fn, _Tys...>>>(
-                                           _STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Tys>(_Vals)...));
-                                   };
+    static_cast<remove_cvref_t<invoke_result_t<_Fn, _Tys...>>>(
+        _STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Tys>(_Vals)...));
+};
 
 template <class _Ty>
 struct _Check_expected_argument : true_type {
-    static_assert(!is_reference_v<_Ty>, "T must not be a reference type. (N4928 [expected.object.general]/2)");
-    static_assert(!is_function_v<_Ty>, "T must not be a function type. (N4928 [expected.object.general]/2)");
-    static_assert(!is_array_v<_Ty>, "T must not be an array type. (N4928 [expected.object.general]/2)");
+    static_assert(!is_reference_v<_Ty>, "T must not be a reference type. (N4950 [expected.object.general]/2)");
+    static_assert(!is_function_v<_Ty>, "T must not be a function type. (N4950 [expected.object.general]/2)");
+    static_assert(!is_array_v<_Ty>, "T must not be an array type. (N4950 [expected.object.general]/2)");
     static_assert(!is_same_v<remove_cv_t<_Ty>, in_place_t>,
-        "T must not be (possibly cv-qualified) in_place_t. (N4928 [expected.object.general]/2)");
+        "T must not be (possibly cv-qualified) in_place_t. (N4950 [expected.object.general]/2)");
     static_assert(!is_same_v<remove_cv_t<_Ty>, unexpect_t>,
-        "T must not be (possibly cv-qualified) unexpect_t. (N4928 [expected.object.general]/2)");
+        "T must not be (possibly cv-qualified) unexpect_t. (N4950 [expected.object.general]/2)");
     static_assert(!_Is_specialization_v<remove_cv_t<_Ty>, unexpected>,
-        "T must not be a (possibly cv-qualified) specialization of unexpected. (N4928 [expected.object.general]/2)");
+        "T must not be a (possibly cv-qualified) specialization of unexpected. (N4950 [expected.object.general]/2)");
 };
 
 _EXPORT_STD template <class _Ty, class _Err>
@@ -518,8 +519,9 @@ public:
               && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err> //
               && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
     {
+        using _STD swap;
         if (_Has_value && _Other._Has_value) {
-            _Swap_adl(_Value, _Other._Value);
+            swap(_Value, _Other._Value); // intentional ADL
         } else if (_Has_value) {
             if constexpr (is_nothrow_move_constructible_v<_Err>) {
                 _Err _Tmp(_STD move(_Other._Unexpected));
@@ -560,7 +562,7 @@ public:
         } else if (_Other._Has_value) {
             _Other.swap(*this);
         } else {
-            _Swap_adl(_Unexpected, _Other._Unexpected);
+            swap(_Unexpected, _Other._Unexpected); // intentional ADL
         }
     }
 
@@ -677,9 +679,9 @@ public:
     _NODISCARD constexpr _Ty value_or(_Uty&& _Other) const& noexcept(
         is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_convertible_v<_Uty, _Ty>) /* strengthened */ {
         static_assert(
-            is_copy_constructible_v<_Ty>, "is_copy_constructible_v<T> must be true. (N4928 [expected.object.obs]/16)");
+            is_copy_constructible_v<_Ty>, "is_copy_constructible_v<T> must be true. (N4950 [expected.object.obs]/18)");
         static_assert(
-            is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4928 [expected.object.obs]/16)");
+            is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4950 [expected.object.obs]/18)");
 
         if (_Has_value) {
             return _Value;
@@ -691,9 +693,9 @@ public:
     _NODISCARD constexpr _Ty value_or(_Uty&& _Other) && noexcept(
         is_nothrow_move_constructible_v<_Ty>&& is_nothrow_convertible_v<_Uty, _Ty>) /* strengthened */ {
         static_assert(
-            is_move_constructible_v<_Ty>, "is_move_constructible_v<T> must be true. (N4928 [expected.object.obs]/18)");
+            is_move_constructible_v<_Ty>, "is_move_constructible_v<T> must be true. (N4950 [expected.object.obs]/20)");
         static_assert(
-            is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4928 [expected.object.obs]/18)");
+            is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4950 [expected.object.obs]/20)");
 
         if (_Has_value) {
             return _STD move(_Value);
@@ -706,9 +708,9 @@ public:
     _NODISCARD constexpr _Err error_or(_Uty&& _Other) const& noexcept(
         is_nothrow_copy_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) /* strengthened */ {
         static_assert(
-            is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. (N4928 [expected.object.obs]/20)");
+            is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. (N4950 [expected.object.obs]/22)");
         static_assert(
-            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4928 [expected.object.obs]/20)");
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4950 [expected.object.obs]/22)");
 
         if (_Has_value) {
             return _STD forward<_Uty>(_Other);
@@ -721,9 +723,9 @@ public:
     _NODISCARD constexpr _Err error_or(_Uty&& _Other) && noexcept(
         is_nothrow_move_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) /* strengthened */ {
         static_assert(
-            is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true. (N4928 [expected.object.obs]/22)");
+            is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true. (N4950 [expected.object.obs]/24)");
         static_assert(
-            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4928 [expected.object.obs]/22)");
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4950 [expected.object.obs]/24)");
 
         if (_Has_value) {
             return _STD forward<_Uty>(_Other);
@@ -740,10 +742,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<T, E>::and_then(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.object.monadic]/3)");
+            "(N4950 [expected.object.monadic]/3)");
         static_assert(is_same_v<typename _Uty::error_type, _Err>,
             "expected<T, E>::and_then(F) requires the error type of the return type of F to be E. "
-            "(N4928 [expected.object.monadic]/3)");
+            "(N4950 [expected.object.monadic]/3)");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), _Value);
@@ -759,10 +761,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<T, E>::and_then(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.object.monadic]/3)");
+            "(N4950 [expected.object.monadic]/3)");
         static_assert(is_same_v<typename _Uty::error_type, _Err>,
             "expected<T, E>::and_then(F) requires the error type of the return type of F to be E. "
-            "(N4928 [expected.object.monadic]/3)");
+            "(N4950 [expected.object.monadic]/3)");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), _Value);
@@ -778,10 +780,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<T, E>::and_then(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.object.monadic]/7)");
+            "(N4950 [expected.object.monadic]/7)");
         static_assert(is_same_v<typename _Uty::error_type, _Err>,
             "expected<T, E>::and_then(F) requires the error type of the return type of F to be E. "
-            "(N4928 [expected.object.monadic]/7)");
+            "(N4950 [expected.object.monadic]/7)");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
@@ -797,10 +799,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<T, E>::and_then(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.object.monadic]/7)");
+            "(N4950 [expected.object.monadic]/7)");
         static_assert(is_same_v<typename _Uty::error_type, _Err>,
             "expected<T, E>::and_then(F) requires the error type of the return type of F to be E. "
-            "(N4928 [expected.object.monadic]/7)");
+            "(N4950 [expected.object.monadic]/7)");
 
         if (_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(_Value));
@@ -816,10 +818,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<T, E>::or_else(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.object.monadic]/11)");
+            "(N4950 [expected.object.monadic]/11)");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
             "expected<T, E>::or_else(F) requires the value type of the return type of F to be T. "
-            "(N4928 [expected.object.monadic]/11)");
+            "(N4950 [expected.object.monadic]/11)");
 
         if (_Has_value) {
             return _Uty{in_place, _Value};
@@ -835,10 +837,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<T, E>::or_else(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.object.monadic]/11)");
+            "(N4950 [expected.object.monadic]/11)");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
             "expected<T, E>::or_else(F) requires the value type of the return type of F to be T. "
-            "(N4928 [expected.object.monadic]/11)");
+            "(N4950 [expected.object.monadic]/11)");
 
         if (_Has_value) {
             return _Uty{in_place, _Value};
@@ -854,10 +856,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<T, E>::or_else(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.object.monadic]/15)");
+            "(N4950 [expected.object.monadic]/15)");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
             "expected<T, E>::or_else(F) requires the value type of the return type of F to be T. "
-            "(N4928 [expected.object.monadic]/15)");
+            "(N4950 [expected.object.monadic]/15)");
 
         if (_Has_value) {
             return _Uty{in_place, _STD move(_Value)};
@@ -873,10 +875,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<T, E>::or_else(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.object.monadic]/15)");
+            "(N4950 [expected.object.monadic]/15)");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
             "expected<T, E>::or_else(F) requires the value type of the return type of F to be T. "
-            "(N4928 [expected.object.monadic]/15)");
+            "(N4950 [expected.object.monadic]/15)");
 
         if (_Has_value) {
             return _Uty{in_place, _STD move(_Value)};
@@ -889,13 +891,13 @@ public:
         requires is_constructible_v<_Err, _Err&>
     constexpr auto transform(_Fn&& _Func) & {
         static_assert(invocable<_Fn, _Ty&>, "expected<T, E>::transform(F) requires that F is invocable with T. "
-                                            "(N4928 [expected.object.monadic]/19)");
+                                            "(N4950 [expected.object.monadic]/19)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Ty&>>;
 
         if constexpr (!is_void_v<_Uty>) {
             static_assert(_Is_invoke_constructible<_Fn, _Ty&>,
                 "expected<T, E>::transform(F) requires that the return type of F is constructible with the result of "
-                "invoking f. (N4928 [expected.object.monadic]/19)");
+                "invoking f. (N4950 [expected.object.monadic]/19)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -916,13 +918,13 @@ public:
         requires is_copy_constructible_v<_Err>
     constexpr auto transform(_Fn&& _Func) const& {
         static_assert(invocable<_Fn, const _Ty&>, "expected<T, E>::transform(F) requires that F is invocable with T. "
-                                                  "(N4928 [expected.object.monadic]/19)");
+                                                  "(N4950 [expected.object.monadic]/19)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Ty&>>;
 
         if constexpr (!is_void_v<_Uty>) {
             static_assert(_Is_invoke_constructible<_Fn, const _Ty&>,
                 "expected<T, E>::transform(F) requires that the return type of F is constructible with the result of "
-                "invoking f. (N4928 [expected.object.monadic]/19)");
+                "invoking f. (N4950 [expected.object.monadic]/19)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -943,13 +945,13 @@ public:
         requires is_move_constructible_v<_Err>
     constexpr auto transform(_Fn&& _Func) && {
         static_assert(invocable<_Fn, _Ty>, "expected<T, E>::transform(F) requires that F is invocable with T. "
-                                           "(N4928 [expected.object.monadic]/23)");
+                                           "(N4950 [expected.object.monadic]/23)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Ty>>;
 
         if constexpr (!is_void_v<_Uty>) {
             static_assert(_Is_invoke_constructible<_Fn, _Ty>,
                 "expected<T, E>::transform(F) requires that the return type of F is constructible with the result of "
-                "invoking f. (N4928 [expected.object.monadic]/23)");
+                "invoking f. (N4950 [expected.object.monadic]/23)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -970,13 +972,13 @@ public:
         requires is_constructible_v<_Err, const _Err>
     constexpr auto transform(_Fn&& _Func) const&& {
         static_assert(invocable<_Fn, const _Ty>, "expected<T, E>::transform(F) requires that F is invocable with T. "
-                                                 "(N4928 [expected.object.monadic]/23)");
+                                                 "(N4950 [expected.object.monadic]/23)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Ty>>;
 
         if constexpr (!is_void_v<_Uty>) {
             static_assert(_Is_invoke_constructible<_Fn, const _Ty>,
                 "expected<T, E>::transform(F) requires that the return type of F is constructible with the result of "
-                "invoking f. (N4928 [expected.object.monadic]/23)");
+                "invoking f. (N4950 [expected.object.monadic]/23)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -997,11 +999,11 @@ public:
         requires is_constructible_v<_Ty, _Ty&>
     constexpr auto transform_error(_Fn&& _Func) & {
         static_assert(invocable<_Fn, _Err&>, "expected<T, E>::transform_error(F) requires that F is invocable with E. "
-                                             "(N4928 [expected.object.monadic]/27)");
+                                             "(N4950 [expected.object.monadic]/27)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err&>>;
         static_assert(_Is_invoke_constructible<_Fn, _Err&>,
             "expected<T, E>::transform_error(F) requires that the return type of F is constructible with the result of "
-            "invoking f. (N4928 [expected.object.monadic]/27)");
+            "invoking f. (N4950 [expected.object.monadic]/27)");
 
         static_assert(_Check_unexpected_argument<_Uty>::value);
 
@@ -1018,11 +1020,11 @@ public:
     constexpr auto transform_error(_Fn&& _Func) const& {
         static_assert(invocable<_Fn, const _Err&>,
             "expected<T, E>::transform_error(F) requires that F is invocable with E. "
-            "(N4928 [expected.object.monadic]/27)");
+            "(N4950 [expected.object.monadic]/27)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err&>>;
         static_assert(_Is_invoke_constructible<_Fn, const _Err&>,
             "expected<T, E>::transform_error(F) requires that the return type of F is constructible with the result of "
-            "invoking f. (N4928 [expected.object.monadic]/27)");
+            "invoking f. (N4950 [expected.object.monadic]/27)");
 
         static_assert(_Check_unexpected_argument<_Uty>::value);
 
@@ -1038,11 +1040,11 @@ public:
         requires is_move_constructible_v<_Ty>
     constexpr auto transform_error(_Fn&& _Func) && {
         static_assert(invocable<_Fn, _Err>, "expected<T, E>::transform_error(F) requires that F is invocable with E. "
-                                            "(N4928 [expected.object.monadic]/31)");
+                                            "(N4950 [expected.object.monadic]/31)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err>>;
         static_assert(_Is_invoke_constructible<_Fn, _Err>,
             "expected<T, E>::transform_error(F) requires that the return type of F is constructible with the result of "
-            "invoking f. (N4928 [expected.object.monadic]/31)");
+            "invoking f. (N4950 [expected.object.monadic]/31)");
 
         static_assert(_Check_unexpected_argument<_Uty>::value);
 
@@ -1059,11 +1061,11 @@ public:
     constexpr auto transform_error(_Fn&& _Func) const&& {
         static_assert(invocable<_Fn, const _Err>,
             "expected<T, E>::transform_error(F) requires that F is invocable with E. "
-            "(N4928 [expected.object.monadic]/31)");
+            "(N4950 [expected.object.monadic]/31)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err>>;
         static_assert(_Is_invoke_constructible<_Fn, const _Err>,
             "expected<T, E>::transform_error(F) requires that the return type of F is constructible with the result of "
-            "invoking f. (N4928 [expected.object.monadic]/31)");
+            "invoking f. (N4950 [expected.object.monadic]/31)");
 
         static_assert(_Check_unexpected_argument<_Uty>::value);
 
@@ -1344,6 +1346,7 @@ public:
         is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>) //
         requires is_swappable_v<_Err> && is_move_constructible_v<_Err>
     {
+        using _STD swap;
         if (_Has_value && _Other._Has_value) {
             // nothing
         } else if (_Has_value) {
@@ -1361,7 +1364,7 @@ public:
             _Has_value        = true;
             _Other._Has_value = false;
         } else {
-            _Swap_adl(_Unexpected, _Other._Unexpected);
+            swap(_Unexpected, _Other._Unexpected); // intentional ADL
         }
     }
 
@@ -1369,6 +1372,7 @@ public:
         is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>)
         requires is_swappable_v<_Err> && is_move_constructible_v<_Err>
     {
+        using _STD swap;
         if (_Left._Has_value && _Right._Has_value) {
             // nothing
         } else if (_Left._Has_value) {
@@ -1386,7 +1390,7 @@ public:
             _Left._Has_value  = true;
             _Right._Has_value = false;
         } else {
-            _Swap_adl(_Left._Unexpected, _Right._Unexpected);
+            swap(_Left._Unexpected, _Right._Unexpected); // intentional ADL
         }
     }
 
@@ -1444,9 +1448,9 @@ public:
     _NODISCARD constexpr _Err error_or(_Uty&& _Other) const& noexcept(
         is_nothrow_copy_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) /* strengthened */ {
         static_assert(
-            is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. (N4928 [expected.void.obs]/9)");
+            is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. (N4950 [expected.void.obs]/9)");
         static_assert(
-            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4928 [expected.void.obs]/9)");
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4950 [expected.void.obs]/9)");
 
         if (_Has_value) {
             return _STD forward<_Uty>(_Other);
@@ -1459,9 +1463,9 @@ public:
     _NODISCARD constexpr _Err error_or(_Uty&& _Other) && noexcept(
         is_nothrow_move_constructible_v<_Err>&& is_nothrow_convertible_v<_Uty, _Err>) /* strengthened */ {
         static_assert(
-            is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true. (N4928 [expected.void.obs]/11)");
+            is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true. (N4950 [expected.void.obs]/11)");
         static_assert(
-            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4928 [expected.void.obs]/11)");
+            is_convertible_v<_Uty, _Err>, "is_convertible_v<G, E> must be true. (N4950 [expected.void.obs]/11)");
 
         if (_Has_value) {
             return _STD forward<_Uty>(_Other);
@@ -1478,10 +1482,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void, E>::and_then(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.void.monadic]/3)");
+            "(N4950 [expected.void.monadic]/3)");
         static_assert(is_same_v<typename _Uty::error_type, _Err>,
             "expected<void, E>::and_then(F) requires the error type of the return type of F to be E. "
-            "(N4928 [expected.void.monadic]/3)");
+            "(N4950 [expected.void.monadic]/3)");
 
         if (_Has_value) {
             return _STD forward<_Fn>(_Func)(); // f() is equivalent to invoke(f)
@@ -1497,10 +1501,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void, E>::and_then(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.void.monadic]/3)");
+            "(N4950 [expected.void.monadic]/3)");
         static_assert(is_same_v<typename _Uty::error_type, _Err>,
             "expected<void, E>::and_then(F) requires the error type of the return type of F to be E. "
-            "(N4928 [expected.void.monadic]/3)");
+            "(N4950 [expected.void.monadic]/3)");
 
         if (_Has_value) {
             return _STD forward<_Fn>(_Func)(); // f() is equivalent to invoke(f)
@@ -1516,10 +1520,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void, E>::and_then(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.void.monadic]/7)");
+            "(N4950 [expected.void.monadic]/7)");
         static_assert(is_same_v<typename _Uty::error_type, _Err>,
             "expected<void, E>::and_then(F) requires the error type of the return type of F to be E. "
-            "(N4928 [expected.void.monadic]/7)");
+            "(N4950 [expected.void.monadic]/7)");
 
         if (_Has_value) {
             return _STD forward<_Fn>(_Func)(); // f() is equivalent to invoke(f)
@@ -1535,10 +1539,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void, E>::and_then(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.void.monadic]/7)");
+            "(N4950 [expected.void.monadic]/7)");
         static_assert(is_same_v<typename _Uty::error_type, _Err>,
             "expected<void, E>::and_then(F) requires the error type of the return type of F to be E. "
-            "(N4928 [expected.void.monadic]/7)");
+            "(N4950 [expected.void.monadic]/7)");
 
         if (_Has_value) {
             return _STD forward<_Fn>(_Func)(); // f() is equivalent to invoke(f)
@@ -1553,10 +1557,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void, E>::or_else(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.void.monadic]/10)");
+            "(N4950 [expected.void.monadic]/10)");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
             "expected<void, E>::or_else(F) requires the value type of the return type of F to be T. "
-            "(N4928 [expected.void.monadic]/10)");
+            "(N4950 [expected.void.monadic]/10)");
 
         if (_Has_value) {
             return _Uty{};
@@ -1571,10 +1575,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void, E>::or_else(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.void.monadic]/10)");
+            "(N4950 [expected.void.monadic]/10)");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
             "expected<void, E>::or_else(F) requires the value type of the return type of F to be T. "
-            "(N4928 [expected.void.monadic]/10)");
+            "(N4950 [expected.void.monadic]/10)");
 
         if (_Has_value) {
             return _Uty{};
@@ -1589,10 +1593,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void, E>::or_else(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.void.monadic]/13)");
+            "(N4950 [expected.void.monadic]/13)");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
             "expected<void, E>::or_else(F) requires the value type of the return type of F to be T. "
-            "(N4928 [expected.void.monadic]/13)");
+            "(N4950 [expected.void.monadic]/13)");
 
         if (_Has_value) {
             return _Uty{};
@@ -1607,10 +1611,10 @@ public:
 
         static_assert(_Is_specialization_v<_Uty, expected>,
             "expected<void, E>::or_else(F) requires the return type of F to be a specialization of expected. "
-            "(N4928 [expected.void.monadic]/13)");
+            "(N4950 [expected.void.monadic]/13)");
         static_assert(is_same_v<typename _Uty::value_type, _Ty>,
             "expected<void, E>::or_else(F) requires the value type of the return type of F to be T. "
-            "(N4928 [expected.void.monadic]/13)");
+            "(N4950 [expected.void.monadic]/13)");
 
         if (_Has_value) {
             return _Uty{};
@@ -1623,13 +1627,13 @@ public:
         requires is_constructible_v<_Err, _Err&>
     constexpr auto transform(_Fn&& _Func) & {
         static_assert(invocable<_Fn>, "expected<void, E>::transform(F) requires that F is invocable with no arguments. "
-                                      "(N4928 [expected.void.monadic]/17)");
+                                      "(N4950 [expected.void.monadic]/17)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
         if constexpr (!is_void_v<_Uty>) {
             static_assert(_Is_invoke_constructible<_Fn>, "expected<void, E>::transform(F) requires that the return "
                                                          "type of F is constructible with the result of "
-                                                         "invoking f. (N4928 [expected.void.monadic]/17)");
+                                                         "invoking f. (N4950 [expected.void.monadic]/17)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -1649,13 +1653,13 @@ public:
         requires is_copy_constructible_v<_Err>
     constexpr auto transform(_Fn&& _Func) const& {
         static_assert(invocable<_Fn>, "expected<void, E>::transform(F) requires that F is invocable with no arguments. "
-                                      "(N4928 [expected.void.monadic]/17)");
+                                      "(N4950 [expected.void.monadic]/17)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
         if constexpr (!is_void_v<_Uty>) {
             static_assert(_Is_invoke_constructible<_Fn>, "expected<void, E>::transform(F) requires that the return "
                                                          "type of F is constructible with the result of "
-                                                         "invoking f. (N4928 [expected.void.monadic]/17)");
+                                                         "invoking f. (N4950 [expected.void.monadic]/17)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -1675,13 +1679,13 @@ public:
         requires is_move_constructible_v<_Err>
     constexpr auto transform(_Fn&& _Func) && {
         static_assert(invocable<_Fn>, "expected<void, E>::transform(F) requires that F is invocable with no arguments. "
-                                      "(N4928 [expected.void.monadic]/21)");
+                                      "(N4950 [expected.void.monadic]/21)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
         if constexpr (!is_void_v<_Uty>) {
             static_assert(_Is_invoke_constructible<_Fn>, "expected<void, E>::transform(F) requires that the return "
                                                          "type of F is constructible with the result of "
-                                                         "invoking f. (N4928 [expected.void.monadic]/21)");
+                                                         "invoking f. (N4950 [expected.void.monadic]/21)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -1701,13 +1705,13 @@ public:
         requires is_constructible_v<_Err, const _Err>
     constexpr auto transform(_Fn&& _Func) const&& {
         static_assert(invocable<_Fn>, "expected<void, E>::transform(F) requires that F is invocable with no arguments. "
-                                      "(N4928 [expected.void.monadic]/21)");
+                                      "(N4950 [expected.void.monadic]/21)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn>>;
 
         if constexpr (!is_void_v<_Uty>) {
             static_assert(_Is_invoke_constructible<_Fn>, "expected<void, E>::transform(F) requires that the return "
                                                          "type of F is constructible with the result of "
-                                                         "invoking f. (N4928 [expected.void.monadic]/21)");
+                                                         "invoking f. (N4950 [expected.void.monadic]/21)");
         }
         static_assert(_Check_expected_argument<_Uty>::value);
 
@@ -1727,11 +1731,11 @@ public:
     constexpr auto transform_error(_Fn&& _Func) & {
         static_assert(invocable<_Fn, _Err&>,
             "expected<void, E>::transform_error(F) requires that F is invocable with E. "
-            "(N4928 [expected.void.monadic]/24)");
+            "(N4950 [expected.void.monadic]/24)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err&>>;
         static_assert(_Is_invoke_constructible<_Fn, _Err&>, "expected<void, E>::transform_error(F) requires that the "
                                                             "return type of F is constructible with the result of "
-                                                            "invoking f. (N4928 [expected.void.monadic]/24)");
+                                                            "invoking f. (N4950 [expected.void.monadic]/24)");
 
         static_assert(_Check_unexpected_argument<_Uty>::value);
 
@@ -1747,12 +1751,12 @@ public:
     constexpr auto transform_error(_Fn&& _Func) const& {
         static_assert(invocable<_Fn, const _Err&>,
             "expected<void, E>::transform_error(F) requires that F is invocable with E. "
-            "(N4928 [expected.void.monadic]/24)");
+            "(N4950 [expected.void.monadic]/24)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err&>>;
         static_assert(_Is_invoke_constructible<_Fn, const _Err&>,
             "expected<void, E>::transform_error(F) requires that the "
             "return type of F is constructible with the result of "
-            "invoking f. (N4928 [expected.void.monadic]/24)");
+            "invoking f. (N4950 [expected.void.monadic]/24)");
 
         static_assert(_Check_unexpected_argument<_Uty>::value);
 
@@ -1768,11 +1772,11 @@ public:
     constexpr auto transform_error(_Fn&& _Func) && {
         static_assert(invocable<_Fn, _Err>,
             "expected<void, E>::transform_error(F) requires that F is invocable with E. "
-            "(N4928 [expected.void.monadic]/27)");
+            "(N4950 [expected.void.monadic]/27)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Err>>;
         static_assert(_Is_invoke_constructible<_Fn, _Err>, "expected<void, E>::transform_error(F) requires that the "
                                                            "return type of F is constructible with the result of "
-                                                           "invoking f. (N4928 [expected.void.monadic]/27)");
+                                                           "invoking f. (N4950 [expected.void.monadic]/27)");
 
         static_assert(_Check_unexpected_argument<_Uty>::value);
 
@@ -1788,12 +1792,12 @@ public:
     constexpr auto transform_error(_Fn&& _Func) const&& {
         static_assert(invocable<_Fn, const _Err>,
             "expected<void, E>::transform_error(F) requires that F is invocable with E. "
-            "(N4928 [expected.void.monadic]/27)");
+            "(N4950 [expected.void.monadic]/27)");
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Err>>;
         static_assert(_Is_invoke_constructible<_Fn, const _Err>,
             "expected<void, E>::transform_error(F) requires that the "
             "return type of F is constructible with the result of "
-            "invoking f. (N4928 [expected.void.monadic]/27)");
+            "invoking f. (N4950 [expected.void.monadic]/27)");
 
         static_assert(_Check_unexpected_argument<_Uty>::value);
 

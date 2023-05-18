@@ -36,22 +36,23 @@ _STD_BEGIN
     static_assert(!_Is_character<_CheckedType>::value, \
         "note: char, signed char, unsigned char, char8_t, int8_t, and uint8_t are not allowed")
 
-#define _RNG_REQUIRE_REALTYPE(_RandType, _CheckedType)                                                     \
-    static_assert(_Is_any_of_v<_CheckedType, float, double, long double>,                                  \
-        "invalid template argument for " #_RandType ": N4659 29.6.1.1 [rand.req.genl]/1d requires one of " \
-        "float, double, or long double")
+#define _RNG_REQUIRE_REALTYPE(_RandType, _CheckedType)                    \
+    static_assert(_Is_any_of_v<_CheckedType, float, double, long double>, \
+        "invalid template argument for " #_RandType                       \
+        ": N4950 [rand.req.genl]/1.4 requires one of float, double, or long double")
 
 #define _RNG_REQUIRE_INTTYPE(_RandType, _CheckedType)                                                                  \
     static_assert(_Is_any_of_v<_CheckedType, short, int, long, long long, unsigned short, unsigned int, unsigned long, \
                       unsigned long long>,                                                                             \
-        "invalid template argument for " #_RandType ": N4659 29.6.1.1 [rand.req.genl]/1e requires one of "             \
-        "short, int, long, long long, unsigned short, unsigned int, unsigned long, or unsigned long long");            \
+        "invalid template argument for " #_RandType                                                                    \
+        ": N4950 [rand.req.genl]/1.5 requires one of short, int, long, long long, unsigned short, unsigned int, "      \
+        "unsigned long, or unsigned long long");                                                                       \
     _RNG_PROHIBIT_CHAR(_CheckedType)
 
-#define _RNG_REQUIRE_UINTTYPE(_RandType, _CheckedType)                                                         \
-    static_assert(_Is_any_of_v<_CheckedType, unsigned short, unsigned int, unsigned long, unsigned long long>, \
-        "invalid template argument for " #_RandType ": N4659 29.6.1.1 [rand.req.genl]/1f requires one of "     \
-        "unsigned short, unsigned int, unsigned long, or unsigned long long");                                 \
+#define _RNG_REQUIRE_UINTTYPE(_RandType, _CheckedType)                                                             \
+    static_assert(_Is_any_of_v<_CheckedType, unsigned short, unsigned int, unsigned long, unsigned long long>,     \
+        "invalid template argument for " #_RandType ": N4950 [rand.req.genl]/1.6 requires one of unsigned short, " \
+        "unsigned int, unsigned long, or unsigned long long");                                                     \
     _RNG_PROHIBIT_CHAR(_CheckedType)
 
 template <class _Seed_seq, class _Self, class _Engine = _Self>
@@ -295,7 +296,7 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
 template <class _Gen, class = void>
 struct _Has_static_min_max : false_type {};
 
-// This checks a requirement of N4901 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
+// This checks a requirement of N4950 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
 // to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
 template <class _Gen>
 struct _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> : true_type {};
@@ -352,9 +353,9 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     //   _Cx <= numeric_limits<T>::max()
     //   && (_Mx - 1) <= (numeric_limits<T>::max() - _Cx) / _Ax
     if constexpr (_Ax == 0) { // degenerate case; avoid divide by 0
-        return static_cast<_Uint>(_Cx); // relies on _Mx == 0 || _Cx <= _Mx, N4741 [rand.eng.lcong]/3
+        return static_cast<_Uint>(_Cx); // relies on _Mx == 0 || _Cx <= _Mx, N4950 [rand.eng.lcong]/3
     } else if constexpr (_Mx == 0) {
-        // N4762 [rand.eng.lcong]/2: "If the template parameter m is 0, the modulus m
+        // N4950 [rand.eng.lcong]/2: "If the template parameter m is 0, the modulus m
         // used throughout this subclause [rand.eng.lcong] is
         // numeric_limits<result_type>::max() plus 1." That is: Just do the multiply
         // and let normal unsigned modulo take care of it
@@ -395,7 +396,7 @@ _NODISCARD constexpr unsigned long long _Seed_seq_to_ull(_Seed_seq& _Seq) {
 }
 
 template <class _Uint, _Uint _Cx, _Uint _Mx>
-_NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { // N4741 [rand.eng.lcong]/5
+_NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { // N4950 [rand.eng.lcong]/5
     if constexpr (_Mx != 0) {
         _Sx %= _Mx;
     }
@@ -410,7 +411,7 @@ _NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { /
 }
 
 template <class _Uint, _Uint _Cx, _Uint _Mx, class _Seed_seq>
-_NODISCARD _Uint _Get_linear_congruential_seed_from_seq(_Seed_seq& _Seq) { // N4741 [rand.eng.lcong]/6
+_NODISCARD _Uint _Get_linear_congruential_seed_from_seq(_Seed_seq& _Seq) { // N4950 [rand.eng.lcong]/6
     _Uint _Sx;
     if constexpr (_Mx == 0) {
         if constexpr (sizeof(_Uint) <= sizeof(unsigned int)) {

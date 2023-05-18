@@ -247,7 +247,7 @@ public:
 
     static_assert(conjunction_v<is_default_constructible<_Ty>, is_copy_constructible<_Ty>, is_copy_assignable<_Ty>>,
         "istream_iterator<T> requires T to be default constructible, copy constructible, and copy assignable. "
-        "(N4835 [istream.iterator]/2)");
+        "(N4950 [istream.iterator]/2)");
 
     constexpr istream_iterator() noexcept(is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {}
 
@@ -1100,9 +1100,9 @@ struct _Common_iterator_pointer_type<_Iter, _Se> {
 
 template <class _Iter>
 concept _Has_forward_category = requires {
-                                    typename _Iter_cat_t<_Iter>;
-                                    requires derived_from<_Iter_cat_t<_Iter>, forward_iterator_tag>;
-                                };
+    typename _Iter_cat_t<_Iter>;
+    requires derived_from<_Iter_cat_t<_Iter>, forward_iterator_tag>;
+};
 
 template <input_iterator _Iter, class _Se>
 struct iterator_traits<common_iterator<_Iter, _Se>> {
@@ -1378,7 +1378,7 @@ public:
         (void) _Right;
 #else // ^^^ workaround / no workaround vvv
 
-        // Per N4901 [counted.iterator]/3, two counted_iterators x and y refer to elements of the same sequence iff
+        // Per N4950 [counted.iterator]/3, two counted_iterators x and y refer to elements of the same sequence iff
         // for some integer n, next(x.base(), x.count() + n) and next(y.base(), y.count() + n)
         // "refer to the same (possibly past-the-end) element".
         // Iterator equality is a fair proxy for the vaguely-defined "refer to the same element".

@@ -240,7 +240,7 @@ protected:
         }
 
         if ((_Which & ios_base::in && !gptr())
-            || (_Which & ios_base::out && !pptr())) { // N4928 [depr.strstreambuf.virtuals]/15:
+            || (_Which & ios_base::out && !pptr())) { // N4950 [depr.strstreambuf.virtuals]/15:
                                                       // For a sequence to be positioned, if its next pointer
                                                       // is a null pointer, the positioning operation fails.
             return pos_type{off_type{-1}};
@@ -249,7 +249,7 @@ protected:
         const auto _Seeklow  = eback();
         const auto _Seekdist = _Seekhigh - _Seeklow;
 
-        // N4928 [depr.strstreambuf.virtuals]/16 effectively says check that the result will be in range
+        // N4950 [depr.strstreambuf.virtuals]/16 effectively says check that the result will be in range
         // [_Seeklow, _Seekhigh]; but we want to calculate this without potential integer overflow
         switch (_Way) {
         case ios_base::beg:
@@ -271,7 +271,7 @@ protected:
         case ios_base::cur:
             {
                 constexpr auto _Both = ios_base::in | ios_base::out;
-                if ((_Which & _Both) == _Both) { // prohibited by N4928 [tab:depr.strstreambuf.seekoff.pos]
+                if ((_Which & _Both) == _Both) { // prohibited by N4950 [tab:depr.strstreambuf.seekoff.pos]
                     return pos_type{off_type{-1}};
                 }
 

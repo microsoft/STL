@@ -22,6 +22,8 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #include <vcruntime_typeinfo.h>
 
+_EXPORT_STD extern "C++" class type_info; // for typeid, MSVC looks for type_info in the global namespace
+
 _STD_BEGIN
 
 // size in pointers of std::function and std::any (roughly 3 pointers larger than std::string when building debug)

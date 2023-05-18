@@ -90,8 +90,12 @@ void test_duration_output() {
     assert(test_duration_basic_out(duration<int, ratio<60 * 60 * 24>>{42}, "42d"));
 
     assert(test_duration_basic_out(duration<int, ratio<2>>{24}, "24[2]s"));
+    assert(test_duration_basic_out(duration<int, ratio<3, 1>>{24}, "24[3]s"));
+    assert(test_duration_basic_out(duration<int, ratio<3, 7>>{24}, "24[3/7]s"));
     assert(test_duration_basic_out(duration<int, ratio<1, 2>>{24}, "24[1/2]s"));
     assert(test_duration_basic_out(duration<int, ratio<22, 7>>{24}, "24[22/7]s"));
+    assert(test_duration_basic_out(duration<int, ratio<53, 101>>{24}, "24[53/101]s"));
+    assert(test_duration_basic_out(duration<int, ratio<201, 2147483647>>{24}, "24[201/2147483647]s"));
     assert(test_duration_basic_out(duration<int, LongRatio>{24}, "24[9223372036854775806/9223372036854775807]s"));
 
     assert(test_duration_basic_out(duration<double>{0.140625}, "0.140625s"));
@@ -119,8 +123,12 @@ void test_duration_output() {
     assert(test_duration_basic_out(duration<int, ratio<60 * 60 * 24>>{42}, L"42d"));
 
     assert(test_duration_basic_out(duration<int, ratio<2>>{24}, L"24[2]s"));
+    assert(test_duration_basic_out(duration<int, ratio<3, 1>>{24}, L"24[3]s"));
+    assert(test_duration_basic_out(duration<int, ratio<3, 7>>{24}, L"24[3/7]s"));
     assert(test_duration_basic_out(duration<int, ratio<1, 2>>{24}, L"24[1/2]s"));
     assert(test_duration_basic_out(duration<int, ratio<22, 7>>{24}, L"24[22/7]s"));
+    assert(test_duration_basic_out(duration<int, ratio<53, 101>>{24}, L"24[53/101]s"));
+    assert(test_duration_basic_out(duration<int, ratio<201, 2147483647>>{24}, L"24[201/2147483647]s"));
     assert(test_duration_basic_out(duration<int, LongRatio>{24}, L"24[9223372036854775806/9223372036854775807]s"));
 
     assert(test_duration_basic_out(duration<double>{0.140625}, L"0.140625s"));

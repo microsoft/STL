@@ -970,13 +970,13 @@ namespace test_subrange {
 
     template <class R>
     concept HasMemberEmpty = requires(std::remove_reference_t<R> const r) {
-                                 { r.empty() } -> same_as<bool>;
-                             };
+        { r.empty() } -> same_as<bool>;
+    };
 
     template <class R>
     concept HasMemberSize = requires(std::remove_reference_t<R> const r) {
-                                { r.size() } -> std::integral;
-                            };
+        { r.size() } -> std::integral;
+    };
 
     // Validate default template arguments: second defaults to first, and third defaults to subrange_kind::sized iff
     // sized_sentinel_for<second, first>.
