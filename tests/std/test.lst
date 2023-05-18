@@ -570,6 +570,9 @@ tests\P2278R4_const_span
 tests\P2278R4_ranges_const_iterator_machinery
 tests\P2278R4_ranges_const_range_machinery
 tests\P2278R4_views_as_const
+tests\P2286R8_formatting_ranges
+tests\P2286R8_formatting_ranges_legacy_text_encoding
+tests\P2286R8_formatting_ranges_utf8
 tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference

@@ -4692,17 +4692,6 @@ namespace chrono {
 #ifdef __cpp_lib_concepts
   // [time.format]
 
-template <class _CharT>
-_NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const wchar_t* const _WStr) noexcept {
-    if constexpr (is_same_v<_CharT, char>) {
-        return _Str;
-    } else {
-        return _WStr;
-    }
-}
-
-#define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
-
 // clang-format off
 template <class _Ty, class _CharT>
 concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
@@ -6037,8 +6026,6 @@ inline namespace literals {
     } // namespace chrono_literals
 } // namespace literals
 #endif // _HAS_CXX20
-
-#undef _STATICALLY_WIDEN
 
 _STD_END
 #pragma pop_macro("new")

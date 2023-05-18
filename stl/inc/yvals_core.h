@@ -337,6 +337,8 @@
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
 // P2278R4 cbegin Should Always Return A Constant Iterator
+// P2286R8 Formatting Ranges
+//     (only the '?' format specifier for strings and characters)
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
@@ -362,6 +364,7 @@
 // P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
 // P2652R2 Disallowing User Specialization Of allocator_traits
+// P2713R1 Escaping Improvements In std::format
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
