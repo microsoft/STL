@@ -780,8 +780,8 @@ struct _Static_partition_team { // common data for all static partitioned ops
     _Diff _Unchunked_items;
 
     _Static_partition_team(const _Diff _Count_, const size_t _Chunks_)
-        : _Consumed_chunks{0}, _Chunks{_Chunks_}, _Count{_Count_}, _Chunk_size{static_cast<_Diff>(
-                                                                       _Count_ / static_cast<_Diff>(_Chunks_))},
+        : _Consumed_chunks{0}, _Chunks{_Chunks_}, _Count{_Count_},
+          _Chunk_size{static_cast<_Diff>(_Count_ / static_cast<_Diff>(_Chunks_))},
           _Unchunked_items{static_cast<_Diff>(_Count_ % static_cast<_Diff>(_Chunks_))} {
         // Calculate common data for statically partitioning iterator ranges.
         // pre: _Count_ >= _Chunks_ && _Chunks_ >= 1
@@ -1490,8 +1490,8 @@ struct _Static_partitioned_find_end_backward3 {
 
     _Static_partitioned_find_end_backward3(const size_t _Hw_threads, const _Iter_diff_t<_BidIt1> _Count,
         const _BidIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2, const _Pr _Pred_)
-        : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis{},
-          _Results(_Last1), _Range2{_First2, _Last2}, _Pred{_Pred_} {}
+        : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis{}, _Results(_Last1),
+          _Range2{_First2, _Last2}, _Pred{_Pred_} {}
 
     _Cancellation_status _Process_chunk() {
         if (_Results._Complete()) {
@@ -1961,8 +1961,8 @@ struct _Static_partitioned_equal2 {
     _Cancellation_token _Cancel_token;
 
     _Static_partitioned_equal2(const size_t _Hw_threads, const _Diff _Count, _Pr _Pred_, const _FwdIt1&, const _FwdIt2&)
-        : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis1{}, _Basis2{},
-          _Pred(_Pred_), _Cancel_token{} {}
+        : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis1{}, _Basis2{}, _Pred(_Pred_),
+          _Cancel_token{} {}
 
     _Cancellation_status _Process_chunk() {
         if (_Cancel_token._Is_canceled()) {
@@ -3346,7 +3346,7 @@ pair<_FwdIt, _Iter_diff_t<_FwdIt>> _Partition_with_count_unchecked(_FwdIt _First
                 }
             } while (!_Pred(*_Last));
 
-            _STD iter_swap(_First, _Last); // out of place, swap and loop
+            swap(*_First, *_Last); // out of place, swap and loop; intentional ADL
             ++_First;
             ++_Trues;
         }
@@ -3367,7 +3367,7 @@ pair<_FwdIt, _Iter_diff_t<_FwdIt>> _Partition_with_count_unchecked(_FwdIt _First
 
         for (_FwdIt _Next = _First; ++_Next != _Last;) {
             if (_Pred(*_Next)) {
-                _STD iter_swap(_First, _Next); // out of place, swap and loop
+                swap(*_First, *_Next); // out of place, swap and loop; intentional ADL
                 ++_First;
                 ++_Trues;
             }
@@ -3387,7 +3387,7 @@ pair<_FwdIt, _Iter_diff_t<_FwdIt>> _Partition_swap_backward(
         while (_First != _Last) {
             --_Last;
             if (_Pred(*_Last)) {
-                _STD iter_swap(_Beginning_of_falses, _Last);
+                swap(*_Beginning_of_falses, *_Last); // intentional ADL
                 ++_Beginning_of_falses;
                 ++_Trues;
                 if (_Beginning_of_falses == _First) {
@@ -3399,7 +3399,7 @@ pair<_FwdIt, _Iter_diff_t<_FwdIt>> _Partition_swap_backward(
     } else {
         for (; _First != _Last; ++_First) {
             if (_Pred(*_First)) {
-                _STD iter_swap(_First, _Beginning_of_falses);
+                swap(*_First, *_Beginning_of_falses); // intentional ADL
                 ++_Beginning_of_falses;
                 ++_Trues;
             }
@@ -4009,7 +4009,7 @@ _Ty _Reduce_move_unchecked(_InIt _First, const _InIt _Last, _Ty _Val, _BinOp _Re
         return _Reduce_plus_arithmetic_ranges(_First, _Last, _Val);
     } else {
         for (; _First != _Last; ++_First) {
-            _Val = _Reduce_op(_STD move(_Val), _STD move(*_First)); // Requirement missing from N4713
+            _Val = _Reduce_op(_STD move(_Val), _STD move(*_First)); // Requirement missing from N4950
         }
 
         return _Val;
@@ -4026,7 +4026,7 @@ _Ty _Reduce_at_least_two(const _FwdIt _First, const _FwdIt _Last, _BinOp _Reduce
         auto _Next = _First;
         _Ty _Val   = _Reduce_op(*_First, *++_Next);
         while (++_Next != _Last) {
-            _Val = _Reduce_op(_STD move(_Val), *_Next); // Requirement missing from N4713
+            _Val = _Reduce_op(_STD move(_Val), *_Next); // Requirement missing from N4950
         }
 
         return _Val;
@@ -4119,8 +4119,8 @@ struct _Static_partitioned_transform_reduce_binary2 { // transform-reduction tas
 
     _Static_partitioned_transform_reduce_binary2(const _Diff _Count, const size_t _Chunks, const _FwdIt1 _First1,
         const _FwdIt2 _First2, _BinOp1 _Reduce_op_, _BinOp2 _Transform_op_)
-        : _Team{_Count, _Chunks}, _Basis1{}, _Basis2{}, _Reduce_op(_Reduce_op_),
-          _Transform_op(_Transform_op_), _Results{_Chunks} {
+        : _Team{_Count, _Chunks}, _Basis1{}, _Basis2{}, _Reduce_op(_Reduce_op_), _Transform_op(_Transform_op_),
+          _Results{_Chunks} {
         _Basis1._Populate(_Team, _First1);
         _Basis2._Populate(_Team, _First2);
     }
@@ -4137,10 +4137,10 @@ struct _Static_partitioned_transform_reduce_binary2 { // transform-reduction tas
                 _This->_Basis2._Get_first(_Key._Chunk_number, _This->_Team._Get_chunk_offset(_Key._Chunk_number));
             auto _Next1 = _Chunk1._First;
             auto _Next2 = _First2;
-            // Requirement missing from N4713:
+            // Requirement missing from N4950:
             _Ty _Val = _Reduce_op(_Transform_op(*_Chunk1._First, *_First2), _Transform_op(*++_Next1, *++_Next2));
             while (++_Next1 != _Chunk1._Last) {
-                // Requirement missing from N4713:
+                // Requirement missing from N4950:
                 _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_Next1, *++_Next2));
             }
 
@@ -4151,7 +4151,7 @@ struct _Static_partitioned_transform_reduce_binary2 { // transform-reduction tas
                 _Next1 = _Chunk1._First;
                 _Next2 = _First2;
                 for (; _Next1 != _Chunk1._Last; ++_Next1, (void) ++_Next2) {
-                    // Requirement missing from N4713:
+                    // Requirement missing from N4950:
                     _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_Next1, *_Next2));
                 }
             }
@@ -4287,7 +4287,7 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
                     // setup complete, hereafter nothrow or terminate
                     _Work._Submit_for_chunks(_Hw_threads, _Chunks);
                     while (auto _Stolen_key = _Operation._Team._Get_next_key()) {
-                        // keep processing remaining chunks to comply with N4687 [intro.progress]/14
+                        // keep processing remaining chunks to comply with N4950 [intro.progress]/14
                         auto _Chunk = _Operation._Basis._Get_chunk(_Stolen_key);
                         _Val = _STD transform_reduce(_Chunk._First, _Chunk._Last, _STD move(_Val), _Pass_fn(_Reduce_op),
                             _Pass_fn(_Transform_op));

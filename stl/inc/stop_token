@@ -255,7 +255,7 @@ void _Stop_callback_base::_Do_attach(
 
     // fast path check if the state is already known
     auto _Local_sources = _State->_Stop_sources.load();
-    if ((_Local_sources & uint32_t{1}) != 0) {
+    if ((_Local_sources& uint32_t{1}) != 0) {
         // stop already requested
         _Fn(this);
         return;
@@ -269,7 +269,7 @@ void _Stop_callback_base::_Do_attach(
     auto _Head = _State->_Callbacks._Lock_and_load();
     // recheck the state in case it changed while we were waiting to acquire the lock
     _Local_sources = _State->_Stop_sources.load();
-    if ((_Local_sources & uint32_t{1}) != 0) {
+    if ((_Local_sources& uint32_t{1}) != 0) {
         // stop already requested
         _State->_Callbacks._Store_and_unlock(_Head);
         _Fn(this);

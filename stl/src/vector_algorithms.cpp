@@ -135,8 +135,8 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_4);
         do {
-            const unsigned long _Left = *static_cast<unsigned long*>(_First1);
-            const unsigned long _Right = *static_cast<unsigned long*>(_First2);
+            const unsigned long _Left             = *static_cast<unsigned long*>(_First1);
+            const unsigned long _Right            = *static_cast<unsigned long*>(_First2);
             *static_cast<unsigned long*>(_First1) = _Right;
             *static_cast<unsigned long*>(_First2) = _Left;
             _Advance_bytes(_First1, 4);
@@ -699,7 +699,7 @@ namespace {
         static constexpr bool _Has_portion_max = false;
 #else // ^^^ 32-bit / 64-bit vvv
         static constexpr bool _Has_portion_max = true;
-        static constexpr size_t _Portion_max = 0x1'0000'0000ULL;
+        static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
 
         static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF'FFFFUL);

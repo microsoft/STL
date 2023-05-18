@@ -2583,7 +2583,7 @@ inline void resize_file(const path& _Path, uintmax_t _Newsize) { // change file 
     if (_Code) {
         _Throw_filesystem_error("resize_file(p, n): invalid arguments");
     }
-};
+}
 
 inline void resize_file(const path& _Path, uintmax_t _Newsize,
     error_code& _Code) noexcept { // change file size
