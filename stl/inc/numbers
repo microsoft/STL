@@ -30,7 +30,7 @@ namespace numbers {
     template <class _Ty>
     struct _Invalid {
         static_assert(_Always_false<_Ty>, "A program that instantiates a primary template of a mathematical constant "
-                                          "variable template is ill-formed. (N4944 [math.constants]/3)");
+                                          "variable template is ill-formed. (N4950 [math.constants]/3)");
     };
 
     _EXPORT_STD template <class _Ty>
@@ -90,7 +90,7 @@ namespace numbers {
     template <class _Ty>
     struct _Reject_invalid {
         static_assert(is_floating_point_v<_Ty>, "A program that instantiates a primary template of a mathematical "
-                                                "constant variable template is ill-formed. (N4944 [math.constants]/3)");
+                                                "constant variable template is ill-formed. (N4950 [math.constants]/3)");
         using type = _Ty;
     };
 

@@ -5454,7 +5454,7 @@ _EXPORT_STD template <class _FwdIt>
 constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) left by _Pos_to_shift
     // positions; returns the end of the resulting range
-    _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/1)");
+    _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/1)");
 
     _Adl_verify_range(_First, _Last);
 
@@ -5495,7 +5495,7 @@ _EXPORT_STD template <class _FwdIt>
 constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) right by _Pos_to_shift
     // positions; returns the beginning of the resulting range
-    _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/5)");
+    _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/5)");
 
     _Adl_verify_range(_First, _Last);
 
@@ -5581,7 +5581,7 @@ namespace ranges {
 
         template <permutable _It, sentinel_for<_It> _Se>
         constexpr subrange<_It> operator()(_It _First, const _Se _Last, iter_difference_t<_It> _Pos_to_shift) const {
-            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/1)");
+            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/1)");
 
             _Adl_verify_range(_First, _Last);
             auto _Result = _First;
@@ -5599,7 +5599,7 @@ namespace ranges {
         template <forward_range _Rng>
             requires permutable<iterator_t<_Rng>>
         constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, range_difference_t<_Rng> _Pos_to_shift) const {
-            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/1)");
+            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/1)");
 
             if (_Pos_to_shift == 0) {
                 auto _Last = _Rewrap_iterator(_Range, _Get_final_iterator_unwrapped(_Range));
@@ -5703,7 +5703,7 @@ namespace ranges {
             _It _First, _Se _Last, iter_difference_t<_It> _Pos_to_shift, const _SizeTy _Size) {
             _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
-            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/5)");
+            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/5)");
 
             if (_Pos_to_shift == 0) {
                 return {_First, _RANGES next(_First, _Last)};
@@ -10061,7 +10061,7 @@ namespace ranges {
             const auto _First = _Range.begin();
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
-                "An initializer_list passed to std::ranges::minmax must not be empty. (N4928 [alg.min.max]/21)");
+                "An initializer_list passed to std::ranges::minmax must not be empty. (N4950 [alg.min.max]/21)");
             return _Minmax_fwd_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
@@ -10073,13 +10073,13 @@ namespace ranges {
             auto _UFirst = _RANGES _Ubegin(_Range);
             auto _ULast  = _RANGES _Uend(_Range);
             _STL_ASSERT(
-                _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4928 [alg.min.max]/21)");
+                _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4950 [alg.min.max]/21)");
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 return _Minmax_fwd_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             } else {
                 using _Vty = range_value_t<_Rng>;
-                // This initialization is correct, similar to the N4928 [dcl.init.aggr]/6 example
+                // This initialization is correct, similar to the N4950 [dcl.init.aggr]/6 example
                 minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst), _Found.min};
                 if (_UFirst == _ULast) {
                     return _Found;
@@ -10147,7 +10147,7 @@ namespace ranges {
 
             auto _Found_min = _First;
             if (++_First == _Last) {
-                // This initialization is correct, similar to the N4928 [dcl.init.aggr]/6 example
+                // This initialization is correct, similar to the N4950 [dcl.init.aggr]/6 example
                 minmax_result<_Vty> _Result = {static_cast<_Vty>(*_Found_min), _Result.min};
                 return _Result;
             }
@@ -10568,7 +10568,7 @@ namespace ranges {
             const _Ty& _Val, const _Ty& _Lo, const _Ty& _Hi, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _STL_ASSERT(!_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD invoke(_Proj, _Lo)),
                 "The lower bound cannot be greater than the upper bound in a call to std::ranges::clamp "
-                "(N4861 [alg.clamp]/2).");
+                "(N4950 [alg.clamp]/2).");
 
             auto&& _Temp = _STD invoke(_Proj, _Val);
             if (_STD invoke(_Pred, _STD forward<decltype(_Temp)>(_Temp), _STD invoke(_Proj, _Lo))) {
