@@ -109,7 +109,7 @@ _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
 
         if (trailingUtf8Units > 2) { // this would result in a UTF-16 surrogate pair, which we can't emit in our
                                      // singular output wchar_t, so fail
-                                     // see N4750 [locale.codecvt.virtuals]/3
+                                     // see N4950 [locale.codecvt.virtuals]/3
             errno = EILSEQ;
             return -1;
         }

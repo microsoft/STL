@@ -17,15 +17,15 @@ concept CanIterConstRef = requires { typename iter_const_reference_t<It>; };
 
 template <class It>
 concept CanConstIterator = requires(It it) {
-                               typename const_iterator<It>;
-                               { make_const_iterator(move(it)) } -> same_as<const_iterator<It>>;
-                           };
+    typename const_iterator<It>;
+    { make_const_iterator(move(it)) } -> same_as<const_iterator<It>>;
+};
 
 template <class Se>
 concept CanConstSentinel = requires(Se se) {
-                               typename const_sentinel<Se>;
-                               { make_const_sentinel(move(se)) } -> same_as<const_sentinel<Se>>;
-                           };
+    typename const_sentinel<Se>;
+    { make_const_sentinel(move(se)) } -> same_as<const_sentinel<Se>>;
+};
 
 static_assert(!CanIterConstRef<int>);
 static_assert(!CanIterConstRef<list<int>>);
@@ -89,10 +89,10 @@ namespace test_common_type {
 
     template <class T, class U>
         requires requires {
-                     typename common_type_t<T, basic_const_iterator<U>>;
-                     typename common_type_t<basic_const_iterator<T>, U>;
-                     typename common_type_t<basic_const_iterator<T>, basic_const_iterator<U>>;
-                 }
+            typename common_type_t<T, basic_const_iterator<U>>;
+            typename common_type_t<basic_const_iterator<T>, U>;
+            typename common_type_t<basic_const_iterator<T>, basic_const_iterator<U>>;
+        }
     void test_lwg3862(); // not defined
 
     template <class T, class U>

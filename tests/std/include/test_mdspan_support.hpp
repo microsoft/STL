@@ -65,13 +65,13 @@ namespace detail {
 
     template <class M>
     concept CheckStaticFunctionsOfLayoutMapping = requires {
-                                                      { M::is_always_strided() } -> std::same_as<bool>;
-                                                      { M::is_always_exhaustive() } -> std::same_as<bool>;
-                                                      { M::is_always_unique() } -> std::same_as<bool>;
-                                                      std::bool_constant<M::is_always_strided()>::value;
-                                                      std::bool_constant<M::is_always_exhaustive()>::value;
-                                                      std::bool_constant<M::is_always_unique()>::value;
-                                                  };
+        { M::is_always_strided() } -> std::same_as<bool>;
+        { M::is_always_exhaustive() } -> std::same_as<bool>;
+        { M::is_always_unique() } -> std::same_as<bool>;
+        std::bool_constant<M::is_always_strided()>::value;
+        std::bool_constant<M::is_always_exhaustive()>::value;
+        std::bool_constant<M::is_always_unique()>::value;
+    };
 } // namespace detail
 
 // clang-format off
@@ -85,8 +85,8 @@ concept CheckCallOperatorOfLayoutMapping =
 
 template <class M>
 concept CheckStrideMemberFunction = requires(M mapping, M::rank_type i) {
-                                        { mapping.stride(i) } -> std::same_as<typename M::index_type>;
-                                    };
+    { mapping.stride(i) } -> std::same_as<typename M::index_type>;
+};
 
 template <class M>
 constexpr bool check_layout_mapping_requirements() {
@@ -101,8 +101,7 @@ constexpr bool check_layout_mapping_requirements() {
 
     []<size_t... Indices>(std::index_sequence<Indices...>) {
         static_assert(CheckCallOperatorOfLayoutMapping<M, decltype(Indices)...>);
-    }
-    (std::make_index_sequence<M::extents_type::rank()>{});
+    }(std::make_index_sequence<M::extents_type::rank()>{});
 
     if constexpr (requires(M m, M::rank_type i) { m.stride(i); }) {
         static_assert(CheckStrideMemberFunction<M>);
@@ -128,15 +127,14 @@ namespace detail {
     template <class A>
     concept CheckNestedTypesOfAccessorPolicy =
         sizeof(typename A::element_type) > 0
-        && (!std::is_abstract_v<typename A::element_type>) && std::copyable<typename A::data_handle_type>
-        && std::is_nothrow_move_constructible_v<typename A::data_handle_type>
-        && std::is_nothrow_move_assignable_v<typename A::data_handle_type>
-        && std::is_nothrow_swappable_v<typename A::data_handle_type>
-        && std::common_reference_with<typename A::reference, typename A::element_type&&>
+        && (!std::is_abstract_v<typename A::element_type>) &&std::copyable<typename A::data_handle_type>&& std::
+            is_nothrow_move_constructible_v<typename A::data_handle_type>&& std::is_nothrow_move_assignable_v<
+                typename A::data_handle_type>&& std::is_nothrow_swappable_v<typename A::data_handle_type>&& std::
+                common_reference_with<typename A::reference, typename A::element_type&&>
         && (std::same_as<typename A::offset_policy, A>
             || check_accessor_policy_requirements<typename A::offset_policy>())
-        && std::constructible_from<typename A::offset_policy, const A&>
-        && std::is_same_v<typename A::offset_policy::element_type, typename A::element_type>;
+        && std::constructible_from<typename A::offset_policy,
+            const A&>&& std::is_same_v<typename A::offset_policy::element_type, typename A::element_type>;
 
     // clang-format off
     template <class A>
