@@ -56,11 +56,11 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 // Controls whether ARM64 ldar/ldapr/stlr should be used
 #ifndef _STD_ATOMIC_USE_ARM64_LDAR_STLR
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-#if defined(_HAS_ARM64_LOAD_ACQUIRE) && _HAS_ARM64_LOAD_ACQUIRE == 1 // TRANSITION, VS 2022 17.7 Preview 1
-#define _STD_ATOMIC_USE_ARM64_LDAR_STLR 1
-#else // ^^^ updated intrin0.inl.h is available / workaround vvv
+#ifdef __clang__ // TRANSITION, LLVM-62103
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
-#endif // ^^^ workaround ^^^
+#else // ^^^ Clang doesn't support new intrinsics / __load_acquire/__stlr intrinsics are available vvv
+#define _STD_ATOMIC_USE_ARM64_LDAR_STLR 1
+#endif // ^^^ __load_acquire/__stlr intrinsics are available ^^^
 #else // ^^^ ARM64/ARM64EC / Other architectures vvv
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
 #endif // defined(_M_ARM64) || defined(_M_ARM64EC)
@@ -141,7 +141,7 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
 
 #define __LOAD_ACQUIRE_ARM64(_Width, _Ptr) \
-    __load_acquire##_Width(reinterpret_cast<const volatile unsigned __int##_Width*>(_Ptr))
+    static_cast<__int##_Width>(__load_acquire##_Width(reinterpret_cast<const volatile unsigned __int##_Width*>(_Ptr)))
 
 #define _ATOMIC_LOAD_ARM64(_Result, _Width, _Ptr, _Order_var) \
     switch (_Order_var) {                                     \
@@ -184,7 +184,8 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
 
 #define __STORE_RELEASE(_Width, _Ptr, _Desired) \
     _Compiler_barrier();                        \
-    __stlr##_Width(reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), (_Desired));
+    __stlr##_Width(                             \
+        reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), static_cast<unsigned __int##_Width>(_Desired));
 
 #else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 ^^^ / vvv _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
 
@@ -214,9 +215,10 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     _Memory_barrier();
 
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
-#define _ATOMIC_STORE_SEQ_CST_ARM64(_Width, _Ptr, _Desired)                               \
-    _Compiler_barrier();                                                                  \
-    __stlr##_Width(reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), (_Desired)); \
+#define _ATOMIC_STORE_SEQ_CST_ARM64(_Width, _Ptr, _Desired)                                                       \
+    _Compiler_barrier();                                                                                          \
+    __stlr##_Width(                                                                                               \
+        reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), static_cast<unsigned __int##_Width>(_Desired)); \
     _Memory_barrier();
 #else
 #define _ATOMIC_STORE_SEQ_CST_ARM64 _ATOMIC_STORE_SEQ_CST_ARM
@@ -433,23 +435,23 @@ struct _Atomic_padded {
 #else // ^^^ don't break ABI / break ABI vvv
 template <class _Ty>
 struct _Atomic_storage_traits { // properties for how _Ty is stored in an atomic
-    static constexpr size_t _Storage_size = sizeof(_Ty) == 1 ? 1
-                                          : sizeof(_Ty) == 2 ? 2
-                                          : sizeof(_Ty) <= 4 ? 4
-                                          : sizeof(_Ty) <= 8 ? 8
+    static constexpr size_t _Storage_size = sizeof(_Ty) == 1  ? 1
+                                          : sizeof(_Ty) == 2  ? 2
+                                          : sizeof(_Ty) <= 4  ? 4
+                                          : sizeof(_Ty) <= 8  ? 8
 #if defined(_M_X64) || defined(_M_ARM64) || defined(_M_ARM64EC)
                                           : sizeof(_Ty) <= 16 ? 16
 #endif // 64 bits
                                                               : sizeof(_Ty);
 
     static constexpr size_t _Padding_size = _Storage_size - sizeof(_Ty);
-    static constexpr bool _Uses_padding = _Padding_size != 0;
+    static constexpr bool _Uses_padding   = _Padding_size != 0;
 };
 
 template <class _Ty>
 struct _Atomic_storage_traits<_Ty&> { // properties for how _Ty is stored in an atomic_ref
     static constexpr size_t _Storage_size = sizeof(_Ty);
-    static constexpr bool _Uses_padding = false;
+    static constexpr bool _Uses_padding   = false;
 };
 
 template <class _Ty, bool = _Atomic_storage_traits<_Ty>::_Uses_padding>
@@ -1115,7 +1117,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR != 1 vvv
 
 #ifdef _M_ARM
-        _As_bytes = __ldrexd(_Mem);
+        _As_bytes           = __ldrexd(_Mem);
 #else
         _As_bytes = __iso_volatile_load64(_Mem);
 #endif

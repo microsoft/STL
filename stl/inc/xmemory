@@ -27,6 +27,16 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+template <class _Ptrty>
+_NODISCARD constexpr auto _Unfancy(_Ptrty _Ptr) noexcept { // converts from a fancy pointer to a plain pointer
+    return _STD addressof(*_Ptr);
+}
+
+template <class _Ty>
+_NODISCARD constexpr _Ty* _Unfancy(_Ty* _Ptr) noexcept { // do nothing for plain pointers
+    return _Ptr;
+}
+
 template <class _Ty>
 struct _NODISCARD _Tidy_guard { // class with destructor that calls _Tidy
     _Ty* _Target;
@@ -907,6 +917,10 @@ class allocator {
 public:
     static_assert(!is_const_v<_Ty>, "The C++ Standard forbids containers of const elements "
                                     "because allocator<const T> is ill-formed.");
+    static_assert(!is_function_v<_Ty>, "The C++ Standard forbids allocators for function elements "
+                                       "because of [allocator.requirements].");
+    static_assert(!is_reference_v<_Ty>, "The C++ Standard forbids allocators for reference elements "
+                                        "because of [allocator.requirements].");
 
     using _From_primary = allocator;
 
@@ -1029,7 +1043,7 @@ _NODISCARD bool operator!=(const allocator<_Ty>&, const allocator<_Other>&) noex
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX17
-// See N4892 [unord.map.overview]/4
+// See N4950 [unord.map.overview]/4
 template <class _Alloc>
 using _Guide_size_type_t =
     typename allocator_traits<conditional_t<_Is_allocator<_Alloc>::value, _Alloc, allocator<int>>>::size_type;
@@ -1058,7 +1072,7 @@ _CONSTEXPR20 void _Pocma(_Alloc& _Left, _Alloc& _Right) noexcept { // (maybe) pr
 template <class _Alloc>
 _CONSTEXPR20 void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_swap::value) {
-        _Swap_adl(_Left, _Right);
+        swap(_Left, _Right); // intentional ADL
     } else {
         _STL_ASSERT(_Left == _Right, "containers incompatible for swap");
     }
@@ -1406,7 +1420,7 @@ using _Container_base = _Container_base0;
 using _Iterator_base  = _Iterator_base0;
 #else // _ITERATOR_DEBUG_LEVEL == 0
 using _Container_base = _Container_base12;
-using _Iterator_base = _Iterator_base12;
+using _Iterator_base  = _Iterator_base12;
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 
 struct _Leave_proxy_unbound {
@@ -1814,7 +1828,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     // In pre-concepts world, _Uninitialized_copy should only ever be called with an iterator
     // and sentinel of the same type, so `_Get_unwrapped` is fine to call.
     auto _UFirst = _Get_unwrapped(_STD move(_First));
-    auto _ULast = _Get_unwrapped(_STD move(_Last));
+    auto _ULast  = _Get_unwrapped(_STD move(_Last));
 #endif // ^^^ !__cpp_lib_concepts ^^^
 
     constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
@@ -2485,7 +2499,7 @@ _EXPORT_STD inline constexpr from_range_t from_range;
 
 template <class _Rng, class _Elem>
 concept _Container_compatible_range =
-    (_RANGES input_range<_Rng>) && convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
+    (_RANGES input_range<_Rng>) &&convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
 
 template <_RANGES input_range _Rng>
 using _Range_key_type = remove_const_t<typename _RANGES range_value_t<_Rng>::first_type>;

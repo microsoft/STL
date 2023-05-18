@@ -101,65 +101,38 @@ constexpr bool test_interface() {
         // Non allocator constructors
         vec size_default_constructed(5);
         assert(size_default_constructed.size() == 5);
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            assert(all_of(
-                size_default_constructed.begin(), size_default_constructed.end(), [](const bool val) { return !val; }));
-        }
+        assert(all_of(
+            size_default_constructed.begin(), size_default_constructed.end(), [](const bool val) { return !val; }));
 
         vec size_value_constructed(5, true);
         assert(size_value_constructed.size() == 5);
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            assert(all_of(
-                size_value_constructed.begin(), size_value_constructed.end(), [](const bool val) { return val; }));
-        }
+        assert(
+            all_of(size_value_constructed.begin(), size_value_constructed.end(), [](const bool val) { return val; }));
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            vec range_constructed(begin(input), end(input));
-            assert(equal(range_constructed.begin(), range_constructed.end(), begin(input), end(input)));
+        vec range_constructed(begin(input), end(input));
+        assert(equal(range_constructed.begin(), range_constructed.end(), begin(input), end(input)));
 
-            vec initializer_list_constructed({true, true, false, true});
-            assert(equal(initializer_list_constructed.begin(), initializer_list_constructed.end(), begin(input) + 2,
-                end(input)));
+        vec initializer_list_constructed({true, true, false, true});
+        assert(equal(
+            initializer_list_constructed.begin(), initializer_list_constructed.end(), begin(input) + 2, end(input)));
 
-            vec copy_assigned = range_constructed;
-            assert(
-                equal(copy_assigned.begin(), copy_assigned.end(), range_constructed.begin(), range_constructed.end()));
+        vec copy_assigned = range_constructed;
+        assert(equal(copy_assigned.begin(), copy_assigned.end(), range_constructed.begin(), range_constructed.end()));
 
-            vec move_assigned = move(copy_assigned);
-            assert(
-                equal(move_assigned.begin(), move_assigned.end(), range_constructed.begin(), range_constructed.end()));
-            assert(copy_assigned.empty()); // implementation-specific assumption that moved-from is empty
-        }
+        vec move_assigned = move(copy_assigned);
+        assert(equal(move_assigned.begin(), move_assigned.end(), range_constructed.begin(), range_constructed.end()));
+        assert(copy_assigned.empty()); // implementation-specific assumption that moved-from is empty
 
         // special member functions
         vec default_constructed;
         assert(default_constructed.empty());
         vec copy_constructed(size_default_constructed);
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            assert(equal(copy_constructed.begin(), copy_constructed.end(), size_default_constructed.begin(),
-                size_default_constructed.end()));
-        }
+        assert(equal(copy_constructed.begin(), copy_constructed.end(), size_default_constructed.begin(),
+            size_default_constructed.end()));
 
         vec move_constructed(move(copy_constructed));
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            assert(equal(move_constructed.begin(), move_constructed.end(), size_default_constructed.begin(),
-                size_default_constructed.end()));
-        }
+        assert(equal(move_constructed.begin(), move_constructed.end(), size_default_constructed.begin(),
+            size_default_constructed.end()));
         assert(copy_constructed.empty()); // implementation-specific assumption that moved-from is empty
 
         // allocator constructors
@@ -173,70 +146,42 @@ constexpr bool test_interface() {
         assert(al_default_constructed.get_allocator().soccc_generation == 3);
 
         vec al_copy_constructed(size_value_constructed, alloc);
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            assert(all_of(al_copy_constructed.begin(), al_copy_constructed.end(), [](const bool val) { return val; }));
-        }
+        assert(all_of(al_copy_constructed.begin(), al_copy_constructed.end(), [](const bool val) { return val; }));
         assert(al_copy_constructed.get_allocator().id == 4);
         assert(al_copy_constructed.get_allocator().soccc_generation == 3);
 
         vec al_move_constructed(move(al_copy_constructed), alloc);
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            assert(all_of(al_move_constructed.begin(), al_move_constructed.end(), [](const bool val) { return val; }));
-        }
+        assert(all_of(al_move_constructed.begin(), al_move_constructed.end(), [](const bool val) { return val; }));
         assert(al_copy_constructed.empty()); // implementation-specific assumption that moved-from is empty
         assert(al_move_constructed.get_allocator().id == 4);
         assert(al_move_constructed.get_allocator().soccc_generation == 3);
 
         vec al_size_default_constructed(5, alloc);
         assert(al_size_default_constructed.size() == 5);
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            assert(all_of(al_size_default_constructed.begin(), al_size_default_constructed.end(),
-                [](const bool val) { return !val; }));
-        }
+        assert(all_of(al_size_default_constructed.begin(), al_size_default_constructed.end(),
+            [](const bool val) { return !val; }));
         assert(al_size_default_constructed.get_allocator().id == 4);
         assert(al_size_default_constructed.get_allocator().soccc_generation == 3);
 
         vec al_size_value_constructed(5, true, alloc);
         assert(al_size_value_constructed.size() == 5);
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            assert(all_of(al_size_value_constructed.begin(), al_size_value_constructed.end(),
-                [](const bool val) { return val; }));
-        }
+        assert(all_of(
+            al_size_value_constructed.begin(), al_size_value_constructed.end(), [](const bool val) { return val; }));
         assert(al_size_value_constructed.get_allocator().id == 4);
         assert(al_size_value_constructed.get_allocator().soccc_generation == 3);
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            vec al_range_constructed(begin(input), end(input), alloc);
-            assert(equal(al_range_constructed.begin(), al_range_constructed.end(), begin(input), end(input)));
-            assert(al_range_constructed.get_allocator().id == 4);
-            assert(al_range_constructed.get_allocator().soccc_generation == 3);
+        vec al_range_constructed(begin(input), end(input), alloc);
+        assert(equal(al_range_constructed.begin(), al_range_constructed.end(), begin(input), end(input)));
+        assert(al_range_constructed.get_allocator().id == 4);
+        assert(al_range_constructed.get_allocator().soccc_generation == 3);
 
-            vec al_initializer_list_constructed({true, true, false, true}, alloc);
-            assert(equal(al_initializer_list_constructed.begin(), al_initializer_list_constructed.end(),
-                begin(input) + 2, end(input)));
-            assert(al_initializer_list_constructed.get_allocator().id == 4);
-            assert(al_initializer_list_constructed.get_allocator().soccc_generation == 3);
-        }
+        vec al_initializer_list_constructed({true, true, false, true}, alloc);
+        assert(equal(al_initializer_list_constructed.begin(), al_initializer_list_constructed.end(), begin(input) + 2,
+            end(input)));
+        assert(al_initializer_list_constructed.get_allocator().id == 4);
+        assert(al_initializer_list_constructed.get_allocator().soccc_generation == 3);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // assignment
         vec range_constructed(begin(input), end(input));
 
@@ -278,9 +223,6 @@ constexpr bool test_interface() {
         assert(alloc.soccc_generation == 0);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // iterators
         vec range_constructed(begin(input), end(input));
         const vec const_range_constructed(begin(input), end(input));
@@ -334,9 +276,6 @@ constexpr bool test_interface() {
         assert(*prev(cre2));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // access
         vec range_constructed(begin(input), end(input));
         const vec const_range_constructed(begin(input), end(input));
@@ -385,9 +324,6 @@ constexpr bool test_interface() {
         assert(cb);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // capacity
         vec range_constructed(begin(input), end(input));
 
@@ -416,9 +352,6 @@ constexpr bool test_interface() {
         assert(c2 == 32);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // modifiers
         vec range_constructed(begin(input), end(input));
 
@@ -509,9 +442,6 @@ constexpr bool test_interface() {
         assert(emplaced.size() == 22);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     {
         // GH-2440: we were incorrectly reallocating _before_ orphaning iterators
         // (resulting in UB) while inserting ranges of unknown length
@@ -524,9 +454,6 @@ constexpr bool test_interface() {
         assert(input_inserted.size() == size(num_arr));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // swap
         vec first{true, false, true};
         vec second{false, false, true, false};
@@ -538,9 +465,6 @@ constexpr bool test_interface() {
         assert(equal(second.begin(), second.end(), begin(expected_second), end(expected_second)));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // erase
         vec erased{false, false, true, false, true};
         erase(erased, false);
@@ -553,9 +477,6 @@ constexpr bool test_interface() {
         assert(equal(erased_if.begin(), erased_if.end(), begin(expected_erase_if), end(expected_erase_if)));
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // comparison
         vec first(begin(input), end(input));
         vec second(begin(input), end(input));
@@ -590,12 +511,6 @@ constexpr bool test_interface() {
 }
 
 constexpr bool test_iterators() {
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (is_constant_evaluated()) {
-        return true;
-    }
-#endif // ^^^ workaround ^^^
-
     vec range_constructed(begin(input), end(input));
 
     { // increment

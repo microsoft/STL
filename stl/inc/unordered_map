@@ -69,6 +69,8 @@ class unordered_map : public _Hash<_Umap_traits<_Kty, _Ty, _Uhash_compare<_Kty, 
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<pair<const _Kty, _Ty>, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("unordered_map<Key, Value, Hasher, Eq, Allocator>", "pair<const Key, Value>"));
+    static_assert(is_object_v<_Kty>, "The C++ Standard forbids containers of non-object types "
+                                     "because of [container.requirements].");
 
 private:
     using _Mytraits      = _Uhash_compare<_Kty, _Hasher, _Keyeq>;
@@ -557,6 +559,8 @@ public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<pair<const _Kty, _Ty>, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE(
             "unordered_multimap<Key, Value, Hasher, Eq, Allocator>", "pair<const Key, Value>"));
+    static_assert(is_object_v<_Kty>, "The C++ Standard forbids containers of non-object types "
+                                     "because of [container.requirements].");
 
 private:
     using _Mytraits      = _Uhash_compare<_Kty, _Hasher, _Keyeq>;

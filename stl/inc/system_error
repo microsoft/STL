@@ -473,6 +473,8 @@ private:
     }
 
 protected:
+    _System_error(error_code _Errcode) : runtime_error(_Errcode.message()), _Mycode(_Errcode) {}
+
     _System_error(error_code _Errcode, const string& _Message)
         : runtime_error(_Makestr(_Errcode, _Message)), _Mycode(_Errcode) {}
 
@@ -484,13 +486,13 @@ private:
     using _Mybase = _System_error;
 
 public:
-    system_error(error_code _Errcode) : _Mybase(_Errcode, "") {}
+    system_error(error_code _Errcode) : _Mybase(_Errcode) {}
 
     system_error(error_code _Errcode, const string& _Message) : _Mybase(_Errcode, _Message) {}
 
     system_error(error_code _Errcode, const char* _Message) : _Mybase(_Errcode, _Message) {}
 
-    system_error(int _Errval, const error_category& _Errcat) : _Mybase(error_code(_Errval, _Errcat), "") {}
+    system_error(int _Errval, const error_category& _Errcat) : _Mybase(error_code(_Errval, _Errcat)) {}
 
     system_error(int _Errval, const error_category& _Errcat, const string& _Message)
         : _Mybase(error_code(_Errval, _Errcat), _Message) {}
@@ -714,7 +716,7 @@ _STD_BEGIN
 //   1. We would like to keep the definition of __std_win_error in xfilesystem_abi.h
 //   2. and xfilesystem_abi.h cannot include <system_error>
 //   3. and specialization of is_error_code_enum and overload of make_error_code
-//      need to be kept together with the enum (see limerick in N4810 [temp.expl.spec]/7)
+//      need to be kept together with the enum (see limerick in N4950 [temp.expl.spec]/8)
 // we resort to using this _Make_ec helper.
 _NODISCARD inline error_code _Make_ec(__std_win_error _Errno) noexcept { // make an error_code
     return {static_cast<int>(_Errno), _STD system_category()};

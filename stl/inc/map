@@ -75,6 +75,8 @@ class map : public _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, false>> {
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<pair<const _Kty, _Ty>, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("map<Key, Value, Compare, Allocator>", "pair<const Key, Value>"));
+    static_assert(is_object_v<_Kty>, "The C++ Standard forbids containers of non-object types "
+                                     "because of [container.requirements].");
 
     using _Mybase                = _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, false>>;
     using _Nodeptr               = typename _Mybase::_Nodeptr;
@@ -457,6 +459,8 @@ class multimap : public _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, true>> {
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<pair<const _Kty, _Ty>, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("multimap<Key, Value, Compare, Allocator>", "pair<const Key, Value>"));
+    static_assert(is_object_v<_Kty>, "The C++ Standard forbids containers of non-object types "
+                                     "because of [container.requirements].");
 
     using _Mybase                = _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, true>>;
     using key_type               = _Kty;

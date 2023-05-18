@@ -1339,7 +1339,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Wi>&& is_nothrow_move_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_Value_)), _Bound(_STD move(_Bound_)) {
             if constexpr (totally_ordered_with<_Wi, _Bo>) {
-                _STL_ASSERT(_Value_ <= _Bound_, "Per N4928 [range.iota.view]/8, the first argument must precede the "
+                _STL_ASSERT(_Value_ <= _Bound_, "Per N4950 [range.iota.view]/8, the first argument must precede the "
                                                 "second when their types are totally ordered.");
             }
         }
@@ -1418,8 +1418,8 @@ namespace ranges {
 
 #if _HAS_CXX23
     template <class _Ty>
-    concept _Integer_like_with_usable_difference_type = _Signed_integer_like<_Ty>
-                                                     || (_Integer_like<_Ty> && weakly_incrementable<_Ty>);
+    concept _Integer_like_with_usable_difference_type =
+        _Signed_integer_like<_Ty> || (_Integer_like<_Ty> && weakly_incrementable<_Ty>);
 
     template <class _Ty>
     struct _Repeat_view_difference_type {
@@ -1741,12 +1741,11 @@ namespace ranges {
         concept _Istreamable_impl = derived_from<_Stream, basic_istream<_CharT, _Traits>>
                                  && constructible_from<basic_istream_view<_Elem, _CharT, _Traits>, _Stream&>;
         template <class _Elem, class _Stream>
-        concept _Istreamable =
-            requires {
-                typename _Stream::char_type;
-                typename _Stream::traits_type;
-                requires _Istreamable_impl<_Elem, _Stream, typename _Stream::char_type, typename _Stream::traits_type>;
-            };
+        concept _Istreamable = requires {
+            typename _Stream::char_type;
+            typename _Stream::traits_type;
+            requires _Istreamable_impl<_Elem, _Stream, typename _Stream::char_type, typename _Stream::traits_type>;
+        };
 
         template <class _Ty>
         struct _Istream_fn {
@@ -2290,7 +2289,7 @@ namespace ranges {
         _NODISCARD constexpr _Iterator begin() {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(
-                _Pred, "N4928 [range.filter.view]/3 forbids calling begin on a filter_view that holds no predicate");
+                _Pred, "N4950 [range.filter.view]/3 forbids calling begin on a filter_view that holds no predicate");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
@@ -3291,7 +3290,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(_Count_ >= 0, "Number of elements to drop must be non-negative (N4928 [range.drop.view]/1");
+            _STL_VERIFY(_Count_ >= 0, "Number of elements to drop must be non-negative (N4950 [range.drop.view]/1");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         }
 
@@ -3515,7 +3514,7 @@ namespace ranges {
         _NODISCARD constexpr auto begin() {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(
-                _Pred, "N4928 [range.drop.while.view]/3 forbids calling begin on a drop_while_view with no predicate");
+                _Pred, "N4950 [range.drop.while.view]/3 forbids calling begin on a drop_while_view with no predicate");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
@@ -6951,10 +6950,10 @@ namespace ranges {
     concept _Slide_caches_nothing = random_access_range<_Vw> && sized_range<_Vw>;
 
     template <class _Vw>
-    concept _Slide_caches_last = (!_Slide_caches_nothing<_Vw>) && bidirectional_range<_Vw> && common_range<_Vw>;
+    concept _Slide_caches_last = (!_Slide_caches_nothing<_Vw>) &&bidirectional_range<_Vw> && common_range<_Vw>;
 
     template <class _Vw>
-    concept _Slide_caches_first = (!_Slide_caches_nothing<_Vw>) && (!_Slide_caches_last<_Vw>);
+    concept _Slide_caches_first = (!_Slide_caches_nothing<_Vw>) &&(!_Slide_caches_last<_Vw>);
 
     _EXPORT_STD template <forward_range _Vw>
         requires view<_Vw>
@@ -7212,7 +7211,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Vw>) /* strengthened */
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(_Count > 0, "The window size must be positive (N4928 [range.slide.view]/1)");
+            _STL_VERIFY(_Count > 0, "The window size must be positive (N4950 [range.slide.view]/1)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         }
 
@@ -7981,9 +7980,9 @@ namespace ranges {
         constexpr bool _Is_noexcept = (noexcept(static_cast<_ResultType>(
             _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>())) && ...);
         // clang-format on
-        const auto _Get_smallest_distance_closure =
-            [&_Lhs_tuple, &_Rhs_tuple ]<size_t _FirstIdx /* = 0 */, size_t... _Idxs>(
-                index_sequence<_FirstIdx, _Idxs...>) noexcept(_Is_noexcept) {
+        const auto _Get_smallest_distance_closure = [&_Lhs_tuple,
+                                                        &_Rhs_tuple]<size_t _FirstIdx /* = 0 */, size_t... _Idxs>(
+                                                        index_sequence<_FirstIdx, _Idxs...>) noexcept(_Is_noexcept) {
             const _ResultType _First_size = static_cast<_ResultType>(_STD get<0>(_Lhs_tuple) - _STD get<0>(_Rhs_tuple));
 
             if (_First_size == 0) {
@@ -8006,29 +8005,29 @@ namespace ranges {
         noexcept((noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) && ...)) {
         // clang-format on
         const auto _Evaluate_equality_closure =
-            [&_Lhs_tuple, &_Rhs_tuple ]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(
+            [&_Lhs_tuple, &_Rhs_tuple]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(
                 (noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) && ...)) {
-            return ((_STD get<_Indices>(_Lhs_tuple) == _STD get<_Indices>(_Rhs_tuple)) || ...);
-        };
+                return ((_STD get<_Indices>(_Lhs_tuple) == _STD get<_Indices>(_Rhs_tuple)) || ...);
+            };
 
         return _Evaluate_equality_closure(index_sequence_for<_LHSTupleTypes...>{});
     }
 
 #ifdef __clang__
     template <bool _IsConst, class... _ViewTypes> // TRANSITION, LLVM-47414
-    concept _Zip_iter_converts = _IsConst
-                              && (convertible_to<iterator_t<_ViewTypes>, iterator_t<const _ViewTypes>> && ...);
+    concept _Zip_iter_converts =
+        _IsConst && (convertible_to<iterator_t<_ViewTypes>, iterator_t<const _ViewTypes>> && ...);
 
     template <bool _IsConst, class... _ViewTypes> // TRANSITION, LLVM-47414
-    concept _Zip_sent_converts = _IsConst
-                              && (convertible_to<sentinel_t<_ViewTypes>, sentinel_t<const _ViewTypes>> && ...);
+    concept _Zip_sent_converts =
+        _IsConst && (convertible_to<sentinel_t<_ViewTypes>, sentinel_t<const _ViewTypes>> && ...);
 #endif // ^^^ workaround ^^^
 
     template <class _Func, class... _Views>
-    concept _Zip_transform_constraints = move_constructible<_Func> && is_object_v<_Func> && (sizeof...(_Views) > 0)
-                                      && (input_range<_Views> && ...) && (view<_Views> && ...)
-                                      && regular_invocable<_Func&, range_reference_t<_Views>...>
-                                      && _Can_reference<invoke_result_t<_Func&, range_reference_t<_Views>...>>;
+    concept _Zip_transform_constraints =
+        move_constructible<_Func> && is_object_v<_Func> && (sizeof...(_Views) > 0) && (input_range<_Views> && ...)
+        && (view<_Views> && ...) && regular_invocable<_Func&, range_reference_t<_Views>...>
+        && _Can_reference<invoke_result_t<_Func&, range_reference_t<_Views>...>>;
 
     _EXPORT_STD template <input_range... _ViewTypes>
         requires (view<_ViewTypes> && ...) && (sizeof...(_ViewTypes) > 0)
@@ -8249,11 +8248,12 @@ namespace ranges {
             {
                 // clang-format on
                 const auto _Swap_every_pair_closure =
-                    [&_Lhs, &_Rhs ]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(noexcept(
+                    [&_Lhs, &_Rhs]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(noexcept(
                         ((_RANGES iter_swap(_STD get<_Indices>(_Lhs._Current), _STD get<_Indices>(_Rhs._Current))),
                             ...))) {
-                    ((_RANGES iter_swap(_STD get<_Indices>(_Lhs._Current), _STD get<_Indices>(_Rhs._Current))), ...);
-                };
+                        ((_RANGES iter_swap(_STD get<_Indices>(_Lhs._Current), _STD get<_Indices>(_Rhs._Current))),
+                            ...);
+                    };
 
                 _Swap_every_pair_closure(index_sequence_for<_ViewTypes...>{});
             }
@@ -8770,7 +8770,7 @@ namespace ranges {
             static constexpr bool _Enable_cpo = []() noexcept {
                 if constexpr (sizeof...(_Types) == 0) {
                     // This is a more efficient implementation of the CPO requirements listed in
-                    // N4928 [range.zip.transform.overview]/2.1.1.
+                    // N4950 [range.zip.transform.overview]/2.1.1.
                     using _Decayed_func = decay_t<_Func>;
                     if constexpr (move_constructible<_Decayed_func> && regular_invocable<_Decayed_func&>) {
                         return !is_void_v<invoke_result_t<_Decayed_func&>>;
@@ -8843,6 +8843,16 @@ namespace ranges {
     using _Invoke_result_with_repeated_type =
         typename _Invoke_result_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>::type;
 
+    template <class _Vw, class _Fn, size_t _Nx>
+    concept _Adjacent_transform_constraints =
+        (_Nx > 0) && forward_range<_Vw> && view<_Vw> && is_object_v<_Fn> && move_constructible<_Fn>
+        && _Regular_invocable_with_repeated_type<_Fn&, range_reference_t<_Vw>, _Nx>
+        && _Can_reference<_Invoke_result_with_repeated_type<_Fn&, range_reference_t<_Vw>, _Nx>>;
+
+    _EXPORT_STD template <class _Vw, class _Fn, size_t _Nx>
+        requires _Adjacent_transform_constraints<_Vw, _Fn, _Nx>
+    class adjacent_transform_view;
+
     _EXPORT_STD template <forward_range _Vw, size_t _Nx>
         requires view<_Vw> && (_Nx > 0)
     class adjacent_view : public view_interface<adjacent_view<_Vw, _Nx>> {
@@ -8858,12 +8868,13 @@ namespace ranges {
         private:
             friend adjacent_view;
 
-            template <forward_range _Vw2, move_constructible _Fn, size_t _Nx2>
-                requires view<_Vw2> && (_Nx2 > 0)
-                      && is_object_v<_Fn> && _Regular_invocable_with_repeated_type<_Fn&, range_reference_t<_Vw2>, _Nx2>
-                      && _Can_reference<_Invoke_result_with_repeated_type<_Fn&, range_reference_t<_Vw2>, _Nx2>>
+#ifdef __clang__ // TRANSITION, Clang 17
+        public:
+#else // ^^^ workaround / no workaround vvv
+            template <class _Vw2, class _Fn, size_t _Nx2>
+                requires _Adjacent_transform_constraints<_Vw2, _Fn, _Nx2>
             friend class adjacent_transform_view;
-
+#endif // ^^^ no workaround ^^^
             using _Base          = _Maybe_const<_Const, _Vw>;
             using _Base_iterator = iterator_t<_Base>;
 
@@ -9224,10 +9235,8 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Adjacent_fn<2> pairwise;
     } // namespace views
 
-    _EXPORT_STD template <forward_range _Vw, move_constructible _Fn, size_t _Nx>
-        requires view<_Vw> && (_Nx > 0)
-              && is_object_v<_Fn> && _Regular_invocable_with_repeated_type<_Fn&, range_reference_t<_Vw>, _Nx>
-              && _Can_reference<_Invoke_result_with_repeated_type<_Fn&, range_reference_t<_Vw>, _Nx>>
+    _EXPORT_STD template <class _Vw, class _Fn, size_t _Nx>
+        requires _Adjacent_transform_constraints<_Vw, _Fn, _Nx>
     class adjacent_transform_view : public view_interface<adjacent_transform_view<_Vw, _Fn, _Nx>> {
     private:
         using _Inner_view = adjacent_view<_Vw, _Nx>;
@@ -9254,7 +9263,7 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Inner_iterator<_Const>>) // strengthened
                 : _Parent(_STD addressof(_Parent_)), _Inner(_STD move(_Inner_)) {}
 
-            _NODISCARD static _CONSTEVAL auto _Get_iterator_category() noexcept {
+            _NODISCARD static consteval auto _Get_iterator_category() noexcept {
                 if constexpr (!is_reference_v<_Invoke_result_with_repeated_type<_Maybe_const<_Const, _Fn>&,
                                   range_reference_t<_Base>, _Nx>>) {
                     return input_iterator_tag{};
@@ -9274,7 +9283,7 @@ namespace ranges {
             }
 
             template <size_t... _Indices>
-            _NODISCARD static _CONSTEVAL bool _Is_indirection_nothrow(index_sequence<_Indices...>) noexcept {
+            _NODISCARD static consteval bool _Is_indirection_nothrow(index_sequence<_Indices...>) noexcept {
                 return noexcept(_STD invoke(_STD declval<_Maybe_const<_Const, _Fn>&>(),
                     *_STD get<_Indices>(_STD declval<const _Inner_iterator<_Const>&>()._Current)...));
             }
@@ -9543,10 +9552,7 @@ namespace ranges {
             template <viewable_range _Rng, class _Fn>
             _NODISCARD constexpr auto operator()(_Rng&&, _Fn&& _Func) const
                 noexcept(noexcept(views::zip_transform(_STD forward<_Fn>(_Func))))
-                requires (_Nx == 0)
-#ifndef __clang__ // TRANSITION, Clang 16
-                         && requires { views::zip_transform(_STD forward<_Fn>(_Func)); }
-#endif // __clang__
+                requires (_Nx == 0) && requires { views::zip_transform(_STD forward<_Fn>(_Func)); }
             {
                 return views::zip_transform(_STD forward<_Fn>(_Func));
             }
@@ -9556,9 +9562,9 @@ namespace ranges {
                 noexcept(noexcept(adjacent_transform_view<views::all_t<_Rng>, decay_t<_Fn>, _Nx>(
                     _STD forward<_Rng>(_Range), _STD forward<_Fn>(_Func))))
                 requires requires {
-                             adjacent_transform_view<views::all_t<_Rng>, decay_t<_Fn>, _Nx>(
-                                 _STD forward<_Rng>(_Range), _STD forward<_Fn>(_Func));
-                         }
+                    adjacent_transform_view<views::all_t<_Rng>, decay_t<_Fn>, _Nx>(
+                        _STD forward<_Rng>(_Range), _STD forward<_Fn>(_Func));
+                }
             {
                 return adjacent_transform_view<views::all_t<_Rng>, decay_t<_Fn>, _Nx>(
                     _STD forward<_Rng>(_Range), _STD forward<_Fn>(_Func));
@@ -9577,71 +9583,10 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Adjacent_transform_fn<2> pairwise_transform;
     } // namespace views
 
-    template <_Integer_like _Int>
-    _NODISCARD constexpr bool _Add_with_overflow_check(const _Int _Left, const _Int _Right, _Int& _Out) {
-#ifdef __clang__
-        if constexpr (integral<_Int>) {
-            return __builtin_add_overflow(_Left, _Right, &_Out);
-        } else
-#endif // __clang__
-        {
-            if constexpr (!_Signed_integer_like<_Int>) {
-                _Out = static_cast<_Int>(_Left + _Right);
-                return _Out < _Left || _Out < _Right;
-            } else {
-                using _UInt = _Make_unsigned_like_t<_Int>;
-                _Out        = static_cast<_Int>(static_cast<_UInt>(_Left) + static_cast<_UInt>(_Right));
-                return (_Left > 0 && _Right > 0 && _Out <= 0) || (_Left < 0 && _Right < 0 && _Out >= 0);
-            }
-        }
-    }
-
-    template <_Integer_like _Int>
-    _NODISCARD constexpr bool _Multiply_with_overflow_check(const _Int _Left, const _Int _Right, _Int& _Out) {
-#ifdef __clang__
-        if constexpr (integral<_Int>) {
-            return __builtin_mul_overflow(_Left, _Right, &_Out);
-        } else
-#endif // __clang__
-        {
-            if constexpr (!_Signed_integer_like<_Int>) {
-                _Out = static_cast<_Int>(_Left * _Right);
-                return _Left != 0 && _Right > (numeric_limits<_Int>::max)() / _Left;
-            } else {
-                // vvv Based on llvm::MulOverflow vvv
-                // https://github.com/llvm/llvm-project/blob/88e5206/llvm/include/llvm/Support/MathExtras.h#L725-L750
-                //===----------------------------------------------------------------------===//
-                //
-                // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-                // See https://llvm.org/LICENSE.txt for license information.
-                // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-                //
-                //===----------------------------------------------------------------------===//
-                using _UInt          = _Make_unsigned_like_t<_Int>;
-                const _UInt _ULeft   = _Left < 0 ? (0 - static_cast<_UInt>(_Left)) : static_cast<_UInt>(_Left);
-                const _UInt _URight  = _Right < 0 ? (0 - static_cast<_UInt>(_Right)) : static_cast<_UInt>(_Right);
-                const _UInt _UResult = static_cast<_UInt>(_ULeft * _URight);
-
-                const bool _Negative = (_Left < 0) != (_Right < 0);
-                _Out                 = static_cast<_Int>(_Negative ? (0 - _UResult) : _UResult);
-                if (_ULeft == 0 || _URight == 0) {
-                    return false;
-                }
-
-                if (_Negative) {
-                    return _ULeft > (static_cast<_UInt>((numeric_limits<_Int>::max)()) + _UInt{1}) / _URight;
-                } else {
-                    return _ULeft > static_cast<_UInt>((numeric_limits<_Int>::max)()) / _URight;
-                }
-                // ^^^ Based on llvm::MulOverflow ^^^
-            }
-        }
-    }
-
     template <bool _Const, class _First, class... _Rest>
-    concept _Cartesian_product_is_random_access = (random_access_range<_Maybe_const<_Const, _First>> && ...
-                                                   && (random_access_range<_Maybe_const<_Const, _Rest>>
-                                                       && sized_range<_Maybe_const<_Const, _Rest>>) );
+    concept _Cartesian_product_is_random_access =
+        (random_access_range<_Maybe_const<_Const, _First>> && ...
+            && (random_access_range<_Maybe_const<_Const, _Rest>> && sized_range<_Maybe_const<_Const, _Rest>>) );
 
     template <class _Rng>
     concept _Cartesian_product_common_arg = common_range<_Rng> || (sized_range<_Rng> && random_access_range<_Rng>);
@@ -9712,7 +9657,7 @@ namespace ranges {
     inline constexpr auto _Compile_time_max_size<const owning_view<_Ty>> = _Compile_time_max_size<const _Ty>;
 
     template <range _Rng>
-    _NODISCARD _CONSTEVAL int _Cartesian_product_max_size_bit_width() noexcept {
+    _NODISCARD consteval int _Cartesian_product_max_size_bit_width() noexcept {
         if constexpr (sized_range<_Rng>) {
             if constexpr (requires(range_size_t<_Rng> _Val) { _STD bit_width(_Val); }) {
                 return _STD bit_width(_Compile_time_max_size<_Rng>);
@@ -9725,7 +9670,7 @@ namespace ranges {
     }
 
     template <class _First, class... _Rest>
-    _NODISCARD _CONSTEVAL auto _Cartesian_product_optimal_size_type() noexcept {
+    _NODISCARD consteval auto _Cartesian_product_optimal_size_type() noexcept {
         constexpr int _Optimal_size_type_bit_width =
             (_Cartesian_product_max_size_bit_width<_First>() + ... + _Cartesian_product_max_size_bit_width<_Rest>());
         if constexpr (_Optimal_size_type_bit_width <= 8) {
@@ -9828,13 +9773,13 @@ namespace ranges {
 #if _ITERATOR_DEBUG_LEVEL != 0
                     const auto _It_off = static_cast<_Diff>(_It - _RANGES begin(_Range));
                     _STL_VERIFY(_It_off + _Off >= 0, "Cannot advance cartesian_product_view iterator before begin "
-                                                     "(N4928 [range.cartesian.iterator]/19).");
+                                                     "(N4950 [range.cartesian.iterator]/19).");
                     if constexpr (sized_range<decltype(_Range)>) {
                         const auto _Size = static_cast<_Diff>(_RANGES ssize(_Range));
                         _STL_VERIFY(_It_off + _Off < _Size
                                         || (_It_off + _Off == _Size
                                             && _Entire_tail_at_begin(make_index_sequence<sizeof...(_Rest)>{})),
-                            "Cannot advance cartesian_product_view iterator past end (N4928 "
+                            "Cannot advance cartesian_product_view iterator past end (N4950 "
                             "[range.cartesian.iterator]/19).");
                     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -9863,10 +9808,10 @@ namespace ranges {
                     const auto _Size =
                         static_cast<_Difference_type<_Const>>(_RANGES size(_STD get<_Index>(_Parent->_Bases)));
                     [[maybe_unused]] const bool _Overflow =
-                        _Multiply_with_overflow_check(_Size, _Distance_from<_Index - 1>(_Tpl), _Result)
-                        || _Add_with_overflow_check(_Result, _Diff, _Result);
+                        _Mul_overflow(_Size, _Distance_from<_Index - 1>(_Tpl), _Result)
+                        || _Add_overflow(_Result, _Diff, _Result);
 #if _ITERATOR_DEBUG_LEVEL != 0
-                    _STL_VERIFY(!_Overflow, "Scaled-sum cannot be represented by difference_type (N4928 "
+                    _STL_VERIFY(!_Overflow, "Scaled-sum cannot be represented by difference_type (N4950 "
                                             "[range.cartesian.iterator]/8).");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                     return _Result;
@@ -9876,7 +9821,7 @@ namespace ranges {
             }
 
             template <size_t... _Indices>
-            _NODISCARD static _CONSTEVAL bool _Is_iter_move_nothrow(index_sequence<_Indices...>) noexcept {
+            _NODISCARD static consteval bool _Is_iter_move_nothrow(index_sequence<_Indices...>) noexcept {
                 return conjunction_v<
                            is_nothrow_move_constructible<range_rvalue_reference_t<_Maybe_const<_Const, _First>>>,
                            is_nothrow_move_constructible<range_rvalue_reference_t<_Maybe_const<_Const, _Rest>>>...>
@@ -9885,7 +9830,7 @@ namespace ranges {
             }
 
             template <size_t... _Indices>
-            _NODISCARD static _CONSTEVAL bool _Is_iter_swap_nothrow(index_sequence<_Indices...>) noexcept {
+            _NODISCARD static consteval bool _Is_iter_swap_nothrow(index_sequence<_Indices...>) noexcept {
                 return (noexcept(_RANGES iter_swap(_STD get<_Indices>(_STD declval<const _Iterator&>()._Current),
                             _STD get<_Indices>(_STD declval<const _Iterator&>()._Current)))
                         && ...);
@@ -10037,8 +9982,7 @@ namespace ranges {
                 return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                     return (_RANGES iter_swap(_STD get<_Indices>(_Left._Current), _STD get<_Indices>(_Right._Current)),
                         ...);
-                }
-                (make_index_sequence<1 + sizeof...(_Rest)>{});
+                }(make_index_sequence<1 + sizeof...(_Rest)>{});
             }
         };
 
@@ -10086,8 +10030,7 @@ namespace ranges {
         {
             const bool _Is_empty = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                 return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ...);
-            }
-            (make_index_sequence<sizeof...(_Rest)>{});
+            }(make_index_sequence<sizeof...(_Rest)>{});
 
             const auto _Make_iter_tuple = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                 return tuple<iterator_t<_First>, iterator_t<_Rest>...>{_Begin_or_first_end<_Indices>(_Is_empty)...};
@@ -10100,8 +10043,7 @@ namespace ranges {
         {
             const bool _Is_empty = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                 return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ...);
-            }
-            (make_index_sequence<sizeof...(_Rest)>{});
+            }(make_index_sequence<sizeof...(_Rest)>{});
 
             const auto _Make_iter_tuple = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
                 return tuple<iterator_t<const _First>, iterator_t<const _Rest>...>{
@@ -10121,17 +10063,16 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
                 _Size_type<false> _Product{1};
                 const bool _Overflow =
-                    (_Multiply_with_overflow_check(
+                    (_Mul_overflow(
                          _Product, static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases))), _Product)
                         || ...);
-                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4928 "
+                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4950 "
                                         "[range.cartesian.view]/10).");
                 return _Product;
 #else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
                 return (static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases))) * ...);
 #endif // ^^^ _CONTAINER_DEBUG_LEVEL == 0 ^^^
-            }
-            (make_index_sequence<1 + sizeof...(_Rest)>{});
+            }(make_index_sequence<1 + sizeof...(_Rest)>{});
         }
 
         _NODISCARD constexpr auto size() const
@@ -10141,17 +10082,16 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
                 _Size_type<true> _Product{1};
                 const bool _Overflow =
-                    (_Multiply_with_overflow_check(
+                    (_Mul_overflow(
                          _Product, static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases))), _Product)
                         || ...);
-                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4928 "
+                _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4950 "
                                         "[range.cartesian.view]/10).");
                 return _Product;
 #else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
                 return (static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases))) * ...);
 #endif // ^^^ _CONTAINER_DEBUG_LEVEL == 0 ^^^
-            }
-            (make_index_sequence<1 + sizeof...(_Rest)>{});
+            }(make_index_sequence<1 + sizeof...(_Rest)>{});
         }
     };
 
@@ -10256,7 +10196,7 @@ namespace ranges {
             };
             return _RANGES to<_Container>(views::transform(_Range, _Xform), _STD forward<_Types>(_Args)...);
         } else {
-            static_assert(_Always_false<_Container>, "the program is ill-formed per N4910 [range.utility.conv.to]/1.3");
+            static_assert(_Always_false<_Container>, "the program is ill-formed per N4950 [range.utility.conv.to]/2.3");
         }
     }
 

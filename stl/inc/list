@@ -776,6 +776,8 @@ private:
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Ty, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("list<T, Allocator>", "T"));
+    static_assert(is_object_v<_Ty>, "The C++ Standard forbids containers of non-object types "
+                                    "because of [container.requirements].");
 
     using value_type      = _Ty;
     using allocator_type  = _Alloc;
@@ -955,10 +957,11 @@ public:
 
 private:
     void _Swap_val(list& _Right) noexcept { // swap with _Right, same allocator
+        using _STD swap;
         auto& _My_data    = _Mypair._Myval2;
         auto& _Right_data = _Right._Mypair._Myval2;
         _My_data._Swap_proxy_and_iterators(_Right_data);
-        _Swap_adl(_My_data._Myhead, _Right_data._Myhead);
+        swap(_My_data._Myhead, _Right_data._Myhead); // intentional ADL
         _STD swap(_My_data._Mysize, _Right_data._Mysize);
     }
 

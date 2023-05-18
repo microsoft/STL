@@ -20,9 +20,9 @@ concept CanSize = requires(R& r) { ranges::size(r); };
 
 template <class R>
 concept CanTakeDrop = requires(R r) {
-                          forward<R>(r) | views::take(1);
-                          forward<R>(r) | views::drop(1);
-                      };
+    forward<R>(r) | views::take(1);
+    forward<R>(r) | views::drop(1);
+};
 
 struct non_default {
     int value{};
@@ -286,15 +286,6 @@ struct forward_tester {
 struct tuple_tester {
     forward_tester y;
     forward_tester z;
-
-#ifdef __clang__ // TRANSITION, Clang needs to implement P0960R3
-#ifdef __cpp_aggregate_paren_init
-#error Remove this workaround
-#else // ^^^ Workaround is useless / workaround is useful vvv
-    template <class T, class U>
-    constexpr tuple_tester(T&& a, U&& b) : y{forward<T>(a)}, z{forward<U>(b)} {}
-#endif // __cpp_aggregate_paren_init
-#endif // __clang__
 };
 
 constexpr bool test() {

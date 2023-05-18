@@ -34,6 +34,8 @@ public:
     using container_type  = _Container;
 
     static_assert(is_same_v<_Ty, value_type>, "container adaptors require consistent types");
+    static_assert(is_object_v<_Ty>, "The C++ Standard forbids container adaptors of non-object types "
+                                    "because of [container.requirements].");
 
     queue() = default;
 
@@ -144,7 +146,8 @@ public:
     }
 
     void swap(queue& _Right) noexcept(_Is_nothrow_swappable<_Container>::value) {
-        _Swap_adl(c, _Right.c);
+        using _STD swap;
+        swap(c, _Right.c); // intentional ADL
     }
 
     _NODISCARD const _Container& _Get_container() const noexcept {
@@ -234,6 +237,8 @@ public:
     using value_compare   = _Pr;
 
     static_assert(is_same_v<_Ty, value_type>, "container adaptors require consistent types");
+    static_assert(is_object_v<_Ty>, "The C++ Standard forbids container adaptors of non-object types "
+                                    "because of [container.requirements].");
 
     priority_queue() = default;
 
@@ -401,8 +406,9 @@ public:
 
     void swap(priority_queue& _Right) noexcept(
         _Is_nothrow_swappable<_Container>::value&& _Is_nothrow_swappable<_Pr>::value) {
-        _Swap_adl(c, _Right.c);
-        _Swap_adl(comp, _Right.comp);
+        using _STD swap;
+        swap(c, _Right.c); // intentional ADL
+        swap(comp, _Right.comp); // intentional ADL
     }
 
 protected:

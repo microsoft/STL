@@ -295,13 +295,6 @@ _CONSTEXPR20 void test_sequence_swap(const size_t id1, const size_t id2) {
 
 template <template <class, class> class Sequence>
 _CONSTEXPR20 bool test_sequence() {
-#if _HAS_CXX20 && defined(__EDG__) \
-    && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1726722 (attempt to access expired storage)
-    if (is_constant_evaluated()) {
-        return true;
-    }
-#endif // ^^^ workaround ^^^
-
     test_sequence_copy_ctor<Sequence>();
 
     test_sequence_copy_alloc_ctor<Sequence>(11, 11); // equal allocators

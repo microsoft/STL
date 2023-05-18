@@ -14,7 +14,7 @@
 using namespace std;
 
 template <class IndexType, size_t... Extents, size_t... Indices>
-constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index_sequence<Indices...>) {
+constexpr void check_members(const extents<IndexType, Extents...>& ext, index_sequence<Indices...>) {
     using Ext     = extents<IndexType, Extents...>;
     using Mapping = layout_left::mapping<Ext>;
 
@@ -75,14 +75,15 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
         // Other tests are defined in 'check_construction_from_other_right_mapping' function
     }
 
-#pragma warning(push) // TRANSITION, "/analyze:only" BUG?
-#pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
     { // Check construction from layout_stride::mapping
         array<IndexType, Ext::rank()> strides{};
         if constexpr (Ext::rank() > 0) {
             strides.front() = 1;
             for (size_t i = 1; i < Ext::rank(); ++i) {
+#pragma warning(push)
+#pragma warning(disable : 28020) // TRANSITION, DevCom-923103
                 strides[i] = static_cast<IndexType>(strides[i - 1] * ext.extent(i - 1));
+#pragma warning(pop)
             }
         }
 
@@ -91,7 +92,6 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
         [[maybe_unused]] Mapping m{stride_mapping};
         // Other tests are defined in 'check_construction_from_other_stride_mapping' function
     }
-#pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
 
     Mapping m{ext}; // For later use
 
@@ -142,11 +142,6 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext, index
         assert(!(m != m));
         // Other tests are defined in 'check_comparisons' function
     }
-}
-
-template <class IndexType, size_t... Extents>
-constexpr void check_members(extents<IndexType, Extents...> ext) {
-    do_check_members<IndexType, Extents...>(ext, make_index_sequence<sizeof...(Extents)>{});
 }
 
 constexpr void check_construction_from_other_left_mapping() {
@@ -335,7 +330,7 @@ constexpr void check_correctness() {
         assert(tensor(2, 0, 0) == 2);
         assert(tensor(1, 1, 1) == 10);
         assert(tensor(0, 0, 3) == 18);
-        assert(tensor(2, 2, 2) == 20);
+        assert(tensor(2, 1, 2) == 17);
         assert(tensor(2, 1, 3) == 23);
     }
 
@@ -356,18 +351,17 @@ constexpr void check_correctness() {
 }
 
 constexpr bool test() {
-    check_members(extents<short>{});
-    check_members(extents<int, 1, 2, 3>{});
-    check_members(extents<unsigned short, 4, 4>{});
-    check_members(extents<unsigned long long, dynamic_extent, 4, 5>{3});
-    check_members(extents<short, dynamic_extent, dynamic_extent, 6>{4, 5});
-    check_members(extents<unsigned char, dynamic_extent, dynamic_extent, dynamic_extent>{3, 3, 3});
+    check_members_with_various_extents(
+        []<class IndexType, size_t... Extents>(const extents<IndexType, Extents...>& ext) {
+            check_members(ext, make_index_sequence<sizeof...(Extents)>{});
+        });
     check_construction_from_other_left_mapping();
     check_construction_from_other_right_mapping();
     check_construction_from_other_stride_mapping();
     check_call_operator();
     check_comparisons();
     check_correctness();
+
     return true;
 }
 

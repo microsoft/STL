@@ -936,6 +936,10 @@ void test_floating_from_chars(const chars_format fmt) {
         test_from_chars<T>("-000", fmt, 4, errc{}, T{-0.0});
         test_from_chars<T>("-0e9999", fmt, 7, errc{}, T{-0.0});
         test_from_chars<T>("-0e-9999", fmt, 8, errc{}, T{-0.0});
+        test_from_chars<T>("1" + string(10000, '0') + "e-10000", fmt, 10008, errc{}, T{1.0});
+        test_from_chars<T>("0." + string(9999, '0') + "1e10000", fmt, 10008, errc{}, T{1.0});
+        test_from_chars<T>("1" + string(1280000, '0') + "e-1280000", fmt, 1280010, errc{}, T{1.0});
+        test_from_chars<T>("0." + string(1279999, '0') + "1e1280000", fmt, 1280010, errc{}, T{1.0});
         test_from_chars<T>("1e9999", fmt, 6, errc::result_out_of_range, inf);
         test_from_chars<T>("-1e9999", fmt, 7, errc::result_out_of_range, -inf);
         test_from_chars<T>("1e-9999", fmt, 7, errc::result_out_of_range, T{0});
@@ -978,6 +982,10 @@ void test_floating_from_chars(const chars_format fmt) {
         test_from_chars<T>("-000", fmt, 4, errc{}, T{-0.0});
         test_from_chars<T>("-0p9999", fmt, 7, errc{}, T{-0.0});
         test_from_chars<T>("-0p-9999", fmt, 8, errc{}, T{-0.0});
+        test_from_chars<T>("1" + string(2500, '0') + "p-10000", fmt, 2508, errc{}, T{1.0});
+        test_from_chars<T>("0." + string(2499, '0') + "1p10000", fmt, 2508, errc{}, T{1.0});
+        test_from_chars<T>("1" + string(320000, '0') + "p-1280000", fmt, 320010, errc{}, T{1.0});
+        test_from_chars<T>("0." + string(319999, '0') + "1p1280000", fmt, 320010, errc{}, T{1.0});
         test_from_chars<T>("1p9999", fmt, 6, errc::result_out_of_range, inf);
         test_from_chars<T>("-1p9999", fmt, 7, errc::result_out_of_range, -inf);
         test_from_chars<T>("1p-9999", fmt, 7, errc::result_out_of_range, T{0});
@@ -1162,6 +1170,9 @@ template pair<wchar_t*, errc> std::__to_chars(
     wchar_t* const, wchar_t* const, const __floating_decimal_64, chars_format, const double);
 template pair<wchar_t*, errc> std::__d2fixed_buffered_n(wchar_t*, wchar_t* const, const double, const uint32_t);
 
+#if defined(__clang__) && defined(_M_IX86) // TRANSITION, LLVM-62762, fixed in Clang 16.0.3
+int main() {}
+#else // ^^^ workaround / no workaround vvv
 int main(int argc, char** argv) {
     const auto start = chrono::steady_clock::now();
 
@@ -1190,3 +1201,4 @@ int main(int argc, char** argv) {
         puts("That was slow. Consider tuning PrefixesToTest and FractionBits to test fewer cases.");
     }
 }
+#endif // ^^^ no workaround ^^^

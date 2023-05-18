@@ -121,6 +121,10 @@ std/language.support/support.limits/support.limits.general/ranges.version.compil
 # libc++ is missing various <format> DRs
 std/language.support/support.limits/support.limits.general/format.version.compile.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-2381
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_double.pass.cpp FAIL
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_float.pass.cpp FAIL
+
 # libc++ doesn't implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
@@ -131,6 +135,9 @@ std/utilities/expected/expected.expected/ctor/ctor.u.pass.cpp FAIL
 std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
 std/strings/string.view/string.view.cons/from_string1.compile.fail.cpp FAIL
 std/strings/string.view/string.view.cons/from_string2.compile.fail.cpp FAIL
+
+# libc++ doesn't implement LWG-3865 Sorting a range of pairs
+std/utilities/tuple/tuple.tuple/tuple.apply/make_from_tuple.pass.cpp FAIL
 
 # libc++ doesn't implement LWG-3870
 std/utilities/memory/specialized.algorithms/specialized.construct/ranges_construct_at.pass.cpp FAIL
@@ -172,9 +179,6 @@ std/ranges/range.adaptors/range.join.view/iterator/eq.pass.cpp FAIL
 std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp FAIL
 std/re/re.iter/re.regiter/iterator_concept_conformance.compile.pass.cpp FAIL
 std/re/re.iter/re.tokiter/iterator_concept_conformance.compile.pass.cpp FAIL
-
-# libc++ doesn't implement LWG-3865 Sorting a range of pairs
-std/utilities/tuple/tuple.tuple/tuple.apply/make_from_tuple.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -338,6 +342,9 @@ std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp SKIPPED
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
+# LWG-2192 "Validity and return type of std::abs(0u) is unclear" (resolution is missing in UCRT, DevCom-10331466)
+std/depr/depr.c.headers/stdlib_h.pass.cpp FAIL
+
 # LWG-2503 "multiline option should be added to syntax_option_type"
 std/re/re.const/re.matchflag/match_multiline.pass.cpp FAIL
 
@@ -404,10 +411,7 @@ std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
-std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
-
-# Clang doesn't implement P0960 "Initializing Aggregates With Parentheses"
-std/ranges/range.factories/range.iota.view/sentinel/ctor.value.pass.cpp:1 FAIL
+std/depr/depr.c.headers/tgmath_h.pass.cpp:1 SKIPPED
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -440,14 +444,6 @@ std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
 # GH-1006 <algorithm>: debug checks for predicates are observable
 std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.min.max/minmax_init_list_comp.pass.cpp FAIL
-
-# GH-1259 <locale>: wrong field extraction for hexfloats, or special cases like inf
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_double.pass.cpp FAIL
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_float.pass.cpp FAIL
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp FAIL
-
-# GH-1277 <xlocnum>: We don't match numpunct groups correctly in do_get
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp FAIL
 
 # GH-1275 <locale>: missing some locale names
 # We don't have the locale names libcxx wants specialized in platform_support.hpp
@@ -511,8 +507,8 @@ std/thread/thread.threads/thread.thread.class/thread.thread.assign/move2.pass.cp
 std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp SKIPPED
 
 # OS-29877133 "LDBL_DECIMAL_DIG missing from <float.h>"
-std/depr/depr.c.headers/float_h.pass.cpp:0 FAIL
-std/language.support/support.limits/c.limits/cfloat.pass.cpp:0 FAIL
+std/depr/depr.c.headers/float_h.pass.cpp FAIL
+std/language.support/support.limits/c.limits/cfloat.pass.cpp FAIL
 
 
 # *** LIKELY BOGUS TESTS ***
@@ -670,6 +666,9 @@ std/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
 
 # libc++'s filesystem::path::iterator models bidirectional_iterator, which is not guaranteed by the Standard
 std/input.output/filesystems/class.path/range_concept_conformance.compile.pass.cpp FAIL
+
+# libc++ assumes long double is at least 80-bit; also affected by LWG-2381
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp FAIL
 
 # MaybePOCCAAllocator doesn't meet the allocator requirements
 std/containers/sequences/vector/vector.cons/assign_copy.pass.cpp FAIL
@@ -998,8 +997,6 @@ std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAI
 std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.move/iter_rvalue_reference_t.compile.pass.cpp FAIL
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.swap/iter_swap.pass.cpp FAIL
-std/iterators/predef.iterators/iterators.common/iterator_traits.compile.pass.cpp:1 FAIL
-std/iterators/predef.iterators/iterators.common/plus_plus.pass.cpp:1 FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gt.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_lte.pass.cpp FAIL

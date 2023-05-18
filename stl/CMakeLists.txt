@@ -248,7 +248,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xnode_handle.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xpolymorphic_allocator.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xsmf_control.h
-    ${CMAKE_CURRENT_LIST_DIR}/inc/xstddef
     ${CMAKE_CURRENT_LIST_DIR}/inc/xstring
     ${CMAKE_CURRENT_LIST_DIR}/inc/xthreads.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xtimec.h
@@ -503,7 +502,7 @@ set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
 
 add_compile_options(/WX /Gy
     "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
-    "$<$<COMPILE_LANGUAGE:ASM_MASM>:/W3;/nologo>"
+    "$<$<COMPILE_LANGUAGE:ASM_MASM>:/W3;/nologo;/quiet>"
 )
 
 include_directories(BEFORE

@@ -12,7 +12,6 @@
 #include <tuple>
 #include <typeinfo>
 #include <xmemory>
-#include <xstddef>
 #if _HAS_CXX17
 #ifdef _LEGACY_CODE_ASSUMES_FUNCTIONAL_INCLUDES_MEMORY
 #include <memory>
@@ -31,7 +30,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// plus, minus, and multiplies are defined in <xstddef>
+// plus, minus, and multiplies are defined in <xutility>
 
 _EXPORT_STD template <class _Ty = void>
 struct divides {
@@ -65,7 +64,8 @@ struct negate {
     }
 };
 
-// equal_to, not_equal_to, greater, less, greater_equal, and less_equal are defined in <xstddef>
+// less is defined in <type_traits>
+// equal_to, not_equal_to, greater, greater_equal, and less_equal are defined in <xutility>
 
 _EXPORT_STD template <class _Ty = void>
 struct logical_and {
@@ -142,7 +142,7 @@ struct bit_not {
     }
 };
 
-// void specializations of plus, minus, and multiplies are defined in <xstddef>
+// void specializations of plus, minus, and multiplies are defined in <xutility>
 
 template <>
 struct divides<void> {
@@ -175,8 +175,8 @@ struct negate<void> {
 
     using is_transparent = int;
 };
-
-// void specializations of equal_to, not_equal_to, greater, less, greater_equal, and less_equal are defined in <xstddef>
+// void specialization of less is defined in <type_traits>
+// void specializations of equal_to, not_equal_to, greater, greater_equal, and less_equal are defined in <xutility>
 
 template <>
 struct logical_and<void> {
@@ -301,6 +301,19 @@ _STL_RESTORE_DEPRECATED_WARNING
 #endif // _HAS_DEPRECATED_NEGATORS
 
 #if _HAS_AUTO_PTR_ETC
+_EXPORT_STD template <class _Arg, class _Result>
+struct unary_function { // base class for unary functions
+    using argument_type = _Arg;
+    using result_type   = _Result;
+};
+
+_EXPORT_STD template <class _Arg1, class _Arg2, class _Result>
+struct binary_function { // base class for binary functions
+    using first_argument_type  = _Arg1;
+    using second_argument_type = _Arg2;
+    using result_type          = _Result;
+};
+
 _STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Fn>
 class binder1st : public unary_function<typename _Fn::second_argument_type,
@@ -1152,7 +1165,7 @@ struct _Deduce_signature {}; // can't deduce signature when &_Fx::operator() is 
 
 template <class _Fx>
 struct _Deduce_signature<_Fx, void_t<decltype(&_Fx::operator())>>
-    : _Is_memfunptr<decltype(&_Fx::operator())>::_Guide_type {}; // N4842 [func.wrap.func.con]/12
+    : _Is_memfunptr<decltype(&_Fx::operator())>::_Guide_type {}; // N4950 [func.wrap.func.con]/16.1
 
 template <class _Fx>
 function(_Fx) -> function<typename _Deduce_signature<_Fx>::type>;
@@ -1236,7 +1249,7 @@ inline constexpr size_t _Minimum_function_size = 2 * sizeof(void*);
 template <class _Rx, class... _Types>
 [[noreturn]] _Rx __stdcall _Function_not_callable(const _Move_only_function_data&, _Types&&...) noexcept {
     _CSTD abort(); // Unlike std::function, move_only_function doesn't throw bad_function_call
-                   // (N4901 [func.wrap.move.inv]/2)
+                   // (N4950 [func.wrap.move.inv]/2)
 }
 
 template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>
@@ -1425,7 +1438,7 @@ public:
     }
 
     void _Move_assign(_Move_only_function_base&& _Other) noexcept {
-        // As specified in N4901 [func.wrap.move.ctor]/22, we are expected to first move the new target,
+        // As specified in N4950 [func.wrap.move.ctor]/22, we are expected to first move the new target,
         // then finally destroy the old target.
         // It is more efficient to do the reverse - this way no temporary storage for the old target will be used.
         // In some cases when some operations are trivial, it can be optimized,
@@ -1789,7 +1802,7 @@ public:
     move_only_function(_Fn&& _Callable) {
         using _Vt = decay_t<_Fn>;
         static_assert(is_constructible_v<_Vt, _Fn>, "_Vt should be constructible from _Fn. "
-                                                    "(N4901 [func.wrap.move.ctor]/6)");
+                                                    "(N4950 [func.wrap.move.ctor]/6)");
 
         if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt> || _Is_specialization_v<_Vt, move_only_function>) {
             if (_Callable == nullptr) {
@@ -1805,7 +1818,7 @@ public:
     template <class _Fn, class... _CTypes, enable_if_t<_Enable_in_place_constructor<_Fn, _CTypes...>, int> = 0>
     explicit move_only_function(in_place_type_t<_Fn>, _CTypes&&... _Args) {
         using _Vt = decay_t<_Fn>;
-        static_assert(is_same_v<_Vt, _Fn>, "_Vt should be the same type as _Fn. (N4901 [func.wrap.move.ctor]/12)");
+        static_assert(is_same_v<_Vt, _Fn>, "_Vt should be the same type as _Fn. (N4950 [func.wrap.move.ctor]/12)");
 
         using _VtInvQuals = typename _Call::template _VtInvQuals<_Vt>;
         this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_CTypes>(_Args)...);
@@ -1815,7 +1828,7 @@ public:
         enable_if_t<_Enable_in_place_list_constructor<_Fn, _Ux, _CTypes...>, int> = 0>
     explicit move_only_function(in_place_type_t<_Fn>, initializer_list<_Ux> _Li, _CTypes&&... _Args) {
         using _Vt = decay_t<_Fn>;
-        static_assert(is_same_v<_Vt, _Fn>, "_Vt should be the same type as _Fn. (N4901 [func.wrap.move.ctor]/18)");
+        static_assert(is_same_v<_Vt, _Fn>, "_Vt should be the same type as _Fn. (N4950 [func.wrap.move.ctor]/18)");
 
         using _VtInvQuals = typename _Call::template _VtInvQuals<_Vt>;
         this->template _Construct_with_fn<_Vt, _VtInvQuals>(_Li, _STD forward<_CTypes>(_Args)...);
@@ -1833,7 +1846,9 @@ public:
         return *this;
     }
 
-    move_only_function& operator=(move_only_function&& _Other) {
+    move_only_function& operator=(move_only_function&& _Other)
+    // intentionally noexcept(false), leaving the door open to adding allocator support in the future; see GH-2278
+    {
         if (this != _STD addressof(_Other)) {
             this->_Move_assign(_STD move(_Other));
         }

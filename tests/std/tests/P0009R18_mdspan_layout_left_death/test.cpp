@@ -24,8 +24,6 @@ void test_construction_from_other_right_mapping() {
     layout_left::mapping<dextents<unsigned char, 1>> m2{m1};
 }
 
-#pragma warning(push) // TRANSITION, "/analyze:only" BUG?
-#pragma warning(disable : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
 void test_construction_from_other_stride_mapping_1() {
     using Ext = extents<int, 2, 4>;
     layout_stride::mapping<Ext> m1{Ext{}, array{1, 1}};
@@ -39,7 +37,12 @@ void test_construction_from_other_stride_mapping_2() {
     // Value of other.required_span_size() must be representable as a value of type index_type
     layout_left::mapping<dextents<unsigned char, 1>> m2{m1};
 }
-#pragma warning(pop) // TRANSITION, "/analyze:only" BUG?
+
+void test_call_operator() {
+    layout_left::mapping<extents<int, 3, 4, 5>> m;
+    // Value of extents_type::index-cast(i) must be a multidimensional index in extents_
+    (void) m(2, 3, 5);
+}
 
 void test_stride_function() {
     layout_left::mapping<extents<int, 3>> m;
@@ -55,6 +58,7 @@ int main(int argc, char* argv[]) {
         test_construction_from_other_right_mapping,
         test_construction_from_other_stride_mapping_1,
         test_construction_from_other_stride_mapping_2,
+        test_call_operator,
         test_stride_function,
     });
     return exec.run(argc, argv);

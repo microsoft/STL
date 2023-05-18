@@ -9,7 +9,7 @@ variables:
   benchmarkBuildOutputLocation: 'D:\benchmark'
 
 pool:
-  name: 'StlBuild-2023-02-21T1058-Pool'
+  name: 'StlBuild-2023-05-16T1204-Pool'
   demands: EnableSpotVM -equals true
 
 pr:

@@ -389,6 +389,17 @@ void test_map() {
     assert(m[30] == 33);
 }
 
+void test_mdspan() {
+    using namespace std;
+    puts("Testing <mdspan>.");
+    int arr[] = {10, 0, 0, 0, 20, 0, 0, 0, 30};
+    layout_right::mapping<extents<int, 3, 3>> mp;
+    assert(arr[mp(0, 0)] == 10);
+    assert(arr[mp(1, 1)] == 20);
+    assert(arr[mp(2, 2)] == 30);
+    // TRANSITION, test std::mdspan too (DevCom-10359857)
+}
+
 void test_memory() {
     using namespace std;
     puts("Testing <memory>.");
@@ -661,11 +672,7 @@ constexpr bool impl_test_source_location() {
     using namespace std;
     const auto sl = source_location::current();
     assert(sl.line() == __LINE__ - 1);
-#if defined(_MSVC_INTERNAL_TESTING) || _MSC_FULL_VER >= 193632502 // TRANSITION, VS 2022 17.6 Preview 2
     assert(sl.column() == 38);
-#else // ^^^ no workaround / workaround vvv
-    assert(sl.column() == 1);
-#endif // ^^^ workaround ^^^
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(sl.function_name() == "impl_test_source_location"sv);
 #else // ^^^ workaround / no workaround vvv
@@ -941,6 +948,8 @@ void test_typeinfo() {
     const type_info& t3 = typeid(double);
     assert(t1 == t2);
     assert(t1 != t3);
+
+    assert(typeid(double).name() == "double"sv); // also test DevCom-10349749
 }
 
 void test_unordered_map() {
@@ -1101,6 +1110,7 @@ void all_cpp_header_tests() {
     test_list();
     test_locale();
     test_map();
+    test_mdspan();
     test_memory();
     test_memory_resource();
     test_mutex();
