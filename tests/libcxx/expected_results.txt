@@ -410,7 +410,8 @@ std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.
 
 
 # *** CLANG COMPILER BUGS ***
-# Nothing here! :-)
+# LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
+std/depr/depr.c.headers/tgmath_h.pass.cpp:1 SKIPPED
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
