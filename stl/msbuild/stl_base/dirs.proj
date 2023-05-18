@@ -12,8 +12,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ProjectFile Condition="'$(CrtBuildMT)'  != 'false'" Include="mt\dirs.proj" />
         <ProjectFile Condition="'$(CrtBuildMT)'  != 'false'" Include="mt1\dirs.proj" />
         <ProjectFile Condition="'$(CrtBuildXMT)' != 'false'" Include="xmt\dirs.proj" />
-        <ProjectFile Condition="'$(CrtBuildXMT)' != 'false' and ('$(SpectreBuildMode)' == '' or '$(SpectreBuildDebug)' == 'true')" Include="xmt0\dirs.proj" />
-        <ProjectFile Condition="'$(CrtBuildXMT)' != 'false' and ('$(SpectreBuildMode)' == '' or '$(SpectreBuildDebug)' == 'true')" Include="xmt1\dirs.proj" />
+        <ProjectFile Condition="'$(CrtBuildXMT)' != 'false' and '$(SpectreBuildMode)' == ''" Include="xmt0\dirs.proj" />
+        <ProjectFile Condition="'$(CrtBuildXMT)' != 'false' and '$(SpectreBuildMode)' == ''" Include="xmt1\dirs.proj" />
     </ItemGroup>
 
     <Import Project="$(RepoSrc)\tools\Microsoft.DevDiv.Traversal.targets" />

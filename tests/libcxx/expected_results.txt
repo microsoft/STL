@@ -448,9 +448,6 @@ std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
 std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.min.max/minmax_init_list_comp.pass.cpp FAIL
 
-# GH-1277 <xlocnum>: We don't match numpunct groups correctly in do_get
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp FAIL
-
 # GH-1275 <locale>: missing some locale names
 # We don't have the locale names libcxx wants specialized in platform_support.hpp
 # More bugs may be uncovered when the locale names are present.

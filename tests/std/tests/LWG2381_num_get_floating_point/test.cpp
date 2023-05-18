@@ -40,16 +40,6 @@ public:
     explicit my_facet(size_t refs = 0) : num_get<char, const char*>(refs) {}
 };
 
-class mid_zero_numpunct : public numpunct<char> {
-public:
-    mid_zero_numpunct() : numpunct<char>() {}
-
-protected:
-    string do_grouping() const override {
-        return "\1\0\2"s;
-    }
-};
-
 class my_numpunct : public numpunct<char> {
 public:
     my_numpunct() : numpunct<char>() {}
@@ -251,109 +241,6 @@ void test() {
         str_instr >> v;
         assert(v == 0);
         assert(str_instr.good());
-    }
-}
-
-// Also test non-ending unlimited grouping for FP numbers
-template <class Flt, enable_if_t<is_floating_point_v<Flt>, int> = 0>
-void test_nonending_unlimited_grouping() {
-    const my_facet f(1);
-    ios instr(nullptr);
-    instr.imbue(locale(locale(), new mid_zero_numpunct));
-    Flt v = 0;
-    {
-        v                     = -1;
-        const char sep_str[]  = "17,2,9.0";
-        const size_t len      = sizeof(sep_str) - 1;
-        ios_base::iostate err = instr.goodbit;
-        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
-        assert(iter == sep_str + len);
-        assert(err == instr.goodbit);
-        assert(v == 1729.0);
-    }
-    {
-        v                     = -1;
-        const char sep_str[]  = "17,222,9.0";
-        const size_t len      = sizeof(sep_str) - 1;
-        ios_base::iostate err = instr.goodbit;
-        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
-        assert(iter == sep_str + len);
-        assert(err == instr.goodbit);
-        assert(v == 172229.0);
-    }
-    {
-        v                     = -1;
-        const char sep_str[]  = "0x17,2,9.0";
-        const size_t len      = sizeof(sep_str) - 1;
-        ios_base::iostate err = instr.goodbit;
-        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
-        assert(iter == sep_str + len);
-        assert(err == instr.goodbit);
-        assert(v == 0x1729.0p0);
-    }
-    {
-        v                     = -1;
-        const char sep_str[]  = "0x17,222,9.0";
-        const size_t len      = sizeof(sep_str) - 1;
-        ios_base::iostate err = instr.goodbit;
-        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
-        assert(iter == sep_str + len);
-        assert(err == instr.goodbit);
-        assert(v == 0x172229.0p0);
-    }
-}
-
-// Also test non-ending unlimited grouping for integers
-template <class Integer, enable_if_t<is_integral_v<Integer>, int> = 0>
-void test_nonending_unlimited_grouping() {
-    const my_facet f(1);
-    ios instr(nullptr);
-    instr.imbue(locale(locale(), new mid_zero_numpunct));
-
-    Integer v = 0;
-    {
-        v                     = static_cast<Integer>(-1);
-        const char sep_str[]  = "17,2,9";
-        const size_t len      = sizeof(sep_str) - 1;
-        ios_base::iostate err = instr.goodbit;
-        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
-        assert(iter == sep_str + len);
-        assert(err == instr.goodbit);
-        assert(v == static_cast<Integer>(1729));
-    }
-    {
-        v                     = static_cast<Integer>(-1);
-        const char sep_str[]  = "17,222,9";
-        const size_t len      = sizeof(sep_str) - 1;
-        ios_base::iostate err = instr.goodbit;
-        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
-        assert(iter == sep_str + len);
-        assert(err == instr.goodbit);
-        assert(v == static_cast<Integer>(172229));
-    }
-    {
-        v                     = static_cast<Integer>(-1);
-        const char sep_str[]  = "0x17,2,9";
-        const size_t len      = sizeof(sep_str) - 1;
-        ios_base::iostate err = instr.goodbit;
-
-        instr.flags(ios_base::fmtflags{});
-        const char* iter = f.get(sep_str, sep_str + len + 1, instr, err, v);
-        assert(iter == sep_str + len);
-        assert(err == instr.goodbit);
-        assert(v == static_cast<Integer>(0x1729));
-    }
-    {
-        v                     = static_cast<Integer>(-1);
-        const char sep_str[]  = "0x17,222,9";
-        const size_t len      = sizeof(sep_str) - 1;
-        ios_base::iostate err = instr.goodbit;
-
-        instr.flags(ios_base::fmtflags{});
-        const char* iter = f.get(sep_str, sep_str + len + 1, instr, err, v);
-        assert(iter == sep_str + len);
-        assert(err == instr.goodbit);
-        assert(v == static_cast<Integer>(0x172229));
     }
 }
 
@@ -686,16 +573,6 @@ int main() {
     test<float>();
     test<double>();
     test<long double>();
-
-    test_nonending_unlimited_grouping<float>();
-    test_nonending_unlimited_grouping<double>();
-    test_nonending_unlimited_grouping<long double>();
-
-    test_nonending_unlimited_grouping<unsigned int>();
-    test_nonending_unlimited_grouping<long>();
-    test_nonending_unlimited_grouping<unsigned long>();
-    test_nonending_unlimited_grouping<long long>();
-    test_nonending_unlimited_grouping<unsigned long long>();
 
     test_gh_1582<float>();
     test_gh_1582<double>();

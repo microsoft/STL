@@ -9577,67 +9577,6 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Adjacent_transform_fn<2> pairwise_transform;
     } // namespace views
 
-    template <_Integer_like _Int>
-    _NODISCARD constexpr bool _Add_with_overflow_check(const _Int _Left, const _Int _Right, _Int& _Out) {
-#ifdef __clang__
-        if constexpr (integral<_Int>) {
-            return __builtin_add_overflow(_Left, _Right, &_Out);
-        } else
-#endif // __clang__
-        {
-            if constexpr (!_Signed_integer_like<_Int>) {
-                _Out = static_cast<_Int>(_Left + _Right);
-                return _Out < _Left || _Out < _Right;
-            } else {
-                using _UInt = _Make_unsigned_like_t<_Int>;
-                _Out        = static_cast<_Int>(static_cast<_UInt>(_Left) + static_cast<_UInt>(_Right));
-                return (_Left > 0 && _Right > 0 && _Out <= 0) || (_Left < 0 && _Right < 0 && _Out >= 0);
-            }
-        }
-    }
-
-    template <_Integer_like _Int>
-    _NODISCARD constexpr bool _Multiply_with_overflow_check(const _Int _Left, const _Int _Right, _Int& _Out) {
-#ifdef __clang__
-        if constexpr (integral<_Int>) {
-            return __builtin_mul_overflow(_Left, _Right, &_Out);
-        } else
-#endif // __clang__
-        {
-            if constexpr (!_Signed_integer_like<_Int>) {
-                _Out = static_cast<_Int>(_Left * _Right);
-                return _Left != 0 && _Right > (numeric_limits<_Int>::max)() / _Left;
-            } else {
-                // vvv Based on llvm::MulOverflow vvv
-                // https://github.com/llvm/llvm-project/blob/88e5206/llvm/include/llvm/Support/MathExtras.h#L725-L750
-                //===----------------------------------------------------------------------===//
-                //
-                // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-                // See https://llvm.org/LICENSE.txt for license information.
-                // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-                //
-                //===----------------------------------------------------------------------===//
-                using _UInt          = _Make_unsigned_like_t<_Int>;
-                const _UInt _ULeft   = _Left < 0 ? (0 - static_cast<_UInt>(_Left)) : static_cast<_UInt>(_Left);
-                const _UInt _URight  = _Right < 0 ? (0 - static_cast<_UInt>(_Right)) : static_cast<_UInt>(_Right);
-                const _UInt _UResult = static_cast<_UInt>(_ULeft * _URight);
-
-                const bool _Negative = (_Left < 0) != (_Right < 0);
-                _Out                 = static_cast<_Int>(_Negative ? (0 - _UResult) : _UResult);
-                if (_ULeft == 0 || _URight == 0) {
-                    return false;
-                }
-
-                if (_Negative) {
-                    return _ULeft > (static_cast<_UInt>((numeric_limits<_Int>::max)()) + _UInt{1}) / _URight;
-                } else {
-                    return _ULeft > static_cast<_UInt>((numeric_limits<_Int>::max)()) / _URight;
-                }
-                // ^^^ Based on llvm::MulOverflow ^^^
-            }
-        }
-    }
-
     template <bool _Const, class _First, class... _Rest>
     concept _Cartesian_product_is_random_access = (random_access_range<_Maybe_const<_Const, _First>> && ...
                                                    && (random_access_range<_Maybe_const<_Const, _Rest>>
@@ -9863,8 +9802,8 @@ namespace ranges {
                     const auto _Size =
                         static_cast<_Difference_type<_Const>>(_RANGES size(_STD get<_Index>(_Parent->_Bases)));
                     [[maybe_unused]] const bool _Overflow =
-                        _Multiply_with_overflow_check(_Size, _Distance_from<_Index - 1>(_Tpl), _Result)
-                        || _Add_with_overflow_check(_Result, _Diff, _Result);
+                        _Mul_overflow(_Size, _Distance_from<_Index - 1>(_Tpl), _Result)
+                        || _Add_overflow(_Result, _Diff, _Result);
 #if _ITERATOR_DEBUG_LEVEL != 0
                     _STL_VERIFY(!_Overflow, "Scaled-sum cannot be represented by difference_type (N4950 "
                                             "[range.cartesian.iterator]/8).");
@@ -10121,7 +10060,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
                 _Size_type<false> _Product{1};
                 const bool _Overflow =
-                    (_Multiply_with_overflow_check(
+                    (_Mul_overflow(
                          _Product, static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases))), _Product)
                         || ...);
                 _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4950 "
@@ -10141,7 +10080,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
                 _Size_type<true> _Product{1};
                 const bool _Overflow =
-                    (_Multiply_with_overflow_check(
+                    (_Mul_overflow(
                          _Product, static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases))), _Product)
                         || ...);
                 _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4950 "

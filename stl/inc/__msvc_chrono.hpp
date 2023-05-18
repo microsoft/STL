@@ -703,7 +703,7 @@ _NODISCARD bool _To_timespec64_sys_10_day_clamped(
     // Every function calling this one is TRANSITION, ABI
     constexpr _CHRONO nanoseconds _Ten_days{_CHRONO hours{24} * 10};
     constexpr _CHRONO duration<double> _Ten_days_d{_Ten_days};
-    _CHRONO nanoseconds _Tx0 = _CHRONO system_clock::now().time_since_epoch();
+    _CHRONO nanoseconds _Tx0 = _CHRONO system_clock::duration{_Xtime_get_ticks()};
     const bool _Clamped      = _Ten_days_d < _Rel_time;
     if (_Clamped) {
         _Tx0 += _Ten_days;
