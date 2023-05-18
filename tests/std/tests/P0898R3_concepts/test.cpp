@@ -1804,7 +1804,7 @@ namespace test_ranges_swap {
         friend constexpr void swap(DoNotUseFallback&, DoNotUseFallback&) noexcept {}
     };
 
-    constexpr auto for_each_232 = [](auto(&array)[2][3][2], auto f) {
+    constexpr auto for_each_232 = [](auto (&array)[2][3][2], auto f) {
         for (int i = 0; i < 2; ++i) {
             for (int j = 0; j < 3; ++j) {
                 for (int k = 0; k < 2; ++k) {

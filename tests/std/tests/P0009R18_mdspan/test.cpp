@@ -33,14 +33,14 @@ struct ConstructibleAndConvertible {
     // convertible and noexcept constructible
     constexpr operator size_t() noexcept {
         return size_t{2};
-    };
+    }
 };
 
 struct ConstructibleAndConvertibleConst {
     // convertible and noexcept constructible
     constexpr operator size_t() const noexcept {
         return size_t{2};
-    };
+    }
 };
 
 

@@ -117,8 +117,7 @@ struct settish_instantiator {
             } else {
                 return unique_ints;
             }
-        }
-        ();
+        }();
 
         using Container = C<int>;
         {

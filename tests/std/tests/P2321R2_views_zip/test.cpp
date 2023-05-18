@@ -213,9 +213,9 @@ constexpr bool do_tuples_reference_same_objects(const LHSTupleType& lhs_tuple, c
             == addressof(static_cast<reference_type>(get<CurrIndex>(rhs_tuple)));
     };
 
-    using index_sequence_type = make_index_sequence<tuple_size_v<LHSTupleType>>;
-    const auto evaluate_tuples_lambda =
-        [&evaluate_single_element_lambda]<size_t... Indices>(index_sequence<Indices...>) {
+    using index_sequence_type         = make_index_sequence<tuple_size_v<LHSTupleType>>;
+    const auto evaluate_tuples_lambda = [&evaluate_single_element_lambda]<size_t... Indices>(
+                                            index_sequence<Indices...>) {
         return (evaluate_single_element_lambda.template operator()<Indices>() && ...);
     };
 

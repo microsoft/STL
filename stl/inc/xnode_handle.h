@@ -175,6 +175,7 @@ public:
     }
 
     void swap(_Node_handle& _That) noexcept /* strengthened */ {
+        using _STD swap;
         if (_Ptr != nullptr) {
             if (_That._Ptr != nullptr) {
                 _Pocs(_Getal(), _That._Getal());
@@ -192,7 +193,7 @@ public:
             _Construct_in_place(_Getal(), _STD move(_That_al));
             _Destroy_in_place(_That_al);
         }
-        _Swap_adl(_Ptr, _That._Ptr);
+        swap(_Ptr, _That._Ptr); // intentional ADL
     }
     friend void swap(_Node_handle& _Left, _Node_handle& _Right) noexcept /* strengthened */ {
         _Left.swap(_Right);

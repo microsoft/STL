@@ -424,8 +424,7 @@ public:
                                     ? _Prod
                                     : _STD exchange(_Prod, static_cast<index_type>(_Prod * _Exts.extent(_Indices)))))
                         && ...);
-            }
-            (make_index_sequence<extents_type::rank()>{});
+            }(make_index_sequence<extents_type::rank()>{});
             _STL_VERIFY(_Verify, "For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to "
                                  "extents().fwd-prod-of-extents(r) (N4950 [mdspan.layout.left.cons]/10.1).");
         }
@@ -561,8 +560,7 @@ public:
                                 ? _Prod
                                 : _STD exchange(_Prod, static_cast<index_type>(_Prod / _Exts.extent(_Indices + 1)))))
                     && ...);
-            }
-            (make_index_sequence<extents_type::rank()>{});
+            }(make_index_sequence<extents_type::rank()>{});
             _STL_VERIFY(_Verify, "For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to "
                                  "extents().rev-prod-of-extents(r) (N4950 [mdspan.layout.right.cons]/10.1).");
         }
@@ -644,14 +642,14 @@ private:
 
 template <class _Mp>
 concept _Layout_mapping_alike = requires {
-                                    requires _Is_extents<typename _Mp::extents_type>;
-                                    { _Mp::is_always_strided() } -> same_as<bool>;
-                                    { _Mp::is_always_exhaustive() } -> same_as<bool>;
-                                    { _Mp::is_always_unique() } -> same_as<bool>;
-                                    bool_constant<_Mp::is_always_strided()>::value;
-                                    bool_constant<_Mp::is_always_exhaustive()>::value;
-                                    bool_constant<_Mp::is_always_unique()>::value;
-                                };
+    requires _Is_extents<typename _Mp::extents_type>;
+    { _Mp::is_always_strided() } -> same_as<bool>;
+    { _Mp::is_always_exhaustive() } -> same_as<bool>;
+    { _Mp::is_always_unique() } -> same_as<bool>;
+    bool_constant<_Mp::is_always_strided()>::value;
+    bool_constant<_Mp::is_always_exhaustive()>::value;
+    bool_constant<_Mp::is_always_unique()>::value;
+};
 
 template <class _Extents>
 class layout_stride::mapping {
@@ -848,10 +846,8 @@ private:
                 }
             }
 
-            return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-                return _Mapping(((void) _Indices, 0)...);
-            }
-            (make_index_sequence<extents_type::rank()>{});
+            return [&]<size_t... _Indices>(index_sequence<_Indices...>) { return _Mapping(((void) _Indices, 0)...); }(
+                       make_index_sequence<extents_type::rank()>{});
         }
     }
 

@@ -94,7 +94,7 @@ _EXPORT_STD inline constexpr destroying_delete_t destroying_delete{};
 _EXPORT_STD template <class _Ty>
 _NODISCARD_LAUNDER constexpr _Ty* launder(_Ty* _Ptr) noexcept {
     static_assert(!is_function_v<_Ty> && !is_void_v<_Ty>,
-        "N4727 21.6.4 [ptr.launder]/3: The program is ill-formed if T is a function type or cv void.");
+        "N4950 [ptr.launder]/1: Mandates: !is_function_v<T> && !is_void_v<T> is true.");
     return __builtin_launder(_Ptr);
 }
 

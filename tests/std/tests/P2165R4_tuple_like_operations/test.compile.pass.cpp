@@ -80,8 +80,8 @@ namespace test_apply {
 namespace test_make_from_tuple {
     template <class T, class Tuple>
     concept CanMakeFromTuple = requires(Tuple tuple_like) {
-                                   { make_from_tuple<T>(tuple_like) } -> same_as<T>;
-                               };
+        { make_from_tuple<T>(tuple_like) } -> same_as<T>;
+    };
 
     static_assert(CanMakeFromTuple<string, tuple<>>);
     static_assert(CanMakeFromTuple<string, tuple<size_t, char>>);
