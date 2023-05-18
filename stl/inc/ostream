@@ -1114,7 +1114,7 @@ void _Vprint_nonunicode_impl(
         _State |= ios_base::badbit;
     } else [[likely]] {
         // This is intentionally kept outside of the try/catch block in _Print_noformat_nonunicode()
-        // (see N4928 [ostream.formatted.print]/3.2).
+        // (see N4950 [ostream.formatted.print]/3.2).
         string _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
         if (_Add_nl == _Add_newline::_Yes) {
             _Output_str.push_back('\n');
@@ -1206,7 +1206,7 @@ void _Vprint_unicode_impl(
         _State |= ios_base::badbit;
     } else [[likely]] {
         // This is intentionally kept outside of the try/catch block in _Print_noformat_unicode()
-        // (see N4928 [ostream.formatted.print]/3.2).
+        // (see N4950 [ostream.formatted.print]/3.2).
         string _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
         if (_Add_nl == _Add_newline::_Yes) {
             _Output_str.push_back('\n');
@@ -1241,7 +1241,7 @@ void _Print_impl(const _Add_newline _Add_nl, ostream& _Ostr, const format_string
     constexpr bool _Has_format_args = sizeof...(_Types) > 0;
 
     // This is intentionally kept outside of the try/catch block in _Print_noformat_*()
-    // (see N4928 [ostream.formatted.print]/3.2).
+    // (see N4950 [ostream.formatted.print]/3.2).
 
     if constexpr (_Has_format_args) {
         if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {

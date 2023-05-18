@@ -568,8 +568,8 @@ protected:
             int _Errno;
             char* _Ep;
             _Val = _STD _Stofx_v3(_Ac, &_Ep, &_Errno); // convert
-            if (_Ep == _Ac || _Errno != 0 // N4944 [facet.num.get.virtuals]/3
-                || _Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtuals]/4
+            if (_Ep == _Ac || _Errno != 0 // N4950 [facet.num.get.virtuals]/3
+                || _Parse_result._Bad_grouping) { // N4950 [facet.num.get.virtuals]/4
                 _State = ios_base::failbit;
             }
         }
@@ -594,8 +594,8 @@ protected:
             int _Errno;
             char* _Ep;
             _Val = _STD _Stodx_v3(_Ac, &_Ep, &_Errno); // convert
-            if (_Ep == _Ac || _Errno != 0 // N4944 [facet.num.get.virtuals]/3
-                || _Parse_result._Bad_grouping) { // N4944 [facet.num.get.virtuals]/4
+            if (_Ep == _Ac || _Errno != 0 // N4950 [facet.num.get.virtuals]/3
+                || _Parse_result._Bad_grouping) { // N4950 [facet.num.get.virtuals]/4
                 _State = ios_base::failbit;
             }
         }
@@ -1175,7 +1175,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id num_get<_Elem, _InIt>::id;
 
 template <class _Ty>
 int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fmtflags _Float_flags) {
-    // return the effective precision determined by N4944 [facet.num.put.virtuals]/2.1 and printf's rules
+    // return the effective precision determined by N4950 [facet.num.put.virtuals]/2.1 and printf's rules
     const bool _Is_hex = _Float_flags == (ios_base::fixed | ios_base::scientific);
     if (_Is_hex) {
         // return the number of hexits needed (after the radix point) to represent the floating-point value exactly

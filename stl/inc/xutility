@@ -325,8 +325,7 @@ inline constexpr bool
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
-    static_assert(!is_function_v<_Ty>,
-        "N4810 20.10.4 [pointer.conversion]/2: The program is ill-formed if T is a function type.");
+    static_assert(!is_function_v<_Ty>, "N4950 [pointer.conversion]/1: Mandates: T is not a function type.");
     return _Val;
 }
 
@@ -1270,9 +1269,9 @@ struct _Is_allocator : false_type {}; // selected when _Ty can't possibly be an 
 template <class _Ty>
 struct _Is_allocator<_Ty, void_t<typename _Ty::value_type, decltype(_STD declval<_Ty&>().deallocate(
                                                                _STD declval<_Ty&>().allocate(size_t{1}), size_t{1}))>>
-    : true_type {}; // selected when _Ty resembles an allocator, N4687 26.2.1 [container.requirements.general]/17
+    : true_type {}; // selected when _Ty resembles an allocator, N4950 [container.reqmts]/69
 
-// deduction guide utilities (N4892 [associative.general]/2)
+// deduction guide utilities (N4950 [associative.general]/2)
 template <class _Iter>
 using _Guide_key_t =
 #if _HAS_CXX23
@@ -1306,7 +1305,7 @@ _EXPORT_STD template <class _Ty>
 inline constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
 
 // Note: The noexcept specifiers on all parallel algorithm overloads enforce termination as per
-// N4713 23.19.4 [execpol.seq]/2, 23.19.5 [execpol.par]/2, and 23.19.6 [execpol.parunseq]/2
+// N4950 [execpol.seq]/2, [execpol.par]/2, [execpol.parunseq]/2, and [execpol.unseq]/2
 template <class _ExPo>
 using _Enable_if_execution_policy_t = typename remove_reference_t<_ExPo>::_Standard_execution_policy;
 
@@ -3528,17 +3527,19 @@ namespace ranges {
     private:
         _NODISCARD constexpr _Derived& _Cast() noexcept {
             static_assert(derived_from<_Derived, view_interface>,
-                "view_interface's template argument D must derive from view_interface<D> (N4849 [view.interface]/2).");
+                "view_interface's template argument D must derive from view_interface<D> "
+                "(N4950 [view.interface.general]/2).");
             static_assert(view<_Derived>,
-                "view_interface's template argument must model the view concept (N4849 [view.interface]/2).");
+                "view_interface's template argument must model the view concept (N4950 [view.interface.general]/2).");
             return static_cast<_Derived&>(*this);
         }
 
         _NODISCARD constexpr const _Derived& _Cast() const noexcept {
             static_assert(derived_from<_Derived, view_interface>,
-                "view_interface's template argument D must derive from view_interface<D> (N4849 [view.interface]/2).");
+                "view_interface's template argument D must derive from view_interface<D> "
+                "(N4950 [view.interface.general]/2).");
             static_assert(view<_Derived>,
-                "view_interface's template argument must model the view concept (N4849 [view.interface]/2).");
+                "view_interface's template argument must model the view concept (N4950 [view.interface.general]/2).");
             return static_cast<const _Derived&>(*this);
         }
 
@@ -3899,7 +3900,7 @@ namespace ranges {
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 _STL_ASSERT(_Size_ == static_cast<_Size_type>(_Last - _First),
                     "This constructor's third argument should be equal to the distance "
-                    "between the first and second arguments (N4849 [range.subrange.ctor]/3).");
+                    "between the first and second arguments (N4950 [range.subrange.ctor]/3).");
             }
         }
 
@@ -6909,7 +6910,7 @@ namespace ranges {
             const auto _First = _Range.begin();
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
-                "An initializer_list passed to std::ranges::max must not be empty. (N4861 [alg.min.max]/13)");
+                "An initializer_list passed to std::ranges::max must not be empty. (N4950 [alg.min.max]/13)");
             return *_RANGES _Max_element_unchecked(_First, _Last, _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
 
@@ -6920,7 +6921,7 @@ namespace ranges {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
-                _UFirst != _ULast, "A range passed to std::ranges::max must not be empty. (N4861 [alg.min.max]/13)");
+                _UFirst != _ULast, "A range passed to std::ranges::max must not be empty. (N4950 [alg.min.max]/13)");
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Max_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj)));
@@ -7097,7 +7098,7 @@ namespace ranges {
             const auto _First = _Range.begin();
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
-                "An initializer_list passed to std::ranges::min must not be empty. (N4861 [alg.min.max]/5)");
+                "An initializer_list passed to std::ranges::min must not be empty. (N4950 [alg.min.max]/5)");
             return *_RANGES _Min_element_unchecked(_First, _Last, _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
 
@@ -7108,7 +7109,7 @@ namespace ranges {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
-                _UFirst != _ULast, "A range passed to std::ranges::min must not be empty. (N4861 [alg.min.max]/5)");
+                _UFirst != _ULast, "A range passed to std::ranges::min must not be empty. (N4950 [alg.min.max]/5)");
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Min_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj)));
