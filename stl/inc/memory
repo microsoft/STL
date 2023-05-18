@@ -1510,24 +1510,24 @@ struct _SP_convertible<_Yty, _Uty[_Ext]> : is_convertible<_Yty (*)[_Ext], _Uty (
 
 template <class _Yty, class _Ty>
 struct _SP_pointer_compatible : is_convertible<_Yty*, _Ty*>::type {
-    // N4659 [util.smartptr.shared]/5 "a pointer type Y* is said to be compatible
-    // with a pointer type T* " "when either Y* is convertible to T* ..."
+    // N4950 [util.smartptr.shared.general]/6 "a pointer type Y* is said to be compatible
+    // with a pointer type T* when either Y* is convertible to T* ..."
 };
 template <class _Uty, size_t _Ext>
 struct _SP_pointer_compatible<_Uty[_Ext], _Uty[]> : true_type {
-    // N4659 [util.smartptr.shared]/5 "... or Y is U[N] and T is cv U[]."
+    // N4950 [util.smartptr.shared.general]/6 "... or Y is U[N] and T is cv U[]."
 };
 template <class _Uty, size_t _Ext>
 struct _SP_pointer_compatible<_Uty[_Ext], const _Uty[]> : true_type {
-    // N4659 [util.smartptr.shared]/5 "... or Y is U[N] and T is cv U[]."
+    // N4950 [util.smartptr.shared.general]/6 "... or Y is U[N] and T is cv U[]."
 };
 template <class _Uty, size_t _Ext>
 struct _SP_pointer_compatible<_Uty[_Ext], volatile _Uty[]> : true_type {
-    // N4659 [util.smartptr.shared]/5 "... or Y is U[N] and T is cv U[]."
+    // N4950 [util.smartptr.shared.general]/6 "... or Y is U[N] and T is cv U[]."
 };
 template <class _Uty, size_t _Ext>
 struct _SP_pointer_compatible<_Uty[_Ext], const volatile _Uty[]> : true_type {
-    // N4659 [util.smartptr.shared]/5 "... or Y is U[N] and T is cv U[]."
+    // N4950 [util.smartptr.shared.general]/6 "... or Y is U[N] and T is cv U[]."
 };
 
 template <class _Ux>
@@ -2108,7 +2108,7 @@ public:
     ~_Ref_count_obj2() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage._Value was already destroyed in _Destroy
 
-        // N4849 [class.dtor]/7:
+        // N4950 [class.dtor]/7:
         // "A defaulted destructor for a class X is defined as deleted if:
         // X is a union-like class that has a variant member with a non-trivial destructor"
     }
@@ -2371,7 +2371,7 @@ private:
     ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Ty is trivially destructible
 
-        // See N4849 [class.dtor]/7.
+        // See N4950 [class.dtor]/7.
     }
 
     void _Destroy() noexcept override { // destroy managed resource
@@ -2419,7 +2419,7 @@ private:
     ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage was already destroyed in _Destroy
 
-        // See N4849 [class.dtor]/7.
+        // See N4950 [class.dtor]/7.
     }
 
     void _Destroy() noexcept override { // destroy managed resource
@@ -2457,11 +2457,13 @@ private:
     ~_Ref_count_bounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage was already destroyed in _Destroy
 
-        // See N4849 [class.dtor]/7.
+        // See N4950 [class.dtor]/7.
     }
 
     void _Destroy() noexcept override { // destroy managed resource
-        _Destroy_in_place(_Storage); // not _Storage._Value, see N4849 [expr.prim.id.dtor]
+        // not _Storage._Value as _Ty is an array type (not a class type or a scalar type),
+        // and thus cannot be used as a pseudo-destructor (N4950 [expr.prim.id.dtor]).
+        _Destroy_in_place(_Storage);
     }
 
     void _Delete_this() noexcept override { // destroy self
@@ -2502,7 +2504,7 @@ private:
     ~_Ref_count_obj_alloc3() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
-        // See N4849 [class.dtor]/7.
+        // See N4950 [class.dtor]/7.
     }
 
     void _Destroy() noexcept override { // destroy managed resource
@@ -2689,7 +2691,7 @@ private:
     ~_Ref_count_unbounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
-        // See N4849 [class.dtor]/7.
+        // See N4950 [class.dtor]/7.
     }
 
     void _Destroy() noexcept override { // destroy managed resource
@@ -2749,7 +2751,7 @@ private:
     ~_Ref_count_bounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
-        // See N4849 [class.dtor]/7.
+        // See N4950 [class.dtor]/7.
     }
 
     void _Destroy() noexcept override { // destroy managed resource
@@ -2786,7 +2788,7 @@ struct _NODISCARD _Global_delete_guard {
     _Refc* _Target;
 
     ~_Global_delete_guard() {
-        // While this branch is technically unnecessary because N4849 [new.delete.single]/17 requires
+        // While this branch is technically unnecessary because N4950 [new.delete.single]/16 requires
         // `::operator delete(nullptr)` to be a no-op, it's here to help optimizers see that after
         // `_Guard._Target = nullptr;`, this destructor can be eliminated.
         if (_Target) {
@@ -3006,7 +3008,7 @@ class weak_ptr : public _Ptr_base<_Ty> { // class for pointer to reference count
 public:
 #ifndef _M_CEE_PURE
     // When a constructor is converting from weak_ptr<_Ty2> to weak_ptr<_Ty>, the below type trait intentionally asks
-    // whether it would be possible to static_cast from _Ty* to const _Ty2*; see N4901 [expr.static.cast]/11.
+    // whether it would be possible to static_cast from _Ty* to const _Ty2*; see N4950 [expr.static.cast]/12.
 
     // Primary template, the value is used when the substitution fails.
     template <class _Ty2, class = const _Ty2*>
@@ -4181,7 +4183,7 @@ concept _Resettable_pointer = requires(_SmartPtr& _Smart_ptr, _Pointer _Ptr, _Ar
 _EXPORT_STD template <class _SmartPtr, class _Pointer, class... _ArgsT>
 class out_ptr_t {
     static_assert(!_Is_specialization_v<_SmartPtr, shared_ptr> || sizeof...(_ArgsT) != 0,
-        "out_ptr_t with shared_ptr requires a deleter (N4892 [out.ptr.t]/3)");
+        "out_ptr_t with shared_ptr requires a deleter (N4950 [out.ptr.t]/3)");
 
 public:
     explicit out_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
@@ -4210,7 +4212,7 @@ public:
                 if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
                     _Smart_ptr.reset(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 } else {
-                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4892 [out.ptr.t]/9.3)");
+                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4950 [out.ptr.t]/9.3)");
                     _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 }
             },
@@ -4225,7 +4227,7 @@ public:
         requires (!is_same_v<_Pointer, void*>)
     {
         static_assert(is_pointer_v<_Pointer>, "conversion of out_ptr_t<Smart, Pointer, Args...> to void** requires "
-                                              "Pointer to be a raw pointer (N4892 [out.ptr.t]/13)");
+                                              "Pointer to be a raw pointer (N4950 [out.ptr.t]/13)");
         return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
     }
 
@@ -4254,7 +4256,7 @@ _NODISCARD auto out_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
 _EXPORT_STD template <class _SmartPtr, class _Pointer, class... _ArgsT>
 class inout_ptr_t {
     static_assert(!_Is_specialization_v<_SmartPtr, shared_ptr>,
-        "inout_ptr_t doesn't work with shared_ptr (N4892 [inout.ptr.t]/3)");
+        "inout_ptr_t doesn't work with shared_ptr (N4950 [inout.ptr.t]/3)");
 
 private:
     _NODISCARD static auto _Get_ptr_from_smart(_SmartPtr& _Smart_ptr) noexcept
@@ -4294,7 +4296,7 @@ public:
                 } else if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
                     _Smart_ptr.reset(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 } else {
-                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4892 [inout.ptr.t]/11.4)");
+                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4950 [inout.ptr.t]/11.4)");
                     _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 }
             },
@@ -4309,7 +4311,7 @@ public:
         requires (!is_same_v<_Pointer, void*>)
     {
         static_assert(is_pointer_v<_Pointer>, "conversion of inout_ptr_t<Smart, Pointer, Args...> to void** requires "
-                                              "Pointer to be a raw pointer (N4892 [inout.ptr.t]/15)");
+                                              "Pointer to be a raw pointer (N4950 [inout.ptr.t]/15)");
         return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
     }
 

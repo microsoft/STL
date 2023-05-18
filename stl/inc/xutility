@@ -14,6 +14,10 @@
 #include <cstdlib>
 #include <cstring>
 
+#if _HAS_CXX23
+#include <limits>
+#endif // _HAS_CXX23
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -321,8 +325,7 @@ inline constexpr bool
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
-    static_assert(!is_function_v<_Ty>,
-        "N4810 20.10.4 [pointer.conversion]/2: The program is ill-formed if T is a function type.");
+    static_assert(!is_function_v<_Ty>, "N4950 [pointer.conversion]/1: Mandates: T is not a function type.");
     return _Val;
 }
 
@@ -1264,9 +1267,9 @@ struct _Is_allocator : false_type {}; // selected when _Ty can't possibly be an 
 template <class _Ty>
 struct _Is_allocator<_Ty, void_t<typename _Ty::value_type, decltype(_STD declval<_Ty&>().deallocate(
                                                                _STD declval<_Ty&>().allocate(size_t{1}), size_t{1}))>>
-    : true_type {}; // selected when _Ty resembles an allocator, N4687 26.2.1 [container.requirements.general]/17
+    : true_type {}; // selected when _Ty resembles an allocator, N4950 [container.reqmts]/69
 
-// deduction guide utilities (N4892 [associative.general]/2)
+// deduction guide utilities (N4950 [associative.general]/2)
 template <class _Iter>
 using _Guide_key_t =
 #if _HAS_CXX23
@@ -1300,7 +1303,7 @@ _EXPORT_STD template <class _Ty>
 inline constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
 
 // Note: The noexcept specifiers on all parallel algorithm overloads enforce termination as per
-// N4713 23.19.4 [execpol.seq]/2, 23.19.5 [execpol.par]/2, and 23.19.6 [execpol.parunseq]/2
+// N4950 [execpol.seq]/2, [execpol.par]/2, [execpol.parunseq]/2, and [execpol.unseq]/2
 template <class _ExPo>
 using _Enable_if_execution_policy_t = typename remove_reference_t<_ExPo>::_Standard_execution_policy;
 
@@ -3517,17 +3520,19 @@ namespace ranges {
     private:
         _NODISCARD constexpr _Derived& _Cast() noexcept {
             static_assert(derived_from<_Derived, view_interface>,
-                "view_interface's template argument D must derive from view_interface<D> (N4849 [view.interface]/2).");
+                "view_interface's template argument D must derive from view_interface<D> "
+                "(N4950 [view.interface.general]/2).");
             static_assert(view<_Derived>,
-                "view_interface's template argument must model the view concept (N4849 [view.interface]/2).");
+                "view_interface's template argument must model the view concept (N4950 [view.interface.general]/2).");
             return static_cast<_Derived&>(*this);
         }
 
         _NODISCARD constexpr const _Derived& _Cast() const noexcept {
             static_assert(derived_from<_Derived, view_interface>,
-                "view_interface's template argument D must derive from view_interface<D> (N4849 [view.interface]/2).");
+                "view_interface's template argument D must derive from view_interface<D> "
+                "(N4950 [view.interface.general]/2).");
             static_assert(view<_Derived>,
-                "view_interface's template argument must model the view concept (N4849 [view.interface]/2).");
+                "view_interface's template argument must model the view concept (N4950 [view.interface.general]/2).");
             return static_cast<const _Derived&>(*this);
         }
 
@@ -3792,7 +3797,7 @@ namespace ranges {
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 _STL_ASSERT(_Size_ == static_cast<_Size_type>(_Last - _First),
                     "This constructor's third argument should be equal to the distance "
-                    "between the first and second arguments (N4849 [range.subrange.ctor]/3).");
+                    "between the first and second arguments (N4950 [range.subrange.ctor]/3).");
             }
         }
 
@@ -6802,7 +6807,7 @@ namespace ranges {
             const auto _First = _Range.begin();
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
-                "An initializer_list passed to std::ranges::max must not be empty. (N4861 [alg.min.max]/13)");
+                "An initializer_list passed to std::ranges::max must not be empty. (N4950 [alg.min.max]/13)");
             return *_RANGES _Max_element_unchecked(_First, _Last, _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
 
@@ -6813,7 +6818,7 @@ namespace ranges {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
-                _UFirst != _ULast, "A range passed to std::ranges::max must not be empty. (N4861 [alg.min.max]/13)");
+                _UFirst != _ULast, "A range passed to std::ranges::max must not be empty. (N4950 [alg.min.max]/13)");
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Max_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj)));
@@ -6990,7 +6995,7 @@ namespace ranges {
             const auto _First = _Range.begin();
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
-                "An initializer_list passed to std::ranges::min must not be empty. (N4861 [alg.min.max]/5)");
+                "An initializer_list passed to std::ranges::min must not be empty. (N4950 [alg.min.max]/5)");
             return *_RANGES _Min_element_unchecked(_First, _Last, _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
 
@@ -7001,7 +7006,7 @@ namespace ranges {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
-                _UFirst != _ULast, "A range passed to std::ranges::min must not be empty. (N4861 [alg.min.max]/5)");
+                _UFirst != _ULast, "A range passed to std::ranges::min must not be empty. (N4950 [alg.min.max]/5)");
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Min_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj)));
@@ -7176,6 +7181,74 @@ _NODISCARD constexpr bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
 #if _HAS_CXX17
 _EXPORT_STD struct monostate {};
 #endif // _HAS_CXX17
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <_Integer_like _Int>
+_NODISCARD constexpr bool _Add_overflow(const _Int _Left, const _Int _Right, _Int& _Out) {
+#ifdef __clang__
+    if constexpr (integral<_Int>) {
+        return __builtin_add_overflow(_Left, _Right, &_Out);
+    } else
+#endif // __clang__
+    {
+        if constexpr (!_Signed_integer_like<_Int>) {
+            _Out = static_cast<_Int>(_Left + _Right);
+            return _Out < _Left || _Out < _Right;
+        } else {
+            using _UInt = _Make_unsigned_like_t<_Int>;
+            _Out        = static_cast<_Int>(static_cast<_UInt>(_Left) + static_cast<_UInt>(_Right));
+            return (_Left > 0 && _Right > 0 && _Out <= 0) || (_Left < 0 && _Right < 0 && _Out >= 0);
+        }
+    }
+}
+
+template <_Integer_like _Int>
+_NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _Int& _Out) {
+#ifdef __clang__
+    if constexpr (integral<_Int>) {
+        return __builtin_mul_overflow(_Left, _Right, &_Out);
+    } else
+#endif // __clang__
+    {
+        if constexpr (!_Signed_integer_like<_Int>) {
+            const bool _Overflow = _Left != 0 && _Right > (numeric_limits<_Int>::max)() / _Left;
+            if (!_Overflow) {
+                _Out = static_cast<_Int>(_Left * _Right);
+            }
+            return _Overflow;
+        } else {
+            // vvv Based on llvm::MulOverflow vvv
+            // https://github.com/llvm/llvm-project/blob/88e5206/llvm/include/llvm/Support/MathExtras.h#L725-L750
+            //===----------------------------------------------------------------------===//
+            //
+            // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+            // See https://llvm.org/LICENSE.txt for license information.
+            // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+            //
+            //===----------------------------------------------------------------------===//
+            using _UInt = _Make_unsigned_like_t<_Int>;
+            const _UInt _ULeft =
+                static_cast<_UInt>(_Left < 0 ? (0 - static_cast<_UInt>(_Left)) : static_cast<_UInt>(_Left));
+            const _UInt _URight =
+                static_cast<_UInt>(_Right < 0 ? (0 - static_cast<_UInt>(_Right)) : static_cast<_UInt>(_Right));
+            const _UInt _UResult = static_cast<_UInt>(_ULeft * _URight);
+
+            const bool _Negative = (_Left < 0) != (_Right < 0);
+            _Out                 = static_cast<_Int>(_Negative ? (0 - _UResult) : _UResult);
+            if (_ULeft == 0 || _URight == 0) {
+                return false;
+            }
+
+            if (_Negative) {
+                return _ULeft > (static_cast<_UInt>((numeric_limits<_Int>::max)()) + _UInt{1}) / _URight;
+            } else {
+                return _ULeft > static_cast<_UInt>((numeric_limits<_Int>::max)()) / _URight;
+            }
+            // ^^^ Based on llvm::MulOverflow ^^^
+        }
+    }
+}
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 _STD_END
 #pragma pop_macro("new")

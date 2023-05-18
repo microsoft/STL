@@ -926,7 +926,7 @@ public:
     }
 
     void reserve(size_type _Maxcount) { // rebuild table with room for _Maxcount elements
-        rehash(static_cast<size_type>(static_cast<float>(_Maxcount) / max_load_factor() + 0.5F));
+        rehash(_Min_load_factor_buckets(_Maxcount));
     }
 
     conditional_t<_Multi, iterator, pair<iterator, bool>> insert(const value_type& _Val) {
@@ -1999,7 +1999,7 @@ protected:
 };
 
 #if _HAS_CXX17
-// For constraining deduction guides (N4892 [unord.req]/18.3)
+// For constraining deduction guides (N4950 [unord.req.general]/243.3)
 template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
 #endif // _HAS_CXX17
