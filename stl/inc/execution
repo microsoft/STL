@@ -3346,7 +3346,7 @@ pair<_FwdIt, _Iter_diff_t<_FwdIt>> _Partition_with_count_unchecked(_FwdIt _First
                 }
             } while (!_Pred(*_Last));
 
-            _STD iter_swap(_First, _Last); // out of place, swap and loop
+            swap(*_First, *_Last); // out of place, swap and loop; intentional ADL
             ++_First;
             ++_Trues;
         }
@@ -3367,7 +3367,7 @@ pair<_FwdIt, _Iter_diff_t<_FwdIt>> _Partition_with_count_unchecked(_FwdIt _First
 
         for (_FwdIt _Next = _First; ++_Next != _Last;) {
             if (_Pred(*_Next)) {
-                _STD iter_swap(_First, _Next); // out of place, swap and loop
+                swap(*_First, *_Next); // out of place, swap and loop; intentional ADL
                 ++_First;
                 ++_Trues;
             }
@@ -3387,7 +3387,7 @@ pair<_FwdIt, _Iter_diff_t<_FwdIt>> _Partition_swap_backward(
         while (_First != _Last) {
             --_Last;
             if (_Pred(*_Last)) {
-                _STD iter_swap(_Beginning_of_falses, _Last);
+                swap(*_Beginning_of_falses, *_Last); // intentional ADL
                 ++_Beginning_of_falses;
                 ++_Trues;
                 if (_Beginning_of_falses == _First) {
@@ -3399,7 +3399,7 @@ pair<_FwdIt, _Iter_diff_t<_FwdIt>> _Partition_swap_backward(
     } else {
         for (; _First != _Last; ++_First) {
             if (_Pred(*_First)) {
-                _STD iter_swap(_First, _Beginning_of_falses);
+                swap(*_First, *_Beginning_of_falses); // intentional ADL
                 ++_Beginning_of_falses;
                 ++_Trues;
             }

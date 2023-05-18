@@ -6321,7 +6321,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
     for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
-        _STD iter_swap(_UFirst, _ULast);
+        swap(*_UFirst, *_ULast); // intentional ADL
     }
 }
 
@@ -6338,7 +6338,7 @@ template <class _BidIt>
 constexpr pair<_BidIt, _BidIt> _Reverse_until_sentinel_unchecked(_BidIt _First, _BidIt _Sentinel, _BidIt _Last) {
     // reverse until either _First or _Last hits _Sentinel
     while (_First != _Sentinel && _Last != _Sentinel) {
-        _STD iter_swap(_First, --_Last);
+        swap(*_First, *--_Last); // intentional ADL
         ++_First;
     }
 
@@ -6377,7 +6377,7 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
     } else {
         auto _UNext = _UMid;
         do { // rotate the first cycle
-            _STD iter_swap(_UFirst, _UNext);
+            swap(*_UFirst, *_UNext); // intentional ADL
             ++_UFirst;
             ++_UNext;
             if (_UFirst == _UMid) {
@@ -6388,7 +6388,7 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
         while (_UMid != _ULast) { // rotate subsequent cycles
             _UNext = _UMid;
             do {
-                _STD iter_swap(_UFirst, _UNext);
+                swap(*_UFirst, *_UNext); // intentional ADL
                 ++_UFirst;
                 ++_UNext;
                 if (_UFirst == _UMid) {
@@ -7207,7 +7207,7 @@ _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
     for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
-        _STD iter_swap(_First1, _First2);
+        swap(*_First1, *_First2); // intentional ADL
     }
 
     return _First2;

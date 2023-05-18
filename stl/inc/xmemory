@@ -1072,7 +1072,7 @@ _CONSTEXPR20 void _Pocma(_Alloc& _Left, _Alloc& _Right) noexcept { // (maybe) pr
 template <class _Alloc>
 _CONSTEXPR20 void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_swap::value) {
-        _Swap_adl(_Left, _Right);
+        swap(_Left, _Right); // intentional ADL
     } else {
         _STL_ASSERT(_Left == _Right, "containers incompatible for swap");
     }

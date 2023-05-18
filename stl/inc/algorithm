@@ -3430,6 +3430,11 @@ _FwdIt2 swap_ranges(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Dest) noe
 }
 #endif // _HAS_CXX17
 
+_EXPORT_STD template <class _FwdIt1, class _FwdIt2>
+_CONSTEXPR20 void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and *_Right
+    swap(*_Left, *_Right); // intentional ADL
+}
+
 _EXPORT_STD template <class _InIt, class _OutIt, class _Fn>
 _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Fn _Func) {
     // transform [_First, _Last) with _Func
@@ -5349,7 +5354,7 @@ void _Random_shuffle1(_RanIt _First, _RanIt _Last, _RngFn& _RngFunc) {
         _Diff _Off = _RngFunc(static_cast<_Diff>(_Target_index + 1));
         _STL_ASSERT(0 <= _Off && _Off <= _Target_index, "random value out of range");
         if (_Off != _Target_index) { // avoid self-move-assignment
-            _STD iter_swap(_UTarget, _UFirst + _Off);
+            swap(*_UTarget, *(_UFirst + _Off)); // intentional ADL
         }
     }
 }
@@ -5559,7 +5564,7 @@ constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fw
 
                     return _First;
                 }
-                _Swap_adl(*_Mid, *_Trail);
+                swap(*_Mid, *_Trail); // intentional ADL
             }
         }
     }
@@ -5830,7 +5835,7 @@ _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
                 }
             } while (!_Pred(*_ULast));
 
-            _STD iter_swap(_UFirst, _ULast); // out of place, swap and loop
+            swap(*_UFirst, *_ULast); // out of place, swap and loop; intentional ADL
             ++_UFirst;
         }
     } else {
@@ -5849,7 +5854,7 @@ _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
 
         for (auto _UNext = _UFirst; ++_UNext != _ULast;) {
             if (_Pred(*_UNext)) {
-                _STD iter_swap(_UFirst, _UNext); // out of place, swap and loop
+                swap(*_UFirst, *_UNext); // out of place, swap and loop; intentional ADL
                 ++_UFirst;
             }
         }
@@ -7924,14 +7929,14 @@ template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Med3_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) {
     // sort median of three elements to middle
     if (_DEBUG_LT_PRED(_Pred, *_Mid, *_First)) {
-        _STD iter_swap(_Mid, _First);
+        swap(*_Mid, *_First); // intentional ADL
     }
 
     if (_DEBUG_LT_PRED(_Pred, *_Last, *_Mid)) { // swap middle and last, then test first again
-        _STD iter_swap(_Last, _Mid);
+        swap(*_Last, *_Mid); // intentional ADL
 
         if (_DEBUG_LT_PRED(_Pred, *_Mid, *_First)) {
-            _STD iter_swap(_Mid, _First);
+            swap(*_Mid, *_First); // intentional ADL
         }
     }
 }
@@ -7980,7 +7985,7 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
             } else if (_Pred(*_Gfirst, *_Pfirst)) {
                 break;
             } else if (_Plast != _Gfirst) {
-                _STD iter_swap(_Plast, _Gfirst);
+                swap(*_Plast, *_Gfirst); // intentional ADL
                 ++_Plast;
             } else {
                 ++_Plast;
@@ -7988,12 +7993,13 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
         }
 
         for (; _First < _Glast; --_Glast) {
-            if (_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Glast), *_Pfirst)) {
+            const auto _Glast_prev = _Prev_iter(_Glast);
+            if (_DEBUG_LT_PRED(_Pred, *_Glast_prev, *_Pfirst)) {
                 continue;
-            } else if (_Pred(*_Pfirst, *_Prev_iter(_Glast))) {
+            } else if (_Pred(*_Pfirst, *_Glast_prev)) {
                 break;
-            } else if (--_Pfirst != _Prev_iter(_Glast)) {
-                _STD iter_swap(_Pfirst, _Prev_iter(_Glast));
+            } else if (--_Pfirst != _Glast_prev) {
+                swap(*_Pfirst, *_Glast_prev); // intentional ADL
             }
         }
 
@@ -8003,21 +8009,21 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
 
         if (_Glast == _First) { // no room at bottom, rotate pivot upward
             if (_Plast != _Gfirst) {
-                _STD iter_swap(_Pfirst, _Plast);
+                swap(*_Pfirst, *_Plast); // intentional ADL
             }
 
             ++_Plast;
-            _STD iter_swap(_Pfirst, _Gfirst);
+            swap(*_Pfirst, *_Gfirst); // intentional ADL
             ++_Pfirst;
             ++_Gfirst;
         } else if (_Gfirst == _Last) { // no room at top, rotate pivot downward
             if (--_Glast != --_Pfirst) {
-                _STD iter_swap(_Glast, _Pfirst);
+                swap(*_Glast, *_Pfirst); // intentional ADL
             }
 
-            _STD iter_swap(_Pfirst, --_Plast);
+            swap(*_Pfirst, *--_Plast); // intentional ADL
         } else {
-            _STD iter_swap(_Gfirst, --_Glast);
+            swap(*_Gfirst, *--_Glast); // intentional ADL
             ++_Gfirst;
         }
     }
@@ -10217,7 +10223,7 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
                 --_UMid;
             } while (!_DEBUG_LT_PRED(_Pred, *_UNext, *_UMid));
 
-            _STD iter_swap(_UNext, _UMid);
+            swap(*_UNext, *_UMid); // intentional ADL
             _STD reverse(_UNext1, _ULast);
             return true;
         }
@@ -10321,7 +10327,7 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
                 --_UMid;
             } while (!_DEBUG_LT_PRED(_Pred, *_UMid, *_UNext));
 
-            _STD iter_swap(_UNext, _UMid);
+            swap(*_UNext, *_UMid); // intentional ADL
             _STD reverse(_UNext1, _ULast);
             return true;
         }
