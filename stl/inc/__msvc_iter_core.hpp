@@ -23,7 +23,7 @@ struct _Has_allocator_type : false_type {}; // tests for suitable _Ty::allocator
 
 template <class _Ty, class _Alloc>
 struct _Has_allocator_type<_Ty, _Alloc, void_t<typename _Ty::allocator_type>>
-    : is_convertible<_Alloc, typename _Ty::allocator_type>::type {}; // tests for suitable _Ty::allocator_type
+    : is_convertible<_Alloc, typename _Ty::allocator_type>::type {};
 
 _EXPORT_STD struct allocator_arg_t { // tag type for added allocator argument
     explicit allocator_arg_t() = default;
@@ -32,9 +32,7 @@ _EXPORT_STD struct allocator_arg_t { // tag type for added allocator argument
 _EXPORT_STD _INLINE_VAR constexpr allocator_arg_t allocator_arg{};
 
 _EXPORT_STD template <class _Ty, class _Alloc>
-struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {
-    // determine whether _Ty has an allocator_type member type
-};
+struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {};
 
 _EXPORT_STD template <class _Ty, class _Alloc>
 _INLINE_VAR constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
