@@ -11,6 +11,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <__msvc_bit_utils.hpp>
 #include <cstdint>
+#include <limits>
 #include <type_traits>
 
 #include _STL_INTRIN_HEADER
@@ -964,9 +965,6 @@ struct _Unsigned128 : _Base128 {
         return *this;
     }
 };
-
-_EXPORT_STD template <class _Ty>
-class numeric_limits;
 
 template <>
 class numeric_limits<_Unsigned128> : public _Num_int_base {
