@@ -9,14 +9,13 @@
 
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <__msvc_bit_utils.hpp>
 #include <cstdint>
-#include <limits>
 #include <type_traits>
 
 #include _STL_INTRIN_HEADER
 
 #if _HAS_CXX20
-#include <bit>
 #include <compare>
 #define _ZERO_OR_NO_INIT
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
@@ -143,7 +142,7 @@ struct
     static constexpr void _Knuth_4_3_1_M(
         const uint32_t (&__u)[__m], const uint32_t (&__v)[__n], uint32_t (&__w)[__n + __m]) noexcept {
 #ifdef _ENABLE_STL_INTERNAL_CHECK
-        constexpr auto _Int_max = static_cast<size_t>((numeric_limits<int>::max)());
+        constexpr auto _Int_max = static_cast<size_t>(INT_MAX);
         _STL_INTERNAL_STATIC_ASSERT(__m <= _Int_max);
         _STL_INTERNAL_STATIC_ASSERT(__n <= _Int_max);
 #endif // _ENABLE_STL_INTERNAL_CHECK
@@ -192,7 +191,7 @@ struct
     static constexpr void _Knuth_4_3_1_D(uint32_t* const __u, const size_t __u_size, const uint32_t* const __v,
         const size_t __v_size, uint32_t* const __q) noexcept {
         // Pre: __u + [0, __u_size), __v + [0, __v_size), and __q + [0, __u_size - __v_size) are all valid ranges
-        // constexpr auto _Int_max = static_cast<size_t>((numeric_limits<int>::max)());
+        // constexpr auto _Int_max = static_cast<size_t>(INT_MAX);
         // _STL_INTERNAL_CHECK(__v_size <= _Int_max);
         const int __n = static_cast<int>(__v_size);
         // _STL_INTERNAL_CHECK(__u_size > __v_size);
@@ -252,11 +251,7 @@ struct
         }
 #endif // _STL_128_DIV_INTRINSICS
 
-#if _HAS_CXX20
-        const auto __d = _STD countl_zero(static_cast<uint32_t>(_Div >> 32));
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const auto __d = _Countl_zero_fallback(static_cast<uint32_t>(_Div >> 32));
-#endif // ^^^ !_HAS_CXX20 ^^^
+        const auto __d = _Countl_zero_internal(static_cast<uint32_t>(_Div >> 32));
         if (__d >= 32) { // _Div < 2^32
             auto _Rem    = (_High << 32) | (_Low >> 32);
             auto _Result = _Rem / static_cast<uint32_t>(_Div);
@@ -464,11 +459,7 @@ struct
         // _STL_INTERNAL_CHECK(_Den._Word[1] != 0);
         // _STL_INTERNAL_CHECK(_Num._Word[1] > _Den._Word[1]);
         // Normalize by shifting both left until _Den's high bit is set (So _Den's high digit is >= b / 2)
-#if _HAS_CXX20
-        const auto __d = _STD countl_zero(_Den._Word[1]);
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const auto __d = _Countl_zero_fallback(_Den._Word[1]);
-#endif // ^^^ !_HAS_CXX20 ^^^
+        const auto __d = _Countl_zero_internal(_Den._Word[1]);
         _Den <<= __d;
         auto _High_digit = __d == 0 ? 0 : _Num._Word[1] >> (64 - __d); // This creates a third digit for _Num
         _Num <<= __d;
@@ -513,11 +504,7 @@ struct
         }
         return __qhat;
 #else // ^^^ 128-bit intrinsics / no such intrinsics vvv
-#if _HAS_CXX20
-        auto __d                   = _STD countl_zero(_Den._Word[1]);
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        auto __d = _Countl_zero_fallback(_Den._Word[1]);
-#endif // ^^^ !_HAS_CXX20 ^^^
+        auto __d                   = _Countl_zero_internal(_Den._Word[1]);
         const bool _Three_word_den = __d >= 32;
         __d &= 31;
         uint32_t __u[5]{
@@ -597,11 +584,7 @@ struct
         // _STL_INTERNAL_CHECK(_Den._Word[1] != 0);
         // _STL_INTERNAL_CHECK(_Num._Word[1] > _Den._Word[1]);
         // Normalize by shifting both left until _Den's high bit is set (So _Den's high digit is >= b / 2)
-#if _HAS_CXX20
-        const auto __d = _STD countl_zero(_Den._Word[1]);
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const auto __d = _Countl_zero_fallback(_Den._Word[1]);
-#endif // ^^^ !_HAS_CXX20 ^^^
+        const auto __d = _Countl_zero_internal(_Den._Word[1]);
         _Den <<= __d;
         auto _High_digit = __d == 0 ? 0 : _Num._Word[1] >> (64 - __d); // This creates a third digit for _Num
         _Num <<= __d;
@@ -648,11 +631,7 @@ struct
             (void) _AddCarry64(_Carry, _Num._Word[1], _Den._Word[1], _Num._Word[1]);
         }
 #else // ^^^ 128-bit intrinsics / no such intrinsics vvv
-#if _HAS_CXX20
-        auto __d                   = _STD countl_zero(_Den._Word[1]);
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        auto __d = _Countl_zero_fallback(_Den._Word[1]);
-#endif // ^^^ !_HAS_CXX20 ^^^
+        auto __d                   = _Countl_zero_internal(_Den._Word[1]);
         const bool _Three_word_den = __d >= 32;
         __d &= 31;
         uint32_t __u[5]{
@@ -985,6 +964,9 @@ struct _Unsigned128 : _Base128 {
         return *this;
     }
 };
+
+_EXPORT_STD template <class _Ty>
+class numeric_limits;
 
 template <>
 class numeric_limits<_Unsigned128> : public _Num_int_base {
