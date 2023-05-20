@@ -12,6 +12,7 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <ranges> are available only with C++20 or later.");
 #else // ^^^ !defined(__cpp_lib_ranges) / defined(__cpp_lib_ranges) vvv
 #include <__msvc_int128.hpp>
+#include <bit>
 #include <iosfwd>
 #include <iterator>
 #include <limits>
