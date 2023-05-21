@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
-#include <deque>
+#include <utility>
 #include <memory>
+#include <deque>
 #include <sstream>
 #include <string>
 #include <syncstream>
@@ -11,17 +12,22 @@
 
 using namespace std;
 
-bool allocate_at_least_called = false;
+struct {
+    void assert_set() {
+        assert(consume());
+    }
 
-bool consume_signal() {
-    bool ret                 = allocate_at_least_called;
-    allocate_at_least_called = false;
-    return ret;
-}
+    bool consume() {
+        return exchange(is_set, false);
+    }
 
-void set_signal() {
-    allocate_at_least_called = true;
-}
+    void set() {
+        is_set = true;
+    }
+
+private:
+    bool is_set = false;
+} allocate_at_least_signal;
 
 template <class T>
 struct signaling_allocator {
@@ -42,7 +48,7 @@ struct signaling_allocator {
     }
 
     allocation_result<T*> allocate_at_least(size_t count) {
-        set_signal();
+        allocate_at_least_signal.set();
         return {allocate(count * 2), count * 2};
     }
 
@@ -58,7 +64,7 @@ void test_container() {
     T container;
     size_t reserve_count = container.capacity() + 100;
     container.reserve(reserve_count);
-    assert(consume_signal());
+    allocate_at_least_signal.assert_set();
     assert(container.capacity() >= reserve_count * 2);
     assert(container.size() == 0);
 }
@@ -66,20 +72,20 @@ void test_container() {
 void test_deque() {
     deque<int, signaling_allocator<int>> d;
     d.resize(100);
-    assert(consume_signal());
+    allocate_at_least_signal.assert_set();
     assert(d.size() == 100);
 }
 
 void test_stream_overflow(auto& stream) {
     stream << "my very long string that is indeed very long in order to make sure"
            << "that overflow is called, hopefully calling allocate_at_least in return";
-    assert(consume_signal());
+    allocate_at_least_signal.assert_set();
 }
 
 void test_sstream() {
     basic_stringstream<char, char_traits<char>, signaling_allocator<char>> ss;
     ss.str("my_cool_string");
-    assert(consume_signal());
+    allocate_at_least_signal.assert_set();
     test_stream_overflow(ss);
 }
 
