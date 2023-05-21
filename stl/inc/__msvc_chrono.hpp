@@ -501,7 +501,7 @@ namespace chrono {
         is_arithmetic_v<_Rep>) /* strengthened */ {
         // create a duration whose count() is the absolute value of _Dur.count()
         if (_Dur < duration<_Rep, _Period>::zero()) {
-            return duration<_Rep, _Period>::zero() - _Dur;
+            return -_Dur;
         } else {
             return _Dur;
         }
