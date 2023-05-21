@@ -575,7 +575,7 @@ template <typename IoManipIn, typename IoManipOut>
 void iomanip_test_impl(IoManipIn in, IoManipOut out, bool test_manip_out = true) {
     stringstream ss{};
     ss << in;
-    if (test_input_stream) {
+    if (test_manip_out) {
         ss >> out;
     }
 }
