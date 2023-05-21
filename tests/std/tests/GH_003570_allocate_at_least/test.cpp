@@ -30,13 +30,13 @@ private:
 } allocate_at_least_signal;
 
 template <class T>
-struct signaling_allocator {
+struct signalling_allocator {
     using value_type = T;
 
-    signaling_allocator() = default;
+    signalling_allocator() = default;
 
     template <typename U>
-    signaling_allocator(const signaling_allocator<U>&) {}
+    signalling_allocator(const signalling_allocator<U>&) {}
 
     T* allocate(size_t count) {
         T* ptr = (T*) malloc(count * sizeof(T));
@@ -56,7 +56,7 @@ struct signaling_allocator {
         free(ptr);
     }
 
-    friend bool operator==(const signaling_allocator&, const signaling_allocator&) = default;
+    friend bool operator==(const signalling_allocator&, const signalling_allocator&) = default;
 };
 
 template <typename T>
@@ -70,7 +70,7 @@ void test_container() {
 }
 
 void test_deque() {
-    deque<int, signaling_allocator<int>> d;
+    deque<int, signalling_allocator<int>> d;
     d.resize(100);
     allocate_at_least_signal.assert_set();
     assert(d.size() == 100);
@@ -83,22 +83,22 @@ void test_stream_overflow(auto& stream) {
 }
 
 void test_sstream() {
-    basic_stringstream<char, char_traits<char>, signaling_allocator<char>> ss;
+    basic_stringstream<char, char_traits<char>, signalling_allocator<char>> ss;
     ss.str("my_cool_string");
     allocate_at_least_signal.assert_set();
     test_stream_overflow(ss);
 }
 
 void test_syncstream() {
-    basic_syncbuf<char, char_traits<char>, signaling_allocator<char>> buf;
-    basic_osyncstream<char, char_traits<char>, signaling_allocator<char>> ss(&buf);
+    basic_syncbuf<char, char_traits<char>, signalling_allocator<char>> buf;
+    basic_osyncstream<char, char_traits<char>, signalling_allocator<char>> ss(&buf);
     test_stream_overflow(ss);
 }
 
 int main() {
     test_deque();
-    test_container<basic_string<char, char_traits<char>, signaling_allocator<char>>>();
-    test_container<vector<int, signaling_allocator<int>>>();
+    test_container<basic_string<char, char_traits<char>, signalling_allocator<char>>>();
+    test_container<vector<int, signalling_allocator<int>>>();
     test_sstream();
     test_syncstream();
 }
