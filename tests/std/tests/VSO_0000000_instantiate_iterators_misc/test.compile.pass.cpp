@@ -572,7 +572,7 @@ void future_test() {
 #endif // _M_CEE_PURE
 
 template <typename IoManipIn, typename IoManipOut>
-void iomanip_test_impl(IoManipIn in, IoManipOut out, bool test_mainp_out = true) {
+void iomanip_test_impl(IoManipIn in, IoManipOut out, bool test_manip_out = true) {
     stringstream ss{};
     ss << in;
     if (test_input_stream) {
@@ -581,7 +581,7 @@ void iomanip_test_impl(IoManipIn in, IoManipOut out, bool test_mainp_out = true)
 }
 
 template <typename IoManip>
-void iomanip_test_impl(IoManip iom, bool test_mainp_out = true) {
+void iomanip_test_impl(IoManip iom, bool test_manip_out = true) {
     iomanip_test_impl(iom, iom, test_mainp_out);
 }
 
