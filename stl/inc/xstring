@@ -2653,7 +2653,7 @@ private:
 #if _HAS_CXX23
         const auto [_New_ptr, _Allocated] = _Alty_traits::allocate_at_least(_Al, _New_capacity);
 #else // _HAS_CXX23
-        const pointer _New_ptr = _Al.allocate(_New_capacity);
+        const pointer _New_ptr     = _Al.allocate(_New_capacity);
         const size_type _Allocated = _New_capacity;
 #endif // _HAS_CXX23
         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
@@ -2702,7 +2702,7 @@ private:
 #if _HAS_CXX23
                 const auto [_New_ptr, _Allocated] = _Alty_traits::allocate_at_least(_Al, _New_capacity);
 #else // _HAS_CXX23
-                const pointer _New_ptr = _Al.allocate(_New_capacity);
+                const pointer _New_ptr     = _Al.allocate(_New_capacity);
                 const size_type _Allocated = _New_capacity;
 #endif // _HAS_CXX23
                 _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
@@ -2726,7 +2726,7 @@ private:
 #if _HAS_CXX23
                     const auto [_New_ptr, _Allocated] = _Alty_traits::allocate_at_least(_Al, _New_capacity);
 #else // _HAS_CXX23
-                    const pointer _New_ptr = _Al.allocate(_New_capacity);
+                    const pointer _New_ptr     = _Al.allocate(_New_capacity);
                     const size_type _Allocated = _New_capacity;
 #endif // _HAS_CXX23
 
@@ -2895,7 +2895,7 @@ public:
         const auto [_Fancyptr, _Allocated] = _Alty_traits::allocate_at_least(_Getal(), _New_capacity);
 #else // _HAS_CXX23
         const pointer _Fancyptr = _Getal().allocate(_New_capacity);
-        const auto _Allocated = _New_capacity;
+        const auto _Allocated   = _New_capacity;
 #endif // _HAS_CXX23
        // nothrow hereafter
         _Start_element_lifetimes(_Unfancy(_Fancyptr), _Allocated);
@@ -3210,7 +3210,7 @@ public:
                     const auto [_New_ptr, _Allocated] =
                         _Alty_traits::allocate_at_least(_Right_al_non_const, _New_capacity);
 #else // _HAS_CXX23
-                    const auto _New_ptr = _Right_al_non_const.allocate(_New_capacity);
+                    const auto _New_ptr   = _Right_al_non_const.allocate(_New_capacity);
                     const auto _Allocated = _New_capacity;
 #endif // _HAS_CXX23
 
@@ -4785,7 +4785,7 @@ private:
 #if _HAS_CXX23
         const auto [_New_ptr, _Allocated] = _Alty_traits::allocate_at_least(_Al, _New_capacity);
 #else // _HAS_CXX23
-        const pointer _New_ptr = _Al.allocate(_New_capacity);
+        const pointer _New_ptr     = _Al.allocate(_New_capacity);
         const size_type _Allocated = _New_capacity;
 #endif // _HAS_CXX23
 
@@ -4824,7 +4824,7 @@ private:
 #if _HAS_CXX23
         const auto [_New_ptr, _Allocated] = _Alty_traits::allocate_at_least(_Al, _New_capacity);
 #else // _HAS_CXX23
-        const pointer _New_ptr = _Al.allocate(_New_capacity);
+        const pointer _New_ptr     = _Al.allocate(_New_capacity);
         const size_type _Allocated = _New_capacity;
 #endif // _HAS_CXX23
 

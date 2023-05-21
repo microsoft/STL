@@ -831,7 +831,7 @@ private:
 #if _HAS_CXX23
         const auto [_Newvec, _Allocated] = _Alty_traits::allocate_at_least(_Al, _Newcapacity);
 #else // _HAS_CXX23
-        const pointer _Newvec = _Al.allocate(_Newcapacity);
+        const pointer _Newvec      = _Al.allocate(_Newcapacity);
         const size_type _Allocated = _Newcapacity;
 #endif // _HAS_CXX23
         const pointer _Constructed_last = _Newvec + _Whereoff + 1;
@@ -1049,7 +1049,7 @@ public:
 #if _HAS_CXX23
             const auto [_Newvec, _Allocated] = _Alty_traits::allocate_at_least(_Al, _Newcapacity);
 #else // _HAS_CXX23
-            const pointer _Newvec = _Al.allocate(_Newcapacity);
+            const pointer _Newvec      = _Al.allocate(_Newcapacity);
             const size_type _Allocated = _Newcapacity;
 #endif // _HAS_CXX23
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
@@ -1149,7 +1149,7 @@ private:
 #if _HAS_CXX23
             const auto [_Newvec, _Allocated] = _Alty_traits::allocate_at_least(_Al, _Newcapacity);
 #else // _HAS_CXX23
-            const pointer _Newvec = _Al.allocate(_Newcapacity);
+            const pointer _Newvec      = _Al.allocate(_Newcapacity);
             const size_type _Allocated = _Newcapacity;
 #endif // _HAS_CXX23
             const auto _Whereoff            = static_cast<size_type>(_Whereptr - _Oldfirst);
@@ -1544,7 +1544,7 @@ private:
 #if _HAS_CXX23
         const auto [_Newvec, _Allocated] = _Alty_traits::allocate_at_least(_Al, _Newcapacity);
 #else // _HAS_CXX23
-        const pointer _Newvec = _Al.allocate(_Newcapacity);
+        const pointer _Newvec      = _Al.allocate(_Newcapacity);
         const size_type _Allocated = _Newcapacity;
 #endif // _HAS_CXX23
         const pointer _Appended_first = _Newvec + _Oldsize;
@@ -2033,7 +2033,7 @@ private:
 #if _HAS_CXX23
         const auto [_Newvec, _Allocated] = std::allocator_traits<_Alloc>::allocate_at_least(_Getal(), _Newcapacity);
 #else // _HAS_CXX23
-        const auto _Newvec = _Getal().allocate(_Newcapacity);
+        const auto _Newvec         = _Getal().allocate(_Newcapacity);
         const size_type _Allocated = _Newcapacity;
 #endif // _HAS_CXX23
         _Myfirst = _Newvec;
