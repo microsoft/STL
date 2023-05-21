@@ -5609,9 +5609,12 @@ namespace chrono {
                 _Os << _CharT{'/'};
                 _Custom_write(_Os, {._Type = 'y'}, _Time, _Val);
                 return true;
+            case 'H':
+                // Print hour even if >= 24.
+                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Time.tm_hour);
+                return true;
             case 'T':
-                // Alias for %H:%M:%S but we need to allow for hours > 23 and rewrite %S to display fractions of a
-                // second.
+                // Alias for %H:%M:%S but we allow hours > 23 and rewrite %S to display fractions of a second.
                 _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}:{:02}:"), _Time.tm_hour, _Time.tm_min);
                 [[fallthrough]];
             case 'S':

@@ -45,4 +45,7 @@ int main() {
     assert_duration_format_equal(duration<float, days::period>{-1.55f}, "-37:12:00");
     assert_duration_format_equal(2ms, "00:00:00.002");
     assert_duration_format_equal(-2ms, "-00:00:00.002");
+
+    assert_equal("24", format("{:%H}", 24h));
+    assert_equal("-24", format("{:%H}", -24h));
 }
