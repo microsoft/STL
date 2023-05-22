@@ -2673,7 +2673,9 @@ namespace ranges {
         using _Begin_on_const = decltype(_RANGES begin(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
 
         template <_Should_range_access _Ty>
-            requires requires(_Ty& _Val) { //
+            requires requires(_Ty& _Val) {
+                typename _Begin_on_const<_Ty>;
+                typename const_iterator<_Begin_on_const<_Ty>>;
                 const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
             }
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(
@@ -2701,7 +2703,9 @@ namespace ranges {
         using _End_on_const = decltype(_RANGES end(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
 
         template <_Should_range_access _Ty>
-            requires requires(_Ty& _Val) { //
+            requires requires(_Ty& _Val) {
+                typename _End_on_const<_Ty>;
+                typename const_sentinel<_End_on_const<_Ty>>;
                 const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
             }
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
@@ -2868,7 +2872,9 @@ namespace ranges {
         using _Rbegin_on_const = decltype(_RANGES rbegin(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
 
         template <_Should_range_access _Ty>
-            requires requires(_Ty& _Val) { //
+            requires requires(_Ty& _Val) {
+                typename _Rbegin_on_const<_Ty>;
+                typename const_iterator<_Rbegin_on_const<_Ty>>;
                 const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
             }
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(
@@ -2896,7 +2902,9 @@ namespace ranges {
         using _Rend_on_const = decltype(_RANGES rend(_RANGES _Possibly_const_range(_STD declval<_Ty&>())));
 
         template <_Should_range_access _Ty>
-            requires requires(_Ty& _Val) { //
+            requires requires(_Ty& _Val) {
+                typename _Rend_on_const<_Ty>;
+                typename const_sentinel<_Rend_on_const<_Ty>>;
                 const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
             }
         _NODISCARD constexpr auto operator()(_Ty&& _Val) const
