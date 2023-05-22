@@ -505,13 +505,16 @@ add_compile_options(/WX /Gy
 )
 
 include_directories(BEFORE
-    "${CMAKE_CURRENT_LIST_DIR}/inc"
     "${TOOLSET_ROOT_DIR}/crt/src/vcruntime"
 )
 
 ###########################
 # End of toolset options. #
 ###########################
+
+include_directories(BEFORE
+    "${CMAKE_CURRENT_LIST_DIR}/inc"
+)
 
 if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(x86|x64)$")
     add_library(stl_alias_objects OBJECT ${ALIAS_SOURCES_X86_X64})
