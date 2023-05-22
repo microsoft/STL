@@ -775,6 +775,10 @@ void test_hh_mm_ss_formatter() {
     assert(format(STR("{:%H %I %M %S %r %R %T %p}"), hh_mm_ss{-13h - 14min - 15351ms})
            == STR("-13 01 14 15.351 01:14:15 PM 13:14 13:14:15.351 PM"));
 
+    assert(format(STR("{}"), hh_mm_ss{24h}) == STR("24:00:00"));
+    assert(format(STR("{}"), hh_mm_ss{-24h}) == STR("-24:00:00"));
+    assert(format(STR("{:%H}"), hh_mm_ss{24h}) == STR("24"));
+    assert(format(STR("{:%H}"), hh_mm_ss{-24h}) == STR("-24"));
     assert(format(STR("{:%M %S}"), hh_mm_ss{27h + 12min + 30s}) == STR("12 30"));
 }
 
