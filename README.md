@@ -153,7 +153,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
 4. In the terminal, invoke `git submodule update --init --progress`
 5. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
-   settings are set by `CMakeSettings.json`.
+   settings are set by `CMakePresets.json`.
 
 # How To Build With A Native Tools Command Prompt
 
@@ -172,15 +172,15 @@ To build the x86 target:
 
 1. Open an "x86 Native Tools Command Prompt for VS 2022 Preview".
 2. Change directories to the previously cloned `STL` directory.
-3. `cmake -G Ninja -S . -B out\build\x86`
-4. `ninja -C out\build\x86`
+3. `cmake --preset x86`
+4. `cmake --build --preset x86`
 
 To build the x64 target (recommended):
 
 1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
 2. Change directories to the previously cloned `STL` directory.
-3. `cmake -G Ninja -S . -B out\build\x64`
-4. `ninja -C out\build\x64`
+3. `cmake --preset x64
+4. `cmake --build --preset x64`
 
 # How To Consume
 
