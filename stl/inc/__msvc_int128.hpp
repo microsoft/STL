@@ -56,6 +56,22 @@ _STD_BEGIN
 #define _STL_128_DIV_INTRINSICS     0
 #endif // ^^^ intrinsics unavailable ^^^
 
+template <class _Ty>
+_NODISCARD constexpr int _Countl_zero_internal(const _Ty _Val) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(_Is_standard_unsigned_integer<_Ty>);
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+    if (!_Is_constant_evaluated()) {
+        return _Checked_x86_x64_countl_zero(_Val);
+    }
+#elif defined(_M_ARM) || defined(_M_ARM64)
+    if (!_Is_constant_evaluated()) {
+        return _Checked_arm_arm64_countl_zero(_Val);
+    }
+#endif // defined(_M_ARM) || defined(_M_ARM64)
+
+    return _Countl_zero_fallback(_Val);
+}
+
 struct
 #ifndef _M_ARM
     alignas(16)

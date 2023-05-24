@@ -175,21 +175,6 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
 }
 #endif // defined(_M_ARM) || defined(_M_ARM64)
 
-template <class _Ty>
-_NODISCARD constexpr int _Countl_zero_internal(const _Ty _Val) noexcept {
-#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
-    if (!_Is_constant_evaluated()) {
-        return _Checked_x86_x64_countl_zero(_Val);
-    }
-#elif defined(_M_ARM) || defined(_M_ARM64)
-    if (!_Is_constant_evaluated()) {
-        return _Checked_arm_arm64_countl_zero(_Val);
-    }
-#endif // defined(_M_ARM) || defined(_M_ARM64)
-
-    return _Countl_zero_fallback(_Val);
-}
-
 // Implementation of countr_zero without using specialized CPU instructions.
 // Used at compile time and when said instructions are not supported.
 // see "Hacker's Delight" section 5-4
@@ -362,7 +347,7 @@ _NODISCARD inline int _Arm64_popcount(const unsigned long long _Val) noexcept {
 #endif // _HAS_NEON_INTRINSICS
 
 template <class _Ty>
-constexpr bool _Is_standard_unsigned_integer =
+_INLINE_VAR constexpr bool _Is_standard_unsigned_integer =
     _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
