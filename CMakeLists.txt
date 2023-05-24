@@ -47,6 +47,8 @@ set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid confl
 
 option(STL_USE_ANALYZE "Pass the /analyze flag to MSVC" OFF)
 
+set(VCLIBS_EXPLICIT_MACHINE "")
+
 if("${VCLIBS_TARGET_ARCHITECTURE}" MATCHES "^x86$")
     set(VCLIBS_TARGET_ARCHITECTURE "x86")
     set(VCLIBS_I386_OR_AMD64 "i386")
@@ -71,6 +73,13 @@ elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^arm64$")
     set(VCLIBS_I386_OR_AMD64 "arm64")
     set(VCLIBS_X86_OR_X64 "arm64")
     add_compile_definitions(_ARM64_ _VCRT_WIN32_WINNT=0x0A00 _STL_WIN32_WINNT=0x0A00)
+elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^arm64ec$")
+    set(VCLIBS_TARGET_ARCHITECTURE "arm64ec")
+    set(VCLIBS_I386_OR_AMD64 "arm64ec")
+    set(VCLIBS_X86_OR_X64 "arm64")
+    add_compile_definitions(_AMD64_ _ARM64EC_ _VCRT_WIN32_WINNT=0x0501 _STL_WIN32_WINNT=0x0501)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/arm64EC>)
+    set(VCLIBS_EXPLICIT_MACHINE "/machine:arm64ec")
 else()
     message(FATAL_ERROR "Could not determine target architecture: VCLIBS_TARGET_ARCHITECTURE: ${VCLIBS_TARGET_ARCHITECTURE}")
 endif()
