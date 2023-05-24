@@ -1029,8 +1029,10 @@ void mdspan_tests_observers() {
     static_assert(!mds.is_exhaustive());
     static_assert(mds.is_strided());
 
-    static_assert(mds(1, 0) == 1);
-    static_assert(mds(1, 2) == 7);
+#ifdef __clang__ // TRANSITION, P2128R6
+    static_assert(mds[1, 0] == 1);
+    static_assert(mds[1, 2] == 7);
+#endif // __clang__
 
     static_assert(mds[array{0, 1}] == 3);
     static_assert(mds[array{1, 1}] == 4);

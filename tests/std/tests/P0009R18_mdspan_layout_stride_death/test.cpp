@@ -28,7 +28,7 @@ void test_construction_from_strided_layout_mapping() {
 }
 
 void test_call_operator() {
-    layout_stride::mapping<extents<unsigned, 5, 3, 4>> m;
+    layout_stride::mapping<extents<unsigned int, 5, 3, 4>> m;
     // Value of extents_type::index-cast(i) must be a multidimensional index in extents_
     (void) m(4, 3, 3);
 }
