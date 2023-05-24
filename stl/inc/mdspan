@@ -44,7 +44,7 @@ public:
 private:
     static constexpr array<rank_type, _Rank> _Static_extents = {_Extents...};
 
-    _NODISCARD static _CONSTEVAL auto _Make_dynamic_indices() noexcept {
+    _NODISCARD static consteval auto _Make_dynamic_indices() noexcept {
         array<rank_type, _Rank + 1> _Result{};
         rank_type _Counter = 0;
         for (rank_type _Idx = 0; _Idx < _Rank; ++_Idx) {
@@ -59,7 +59,7 @@ private:
 
     static constexpr array<rank_type, _Rank + 1> _Dynamic_indices = _Make_dynamic_indices();
 
-    _NODISCARD static _CONSTEVAL auto _Make_dynamic_indices_inv() noexcept {
+    _NODISCARD static consteval auto _Make_dynamic_indices_inv() noexcept {
         array<rank_type, _Rank> _Result{};
         for (rank_type _Idx = 0; _Idx < _Rank; ++_Idx) {
             for (rank_type _Idx_inv = 0; _Idx_inv < _Rank; ++_Idx_inv) {
@@ -249,7 +249,7 @@ public:
         return _Result;
     }
 
-    _NODISCARD static _CONSTEVAL bool _Is_index_space_size_representable() {
+    _NODISCARD static consteval bool _Is_index_space_size_representable() {
         if constexpr (rank_dynamic() == 0 && rank() > 0) {
             return _STD in_range<index_type>((_Extents * ...));
         } else {
