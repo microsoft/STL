@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <cassert>
 #include <cstddef>
 #include <ranges>
@@ -41,7 +39,7 @@ int main(int argc, char* argv[]) {
             test_misordered_start_bound_int<long long>, test_misordered_start_bound_int<unsigned long long>,
 
             test_misordered_start_bound_int<char>,
-#if __cpp_char8_t
+#ifdef __cpp_char8_t
             test_misordered_start_bound_int<char8_t>,
 #endif // __cpp_char8_t
             test_misordered_start_bound_int<char16_t>, test_misordered_start_bound_int<char32_t>,
@@ -53,7 +51,7 @@ int main(int argc, char* argv[]) {
             test_misordered_start_bound_uint_value_init<unsigned long>,
             test_misordered_start_bound_uint_value_init<unsigned long long>,
             test_misordered_start_bound_uint_value_init<unsigned long long>,
-#if __cpp_char8_t
+#ifdef __cpp_char8_t
             test_misordered_start_bound_uint_value_init<char8_t>,
 #endif // __cpp_char8_t
             test_misordered_start_bound_uint_value_init<char16_t>,
