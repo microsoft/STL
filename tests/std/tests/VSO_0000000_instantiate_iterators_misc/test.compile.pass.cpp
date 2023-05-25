@@ -571,11 +571,11 @@ void future_test() {
 }
 #endif // _M_CEE_PURE
 
-template <typename IoManipIn, typename IoManipOut>
-void iomanip_test_impl(IoManipIn in, IoManipOut out) {
+template <typename IoManipOut, typename IoManipIn>
+void iomanip_test_impl(IoManipOut out, IoManipIn in) {
     stringstream ss{};
-    ss << in;
-    ss >> out;
+    ss << out;
+    ss >> in;
 }
 
 template <typename IoManip>
@@ -584,9 +584,9 @@ void iomanip_test_impl(IoManip iom) {
 }
 
 template <typename IoManip>
-void iomanip_test_impl_for_setfill(IoManip in) {
+void iomanip_test_impl_for_setfill(IoManip out) {
     stringstream ss{};
-    ss << in;
+    ss << out;
 }
 
 void iomanip_test() {
