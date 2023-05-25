@@ -30,6 +30,7 @@ void test_misordered_start_bound_ptr() {
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
 
+#ifdef _DEBUG
     struct S {};
 
     exec.add_death_tests({
@@ -61,6 +62,7 @@ int main(int argc, char* argv[]) {
             test_misordered_start_bound_ptr<char>, test_misordered_start_bound_ptr<int>,
             test_misordered_start_bound_ptr<S>,
     });
+#endif // _DEBUG
 
     return exec.run(argc, argv);
 }
