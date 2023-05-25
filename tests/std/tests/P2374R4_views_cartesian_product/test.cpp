@@ -973,6 +973,8 @@ namespace check_recommended_practice_implementation { // MSVC STL specific behav
     STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Vec>, all_t<Vec>>>) > sizeof(ptrdiff_t));
 } // namespace check_recommended_practice_implementation
 
+// GH-3733: cartesian_product_view would incorrectly reject a call to size() claiming that big*big*big*0 is not
+// representable as range_size_t because big*big*big is not.
 constexpr void test_gh_3733() {
     const auto r1   = views::repeat(0, (numeric_limits<ptrdiff_t>::max)());
     const auto r2   = views::repeat(1, 0);
