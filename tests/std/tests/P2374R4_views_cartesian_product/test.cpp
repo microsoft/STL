@@ -973,7 +973,7 @@ namespace check_recommended_practice_implementation { // MSVC STL specific behav
     STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Vec>, all_t<Vec>>>) > sizeof(ptrdiff_t));
 } // namespace check_recommended_practice_implementation
 
-constexpr void test_gh_NNNN() {
+constexpr void test_gh_3733() {
     const auto r1   = views::repeat(0, (numeric_limits<ptrdiff_t>::max)());
     const auto r2   = views::repeat(1, 0);
     const auto cart = views::cartesian_product(r1, r1, r1, r2);
@@ -1038,6 +1038,6 @@ int main() {
 #endif // TRANSITION, GH-1030
     instantiation_test();
 
-    STATIC_ASSERT((test_gh_NNNN(), true));
-    test_gh_NNNN();
+    STATIC_ASSERT((test_gh_3733(), true));
+    test_gh_3733();
 }
