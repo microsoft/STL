@@ -641,11 +641,11 @@ _EXPORT_STD template <class _Iter, class _Keylt = less<iter_value_t<_Iter>>>
 flat_set(sorted_unique_t, _Iter, _Iter, _Keylt = _Keylt()) -> flat_set<iter_value_t<_Iter>, _Keylt>;
 _EXPORT_STD template <_RANGES input_range _Range, class _Keylt = less<_RANGES range_value_t<_Range>>,
     class _Alloc = allocator<_RANGES range_value_t<_Range>>>
-flat_set(from_range_t, _Range&&, _Keylt = _Keylt(), _Alloc = _Alloc())
-    -> flat_set<_RANGES range_value_t<_Range>, _Keylt>;
+flat_set(from_range_t, _Range&&, _Keylt = _Keylt(), _Alloc = _Alloc()) -> flat_set<_RANGES range_value_t<_Range>,
+    _Keylt, vector<_RANGES range_value_t<_Range>, _Rebind_alloc_t<_Alloc, _RANGES range_value_t<_Range>>>>;
 _EXPORT_STD template <_RANGES input_range _Range, class _Alloc>
-flat_set(from_range_t, _Range&&, _Alloc)
-    -> flat_set<_RANGES range_value_t<_Range>, less<_RANGES range_value_t<_Range>>>;
+flat_set(from_range_t, _Range&&, _Alloc) -> flat_set<_RANGES range_value_t<_Range>, less<_RANGES range_value_t<_Range>>,
+    vector<_RANGES range_value_t<_Range>, _Rebind_alloc_t<_Alloc, _RANGES range_value_t<_Range>>>>;
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>>
 flat_set(initializer_list<_Kty>, _Keylt = _Keylt()) -> flat_set<_Kty, _Keylt>;
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>>
@@ -678,10 +678,12 @@ flat_multiset(sorted_equivalent_t, _Iter, _Iter, _Keylt = _Keylt())
 _EXPORT_STD template <_RANGES input_range _Range, class _Keylt = less<_RANGES range_value_t<_Range>>,
     class _Alloc = allocator<_RANGES range_value_t<_Range>>>
 flat_multiset(from_range_t, _Range&&, _Keylt = _Keylt(), _Alloc = _Alloc())
-    -> flat_multiset<_RANGES range_value_t<_Range>, _Keylt>;
+    -> flat_multiset<_RANGES range_value_t<_Range>, _Keylt,
+        vector<_RANGES range_value_t<_Range>, _Rebind_alloc_t<_Alloc, _RANGES range_value_t<_Range>>>>;
 _EXPORT_STD template <_RANGES input_range _Range, class _Alloc>
 flat_multiset(from_range_t, _Range&&, _Alloc)
-    -> flat_multiset<_RANGES range_value_t<_Range>, less<_RANGES range_value_t<_Range>>>;
+    -> flat_multiset<_RANGES range_value_t<_Range>, less<_RANGES range_value_t<_Range>>,
+        vector<_RANGES range_value_t<_Range>, _Rebind_alloc_t<_Alloc, _RANGES range_value_t<_Range>>>>;
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>>
 flat_multiset(initializer_list<_Kty>, _Keylt = _Keylt()) -> flat_multiset<_Kty, _Keylt>;
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>>
