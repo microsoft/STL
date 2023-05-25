@@ -10061,11 +10061,14 @@ namespace ranges {
         {
             return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
 #if _CONTAINER_DEBUG_LEVEL > 0
+                const array _Sizes   = {static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases)))...};
+                const bool _Any_zero = ((_Sizes[_Indices] == 0) || ...);
+                if (_Any_zero) {
+                    return _Size_type<false>{0};
+                }
+
                 _Size_type<false> _Product{1};
-                const bool _Overflow =
-                    (_Mul_overflow(
-                         _Product, static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases))), _Product)
-                        || ...);
+                const bool _Overflow = (_Mul_overflow(_Product, _Sizes[_Indices], _Product) || ...);
                 _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4950 "
                                         "[range.cartesian.view]/10).");
                 return _Product;
@@ -10080,11 +10083,14 @@ namespace ranges {
         {
             return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
 #if _CONTAINER_DEBUG_LEVEL > 0
+                const array _Sizes   = {static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases)))...};
+                const bool _Any_zero = ((_Sizes[_Indices] == 0) || ...);
+                if (_Any_zero) {
+                    return _Size_type<true>{0};
+                }
+
                 _Size_type<true> _Product{1};
-                const bool _Overflow =
-                    (_Mul_overflow(
-                         _Product, static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases))), _Product)
-                        || ...);
+                const bool _Overflow = (_Mul_overflow(_Product, _Sizes[_Indices], _Product) || ...);
                 _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4950 "
                                         "[range.cartesian.view]/10).");
                 return _Product;
