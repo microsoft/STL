@@ -36,8 +36,7 @@ _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
         *endptr = const_cast<char*>(s);
     }
 
-    if (s == *endptr && x != 0 || sign == '+' && LLONG_MAX < x
-        || sign == '-' && 0 - static_cast<unsigned long long>(LLONG_MIN) < x) { // overflow
+    if (s == *endptr && x != 0 || sign == '+' && LLONG_MAX < x || sign == '-' && (1ull << 63) < x) { // overflow
         errno = ERANGE;
         if (perr != nullptr) {
             *perr = 1;
