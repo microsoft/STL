@@ -745,8 +745,8 @@ struct _List_node_insert_op2 {
 private:
     _Alnode& _Al;
     size_type _Added; // if 0, the values of _Head and _Tail are indeterminate
-    pointer _Tail; // points to the most recently appended element; it doesn't have _Next constructed
-    pointer _Head; // points to the first appended element; it doesn't have _Prev constructed
+    pointer _Tail{}; // points to the most recently appended element; it doesn't have _Next constructed
+    pointer _Head{}; // points to the first appended element; it doesn't have _Prev constructed
 };
 
 template <class _Traits>

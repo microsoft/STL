@@ -1892,8 +1892,8 @@ struct _Format_arg_index {
         _Type_ = static_cast<size_t>(_Val);
     }
 
-    size_t _Index : (sizeof(size_t) * 8 - 4);
-    size_t _Type_ : 4;
+    size_t _Index : (sizeof(size_t) * 8 - 4){};
+    size_t _Type_ : 4 {};
 };
 
 _EXPORT_STD template <class _Context>

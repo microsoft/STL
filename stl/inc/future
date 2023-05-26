@@ -409,7 +409,7 @@ protected:
     }
 
 public:
-    conditional_t<is_default_constructible_v<_Ty>, _Ty, _Result_holder<_Ty>> _Result;
+    conditional_t<is_default_constructible_v<_Ty>, _Ty, _Result_holder<_Ty>> _Result{};
     exception_ptr _Exception;
     mutex _Mtx;
     condition_variable _Cond;

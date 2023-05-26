@@ -686,7 +686,7 @@ public:
     }
 
 private:
-    streamsize _Chcount; // the character count
+    streamsize _Chcount{}; // the character count
 };
 
 #pragma vtordisp(pop) // compiler bug workaround
