@@ -6,10 +6,10 @@
 #include <format>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 using namespace std;
 using namespace chrono;
-using namespace chrono_literals;
 
 void assert_equal(const auto& expected, const auto& value) {
     if (expected == value) {
@@ -22,17 +22,17 @@ void assert_equal(const auto& expected, const auto& value) {
 }
 
 template <typename R, typename P>
-void assert_duration_format_equal(const duration<R, P>& duration, const string& str) {
-    stringstream ss;
-    ss << hh_mm_ss{duration};
-    assert_equal(str, ss.str());
-    assert_equal(str, format("{:%T}", duration));
+void assert_duration_format_equal(const duration<R, P>& dur, const string& str) {
+    ostringstream oss;
+    oss << hh_mm_ss{dur};
+    assert_equal(str, oss.str());
+    assert_equal(str, format("{:%T}", dur));
 }
 
 template <typename R, typename P>
-void assert_duration_format_equal_positive(const duration<R, P>& duration, const string& str) {
-    assert_duration_format_equal(duration, str);
-    assert_duration_format_equal(-duration, '-' + str);
+void assert_duration_format_equal_positive(const duration<R, P>& dur, const string& str) {
+    assert_duration_format_equal(dur, str);
+    assert_duration_format_equal(-dur, '-' + str);
 }
 
 int main() {
