@@ -32,33 +32,41 @@ int main(int argc, char* argv[]) {
     struct S {};
 
     exec.add_death_tests({
-        test_misordered_start_bound_int<signed char>, test_misordered_start_bound_int<unsigned char>,
-            test_misordered_start_bound_int<short>, test_misordered_start_bound_int<unsigned short>,
-            test_misordered_start_bound_int<int>, test_misordered_start_bound_int<unsigned int>,
-            test_misordered_start_bound_int<long>, test_misordered_start_bound_int<unsigned long>,
-            test_misordered_start_bound_int<long long>, test_misordered_start_bound_int<unsigned long long>,
+        test_misordered_start_bound_int<signed char>,
+        test_misordered_start_bound_int<unsigned char>,
+        test_misordered_start_bound_int<short>,
+        test_misordered_start_bound_int<unsigned short>,
+        test_misordered_start_bound_int<int>,
+        test_misordered_start_bound_int<unsigned int>,
+        test_misordered_start_bound_int<long>,
+        test_misordered_start_bound_int<unsigned long>,
+        test_misordered_start_bound_int<long long>,
+        test_misordered_start_bound_int<unsigned long long>,
 
-            test_misordered_start_bound_int<char>,
+        test_misordered_start_bound_int<char>,
 #ifdef __cpp_char8_t
-            test_misordered_start_bound_int<char8_t>,
+        test_misordered_start_bound_int<char8_t>,
 #endif // __cpp_char8_t
-            test_misordered_start_bound_int<char16_t>, test_misordered_start_bound_int<char32_t>,
-            test_misordered_start_bound_int<wchar_t>,
+        test_misordered_start_bound_int<char16_t>,
+        test_misordered_start_bound_int<char32_t>,
+        test_misordered_start_bound_int<wchar_t>,
 
-            test_misordered_start_bound_uint_value_init<unsigned char>,
-            test_misordered_start_bound_uint_value_init<unsigned short>,
-            test_misordered_start_bound_uint_value_init<unsigned int>,
-            test_misordered_start_bound_uint_value_init<unsigned long>,
-            test_misordered_start_bound_uint_value_init<unsigned long long>,
-            test_misordered_start_bound_uint_value_init<unsigned long long>,
+        test_misordered_start_bound_uint_value_init<unsigned char>,
+        test_misordered_start_bound_uint_value_init<unsigned short>,
+        test_misordered_start_bound_uint_value_init<unsigned int>,
+        test_misordered_start_bound_uint_value_init<unsigned long>,
+        test_misordered_start_bound_uint_value_init<unsigned long long>,
+        test_misordered_start_bound_uint_value_init<unsigned long long>,
 #ifdef __cpp_char8_t
-            test_misordered_start_bound_uint_value_init<char8_t>,
+        test_misordered_start_bound_uint_value_init<char8_t>,
 #endif // __cpp_char8_t
-            test_misordered_start_bound_uint_value_init<char16_t>,
-            test_misordered_start_bound_uint_value_init<char32_t>, test_misordered_start_bound_uint_value_init<wchar_t>,
+        test_misordered_start_bound_uint_value_init<char16_t>,
+        test_misordered_start_bound_uint_value_init<char32_t>,
+        test_misordered_start_bound_uint_value_init<wchar_t>,
 
-            test_misordered_start_bound_ptr<char>, test_misordered_start_bound_ptr<int>,
-            test_misordered_start_bound_ptr<S>,
+        test_misordered_start_bound_ptr<char>,
+        test_misordered_start_bound_ptr<int>,
+        test_misordered_start_bound_ptr<S>,
     });
 #endif // _DEBUG
 
