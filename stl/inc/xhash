@@ -108,12 +108,16 @@ struct _Uhash_choose_transparency {
 #if _HAS_CXX20
 template <class _Kty, class _Hasher, class _Keyeq>
 struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq,
-    void_t<typename _Hasher::is_transparent, typename _Keyeq::is_transparent>> {
+    enable_if_t<conjunction_v<_Is_transparent<_Hasher>, _Is_transparent<_Keyeq>>>> {
     // transparency selector for transparent hashed containers
     template <class _Keyty>
     using _Deduce_key = const _Keyty&;
 
-    using _Transparent = void;
+    template <class _Container, class _Kx,
+        enable_if_t<!disjunction_v<is_convertible<_Kx, typename _Container::const_iterator>,
+                        is_convertible<_Kx, typename _Container::iterator>>,
+            int> = 0>
+    using _Supports_transparency = void;
 };
 #endif // _HAS_CXX20
 
@@ -1140,8 +1144,7 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _Kx, class _Mytraits = _Traits, class = typename _Mytraits::_Transparent,
-        enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
+    template <class _Kx, class _Mytraits = _Traits, class = _Mytraits::template _Supports_transparency<_Hash, _Kx>>
     size_type erase(_Kx&& _Keyval) noexcept(noexcept(_Erase(_Keyval))) /* strengthened */ {
         return _Erase(_Keyval);
     }
@@ -1380,8 +1383,7 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _Kx, class _Mytraits = _Traits, class = typename _Mytraits::_Transparent,
-        enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
+    template <class _Kx, class _Mytraits = _Traits, class = _Mytraits::template _Supports_transparency<_Hash, _Kx>>
     node_type extract(_Kx&& _Keyval) {
         const auto _Ptr = _Extract(_Keyval);
         if (!_Ptr) {
