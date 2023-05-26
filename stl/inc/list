@@ -896,7 +896,7 @@ public:
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
-    list(list&& _Right) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
+    list(list&& _Right) noexcept(false) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
         _Swap_val(_Right);
     }
