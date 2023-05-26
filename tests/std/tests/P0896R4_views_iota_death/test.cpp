@@ -25,6 +25,12 @@ void test_misordered_start_bound_ptr() {
     ranges::iota_view{arr + 1, arr + 0};
 }
 
+template <class T>
+void test_misordered_start_bound_vector_iter() {
+    std::vector<T> vec(1);
+    ranges::iota_view{vec.end(), vec.begin()};
+}
+
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
 
@@ -67,6 +73,10 @@ int main(int argc, char* argv[]) {
         test_misordered_start_bound_ptr<char>,
         test_misordered_start_bound_ptr<int>,
         test_misordered_start_bound_ptr<S>,
+
+        test_misordered_start_bound_vector_iter<char>,
+        test_misordered_start_bound_vector_iter<int>,
+        test_misordered_start_bound_vector_iter<S>,
     });
 #endif // _DEBUG
 
