@@ -1335,7 +1335,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Wi>&& is_nothrow_default_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_Value_)) {
             if constexpr (totally_ordered_with<_Wi, _Bo>) {
-                _STL_ASSERT(_Value_ <= _Bound, "Per N4950 [range.iota.view]/6, the first argument must precede the "
+                _STL_ASSERT(_Value_ <= _Bound, "Per N4950 [range.iota.view]/6, the first argument must not exceed the "
                                                "value-initialized bound when their types are totally ordered.");
             }
         }
@@ -1344,7 +1344,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Wi>&& is_nothrow_move_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_Value_)), _Bound(_STD move(_Bound_)) {
             if constexpr (totally_ordered_with<_Wi, _Bo>) {
-                _STL_ASSERT(_Value_ <= _Bound_, "Per N4950 [range.iota.view]/8, the first argument must precede the "
+                _STL_ASSERT(_Value_ <= _Bound_, "Per N4950 [range.iota.view]/8, the first argument must not exceed the "
                                                 "second when their types are totally ordered.");
             }
         }

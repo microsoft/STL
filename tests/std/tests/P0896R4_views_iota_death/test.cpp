@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <cassert>
-#include <cstddef>
 #include <ranges>
 #include <vector>
 
@@ -61,7 +59,6 @@ int main(int argc, char* argv[]) {
         test_misordered_start_bound_uint_value_init<unsigned short>,
         test_misordered_start_bound_uint_value_init<unsigned int>,
         test_misordered_start_bound_uint_value_init<unsigned long>,
-        test_misordered_start_bound_uint_value_init<unsigned long long>,
         test_misordered_start_bound_uint_value_init<unsigned long long>,
 #ifdef __cpp_char8_t
         test_misordered_start_bound_uint_value_init<char8_t>,
