@@ -407,7 +407,7 @@ private:
         return _CSTD strcmp(_Lobj._Getname(), "*") == 0;
     }
 
-    _Locimp* _Ptr{}; // pointer to locale implementation object
+    _Locimp* _Ptr; // pointer to locale implementation object
 };
 
 template <class _Facet>
