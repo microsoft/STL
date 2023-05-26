@@ -27,7 +27,7 @@ void test_misordered_start_bound_ptr() {
 
 template <class T>
 void test_misordered_start_bound_vector_iter() {
-    std::vector<T> vec(1);
+    vector<T> vec(1);
     ranges::iota_view{vec.end(), vec.begin()};
 }
 
