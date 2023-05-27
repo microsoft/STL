@@ -205,8 +205,8 @@ public:
     // TRANSITION, incorrectly default constructs _Result when _Ty is default constructible
     _Associated_state(_Mydel* _Dp = nullptr)
         : _Refs(1), // non-atomic initialization
-          _Exception(), _Retrieved(false), _Ready(false), _Ready_at_thread_exit(false), _Has_stored_result(false),
-          _Running(false), _Deleter(_Dp) {}
+          _Result(), _Exception(), _Retrieved(false), _Ready(false), _Ready_at_thread_exit(false),
+          _Has_stored_result(false), _Running(false), _Deleter(_Dp) {}
 
     virtual ~_Associated_state() noexcept {
         if (_Already_has_stored_result() && !_Ready) { // registered for release at thread exit
@@ -409,7 +409,7 @@ protected:
     }
 
 public:
-    conditional_t<is_default_constructible_v<_Ty>, _Ty, _Result_holder<_Ty>> _Result{};
+    conditional_t<is_default_constructible_v<_Ty>, _Ty, _Result_holder<_Ty>> _Result;
     exception_ptr _Exception;
     mutex _Mtx;
     condition_variable _Cond;
