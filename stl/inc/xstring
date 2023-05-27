@@ -190,27 +190,27 @@ struct _Char_traits { // properties of a string or stream element
         }
     }
 
-    _NODISCARD static constexpr bool eq(const _Elem& _Left, const _Elem& _Right) noexcept {
+    _NODISCARD static constexpr bool eq(const _Elem _Left, const _Elem _Right) noexcept {
         return _Left == _Right;
     }
 
-    _NODISCARD static constexpr bool lt(const _Elem& _Left, const _Elem& _Right) noexcept {
+    _NODISCARD static constexpr bool lt(const _Elem _Left, const _Elem _Right) noexcept {
         return _Left < _Right;
     }
 
-    _NODISCARD static constexpr _Elem to_char_type(const int_type& _Meta) noexcept {
+    _NODISCARD static constexpr _Elem to_char_type(const int_type _Meta) noexcept {
         return static_cast<_Elem>(_Meta);
     }
 
-    _NODISCARD static constexpr int_type to_int_type(const _Elem& _Ch) noexcept {
+    _NODISCARD static constexpr int_type to_int_type(const _Elem _Ch) noexcept {
         return static_cast<int_type>(_Ch);
     }
 
-    _NODISCARD static constexpr bool eq_int_type(const int_type& _Left, const int_type& _Right) noexcept {
+    _NODISCARD static constexpr bool eq_int_type(const int_type _Left, const int_type _Right) noexcept {
         return _Left == _Right;
     }
 
-    _NODISCARD static constexpr int_type not_eof(const int_type& _Meta) noexcept {
+    _NODISCARD static constexpr int_type not_eof(const int_type _Meta) noexcept {
         return _Meta != eof() ? _Meta : !eof();
     }
 
@@ -302,27 +302,27 @@ public:
         _Left = _Right;
     }
 
-    _NODISCARD static constexpr bool eq(const _Elem& _Left, const _Elem& _Right) noexcept {
+    _NODISCARD static constexpr bool eq(const _Elem _Left, const _Elem _Right) noexcept {
         return _Left == _Right;
     }
 
-    _NODISCARD static constexpr bool lt(const _Elem& _Left, const _Elem& _Right) noexcept {
+    _NODISCARD static constexpr bool lt(const _Elem _Left, const _Elem _Right) noexcept {
         return _Left < _Right;
     }
 
-    _NODISCARD static constexpr _Elem to_char_type(const int_type& _Meta) noexcept {
+    _NODISCARD static constexpr _Elem to_char_type(const int_type _Meta) noexcept {
         return _Meta;
     }
 
-    _NODISCARD static constexpr int_type to_int_type(const _Elem& _Ch) noexcept {
+    _NODISCARD static constexpr int_type to_int_type(const _Elem _Ch) noexcept {
         return _Ch;
     }
 
-    _NODISCARD static constexpr bool eq_int_type(const int_type& _Left, const int_type& _Right) noexcept {
+    _NODISCARD static constexpr bool eq_int_type(const int_type _Left, const int_type _Right) noexcept {
         return _Left == _Right;
     }
 
-    _NODISCARD static constexpr int_type not_eof(const int_type& _Meta) noexcept {
+    _NODISCARD static constexpr int_type not_eof(const int_type _Meta) noexcept {
         return _Meta != eof() ? _Meta : static_cast<int_type>(!eof());
     }
 
@@ -446,27 +446,27 @@ public:
         _Left = _Right;
     }
 
-    _NODISCARD static constexpr bool eq(const _Elem& _Left, const _Elem& _Right) noexcept {
+    _NODISCARD static constexpr bool eq(const _Elem _Left, const _Elem _Right) noexcept {
         return _Left == _Right;
     }
 
-    _NODISCARD static constexpr bool lt(const _Elem& _Left, const _Elem& _Right) noexcept {
+    _NODISCARD static constexpr bool lt(const _Elem _Left, const _Elem _Right) noexcept {
         return static_cast<unsigned char>(_Left) < static_cast<unsigned char>(_Right);
     }
 
-    _NODISCARD static constexpr _Elem to_char_type(const int_type& _Meta) noexcept {
+    _NODISCARD static constexpr _Elem to_char_type(const int_type _Meta) noexcept {
         return static_cast<_Elem>(_Meta);
     }
 
-    _NODISCARD static constexpr int_type to_int_type(const _Elem& _Ch) noexcept {
+    _NODISCARD static constexpr int_type to_int_type(const _Elem _Ch) noexcept {
         return static_cast<unsigned char>(_Ch);
     }
 
-    _NODISCARD static constexpr bool eq_int_type(const int_type& _Left, const int_type& _Right) noexcept {
+    _NODISCARD static constexpr bool eq_int_type(const int_type _Left, const int_type _Right) noexcept {
         return _Left == _Right;
     }
 
-    _NODISCARD static constexpr int_type not_eof(const int_type& _Meta) noexcept {
+    _NODISCARD static constexpr int_type not_eof(const int_type _Meta) noexcept {
         return _Meta != eof() ? _Meta : !eof();
     }
 
