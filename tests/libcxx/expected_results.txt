@@ -152,6 +152,9 @@ std/utilities/memory/specialized.algorithms/uninitialized.fill.n/ranges_uninitia
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move_n.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-3843
+std/utilities/expected/expected.expected/observers/value.pass.cpp
+
 # libc++ doesn't implement P1957R2 "Converting from `T*` to `bool` should be considered narrowing"
 std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
