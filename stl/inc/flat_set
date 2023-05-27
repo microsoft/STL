@@ -11,8 +11,8 @@
 #include <algorithm>
 #include <compare>
 #include <initializer_list>
-#include <ranges>
 #include <vector>
+#include <xutility>
 
 _STD_BEGIN
 template <class _Alloc, class _Container>
@@ -713,7 +713,6 @@ _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>>
 flat_multiset(initializer_list<_Kty>, _Keylt = _Keylt()) -> flat_multiset<_Kty, _Keylt>;
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>>
 flat_multiset(sorted_equivalent_t, initializer_list<_Kty>, _Keylt = _Keylt()) -> flat_multiset<_Kty, _Keylt>;
-
 _STD_END
 
 #endif // _STL_COMPILER_PREPROCESSOR

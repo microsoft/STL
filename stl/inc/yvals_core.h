@@ -1725,6 +1725,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_forward_like   202207L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_flat_set 202207L
+#endif // __cpp_lib_concepts
+
 #define __cpp_lib_invoke_r       202106L
 #define __cpp_lib_ios_noreplace  202207L
 #define __cpp_lib_is_scoped_enum 202011L
@@ -1769,10 +1774,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_unreachable 202202L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_flat_set 202207L
-#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
