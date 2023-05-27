@@ -636,6 +636,12 @@ public:
         _Throw_bad_expected_access_lv();
     }
     _NODISCARD constexpr const _Ty&& value() const&& {
+        // TRANSITION, DevCom-1638273 and LLVM-53224
+        static_assert(
+            is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. N4950 [expected.object.obs]/11");
+        static_assert(is_move_constructible_v<_Err>,
+            "is_constructible_v<E, const E&&> must be true. N4950 [expected.object.obs]/11");
+
         if (_Has_value) {
             return _STD move(_Value);
         }
@@ -643,6 +649,12 @@ public:
         _Throw_bad_expected_access_rv();
     }
     _NODISCARD constexpr _Ty&& value() && {
+        // TRANSITION, DevCom-1638273 and LLVM-53224
+        static_assert(
+            is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. N4950 [expected.object.obs]/11");
+        static_assert(
+            is_move_constructible_v<_Err>, "is_constructible_v<E, E&&> must be true. N4950 [expected.object.obs]/11");
+
         if (_Has_value) {
             return _STD move(_Value);
         }
@@ -1133,9 +1145,6 @@ private:
     [[noreturn]] void _Throw_bad_expected_access_lv() const {
         _THROW(bad_expected_access{_Unexpected});
     }
-    [[noreturn]] void _Throw_bad_expected_access_lv() {
-        _THROW(bad_expected_access{_Unexpected});
-    }
     [[noreturn]] void _Throw_bad_expected_access_rv() const {
         _THROW(bad_expected_access{_STD move(_Unexpected)});
     }
@@ -1414,6 +1423,11 @@ public:
         }
     }
     constexpr void value() && {
+        // per LWG issue unnumbered as of 2023-05-26
+        // TRANSITION, DevCom-1638273 and LLVM-53224
+        static_assert(is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true");
+        static_assert(is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true");
+
         if (!_Has_value) {
             _Throw_bad_expected_access_rv();
         }
