@@ -639,7 +639,7 @@ public:
         // TRANSITION, DevCom-1638273 and LLVM-53224
         static_assert(
             is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. N4950 [expected.object.obs]/11");
-        static_assert(is_move_constructible_v<_Err>,
+        static_assert(is_constructible_v<_Err, const _Err&&>,
             "is_constructible_v<E, const E&&> must be true. N4950 [expected.object.obs]/11");
 
         if (_Has_value) {
