@@ -1724,7 +1724,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_expected          202211L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_forward_like   202207L
+#define __cpp_lib_forward_like 202207L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_flat_set 202207L
