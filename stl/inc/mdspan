@@ -993,7 +993,7 @@ public:
     constexpr mdspan& operator=(const mdspan&) = default;
     constexpr mdspan& operator=(mdspan&&)      = default;
 
-#ifdef __clang__ // TRANSITION, P2128R6
+#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
     template <class... _OtherIndexTypes>
         requires (is_convertible_v<_OtherIndexTypes, index_type> && ...)
               && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
@@ -1001,7 +1001,7 @@ public:
     _NODISCARD constexpr reference operator[](_OtherIndexTypes... _Indices) const {
         return _Acc.access(_Ptr, static_cast<size_t>(_Map(static_cast<index_type>(_STD move(_Indices))...)));
     }
-#endif // __clang__
+#endif // __cpp_multidimensional_subscript
 
     template <class _OtherIndexType>
         requires is_convertible_v<const _OtherIndexType&, index_type>
@@ -1088,11 +1088,11 @@ public:
 private:
     template <class _OtherIndexType, size_t... _Seq>
     _NODISCARD constexpr reference _Index_impl(span<_OtherIndexType, rank()> _Indices, index_sequence<_Seq...>) const {
-#ifdef __clang__ // TRANSITION, P2128R6
-        return this->operator[](_STD as_const(_Indices[_Seq])...);
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
+        return operator[](_STD as_const(_Indices[_Seq])...);
+#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
         return _Acc.access(_Ptr, static_cast<size_t>(_Map(static_cast<index_type>(_STD as_const(_Indices[_Seq]))...)));
-#endif // ^^^ !defined(__clang__) ^^^
+#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 
     data_handle_type _Ptr{};
