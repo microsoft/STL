@@ -1423,7 +1423,7 @@ public:
         }
     }
     constexpr void value() && {
-        // per LWG issue unnumbered as of 2023-05-26
+        // per LWG-3940
         // TRANSITION, DevCom-1638273 and LLVM-53224
         static_assert(is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true");
         static_assert(is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true");
