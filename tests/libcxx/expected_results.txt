@@ -131,6 +131,9 @@ std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass
 # libc++ doesn't implement LWG-3836
 std/utilities/expected/expected.expected/ctor/ctor.u.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-3843
+std/utilities/expected/expected.expected/observers/value.pass.cpp FAIL
+
 # libc++ doesn't implement LWG-3857
 std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
 std/strings/string.view/string.view.cons/from_string1.compile.fail.cpp FAIL
@@ -152,8 +155,7 @@ std/utilities/memory/specialized.algorithms/uninitialized.fill.n/ranges_uninitia
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move_n.pass.cpp FAIL
 
-# libc++ doesn't implement LWG-3843
-std/utilities/expected/expected.expected/observers/value.pass.cpp FAIL
+# libc++ doesn't speculatively implement LWG-3940
 std/utilities/expected/expected.void/observers/value.pass.cpp FAIL
 
 # libc++ doesn't implement P1957R2 "Converting from `T*` to `bool` should be considered narrowing"
