@@ -280,6 +280,7 @@ template <class _Extents>
 class _Fwd_prod_of_extents {
 public:
     _NODISCARD static constexpr _Extents::index_type _Calculate(const _Extents& _Exts, const size_t _Idx) noexcept {
+        _STL_INTERNAL_CHECK(_Idx <= _Extents::_Rank);
         if constexpr (_Extents::rank() == 0) {
             return 1;
         } else {
@@ -293,7 +294,7 @@ public:
 };
 
 template <class _IndexType, size_t... _Extents>
-    requires ((_Extents != dynamic_extent) && ...)
+    requires (sizeof...(_Extents) > 0) && ((_Extents != dynamic_extent) && ...)
 class _Fwd_prod_of_extents<extents<_IndexType, _Extents...>> {
 private:
     using _Ty = extents<_IndexType, _Extents...>;
@@ -301,8 +302,8 @@ private:
     _NODISCARD static consteval auto _Make_prods() noexcept {
         array<typename _Ty::index_type, _Ty::rank() + 1> _Result;
         _Result.front() = 1;
-        for (size_t _Dim = 1; _Dim < _Ty::_Rank + 1; ++_Dim) {
-            _Result[_Dim] = static_cast<_Ty::index_type>(_Result[_Dim - 1] * _Ty::static_extent(_Dim - 1));
+        for (size_t _Idx = 1; _Idx < _Ty::_Rank + 1; ++_Idx) {
+            _Result[_Idx] = static_cast<_Ty::index_type>(_Result[_Idx - 1] * _Ty::static_extent(_Idx - 1));
         }
         return _Result;
     }
@@ -311,6 +312,7 @@ private:
 
 public:
     _NODISCARD static constexpr _Ty::index_type _Calculate(const _Ty&, const size_t _Idx) noexcept {
+        _STL_INTERNAL_CHECK(_Idx <= _Ty::_Rank);
         return _Cache[_Idx];
     }
 };
@@ -320,6 +322,7 @@ template <class _Extents>
 class _Rev_prod_of_extents {
 public:
     _NODISCARD static constexpr _Extents::index_type _Calculate(const _Extents& _Exts, const size_t _Idx) noexcept {
+        _STL_INTERNAL_CHECK(_Idx < _Extents::_Rank);
         typename _Extents::index_type _Result = 1;
         for (size_t _Dim = _Idx + 1; _Dim < _Extents::_Rank; ++_Dim) {
             _Result *= _Exts.extent(_Dim);
@@ -337,8 +340,8 @@ private:
     _NODISCARD static consteval auto _Make_prods() noexcept {
         array<typename _Ty::index_type, _Ty::rank()> _Result;
         _Result.back() = 1;
-        for (size_t _Dim = _Ty::_Rank; _Dim-- > 1;) {
-            _Result[_Dim - 1] = static_cast<_Ty::index_type>(_Result[_Dim] * _Ty::static_extent(_Dim));
+        for (size_t _Idx = _Ty::_Rank; _Idx-- > 1;) {
+            _Result[_Idx - 1] = static_cast<_Ty::index_type>(_Result[_Idx] * _Ty::static_extent(_Idx));
         }
         return _Result;
     }
@@ -347,6 +350,7 @@ private:
 
 public:
     _NODISCARD static constexpr _Ty::index_type _Calculate(const _Ty&, const size_t _Idx) noexcept {
+        _STL_INTERNAL_CHECK(_Idx < _Ty::_Rank);
         return _Cache[_Idx];
     }
 };
