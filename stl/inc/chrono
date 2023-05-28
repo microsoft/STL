@@ -1603,8 +1603,8 @@ namespace chrono {
         constexpr explicit hh_mm_ss(_Duration _Dur)
             : _Is_neg{_Dur < _Duration::zero()}, //
               _Hours{_Duration_cast_underflow_to_zero<_CHRONO hours>(_CHRONO abs(_Dur))},
-              _Mins{_Duration_cast_underflow_to_zero<_CHRONO minutes>(_CHRONO abs(_Dur)) - _Hours},
-              _Secs{_Duration_cast_underflow_to_zero<_CHRONO seconds>(_CHRONO abs(_Dur)) - _Hours - _Mins} {
+              _Mins{_Duration_cast_underflow_to_zero<_CHRONO minutes>(_CHRONO abs(_Dur) - _Hours)},
+              _Secs{_Duration_cast_underflow_to_zero<_CHRONO seconds>(_CHRONO abs(_Dur) - _Hours - _Mins)} {
             if constexpr (treat_as_floating_point_v<typename precision::rep>) {
                 // no need to deal with underflow here, because floating durations allow it
                 _Sub_secs = _CHRONO abs(_Dur) - hours() - minutes() - seconds();

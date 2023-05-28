@@ -44,7 +44,7 @@ int main() {
     assert_duration_format_equal_positive(10h + 20min + 30s, "10:20:30");
     assert_duration_format_equal_positive(days{3}, "72:00:00");
     assert_duration_format_equal_positive(years{1}, "8765:49:12");
-    assert_duration_format_equal_positive(duration<float, days::period>{1.55f}, "37:12:00");
+    assert_duration_format_equal_positive(duration<float, days::period>{1.55f}, "37:11:59");
     assert_duration_format_equal_positive(2ms, "00:00:00.002");
     assert_duration_format_equal_positive(60min, "01:00:00");
 }
