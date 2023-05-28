@@ -1399,7 +1399,8 @@ public:
         return substr(_Off, _Nx).compare(_Right.substr(_Roff, _Count));
     }
 
-    _NODISCARD constexpr int compare(_In_z_ const _Elem* const _Ptr) const { // compare [0, _Mysize) with [_Ptr, <null>)
+    _NODISCARD constexpr int compare(_In_z_ const _Elem* const _Ptr) const noexcept /* strengthened */ {
+        // compare [0, _Mysize) with [_Ptr, <null>)
         return compare(basic_string_view(_Ptr));
     }
 
