@@ -952,7 +952,7 @@ public:
                   && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
                   && (_Size == rank() || _Size == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
-    constexpr explicit(_Size != rank_dynamic()) mdspan(data_handle_type _Ptr_, span<_OtherIndexType, _Size>& _Exts)
+    constexpr explicit(_Size != rank_dynamic()) mdspan(data_handle_type _Ptr_, span<_OtherIndexType, _Size> _Exts)
         : _Ptr(_STD move(_Ptr_)), _Map(extents_type{_Exts}), _Acc() {}
 
     template <class _OtherIndexType, size_t _Size>
@@ -1091,9 +1091,16 @@ private:
 #ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
         return operator[](_STD as_const(_Indices[_Seq])...);
 #else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
-        return _Acc.access(_Ptr, static_cast<size_t>(_Map(static_cast<index_type>(_STD as_const(_Indices[_Seq]))...)));
+        return _Multidimensional_access(_STD as_const(_Indices[_Seq])...);
 #endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
+
+#ifndef __cpp_multidimensional_subscript // TRANSITION, P2128R6
+    template <class... _OtherIndexTypes>
+    _NODISCARD constexpr reference _Multidimensional_access(_OtherIndexTypes... _Indices) const {
+        return _Acc.access(_Ptr, static_cast<size_t>(_Map(static_cast<index_type>(_STD move(_Indices))...)));
+    }
+#endif // __cpp_multidimensional_subscript
 
     data_handle_type _Ptr{};
     mapping_type _Map{};
