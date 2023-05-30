@@ -82,22 +82,26 @@ constexpr void sloc_constructor_test() {
     const s x;
     assert(x.loc.line() == __LINE__ - 1);
     assert(x.loc.column() == 13);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
+    assert(x.loc.function_name() == "sloc_constructor_test"sv);
+#else // ^^^ workaround / no workaround vvv
     if (is_constant_evaluated()) {
         assert(x.loc.function_name() == "int __cdecl main(void)"sv); // TRANSITION, VSO-1285783
     } else {
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
-        assert(x.loc.function_name() == "sloc_constructor_test"sv);
-#else // ^^^ workaround / no workaround vvv
         assert(x.loc.function_name() == "void __cdecl sloc_constructor_test(void)"sv);
-#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     }
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{x.loc.file_name()}.ends_with(test_cpp));
 }
 
 constexpr void different_constructor_test() {
     const s x{1};
     assert(x.loc.line() == s_int_line);
+#ifdef __clang__
+    assert(x.loc.column() == 15);
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
     assert(x.loc.column() == 5);
+#endif // ^^^ !defined(__clang__) ^^^
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(x.loc.function_name() == "s"sv);
 #elif defined(_M_IX86) // ^^^ workaround / no workaround vvv
@@ -112,20 +116,24 @@ constexpr void sub_member_test() {
     const s2 s;
     assert(s.x.loc.line() == __LINE__ - 1);
     assert(s.x.loc.column() == 14);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
+    assert(s.x.loc.function_name() == "sub_member_test"sv);
+#else // ^^^ workaround / no workaround vvv
     if (is_constant_evaluated()) {
         assert(s.x.loc.function_name() == "int __cdecl main(void)"sv); // TRANSITION, VSO-1285783
     } else {
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
-        assert(s.x.loc.function_name() == "sub_member_test"sv);
-#else // ^^^ workaround / no workaround vvv
         assert(s.x.loc.function_name() == "void __cdecl sub_member_test(void)"sv);
-#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     }
+#endif // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(string_view{s.x.loc.file_name()}.ends_with(test_cpp));
 
     const s2 s_i{1};
     assert(s_i.x.loc.line() == s2_int_line);
+#ifdef __clang__
+    assert(s_i.x.loc.column() == 15);
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
     assert(s_i.x.loc.column() == 5);
+#endif // ^^^ !defined(__clang__) ^^^
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
     assert(s_i.x.loc.function_name() == "s2"sv);
 #elif defined(_M_IX86) // ^^^ workaround / no workaround vvv
@@ -201,21 +209,17 @@ constexpr void function_template_test() {
 constexpr bool test() {
     copy_test();
     local_test();
-#ifndef __clang__ // TRANSITION, LLVM-56379
     argument_test(__LINE__, 5);
-#endif // __clang__
 #ifdef __clang__
     const auto loc = source_location::current();
     argument_test(__LINE__ - 1, 22, loc);
-#else // ^^^ defined(__clang__) / !defined(__clang__)
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
     const auto loc = source_location::current();
     argument_test(__LINE__ - 1, 39, loc);
 #endif // ^^^ !defined(__clang__) ^^^
-#ifndef __clang__ // TRANSITION, LLVM-56379
     sloc_constructor_test();
     different_constructor_test();
     sub_member_test();
-#endif // __clang__
     lambda_test();
     function_template_test();
     header_test();
