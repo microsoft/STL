@@ -280,8 +280,8 @@ void test_duration_formatter() {
     assert(format(STR("{:%T %j %q %Q}"), -days{4} - 30min) == STR("-96:30:00 4 min 5790"));
     assert(format(STR("{:%T %j}"), days{4} + 23h + 30min) == STR("119:30:00 4"));
     assert(format(STR("{:%T %j}"), -days{4} - 23h - 30min) == STR("-119:30:00 4"));
-    assert(format(STR("{:%T %j}"), duration<float, days::period>{1.55f}) == STR("37:12:00 1"));
-    assert(format(STR("{:%T %j}"), duration<float, days::period>{-1.55f}) == STR("-37:12:00 1"));
+    assert(format(STR("{:%T %j}"), duration<float, days::period>{1.55f}) == STR("37:11:59 1"));
+    assert(format(STR("{:%T %j}"), duration<float, days::period>{-1.55f}) == STR("-37:11:59 1"));
 }
 
 template <typename CharT>
