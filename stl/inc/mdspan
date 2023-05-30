@@ -1032,9 +1032,9 @@ public:
     }
 
     friend constexpr void swap(mdspan& _Left, mdspan& _Right) noexcept {
-        swap(_Left._Ptr, _Right._Ptr);
-        swap(_Left._Map, _Right._Map);
-        swap(_Left._Acc, _Right._Acc);
+        swap(_Left._Ptr, _Right._Ptr); // intentional ADL
+        swap(_Left._Map, _Right._Map); // intentional ADL
+        swap(_Left._Acc, _Right._Acc); // intentional ADL
     }
 
     _NODISCARD constexpr const extents_type& extents() const noexcept {
