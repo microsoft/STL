@@ -261,11 +261,12 @@ public:
 #pragma warning(disable : 26495) // Variable 'std::locale::_Ptr' is uninitialized.
                                  // Always initialize a member variable (type.6).
 
-    // _Ptr must remain uninitialized here.
+    // We must not explicitly initialize _Ptr here; we rely on it maintaining the value
+    // previously created in its storage. To be precise:
     // In locale0.cpp, locale::_Init() uses True Placement New at classic_locale's address,
     // and classic_locale is constructed from the _Noinit enumerator of type _Uninitialized.
     // The sequencing is highly unusual; the True Placement New happens before the _Uninitialized construction,
-    // so attempting to initialize _Ptr here will overwrite the result of the True Placement New.
+    // so while _Ptr here formally has indeterminate value, we expect it to actually keep the previous value.
     locale(_Uninitialized) {} // defer construction
 #pragma warning(pop)
 
