@@ -381,22 +381,22 @@ protected:
     virtual void __CLR_OR_THIS_CALL imbue(const locale&) {} // set locale to argument (do nothing)
 
 private:
-    _Elem* _Gfirst; // beginning of read buffer
-    _Elem* _Pfirst; // beginning of write buffer
-    _Elem** _IGfirst; // pointer to beginning of read buffer
-    _Elem** _IPfirst; // pointer to beginning of write buffer
-    _Elem* _Gnext; // current position in read buffer
-    _Elem* _Pnext; // current position in write buffer
-    _Elem** _IGnext; // pointer to current position in read buffer
-    _Elem** _IPnext; // pointer to current position in write buffer
+    _Elem* _Gfirst{}; // beginning of read buffer
+    _Elem* _Pfirst{}; // beginning of write buffer
+    _Elem** _IGfirst{}; // pointer to beginning of read buffer
+    _Elem** _IPfirst{}; // pointer to beginning of write buffer
+    _Elem* _Gnext{}; // current position in read buffer
+    _Elem* _Pnext{}; // current position in write buffer
+    _Elem** _IGnext{}; // pointer to current position in read buffer
+    _Elem** _IPnext{}; // pointer to current position in write buffer
 
-    int _Gcount; // length of read buffer
-    int _Pcount; // length of write buffer
-    int* _IGcount; // pointer to length of read buffer
-    int* _IPcount; // pointer to length of write buffer
+    int _Gcount{}; // length of read buffer
+    int _Pcount{}; // length of write buffer
+    int* _IGcount{}; // pointer to length of read buffer
+    int* _IPcount{}; // pointer to length of write buffer
 
 protected:
-    locale* _Plocale; // pointer to imbued locale object
+    locale* _Plocale{}; // pointer to imbued locale object
 };
 
 #if defined(_DLL_CPPLIB)

@@ -305,8 +305,8 @@ private:
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-private-field"
 #endif // __clang__
-    void* _Data1;
-    void* _Data2;
+    void* _Data1{};
+    void* _Data2{};
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__

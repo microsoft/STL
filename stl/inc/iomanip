@@ -26,15 +26,6 @@ struct _Fillobj { // store fill character
     _Fillobj(_Elem _Ch) : _Fill(_Ch) {}
 
     template <class _Elem2, class _Traits>
-    friend basic_istream<_Elem2, _Traits>& operator>>(basic_istream<_Elem2, _Traits>& _Istr, const _Fillobj& _Manip) {
-        // set fill character in input stream
-        static_assert(is_same_v<_Elem, _Elem2>, "wrong character type for setfill");
-
-        _Istr.fill(_Manip._Fill);
-        return _Istr;
-    }
-
-    template <class _Elem2, class _Traits>
     friend basic_ostream<_Elem2, _Traits>& operator<<(basic_ostream<_Elem2, _Traits>& _Ostr, const _Fillobj& _Manip) {
         // set fill character in output stream
         static_assert(is_same_v<_Elem, _Elem2>, "wrong character type for setfill");
