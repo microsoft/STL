@@ -253,7 +253,10 @@ _NODISCARD _CONSTEXPR23 from_chars_result _Integer_from_chars(
 
     constexpr _Unsigned _Uint_max    = static_cast<_Unsigned>(-1);
     constexpr _Unsigned _Int_max     = static_cast<_Unsigned>(_Uint_max >> 1);
+#pragma warning(push)
+#pragma warning(disable : 26450) // TRANSITION, VSO-1828677
     constexpr _Unsigned _Abs_int_min = static_cast<_Unsigned>(_Int_max + 1);
+#pragma warning(pop)
 
     _Unsigned _Risky_val;
     _Unsigned _Max_digit;

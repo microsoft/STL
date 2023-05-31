@@ -704,7 +704,10 @@ namespace pmr {
         static constexpr size_t _Scale(const size_t _Size) noexcept {
             // scale _Size by 1.5, rounding up to a multiple of alignof(_Header), saturating to _Max_allocation
             // (keep synchronized with monotonic_buffer_resource::release)
+#pragma warning(push)
+#pragma warning(disable : 26450) // TRANSITION, VSO-1828677
             constexpr auto _Max_size = (_Max_allocation - alignof(_Header) + 1) / 3 * 2;
+#pragma warning(pop)
             if (_Size >= _Max_size) {
                 return _Max_allocation;
             }
