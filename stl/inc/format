@@ -695,10 +695,6 @@ public:
         : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
     explicit basic_format_arg(const unsigned int _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
-    explicit basic_format_arg(const long _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
-    explicit basic_format_arg(const unsigned long _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
     explicit basic_format_arg(const long long _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Long_long_type), _Long_long_state(_Val) {}
     explicit basic_format_arg(const unsigned long long _Val) noexcept
@@ -3548,10 +3544,19 @@ struct _Formatter_base {
                 _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
         }
 
-        return _STD visit_format_arg(
-            _Arg_formatter<typename _FormatContext::iterator, _CharT>{
-                ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)},
-            basic_format_arg<_FormatContext>{_Val});
+        using _Erased_type = _Format_arg_traits<_FormatContext>::template _Storage_type<_Ty>;
+
+        _Arg_formatter<typename _FormatContext::iterator, _CharT> _Visitor{
+            ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)};
+#if !_HAS_CXX23
+        if constexpr (is_same_v<_Erased_type, basic_string_view<_CharT>>) {
+            return _STD visit_format_arg(
+                _Visitor, basic_format_arg<_FormatContext>{_Erased_type{_Val.data(), _Val.size()}});
+        } else
+#endif // !_HAS_CXX23
+        {
+            return _STD visit_format_arg(_Visitor, basic_format_arg<_FormatContext>{static_cast<_Erased_type>(_Val)});
+        }
     }
 
 private:
