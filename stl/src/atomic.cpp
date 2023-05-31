@@ -18,6 +18,7 @@ _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() { // TRANSITION, ABI: "s
 }
 
 _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previously obtained lock
+    _Analysis_assume_lock_held_(_Shared_ptr_lock);
     ReleaseSRWLockExclusive(&_Shared_ptr_lock);
 }
 

@@ -45,7 +45,7 @@ public:
     }
 
 protected:
-    __CLR_OR_THIS_CALL basic_ostream(basic_ostream&& _Right) {
+    __CLR_OR_THIS_CALL basic_ostream(basic_ostream&& _Right) noexcept(false) {
         _Myios::init();
         _Myios::move(_STD move(_Right));
     }
