@@ -179,7 +179,7 @@ To build the x64 target (recommended):
 
 1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
 2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset x64
+3. `cmake --preset x64`
 4. `cmake --build --preset x64`
 
 # How To Consume
