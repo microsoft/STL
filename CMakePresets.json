@@ -10,43 +10,28 @@
       "name": "base",
       "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/out/${presetName}"
+      "binaryDir": "${sourceDir}/out/${presetName}",
+      "description": "${presetName} Ninja Config",
+      "architecture": {
+        "strategy": "external",
+        "value": "${presetName}"
+      }
     },
     {
       "name": "x86",
-      "inherits": "base",
-      "description": "x86 Ninja Config",
-      "architecture": {
-        "strategy": "external",
-        "value": "x86"
-      }
+      "inherits": "base"
     },
     {
       "name": "x64",
-      "inherits": "base",
-      "description": "x64 Ninja Config",
-      "architecture": {
-        "strategy": "external",
-        "value": "x64"
-      }
+      "inherits": "base"
     },
     {
       "name": "ARM",
-      "inherits": "base",
-      "description": "ARM Ninja Config",
-      "architecture": {
-        "strategy": "external",
-        "value": "ARM"
-      }
+      "inherits": "base"
     },
     {
       "name": "ARM64",
-      "inherits": "base",
-      "description": "ARM64 Ninja Config",
-      "architecture": {
-        "strategy": "external",
-        "value": "ARM64"
-      }
+      "inherits": "base"
     }
   ],
   "buildPresets": [
