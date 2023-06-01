@@ -416,8 +416,8 @@ for how _we_ use it.
 To run benchmarks, you'll need to first build the STL, then build the benchmarks:
 
 ```cmd
-cmake -B out\x64 -S . -G Ninja
-cmake --build out\x64
+cmake --preset x64
+cmake --build --preset x64
 cmake -B out\benchmark -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\x64
 cmake --build out\benchmark
 ```
