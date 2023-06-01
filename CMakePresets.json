@@ -9,6 +9,7 @@
     {
       "name": "base",
       "hidden": true,
+      "generator": "Ninja",
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "installDir": "${sourceDir}/out/install/${presetName}"
     },
@@ -16,7 +17,6 @@
       "name": "x86",
       "inherits": "base",
       "description": "x86 Ninja Config",
-      "generator": "Ninja",
       "architecture": {
         "strategy": "external",
         "value": "x86"
@@ -26,7 +26,6 @@
       "name": "x64",
       "inherits": "base",
       "description": "x64 Ninja Config",
-      "generator": "Ninja",
       "architecture": {
         "strategy": "external",
         "value": "x64"
@@ -36,7 +35,6 @@
       "name": "ARM",
       "inherits": "base",
       "description": "ARM Ninja Config",
-      "generator": "Ninja",
       "architecture": {
         "strategy": "external",
         "value": "ARM"
@@ -46,7 +44,6 @@
       "name": "ARM64",
       "inherits": "base",
       "description": "ARM64 Ninja Config",
-      "generator": "Ninja",
       "architecture": {
         "strategy": "external",
         "value": "ARM64"
