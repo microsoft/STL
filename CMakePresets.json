@@ -27,11 +27,17 @@
     },
     {
       "name": "ARM",
-      "inherits": "base"
+      "inherits": "base",
+      "cacheVariables": {
+        "TESTS_BUILD_ONLY": true
+      }
     },
     {
       "name": "ARM64",
-      "inherits": "base"
+      "inherits": "base",
+      "cacheVariables": {
+        "TESTS_BUILD_ONLY": true
+      }
     }
   ],
   "buildPresets": [
