@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
     "minor": 26,
