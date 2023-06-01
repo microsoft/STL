@@ -10,8 +10,7 @@
       "name": "base",
       "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/out/install/${presetName}"
+      "binaryDir": "${sourceDir}/out/build/${presetName}"
     },
     {
       "name": "x86",
