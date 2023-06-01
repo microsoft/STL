@@ -11,7 +11,6 @@
       "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/out/${presetName}",
-      "description": "${presetName} Ninja Config",
       "architecture": {
         "strategy": "external",
         "value": "${presetName}"
@@ -19,15 +18,18 @@
     },
     {
       "name": "x86",
-      "inherits": "base"
+      "inherits": "base",
+      "description": "x86 Ninja Config"
     },
     {
       "name": "x64",
-      "inherits": "base"
+      "inherits": "base",
+      "description": "x64 Ninja Config"
     },
     {
       "name": "ARM",
       "inherits": "base",
+      "description": "ARM Ninja Config",
       "cacheVariables": {
         "TESTS_BUILD_ONLY": true
       }
@@ -35,6 +37,7 @@
     {
       "name": "ARM64",
       "inherits": "base",
+      "description": "ARM64 Ninja Config",
       "cacheVariables": {
         "TESTS_BUILD_ONLY": true
       }
