@@ -36,31 +36,22 @@
   ],
   "buildPresets": [
     {
-      "name": "base-build",
-      "hidden": true,
-      "nativeToolOptions": [ "-v" ]
-    },
-    {
       "name": "x86",
-      "inherits": "base-build",
       "configurePreset": "x86",
       "description": "Build x86 STL"
     },
     {
       "name": "x64",
-      "inherits": "base-build",
       "configurePreset": "x64",
       "description": "Build x64 STL"
     },
     {
       "name": "ARM",
-      "inherits": "base-build",
       "configurePreset": "ARM",
       "description": "Build ARM STL"
     },
     {
       "name": "ARM64",
-      "inherits": "base-build",
       "configurePreset": "ARM64",
       "description": "Build ARM64 STL"
     }
