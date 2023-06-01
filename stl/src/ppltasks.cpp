@@ -27,8 +27,9 @@ static GUID const Local_IID_ICallbackWithNoReentrancyToApplicationSTA = {
 
 // Introduce stacktrace API for Debug CRT_APP
 #if defined(_CRT_APP) && defined(_DEBUG)
-extern "C" NTSYSAPI WORD NTAPI RtlCaptureStackBackTrace(_In_ DWORD FramesToSkip, _In_ DWORD FramesToCapture,
-    _Out_writes_to_(FramesToCapture, return) PVOID* BackTrace, _Out_opt_ PDWORD BackTraceHash);
+extern "C" NTSYSAPI _Success_(return != 0) WORD NTAPI
+    RtlCaptureStackBackTrace(_In_ DWORD FramesToSkip, _In_ DWORD FramesToCapture,
+        _Out_writes_to_(FramesToCapture, return) PVOID* BackTrace, _Out_opt_ PDWORD BackTraceHash);
 #endif
 
 namespace Concurrency {

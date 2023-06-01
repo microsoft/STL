@@ -4145,7 +4145,7 @@ namespace chrono {
                 --_Width;
             }
 
-            char _Ac[_MAX_INT_DIG];
+            char _Ac[_Max_int_dig];
             char* _Ptr = _Ac;
             if (_First != _Last && _Width > 0) {
                 const char _Ch = _Ctype_fac.narrow(*_First);

@@ -96,7 +96,7 @@ struct std::formatter<custom_formattable_type<T>, charT> : std::formatter<T, cha
     }
 };
 
-constexpr void test_disabled_formatter_is_disabled() {
+constexpr void test_disabled_formatter_is_disabled() { // COMPILE-ONLY
     using F = formatter<void, void>;
 
     static_assert(!is_default_constructible_v<F>);
@@ -184,6 +184,21 @@ void test_custom_formattable_type() {
     test_numeric_custom_formattable_type<float, charT>();
     test_numeric_custom_formattable_type<double, charT>();
     test_numeric_custom_formattable_type<long double, charT>();
+
+    test_custom_equiv_with_format<charT, charT>(STR("{}"), charT(' '));
+    test_custom_equiv_with_format<char, charT>(STR("{}"), ' ');
+
+    charT test_str[] = {charT(' '), charT()};
+    test_custom_equiv_with_format<charT*, charT>(STR("{}"), test_str);
+    test_custom_equiv_with_format<const charT*, charT>(STR("{}"), test_str);
+
+    struct traits : char_traits<charT> {};
+    test_custom_equiv_with_format<basic_string<charT, traits>, charT>(STR("{}"), test_str);
+    test_custom_equiv_with_format<basic_string_view<charT, traits>, charT>(STR("{}"), test_str);
+
+    test_custom_equiv_with_format<nullptr_t, charT>(STR("{}"), nullptr);
+    test_custom_equiv_with_format<void*, charT>(STR("{}"), nullptr);
+    test_custom_equiv_with_format<const void*, charT>(STR("{}"), nullptr);
 }
 
 template <class charT>
@@ -201,6 +216,21 @@ void test_mixed_custom_formattable_type() {
     test_numeric_mixed_args_custom_formattable_type<float, charT>();
     test_numeric_mixed_args_custom_formattable_type<double, charT>();
     test_numeric_mixed_args_custom_formattable_type<long double, charT>();
+
+    test_custom_equiv_with_format_mixed<charT, charT>(STR("{}{}"), charT(' '));
+    test_custom_equiv_with_format_mixed<char, charT>(STR("{}{}"), ' ');
+
+    charT test_str[] = {charT(' '), charT()};
+    test_custom_equiv_with_format_mixed<charT*, charT>(STR("{}{}"), test_str);
+    test_custom_equiv_with_format_mixed<const charT*, charT>(STR("{}{}"), test_str);
+
+    struct traits : char_traits<charT> {};
+    test_custom_equiv_with_format_mixed<basic_string<charT, traits>, charT>(STR("{}{}"), test_str);
+    test_custom_equiv_with_format_mixed<basic_string_view<charT, traits>, charT>(STR("{}{}"), test_str);
+
+    test_custom_equiv_with_format_mixed<nullptr_t, charT>(STR("{}{}"), nullptr);
+    test_custom_equiv_with_format_mixed<void*, charT>(STR("{}{}"), nullptr);
+    test_custom_equiv_with_format_mixed<const void*, charT>(STR("{}{}"), nullptr);
 }
 
 int main() {
