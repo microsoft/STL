@@ -186,7 +186,7 @@ To build the x64 target (recommended):
 
 Consumption of the built library is largely based on the build system you're using. There are at least 2 directories
 you need to hook up. Assuming you built the x64 target with the Visual Studio IDE, with the STL repository cloned to
-`C:\Dev\STL`, build outputs will end up at `C:\Dev\STL\out\build\x64\out`. Ensure that the `inc` directory is searched
+`C:\Dev\STL`, build outputs will end up at `C:\Dev\STL\out\x64\out`. Ensure that the `inc` directory is searched
 for headers, and that `lib\{architecture}` is searched for link libraries, before any defaults supplied by MSVC. The
 names of the import and static libraries are the same as those that ship with MSVC. As a result, the compiler `/MD`,
 `/MDd`, `/MT`, or `/MTd` switches will work without modification of your build scripts or command-line muscle memory.
@@ -210,7 +210,7 @@ variables to ensure that the built headers and libraries are used.
 From an "x64 Native Tools Command Prompt for VS 2022 Preview":
 
 ```
-C:\Users\username\Desktop>C:\Dev\STL\out\build\x64\set_environment.bat
+C:\Users\username\Desktop>C:\Dev\STL\out\x64\set_environment.bat
 
 C:\Users\username\Desktop>type example.cpp
 #include <iostream>
@@ -253,7 +253,7 @@ under a category in libcxx, or running a single test in `std` and `tr1`.
 
 ## Examples
 
-These examples assume that your current directory is `C:\Dev\STL\out\build\x64`.
+These examples assume that your current directory is `C:\Dev\STL\out\x64`.
 
 * This command will run all of the test suites with verbose output.
   + `ctest -V`
@@ -368,8 +368,8 @@ steps. Let's assume we want to debug a new feature with tests located in `tests\
 
 As always, build the STL from your branch and run the tests:
 ```
-C:\STL\out\build\x64> ninja
-C:\STL\out\build\x64> python tests\utils\stl-lit\stl-lit.py -v C:\STL\tests\std\tests\GH_XXXX_meow
+C:\STL\out\x64> ninja
+C:\STL\out\x64> python tests\utils\stl-lit\stl-lit.py -v C:\STL\tests\std\tests\GH_XXXX_meow
 ```
 
 Let's assume one of the tests fails an assert and we want to debug that configuration. `stl-lit` will conveniently print
@@ -379,14 +379,14 @@ provide debug symbols: `/Zi /Fdbark.pdb`.
 You can replace `bark` with any descriptive name you like. Add these before the `"-link"` option in the command line
 and recompile. Example:
 ```
-C:\STL\out\build\x64>cl "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp" [... more arguments ...]
-"-FeC:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" /Zi /Fdbark.pdb "-link"
+C:\STL\out\x64>cl "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp" [... more arguments ...]
+"-FeC:\STL\out\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" /Zi /Fdbark.pdb "-link"
 [... more arguments ...]
 ```
 
 You can now start debugging the test via:
 ```
-devenv "C:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe"
+devenv "C:\STL\out\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe"
        "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp"
 ```
 
@@ -395,7 +395,7 @@ is that the STL builds those and other DLLs itself and we should under no circum
 If you are testing one of the configurations with dynamic linkage (`/MD` or `/MDd`) the easiest solution is to add the
 build folder to your path:
 ```
-set PATH=C:\STL\out\build\x64\out\bin\amd64;%PATH%
+set PATH=C:\STL\out\x64\out\bin\amd64;%PATH%
 ```
 
 # Benchmarking
