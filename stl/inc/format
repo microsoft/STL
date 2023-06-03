@@ -565,14 +565,6 @@ concept _CharT_or_bool = same_as<_Ty, _CharT> || same_as<_Ty, bool>;
 template <class _CharT>
 concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;
 
-template <class _Ty, class _Context>
-concept _Has_formatter = requires(_Ty& _Val, _Context& _Ctx) {
-    _STD declval<typename _Context::template formatter_type<remove_cvref_t<_Ty>>>().format(_Val, _Ctx);
-};
-
-template <class _Ty, class _Context>
-concept _Has_const_formatter = _Has_formatter<const remove_reference_t<_Ty>, _Context>;
-
 _EXPORT_STD template <class _Ty, class _CharT = char>
 struct formatter;
 
@@ -656,6 +648,48 @@ private:
 _EXPORT_STD using format_parse_context  = basic_format_parse_context<char>;
 _EXPORT_STD using wformat_parse_context = basic_format_parse_context<wchar_t>;
 
+template <class _Ty, class _Context, class _Formatter = typename _Context::template formatter_type<remove_const_t<_Ty>>>
+concept _Formattable_with = semiregular<_Formatter>
+                         && requires(_Formatter& __f, const _Formatter& __cf, _Ty&& __t, _Context __fc,
+                             basic_format_parse_context<typename _Context::char_type> __pc) {
+                                { __f.parse(__pc) } -> same_as<typename decltype(__pc)::iterator>;
+                                { __cf.format(__t, __fc) } -> same_as<typename _Context::iterator>;
+                            };
+
+template <class _Ty, class _CharT>
+inline constexpr bool _Is_basic_string_like_for = false;
+
+template <class _CharT, class _Traits, class _Alloc>
+inline constexpr bool _Is_basic_string_like_for<basic_string<_CharT, _Traits, _Alloc>, _CharT> = true;
+
+template <class _CharT, class _Traits>
+inline constexpr bool _Is_basic_string_like_for<basic_string_view<_CharT, _Traits>, _CharT> = true;
+
+template <class _Context>
+struct _Format_arg_traits {
+    using _Char_type = typename _Context::char_type;
+
+    // Function template _Type_eraser mirrors the type dispatching mechanism in the construction of basic_format_arg
+    // (N4950 [format.arg]). They determine the mapping from "raw" to "erased" argument type for _Format_arg_store.
+    template <_Formattable_with<_Context> _Ty>
+    static auto _Type_eraser();
+
+    template <class _Ty>
+    using _Storage_type = decltype(_Type_eraser<remove_reference_t<_Ty>>());
+
+    template <class _Ty>
+    static constexpr size_t _Storage_size = sizeof(_Storage_type<_Ty>);
+};
+
+_EXPORT_STD template <class _Context>
+class basic_format_args;
+
+_FMT_P2286_BEGIN
+template <class _CharT>
+struct _Format_handler;
+_FMT_P2286_END
+
+
 _EXPORT_STD template <class _Context>
 class basic_format_arg {
 public:
@@ -669,18 +703,16 @@ public:
 
     public:
         template <class _Ty>
-        explicit handle(_Ty&& _Val) noexcept
+        explicit handle(_Ty& _Val) noexcept
             : _Ptr(_STD addressof(_Val)),
               _Format([](basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void* _Ptr) {
-                  using _Value_type = remove_cvref_t<_Ty>;
-                  typename _Context::template formatter_type<_Value_type> _Formatter;
-                  using _Qualified_type =
-                      conditional_t<_Has_const_formatter<_Value_type, _Context>, const _Value_type, _Value_type>;
+                  using _Td = remove_const_t<_Ty>;
+                  typename _Context::template formatter_type<_Td> _Formatter;
                   _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
                   _Format_ctx.advance_to(_Formatter.format(
-                      *const_cast<_Qualified_type*>(static_cast<const _Value_type*>(_Ptr)), _Format_ctx));
+                      *const_cast<_Qual_for_handle<_Ty>*>(static_cast<const _Td*>(_Ptr)), _Format_ctx));
               }) {
-            static_assert(_Has_const_formatter<_Ty, _Context> || !is_const_v<remove_reference_t<_Ty>>);
+            static_assert(_Formattable_with<_Qual_for_handle<_Ty>, _Context>);
         }
 
         void format(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx) const {
@@ -690,6 +722,37 @@ public:
 
     // TRANSITION, LLVM-49072
     basic_format_arg() noexcept : _Active_state(_Basic_format_arg_type::_None), _No_state() {}
+
+    explicit operator bool() const noexcept {
+        return _Active_state != _Basic_format_arg_type::_None;
+    }
+
+    // Function template _Make_from mirrors the exposition-only single-argument constructor template of
+    // basic_format_arg (N4950 [format.arg]).
+    template <_Formattable_with<_Context> _Ty>
+    static basic_format_arg _Make_from(_Ty& _Val) noexcept {
+        using _Erased_type = typename _Format_arg_traits<_Context>::template _Storage_type<_Ty>;
+#if !_HAS_CXX23
+        if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
+            return basic_format_arg(_Erased_type{_Val.data(), _Val.size()});
+        } else
+#endif // !_HAS_CXX23
+        {
+            return basic_format_arg(static_cast<_Erased_type>(_Val));
+        }
+    }
+
+private:
+    template <class _Visitor, class _Ctx>
+    friend decltype(auto) visit_format_arg(_Visitor&&, basic_format_arg<_Ctx>);
+
+    friend class basic_format_args<_Context>;
+    friend struct _Format_handler<_CharType>;
+    friend struct _Format_arg_traits<_Context>;
+
+    // doesn't drop const-qualifier per an unnumbered LWG issue
+    template <class _Ty>
+    using _Qual_for_handle = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
 
     explicit basic_format_arg(const int _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
@@ -718,10 +781,6 @@ public:
     explicit basic_format_arg(const handle _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Custom_type), _Custom_state(_Val) {}
 
-    explicit operator bool() const noexcept {
-        return _Active_state != _Basic_format_arg_type::_None;
-    }
-
     _Basic_format_arg_type _Active_state = _Basic_format_arg_type::_None;
     union {
         monostate _No_state = monostate{};
@@ -740,6 +799,43 @@ public:
         handle _Custom_state;
     };
 };
+
+template <class _Context>
+template <_Formattable_with<_Context> _Ty>
+auto _Format_arg_traits<_Context>::_Type_eraser() {
+    using _Td = remove_const_t<_Ty>;
+    // See N4950 [format.arg]/6
+    if constexpr (is_same_v<_Td, bool>) {
+        return bool{};
+    } else if constexpr (is_same_v<_Td, _Char_type>) {
+        return _Char_type{};
+    } else if constexpr (is_same_v<_Td, char> && is_same_v<_Char_type, wchar_t>) {
+        return _Char_type{};
+    } else if constexpr (signed_integral<_Td> && sizeof(_Td) <= sizeof(int)) {
+        return int{};
+    } else if constexpr (unsigned_integral<_Td> && sizeof(_Td) <= sizeof(unsigned int)) {
+        return static_cast<unsigned int>(42);
+    } else if constexpr (signed_integral<_Td> && sizeof(_Td) <= sizeof(long long)) {
+        return static_cast<long long>(42);
+    } else if constexpr (unsigned_integral<_Td> && sizeof(_Td) <= sizeof(unsigned long long)) {
+        return static_cast<unsigned long long>(42);
+    } else if constexpr (is_same_v<_Td, float>) {
+        return float{};
+    } else if constexpr (is_same_v<_Td, double>) {
+        return double{};
+    } else if constexpr (is_same_v<_Td, long double>) {
+        return static_cast<long double>(42);
+    } else if constexpr (_Is_basic_string_like_for<_Td, _Char_type>) {
+        return basic_string_view<_Char_type>{};
+    } else if constexpr (_Is_any_of_v<decay_t<_Td>, _Char_type*, const _Char_type*>) {
+        return static_cast<const _Char_type*>(nullptr);
+    } else if constexpr (is_void_v<remove_pointer_t<_Td>> || is_same_v<_Td, nullptr_t>) {
+        return static_cast<const void*>(nullptr);
+    } else {
+        int _Dummy{};
+        return typename basic_format_arg<_Context>::handle{_Dummy};
+    }
+}
 
 _EXPORT_STD template <class _Visitor, class _Context>
 decltype(auto) visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
@@ -1821,65 +1917,6 @@ public:
     }
 };
 
-template <class _Context>
-struct _Format_arg_traits {
-    using _Char_type = typename _Context::char_type;
-
-    // These overloads mirror the exposition-only single-argument constructor
-    // set of basic_format_arg (N4928 [format.arg]). They determine the mapping
-    // from "raw" to "erased" argument type for _Format_arg_store.
-    template <_Has_formatter<_Context> _Ty>
-    static auto _Phony_basic_format_arg_constructor(_Ty&&) {
-        // per the proposed resolution of LWG-3631
-        using _Td = remove_cvref_t<_Ty>;
-        // See N4928 [format.arg]/5
-        if constexpr (is_same_v<_Td, bool>) {
-            return bool{};
-        } else if constexpr (is_same_v<_Td, _Char_type>) {
-            return _Char_type{};
-        } else if constexpr (is_same_v<_Td, char> && is_same_v<_Char_type, wchar_t>) {
-            return _Char_type{};
-        } else if constexpr (signed_integral<_Td> && sizeof(_Td) <= sizeof(int)) {
-            return int{};
-        } else if constexpr (unsigned_integral<_Td> && sizeof(_Td) <= sizeof(unsigned int)) {
-            return static_cast<unsigned int>(42);
-        } else if constexpr (signed_integral<_Td> && sizeof(_Td) <= sizeof(long long)) {
-            return static_cast<long long>(42);
-        } else if constexpr (unsigned_integral<_Td> && sizeof(_Td) <= sizeof(unsigned long long)) {
-            return static_cast<unsigned long long>(42);
-        } else {
-            return typename basic_format_arg<_Context>::handle{42};
-        }
-    }
-
-    static auto _Phony_basic_format_arg_constructor(float) -> float; // not defined
-    static auto _Phony_basic_format_arg_constructor(double) -> double; // not defined
-    static auto _Phony_basic_format_arg_constructor(long double) -> long double; // not defined
-
-    static auto _Phony_basic_format_arg_constructor(_Char_type*) -> const _Char_type*; // not defined
-    static auto _Phony_basic_format_arg_constructor(const _Char_type*) -> const _Char_type*; // not defined
-
-    template <class _Traits>
-    static auto _Phony_basic_format_arg_constructor(basic_string_view<_Char_type, _Traits>)
-        -> basic_string_view<_Char_type>; // not defined
-
-    template <class _Traits, class _Alloc>
-    static auto _Phony_basic_format_arg_constructor(basic_string<_Char_type, _Traits, _Alloc>)
-        -> basic_string_view<_Char_type>; // not defined
-
-    static auto _Phony_basic_format_arg_constructor(nullptr_t) -> const void*; // not defined
-
-    template <class _Ty>
-        requires is_void_v<_Ty>
-    static auto _Phony_basic_format_arg_constructor(_Ty*) -> const void*; // not defined
-
-    template <class _Ty>
-    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<_Ty&>()));
-
-    template <class _Ty>
-    static constexpr size_t _Storage_size = sizeof(_Storage_type<_Ty>);
-};
-
 struct _Format_arg_index {
     // TRANSITION, Should be templated on number of arguments for even less storage
 
@@ -1899,9 +1936,6 @@ struct _Format_arg_index {
     size_t _Index : (sizeof(size_t) * 8 - 4){};
     size_t _Type_ : 4 {};
 };
-
-_EXPORT_STD template <class _Context>
-class basic_format_args;
 
 template <class _Context, class... _Args>
 class _Format_arg_store {
@@ -1974,7 +2008,7 @@ private:
         }
 
 #if !_HAS_CXX23
-        // Workaround towards N4928 [format.arg]/9 and /10 in C++20
+        // Workaround towards N4950 [format.arg]/6.8 in C++20
         if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
             _Store_impl<_Erased_type>(_Arg_index, _Arg_type, _Erased_type{_Val.data(), _Val.size()});
         } else
@@ -3544,19 +3578,10 @@ struct _Formatter_base {
                 _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
         }
 
-        using _Erased_type = _Format_arg_traits<_FormatContext>::template _Storage_type<_Ty>;
-
-        _Arg_formatter<typename _FormatContext::iterator, _CharT> _Visitor{
-            ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)};
-#if !_HAS_CXX23
-        if constexpr (is_same_v<_Erased_type, basic_string_view<_CharT>>) {
-            return _STD visit_format_arg(
-                _Visitor, basic_format_arg<_FormatContext>{_Erased_type{_Val.data(), _Val.size()}});
-        } else
-#endif // !_HAS_CXX23
-        {
-            return _STD visit_format_arg(_Visitor, basic_format_arg<_FormatContext>{static_cast<_Erased_type>(_Val)});
-        }
+        return _STD visit_format_arg(
+            _Arg_formatter<typename _FormatContext::iterator, _CharT>{
+                ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)},
+            basic_format_arg<_FormatContext>::_Make_from(_Val));
     }
 
 private:
@@ -3643,17 +3668,17 @@ _EXPORT_STD using wformat_args = basic_format_args<wformat_context>;
 
 _EXPORT_STD template <class _Context = format_context, class... _Args>
 _NODISCARD auto make_format_args(_Args&&... _Vals) {
-    static_assert((_Has_formatter<_Args, _Context> && ...),
+    static_assert((_Formattable_with<remove_cvref_t<_Args>, _Context> && ...),
         "Cannot format an argument. To make type T formattable, provide a formatter<T> specialization. "
-        "See N4928 [format.arg.store]/2 and [formatter.requirements].");
+        "See N4950 [format.arg.store]/2 and [formatter.requirements].");
     return _Format_arg_store<_Context, _Args...>{_Vals...};
 }
 
 _EXPORT_STD template <class... _Args>
 _NODISCARD auto make_wformat_args(_Args&&... _Vals) {
-    static_assert((_Has_formatter<_Args, wformat_context> && ...),
+    static_assert((_Formattable_with<remove_cvref_t<_Args>, wformat_context> && ...),
         "Cannot format an argument. To make type T formattable, provide a formatter<T> specialization. "
-        "See N4928 [format.arg.store]/2 and [formatter.requirements].");
+        "See N4950 [format.arg.store]/2 and [formatter.requirements].");
     return _Format_arg_store<wformat_context, _Args...>{_Vals...};
 }
 

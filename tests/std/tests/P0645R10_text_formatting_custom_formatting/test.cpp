@@ -233,6 +233,21 @@ void test_mixed_custom_formattable_type() {
     test_custom_equiv_with_format_mixed<const void*, charT>(STR("{}{}"), nullptr);
 }
 
+template <class OutIt, class CharT>
+void test_basic_format_arg_handle_construction() {
+    using handle = typename basic_format_arg<basic_format_context<OutIt, CharT>>::handle;
+
+    static_assert(is_constructible_v<handle, int&>);
+    static_assert(is_constructible_v<handle, const int&>);
+    static_assert(!is_constructible_v<handle, int>);
+    static_assert(is_constructible_v<handle, const int>);
+
+    static_assert(is_constructible_v<handle, custom_formattable_type<CharT>&>);
+    static_assert(is_constructible_v<handle, const custom_formattable_type<CharT>&>);
+    static_assert(!is_constructible_v<handle, custom_formattable_type<CharT>>);
+    static_assert(is_constructible_v<handle, const custom_formattable_type<CharT>>);
+}
+
 int main() {
     test_format_family_overloads<basic_custom_formattable_type>();
     test_format_family_overloads<not_const_formattable_type>();
@@ -240,5 +255,12 @@ int main() {
     test_custom_formattable_type<wchar_t>();
     test_mixed_custom_formattable_type<char>();
     test_mixed_custom_formattable_type<wchar_t>();
+
+    test_basic_format_arg_handle_construction<char*, char>();
+    test_basic_format_arg_handle_construction<string::iterator, char>();
+    test_basic_format_arg_handle_construction<back_insert_iterator<string>, char>();
+    test_basic_format_arg_handle_construction<wchar_t*, wchar_t>();
+    test_basic_format_arg_handle_construction<wstring::iterator, wchar_t>();
+    test_basic_format_arg_handle_construction<back_insert_iterator<wstring>, wchar_t>();
     return 0;
 }
