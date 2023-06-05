@@ -58,6 +58,9 @@ inline constexpr ptrdiff_t _Semaphore_max = (1ULL << (sizeof(ptrdiff_t) * CHAR_B
 _EXPORT_STD template <ptrdiff_t _Least_max_value = _Semaphore_max>
 class counting_semaphore {
 public:
+    static_assert(_Least_max_value >= 0,
+        "The least maximum value for a counting_semaphore must be nonnegative (N4950 [thread.sema.cnt]/2).");
+
     _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
         return _Least_max_value;
     }
@@ -91,7 +94,7 @@ public:
         // but from the point of view of the C++ memory model itself it is needed; weaker orders don't work.
 
         const ptrdiff_t _Prev = _Counter.fetch_add(static_cast<ptrdiff_t>(_Update));
-        _STL_VERIFY(_Prev + _Update > 0 && _Prev + _Update <= _Least_max_value,
+        _STL_VERIFY(_Prev + _Update > 0 && _Update <= _Least_max_value - _Prev,
             "Precondition: update <= max() - counter (N4950 [thread.sema.cnt]/8)");
 
         const ptrdiff_t _Waiting_upper_bound = _Waiting.load();
@@ -109,16 +112,6 @@ public:
                 _Counter.notify_one();
             }
         }
-    }
-
-    void _Wait(const unsigned long _Remaining_timeout) noexcept {
-        // See the comment in release()
-        _Waiting.fetch_add(1);
-        ptrdiff_t _Current = _Counter.load();
-        if (_Current == 0) {
-            __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
-        }
-        _Waiting.fetch_sub(1, memory_order_relaxed);
     }
 
     void acquire() noexcept /* strengthened */ {
@@ -200,6 +193,16 @@ public:
     }
 
 private:
+    void _Wait(const unsigned long _Remaining_timeout) noexcept {
+        // See the comment in release()
+        _Waiting.fetch_add(1);
+        ptrdiff_t _Current = _Counter.load();
+        if (_Current == 0) {
+            __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
+        }
+        _Waiting.fetch_sub(1, memory_order_relaxed);
+    }
+
     atomic<ptrdiff_t> _Counter;
     atomic<ptrdiff_t> _Waiting;
 };
