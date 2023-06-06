@@ -758,7 +758,7 @@ constexpr void check_data_handle_and_mapping_and_accessor_constructor() {
 }
 
 constexpr void check_construction_from_other_mdspan() {
-    { // Check constraint: 'is_constructible_v<mapping_type, const OtherLayoutPolicy​::​template
+    { // Check constraint: 'is_constructible_v<mapping_type, const OtherLayoutPolicy::template
       // mapping<OtherExtents>&>'
         static_assert(is_constructible_v<mdspan<int, extents<int, 4, 4, 4>, layout_stride>,
             mdspan<int, dextents<long, 3>, layout_right>>);
