@@ -498,7 +498,7 @@ constexpr void check_data_handle_and_indices_pack_constructor() {
         static_assert(!NotImplicitlyConstructibleFrom<Mds, bool*, signed char, short, long>);
     }
 
-    { // Check effects: 'direct-non-list-initializes ptr_ with std​::​move(p)'
+    { // Check effects: 'direct-non-list-initializes ptr_ with std::move(p)'
         int ints[4] = {1, 2, 3, 4};
         mdspan<int, extents<int, 2, 2>, layout_right, AccessorWithTrackingDataHandle<int>> mds{
             TrackingDataHandle<int>{1, ints}, 2, 2};
@@ -506,7 +506,7 @@ constexpr void check_data_handle_and_indices_pack_constructor() {
     }
 
     { // Check effects: 'direct-non-list-initializes map_ with
-        // extents_type(static_cast<index_type>(std​::​move(exts​))...)'
+        // extents_type(static_cast<index_type>(std::move(exts))...)'
         using Ext = dextents<signed char, 2>;
         struct FunnyIndex {
             constexpr operator Ext::index_type() const& noexcept {
@@ -605,7 +605,7 @@ constexpr void check_data_handle_and_span_array_constructors() {
         static_assert(!NotImplicitlyConstructibleFrom<Mds, const float*, array<ConvertibleToInt<short>, 1>>);
     }
 
-    { // Check effects: 'direct-non-list-initializes ptr_ with std​::​move(p)'
+    { // Check effects: 'direct-non-list-initializes ptr_ with std::move(p)'
         int ints[4] = {1, 2, 3, 4};
         array<int, 2> indices{2, 2};
         mdspan<int, extents<int, 2, 2>, layout_right, AccessorWithTrackingDataHandle<int>> mds1{
@@ -678,7 +678,7 @@ constexpr void check_data_handle_and_extents_constructor() {
                       extents<unsigned char, 4, 4>>);
     }
 
-    { // Check effects: 'direct-non-list-initializes ptr_ with std​::​move(p)'
+    { // Check effects: 'direct-non-list-initializes ptr_ with std::move(p)'
         char physics[4] = {'s', 't', 'v', 'a'};
         mdspan<char, extents<int, 2, 2>, layout_right, AccessorWithTrackingDataHandle<char>> mds{
             TrackingDataHandle<char>{1, physics}, extents<short, 2, 2>{}};
@@ -713,7 +713,7 @@ constexpr void check_data_handle_and_mapping_constructor() {
                       deque<int>* const, TrackingLayout<>::mapping<extents<signed char, 5, 5, 5>>>);
     }
 
-    { // Check effect: 'direct-non-list-initializes ptr_ with std​::​move(p)'
+    { // Check effect: 'direct-non-list-initializes ptr_ with std::move(p)'
         using Ext      = extents<int, 2, 1, 3>;
         char banana[6] = {'b', 'a', 'n', 'a', 'n', 'a'};
         mdspan<char, Ext, layout_stride, AccessorWithTrackingDataHandle<char>> mds{
@@ -746,7 +746,7 @@ constexpr void check_data_handle_and_mapping_and_accessor_constructor() {
         TrackingAccessor<unsigned int>{18}};
 
     // Check effects:
-    // - Direct-non-list-initializes ptr_ with std​::​move(p),
+    // - Direct-non-list-initializes ptr_ with std::move(p),
     // - direct-non-list-initializes map_ with m, and
     // - direct-non-list-initializes acc_ with a.
     assert(mds.data_handle().is_move_constructed());
