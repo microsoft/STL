@@ -982,7 +982,7 @@ public:
         !is_convertible_v<const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&, mapping_type>
         || !is_convertible_v<const _OtherAccessor&, accessor_type>)
         mdspan(const mdspan<_OtherElementType, _OtherExtents, _OtherLayoutPolicy, _OtherAccessor>& _Other)
-        : _Ptr(_Other._Ptr), _Map(_Other._Map), _Acc(_Other._Acc) {
+        : _Ptr(_Other.data_handle()), _Map(_Other.mapping()), _Acc(_Other.accessor()) {
         static_assert(is_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>,
             "The data_handle_type must be constructible from const typename OtherAccessor::data_handle_type& (N4950 "
             "[mdspan.mdspan.cons]/20.1).");
