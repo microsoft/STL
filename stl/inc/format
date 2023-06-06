@@ -707,12 +707,16 @@ public:
             : _Ptr(_STD addressof(_Val)),
               _Format([](basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void* _Ptr) {
                   using _Td = remove_const_t<_Ty>;
+                  // doesn't drop const-qualifier per an unnumbered LWG issue
+                  using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
                   typename _Context::template formatter_type<_Td> _Formatter;
                   _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
-                  _Format_ctx.advance_to(_Formatter.format(
-                      *const_cast<_Qual_for_handle<_Ty>*>(static_cast<const _Td*>(_Ptr)), _Format_ctx));
+                  _Format_ctx.advance_to(
+                      _Formatter.format(*const_cast<_Tq*>(static_cast<const _Td*>(_Ptr)), _Format_ctx));
               }) {
-            static_assert(_Formattable_with<_Qual_for_handle<_Ty>, _Context>);
+            // ditto doesn't drop const-qualifier
+            using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
+            static_assert(_Formattable_with<_Tq, _Context>);
         }
 
         void format(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx) const {
@@ -749,10 +753,6 @@ private:
     friend class basic_format_args<_Context>;
     friend struct _Format_handler<_CharType>;
     friend struct _Format_arg_traits<_Context>;
-
-    // doesn't drop const-qualifier per an unnumbered LWG issue
-    template <class _Ty>
-    using _Qual_for_handle = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
 
     explicit basic_format_arg(const int _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
