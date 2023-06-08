@@ -571,7 +571,7 @@ public:
     }
 
     _Ty _Elems[_Size];
-    
+
 private:
     [[noreturn]] static void _Xran() {
         _Xout_of_range("invalid array<T, N> subscript");
