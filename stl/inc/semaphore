@@ -93,8 +93,8 @@ public:
         // memory_order_seq_cst might be superfluous for some hardware mappings of the C++ memory model,
         // but from the point of view of the C++ memory model itself it is needed; weaker orders don't work.
 
-        const ptrdiff_t _Prev = _Counter.fetch_add(static_cast<ptrdiff_t>(_Update));
-        _STL_VERIFY(_Prev + _Update > 0 && _Update <= _Least_max_value - _Prev,
+        const ptrdiff_t _Prev = _Counter.fetch_add(_Update);
+        _STL_VERIFY(_Prev > 0 && _Update <= _Least_max_value - _Prev,
             "Precondition: update <= max() - counter (N4950 [thread.sema.cnt]/8)");
 
         const ptrdiff_t _Waiting_upper_bound = _Waiting.load();
