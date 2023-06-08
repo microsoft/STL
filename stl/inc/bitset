@@ -479,15 +479,15 @@ private:
         return *this;
     }
 
-    [[noreturn]] void _Xinv() const {
+    [[noreturn]] static void _Xinv() {
         _Xinvalid_argument("invalid bitset char");
     }
 
-    [[noreturn]] void _Xoflo() const {
+    [[noreturn]] static void _Xoflo() {
         _Xoverflow_error("bitset overflow");
     }
 
-    [[noreturn]] void _Xran() const {
+    [[noreturn]] static void _Xran() {
         _Xout_of_range("invalid bitset position");
     }
 
