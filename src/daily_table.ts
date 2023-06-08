@@ -1384,8 +1384,9 @@ export const daily_table: DailyRow[] = [
     { date: '2023-06-01', merged: 37.01, pr: 15, cxx20: null, cxx23: 12, lwg: 5, issue: 407, bug: 133, video: 30, avg_age: 95.70, sum_age: 47.85, },
     { date: '2023-06-02', merged: 36.24, pr: 15, cxx20: null, cxx23: 12, lwg: 5, issue: 407, bug: 133, video: 30, avg_age: 96.70, sum_age: 48.35, },
     { date: '2023-06-03', merged: 35.44, pr: 16, cxx20: null, cxx23: 12, lwg: 5, issue: 407, bug: 133, video: 30, avg_age: 91.63, sum_age: 48.87, },
-    { date: '2023-06-04', merged: 34.58, pr: 16, cxx20: null, cxx23: 12, lwg: 5, issue: 408, bug: 133, video: 30, avg_age: 92.63, sum_age: 49.40, },
-    { date: '2023-06-05', merged: 33.70, pr: 17, cxx20: null, cxx23: 12, lwg: 5, issue: 409, bug: 133, video: 30, avg_age: 88.15, sum_age: 49.95, },
-    { date: '2023-06-06', merged: 32.90, pr: 18, cxx20: null, cxx23: 12, lwg: 5, issue: 410, bug: 133, video: 30, avg_age: 84.22, sum_age: 50.53, },
+    { date: '2023-06-04', merged: 34.58, pr: 16, cxx20: null, cxx23: 12, lwg: 5, issue: 408, bug: 134, video: 30, avg_age: 92.63, sum_age: 49.40, },
+    { date: '2023-06-05', merged: 33.70, pr: 17, cxx20: null, cxx23: 12, lwg: 5, issue: 409, bug: 134, video: 30, avg_age: 88.15, sum_age: 49.95, },
+    { date: '2023-06-06', merged: 32.90, pr: 18, cxx20: null, cxx23: 12, lwg: 5, issue: 410, bug: 134, video: 30, avg_age: 84.22, sum_age: 50.53, },
+    { date: '2023-06-07', merged: 31.94, pr: 20, cxx20: null, cxx23: 12, lwg: 5, issue: 411, bug: 135, video: 30, avg_age: 76.74, sum_age: 51.16, },
 ];
 // Generated file - DO NOT EDIT manually!
