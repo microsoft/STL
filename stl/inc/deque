@@ -1536,11 +1536,11 @@ private:
         }
     }
 
-    [[noreturn]] void _Xlen() const {
+    [[noreturn]] static void _Xlen() {
         _Xlength_error("deque<T> too long");
     }
 
-    [[noreturn]] void _Xran() const {
+    [[noreturn]] static void _Xran() {
         _Xout_of_range("invalid deque<T> subscript");
     }
 
