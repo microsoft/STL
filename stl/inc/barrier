@@ -43,7 +43,8 @@ inline constexpr ptrdiff_t _Barrier_value_mask         = ~_Barrier_arrival_token
 inline constexpr ptrdiff_t _Barrier_value_shift        = 1;
 inline constexpr ptrdiff_t _Barrier_invalid_token      = 0;
 inline constexpr ptrdiff_t _Barrier_value_step         = 1 << _Barrier_value_shift;
-inline constexpr ptrdiff_t _Barrier_max                = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 2)) - 1;
+inline constexpr ptrdiff_t _Barrier_max                = PTRDIFF_MAX >> _Barrier_value_shift;
+static_assert((_Barrier_max << _Barrier_value_shift) > 0);
 
 template <class _Completion_function>
 class _Arrival_token {
@@ -81,7 +82,7 @@ public:
     constexpr explicit barrier(
         const ptrdiff_t _Expected, _Completion_function _Fn = _Completion_function()) noexcept /* strengthened */
         : _Val(_One_then_variadic_args_t{}, _STD move(_Fn), _Expected << _Barrier_value_shift) {
-        _STL_VERIFY(_Val._Myval2._Current.load(memory_order_relaxed) >= 0,
+        _STL_VERIFY(_Expected >= 0 && _Expected <= max(),
             "Precondition: expected >= 0 and expected <= max() (N4950 [thread.barrier.class]/9)");
     }
 
