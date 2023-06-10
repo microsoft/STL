@@ -19,7 +19,7 @@ using namespace std;
 
 class ActionTracker {
 public:
-    constexpr ActionTracker(int id_) noexcept : id{id_} {}
+    constexpr explicit ActionTracker(int id_) noexcept : id{id_} {}
 
     constexpr ActionTracker(const ActionTracker& other) noexcept : id{other.id}, copy_constructed{true} {}
 
@@ -65,7 +65,7 @@ public:
         left.swapped  = true;
         right.swapped = true;
         swap(left.id, right.id);
-        // leave the rest of member alone
+        // leave the other members alone
     }
 
 private:
@@ -103,7 +103,7 @@ struct TrackingLayout {
             : ActionTracker(-1), constructed_with_extents_only{true}, mp(e) {}
 
         template <class T>
-        mapping(initializer_list<T>) = delete; // we should never use list initialization in <mdspan>
+        mapping(initializer_list<T>) = delete; // we should never use list-initialization in <mdspan>
 
         constexpr mapping(const mapping& other) : ActionTracker(other), mp(other.mp) {}
 
@@ -192,12 +192,12 @@ struct VectorBoolAccessor {
     using reference        = vector<bool>::reference;
     using data_handle_type = vector<bool>::iterator;
 
-    constexpr reference access(data_handle_type handle, size_t offset) const {
-        return handle[static_cast<ptrdiff_t>(offset)];
+    constexpr reference access(data_handle_type handle, size_t off) const {
+        return handle[static_cast<ptrdiff_t>(off)];
     }
 
-    constexpr data_handle_type offset(data_handle_type handle, size_t offset) const {
-        return handle + static_cast<ptrdiff_t>(offset);
+    constexpr data_handle_type offset(data_handle_type handle, size_t off) const {
+        return handle + static_cast<ptrdiff_t>(off);
     }
 };
 
@@ -216,7 +216,7 @@ public:
     constexpr TrackingDataHandle(const TrackingDataHandle<OtherElementType>& other) : ActionTracker(other) {}
 
     template <class T>
-    TrackingDataHandle(initializer_list<T>) = delete; // we should never use list initialization in <mdspan>
+    TrackingDataHandle(initializer_list<T>) = delete; // we should never use list-initialization in <mdspan>
 
     constexpr TrackingDataHandle(const TrackingDataHandle& other) noexcept : ActionTracker(other), ptr{other.ptr} {}
 
@@ -247,12 +247,12 @@ public:
     using reference        = ElementType&;
     using data_handle_type = TrackingDataHandle<ElementType>;
 
-    constexpr reference access(data_handle_type handle, size_t offset) const {
-        return handle.get_ptr()[offset];
+    constexpr reference access(data_handle_type handle, size_t off) const {
+        return handle.get_ptr()[off];
     }
 
-    constexpr data_handle_type offset(data_handle_type handle, size_t offset) const {
-        return TrackingDataHandle{handle.get_id(), handle.get_ptr() + offset};
+    constexpr data_handle_type offset(data_handle_type handle, size_t off) const {
+        return TrackingDataHandle{handle.get_id(), handle.get_ptr() + off};
     }
 };
 
@@ -271,12 +271,12 @@ public:
         requires is_convertible_v<OtherElementType (*)[], element_type (*)[]>
     constexpr TrackingAccessor(const TrackingAccessor<OtherElementType>& other) : ActionTracker(other) {}
 
-    constexpr reference access(data_handle_type handle, size_t offset) const {
-        return handle.get_ptr()[offset];
+    constexpr reference access(data_handle_type handle, size_t off) const {
+        return handle.get_ptr()[off];
     }
 
-    constexpr data_handle_type offset(data_handle_type handle, size_t offset) const {
-        return data_handle_type{handle.get_id(), handle.get_ptr() + offset};
+    constexpr data_handle_type offset(data_handle_type handle, size_t off) const {
+        return data_handle_type{handle.get_id(), handle.get_ptr() + off};
     }
 
     friend constexpr void swap(TrackingAccessor& left, TrackingAccessor& right) noexcept {
@@ -304,12 +304,12 @@ struct AccessorWithCustomOffsetPolicy {
         return offpol;
     }
 
-    constexpr reference access(data_handle_type handle, size_t offset) const {
-        return offpol(handle, offset);
+    constexpr reference access(data_handle_type handle, size_t off) const {
+        return offpol(handle, off);
     }
 
-    constexpr data_handle_type offset(data_handle_type handle, size_t offset) const {
-        return offpol.offset(handle, offset);
+    constexpr data_handle_type offset(data_handle_type handle, size_t off) const {
+        return offpol.offset(handle, off);
     }
 
 private:
@@ -325,12 +325,12 @@ struct TrivialAccessor {
     using reference        = ElementType&;
     using data_handle_type = ElementType*;
 
-    constexpr reference access(data_handle_type handle, size_t offset) const noexcept {
-        return handle[offset];
+    constexpr reference access(data_handle_type handle, size_t off) const noexcept {
+        return handle[off];
     }
 
-    constexpr data_handle_type offset(data_handle_type handle, size_t offset) const noexcept {
-        return handle + offset;
+    constexpr data_handle_type offset(data_handle_type handle, size_t off) const noexcept {
+        return handle + off;
     }
 
     int member;
@@ -362,7 +362,7 @@ constexpr void check_member_types() {
     static_assert(same_as<typename Mds::accessor_type, Accessor>);
     static_assert(same_as<typename Mds::mapping_type, typename Layout::template mapping<Ext>>);
     static_assert(same_as<typename Mds::element_type, float>);
-    static_assert(same_as<typename Mds::value_type, remove_cv_t<float>>);
+    static_assert(same_as<typename Mds::value_type, float>);
     static_assert(same_as<typename Mds::index_type, typename Ext::index_type>);
     static_assert(same_as<typename Mds::size_type, typename Ext::size_type>);
     static_assert(same_as<typename Mds::rank_type, typename Ext::rank_type>);
@@ -588,9 +588,9 @@ constexpr void check_data_handle_and_span_array_constructors() {
         static_assert(is_constructible_v<mdspan<bool, dextents<int, 2>, layout_right, VectorBoolAccessor>,
             vector<bool>::iterator, array<short, 2>>);
         static_assert(!is_constructible_v<mdspan<int, dextents<int, 2>, layout_right, TrackingAccessor<int>>, int*,
-                      array<int, 2>>);
-        static_assert(!is_constructible_v<mdspan<int, dextents<int, 2>, layout_right, TrackingAccessor<int>>, int*,
                       span<int, 2>>);
+        static_assert(!is_constructible_v<mdspan<int, dextents<int, 2>, layout_right, TrackingAccessor<int>>, int*,
+                      array<int, 2>>);
     }
 
     { // Check explicitness
