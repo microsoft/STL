@@ -81,7 +81,7 @@ public:
     constexpr explicit barrier(
         const ptrdiff_t _Expected, _Completion_function _Fn = _Completion_function()) noexcept /* strengthened */
         : _Val(_One_then_variadic_args_t{}, _STD move(_Fn), _Expected << _Barrier_value_shift) {
-        _STL_VERIFY(_Expected >= 0 && _Expected <= max(),
+        _STL_VERIFY(_Expected >= 0 && _Expected <= (max) (),
             "Precondition: expected >= 0 and expected <= max() (N4950 [thread.barrier.class]/9)");
     }
 
@@ -93,8 +93,7 @@ public:
     }
 
     _NODISCARD_BARRIER_TOKEN arrival_token arrive(ptrdiff_t _Update = 1) noexcept /* strengthened */ {
-        // Shifting before precondition check, so that exceeding max() will trigger precondition check too
-        _STL_VERIFY(_Update > 0 && _Update <= max(), "Precondition: update > 0 (N4950 [thread.barrier.class]/12)");
+        _STL_VERIFY(_Update > 0 && _Update <= (max) (), "Precondition: update > 0 (N4950 [thread.barrier.class]/12)");
         _Update <<= _Barrier_value_shift;
         // TRANSITION, GH-1133: should be memory_order_release
         ptrdiff_t _Current = _Val._Myval2._Current.fetch_sub(_Update) - _Update;
