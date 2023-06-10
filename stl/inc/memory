@@ -4361,6 +4361,10 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
 #endif // _HAS_TR1_NAMESPACE
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("msvc")
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
