@@ -762,18 +762,6 @@ private:
         }
     }
 
-    template <class _Predicate>
-    bool _Wait_until1(unique_lock<mutex>& _Lck, const _timespec64* _Abs_time, _Predicate& _Pred) {
-        // wait for signal with timeout and check predicate
-        while (!_Pred()) {
-            if (_Wait_until_sys_time(_Lck, _Abs_time) == cv_status::timeout) {
-                return _Pred();
-            }
-        }
-
-        return true;
-    }
-
     template <class _Clock, class _Duration, class _Predicate>
     bool _Wait_until1(
         unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate& _Pred) {
