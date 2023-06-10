@@ -29,7 +29,7 @@
 
 #if lifetimebound != 4
 #error bad macro expansion
-#endif // intrinsic != 4
+#endif // lifetimebound != 4
 
 #if noop_dtor != 5
 #error bad macro expansion

@@ -25,6 +25,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#undef msvc
+
 _STD_BEGIN
 #if _HAS_CXX17
 #define _REQUIRE_PARALLEL_LVALUE_ITERATOR(_Iter)                                                                     \
