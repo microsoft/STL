@@ -689,7 +689,6 @@ template <class _CharT>
 struct _Format_handler;
 _FMT_P2286_END
 
-
 _EXPORT_STD template <class _Context>
 class basic_format_arg {
 public:
@@ -750,9 +749,9 @@ private:
     template <class _Visitor, class _Ctx>
     friend decltype(auto) visit_format_arg(_Visitor&&, basic_format_arg<_Ctx>);
 
-    friend class basic_format_args<_Context>;
-    friend struct _Format_handler<_CharType>;
-    friend struct _Format_arg_traits<_Context>;
+    friend basic_format_args<_Context>;
+    friend _Format_handler<_CharType>;
+    friend _Format_arg_traits<_Context>;
 
     explicit basic_format_arg(const int _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
