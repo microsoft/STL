@@ -405,7 +405,7 @@ public:
     condition_variable _Cond;
     bool _Retrieved;
     int _Ready;
-    bool _Ready_at_thread_exit;// TRANSITION, ABI: always fasle.
+    bool _Ready_at_thread_exit; // TRANSITION, ABI: preserved for binary compatibility
     bool _Has_stored_result;
     bool _Running;
 
