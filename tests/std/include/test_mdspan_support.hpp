@@ -27,12 +27,10 @@ namespace detail {
     constexpr void check_implicit_conversion(T); // not defined
 }
 
-// clang-format off
 template <class T, class... Args>
-concept NotImplicitlyConstructibleFrom =
-    std::constructible_from<T, Args...>
-    && !requires(Args&&... args) { detail::check_implicit_conversion<T>({std::forward<Args>(args)...}); };
-// clang-format on
+concept NotImplicitlyConstructibleFrom = std::constructible_from<T, Args...> && !requires(Args&&... args) {
+    detail::check_implicit_conversion<T>({std::forward<Args>(args)...});
+};
 
 namespace detail {
     template <class T>
@@ -51,17 +49,14 @@ namespace detail {
                                            && std::same_as<typename M::rank_type, typename M::extents_type::rank_type>
                                            && is_mapping_of_v<typename M::layout_type, M>;
 
-    // clang-format off
     template <class M>
-    concept CheckMemberFunctionsOfLayoutMapping =
-        requires(const M m) {
-            { m.extents() } -> std::same_as<const typename M::extents_type&>;
-            { m.required_span_size() } -> std::same_as<typename M::index_type>;
-            { m.is_unique() } -> std::same_as<bool>;
-            { m.is_exhaustive() } -> std::same_as<bool>;
-            { m.is_strided() } -> std::same_as<bool>;
-        };
-    // clang-format on
+    concept CheckMemberFunctionsOfLayoutMapping = requires(const M m) {
+        { m.extents() } -> std::same_as<const typename M::extents_type&>;
+        { m.required_span_size() } -> std::same_as<typename M::index_type>;
+        { m.is_unique() } -> std::same_as<bool>;
+        { m.is_exhaustive() } -> std::same_as<bool>;
+        { m.is_strided() } -> std::same_as<bool>;
+    };
 
     template <class M>
     concept CheckStaticFunctionsOfLayoutMapping = requires {
@@ -74,14 +69,11 @@ namespace detail {
     };
 } // namespace detail
 
-// clang-format off
 template <class M, class... Indices>
-concept CheckCallOperatorOfLayoutMapping =
-    requires(const M m, Indices... i) {
-        { m(i...) } -> std::same_as<typename M::index_type>;
-        { m(i...) == m(static_cast<M::index_type>(i)...) } -> std::same_as<bool>;
-    };
-// clang-format on
+concept CheckCallOperatorOfLayoutMapping = requires(const M m, Indices... i) {
+    { m(i...) } -> std::same_as<typename M::index_type>;
+    { m(i...) == m(static_cast<M::index_type>(i)...) } -> std::same_as<bool>;
+};
 
 template <class M>
 concept CheckStrideMemberFunction = requires(M mapping, M::rank_type i) {
@@ -127,23 +119,21 @@ namespace detail {
     template <class A>
     concept CheckNestedTypesOfAccessorPolicy =
         sizeof(typename A::element_type) > 0
-        && (!std::is_abstract_v<typename A::element_type>) &&std::copyable<typename A::data_handle_type>&& std::
-            is_nothrow_move_constructible_v<typename A::data_handle_type>&& std::is_nothrow_move_assignable_v<
-                typename A::data_handle_type>&& std::is_nothrow_swappable_v<typename A::data_handle_type>&& std::
-                common_reference_with<typename A::reference, typename A::element_type&&>
+        && !std::is_abstract_v<typename A::element_type> && std::copyable<typename A::data_handle_type>
+        && std::is_nothrow_move_constructible_v<typename A::data_handle_type>
+        && std::is_nothrow_move_assignable_v<typename A::data_handle_type>
+        && std::is_nothrow_swappable_v<typename A::data_handle_type>
+        && std::common_reference_with<typename A::reference, typename A::element_type&&>
         && (std::same_as<typename A::offset_policy, A>
             || check_accessor_policy_requirements<typename A::offset_policy>())
-        && std::constructible_from<typename A::offset_policy,
-            const A&>&& std::is_same_v<typename A::offset_policy::element_type, typename A::element_type>;
+        && std::constructible_from<typename A::offset_policy, const A&>
+        && std::is_same_v<typename A::offset_policy::element_type, typename A::element_type>;
 
-    // clang-format off
     template <class A>
-    concept CheckMemberFunctionsOfAccessorPolicy =
-        requires(const A a, const A::data_handle_type p, size_t i) {
-            { a.access(p, i) } -> std::same_as<typename A::reference>;
-            { a.offset(p, i) } -> std::same_as<typename A::offset_policy::data_handle_type>;
-        };
-    // clang-format on
+    concept CheckMemberFunctionsOfAccessorPolicy = requires(const A a, const A::data_handle_type p, size_t i) {
+        { a.access(p, i) } -> std::same_as<typename A::reference>;
+        { a.offset(p, i) } -> std::same_as<typename A::offset_policy::data_handle_type>;
+    };
 } // namespace detail
 
 template <class A>

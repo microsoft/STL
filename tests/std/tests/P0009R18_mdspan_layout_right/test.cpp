@@ -303,43 +303,43 @@ constexpr void check_correctness() {
         const array vals{2, 1, 0};
         mdspan<const int, extents<int, 3>, layout_right> vec{vals.data()};
 
-#ifdef __clang__ // TRANSITION, P2128R6
+#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
         assert(vec[0] == 2);
         assert(vec[1] == 1);
         assert(vec[2] == 0);
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
         assert(vec[array{0}] == 2);
         assert(vec[array{1}] == 1);
         assert(vec[array{2}] == 0);
-#endif // ^^^ !defined(__clang__) ^^^
+#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 
     { // 4x3 matrix with row-major order
         const array vals{11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
         mdspan<const int, extents<int, 4, 3>, layout_right> matrix{vals.data()};
 
-#ifdef __clang__ // TRANSITION, P2128R6
+#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
         assert((matrix[0, 0] == 11));
         assert((matrix[0, 2] == 9));
         assert((matrix[1, 1] == 7));
         assert((matrix[2, 0] == 5));
         assert((matrix[2, 2] == 3));
         assert((matrix[3, 1] == 1));
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
         assert((matrix[array{0, 0}] == 11));
         assert((matrix[array{0, 2}] == 9));
         assert((matrix[array{1, 1}] == 7));
         assert((matrix[array{2, 0}] == 5));
         assert((matrix[array{2, 2}] == 3));
         assert((matrix[array{3, 1}] == 1));
-#endif // ^^^ !defined(__clang__) ^^^
+#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 
     { // 4x3x2 tensor
         const array vals{23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
         mdspan<const int, dextents<size_t, 3>, layout_right> tensor{vals.data(), 4, 3, 2};
 
-#ifdef __clang__ // TRANSITION, P2128R6
+#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
         assert((tensor[0, 0, 0] == 23));
         assert((tensor[0, 0, 1] == 22));
         assert((tensor[0, 1, 0] == 21));
@@ -350,7 +350,7 @@ constexpr void check_correctness() {
         assert((tensor[1, 1, 1] == 14));
         assert((tensor[2, 2, 1] == 6));
         assert((tensor[3, 2, 1] == 0));
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
         assert((tensor[array{0, 0, 0}] == 23));
         assert((tensor[array{0, 0, 1}] == 22));
         assert((tensor[array{0, 1, 0}] == 21));
@@ -361,7 +361,7 @@ constexpr void check_correctness() {
         assert((tensor[array{1, 1, 1}] == 14));
         assert((tensor[array{2, 2, 1}] == 6));
         assert((tensor[array{3, 2, 1}] == 0));
-#endif // ^^^ !defined(__clang__) ^^^
+#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 
     { // 3x2x3x2 tensor
@@ -369,7 +369,7 @@ constexpr void check_correctness() {
             11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
         mdspan<const int, extents<long, 3, dynamic_extent, 3, dynamic_extent>, layout_right> tensor{vals.data(), 2, 2};
 
-#ifdef __clang__ // TRANSITION, P2128R6
+#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
         assert((tensor[0, 0, 0, 0] == 35));
         assert((tensor[0, 0, 0, 1] == 34));
         assert((tensor[0, 0, 1, 0] == 33));
@@ -388,7 +388,7 @@ constexpr void check_correctness() {
         assert((tensor[1, 1, 1, 1] == 14));
         assert((tensor[2, 0, 2, 0] == 7));
         assert((tensor[2, 1, 2, 1] == 0));
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
         assert((tensor[array{0, 0, 0, 0}] == 35));
         assert((tensor[array{0, 0, 0, 1}] == 34));
         assert((tensor[array{0, 0, 1, 0}] == 33));
@@ -407,7 +407,7 @@ constexpr void check_correctness() {
         assert((tensor[array{1, 1, 1, 1}] == 14));
         assert((tensor[array{2, 0, 2, 0}] == 7));
         assert((tensor[array{2, 1, 2, 1}] == 0));
-#endif // ^^^ !defined(__clang__) ^^^
+#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 }
 
