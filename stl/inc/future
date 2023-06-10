@@ -395,12 +395,6 @@ public:
     }
 
 protected:
-    void _Make_ready_at_thread_exit() { // set ready status at thread exit
-        if (_Ready_at_thread_exit) {
-            _Ready = true;
-        }
-    }
-
     void _Maybe_run_deferred_function(unique_lock<mutex>& _Lock) { // run a deferred function if not already done
         if (!_Running) { // run the function
             _Running = true;
@@ -415,7 +409,7 @@ public:
     condition_variable _Cond;
     bool _Retrieved;
     int _Ready;
-    bool _Ready_at_thread_exit;
+    bool _Ready_at_thread_exit;// TRANSITION, ABI: always fasle.
     bool _Has_stored_result;
     bool _Running;
 
