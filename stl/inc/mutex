@@ -843,8 +843,12 @@ public:
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
-    template <class _Time>
-    bool _Try_lock_until(_Time _Abs_time) { // try to lock the mutex with timeout
+    template <class _Clock, class _Duration>
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        // try to lock the mutex with timeout
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         unique_lock<mutex> _Lock(_My_mutex);
         if (!_My_cond.wait_until(_Lock, _Abs_time, _UInt_is_zero{_My_locked})) {
             return false;
@@ -852,15 +856,6 @@ public:
 
         _My_locked = UINT_MAX;
         return true;
-    }
-
-    template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-        // try to lock the mutex with timeout
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
-        return _Try_lock_until(_Abs_time);
     }
 
 private:
@@ -944,8 +939,12 @@ public:
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
-    template <class _Time>
-    bool _Try_lock_until(_Time _Abs_time) { // try to lock the mutex with timeout
+    template <class _Clock, class _Duration>
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        // try to lock the mutex with timeout
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         const thread::id _Tid = this_thread::get_id();
 
         unique_lock<mutex> _Lock(_My_mutex);
@@ -965,15 +964,6 @@ public:
             _My_owner  = _Tid;
         }
         return true;
-    }
-
-    template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-        // try to lock the mutex with timeout
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
-        return _Try_lock_until(_Abs_time);
     }
 
 private:
