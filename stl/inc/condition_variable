@@ -95,7 +95,9 @@ public:
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
-        return wait_for(_Lck, _Abs_time - _Clock::now());
+        const auto _Now           = _Clock::now();
+        const _Duration _Rel_time = (_Abs_time <= _Now) ? _Duration::zero() : _Abs_time - _Now;
+        return wait_for(_Lck, _Rel_time);
     }
 
     template <class _Lock, class _Clock, class _Duration, class _Predicate>
