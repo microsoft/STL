@@ -525,7 +525,7 @@ namespace ranges {
             requires copy_constructible<_Ty> && is_trivially_copy_constructible_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Defaultabox(const _Defaultabox& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>) // strengthened
+        constexpr _Defaultabox(const _Defaultabox& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>)
             requires copy_constructible<_Ty>
             : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
@@ -546,8 +546,7 @@ namespace ranges {
 
         template <_Different_from<_Ty> _Uty>
             requires convertible_to<const _Uty&, _Ty>
-        constexpr _Defaultabox(const _Defaultabox<_Uty>& _That) noexcept(
-            is_nothrow_constructible_v<_Ty, const _Uty&>) // strengthened
+        constexpr _Defaultabox(const _Defaultabox<_Uty>& _That) noexcept(is_nothrow_constructible_v<_Ty, const _Uty&>)
             : _Engaged{_That} {
             if (_That) {
                 _STD _Construct_in_place(_Val, *_That);
@@ -556,8 +555,7 @@ namespace ranges {
 
         template <_Different_from<_Ty> _Uty>
             requires convertible_to<_Uty, _Ty>
-        constexpr _Defaultabox(_Defaultabox<_Uty>&& _That) noexcept(
-            is_nothrow_constructible_v<_Ty, _Uty>) // strengthened
+        constexpr _Defaultabox(_Defaultabox<_Uty>&& _That) noexcept(is_nothrow_constructible_v<_Ty, _Uty>)
             : _Engaged{_That} {
             if (_That) {
                 _STD _Construct_in_place(_Val, _STD move(*_That));
@@ -570,7 +568,7 @@ namespace ranges {
         // clang-format on
 
         constexpr _Defaultabox& operator=(const _Defaultabox& _That) noexcept(
-            is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_assignable_v<_Ty>) // strengthened
+            is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_assignable_v<_Ty>)
             requires copyable<_Ty>
         {
             if (_Engaged) {
@@ -597,7 +595,7 @@ namespace ranges {
         // clang-format on
 
         constexpr _Defaultabox& operator=(_Defaultabox&& _That) noexcept(
-            is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) /* strengthened */ {
+            is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) {
             if (_Engaged) {
                 if (_That._Engaged) {
                     static_cast<_Ty&>(_Val) = static_cast<_Ty&&>(_That._Val);
@@ -686,8 +684,7 @@ namespace ranges {
         template <_Different_from<_Ty> _Uty>
             requires convertible_to<const _Uty&, _Ty>
         constexpr _Defaultabox(const _Defaultabox<_Uty>& _That) noexcept(
-            is_default_constructible_v<_Ty>&& noexcept(_Value = static_cast<_Ty>(*_That))) // strengthened
-        {
+            is_default_constructible_v<_Ty>&& noexcept(_Value = static_cast<_Ty>(*_That))) {
             if (_That) {
                 _Value = static_cast<_Ty>(*_That);
             }
@@ -696,8 +693,7 @@ namespace ranges {
         template <_Different_from<_Ty> _Uty>
             requires convertible_to<_Uty, _Ty>
         constexpr _Defaultabox(_Defaultabox<_Uty>&& _That) noexcept(
-            is_default_constructible_v<_Ty>&& noexcept(_Value = static_cast<_Ty>(_STD move(*_That)))) // strengthened
-        {
+            is_default_constructible_v<_Ty>&& noexcept(_Value = static_cast<_Ty>(_STD move(*_That)))) {
             if (_That) {
                 _Value = static_cast<_Ty>(_STD move(*_That));
             }
