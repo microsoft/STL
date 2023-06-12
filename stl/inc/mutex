@@ -34,24 +34,22 @@ _EXPORT_STD class condition_variable_any;
 struct _Mtx_internal_imp_mirror {
 #ifdef _CRT_WINDOWS
 #ifdef _WIN64
-    static constexpr size_t _Critical_section_size = 8;
+    static constexpr size_t _Critical_section_size = 16;
 #else // _WIN64
-    static constexpr size_t _Critical_section_size = 4;
+    static constexpr size_t _Critical_section_size = 8;
 #endif // _WIN64
 #else // _CRT_WINDOWS
 #ifdef _WIN64
-    static constexpr size_t _Critical_section_size = 56;
+    static constexpr size_t _Critical_section_size = 64;
 #else // _WIN64
-    static constexpr size_t _Critical_section_size = 32;
+    static constexpr size_t _Critical_section_size = 36;
 #endif // _WIN64
 #endif // _CRT_WINDOWS
 
+    static constexpr size_t _Critical_section_align = alignof(void*);
+
     int _Type;
-    const void* _Vptr;
-    union {
-        void* _Srw_lock_placeholder;
-        unsigned char _Padding[_Critical_section_size];
-    };
+    _Aligned_storage_t<_Critical_section_size, _Critical_section_align> _Cs;
     long _Thread_id;
     int _Count;
 };
