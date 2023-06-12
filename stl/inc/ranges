@@ -684,7 +684,7 @@ namespace ranges {
         template <_Different_from<_Ty> _Uty>
             requires convertible_to<const _Uty&, _Ty>
         constexpr _Defaultabox(const _Defaultabox<_Uty>& _That) noexcept(
-            is_default_constructible_v<_Ty>&& noexcept(_Value = static_cast<_Ty>(*_That))) {
+            is_nothrow_default_constructible_v<_Ty>&& noexcept(_Value = static_cast<_Ty>(*_That))) {
             if (_That) {
                 _Value = static_cast<_Ty>(*_That);
             }
@@ -693,7 +693,7 @@ namespace ranges {
         template <_Different_from<_Ty> _Uty>
             requires convertible_to<_Uty, _Ty>
         constexpr _Defaultabox(_Defaultabox<_Uty>&& _That) noexcept(
-            is_default_constructible_v<_Ty>&& noexcept(_Value = static_cast<_Ty>(_STD move(*_That)))) {
+            is_nothrow_default_constructible_v<_Ty>&& noexcept(_Value = static_cast<_Ty>(_STD move(*_That)))) {
             if (_That) {
                 _Value = static_cast<_Ty>(_STD move(*_That));
             }
