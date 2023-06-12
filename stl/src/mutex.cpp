@@ -42,8 +42,8 @@ struct _Mtx_internal_imp_t { // ConcRT mutex
         Concurrency::details::stl_critical_section_max_alignment>::type cs;
     long thread_id;
     int count;
-    Concurrency::details::stl_critical_section_interface* _get_cs() { // get pointer to implementation
-        return reinterpret_cast<Concurrency::details::stl_critical_section_interface*>(&cs);
+    [[nodiscard]] Concurrency::details::stl_critical_section_win7* _get_cs() { // get pointer to implementation
+        return reinterpret_cast<Concurrency::details::stl_critical_section_win7*>(&cs);
     }
 };
 

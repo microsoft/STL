@@ -15,9 +15,9 @@ struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
     typename std::_Aligned_storage<Concurrency::details::stl_condition_variable_max_size,
         Concurrency::details::stl_condition_variable_max_alignment>::type cv;
 
-    [[nodiscard]] Concurrency::details::stl_condition_variable_interface* _get_cv() noexcept {
+    [[nodiscard]] Concurrency::details::stl_condition_variable_win7* _get_cv() noexcept {
         // get pointer to implementation
-        return reinterpret_cast<Concurrency::details::stl_condition_variable_interface*>(&cv);
+        return reinterpret_cast<Concurrency::details::stl_condition_variable_win7*>(&cv);
     }
 };
 
