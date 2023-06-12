@@ -7239,10 +7239,11 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
+_STD_END
+
 // TRANSITION, non-_Ugly attribute tokens
 #pragma pop_macro("msvc")
 
-_STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
