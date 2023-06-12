@@ -339,9 +339,12 @@ struct TrivialAccessor {
 static_assert(check_accessor_policy_requirements<TrivialAccessor<int>>());
 static_assert(is_trivial_v<TrivialAccessor<int>>);
 
-constexpr void check_modeled_concepts() {
-    using Mds = mdspan<long, extents<short, 4, 3, dynamic_extent>, TrackingLayout<layout_left>,
-        AccessorWithCustomOffsetPolicy<long>>;
+template <class Ext, class Layout, template <class> class AccessorTemplate>
+constexpr void check_modeled_concepts_and_member_types() {
+    using Accessor = AccessorTemplate<float>;
+    using Mds      = mdspan<float, Ext, Layout, Accessor>;
+
+    // Check modeled concepts
     static_assert(copyable<Mds>);
     static_assert(is_nothrow_move_constructible_v<Mds>);
     static_assert(is_nothrow_move_assignable_v<Mds>);
@@ -350,13 +353,8 @@ constexpr void check_modeled_concepts() {
         is_trivially_copyable_v<Mds>
         == (is_trivially_copyable_v<typename Mds::accessor_type> && is_trivially_copyable_v<typename Mds::mapping_type>
             && is_trivially_copyable_v<typename Mds::data_handle_type>) );
-}
 
-constexpr void check_member_types() {
-    using Ext      = extents<signed char, 2, 3, dynamic_extent, 7>;
-    using Layout   = layout_stride;
-    using Accessor = TrivialAccessor<float>;
-    using Mds      = mdspan<float, Ext, Layout, Accessor>;
+    // Check member types
     static_assert(same_as<typename Mds::extents_type, Ext>);
     static_assert(same_as<typename Mds::layout_type, Layout>);
     static_assert(same_as<typename Mds::accessor_type, Accessor>);
@@ -1319,8 +1317,10 @@ constexpr void check_deduction_guides() {
 }
 
 constexpr bool test() {
-    check_modeled_concepts();
-    check_member_types();
+    check_modeled_concepts_and_member_types<extents<signed char, 2, 3, 5>, layout_stride, TrivialAccessor>();
+    check_modeled_concepts_and_member_types<extents<unsigned short, 2, 4, dynamic_extent>, TrackingLayout<>,
+        AccessorWithTrackingDataHandle>();
+    check_modeled_concepts_and_member_types<dextents<unsigned long long, 3>, layout_left, TrackingAccessor>();
     check_observers();
     check_default_constructor();
     check_defaulted_copy_and_move_constructors();
