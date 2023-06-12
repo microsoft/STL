@@ -518,7 +518,8 @@ public:
     }
 };
 
-template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer, class _Mapptr_type>
+template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
+    class _Mapptr_type>
 struct _Deque_iter_types {
     using value_type      = _Value_type;
     using size_type       = _Size_type;
