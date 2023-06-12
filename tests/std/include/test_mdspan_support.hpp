@@ -11,14 +11,34 @@
 #include <type_traits>
 #include <utility>
 
+enum class IsExplicit : bool { no, yes };
 enum class IsNothrow : bool { no, yes };
 
-template <std::integral Int, IsNothrow Nothrow = IsNothrow::yes>
+template <std::integral Int, IsNothrow Nothrow = IsNothrow::yes, IsExplicit Explicit = IsExplicit::no>
 struct ConvertibleToInt {
-    constexpr operator Int() const noexcept(std::to_underlying(Nothrow)) {
-        return Int{1};
+    Int val = 1;
+
+    constexpr explicit(std::to_underlying(Explicit)) operator Int() const noexcept(std::to_underlying(Nothrow)) {
+        return val;
     }
 };
+
+static_assert(std::is_aggregate_v<ConvertibleToInt<int>>);
+static_assert(std::is_convertible_v<ConvertibleToInt<int>, int>);
+static_assert(std::is_nothrow_convertible_v<ConvertibleToInt<int>, int>);
+static_assert(!std::is_nothrow_convertible_v<ConvertibleToInt<int, IsNothrow::no>, int>);
+static_assert(std::is_convertible_v<ConvertibleToInt<int, IsNothrow::no>, int>);
+static_assert(!std::is_convertible_v<ConvertibleToInt<int, IsNothrow::no, IsExplicit::yes>, int>);
+
+template <std::integral Int>
+struct NonConstConvertibleToInt {
+    constexpr operator Int() noexcept; // not defined
+};
+
+static_assert(std::is_convertible_v<NonConstConvertibleToInt<int>, int>);
+static_assert(!std::is_convertible_v<const NonConstConvertibleToInt<int>, int>);
+static_assert(std::is_nothrow_convertible_v<NonConstConvertibleToInt<int>, int>);
+static_assert(!std::is_nothrow_convertible_v<const NonConstConvertibleToInt<int>, int>);
 
 struct NonConvertibleToAnything {};
 
