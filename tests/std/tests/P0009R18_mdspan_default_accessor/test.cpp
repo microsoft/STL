@@ -9,7 +9,7 @@
 #include <string>
 #include <type_traits>
 
-#include "test_mdspan_support.hpp"
+#include <test_mdspan_support.hpp>
 
 using namespace std;
 

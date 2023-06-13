@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "test_mdspan_support.hpp"
+#include <test_mdspan_support.hpp>
 
 using namespace std;
 
