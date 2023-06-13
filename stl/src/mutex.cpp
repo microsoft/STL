@@ -48,8 +48,8 @@ struct _Mtx_internal_imp_t { // ConcRT mutex
     }
 };
 
-static_assert(sizeof(_Mtx_internal_imp_t) <= _Mtx_internal_imp_size, "incorrect _Mtx_internal_imp_size");
-static_assert(alignof(_Mtx_internal_imp_t) <= _Mtx_internal_imp_alignment, "incorrect _Mtx_internal_imp_alignment");
+static_assert(sizeof(_Mtx_internal_imp_t) == _Mtx_internal_imp_size, "incorrect _Mtx_internal_imp_size");
+static_assert(alignof(_Mtx_internal_imp_t) == _Mtx_internal_imp_alignment, "incorrect _Mtx_internal_imp_alignment");
 
 static_assert(
     std::_Mtx_internal_imp_mirror::_Critical_section_size == Concurrency::details::stl_critical_section_max_size);

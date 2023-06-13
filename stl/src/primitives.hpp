@@ -123,13 +123,10 @@ namespace Concurrency {
 #if defined(_CRT_WINDOWS)
         const size_t stl_critical_section_max_size   = sizeof(stl_critical_section_win7);
         const size_t stl_condition_variable_max_size = sizeof(stl_condition_variable_win7);
-#elif defined(_STL_CONCRT_SUPPORT)
+#else // vvv !defined(_CRT_WINDOWS) vvv
         const size_t stl_critical_section_max_size        = sizeof_stl_critical_section_concrt;
         const size_t stl_condition_variable_max_size      = sizeof_stl_condition_variable_concrt;
-#else // vvv !defined(_CRT_WINDOWS) && !defined(_STL_CONCRT_SUPPORT) vvv
-        const size_t stl_critical_section_max_size   = sizeof_stl_critical_section_vista;
-        const size_t stl_condition_variable_max_size = sizeof_stl_condition_variable_vista;
-#endif // ^^^ !defined(_CRT_WINDOWS) && !defined(_STL_CONCRT_SUPPORT) ^^^
+#endif // ^^^ !defined(_CRT_WINDOWS) ^^^
 
         // concrt, vista, and win7 alignments are all identical to alignof(void*)
         const size_t stl_critical_section_max_alignment   = alignof(stl_critical_section_win7);
