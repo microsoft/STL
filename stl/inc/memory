@@ -1218,11 +1218,7 @@ public:
     _Ref_count_resource(_Resource _Px, _Dx _Dt)
         : _Ref_count_base(), _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Px) {}
 
-#ifdef __EDG__ // TRANSITION, VSO-1292293
-    ~_Ref_count_resource() noexcept override {} // TRANSITION, should be non-virtual
-#else // ^^^ workaround / no workaround vvv
     ~_Ref_count_resource() noexcept override = default; // TRANSITION, should be non-virtual
-#endif // ^^^ no workaround ^^^
 
     void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
@@ -1256,11 +1252,7 @@ public:
         : _Ref_count_base(),
           _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _One_then_variadic_args_t{}, _Ax, _Px) {}
 
-#ifdef __EDG__ // TRANSITION, VSO-1292293
-    ~_Ref_count_resource_alloc() noexcept override {} // TRANSITION, should be non-virtual
-#else // ^^^ workaround / no workaround vvv
     ~_Ref_count_resource_alloc() noexcept override = default; // TRANSITION, should be non-virtual
-#endif // ^^^ no workaround ^^^
 
     void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
