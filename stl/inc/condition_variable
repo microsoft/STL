@@ -95,9 +95,9 @@ public:
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
-        using _CommonDuration           = common_type_t<_Duration, typename _Clock::duration>;
-        const auto _Now                 = _Clock::now();
-        const _CommonDuration _Rel_time = (_Abs_time <= _Now) ? _CommonDuration::zero() : _Abs_time - _Now;
+        const auto _Now                  = _Clock::now();
+        using _Common_duration           = decltype(_Abs_time - _Now);
+        const _Common_duration _Rel_time = (_Abs_time <= _Now) ? _Common_duration::zero() : _Abs_time - _Now;
         return wait_for(_Lck, _Rel_time);
     }
 
