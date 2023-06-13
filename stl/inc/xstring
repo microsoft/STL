@@ -2795,10 +2795,10 @@ public:
             _New_capacity           = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size()) + 1;
             const pointer _Fancyptr = _Allocate_at_least_helper(_Getal(), _New_capacity); // throws
             _Ptr                    = _Unfancy(_Fancyptr);
-            _New_capacity--;
             _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
 
-            _Start_element_lifetimes(_Ptr, _New_capacity + 1);
+            _Start_element_lifetimes(_Ptr, _New_capacity);
+            --_New_capacity;
         }
 
         _My_data._Mysize = _New_size;

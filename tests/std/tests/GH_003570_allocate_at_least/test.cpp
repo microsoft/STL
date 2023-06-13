@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstdlib>
 #include <deque>
 #include <memory>
+#include <new>
 #include <sstream>
 #include <string>
 #include <syncstream>
@@ -12,12 +14,8 @@
 
 using namespace std;
 
-struct {
-    void assert_set() {
-        assert(consume());
-    }
-
-    bool consume() {
+struct signaller {
+    [[nodiscard]] bool consume() {
         return exchange(is_set, false);
     }
 
@@ -27,7 +25,9 @@ struct {
 
 private:
     bool is_set = false;
-} allocate_at_least_signal;
+};
+
+signaller allocate_at_least_signal;
 
 template <class T>
 struct signalling_allocator {
@@ -39,7 +39,7 @@ struct signalling_allocator {
     signalling_allocator(const signalling_allocator<U>&) {}
 
     T* allocate(size_t count) {
-        T* ptr = (T*) malloc(count * sizeof(T));
+        T* const ptr = static_cast<T*>(malloc(count * sizeof(T)));
         if (ptr) {
             return ptr;
         }
@@ -62,9 +62,9 @@ struct signalling_allocator {
 template <typename T>
 void test_container() {
     T container;
-    size_t reserve_count = container.capacity() + 100;
+    const size_t reserve_count = container.capacity() + 100;
     container.reserve(reserve_count);
-    allocate_at_least_signal.assert_set();
+    assert(allocate_at_least_signal.consume());
     assert(container.capacity() >= reserve_count * 2);
     assert(container.size() == 0);
 }
@@ -72,20 +72,20 @@ void test_container() {
 void test_deque() {
     deque<int, signalling_allocator<int>> d;
     d.resize(100);
-    allocate_at_least_signal.assert_set();
+    assert(allocate_at_least_signal.consume());
     assert(d.size() == 100);
 }
 
 void test_stream_overflow(auto& stream) {
-    stream << "my very long string that is indeed very long in order to make sure"
+    stream << "my very long string that is indeed very long in order to make sure "
            << "that overflow is called, hopefully calling allocate_at_least in return";
-    allocate_at_least_signal.assert_set();
+    assert(allocate_at_least_signal.consume());
 }
 
 void test_sstream() {
     basic_stringstream<char, char_traits<char>, signalling_allocator<char>> ss;
     ss.str("my_cool_string");
-    allocate_at_least_signal.assert_set();
+    assert(allocate_at_least_signal.consume());
     test_stream_overflow(ss);
 }
 

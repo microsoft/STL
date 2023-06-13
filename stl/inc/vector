@@ -1598,6 +1598,40 @@ public:
     }
 
 private:
+    enum class _Reallocation_policy { _At_least, _Exactly };
+
+    template <_Reallocation_policy _Policy>
+    _CONSTEXPR20 void _Reallocate(size_type& _Newcapacity) {
+        // set capacity to _Newcapacity (without geometric growth), provide strong guarantee
+        auto& _Al         = _Getal();
+        auto& _My_data    = _Mypair._Myval2;
+        pointer& _Myfirst = _My_data._Myfirst;
+        pointer& _Mylast  = _My_data._Mylast;
+
+        const auto _Size = static_cast<size_type>(_Mylast - _Myfirst);
+
+        pointer _Newvec;
+        if constexpr (_Policy == _Reallocation_policy::_At_least) {
+            _Newvec = _Allocate_at_least_helper(_Al, _Newcapacity);
+        } else {
+            _STL_INTERNAL_STATIC_ASSERT(_Policy == _Reallocation_policy::_Exactly);
+            _Newvec = _Al.allocate(_Newcapacity);
+        }
+
+        _TRY_BEGIN
+        if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+            _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
+        } else {
+            _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
+        }
+        _CATCH_ALL
+        _Al.deallocate(_Newvec, _Newcapacity);
+        _RERAISE;
+        _CATCH_END
+
+        _Change_array(_Newvec, _Size, _Newcapacity);
+    }
+
 #if _ITERATOR_DEBUG_LEVEL != 0 && defined(_ENABLE_STL_INTERNAL_CHECK)
     void _Check_all_orphaned_locked() const noexcept {
         _Lockit _Lock(_LOCK_DEBUG);
@@ -1657,27 +1691,7 @@ public:
                 _Xlength();
             }
 
-            auto& _Al         = _Getal();
-            auto& _My_data    = _Mypair._Myval2;
-            pointer& _Myfirst = _My_data._Myfirst;
-            pointer& _Mylast  = _My_data._Mylast;
-
-            const auto _Size = static_cast<size_type>(_Mylast - _Myfirst);
-
-            const pointer _Newvec = _Allocate_at_least_helper(_Al, _Newcapacity);
-
-            _TRY_BEGIN
-            if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
-                _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
-            } else {
-                _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
-            }
-            _CATCH_ALL
-            _Al.deallocate(_Newvec, _Newcapacity);
-            _RERAISE;
-            _CATCH_END
-
-            _Change_array(_Newvec, _Size, _Newcapacity);
+            _Reallocate<_Reallocation_policy::_At_least>(_Newcapacity);
         }
     }
 
@@ -1689,26 +1703,8 @@ public:
             if (_Oldfirst == _Oldlast) {
                 _Tidy();
             } else {
-                auto& _Al         = _Getal();
-                pointer& _Myfirst = _My_data._Myfirst;
-                pointer& _Mylast  = _My_data._Mylast;
-
-                const auto _Size = static_cast<size_type>(_Mylast - _Myfirst);
-
-                const pointer _Newvec = _Al.allocate(_Size);
-
-                _TRY_BEGIN
-                if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
-                    _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
-                } else {
-                    _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
-                }
-                _CATCH_ALL
-                _Al.deallocate(_Newvec, _Size);
-                _RERAISE;
-                _CATCH_END
-
-                _Change_array(_Newvec, _Size, _Size);
+                size_type _Newcapacity = static_cast<size_type>(_Oldlast - _Oldfirst);
+                _Reallocate<_Reallocation_policy::_Exactly>(_Newcapacity);
             }
         }
     }
