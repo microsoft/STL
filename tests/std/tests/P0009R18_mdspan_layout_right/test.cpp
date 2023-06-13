@@ -34,24 +34,35 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
     static_assert(same_as<typename Mapping::layout_type, layout_right>);
 
     { // Check default and copy constructor
-        Mapping m;
+        const Mapping m;
         Mapping cpy = m;
         assert(cpy == m);
         static_assert(is_nothrow_default_constructible_v<Mapping>);
         static_assert(is_nothrow_copy_constructible_v<Mapping>);
     }
 
+    { // Check copy assignment operator
+        const Mapping m;
+        Mapping cpy;
+        cpy = m;
+        assert(cpy == m);
+        static_assert(is_nothrow_copy_assignable_v<Ext>);
+    }
+
     { // Check construction from extents_type
         Mapping m{ext};
         assert(m.extents() == ext);
         static_assert(is_nothrow_constructible_v<Mapping, Ext>);
+        // Other tests are defined in 'check_construction_from_extents' function
     }
 
     using OtherIndexType = long long;
     using Ext2           = extents<OtherIndexType, Extents...>;
     using Mapping2       = layout_right::mapping<Ext2>;
 
-#ifndef __clang__ // FIXME, Clang suddenly cannot digest this
+#ifdef __clang__
+    if (!is_constant_evaluated()) // FIXME clang hits contexpr limit here
+#endif
     { // Check construction from other layout_right::mapping
         Mapping m1{ext};
         Mapping2 m2{m1};
@@ -59,7 +70,6 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         static_assert(is_nothrow_constructible_v<Mapping2, Mapping>);
         // Other tests are defined in 'check_construction_from_other_right_mapping' function
     }
-#endif // __clang__
 
     { // Check construction from layout_left::mapping
         using LeftMapping = layout_left::mapping<Ext>;
@@ -89,9 +99,9 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
             }
         }
 
-        using StrideMapping = layout_stride::mapping<Ext>;
-        StrideMapping stride_mapping{ext, strides};
-        [[maybe_unused]] Mapping m{stride_mapping};
+        layout_stride::mapping<Ext> m1{ext, strides};
+        Mapping m2{m1};
+        assert(m1.extents() == m2.extents());
         // Other tests are defined in 'check_construction_from_other_stride_mapping' function
     }
 
@@ -103,9 +113,10 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
     }
 
     { // Check 'required_span_size' function
-        const IndexType expected_value = static_cast<IndexType>((ext.extent(Indices) * ... * 1));
-        assert(m.required_span_size() == expected_value);
+        same_as<IndexType> decltype(auto) rss = m.required_span_size();
+        assert(rss == static_cast<IndexType>((ext.extent(Indices) * ... * 1)));
         static_assert(noexcept(m.required_span_size()));
+        // Other tests are defined in 'check_mapping_properties'
     }
 
     { // Check operator()
@@ -126,6 +137,7 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         static_assert(Mapping::is_unique());
         static_assert(Mapping::is_exhaustive());
         static_assert(Mapping::is_strided());
+        // Other tests are defined in 'check_mapping_properties'
     }
 
     if constexpr (Ext::rank() > 0) { // Check 'stride' function
@@ -134,6 +146,7 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         assert(m.stride(Ext::rank() - 1) == 1);
         static_assert(noexcept(m.stride(Ext::rank() - 1)));
         static_assert(noexcept(m.stride(0)));
+        // Other tests are defined in 'check_stride_function'
     } else {
         static_assert(!CheckStrideMemberFunction<Mapping>);
     }
@@ -142,6 +155,44 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         assert(m == m);
         assert(!(m != m));
         // Other tests are defined in 'check_comparisons' function
+    }
+}
+
+constexpr void check_mapping_properties() {
+    auto check = [](const auto& mapping) {
+        const auto props = get_mapping_properties(mapping);
+        if constexpr (!is_permissive) {
+            assert(props.req_span_size == mapping.required_span_size());
+            assert(props.uniqueness);
+            assert(props.exhaustiveness);
+            assert(props.strideness);
+        }
+    };
+
+    using M1 = layout_right::mapping<extents<int, 7, 11, 13>>;
+    check(M1{});
+
+    using M2 = layout_right::mapping<extents<unsigned long, dynamic_extent, 4, dynamic_extent>>;
+    check(M2{M2::extents_type{2, 6}});
+
+    using M3 = layout_right::mapping<dextents<unsigned char, 4>>;
+    check(M3{M3::extents_type{4, 3, 5, 4}});
+}
+
+constexpr void check_construction_from_extents() {
+    using Ext = extents<int, 6, 4, 2>;
+    Ext ext;
+
+    { // Check construction from 'extents_type'
+        layout_right::mapping<Ext> mp(ext);
+        assert(mp.extents() == ext);
+        static_assert(is_nothrow_constructible_v<decltype(mp), Ext>);
+    }
+
+    { // Check construction from other extents
+        layout_right::mapping<extents<long, dynamic_extent, 4, dynamic_extent>> mp(ext);
+        assert(mp.extents() == ext);
+        static_assert(is_nothrow_constructible_v<decltype(mp), Ext>);
     }
 }
 
@@ -166,10 +217,10 @@ constexpr void check_construction_from_other_right_mapping() {
 
 constexpr void check_construction_from_other_left_mapping() {
     { // Check construction from layout_left::mapping<E> with various values of E::rank()
-        static_assert(
-            is_constructible_v<layout_right::mapping<dextents<int, 0>>, layout_left::mapping<dextents<int, 0>>>);
-        static_assert(
-            is_constructible_v<layout_right::mapping<dextents<int, 1>>, layout_left::mapping<dextents<int, 1>>>);
+        static_assert(is_nothrow_constructible_v<layout_right::mapping<dextents<int, 0>>,
+            layout_left::mapping<dextents<int, 0>>>);
+        static_assert(is_nothrow_constructible_v<layout_right::mapping<dextents<int, 1>>,
+            layout_left::mapping<dextents<int, 1>>>);
         static_assert(
             !is_constructible_v<layout_right::mapping<dextents<int, 2>>, layout_left::mapping<dextents<int, 2>>>);
         static_assert(
@@ -188,18 +239,27 @@ constexpr void check_construction_from_other_left_mapping() {
         static_assert(NotImplicitlyConstructibleFrom<Mapping, layout_left::mapping<extents<long long, 4>>>);
         static_assert(NotImplicitlyConstructibleFrom<Mapping, layout_left::mapping<extents<int, dynamic_extent>>>);
     }
+
+    { // Check effects
+        layout_right::mapping<extents<unsigned int, 6, 2, 6>> m1;
+        layout_right::mapping<dextents<unsigned short, 3>> m2{m1};
+        assert(m2.extents().extent(0) == 6);
+        assert(m2.extents().extent(1) == 2);
+        assert(m2.extents().extent(2) == 6);
+        assert(m1.extents() == m2.extents());
+    }
 }
 
 constexpr void check_construction_from_other_stride_mapping() {
     { // Check construction from layout_stride::mapping<E> with various values of E::rank()
-        static_assert(
-            is_constructible_v<layout_right::mapping<dextents<int, 0>>, layout_stride::mapping<dextents<int, 0>>>);
-        static_assert(
-            is_constructible_v<layout_right::mapping<dextents<int, 1>>, layout_stride::mapping<dextents<int, 1>>>);
-        static_assert(
-            is_constructible_v<layout_right::mapping<dextents<int, 2>>, layout_stride::mapping<dextents<int, 2>>>);
-        static_assert(
-            is_constructible_v<layout_right::mapping<dextents<int, 3>>, layout_stride::mapping<dextents<int, 3>>>);
+        static_assert(is_nothrow_constructible_v<layout_right::mapping<dextents<int, 0>>,
+            layout_stride::mapping<dextents<int, 0>>>);
+        static_assert(is_nothrow_constructible_v<layout_right::mapping<dextents<int, 1>>,
+            layout_stride::mapping<dextents<int, 1>>>);
+        static_assert(is_nothrow_constructible_v<layout_right::mapping<dextents<int, 2>>,
+            layout_stride::mapping<dextents<int, 2>>>);
+        static_assert(is_nothrow_constructible_v<layout_right::mapping<dextents<int, 3>>,
+            layout_stride::mapping<dextents<int, 3>>>);
     }
 
     { // Check construction from layout_stride::mapping<E> when E is invalid
@@ -210,8 +270,13 @@ constexpr void check_construction_from_other_stride_mapping() {
 
     { // Check correctness
         using Ext = extents<int, 4, 3, 2, 3, 4>;
-        layout_stride::mapping<Ext> stride_mapping{Ext{}, array{72, 24, 12, 4, 1}};
-        [[maybe_unused]] layout_right::mapping<Ext> m{stride_mapping};
+        layout_stride::mapping<Ext> m1{Ext{}, array{72, 24, 12, 4, 1}};
+        layout_right::mapping<Ext> m2{m1};
+        assert(m2.extents().extent(0) == 4);
+        assert(m2.extents().extent(1) == 3);
+        assert(m2.stride(2) == 12);
+        assert(m2.stride(3) == 4);
+        assert(m2.extents() == m1.extents());
     }
 
     { // Check implicit conversions
@@ -272,6 +337,35 @@ constexpr void check_call_operator() {
     }
 }
 
+constexpr void check_stride_function() {
+    layout_right::mapping<extents<unsigned short, 2, 3, 5, 7, 11>> prime_mapping;
+
+    { // Check return type
+        same_as<unsigned short> decltype(auto) s = prime_mapping.stride(0);
+        assert(s == 1155); // 11 * 7 * 5 * 3
+    }
+
+    { // Check that argument is 'rank_type'
+        struct ConvertibleToRankType {
+            constexpr operator integral auto() const {
+                return 0;
+            }
+
+            constexpr operator size_t() const { // NB: 'rank_type' is always 'size_t'
+                return 1;
+            }
+        };
+
+        assert(prime_mapping.stride(ConvertibleToRankType{}) == 385); // 11 * 7 * 5
+    }
+
+    { // Check other strides
+        assert(prime_mapping.stride(2) == 77);
+        assert(prime_mapping.stride(3) == 11);
+        assert(prime_mapping.stride(4) == 1);
+    }
+}
+
 constexpr void check_comparisons() {
     using StaticMapping  = layout_right::mapping<extents<int, 4, 4>>;
     using DynamicMapping = layout_right::mapping<dextents<int, 2>>;
@@ -290,6 +384,14 @@ constexpr void check_comparisons() {
         assert(m2 != m3);
         assert(m1 != m3);
     }
+}
+
+constexpr void check_ctad() {
+    using Ext = extents<long, 5, 5>;
+    layout_right::mapping m{Ext{}};
+    static_assert(same_as<decltype(m), layout_right::mapping<Ext>>);
+    assert(m.extents().extent(0) == 5);
+    assert(m.stride(1) == 1);
 }
 
 constexpr void check_correctness() {
@@ -416,11 +518,17 @@ constexpr bool test() {
         []<class IndexType, size_t... Extents>(const extents<IndexType, Extents...>& ext) {
             check_members(ext, make_index_sequence<sizeof...(Extents)>{});
         });
+    if (!is_constant_evaluated()) { // too heavy for compile time
+        check_mapping_properties();
+    }
+    check_construction_from_extents();
     check_construction_from_other_right_mapping();
     check_construction_from_other_left_mapping();
     check_construction_from_other_stride_mapping();
     check_call_operator();
+    check_stride_function();
     check_comparisons();
+    check_ctad();
     check_correctness();
 
     return true;

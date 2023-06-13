@@ -549,7 +549,8 @@ public:
 
     template <class _OtherExtents>
         requires is_constructible_v<extents_type, _OtherExtents>
-    constexpr explicit(extents_type::rank() > 0) mapping(const layout_stride::template mapping<_OtherExtents>& _Other)
+    constexpr explicit(extents_type::rank() > 0)
+        mapping(const layout_stride::template mapping<_OtherExtents>& _Other) noexcept
         : _Exts(_Other.extents()) {
         if constexpr (extents_type::rank() > 0) {
             const bool _Verify = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
