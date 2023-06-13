@@ -174,38 +174,38 @@ constexpr void check_members(extents<IndexType, Extents...> ext, const array<int
     check_members_with_different_strides_index_type<unsigned long long>(ext, strides);
 }
 
-constexpr void check_mapping_properties() {
-    auto check = [](const auto& mapping, [[maybe_unused]] const bool expected_exhaustiveness) {
-        const auto props = get_mapping_properties(mapping);
-        if constexpr (!is_permissive) {
+void check_mapping_properties() {
+    if constexpr (!is_permissive) {
+        auto check = [](const auto& mapping, const bool expected_exhaustiveness) {
+            const auto props = get_mapping_properties(mapping);
             assert(props.req_span_size == mapping.required_span_size());
             assert(props.uniqueness);
             assert(props.exhaustiveness == expected_exhaustiveness);
             assert(props.exhaustiveness == mapping.is_exhaustive());
             assert(props.strideness);
+        };
+
+        { // Check exhaustive mappings
+            using M1 = layout_stride::mapping<extents<unsigned int, 4, 2, 3>>;
+            check(M1{M1::extents_type{}, array{6, 1, 2}}, true);
+
+            using M2 = layout_stride::mapping<extents<unsigned long long, dynamic_extent, dynamic_extent, 8>>;
+            check(M2{M2::extents_type{6, 7}, array{1, 48, 6}}, true);
+
+            using M3 = layout_stride::mapping<dextents<short, 4>>;
+            check(M3{M3::extents_type{3, 5, 2, 4}, array{20, 1, 60, 5}}, true);
         }
-    };
 
-    { // Check exhaustive mappings
-        using M1 = layout_stride::mapping<extents<unsigned int, 4, 2, 3>>;
-        check(M1{M1::extents_type{}, array{6, 1, 2}}, true);
+        { // Check non-exhaustive mappings
+            using M1 = layout_stride::mapping<extents<int, 2, 4, 3>>;
+            check(M1{M1::extents_type{}, array{9, 18, 1}}, false);
 
-        using M2 = layout_stride::mapping<extents<unsigned long long, dynamic_extent, dynamic_extent, 8>>;
-        check(M2{M2::extents_type{6, 7}, array{1, 48, 6}}, true);
+            using M2 = layout_stride::mapping<extents<long long, 3, dynamic_extent, dynamic_extent>>;
+            check(M2{M2::extents_type{4, 3}, array{12, 36, 1}}, false);
 
-        using M3 = layout_stride::mapping<dextents<short, 4>>;
-        check(M3{M3::extents_type{3, 5, 2, 4}, array{20, 1, 60, 5}}, true);
-    }
-
-    { // Check non-exhaustive mappings
-        using M1 = layout_stride::mapping<extents<int, 2, 4, 3>>;
-        check(M1{M1::extents_type{}, array{9, 18, 1}}, false);
-
-        using M2 = layout_stride::mapping<extents<long long, 3, dynamic_extent, dynamic_extent>>;
-        check(M2{M2::extents_type{4, 3}, array{12, 36, 1}}, false);
-
-        using M3 = layout_stride::mapping<dextents<unsigned short, 3>>;
-        check(M3{M3::extents_type{4, 3, 2}, array{8, 32, 2}}, false);
+            using M3 = layout_stride::mapping<dextents<unsigned short, 3>>;
+            check(M3{M3::extents_type{4, 3, 2}, array{8, 32, 2}}, false);
+        }
     }
 }
 

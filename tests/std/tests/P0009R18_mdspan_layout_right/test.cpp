@@ -158,25 +158,25 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
     }
 }
 
-constexpr void check_mapping_properties() {
-    auto check = [](const auto& mapping) {
-        const auto props = get_mapping_properties(mapping);
-        if constexpr (!is_permissive) {
+void check_mapping_properties() {
+    if constexpr (!is_permissive) {
+        auto check = []([[maybe_unused]] const auto& mapping) {
+            const auto props = get_mapping_properties(mapping);
             assert(props.req_span_size == mapping.required_span_size());
             assert(props.uniqueness);
             assert(props.exhaustiveness);
             assert(props.strideness);
-        }
-    };
+        };
 
-    using M1 = layout_right::mapping<extents<int, 7, 11, 13>>;
-    check(M1{});
+        using M1 = layout_right::mapping<extents<int, 7, 11, 13>>;
+        check(M1{});
 
-    using M2 = layout_right::mapping<extents<unsigned long, dynamic_extent, 4, dynamic_extent>>;
-    check(M2{M2::extents_type{2, 6}});
+        using M2 = layout_right::mapping<extents<unsigned long, dynamic_extent, 4, dynamic_extent>>;
+        check(M2{M2::extents_type{2, 6}});
 
-    using M3 = layout_right::mapping<dextents<unsigned char, 4>>;
-    check(M3{M3::extents_type{4, 3, 5, 4}});
+        using M3 = layout_right::mapping<dextents<unsigned char, 4>>;
+        check(M3{M3::extents_type{4, 3, 5, 4}});
+    }
 }
 
 constexpr void check_construction_from_extents() {
