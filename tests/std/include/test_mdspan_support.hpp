@@ -8,6 +8,7 @@
 #include <concepts>
 #include <cstddef>
 #include <mdspan>
+#include <optional>
 #include <ranges>
 #include <span>
 #include <type_traits>
@@ -263,41 +264,65 @@ struct MappingProperties {
 
 template <class Mapping>
     requires (!details::PermissiveTest<Mapping>::test())
-constexpr MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
-    constexpr typename Mapping::index_type zero = 0;
+MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
+    using IndexType          = typename Mapping::index_type;
+    constexpr IndexType zero = 0;
+    constexpr auto rank      = Mapping::extents_type::rank();
+    constexpr std::make_index_sequence<rank> rank_indices;
 
-    auto make_cartesian_prod = [&]<size_t... Indices>(std::index_sequence<Indices...>) {
-        return std::views::cartesian_product(std::views::iota(zero, mapping.extents().extent(Indices))...);
-    };
+    auto get_extent       = [&](size_t i) { return mapping.extents().extent(i); };
+    auto multidim_indices = [&]<size_t... Indices>(std::index_sequence<Indices...>) {
+        return std::views::cartesian_product(std::views::iota(zero, get_extent(Indices))...);
+    }(rank_indices);
 
-    auto indices =
-        make_cartesian_prod(std::make_index_sequence<Mapping::extents_type::rank()>{})
-        | std::views::transform([&](auto tpl) { return std::apply([&](auto... i) { return mapping(i...); }, tpl); })
-        | std::ranges::to<std::vector>();
-    std::ranges::sort(indices);
+    auto map_index      = [&](const auto& tpl) { return std::apply([&](auto... i) { return mapping(i...); }, tpl); };
+    auto mapped_indices = multidim_indices | std::views::transform(map_index) | std::ranges::to<std::vector>();
+    std::ranges::sort(mapped_indices);
 
-    MappingProperties<Mapping> props;
+    MappingProperties<Mapping> props{};
 
     { // Find required span size (N4950 [mdspan.layout.reqmts]/12)
-        auto exts = std::views::iota(0u, Mapping::extents_type::rank())
-                  | std::views::transform([&](auto i) { return mapping.extents().extent(i); });
+        auto exts = std::views::iota(0u, rank) | std::views::transform([&](auto i) { return get_extent(i); });
         if (std::ranges::contains(exts, zero)) {
             props.req_span_size = 0;
         } else {
-            props.req_span_size = static_cast<Mapping::index_type>(1 + indices.back());
+            props.req_span_size = static_cast<IndexType>(1 + mapped_indices.back());
         }
     }
 
     // Is mapping unique? (N4950 [mdspan.layout.reqmts]/14)
-    props.uniqueness = !std::ranges::contains(std::views::pairwise_transform(indices, std::minus{}), zero);
+    props.uniqueness = !std::ranges::contains(std::views::pairwise_transform(mapped_indices, std::minus{}), zero);
 
     { // Is mapping exhaustive? (N4950 [mdspan.layout.reqmts]/16)
-        const auto diffs     = std::views::pairwise_transform(indices, [](auto x, auto y) { return y - x; });
+        const auto diffs     = std::views::pairwise_transform(mapped_indices, [](auto x, auto y) { return y - x; });
         props.exhaustiveness = std::ranges::find_if_not(diffs, [](auto x) { return x == 1; }) == diffs.end();
     }
 
-    // Is mapping strided? FIXME (N4950 [mdspan.layout.reqmts]/18)
-    props.strideness = true;
+    { // Is mapping strided? (N4950 [mdspan.layout.reqmts]/18)
+        props.strideness = true; // assumption
+        for (auto r : std::views::iota(0u, rank)) {
+            std::optional<IndexType> sr;
+            for (auto i : multidim_indices) {
+                const auto i_plus_dr = [&]<size_t... Indices>(std::index_sequence<Indices...>) {
+                    return std::array{static_cast<IndexType>(std::get<Indices>(i) + (Indices == r ? 1 : 0))...};
+                }(rank_indices);
+
+                if (i_plus_dr[r] < get_extent(r)) {
+                    const auto diff = static_cast<IndexType>(map_index(i_plus_dr) - map_index(i));
+                    if (!sr.has_value()) {
+                        sr = diff;
+                    } else if (*sr != diff) {
+                        props.strideness = false;
+                        break;
+                    }
+                }
+            }
+
+            if (!props.strideness) {
+                break;
+            }
+        }
+    }
 
     return props;
 }
