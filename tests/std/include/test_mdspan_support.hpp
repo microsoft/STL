@@ -4,12 +4,15 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <concepts>
 #include <cstddef>
 #include <mdspan>
+#include <ranges>
 #include <span>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 enum class IsExplicit : bool { no, yes };
 enum class IsNothrow : bool { no, yes };
@@ -226,4 +229,81 @@ constexpr void check_members_with_various_extents(Fn&& fn) {
 #ifndef _PREFAST_
     details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<16>{});
 #endif // _PREFAST_
+}
+
+namespace details {
+    static constexpr bool permissive() {
+        return false;
+    }
+
+    template <class>
+    struct PermissiveTestBase {
+        static constexpr bool permissive() {
+            return true;
+        }
+    };
+
+    template <class T>
+    struct PermissiveTest : PermissiveTestBase<T> {
+        static constexpr bool test() {
+            return permissive();
+        }
+    };
+} // namespace details
+
+inline constexpr bool is_permissive = details::PermissiveTest<int>::test();
+
+template <class Mapping>
+struct MappingProperties {
+    typename Mapping::index_type req_span_size;
+    bool uniqueness;
+    bool exhaustiveness;
+    bool strideness;
+};
+
+template <class Mapping>
+    requires (!details::PermissiveTest<Mapping>::test())
+constexpr MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
+    constexpr typename Mapping::index_type zero = 0;
+
+    auto make_cartesian_prod = [&]<size_t... Indices>(std::index_sequence<Indices...>) {
+        return std::views::cartesian_product(std::views::iota(zero, mapping.extents().extent(Indices))...);
+    };
+
+    auto indices =
+        make_cartesian_prod(std::make_index_sequence<Mapping::extents_type::rank()>{})
+        | std::views::transform([&](auto tpl) { return std::apply([&](auto... i) { return mapping(i...); }, tpl); })
+        | std::ranges::to<std::vector>();
+    std::ranges::sort(indices);
+
+    MappingProperties<Mapping> props;
+
+    { // Find required span size (N4950 [mdspan.layout.reqmts]/12)
+        auto exts = std::views::iota(0u, Mapping::extents_type::rank())
+                  | std::views::transform([&](auto i) { return mapping.extents().extent(i); });
+        if (std::ranges::contains(exts, zero)) {
+            props.req_span_size = 0;
+        } else {
+            props.req_span_size = static_cast<Mapping::index_type>(1 + indices.back());
+        }
+    }
+
+    // Is mapping unique? (N4950 [mdspan.layout.reqmts]/14)
+    props.uniqueness = !std::ranges::contains(std::views::pairwise_transform(indices, std::minus{}), zero);
+
+    { // Is mapping exhaustive? (N4950 [mdspan.layout.reqmts]/16)
+        const auto diffs     = std::views::pairwise_transform(indices, [](auto x, auto y) { return y - x; });
+        props.exhaustiveness = std::ranges::find_if_not(diffs, [](auto x) { return x == 1; }) == diffs.end();
+    }
+
+    // Is mapping strided? FIXME (N4950 [mdspan.layout.reqmts]/18)
+    props.strideness = true;
+
+    return props;
+}
+
+template <class Mapping>
+    requires (details::PermissiveTest<Mapping>::test())
+constexpr MappingProperties<Mapping> get_mapping_properties(const Mapping&) {
+    return {}; // we cannot get properties in '/permissive' mode
 }
