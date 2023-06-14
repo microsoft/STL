@@ -1601,7 +1601,7 @@ namespace chrono {
 
         constexpr hh_mm_ss() noexcept : hh_mm_ss{_Duration::zero()} {}
         constexpr explicit hh_mm_ss(_Duration _Dur)
-            : _Is_neg{_Dur < _Duration::zero()}, //
+            : _Is_neg{_Dur < _Duration::zero()},
               _Hours{_Duration_cast_underflow_to_zero<_CHRONO hours>(_CHRONO abs(_Dur))},
               _Mins{_Duration_cast_underflow_to_zero<_CHRONO minutes>(
                   _Remove_duration_part<_CHRONO hours>(_CHRONO abs(_Dur)))},
@@ -2989,12 +2989,10 @@ namespace chrono {
         if constexpr (is_invocable_v<clock_time_conversion<_DestClock, _SourceClock>, _Tp>) {
             return _Clock_cast_strategy::_Direct;
         } else {
-            constexpr bool _Has_sys = _Has_two_step_conversion< //
-                clock_time_conversion<_DestClock, system_clock>, //
+            constexpr bool _Has_sys = _Has_two_step_conversion<clock_time_conversion<_DestClock, system_clock>,
                 clock_time_conversion<system_clock, _SourceClock>, _Tp>;
 
-            constexpr bool _Has_utc = _Has_two_step_conversion< //
-                clock_time_conversion<_DestClock, utc_clock>, //
+            constexpr bool _Has_utc = _Has_two_step_conversion<clock_time_conversion<_DestClock, utc_clock>,
                 clock_time_conversion<utc_clock, _SourceClock>, _Tp>;
 
             if constexpr (_Has_sys && _Has_utc) {
@@ -5816,60 +5814,46 @@ struct formatter<_CHRONO duration<_Rep, _Period>, _CharT>
     : _Fill_tm_formatter<_CHRONO duration<_Rep, _Period>, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO day, _CharT> //
-    : _Fill_tm_formatter<_CHRONO day, _CharT> {};
+struct formatter<_CHRONO day, _CharT> : _Fill_tm_formatter<_CHRONO day, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO month, _CharT> //
-    : _Fill_tm_formatter<_CHRONO month, _CharT> {};
+struct formatter<_CHRONO month, _CharT> : _Fill_tm_formatter<_CHRONO month, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO year, _CharT> //
-    : _Fill_tm_formatter<_CHRONO year, _CharT> {};
+struct formatter<_CHRONO year, _CharT> : _Fill_tm_formatter<_CHRONO year, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO weekday, _CharT> //
-    : _Fill_tm_formatter<_CHRONO weekday, _CharT> {};
+struct formatter<_CHRONO weekday, _CharT> : _Fill_tm_formatter<_CHRONO weekday, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO weekday_indexed, _CharT> //
-    : _Fill_tm_formatter<_CHRONO weekday_indexed, _CharT> {};
+struct formatter<_CHRONO weekday_indexed, _CharT> : _Fill_tm_formatter<_CHRONO weekday_indexed, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO weekday_last, _CharT> //
-    : _Fill_tm_formatter<_CHRONO weekday_last, _CharT> {};
+struct formatter<_CHRONO weekday_last, _CharT> : _Fill_tm_formatter<_CHRONO weekday_last, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO month_day, _CharT> //
-    : _Fill_tm_formatter<_CHRONO month_day, _CharT> {};
+struct formatter<_CHRONO month_day, _CharT> : _Fill_tm_formatter<_CHRONO month_day, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO month_day_last, _CharT> //
-    : _Fill_tm_formatter<_CHRONO month_day_last, _CharT> {};
+struct formatter<_CHRONO month_day_last, _CharT> : _Fill_tm_formatter<_CHRONO month_day_last, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO month_weekday, _CharT> //
-    : _Fill_tm_formatter<_CHRONO month_weekday, _CharT> {};
+struct formatter<_CHRONO month_weekday, _CharT> : _Fill_tm_formatter<_CHRONO month_weekday, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO month_weekday_last, _CharT> //
-    : _Fill_tm_formatter<_CHRONO month_weekday_last, _CharT> {};
+struct formatter<_CHRONO month_weekday_last, _CharT> : _Fill_tm_formatter<_CHRONO month_weekday_last, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO year_month, _CharT> //
-    : _Fill_tm_formatter<_CHRONO year_month, _CharT> {};
+struct formatter<_CHRONO year_month, _CharT> : _Fill_tm_formatter<_CHRONO year_month, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO year_month_day, _CharT> //
-    : _Fill_tm_formatter<_CHRONO year_month_day, _CharT> {};
+struct formatter<_CHRONO year_month_day, _CharT> : _Fill_tm_formatter<_CHRONO year_month_day, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO year_month_day_last, _CharT> //
-    : _Fill_tm_formatter<_CHRONO year_month_day_last, _CharT> {};
+struct formatter<_CHRONO year_month_day_last, _CharT> : _Fill_tm_formatter<_CHRONO year_month_day_last, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO year_month_weekday, _CharT> //
-    : _Fill_tm_formatter<_CHRONO year_month_weekday, _CharT> {};
+struct formatter<_CHRONO year_month_weekday, _CharT> : _Fill_tm_formatter<_CHRONO year_month_weekday, _CharT> {};
 
 template <class _CharT>
 struct formatter<_CHRONO year_month_weekday_last, _CharT>
@@ -5880,12 +5864,10 @@ struct formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT>
     : _Fill_tm_formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO sys_info, _CharT> //
-    : _Fill_tm_formatter<_CHRONO sys_info, _CharT> {};
+struct formatter<_CHRONO sys_info, _CharT> : _Fill_tm_formatter<_CHRONO sys_info, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO local_info, _CharT> //
-    : _Fill_tm_formatter<_CHRONO local_info, _CharT> {};
+struct formatter<_CHRONO local_info, _CharT> : _Fill_tm_formatter<_CHRONO local_info, _CharT> {};
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
@@ -5974,8 +5956,7 @@ private:
 };
 
 template <class _Duration, class _CharT>
-struct formatter<_CHRONO local_time<_Duration>, _CharT> //
-    : _Fill_tm_formatter<_CHRONO local_time<_Duration>, _CharT> {};
+struct formatter<_CHRONO local_time<_Duration>, _CharT> : _Fill_tm_formatter<_CHRONO local_time<_Duration>, _CharT> {};
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT>
