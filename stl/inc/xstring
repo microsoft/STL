@@ -2648,14 +2648,16 @@ private:
         }
 
         _My_data._Myres         = _BUF_SIZE - 1;
-        size_type _New_capacity = _Calculate_growth(_Count) + 1;
-        const pointer _New_ptr  = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+        size_type _New_capacity = _Calculate_growth(_Count);
+        ++_New_capacity;
+        const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+        --_New_capacity;
         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
 
-        _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity);
+        _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
 
         _My_data._Mysize = _Count;
-        _My_data._Myres  = _New_capacity - 1;
+        _My_data._Myres  = _New_capacity;
         if constexpr (_Strat == _Construct_strategy::_From_char) {
             _Traits::assign(_Unfancy(_New_ptr), _Count, _Arg);
             _Traits::assign(_Unfancy(_New_ptr)[_Count], _Elem());
@@ -2691,12 +2693,14 @@ private:
             }
 
             if (_Count >= _BUF_SIZE) {
-                size_type _New_capacity = _Calculate_growth(_Count) + 1;
-                const pointer _New_ptr  = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+                size_type _New_capacity = _Calculate_growth(_Count);
+                ++_New_capacity;
+                const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+                --_New_capacity;
                 _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
-                _My_data._Myres = _New_capacity - 1;
+                _My_data._Myres = _New_capacity;
 
-                _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity);
+                _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
             }
         }
 
@@ -2709,10 +2713,12 @@ private:
                     }
 
                     const auto _Old_ptr     = _My_data._Myptr();
-                    size_type _New_capacity = _Calculate_growth(_My_data._Mysize) + 1;
-                    const pointer _New_ptr  = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+                    size_type _New_capacity = _Calculate_growth(_My_data._Mysize);
+                    ++_New_capacity;
+                    const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+                    --_New_capacity;
 
-                    _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity);
+                    _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
                     _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
                     if (_My_data._Myres >= _BUF_SIZE) { // Need to deallocate old storage
                         _Al.deallocate(_My_data._Bx._Ptr, _My_data._Myres + 1);
@@ -2720,7 +2726,7 @@ private:
                     } else {
                         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
                     }
-                    _My_data._Myres = _New_capacity - 1;
+                    _My_data._Myres = _New_capacity;
                 }
             }
 
@@ -2792,13 +2798,14 @@ public:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
 
         if (_New_capacity < _New_size) {
-            _New_capacity           = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size()) + 1;
+            _New_capacity = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size());
+            ++_New_capacity;
             const pointer _Fancyptr = _Allocate_at_least_helper(_Getal(), _New_capacity); // throws
-            _Ptr                    = _Unfancy(_Fancyptr);
+            --_New_capacity;
+            _Ptr = _Unfancy(_Fancyptr);
             _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
 
-            _Start_element_lifetimes(_Ptr, _New_capacity);
-            --_New_capacity;
+            _Start_element_lifetimes(_Ptr, _New_capacity + 1);
         }
 
         _My_data._Mysize = _New_size;
@@ -2864,15 +2871,17 @@ public:
             _Xlen_string();
         }
 
-        auto _New_capacity = _Calculate_growth(_New_size, _BUF_SIZE - 1, _Max) + 1;
+        auto _New_capacity = _Calculate_growth(_New_size, _BUF_SIZE - 1, _Max);
         auto&& _Alproxy    = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
+        ++_New_capacity;
         const pointer _Fancyptr = _Allocate_at_least_helper(_Getal(), _New_capacity); // throws
+        --_New_capacity;
         // nothrow hereafter
-        _Start_element_lifetimes(_Unfancy(_Fancyptr), _New_capacity);
+        _Start_element_lifetimes(_Unfancy(_Fancyptr), _New_capacity + 1);
         _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
         _My_data._Mysize = _New_size;
-        _My_data._Myres  = _New_capacity - 1;
+        _My_data._Myres  = _New_capacity;
         const auto _Ptr  = _Unfancy(_Fancyptr);
         _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
         _Traits::copy(_Ptr + _Left_size, _Right_data._Myptr(), _Right_size + 1);
@@ -3169,17 +3178,19 @@ public:
 
                 if (_Right._Mypair._Myval2._Large_string_engaged()) {
                     const auto _New_size     = _Right._Mypair._Myval2._Mysize;
-                    auto _New_capacity       = _Calculate_growth(_New_size, 0, _Right.max_size()) + 1;
+                    auto _New_capacity       = _Calculate_growth(_New_size, 0, _Right.max_size());
                     auto _Right_al_non_const = _Right_al;
-                    const auto _New_ptr      = _Allocate_at_least_helper(_Right_al_non_const, _New_capacity); // throws
+                    ++_New_capacity;
+                    const auto _New_ptr = _Allocate_at_least_helper(_Right_al_non_const, _New_capacity); // throws
+                    --_New_capacity;
 
-                    _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity);
+                    _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
 
                     _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_Right._Mypair._Myval2._Bx._Ptr), _New_size + 1);
                     _Tidy_deallocate();
                     _Mypair._Myval2._Bx._Ptr = _New_ptr;
                     _Mypair._Myval2._Mysize  = _New_size;
-                    _Mypair._Myval2._Myres   = _New_capacity - 1;
+                    _Mypair._Myval2._Myres   = _New_capacity;
                 } else {
                     _Copy_assign_val_from_small(_Right);
                 }
@@ -4738,15 +4749,17 @@ private:
         }
 
         const size_type _Old_capacity = _Mypair._Myval2._Myres;
-        size_type _New_capacity       = _Calculate_growth(_New_size) + 1;
+        size_type _New_capacity       = _Calculate_growth(_New_size);
         auto& _Al                     = _Getal();
-        const pointer _New_ptr        = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+        ++_New_capacity;
+        const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+        --_New_capacity;
 
-        _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity);
+        _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
         _Mypair._Myval2._Orphan_all();
         _ASAN_STRING_REMOVE(*this);
         _Mypair._Myval2._Mysize = _New_size;
-        _Mypair._Myval2._Myres  = _New_capacity - 1;
+        _Mypair._Myval2._Myres  = _New_capacity;
         _Fn(_Unfancy(_New_ptr), _New_size, _Args...);
         if (_BUF_SIZE <= _Old_capacity) {
             _Al.deallocate(_Mypair._Myval2._Bx._Ptr, _Old_capacity + 1);
@@ -4771,15 +4784,17 @@ private:
 
         const size_type _New_size     = _Old_size + _Size_increase;
         const size_type _Old_capacity = _My_data._Myres;
-        size_type _New_capacity       = _Calculate_growth(_New_size) + 1;
+        size_type _New_capacity       = _Calculate_growth(_New_size);
         auto& _Al                     = _Getal();
-        const pointer _New_ptr        = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+        ++_New_capacity;
+        const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+        --_New_capacity;
 
-        _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity);
+        _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
         _My_data._Orphan_all();
         _ASAN_STRING_REMOVE(*this);
         _My_data._Mysize      = _New_size;
-        _My_data._Myres       = _New_capacity - 1;
+        _My_data._Myres       = _New_capacity;
         _Elem* const _Raw_new = _Unfancy(_New_ptr);
         if (_BUF_SIZE <= _Old_capacity) {
             const pointer _Old_ptr = _My_data._Bx._Ptr;
