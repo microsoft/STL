@@ -64,6 +64,13 @@ _NODISCARD constexpr int _Countl_zero_fallback(_Ty _Val) noexcept {
     return static_cast<int>(_Nn) - static_cast<int>(_Val);
 }
 
+#if !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
+#define _HAS_COUNTL_ZERO_INTRINSICS 1
+#else // ^^^ intrinsics available / intrinsics unavailable vvv
+#define _HAS_COUNTL_ZERO_INTRINSICS 0
+#endif // ^^^ intrinsics unavailable ^^^
+
+#if _HAS_COUNTL_ZERO_INTRINSICS
 #if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 template <class _Ty>
 _NODISCARD int _Countl_zero_lzcnt(const _Ty _Val) noexcept {
@@ -174,6 +181,7 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
 #endif // TRANSITION, GH-1586
 }
 #endif // defined(_M_ARM) || defined(_M_ARM64)
+#endif // _HAS_COUNTL_ZERO_INTRINSICS
 
 // Implementation of countr_zero without using specialized CPU instructions.
 // Used at compile time and when said instructions are not supported.
