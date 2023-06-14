@@ -176,7 +176,7 @@ _EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(
 }
 _EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned short _Value,
     const int _Base = 10) noexcept /* strengthened */ {
-    return _Integer_to_chars(_First, _Last, static_cast<unsigned>(_Value), _Base);
+    return _Integer_to_chars(_First, _Last, static_cast<unsigned int>(_Value), _Base);
 }
 _EXPORT_STD _CONSTEXPR23 to_chars_result to_chars(
     char* const _First, char* const _Last, const int _Value, const int _Base = 10) noexcept /* strengthened */ {
