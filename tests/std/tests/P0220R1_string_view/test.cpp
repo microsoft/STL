@@ -127,7 +127,7 @@ static_assert(noexcept(g_example.swap(g_example_swap_target)), "swap() not noexc
 static_assert(noexcept(g_example.compare(string_view{})), "compare(basic_string_view) not noexcept");
 // compare(pos1, n1, basic_string_view) throws out_of_range
 // compare(pos1, n1, basic_string_view, pos2, n2) throws out_of_range
-static_assert(noexcept(g_example.compare("literal")), "compare(const charT*) noexcept (strengthened)");
+static_assert(noexcept(g_example.compare("literal")), "compare(const charT*) not noexcept"); // strengthened
 // compare(pos1, n1, const charT*) throws out_of_range and calls through char_traits
 // compare(pos1, n1, const charT*, n2) throws out_of_range and calls through char_traits
 static_assert(noexcept(g_example.find(string_view{})), "find(basic_string_view, offset) not noexcept");
