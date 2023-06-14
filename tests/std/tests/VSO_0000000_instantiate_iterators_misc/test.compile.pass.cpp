@@ -571,16 +571,22 @@ void future_test() {
 }
 #endif // _M_CEE_PURE
 
-template <typename IoManipIn, typename IoManipOut>
-void iomanip_test_impl(IoManipIn in, IoManipOut out) {
+template <typename IoManipOut, typename IoManipIn>
+void iomanip_test_impl(IoManipOut out, IoManipIn in) {
     stringstream ss{};
-    ss << in;
-    ss >> out;
+    ss << out;
+    ss >> in;
 }
 
 template <typename IoManip>
 void iomanip_test_impl(IoManip iom) {
     iomanip_test_impl(iom, iom);
+}
+
+template <typename IoManip>
+void iomanip_test_impl_for_setfill(IoManip out) {
+    stringstream ss{};
+    ss << out;
 }
 
 void iomanip_test() {
@@ -591,7 +597,7 @@ void iomanip_test() {
     localtime_s(&time, &t);
     string str = "string with \" quotes ";
 
-    iomanip_test_impl(sf);
+    iomanip_test_impl_for_setfill(sf);
     iomanip_test_impl(put_money(money), get_money(money));
     iomanip_test_impl(put_time(&time, "%c %Z"), get_time(&time, "%c %Z"));
     iomanip_test_impl(quoted(str.c_str()), quoted(str));

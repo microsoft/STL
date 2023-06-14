@@ -161,9 +161,9 @@ protected:
     __CLR_OR_THIS_CALL basic_ios() {}
 
 private:
-    _Mysb* _Mystrbuf; // pointer to stream buffer
-    _Myos* _Tiestr; // pointer to tied output stream
-    _Elem _Fillch; // the fill character
+    _Mysb* _Mystrbuf{}; // pointer to stream buffer
+    _Myos* _Tiestr{}; // pointer to tied output stream
+    _Elem _Fillch{}; // the fill character
 
 public:
     __CLR_OR_THIS_CALL basic_ios(const basic_ios&)            = delete;
