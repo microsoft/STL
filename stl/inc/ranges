@@ -8762,11 +8762,7 @@ namespace ranges {
 
     template <class _Fn, class _Ty, size_t... _Indices>
     struct _Invoke_result_with_repeated_type_impl<_Fn, _Ty, index_sequence<_Indices...>> {
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1761088
         using type = invoke_result_t<_Fn, _Repeat_type<_Ty, _Indices>...>;
-#else // ^^^ no workaround / workaround vvv
-        using type = decltype(_STD invoke(_STD declval<_Fn>(), _STD declval<_Repeat_type<_Ty, _Indices>>()...));
-#endif // ^^^ workaround ^^^
     };
 
     template <class _Fn, class _Ty, size_t _Nx>
