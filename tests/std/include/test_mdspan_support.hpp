@@ -281,13 +281,11 @@ MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
 
     MappingProperties<Mapping> props{};
 
-    { // Find required span size (N4950 [mdspan.layout.reqmts]/12)
-        auto exts = std::views::iota(0u, rank) | std::views::transform([&](auto i) { return get_extent(i); });
-        if (std::ranges::contains(exts, zero)) {
-            props.req_span_size = 0;
-        } else {
-            props.req_span_size = static_cast<IndexType>(1 + mapped_indices.back());
-        }
+    // Find required span size (N4950 [mdspan.layout.reqmts]/12)
+    if (std::ranges::contains(std::views::iota(0u, rank) | std::views::transform(get_extent), zero)) {
+        props.req_span_size = 0;
+    } else {
+        props.req_span_size = static_cast<IndexType>(1 + mapped_indices.back());
     }
 
     // Is mapping unique? (N4950 [mdspan.layout.reqmts]/14)
