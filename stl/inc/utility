@@ -31,6 +31,29 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+_EXPORT_STD template <class _Ty, _Ty... _Vals>
+struct integer_sequence { // sequence of integer parameters
+    static_assert(is_integral_v<_Ty>, "integer_sequence<T, I...> requires T to be an integral type.");
+
+    using value_type = _Ty;
+
+    _NODISCARD static constexpr size_t size() noexcept {
+        return sizeof...(_Vals);
+    }
+};
+
+_EXPORT_STD template <class _Ty, _Ty _Size>
+using make_integer_sequence = __make_integer_seq<integer_sequence, _Ty, _Size>;
+
+_EXPORT_STD template <size_t... _Vals>
+using index_sequence = integer_sequence<size_t, _Vals...>;
+
+_EXPORT_STD template <size_t _Size>
+using make_index_sequence = make_integer_sequence<size_t, _Size>;
+
+_EXPORT_STD template <class... _Types>
+using index_sequence_for = make_index_sequence<sizeof...(_Types)>;
+
 _EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty&(max) (const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_Pred(_Left, _Right))) /* strengthened */ {
@@ -106,27 +129,6 @@ _EXPORT_STD struct piecewise_construct_t { // tag type for pair tuple arguments
 };
 
 _EXPORT_STD _INLINE_VAR constexpr piecewise_construct_t piecewise_construct{};
-
-template <class _Ty, class _Alloc, class = void>
-struct _Has_allocator_type : false_type {}; // tests for suitable _Ty::allocator_type
-
-template <class _Ty, class _Alloc>
-struct _Has_allocator_type<_Ty, _Alloc, void_t<typename _Ty::allocator_type>>
-    : is_convertible<_Alloc, typename _Ty::allocator_type>::type {}; // tests for suitable _Ty::allocator_type
-
-_EXPORT_STD struct allocator_arg_t { // tag type for added allocator argument
-    explicit allocator_arg_t() = default;
-};
-
-_EXPORT_STD _INLINE_VAR constexpr allocator_arg_t allocator_arg{};
-
-_EXPORT_STD template <class _Ty, class _Alloc>
-struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {
-    // determine whether _Ty has an allocator_type member type
-};
-
-_EXPORT_STD template <class _Ty, class _Alloc>
-_INLINE_VAR constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
 
 _EXPORT_STD template <class... _Types>
 class tuple;

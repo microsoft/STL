@@ -52,6 +52,7 @@ namespace Concurrency {
             }
 
             void unlock() override {
+                _Analysis_assume_lock_held_(m_srw_lock);
                 ReleaseSRWLockExclusive(&m_srw_lock);
             }
 

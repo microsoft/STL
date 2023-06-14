@@ -325,6 +325,7 @@ extern "C" VOID __cdecl __crtAcquireSRWLockExclusive(_Inout_ PSRWLOCK const pLoc
 
 // TRANSITION, ABI: preserved for binary compatibility
 extern "C" VOID __cdecl __crtReleaseSRWLockExclusive(_Inout_ PSRWLOCK const pLock) {
+    _Analysis_assume_lock_held_(*pLock);
     ReleaseSRWLockExclusive(pLock);
 }
 

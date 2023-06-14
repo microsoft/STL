@@ -25,7 +25,7 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
     const ctype<_Elem>& _Ctype_fac) { // get integer in range [_Lo, _Hi] from [_First, _Last)
     _STL_INTERNAL_CHECK(0 <= _Hi && _Hi <= 9999);
     const int _Hi_digits = (_Hi <= 9 ? 1 : _Hi <= 99 ? 2 : _Hi <= 999 ? 3 : 4);
-    char _Ac[_MAX_INT_DIG];
+    char _Ac[_Max_int_dig];
     char* _Ep;
     char* _Ptr = _Ac;
     char _Ch;
@@ -55,7 +55,7 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
         *_Ptr++ = '0'; // replace one or more with single zero
     }
 
-    for (char* const _Pe = &_Ac[_MAX_INT_DIG - 1];
+    for (char* const _Pe = &_Ac[_Max_int_dig - 1];
          _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9' && _Digits_read < _Hi_digits;
          ++_Digits_read, (void) ++_First) { // copy digits
         *_Ptr = _Ch;
