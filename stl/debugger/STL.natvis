@@ -1182,9 +1182,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Intrinsic Name="size" Expression="(size_t)(_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst)" />
     <Intrinsic Name="capacity" Expression="(size_t)(_Mypair._Myval2._Myend - _Mypair._Myval2._Myfirst)" />
     <SmartPointer Usage="Indexable" DefaultExpansion="false">data()</SmartPointer>
-    <DisplayString Condition="size() > 0">{data(),na} (size = {size()})</DisplayString>
+    <DisplayString Condition="size() > 0">{data(),[size()]na}</DisplayString>
     <DisplayString Condition="size() == 0">{{empty}}</DisplayString>
     <Expand>
+      <Item Name="[size]" ExcludeView="simple">size()</Item>
       <Item Name="[capacity]" ExcludeView="simple">capacity()</Item>
       <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
       <ArrayItems>
