@@ -111,13 +111,9 @@ namespace Concurrency {
 #ifdef _WIN64
         const size_t sizeof_stl_critical_section_concrt   = 64;
         const size_t sizeof_stl_condition_variable_concrt = 72;
-        const size_t sizeof_stl_critical_section_vista    = 48;
-        const size_t sizeof_stl_condition_variable_vista  = 16;
 #else // ^^^ 64-bit / 32-bit vvv
         const size_t sizeof_stl_critical_section_concrt   = 36;
         const size_t sizeof_stl_condition_variable_concrt = 40;
-        const size_t sizeof_stl_critical_section_vista    = 28;
-        const size_t sizeof_stl_condition_variable_vista  = 8;
 #endif // ^^^ 32-bit ^^^
 
 #if defined(_CRT_WINDOWS)
