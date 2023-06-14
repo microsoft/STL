@@ -100,12 +100,22 @@ namespace Concurrency {
             CONDITION_VARIABLE m_condition_variable;
         };
 
+        struct stl_critical_section {
+            void* unused       = nullptr;
+            SRWLOCK m_srw_lock = SRWLOCK_INIT;
+        };
+
         inline void create_stl_critical_section(stl_critical_section_interface* p) {
-            new (p) stl_critical_section_win7;
+            new (p) stl_critical_section;
         }
 
+        struct stl_condition_variable {
+            void* unused                            = nullptr;
+            CONDITION_VARIABLE m_condition_variable = CONDITION_VARIABLE_INIT;
+        };
+
         inline void create_stl_condition_variable(stl_condition_variable_interface* p) {
-            new (p) stl_condition_variable_win7;
+            new (p) stl_condition_variable;
         }
 
 #ifdef _WIN64
