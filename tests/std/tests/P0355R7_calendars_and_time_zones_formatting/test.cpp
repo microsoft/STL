@@ -276,12 +276,12 @@ void test_duration_formatter() {
     assert(format(STR("{:%T}"), 4083007ms) == STR("01:08:03.007"));
     assert(format(STR("{:%T}"), -4083007ms) == STR("-01:08:03.007"));
 
-    assert(format(STR("{:%T %j %q %Q}"), days{4} + 30min) == STR("00:30:00 4 min 5790"));
-    assert(format(STR("{:%T %j %q %Q}"), -days{4} - 30min) == STR("-00:30:00 4 min 5790"));
-    assert(format(STR("{:%T %j}"), days{4} + 23h + 30min) == STR("23:30:00 4"));
-    assert(format(STR("{:%T %j}"), -days{4} - 23h - 30min) == STR("-23:30:00 4"));
-    assert(format(STR("{:%T %j}"), duration<float, days::period>{1.55f}) == STR("13:11:59 1"));
-    assert(format(STR("{:%T %j}"), duration<float, days::period>{-1.55f}) == STR("-13:11:59 1"));
+    assert(format(STR("{:%T %j %q %Q}"), days{4} + 30min) == STR("96:30:00 4 min 5790"));
+    assert(format(STR("{:%T %j %q %Q}"), -days{4} - 30min) == STR("-96:30:00 4 min 5790"));
+    assert(format(STR("{:%T %j}"), days{4} + 23h + 30min) == STR("119:30:00 4"));
+    assert(format(STR("{:%T %j}"), -days{4} - 23h - 30min) == STR("-119:30:00 4"));
+    assert(format(STR("{:%T %j}"), duration<float, days::period>{1.55f}) == STR("37:11:59 1"));
+    assert(format(STR("{:%T %j}"), duration<float, days::period>{-1.55f}) == STR("-37:11:59 1"));
 }
 
 template <typename CharT>
@@ -775,8 +775,10 @@ void test_hh_mm_ss_formatter() {
     assert(format(STR("{:%H %I %M %S %r %R %T %p}"), hh_mm_ss{-13h - 14min - 15351ms})
            == STR("-13 01 14 15.351 01:14:15 PM 13:14 13:14:15.351 PM"));
 
-    throw_helper(STR("{}"), hh_mm_ss{24h});
-    throw_helper(STR("{}"), hh_mm_ss{-24h});
+    assert(format(STR("{}"), hh_mm_ss{24h}) == STR("24:00:00"));
+    assert(format(STR("{}"), hh_mm_ss{-24h}) == STR("-24:00:00"));
+    assert(format(STR("{:%H}"), hh_mm_ss{24h}) == STR("24"));
+    assert(format(STR("{:%H}"), hh_mm_ss{-24h}) == STR("-24"));
     assert(format(STR("{:%M %S}"), hh_mm_ss{27h + 12min + 30s}) == STR("12 30"));
 }
 

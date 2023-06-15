@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <isa_availability.h>
 #include <ranges>
 
 #include <Windows.h>

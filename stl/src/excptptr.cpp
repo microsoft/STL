@@ -300,7 +300,7 @@ namespace {
         }
 
         _EXCEPTION_RECORD _ExRecord;
-        void* _Unused_alignment_padding;
+        void* _Unused_alignment_padding{};
     };
 
     // We aren't using alignas because this file might be compiled with _M_CEE_PURE

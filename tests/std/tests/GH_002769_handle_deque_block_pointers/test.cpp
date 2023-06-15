@@ -10,7 +10,7 @@
 
 using namespace std;
 
-size_t fancy_counter = 0;
+size_t counter = 0;
 
 template <class T>
 class counting_ptr {
@@ -18,7 +18,7 @@ private:
     T* p_;
 
     explicit counting_ptr(T* raw_ptr) noexcept : p_(raw_ptr) {
-        ++fancy_counter;
+        ++counter;
     }
 
     template <class U>
@@ -48,8 +48,8 @@ public:
     }
 
     ~counting_ptr() {
-        assert(fancy_counter != 0);
-        --fancy_counter;
+        assert(counter != 0);
+        --counter;
     }
 
     explicit operator bool() const noexcept {
@@ -211,17 +211,69 @@ struct ptr_counting_allocator {
 #endif // !_HAS_CXX20
 };
 
+size_t count_limit = 0;
+
+struct live_counter {
+    live_counter() {
+        add();
+    }
+    live_counter(const live_counter&) {
+        add();
+    }
+    live_counter& operator=(const live_counter&) = default;
+    ~live_counter() {
+        remove();
+    }
+
+    static void add() {
+        assert(counter <= count_limit);
+        if (counter == count_limit) {
+            throw 42;
+        }
+        ++counter;
+    }
+    static void remove() {
+        assert(counter <= count_limit);
+        assert(counter > 0);
+        --counter;
+    }
+};
+
+void test_gh_3717() {
+    // Also test GH-3717: deque(count) would leak elements if a constructor threw during resize(count)
+
+    // make sure the counter/limit machinery works properly
+    assert(counter == 0);
+    count_limit = 8;
+    {
+        deque<live_counter> d{8};
+        assert(counter == 8);
+    }
+    assert(counter == 0);
+
+    // verify that deque(n) cleans up live objects on construction failure
+    try {
+        deque<live_counter>{16};
+        assert(false);
+    } catch (const int i) {
+        assert(i == 42);
+        assert(counter == 0);
+    }
+}
+
 int main() {
     {
         deque<int, ptr_counting_allocator<int>> dq{3, 1, 4, 1, 5, 9};
         dq.insert(dq.end(), {2, 6, 5, 3, 5, 8});
     }
-    assert(fancy_counter == 0);
+    assert(counter == 0);
 
     {
         deque<int, ptr_counting_allocator<int>> dq(979, 323);
         dq.insert(dq.begin(), 84, 62);
         dq.erase(dq.begin() + 64, dq.begin() + 338);
     }
-    assert(fancy_counter == 0);
+    assert(counter == 0);
+
+    test_gh_3717();
 }

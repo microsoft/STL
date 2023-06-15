@@ -24,29 +24,6 @@ template <class>
 // TRANSITION, CWG-2518: false value attached to a dependent name (for static_assert)
 _INLINE_VAR constexpr bool _Always_false = false;
 
-_EXPORT_STD template <class _Ty, _Ty... _Vals>
-struct integer_sequence { // sequence of integer parameters
-    static_assert(is_integral_v<_Ty>, "integer_sequence<T, I...> requires T to be an integral type.");
-
-    using value_type = _Ty;
-
-    _NODISCARD static constexpr size_t size() noexcept {
-        return sizeof...(_Vals);
-    }
-};
-
-_EXPORT_STD template <class _Ty, _Ty _Size>
-using make_integer_sequence = __make_integer_seq<integer_sequence, _Ty, _Size>;
-
-_EXPORT_STD template <size_t... _Vals>
-using index_sequence = integer_sequence<size_t, _Vals...>;
-
-_EXPORT_STD template <size_t _Size>
-using make_index_sequence = make_integer_sequence<size_t, _Size>;
-
-_EXPORT_STD template <class... _Types>
-using index_sequence_for = make_index_sequence<sizeof...(_Types)>;
-
 template <bool _First_value, class _First, class... _Rest>
 struct _Conjunction { // handle false trait or last trait
     using type = _First;
