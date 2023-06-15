@@ -3552,11 +3552,11 @@ public:
         }
     }
 
-    [[noreturn]] void _Xlen() const {
+    [[noreturn]] static void _Xlen() {
         _Xlength_error("vector<bool> too long");
     }
 
-    [[noreturn]] void _Xran() const {
+    [[noreturn]] static void _Xran() {
         _Xout_of_range("invalid vector<bool> subscript");
     }
 };
