@@ -53,7 +53,7 @@ template <class... Ranges>
 concept CanViewCartesianProduct = requires(Ranges&&... rs) { views::cartesian_product(forward<Ranges>(rs)...); };
 
 template <class T>
-concept UnsignedIntegerLike = _Integer_like<T> && (!_Signed_integer_like<T>);
+concept UnsignedIntegerLike = _Integer_like<T> && !_Signed_integer_like<T>;
 
 template <class First, class... Rest>
 constexpr bool is_iter_move_nothrow() {

@@ -46,7 +46,7 @@ steps:
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake --build $(${{ parameters.buildOutputLocationVar }})
   displayName: 'Build the STL'
-  timeoutInMinutes: 10
+  timeoutInMinutes: 5
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - script: |
     if exist "$(${{ parameters.benchmarkBuildOutputLocationVar }})" (
@@ -68,6 +68,6 @@ steps:
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake --build $(${{ parameters.benchmarkBuildOutputLocationVar }})
   displayName: 'Build the benchmarks'
-  timeoutInMinutes: 10
+  timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   condition: ne('${{ parameters.benchmarkBuildOutputLocationVar }}', '')

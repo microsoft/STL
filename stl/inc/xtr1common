@@ -16,6 +16,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("known_semantics")
+#undef msvc
+#undef known_semantics
+
 _STD_BEGIN
 _EXPORT_STD template <class _Ty, _Ty _Val>
 struct integral_constant {
@@ -237,6 +243,11 @@ struct remove_cvref {
 #endif // _HAS_CXX20
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("known_semantics")
+#pragma pop_macro("msvc")
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
