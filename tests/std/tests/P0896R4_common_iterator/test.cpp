@@ -23,7 +23,7 @@ concept CanDifference = requires(Iter it) {
 };
 
 template <class Iter>
-concept HasProxy = (!is_reference_v<iter_reference_t<Iter>>);
+concept HasProxy = !is_reference_v<iter_reference_t<Iter>>;
 
 template <class Iter>
 concept CanArrow = requires(const Iter& i) {

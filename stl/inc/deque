@@ -519,7 +519,7 @@ public:
 };
 
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
-    class _Reference, class _Const_reference, class _Mapptr_type>
+    class _Mapptr_type>
 struct _Deque_iter_types {
     using value_type      = _Value_type;
     using size_type       = _Size_type;
@@ -587,7 +587,7 @@ private:
 
     using _Scary_val = _Deque_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Deque_simple_types<_Ty>,
         _Deque_iter_types<_Ty, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,
-            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Ty&, const _Ty&, _Mapptr>>>;
+            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Mapptr>>>;
 
     static constexpr int _Minimum_map_size = 8;
     static constexpr int _Block_size       = _Scary_val::_Block_size;
@@ -1536,11 +1536,11 @@ private:
         }
     }
 
-    [[noreturn]] void _Xlen() const {
+    [[noreturn]] static void _Xlen() {
         _Xlength_error("deque<T> too long");
     }
 
-    [[noreturn]] void _Xran() const {
+    [[noreturn]] static void _Xran() {
         _Xout_of_range("invalid deque<T> subscript");
     }
 
@@ -1557,11 +1557,12 @@ private:
 
             _Newsize *= 2;
         }
-        _Count = _Newsize - _Mapsize();
 
         size_type _Myboff = _Myoff() / _Block_size;
-        _Mapptr _Newmap   = _Almap.allocate(_Mapsize() + _Count);
+        _Mapptr _Newmap   = _Allocate_at_least_helper(_Almap, _Newsize);
         _Mapptr _Myptr    = _Newmap + _Myboff;
+
+        _Count = _Newsize - _Mapsize();
 
         _Myptr = _STD uninitialized_copy(_Map() + _Myboff, _Map() + _Mapsize(), _Myptr); // copy initial to end
         if (_Myboff <= _Count) { // increment greater than offset of initial block

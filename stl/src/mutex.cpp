@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <internal_shared.h>
+#include <mutex>
 #include <type_traits>
 #include <xthreads.h>
 #include <xtimec.h>
@@ -47,8 +48,13 @@ struct _Mtx_internal_imp_t { // ConcRT mutex
     }
 };
 
-static_assert(sizeof(_Mtx_internal_imp_t) <= _Mtx_internal_imp_size, "incorrect _Mtx_internal_imp_size");
-static_assert(alignof(_Mtx_internal_imp_t) <= _Mtx_internal_imp_alignment, "incorrect _Mtx_internal_imp_alignment");
+static_assert(sizeof(_Mtx_internal_imp_t) == _Mtx_internal_imp_size, "incorrect _Mtx_internal_imp_size");
+static_assert(alignof(_Mtx_internal_imp_t) == _Mtx_internal_imp_alignment, "incorrect _Mtx_internal_imp_alignment");
+
+static_assert(
+    std::_Mtx_internal_imp_mirror::_Critical_section_size == Concurrency::details::stl_critical_section_max_size);
+static_assert(
+    std::_Mtx_internal_imp_mirror::_Critical_section_align == Concurrency::details::stl_critical_section_max_alignment);
 
 void _Mtx_init_in_situ(_Mtx_t mtx, int type) { // initialize mutex in situ
     Concurrency::details::create_stl_critical_section(mtx->_get_cs());

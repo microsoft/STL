@@ -108,31 +108,18 @@ namespace Concurrency {
             new (p) stl_condition_variable_win7;
         }
 
-#ifdef _WIN64
-        const size_t sizeof_stl_critical_section_concrt   = 64;
-        const size_t sizeof_stl_condition_variable_concrt = 72;
-        const size_t sizeof_stl_critical_section_vista    = 48;
-        const size_t sizeof_stl_condition_variable_vista  = 16;
-#else // ^^^ 64-bit / 32-bit vvv
-        const size_t sizeof_stl_critical_section_concrt   = 36;
-        const size_t sizeof_stl_condition_variable_concrt = 40;
-        const size_t sizeof_stl_critical_section_vista    = 28;
-        const size_t sizeof_stl_condition_variable_vista  = 8;
-#endif // ^^^ 32-bit ^^^
+#if defined(_CRT_WINDOWS) // for Windows-internal code
+        const size_t stl_critical_section_max_size   = 2 * sizeof(void*);
+        const size_t stl_condition_variable_max_size = 2 * sizeof(void*);
+#elif defined(_WIN64) // ordinary 64-bit code
+        const size_t stl_critical_section_max_size   = 64;
+        const size_t stl_condition_variable_max_size = 72;
+#else // vvv ordinary 32-bit code vvv
+        const size_t stl_critical_section_max_size   = 36;
+        const size_t stl_condition_variable_max_size = 40;
+#endif // ^^^ ordinary 32-bit code ^^^
 
-#if defined(_CRT_WINDOWS)
-        const size_t stl_critical_section_max_size   = sizeof(stl_critical_section_win7);
-        const size_t stl_condition_variable_max_size = sizeof(stl_condition_variable_win7);
-#elif defined(_STL_CONCRT_SUPPORT)
-        const size_t stl_critical_section_max_size        = sizeof_stl_critical_section_concrt;
-        const size_t stl_condition_variable_max_size      = sizeof_stl_condition_variable_concrt;
-#else // vvv !defined(_CRT_WINDOWS) && !defined(_STL_CONCRT_SUPPORT) vvv
-        const size_t stl_critical_section_max_size   = sizeof_stl_critical_section_vista;
-        const size_t stl_condition_variable_max_size = sizeof_stl_condition_variable_vista;
-#endif // ^^^ !defined(_CRT_WINDOWS) && !defined(_STL_CONCRT_SUPPORT) ^^^
-
-        // concrt, vista, and win7 alignments are all identical to alignof(void*)
-        const size_t stl_critical_section_max_alignment   = alignof(stl_critical_section_win7);
-        const size_t stl_condition_variable_max_alignment = alignof(stl_condition_variable_win7);
+        const size_t stl_critical_section_max_alignment   = alignof(void*);
+        const size_t stl_condition_variable_max_alignment = alignof(void*);
     } // namespace details
 } // namespace Concurrency

@@ -2060,6 +2060,81 @@ struct Data {
 };
 static_assert(((void) expected<void, Data>{unexpect, {1, 2, 3}}, true));
 
+void test_lwg_3843() {
+    struct Indicator {
+        Indicator() = default;
+
+        Indicator(Indicator& other) noexcept : count(other.count + 256) {}
+        Indicator(const Indicator& other) noexcept : count(other.count + 1024) {}
+
+        Indicator(Indicator&& other) noexcept : count(other.count + 1) {}
+        Indicator(const Indicator&& other) noexcept : count(other.count + 16) {}
+
+        Indicator& operator=(const Indicator&) = default;
+        Indicator& operator=(Indicator&&)      = default;
+
+        int count = 0;
+    };
+
+    {
+        expected<int, Indicator> exv{unexpect};
+        assert(exv.error().count == 0);
+
+        try {
+            (void) exv.value();
+        } catch (const bad_expected_access<Indicator>& e) {
+            assert(e.error().count == 1025);
+        }
+
+        try {
+            (void) as_const(exv).value();
+        } catch (const bad_expected_access<Indicator>& e) {
+            assert(e.error().count == 1025);
+        }
+
+        try {
+            (void) move(exv).value();
+        } catch (const bad_expected_access<Indicator>& e) {
+            assert(e.error().count == 2);
+        }
+
+        try {
+            (void) move(as_const(exv)).value();
+        } catch (const bad_expected_access<Indicator>& e) {
+            assert(e.error().count == 17);
+        }
+    }
+
+    {
+        expected<void, Indicator> exv{unexpect};
+        assert(exv.error().count == 0);
+
+        try {
+            (void) exv.value();
+        } catch (const bad_expected_access<Indicator>& e) {
+            assert(e.error().count == 1025);
+        }
+
+        try {
+            (void) as_const(exv).value();
+        } catch (const bad_expected_access<Indicator>& e) {
+            assert(e.error().count == 1025);
+        }
+
+        try {
+            (void) move(exv).value();
+        } catch (const bad_expected_access<Indicator>& e) {
+            assert(e.error().count == 2);
+        }
+
+        try {
+            (void) move(as_const(exv)).value();
+        } catch (const bad_expected_access<Indicator>& e) {
+            assert(e.error().count == 1025);
+        }
+    }
+}
+
 int main() {
     test_unexpected::test_all();
     static_assert(test_unexpected::test_all());
@@ -2075,4 +2150,5 @@ int main() {
     static_assert(is_convertible_v<bad_expected_access<int>*, exception*>);
 
     test_reinit_regression();
+    test_lwg_3843();
 }

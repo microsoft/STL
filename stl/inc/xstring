@@ -190,27 +190,27 @@ struct _Char_traits { // properties of a string or stream element
         }
     }
 
-    _NODISCARD static constexpr bool eq(const _Elem& _Left, const _Elem& _Right) noexcept {
+    _NODISCARD static constexpr bool eq(const _Elem _Left, const _Elem _Right) noexcept {
         return _Left == _Right;
     }
 
-    _NODISCARD static constexpr bool lt(const _Elem& _Left, const _Elem& _Right) noexcept {
+    _NODISCARD static constexpr bool lt(const _Elem _Left, const _Elem _Right) noexcept {
         return _Left < _Right;
     }
 
-    _NODISCARD static constexpr _Elem to_char_type(const int_type& _Meta) noexcept {
+    _NODISCARD static constexpr _Elem to_char_type(const int_type _Meta) noexcept {
         return static_cast<_Elem>(_Meta);
     }
 
-    _NODISCARD static constexpr int_type to_int_type(const _Elem& _Ch) noexcept {
+    _NODISCARD static constexpr int_type to_int_type(const _Elem _Ch) noexcept {
         return static_cast<int_type>(_Ch);
     }
 
-    _NODISCARD static constexpr bool eq_int_type(const int_type& _Left, const int_type& _Right) noexcept {
+    _NODISCARD static constexpr bool eq_int_type(const int_type _Left, const int_type _Right) noexcept {
         return _Left == _Right;
     }
 
-    _NODISCARD static constexpr int_type not_eof(const int_type& _Meta) noexcept {
+    _NODISCARD static constexpr int_type not_eof(const int_type _Meta) noexcept {
         return _Meta != eof() ? _Meta : !eof();
     }
 
@@ -302,27 +302,27 @@ public:
         _Left = _Right;
     }
 
-    _NODISCARD static constexpr bool eq(const _Elem& _Left, const _Elem& _Right) noexcept {
+    _NODISCARD static constexpr bool eq(const _Elem _Left, const _Elem _Right) noexcept {
         return _Left == _Right;
     }
 
-    _NODISCARD static constexpr bool lt(const _Elem& _Left, const _Elem& _Right) noexcept {
+    _NODISCARD static constexpr bool lt(const _Elem _Left, const _Elem _Right) noexcept {
         return _Left < _Right;
     }
 
-    _NODISCARD static constexpr _Elem to_char_type(const int_type& _Meta) noexcept {
+    _NODISCARD static constexpr _Elem to_char_type(const int_type _Meta) noexcept {
         return _Meta;
     }
 
-    _NODISCARD static constexpr int_type to_int_type(const _Elem& _Ch) noexcept {
+    _NODISCARD static constexpr int_type to_int_type(const _Elem _Ch) noexcept {
         return _Ch;
     }
 
-    _NODISCARD static constexpr bool eq_int_type(const int_type& _Left, const int_type& _Right) noexcept {
+    _NODISCARD static constexpr bool eq_int_type(const int_type _Left, const int_type _Right) noexcept {
         return _Left == _Right;
     }
 
-    _NODISCARD static constexpr int_type not_eof(const int_type& _Meta) noexcept {
+    _NODISCARD static constexpr int_type not_eof(const int_type _Meta) noexcept {
         return _Meta != eof() ? _Meta : static_cast<int_type>(!eof());
     }
 
@@ -446,27 +446,27 @@ public:
         _Left = _Right;
     }
 
-    _NODISCARD static constexpr bool eq(const _Elem& _Left, const _Elem& _Right) noexcept {
+    _NODISCARD static constexpr bool eq(const _Elem _Left, const _Elem _Right) noexcept {
         return _Left == _Right;
     }
 
-    _NODISCARD static constexpr bool lt(const _Elem& _Left, const _Elem& _Right) noexcept {
+    _NODISCARD static constexpr bool lt(const _Elem _Left, const _Elem _Right) noexcept {
         return static_cast<unsigned char>(_Left) < static_cast<unsigned char>(_Right);
     }
 
-    _NODISCARD static constexpr _Elem to_char_type(const int_type& _Meta) noexcept {
+    _NODISCARD static constexpr _Elem to_char_type(const int_type _Meta) noexcept {
         return static_cast<_Elem>(_Meta);
     }
 
-    _NODISCARD static constexpr int_type to_int_type(const _Elem& _Ch) noexcept {
+    _NODISCARD static constexpr int_type to_int_type(const _Elem _Ch) noexcept {
         return static_cast<unsigned char>(_Ch);
     }
 
-    _NODISCARD static constexpr bool eq_int_type(const int_type& _Left, const int_type& _Right) noexcept {
+    _NODISCARD static constexpr bool eq_int_type(const int_type _Left, const int_type _Right) noexcept {
         return _Left == _Right;
     }
 
-    _NODISCARD static constexpr int_type not_eof(const int_type& _Meta) noexcept {
+    _NODISCARD static constexpr int_type not_eof(const int_type _Meta) noexcept {
         return _Meta != eof() ? _Meta : !eof();
     }
 
@@ -1399,7 +1399,8 @@ public:
         return substr(_Off, _Nx).compare(_Right.substr(_Roff, _Count));
     }
 
-    _NODISCARD constexpr int compare(_In_z_ const _Elem* const _Ptr) const { // compare [0, _Mysize) with [_Ptr, <null>)
+    _NODISCARD constexpr int compare(_In_z_ const _Elem* const _Ptr) const noexcept /* strengthened */ {
+        // compare [0, _Mysize) with [_Ptr, <null>)
         return compare(basic_string_view(_Ptr));
     }
 
@@ -2190,8 +2191,7 @@ struct pointer_traits<_String_iterator<_Mystr>> {
 };
 #endif // _HAS_CXX20
 
-template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
-    class _Reference, class _Const_reference>
+template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer>
 struct _String_iter_types {
     using value_type      = _Value_type;
     using size_type       = _Size_type;
@@ -2329,7 +2329,7 @@ private:
 
     using _Scary_val = _String_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Elem>,
         _String_iter_types<_Elem, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,
-            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Elem&, const _Elem&>>>;
+            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer>>>;
 
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Elem, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("basic_string<T, Traits, Allocator>", "T"));
@@ -2647,9 +2647,11 @@ private:
             return;
         }
 
-        _My_data._Myres               = _BUF_SIZE - 1;
-        const size_type _New_capacity = _Calculate_growth(_Count);
-        const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+        _My_data._Myres         = _BUF_SIZE - 1;
+        size_type _New_capacity = _Calculate_growth(_Count);
+        ++_New_capacity;
+        const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+        --_New_capacity;
         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
 
         _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
@@ -2691,8 +2693,10 @@ private:
             }
 
             if (_Count >= _BUF_SIZE) {
-                const size_type _New_capacity = _Calculate_growth(_Count);
-                const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+                size_type _New_capacity = _Calculate_growth(_Count);
+                ++_New_capacity;
+                const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+                --_New_capacity;
                 _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
                 _My_data._Myres = _New_capacity;
 
@@ -2708,9 +2712,11 @@ private:
                         _Xlen_string(); // result too long
                     }
 
-                    const auto _Old_ptr           = _My_data._Myptr();
-                    const size_type _New_capacity = _Calculate_growth(_My_data._Mysize);
-                    const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+                    const auto _Old_ptr     = _My_data._Myptr();
+                    size_type _New_capacity = _Calculate_growth(_My_data._Mysize);
+                    ++_New_capacity;
+                    const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+                    --_New_capacity;
 
                     _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
                     _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
@@ -2792,9 +2798,11 @@ public:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
 
         if (_New_capacity < _New_size) {
-            _New_capacity           = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size());
-            const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
-            _Ptr                    = _Unfancy(_Fancyptr);
+            _New_capacity = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size());
+            ++_New_capacity;
+            const pointer _Fancyptr = _Allocate_at_least_helper(_Getal(), _New_capacity); // throws
+            --_New_capacity;
+            _Ptr = _Unfancy(_Fancyptr);
             _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
 
             _Start_element_lifetimes(_Ptr, _New_capacity + 1);
@@ -2863,10 +2871,12 @@ public:
             _Xlen_string();
         }
 
-        const auto _New_capacity = _Calculate_growth(_New_size, _BUF_SIZE - 1, _Max);
-        auto&& _Alproxy          = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+        auto _New_capacity = _Calculate_growth(_New_size, _BUF_SIZE - 1, _Max);
+        auto&& _Alproxy    = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
-        const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
+        ++_New_capacity;
+        const pointer _Fancyptr = _Allocate_at_least_helper(_Getal(), _New_capacity); // throws
+        --_New_capacity;
         // nothrow hereafter
         _Start_element_lifetimes(_Unfancy(_Fancyptr), _New_capacity + 1);
         _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
@@ -2946,9 +2956,10 @@ public:
             _Result._Res = _My_data._Myres + 1;
         } else {
             // use _BUF_SIZE + 1 to avoid SSO, if the buffer is assigned back
-            _Result._Ptr = _Al.allocate(_BUF_SIZE + 1);
+            size_type _Allocated = _BUF_SIZE + 1;
+            _Result._Ptr         = _Allocate_at_least_helper(_Al, _Allocated);
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
-            _Result._Res = _BUF_SIZE + 1;
+            _Result._Res = _Allocated;
         }
         _My_data._Orphan_all();
         _Tidy_init();
@@ -3167,11 +3178,13 @@ public:
 
                 if (_Right._Mypair._Myval2._Large_string_engaged()) {
                     const auto _New_size     = _Right._Mypair._Myval2._Mysize;
-                    const auto _New_capacity = _Calculate_growth(_New_size, 0, _Right.max_size());
+                    auto _New_capacity       = _Calculate_growth(_New_size, 0, _Right.max_size());
                     auto _Right_al_non_const = _Right_al;
-                    const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity + 1); // throws
+                    ++_New_capacity;
+                    const auto _New_ptr = _Allocate_at_least_helper(_Right_al_non_const, _New_capacity); // throws
+                    --_New_capacity;
 
-                    _Start_element_lifetimes(_Unfancy(_New_ptr), _New_size + 1);
+                    _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
 
                     _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_Right._Mypair._Myval2._Bx._Ptr), _New_size + 1);
                     _Tidy_deallocate();
@@ -4258,7 +4271,7 @@ public:
         _Construct_in_place(_Starts_small._Bx._Ptr, _Ptr);
     }
 
-    _CONSTEXPR20 void _Swap_data(basic_string& _Right) {
+    _CONSTEXPR20 void _Swap_data(basic_string& _Right) noexcept {
         using _STD swap;
 
         auto& _My_data    = _Mypair._Myval2;
@@ -4736,9 +4749,11 @@ private:
         }
 
         const size_type _Old_capacity = _Mypair._Myval2._Myres;
-        const size_type _New_capacity = _Calculate_growth(_New_size);
+        size_type _New_capacity       = _Calculate_growth(_New_size);
         auto& _Al                     = _Getal();
-        const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+        ++_New_capacity;
+        const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+        --_New_capacity;
 
         _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
         _Mypair._Myval2._Orphan_all();
@@ -4769,9 +4784,11 @@ private:
 
         const size_type _New_size     = _Old_size + _Size_increase;
         const size_type _Old_capacity = _My_data._Myres;
-        const size_type _New_capacity = _Calculate_growth(_New_size);
+        size_type _New_capacity       = _Calculate_growth(_New_size);
         auto& _Al                     = _Getal();
-        const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+        ++_New_capacity;
+        const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
+        --_New_capacity;
 
         _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
         _My_data._Orphan_all();
@@ -4810,7 +4827,7 @@ private:
         _My_data._Myres = _BUF_SIZE - 1;
     }
 
-    _CONSTEXPR20 void _Eos(const size_type _New_size) { // set new length and null terminator
+    _CONSTEXPR20 void _Eos(const size_type _New_size) noexcept { // set new length and null terminator
         _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
         _Traits::assign(_Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize = _New_size], _Elem());
     }
@@ -4850,7 +4867,7 @@ public:
     }
 
 private:
-    _CONSTEXPR20 void _Swap_proxy_and_iterators(basic_string& _Right) {
+    _CONSTEXPR20 void _Swap_proxy_and_iterators(basic_string& _Right) noexcept {
         _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
     }
 
