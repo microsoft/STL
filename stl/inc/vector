@@ -8,6 +8,7 @@
 #define _VECTOR_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <__msvc_bit_utils.hpp>
 #include <xmemory>
 
 #if _HAS_CXX17

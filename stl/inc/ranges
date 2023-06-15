@@ -21,6 +21,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <ranges> are available only with C++
 
 #if _HAS_CXX23
 #include <array>
+#include <bit>
 #endif // _HAS_CXX23
 
 #pragma pack(push, _CRT_PACKING)
