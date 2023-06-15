@@ -145,10 +145,9 @@ namespace ranges {
         _Pipeline(_Ty1, _Ty2) -> _Pipeline<_Ty1, _Ty2>;
 
         _EXPORT_STD template <class _Left, class _Right>
-            requires _Range_adaptor_closure_object<_Left> //
-                  && _Range_adaptor_closure_object<_Right> //
-                  && constructible_from<remove_cvref_t<_Left>, _Left> //
-                  && constructible_from<remove_cvref_t<_Right>, _Right> //
+            requires _Range_adaptor_closure_object<_Left> && _Range_adaptor_closure_object<_Right>
+                  && constructible_from<remove_cvref_t<_Left>, _Left>
+                  && constructible_from<remove_cvref_t<_Right>, _Right>
         _NODISCARD constexpr auto operator|(_Left&& __l, _Right&& __r) noexcept(
             noexcept(_Pipeline{static_cast<_Left&&>(__l), static_cast<_Right&&>(__r)})) {
             return _Pipeline{static_cast<_Left&&>(__l), static_cast<_Right&&>(__r)};
@@ -3919,8 +3918,8 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto end() {
-            if constexpr (forward_range<_Vw> && is_reference_v<_InnerRng<false>> //
-                          && forward_range<_InnerRng<false>> && common_range<_Vw> && common_range<_InnerRng<false>>) {
+            if constexpr (forward_range<_Vw> && is_reference_v<_InnerRng<false>> && forward_range<_InnerRng<false>>
+                          && common_range<_Vw> && common_range<_InnerRng<false>>) {
                 return _Iterator<_Simple_view<_Vw>>{*this, _RANGES end(_Range)};
             } else {
                 return _Sentinel<_Simple_view<_Vw>>{*this};
@@ -4161,9 +4160,9 @@ namespace ranges {
             }
 
         public:
-            using iterator_concept = //
-                conditional_t<_Deref_is_glvalue && bidirectional_range<_Base> //
-                                  && _Bidi_common_range<_InnerRng<_Const>> && _Bidi_common_range<_PatternBase>,
+            using iterator_concept =
+                conditional_t<_Deref_is_glvalue && bidirectional_range<_Base> && _Bidi_common_range<_InnerRng<_Const>>
+                                  && _Bidi_common_range<_PatternBase>,
                     bidirectional_iterator_tag,
                     conditional_t<_Deref_is_glvalue && forward_range<_Base> && forward_range<_InnerRng<_Const>>,
                         forward_iterator_tag, input_iterator_tag>>;
@@ -4175,10 +4174,9 @@ namespace ranges {
             // clang-format on
 
             constexpr _Iterator(_Iterator<!_Const> _It)
-                requires _Const //
-                          && convertible_to<iterator_t<_Vw>, _OuterIter> //
-                          && convertible_to<iterator_t<_InnerRng<false>>, _InnerIter> //
-                          && convertible_to<iterator_t<_Pat>, _PatternIter> //
+                requires _Const && convertible_to<iterator_t<_Vw>, _OuterIter>
+                          && convertible_to<iterator_t<_InnerRng<false>>, _InnerIter>
+                          && convertible_to<iterator_t<_Pat>, _PatternIter>
                 : _Mybase(_STD move(_It._Outer_it)), _Parent(_It._Parent) {
                 switch (_It._Inner_it._Contains) {
                 case _Variantish_state::_Holds_first:
@@ -4225,8 +4223,8 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator--()
-                requires _Deref_is_glvalue && bidirectional_range<_Base> //
-                      && _Bidi_common_range<_InnerRng<_Const>> && _Bidi_common_range<_PatternBase>
+                requires _Deref_is_glvalue && bidirectional_range<_Base> && _Bidi_common_range<_InnerRng<_Const>>
+                      && _Bidi_common_range<_PatternBase>
             {
                 auto& _Outer_it = _Get_outer();
                 if (_Outer_it == _RANGES end(_Parent->_Range)) {
@@ -4269,8 +4267,8 @@ namespace ranges {
             }
 
             constexpr _Iterator operator--(int)
-                requires _Deref_is_glvalue && bidirectional_range<_Base> //
-                      && _Bidi_common_range<_InnerRng<_Const>> && _Bidi_common_range<_PatternBase>
+                requires _Deref_is_glvalue && bidirectional_range<_Base> && _Bidi_common_range<_InnerRng<_Const>>
+                      && _Bidi_common_range<_PatternBase>
             {
                 auto _Tmp = *this;
                 --*this;
@@ -4422,8 +4420,7 @@ namespace ranges {
 
         _NODISCARD constexpr auto end() {
             constexpr bool _Both_simple = _Simple_view<_Vw> && _Simple_view<_Pat>;
-            if constexpr (forward_range<_Vw> //
-                          && is_reference_v<_InnerRng<false>> && forward_range<_InnerRng<false>> //
+            if constexpr (forward_range<_Vw> && is_reference_v<_InnerRng<false>> && forward_range<_InnerRng<false>>
                           && common_range<_Vw> && common_range<_InnerRng<false>>) {
                 return _Iterator<_Both_simple>{*this, _RANGES end(_Range)};
             } else {
@@ -6182,8 +6179,8 @@ namespace ranges {
 
             template <bool _OtherConst>
                 requires sentinel_for<_Base_sentinel, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
-            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_OtherConst>& _It, const _Sentinel& _Se) //
-                noexcept(noexcept(_Se._Equal(_It))) /* strengthened */ {
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_OtherConst>& _It,
+                const _Sentinel& _Se) noexcept(noexcept(_Se._Equal(_It))) /* strengthened */ {
                 return _Se._Equal(_It);
             }
 
@@ -6580,7 +6577,7 @@ namespace ranges {
             range_difference_t<_Base> _Count   = 0;
             range_difference_t<_Base> _Missing = 0;
 
-            constexpr _Iterator(_ParentTy* _Parent, _Base_iterator _Current_, //
+            constexpr _Iterator(_ParentTy* _Parent, _Base_iterator _Current_,
                 range_difference_t<_Base> _Missing_ = 0) //
                 noexcept(noexcept(_RANGES end(_Parent->_Range)) && is_nothrow_move_constructible_v<_Base_iterator> //
                          && is_nothrow_move_constructible_v<_Base_sentinel>) /* strengthened */
@@ -6906,10 +6903,10 @@ namespace ranges {
     concept _Slide_caches_nothing = random_access_range<_Vw> && sized_range<_Vw>;
 
     template <class _Vw>
-    concept _Slide_caches_last = (!_Slide_caches_nothing<_Vw>) &&bidirectional_range<_Vw> && common_range<_Vw>;
+    concept _Slide_caches_last = !_Slide_caches_nothing<_Vw> && bidirectional_range<_Vw> && common_range<_Vw>;
 
     template <class _Vw>
-    concept _Slide_caches_first = (!_Slide_caches_nothing<_Vw>) &&(!_Slide_caches_last<_Vw>);
+    concept _Slide_caches_first = !_Slide_caches_nothing<_Vw> && !_Slide_caches_last<_Vw>;
 
     _EXPORT_STD template <forward_range _Vw>
         requires view<_Vw>
@@ -7883,8 +7880,8 @@ namespace ranges {
     } // namespace views
 
     template <class... _RangeTypes>
-    concept _Zip_is_common = (sizeof...(_RangeTypes) == 1 && (common_range<_RangeTypes> && ...)) //
-                          || (!(bidirectional_range<_RangeTypes> && ...) && (common_range<_RangeTypes> && ...)) //
+    concept _Zip_is_common = (sizeof...(_RangeTypes) == 1 && (common_range<_RangeTypes> && ...))
+                          || (!(bidirectional_range<_RangeTypes> && ...) && (common_range<_RangeTypes> && ...))
                           || ((random_access_range<_RangeTypes> && ...) && (sized_range<_RangeTypes> && ...));
 
     template <class _CallbackType>
@@ -10072,11 +10069,11 @@ namespace ranges {
 
     template <class _Rng, class _Container>
     concept _Ref_converts =
-        (!input_range<_Container>) || convertible_to<range_reference_t<_Rng>, range_value_t<_Container>>;
+        !input_range<_Container> || convertible_to<range_reference_t<_Rng>, range_value_t<_Container>>;
 
     template <class _Rng, class _Container, class... _Types>
-    concept _Converts_direct_constructible = _Ref_converts<_Rng, _Container> //
-                                          && constructible_from<_Container, _Rng, _Types...>;
+    concept _Converts_direct_constructible =
+        _Ref_converts<_Rng, _Container> && constructible_from<_Container, _Rng, _Types...>;
 
     template <class _Rng, class _Container, class... _Types>
     concept _Converts_tag_constructible = _Ref_converts<_Rng, _Container>
