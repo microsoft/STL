@@ -652,7 +652,7 @@ protected:
         }
 
         if (!_Myfile || !_Endwrite()
-            || ((_Off != 0 || _Way != ios_base::cur) && _CSTD _fseeki64(_Myfile, _Off, _Way) != 0)
+            || _CSTD _fseeki64(_Myfile, _Off, _Way) != 0
             || _CSTD fgetpos(_Myfile, &_Fileposition) != 0) {
             return pos_type{off_type{-1}}; // report failure
         }
