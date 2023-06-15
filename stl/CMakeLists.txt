@@ -495,7 +495,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "")
 
 # Toolset options must appear before add_library() for the options to take effect.
-add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1 _STL_CONCRT_SUPPORT)
+add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1)
 
 # /Z7 for MSVC, /Zi for MASM
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
