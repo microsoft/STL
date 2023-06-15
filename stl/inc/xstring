@@ -1399,7 +1399,8 @@ public:
         return substr(_Off, _Nx).compare(_Right.substr(_Roff, _Count));
     }
 
-    _NODISCARD constexpr int compare(_In_z_ const _Elem* const _Ptr) const { // compare [0, _Mysize) with [_Ptr, <null>)
+    _NODISCARD constexpr int compare(_In_z_ const _Elem* const _Ptr) const noexcept /* strengthened */ {
+        // compare [0, _Mysize) with [_Ptr, <null>)
         return compare(basic_string_view(_Ptr));
     }
 
@@ -4270,7 +4271,7 @@ public:
         _Construct_in_place(_Starts_small._Bx._Ptr, _Ptr);
     }
 
-    _CONSTEXPR20 void _Swap_data(basic_string& _Right) {
+    _CONSTEXPR20 void _Swap_data(basic_string& _Right) noexcept {
         using _STD swap;
 
         auto& _My_data    = _Mypair._Myval2;
@@ -4826,7 +4827,7 @@ private:
         _My_data._Myres = _BUF_SIZE - 1;
     }
 
-    _CONSTEXPR20 void _Eos(const size_type _New_size) { // set new length and null terminator
+    _CONSTEXPR20 void _Eos(const size_type _New_size) noexcept { // set new length and null terminator
         _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
         _Traits::assign(_Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize = _New_size], _Elem());
     }
@@ -4866,7 +4867,7 @@ public:
     }
 
 private:
-    _CONSTEXPR20 void _Swap_proxy_and_iterators(basic_string& _Right) {
+    _CONSTEXPR20 void _Swap_proxy_and_iterators(basic_string& _Right) noexcept {
         _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
     }
 

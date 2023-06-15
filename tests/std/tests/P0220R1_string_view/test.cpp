@@ -93,174 +93,139 @@ static_assert(is_trivially_destructible_v<wstring_view>);
 
 // noexcept assertions:
 // (functions that explicitly throw have their throws tested and therefore have no static_asserts)
-static_assert(noexcept(string_view{}), "default constructor not noexcept");
-static_assert(noexcept(string_view{string_view{}}), "copy constructor not noexcept");
+static_assert(noexcept(string_view{}));
+static_assert(noexcept(string_view{string_view{}}));
 string_view g_example{"text", 2};
 
 // the assignment operator is arguably noexcept in the WP (it is defaulted)
-static_assert(noexcept(declval<string_view&>() = declval<string_view>()), "assignment operator not noexcept");
-static_assert(noexcept(string_view{"text"}), "NTCTS constructor not noexcept"); // strengthened
-static_assert(noexcept(string_view{"text", 2}), "buffer constructor not noexcept"); // strengthened
-static_assert(noexcept(g_example.begin()), "begin not noexcept");
-static_assert(noexcept(g_example.end()), "end not noexcept");
-static_assert(noexcept(g_example.cbegin()), "cbegin not noexcept");
-static_assert(noexcept(g_example.cend()), "cend not noexcept");
-static_assert(noexcept(g_example.rbegin()), "rbegin not noexcept");
-static_assert(noexcept(g_example.rend()), "rend not noexcept");
-static_assert(noexcept(g_example.crbegin()), "crbegin not noexcept");
-static_assert(noexcept(g_example.crend()), "crend not noexcept");
-static_assert(noexcept(g_example.size()), "size not noexcept");
-static_assert(noexcept(g_example.length()), "length not noexcept");
-static_assert(noexcept(g_example.max_size()), "max_size not noexcept");
-static_assert(noexcept(g_example.empty()), "empty not noexcept");
-static_assert(noexcept(g_example[0]), "operator[] not noexcept"); // strengthened
+static_assert(noexcept(declval<string_view&>() = declval<string_view>()));
+static_assert(noexcept(string_view{"text"})); // strengthened
+static_assert(noexcept(string_view{"text", 2})); // strengthened
+static_assert(noexcept(g_example.begin()));
+static_assert(noexcept(g_example.end()));
+static_assert(noexcept(g_example.cbegin()));
+static_assert(noexcept(g_example.cend()));
+static_assert(noexcept(g_example.rbegin()));
+static_assert(noexcept(g_example.rend()));
+static_assert(noexcept(g_example.crbegin()));
+static_assert(noexcept(g_example.crend()));
+static_assert(noexcept(g_example.size()));
+static_assert(noexcept(g_example.length()));
+static_assert(noexcept(g_example.max_size()));
+static_assert(noexcept(g_example.empty()));
+static_assert(noexcept(g_example[0])); // strengthened
 // at throws out_of_range
-static_assert(noexcept(g_example.front()), "front() not noexcept"); // strengthened
-static_assert(noexcept(g_example.back()), "back() not noexcept"); // strengthened
-static_assert(noexcept(g_example.data()), "data() not noexcept");
-static_assert(noexcept(g_example.remove_prefix(1)), "remove_prefix() not noexcept"); // strengthened
-static_assert(noexcept(g_example.remove_suffix(1)), "remove_suffix() not noexcept"); // strengthened
+static_assert(noexcept(g_example.front())); // strengthened
+static_assert(noexcept(g_example.back())); // strengthened
+static_assert(noexcept(g_example.data()));
+static_assert(noexcept(g_example.remove_prefix(1))); // strengthened
+static_assert(noexcept(g_example.remove_suffix(1))); // strengthened
 string_view g_example_swap_target{"text", 3};
-static_assert(noexcept(g_example.swap(g_example_swap_target)), "swap() not noexcept");
+static_assert(noexcept(g_example.swap(g_example_swap_target)));
 // copy throws out_of_range
 // substr throws out_of_range
-static_assert(noexcept(g_example.compare(string_view{})), "compare(basic_string_view) not noexcept");
+static_assert(noexcept(g_example.compare(string_view{})));
 // compare(pos1, n1, basic_string_view) throws out_of_range
 // compare(pos1, n1, basic_string_view, pos2, n2) throws out_of_range
-static_assert(!noexcept(g_example.compare("literal")), "compare(const charT*) not noexcept (this is bad, char_traits)");
+static_assert(noexcept(g_example.compare("literal"))); // strengthened
 // compare(pos1, n1, const charT*) throws out_of_range and calls through char_traits
 // compare(pos1, n1, const charT*, n2) throws out_of_range and calls through char_traits
-static_assert(noexcept(g_example.find(string_view{})), "find(basic_string_view, offset) not noexcept");
-static_assert(noexcept(g_example.find('c')), "find(charT, count) not noexcept");
-static_assert(noexcept(g_example.find("text", 0, 0)), "find(const charT *, pos, n) not noexcept"); // strengthened
-static_assert(noexcept(g_example.find("text")), "find(const charT *, pos) not noexcept"); // strengthened
-static_assert(noexcept(g_example.rfind(string_view{})), "rfind(basic_string_view, offset) not noexcept");
-static_assert(noexcept(g_example.rfind('c')), "rfind(charT, count) not noexcept");
-static_assert(noexcept(g_example.rfind("text", 0, 0)), "rfind(const charT *, pos, n) not noexcept"); // strengthened
-static_assert(noexcept(g_example.rfind("text")), "rfind(const charT *, pos) not noexcept"); // strengthened
-static_assert(
-    noexcept(g_example.find_first_of(string_view{})), "find_first_of(basic_string_view, offset) not noexcept");
-static_assert(noexcept(g_example.find_first_of('c')), "find_first_of(charT, count) not noexcept");
-static_assert(noexcept(g_example.find_first_of("text", 0, 0)),
-    "find_first_of(const charT *, pos, n) not noexcept"); // strengthened
-static_assert(noexcept(g_example.find_first_of("text")),
-    "find_first_of(const charT *, pos) not noexcept"); // strengthened
-static_assert(noexcept(g_example.find_last_of(string_view{})), "find_last_of(basic_string_view, offset) not noexcept");
-static_assert(noexcept(g_example.find_last_of('c')), "find_last_of(charT, count) not noexcept");
-static_assert(noexcept(g_example.find_last_of("text", 0, 0)),
-    "find_last_of(const charT *, pos, n) not noexcept"); // strengthened
-static_assert(noexcept(g_example.find_last_of("text")),
-    "find_last_of(const charT *, pos) noexcept"); // strengthened
-static_assert(
-    noexcept(g_example.find_first_not_of(string_view{})), "find_first_not_of(basic_string_view, offset) not noexcept");
-static_assert(noexcept(g_example.find_first_not_of('c')), "find_first_not_of(charT, count) not noexcept");
-static_assert(noexcept(g_example.find_first_not_of("text", 0, 0)),
-    "find_first_not_of(const charT *, pos, n) not noexcept"); // strengthened
-static_assert(noexcept(g_example.find_first_not_of("text")),
-    "find_first_not_of(const charT *, pos) not noexcept"); // strengthened
-static_assert(
-    noexcept(g_example.find_last_not_of(string_view{})), "find_last_not_of(basic_string_view, offset) not noexcept");
-static_assert(noexcept(g_example.find_last_not_of('c')), "find_last_not_of(charT, count) not noexcept");
-static_assert(noexcept(g_example.find_last_not_of("text", 0, 0)),
-    "find_last_not_of(const charT *, pos, n) not noexcept"); // strengthened
-static_assert(noexcept(g_example.find_last_not_of("text")),
-    "find_last_not_of(const charT *, pos) noexcept"); // strengthened
+static_assert(noexcept(g_example.find(string_view{})));
+static_assert(noexcept(g_example.find('c')));
+static_assert(noexcept(g_example.find("text", 0, 0))); // strengthened
+static_assert(noexcept(g_example.find("text"))); // strengthened
+static_assert(noexcept(g_example.rfind(string_view{})));
+static_assert(noexcept(g_example.rfind('c')));
+static_assert(noexcept(g_example.rfind("text", 0, 0))); // strengthened
+static_assert(noexcept(g_example.rfind("text"))); // strengthened
+static_assert(noexcept(g_example.find_first_of(string_view{})));
+static_assert(noexcept(g_example.find_first_of('c')));
+static_assert(noexcept(g_example.find_first_of("text", 0, 0))); // strengthened
+static_assert(noexcept(g_example.find_first_of("text"))); // strengthened
+static_assert(noexcept(g_example.find_last_of(string_view{})));
+static_assert(noexcept(g_example.find_last_of('c')));
+static_assert(noexcept(g_example.find_last_of("text", 0, 0))); // strengthened
+static_assert(noexcept(g_example.find_last_of("text"))); // strengthened
+static_assert(noexcept(g_example.find_first_not_of(string_view{})));
+static_assert(noexcept(g_example.find_first_not_of('c')));
+static_assert(noexcept(g_example.find_first_not_of("text", 0, 0))); // strengthened
+static_assert(noexcept(g_example.find_first_not_of("text"))); // strengthened
+static_assert(noexcept(g_example.find_last_not_of(string_view{})));
+static_assert(noexcept(g_example.find_last_not_of('c')));
+static_assert(noexcept(g_example.find_last_not_of("text", 0, 0))); // strengthened
+static_assert(noexcept(g_example.find_last_not_of("text"))); // strengthened
 
-static_assert(noexcept(string_view{} == string_view{}), "operator== not noexcept");
-static_assert(!noexcept(conversion_to_string_view{} == string_view{}), "operator== left noexcept forward");
-static_assert(
-    noexcept(evil_conversion_to_string_view_rvalue_only{} == string_view{}), "operator== left noexcept forward");
-static_assert(!noexcept(convert_rvalue_only == string_view{}), "operator== left noexcept forward");
-static_assert(
-    !noexcept(evil_conversion_to_string_view_lvalue_only{} == string_view{}), "operator== left noexcept forward");
-static_assert(noexcept(convert_lvalue_only == string_view{}), "operator== left noexcept forward");
-static_assert(!noexcept(string_view{} == conversion_to_string_view{}), "operator== right noexcept forward");
-static_assert(
-    noexcept(string_view{} == evil_conversion_to_string_view_rvalue_only{}), "operator== right noexcept forward");
-static_assert(!noexcept(string_view{} == convert_rvalue_only), "operator== right noexcept forward");
-static_assert(
-    !noexcept(string_view{} == evil_conversion_to_string_view_lvalue_only{}), "operator== right noexcept forward");
-static_assert(noexcept(string_view{} == convert_lvalue_only), "operator== right noexcept forward");
+static_assert(noexcept(string_view{} == string_view{}));
+static_assert(!noexcept(conversion_to_string_view{} == string_view{}));
+static_assert(noexcept(evil_conversion_to_string_view_rvalue_only{} == string_view{}));
+static_assert(!noexcept(convert_rvalue_only == string_view{}));
+static_assert(!noexcept(evil_conversion_to_string_view_lvalue_only{} == string_view{}));
+static_assert(noexcept(convert_lvalue_only == string_view{}));
+static_assert(!noexcept(string_view{} == conversion_to_string_view{}));
+static_assert(noexcept(string_view{} == evil_conversion_to_string_view_rvalue_only{}));
+static_assert(!noexcept(string_view{} == convert_rvalue_only));
+static_assert(!noexcept(string_view{} == evil_conversion_to_string_view_lvalue_only{}));
+static_assert(noexcept(string_view{} == convert_lvalue_only));
 
-static_assert(noexcept(string_view{} != string_view{}), "operator!= not noexcept");
-static_assert(!noexcept(conversion_to_string_view{} != string_view{}), "operator!= left noexcept forward");
-static_assert(
-    noexcept(evil_conversion_to_string_view_rvalue_only{} != string_view{}), "operator!= left noexcept forward");
-static_assert(!noexcept(convert_rvalue_only != string_view{}), "operator!= left noexcept forward");
-static_assert(
-    !noexcept(evil_conversion_to_string_view_lvalue_only{} != string_view{}), "operator!= left noexcept forward");
-static_assert(noexcept(convert_lvalue_only != string_view{}), "operator!= left noexcept forward");
-static_assert(!noexcept(string_view{} != conversion_to_string_view{}), "operator!= right noexcept forward");
-static_assert(
-    noexcept(string_view{} != evil_conversion_to_string_view_rvalue_only{}), "operator!= right noexcept forward");
-static_assert(!noexcept(string_view{} != convert_rvalue_only), "operator!= right noexcept forward");
-static_assert(
-    !noexcept(string_view{} != evil_conversion_to_string_view_lvalue_only{}), "operator!= right noexcept forward");
-static_assert(noexcept(string_view{} != convert_lvalue_only), "operator!= right noexcept forward");
+static_assert(noexcept(string_view{} != string_view{}));
+static_assert(!noexcept(conversion_to_string_view{} != string_view{}));
+static_assert(noexcept(evil_conversion_to_string_view_rvalue_only{} != string_view{}));
+static_assert(!noexcept(convert_rvalue_only != string_view{}));
+static_assert(!noexcept(evil_conversion_to_string_view_lvalue_only{} != string_view{}));
+static_assert(noexcept(convert_lvalue_only != string_view{}));
+static_assert(!noexcept(string_view{} != conversion_to_string_view{}));
+static_assert(noexcept(string_view{} != evil_conversion_to_string_view_rvalue_only{}));
+static_assert(!noexcept(string_view{} != convert_rvalue_only));
+static_assert(!noexcept(string_view{} != evil_conversion_to_string_view_lvalue_only{}));
+static_assert(noexcept(string_view{} != convert_lvalue_only));
 
-static_assert(noexcept(string_view{} < string_view{}), "operator< not noexcept");
-static_assert(!noexcept(conversion_to_string_view{} < string_view{}), "operator< left noexcept forward");
-static_assert(
-    noexcept(evil_conversion_to_string_view_rvalue_only{} < string_view{}), "operator< left noexcept forward");
-static_assert(!noexcept(convert_rvalue_only < string_view{}), "operator< left noexcept forward");
-static_assert(
-    !noexcept(evil_conversion_to_string_view_lvalue_only{} < string_view{}), "operator< left noexcept forward");
-static_assert(noexcept(convert_lvalue_only < string_view{}), "operator< left noexcept forward");
-static_assert(!noexcept(string_view{} < conversion_to_string_view{}), "operator< right noexcept forward");
-static_assert(
-    noexcept(string_view{} < evil_conversion_to_string_view_rvalue_only{}), "operator< right noexcept forward");
-static_assert(!noexcept(string_view{} < convert_rvalue_only), "operator< right noexcept forward");
-static_assert(
-    !noexcept(string_view{} < evil_conversion_to_string_view_lvalue_only{}), "operator< right noexcept forward");
-static_assert(noexcept(string_view{} < convert_lvalue_only), "operator< right noexcept forward");
+static_assert(noexcept(string_view{} < string_view{}));
+static_assert(!noexcept(conversion_to_string_view{} < string_view{}));
+static_assert(noexcept(evil_conversion_to_string_view_rvalue_only{} < string_view{}));
+static_assert(!noexcept(convert_rvalue_only < string_view{}));
+static_assert(!noexcept(evil_conversion_to_string_view_lvalue_only{} < string_view{}));
+static_assert(noexcept(convert_lvalue_only < string_view{}));
+static_assert(!noexcept(string_view{} < conversion_to_string_view{}));
+static_assert(noexcept(string_view{} < evil_conversion_to_string_view_rvalue_only{}));
+static_assert(!noexcept(string_view{} < convert_rvalue_only));
+static_assert(!noexcept(string_view{} < evil_conversion_to_string_view_lvalue_only{}));
+static_assert(noexcept(string_view{} < convert_lvalue_only));
 
-static_assert(noexcept(string_view{} > string_view{}), "operator> not noexcept");
-static_assert(!noexcept(conversion_to_string_view{} > string_view{}), "operator> left noexcept forward");
-static_assert(
-    noexcept(evil_conversion_to_string_view_rvalue_only{} > string_view{}), "operator> left noexcept forward");
-static_assert(!noexcept(convert_rvalue_only > string_view{}), "operator> left noexcept forward");
-static_assert(
-    !noexcept(evil_conversion_to_string_view_lvalue_only{} > string_view{}), "operator> left noexcept forward");
-static_assert(noexcept(convert_lvalue_only > string_view{}), "operator> left noexcept forward");
-static_assert(!noexcept(string_view{} > conversion_to_string_view{}), "operator> right noexcept forward");
-static_assert(
-    noexcept(string_view{} > evil_conversion_to_string_view_rvalue_only{}), "operator> right noexcept forward");
-static_assert(!noexcept(string_view{} > convert_rvalue_only), "operator> right noexcept forward");
-static_assert(
-    !noexcept(string_view{} > evil_conversion_to_string_view_lvalue_only{}), "operator> right noexcept forward");
-static_assert(noexcept(string_view{} > convert_lvalue_only), "operator> right noexcept forward");
+static_assert(noexcept(string_view{} > string_view{}));
+static_assert(!noexcept(conversion_to_string_view{} > string_view{}));
+static_assert(noexcept(evil_conversion_to_string_view_rvalue_only{} > string_view{}));
+static_assert(!noexcept(convert_rvalue_only > string_view{}));
+static_assert(!noexcept(evil_conversion_to_string_view_lvalue_only{} > string_view{}));
+static_assert(noexcept(convert_lvalue_only > string_view{}));
+static_assert(!noexcept(string_view{} > conversion_to_string_view{}));
+static_assert(noexcept(string_view{} > evil_conversion_to_string_view_rvalue_only{}));
+static_assert(!noexcept(string_view{} > convert_rvalue_only));
+static_assert(!noexcept(string_view{} > evil_conversion_to_string_view_lvalue_only{}));
+static_assert(noexcept(string_view{} > convert_lvalue_only));
 
-static_assert(noexcept(string_view{} <= string_view{}), "operator<= not noexcept");
-static_assert(!noexcept(conversion_to_string_view{} <= string_view{}), "operator<= left noexcept forward");
-static_assert(
-    noexcept(evil_conversion_to_string_view_rvalue_only{} <= string_view{}), "operator<= left noexcept forward");
-static_assert(!noexcept(convert_rvalue_only <= string_view{}), "operator<= left noexcept forward");
-static_assert(
-    !noexcept(evil_conversion_to_string_view_lvalue_only{} <= string_view{}), "operator<= left noexcept forward");
-static_assert(noexcept(convert_lvalue_only <= string_view{}), "operator<= left noexcept forward");
-static_assert(!noexcept(string_view{} <= conversion_to_string_view{}), "operator<= right noexcept forward");
-static_assert(
-    noexcept(string_view{} <= evil_conversion_to_string_view_rvalue_only{}), "operator<= right noexcept forward");
-static_assert(!noexcept(string_view{} <= convert_rvalue_only), "operator<= right noexcept forward");
-static_assert(
-    !noexcept(string_view{} <= evil_conversion_to_string_view_lvalue_only{}), "operator<= right noexcept forward");
-static_assert(noexcept(string_view{} <= convert_lvalue_only), "operator<= right noexcept forward");
+static_assert(noexcept(string_view{} <= string_view{}));
+static_assert(!noexcept(conversion_to_string_view{} <= string_view{}));
+static_assert(noexcept(evil_conversion_to_string_view_rvalue_only{} <= string_view{}));
+static_assert(!noexcept(convert_rvalue_only <= string_view{}));
+static_assert(!noexcept(evil_conversion_to_string_view_lvalue_only{} <= string_view{}));
+static_assert(noexcept(convert_lvalue_only <= string_view{}));
+static_assert(!noexcept(string_view{} <= conversion_to_string_view{}));
+static_assert(noexcept(string_view{} <= evil_conversion_to_string_view_rvalue_only{}));
+static_assert(!noexcept(string_view{} <= convert_rvalue_only));
+static_assert(!noexcept(string_view{} <= evil_conversion_to_string_view_lvalue_only{}));
+static_assert(noexcept(string_view{} <= convert_lvalue_only));
 
-static_assert(noexcept(string_view{} >= string_view{}), "operator>= not noexcept");
-static_assert(!noexcept(conversion_to_string_view{} >= string_view{}), "operator>= left noexcept forward");
-static_assert(
-    noexcept(evil_conversion_to_string_view_rvalue_only{} >= string_view{}), "operator>= left noexcept forward");
-static_assert(!noexcept(convert_rvalue_only >= string_view{}), "operator>= left noexcept forward");
-static_assert(
-    !noexcept(evil_conversion_to_string_view_lvalue_only{} >= string_view{}), "operator>= left noexcept forward");
-static_assert(noexcept(convert_lvalue_only >= string_view{}), "operator>= left noexcept forward");
-static_assert(!noexcept(string_view{} >= conversion_to_string_view{}), "operator>= right noexcept forward");
-static_assert(
-    noexcept(string_view{} >= evil_conversion_to_string_view_rvalue_only{}), "operator>= right noexcept forward");
-static_assert(!noexcept(string_view{} >= convert_rvalue_only), "operator>= right noexcept forward");
-static_assert(
-    !noexcept(string_view{} >= evil_conversion_to_string_view_lvalue_only{}), "operator>= right noexcept forward");
-static_assert(noexcept(string_view{} >= convert_lvalue_only), "operator>= right noexcept forward");
+static_assert(noexcept(string_view{} >= string_view{}));
+static_assert(!noexcept(conversion_to_string_view{} >= string_view{}));
+static_assert(noexcept(evil_conversion_to_string_view_rvalue_only{} >= string_view{}));
+static_assert(!noexcept(convert_rvalue_only >= string_view{}));
+static_assert(!noexcept(evil_conversion_to_string_view_lvalue_only{} >= string_view{}));
+static_assert(noexcept(convert_lvalue_only >= string_view{}));
+static_assert(!noexcept(string_view{} >= conversion_to_string_view{}));
+static_assert(noexcept(string_view{} >= evil_conversion_to_string_view_rvalue_only{}));
+static_assert(!noexcept(string_view{} >= convert_rvalue_only));
+static_assert(!noexcept(string_view{} >= evil_conversion_to_string_view_lvalue_only{}));
+static_assert(noexcept(string_view{} >= convert_lvalue_only));
 
 template <typename CharT>
 struct choose_literal; // not defined
@@ -1235,14 +1200,13 @@ static_assert(test_case_contains<char, constexpr_char_traits, false>());
 static_assert(test_case_operators<char, constexpr_char_traits>());
 static_assert(test_case_find<char, constexpr_char_traits>());
 
-static_assert(string_view{}.max_size() == ptrdiff_max, "bad max_size for string_view");
+static_assert(string_view{}.max_size() == ptrdiff_max);
 #ifdef __cpp_lib_char8_t
-static_assert(u8string_view{}.max_size() == ptrdiff_max, "bad max_size for u8string_view");
+static_assert(u8string_view{}.max_size() == ptrdiff_max);
 #endif // __cpp_lib_char8_t
-static_assert(u16string_view{}.max_size() == ptrdiff_max, "bad max_size for u16string_view");
-static_assert(
-    u32string_view{}.max_size() == static_cast<size_t>(-1) / sizeof(char32_t), "bad max_size for u32string_view");
-static_assert(wstring_view{}.max_size() == ptrdiff_max, "bad max_size for wstring_view");
+static_assert(u16string_view{}.max_size() == ptrdiff_max);
+static_assert(u32string_view{}.max_size() == static_cast<size_t>(-1) / sizeof(char32_t));
+static_assert(wstring_view{}.max_size() == ptrdiff_max);
 
 // P0403R1 UDLs For <string_view> ("meow"sv, etc.)
 static_assert("abc"sv[1] == 'b');
@@ -1260,9 +1224,9 @@ static_assert(noexcept(u8"abc"sv));
 
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 #if _HAS_CXX23
-static_assert(!is_constructible_v<string_view, nullptr_t>, "constructing string_view from nullptr_t is prohibited");
-static_assert(!is_constructible_v<string, nullptr_t>, "constructing string from nullptr_t is prohibited");
-static_assert(!is_assignable_v<string&, nullptr_t>, "assigning nullptr_t to string is prohibited");
+static_assert(!is_constructible_v<string_view, nullptr_t>);
+static_assert(!is_constructible_v<string, nullptr_t>);
+static_assert(!is_assignable_v<string&, nullptr_t>);
 #endif // _HAS_CXX23
 
 // Also test that no C6510 warning
@@ -1279,7 +1243,7 @@ struct std::char_traits<char_wrapper> {
     }
 
     static size_t length(const char_wrapper* a) {
-        static_assert(sizeof(char_wrapper) == 1, "strlen requires this");
+        static_assert(sizeof(char_wrapper) == 1);
         return strlen(reinterpret_cast<const char*>(a));
     }
 
