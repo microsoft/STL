@@ -371,8 +371,7 @@ struct pointer_traits<_Vector_iterator<_Myvec>> {
 };
 #endif // _HAS_CXX20
 
-template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
-    class _Reference, class _Const_reference>
+template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer>
 struct _Vec_iter_types {
     using value_type      = _Value_type;
     using size_type       = _Size_type;
@@ -600,7 +599,7 @@ private:
 #endif // !_INSERT_VECTOR_ANNOTATION
 
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
-        _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer, _Ty&, const _Ty&>>>;
+        _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer>>>;
 
 public:
     using iterator               = _Vector_iterator<_Scary_val>;

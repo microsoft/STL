@@ -256,8 +256,7 @@ struct _Hash_vec {
     using difference_type   = typename _Aliter_traits::difference_type;
     using pointer           = typename _Aliter_traits::pointer;
     using _Aliter_scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Aliter>, _Simple_types<value_type>,
-        _Vec_iter_types<value_type, size_type, difference_type, pointer, typename _Aliter_traits::const_pointer,
-            value_type&, const value_type&>>>;
+        _Vec_iter_types<value_type, size_type, difference_type, pointer, typename _Aliter_traits::const_pointer>>>;
 
     _Hash_vec() : _Mypair(_Zero_then_variadic_args_t{}) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Aliter, _Mypair._Get_first()));
