@@ -58,7 +58,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
         Mapping cpy;
         cpy = m;
         assert(cpy == m);
-        static_assert(is_nothrow_copy_assignable_v<Ext>);
+        static_assert(is_nothrow_copy_assignable_v<Mapping>);
     }
 
     { // Check construction from extents_type and array

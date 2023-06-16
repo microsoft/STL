@@ -7,10 +7,12 @@
 #include <array>
 #include <concepts>
 #include <cstddef>
+#include <functional>
 #include <mdspan>
 #include <optional>
 #include <ranges>
 #include <span>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>

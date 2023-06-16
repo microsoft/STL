@@ -46,7 +46,7 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         Mapping cpy;
         cpy = m;
         assert(cpy == m);
-        static_assert(is_nothrow_copy_assignable_v<Ext>);
+        static_assert(is_nothrow_copy_assignable_v<Mapping>);
     }
 
     { // Check construction from extents_type
@@ -85,7 +85,7 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
     }
 
 #ifdef __clang__
-    if (!is_constant_evaluated()) // FIXME clang hits contexpr limit here
+    if (!is_constant_evaluated()) // FIXME clang hits constexpr limit here
 #endif
     { // Check construction from layout_stride::mapping
         array<IndexType, Ext::rank()> strides{};
