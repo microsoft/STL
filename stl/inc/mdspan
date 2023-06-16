@@ -146,11 +146,18 @@ public:
               && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
               && (sizeof...(_OtherIndexTypes) == rank_dynamic() || sizeof...(_OtherIndexTypes) == rank())
     constexpr explicit extents(_OtherIndexTypes... _Exts) noexcept {
-        if constexpr ((_Is_standard_integer<_OtherIndexTypes> && ...)) {
-            _STL_VERIFY(sizeof...(_Exts) == 0 || ((_Exts >= 0 && _STD in_range<index_type>(_Exts)) && ...),
-                "Either sizeof...(exts) must be equal to 0 or each element of exts must be nonnegative and must be "
-                "representable as value of type index_type (N4950 [mdspan.extents.cons]/7.2)");
-        }
+        auto _Check_extent = []<class _Ty>(const _Ty& _Ext) {
+            if constexpr (_Is_standard_integer<_Ty>) {
+                return _Ext >= 0 && _STD in_range<index_type>(_Ext);
+            } else if constexpr (_Integer_like<_Ty>) {
+                return _Ext >= 0;
+            } else {
+                return true; // NB: We cannot check preconditions
+            }
+        };
+        _STL_VERIFY((_Check_extent(_Exts) && ...),
+            "Either sizeof...(exts) must be equal to 0 or each element of exts must be nonnegative and must be "
+            "representable as value of type index_type (N4950 [mdspan.extents.cons]/7.2)");
 
         if constexpr (sizeof...(_Exts) == rank_dynamic()) {
             _Dynamic_extents = {static_cast<index_type>(_STD move(_Exts))...};
