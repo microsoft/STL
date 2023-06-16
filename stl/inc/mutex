@@ -95,9 +95,8 @@ public:
 
     using native_handle_type = void*;
 
-    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ {
-        return _Mtx_getconcrtcs(_Mymtx());
-    }
+    // TRANSITION, native_handle() could return a pointer to the underlying SRWLOCK
+    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ = delete;
 
 protected:
     _NODISCARD_TRY_CHANGE_STATE bool _Verify_ownership_levels() noexcept {
@@ -636,8 +635,6 @@ _EXPORT_STD enum class cv_status { // names for wait returns
 
 _EXPORT_STD class condition_variable { // class for waiting for conditions
 public:
-    using native_handle_type = _Cnd_t;
-
     condition_variable() noexcept /* strengthened */ {
         _Cnd_init_in_situ(_Mycnd());
     }
@@ -725,9 +722,10 @@ public:
         return _Wait_until1(_Lck, _Abs_time, _Pred);
     }
 
-    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ {
-        return _Mycnd();
-    }
+    using native_handle_type = void*;
+
+    // TRANSITION, native_handle() could return a pointer to the underlying CONDITION_VARIABLE
+    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ = delete;
 
     void _Register(unique_lock<mutex>& _Lck, int* _Ready) noexcept { // register this object for release at thread exit
         _Cnd_register_at_thread_exit(_Mycnd(), _Lck.release()->_Mymtx(), _Ready);
