@@ -7,6 +7,7 @@
 
 set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_all_public_headers.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_bit_utils.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_chrono.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_cxx_stdatomic.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_filebuf.hpp
@@ -495,7 +496,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "")
 
 # Toolset options must appear before add_library() for the options to take effect.
-add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1 _STL_CONCRT_SUPPORT)
+add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1)
 
 # /Z7 for MSVC, /Zi for MASM
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")

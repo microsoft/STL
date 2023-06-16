@@ -34,24 +34,22 @@ _EXPORT_STD class condition_variable_any;
 struct _Mtx_internal_imp_mirror {
 #ifdef _CRT_WINDOWS
 #ifdef _WIN64
-    static constexpr size_t _Critical_section_size = 8;
+    static constexpr size_t _Critical_section_size = 16;
 #else // _WIN64
-    static constexpr size_t _Critical_section_size = 4;
+    static constexpr size_t _Critical_section_size = 8;
 #endif // _WIN64
 #else // _CRT_WINDOWS
 #ifdef _WIN64
-    static constexpr size_t _Critical_section_size = 56;
+    static constexpr size_t _Critical_section_size = 64;
 #else // _WIN64
-    static constexpr size_t _Critical_section_size = 32;
+    static constexpr size_t _Critical_section_size = 36;
 #endif // _WIN64
 #endif // _CRT_WINDOWS
 
+    static constexpr size_t _Critical_section_align = alignof(void*);
+
     int _Type;
-    const void* _Vptr;
-    union {
-        void* _Srw_lock_placeholder;
-        unsigned char _Padding[_Critical_section_size];
-    };
+    _Aligned_storage_t<_Critical_section_size, _Critical_section_align> _Cs;
     long _Thread_id;
     int _Count;
 };
@@ -762,18 +760,6 @@ private:
         }
     }
 
-    template <class _Predicate>
-    bool _Wait_until1(unique_lock<mutex>& _Lck, const _timespec64* _Abs_time, _Predicate& _Pred) {
-        // wait for signal with timeout and check predicate
-        while (!_Pred()) {
-            if (_Wait_until_sys_time(_Lck, _Abs_time) == cv_status::timeout) {
-                return _Pred();
-            }
-        }
-
-        return true;
-    }
-
     template <class _Clock, class _Duration, class _Predicate>
     bool _Wait_until1(
         unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate& _Pred) {
@@ -843,8 +829,12 @@ public:
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
-    template <class _Time>
-    bool _Try_lock_until(_Time _Abs_time) { // try to lock the mutex with timeout
+    template <class _Clock, class _Duration>
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        // try to lock the mutex with timeout
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         unique_lock<mutex> _Lock(_My_mutex);
         if (!_My_cond.wait_until(_Lock, _Abs_time, _UInt_is_zero{_My_locked})) {
             return false;
@@ -852,15 +842,6 @@ public:
 
         _My_locked = UINT_MAX;
         return true;
-    }
-
-    template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-        // try to lock the mutex with timeout
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
-        return _Try_lock_until(_Abs_time);
     }
 
 private:
@@ -944,8 +925,12 @@ public:
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
-    template <class _Time>
-    bool _Try_lock_until(_Time _Abs_time) { // try to lock the mutex with timeout
+    template <class _Clock, class _Duration>
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        // try to lock the mutex with timeout
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         const thread::id _Tid = this_thread::get_id();
 
         unique_lock<mutex> _Lock(_My_mutex);
@@ -965,15 +950,6 @@ public:
             _My_owner  = _Tid;
         }
         return true;
-    }
-
-    template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-        // try to lock the mutex with timeout
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
-        return _Try_lock_until(_Abs_time);
     }
 
 private:

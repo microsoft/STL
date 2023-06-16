@@ -165,8 +165,8 @@ template <class>
 struct _Iterator_traits_base {};
 
 template <class _It>
-concept _Has_iter_types = _Has_member_difference_type<_It> && _Has_member_value_type<_It> //
-                       && _Has_member_reference<_It> && _Has_member_iterator_category<_It>;
+concept _Has_iter_types = _Has_member_difference_type<_It> && _Has_member_value_type<_It> && _Has_member_reference<_It>
+                       && _Has_member_iterator_category<_It>;
 
 template <bool _Has_member_typedef>
 struct _Old_iter_traits_pointer {

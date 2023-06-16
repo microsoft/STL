@@ -190,9 +190,8 @@ inline constexpr bool _Can_construct_values_from_tuple_like_v<tuple<_Types...>, 
 #ifdef __clang__ // TRANSITION, LLVM-59827
 template <class _TupleLike, class _Tuple>
 concept _Can_construct_from_tuple_like =
-    _Different_from<_TupleLike, _Tuple> && _Tuple_like<_TupleLike>
-    && (!_Is_subrange_v<remove_cvref_t<_TupleLike>>) &&(
-        tuple_size_v<_Tuple>
+    _Different_from<_TupleLike, _Tuple> && _Tuple_like<_TupleLike> && !_Is_subrange_v<remove_cvref_t<_TupleLike>>
+    && (tuple_size_v<_Tuple>
         == tuple_size_v<remove_cvref_t<_TupleLike>>) &&_Can_construct_values_from_tuple_like_v<_Tuple, _TupleLike>
     && (tuple_size_v<_Tuple> != 1
         || (!is_convertible_v<_TupleLike, tuple_element_t<0, _Tuple>>
@@ -217,7 +216,7 @@ using _Three_way_comparison_result_with_tuple_like_t =
     typename _Three_way_comparison_result_with_tuple_like<_TTuple, _UTuple>::type;
 
 template <class _Ty>
-concept _Tuple_like_non_tuple = (!_Is_specialization_v<_Ty, tuple>) &&_Tuple_like<_Ty>;
+concept _Tuple_like_non_tuple = !_Is_specialization_v<_Ty, tuple> && _Tuple_like<_Ty>;
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <>

@@ -25,6 +25,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#undef msvc
+
 #if defined(_CRTBLD) && defined(CRTDLL2)
 // TRANSITION, ABI: The vector algorithms are compiled into the import lib, so we disable their usage when building
 // the DLL. (We could additionally link them into the DLL - not as exports, just for internal usage - but we
@@ -1011,11 +1015,9 @@ namespace ranges {
 
 _EXPORT_STD template <class _It1, class _It2, class _Out, class _Pr = ranges::less, class _Pj1 = identity,
     class _Pj2 = identity>
-concept mergeable = input_iterator<_It1> && input_iterator<_It2> //
-                 && weakly_incrementable<_Out> //
-                 && indirectly_copyable<_It1, _Out> //
-                 && indirectly_copyable<_It2, _Out> //
-                 && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>;
+concept mergeable =
+    input_iterator<_It1> && input_iterator<_It2> && weakly_incrementable<_Out> && indirectly_copyable<_It1, _Out>
+    && indirectly_copyable<_It2, _Out> && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>;
 
 _EXPORT_STD template <class _It, class _Pr = ranges::less, class _Proj = identity>
 concept sortable = permutable<_It> && indirect_strict_weak_order<_Pr, projected<_It, _Proj>>;
@@ -2316,10 +2318,9 @@ namespace ranges {
         };
 
         template <class _Ty>
-        concept _Has_ADL = _Has_class_or_enum_type<_Ty> //
-                        && requires(_Ty __t) {
-                               { _Fake_copy_init(begin(__t)) } -> input_or_output_iterator; // intentional ADL
-                           };
+        concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
+            { _Fake_copy_init(begin(__t)) } -> input_or_output_iterator; // intentional ADL
+        };
 
         class _Cpo {
         private:
@@ -2385,10 +2386,9 @@ namespace ranges {
         };
 
         template <class _Ty>
-        concept _Has_ADL = _Has_class_or_enum_type<_Ty> //
-                        && requires(_Ty __t) {
-                               { _Fake_copy_init(end(__t)) } -> sentinel_for<iterator_t<_Ty>>; // intentional ADL
-                           };
+        concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
+            { _Fake_copy_init(end(__t)) } -> sentinel_for<iterator_t<_Ty>>; // intentional ADL
+        };
 
         class _Cpo {
         private:
@@ -2465,18 +2465,18 @@ namespace ranges {
     concept _Weakly_unwrappable_sentinel = _Weakly_unwrappable<const remove_reference_t<_Sent>&>;
 
     template <class _Iter>
-    concept _Weakly_unwrappable_iterator = //
-        _Weakly_unwrappable<_Iter> //
-        && requires(
-            _Iter&& _It, remove_cvref_t<_Iter>& _MutIt) { _MutIt._Seek_to(_STD forward<_Iter>(_It)._Unwrapped()); };
+    concept _Weakly_unwrappable_iterator =
+        _Weakly_unwrappable<_Iter> && requires(_Iter&& _It, remove_cvref_t<_Iter>& _MutIt) {
+            _MutIt._Seek_to(_STD forward<_Iter>(_It)._Unwrapped());
+        };
 
     template <class _Sent, class _Iter>
-    concept _Unwrappable_sentinel_for = //
-        _Weakly_unwrappable_sentinel<_Sent> //
-        && _Weakly_unwrappable_iterator<_Iter> //
-        && requires(_Iter&& _It, const remove_reference_t<_Sent>& _Se) {
-               { _Se._Unwrapped() } -> sentinel_for<decltype(_STD forward<_Iter>(_It)._Unwrapped())>;
-           };
+    concept _Unwrappable_sentinel_for = _Weakly_unwrappable_sentinel<_Sent> && _Weakly_unwrappable_iterator<_Iter>
+                                     && requires(_Iter&& _It, const remove_reference_t<_Sent>& _Se) {
+                                            {
+                                                _Se._Unwrapped()
+                                            } -> sentinel_for<decltype(_STD forward<_Iter>(_It)._Unwrapped())>;
+                                        };
 
     template <class _Sent, class _Iter>
     _NODISCARD constexpr decltype(auto) _Unwrap_iter(_Iter&& _It) noexcept(
@@ -2740,10 +2740,9 @@ namespace ranges {
         };
 
         template <class _Ty>
-        concept _Has_ADL = _Has_class_or_enum_type<_Ty> //
-                        && requires(_Ty __t) {
-                               { _Fake_copy_init(rbegin(__t)) } -> input_or_output_iterator; // intentional ADL
-                           };
+        concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
+            { _Fake_copy_init(rbegin(__t)) } -> input_or_output_iterator; // intentional ADL
+        };
 
         template <class _Ty>
         concept _Can_make_reverse = requires(_Ty __t) {
@@ -2809,11 +2808,10 @@ namespace ranges {
         };
 
         template <class _Ty>
-        concept _Has_ADL = _Has_class_or_enum_type<_Ty> //
-                        && requires(_Ty __t) {
-                               // intentional ADL
-                               { _Fake_copy_init(rend(__t)) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
-                           };
+        concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
+            // intentional ADL
+            { _Fake_copy_init(rend(__t)) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
+        };
 
         template <class _Ty>
         concept _Can_make_reverse = requires(_Ty __t) {
@@ -2937,17 +2935,14 @@ namespace ranges {
 #endif // ^^^ workaround ^^^
 
         template <class _Ty, class _UnCV>
-        concept _Has_member = (!disable_sized_range<_UnCV>) //
-            &&requires(_Ty __t) {
-                { _Fake_copy_init(__t.size()) } -> _Integer_like;
-            };
+        concept _Has_member = !disable_sized_range<_UnCV> && requires(_Ty __t) {
+            { _Fake_copy_init(__t.size()) } -> _Integer_like;
+        };
 
         template <class _Ty, class _UnCV>
-        concept _Has_ADL = _Has_class_or_enum_type<_Ty>
-                        && (!disable_sized_range<_UnCV>) //
-                        &&requires(_Ty __t) {
-                            { _Fake_copy_init(size(__t)) } -> _Integer_like; // intentional ADL
-                        };
+        concept _Has_ADL = _Has_class_or_enum_type<_Ty> && !disable_sized_range<_UnCV> && requires(_Ty __t) {
+            { _Fake_copy_init(size(__t)) } -> _Integer_like; // intentional ADL
+        };
 
         template <class _Ty>
         concept _Can_difference = requires(_Ty __t) {
@@ -3683,15 +3678,15 @@ namespace ranges {
     template <class _From, class _To>
     concept _Uses_nonqualification_pointer_conversion =
         is_pointer_v<_From> && is_pointer_v<_To>
-        && (!convertible_to<remove_pointer_t<_From> (*)[], remove_pointer_t<_To> (*)[]>);
+        && !convertible_to<remove_pointer_t<_From> (*)[], remove_pointer_t<_To> (*)[]>;
 
     template <class _From, class _To>
     concept _Convertible_to_non_slicing =
-        convertible_to<_From, _To> && (!_Uses_nonqualification_pointer_conversion<decay_t<_From>, decay_t<_To>>);
+        convertible_to<_From, _To> && !_Uses_nonqualification_pointer_conversion<decay_t<_From>, decay_t<_To>>;
 
 #if !_HAS_CXX23
     template <class _Ty>
-    concept _Pair_like = (!is_reference_v<_Ty>) &&requires(_Ty __t) {
+    concept _Pair_like = !is_reference_v<_Ty> && requires(_Ty __t) {
         typename tuple_size<_Ty>::type;
         requires derived_from<tuple_size<_Ty>, integral_constant<size_t, 2>>;
         typename tuple_element_t<0, remove_const_t<_Ty>>;
@@ -3702,17 +3697,16 @@ namespace ranges {
 #endif // !_HAS_CXX23
 
     template <class _Ty, class _First, class _Second>
-    concept _Pair_like_convertible_from =
-        (!range<_Ty>)
+    concept _Pair_like_convertible_from = !range<_Ty>
 #if _HAS_CXX23
-        &&(!is_reference_v<_Ty>)
+                                       && !is_reference_v<_Ty>
 #endif // _HAS_CXX23
-        &&_Pair_like<_Ty>
-        && constructible_from<_Ty, _First, _Second> && _Convertible_to_non_slicing<_First, tuple_element_t<0, _Ty>>
-        && convertible_to<_Second, tuple_element_t<1, _Ty>>;
+                                       && _Pair_like<_Ty> && constructible_from<_Ty, _First, _Second>
+                                       && _Convertible_to_non_slicing<_First, tuple_element_t<0, _Ty>>
+                                       && convertible_to<_Second, tuple_element_t<1, _Ty>>;
 
     template <class _It, class _Se, subrange_kind _Ki>
-    concept _Store_size = (_Ki == subrange_kind::sized) && (!sized_sentinel_for<_Se, _It>);
+    concept _Store_size = (_Ki == subrange_kind::sized) && !sized_sentinel_for<_Se, _It>;
 
     template <class _It, class _Se, subrange_kind _Ki>
     class _Subrange_base : public view_interface<subrange<_It, _Se, _Ki>> {
@@ -4170,24 +4164,14 @@ public:
         return _Left._Current - _Right._Get_last();
     }
 
-    _NODISCARD_FRIEND constexpr reference iter_move(const move_iterator& _It)
-#ifdef __EDG__ // TRANSITION, VSO-1222776
-        noexcept(noexcept(_RANGES iter_move(_STD declval<const _Iter&>())))
-#else // ^^^ workaround / no workaround vvv
-        noexcept(noexcept(_RANGES iter_move(_It._Current)))
-#endif // TRANSITION, VSO-1222776
-    {
+    _NODISCARD_FRIEND constexpr reference iter_move(const move_iterator& _It) noexcept(
+        noexcept(_RANGES iter_move(_It._Current))) {
         return _RANGES iter_move(_It._Current);
     }
 
     template <indirectly_swappable<_Iter> _Iter2>
-    friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right)
-#ifdef __EDG__ // TRANSITION, VSO-1222776
-        noexcept(noexcept(_RANGES iter_swap(_STD declval<const _Iter&>(), _STD declval<const _Iter2&>())))
-#else // ^^^ workaround / no workaround vvv
-        noexcept(noexcept(_RANGES iter_swap(_Left._Current, _Right.base())))
-#endif // TRANSITION, VSO-1222776
-    {
+    friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right) noexcept(
+        noexcept(_RANGES iter_swap(_Left._Current, _Right.base()))) {
         _RANGES iter_swap(_Left._Current, _Right.base());
     }
 #endif // __cpp_lib_concepts
@@ -4452,8 +4436,8 @@ struct _False_trivial_cat {
 };
 
 template <class _SourceIt, class _DestIt,
-    bool _Are_contiguous = _Iterators_are_contiguous<_SourceIt, _DestIt> //
-                        && !_Iterator_is_volatile<_SourceIt> && !_Iterator_is_volatile<_DestIt>>
+    bool _Are_contiguous = _Iterators_are_contiguous<_SourceIt, _DestIt> && !_Iterator_is_volatile<_SourceIt>
+                        && !_Iterator_is_volatile<_DestIt>>
 struct _Iter_move_cat : _Trivial_cat<_Iter_value_t<_SourceIt>, _Iter_value_t<_DestIt>,
                             remove_reference_t<_Iter_ref_t<_SourceIt>>&&, _Iter_ref_t<_DestIt>> {};
 
@@ -4464,8 +4448,8 @@ template <class _SourceIt, class _DestIt>
 struct _Iter_move_cat<move_iterator<_SourceIt>, _DestIt, false> : _Iter_move_cat<_SourceIt, _DestIt> {};
 
 template <class _SourceIt, class _DestIt,
-    bool _Are_contiguous = _Iterators_are_contiguous<_SourceIt, _DestIt> //
-                        && !_Iterator_is_volatile<_SourceIt> && !_Iterator_is_volatile<_DestIt>>
+    bool _Are_contiguous = _Iterators_are_contiguous<_SourceIt, _DestIt> && !_Iterator_is_volatile<_SourceIt>
+                        && !_Iterator_is_volatile<_DestIt>>
 struct _Iter_copy_cat
     : _Trivial_cat<_Iter_value_t<_SourceIt>, _Iter_value_t<_DestIt>, _Iter_ref_t<_SourceIt>, _Iter_ref_t<_DestIt>> {};
 
@@ -5214,8 +5198,7 @@ _INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred<_Elem1, _Elem2, _RANGE
 // It ignores top-level constness on the iterators and on the elements.
 template <class _Iter1, class _Iter2, class _Pr>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper =
-    _Iterators_are_contiguous<_Iter1, _Iter2> //
-    && !_Iterator_is_volatile<_Iter1> && !_Iterator_is_volatile<_Iter2> //
+    _Iterators_are_contiguous<_Iter1, _Iter2> && !_Iterator_is_volatile<_Iter1> && !_Iterator_is_volatile<_Iter2>
     && _Can_memcmp_elements_with_pred<_Iter_value_t<_Iter1>, _Iter_value_t<_Iter2>, _Pr>;
 
 template <class _Iter1, class _Iter2, class _Pr>
@@ -7236,6 +7219,10 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("msvc")
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
