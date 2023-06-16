@@ -49,7 +49,7 @@ struct _Mtx_internal_imp_mirror {
     static constexpr size_t _Critical_section_align = alignof(void*);
 
     int _Type;
-    _Aligned_storage_t<_Critical_section_size, _Critical_section_align> _Cs;
+    _Aligned_storage_t<_Critical_section_size, _Critical_section_align> _Cs_storage;
     long _Thread_id;
     int _Count;
 };
