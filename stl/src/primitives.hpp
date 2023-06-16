@@ -58,7 +58,7 @@ namespace Concurrency {
             void destroy() {}
 
             void wait(stl_critical_section_win7* lock) {
-                if (!stl_condition_variable_win7::wait_for(lock, INFINITE)) {
+                if (!wait_for(lock, INFINITE)) {
                     std::terminate();
                 }
             }
