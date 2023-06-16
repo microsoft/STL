@@ -819,9 +819,6 @@ std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.
 std/utilities/format/format.formatter/format.parse.ctx/next_arg_id.pass.cpp FAIL
 std/time/time.syn/formatter.month_day_last.pass.cpp FAIL
 
-# Likely STL bug in `bind_front`: we don't respect deletion of the target call operator
-std/utilities/function.objects/func.bind_front/bind_front.pass.cpp FAIL
-
 # Likely STL bug in `join_view::_Iterator`: constexpr weirdness
 std/ranges/range.adaptors/range.join.view/end.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.join.view/iterator/decrement.pass.cpp:0 FAIL
