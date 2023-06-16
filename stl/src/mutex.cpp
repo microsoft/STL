@@ -126,7 +126,7 @@ static int mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock mutex
             while (now.tv_sec < target->tv_sec || now.tv_sec == target->tv_sec && now.tv_nsec < target->tv_nsec) {
                 // time has not expired
                 if (mtx->thread_id == static_cast<long>(GetCurrentThreadId())
-                    || mtx->_get_cs()->try_lock_for(_Xtime_diff_to_millis2(target, &now))) { // stop waiting
+                    || mtx->_get_cs()->try_lock()) { // stop waiting
                     res = WAIT_OBJECT_0;
                     break;
                 } else {

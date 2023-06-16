@@ -26,11 +26,6 @@ namespace Concurrency {
                 return TryAcquireSRWLockExclusive(&m_srw_lock) != 0;
             }
 
-            bool try_lock_for(unsigned int) {
-                // STL will call try_lock_for once again if this call will not succeed
-                return stl_critical_section_win7::try_lock();
-            }
-
             void unlock() {
                 _Analysis_assume_lock_held_(m_srw_lock);
                 ReleaseSRWLockExclusive(&m_srw_lock);
