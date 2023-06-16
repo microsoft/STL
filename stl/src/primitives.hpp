@@ -18,8 +18,6 @@ namespace Concurrency {
             stl_critical_section_win7(const stl_critical_section_win7&)            = delete;
             stl_critical_section_win7& operator=(const stl_critical_section_win7&) = delete;
 
-            void destroy() {}
-
             void lock() {
                 AcquireSRWLockExclusive(&m_srw_lock);
             }
@@ -54,8 +52,6 @@ namespace Concurrency {
             ~stl_condition_variable_win7()                                             = delete;
             stl_condition_variable_win7(const stl_condition_variable_win7&)            = delete;
             stl_condition_variable_win7& operator=(const stl_condition_variable_win7&) = delete;
-
-            void destroy() {}
 
             void wait(stl_critical_section_win7* lock) {
                 if (!wait_for(lock, INFINITE)) {

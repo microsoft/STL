@@ -28,9 +28,7 @@ void _Cnd_init_in_situ(const _Cnd_t cond) { // initialize condition variable in 
     Concurrency::details::create_stl_condition_variable(cond->_get_cv());
 }
 
-void _Cnd_destroy_in_situ(const _Cnd_t cond) { // destroy condition variable in situ
-    cond->_get_cv()->destroy();
-}
+void _Cnd_destroy_in_situ(_Cnd_t) {} // destroy condition variable in situ
 
 int _Cnd_init(_Cnd_t* const pcond) { // initialize
     *pcond = nullptr;

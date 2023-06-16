@@ -65,7 +65,7 @@ void _Mtx_init_in_situ(_Mtx_t mtx, int type) { // initialize mutex in situ
 
 void _Mtx_destroy_in_situ(_Mtx_t mtx) { // destroy mutex in situ
     _THREAD_ASSERT(mtx->count == 0, "mutex destroyed while busy");
-    mtx->_get_cs()->destroy();
+    (void) mtx;
 }
 
 int _Mtx_init(_Mtx_t* mtx, int type) { // initialize mutex
