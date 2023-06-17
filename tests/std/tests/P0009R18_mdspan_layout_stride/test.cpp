@@ -10,7 +10,7 @@
 #include <span>
 #include <type_traits>
 
-#include "test_mdspan_support.hpp"
+#include <test_mdspan_support.hpp>
 
 using namespace std;
 
@@ -44,7 +44,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
     static_assert(same_as<typename Mapping::layout_type, layout_stride>);
 
     { // Check default and copy constructor
-        Mapping m;
+        const Mapping m;
         const Mapping cpy = m;
         const layout_right::mapping<Ext> right_mapping;
         assert(m == right_mapping);
@@ -53,12 +53,20 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
         static_assert(is_nothrow_copy_constructible_v<Mapping>);
     }
 
+    { // Check copy assignment operator
+        const Mapping m;
+        Mapping cpy;
+        cpy = m;
+        assert(cpy == m);
+        static_assert(is_nothrow_copy_assignable_v<Mapping>);
+    }
+
     { // Check construction from extents_type and array
         Mapping m{ext, strs};
         assert(m.extents() == ext);
         assert(ranges::equal(m.strides(), strs, CmpEqual{}));
         static_assert(is_nothrow_constructible_v<Mapping, Ext, Strides>);
-        // Other tests are defined in 'check_construction_from_extents_and_array' function
+        // Other tests are defined in 'check_construction_from_extents_and_array_or_span' function
     }
 
     { // Check construction from extents_type and span
@@ -67,7 +75,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
         assert(m.extents() == ext);
         assert(ranges::equal(m.strides(), strs, CmpEqual{}));
         static_assert(is_nothrow_constructible_v<Mapping, Ext, Span>);
-        // Other tests are defined in 'check_construction_from_extents_and_array' function
+        // Other tests are defined in 'check_construction_from_extents_and_array_or_span' function
     }
 
     using OtherIndexType = long long;
@@ -94,6 +102,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
         same_as<Strides> decltype(auto) strs2 = m.strides();
         assert(ranges::equal(strs2, strs, CmpEqual{}));
         static_assert(noexcept(m.strides()));
+        // Other tests are defined in 'check_stride_function'
     }
 
     { // Check 'required_span_size' function
@@ -105,7 +114,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
             assert(m.required_span_size() == expected_value);
         }
         static_assert(noexcept(m.required_span_size()));
-        // Other tests are defined in 'check_required_span_size' function
+        // Other tests are defined in 'check_required_span_size' and 'check_mapping_properties' functions
     }
 
     // Call operator() is tested in 'check_call_operator' function
@@ -120,6 +129,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
         static_assert(Mapping::is_unique());
         static_assert(Mapping::is_strided());
         // Tests of 'is_exhaustive' are defined in 'check_is_exhaustive' function
+        // Other tests are defined in 'check_mapping_properties'
     }
 
     { // Check 'stride' function
@@ -164,35 +174,99 @@ constexpr void check_members(extents<IndexType, Extents...> ext, const array<int
     check_members_with_different_strides_index_type<unsigned long long>(ext, strides);
 }
 
-constexpr void check_construction_from_extents_and_array() {
-    // Check invalid construction
-    using Mapping = layout_stride::mapping<extents<int, 3, 3>>;
-    static_assert(!is_constructible_v<Mapping, extents<int, 2, 3>, array<int, 2>>);
-    static_assert(!is_constructible_v<Mapping, extents<int, 3, 3>, array<int, 3>>);
-    static_assert(!is_constructible_v<Mapping, dextents<int, 2>, array<int, 2>>);
-    static_assert(!is_constructible_v<Mapping, dextents<int, 2>, array<int, 3>>);
-    static_assert(!is_constructible_v<Mapping, extents<int, 2, 3>, span<int, 2>>);
-    static_assert(!is_constructible_v<Mapping, extents<int, 3, 3>, span<int, 3>>);
-    static_assert(!is_constructible_v<Mapping, dextents<int, 2>, span<int, 2>>);
-    static_assert(!is_constructible_v<Mapping, dextents<int, 2>, span<int, 3>>);
-    static_assert(!is_constructible_v<Mapping, extents<int, 3, 3>, array<NonConvertibleToAnything, 2>>);
-    static_assert(!is_constructible_v<Mapping, extents<int, 3, 3>, span<NonConvertibleToAnything, 2>>);
-    static_assert(!is_constructible_v<Mapping, extents<int, 3, 3>, array<ConvertibleToInt<int, IsNothrow::no>, 2>>);
-    static_assert(!is_constructible_v<Mapping, extents<int, 3, 3>, span<ConvertibleToInt<int, IsNothrow::no>, 2>>);
+void check_mapping_properties() {
+    if constexpr (!is_permissive) {
+        auto check = [](const auto& mapping, const bool expected_exhaustiveness) {
+            const auto props = get_mapping_properties(mapping);
+            assert(props.req_span_size == mapping.required_span_size());
+            assert(props.uniqueness);
+            assert(props.exhaustiveness == expected_exhaustiveness);
+            assert(props.exhaustiveness == mapping.is_exhaustive());
+            assert(props.strideness);
+        };
+
+        { // Check exhaustive mappings
+            using M1 = layout_stride::mapping<extents<unsigned int, 4, 2, 3>>;
+            check(M1{M1::extents_type{}, array{6, 1, 2}}, true);
+
+            using M2 = layout_stride::mapping<extents<unsigned long long, dynamic_extent, dynamic_extent, 8>>;
+            check(M2{M2::extents_type{6, 7}, array{1, 48, 6}}, true);
+
+            using M3 = layout_stride::mapping<dextents<short, 4>>;
+            check(M3{M3::extents_type{3, 5, 2, 4}, array{20, 1, 60, 5}}, true);
+        }
+
+        { // Check non-exhaustive mappings
+            using M1 = layout_stride::mapping<extents<int, 2, 4, 3>>;
+            check(M1{M1::extents_type{}, array{9, 18, 1}}, false);
+
+            using M2 = layout_stride::mapping<extents<long long, 3, dynamic_extent, dynamic_extent>>;
+            check(M2{M2::extents_type{4, 3}, array{12, 36, 1}}, false);
+
+            using M3 = layout_stride::mapping<dextents<unsigned short, 3>>;
+            check(M3{M3::extents_type{4, 3, 2}, array{8, 32, 2}}, false);
+        }
+    }
+}
+
+constexpr void check_construction_from_extents_and_array_or_span() {
+    { // Check invalid construction
+        using Mapping = layout_stride::mapping<extents<int, 3, 3>>;
+        static_assert(!is_constructible_v<Mapping, extents<int, 2, 3>, array<int, 2>>);
+        static_assert(!is_constructible_v<Mapping, extents<int, 2, 3>, span<int, 2>>);
+        static_assert(!is_constructible_v<Mapping, extents<int, 3, 3>, array<int, 3>>);
+        static_assert(!is_constructible_v<Mapping, extents<int, 3, 3>, span<int, 3>>);
+        static_assert(!is_constructible_v<Mapping, dextents<int, 2>, array<int, 2>>);
+        static_assert(!is_constructible_v<Mapping, dextents<int, 2>, span<int, 2>>);
+        static_assert(!is_constructible_v<Mapping, dextents<int, 2>, array<int, 3>>);
+        static_assert(!is_constructible_v<Mapping, dextents<int, 2>, span<int, 3>>);
+        static_assert(!is_constructible_v<Mapping, extents<int, 3, 3>, array<NonConvertibleToAnything, 2>>);
+        static_assert(!is_constructible_v<Mapping, extents<int, 3, 3>, span<NonConvertibleToAnything, 2>>);
+        static_assert(!is_constructible_v<Mapping, extents<int, 3, 3>, array<ConvertibleToInt<int, IsNothrow::no>, 2>>);
+        static_assert(!is_constructible_v<Mapping, extents<int, 3, 3>, span<ConvertibleToInt<int, IsNothrow::no>, 2>>);
+    }
+
+    using Ext = extents<int, 2, 4, 6>;
+    Ext ext;
+
+    { // Check construction from 'extents_type'
+        array strs{24, 1, 4};
+        layout_stride::mapping<Ext> m1(ext, strs);
+        assert(m1.extents() == ext);
+        static_assert(is_nothrow_constructible_v<decltype(m1), Ext, decltype(strs)>);
+
+        span s{strs};
+        layout_stride::mapping<Ext> m2(ext, s);
+        assert(m2.extents() == ext);
+        static_assert(is_nothrow_constructible_v<decltype(m2), Ext, decltype(s)>);
+    }
+
+    { // Check construction from other extents
+        using Ext2 = extents<long, dynamic_extent, 4, dynamic_extent>;
+
+        const array strs{1, 12, 2};
+        layout_stride::mapping<Ext2> m1(ext, strs);
+        assert(m1.extents() == ext);
+        static_assert(is_nothrow_constructible_v<decltype(m1), Ext, decltype(strs)>);
+
+        const span s{strs};
+        layout_stride::mapping<Ext2> m2(ext, s);
+        static_assert(is_nothrow_constructible_v<decltype(m2), Ext, decltype(s)>);
+    }
 }
 
 constexpr void check_construction_from_other_mappings() {
-    { // Check construction
+    { // Check valid construction
         using Mapping = layout_stride::mapping<extents<int, 4, 4>>;
-        static_assert(is_constructible_v<Mapping, layout_left::mapping<extents<int, 4, 4>>>);
-        static_assert(is_constructible_v<Mapping, layout_right::mapping<extents<int, 4, 4>>>);
-        static_assert(is_constructible_v<Mapping, layout_left::mapping<extents<long, 4, 4>>>);
-        static_assert(is_constructible_v<Mapping, layout_right::mapping<extents<long, 4, 4>>>);
-        static_assert(is_constructible_v<Mapping, layout_stride::mapping<extents<long, 4, 4>>>);
+        static_assert(is_nothrow_constructible_v<Mapping, layout_left::mapping<extents<int, 4, 4>>>);
+        static_assert(is_nothrow_constructible_v<Mapping, layout_right::mapping<extents<int, 4, 4>>>);
+        static_assert(is_nothrow_constructible_v<Mapping, layout_left::mapping<extents<long, 4, 4>>>);
+        static_assert(is_nothrow_constructible_v<Mapping, layout_right::mapping<extents<long, 4, 4>>>);
+        static_assert(is_nothrow_constructible_v<Mapping, layout_stride::mapping<extents<long, 4, 4>>>);
     }
 
     { // Check invalid construction
-        using Mapping = layout_stride::mapping<extents<int, 4, 4>>;
+        using Mapping = layout_stride::mapping<extents<unsigned int, 4, 4>>;
         static_assert(!is_constructible_v<Mapping, layout_left::mapping<extents<int, 4, 3>>>);
         static_assert(!is_constructible_v<Mapping, layout_right::mapping<extents<int, 3, 4>>>);
         static_assert(!is_constructible_v<Mapping, layout_left::mapping<extents<long, 4, 4, 4>>>);
@@ -328,6 +402,36 @@ constexpr void check_call_operator() {
     }
 }
 
+constexpr void check_stride_function() {
+    using Ext = extents<unsigned int, 2, 4, 6, 8, 10>;
+    layout_stride::mapping<Ext> even_mapping{Ext{}, array{80, 160, 640, 1, 8}};
+
+    { // Check return type
+        same_as<unsigned int> decltype(auto) s = even_mapping.stride(0);
+        assert(s == 80);
+    }
+
+    { // Check that argument is 'rank_type'
+        struct ConvertibleToRankType {
+            constexpr operator integral auto() const {
+                return 0;
+            }
+
+            constexpr operator size_t() const { // NB: 'rank_type' is always 'size_t'
+                return 1;
+            }
+        };
+
+        assert(even_mapping.stride(ConvertibleToRankType{}) == 160);
+    }
+
+    { // Check other strides
+        assert(even_mapping.stride(2) == 640);
+        assert(even_mapping.stride(3) == 1);
+        assert(even_mapping.stride(4) == 8);
+    }
+}
+
 constexpr void check_comparisons() {
     using E                    = extents<int, 2, 3>;
     using StaticStrideMapping  = layout_stride::mapping<E>;
@@ -351,7 +455,8 @@ constexpr void check_comparisons() {
     { // Check correctness: layout_stride::mapping with layout_stride::mapping
         StaticStrideMapping m1{E{}, array{3, 1}};
         DynamicStrideMapping m2{dextents<int, 2>{2, 3}, array{3, 1}};
-        assert(m1 == m2); // extents are equal, OFFSET(rhs) == 0, strides are equal
+        same_as<bool> decltype(auto) cond = m1 == m2;
+        assert(cond); // extents are equal, OFFSET(rhs) == 0, strides are equal
 
         DynamicStrideMapping m3{dextents<int, 2>{2, 3}, array{1, 2}};
         assert(m1 != m3); // extents are equal, OFFSET(rhs) == 0, strides are not equal
@@ -363,12 +468,16 @@ constexpr void check_comparisons() {
         assert(m3 != m4); // extents are not equal, OFFSET(rhs) == 0, strides are not equal
 
         // NB: OFFSET(layout_stride::mapping) is always equal to 0
+
+        static_assert(noexcept(m1 == m2));
+        static_assert(noexcept(m1 != m3));
     }
 
     { // Check correctness: layout_stride::mapping with layout_left::mapping
         LeftMapping m1;
         StaticStrideMapping m2{E{}, array{1, 2}};
-        assert(m1 == m2); // extents are equal, OFFSET(rhs) == 0, strides are equal
+        same_as<bool> decltype(auto) cond = m1 == m2;
+        assert(cond); // extents are equal, OFFSET(rhs) == 0, strides are equal
 
         DynamicStrideMapping m3{dextents<int, 2>{2, 3}, array{3, 1}};
         assert(m1 != m3); // extents are equal, OFFSET(rhs) == 0, strides are not equal
@@ -380,12 +489,16 @@ constexpr void check_comparisons() {
         assert(m3 != m4); // extents are not equal, OFFSET(rhs) == 0, strides are not equal
 
         // NB: OFFSET(layout_left::mapping) is always equal to 0
+
+        static_assert(noexcept(m1 == m2));
+        static_assert(noexcept(m1 != m3));
     }
 
     { // Check correctness: layout_stride::mapping with layout_right::mapping
         RightMapping m1;
         StaticStrideMapping m2{E{}, array{3, 1}};
-        assert(m1 == m2); // extents are equal, OFFSET(rhs) == 0, strides are equal
+        same_as<bool> decltype(auto) cond = m1 == m2;
+        assert(cond); // extents are equal, OFFSET(rhs) == 0, strides are equal
 
         DynamicStrideMapping m3{dextents<int, 2>{2, 3}, array{1, 2}};
         assert(m1 != m3); // extents are equal, OFFSET(rhs) == 0, strides are not equal
@@ -397,9 +510,45 @@ constexpr void check_comparisons() {
         assert(m3 != m4); // extents are not equal, OFFSET(rhs) == 0, strides are not equal
 
         // NB: OFFSET(layout_right::mapping) is always equal to 0
+
+        static_assert(noexcept(m1 == m2));
+        static_assert(noexcept(m1 != m3));
     }
 
     // TRANSITION, Check comparisons with custom layout mapping
+}
+
+constexpr void check_ctad() {
+    using E = extents<size_t, 2, 3>;
+    E e;
+
+    { // E::index_type and array::value_type are the same
+        array<size_t, 2> a{1, 2};
+        layout_stride::mapping m1{e, a};
+        static_assert(same_as<decltype(m1), layout_stride::mapping<E>>);
+        assert(m1.extents() == e);
+        assert(m1.strides() == a);
+
+        span s{a};
+        layout_stride::mapping m2{e, s};
+        static_assert(same_as<decltype(m2), layout_stride::mapping<E>>);
+        assert(m2.extents() == e);
+        assert(m2.strides() == a);
+    }
+
+    { // E::index_type and array::value_type are different
+        array<int, 2> a{1, 2};
+        layout_stride::mapping m1{e, a};
+        static_assert(same_as<decltype(m1), layout_stride::mapping<E>>);
+        assert(m1.extents() == e);
+        assert(ranges::equal(m1.strides(), a, CmpEqual{}));
+
+        span s{a};
+        layout_stride::mapping m2{e, s};
+        static_assert(same_as<decltype(m2), layout_stride::mapping<E>>);
+        assert(m2.extents() == e);
+        assert(ranges::equal(m2.strides(), a, CmpEqual{}));
+    }
 }
 
 constexpr void check_correctness() {
@@ -535,39 +684,6 @@ constexpr void check_correctness() {
     }
 }
 
-constexpr void check_ctad() {
-    using E = extents<size_t, 2, 3>;
-    E e;
-
-    { // E::index_type and array::value_type are the same
-        array<size_t, 2> a{1, 2};
-        layout_stride::mapping m1{e, a};
-        static_assert(same_as<decltype(m1), layout_stride::mapping<E>>);
-        assert(m1.extents() == e);
-        assert(m1.strides() == a);
-
-        span s{a};
-        layout_stride::mapping m2{e, s};
-        static_assert(same_as<decltype(m2), layout_stride::mapping<E>>);
-        assert(m2.extents() == e);
-        assert(m2.strides() == a);
-    }
-
-    { // E::index_type and array::value_type are different
-        array<int, 2> a{1, 2};
-        layout_stride::mapping m1{e, a};
-        static_assert(same_as<decltype(m1), layout_stride::mapping<E>>);
-        assert(m1.extents() == e);
-        assert(ranges::equal(m1.strides(), a, CmpEqual{}));
-
-        span s{a};
-        layout_stride::mapping m2{e, s};
-        static_assert(same_as<decltype(m2), layout_stride::mapping<E>>);
-        assert(m2.extents() == e);
-        assert(ranges::equal(m2.strides(), a, CmpEqual{}));
-    }
-}
-
 constexpr bool test() {
     // Check signed integers
     check_members(extents<signed char, 5>{5}, array{1});
@@ -583,14 +699,18 @@ constexpr bool test() {
     check_members(extents<unsigned long, 4>{}, array{1});
     check_members(extents<unsigned long long, 3, 2, dynamic_extent>{3}, array{1, 3, 6});
 
-    check_construction_from_extents_and_array();
+    if (!is_constant_evaluated()) { // too heavy for compile time
+        check_mapping_properties();
+    }
+    check_construction_from_extents_and_array_or_span();
     check_construction_from_other_mappings();
     check_required_span_size();
     check_is_exhaustive();
     check_call_operator();
+    check_stride_function();
     check_comparisons();
-    check_correctness();
     check_ctad();
+    check_correctness();
 
     return true;
 }
