@@ -14,10 +14,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#if _HAS_CXX23
-#include <limits>
-#endif // _HAS_CXX23
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -7179,7 +7175,9 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 #endif // __clang__
     {
         if constexpr (!_Signed_integer_like<_Int>) {
-            const bool _Overflow = _Left != 0 && _Right > (numeric_limits<_Int>::max)() / _Left;
+            // use instead of numeric_limits::max; avoid <limits> dependency
+            constexpr auto _UInt_max = static_cast<_Int>(-1);
+            const bool _Overflow     = _Left != 0 && _Right > _UInt_max / _Left;
             if (!_Overflow) {
                 _Out = static_cast<_Int>(_Left * _Right);
             }
@@ -7207,10 +7205,12 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
                 return false;
             }
 
+            // use instead of numeric_limits::max; avoid <limits> dependency
+            constexpr _Int_max = static_cast<_UInt>(static_cast<_UInt>(-1) / 2);
             if (_Negative) {
-                return _ULeft > (static_cast<_UInt>((numeric_limits<_Int>::max)()) + _UInt{1}) / _URight;
+                return _ULeft > (_Int_max + _UInt{1}) / _URight;
             } else {
-                return _ULeft > static_cast<_UInt>((numeric_limits<_Int>::max)()) / _URight;
+                return _ULeft > _Int_max / _URight;
             }
             // ^^^ Based on llvm::MulOverflow ^^^
         }
