@@ -7206,7 +7206,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
             }
 
             // use instead of numeric_limits::max; avoid <limits> dependency
-            constexpr _Int_max = static_cast<_UInt>(static_cast<_UInt>(-1) / 2);
+            constexpr auto _Int_max = static_cast<_UInt>(static_cast<_UInt>(-1) / 2);
             if (_Negative) {
                 return _ULeft > (_Int_max + _UInt{1}) / _URight;
             } else {
