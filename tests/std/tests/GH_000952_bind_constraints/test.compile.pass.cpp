@@ -1,6 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+// some portions of this file is derived from libc++'s test files:
+// * std/utilities/function.objects/func.bind_front/bind_front.pass.cpp
+
 #include <functional>
 #include <type_traits>
 
@@ -107,6 +118,83 @@ static_assert(is_invocable_v<WeirdDual, int, long> == is_invocable_v<decltype(bi
 static_assert(
     is_invocable_v<const WeirdDual, int, long> == is_invocable_v<const decltype(bind_front(WeirdDual{}, 0)), long>);
 
+// derived from libc++'s test file
+void test_bind_front_deletion() {
+    // Make sure the bind_front unspecified-type is NOT invocable when the call would select a differently-qualified
+    // operator().
+    //
+    // For example, if the call to `operator()() &` is ill-formed, the call to the unspecified-type
+    // should be ill-formed and not fall back to the `operator()() const&` overload.
+    {
+        // Make sure we delete the & overload when the underlying call isn't valid
+        struct F {
+            void operator()() & = delete;
+            void operator()() const& {}
+            void operator()() && {}
+            void operator()() const&& {}
+        };
+        using X = decltype(bind_front(F{}));
+        static_assert(!is_invocable_v<X&>);
+        static_assert(is_invocable_v<X const&>);
+        static_assert(is_invocable_v<X>);
+        static_assert(is_invocable_v<X const>);
+    }
+
+    // There's no way to make sure we delete the const& overload when the underlying call isn't valid,
+    // so we can't check this one.
+
+    // Make sure we delete the && overload when the underlying call isn't valid
+    {
+        struct F {
+            void operator()() & {}
+            void operator()() const& {}
+            void operator()() && = delete;
+            void operator()() const&& {}
+        };
+        using X = decltype(bind_front(F{}));
+        static_assert(is_invocable_v<X&>);
+        static_assert(is_invocable_v<X const&>);
+        static_assert(!is_invocable_v<X>);
+        static_assert(is_invocable_v<X const>);
+    }
+
+    // Make sure we delete the const&& overload when the underlying call isn't valid
+    {
+        struct F {
+            void operator()() & {}
+            void operator()() const& {}
+            void operator()() && {}
+            void operator()() const&& = delete;
+        };
+        using X = decltype(bind_front(F{}));
+        static_assert(is_invocable_v<X&>);
+        static_assert(is_invocable_v<X const&>);
+        static_assert(is_invocable_v<X>);
+        static_assert(!is_invocable_v<X const>);
+    }
+
+    // Some examples by Tim Song
+    {
+        struct T {};
+        struct F {
+            void operator()(T&&) const& {}
+            void operator()(T&&) && = delete;
+        };
+        using X = decltype(bind_front(F{}));
+        static_assert(!is_invocable_v<X, T>);
+    }
+
+    {
+        struct T {};
+        struct F {
+            void operator()(T const&) const {}
+            void operator()(T&&) const = delete;
+        };
+        using X = decltype(bind_front(F{}, T{}));
+        static_assert(!is_invocable_v<X>);
+    }
+}
+
 #if _HAS_CXX23
 static_assert(is_invocable_v<WeirdDual&, int, long> == is_invocable_v<decltype(bind_back(WeirdDual{}, 0L))&, int>);
 static_assert(
@@ -114,5 +202,82 @@ static_assert(
 static_assert(is_invocable_v<WeirdDual, int, long> == is_invocable_v<decltype(bind_back(WeirdDual{}, 0L)), int>);
 static_assert(
     is_invocable_v<const WeirdDual, int, long> == is_invocable_v<const decltype(bind_back(WeirdDual{}, 0L)), int>);
+
+// derived from libc++'s test file
+void test_bind_back_deletion() {
+    // Make sure the bind_back unspecified-type is NOT invocable when the call would select a differently-qualified
+    // operator().
+    //
+    // For example, if the call to `operator()() &` is ill-formed, the call to the unspecified-type
+    // should be ill-formed and not fall back to the `operator()() const&` overload.
+    {
+        // Make sure we delete the & overload when the underlying call isn't valid
+        struct F {
+            void operator()() & = delete;
+            void operator()() const& {}
+            void operator()() && {}
+            void operator()() const&& {}
+        };
+        using X = decltype(bind_back(F{}));
+        static_assert(!is_invocable_v<X&>);
+        static_assert(is_invocable_v<X const&>);
+        static_assert(is_invocable_v<X>);
+        static_assert(is_invocable_v<X const>);
+    }
+
+    // There's no way to make sure we delete the const& overload when the underlying call isn't valid,
+    // so we can't check this one.
+
+    // Make sure we delete the && overload when the underlying call isn't valid
+    {
+        struct F {
+            void operator()() & {}
+            void operator()() const& {}
+            void operator()() && = delete;
+            void operator()() const&& {}
+        };
+        using X = decltype(bind_back(F{}));
+        static_assert(is_invocable_v<X&>);
+        static_assert(is_invocable_v<X const&>);
+        static_assert(!is_invocable_v<X>);
+        static_assert(is_invocable_v<X const>);
+    }
+
+    // Make sure we delete the const&& overload when the underlying call isn't valid
+    {
+        struct F {
+            void operator()() & {}
+            void operator()() const& {}
+            void operator()() && {}
+            void operator()() const&& = delete;
+        };
+        using X = decltype(bind_back(F{}));
+        static_assert(is_invocable_v<X&>);
+        static_assert(is_invocable_v<X const&>);
+        static_assert(is_invocable_v<X>);
+        static_assert(!is_invocable_v<X const>);
+    }
+
+    // Some examples by Tim Song
+    {
+        struct T {};
+        struct F {
+            void operator()(T&&) const& {}
+            void operator()(T&&) && = delete;
+        };
+        using X = decltype(bind_back(F{}));
+        static_assert(!is_invocable_v<X, T>);
+    }
+
+    {
+        struct T {};
+        struct F {
+            void operator()(T const&) const {}
+            void operator()(T&&) const = delete;
+        };
+        using X = decltype(bind_back(F{}, T{}));
+        static_assert(!is_invocable_v<X>);
+    }
+}
 #endif // _HAS_CXX23
 #endif // _HAS_CXX20
