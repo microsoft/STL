@@ -108,11 +108,11 @@ static_assert(
     is_invocable_v<const WeirdDual, int, long> == is_invocable_v<const decltype(bind_front(WeirdDual{}, 0)), long>);
 
 #if _HAS_CXX23
-static_assert(is_invocable_v<WeirdDual&, int, long> == is_invocable_v<decltype(bind_back(WeirdDual{}, 0L))&, long>);
+static_assert(is_invocable_v<WeirdDual&, int, long> == is_invocable_v<decltype(bind_back(WeirdDual{}, 0L))&, int>);
 static_assert(
-    is_invocable_v<const WeirdDual&, int, long> == is_invocable_v<const decltype(bind_front(WeirdDual{}, 0L))&, long>);
-static_assert(is_invocable_v<WeirdDual, int, long> == is_invocable_v<decltype(bind_front(WeirdDual{}, 0L)), long>);
+    is_invocable_v<const WeirdDual&, int, long> == is_invocable_v<const decltype(bind_back(WeirdDual{}, 0L))&, int>);
+static_assert(is_invocable_v<WeirdDual, int, long> == is_invocable_v<decltype(bind_back(WeirdDual{}, 0L)), int>);
 static_assert(
-    is_invocable_v<const WeirdDual, int, long> == is_invocable_v<const decltype(bind_front(WeirdDual{}, 0L)), long>);
+    is_invocable_v<const WeirdDual, int, long> == is_invocable_v<const decltype(bind_back(WeirdDual{}, 0L)), int>);
 #endif // _HAS_CXX23
 #endif // _HAS_CXX20
