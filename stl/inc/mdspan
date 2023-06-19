@@ -187,8 +187,6 @@ public:
         auto _Check_extent = []<class _Ty>(const _Ty& _Ext) {
             if constexpr (_Is_standard_integer<_Ty>) {
                 return _Ext >= 0 && _STD in_range<index_type>(_Ext);
-            } else if constexpr (_Integer_like<_Ty>) {
-                return _Ext >= 0;
             } else {
                 return true; // NB: We cannot check preconditions
             }
