@@ -81,13 +81,6 @@ private:
 
     struct _Static_extents_only {
         constexpr explicit _Static_extents_only() noexcept = default;
-
-        template <class... _Args>
-        constexpr explicit _Static_extents_only(_Args&&...) noexcept {}
-
-        _NODISCARD constexpr index_type* begin() const noexcept {
-            return nullptr;
-        }
     };
 
     conditional_t<_Rank_dynamic != 0, array<index_type, _Rank_dynamic>, _Static_extents_only> _Dynamic_extents{};
