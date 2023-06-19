@@ -75,7 +75,9 @@ private:
 
     static constexpr array<rank_type, _Rank> _Dynamic_indices_inv = _Make_dynamic_indices_inv();
 
-    struct _Construct_from_tuple {};
+    struct _Construct_from_tuple {
+        constexpr explicit _Construct_from_tuple() noexcept = default;
+    };
 
     struct _Static_extents_only {
         constexpr explicit _Static_extents_only() noexcept = default;
