@@ -195,11 +195,9 @@ public:
     constexpr explicit extents(span<_OtherIndexType, _Size> _Dynamic_exts, index_sequence<_Indices...>) noexcept
         : _Dynamic_extents{static_cast<index_type>(_STD as_const(_Dynamic_exts[_Indices]))...} {
         if constexpr (_Is_standard_integer<_OtherIndexType> && _Size != 0) {
-            for (_OtherIndexType _Ext : _Dynamic_exts) {
-                _STL_VERIFY(_Ext >= 0 && _STD in_range<index_type>(_Ext),
-                    "Either N must be zero or exts[r] must be nonnegative and must be representable as value of type "
-                    "index_type for every rank index r (N4950 [mdspan.extents.cons]/10.2)");
-            }
+            _STL_VERIFY(((_Dynamic_exts[_Indices] >= 0 && _STD in_range<index_type>(_Dynamic_exts[_Indices])) && ...),
+                "Either N must be zero or exts[r] must be nonnegative and must be representable as value of type "
+                "index_type for every rank index r (N4950 [mdspan.extents.cons]/10.2)");
         }
     }
 
