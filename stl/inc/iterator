@@ -1472,16 +1472,22 @@ using _STD size_t;
 
 template <class _Ptr>
 class checked_array_iterator { // wrap a pointer with checking
-    static_assert(_STD is_pointer_v<_Ptr>, "checked_array_iterator requires pointers");
+private:
+    using _Pointee_type = _STD remove_pointer_t<_Ptr>;
+    static_assert(_STD is_pointer_v<_Ptr> && _STD is_object_v<_Pointee_type>,
+        "checked_array_iterator requires pointers to objects");
 
 public:
-    using iterator_category = typename iterator_traits<_Ptr>::iterator_category;
-    using value_type        = typename iterator_traits<_Ptr>::value_type;
-    using difference_type   = typename iterator_traits<_Ptr>::difference_type;
-    using pointer           = typename iterator_traits<_Ptr>::pointer;
-    using reference         = typename iterator_traits<_Ptr>::reference;
+    using iterator_category = _STD random_access_iterator_tag;
+    using value_type        = _STD remove_cv_t<_Pointee_type>;
+    using difference_type   = _STD ptrdiff_t;
+    using pointer           = _Ptr;
+    using reference         = _Pointee_type&;
+#ifdef __cpp_lib_concepts
+    using iterator_concept = _STD contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
 
-    constexpr checked_array_iterator() noexcept : _Myarray(nullptr), _Mysize(0), _Myindex(0) {}
+    constexpr checked_array_iterator() = default;
 
     constexpr checked_array_iterator(const _Ptr _Array, const size_t _Size, const size_t _Index = 0) noexcept
         : _Myarray(_Array), _Mysize(_Size), _Myindex(_Index) {
@@ -1663,29 +1669,35 @@ public:
     }
 
 private:
-    _Ptr _Myarray; // beginning of array
-    size_t _Mysize; // size of array
-    size_t _Myindex; // offset into array
+    _Ptr _Myarray   = nullptr; // beginning of array
+    size_t _Mysize  = 0; // size of array
+    size_t _Myindex = 0; // offset into array
 };
 
 template <class _Ptr>
 _NODISCARD constexpr checked_array_iterator<_Ptr> make_checked_array_iterator(
-    const _Ptr _Array, const size_t _Size, const size_t _Index = 0) {
+    const _Ptr _Array, const size_t _Size, const size_t _Index = 0) noexcept {
     return checked_array_iterator<_Ptr>(_Array, _Size, _Index);
 }
 
 template <class _Ptr>
 class unchecked_array_iterator { // wrap a pointer without checking, to silence warnings
-    static_assert(_STD is_pointer_v<_Ptr>, "unchecked_array_iterator requires pointers");
+private:
+    using _Pointee_type = _STD remove_pointer_t<_Ptr>;
+    static_assert(_STD is_pointer_v<_Ptr> && _STD is_object_v<_Pointee_type>,
+        "unchecked_array_iterator requires pointers to objects");
 
 public:
-    using iterator_category = typename iterator_traits<_Ptr>::iterator_category;
-    using value_type        = typename iterator_traits<_Ptr>::value_type;
-    using difference_type   = typename iterator_traits<_Ptr>::difference_type;
-    using pointer           = typename iterator_traits<_Ptr>::pointer;
-    using reference         = typename iterator_traits<_Ptr>::reference;
+    using iterator_category = _STD random_access_iterator_tag;
+    using value_type        = _STD remove_cv_t<_Pointee_type>;
+    using difference_type   = _STD ptrdiff_t;
+    using pointer           = _Ptr;
+    using reference         = _Pointee_type&;
+#ifdef __cpp_lib_concepts
+    using iterator_concept = _STD contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
 
-    constexpr unchecked_array_iterator() noexcept : _Myptr(nullptr) {}
+    constexpr unchecked_array_iterator() = default;
 
     constexpr explicit unchecked_array_iterator(const _Ptr _Src) noexcept : _Myptr(_Src) {}
 
@@ -1812,7 +1824,7 @@ public:
     }
 
 private:
-    _Ptr _Myptr; // underlying pointer
+    _Ptr _Myptr = nullptr; // underlying pointer
 };
 
 template <class _Ptr>
