@@ -23,4 +23,11 @@ int main() {
     assert(std::format("{:#.3}", 0.123) == "0.123");
     assert(std::format("{:#.4}", 0.123) == "0.123");
     assert(std::format("{:#.5}", 0.123) == "0.123");
+    
+    assert(std::format("{:#.0}", 10.1) == "1.e+01");
+    assert(std::format("{:#.1}", 10.1) == "1.e+01");
+    assert(std::format("{:#.2}", 10.1) == "10.");
+    assert(std::format("{:#.3}", 10.1) == "10.1");
+    assert(std::format("{:#.4}", 10.1) == "10.1");
+    assert(std::format("{:#.5}", 10.1) == "10.1");
 }
