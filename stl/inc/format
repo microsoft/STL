@@ -3015,7 +3015,7 @@ _NODISCARD _OutputIt _Fmt_write(
             _Zeroes_to_append = _Extra_precision;
             break;
         case chars_format::general:
-            if (_Specs._Alt) {
+            if (_Specs._Alt && (_Specs._Type == 'g' || _Specs._Type == 'G')) {
                 auto _Digits = static_cast<int>(_Exponent_start - _Buffer_start);
 
                 if (!_Append_decimal) {
