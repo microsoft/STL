@@ -2864,7 +2864,7 @@ _NODISCARD _OutputIt _Fmt_write(
 
     auto _To_upper  = false;
     auto _Format    = chars_format::general;
-    auto _Exponent  = '\0';
+    auto _Exponent  = 'e';
     auto _Precision = _Specs._Precision;
 
     switch (_Specs._Type) {
