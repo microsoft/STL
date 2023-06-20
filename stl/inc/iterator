@@ -1488,6 +1488,11 @@ public:
         _STL_VERIFY(_Index <= _Size, "checked_array_iterator construction index out of range");
     }
 
+    template <class _Ty = _Pointee_type, _STD enable_if_t<!_STD is_const_v<_Ty>, int> = 0>
+    constexpr operator checked_array_iterator<const _Ty*>() const noexcept {
+        return checked_array_iterator<const _Ty*>{_Myarray, _Mysize, _Myindex};
+    }
+
     _NODISCARD constexpr _Ptr base() const noexcept {
         return _Myarray + _Myindex;
     }
@@ -1683,6 +1688,11 @@ public:
     constexpr unchecked_array_iterator() noexcept : _Myptr(nullptr) {}
 
     constexpr explicit unchecked_array_iterator(const _Ptr _Src) noexcept : _Myptr(_Src) {}
+
+    template <class _Ty = _Pointee_type, _STD enable_if_t<!_STD is_const_v<_Ty>, int> = 0>
+    constexpr operator unchecked_array_iterator<const _Ty*>() const noexcept {
+        return unchecked_array_iterator<const _Ty*>{_Myptr};
+    }
 
     _NODISCARD constexpr _Ptr base() const noexcept {
         return _Myptr;
