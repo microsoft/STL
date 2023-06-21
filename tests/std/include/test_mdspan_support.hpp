@@ -177,7 +177,7 @@ namespace details {
     template <size_t... Extents, class Fn>
     constexpr void check_members_with_mixed_extents(Fn&& fn) {
         auto select_extent = [](size_t e) consteval {
-            return e == std::dynamic_extent ? std::min(sizeof...(Extents), size_t{3}) : e;
+            return e == std::dynamic_extent ? (std::min)(sizeof...(Extents), size_t{3}) : e;
         };
 
         // Check signed integers
@@ -198,7 +198,7 @@ namespace details {
     template <class Fn, size_t... Seq>
     constexpr void check_members_with_various_extents_impl(Fn&& fn, std::index_sequence<Seq...>) {
         auto static_or_dynamic = [](size_t i) consteval {
-            return i == 0 ? std::dynamic_extent : std::min(sizeof...(Seq), size_t{3});
+            return i == 0 ? std::dynamic_extent : (std::min)(sizeof...(Seq), size_t{3});
         };
 
         if constexpr (sizeof...(Seq) <= 1) {

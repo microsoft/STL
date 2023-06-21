@@ -1,12 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _CONTAINER_DEBUG_LEVEL 1
+
 #include <array>
 #include <cstddef>
 #include <mdspan>
 #include <span>
 
 #include <test_death.hpp>
+#include <test_mdspan_support.hpp>
 
 using namespace std;
 
@@ -39,10 +42,16 @@ void test_construction_from_pack_with_invalid_values() {
     [[maybe_unused]] extents<int, 1, 2> e{1, 1};
 }
 
-void test_construction_from_pack_with_unrepresentable_as_index_type_values() {
+void test_construction_from_pack_with_unrepresentable_as_index_type_values_1() {
     // Either sizeof...(exts) must be equal to 0 or each element of exts must be nonnegative and must be representable
     // as value of type index_type
     [[maybe_unused]] extents<unsigned char, 1, dynamic_extent> e{1, 256};
+}
+
+void test_construction_from_pack_with_unrepresentable_as_index_type_values_2() {
+    // Either sizeof...(exts) must be equal to 0 or each element of exts must be nonnegative and must be representable
+    // as value of type index_type
+    [[maybe_unused]] extents<unsigned char, 1, dynamic_extent> e{ConvertibleToInt<unsigned char>{.val = 1}, 256};
 }
 
 void test_construction_from_span_with_invalid_values() {
@@ -82,7 +91,8 @@ int main(int argc, char* argv[]) {
         test_construction_from_other_extents_with_invalid_values,
         test_construction_from_other_extents_with_unrepresentable_as_index_type_values,
         test_construction_from_pack_with_invalid_values,
-        test_construction_from_pack_with_unrepresentable_as_index_type_values,
+        test_construction_from_pack_with_unrepresentable_as_index_type_values_1,
+        test_construction_from_pack_with_unrepresentable_as_index_type_values_2,
         test_construction_from_span_with_invalid_values,
         test_construction_from_span_with_unrepresentable_as_index_type_values,
         test_construction_from_array_with_invalid_values,
