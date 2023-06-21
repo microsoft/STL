@@ -8,6 +8,9 @@
 #define _FLAT_SET_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#if !_HAS_CXX23 || !defined(__cpp_lib_concepts) // TRANSITION, GH-395
+_EMIT_STL_WARNING(STL4038, "The contents of <flat_set> are available only with C++23 or later.");
+#else // ^^^ not supported / supported language mode vvv
 #include <algorithm>
 #include <compare>
 #include <initializer_list>
@@ -15,6 +18,7 @@
 #include <xutility>
 
 _STD_BEGIN
+
 template <class _Ty>
 struct _NODISCARD _Clear_scope_guard {
     _Ty* _Clearable;
@@ -709,7 +713,9 @@ template <class _Kty, class _Keylt = less<_Kty>>
 flat_multiset(initializer_list<_Kty>, _Keylt = _Keylt()) -> flat_multiset<_Kty, _Keylt>;
 template <class _Kty, class _Keylt = less<_Kty>>
 flat_multiset(sorted_equivalent_t, initializer_list<_Kty>, _Keylt = _Keylt()) -> flat_multiset<_Kty, _Keylt>;
+
 _STD_END
 
+#endif // ^^^ supported language mode ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FLAT_SET_
