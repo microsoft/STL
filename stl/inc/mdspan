@@ -270,6 +270,28 @@ public:
         }
     }
 
+    _NODISCARD constexpr bool _Is_dynamic_multidim_index_space_size_representable() const noexcept {
+        // Pre: rank_dynamic() != 0
+        if constexpr (_Multidim_index_space_size_is_always_zero) {
+            return true;
+        } else {
+            index_type _Result{1};
+            bool _Overflow = false;
+            for (rank_type _Idx = 0; _Idx < _Rank; ++_Idx) {
+                const index_type _Ext = extent(_Idx);
+                if (_Ext == 0) {
+                    return true;
+                }
+
+                if (!_Overflow) {
+                    _Overflow = _Mul_overflow(extent(_Idx), _Result, _Result);
+                }
+            }
+
+            return !_Overflow;
+        }
+    }
+
     template <class... _IndexTypes, size_t... _Seq>
     _NODISCARD constexpr bool _Contains_multidimensional_index(
         index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
@@ -425,7 +447,13 @@ public:
     constexpr mapping(const mapping&) noexcept = default;
 
     constexpr mapping(const extents_type& _Exts_) noexcept : _Exts(_Exts_) {
-        // TRANSITION, CHECK [mdspan.layout.left.cons]/1 (REQUIRES '_Multiply_with_overflow_check' FROM #3561)
+#if _CONTAINER_DEBUG_LEVEL > 0
+        if constexpr (extents_type::rank_dynamic() != 0) {
+            _STL_VERIFY(_Exts_._Is_dynamic_multidim_index_space_size_representable(),
+                "The size of the multidimensional index space e must be representable as a value of type index_type "
+                "(N4950 [mdspan.layout.left.cons]/1).");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
     template <class _OtherExtents>

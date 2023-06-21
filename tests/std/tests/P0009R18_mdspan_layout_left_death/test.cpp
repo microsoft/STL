@@ -12,7 +12,17 @@
 
 using namespace std;
 
-// TRANSITION, Test Construction From extents_type
+void test_construction_from_extents_type_with_signed_index_type() {
+    using Ext = dextents<signed char, 3>;
+    // The size of the multidimensional index space e must be representable as a value of type index_type
+    [[maybe_unused]] layout_left::mapping<Ext> m{Ext{5, 4, 7}};
+}
+
+void test_construction_from_extents_type_with_unsigned_index_type() {
+    using Ext = dextents<unsigned char, 3>;
+    // The size of the multidimensional index space e must be representable as a value of type index_type
+    [[maybe_unused]] layout_left::mapping<Ext> m{Ext{5, 10, 6}};
+}
 
 void test_construction_from_other_left_mapping() {
     layout_left::mapping<dextents<int, 1>> m1{dextents<int, 1>{256}};
@@ -55,7 +65,8 @@ void test_stride_function() {
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
     exec.add_death_tests({
-        // TRANSITION Construction From extents_type
+        test_construction_from_extents_type_with_signed_index_type,
+        test_construction_from_extents_type_with_unsigned_index_type,
         test_construction_from_other_left_mapping,
         test_construction_from_other_right_mapping,
         test_construction_from_other_stride_mapping_1,
