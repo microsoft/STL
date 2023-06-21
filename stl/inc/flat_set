@@ -48,10 +48,10 @@ public:
     using value_compare          = _Keylt;
     using reference              = value_type&;
     using const_reference        = const value_type&;
-    using size_type              = typename _Container::size_type;
-    using difference_type        = typename _Container::difference_type;
-    using iterator               = typename _Container::iterator;
-    using const_iterator         = typename _Container::const_iterator;
+    using size_type              = _Container::size_type;
+    using difference_type        = _Container::difference_type;
+    using iterator               = _Container::iterator;
+    using const_iterator         = _Container::const_iterator;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
     using container_type         = _Container;
