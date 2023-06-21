@@ -2174,18 +2174,6 @@ _NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _R
     }
 }
 
-template <class _Alloc>
-_NODISCARD_RAW_PTR_ALLOC _CONSTEXPR20 typename allocator_traits<_Alloc>::pointer _Allocate_at_least_helper(
-    _Alloc& _Al, _CRT_GUARDOVERFLOW typename allocator_traits<_Alloc>::size_type& _Count) {
-#if _HAS_CXX23
-    auto [_Ptr, _Allocated] = allocator_traits<_Alloc>::allocate_at_least(_Al, _Count);
-    _Count                  = _Allocated;
-    return _Ptr;
-#else // _HAS_CXX23
-    return _Al.allocate(_Count);
-#endif // _HAS_CXX23
-}
-
 _EXPORT_STD template <class _FwdIt, class _Ty>
 _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
     // remove each matching _Val

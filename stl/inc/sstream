@@ -261,7 +261,7 @@ protected:
             return _Traits::eof();
         }
 
-        const auto _Newptr = _Unfancy(_Allocate_at_least_helper(_Al, _Newsize));
+        const auto _Newptr = _Unfancy(_Al.allocate(_Newsize));
         _Traits::copy(_Newptr, _Oldptr, _Oldsize);
 
         const auto _New_pnext = _Newptr + _Oldsize;
@@ -430,7 +430,7 @@ protected:
         return pos_type{_Off};
     }
 
-    void _Init(const _Elem* _Ptr, const _Mysize_type _Count, int _State) {
+    void _Init(const _Elem* _Ptr, _Mysize_type _Count, int _State) {
         // initialize buffer to [_Ptr, _Ptr + _Count), set state
         _State &= ~_From_rvalue;
 
@@ -440,10 +440,9 @@ protected:
 
         if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
             // finite buffer that can be read or written, set it up
-            _Mysize_type _Newsize = _Count;
-            const auto _Pnew      = _Unfancy(_Allocate_at_least_helper(_Al, _Newsize));
+            const auto _Pnew = _Unfancy(_Al.allocate(_Count));
             _Traits::copy(_Pnew, _Ptr, _Count);
-            _Seekhigh = _Pnew + _Newsize;
+            _Seekhigh = _Pnew + _Count;
 
             if (!(_State & _Noread)) {
                 _Mysb::setg(_Pnew, _Pnew, _Seekhigh); // setup read buffer

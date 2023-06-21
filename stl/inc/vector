@@ -825,10 +825,10 @@ private:
             _Xlength();
         }
 
-        const size_type _Newsize = _Oldsize + 1;
-        size_type _Newcapacity   = _Calculate_growth(_Newsize);
+        const size_type _Newsize     = _Oldsize + 1;
+        const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-        const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
+        const pointer _Newvec           = _Al.allocate(_Newcapacity);
         const pointer _Constructed_last = _Newvec + _Whereoff + 1;
         pointer _Constructed_first      = _Constructed_last;
 
@@ -912,10 +912,10 @@ private:
                 _Xlength();
             }
 
-            const size_type _Newsize = _Oldsize + _Count;
-            size_type _Newcapacity   = _Calculate_growth(_Newsize);
+            const size_type _Newsize     = _Oldsize + _Count;
+            const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
+            const pointer _Newvec           = _Al.allocate(_Newcapacity);
             const pointer _Constructed_last = _Newvec + _Oldsize + _Count;
             pointer _Constructed_first      = _Constructed_last;
 
@@ -1033,10 +1033,10 @@ public:
                 _Xlength();
             }
 
-            const size_type _Newsize = _Oldsize + _Count;
-            size_type _Newcapacity   = _Calculate_growth(_Newsize);
+            const size_type _Newsize     = _Oldsize + _Count;
+            const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
+            const pointer _Newvec           = _Al.allocate(_Newcapacity);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
             pointer _Constructed_first      = _Constructed_last;
 
@@ -1128,10 +1128,10 @@ private:
                 _Xlength();
             }
 
-            const size_type _Newsize = _Oldsize + _Count;
-            size_type _Newcapacity   = _Calculate_growth(_Newsize);
+            const size_type _Newsize     = _Oldsize + _Count;
+            const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
+            const pointer _Newvec           = _Al.allocate(_Newcapacity);
             const auto _Whereoff            = static_cast<size_type>(_Whereptr - _Oldfirst);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
             pointer _Constructed_first      = _Constructed_last;
@@ -1518,10 +1518,10 @@ private:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
-        const auto _Oldsize    = static_cast<size_type>(_Mylast - _Myfirst);
-        size_type _Newcapacity = _Calculate_growth(_Newsize);
+        const auto _Oldsize          = static_cast<size_type>(_Mylast - _Myfirst);
+        const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-        const pointer _Newvec         = _Allocate_at_least_helper(_Al, _Newcapacity);
+        const pointer _Newvec         = _Al.allocate(_Newcapacity);
         const pointer _Appended_first = _Newvec + _Oldsize;
         pointer _Appended_last        = _Appended_first;
 
@@ -1598,10 +1598,7 @@ public:
     }
 
 private:
-    enum class _Reallocation_policy { _At_least, _Exactly };
-
-    template <_Reallocation_policy _Policy>
-    _CONSTEXPR20 void _Reallocate(size_type& _Newcapacity) {
+    _CONSTEXPR20 void _Reallocate_exactly(const size_type _Newcapacity) {
         // set capacity to _Newcapacity (without geometric growth), provide strong guarantee
         auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
@@ -1610,13 +1607,7 @@ private:
 
         const auto _Size = static_cast<size_type>(_Mylast - _Myfirst);
 
-        pointer _Newvec;
-        if constexpr (_Policy == _Reallocation_policy::_At_least) {
-            _Newvec = _Allocate_at_least_helper(_Al, _Newcapacity);
-        } else {
-            _STL_INTERNAL_STATIC_ASSERT(_Policy == _Reallocation_policy::_Exactly);
-            _Newvec = _Al.allocate(_Newcapacity);
-        }
+        const pointer _Newvec = _Al.allocate(_Newcapacity);
 
         _TRY_BEGIN
         if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
@@ -1684,14 +1675,14 @@ private:
     }
 
 public:
-    _CONSTEXPR20 void reserve(_CRT_GUARDOVERFLOW size_type _Newcapacity) {
+    _CONSTEXPR20 void reserve(_CRT_GUARDOVERFLOW const size_type _Newcapacity) {
         // increase capacity to _Newcapacity (without geometric growth), provide strong guarantee
         if (_Newcapacity > capacity()) { // something to do (reserve() never shrinks)
             if (_Newcapacity > max_size()) {
                 _Xlength();
             }
 
-            _Reallocate<_Reallocation_policy::_At_least>(_Newcapacity);
+            _Reallocate_exactly(_Newcapacity);
         }
     }
 
@@ -1703,8 +1694,7 @@ public:
             if (_Oldfirst == _Oldlast) {
                 _Tidy();
             } else {
-                size_type _Newcapacity = static_cast<size_type>(_Oldlast - _Oldfirst);
-                _Reallocate<_Reallocation_policy::_Exactly>(_Newcapacity);
+                _Reallocate_exactly(static_cast<size_type>(_Oldlast - _Oldfirst));
             }
         }
     }
@@ -1986,7 +1976,7 @@ private:
         return _Geometric; // geometric growth is sufficient
     }
 
-    _CONSTEXPR20 void _Buy_raw(size_type _Newcapacity) {
+    _CONSTEXPR20 void _Buy_raw(const size_type _Newcapacity) {
         // allocate array with _Newcapacity elements
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
@@ -1996,10 +1986,10 @@ private:
         _STL_INTERNAL_CHECK(!_Myfirst && !_Mylast && !_Myend); // check that *this is tidy
         _STL_INTERNAL_CHECK(0 < _Newcapacity && _Newcapacity <= max_size());
 
-        const pointer _Newvec = _Allocate_at_least_helper(_Getal(), _Newcapacity);
-        _Myfirst              = _Newvec;
-        _Mylast               = _Newvec;
-        _Myend                = _Newvec + _Newcapacity;
+        const auto _Newvec = _Getal().allocate(_Newcapacity);
+        _Myfirst           = _Newvec;
+        _Mylast            = _Newvec;
+        _Myend             = _Newvec + _Newcapacity;
     }
 
     _CONSTEXPR20 void _Buy_nonzero(const size_type _Newcapacity) {
