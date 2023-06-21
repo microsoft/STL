@@ -636,21 +636,17 @@ public:
         : _Exts(_Other.extents()) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (extents_type::rank() > 0) {
-            const bool _Verify = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-                index_type _Prod = stride(0);
-                return (
-                    (_Other.stride(_Indices)
-                        == (_Indices == extents_type::_Rank - 1
-                                ? _Prod
-                                : _STD exchange(_Prod, static_cast<index_type>(_Prod / _Exts.extent(_Indices + 1)))))
-                    && ...);
-            }(make_index_sequence<extents_type::rank()>{});
-            _STL_VERIFY(_Verify, "For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to "
-                                 "extents().rev-prod-of-extents(r) (N4950 [mdspan.layout.right.cons]/10.1).");
+            index_type _Prod = 1;
+            for (size_t _Idx = extents_type::_Rank; _Idx-- > 0;) {
+                _STL_VERIFY(_Prod == _Other.stride(_Idx),
+                    "For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to "
+                    "extents().rev-prod-of-extents(r) (N4950 [mdspan.layout.right.cons]/10.1).");
+                _Prod = static_cast<index_type>(_Prod * _Exts.extent(_Idx));
+            }
+            _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
+                "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
+                "[mdspan.layout.right.cons]/10.2).");
         }
-        _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
-            "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
-            "[mdspan.layout.right.cons]/10.2).");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 

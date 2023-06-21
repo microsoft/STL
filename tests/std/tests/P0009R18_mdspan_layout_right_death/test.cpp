@@ -38,7 +38,7 @@ void test_construction_from_other_left_mapping() {
 
 void test_construction_from_other_stride_mapping_1() {
     using Ext = extents<int, 2, 4>;
-    layout_stride::mapping<Ext> m1{Ext{}, array{3, 1}};
+    layout_stride::mapping<Ext> m1{Ext{}, array{1, 2}};
     // For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to
     // extents().rev-prod-of-extents(r)
     layout_right::mapping<Ext> m2{m1};
