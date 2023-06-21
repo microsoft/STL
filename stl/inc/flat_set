@@ -609,15 +609,15 @@ _EXPORT_STD struct sorted_equivalent_t {
 };
 _EXPORT_STD inline constexpr sorted_equivalent_t sorted_equivalent{};
 
-template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
-_EXPORT_STD class flat_set
+_EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
+class flat_set
     : public _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set<_Kty, _Keylt, _Container>, sorted_unique_t> {
 public:
     using _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set, sorted_unique_t>::_Base_flat_set;
 };
 
-template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
-_EXPORT_STD class flat_multiset : public _Base_flat_set<_Kty, _Keylt, _Container, true,
+_EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
+class flat_multiset : public _Base_flat_set<_Kty, _Keylt, _Container, true,
                                       flat_multiset<_Kty, _Keylt, _Container>, sorted_equivalent_t> {
 public:
     using _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset, sorted_equivalent_t>::_Base_flat_set;
