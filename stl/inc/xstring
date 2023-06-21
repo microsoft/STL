@@ -3171,7 +3171,7 @@ public:
                     auto _Right_al_non_const = _Right_al;
                     const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity + 1); // throws
 
-                    _Start_element_lifetimes(_Unfancy(_New_ptr), _New_size + 1);
+                    _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
 
                     _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_Right._Mypair._Myval2._Bx._Ptr), _New_size + 1);
                     _Tidy_deallocate();
