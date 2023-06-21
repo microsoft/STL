@@ -256,11 +256,17 @@ public:
         }
     }
 
-    _NODISCARD static consteval bool _Is_index_space_size_representable() {
-        if constexpr (rank_dynamic() == 0 && rank() > 0) {
-            return _STD in_range<index_type>((_Extents * ...));
-        } else {
+    _NODISCARD static consteval bool _Is_static_multidim_index_space_size_representable() noexcept {
+        // Pre: rank_dynamic() == 0
+        if constexpr (_Multidim_index_space_size_is_always_zero) {
             return true;
+        } else {
+            index_type _Result{1};
+#pragma warning(push)
+#pragma warning(disable : 6287) // TRANSITION, DevCom-???
+            const bool _Overflow = (_Mul_overflow(static_cast<index_type>(_Extents), _Result, _Result) || ...);
+#pragma warning(pop)
+            return !_Overflow;
         }
     }
 
@@ -410,7 +416,8 @@ public:
 
     static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4950 [mdspan.layout.left.overview]/2).");
-    static_assert(extents_type::_Is_index_space_size_representable(),
+    static_assert(
+        extents_type::rank_dynamic() != 0 || extents_type::_Is_static_multidim_index_space_size_representable(),
         "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
         "representable as a value of type typename Extents::index_type (N4950 [mdspan.layout.left.overview]/4).");
 
@@ -545,7 +552,8 @@ public:
 
     static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4950 [mdspan.layout.right.overview]/2).");
-    static_assert(extents_type::_Is_index_space_size_representable(),
+    static_assert(
+        extents_type::rank_dynamic() != 0 || extents_type::_Is_static_multidim_index_space_size_representable(),
         "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
         "representable as a value of type typename Extents::index_type (N4950 [mdspan.layout.right.overview]/4).");
 
@@ -692,7 +700,8 @@ public:
 
     static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4950 [mdspan.layout.stride.overview]/2).");
-    static_assert(extents_type::_Is_index_space_size_representable(),
+    static_assert(
+        extents_type::rank_dynamic() != 0 || extents_type::_Is_static_multidim_index_space_size_representable(),
         "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
         "representable as a value of type typename Extents::index_type (N4950 [mdspan.layout.stride.overview]/4).");
 
