@@ -36,6 +36,7 @@ namespace Concurrency {
             }
 
         private:
+            void* unused       = nullptr; // TRANSITION, ABI: was the vptr
             SRWLOCK m_srw_lock = SRWLOCK_INIT;
         };
 
@@ -66,6 +67,7 @@ namespace Concurrency {
             }
 
         private:
+            void* unused                            = nullptr; // TRANSITION, ABI: was the vptr
             CONDITION_VARIABLE m_condition_variable = CONDITION_VARIABLE_INIT;
         };
 
