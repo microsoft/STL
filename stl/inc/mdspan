@@ -756,8 +756,17 @@ public:
         if constexpr (extents_type::rank() != 0) {
             _Strides.back() = 1;
             for (rank_type _Idx = extents_type::_Rank - 1; _Idx-- > 0;) {
-                // TRANSITION USE `_Multiply_with_overflow_check` IN DEBUG MODE
+#if _CONTAINER_DEBUG_LEVEL > 0
+                const bool _Overflow = _Mul_overflow(_Strides[_Idx + 1], _Exts.extent(_Idx + 1), _Strides[_Idx]);
+                // NB: N4950 requires value of 'layout_right​::​mapping<extents_type>().required_span_size()' to be
+                // representable as value of type 'index_type', but this is not enough. We need to require every single
+                // stride to be representable as value of type 'index_type', so we can get desired effects.
+                _STL_VERIFY(!_Overflow,
+                    "Value of layout_right::mapping<extents_type>().required_span_size() must be "
+                    "representable as a value of type index_type (N4950 [mdspan.layout.stride.cons]/1).");
+#else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
                 _Strides[_Idx] = static_cast<index_type>(_Strides[_Idx + 1] * _Exts.extent(_Idx + 1));
+#endif // _CONTAINER_DEBUG_LEVEL > 0
             }
         }
     }
