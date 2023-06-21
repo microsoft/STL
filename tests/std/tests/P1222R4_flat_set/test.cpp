@@ -136,7 +136,7 @@ void test_constructors() {
     assert_all_requirements_and_equals(b, {-1, 1, 2, 7, 7, 7, 100});
 }
 
-template <typename T>
+template <class T>
 void test_spaceship_operator() {
     static constexpr bool multiset = _Is_specialization_v<T, flat_multiset>;
     static constexpr bool invert   = is_same_v<typename T::key_compare, std::greater<typename T::key_type>>;
@@ -157,7 +157,7 @@ void test_spaceship_operator() {
     assert((f <=> a) == strong_ordering::greater);
 }
 
-template <typename T>
+template <class T>
 struct proxy_comparer {
     bool operator()(const T& lhs, const T& rhs) const {
         return less ? (lhs < rhs) : (lhs > rhs);
