@@ -1447,14 +1447,14 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if _HAS_CXX17 && !defined(_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
-#define _CXX_DEPRECATE_EXT_ARR_ITERS                                                                                  \
+#define _CXX_DEPRECATE_STDEXT_ARR_ITERS                                                                               \
     [[deprecated(                                                                                                     \
         "warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory "     \
         "functions are non-Standard extensions and will be removed in future. std::span (since C++20) and gsl::span " \
         "can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or "                       \
         "_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
-#define _CXX_DEPRECATE_EXT_ARR_ITERS
+#define _CXX_DEPRECATE_STDEXT_ARR_ITERS
 #endif // ^^^ warning disabled ^^^
 
 // next warning number: STL4044
