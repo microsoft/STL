@@ -1471,7 +1471,7 @@ using _STD iterator_traits;
 using _STD size_t;
 
 template <class _Ptr>
-class checked_array_iterator { // wrap a pointer with checking
+class _CXX_DEPRECATE_EXT_ARR_ITERS checked_array_iterator { // wrap a pointer with checking
 private:
     using _Pointee_type = _STD remove_pointer_t<_Ptr>;
     static_assert(_STD is_pointer_v<_Ptr> && _STD is_object_v<_Pointee_type>,
@@ -1675,13 +1675,13 @@ private:
 };
 
 template <class _Ptr>
-_NODISCARD constexpr checked_array_iterator<_Ptr> make_checked_array_iterator(
+_CXX_DEPRECATE_EXT_ARR_ITERS _NODISCARD constexpr checked_array_iterator<_Ptr> make_checked_array_iterator(
     const _Ptr _Array, const size_t _Size, const size_t _Index = 0) noexcept {
     return checked_array_iterator<_Ptr>(_Array, _Size, _Index);
 }
 
 template <class _Ptr>
-class unchecked_array_iterator { // wrap a pointer without checking, to silence warnings
+class _CXX_DEPRECATE_EXT_ARR_ITERS unchecked_array_iterator { // wrap a pointer without checking, to silence warnings
 private:
     using _Pointee_type = _STD remove_pointer_t<_Ptr>;
     static_assert(_STD is_pointer_v<_Ptr> && _STD is_object_v<_Pointee_type>,
@@ -1828,7 +1828,8 @@ private:
 };
 
 template <class _Ptr>
-_NODISCARD unchecked_array_iterator<_Ptr> make_unchecked_array_iterator(const _Ptr _It) noexcept {
+_CXX_DEPRECATE_EXT_ARR_ITERS _NODISCARD unchecked_array_iterator<_Ptr> make_unchecked_array_iterator(
+    const _Ptr _It) noexcept {
     return unchecked_array_iterator<_Ptr>(_It);
 }
 _STDEXT_END
