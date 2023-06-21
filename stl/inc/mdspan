@@ -41,6 +41,7 @@ public:
 
     static constexpr rank_type _Rank         = sizeof...(_Extents);
     static constexpr rank_type _Rank_dynamic = (static_cast<rank_type>(_Extents == dynamic_extent) + ... + 0);
+    static constexpr bool _Multidim_index_space_size_is_always_zero = ((_Extents == 0) || ...);
 
 private:
     static constexpr array<rank_type, _Rank> _Static_extents = {_Extents...};
@@ -1052,12 +1053,17 @@ public:
     }
 
     _NODISCARD constexpr bool empty() const noexcept {
-        for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
-            if (_Map.extents().extent(_Idx) == 0) {
-                return true;
+        if constexpr (extents_type::_Multidim_index_space_size_is_always_zero) {
+            return true;
+        } else {
+            const extents_type& _Exts = _Map.extents();
+            for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
+                if (_Exts.extent(_Idx) == 0) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
     }
 
     friend constexpr void swap(mdspan& _Left, mdspan& _Right) noexcept {
