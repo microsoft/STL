@@ -1367,7 +1367,7 @@ public:
         static_assert(sizeof(_Refs) == sizeof(_Atomic_counter_t), "invalid _Refs size");
     }
 
-    regex_constants::syntax_option_type _Fl;
+    regex_constants::syntax_option_type _Fl{};
     unsigned int _Loops;
     unsigned int _Marks;
     unsigned int _Refs;

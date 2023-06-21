@@ -449,46 +449,6 @@ static void t_is_member_function_pointer() { // test is_member_function_pointer<
     CHECK(STD is_member_function_pointer<pf5>::value);
 }
 
-void t_sequence() { // test integer_sequence
-    typedef STD integer_sequence<size_t> s0;
-    CHECK_TYPE(size_t, s0::value_type);
-    CHECK_INT(s0().size(), 0);
-
-    typedef STD integer_sequence<size_t, 2> s1;
-    CHECK_TYPE(size_t, s1::value_type);
-    CHECK_INT(s1().size(), 1);
-
-    typedef STD integer_sequence<size_t, 4, 5> s2;
-    CHECK_TYPE(size_t, s2::value_type);
-    CHECK_INT(s2().size(), 2);
-
-    typedef STD make_integer_sequence<int, 0> si0;
-    CHECK_TYPE(si0, STD integer_sequence<int>);
-
-    typedef STD make_integer_sequence<int, 1> si1;
-    typedef STD integer_sequence<int, 0> si1a;
-    CHECK_TYPE(si1, si1a);
-
-    typedef STD make_integer_sequence<int, 2> si2;
-    typedef STD integer_sequence<int, 0, 1> si2a;
-    CHECK_TYPE(si2, si2a);
-
-    typedef STD make_index_sequence<2> si2b;
-
-    typedef STD index_sequence_for<int, float> si2d;
-    CHECK_TYPE(si2b, si2d);
-
-    CHECK_TYPE(s0, STD index_sequence<>);
-
-    CHECK_TYPE(s1, STD index_sequence<2>);
-
-    typedef STD index_sequence<4, 5> s2x;
-    CHECK_TYPE(s2, s2x);
-
-    typedef STD index_sequence<0, 1> si2c;
-    CHECK_TYPE(si2b, si2c);
-}
-
 void t_aliases() { // test template aliases
     typedef int Ty;
 
@@ -557,8 +517,6 @@ void test_main() { // test type traits
     t_is_reference();
     t_is_member_object_pointer();
     t_is_member_function_pointer();
-
-    t_sequence();
 
     t_aliases();
 }

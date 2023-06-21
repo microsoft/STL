@@ -53,7 +53,7 @@ template <class... Ranges>
 concept CanViewCartesianProduct = requires(Ranges&&... rs) { views::cartesian_product(forward<Ranges>(rs)...); };
 
 template <class T>
-concept UnsignedIntegerLike = _Integer_like<T> && (!_Signed_integer_like<T>);
+concept UnsignedIntegerLike = _Integer_like<T> && !_Signed_integer_like<T>;
 
 template <class First, class... Rest>
 constexpr bool is_iter_move_nothrow() {
@@ -973,6 +973,16 @@ namespace check_recommended_practice_implementation { // MSVC STL specific behav
     STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Vec>, all_t<Vec>>>) > sizeof(ptrdiff_t));
 } // namespace check_recommended_practice_implementation
 
+// GH-3733: cartesian_product_view would incorrectly reject a call to size() claiming that big*big*big*0 is not
+// representable as range_size_t because big*big*big is not.
+constexpr void test_gh_3733() {
+    const auto r1   = views::repeat(0, (numeric_limits<ptrdiff_t>::max)());
+    const auto r2   = views::repeat(1, 0);
+    const auto cart = views::cartesian_product(r1, r1, r1, r2);
+    assert(cart.size() == 0);
+    assert(as_const(cart).size() == 0);
+}
+
 int main() {
     // Check views
     { // ... copyable
@@ -1029,4 +1039,7 @@ int main() {
     STATIC_ASSERT((instantiation_test(), true));
 #endif // TRANSITION, GH-1030
     instantiation_test();
+
+    STATIC_ASSERT((test_gh_3733(), true));
+    test_gh_3733();
 }

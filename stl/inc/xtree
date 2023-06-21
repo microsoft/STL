@@ -309,7 +309,7 @@ public:
 };
 
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
-    class _Reference, class _Const_reference, class _Nodeptr_type>
+    class _Nodeptr_type>
 struct _Tree_iter_types {
     using value_type      = _Value_type;
     using size_type       = _Size_type;
@@ -842,8 +842,7 @@ protected:
 
     using _Scary_val = _Tree_val<conditional_t<_Is_simple_alloc_v<_Alnode>, _Tree_simple_types<value_type>,
         _Tree_iter_types<value_type, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,
-            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, value_type&, const value_type&,
-            _Nodeptr>>>;
+            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Nodeptr>>>;
 
     static constexpr bool _Multi  = _Traits::_Multi;
     static constexpr bool _Is_set = is_same_v<key_type, value_type>;

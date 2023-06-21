@@ -253,7 +253,10 @@ _NODISCARD _CONSTEXPR23 from_chars_result _Integer_from_chars(
 
     constexpr _Unsigned _Uint_max    = static_cast<_Unsigned>(-1);
     constexpr _Unsigned _Int_max     = static_cast<_Unsigned>(_Uint_max >> 1);
+#pragma warning(push)
+#pragma warning(disable : 26450) // TRANSITION, VSO-1828677
     constexpr _Unsigned _Abs_int_min = static_cast<_Unsigned>(_Int_max + 1);
+#pragma warning(pop)
 
     _Unsigned _Risky_val;
     _Unsigned _Max_digit;
@@ -395,7 +398,11 @@ _EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(const char* const _First, 
 // - Otherwise, no initialization is performed."
 // Therefore, _Mydata's elements are not initialized.
 struct _Big_integer_flt {
+#pragma warning(push)
+#pragma warning(disable : 26495) // Variable 'std::_Big_integer_flt::_Mydata' is uninitialized.
+                                 // Always initialize a member variable (type.6).
     _Big_integer_flt() noexcept : _Myused(0) {}
+#pragma warning(pop)
 
     _Big_integer_flt(const _Big_integer_flt& _Other) noexcept : _Myused(_Other._Myused) {
         _CSTD memcpy(_Mydata, _Other._Mydata, _Other._Myused * sizeof(uint32_t));
@@ -1020,7 +1027,10 @@ _NODISCARD inline uint64_t _Right_shift_with_rounding(
     constexpr uint32_t _Total_number_of_bits = 64;
     if (_Shift >= _Total_number_of_bits) {
         if (_Shift == _Total_number_of_bits) {
+#pragma warning(push)
+#pragma warning(disable : 26454) // TRANSITION, VSO-1826196
             constexpr uint64_t _Extra_bits_mask = (1ULL << (_Total_number_of_bits - 1)) - 1;
+#pragma warning(pop)
             constexpr uint64_t _Round_bit_mask  = (1ULL << (_Total_number_of_bits - 1));
 
             const bool _Round_bit = (_Value & _Round_bit_mask) != 0;

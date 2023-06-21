@@ -5,6 +5,7 @@
     "Version": "1.0",
     "BuildAsHeaderUnits": [
         // "__msvc_all_public_headers.hpp", // for testing, not production
+        "__msvc_bit_utils.hpp",
         "__msvc_chrono.hpp",
         "__msvc_cxx_stdatomic.hpp",
         "__msvc_filebuf.hpp",

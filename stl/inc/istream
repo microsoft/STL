@@ -48,7 +48,7 @@ public:
     }
 
 protected:
-    __CLR_OR_THIS_CALL basic_istream(basic_istream&& _Right) : _Chcount(_Right._Chcount) {
+    __CLR_OR_THIS_CALL basic_istream(basic_istream&& _Right) noexcept(false) : _Chcount(_Right._Chcount) {
         _Myios::init();
         _Myios::move(_STD move(_Right));
         _Right._Chcount = 0;
@@ -686,7 +686,7 @@ public:
     }
 
 private:
-    streamsize _Chcount; // the character count
+    streamsize _Chcount{}; // the character count
 };
 
 #pragma vtordisp(pop) // compiler bug workaround
@@ -739,7 +739,8 @@ public:
         : _Myis(_Strbuf, false), _Myos(_Noinit, false) {}
 
 protected:
-    __CLR_OR_THIS_CALL basic_iostream(basic_iostream&& _Right) : _Myis(_Right.rdbuf(), false), _Myos(_Noinit, false) {
+    __CLR_OR_THIS_CALL basic_iostream(basic_iostream&& _Right) noexcept(false)
+        : _Myis(_Right.rdbuf(), false), _Myos(_Noinit, false) {
         _Myios::init();
         _Myios::move(_STD move(_Right));
     }

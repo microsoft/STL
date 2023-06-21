@@ -273,7 +273,7 @@ public:
 };
 
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
-    class _Reference, class _Const_reference, class _Nodeptr_type>
+    class _Nodeptr_type>
 struct _List_iter_types {
     using value_type      = _Value_type;
     using size_type       = _Size_type;
@@ -745,8 +745,8 @@ struct _List_node_insert_op2 {
 private:
     _Alnode& _Al;
     size_type _Added; // if 0, the values of _Head and _Tail are indeterminate
-    pointer _Tail; // points to the most recently appended element; it doesn't have _Next constructed
-    pointer _Head; // points to the first appended element; it doesn't have _Prev constructed
+    pointer _Tail{}; // points to the most recently appended element; it doesn't have _Next constructed
+    pointer _Head{}; // points to the first appended element; it doesn't have _Prev constructed
 };
 
 template <class _Traits>
@@ -769,7 +769,7 @@ private:
 
     using _Val_types = conditional_t<_Is_simple_alloc_v<_Alnode>, _List_simple_types<_Ty>,
         _List_iter_types<_Ty, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,
-            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Ty&, const _Ty&, _Nodeptr>>;
+            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Nodeptr>>;
 
     using _Scary_val = _List_val<_Val_types>;
 
@@ -896,7 +896,7 @@ public:
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
-    list(list&& _Right) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
+    list(list&& _Right) noexcept(false) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
         _Swap_val(_Right);
     }

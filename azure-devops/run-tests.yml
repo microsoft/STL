@@ -17,7 +17,7 @@ parameters:
 steps:
 - task: CmdLine@2
   displayName: ${{ parameters.displayName }}
-  timeoutInMinutes: 120
+  timeoutInMinutes: 20
   condition: succeeded()
   inputs:
     workingDirectory: $(${{ parameters.buildOutputLocationVar }})
@@ -28,7 +28,7 @@ steps:
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - task: PublishTestResults@2
   displayName: 'Publish Tests'
-  timeoutInMinutes: 10
+  timeoutInMinutes: 5
   condition: succeededOrFailed()
   inputs:
     searchFolder: $(${{ parameters.buildOutputLocationVar }})

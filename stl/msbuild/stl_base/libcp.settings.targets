@@ -10,7 +10,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetType>LIBRARY</TargetType>
         <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
         <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
-        <DependsOnConcRT Condition="'$(MsvcpFlavor)' == 'kernel32'">true</DependsOnConcRT>
         <Arm64CombinedPdb>true</Arm64CombinedPdb>
     </PropertyGroup>
 
@@ -26,7 +25,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <PropertyGroup>
         <ClProgramDataBaseFileName>$(OutputLibPdbPath)$(OutputName)$(PdbVerName).pdb</ClProgramDataBaseFileName>
-        <ClDefines Condition="'$(DependsOnConcRT)' == 'true'">$(ClDefines);_STL_CONCRT_SUPPORT</ClDefines>
         <ClDefines>$(ClDefines);_VCRT_ALLOW_INTERNALS;_ANNOTATE_VECTOR;_ANNOTATE_STRING</ClDefines>
     </PropertyGroup>
 

@@ -376,8 +376,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                           || same_as<IterCat, C>);
         }
 
-        constexpr bool constructible_from_nonconst = convertible_to<iterator_t<V>, iterator_t<const V>> //
-                                                  && convertible_to<sentinel_t<V>, sentinel_t<const V>>;
+        constexpr bool constructible_from_nonconst =
+            convertible_to<iterator_t<V>, iterator_t<const V>> && convertible_to<sentinel_t<V>, sentinel_t<const V>>;
 
         if constexpr (forward_range<const R>) {
             [[maybe_unused]] const iterator_t<const R> const_defaulted;

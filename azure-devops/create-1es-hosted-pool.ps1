@@ -14,7 +14,7 @@ $ErrorActionPreference = 'Stop'
 $CurrentDate = Get-Date
 
 $Location = 'eastus'
-$VMSize = 'Standard_D32ds_v5'
+$VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
 $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'

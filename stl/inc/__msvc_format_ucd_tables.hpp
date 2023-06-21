@@ -61,7 +61,6 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <cstdint>
-#include <limits>
 #include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
@@ -79,7 +78,7 @@ struct _Unicode_property_data {
     uint16_t _Props_and_size[_NumRanges];
     _NODISCARD constexpr _ValueEnum _Get_property_for_codepoint(const uint32_t _Code_point) const noexcept {
         ptrdiff_t _Upper_idx = _STD upper_bound(_Lower_bounds, _STD end(_Lower_bounds), _Code_point) - _Lower_bounds;
-        constexpr auto _No_value_constant = static_cast<_ValueEnum>((numeric_limits<uint8_t>::max)());
+        constexpr auto _No_value_constant = static_cast<_ValueEnum>(UINT8_MAX);
         if (_Upper_idx == 0) {
             return _No_value_constant;
         }
