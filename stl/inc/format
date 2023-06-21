@@ -2882,8 +2882,7 @@ _NODISCARD _OutputIt _Fmt_write(
         if (_Precision == -1) {
             _Precision = 6;
         }
-        _Format   = chars_format::scientific;
-        _Exponent = 'e';
+        _Format = chars_format::scientific;
         break;
     case 'F':
         _To_upper = true;
@@ -2901,8 +2900,7 @@ _NODISCARD _OutputIt _Fmt_write(
         if (_Precision == -1) {
             _Precision = 6;
         }
-        _Format   = chars_format::general;
-        _Exponent = 'e';
+        _Format = chars_format::general;
         break;
     }
 
