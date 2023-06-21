@@ -777,11 +777,13 @@ public:
     constexpr mapping(const extents_type& _Exts_, span<_OtherIndexType, extents_type::rank()> _Strides_,
         index_sequence<_Indices...>) noexcept
         : _Exts(_Exts_), _Strides{static_cast<index_type>(_STD as_const(_Strides_[_Indices]))...} {
+#if _CONTAINER_DEBUG_LEVEL > 0
         for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
             // TRANSITION CHECK [mdspan.layout.stride.cons]/4.2 (REQUIRES `_Multiply_with_overflow_check`)
             _STL_VERIFY(_Strides[_Idx] > 0, "Value of s[i] must be greater than 0 for all i in the range [0, rank_) "
                                             "(N4950 [mdspan.layout.stride.cons]/4.1).");
         }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
 #ifndef __clang__ // TRANSITION, DevCom-10360833
@@ -821,15 +823,19 @@ public:
             || _Is_mapping_of<layout_stride, _StridedLayoutMapping>) ))
         mapping(const _StridedLayoutMapping& _Other) noexcept
         : _Exts(_Other.extents()) {
+#if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
             "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
             "[mdspan.layout.stride.cons]/7.3).");
         _STL_VERIFY(
             _Offset(_Other) == 0, "Value of OFFSET(other) must be equal to 0 (N4950 [mdspan.layout.stride.cons]/7.4).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
             const auto _Stride = _Other.stride(_Idx);
+#if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Stride > 0, "Value of other.stride(r) must be greater than 0 for every rank index r of "
                                      "extents() (N4950 [mdspan.layout.stride.cons]/7.2).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
             _Strides[_Idx] = static_cast<index_type>(_Stride);
         }
     }
@@ -866,10 +872,12 @@ public:
         requires (sizeof...(_IndexTypes) == extents_type::rank()) && (is_convertible_v<_IndexTypes, index_type> && ...)
               && (is_nothrow_constructible_v<index_type, _IndexTypes> && ...)
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
+#if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Exts._Contains_multidimensional_index(
                         make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
             "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
             "[mdspan.layout.stride.obs]/3).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
     }
 
