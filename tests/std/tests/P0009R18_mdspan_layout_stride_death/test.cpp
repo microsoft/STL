@@ -9,6 +9,7 @@
 #include <span>
 
 #include <test_death.hpp>
+#include <test_mdspan_support.hpp>
 
 using namespace std;
 
@@ -19,15 +20,30 @@ void test_default_construction() {
     [[maybe_unused]] layout_stride::mapping<Ext> m{}; // NB: strides are [140, 35, 7, 1]
 }
 
-void test_construction_from_extents_and_array() {
+void test_construction_from_extents_and_array_1() {
     // Value of s[i] must be greater than 0 for all i in the range [0, rank_)
     [[maybe_unused]] layout_stride::mapping<dextents<int, 1>> m1{extents<int, 1>{}, array<int, 1>{-1}};
 }
 
-void test_construction_from_extents_and_span() {
+void test_construction_from_extents_and_array_2() {
+    using Ext = extents<signed char, 120>;
+    // REQUIRED-SPAN-SIZE(e, s) must be representable as a value of type index_type
+    [[maybe_unused]] layout_stride::mapping<Ext> m{Ext{}, array<int, 1>{2}};
+}
+
+
+void test_construction_from_extents_and_span_1() {
     array<int, 1> s{-1};
     // Value of s[i] must be greater than 0 for all i in the range [0, rank_)
-    [[maybe_unused]] layout_stride::mapping<dextents<int, 1>> m1{extents<int, 1>{}, span{s}};
+    [[maybe_unused]] layout_stride::mapping<dextents<int, 1>> m{extents<int, 1>{}, span{s}};
+}
+
+void test_construction_from_extents_and_span_2() {
+    using Ext = extents<unsigned char, 126>;
+    array<ConvertibleToInt<int>, 1> a{{{.val = 2}}};
+    const span s{a};
+    // REQUIRED-SPAN-SIZE(e, s) must be representable as a value of type index_type
+    [[maybe_unused]] layout_stride::mapping<Ext> m{Ext{}, s};
 }
 
 void test_construction_from_strided_layout_mapping() {
@@ -46,8 +62,10 @@ int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
     exec.add_death_tests({
         test_default_construction,
-        test_construction_from_extents_and_array,
-        test_construction_from_extents_and_span,
+        test_construction_from_extents_and_array_1,
+        test_construction_from_extents_and_array_2,
+        test_construction_from_extents_and_span_1,
+        test_construction_from_extents_and_span_2,
         test_construction_from_strided_layout_mapping,
         test_call_operator,
     });

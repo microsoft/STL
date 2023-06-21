@@ -780,10 +780,27 @@ public:
         index_sequence<_Indices...>) noexcept
         : _Exts(_Exts_), _Strides{static_cast<index_type>(_STD as_const(_Strides_[_Indices]))...} {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
-            // TRANSITION CHECK [mdspan.layout.stride.cons]/4.2 (REQUIRES `_Multiply_with_overflow_check`)
-            _STL_VERIFY(_Strides[_Idx] > 0, "Value of s[i] must be greater than 0 for all i in the range [0, rank_) "
-                                            "(N4950 [mdspan.layout.stride.cons]/4.1).");
+        if constexpr (extents_type::rank() != 0) {
+            bool _Found_zero          = false;
+            bool _Overflow            = false;
+            index_type _Req_span_size = 0;
+            for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
+                const index_type _Stride = _Strides[_Idx];
+                _STL_VERIFY(_Stride > 0, "Value of s[i] must be greater than 0 for all i in the range [0, rank_) "
+                                         "(N4950 [mdspan.layout.stride.cons]/4.1).");
+                const index_type _Ext = _Exts.extent(_Idx);
+                if (_Ext == 0) {
+                    _Found_zero = true;
+                }
+
+                if (!_Found_zero && !_Overflow) {
+                    index_type _Prod;
+                    _Overflow = _Mul_overflow(static_cast<index_type>(_Ext - 1), _Stride, _Prod)
+                             || _Add_overflow(_Req_span_size, _Prod, _Req_span_size);
+                }
+            }
+            _STL_VERIFY(_Found_zero || !_Overflow, "REQUIRED-SPAN-SIZE(e, s) must be representable as a value of type "
+                                                   "index_type (N4950 [mdspan.layout.stride.cons]/4.2).");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
