@@ -599,7 +599,13 @@ public:
     constexpr mapping(const mapping&) noexcept = default;
 
     constexpr mapping(const extents_type& _Exts_) noexcept : _Exts(_Exts_) {
-        // TRANSITION, CHECK [mdspan.layout.right.cons]/1 (REQUIRES '_Multiply_with_overflow_check' FROM #3561)
+#if _CONTAINER_DEBUG_LEVEL > 0
+        if constexpr (extents_type::rank_dynamic() != 0) {
+            _STL_VERIFY(_Exts_._Is_dynamic_multidim_index_space_size_representable(),
+                "The size of the multidimensional index space e must be representable as a value of type index_type "
+                "(N4950 [mdspan.layout.right.cons]/1).");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
     template <class _OtherExtents>
