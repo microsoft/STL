@@ -3,6 +3,8 @@
 
 #include <cassert>
 #include <fstream>
+#include <ios>
+#include <string_view>
 
 int main() {
     using namespace std;
@@ -15,7 +17,8 @@ int main() {
         char buffer[4]{};
         f.seekg(0);
         f.read(buffer, 3);
-        assert(f && buffer == content);
+        assert(f);
+        assert(buffer == content);
     };
 
     f.seekg(0);
@@ -26,19 +29,19 @@ int main() {
 
     f.seekg(0);
     (void) f.get();
-    f.seekp(0, std::ios::cur);
+    f.seekp(0, ios::cur);
     f << "!";
     check("1!3");
 
     f.seekg(0);
     (void) f.get();
-    f.seekp(1, std::ios::cur);
+    f.seekp(1, ios::cur);
     f << "!";
     check("1!!");
 
     f.seekg(0);
     (void) f.get();
-    f.seekp(-1, std::ios::cur);
+    f.seekp(-1, ios::cur);
     f << "!";
     check("!!!");
 }
