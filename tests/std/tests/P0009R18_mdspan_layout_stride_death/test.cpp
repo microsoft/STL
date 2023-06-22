@@ -39,7 +39,7 @@ void test_construction_from_extents_and_span_1() {
 }
 
 void test_construction_from_extents_and_span_2() {
-    using Ext = extents<unsigned char, 126>;
+    using Ext = extents<unsigned char, 130>;
     array<ConvertibleToInt<int>, 1> a{{{.val = 2}}};
     const span s{a};
     // REQUIRED-SPAN-SIZE(e, s) must be representable as a value of type index_type
