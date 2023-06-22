@@ -745,10 +745,45 @@ public:
         }
     }
 
-private:
-    template <class _Visitor, class _Ctx>
-    friend decltype(auto) visit_format_arg(_Visitor&&, basic_format_arg<_Ctx>);
+    template <class _Visitor>
+    decltype(auto) _Visit(_Visitor&& _Vis) {
+        switch (_Active_state) {
+        case _Basic_format_arg_type::_None:
+            return _STD forward<_Visitor>(_Vis)(_No_state);
+        case _Basic_format_arg_type::_Int_type:
+            return _STD forward<_Visitor>(_Vis)(_Int_state);
+        case _Basic_format_arg_type::_UInt_type:
+            return _STD forward<_Visitor>(_Vis)(_UInt_state);
+        case _Basic_format_arg_type::_Long_long_type:
+            return _STD forward<_Visitor>(_Vis)(_Long_long_state);
+        case _Basic_format_arg_type::_ULong_long_type:
+            return _STD forward<_Visitor>(_Vis)(_ULong_long_state);
+        case _Basic_format_arg_type::_Bool_type:
+            return _STD forward<_Visitor>(_Vis)(_Bool_state);
+        case _Basic_format_arg_type::_Char_type:
+            return _STD forward<_Visitor>(_Vis)(_Char_state);
+        case _Basic_format_arg_type::_Float_type:
+            return _STD forward<_Visitor>(_Vis)(_Float_state);
+        case _Basic_format_arg_type::_Double_type:
+            return _STD forward<_Visitor>(_Vis)(_Double_state);
+        case _Basic_format_arg_type::_Long_double_type:
+            return _STD forward<_Visitor>(_Vis)(_Long_double_state);
+        case _Basic_format_arg_type::_Pointer_type:
+            return _STD forward<_Visitor>(_Vis)(_Pointer_state);
+        case _Basic_format_arg_type::_CString_type:
+            return _STD forward<_Visitor>(_Vis)(_CString_state);
+        case _Basic_format_arg_type::_String_type:
+            return _STD forward<_Visitor>(_Vis)(_String_state);
+        case _Basic_format_arg_type::_Custom_type:
+            return _STD forward<_Visitor>(_Vis)(_Custom_state);
+        default:
+            _STL_VERIFY(false, "basic_format_arg is in impossible state");
+            int _Dummy{};
+            return _STD forward<_Visitor>(_Vis)(_Dummy);
+        }
+    }
 
+private:
     friend basic_format_args<_Context>;
     friend _Format_handler<_CharType>;
     friend _Format_arg_traits<_Context>;
@@ -838,39 +873,7 @@ auto _Format_arg_traits<_Context>::_Type_eraser() {
 
 _EXPORT_STD template <class _Visitor, class _Context>
 decltype(auto) visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
-    switch (_Arg._Active_state) {
-    case _Basic_format_arg_type::_None:
-        return _STD forward<_Visitor>(_Vis)(_Arg._No_state);
-    case _Basic_format_arg_type::_Int_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Int_state);
-    case _Basic_format_arg_type::_UInt_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._UInt_state);
-    case _Basic_format_arg_type::_Long_long_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Long_long_state);
-    case _Basic_format_arg_type::_ULong_long_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._ULong_long_state);
-    case _Basic_format_arg_type::_Bool_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Bool_state);
-    case _Basic_format_arg_type::_Char_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Char_state);
-    case _Basic_format_arg_type::_Float_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Float_state);
-    case _Basic_format_arg_type::_Double_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Double_state);
-    case _Basic_format_arg_type::_Long_double_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Long_double_state);
-    case _Basic_format_arg_type::_Pointer_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Pointer_state);
-    case _Basic_format_arg_type::_CString_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._CString_state);
-    case _Basic_format_arg_type::_String_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._String_state);
-    case _Basic_format_arg_type::_Custom_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Custom_state);
-    default:
-        _STL_VERIFY(false, "basic_format_arg is in impossible state");
-        return _STD forward<_Visitor>(_Vis)(0);
-    }
+    return _Arg._Visit(_STD forward<_Visitor>(_Vis));
 }
 
 // we need to implement this ourselves because from_chars does not work with wide characters and isn't constexpr
@@ -2864,7 +2867,7 @@ _NODISCARD _OutputIt _Fmt_write(
 
     auto _To_upper  = false;
     auto _Format    = chars_format::general;
-    auto _Exponent  = '\0';
+    auto _Exponent  = 'e';
     auto _Precision = _Specs._Precision;
 
     switch (_Specs._Type) {
@@ -2882,8 +2885,7 @@ _NODISCARD _OutputIt _Fmt_write(
         if (_Precision == -1) {
             _Precision = 6;
         }
-        _Format   = chars_format::scientific;
-        _Exponent = 'e';
+        _Format = chars_format::scientific;
         break;
     case 'F':
         _To_upper = true;
@@ -2901,8 +2903,7 @@ _NODISCARD _OutputIt _Fmt_write(
         if (_Precision == -1) {
             _Precision = 6;
         }
-        _Format   = chars_format::general;
-        _Exponent = 'e';
+        _Format = chars_format::general;
         break;
     }
 
@@ -3015,7 +3016,7 @@ _NODISCARD _OutputIt _Fmt_write(
             _Zeroes_to_append = _Extra_precision;
             break;
         case chars_format::general:
-            if (_Specs._Alt) {
+            if (_Specs._Alt && (_Specs._Type == 'g' || _Specs._Type == 'G')) {
                 auto _Digits = static_cast<int>(_Exponent_start - _Buffer_start);
 
                 if (!_Append_decimal) {

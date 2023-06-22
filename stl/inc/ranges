@@ -4596,7 +4596,7 @@ namespace ranges {
 
             constexpr _Outer_iter(_Outer_iter<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_BaseTy>>
-                : _Mybase{_STD move(_It._Current)}, _Parent{_It._Parent} {}
+                : _Mybase{_STD move(_It._Current)}, _Parent{_It._Parent}, _Trailing_empty{_It._Trailing_empty} {}
 
             _NODISCARD constexpr auto operator*() const noexcept(noexcept(value_type{*this})) /* strengthened */ {
                 return value_type{*this};
@@ -6124,7 +6124,7 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr difference_type operator-(
-                const _Iterator& _Left, const _Iterator& _Right) noexcept /* strengthened */ {
+                const _Iterator& _Left, const _Iterator& _Right) noexcept {
                 return _Left._Pos - _Right._Pos;
             }
 

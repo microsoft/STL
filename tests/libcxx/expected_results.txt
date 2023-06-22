@@ -155,7 +155,7 @@ std/utilities/memory/specialized.algorithms/uninitialized.fill.n/ranges_uninitia
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move_n.pass.cpp FAIL
 
-# libc++ doesn't speculatively implement LWG-3940
+# libc++ doesn't implement LWG-3940
 std/utilities/expected/expected.void/observers/value.pass.cpp FAIL
 
 # libc++ doesn't implement P1957R2 "Converting from `T*` to `bool` should be considered narrowing"
@@ -1062,11 +1062,7 @@ std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
 std/ranges/range.factories/range.single.view/cpo.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
 std/utilities/format/format.functions/escaped_output.ascii.pass.cpp FAIL
-std/utilities/format/format.functions/format.locale.pass.cpp FAIL
-std/utilities/format/format.functions/format.pass.cpp FAIL
 std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
-std/utilities/format/format.functions/vformat.locale.pass.cpp FAIL
-std/utilities/format/format.functions/vformat.pass.cpp FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.inv/invoke.pass.cpp:0 FAIL
 std/utilities/function.objects/refwrap/refwrap.const/type_conv_ctor.pass.cpp:0 FAIL

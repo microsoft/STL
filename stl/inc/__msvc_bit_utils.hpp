@@ -49,19 +49,19 @@ _INLINE_VAR constexpr int _Unsigned_integer_digits = sizeof(_UInt) * CHAR_BIT;
 // see "Hacker's Delight" section 5-3
 template <class _Ty>
 _NODISCARD constexpr int _Countl_zero_fallback(_Ty _Val) noexcept {
-    _Ty _Yy = 0;
+    _Ty _Yx = 0;
 
-    unsigned int _Nn = _Unsigned_integer_digits<_Ty>;
-    unsigned int _Cc = _Unsigned_integer_digits<_Ty> / 2;
+    unsigned int _Nx = _Unsigned_integer_digits<_Ty>;
+    unsigned int _Cx = _Unsigned_integer_digits<_Ty> / 2;
     do {
-        _Yy = static_cast<_Ty>(_Val >> _Cc);
-        if (_Yy != 0) {
-            _Nn -= _Cc;
-            _Val = _Yy;
+        _Yx = static_cast<_Ty>(_Val >> _Cx);
+        if (_Yx != 0) {
+            _Nx -= _Cx;
+            _Val = _Yx;
         }
-        _Cc >>= 1;
-    } while (_Cc != 0);
-    return static_cast<int>(_Nn) - static_cast<int>(_Val);
+        _Cx >>= 1;
+    } while (_Cx != 0);
+    return static_cast<int>(_Nx) - static_cast<int>(_Val);
 }
 
 #if !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)

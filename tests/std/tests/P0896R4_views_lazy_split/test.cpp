@@ -337,7 +337,18 @@ constexpr bool instantiation_test() {
     return true;
 }
 
+constexpr bool test_lwg_3904() {
+    auto r = views::single(0) | views::lazy_split(0);
+    auto i = r.begin();
+    ++i;
+    decltype(as_const(r).begin()) j = i;
+    return j != r.end();
+}
+
 int main() {
     STATIC_ASSERT(instantiation_test());
     instantiation_test();
+
+    STATIC_ASSERT(test_lwg_3904());
+    assert(test_lwg_3904());
 }

@@ -4003,6 +4003,10 @@ public:
         store(_STD move(_Value));
     }
 
+    void operator=(nullptr_t) noexcept {
+        store(nullptr);
+    }
+
     ~atomic() {
         const auto _Rep = this->_Repptr._Unsafe_load_relaxed();
         if (_Rep) {

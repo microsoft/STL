@@ -1316,7 +1316,7 @@ private:
         }
     };
 
-    enum class _Is_bidi : bool { _No, _Yes };
+    enum class _Is_bidi : bool { _Nope, _Yes };
 
     template <_Is_bidi _Bidi, class _Iter, class _Sent>
     iterator _Insert_range(const size_type _Off, _Iter _First, _Sent _Last) {
@@ -1352,7 +1352,7 @@ private:
             const auto _Num     = static_cast<difference_type>(_Mysize() - _Oldsize);
             const auto _Myfirst = _Unchecked_begin();
             const auto _Mymid   = _Myfirst + _Num;
-            if constexpr (_Bidi == _Is_bidi::_No) {
+            if constexpr (_Bidi == _Is_bidi::_Nope) {
                 _STD reverse(_Myfirst, _Mymid); // flip new stuff in place
             }
             _STD rotate(_Myfirst, _Mymid, _Mymid + static_cast<difference_type>(_Off));
@@ -1392,7 +1392,7 @@ public:
             return _Insert_range<_Is_bidi::_Yes>(
                 _Off, _RANGES _Ubegin(_Range), _RANGES _Get_final_iterator_unwrapped(_Range));
         } else {
-            return _Insert_range<_Is_bidi::_No>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+            return _Insert_range<_Is_bidi::_Nope>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
