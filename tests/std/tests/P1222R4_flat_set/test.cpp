@@ -159,16 +159,16 @@ void test_spaceship_operator() {
 template <class T>
 struct proxy_comparer {
     bool operator()(const T& lhs, const T& rhs) const {
-        return less ? (lhs < rhs) : (lhs > rhs);
+        return m_less ? (lhs < rhs) : (lhs > rhs);
     }
 
-    bool less = true;
+    bool m_less = true;
 };
 
 void test_non_static_comparer() {
     flat_set<int, proxy_comparer<int>> a{3, 2, 2, 1};
     assert_all_requirements_and_equals(a, {1, 2, 3});
-    auto b = flat_set<int, proxy_comparer<int>>({-1, 5, 9, 9, 9, 9, 9}, proxy_comparer<int>{.less = false});
+    auto b = flat_set<int, proxy_comparer<int>>({-1, 5, 9, 9, 9, 9, 9}, proxy_comparer<int>{.m_less = false});
     assert_all_requirements_and_equals(b, {9, 5, -1});
 
     auto aBackup = a;
