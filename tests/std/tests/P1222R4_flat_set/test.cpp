@@ -6,7 +6,6 @@
 #include <flat_set>
 #include <functional>
 #include <iostream>
-#include <variant>
 #include <vector>
 
 using namespace std;
