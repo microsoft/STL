@@ -542,6 +542,7 @@ tests\P1206R7_vector_assign_range
 tests\P1206R7_vector_from_range
 tests\P1206R7_vector_insert_range
 tests\P1208R6_source_location
+tests\P1222R4_flat_set
 tests\P1223R5_ranges_alg_find_last
 tests\P1223R5_ranges_alg_find_last_if
 tests\P1223R5_ranges_alg_find_last_if_not
