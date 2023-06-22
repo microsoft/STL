@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstring>
 #include <fstream>
 #include <ios>
-#include <string_view>
 
 int main() {
     using namespace std;
@@ -13,12 +13,12 @@ int main() {
 
     f << "123";
 
-    auto check = [&](string_view content) {
+    auto check = [&f](const char(&content)[4]) {
         char buffer[4]{};
         f.seekg(0);
         f.read(buffer, 3);
         assert(f);
-        assert(buffer == content);
+        assert(memcmp(buffer, content, 4) == 0);
     };
 
     f.seekg(0);
