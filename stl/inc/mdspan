@@ -1111,6 +1111,14 @@ public:
             "[mdspan.mdspan.cons]/20.1).");
         static_assert(is_constructible_v<extents_type, _OtherExtents>,
             "The extents_type must be constructible from OtherExtents (N4950 [mdspan.mdspan.cons]/20.2).");
+#if _CONTAINER_DEBUG_LEVEL > 0
+        for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
+            const auto _Static_ext = static_extent(_Idx);
+            _STL_VERIFY(_Static_ext == dynamic_extent || _Static_ext == _Other.extent(_Idx),
+                "For each rank index r of extents_type, static_extent(r) == dynamic_extent || static_extent(r) == "
+                "other.extent(r) must be true (N4950 [mdspan.mdspan.cons]/21.1).");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
     constexpr mdspan& operator=(const mdspan&) = default;
