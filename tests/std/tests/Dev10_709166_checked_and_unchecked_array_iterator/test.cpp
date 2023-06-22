@@ -10,71 +10,62 @@
 #include <utility>
 #include <vector>
 
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
 template <class T>
 void check_checked_array_iterator_category_and_convertibility() {
-    static_assert(
-        std::is_same_v<typename stdext::checked_array_iterator<T*>::iterator_category, std::random_access_iterator_tag>,
-        "stdext::checked_array_iterator<T*>::iterator_category is wrong!");
+    STATIC_ASSERT(std::is_same_v<typename stdext::checked_array_iterator<T*>::iterator_category,
+        std::random_access_iterator_tag>);
 
-    static_assert(std::is_same_v<typename stdext::checked_array_iterator<T*>::value_type, std::remove_cv_t<T>>,
-        "stdext::checked_array_iterator<T*>::value_type is wrong!");
+    STATIC_ASSERT(std::is_same_v<typename stdext::checked_array_iterator<T*>::value_type, std::remove_cv_t<T>>);
 
-    static_assert(std::is_same_v<typename stdext::checked_array_iterator<T*>::difference_type, ptrdiff_t>,
-        "stdext::checked_array_iterator<T*>::difference_type is wrong!");
+    STATIC_ASSERT(std::is_same_v<typename stdext::checked_array_iterator<T*>::difference_type, std::ptrdiff_t>);
 
-    static_assert(std::is_same_v<typename stdext::checked_array_iterator<T*>::pointer, T*>,
-        "stdext::checked_array_iterator<T*>::pointer is wrong!");
+    STATIC_ASSERT(std::is_same_v<typename stdext::checked_array_iterator<T*>::pointer, T*>);
 
-    static_assert(std::is_same_v<typename stdext::checked_array_iterator<T*>::reference, T&>,
-        "stdext::checked_array_iterator<T*>::reference is wrong!");
+    STATIC_ASSERT(std::is_same_v<typename stdext::checked_array_iterator<T*>::reference, T&>);
 
-    static_assert(std::is_convertible_v<stdext::checked_array_iterator<T*>, stdext::checked_array_iterator<const T*>>,
-        "stdext::checked_array_iterator<T*> should be convertible to stdext::checked_array_iterator<const T*>");
+    STATIC_ASSERT(std::is_convertible_v<stdext::checked_array_iterator<T*>, stdext::checked_array_iterator<const T*>>);
 
 #ifdef __cpp_lib_concepts
-    static_assert(
-        std::is_same_v<typename stdext::checked_array_iterator<T*>::iterator_concept, std::contiguous_iterator_tag>,
-        "stdext::checked_array_iterator<T*>::iterator_concept is wrong!");
+    STATIC_ASSERT(
+        std::is_same_v<typename stdext::checked_array_iterator<T*>::iterator_concept, std::contiguous_iterator_tag>);
 
-    static_assert(std::contiguous_iterator<stdext::checked_array_iterator<T*>>,
-        "stdext::checked_array_iterator<T*> is not a contiguous iterator type!");
+    STATIC_ASSERT(std::contiguous_iterator<stdext::checked_array_iterator<T*>>);
 #endif // __cpp_lib_concepts
 }
 
 template <class T>
 void check_unchecked_array_iterator_category_and_convertibility() {
-    static_assert(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::iterator_category,
-                      std::random_access_iterator_tag>,
-        "stdext::unchecked_array_iterator<T*>::iterator_category is wrong!");
+    STATIC_ASSERT(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::iterator_category,
+        std::random_access_iterator_tag>);
 
-    static_assert(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::value_type, std::remove_cv_t<T>>,
-        "stdext::unchecked_array_iterator<T*>::value_type is wrong!");
+    STATIC_ASSERT(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::value_type, std::remove_cv_t<T>>);
 
-    static_assert(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::difference_type, ptrdiff_t>,
-        "stdext::unchecked_array_iterator<T*>::difference_type is wrong!");
+    STATIC_ASSERT(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::difference_type, std::ptrdiff_t>);
 
-    static_assert(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::pointer, T*>,
-        "stdext::unchecked_array_iterator<T*>::pointer is wrong!");
+    STATIC_ASSERT(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::pointer, T*>);
 
-    static_assert(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::reference, T&>,
-        "stdext::unchecked_array_iterator<T*>::reference is wrong!");
+    STATIC_ASSERT(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::reference, T&>);
 
-    static_assert(
-        std::is_convertible_v<stdext::unchecked_array_iterator<T*>, stdext::unchecked_array_iterator<const T*>>,
-        "stdext::unchecked_array_iterator<T*> should be convertible to stdext::unchecked_array_iterator<const T*>");
+    STATIC_ASSERT(
+        std::is_convertible_v<stdext::unchecked_array_iterator<T*>, stdext::unchecked_array_iterator<const T*>>);
 
 #ifdef __cpp_lib_concepts
-    static_assert(
-        std::is_same_v<typename stdext::unchecked_array_iterator<T*>::iterator_concept, std::contiguous_iterator_tag>,
-        "stdext::unchecked_array_iterator<T*>::iterator_concept is wrong!");
+    STATIC_ASSERT(
+        std::is_same_v<typename stdext::unchecked_array_iterator<T*>::iterator_concept, std::contiguous_iterator_tag>);
 
-    static_assert(std::contiguous_iterator<stdext::unchecked_array_iterator<T*>>,
-        "stdext::unchecked_array_iterator<T*> is not a contiguous iterator type!");
+    STATIC_ASSERT(std::contiguous_iterator<stdext::unchecked_array_iterator<T*>>);
 #endif // __cpp_lib_concepts
 }
 
 int main() {
     {
+        check_checked_array_iterator_category_and_convertibility<int>();
+        check_checked_array_iterator_category_and_convertibility<const int>();
+        check_checked_array_iterator_category_and_convertibility<std::tuple<const char*>>();
+
+
         int* const p = new int[9];
 
         for (int i = 0; i < 9; ++i) {
@@ -87,16 +78,27 @@ int main() {
         static_assert(std::is_same_v<decltype(cat), stdext::checked_array_iterator<int*>>,
             "stdext::make_checked_array_iterator(p, 9)'s return type is wrong!");
 
+#if _HAS_CXX20
+        assert(std::to_address(cat) == &*cat);
+        assert(std::to_address(cat + 8) == &*cat + 8);
+        assert(std::to_address(cat + 8) == std::to_address(cat) + 8);
+        assert(std::to_address(cat + 9) == std::to_address(cat) + 9);
+#endif // _HAS_CXX20
+
 
         auto dog = stdext::make_checked_array_iterator(p, 9, 3);
 
         static_assert(std::is_same_v<decltype(dog), stdext::checked_array_iterator<int*>>,
             "stdext::make_checked_array_iterator(p, 9, 3)'s return type is wrong!");
 
-
-        check_checked_array_iterator_category_and_convertibility<int>();
-        check_checked_array_iterator_category_and_convertibility<const int>();
-        check_checked_array_iterator_category_and_convertibility<std::tuple<const char*>>();
+#if _HAS_CXX20
+        assert(std::to_address(dog) == &*dog);
+        assert(std::to_address(dog + 5) == &*dog + 5);
+        assert(std::to_address(dog + 5) == std::to_address(dog) + 5);
+        assert(std::to_address(dog - 3) == &*dog - 3);
+        assert(std::to_address(dog - 3) == std::to_address(dog) - 3);
+        assert(std::to_address(dog + 6) == std::to_address(dog) + 6);
+#endif // _HAS_CXX20
 
 
         {
@@ -237,6 +239,11 @@ int main() {
     }
 
     {
+        check_unchecked_array_iterator_category_and_convertibility<int>();
+        check_unchecked_array_iterator_category_and_convertibility<const int>();
+        check_unchecked_array_iterator_category_and_convertibility<std::tuple<const char*>>();
+
+
         int* const p = new int[9];
 
         for (int i = 0; i < 9; ++i) {
@@ -249,16 +256,27 @@ int main() {
         static_assert(std::is_same_v<decltype(cat), stdext::unchecked_array_iterator<int*>>,
             "stdext::make_unchecked_array_iterator(p)'s return type is wrong!");
 
+#if _HAS_CXX20
+        assert(std::to_address(cat) == &*cat);
+        assert(std::to_address(cat + 8) == &*cat + 8);
+        assert(std::to_address(cat + 8) == std::to_address(cat) + 8);
+        assert(std::to_address(cat + 9) == std::to_address(cat) + 9);
+#endif // _HAS_CXX20
+
 
         auto dog = stdext::make_unchecked_array_iterator(p + 3);
 
         static_assert(std::is_same_v<decltype(dog), stdext::unchecked_array_iterator<int*>>,
             "stdext::make_unchecked_array_iterator(p + 3)'s return type is wrong!");
 
-
-        check_unchecked_array_iterator_category_and_convertibility<int>();
-        check_unchecked_array_iterator_category_and_convertibility<const int>();
-        check_unchecked_array_iterator_category_and_convertibility<std::tuple<const char*>>();
+#if _HAS_CXX20
+        assert(std::to_address(dog) == &*dog);
+        assert(std::to_address(dog + 5) == &*dog + 5);
+        assert(std::to_address(dog + 5) == std::to_address(dog) + 5);
+        assert(std::to_address(dog - 3) == &*dog - 3);
+        assert(std::to_address(dog - 3) == std::to_address(dog) - 3);
+        assert(std::to_address(dog + 6) == std::to_address(dog) + 6);
+#endif // _HAS_CXX20
 
 
         {

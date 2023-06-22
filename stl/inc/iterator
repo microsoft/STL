@@ -1842,6 +1842,23 @@ _CXX_DEPRECATE_STDEXT_ARR_ITERS _NODISCARD unchecked_array_iterator<_Ptr> make_u
 _STL_RESTORE_DEPRECATED_WARNING
 _STDEXT_END
 
+#if _HAS_CXX20
+_STD_BEGIN
+_STL_DISABLE_DEPRECATED_WARNING
+template <class _Ty>
+struct _CXX_DEPRECATE_STDEXT_ARR_ITERS pointer_traits<_STDEXT checked_array_iterator<_Ty*>> {
+    using pointer         = _STDEXT checked_array_iterator<_Ty*>;
+    using element_type    = _Ty;
+    using difference_type = ptrdiff_t;
+
+    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+        return _Iter._Unwrapped();
+    }
+};
+_STL_RESTORE_DEPRECATED_WARNING
+_STD_END
+#endif // _HAS_CXX20
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
