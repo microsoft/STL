@@ -1120,7 +1120,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
             const auto _Static_ext = extents_type::_Static_extents[_Idx];
-            _STL_VERIFY(_Static_ext == dynamic_extent || _Static_ext == _Other.extent(_Idx),
+            _STL_VERIFY(_STD cmp_equal(_Static_ext, dynamic_extent) || _STD cmp_equal(_Static_ext, _Other.extent(_Idx)),
                 "For each rank index r of extents_type, static_extent(r) == dynamic_extent || static_extent(r) == "
                 "other.extent(r) must be true (N4950 [mdspan.mdspan.cons]/21.1).");
         }
