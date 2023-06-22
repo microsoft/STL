@@ -183,6 +183,9 @@ public:
         auto _Check_extent = []<class _Ty>(const _Ty& _Ext) {
             if constexpr (_Is_standard_integer<_Ty>) {
                 return _Ext >= 0 && _STD in_range<index_type>(_Ext);
+            } else if constexpr (integral<_Ty> && !same_as<_Ty, bool>) { // NB: character types
+                const auto _Integer_ext = static_cast<long long>(_Ext);
+                return _Integer_ext >= 0 && _STD in_range<index_type>(_Integer_ext);
             } else {
                 return true; // NB: We cannot check preconditions
             }
