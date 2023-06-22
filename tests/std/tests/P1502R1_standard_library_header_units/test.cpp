@@ -29,6 +29,7 @@ import <exception>;
 import <execution>;
 import <expected>;
 import <filesystem>;
+import <flat_set>;
 import <format>;
 import <forward_list>;
 import <fstream>;
