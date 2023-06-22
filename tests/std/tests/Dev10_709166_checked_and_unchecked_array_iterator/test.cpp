@@ -75,8 +75,7 @@ int main() {
 
         auto cat = stdext::make_checked_array_iterator(p, 9);
 
-        static_assert(std::is_same_v<decltype(cat), stdext::checked_array_iterator<int*>>,
-            "stdext::make_checked_array_iterator(p, 9)'s return type is wrong!");
+        STATIC_ASSERT(std::is_same_v<decltype(cat), stdext::checked_array_iterator<int*>>);
 
 #if _HAS_CXX20
         assert(std::to_address(cat) == &*cat);
@@ -88,8 +87,7 @@ int main() {
 
         auto dog = stdext::make_checked_array_iterator(p, 9, 3);
 
-        static_assert(std::is_same_v<decltype(dog), stdext::checked_array_iterator<int*>>,
-            "stdext::make_checked_array_iterator(p, 9, 3)'s return type is wrong!");
+        STATIC_ASSERT(std::is_same_v<decltype(dog), stdext::checked_array_iterator<int*>>);
 
 #if _HAS_CXX20
         assert(std::to_address(dog) == &*dog);
@@ -253,8 +251,7 @@ int main() {
 
         auto cat = stdext::make_unchecked_array_iterator(p);
 
-        static_assert(std::is_same_v<decltype(cat), stdext::unchecked_array_iterator<int*>>,
-            "stdext::make_unchecked_array_iterator(p)'s return type is wrong!");
+        STATIC_ASSERT(std::is_same_v<decltype(cat), stdext::unchecked_array_iterator<int*>>);
 
 #if _HAS_CXX20
         assert(std::to_address(cat) == &*cat);
@@ -266,8 +263,7 @@ int main() {
 
         auto dog = stdext::make_unchecked_array_iterator(p + 3);
 
-        static_assert(std::is_same_v<decltype(dog), stdext::unchecked_array_iterator<int*>>,
-            "stdext::make_unchecked_array_iterator(p + 3)'s return type is wrong!");
+        STATIC_ASSERT(std::is_same_v<decltype(dog), stdext::unchecked_array_iterator<int*>>);
 
 #if _HAS_CXX20
         assert(std::to_address(dog) == &*dog);
