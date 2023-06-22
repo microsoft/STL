@@ -316,6 +316,7 @@
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
 // P1206R7 Conversions From Ranges To Containers
+// P1222R4 <flat_set>
 // P1223R5 ranges::find_last, ranges::find_last_if, ranges::find_last_if_not
 // P1272R4 byteswap()
 // P1328R1 constexpr type_info::operator==()
