@@ -518,10 +518,12 @@ public:
               && (is_nothrow_constructible_v<index_type, _IndexTypes> && ...)
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Exts._Contains_multidimensional_index(
-                        make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
-            "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
-            "[mdspan.layout.left.obs]/3).");
+        if constexpr ((integral<_IndexTypes> && ...)) {
+            _STL_VERIFY(_Exts._Contains_multidimensional_index(
+                            make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
+                "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
+                "[mdspan.layout.left.obs]/3).");
+        }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
     }
@@ -668,10 +670,12 @@ public:
               && (is_nothrow_constructible_v<index_type, _IndexTypes> && ...)
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Exts._Contains_multidimensional_index(
-                        make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
-            "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
-            "[mdspan.layout.right.obs]/3).");
+        if constexpr ((integral<_IndexTypes> && ...)) {
+            _STL_VERIFY(_Exts._Contains_multidimensional_index(
+                            make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
+                "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
+                "[mdspan.layout.right.obs]/3).");
+        }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
     }
@@ -895,10 +899,12 @@ public:
               && (is_nothrow_constructible_v<index_type, _IndexTypes> && ...)
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Exts._Contains_multidimensional_index(
-                        make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
-            "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
-            "[mdspan.layout.stride.obs]/3).");
+        if constexpr ((integral<_IndexTypes> && ...)) {
+            _STL_VERIFY(_Exts._Contains_multidimensional_index(
+                            make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
+                "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
+                "[mdspan.layout.stride.obs]/3).");
+        }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
     }
