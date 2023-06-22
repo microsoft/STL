@@ -1129,6 +1129,13 @@ public:
               && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
               && (sizeof...(_OtherIndexTypes) == rank())
     _NODISCARD constexpr reference operator[](_OtherIndexTypes... _Indices) const {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        if constexpr ((integral<_OtherIndexTypes> && ...)) {
+            _STL_VERIFY(_Map.extents()._Contains_multidimensional_index(
+                            make_index_sequence<rank()>{}, static_cast<index_type>(_Indices)...),
+                "I must be a multidimensional index in extents() (N4950 [mdspan.mdspan.members]/3).");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Acc.access(_Ptr, static_cast<size_t>(_Map(static_cast<index_type>(_STD move(_Indices))...)));
     }
 #endif // __cpp_multidimensional_subscript
