@@ -98,14 +98,14 @@ public:
     _Base_flat_set(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Base_flat_set(container_type(_First, _Last, _Al)) {}
 
     template <_Container_compatible_range<_Kty> _Rng>
-    _Base_flat_set(from_range_t _R, _Rng&& _Range, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(container_type(_R, _STD forward<_Rng>(_Range)), _Comp) {}
+    _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp = key_compare())
+        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range)), _Comp) {}
     template <_Container_compatible_range<_Kty> _Rng, _Allocator_for<container_type> _Alloc>
-    _Base_flat_set(from_range_t _R, _Rng&& _Range, const _Alloc& _Al)
-        : _Base_flat_set(container_type(_R, _STD forward<_Rng>(_Range), _Al)) {}
+    _Base_flat_set(from_range_t, _Rng&& _Range, const _Alloc& _Al)
+        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range), _Al)) {}
     template <_Container_compatible_range<_Kty> _Rng, _Allocator_for<container_type> _Alloc>
-    _Base_flat_set(from_range_t _R, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
-        : _Base_flat_set(container_type(_R, _STD forward<_Rng>(_Range), _Al), _Comp) {}
+    _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
+        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range), _Al), _Comp) {}
 
     template <input_iterator _Iter>
     _Base_flat_set(_Tsorted _Tsort, _Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
