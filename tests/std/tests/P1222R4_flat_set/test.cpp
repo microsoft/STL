@@ -4,6 +4,7 @@
 #include <cassert>
 #include <deque>
 #include <flat_set>
+#include <functional>
 #include <iostream>
 #include <variant>
 #include <vector>
