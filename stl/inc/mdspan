@@ -265,7 +265,7 @@ public:
         } else {
             index_type _Result{1};
 #pragma warning(push)
-#pragma warning(disable : 6287) // TRANSITION, DevCom-???
+#pragma warning(disable : 6287) // TRANSITION, DevCom-10398426
             const bool _Overflow = (_Mul_overflow(static_cast<index_type>(_Extents), _Result, _Result) || ...);
 #pragma warning(pop)
             return !_Overflow;
