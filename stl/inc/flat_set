@@ -1,0 +1,721 @@
+// flat_set standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _FLAT_SET_
+#define _FLAT_SET_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#if !_HAS_CXX23 || !defined(__cpp_lib_concepts) // TRANSITION, GH-395
+_EMIT_STL_WARNING(STL4038, "The contents of <flat_set> are available only with C++23 or later.");
+#else // ^^^ not supported / supported language mode vvv
+#include <algorithm>
+#include <compare>
+#include <initializer_list>
+#include <vector>
+#include <xutility>
+
+_STD_BEGIN
+
+template <class _Ty>
+struct _NODISCARD _Clear_scope_guard {
+    _Ty* _Clearable;
+    ~_Clear_scope_guard() {
+        if (_Clearable) {
+            _Clearable->clear();
+        }
+    }
+};
+
+template <class _Alloc, class _Container>
+concept _Allocator_for = uses_allocator_v<_Container, _Alloc>;
+
+template <class _Kty, class _Keylt, class _Container, bool _Multi, class _Deriv, class _Tsorted>
+class _Base_flat_set {
+private:
+    static constexpr bool _Keylt_transparent = _Is_transparent_v<_Keylt>;
+
+public:
+    static_assert(same_as<_Kty, typename _Container::value_type>,
+        "The C++ Standard dictates that the Key type must be the "
+        "same as the container's value type [flatset.overview]");
+
+    using key_type               = _Kty;
+    using value_type             = _Kty;
+    using key_compare            = _Keylt;
+    using value_compare          = _Keylt;
+    using reference              = value_type&;
+    using const_reference        = const value_type&;
+    using size_type              = _Container::size_type;
+    using difference_type        = _Container::difference_type;
+    using iterator               = _Container::iterator;
+    using const_iterator         = _Container::const_iterator;
+    using reverse_iterator       = _STD reverse_iterator<iterator>;
+    using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+    using container_type         = _Container;
+
+    static_assert(random_access_iterator<iterator>, "The C++ Standard forbids containers without random "
+                                                    "access iterators from being adapted. See [flatset.overview].");
+
+    _Base_flat_set() : _My_pair(_Zero_then_variadic_args_t{}, _Keylt()) {}
+
+    explicit _Base_flat_set(container_type _Cont, const key_compare& _Comp = key_compare())
+        : _My_pair(_One_then_variadic_args_t{}, _STD move(_Cont), _Comp) {
+        _Make_invariants_fulfilled();
+    }
+    template <_Allocator_for<container_type> _Alloc>
+    _Base_flat_set(const container_type& _Cont, const _Alloc& _Al) : _Base_flat_set(container_type(_Cont, _Al)) {}
+    template <_Allocator_for<container_type> _Alloc>
+    _Base_flat_set(const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
+        : _Base_flat_set(container_type(_Cont, _Al), _Comp) {}
+
+    _Base_flat_set(_Tsorted, container_type _Cont, const key_compare& _Comp = key_compare())
+        : _My_pair(_One_then_variadic_args_t{}, _STD move(_Cont), _Comp) {
+        _Assert_after_sorted_input();
+    }
+    template <_Allocator_for<container_type> _Alloc>
+    _Base_flat_set(_Tsorted _Tsort, const container_type& _Cont, const _Alloc& _Al)
+        : _Base_flat_set(_Tsort, container_type(_Cont, _Al)) {}
+    template <_Allocator_for<container_type> _Alloc>
+    _Base_flat_set(_Tsorted _Tsort, const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
+        : _Base_flat_set(_Tsort, container_type(_Cont, _Al), _Comp) {}
+
+    explicit _Base_flat_set(const key_compare& _Comp) : _My_pair(_Zero_then_variadic_args_t{}, _Comp) {}
+    template <_Allocator_for<container_type> _Alloc>
+    _Base_flat_set(const key_compare& _Comp, const _Alloc& _Al) : _Base_flat_set(_Comp, container_type(_Al)) {}
+    template <_Allocator_for<container_type> _Alloc>
+    explicit _Base_flat_set(const _Alloc& _Al) : _Base_flat_set(container_type(_Al)) {}
+
+    template <input_iterator _Iter>
+    _Base_flat_set(_Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
+        : _Base_flat_set(container_type(_First, _Last), _Comp) {}
+    template <input_iterator _Iter, _Allocator_for<container_type> _Alloc>
+    _Base_flat_set(_Iter _First, _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
+        : _Base_flat_set(container_type(_First, _Last, _Al), _Comp) {}
+    template <input_iterator _Iter, _Allocator_for<container_type> _Alloc>
+    _Base_flat_set(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Base_flat_set(container_type(_First, _Last, _Al)) {}
+
+    template <_Container_compatible_range<_Kty> _Rng>
+    _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp = key_compare())
+        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range)), _Comp) {}
+    template <_Container_compatible_range<_Kty> _Rng, _Allocator_for<container_type> _Alloc>
+    _Base_flat_set(from_range_t, _Rng&& _Range, const _Alloc& _Al)
+        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range), _Al)) {}
+    template <_Container_compatible_range<_Kty> _Rng, _Allocator_for<container_type> _Alloc>
+    _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
+        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range), _Al), _Comp) {}
+
+    template <input_iterator _Iter>
+    _Base_flat_set(_Tsorted _Tsort, _Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
+        : _Base_flat_set(_Tsort, container_type(_First, _Last), _Comp) {}
+    template <input_iterator _Iter, _Allocator_for<container_type> _Alloc>
+    _Base_flat_set(_Tsorted _Tsort, _Iter _First, _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
+        : _Base_flat_set(_Tsort, container_type(_First, _Last, _Al), _Comp) {}
+    template <input_iterator _Iter, _Allocator_for<container_type> _Alloc>
+    _Base_flat_set(_Tsorted _Tsort, _Iter _First, _Iter _Last, const _Alloc& _Al)
+        : _Base_flat_set(_Tsort, container_type(_First, _Last, _Al)) {}
+
+    _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
+        : _Base_flat_set(_Ilist.begin(), _Ilist.end(), _Comp) {}
+    template <_Allocator_for<container_type> _Alloc>
+    _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
+        : _Base_flat_set(container_type(_Ilist.begin(), _Ilist.end(), _Al), _Comp) {}
+    template <_Allocator_for<container_type> _Alloc>
+    _Base_flat_set(initializer_list<_Kty> _Ilist, const _Alloc& _Al)
+        : _Base_flat_set(container_type(_Ilist.begin(), _Ilist.end(), _Al)) {}
+
+    _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
+        : _Base_flat_set(_Tsort, _Ilist.begin(), _Ilist.end(), _Comp) {}
+    template <_Allocator_for<container_type> _Alloc>
+    _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
+        : _Base_flat_set(_Tsort, container_type(_Ilist.begin(), _Ilist.end(), _Al), _Comp) {}
+    template <_Allocator_for<container_type> _Alloc>
+    _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const _Alloc& _Al)
+        : _Base_flat_set(_Tsort, container_type(_Ilist.begin(), _Ilist.end(), _Al)) {}
+
+    _Deriv& operator=(initializer_list<_Kty> _Ilist) {
+        _Get_cont() = container_type(_Ilist.begin(), _Ilist.end());
+        _Make_invariants_fulfilled();
+        return static_cast<_Deriv&>(*this);
+    }
+
+    _NODISCARD iterator begin() noexcept {
+        return _Get_cont().begin();
+    }
+    _NODISCARD const_iterator begin() const noexcept {
+        return _Get_cont().begin();
+    }
+    _NODISCARD iterator end() noexcept {
+        return _Get_cont().end();
+    }
+    _NODISCARD const_iterator end() const noexcept {
+        return _Get_cont().end();
+    }
+    _NODISCARD reverse_iterator rbegin() noexcept {
+        return _Get_cont().rbegin();
+    }
+    _NODISCARD const_reverse_iterator rbegin() const noexcept {
+        return _Get_cont().rbegin();
+    }
+    _NODISCARD reverse_iterator rend() noexcept {
+        return _Get_cont().rend();
+    }
+    _NODISCARD const_reverse_iterator rend() const noexcept {
+        return _Get_cont().rend();
+    }
+    _NODISCARD const_iterator cbegin() const noexcept {
+        return _Get_cont().cbegin();
+    }
+    _NODISCARD const_iterator cend() const noexcept {
+        return _Get_cont().cend();
+    }
+    _NODISCARD const_reverse_iterator crbegin() const noexcept {
+        return _Get_cont().crbegin();
+    }
+    _NODISCARD const_reverse_iterator crend() const noexcept {
+        return _Get_cont().crend();
+    }
+
+    _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
+        return _Get_cont().empty();
+    }
+    _NODISCARD size_type size() const noexcept {
+        return _Get_cont().size();
+    }
+    _NODISCARD size_type max_size() const noexcept {
+        return _Get_cont().max_size();
+    }
+
+    template <class... _Args>
+    auto emplace(_Args&&... _Vals) {
+        insert<_Kty>(_Kty{_STD forward<_Args>(_Vals)...});
+    }
+
+    template <class... _Args>
+    iterator emplace_hint(const_iterator _Hint, _Args&&... _Vals) {
+        return _Emplace_hint(_Hint, _Kty{_STD forward<_Args>(_Vals)...});
+    }
+
+    auto insert(const value_type& _Val) {
+        return _Insert<_Kty>(_Val);
+    }
+    auto insert(value_type&& _Val) {
+        return _Insert(_STD move(_Val));
+    }
+
+    template <class _Other>
+        requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Other>)
+    auto insert(_Other&& _Val) {
+        return _Insert(_STD forward<_Other>(_Val));
+    }
+
+    template <class _Other>
+        requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Other>)
+    iterator insert(const_iterator _Hint, _Other&& _Val) {
+        return _Emplace_hint(_Hint, _STD forward<_Other>(_Val));
+    }
+
+    iterator insert(const_iterator _Hint, const value_type& _Val) {
+        return _Emplace_hint(_Hint, _Val);
+    }
+    iterator insert(const_iterator _Hint, value_type&& _Val) {
+        return _Emplace_hint(_Hint, _STD move(_Val));
+    }
+
+    template <input_iterator _Iter>
+    void insert(const _Iter& _First, const _Iter& _Last) {
+        _Insert_range<false>(_First, _Last);
+    }
+
+    template <input_iterator _Iter>
+    void insert(_Tsorted, _Iter _First, _Iter _Last) {
+        _Insert_range<true>(_First, _Last);
+    }
+
+    template <_Container_compatible_range<_Kty> _Rng>
+    void insert_range(_Rng&& _Range) {
+        const size_type _Old_size = size();
+        _Get_cont().append_range(_STD forward<_Rng>(_Range));
+        _Restore_invariants_after_insert<false>(_Old_size);
+    }
+
+    _NODISCARD container_type extract() && {
+        // The container NEEDS to be cleared no matter what,
+        // which is not guaranteed by simply moving it away
+        // ("... valid but unspecified ...")
+        container_type& _Cont = _Get_cont();
+        _Clear_scope_guard _Guard{this};
+        container_type _Temp = _STD move(_Cont);
+        return _Temp;
+    }
+
+    void replace(container_type&& _Cont) {
+        _Get_cont() = _STD move(_Cont);
+        _Assert_after_sorted_input();
+    }
+
+    iterator erase(iterator _Where) {
+        return _Get_cont().erase(_Where);
+    }
+    iterator erase(const_iterator _Where) {
+        return _Get_cont().erase(_Where);
+    }
+    size_type erase(const _Kty& _Val) {
+        return _Erase(_Val);
+    }
+
+    template <class _Other>
+        requires _Keylt_transparent
+    size_type erase(_Other&& _Val) {
+        return _Erase(_STD forward<_Other>(_Val));
+    }
+
+    iterator erase(const_iterator _First, const_iterator _Last) {
+        return _Get_cont().erase(_First, _Last);
+    }
+
+    void swap(_Deriv& _Other) noexcept {
+        _RANGES swap(_Get_comp(), _Other._Get_comp());
+        _RANGES swap(_Get_cont(), _Other._Get_cont());
+    }
+
+    void clear() noexcept {
+        _Get_cont().clear();
+    }
+
+    _NODISCARD key_compare key_comp() const {
+        return _Get_comp();
+    }
+    _NODISCARD value_compare value_comp() const {
+        return _Get_comp();
+    }
+
+    _NODISCARD iterator find(const _Kty& _Val) {
+        return _Find(_Val);
+    }
+
+    _NODISCARD const_iterator find(const _Kty& _Val) const {
+        return _Find(_Val);
+    }
+
+    template <class _Other>
+        requires _Keylt_transparent
+    _NODISCARD iterator find(const _Other& _Val) {
+        return _Find(_Val);
+    }
+
+    template <class _Other>
+        requires _Keylt_transparent
+    _NODISCARD const_iterator find(const _Other& _Val) const {
+        return _Find(_Val);
+    }
+
+    _NODISCARD size_type count(const _Kty& _Val) const {
+        const auto [_First, _Last] = equal_range(_Val);
+        return _STD distance(_First, _Last);
+    }
+
+    template <class _Other>
+        requires _Keylt_transparent
+    _NODISCARD size_type count(const _Other& _Val) const {
+        const auto [_First, _Last] = equal_range(_Val);
+        return _STD distance(_First, _Last);
+    }
+
+    _NODISCARD bool contains(const _Kty& _Val) const {
+        return find(_Val) != end();
+    }
+    template <class _Other>
+        requires _Keylt_transparent
+    _NODISCARD bool contains(const _Other& _Val) const {
+        return find(_Val) != end();
+    }
+    _NODISCARD iterator lower_bound(const _Kty& _Val) {
+        return _STD lower_bound(begin(), end(), _Val, _Get_comp());
+    }
+    _NODISCARD const_iterator lower_bound(const _Kty& _Val) const {
+        return _STD lower_bound(cbegin(), cend(), _Val, _Get_comp());
+    }
+
+    template <class _Other>
+        requires _Keylt_transparent
+    _NODISCARD iterator lower_bound(const _Other& _Val) {
+        return _STD lower_bound(begin(), end(), _Val, _Get_comp());
+    }
+
+    template <class _Other>
+        requires _Keylt_transparent
+    _NODISCARD const_iterator lower_bound(const _Other& _Val) const {
+        return _STD lower_bound(cbegin(), cend(), _Val, _Get_comp());
+    }
+
+    _NODISCARD iterator upper_bound(const _Kty& _Val) {
+        return _STD upper_bound(begin(), end(), _Val, _Get_comp());
+    }
+
+    _NODISCARD const_iterator upper_bound(const _Kty& _Val) const {
+        return _STD upper_bound(cbegin(), cend(), _Val, _Get_comp());
+    }
+
+    template <class _Other>
+        requires _Keylt_transparent
+    _NODISCARD iterator upper_bound(const _Other& _Val) {
+        return _STD upper_bound(begin(), end(), _Val, _Get_comp());
+    }
+
+    template <class _Other>
+        requires _Keylt_transparent
+    _NODISCARD const_iterator upper_bound(const _Other& _Val) const {
+        return _STD upper_bound(cbegin(), cend(), _Val, _Get_comp());
+    }
+
+    _NODISCARD pair<iterator, iterator> equal_range(const _Kty& _Val) {
+        return _STD equal_range(begin(), end(), _Val, _Get_comp());
+    }
+
+    _NODISCARD pair<const_iterator, const_iterator> equal_range(const _Kty& _Val) const {
+        return _STD equal_range(cbegin(), cend(), _Val, _Get_comp());
+    }
+
+    template <class _Other>
+        requires _Keylt_transparent
+    _NODISCARD pair<iterator, iterator> equal_range(const _Other& _Val) {
+        return _STD equal_range(begin(), end(), _Val, _Get_comp());
+    }
+
+    template <class _Other>
+        requires _Keylt_transparent
+    _NODISCARD pair<const_iterator, const_iterator> equal_range(const _Other& _Val) const {
+        return _STD equal_range(cbegin(), cend(), _Val, _Get_comp());
+    }
+
+    _NODISCARD friend bool operator==(const _Deriv& _Lhs, const _Deriv& _Rhs) {
+        return _RANGES equal(_Lhs, _Rhs);
+    }
+
+    _NODISCARD friend _Synth_three_way_result<_Kty> operator<=>(const _Deriv& _Lhs, const _Deriv& _Rhs) {
+        return _STD lexicographical_compare_three_way(
+            _Lhs.cbegin(), _Lhs.cend(), _Rhs.cbegin(), _Rhs.cend(), _Synth_three_way{});
+    }
+
+    friend void swap(_Deriv& _Lhs, _Deriv& _Rhs) noexcept {
+        _Lhs.swap(_Rhs);
+    }
+
+private:
+    void inline _Assert_after_sorted_input() const {
+        _STL_ASSERT(_STD is_sorted(begin(), end(), _Get_comp()), "Input was not sorted!");
+        if constexpr (!_Multi) {
+            _STL_ASSERT(_Is_unique(), "Input was not unique!");
+        }
+    }
+
+    bool _Is_unique() const {
+        if (empty()) {
+            return true;
+        }
+        const_iterator _End = cend();
+        const_iterator _It  = begin();
+        while (++_It != _End) {
+            if (_Keys_equal(*(_It - 1), *_It)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    template <class _Ty>
+        requires (_Keylt_transparent && is_constructible_v<_Kty, _Ty>) || is_same_v<_Ty, _Kty>
+    void _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
+        _Container& _Cont     = _Get_cont();
+        _Keylt& _Compare      = _Get_comp();
+        const iterator _Begin = begin();
+        const iterator _End   = end();
+
+        if (_Where == _End || !_Compare(*_Where, _Val)) {
+            // _Val <= *_Where
+            // Left of _Where
+            if (_Where == _Begin || !_Compare(_Val, *(_Where - 1))) {
+                // _Val >= (*_Where - 1)
+                // Insert before _Where
+            } else {
+                // _Val < (*_Where - 1)
+                _Where = _STD upper_bound(_Begin, _Where, _Val, _Compare);
+            }
+        } else {
+            // _Val > *_Where
+            // Right of _Where
+            _Where = _STD lower_bound(_Where + 1, _End, _Val, _Compare);
+        }
+
+        if constexpr (_Multi) {
+            return _Cont.insert(_Where, _STD forward<_Ty>(_Val));
+        } else {
+            if (_Where == _End || !_Keys_equal(_Val, *_Where)) {
+                return _Cont.insert(_Where, _STD forward<_Ty>(_Val));
+            }
+            return _Where;
+        }
+    }
+
+    template <bool _Presorted, class _Iter>
+    void _Insert_range(_Iter _First, _Iter _Last) {
+        const size_type _Old_size = size();
+        _Container& _Cont         = _Get_cont();
+        _Cont.insert(_Cont.end(), _First, _Last);
+        _Restore_invariants_after_insert<_Presorted>(_Old_size);
+    }
+
+    template <class _Ty>
+        requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Ty>) || is_same_v<_Ty, _Kty>
+    auto _Insert(_Ty&& _Val) {
+        _Container& _Cont     = _Get_cont();
+        const iterator _End   = end();
+        const iterator _Where = lower_bound(_Val);
+        if constexpr (_Multi) {
+            return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
+        } else {
+            if (_Where != _End && _Keys_equal(*_Where, _Val)) {
+                return pair{_Where, false};
+            }
+            return pair{_Cont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
+        }
+    }
+
+    template <class _Ty>
+        requires _Keylt_transparent || is_same_v<_Ty, _Kty>
+    size_type _Erase(_Ty&& _Val) {
+        const auto [_First, _Last] = equal_range(_Val);
+
+        const difference_type _Removed = _STD distance(_First, _Last);
+        _Get_cont().erase(_First, _Last);
+        return _Removed;
+    }
+
+    template <class _Other>
+        requires _Keylt_transparent || is_same_v<_Other, _Kty>
+    _NODISCARD iterator _Find(const _Other& _Val) {
+        const iterator _End   = end();
+        const iterator _Where = lower_bound(_Val);
+        if (_Where != _End && _Keys_equal(*_Where, _Val)) {
+            return _Where;
+        } else {
+            return _End;
+        }
+    }
+
+    template <class _Other>
+        requires _Keylt_transparent || is_same_v<_Other, _Kty>
+    _NODISCARD const_iterator _Find(const _Other& _Val) const {
+        const iterator _End   = end();
+        const iterator _Where = lower_bound(_Val);
+        if (_Where != _End && _Keys_equal(*_Where, _Val)) {
+            return _Where;
+        } else {
+            return _End;
+        }
+    }
+
+    template <class _Lhty, class _Rhty>
+        requires _Keylt_transparent || (is_same_v<_Kty, _Lhty> && is_same_v<_Lhty, _Rhty>)
+    _NODISCARD bool _Keys_equal(const _Lhty& _Lhs, const _Rhty& _Rhs) const {
+        const key_compare& _Compare = _Get_comp();
+        return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
+    }
+
+    // O(N) if already sorted.
+    void _Sort_potentially_sorted(const iterator& _Begin, const iterator& _End) {
+        key_compare& _Compare          = _Get_comp();
+        const iterator _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Compare);
+
+        _STD sort(_Begin_unsorted, _End, _Compare);
+
+        _STD inplace_merge(begin(), _Begin_unsorted, _End, _Compare);
+    }
+
+    void _Erase_dupes_if_needed() {
+        if constexpr (!_Multi) {
+            iterator _End = end();
+            iterator _New_end =
+                _STD unique(begin(), _End, [&](const _Kty& _Lhs, const _Kty& _Rhs) { return _Keys_equal(_Lhs, _Rhs); });
+            _Get_cont().erase(_New_end, _End);
+        }
+        if constexpr (!_Multi) {
+            _STL_INTERNAL_CHECK(_Is_unique());
+        }
+    }
+
+    template <bool _Presorted>
+    void _Restore_invariants_after_insert(const size_type& _Old_size) {
+        key_compare& _Compare   = _Get_comp();
+        const iterator _Old_end = begin() + static_cast<difference_type>(_Old_size);
+        const iterator _New_end = end();
+
+        if constexpr (!_Presorted) {
+            _STD sort(_Old_end, _New_end, _Compare);
+        } else {
+            _STL_ASSERT(_STD is_sorted(_Old_end, _New_end, _Compare), "Input was not sorted!");
+        }
+
+        _STD inplace_merge(begin(), _Old_end, _New_end, _Compare);
+
+        _STL_INTERNAL_CHECK(_STD is_sorted(begin(), end(), _Get_comp()));
+
+        _Erase_dupes_if_needed();
+    }
+
+    void _Make_invariants_fulfilled() {
+        const iterator _Begin = begin();
+        const iterator _End   = end();
+
+        if (_Begin == _End) {
+            return;
+        }
+
+        _Sort_potentially_sorted(_Begin, _End);
+        _STL_INTERNAL_CHECK(_STD is_sorted(begin(), end(), _Get_comp()));
+
+        _Erase_dupes_if_needed();
+    }
+
+    _NODISCARD const _Container& _Get_cont() const noexcept {
+        return _My_pair._Get_first();
+    }
+
+    _NODISCARD _Container& _Get_cont() noexcept {
+        return _My_pair._Get_first();
+    }
+
+    _NODISCARD const key_compare& _Get_comp() const noexcept {
+        return _My_pair._Myval2;
+    }
+
+    _NODISCARD key_compare& _Get_comp() noexcept {
+        return _My_pair._Myval2;
+    }
+
+    _Compressed_pair<container_type, key_compare> _My_pair;
+};
+
+_EXPORT_STD struct sorted_unique_t {
+    explicit sorted_unique_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_unique_t sorted_unique{};
+
+_EXPORT_STD struct sorted_equivalent_t {
+    explicit sorted_equivalent_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_equivalent_t sorted_equivalent{};
+
+_EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
+class flat_set
+    : public _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set<_Kty, _Keylt, _Container>, sorted_unique_t> {
+public:
+    using _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set, sorted_unique_t>::_Base_flat_set;
+};
+
+_EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
+class flat_multiset : public _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset<_Kty, _Keylt, _Container>,
+                          sorted_equivalent_t> {
+public:
+    using _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset, sorted_equivalent_t>::_Base_flat_set;
+};
+
+_EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
+size_t erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
+    _Clear_scope_guard _Guard{&_Val};
+    return _Erase_remove_if(_Val, _Pass_fn(_Predicate));
+}
+
+_EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
+size_t erase_if(flat_multiset<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
+    _Clear_scope_guard _Guard{&_Val};
+    return _Erase_remove_if(_Val, _Pass_fn(_Predicate));
+}
+
+template <class _Kty, class _Keylt, class _Container, class _Alloc>
+struct uses_allocator<flat_set<_Kty, _Keylt, _Container>, _Alloc>
+    : bool_constant<uses_allocator_v<_Container, _Alloc>> {};
+
+template <class _Kty, class _Keylt, class _Container, class _Alloc>
+struct uses_allocator<flat_multiset<_Kty, _Keylt, _Container>, _Alloc>
+    : bool_constant<uses_allocator_v<_Container, _Alloc>> {};
+
+template <class _Container, class _Keylt = less<typename _Container::value_type>>
+flat_set(_Container, _Keylt = _Keylt()) -> flat_set<typename _Container::value_type, _Keylt, _Container>;
+template <class _Container, class _Alloc>
+flat_set(_Container, _Alloc)
+    -> flat_set<typename _Container::value_type, less<typename _Container::value_type>, _Container>;
+template <class _Container, class _Keylt, class _Alloc>
+flat_set(_Container, _Keylt, _Alloc) -> flat_set<typename _Container::value_type, _Keylt, _Container>;
+
+template <class _Container, class _Keylt = less<typename _Container::value_type>>
+flat_set(sorted_unique_t, _Container, _Keylt = _Keylt())
+    -> flat_set<typename _Container::value_type, _Keylt, _Container>;
+template <class _Container, class _Alloc>
+flat_set(sorted_unique_t, _Container, _Alloc)
+    -> flat_set<typename _Container::value_type, less<typename _Container::value_type>, _Container>;
+template <class _Container, class _Keylt, class _Alloc>
+flat_set(sorted_unique_t, _Container, _Keylt, _Alloc) -> flat_set<typename _Container::value_type, _Keylt, _Container>;
+
+template <class _Iter, class _Keylt = less<iter_value_t<_Iter>>>
+flat_set(_Iter, _Iter, _Keylt = _Keylt()) -> flat_set<iter_value_t<_Iter>, _Keylt>;
+template <class _Iter, class _Keylt = less<iter_value_t<_Iter>>>
+flat_set(sorted_unique_t, _Iter, _Iter, _Keylt = _Keylt()) -> flat_set<iter_value_t<_Iter>, _Keylt>;
+template <_RANGES input_range _Range, class _Keylt = less<_RANGES range_value_t<_Range>>,
+    class _Alloc = allocator<_RANGES range_value_t<_Range>>>
+flat_set(from_range_t, _Range&&, _Keylt = _Keylt(), _Alloc = _Alloc()) -> flat_set<_RANGES range_value_t<_Range>,
+    _Keylt, vector<_RANGES range_value_t<_Range>, _Rebind_alloc_t<_Alloc, _RANGES range_value_t<_Range>>>>;
+template <_RANGES input_range _Range, class _Alloc>
+flat_set(from_range_t, _Range&&, _Alloc) -> flat_set<_RANGES range_value_t<_Range>, less<_RANGES range_value_t<_Range>>,
+    vector<_RANGES range_value_t<_Range>, _Rebind_alloc_t<_Alloc, _RANGES range_value_t<_Range>>>>;
+template <class _Kty, class _Keylt = less<_Kty>>
+flat_set(initializer_list<_Kty>, _Keylt = _Keylt()) -> flat_set<_Kty, _Keylt>;
+template <class _Kty, class _Keylt = less<_Kty>>
+flat_set(sorted_unique_t, initializer_list<_Kty>, _Keylt = _Keylt()) -> flat_set<_Kty, _Keylt>;
+
+
+template <class _Container, class _Keylt = less<typename _Container::value_type>>
+flat_multiset(_Container, _Keylt = _Keylt()) -> flat_multiset<typename _Container::value_type, _Keylt, _Container>;
+template <class _Container, class _Alloc>
+flat_multiset(_Container, _Alloc)
+    -> flat_multiset<typename _Container::value_type, less<typename _Container::value_type>, _Container>;
+template <class _Container, class _Keylt, class _Alloc>
+flat_multiset(_Container, _Keylt, _Alloc) -> flat_multiset<typename _Container::value_type, _Keylt, _Container>;
+
+template <class _Container, class _Keylt = less<typename _Container::value_type>>
+flat_multiset(sorted_equivalent_t, _Container, _Keylt = _Keylt())
+    -> flat_multiset<typename _Container::value_type, _Keylt, _Container>;
+template <class _Container, class _Alloc>
+flat_multiset(sorted_equivalent_t, _Container, _Alloc)
+    -> flat_multiset<typename _Container::value_type, less<typename _Container::value_type>, _Container>;
+template <class _Container, class _Keylt, class _Alloc>
+flat_multiset(sorted_equivalent_t, _Container, _Keylt, _Alloc)
+    -> flat_multiset<typename _Container::value_type, _Keylt, _Container>;
+
+template <class _Iter, class _Keylt = less<iter_value_t<_Iter>>>
+flat_multiset(_Iter, _Iter, _Keylt = _Keylt()) -> flat_multiset<iter_value_t<_Iter>, iter_value_t<_Iter>, _Keylt>;
+template <class _Iter, class _Keylt = less<iter_value_t<_Iter>>>
+flat_multiset(sorted_equivalent_t, _Iter, _Iter, _Keylt = _Keylt())
+    -> flat_multiset<iter_value_t<_Iter>, iter_value_t<_Iter>, _Keylt>;
+template <_RANGES input_range _Range, class _Keylt = less<_RANGES range_value_t<_Range>>,
+    class _Alloc = allocator<_RANGES range_value_t<_Range>>>
+flat_multiset(from_range_t, _Range&&, _Keylt = _Keylt(), _Alloc = _Alloc())
+    -> flat_multiset<_RANGES range_value_t<_Range>, _Keylt,
+        vector<_RANGES range_value_t<_Range>, _Rebind_alloc_t<_Alloc, _RANGES range_value_t<_Range>>>>;
+template <_RANGES input_range _Range, class _Alloc>
+flat_multiset(from_range_t, _Range&&, _Alloc)
+    -> flat_multiset<_RANGES range_value_t<_Range>, less<_RANGES range_value_t<_Range>>,
+        vector<_RANGES range_value_t<_Range>, _Rebind_alloc_t<_Alloc, _RANGES range_value_t<_Range>>>>;
+template <class _Kty, class _Keylt = less<_Kty>>
+flat_multiset(initializer_list<_Kty>, _Keylt = _Keylt()) -> flat_multiset<_Kty, _Keylt>;
+template <class _Kty, class _Keylt = less<_Kty>>
+flat_multiset(sorted_equivalent_t, initializer_list<_Kty>, _Keylt = _Keylt()) -> flat_multiset<_Kty, _Keylt>;
+
+_STD_END
+
+#endif // ^^^ supported language mode ^^^
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _FLAT_SET_

@@ -59,6 +59,7 @@ export module std;
 #include <execution>
 #include <expected>
 #include <filesystem>
+#include <flat_set>
 #include <format>
 #include <forward_list>
 #include <fstream>

@@ -316,6 +316,7 @@
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
 // P1206R7 Conversions From Ranges To Containers
+// P1222R4 <flat_set>
 // P1223R5 ranges::find_last, ranges::find_last_if, ranges::find_last_if_not
 // P1272R4 byteswap()
 // P1328R1 constexpr type_info::operator==()
@@ -1722,6 +1723,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_containers_ranges 202202L
 #define __cpp_lib_expected          202211L
+#define __cpp_lib_flat_set          202207L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_forward_like   202207L

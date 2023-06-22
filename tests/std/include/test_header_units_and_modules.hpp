@@ -234,6 +234,13 @@ void test_filesystem() {
     assert(info.capacity != static_cast<decltype(info.capacity)>(-1));
 }
 
+void test_flat_set() {
+    using namespace std;
+    puts("Testing <flat_set>.");
+
+    // FIXME! ADD TEST COVERAGE HERE!
+}
+
 void test_format() {
     using namespace std;
     puts("Testing <format>.");
@@ -1082,6 +1089,7 @@ void all_cpp_header_tests() {
     test_execution();
     test_expected();
     test_filesystem();
+    test_flat_set();
     test_format();
     test_forward_list();
     test_fstream();
