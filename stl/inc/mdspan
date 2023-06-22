@@ -41,11 +41,10 @@ public:
 
     static constexpr rank_type _Rank         = sizeof...(_Extents);
     static constexpr rank_type _Rank_dynamic = (static_cast<rank_type>(_Extents == dynamic_extent) + ... + 0);
+    static constexpr array<rank_type, _Rank> _Static_extents        = {_Extents...};
     static constexpr bool _Multidim_index_space_size_is_always_zero = ((_Extents == 0) || ...);
 
 private:
-    static constexpr array<rank_type, _Rank> _Static_extents = {_Extents...};
-
     _NODISCARD static consteval auto _Make_dynamic_indices() noexcept {
         array<rank_type, _Rank + 1> _Result{};
         rank_type _Counter = 0;
@@ -359,7 +358,7 @@ private:
         array<typename _Ty::index_type, _Ty::rank() + 1> _Result;
         _Result.front() = 1;
         for (size_t _Idx = 1; _Idx < _Ty::_Rank + 1; ++_Idx) {
-            _Result[_Idx] = static_cast<_Ty::index_type>(_Result[_Idx - 1] * _Ty::static_extent(_Idx - 1));
+            _Result[_Idx] = static_cast<_Ty::index_type>(_Result[_Idx - 1] * _Ty::_Static_extents[_Idx - 1]);
         }
         return _Result;
     }
@@ -397,7 +396,7 @@ private:
         array<typename _Ty::index_type, _Ty::rank()> _Result;
         _Result.back() = 1;
         for (size_t _Idx = _Ty::_Rank; _Idx-- > 1;) {
-            _Result[_Idx - 1] = static_cast<_Ty::index_type>(_Result[_Idx] * _Ty::static_extent(_Idx));
+            _Result[_Idx - 1] = static_cast<_Ty::index_type>(_Result[_Idx] * _Ty::_Static_extents[_Idx]);
         }
         return _Result;
     }
@@ -1113,7 +1112,7 @@ public:
             "The extents_type must be constructible from OtherExtents (N4950 [mdspan.mdspan.cons]/20.2).");
 #if _CONTAINER_DEBUG_LEVEL > 0
         for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
-            const auto _Static_ext = static_extent(_Idx);
+            const auto _Static_ext = extents_type::_Static_extents[_Idx];
             _STL_VERIFY(_Static_ext == dynamic_extent || _Static_ext == _Other.extent(_Idx),
                 "For each rank index r of extents_type, static_extent(r) == dynamic_extent || static_extent(r) == "
                 "other.extent(r) must be true (N4950 [mdspan.mdspan.cons]/21.1).");
