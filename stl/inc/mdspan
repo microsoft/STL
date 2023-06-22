@@ -1164,7 +1164,7 @@ public:
     _NODISCARD constexpr size_type size() const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (rank_dynamic() != 0) {
-            _STL_VERIFY(_Map.extents()._Is_dynamic_multidim_index_space_size_representable<size_type>(),
+            _STL_VERIFY(_Map.extents().template _Is_dynamic_multidim_index_space_size_representable<size_type>(),
                 "The size of the multidimensional index space extents() must be representable as a value of type "
                 "size_type (N4950 [mdspan.mdspan.members]/7).");
         }
