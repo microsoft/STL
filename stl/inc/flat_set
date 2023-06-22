@@ -539,7 +539,7 @@ private:
         if constexpr (!_Multi) {
             iterator _End = end();
             iterator _New_end =
-                unique(begin(), _End, [&](const _Kty& lhs, const _Kty& rhs) { return _Keys_equal(lhs, rhs); });
+                unique(begin(), _End, [&](const _Kty& _Lhs, const _Kty& _Rhs) { return _Keys_equal(_Lhs, _Rhs); });
             _Get_cont().erase(_New_end, _End);
         }
         if constexpr (!_Multi) {
