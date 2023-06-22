@@ -2867,7 +2867,7 @@ _NODISCARD _OutputIt _Fmt_write(
 
     auto _To_upper  = false;
     auto _Format    = chars_format::general;
-    auto _Exponent  = '\0';
+    auto _Exponent  = 'e';
     auto _Precision = _Specs._Precision;
 
     switch (_Specs._Type) {
@@ -2885,8 +2885,7 @@ _NODISCARD _OutputIt _Fmt_write(
         if (_Precision == -1) {
             _Precision = 6;
         }
-        _Format   = chars_format::scientific;
-        _Exponent = 'e';
+        _Format = chars_format::scientific;
         break;
     case 'F':
         _To_upper = true;
@@ -2904,8 +2903,7 @@ _NODISCARD _OutputIt _Fmt_write(
         if (_Precision == -1) {
             _Precision = 6;
         }
-        _Format   = chars_format::general;
-        _Exponent = 'e';
+        _Format = chars_format::general;
         break;
     }
 
@@ -3018,7 +3016,7 @@ _NODISCARD _OutputIt _Fmt_write(
             _Zeroes_to_append = _Extra_precision;
             break;
         case chars_format::general:
-            if (_Specs._Alt) {
+            if (_Specs._Alt && (_Specs._Type == 'g' || _Specs._Type == 'G')) {
                 auto _Digits = static_cast<int>(_Exponent_start - _Buffer_start);
 
                 if (!_Append_decimal) {

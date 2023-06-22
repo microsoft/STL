@@ -218,6 +218,7 @@ tests\GH_002769_handle_deque_block_pointers
 tests\GH_002789_Hash_vec_Tidy
 tests\GH_002989_nothrow_unwrappable
 tests\GH_002992_unwrappable_iter_sent_pairs
+tests\GH_003003_format_decimal_point
 tests\GH_003022_substr_allocator
 tests\GH_003105_piecewise_densities
 tests\GH_003119_error_category_ctor
