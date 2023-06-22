@@ -6124,7 +6124,7 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr difference_type operator-(
-                const _Iterator& _Left, const _Iterator& _Right) noexcept /* strengthened */ {
+                const _Iterator& _Left, const _Iterator& _Right) noexcept {
                 return _Left._Pos - _Right._Pos;
             }
 
