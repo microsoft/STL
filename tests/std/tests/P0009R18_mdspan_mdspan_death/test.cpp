@@ -10,7 +10,7 @@
 
 using namespace std;
 
-constexpr array<int, 128> some_ints{};
+constexpr array<int, 256> some_ints{};
 
 void test_construction_from_other_mdspan() {
     auto mds1 = mdspan{some_ints.data(), 8, 2, 8};
@@ -33,6 +33,18 @@ void test_access_with_invalid_multidimensional_index_2() {
     (void) mds[array{4, 5}];
 }
 
+void test_size_when_index_type_is_signed() {
+    auto mds = mdspan{some_ints.data(), dextents<signed char, 3>{8, 8, 4}};
+    // The size of the multidimensional index space extents() must be representable as a value of type size_type
+    (void) mds.size();
+}
+
+void test_size_when_index_type_is_unsigned() {
+    auto mds = mdspan{some_ints.data(), dextents<unsigned char, 3>{8, 8, 4}};
+    // The size of the multidimensional index space extents() must be representable as a value of type size_type
+    (void) mds.size();
+}
+
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
     exec.add_death_tests({
@@ -41,6 +53,8 @@ int main(int argc, char* argv[]) {
         test_access_with_invalid_multidimensional_index_1,
 #endif // __cpp_multidimensional_subscript
         test_access_with_invalid_multidimensional_index_2,
+        test_size_when_index_type_is_signed,
+        test_size_when_index_type_is_unsigned,
     });
     return exec.run(argc, argv);
 }
