@@ -161,7 +161,7 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
 
 void check_mapping_properties() {
     if constexpr (!is_permissive) {
-        auto check = []([[maybe_unused]] const auto& mapping) {
+        auto check = [](const auto& mapping) {
             const auto props = get_mapping_properties(mapping);
             assert(props.req_span_size == mapping.required_span_size());
             assert(props.uniqueness);
@@ -465,6 +465,9 @@ constexpr void check_correctness() {
 #endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 
+#ifdef __clang__
+    if (!is_constant_evaluated()) // FIXME clang hits constexpr limit here
+#endif
     { // 2x3x2x3 tensor
         const array values{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
             26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
@@ -491,10 +494,7 @@ constexpr void check_correctness() {
 }
 
 constexpr bool test() {
-    check_members_with_various_extents(
-        []<class IndexType, size_t... Extents>(const extents<IndexType, Extents...>& ext) {
-            check_members(ext, make_index_sequence<sizeof...(Extents)>{});
-        });
+    check_members_with_various_extents([]<class E>(const E& e) { check_members(e, make_index_sequence<E::rank()>{}); });
     if (!is_constant_evaluated()) { // too heavy for compile time
         check_mapping_properties();
     }
