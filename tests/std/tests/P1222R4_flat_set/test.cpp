@@ -138,13 +138,12 @@ void test_constructors() {
 
 template <class T>
 void test_spaceship_operator() {
-    static constexpr bool multiset = _Is_specialization_v<T, flat_multiset>;
-    static constexpr bool invert   = is_same_v<typename T::key_compare, std::greater<typename T::key_type>>;
+    static constexpr bool multi  = _Is_specialization_v<T, flat_multiset>;
+    static constexpr bool invert = is_same_v<typename T::key_compare, std::greater<typename T::key_type>>;
 
     T a{3, 2, 2, 1};
     T b{1, 2, 3};
-    assert(
-        (a <=> b) == (multiset ? (invert ? strong_ordering::greater : strong_ordering::less) : strong_ordering::equal));
+    assert((a <=> b) == (multi ? (invert ? strong_ordering::greater : strong_ordering::less) : strong_ordering::equal));
 
     T c{3, 2};
     assert((c <=> b) == (invert ? strong_ordering::less : strong_ordering::greater));
