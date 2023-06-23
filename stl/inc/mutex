@@ -93,7 +93,7 @@ private:
     friend condition_variable;
     friend condition_variable_any;
 
-    _Mtx_internal_imp_t _Mtx_storage;
+    _Mtx_internal_imp_t _Mtx_storage{};
 
     _Mtx_t _Mymtx() noexcept { // get pointer to _Mtx_internal_imp_t inside _Mtx_storage
         return &_Mtx_storage;
