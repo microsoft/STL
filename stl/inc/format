@@ -2089,19 +2089,21 @@ public:
     }
 
     _NODISCARD size_t _Estimate_required_capacity() const noexcept {
-        using _CharT        = typename _Context::char_type;
-        size_t _Result      = 0;
-        const auto _Visitor = [&_Result]<class _ArgTy>(const _ArgTy _Arg) noexcept {
-            if constexpr (is_same_v<_ArgTy, basic_string_view<_CharT>>) {
-                _Result += _Arg.size();
-            } else if constexpr (is_same_v<_ArgTy, const _CharT*>) {
+        using _CharT   = typename _Context::char_type;
+        size_t _Result = 0;
+        for (size_t _Idx = 0; _Idx < _Num_args; ++_Idx) {
+            const auto _Packed_index = _Index_array[_Idx];
+            const auto _Arg_type     = _Packed_index._Type();
+            if (_Arg_type == _Basic_format_arg_type::_String_type) {
+                const auto _Arg_storage =
+                    reinterpret_cast<const unsigned char*>(_Index_array + _Num_args) + _Packed_index._Index;
+                const auto _View = _Get_value_from_memory<basic_string_view<_CharT>>(_Arg_storage);
+                _Result += _View.size();
+            } else if (_Arg_type == _Basic_format_arg_type::_CString_type) {
                 _Result += 32; // estimate for length of null-terminated strings
             } else {
                 _Result += 8; // estimate for length of all other arguments
             }
-        };
-        for (size_t _Idx = 0; _Idx < _Num_args; ++_Idx) {
-            _STD visit_format_arg(_Visitor, get(_Idx));
         }
         return _Result;
     }
