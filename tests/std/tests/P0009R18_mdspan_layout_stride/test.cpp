@@ -78,6 +78,26 @@ static_assert(
 static_assert(
     check_layout_mapping_policy_requirements<LyingLayout<AlwaysUnique::yes, AlwaysStrided::yes>, dextents<int, 3>>());
 
+struct HollowLayout {
+    template <class Extents>
+        requires (Extents::rank() == 0)
+    class mapping : public layout_right::mapping<Extents> {
+    public:
+        using index_type  = Extents::index_type;
+        using layout_type = HollowLayout;
+
+        constexpr index_type operator()() const noexcept {
+            return 1; // NB: used by 'check_comparisons' (OFFSET(*this) != 0)
+        }
+
+        constexpr index_type required_span_size() const noexcept {
+            return 2;
+        }
+    };
+};
+
+static_assert(check_layout_mapping_policy_requirements<HollowLayout, extents<short>>());
+
 template <size_t... Extents, class IndexType, class StridesIndexType, size_t... Indices>
 constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
     const array<StridesIndexType, sizeof...(Extents)>& strs, index_sequence<Indices...>) {
@@ -592,7 +612,47 @@ constexpr void check_comparisons() {
         static_assert(noexcept(m1 != m3));
     }
 
-    // TRANSITION, Check comparisons with custom layout mapping
+    { // Check correctness: layout_stride::mapping with LyingLayout<AlwaysUnique::no, AlwaysStrided::yes>::mapping
+        using CustomMapping = LyingLayout<AlwaysUnique::no, AlwaysStrided::yes>::mapping<E>;
+        CustomMapping m1;
+        StaticStrideMapping m2{E{}, array{1, 2}};
+        same_as<bool> decltype(auto) cond = m1 == m2;
+        assert(cond); // extents are equal, OFFSET(rhs) == 0, strides are equal
+
+        DynamicStrideMapping m3{dextents<int, 2>{2, 3}, array{3, 1}};
+        assert(m1 != m3); // extents are equal, OFFSET(rhs) == 0, strides are not equal
+        assert(m2 != m3); // ditto
+
+        DynamicStrideMapping m4{dextents<int, 2>{1, 3}, array{1, 2}};
+        assert(m1 != m4); // extents are not equal, OFFSET(rhs) == 0, strides are equal
+        assert(m2 != m4); // ditto
+        assert(m3 != m4); // extents are not equal, OFFSET(rhs) == 0, strides are not equal
+
+        // NB: OFFSET(CustomMapping) is always equal to 0
+
+        static_assert(noexcept(m1 == m2));
+        static_assert(noexcept(m1 != m3));
+    }
+
+    { // Check correctness: layout_stride::mapping with HollowLayout::mapping
+        HollowLayout::mapping<extents<short>> m1;
+        if constexpr (!is_permissive) {
+            if (!is_constant_evaluated()) { // too heavy for compile time
+                const auto props = get_mapping_properties(m1);
+                assert(props.req_span_size == m1.required_span_size());
+                assert(props.uniqueness);
+                assert(props.exhaustiveness);
+                assert(props.strideness);
+            }
+        }
+
+        layout_stride::mapping<extents<unsigned short>> m2;
+        same_as<bool> decltype(auto) cond = m1 == m2;
+        assert(!cond); // extents are equal, OFFSET(rhs) != 0, strides are equal
+
+        static_assert(noexcept(m1 == m2));
+        static_assert(noexcept(m1 != m2));
+    }
 }
 
 constexpr void check_ctad() {

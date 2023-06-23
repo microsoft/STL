@@ -304,7 +304,8 @@ MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
             std::optional<IndexType> sr;
             for (auto i : multidim_indices) {
                 const auto i_plus_dr = [&]<size_t... Indices>(std::index_sequence<Indices...>) {
-                    return std::array{static_cast<IndexType>(std::get<Indices>(i) + (Indices == r ? 1 : 0))...};
+                    return std::array<IndexType, rank>{
+                        static_cast<IndexType>(std::get<Indices>(i) + (Indices == r ? 1 : 0))...};
                 }(rank_indices);
 
                 if (i_plus_dr[r] < get_extent(r)) {
