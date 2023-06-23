@@ -49,8 +49,8 @@ public:
         "Each element of Extents must be either equal to dynamic_extent, or must be representable as a value of type "
         "IndexType (N4950 [mdspan.extents.overview]/1.2).");
 
-    static constexpr rank_type _Rank      = sizeof...(_Extents);
-    static constexpr size_t _Rank_dynamic = _Calculate_rank_dynamic<_Extents...>;
+    static constexpr rank_type _Rank         = sizeof...(_Extents);
+    static constexpr rank_type _Rank_dynamic = _Calculate_rank_dynamic<_Extents...>;
 
 private:
     static constexpr array<rank_type, _Rank> _Static_extents = {_Extents...};
