@@ -294,7 +294,7 @@ MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
 
     // Is mapping exhaustive? (N4950 [mdspan.layout.reqmts]/16)
     props.exhaustiveness =
-        std::ranges::adjacent_find(mapped_indices, [](auto x, auto y) { return y - x != 1; }) == mapped_indices.end();
+        std::ranges::adjacent_find(mapped_indices, [](auto x, auto y) { return y - x > 1; }) == mapped_indices.end();
 
     { // Is mapping strided? (N4950 [mdspan.layout.reqmts]/18)
         props.strideness = true; // assumption
