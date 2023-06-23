@@ -22,9 +22,6 @@ struct CmpEqual {
     }
 };
 
-enum class AlwaysUnique { no, yes };
-enum class AlwaysStrided { no, yes };
-
 struct NotLayoutMappingAlikeAtAll {
     template <class Extents>
     class mapping : public layout_right::mapping<Extents> {
@@ -37,6 +34,9 @@ struct NotLayoutMappingAlikeAtAll {
 };
 
 static_assert(!_Layout_mapping_alike<NotLayoutMappingAlikeAtAll::mapping<extents<int, 4, 4>>>);
+
+enum class AlwaysUnique { no, yes };
+enum class AlwaysStrided { no, yes };
 
 template <AlwaysUnique Unique, AlwaysStrided Strided>
 struct LyingLayout {
