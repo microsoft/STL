@@ -2592,9 +2592,12 @@ _NODISCARD _OutputIt _Write_sign(_OutputIt _Out, const _Fmt_sign _Sgn, const boo
     return _Out;
 }
 
-inline void _Buffer_to_uppercase(char* _First, const char* _Last) {
+// We don't need to care about locale here.
+inline void _Buffer_to_uppercase(char* _First, const char* _Last) noexcept {
     for (; _First != _Last; ++_First) {
-        *_First = static_cast<char>(_CSTD toupper(*_First));
+        if (*_First >= 'a' && *_First <= 'z') {
+            *_First -= 'a' - 'A';
+        }
     }
 }
 
@@ -2726,18 +2729,13 @@ _NODISCARD _OutputIt _Write_integral(
     }
 
     int _Base      = 10;
-    bool _To_upper = false;
 
     switch (_Specs._Type) {
     case 'B':
-        _To_upper = true;
-        [[fallthrough]];
     case 'b':
         _Base = 2;
         break;
     case 'X':
-        _To_upper = true;
-        [[fallthrough]];
     case 'x':
         _Base = 16;
         break;
@@ -2763,7 +2761,7 @@ _NODISCARD _OutputIt _Write_integral(
         _Buffer_start += 1;
     }
 
-    if (_To_upper) {
+    if (_Specs._Type == 'X') {
         _Buffer_to_uppercase(_Buffer_start, _End);
     }
 
@@ -2968,9 +2966,10 @@ _NODISCARD _OutputIt _Fmt_write(
         }
     }
 
+    _STL_INTERNAL_CHECK(_Exponent == 'e' || _Exponent == 'p');
     if (_To_upper) {
         _Buffer_to_uppercase(_Buffer_start, _Result.ptr);
-        _Exponent = static_cast<char>(_CSTD toupper(_Exponent));
+        _Exponent -= 'a' - 'A';
     }
 
     const auto _Is_finite = (_STD isfinite)(_Value);
