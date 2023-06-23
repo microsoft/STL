@@ -4,6 +4,7 @@
 #include <cassert>
 #include <functional>
 #include <iterator>
+#include <ranges>
 #include <utility>
 
 using namespace std;
