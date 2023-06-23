@@ -2090,7 +2090,7 @@ public:
 
     _NODISCARD size_t _Estimate_required_capacity() const noexcept {
         using _CharType = typename _Context::char_type;
-        size_t _Result = 0;
+        size_t _Result  = 0;
 
         for (size_t _Idx = 0; _Idx < _Num_args; ++_Idx) {
             const auto _Packed_index = _Index_array[_Idx];
@@ -2727,7 +2727,7 @@ _NODISCARD _OutputIt _Write_integral(
         _Specs._Sgn = _Fmt_sign::_Minus;
     }
 
-    int _Base      = 10;
+    int _Base = 10;
 
     switch (_Specs._Type) {
     case 'B':
