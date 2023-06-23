@@ -468,6 +468,15 @@ void test_vso_1253916() {
     do_shared_locked_things(shared_lock<shared_mutex>{mtx});
 }
 
+void test_constexpr_mutex_constructor() {
+    struct test_type {
+        constexpr test_type() {}
+        mutex mtx;
+    };
+
+    test_type obj;
+}
+
 int main() {
     {
         mutex_test_fixture<mutex> fixture;
