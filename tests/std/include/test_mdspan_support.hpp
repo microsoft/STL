@@ -267,14 +267,13 @@ struct MappingProperties {
 template <class Mapping>
     requires (!details::PermissiveTest<Mapping>::test())
 MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
-    using IndexType          = typename Mapping::index_type;
-    constexpr IndexType zero = 0;
-    constexpr auto rank      = Mapping::extents_type::rank();
+    using IndexType     = typename Mapping::index_type;
+    constexpr auto rank = Mapping::extents_type::rank();
     constexpr std::make_index_sequence<rank> rank_indices;
 
     auto get_extent       = [&](size_t i) { return mapping.extents().extent(i); };
     auto multidim_indices = [&]<size_t... Indices>(std::index_sequence<Indices...>) {
-        return std::views::cartesian_product(std::views::iota(zero, get_extent(Indices))...);
+        return std::views::cartesian_product(std::views::iota(IndexType{0}, get_extent(Indices))...);
     }(rank_indices);
 
     auto map_index      = [&](const auto& tpl) { return std::apply([&](auto... i) { return mapping(i...); }, tpl); };
@@ -284,19 +283,18 @@ MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
     MappingProperties<Mapping> props{};
 
     // Find required span size (N4950 [mdspan.layout.reqmts]/12)
-    if (std::ranges::contains(std::views::iota(0u, rank) | std::views::transform(get_extent), zero)) {
+    if (std::ranges::contains(std::views::iota(0u, rank) | std::views::transform(get_extent), IndexType{0})) {
         props.req_span_size = 0;
     } else {
         props.req_span_size = static_cast<IndexType>(1 + mapped_indices.back());
     }
 
     // Is mapping unique? (N4950 [mdspan.layout.reqmts]/14)
-    props.uniqueness = !std::ranges::contains(std::views::pairwise_transform(mapped_indices, std::minus{}), zero);
+    props.uniqueness = std::ranges::adjacent_find(mapped_indices) == mapped_indices.end();
 
-    { // Is mapping exhaustive? (N4950 [mdspan.layout.reqmts]/16)
-        const auto diffs     = std::views::pairwise_transform(mapped_indices, [](auto x, auto y) { return y - x; });
-        props.exhaustiveness = std::ranges::find_if_not(diffs, [](auto x) { return x == 1; }) == diffs.end();
-    }
+    // Is mapping exhaustive? (N4950 [mdspan.layout.reqmts]/16)
+    props.exhaustiveness =
+        std::ranges::adjacent_find(mapped_indices, [](auto x, auto y) { return y - x != 1; }) == mapped_indices.end();
 
     { // Is mapping strided? (N4950 [mdspan.layout.reqmts]/18)
         props.strideness = true; // assumption
