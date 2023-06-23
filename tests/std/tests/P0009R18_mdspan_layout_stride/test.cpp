@@ -9,6 +9,7 @@
 #include <mdspan>
 #include <span>
 #include <type_traits>
+#include <utility>
 
 #include <test_mdspan_support.hpp>
 
@@ -20,6 +21,62 @@ struct CmpEqual {
         return cmp_equal(t, u);
     }
 };
+
+enum class AlwaysUnique { no, yes };
+enum class AlwaysStrided { no, yes };
+
+struct NotLayoutMappingAlikeAtAll {
+    template <class Extents>
+    class mapping : public layout_right::mapping<Extents> {
+    public:
+        using layout_type = NotLayoutMappingAlikeAtAll;
+
+    private:
+        using layout_right::mapping<Extents>::is_always_exhaustive;
+    };
+};
+
+static_assert(!_Layout_mapping_alike<NotLayoutMappingAlikeAtAll::mapping<extents<int, 4, 4>>>);
+
+template <AlwaysUnique Unique, AlwaysStrided Strided>
+struct LyingLayout {
+    template <class Extents>
+    class mapping : public layout_left::mapping<Extents> {
+    public:
+        using layout_type = LyingLayout;
+
+        constexpr bool is_unique() const {
+            return is_unique();
+        }
+
+        constexpr bool is_exhaustive() const {
+            return is_exhaustive();
+        }
+
+        constexpr bool is_strided() const {
+            return is_strided();
+        }
+
+        static constexpr bool is_always_unique() {
+            return to_underlying(
+                Unique); // might be a lie, allowed by the standard (N4950 [mdspan.layout.reqmts]/23 Note 5)
+        }
+
+        static constexpr bool is_always_exhaustive() {
+            return layout_right::mapping<Extents>::is_always_exhaustive();
+        }
+
+        static constexpr bool is_always_strided() {
+            return to_underlying(
+                Strided); // might be a lie, allowed by the standard (N4950 [mdspan.layout.reqmts]/27 Note 7)
+        }
+    };
+};
+
+static_assert(
+    check_layout_mapping_policy_requirements<LyingLayout<AlwaysUnique::no, AlwaysStrided::no>, extents<int, 3, 4>>());
+static_assert(
+    check_layout_mapping_policy_requirements<LyingLayout<AlwaysUnique::yes, AlwaysStrided::yes>, dextents<int, 3>>());
 
 template <size_t... Extents, class IndexType, class StridesIndexType, size_t... Indices>
 constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
@@ -263,16 +320,24 @@ constexpr void check_construction_from_other_mappings() {
         static_assert(is_nothrow_constructible_v<Mapping, layout_left::mapping<extents<long, 4, 4>>>);
         static_assert(is_nothrow_constructible_v<Mapping, layout_right::mapping<extents<long, 4, 4>>>);
         static_assert(is_nothrow_constructible_v<Mapping, layout_stride::mapping<extents<long, 4, 4>>>);
+        static_assert(is_nothrow_constructible_v<Mapping,
+            LyingLayout<AlwaysUnique::yes, AlwaysStrided::yes>::mapping<extents<long, 4, 4>>>);
     }
 
     { // Check invalid construction
         using Mapping = layout_stride::mapping<extents<unsigned int, 4, 4>>;
+        static_assert(!is_constructible_v<Mapping, NotLayoutMappingAlikeAtAll::mapping<extents<int, 4, 4>>>);
         static_assert(!is_constructible_v<Mapping, layout_left::mapping<extents<int, 4, 3>>>);
         static_assert(!is_constructible_v<Mapping, layout_right::mapping<extents<int, 3, 4>>>);
         static_assert(!is_constructible_v<Mapping, layout_left::mapping<extents<long, 4, 4, 4>>>);
         static_assert(!is_constructible_v<Mapping, layout_right::mapping<extents<long, 3, 3>>>);
         static_assert(!is_constructible_v<Mapping, layout_stride::mapping<extents<int, 4, 4, 3>>>);
-        // TRANSITION, Check other kinds of invalid construction (requires new helper types)
+        static_assert(!is_constructible_v<Mapping,
+                      LyingLayout<AlwaysUnique::no, AlwaysStrided::yes>::mapping<extents<long, 4, 4>>>);
+        static_assert(!is_constructible_v<Mapping,
+                      LyingLayout<AlwaysUnique::yes, AlwaysStrided::no>::mapping<extents<long, 4, 4>>>);
+        static_assert(!is_constructible_v<Mapping,
+                      LyingLayout<AlwaysUnique::no, AlwaysStrided::no>::mapping<extents<long, 4, 4>>>);
     }
 
     { // Check construction from layout_left::mapping
@@ -439,17 +504,29 @@ constexpr void check_comparisons() {
     using RightMapping         = layout_right::mapping<E>;
     using LeftMapping          = layout_left::mapping<E>;
 
-    { // Check equality_comparable_with concept
+    { // Check equality_comparable_with concept (correct comparisons)
         static_assert(equality_comparable_with<StaticStrideMapping, DynamicStrideMapping>);
         static_assert(equality_comparable_with<StaticStrideMapping, RightMapping>);
         static_assert(equality_comparable_with<StaticStrideMapping, LeftMapping>);
         static_assert(equality_comparable_with<DynamicStrideMapping, RightMapping>);
         static_assert(equality_comparable_with<DynamicStrideMapping, LeftMapping>);
+    }
+
+    { // Check equality_comparable_with concept (incorrect comparisons)
+        static_assert(
+            !equality_comparable_with<StaticStrideMapping, NotLayoutMappingAlikeAtAll::mapping<extents<int, 2, 3>>>);
         static_assert(!equality_comparable_with<DynamicStrideMapping, layout_stride::mapping<extents<int, 2, 3, 4>>>);
         static_assert(!equality_comparable_with<StaticStrideMapping, layout_stride::mapping<dextents<int, 3>>>);
         static_assert(!equality_comparable_with<DynamicStrideMapping, layout_right::mapping<extents<int, 2>>>);
         static_assert(!equality_comparable_with<StaticStrideMapping, layout_left::mapping<dextents<int, 1>>>);
-        // TRANSITION, Check other constraints: N4950 [mdspan.layout.stride.obs]/6.1, 6.3
+        static_assert(!equality_comparable_with<DynamicStrideMapping,
+                      LyingLayout<AlwaysUnique::yes, AlwaysStrided::no>::mapping<dextents<int, 2>>>);
+        static_assert(!equality_comparable_with<StaticStrideMapping,
+                      LyingLayout<AlwaysUnique::yes, AlwaysStrided::no>::mapping<extents<int, 2, 3>>>);
+        static_assert(!equality_comparable_with<DynamicStrideMapping,
+                      LyingLayout<AlwaysUnique::no, AlwaysStrided::no>::mapping<dextents<int, 2>>>);
+        static_assert(!equality_comparable_with<StaticStrideMapping,
+                      LyingLayout<AlwaysUnique::no, AlwaysStrided::no>::mapping<extents<int, 2, 3>>>);
     }
 
     { // Check correctness: layout_stride::mapping with layout_stride::mapping
