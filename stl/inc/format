@@ -181,7 +181,7 @@ concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
                                 && _Parse_precision_callbacks<_Ty, _CharT>
                                 && _Width_adapter_callbacks<_Ty, _CharT>
                                 && _Precision_adapter_callbacks<_Ty, _CharT>
-                                && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln, _Fmt_sign _Sgn) {
+                                && requires(_Ty _At, _Fmt_sign _Sgn) {
                                     { _At._On_sign(_Sgn) } -> same_as<void>;
                                     { _At._On_hash() } -> same_as<void>;
                                     { _At._On_zero() } -> same_as<void>;
