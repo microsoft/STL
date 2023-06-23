@@ -223,7 +223,6 @@ tests\GH_003022_substr_allocator
 tests\GH_003105_piecewise_densities
 tests\GH_003119_error_category_ctor
 tests\GH_003246_cmath_narrowing
-tests\GH_003570_allocate_at_least
 tests\GH_003572_fstream_seekp_0_cur
 tests\GH_003617_vectorized_meow_element
 tests\GH_003676_format_large_hh_mm_ss_values

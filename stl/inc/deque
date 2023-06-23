@@ -1557,12 +1557,11 @@ private:
 
             _Newsize *= 2;
         }
+        _Count = _Newsize - _Mapsize();
 
         size_type _Myboff = _Myoff() / _Block_size;
-        _Mapptr _Newmap   = _Allocate_at_least_helper(_Almap, _Newsize);
+        _Mapptr _Newmap   = _Almap.allocate(_Mapsize() + _Count);
         _Mapptr _Myptr    = _Newmap + _Myboff;
-
-        _Count = _Newsize - _Mapsize();
 
         _Myptr = _STD uninitialized_copy(_Map() + _Myboff, _Map() + _Mapsize(), _Myptr); // copy initial to end
         if (_Myboff <= _Count) { // increment greater than offset of initial block
