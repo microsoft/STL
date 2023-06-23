@@ -2592,7 +2592,7 @@ _NODISCARD _OutputIt _Write_sign(_OutputIt _Out, const _Fmt_sign _Sgn, const boo
     return _Out;
 }
 
-// We don't need to care about locale here.
+// We don't need to use `toupper` here.
 inline void _Buffer_to_uppercase(char* _First, const char* _Last) noexcept {
     for (; _First != _Last; ++_First) {
         if (*_First >= 'a' && *_First <= 'z') {
