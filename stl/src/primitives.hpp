@@ -58,7 +58,7 @@ namespace Concurrency {
 
             virtual bool wait_for(_Stl_critical_section* lock, unsigned int timeout) {
                 return SleepConditionVariableSRW(
-                           &m_condition_variable, reinterpret_cast<PSRWLOCK>(lock->_M_srw_lock), timeout, 0)
+                           &m_condition_variable, reinterpret_cast<PSRWLOCK>(&lock->_M_srw_lock), timeout, 0)
                     != 0;
             }
 
