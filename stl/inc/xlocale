@@ -280,6 +280,7 @@ public:
     locale(const locale& _Loc, const locale& _Other, category _Cat) : _Ptr(_Locimp::_New_Locimp(*_Loc._Ptr)) {
         // construct a locale by copying named facets
         if (_Cat != none) { // worth adding, do it
+            _STL_ASSERT((_Cat & all) == _Cat, "the bitmask value specifying category must be valid");
             _Facet_guard _Guard{_Ptr};
             _BEGIN_LOCINFO(_Lobj)
             _Locimp::_Makeloc(_Lobj, _Cat, _Ptr, &_Other);
@@ -294,6 +295,7 @@ public:
 
 private:
     void _Construct(const string& _Str, category _Cat) {
+        _STL_ASSERT((_Cat & all) == _Cat, "the bitmask value specifying category must be valid");
         // construct a locale with named facets
         bool _Bad = false;
         _Init();
