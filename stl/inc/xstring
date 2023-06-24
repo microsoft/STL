@@ -2367,8 +2367,9 @@ private:
     static constexpr auto _BUF_SIZE              = _Scary_val::_BUF_SIZE;
     static constexpr auto _ALLOC_MASK            = _Scary_val::_ALLOC_MASK;
     static constexpr auto _SMALL_STRING_CAPACITY = _Scary_val::_SMALL_STRING_CAPACITY;
+
     static constexpr bool _Entails_large_string(size_type _Size_or_capacity) noexcept {
-        // checks wether planned size/capacity entails large string mode
+        // decides wether planned size/capacity entails large string mode
         return _Size_or_capacity > _SMALL_STRING_CAPACITY;
     }
 
@@ -2597,7 +2598,7 @@ public:
     }
 
 private:
-    static constexpr pointer _Allocate_from_al(_Alty& _Al, const size_type _New_capacity) {
+    static _CONSTEXPR20 pointer _Allocate_from_al(_Alty& _Al, const size_type _New_capacity) {
         _STL_INTERNAL_CHECK(_New_capacity > _SMALL_STRING_CAPACITY);
         const pointer _Fancy_ptr = _Al.allocate(_New_capacity + 1); // throws
         // Start element lifetimes to avoid UB. This is a more general mechanism than _String_val::_Activate_SSO_buffer,
@@ -2613,7 +2614,7 @@ private:
         return _Fancy_ptr;
     }
 
-    static constexpr void _Deallocate_from_al(
+    static _CONSTEXPR20 void _Deallocate_from_al(
         _Alty& _Al, const pointer _Old_ptr, const size_type _Old_capacity) noexcept {
         _STL_INTERNAL_CHECK(_Old_capacity > _SMALL_STRING_CAPACITY);
         _Al.deallocate(_Old_ptr, _Old_capacity + 1);
