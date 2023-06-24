@@ -2216,11 +2216,11 @@ public:
     // length of internal buffer, [1, 16]:
     static constexpr size_type _BUF_SIZE = 16 / sizeof(value_type) < 1 ? 1 : 16 / sizeof(value_type);
     // roundup mask for allocated buffers, [0, 15]:
-    static constexpr size_type _ALLOC_MASK = sizeof(value_type) <= 1 ? 15
-                                           : sizeof(value_type) <= 2 ? 7
-                                           : sizeof(value_type) <= 4 ? 3
-                                           : sizeof(value_type) <= 8 ? 1
-                                                                     : 0;
+    static constexpr size_type _ALLOC_MASK            = sizeof(value_type) <= 1 ? 15
+                                                      : sizeof(value_type) <= 2 ? 7
+                                                      : sizeof(value_type) <= 4 ? 3
+                                                      : sizeof(value_type) <= 8 ? 1
+                                                                                : 0;
     static constexpr size_type _SMALL_STRING_CAPACITY = _BUF_SIZE - 1;
 
     _CONSTEXPR20 value_type* _Myptr() noexcept {
@@ -2363,9 +2363,13 @@ public:
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
 private:
-    static constexpr auto _BUF_SIZE   = _Scary_val::_BUF_SIZE;
-    static constexpr auto _ALLOC_MASK = _Scary_val::_ALLOC_MASK;
+    static constexpr auto _BUF_SIZE              = _Scary_val::_BUF_SIZE;
+    static constexpr auto _ALLOC_MASK            = _Scary_val::_ALLOC_MASK;
     static constexpr auto _SMALL_STRING_CAPACITY = _Scary_val::_SMALL_STRING_CAPACITY;
+
+    static constexpr bool _Entails_large_string(size_type _Size_or_capacity) noexcept {
+        return _Size_or_capacity > _SMALL_STRING_CAPACITY;
+    }
 
     // When doing _String_val operations by memcpy, we are touching:
     //   _String_val::_Bx::_Buf (type is array of _Elem)
@@ -2635,7 +2639,7 @@ private:
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
-        if (_Count < _BUF_SIZE) {
+        if (!_Entails_large_string(_Count)) {
             _My_data._Mysize = _Count;
             _My_data._Myres  = _SMALL_STRING_CAPACITY;
 
@@ -2698,7 +2702,7 @@ private:
                 _Xlen_string(); // result too long
             }
 
-            if (_Count >= _BUF_SIZE) {
+            if (_Entails_large_string(_Count)) {
                 const size_type _New_capacity = _Calculate_growth(_Count);
                 const pointer _New_ptr        = _Allocate_from_al(_Al, _New_capacity); // throws
                 _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
@@ -3056,7 +3060,7 @@ private:
         const auto _Result_size = _Right_data._Clamp_suffix_size(_Roff, _Size_max);
         const auto _Right_ptr   = _Right_data._Myptr();
         auto& _Al               = _Getal();
-        if (_Allocators_equal(_Al, _Right._Getal()) && _Result_size >= _BUF_SIZE) {
+        if (_Allocators_equal(_Al, _Right._Getal()) && _Entails_large_string(_Result_size)) {
             if (_Roff != 0) {
                 _Traits::move(_Right_ptr, _Right_ptr + _Roff, _Result_size);
             }
@@ -3988,7 +3992,7 @@ public:
             return;
         }
 
-        if (_My_data._Mysize < _BUF_SIZE) {
+        if (!_Entails_large_string(_My_data._Mysize)) {
             _Become_small();
             return;
         }
@@ -4212,7 +4216,7 @@ public:
             return;
         }
 
-        if (_BUF_SIZE > _Newcap && _Mypair._Myval2._Large_string_engaged()) {
+        if (!_Entails_large_string(_Newcap) && _Mypair._Myval2._Large_string_engaged()) {
             // deallocate everything; switch back to "small" mode
             _Become_small();
             return;
@@ -4743,7 +4747,7 @@ private:
         _Mypair._Myval2._Mysize = _New_size;
         _Mypair._Myval2._Myres  = _New_capacity;
         _Fn(_Unfancy(_New_ptr), _New_size, _Args...);
-        if (_BUF_SIZE <= _Old_capacity) {
+        if (_Old_capacity != _SMALL_STRING_CAPACITY) { // large string engaged
             _Deallocate_from_al(_Al, _Mypair._Myval2._Bx._Ptr, _Old_capacity);
             _Mypair._Myval2._Bx._Ptr = _New_ptr;
         } else {
@@ -4775,7 +4779,7 @@ private:
         _My_data._Mysize      = _New_size;
         _My_data._Myres       = _New_capacity;
         _Elem* const _Raw_new = _Unfancy(_New_ptr);
-        if (_BUF_SIZE <= _Old_capacity) {
+        if (_Old_capacity != _SMALL_STRING_CAPACITY) { // large string engaged
             const pointer _Old_ptr = _My_data._Bx._Ptr;
             _Fn(_Raw_new, _Unfancy(_Old_ptr), _Old_size, _Args...);
             _Deallocate_from_al(_Al, _Old_ptr, _Old_capacity);
@@ -4793,7 +4797,7 @@ private:
         // release any held storage and return to small string mode
         auto& _My_data = _Mypair._Myval2;
         _STL_INTERNAL_CHECK(_My_data._Large_string_engaged());
-        _STL_INTERNAL_CHECK(_My_data._Mysize < _BUF_SIZE);
+        _STL_INTERNAL_CHECK(!_Entails_large_string(_My_data._Mysize));
 
         _My_data._Orphan_all();
         _ASAN_STRING_REMOVE(*this);
