@@ -2221,7 +2221,7 @@ public:
                                            : sizeof(value_type) <= 4 ? 3
                                            : sizeof(value_type) <= 8 ? 1
                                                                      : 0;
-    // capacity of small strings
+    // capacity for small strings; smallest possible value of _Myres
     static constexpr size_type _SMALL_STRING_CAPACITY = _BUF_SIZE - 1;
 
     _CONSTEXPR20 value_type* _Myptr() noexcept {
@@ -2367,8 +2367,8 @@ private:
     static constexpr auto _BUF_SIZE              = _Scary_val::_BUF_SIZE;
     static constexpr auto _ALLOC_MASK            = _Scary_val::_ALLOC_MASK;
     static constexpr auto _SMALL_STRING_CAPACITY = _Scary_val::_SMALL_STRING_CAPACITY;
-
     static constexpr bool _Entails_large_string(size_type _Size_or_capacity) noexcept {
+        // checks wether planned size/capacity entails large string mode
         return _Size_or_capacity > _SMALL_STRING_CAPACITY;
     }
 
