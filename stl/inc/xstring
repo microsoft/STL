@@ -2368,7 +2368,7 @@ private:
     static constexpr auto _ALLOC_MASK            = _Scary_val::_ALLOC_MASK;
     static constexpr auto _SMALL_STRING_CAPACITY = _Scary_val::_SMALL_STRING_CAPACITY;
 
-    static constexpr bool _Entails_large_string(size_type _Size_or_capacity) noexcept {
+    _NODISCARD static _CONSTEXPR20 bool _Entails_large_string(size_type _Size_or_capacity) noexcept {
         // decides wether planned size/capacity entails large string mode
         return _Size_or_capacity > _SMALL_STRING_CAPACITY;
     }
@@ -2598,12 +2598,12 @@ public:
     }
 
 private:
-    static _CONSTEXPR20 pointer _Allocate_from_al(_Alty& _Al, const size_type _New_capacity) {
+    _NODISCARD static _CONSTEXPR20 pointer _Allocate_from_al(_Alty& _Al, const size_type _New_capacity) {
         _STL_INTERNAL_CHECK(_New_capacity > _SMALL_STRING_CAPACITY);
         const pointer _Fancy_ptr = _Al.allocate(_New_capacity + 1);
+#if _HAS_CXX20
         // Start element lifetimes to avoid UB. This is a more general mechanism than _String_val::_Activate_SSO_buffer,
         // but likely more impactful to throughput.
-#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             _Elem* const _Ptr = _Unfancy(_Fancy_ptr);
             for (size_type _Idx = 0; _Idx < _New_capacity + 1; ++_Idx) {
