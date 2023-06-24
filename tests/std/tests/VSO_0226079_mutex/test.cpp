@@ -469,14 +469,14 @@ void test_vso_1253916() {
 }
 
 void test_constexpr_mutex_constructor() {
-#ifdef _USE_CONSTEXPR_MUTEX_CONSTRUCTOR
+#ifndef _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
     struct test_type {
         constexpr test_type() {}
         mutex mtx;
     };
 
     test_type obj;
-#endif // _USE_CONSTEXPR_MUTEX_CONSTRUCTOR
+#endif // _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
 }
 
 int main() {
