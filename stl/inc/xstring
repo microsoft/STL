@@ -2656,7 +2656,7 @@ private:
 
         _My_data._Myres               = _BUF_SIZE - 1;
         const size_type _New_capacity = _Calculate_growth(_Count);
-        const pointer _New_ptr        = _Allocate_from_al(_Al,_New_capacity); // throws
+        const pointer _New_ptr        = _Allocate_from_al(_Al, _New_capacity); // throws
         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
 
         _My_data._Mysize = _Count;
@@ -2697,7 +2697,7 @@ private:
 
             if (_Count >= _BUF_SIZE) {
                 const size_type _New_capacity = _Calculate_growth(_Count);
-                const pointer _New_ptr        = _Allocate_from_al(_Al,_New_capacity); // throws
+                const pointer _New_ptr        = _Allocate_from_al(_Al, _New_capacity); // throws
                 _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
                 _My_data._Myres = _New_capacity;
             }
