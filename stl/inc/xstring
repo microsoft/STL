@@ -2216,11 +2216,12 @@ public:
     // length of internal buffer, [1, 16]:
     static constexpr size_type _BUF_SIZE = 16 / sizeof(value_type) < 1 ? 1 : 16 / sizeof(value_type);
     // roundup mask for allocated buffers, [0, 15]:
-    static constexpr size_type _ALLOC_MASK            = sizeof(value_type) <= 1 ? 15
-                                                      : sizeof(value_type) <= 2 ? 7
-                                                      : sizeof(value_type) <= 4 ? 3
-                                                      : sizeof(value_type) <= 8 ? 1
-                                                                                : 0;
+    static constexpr size_type _ALLOC_MASK = sizeof(value_type) <= 1 ? 15
+                                           : sizeof(value_type) <= 2 ? 7
+                                           : sizeof(value_type) <= 4 ? 3
+                                           : sizeof(value_type) <= 8 ? 1
+                                                                     : 0;
+    // capacity of small strings
     static constexpr size_type _SMALL_STRING_CAPACITY = _BUF_SIZE - 1;
 
     _CONSTEXPR20 value_type* _Myptr() noexcept {
@@ -2292,8 +2293,8 @@ public:
     };
     _Bxty _Bx;
 
-    size_type _Mysize = 0; // current length of string
-    size_type _Myres  = 0; // current storage reserved for string
+    size_type _Mysize = 0; // current length of string (string::size)
+    size_type _Myres  = 0; // current storage reserved for string (string::capacity)
 };
 
 // get _Ty's size after being EBCO'd
