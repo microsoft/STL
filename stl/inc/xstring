@@ -2600,7 +2600,7 @@ public:
 private:
     static _CONSTEXPR20 pointer _Allocate_from_al(_Alty& _Al, const size_type _New_capacity) {
         _STL_INTERNAL_CHECK(_New_capacity > _SMALL_STRING_CAPACITY);
-        const pointer _Fancy_ptr = _Al.allocate(_New_capacity + 1); // throws
+        const pointer _Fancy_ptr = _Al.allocate(_New_capacity + 1);
         // Start element lifetimes to avoid UB. This is a more general mechanism than _String_val::_Activate_SSO_buffer,
         // but likely more impactful to throughput.
 #if _HAS_CXX20
