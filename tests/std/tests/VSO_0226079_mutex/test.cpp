@@ -468,16 +468,17 @@ void test_vso_1253916() {
     do_shared_locked_things(shared_lock<shared_mutex>{mtx});
 }
 
-void test_constexpr_mutex_constructor() {
 #ifndef _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
-    struct test_type {
-        constexpr test_type() {}
-        mutex mtx;
-    };
+struct test_constexpr_ctor {
+    constexpr test_constexpr_ctor() {}
+    mutex mtx;
+};
 
-    test_type obj;
-#endif // _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
-}
+test_constexpr_ctor obj;
+#if _HAS_CXX20
+constinit test_constexpr_ctor obj2;
+#endif // _HAS_CXX20
+#endif // !_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
 
 int main() {
     {
