@@ -2795,7 +2795,7 @@ public:
 
         if (_New_capacity < _New_size) {
             _New_capacity           = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size());
-            const pointer _Fancyptr = _Allocate_from_al(_Getal(), _New_capacity);
+            const pointer _Fancyptr = _Allocate_from_al(_Getal(), _New_capacity); // throws
             _Ptr                    = _Unfancy(_Fancyptr);
             _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
         }
