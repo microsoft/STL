@@ -38,9 +38,9 @@ struct Holder {
 };
 struct Incomplete;
 
-static_assert(std::equality_comparable<Holder<Incomplete>*>);
-static_assert(std::indirectly_comparable<Holder<Incomplete>**, Holder<Incomplete>**, std::equal_to<>>);
-static_assert(std::sortable<Holder<Incomplete>**>);
+static_assert(equality_comparable<Holder<Incomplete>*>);
+static_assert(indirectly_comparable<Holder<Incomplete>**, Holder<Incomplete>**, equal_to<>>);
+static_assert(sortable<Holder<Incomplete>**>);
 
 constexpr bool test() {
     Holder<Incomplete>* a[10] = {};
