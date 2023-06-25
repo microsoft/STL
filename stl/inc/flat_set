@@ -624,7 +624,7 @@ public:
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
-typename _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
+_Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     _Clear_scope_guard _Guard{&_Val};
     const auto _Erased_count = _Erase_remove_if(_Val, _Pass_fn(_Predicate));
     _Guard._Clearable        = nullptr;
@@ -632,7 +632,7 @@ typename _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val
 }
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
-typename _Container::size_type erase_if(flat_multiset<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
+_Container::size_type erase_if(flat_multiset<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     _Clear_scope_guard _Guard{&_Val};
     const auto _Erased_count = _Erase_remove_if(_Val, _Pass_fn(_Predicate));
     _Guard._Clearable        = nullptr;
