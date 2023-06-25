@@ -242,11 +242,9 @@ public:
     }
 
     _NODISCARD container_type extract() && {
-        // The container NEEDS to be cleared no matter what,
-        // which is not guaranteed by simply moving it away
-        // ("... valid but unspecified ...")
         container_type& _Cont = _Get_cont();
-        _Clear_scope_guard _Guard{this};
+        // always clears the container (N4950 [flat.set.modifiers]/15 and [flat.multiset.modifiers]/10)
+        _Clear_scope_guard<_Base_flat_set> _Guard{this};
         container_type _Temp = _STD move(_Cont);
         return _Temp;
     }
@@ -625,7 +623,8 @@ public:
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
-    _Clear_scope_guard _Guard{&_Val};
+    // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.set.erasure]/5)
+    _Clear_scope_guard<flat_set<_Kty, _Keylt, _Container>> _Guard{&_Val};
     const auto _Erased_count = _Erase_remove_if(_Val, _Pass_fn(_Predicate));
     _Guard._Clearable        = nullptr;
     return _Erased_count;
@@ -633,7 +632,8 @@ _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_multiset<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
-    _Clear_scope_guard _Guard{&_Val};
+    // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.multiset.erasure]/5)
+    _Clear_scope_guard<flat_multiset<_Kty, _Keylt, _Container>> _Guard{&_Val};
     const auto _Erased_count = _Erase_remove_if(_Val, _Pass_fn(_Predicate));
     _Guard._Clearable        = nullptr;
     return _Erased_count;
