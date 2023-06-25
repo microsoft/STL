@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <cassert>
 #include <deque>
 #include <flat_set>
@@ -190,6 +191,15 @@ void test_non_static_comparer() {
     assert_all_requirements_and_equals(a, {9, 7, 5, -1});
 }
 
+template <class C>
+void test_erase_if() {
+    constexpr int erased_result[]{1, 3};
+    C fs{1, 2, 3, 4};
+    erase_if(fs, [](int n) { return n % 2 == 0; });
+    assert(fs.size() == 2);
+    assert(ranges::equal(fs, erased_result));
+}
+
 int main() {
     test_spaceship_operator<flat_set<int>>();
     test_spaceship_operator<flat_multiset<int>>();
@@ -204,6 +214,9 @@ int main() {
     test_constructors<deque<int>>();
 
     test_non_static_comparer();
+
+    test_erase_if<flat_set<int>>();
+    test_erase_if<flat_multiset<int>>();
 
     assert_basic<flat_set<int>>();
     assert_basic<flat_set<int, std::less<int>, deque<int>>>();
