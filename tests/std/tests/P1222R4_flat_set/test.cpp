@@ -192,6 +192,15 @@ void test_non_static_comparer() {
 }
 
 template <class C>
+void test_extract() {
+    constexpr int elements[]{1, 2, 3, 4};
+    C fs{1, 2, 3, 4};
+    auto cont = std::move(fs).extract();
+    assert(fs.empty());
+    assert(ranges::equal(cont, elements));
+}
+
+template <class C>
 void test_erase_if() {
     constexpr int erased_result[]{1, 3};
     C fs{1, 2, 3, 4};
@@ -214,6 +223,9 @@ int main() {
     test_constructors<deque<int>>();
 
     test_non_static_comparer();
+
+    test_extract<flat_set<int>>();
+    test_extract<flat_multiset<int>>();
 
     test_erase_if<flat_set<int>>();
     test_erase_if<flat_multiset<int>>();
