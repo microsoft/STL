@@ -3149,7 +3149,7 @@ public:
                 auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Right_al);
                 _Container_proxy_ptr<_Alty> _New_proxy(_Right_alproxy, _Leave_proxy_unbound{}); // throws
 
-                const auto _Right_size = _Right._Mypair._Myval2._Mysize;
+                const auto _Right_size        = _Right._Mypair._Myval2._Mysize;
                 const _Elem* const _Right_ptr = _Right._Mypair._Myval2._Myptr();
                 if (_Entails_large_string(_Right_size)) {
                     const auto _New_capacity =
