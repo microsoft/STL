@@ -666,18 +666,35 @@ namespace chrono {
         using time_point                = _CHRONO time_point<steady_clock>;
         static constexpr bool is_steady = true;
 
+#if defined(_M_ARM) || defined(_M_ARM64)
+#define _LIKELY_ARM likely
+#define _LIKELY_X86 unlikely
+#elif defined(_M_IX86) || defined(_M_X64)
+#define _LIKELY_ARM unlikely
+#define _LIKELY_X86 likely
+#else
+#error Unknown architecture
+#endif
         _NODISCARD static time_point now() noexcept { // get current time
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
             const long long _Ctr  = _Query_perf_counter();
             static_assert(period::num == 1, "This assumes period::num == 1.");
-            // 10 MHz is a very common QPC frequency on modern PCs. Optimizing for
+            // 10 MHz is a very common QPC frequency on modern X86 PCs. Optimizing for
             // this specific frequency can double the performance of this function by
             // avoiding the expensive frequency conversion path.
-            constexpr long long _TenMHz = 10'000'000;
-            if (_Freq == _TenMHz) {
+            constexpr long long _TwentyFourMHz = 24'000'000;
+            constexpr long long _TenMHz        = 10'000'000;
+            if (_Freq == _TenMHz) [[_LIKELY_X86]] {
                 static_assert(period::den % _TenMHz == 0, "It should never fail.");
                 constexpr long long _Multiplier = period::den / _TenMHz;
                 return time_point(duration(_Ctr * _Multiplier));
+            } else if (_Freq == _TwentyFourMHz) [[_LIKELY_ARM]] {
+                // The compiler recognizes the constants for frequency and time period and uses shifts and multiplies
+                // instead of divides to calculate the nanosecond value. This frequency is common on ARM64 (Windows
+                // devices, and Apple Silicon Macs using Parallels Desktop)
+                const long long _Whole = (_Ctr / _TwentyFourMHz) * period::den;
+                const long long _Part  = (_Ctr % _TwentyFourMHz) * period::den / _TwentyFourMHz;
+                return time_point(duration(_Whole + _Part));
             } else {
                 // Instead of just having "(_Ctr * period::den) / _Freq",
                 // the algorithm below prevents overflow when _Ctr is sufficiently large.
@@ -690,6 +707,8 @@ namespace chrono {
             }
         }
     };
+#undef _LIKELY_ARM
+#undef _LIKELY_X86
 
     _EXPORT_STD using high_resolution_clock = steady_clock;
 } // namespace chrono
