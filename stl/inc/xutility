@@ -865,12 +865,12 @@ _EXPORT_STD template <class _Fn, class... _Its>
 using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Its>...>;
 
 template <class _It>
-struct _Project_difference_type_impl {
+struct _Projected_difference_type_impl {
     struct _Base {};
 };
 
 template <weakly_incrementable _It>
-struct _Project_difference_type_impl<_It> {
+struct _Projected_difference_type_impl<_It> {
     struct _Base {
         using difference_type = iter_difference_t<_It>;
     };
@@ -878,7 +878,7 @@ struct _Project_difference_type_impl<_It> {
 
 template <class _It, class _Proj>
 struct _Projected_impl {
-    struct type : _Project_difference_type_impl<_It>::_Base {
+    struct type : _Projected_difference_type_impl<_It>::_Base {
         using _Iterator   = _It;
         using _Projection = _Proj;
 
