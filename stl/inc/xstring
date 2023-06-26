@@ -2369,9 +2369,9 @@ public:
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
 private:
-    static constexpr auto _BUF_SIZE              = _Scary_val::_BUF_SIZE;
-    static constexpr auto _ALLOC_MASK            = _Scary_val::_ALLOC_MASK;
-    static constexpr auto _SMALL_STRING_CAPACITY = _Scary_val::_SMALL_STRING_CAPACITY;
+    static constexpr size_type _BUF_SIZE              = _Scary_val::_BUF_SIZE;
+    static constexpr size_type _ALLOC_MASK            = _Scary_val::_ALLOC_MASK;
+    static constexpr size_type _SMALL_STRING_CAPACITY = _Scary_val::_SMALL_STRING_CAPACITY;
 
     _NODISCARD static _CONSTEXPR20 bool _Entails_large_string(size_type _Size_or_capacity) noexcept {
         // decides whether planned size/capacity entails large mode
