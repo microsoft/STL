@@ -2378,6 +2378,10 @@ private:
         return _Size_or_capacity > _SMALL_STRING_CAPACITY;
     }
 
+    // least real allocation size, including space reserved for terminating null
+    // used exclusively by _Move_assign_from_buffer and _Release_to_buffer
+    static constexpr size_type _LEAST_ALLOCATION_SIZE = _SMALL_STRING_CAPACITY + 1 + 1;
+
     // When doing _String_val operations by memcpy, we are touching:
     //   _String_val::_Bx::_Buf (type is array of _Elem)
     //   _String_val::_Bx::_Ptr (type is pointer)
@@ -2918,14 +2922,15 @@ public:
         _Tidy_init();
     }
 
-    _NODISCARD bool _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) {
+    _NODISCARD bool _Move_assign_from_buffer(
+        _Elem* const _Right, const size_type _Size, const size_type _Res /* real allocation size */) {
         // Move assign from a buffer, used exclusively by basic_stringbuf; returns _Large_string_engaged()
         auto& _My_data = _Mypair._Myval2;
         _STL_INTERNAL_CHECK(!_My_data._Large_string_engaged() && _My_data._Mysize == 0);
         _STL_INTERNAL_CHECK(_Size < _Res); // So there is room for null terminator
         _Traits::assign(_Right[_Size], _Elem());
 
-        const bool _Is_large = _Res > _BUF_SIZE; // Note: _BUF_SIZE because _Res now includes the null terminator
+        const bool _Is_large = _Res >= _LEAST_ALLOCATION_SIZE;
         if (_Is_large) {
             _ASAN_STRING_REMOVE(*this);
             _Construct_in_place(_My_data._Bx._Ptr, _Refancy<pointer>(_Right));
@@ -2958,10 +2963,10 @@ public:
             _Result._Ptr = _My_data._Bx._Ptr;
             _Result._Res = _My_data._Myres + 1;
         } else {
-            // use _BUF_SIZE + 1 to avoid SSO, if the buffer is assigned back
-            _Result._Ptr = _Al.allocate(_BUF_SIZE + 1);
+            // use _LEAST_ALLOCATION_SIZE to avoid SSO, if the buffer is assigned back
+            _Result._Ptr = _Al.allocate(_LEAST_ALLOCATION_SIZE);
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
-            _Result._Res = _BUF_SIZE + 1;
+            _Result._Res = _LEAST_ALLOCATION_SIZE;
         }
         _My_data._Orphan_all();
         _Tidy_init();
