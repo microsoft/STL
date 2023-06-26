@@ -2244,7 +2244,7 @@ public:
 
     static _CONSTEXPR20 _Large_string_engaged(size_type _Strcap) noexcept {
         // decides whether string is in large mode; has no implication on largeness of _Mysize.
-        _STL_INTERNAL_CHECK(_Myres >= _SMALL_STRING_CAPACITY);
+        _STL_INTERNAL_CHECK(_Strcap >= _SMALL_STRING_CAPACITY);
         return _Strcap != _SMALL_STRING_CAPACITY;
     }
 
