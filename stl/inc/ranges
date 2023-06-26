@@ -38,6 +38,9 @@ namespace ranges {
     template <class _Ty>
     inline constexpr bool _Is_initializer_list = _Is_specialization_v<remove_cvref_t<_Ty>, initializer_list>;
 
+    template <auto> // _Require_constant<E> is a valid template-id iff E is a constant expression of structural type
+    struct _Require_constant;
+
 #if _HAS_CXX23
     _EXPORT_STD template <range _Rng>
     using const_iterator_t = const_iterator<iterator_t<_Rng>>;
@@ -4470,9 +4473,6 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Join_with_fn join_with;
     } // namespace views
 #endif // _HAS_CXX23
-
-    template <auto> // _Require_constant<E> is a valid template-id iff E is a constant expression of structural type
-    struct _Require_constant;
 
     // clang-format off
     template <class _Ty>
