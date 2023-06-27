@@ -2608,7 +2608,7 @@ public:
 
 private:
     _NODISCARD static _CONSTEXPR20 pointer _Allocate_for_capacity(_Alty& _Al, const size_type _New_capacity) {
-        _STL_INTERNAL_CHECK(_Entails_Large_string(_New_capacity));
+        _STL_INTERNAL_CHECK(_Entails_large_string(_New_capacity));
         const pointer _Fancy_ptr = _Al.allocate(_New_capacity + 1);
 #if _HAS_CXX20
         // Start element lifetimes to avoid UB. This is a more general mechanism than _String_val::_Activate_SSO_buffer,
@@ -2625,7 +2625,7 @@ private:
 
     static _CONSTEXPR20 void _Deallocate_for_capacity(
         _Alty& _Al, const pointer& _Old_ptr, const size_type _Old_capacity) noexcept {
-        _STL_INTERNAL_CHECK(_Entails_Large_string(_Old_capacity));
+        _STL_INTERNAL_CHECK(_Entails_large_string(_Old_capacity));
         _Al.deallocate(_Old_ptr, _Old_capacity + 1);
     }
 
