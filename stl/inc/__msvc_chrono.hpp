@@ -666,50 +666,35 @@ namespace chrono {
         using time_point                = _CHRONO time_point<steady_clock>;
         static constexpr bool is_steady = true;
 
-#if defined(_M_ARM) || defined(_M_ARM64) // vvv ARM/ARM64 arch vvv
-
-#if _HAS_CXX20
-#define _LIKELY_ARM [[likely]]
-#elif defined(__clang__)
-#define _LIKELY_ARM [[__likely__]]
-#else
-#define _LIKELY_ARM
-#endif
-#define _LIKELY_X86
-
-#elif defined(_M_IX86) || defined(_M_X64) // ^^^ ARM/ARM64 arch / X86/X64 arch vvv
-
-#if _HAS_CXX20
-#define _LIKELY_X86 [[likely]]
-#elif defined(__clang__)
-#define _LIKELY_X86 [[__likely__]]
-#else
-#define _LIKELY_X86
-#endif
-#define _LIKELY_ARM
-
-#else // ^^^ X86/X64 arch / other arch vvv
-#define _LIKELY_ARM
-#define _LIKELY_X86
+#if defined(_M_ARM) || defined(_M_ARM64) // vvv ARM or ARM64 arch vvv
+#define _STL_LIKELY_ARM _STL_LIKELY
+#define _STL_LIKELY_X86
+#elif defined(_M_IX86) || defined(_M_X64) // ^^^ ARM or ARM64 arch / x86 or x64 arch vvv
+#define _STL_LIKELY_ARM
+#define _STL_LIKELY_X86 _STL_LIKELY
+#else // ^^^ x86 or x64 arch / other arch vvv
+#define _STL_LIKELY_ARM
+#define _STL_LIKELY_X86
 #endif // ^^^ other arch ^^^
         _NODISCARD static time_point now() noexcept { // get current time
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
             const long long _Ctr  = _Query_perf_counter();
             static_assert(period::num == 1, "This assumes period::num == 1.");
-            // 10 MHz is a very common QPC frequency on modern X86 PCs. Optimizing for
-            // this specific frequency can double the performance of this function by
-            // avoiding the expensive frequency conversion path.
+            // The compiler recognizes the constants for frequency and time period and uses shifts and
+            // multiplies instead of divides to calculate the nanosecond value.
             constexpr long long _TwentyFourMHz = 24'000'000;
             constexpr long long _TenMHz        = 10'000'000;
             // clang-format off
-            if (_Freq == _TenMHz) _LIKELY_X86 {
+            if (_Freq == _TenMHz) _STL_LIKELY_X86 {
+                // 10 MHz is a very common QPC frequency on modern x86 PCs. Optimizing for
+                // this specific frequency can double the performance of this function by
+                // avoiding the expensive frequency conversion path.
                 static_assert(period::den % _TenMHz == 0, "It should never fail.");
                 constexpr long long _Multiplier = period::den / _TenMHz;
                 return time_point(duration(_Ctr * _Multiplier));
-            } else if (_Freq == _TwentyFourMHz) _LIKELY_ARM {
-                // The compiler recognizes the constants for frequency and time period and uses shifts and
-                // multiplies instead of divides to calculate the nanosecond value. This frequency is common on
-                // ARM64 (Windows devices, and Apple Silicon Macs using Parallels Desktop)
+            } else if (_Freq == _TwentyFourMHz) _STL_LIKELY_ARM {
+                // 24 MHz frequency is a common frequency on ARM64, including cases where it emulates x86
+                // (Windows devices, and Apple Silicon Macs using Parallels Desktop)
                 const long long _Whole = (_Ctr / _TwentyFourMHz) * period::den;
                 const long long _Part  = (_Ctr % _TwentyFourMHz) * period::den / _TwentyFourMHz;
                 return time_point(duration(_Whole + _Part));
