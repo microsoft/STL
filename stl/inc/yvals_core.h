@@ -1921,14 +1921,14 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // _ENABLE_STL_INTERNAL_CHECK
 
 #if _HAS_CXX20 // vvv C++20 vvv
-#define _STL_LIKELY   [[likely]]
-#define _STL_UNLIKELY [[unlikely]]
+#define _LIKELY   [[likely]]
+#define _UNLIKELY [[unlikely]]
 #elif defined(__clang__) // ^^^ C++20 / clang and C++17 or C++14 vvv
-#define _STL_LIKELY   [[__likely__]]
-#define _STL_UNLIKELY [[__unlikely__]]
+#define _LIKELY   [[__likely__]]
+#define _UNLIKELY [[__unlikely__]]
 #else // ^^^ clang and C++17 or C++14 / C1XX and C++17 or C++14 vvv
-#define _STL_LIKELY
-#define _STL_UNLIKELY
+#define _LIKELY
+#define _UNLIKELY
 #endif // ^^^ C1XX and C++14/C++17 ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
