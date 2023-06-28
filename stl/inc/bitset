@@ -76,17 +76,13 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL == 0
     }
 
-    constexpr bool _Subscript(size_t _Pos) const {
+    constexpr bool _Subscript(size_t _Pos) const noexcept {
         return (_Array[_Pos / _Bitsperword] & (_Ty{1} << _Pos % _Bitsperword)) != 0;
     }
 
-    _NODISCARD constexpr bool operator[](size_t _Pos) const {
-#if _ITERATOR_DEBUG_LEVEL == 0
+    _NODISCARD constexpr bool operator[](size_t _Pos) const noexcept /* strengthened */ {
+        _Validate(_Pos);
         return _Subscript(_Pos);
-
-#else // _ITERATOR_DEBUG_LEVEL == 0
-        return _Bits <= _Pos ? (_Validate(_Pos), false) : _Subscript(_Pos);
-#endif // _ITERATOR_DEBUG_LEVEL == 0
     }
 
     _NODISCARD _CONSTEXPR23 reference operator[](const size_t _Pos) noexcept /* strengthened */ {
