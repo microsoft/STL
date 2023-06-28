@@ -2224,7 +2224,7 @@ public:
     // capacity in small string mode; smallest possible value of _Myres
     static constexpr size_type _SMALL_STRING_CAPACITY = _BUF_SIZE - 1;
 
-    _CONSTEXPR20 value_type* _Myptr() noexcept {
+    _NODISCARD _CONSTEXPR20 value_type* _Myptr() noexcept {
         value_type* _Result = _Bx._Buf;
         if (_Large_string_engaged()) {
             _Result = _Unfancy(_Bx._Ptr);
@@ -2233,7 +2233,7 @@ public:
         return _Result;
     }
 
-    _CONSTEXPR20 const value_type* _Myptr() const noexcept {
+    _NODISCARD _CONSTEXPR20 const value_type* _Myptr() const noexcept {
         const value_type* _Result = _Bx._Buf;
         if (_Large_string_engaged()) {
             _Result = _Unfancy(_Bx._Ptr);
@@ -2242,17 +2242,17 @@ public:
         return _Result;
     }
 
-    static _CONSTEXPR20 bool _Large_string_engaged(size_type _Strcap) noexcept {
-        // decides whether string is in large mode; has no implication on largeness of _Mysize
+    _NODISCARD static _CONSTEXPR20 bool _Large_string_engaged(size_type _Strcap) noexcept {
+        // decides whether string is in large mode; has no implication on largeness of string's size
         _STL_INTERNAL_CHECK(_Strcap >= _SMALL_STRING_CAPACITY);
         return _Strcap != _SMALL_STRING_CAPACITY;
     }
 
-    _CONSTEXPR20 bool _Large_string_engaged() const noexcept {
+    _NODISCARD _CONSTEXPR20 bool _Large_string_engaged() const noexcept {
         return _Large_string_engaged(_Myres);
     }
 
-    constexpr void _Activate_SSO_buffer() noexcept {
+    _CONSTEXPR20 void _Activate_SSO_buffer() noexcept {
         // start the lifetime of the array elements
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
@@ -2281,7 +2281,7 @@ public:
         _Xout_of_range("invalid string position");
     }
 
-    _CONSTEXPR20 size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
+    _NODISCARD _CONSTEXPR20 size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
         // trims _Size to the longest it can be assuming a string at/after _Off
         return (_STD min)(_Size, _Mysize - _Off);
     }
