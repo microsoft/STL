@@ -667,11 +667,11 @@ namespace chrono {
         static constexpr bool is_steady = true;
 
 #if defined(_M_ARM) || defined(_M_ARM64) // vvv ARM or ARM64 arch vvv
-#define _LIKELY_ARM _STL_LIKELY
+#define _LIKELY_ARM _LIKELY
 #define _LIKELY_X86
 #elif defined(_M_IX86) || defined(_M_X64) // ^^^ ARM or ARM64 arch / x86 or x64 arch vvv
 #define _LIKELY_ARM
-#define _LIKELY_X86 _STL_LIKELY
+#define _LIKELY_X86 _LIKELY
 #else // ^^^ x86 or x64 arch / other arch vvv
 #define _LIKELY_ARM
 #define _LIKELY_X86
