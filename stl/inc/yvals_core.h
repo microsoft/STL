@@ -525,6 +525,20 @@
 #define _FALLTHROUGH
 #endif
 
+#ifndef __has_cpp_attribute // vvv no attributes vvv
+#define _LIKELY
+#define _UNLIKELY
+#elif __has_cpp_attribute(likely) >= 201803L && __has_cpp_attribute(unlikely) >= 201803L // ^^^ no attr/C++20 attr vvv
+#define _LIKELY   [[likely]]
+#define _UNLIKELY [[unlikely]]
+#elif defined(__clang__) // ^^^ C++20 attributes / clang attributes and C++17 or C++14 vvv
+#define _LIKELY   [[__likely__]]
+#define _UNLIKELY [[__unlikely__]]
+#else // ^^^ clang attributes and C++17 or C++14 / C1XX attributes and C++17 or C++14 vvv
+#define _LIKELY
+#define _UNLIKELY
+#endif // ^^^ C1XX attributes and C++17 or C++14 ^^^
+
 // _HAS_NODISCARD (in vcruntime.h) controls:
 // [[nodiscard]] attributes on STL functions
 
@@ -1919,17 +1933,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #else // ^^^ _ENABLE_STL_INTERNAL_CHECK / !_ENABLE_STL_INTERNAL_CHECK vvv
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
-
-#if _HAS_CXX20 // vvv C++20 vvv
-#define _LIKELY   [[likely]]
-#define _UNLIKELY [[unlikely]]
-#elif defined(__clang__) // ^^^ C++20 / clang and C++17 or C++14 vvv
-#define _LIKELY   [[__likely__]]
-#define _UNLIKELY [[__unlikely__]]
-#else // ^^^ clang and C++17 or C++14 / C1XX and C++17 or C++14 vvv
-#define _LIKELY
-#define _UNLIKELY
-#endif // ^^^ C1XX and C++14/C++17 ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_
