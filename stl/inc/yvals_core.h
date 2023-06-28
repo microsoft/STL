@@ -72,6 +72,12 @@
 // P1164R1 Making create_directory() Intuitive
 // P1165R1 Consistently Propagating Stateful Allocators In basic_string's operator+()
 // P1902R1 Missing Feature-Test Macros 2017-2019
+// P2013R5 Freestanding Language: Optional ::operator new
+//     (no change is needed for our hosted implementation)
+// P2198R7 Freestanding Feature-Test Macros And Implementation-Defined Extensions
+//     (except for __cpp_lib_freestanding_ranges)
+// P2338R4 Freestanding Library: Character Primitives And The C Library
+//     (except for __cpp_lib_freestanding_charconv)
 // P2401R0 Conditional noexcept For exchange()
 
 // _HAS_CXX17 directly controls:
@@ -127,6 +133,8 @@
 // P2162R2 Inheriting From variant
 // P2251R1 Require span And basic_string_view To Be Trivially Copyable
 //     (basic_string_view always provides this behavior)
+// P2338R4 Freestanding Library: Character Primitives And The C Library
+//     (including __cpp_lib_freestanding_charconv)
 // P2517R1 Conditional noexcept For apply()
 
 // _HAS_CXX17 indirectly controls:
@@ -266,6 +274,8 @@
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P2167R3 Improving boolean-testable Usage
+// P2198R7 Freestanding Feature-Test Macros And Implementation-Defined Extensions
+//     (including __cpp_lib_freestanding_ranges)
 // P2210R2 Superior String Splitting
 // P2216R3 std::format Improvements
 // P2231R1 Completing constexpr In optional And variant
@@ -1522,20 +1532,33 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 
 // C++14
-#define __cpp_lib_chrono_udls                 201304L
-#define __cpp_lib_complex_udls                201309L
-#define __cpp_lib_exchange_function           201304L
-#define __cpp_lib_generic_associative_lookup  201304L
-#define __cpp_lib_integer_sequence            201304L
-#define __cpp_lib_integral_constant_callable  201304L
-#define __cpp_lib_is_final                    201402L
-#define __cpp_lib_is_null_pointer             201309L
-#define __cpp_lib_make_reverse_iterator       201402L
-#define __cpp_lib_make_unique                 201304L
-#define __cpp_lib_null_iterators              201304L
-#define __cpp_lib_quoted_string_io            201304L
-#define __cpp_lib_result_of_sfinae            201210L
-#define __cpp_lib_robust_nonmodifying_seq_ops 201304L
+#define __cpp_lib_chrono_udls                      201304L
+#define __cpp_lib_complex_udls                     201309L
+#define __cpp_lib_exchange_function                201304L
+#define __cpp_lib_freestanding_char_traits         202306L
+#define __cpp_lib_freestanding_cstdlib             202306L
+#define __cpp_lib_freestanding_cstring             202306L
+#define __cpp_lib_freestanding_cwchar              202306L
+#define __cpp_lib_freestanding_errc                202306L
+#define __cpp_lib_freestanding_feature_test_macros 202306L
+#define __cpp_lib_freestanding_functional          202306L
+#define __cpp_lib_freestanding_iterator            202306L
+#define __cpp_lib_freestanding_memory              202306L
+#define __cpp_lib_freestanding_operator_new        202306L
+#define __cpp_lib_freestanding_ratio               202306L
+#define __cpp_lib_freestanding_tuple               202306L
+#define __cpp_lib_freestanding_utility             202306L
+#define __cpp_lib_generic_associative_lookup       201304L
+#define __cpp_lib_integer_sequence                 201304L
+#define __cpp_lib_integral_constant_callable       201304L
+#define __cpp_lib_is_final                         201402L
+#define __cpp_lib_is_null_pointer                  201309L
+#define __cpp_lib_make_reverse_iterator            201402L
+#define __cpp_lib_make_unique                      201304L
+#define __cpp_lib_null_iterators                   201304L
+#define __cpp_lib_quoted_string_io                 201304L
+#define __cpp_lib_result_of_sfinae                 201210L
+#define __cpp_lib_robust_nonmodifying_seq_ops      201304L
 #ifndef _M_CEE_PURE
 #define __cpp_lib_shared_timed_mutex 201402L
 #endif // _M_CEE_PURE
@@ -1574,6 +1597,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // _HAS_STD_BYTE
 #define __cpp_lib_clamp                             201603L
 #define __cpp_lib_filesystem                        201703L
+#define __cpp_lib_freestanding_charconv             202306L
 #define __cpp_lib_gcd_lcm                           201606L
 #define __cpp_lib_hardware_interference_size        201703L
 #define __cpp_lib_has_unique_object_representations 201606L
@@ -1656,7 +1680,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_erase_if                202002L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_format 202207L
+#define __cpp_lib_format              202207L
+#define __cpp_lib_freestanding_ranges 202306L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_generic_unordered_lookup     201811L
