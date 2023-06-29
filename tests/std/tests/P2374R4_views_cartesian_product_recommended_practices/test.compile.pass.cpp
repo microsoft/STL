@@ -26,6 +26,12 @@ using cpv_const_size_t = range_size_t<const cartesian_product_view<Rngs...>>;
 template <class... Rngs>
 using cpv_const_difference_t = range_difference_t<const cartesian_product_view<Rngs...>>;
 
+#if !defined(_M_IX86) && !defined(_M_ARM)
+constexpr bool is_64_bit = true;
+#else // ^^^ 64 bit ^^^ / vvv 32 bit vvv
+constexpr bool is_64_bit = false;
+#endif // ^^^ 32 bit ^^^
+
 constexpr void check_array() {
     // Check '_Compile_time_max_size' type trait
     static_assert(_Compile_time_max_size<int[3]> == 3);
@@ -188,7 +194,7 @@ constexpr void check_simple_range_adaptor() {
         static_assert(sizeof(cpv_size_t<V1>) <= sizeof(size_t));
         static_assert(sizeof(cpv_size_t<V1, V1>) <= sizeof(size_t));
         static_assert(sizeof(cpv_size_t<V2>) <= sizeof(size_t));
-        static_assert(sizeof(cpv_size_t<V2, V2>) <= sizeof(size_t));
+        static_assert((sizeof(cpv_size_t<V2, V2>) <= sizeof(size_t)) == is_64_bit);
         static_assert(sizeof(cpv_size_t<V3>) <= sizeof(size_t));
         static_assert(sizeof(cpv_size_t<V3, V3, V3>) > sizeof(size_t));
     }
@@ -196,7 +202,7 @@ constexpr void check_simple_range_adaptor() {
     static_assert(sizeof(cpv_difference_t<V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V1, V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V2>) <= sizeof(ptrdiff_t));
-    static_assert(sizeof(cpv_difference_t<V2, V2>) <= sizeof(ptrdiff_t));
+    static_assert((sizeof(cpv_difference_t<V2, V2>) <= sizeof(ptrdiff_t)) == is_64_bit);
     static_assert(sizeof(cpv_difference_t<V3>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
 
@@ -234,59 +240,65 @@ constexpr void check_simple_range_adaptor() {
 constexpr void check_join_view() {
     using V1 = ranges::join_view<all_t<array<array<int, 10>, 20>>>;
     using V2 = ranges::join_view<all_t<array<span<int, 5'000'000>, 100>>>;
-    using V3 = ranges::join_view<all_t<span<span<int, 10'000'000'000>, 5'000'000'000>>>;
 
     // Check '_Compile_time_max_size' type trait
     static_assert(_Compile_time_max_size<V1> == 200);
     static_assert(_Compile_time_max_size<V2> == 500'000'000);
-    static_assert(_Compile_time_max_size<V3> == (numeric_limits<size_t>::max)());
 
     static_assert(sizeof(cpv_difference_t<V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V1, V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V2>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V2, V2, V2>) > sizeof(ptrdiff_t));
-    static_assert(sizeof(cpv_difference_t<V3>) <= sizeof(ptrdiff_t));
-    static_assert(sizeof(cpv_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
 
     static_assert(_Compile_time_max_size<const V1> == 200);
     static_assert(_Compile_time_max_size<const V2> == 500'000'000);
-    static_assert(_Compile_time_max_size<const V3> == (numeric_limits<size_t>::max)());
 
     static_assert(sizeof(cpv_const_difference_t<V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V1, V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V2>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V2, V2, V2>) > sizeof(ptrdiff_t));
+
+#if !defined(_M_IX86) && !defined(_M_ARM)
+    using V3 = ranges::join_view<all_t<span<span<int, 10'000'000'000>, 5'000'000'000>>>;
+    static_assert(_Compile_time_max_size<V3> == (numeric_limits<size_t>::max)());
+    static_assert(sizeof(cpv_difference_t<V3>) <= sizeof(ptrdiff_t));
+    static_assert(sizeof(cpv_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
+    static_assert(_Compile_time_max_size<const V3> == (numeric_limits<size_t>::max)());
     static_assert(sizeof(cpv_const_difference_t<V3>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
+#endif // ^^^ 64 bit ^^^
 }
 
 constexpr void check_join_with_view() {
     using V1 = ranges::join_with_view<all_t<array<array<int, 3>, 4>>, all_t<array<int, 2>>>;
     using V2 = ranges::join_with_view<all_t<array<span<int, 100'000>, 100>&>, all_t<array<int, 2>>>;
-    using V3 = ranges::join_with_view<span<span<int, 10'000'000'000>, 5'000'000'000>, span<int, 1>>;
 
     // Check '_Compile_time_max_size' type trait
     static_assert(_Compile_time_max_size<V1> == 18);
     static_assert(_Compile_time_max_size<V2> == 10'000'198);
-    static_assert(_Compile_time_max_size<V3> == (numeric_limits<size_t>::max)());
 
     static_assert(sizeof(cpv_difference_t<V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V1, V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V2>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V2, V2, V2>) > sizeof(ptrdiff_t));
-    static_assert(sizeof(cpv_difference_t<V3>) <= sizeof(ptrdiff_t));
-    static_assert(sizeof(cpv_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
 
     static_assert(_Compile_time_max_size<const V1> == 18);
     static_assert(_Compile_time_max_size<const V2> == 10'000'198);
-    static_assert(_Compile_time_max_size<const V3> == (numeric_limits<size_t>::max)());
 
     static_assert(sizeof(cpv_const_difference_t<V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V1, V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V2>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V2, V2, V2>) > sizeof(ptrdiff_t));
+
+#if !defined(_M_IX86) && !defined(_M_ARM)
+    using V3 = ranges::join_with_view<span<span<int, 10'000'000'000>, 5'000'000'000>, span<int, 1>>;
+    static_assert(_Compile_time_max_size<V3> == (numeric_limits<size_t>::max)());
+    static_assert(sizeof(cpv_difference_t<V3>) <= sizeof(ptrdiff_t));
+    static_assert(sizeof(cpv_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
+    static_assert(_Compile_time_max_size<const V3> == (numeric_limits<size_t>::max)());
     static_assert(sizeof(cpv_const_difference_t<V3>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
+#endif // ^^^ 64 bit ^^^
 }
 
 template <template <class...> class ZipAdaptor>
@@ -305,13 +317,13 @@ constexpr void check_zip_adaptor() {
     static_assert(sizeof(cpv_size_t<Z1>) <= sizeof(size_t));
     static_assert(sizeof(cpv_size_t<Z1, Z1>) <= sizeof(size_t));
     static_assert(sizeof(cpv_size_t<Z2>) <= sizeof(size_t));
-    static_assert(sizeof(cpv_size_t<Z2, Z2>) <= sizeof(size_t));
+    static_assert((sizeof(cpv_size_t<Z2, Z2>) <= sizeof(size_t)) == is_64_bit);
     static_assert(sizeof(cpv_size_t<Z2, Z2, Z2>) > sizeof(size_t));
 
     static_assert(sizeof(cpv_difference_t<Z1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<Z1, Z1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<Z2>) <= sizeof(ptrdiff_t));
-    static_assert(sizeof(cpv_difference_t<Z2, Z2>) <= sizeof(ptrdiff_t));
+    static_assert((sizeof(cpv_difference_t<Z2, Z2>) <= sizeof(ptrdiff_t)) == is_64_bit);
     static_assert(sizeof(cpv_difference_t<Z2, Z2, Z2>) > sizeof(ptrdiff_t));
 
     static_assert(_Compile_time_max_size<const Z1> == 100);
@@ -343,14 +355,14 @@ constexpr void check_adjacent_adaptor() {
     static_assert(sizeof(cpv_size_t<V1>) <= sizeof(size_t));
     static_assert(sizeof(cpv_size_t<V1, V1>) <= sizeof(size_t));
     static_assert(sizeof(cpv_size_t<V2>) <= sizeof(size_t));
-    static_assert(sizeof(cpv_size_t<V2, V2>) <= sizeof(size_t));
+    static_assert((sizeof(cpv_size_t<V2, V2>) <= sizeof(size_t)) == is_64_bit);
     static_assert(sizeof(cpv_size_t<V3>) <= sizeof(size_t));
     static_assert(sizeof(cpv_size_t<V3, V3, V3>) > sizeof(size_t));
 
     static_assert(sizeof(cpv_difference_t<V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V1, V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V2>) <= sizeof(ptrdiff_t));
-    static_assert(sizeof(cpv_difference_t<V2, V2>) <= sizeof(ptrdiff_t));
+    static_assert((sizeof(cpv_difference_t<V2, V2>) <= sizeof(ptrdiff_t)) == is_64_bit);
     static_assert(sizeof(cpv_difference_t<V3>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
 
@@ -379,31 +391,34 @@ constexpr void check_cartesian_product_view() {
     using V1 = ranges::cartesian_product_view<all_t<array<int, 2>>, all_t<array<float, 3>>, all_t<array<char, 5>>>;
     using V2 =
         ranges::cartesian_product_view<all_t<array<int, 200'000>&>, all_t<array<float, 300'000>&>, span<char, 500'000>>;
-    using V3 = ranges::cartesian_product_view<span<int, 10'000'000'000'000>, span<float, 500'000'000'000>,
-        span<char, 900'000'000'000'000>>;
 
     // Check '_Compile_time_max_size' type trait
     static_assert(_Compile_time_max_size<V1> == 30);
     static_assert(_Compile_time_max_size<V2> == 30'000'000'000'000'000);
-    static_assert(_Compile_time_max_size<V3> == (numeric_limits<_Unsigned128>::max)());
 
     static_assert(sizeof(cpv_difference_t<V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<V1, V1>) <= sizeof(ptrdiff_t));
-    static_assert(sizeof(cpv_difference_t<V2>) <= sizeof(ptrdiff_t));
+    static_assert((sizeof(cpv_difference_t<V2>) <= sizeof(ptrdiff_t)) == is_64_bit);
     static_assert(sizeof(cpv_difference_t<V2, V2, V2>) > sizeof(ptrdiff_t));
-    static_assert(sizeof(cpv_difference_t<V3>) > sizeof(ptrdiff_t));
-    static_assert(sizeof(cpv_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
 
     static_assert(_Compile_time_max_size<const V1> == 30);
     static_assert(_Compile_time_max_size<const V2> == 30'000'000'000'000'000);
-    static_assert(_Compile_time_max_size<const V3> == (numeric_limits<_Unsigned128>::max)());
 
     static_assert(sizeof(cpv_const_difference_t<V1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V1, V1>) <= sizeof(ptrdiff_t));
-    static_assert(sizeof(cpv_const_difference_t<V2>) <= sizeof(ptrdiff_t));
+    static_assert((sizeof(cpv_const_difference_t<V2>) <= sizeof(ptrdiff_t)) == is_64_bit);
     static_assert(sizeof(cpv_const_difference_t<V2, V2, V2>) > sizeof(ptrdiff_t));
+
+#if !defined(_M_IX86) && !defined(_M_ARM)
+    using V3 = ranges::cartesian_product_view<span<int, 10'000'000'000'000>, span<float, 500'000'000'000>,
+        span<char, 900'000'000'000'000>>;
+    static_assert(_Compile_time_max_size<V3> == (numeric_limits<_Unsigned128>::max)());
+    static_assert(sizeof(cpv_difference_t<V3>) > sizeof(ptrdiff_t));
+    static_assert(sizeof(cpv_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
+    static_assert(_Compile_time_max_size<const V3> == (numeric_limits<_Unsigned128>::max)());
     static_assert(sizeof(cpv_const_difference_t<V3>) > sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
+#endif // ^^^ 64 bit ^^^
 }
 
 struct Pred {
