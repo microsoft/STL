@@ -69,7 +69,7 @@ public:
     };
 
 private:
-    static _CONSTEXPR23 void _Validate(const size_t _Pos) noexcept { // verify that _Pos is within bounds
+    static constexpr void _Validate(const size_t _Pos) noexcept { // verify that _Pos is within bounds
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Pos;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
