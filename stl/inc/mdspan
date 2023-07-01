@@ -25,19 +25,19 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <class _IndexType, size_t _RankDynamic>
-struct _Dynamic_extents_array {
-    array<_IndexType, _RankDynamic> _Dynamic_extents{};
+template <class _IndexType, size_t _Size>
+struct _Maybe_empty_array {
+    array<_IndexType, _Size> _Array{};
 };
 
 template <class _IndexType>
-struct _Dynamic_extents_array<_IndexType, 0> {};
+struct _Maybe_empty_array<_IndexType, 0> {};
 
 template <size_t... _Extents>
 inline constexpr size_t _Calculate_rank_dynamic = ((_Extents == dynamic_extent) + ... + 0);
 
 _EXPORT_STD template <class _IndexType, size_t... _Extents>
-class extents : private _Dynamic_extents_array<_IndexType, _Calculate_rank_dynamic<_Extents...>> {
+class extents : private _Maybe_empty_array<_IndexType, _Calculate_rank_dynamic<_Extents...>> {
 public:
     using index_type = _IndexType;
     using size_type  = make_unsigned_t<index_type>;
@@ -89,7 +89,7 @@ private:
         explicit _Construct_from_tuple() = default;
     };
 
-    using _Base = _Dynamic_extents_array<_IndexType, _Rank_dynamic>;
+    using _Base = _Maybe_empty_array<_IndexType, _Rank_dynamic>;
 
 public:
     _NODISCARD static constexpr rank_type rank() noexcept {
@@ -114,10 +114,10 @@ public:
         if constexpr (rank_dynamic() == 0) {
             return static_cast<index_type>(_Static_extents[_Idx]);
         } else if constexpr (rank_dynamic() == rank()) {
-            return this->_Dynamic_extents[_Idx];
+            return this->_Array[_Idx];
         } else {
             if (_Static_extents[_Idx] == dynamic_extent) {
-                return this->_Dynamic_extents[_Dynamic_indices[_Idx]];
+                return this->_Array[_Dynamic_indices[_Idx]];
             } else {
                 return static_cast<index_type>(_Static_extents[_Idx]);
             }
