@@ -76,6 +76,7 @@ function load_charts() {
                 new DatasetInfo('cxx17', 'C++17 Features', 'smallAxis', '--color-severe-emphasis'),
                 new DatasetInfo('cxx20', 'C++20 Features', 'smallAxis', '--color-sponsors-emphasis'),
                 new DatasetInfo('cxx23', 'C++23 Features', 'smallAxis', '--color-done-emphasis'),
+                new DatasetInfo('cxx26', 'C++26 Features', 'smallAxis', '--color-severe-emphasis'),
                 new DatasetInfo('lwg', 'LWG Resolutions', 'smallAxis', '--color-success-emphasis'),
                 new DatasetInfo('pr', 'Pull Requests', 'smallAxis', '--color-fg-default'),
                 new DatasetInfo('video', 'Videos', 'smallAxis', '--color-accent-emphasis'),
@@ -169,6 +170,10 @@ function load_charts() {
             {
                 data: get_daily_values('cxx23'),
                 ...get_dataset_properties('cxx23'),
+            },
+            {
+                data: get_daily_values('cxx26'),
+                ...get_dataset_properties('cxx26'),
             },
             {
                 data: get_weekly_values('lwg').concat(get_daily_values('lwg')),
@@ -524,6 +529,7 @@ function load_charts() {
     const daily_keys = [
         'cxx20',
         'cxx23',
+        'cxx26',
         'lwg',
         'pr',
         'video',
