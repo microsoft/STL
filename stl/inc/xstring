@@ -2731,7 +2731,7 @@ private:
 
                     const auto _Old_ptr           = _My_data._Myptr();
                     const size_type _New_capacity = _Calculate_growth(_My_data._Mysize);
-                    const pointer _New_ptr        = _Allocate_for_capacity(_Al, _New_capacity)(); // throws
+                    const pointer _New_ptr        = _Allocate_for_capacity(_Al, _New_capacity); // throws
 
                     _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
                     if (_My_data._Large_string_engaged()) { // Need to deallocate old storage
