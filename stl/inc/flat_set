@@ -243,7 +243,7 @@ public:
 
     _NODISCARD container_type extract() && {
         container_type& _Cont = _Get_cont();
-        // always clears the container (N4950 [flat.set.modifiers]/15 and [flat.multiset.modifiers]/10)
+        // always clears the container (N4950 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
         _Clear_scope_guard<_Base_flat_set> _Guard{this};
         container_type _Temp = _STD move(_Cont);
         return _Temp;
