@@ -1467,11 +1467,10 @@ struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
 _STD_END
 
 _STDEXT_BEGIN
-using _STD iterator_traits;
 using _STD size_t;
 
 template <class _Ptr>
-class _CXX_DEPRECATE_STDEXT_ARR_ITERS checked_array_iterator { // wrap a pointer with checking
+class _DEPRECATE_STDEXT_ARR_ITERS checked_array_iterator { // wrap a pointer with checking
 private:
     using _Pointee_type = _STD remove_pointer_t<_Ptr>;
     static_assert(_STD is_pointer_v<_Ptr> && _STD is_object_v<_Pointee_type>,
@@ -1678,14 +1677,14 @@ private:
 
 _STL_DISABLE_DEPRECATED_WARNING
 template <class _Ptr>
-_CXX_DEPRECATE_STDEXT_ARR_ITERS _NODISCARD constexpr checked_array_iterator<_Ptr> make_checked_array_iterator(
+_DEPRECATE_STDEXT_ARR_ITERS _NODISCARD constexpr checked_array_iterator<_Ptr> make_checked_array_iterator(
     const _Ptr _Array, const size_t _Size, const size_t _Index = 0) noexcept {
     return checked_array_iterator<_Ptr>(_Array, _Size, _Index);
 }
 _STL_RESTORE_DEPRECATED_WARNING
 
 template <class _Ptr>
-class _CXX_DEPRECATE_STDEXT_ARR_ITERS unchecked_array_iterator { // wrap a pointer without checking, to silence warnings
+class _DEPRECATE_STDEXT_ARR_ITERS unchecked_array_iterator { // wrap a pointer without checking, to silence warnings
 private:
     using _Pointee_type = _STD remove_pointer_t<_Ptr>;
     static_assert(_STD is_pointer_v<_Ptr> && _STD is_object_v<_Pointee_type>,
@@ -1835,7 +1834,7 @@ private:
 
 _STL_DISABLE_DEPRECATED_WARNING
 template <class _Ptr>
-_CXX_DEPRECATE_STDEXT_ARR_ITERS _NODISCARD unchecked_array_iterator<_Ptr> make_unchecked_array_iterator(
+_DEPRECATE_STDEXT_ARR_ITERS _NODISCARD unchecked_array_iterator<_Ptr> make_unchecked_array_iterator(
     const _Ptr _It) noexcept {
     return unchecked_array_iterator<_Ptr>(_It);
 }
@@ -1846,7 +1845,7 @@ _STDEXT_END
 _STD_BEGIN
 _STL_DISABLE_DEPRECATED_WARNING
 template <class _Ty>
-struct _CXX_DEPRECATE_STDEXT_ARR_ITERS pointer_traits<_STDEXT checked_array_iterator<_Ty*>> {
+struct pointer_traits<_STDEXT checked_array_iterator<_Ty*>> {
     using pointer         = _STDEXT checked_array_iterator<_Ty*>;
     using element_type    = _Ty;
     using difference_type = ptrdiff_t;
