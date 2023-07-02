@@ -878,7 +878,7 @@ struct _Projected_difference_type_impl<_It> {
 
 template <class _It, class _Proj>
 struct _Projected_impl {
-    struct type : _Projected_difference_type_impl<_It>::_Base {
+    struct _Type : _Projected_difference_type_impl<_It>::_Base {
         using _Iterator   = _It;
         using _Projection = _Proj;
 
@@ -890,7 +890,7 @@ struct _Projected_impl {
 };
 
 _EXPORT_STD template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
-using projected = _Projected_impl<_It, _Proj>::type;
+using projected = _Projected_impl<_It, _Proj>::_Type;
 
 template <class _Ty>
 concept _Projected_specialization = same_as<_Ty, projected<typename _Ty::_Iterator, typename _Ty::_Projection>>;
