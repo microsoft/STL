@@ -565,10 +565,10 @@ private:
 
     template <class... _IndexTypes, size_t... _Seq>
     _NODISCARD constexpr index_type _Index_impl(
-        [[maybe_unused]] index_sequence<_Seq...> _IndexSeq, _IndexTypes... _Indices) const noexcept {
+        [[maybe_unused]] index_sequence<_Seq...> _Index_seq, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Exts._Contains_multidimensional_index(_IndexSeq, _Indices...),
+        _STL_VERIFY(_Exts._Contains_multidimensional_index(_Index_seq, _Indices...),
             "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
             "[mdspan.layout.left.obs]/3).");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -716,10 +716,10 @@ private:
 
     template <class... _IndexTypes, size_t... _Seq>
     _NODISCARD constexpr index_type _Index_impl(
-        [[maybe_unused]] index_sequence<_Seq...> _IndexSeq, _IndexTypes... _Indices) const noexcept {
+        [[maybe_unused]] index_sequence<_Seq...> _Index_seq, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Exts._Contains_multidimensional_index(_IndexSeq, _Indices...),
+        _STL_VERIFY(_Exts._Contains_multidimensional_index(_Index_seq, _Indices...),
             "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
             "[mdspan.layout.right.obs]/3).");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -972,10 +972,10 @@ private:
 
     template <class... _IndexTypes, size_t... _Seq>
     _NODISCARD constexpr index_type _Index_impl(
-        [[maybe_unused]] index_sequence<_Seq...> _IndexSeq, _IndexTypes... _Indices) const noexcept {
+        [[maybe_unused]] index_sequence<_Seq...> _Index_seq, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Exts._Contains_multidimensional_index(_IndexSeq, _Indices...),
+        _STL_VERIFY(_Exts._Contains_multidimensional_index(_Index_seq, _Indices...),
             "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
             "[mdspan.layout.stride.obs]/3).");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
