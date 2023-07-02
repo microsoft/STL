@@ -1050,7 +1050,10 @@ public:
     }
 
     _NODISCARD static constexpr size_t static_extent(const rank_type _Idx) noexcept {
-        return extents_type::static_extent(_Idx);
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Idx < extents_type::_Rank, "Index must be less than rank() (N4950 [mdspan.extents.obs]/1)");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        return extents_type::_Static_extents[_Idx];
     }
 
     _NODISCARD constexpr index_type extent(const rank_type _Idx) const noexcept {
