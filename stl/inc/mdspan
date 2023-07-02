@@ -517,14 +517,6 @@ public:
         requires (sizeof...(_IndexTypes) == extents_type::rank()) && (is_convertible_v<_IndexTypes, index_type> && ...)
               && (is_nothrow_constructible_v<index_type, _IndexTypes> && ...)
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        if constexpr ((integral<_IndexTypes> && ...)) {
-            _STL_VERIFY(_Exts._Contains_multidimensional_index(
-                            make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
-                "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
-                "[mdspan.layout.left.obs]/3).");
-        }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
     }
 
@@ -572,8 +564,15 @@ private:
     extents_type _Exts{};
 
     template <class... _IndexTypes, size_t... _Seq>
-    _NODISCARD constexpr index_type _Index_impl(index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
+    _NODISCARD constexpr index_type _Index_impl(
+        [[maybe_unused]] index_sequence<_Seq...> _IndexSeq, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Exts._Contains_multidimensional_index(_IndexSeq, _Indices...),
+            "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
+            "[mdspan.layout.left.obs]/3).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
         index_type _Stride = 1;
         index_type _Result = 0;
         (((_Result += _Indices * _Stride), (_Stride *= _Exts.extent(_Seq))), ...);
@@ -669,14 +668,6 @@ public:
         requires (sizeof...(_IndexTypes) == extents_type::rank()) && (is_convertible_v<_IndexTypes, index_type> && ...)
               && (is_nothrow_constructible_v<index_type, _IndexTypes> && ...)
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        if constexpr ((integral<_IndexTypes> && ...)) {
-            _STL_VERIFY(_Exts._Contains_multidimensional_index(
-                            make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
-                "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
-                "[mdspan.layout.right.obs]/3).");
-        }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
     }
 
@@ -724,8 +715,15 @@ private:
     extents_type _Exts{};
 
     template <class... _IndexTypes, size_t... _Seq>
-    _NODISCARD constexpr index_type _Index_impl(index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
+    _NODISCARD constexpr index_type _Index_impl(
+        [[maybe_unused]] index_sequence<_Seq...> _IndexSeq, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Exts._Contains_multidimensional_index(_IndexSeq, _Indices...),
+            "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
+            "[mdspan.layout.right.obs]/3).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
         index_type _Result = 0;
         ((_Result = static_cast<index_type>(_Indices + _Exts.extent(_Seq) * _Result)), ...);
         return _Result;
@@ -898,14 +896,6 @@ public:
         requires (sizeof...(_IndexTypes) == extents_type::rank()) && (is_convertible_v<_IndexTypes, index_type> && ...)
               && (is_nothrow_constructible_v<index_type, _IndexTypes> && ...)
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        if constexpr ((integral<_IndexTypes> && ...)) {
-            _STL_VERIFY(_Exts._Contains_multidimensional_index(
-                            make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
-                "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
-                "[mdspan.layout.stride.obs]/3).");
-        }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
     }
 
@@ -981,8 +971,15 @@ private:
     }
 
     template <class... _IndexTypes, size_t... _Seq>
-    _NODISCARD constexpr index_type _Index_impl(index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
+    _NODISCARD constexpr index_type _Index_impl(
+        [[maybe_unused]] index_sequence<_Seq...> _IndexSeq, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Exts._Contains_multidimensional_index(_IndexSeq, _Indices...),
+            "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
+            "[mdspan.layout.stride.obs]/3).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
         return static_cast<index_type>(((_Indices * _Strides[_Seq]) + ... + 0));
     }
 };
