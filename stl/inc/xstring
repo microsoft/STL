@@ -2221,7 +2221,7 @@ public:
                                            : sizeof(value_type) <= 4 ? 3
                                            : sizeof(value_type) <= 8 ? 1
                                                                      : 0;
-    // capacity in small string mode; smallest possible value of _Myres
+    // capacity in SSO mode
     static constexpr size_type _SMALL_STRING_CAPACITY = _BUF_SIZE - 1;
 
     _NODISCARD _CONSTEXPR20 value_type* _Myptr() noexcept {
@@ -2242,10 +2242,10 @@ public:
         return _Result;
     }
 
-    _NODISCARD static _CONSTEXPR20 bool _Large_string_engaged(size_type _Strcap) noexcept {
-        // decides whether string is in large mode; has no implication on largeness of string's size
-        _STL_INTERNAL_CHECK(_Strcap >= _SMALL_STRING_CAPACITY);
-        return _Strcap != _SMALL_STRING_CAPACITY;
+    _NODISCARD static _CONSTEXPR20 bool _Large_string_engaged(size_type _Capacity) noexcept {
+        // determines whether large mode is used for this capacity
+        // has no implication on largeness of string's size
+        return _Capacity > _SMALL_STRING_CAPACITY;
     }
 
     _NODISCARD _CONSTEXPR20 bool _Large_string_engaged() const noexcept {
@@ -2298,8 +2298,9 @@ public:
     };
     _Bxty _Bx;
 
-    size_type _Mysize = 0; // current length of string (string::size(); <= _Myres)
-    size_type _Myres  = _SMALL_STRING_CAPACITY; // current storage reserved for string (string::capacity())
+    // invariant: _Myres >= _Mysize, and _Myres >= _SMALL_STRING_CAPACITY
+    size_type _Mysize = 0; // current length of string (size)
+    size_type _Myres  = _SMALL_STRING_CAPACITY; // current storage reserved for string (capacity)
 };
 
 // get _Ty's size after being EBCO'd
@@ -2607,15 +2608,15 @@ public:
     }
 
 private:
-    _NODISCARD static _CONSTEXPR20 pointer _Allocate_for_capacity(_Alty& _Al, const size_type _New_capacity) {
-        _STL_INTERNAL_CHECK(_Entails_large_string(_New_capacity));
-        const pointer _Fancy_ptr = _Al.allocate(_New_capacity + 1);
+    _NODISCARD static _CONSTEXPR20 pointer _Allocate_for_capacity(_Alty& _Al, const size_type _Capacity) {
+        _STL_INTERNAL_CHECK(_Entails_large_string(_Capacity));
+        const pointer _Fancy_ptr = _Al.allocate(_Capacity + 1);// +1 for null terminator
 #if _HAS_CXX20
         // Start element lifetimes to avoid UB. This is a more general mechanism than _String_val::_Activate_SSO_buffer,
         // but likely more impactful to throughput.
         if (_STD is_constant_evaluated()) {
             _Elem* const _Ptr = _Unfancy(_Fancy_ptr);
-            for (size_type _Idx = 0; _Idx < _New_capacity + 1; ++_Idx) {
+            for (size_type _Idx = 0; _Idx < _Capacity + 1; ++_Idx) {
                 _STD construct_at(_Ptr + _Idx);
             }
         }
@@ -2624,9 +2625,9 @@ private:
     }
 
     static _CONSTEXPR20 void _Deallocate_for_capacity(
-        _Alty& _Al, const pointer& _Old_ptr, const size_type _Old_capacity) noexcept {
-        _STL_INTERNAL_CHECK(_Entails_large_string(_Old_capacity));
-        _Al.deallocate(_Old_ptr, _Old_capacity + 1);
+        _Alty& _Al, const pointer& _Old_ptr, const size_type _Capacity) noexcept {
+        _STL_INTERNAL_CHECK(_Entails_large_string(_Capacity));
+        _Al.deallocate(_Old_ptr, _Capacity + 1);
     }
 
     enum class _Construct_strategy : uint8_t { _From_char, _From_ptr, _From_string };
@@ -2950,7 +2951,7 @@ public:
     struct _Released_buffer {
         pointer _Ptr;
         size_type _Size;
-        size_type _Res; // real allocation size, including space reserved for null terminator
+        size_type _Res; // real allocation size
     };
 
     _NODISCARD _Released_buffer _Release_to_buffer(_Alloc& _Al) {
