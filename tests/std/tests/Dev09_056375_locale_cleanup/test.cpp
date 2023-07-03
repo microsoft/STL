@@ -125,19 +125,19 @@ void test_locale_name_with_another_locale_and_cats() {
     locale lc{"C"};
     locale lunnamed{make_unnamed_locale()};
     {
-        std::locale result{lc, lc, std::locale::none};
+        locale result{lc, lc, locale::none};
         assert(result.name() != "*");
     }
     {
-        std::locale result{lc, lunnamed, std::locale::none};
+        locale result{lc, lunnamed, locale::none};
         assert(result.name() != "*");
     }
     {
-        std::locale result{lunnamed, lc, std::locale::none};
+        locale result{lunnamed, lc, locale::none};
         assert(result.name() == "*");
     }
     {
-        std::locale result{lunnamed, lunnamed, std::locale::none};
+        locale result{lunnamed, lunnamed, locale::none};
         assert(result.name() == "*");
     }
 
@@ -150,19 +150,19 @@ void test_locale_name_with_another_locale_and_cats() {
                                     | ((precats & (1 << 4)) != 0 ? locale::time : locale::none)
                                     | ((precats & (1 << 5)) != 0 ? locale::messages : locale::none);
         {
-            std::locale result{lc, lc, cats};
+            locale result{lc, lc, cats};
             assert(result.name() != "*");
         }
         {
-            std::locale result{lc, lunnamed, cats};
+            locale result{lc, lunnamed, cats};
             assert(result.name() == "*");
         }
         {
-            std::locale result{lunnamed, lc, cats};
+            locale result{lunnamed, lc, cats};
             assert(result.name() == "*");
         }
         {
-            std::locale result{lunnamed, lunnamed, cats};
+            locale result{lunnamed, lunnamed, cats};
             assert(result.name() == "*");
         }
     }
