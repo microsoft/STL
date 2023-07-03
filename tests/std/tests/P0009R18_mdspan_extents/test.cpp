@@ -546,6 +546,12 @@ static_assert(all_extents_dynamic<dextents<unsigned int, 7>, 7>);
 static_assert(all_extents_dynamic<dextents<unsigned long, 8>, 8>);
 static_assert(all_extents_dynamic<dextents<unsigned long long, 9>, 9>);
 
+// When 'E::rank_dynamic()' is equal to 0 then 'is_empty_v<E>' should be true (MSVC STL specific behavior)
+static_assert(!is_empty_v<dextents<int, 2>>);
+static_assert(!is_empty_v<extents<int, 3, dynamic_extent>>);
+static_assert(is_empty_v<extents<int, 3, 3>>);
+static_assert(is_empty_v<extents<int>>);
+
 int main() {
     static_assert(test());
     test();
