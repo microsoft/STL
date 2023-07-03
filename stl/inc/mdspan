@@ -41,10 +41,10 @@ public:
 
     static constexpr rank_type _Rank         = sizeof...(_Extents);
     static constexpr rank_type _Rank_dynamic = (static_cast<rank_type>(_Extents == dynamic_extent) + ... + 0);
+    static constexpr array<rank_type, _Rank> _Static_extents        = {_Extents...};
+    static constexpr bool _Multidim_index_space_size_is_always_zero = ((_Extents == 0) || ...);
 
 private:
-    static constexpr array<rank_type, _Rank> _Static_extents = {_Extents...};
-
     _NODISCARD static consteval auto _Make_dynamic_indices() noexcept {
         array<rank_type, _Rank + 1> _Result{};
         rank_type _Counter = 0;
@@ -182,6 +182,9 @@ public:
         auto _Check_extent = []<class _Ty>(const _Ty& _Ext) {
             if constexpr (_Is_standard_integer<_Ty>) {
                 return _Ext >= 0 && _STD in_range<index_type>(_Ext);
+            } else if constexpr (integral<_Ty> && !same_as<_Ty, bool>) { // NB: character types
+                const auto _Integer_ext = static_cast<long long>(_Ext);
+                return _Integer_ext >= 0 && _STD in_range<index_type>(_Integer_ext);
             } else {
                 return true; // NB: We cannot check preconditions
             }
@@ -255,11 +258,40 @@ public:
         }
     }
 
-    _NODISCARD static consteval bool _Is_index_space_size_representable() {
-        if constexpr (rank_dynamic() == 0 && rank() > 0) {
-            return _STD in_range<index_type>((_Extents * ...));
-        } else {
+    _NODISCARD static consteval bool _Is_static_multidim_index_space_size_representable() noexcept {
+        // Pre: rank_dynamic() == 0
+        if constexpr (_Multidim_index_space_size_is_always_zero) {
             return true;
+        } else {
+            index_type _Result{1};
+#pragma warning(push)
+#pragma warning(disable : 6287) // TRANSITION, DevCom-10398426
+            const bool _Overflow = (_Mul_overflow(static_cast<index_type>(_Extents), _Result, _Result) || ...);
+#pragma warning(pop)
+            return !_Overflow;
+        }
+    }
+
+    template <integral _Ty = index_type>
+    _NODISCARD constexpr bool _Is_dynamic_multidim_index_space_size_representable() const noexcept {
+        // Pre: rank_dynamic() != 0
+        if constexpr (_Multidim_index_space_size_is_always_zero) {
+            return true;
+        } else {
+            bool _Overflow = false;
+            _Ty _Result    = 1;
+            for (rank_type _Idx = 0; _Idx < _Rank; ++_Idx) {
+                const auto _Ext = static_cast<_Ty>(extent(_Idx));
+                if (_Ext == 0) {
+                    return true;
+                }
+
+                if (!_Overflow) {
+                    _Overflow = _Mul_overflow(_Ext, _Result, _Result);
+                }
+            }
+
+            return !_Overflow;
         }
     }
 
@@ -327,7 +359,7 @@ private:
         array<typename _Ty::index_type, _Ty::rank() + 1> _Result;
         _Result.front() = 1;
         for (size_t _Idx = 1; _Idx < _Ty::_Rank + 1; ++_Idx) {
-            _Result[_Idx] = static_cast<_Ty::index_type>(_Result[_Idx - 1] * _Ty::static_extent(_Idx - 1));
+            _Result[_Idx] = static_cast<_Ty::index_type>(_Result[_Idx - 1] * _Ty::_Static_extents[_Idx - 1]);
         }
         return _Result;
     }
@@ -365,7 +397,7 @@ private:
         array<typename _Ty::index_type, _Ty::rank()> _Result;
         _Result.back() = 1;
         for (size_t _Idx = _Ty::_Rank; _Idx-- > 1;) {
-            _Result[_Idx - 1] = static_cast<_Ty::index_type>(_Result[_Idx] * _Ty::static_extent(_Idx));
+            _Result[_Idx - 1] = static_cast<_Ty::index_type>(_Result[_Idx] * _Ty::_Static_extents[_Idx]);
         }
         return _Result;
     }
@@ -409,7 +441,8 @@ public:
 
     static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4950 [mdspan.layout.left.overview]/2).");
-    static_assert(extents_type::_Is_index_space_size_representable(),
+    static_assert(
+        extents_type::rank_dynamic() != 0 || extents_type::_Is_static_multidim_index_space_size_representable(),
         "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
         "representable as a value of type typename Extents::index_type (N4950 [mdspan.layout.left.overview]/4).");
 
@@ -417,7 +450,13 @@ public:
     constexpr mapping(const mapping&) noexcept = default;
 
     constexpr mapping(const extents_type& _Exts_) noexcept : _Exts(_Exts_) {
-        // TRANSITION, CHECK [mdspan.layout.left.cons]/1 (REQUIRES '_Multiply_with_overflow_check' FROM #3561)
+#if _CONTAINER_DEBUG_LEVEL > 0
+        if constexpr (extents_type::rank_dynamic() != 0) {
+            _STL_VERIFY(_Exts_._Is_dynamic_multidim_index_space_size_representable(),
+                "The size of the multidimensional index space e must be representable as a value of type index_type "
+                "(N4950 [mdspan.layout.left.cons]/1).");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
     template <class _OtherExtents>
@@ -425,9 +464,11 @@ public:
     constexpr explicit(!is_convertible_v<_OtherExtents, extents_type>)
         mapping(const mapping<_OtherExtents>& _Other) noexcept
         : _Exts(_Other.extents()) {
+#if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
             "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
             "[mdspan.layout.left.cons]/4).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
     template <class _OtherExtents>
@@ -435,30 +476,31 @@ public:
     constexpr explicit(!is_convertible_v<_OtherExtents, extents_type>)
         mapping(const layout_right::mapping<_OtherExtents>& _Other) noexcept
         : _Exts(_Other.extents()) {
+#if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
             "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
             "[mdspan.layout.left.cons]/7).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
     template <class _OtherExtents>
         requires is_constructible_v<extents_type, _OtherExtents>
     constexpr explicit(extents_type::rank() > 0) mapping(const layout_stride::template mapping<_OtherExtents>& _Other)
         : _Exts(_Other.extents()) {
+#if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (extents_type::rank() > 0) {
-            const bool _Verify = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-                index_type _Prod = 1;
-                return ((_Other.stride(_Indices)
-                            == (_Indices == extents_type::_Rank - 1
-                                    ? _Prod
-                                    : _STD exchange(_Prod, static_cast<index_type>(_Prod * _Exts.extent(_Indices)))))
-                        && ...);
-            }(make_index_sequence<extents_type::rank()>{});
-            _STL_VERIFY(_Verify, "For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to "
-                                 "extents().fwd-prod-of-extents(r) (N4950 [mdspan.layout.left.cons]/10.1).");
+            index_type _Prod = 1;
+            for (size_t _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
+                _STL_VERIFY(_Other.stride(_Idx) == _Prod,
+                    "For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to "
+                    "extents().fwd-prod-of-extents(r) (N4950 [mdspan.layout.left.cons]/10.1).");
+                _Prod = static_cast<index_type>(_Prod * _Exts.extent(_Idx));
+            }
+            _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
+                "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
+                "[mdspan.layout.left.cons]/10.2).");
         }
-        _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
-            "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
-            "[mdspan.layout.left.cons]/10.2).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
     constexpr mapping& operator=(const mapping&) noexcept = default;
@@ -475,10 +517,6 @@ public:
         requires (sizeof...(_IndexTypes) == extents_type::rank()) && (is_convertible_v<_IndexTypes, index_type> && ...)
               && (is_nothrow_constructible_v<index_type, _IndexTypes> && ...)
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
-        _STL_VERIFY(_Exts._Contains_multidimensional_index(
-                        make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
-            "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
-            "[mdspan.layout.left.obs]/3).");
         return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
     }
 
@@ -509,8 +547,10 @@ public:
     _NODISCARD constexpr index_type stride(const rank_type _Idx) const noexcept
         requires (extents_type::rank() > 0)
     {
+#if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Idx < extents_type::_Rank,
             "Value of i must be less than extents_type::rank() (N4950 [mdspan.layout.left.obs]/6).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Fwd_prod_of_extents<extents_type>::_Calculate(_Exts, _Idx);
     }
 
@@ -524,8 +564,15 @@ private:
     extents_type _Exts{};
 
     template <class... _IndexTypes, size_t... _Seq>
-    _NODISCARD constexpr index_type _Index_impl(index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
+    _NODISCARD constexpr index_type _Index_impl(
+        [[maybe_unused]] index_sequence<_Seq...> _Index_seq, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Exts._Contains_multidimensional_index(_Index_seq, _Indices...),
+            "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
+            "[mdspan.layout.left.obs]/3).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
         index_type _Stride = 1;
         index_type _Result = 0;
         (((_Result += _Indices * _Stride), (_Stride *= _Exts.extent(_Seq))), ...);
@@ -544,7 +591,8 @@ public:
 
     static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4950 [mdspan.layout.right.overview]/2).");
-    static_assert(extents_type::_Is_index_space_size_representable(),
+    static_assert(
+        extents_type::rank_dynamic() != 0 || extents_type::_Is_static_multidim_index_space_size_representable(),
         "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
         "representable as a value of type typename Extents::index_type (N4950 [mdspan.layout.right.overview]/4).");
 
@@ -552,7 +600,13 @@ public:
     constexpr mapping(const mapping&) noexcept = default;
 
     constexpr mapping(const extents_type& _Exts_) noexcept : _Exts(_Exts_) {
-        // TRANSITION, CHECK [mdspan.layout.right.cons]/1 (REQUIRES '_Multiply_with_overflow_check' FROM #3561)
+#if _CONTAINER_DEBUG_LEVEL > 0
+        if constexpr (extents_type::rank_dynamic() != 0) {
+            _STL_VERIFY(_Exts_._Is_dynamic_multidim_index_space_size_representable(),
+                "The size of the multidimensional index space e must be representable as a value of type index_type "
+                "(N4950 [mdspan.layout.right.cons]/1).");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
     template <class _OtherExtents>
@@ -560,9 +614,11 @@ public:
     constexpr explicit(!is_convertible_v<_OtherExtents, extents_type>)
         mapping(const mapping<_OtherExtents>& _Other) noexcept
         : _Exts(_Other.extents()) {
+#if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
             "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
             "[mdspan.layout.right.cons]/4).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
     template <class _OtherExtents>
@@ -570,9 +626,11 @@ public:
     constexpr explicit(!is_convertible_v<_OtherExtents, extents_type>)
         mapping(const layout_left::mapping<_OtherExtents>& _Other) noexcept
         : _Exts(_Other.extents()) {
+#if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
             "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
             "[mdspan.layout.right.cons]/7).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
     template <class _OtherExtents>
@@ -580,22 +638,20 @@ public:
     constexpr explicit(extents_type::rank() > 0)
         mapping(const layout_stride::template mapping<_OtherExtents>& _Other) noexcept
         : _Exts(_Other.extents()) {
+#if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (extents_type::rank() > 0) {
-            const bool _Verify = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-                index_type _Prod = stride(0);
-                return (
-                    (_Other.stride(_Indices)
-                        == (_Indices == extents_type::_Rank - 1
-                                ? _Prod
-                                : _STD exchange(_Prod, static_cast<index_type>(_Prod / _Exts.extent(_Indices + 1)))))
-                    && ...);
-            }(make_index_sequence<extents_type::rank()>{});
-            _STL_VERIFY(_Verify, "For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to "
-                                 "extents().rev-prod-of-extents(r) (N4950 [mdspan.layout.right.cons]/10.1).");
+            index_type _Prod = 1;
+            for (size_t _Idx = extents_type::_Rank; _Idx-- > 0;) {
+                _STL_VERIFY(_Prod == _Other.stride(_Idx),
+                    "For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to "
+                    "extents().rev-prod-of-extents(r) (N4950 [mdspan.layout.right.cons]/10.1).");
+                _Prod = static_cast<index_type>(_Prod * _Exts.extent(_Idx));
+            }
+            _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
+                "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
+                "[mdspan.layout.right.cons]/10.2).");
         }
-        _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
-            "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
-            "[mdspan.layout.right.cons]/10.2).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
     constexpr mapping& operator=(const mapping&) noexcept = default;
@@ -612,10 +668,6 @@ public:
         requires (sizeof...(_IndexTypes) == extents_type::rank()) && (is_convertible_v<_IndexTypes, index_type> && ...)
               && (is_nothrow_constructible_v<index_type, _IndexTypes> && ...)
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
-        _STL_VERIFY(_Exts._Contains_multidimensional_index(
-                        make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
-            "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
-            "[mdspan.layout.right.obs]/3).");
         return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
     }
 
@@ -646,8 +698,10 @@ public:
     _NODISCARD constexpr index_type stride(const rank_type _Idx) const noexcept
         requires (extents_type::rank() > 0)
     {
+#if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Idx < extents_type::_Rank,
             "Value of i must be less than extents_type::rank() (N4950 [mdspan.layout.right.obs]/6).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Rev_prod_of_extents<extents_type>::_Calculate(_Exts, _Idx);
     }
 
@@ -661,8 +715,15 @@ private:
     extents_type _Exts{};
 
     template <class... _IndexTypes, size_t... _Seq>
-    _NODISCARD constexpr index_type _Index_impl(index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
+    _NODISCARD constexpr index_type _Index_impl(
+        [[maybe_unused]] index_sequence<_Seq...> _Index_seq, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Exts._Contains_multidimensional_index(_Index_seq, _Indices...),
+            "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
+            "[mdspan.layout.right.obs]/3).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
         index_type _Result = 0;
         ((_Result = static_cast<index_type>(_Indices + _Exts.extent(_Seq) * _Result)), ...);
         return _Result;
@@ -691,7 +752,8 @@ public:
 
     static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4950 [mdspan.layout.stride.overview]/2).");
-    static_assert(extents_type::_Is_index_space_size_representable(),
+    static_assert(
+        extents_type::rank_dynamic() != 0 || extents_type::_Is_static_multidim_index_space_size_representable(),
         "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
         "representable as a value of type typename Extents::index_type (N4950 [mdspan.layout.stride.overview]/4).");
 
@@ -699,8 +761,17 @@ public:
         if constexpr (extents_type::rank() != 0) {
             _Strides.back() = 1;
             for (rank_type _Idx = extents_type::_Rank - 1; _Idx-- > 0;) {
-                // TRANSITION USE `_Multiply_with_overflow_check` IN DEBUG MODE
+#if _CONTAINER_DEBUG_LEVEL > 0
+                const bool _Overflow = _Mul_overflow(_Strides[_Idx + 1], _Exts.extent(_Idx + 1), _Strides[_Idx]);
+                // NB: N4950 requires value of 'layout_right::mapping<extents_type>().required_span_size()' to be
+                // representable as value of type 'index_type', but this is not enough. We need to require every single
+                // stride to be representable as value of type 'index_type', so we can get desired effects.
+                _STL_VERIFY(!_Overflow,
+                    "Value of layout_right::mapping<extents_type>().required_span_size() must be "
+                    "representable as a value of type index_type (N4950 [mdspan.layout.stride.cons]/1).");
+#else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
                 _Strides[_Idx] = static_cast<index_type>(_Strides[_Idx + 1] * _Exts.extent(_Idx + 1));
+#endif // _CONTAINER_DEBUG_LEVEL > 0
             }
         }
     }
@@ -713,11 +784,30 @@ public:
     constexpr mapping(const extents_type& _Exts_, span<_OtherIndexType, extents_type::rank()> _Strides_,
         index_sequence<_Indices...>) noexcept
         : _Exts(_Exts_), _Strides{static_cast<index_type>(_STD as_const(_Strides_[_Indices]))...} {
-        for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
-            // TRANSITION CHECK [mdspan.layout.stride.cons]/4.2 (REQUIRES `_Multiply_with_overflow_check`)
-            _STL_VERIFY(_Strides[_Idx] > 0, "Value of s[i] must be greater than 0 for all i in the range [0, rank_) "
-                                            "(N4950 [mdspan.layout.stride.cons]/4.1).");
+#if _CONTAINER_DEBUG_LEVEL > 0
+        if constexpr (extents_type::rank() != 0) {
+            bool _Found_zero          = false;
+            bool _Overflow            = false;
+            index_type _Req_span_size = 0;
+            for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
+                const index_type _Stride = _Strides[_Idx];
+                _STL_VERIFY(_Stride > 0, "Value of s[i] must be greater than 0 for all i in the range [0, rank_) "
+                                         "(N4950 [mdspan.layout.stride.cons]/4.1).");
+                const index_type _Ext = _Exts.extent(_Idx);
+                if (_Ext == 0) {
+                    _Found_zero = true;
+                }
+
+                if (!_Found_zero && !_Overflow) {
+                    index_type _Prod;
+                    _Overflow = _Mul_overflow(static_cast<index_type>(_Ext - 1), _Stride, _Prod)
+                             || _Add_overflow(_Req_span_size, _Prod, _Req_span_size);
+                }
+            }
+            _STL_VERIFY(_Found_zero || !_Overflow, "REQUIRED-SPAN-SIZE(e, s) must be representable as a value of type "
+                                                   "index_type (N4950 [mdspan.layout.stride.cons]/4.2).");
         }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
 #ifndef __clang__ // TRANSITION, DevCom-10360833
@@ -757,15 +847,19 @@ public:
             || _Is_mapping_of<layout_stride, _StridedLayoutMapping>) ))
         mapping(const _StridedLayoutMapping& _Other) noexcept
         : _Exts(_Other.extents()) {
+#if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
             "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
             "[mdspan.layout.stride.cons]/7.3).");
         _STL_VERIFY(
             _Offset(_Other) == 0, "Value of OFFSET(other) must be equal to 0 (N4950 [mdspan.layout.stride.cons]/7.4).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
             const auto _Stride = _Other.stride(_Idx);
+#if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Stride > 0, "Value of other.stride(r) must be greater than 0 for every rank index r of "
                                      "extents() (N4950 [mdspan.layout.stride.cons]/7.2).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
             _Strides[_Idx] = static_cast<index_type>(_Stride);
         }
     }
@@ -802,10 +896,6 @@ public:
         requires (sizeof...(_IndexTypes) == extents_type::rank()) && (is_convertible_v<_IndexTypes, index_type> && ...)
               && (is_nothrow_constructible_v<index_type, _IndexTypes> && ...)
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
-        _STL_VERIFY(_Exts._Contains_multidimensional_index(
-                        make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...),
-            "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
-            "[mdspan.layout.stride.obs]/3).");
         return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
     }
 
@@ -881,8 +971,15 @@ private:
     }
 
     template <class... _IndexTypes, size_t... _Seq>
-    _NODISCARD constexpr index_type _Index_impl(index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
+    _NODISCARD constexpr index_type _Index_impl(
+        [[maybe_unused]] index_sequence<_Seq...> _Index_seq, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Exts._Contains_multidimensional_index(_Index_seq, _Indices...),
+            "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
+            "[mdspan.layout.stride.obs]/3).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
         return static_cast<index_type>(((_Indices * _Strides[_Seq]) + ... + 0));
     }
 };
@@ -953,7 +1050,10 @@ public:
     }
 
     _NODISCARD static constexpr size_t static_extent(const rank_type _Idx) noexcept {
-        return extents_type::static_extent(_Idx);
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Idx < extents_type::_Rank, "Index must be less than rank() (N4950 [mdspan.extents.obs]/1)");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        return extents_type::_Static_extents[_Idx];
     }
 
     _NODISCARD constexpr index_type extent(const rank_type _Idx) const noexcept {
@@ -1017,6 +1117,14 @@ public:
             "[mdspan.mdspan.cons]/20.1).");
         static_assert(is_constructible_v<extents_type, _OtherExtents>,
             "The extents_type must be constructible from OtherExtents (N4950 [mdspan.mdspan.cons]/20.2).");
+#if _CONTAINER_DEBUG_LEVEL > 0
+        for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
+            const auto _Static_ext = extents_type::_Static_extents[_Idx];
+            _STL_VERIFY(_STD cmp_equal(_Static_ext, dynamic_extent) || _STD cmp_equal(_Static_ext, _Other.extent(_Idx)),
+                "For each rank index r of extents_type, static_extent(r) == dynamic_extent || static_extent(r) == "
+                "other.extent(r) must be true (N4950 [mdspan.mdspan.cons]/21.1).");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
     constexpr mdspan& operator=(const mdspan&) = default;
@@ -1028,7 +1136,7 @@ public:
               && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
               && (sizeof...(_OtherIndexTypes) == rank())
     _NODISCARD constexpr reference operator[](_OtherIndexTypes... _Indices) const {
-        return _Acc.access(_Ptr, static_cast<size_t>(_Map(static_cast<index_type>(_STD move(_Indices))...)));
+        return _Access_impl(static_cast<index_type>(_STD move(_Indices))...);
     }
 #endif // __cpp_multidimensional_subscript
 
@@ -1036,28 +1144,52 @@ public:
         requires is_convertible_v<const _OtherIndexType&, index_type>
               && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
     _NODISCARD constexpr reference operator[](span<_OtherIndexType, rank()> _Indices) const {
-        return _Index_impl(_Indices, make_index_sequence<rank()>{});
+        return [&]<size_t... _Seq>(index_sequence<_Seq...>) -> reference {
+#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
+            return operator[](_STD as_const(_Indices[_Seq])...);
+#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
+            return _Multidimensional_access(_STD as_const(_Indices[_Seq])...);
+#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
+        }(make_index_sequence<rank()>{});
     }
 
     template <class _OtherIndexType>
         requires is_convertible_v<const _OtherIndexType&, index_type>
               && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
     _NODISCARD constexpr reference operator[](const array<_OtherIndexType, rank()>& _Indices) const {
-        return _Index_impl(span{_Indices}, make_index_sequence<rank()>{});
+        return [&]<size_t... _Seq>(index_sequence<_Seq...>) -> reference {
+#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
+            return operator[](_Indices[_Seq]...);
+#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
+            return _Multidimensional_access(_Indices[_Seq]...);
+#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
+        }(make_index_sequence<rank()>{});
     }
 
     _NODISCARD constexpr size_type size() const noexcept {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        if constexpr (rank_dynamic() != 0) {
+            _STL_VERIFY(_Map.extents().template _Is_dynamic_multidim_index_space_size_representable<size_type>(),
+                "The size of the multidimensional index space extents() must be representable as a value of type "
+                "size_type (N4950 [mdspan.mdspan.members]/7).");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return static_cast<size_type>(
             _Fwd_prod_of_extents<extents_type>::_Calculate(_Map.extents(), extents_type::_Rank));
     }
 
     _NODISCARD constexpr bool empty() const noexcept {
-        for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
-            if (_Map.extents().extent(_Idx) == 0) {
-                return true;
+        if constexpr (extents_type::_Multidim_index_space_size_is_always_zero) {
+            return true;
+        } else {
+            const extents_type& _Exts = _Map.extents();
+            for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
+                if (_Exts.extent(_Idx) == 0) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
     }
 
     friend constexpr void swap(mdspan& _Left, mdspan& _Right) noexcept {
@@ -1115,21 +1247,23 @@ public:
     }
 
 private:
-    template <class _OtherIndexType, size_t... _Seq>
-    _NODISCARD constexpr reference _Index_impl(span<_OtherIndexType, rank()> _Indices, index_sequence<_Seq...>) const {
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
-        return operator[](_STD as_const(_Indices[_Seq])...);
-#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
-        return _Multidimensional_access(_STD as_const(_Indices[_Seq])...);
-#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
-    }
-
 #ifndef __cpp_multidimensional_subscript // TRANSITION, P2128R6
     template <class... _OtherIndexTypes>
     _NODISCARD constexpr reference _Multidimensional_access(_OtherIndexTypes... _Indices) const {
-        return _Acc.access(_Ptr, static_cast<size_t>(_Map(static_cast<index_type>(_STD move(_Indices))...)));
+        return _Access_impl(static_cast<index_type>(_STD move(_Indices))...);
     }
-#endif // __cpp_multidimensional_subscript
+#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
+
+    template <class... _OtherIndexTypes>
+    _NODISCARD constexpr reference _Access_impl(_OtherIndexTypes... _Indices) const {
+        _STL_INTERNAL_STATIC_ASSERT((same_as<_OtherIndexTypes, index_type> && ...));
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Map.extents()._Contains_multidimensional_index(make_index_sequence<rank()>{}, _Indices...),
+            "I must be a multidimensional index in extents() (N4950 [mdspan.mdspan.members]/3).");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return _Acc.access(_Ptr, static_cast<size_t>(_Map(_Indices...)));
+    }
 
     data_handle_type _Ptr{};
     mapping_type _Map{};
