@@ -33,6 +33,9 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
     static_assert(same_as<typename Mapping::rank_type, typename Ext::rank_type>);
     static_assert(same_as<typename Mapping::layout_type, layout_right>);
 
+#ifdef __clang__
+    if (!is_constant_evaluated()) // FIXME clang hits constexpr limit here
+#endif
     { // Check default and copy constructor
         const Mapping m;
         Mapping cpy = m;
@@ -160,7 +163,7 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
 
 void check_mapping_properties() {
     if constexpr (!is_permissive) {
-        auto check = []([[maybe_unused]] const auto& mapping) {
+        auto check = [](const auto& mapping) {
             const auto props = get_mapping_properties(mapping);
             assert(props.req_span_size == mapping.required_span_size());
             assert(props.uniqueness);
@@ -514,10 +517,7 @@ constexpr void check_correctness() {
 }
 
 constexpr bool test() {
-    check_members_with_various_extents(
-        []<class IndexType, size_t... Extents>(const extents<IndexType, Extents...>& ext) {
-            check_members(ext, make_index_sequence<sizeof...(Extents)>{});
-        });
+    check_members_with_various_extents([]<class E>(const E& e) { check_members(e, make_index_sequence<E::rank()>{}); });
     if (!is_constant_evaluated()) { // too heavy for compile time
         check_mapping_properties();
     }

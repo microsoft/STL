@@ -54,6 +54,13 @@ void test_construction_from_pack_with_unrepresentable_as_index_type_values_2() {
     [[maybe_unused]] extents<unsigned char, 1, dynamic_extent> e{ConvertibleToInt<unsigned char>{.val = 1}, 256};
 }
 
+void test_construction_from_pack_with_unrepresentable_as_index_type_values_3() {
+    static_assert(signed_integral<char>, "char is not signed integral");
+    // Either sizeof...(exts) must be equal to 0 or each element of exts must be nonnegative and must be representable
+    // as value of type index_type
+    [[maybe_unused]] extents<signed char, 1, dynamic_extent> e{static_cast<char>(-1)};
+}
+
 void test_construction_from_span_with_invalid_values() {
     int vals[] = {1, 2};
     span s{vals};
@@ -93,6 +100,7 @@ int main(int argc, char* argv[]) {
         test_construction_from_pack_with_invalid_values,
         test_construction_from_pack_with_unrepresentable_as_index_type_values_1,
         test_construction_from_pack_with_unrepresentable_as_index_type_values_2,
+        test_construction_from_pack_with_unrepresentable_as_index_type_values_3,
         test_construction_from_span_with_invalid_values,
         test_construction_from_span_with_unrepresentable_as_index_type_values,
         test_construction_from_array_with_invalid_values,
