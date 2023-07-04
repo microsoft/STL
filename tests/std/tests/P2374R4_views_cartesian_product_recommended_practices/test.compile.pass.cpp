@@ -4,6 +4,7 @@
 // Check MSVC-STL internal machinery
 
 #include <array>
+#include <cstddef>
 #include <limits>
 #include <ranges>
 #include <span>
