@@ -348,7 +348,7 @@ constexpr void check_adjacent_adaptor() {
     using V2    = AdjacentAdaptor<span<ValTy, 500'000'000>, 6>; // "already view"
     using V3    = AdjacentAdaptor<all_t<array<ValTy, 500'000'000>&>, 11>; // ref_view
 
-    // Check '_Compile_time_max_size' type trait and
+    // Check '_Compile_time_max_size' type trait
     static_assert(_Compile_time_max_size<V1> == 100);
     static_assert(_Compile_time_max_size<V2> == 499'999'995);
     static_assert(_Compile_time_max_size<V3> == 499'999'990);
