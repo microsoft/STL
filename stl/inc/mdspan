@@ -34,7 +34,7 @@ template <class _IndexType>
 struct _Maybe_empty_array<_IndexType, 0> {};
 
 template <size_t... _Extents>
-inline constexpr size_t _Calculate_rank_dynamic = ((_Extents == dynamic_extent) + ... + 0);
+inline constexpr size_t _Calculate_rank_dynamic = (static_cast<size_t>(_Extents == dynamic_extent) + ... + 0);
 
 _EXPORT_STD template <class _IndexType, size_t... _Extents>
 class extents : private _Maybe_empty_array<_IndexType, _Calculate_rank_dynamic<_Extents...>> {
