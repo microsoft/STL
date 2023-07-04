@@ -58,7 +58,7 @@ constexpr void check_array() {
     using A2 = all_t<int(&)[500'000'000]>;
     static_assert(sizeof(cpv_size_t<A2, A2, A2>) > sizeof(size_t));
     static_assert(sizeof(cpv_difference_t<A2, A2, A2>) > sizeof(ptrdiff_t));
-#endif
+#endif // __clang__
 }
 
 constexpr void check_std_array() {
