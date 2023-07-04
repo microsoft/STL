@@ -300,6 +300,15 @@ constexpr void check_join_with_view() {
     static_assert(sizeof(cpv_const_difference_t<V3>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
 #endif // ^^^ 64 bit ^^^
+
+    // Check '_Compile_time_max_size' when size of joined range is 0
+    using V4 = ranges::join_with_view<span<span<int, 5>, 0>, span<int, 2>>;
+    static_assert(_Compile_time_max_size<V4> == 0);
+    static_assert(sizeof(cpv_difference_t<V4>) <= sizeof(ptrdiff_t));
+    static_assert(sizeof(cpv_difference_t<V4, V4, V4>) <= sizeof(ptrdiff_t));
+    static_assert(_Compile_time_max_size<const V4> == 0);
+    static_assert(sizeof(cpv_const_difference_t<V4>) <= sizeof(ptrdiff_t));
+    static_assert(sizeof(cpv_const_difference_t<V4, V4, V4>) <= sizeof(ptrdiff_t));
 }
 
 template <template <class...> class ZipAdaptor>

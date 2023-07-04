@@ -4577,11 +4577,12 @@ namespace ranges {
         _Size_type _Joined_max_size{};
         _Size_type _Pattern_max_size{};
         _Size_type _Result{};
-        const bool _Overflow = _Mul_overflow(static_cast<_Size_type>(_Compile_time_max_size<_Rng>),
-                                   static_cast<_Size_type>(_Compile_time_max_size<_Inner>), _Joined_max_size)
-                            || _Mul_overflow(static_cast<_Size_type>(_Compile_time_max_size<_Rng> - 1),
-                                static_cast<_Size_type>(_Compile_time_max_size<_Pat>), _Pattern_max_size)
-                            || _Add_overflow(_Joined_max_size, _Pattern_max_size, _Result);
+        const bool _Overflow =
+            _Mul_overflow(static_cast<_Size_type>(_Compile_time_max_size<_Rng>),
+                static_cast<_Size_type>(_Compile_time_max_size<_Inner>), _Joined_max_size)
+            || _Mul_overflow((_STD max)(static_cast<_Size_type>(_Compile_time_max_size<_Rng>), _Size_type{1}) - 1,
+                static_cast<_Size_type>(_Compile_time_max_size<_Pat>), _Pattern_max_size)
+            || _Add_overflow(_Joined_max_size, _Pattern_max_size, _Result);
         if (_Overflow) {
             return (numeric_limits<_Size_type>::max)();
         } else {
