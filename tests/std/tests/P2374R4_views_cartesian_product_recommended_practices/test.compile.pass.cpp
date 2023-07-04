@@ -388,9 +388,8 @@ constexpr void check_adjacent_adaptor() {
 }
 
 constexpr void check_cartesian_product_view() {
-    using V1 = ranges::cartesian_product_view<all_t<array<int, 2>>, all_t<array<float, 3>>, all_t<array<char, 5>>>;
-    using V2 =
-        ranges::cartesian_product_view<all_t<array<int, 200'000>&>, all_t<array<float, 300'000>&>, span<char, 500'000>>;
+    using V1 = cartesian_product_view<all_t<array<int, 2>>, all_t<array<float, 3>>, all_t<array<char, 5>>>;
+    using V2 = cartesian_product_view<all_t<array<int, 200'000>&>, all_t<array<float, 300'000>&>, span<char, 500'000>>;
 
     // Check '_Compile_time_max_size' type trait
     static_assert(_Compile_time_max_size<V1> == 30);
@@ -410,7 +409,7 @@ constexpr void check_cartesian_product_view() {
     static_assert(sizeof(cpv_const_difference_t<V2, V2, V2>) > sizeof(ptrdiff_t));
 
 #if !defined(_M_IX86) && !defined(_M_ARM)
-    using V3 = ranges::cartesian_product_view<span<int, 10'000'000'000'000>, span<float, 500'000'000'000>,
+    using V3 = cartesian_product_view<span<int, 10'000'000'000'000>, span<float, 500'000'000'000>,
         span<char, 900'000'000'000'000>>;
     static_assert(_Compile_time_max_size<V3> == (numeric_limits<_Unsigned128>::max)());
     static_assert(sizeof(cpv_difference_t<V3>) > sizeof(ptrdiff_t));
