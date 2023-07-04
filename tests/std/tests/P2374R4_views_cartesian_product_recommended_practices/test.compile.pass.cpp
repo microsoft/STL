@@ -110,7 +110,7 @@ constexpr void check_span() {
     static_assert(_Compile_time_max_size<const span<int, 9>> == 9);
     static_assert(_Compile_time_max_size<const span<int>> == (numeric_limits<span<int>::size_type>::max)());
 
-    // Computing cartesian product for small spans does no require big range_size_t
+    // Computing cartesian product for small spans does not require big range_size_t
     using S1 = all_t<span<int, 4>>;
     static_assert(sizeof(cpv_size_t<S1>) <= sizeof(size_t));
     static_assert(sizeof(cpv_size_t<S1, S1>) <= sizeof(size_t));
