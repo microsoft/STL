@@ -27,7 +27,7 @@ using cpv_const_size_t = range_size_t<const cartesian_product_view<Rngs...>>;
 template <class... Rngs>
 using cpv_const_difference_t = range_difference_t<const cartesian_product_view<Rngs...>>;
 
-#if !defined(_M_IX86) && !defined(_M_ARM)
+#ifdef _WIN64
 constexpr bool is_64_bit = true;
 #else // ^^^ 64 bit ^^^ / vvv 32 bit vvv
 constexpr bool is_64_bit = false;
@@ -259,7 +259,7 @@ constexpr void check_join_view() {
     static_assert(sizeof(cpv_const_difference_t<V2>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V2, V2, V2>) > sizeof(ptrdiff_t));
 
-#if !defined(_M_IX86) && !defined(_M_ARM)
+#ifdef _WIN64
     using V3 = ranges::join_view<all_t<span<span<int, 10'000'000'000>, 5'000'000'000>>>;
     static_assert(_Compile_time_max_size<V3> == (numeric_limits<size_t>::max)());
     static_assert(sizeof(cpv_difference_t<V3>) <= sizeof(ptrdiff_t));
@@ -291,7 +291,7 @@ constexpr void check_join_with_view() {
     static_assert(sizeof(cpv_const_difference_t<V2>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V2, V2, V2>) > sizeof(ptrdiff_t));
 
-#if !defined(_M_IX86) && !defined(_M_ARM)
+#ifdef _WIN64
     using V3 = ranges::join_with_view<span<span<int, 10'000'000'000>, 5'000'000'000>, span<int, 1>>;
     static_assert(_Compile_time_max_size<V3> == (numeric_limits<size_t>::max)());
     static_assert(sizeof(cpv_difference_t<V3>) <= sizeof(ptrdiff_t));
@@ -409,7 +409,7 @@ constexpr void check_cartesian_product_view() {
     static_assert((sizeof(cpv_const_difference_t<V2>) <= sizeof(ptrdiff_t)) == is_64_bit);
     static_assert(sizeof(cpv_const_difference_t<V2, V2, V2>) > sizeof(ptrdiff_t));
 
-#if !defined(_M_IX86) && !defined(_M_ARM)
+#ifdef _WIN64
     using V3 = cartesian_product_view<span<int, 10'000'000'000'000>, span<float, 500'000'000'000>,
         span<char, 900'000'000'000'000>>;
     static_assert(_Compile_time_max_size<V3> == (numeric_limits<_Unsigned128>::max)());
