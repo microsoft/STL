@@ -59,8 +59,8 @@ namespace ranges {
     inline constexpr auto _Compile_time_max_size<_Ty> = (numeric_limits<range_size_t<_Ty>>::max)();
 
     template <sized_range _Ty>
-        requires requires { typename _Require_constant<remove_reference_t<_Ty>::size()>; }
-    inline constexpr auto _Compile_time_max_size<_Ty> = remove_reference_t<_Ty>::size();
+        requires requires { typename _Require_constant<_Ty::size()>; }
+    inline constexpr auto _Compile_time_max_size<_Ty> = _Ty::size();
 
     template <class _Ty, size_t _Size>
     inline constexpr auto _Compile_time_max_size<_Ty[_Size]> = _Size;
