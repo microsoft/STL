@@ -471,7 +471,7 @@ public:
     using layout_type  = layout_left;
 
 private:
-    using _Base = _Maybe_fully_static_extents<_Extents>;
+    using _Base = _Maybe_fully_static_extents<extents_type>;
 
     static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4950 [mdspan.layout.left.overview]/2).");
@@ -623,7 +623,7 @@ public:
     using layout_type  = layout_right;
 
 private:
-    using _Base = _Maybe_fully_static_extents<_Extents>;
+    using _Base = _Maybe_fully_static_extents<extents_type>;
 
     static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4950 [mdspan.layout.right.overview]/2).");
