@@ -781,13 +781,18 @@ concept _Layout_mapping_alike = requires {
 };
 
 template <class _Extents>
-class layout_stride::mapping {
+class layout_stride::mapping : private _Maybe_fully_static_extents<_Extents>,
+                               private _Maybe_empty_array<typename _Extents::index_type, _Extents::rank()> {
 public:
     using extents_type = _Extents;
     using index_type   = extents_type::index_type;
     using size_type    = extents_type::size_type;
     using rank_type    = extents_type::rank_type;
     using layout_type  = layout_stride;
+
+private:
+    using _Extents_base = _Maybe_fully_static_extents<extents_type>;
+    using _Strides_base = _Maybe_empty_array<index_type, _Extents::rank()>;
 
     static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4950 [mdspan.layout.stride.overview]/2).");
@@ -796,12 +801,14 @@ public:
         "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
         "representable as a value of type typename Extents::index_type (N4950 [mdspan.layout.stride.overview]/4).");
 
-    constexpr mapping() noexcept : _Exts(extents_type{}) {
+public:
+    constexpr mapping() noexcept : _Extents_base(extents_type{}) {
         if constexpr (extents_type::rank() != 0) {
-            _Strides.back() = 1;
+            this->_Array.back() = 1;
             for (rank_type _Idx = extents_type::_Rank - 1; _Idx-- > 0;) {
 #if _CONTAINER_DEBUG_LEVEL > 0
-                const bool _Overflow = _Mul_overflow(_Strides[_Idx + 1], _Exts.extent(_Idx + 1), _Strides[_Idx]);
+                const bool _Overflow =
+                    _Mul_overflow(this->_Array[_Idx + 1], this->_Exts.extent(_Idx + 1), this->_Array[_Idx]);
                 // NB: N4950 requires value of 'layout_right::mapping<extents_type>().required_span_size()' to be
                 // representable as value of type 'index_type', but this is not enough. We need to require every single
                 // stride to be representable as value of type 'index_type', so we can get desired effects.
@@ -809,7 +816,7 @@ public:
                     "Value of layout_right::mapping<extents_type>().required_span_size() must be "
                     "representable as a value of type index_type (N4950 [mdspan.layout.stride.cons]/1).");
 #else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
-                _Strides[_Idx] = static_cast<index_type>(_Strides[_Idx + 1] * _Exts.extent(_Idx + 1));
+                this->_Array[_Idx] = static_cast<index_type>(this->_Array[_Idx + 1] * this->_Exts.extent(_Idx + 1));
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             }
         }
@@ -822,17 +829,17 @@ public:
                   && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
     constexpr mapping(const extents_type& _Exts_, span<_OtherIndexType, extents_type::rank()> _Strides_,
         index_sequence<_Indices...>) noexcept
-        : _Exts(_Exts_), _Strides{static_cast<index_type>(_STD as_const(_Strides_[_Indices]))...} {
+        : _Extents_base(_Exts_), _Strides_base{static_cast<index_type>(_STD as_const(_Strides_[_Indices]))...} {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (extents_type::rank() != 0) {
             bool _Found_zero          = false;
             bool _Overflow            = false;
             index_type _Req_span_size = 0;
             for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
-                const index_type _Stride = _Strides[_Idx];
+                const index_type _Stride = this->_Array[_Idx];
                 _STL_VERIFY(_Stride > 0, "Value of s[i] must be greater than 0 for all i in the range [0, rank_) "
                                          "(N4950 [mdspan.layout.stride.cons]/4.1).");
-                const index_type _Ext = _Exts.extent(_Idx);
+                const index_type _Ext = this->_Exts.extent(_Idx);
                 if (_Ext == 0) {
                     _Found_zero = true;
                 }
@@ -885,7 +892,7 @@ public:
         && (_Is_mapping_of<layout_left, _StridedLayoutMapping> || _Is_mapping_of<layout_right, _StridedLayoutMapping>
             || _Is_mapping_of<layout_stride, _StridedLayoutMapping>) ))
         mapping(const _StridedLayoutMapping& _Other) noexcept
-        : _Exts(_Other.extents()) {
+        : _Extents_base(_Other.extents()) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
             "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
@@ -899,18 +906,18 @@ public:
             _STL_VERIFY(_Stride > 0, "Value of other.stride(r) must be greater than 0 for every rank index r of "
                                      "extents() (N4950 [mdspan.layout.stride.cons]/7.2).");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-            _Strides[_Idx] = static_cast<index_type>(_Stride);
+            this->_Array[_Idx] = static_cast<index_type>(_Stride);
         }
     }
 
     constexpr mapping& operator=(const mapping&) noexcept = default;
 
     _NODISCARD constexpr const extents_type& extents() const noexcept {
-        return _Exts;
+        return this->_Exts;
     }
 
     _NODISCARD constexpr array<index_type, extents_type::rank()> strides() const noexcept {
-        return _Strides;
+        return this->_Array;
     }
 
     _NODISCARD constexpr index_type required_span_size() const noexcept {
@@ -919,12 +926,12 @@ public:
         } else {
             index_type _Result = 1;
             for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
-                const index_type _Ext = _Exts.extent(_Idx);
+                const index_type _Ext = this->_Exts.extent(_Idx);
                 if (_Ext == 0) {
                     return 0;
                 }
 
-                _Result += (_Ext - 1) * _Strides[_Idx];
+                _Result += (_Ext - 1) * this->_Array[_Idx];
             }
 
             return _Result;
@@ -958,7 +965,8 @@ public:
         if constexpr (extents_type::rank() == 0) {
             return true;
         } else {
-            return required_span_size() == _Fwd_prod_of_extents<extents_type>::_Calculate(_Exts, extents_type::_Rank);
+            return required_span_size()
+                == _Fwd_prod_of_extents<extents_type>::_Calculate(this->_Exts, extents_type::_Rank);
         }
     }
 
@@ -967,7 +975,7 @@ public:
     }
 
     _NODISCARD constexpr index_type stride(const rank_type _Idx) const noexcept {
-        return _Strides[_Idx];
+        return this->_Array[_Idx];
     }
 
     template <class _OtherMapping>
@@ -990,9 +998,6 @@ public:
     }
 
 private:
-    /* [[no_unique_address]] */ extents_type _Exts{};
-    /* [[no_unique_address]] */ array<index_type, extents_type::rank()> _Strides{};
-
     template <class _OtherMapping>
     _NODISCARD static constexpr _OtherMapping::index_type _Offset(_OtherMapping& _Mapping) noexcept {
         if constexpr (extents_type::rank() == 0) {
@@ -1014,12 +1019,12 @@ private:
         [[maybe_unused]] index_sequence<_Seq...> _Index_seq, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Exts._Contains_multidimensional_index(_Index_seq, _Indices...),
+        _STL_VERIFY(this->_Exts._Contains_multidimensional_index(_Index_seq, _Indices...),
             "Value of extents_type::index-cast(i) must be a multidimensional index in extents_ (N4950 "
             "[mdspan.layout.stride.obs]/3).");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return static_cast<index_type>(((_Indices * _Strides[_Seq]) + ... + 0));
+        return static_cast<index_type>(((_Indices * this->_Array[_Seq]) + ... + 0));
     }
 };
 
