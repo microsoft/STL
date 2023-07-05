@@ -1095,35 +1095,52 @@ constexpr void check_empty() {
 }
 
 constexpr void check_swap() {
-    using E   = extents<int, 3, 3>;
-    using Mds = mdspan<int, E, TrackingLayout<>, TrackingAccessor<int>>;
-    static_assert(is_nothrow_swappable_v<Mds>);
-    static_assert(!is_swappable_v<const Mds>);
+    { // Check swapping with tracking types
+        using E   = extents<int, 3, 3>;
+        using Mds = mdspan<int, E, TrackingLayout<>, TrackingAccessor<int>>;
+        static_assert(is_nothrow_swappable_v<Mds>);
+        static_assert(!is_swappable_v<const Mds>);
 
-    int a1[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-    Mds mds1{TrackingDataHandle<int>{1, a1}, TrackingLayout<>::mapping<E>(1), TrackingAccessor<int>{1}};
-    int a2[9] = {3, 0, 0, 0, 3, 0, 0, 0, 3};
-    Mds mds2{TrackingDataHandle<int>{3, a2}, TrackingLayout<>::mapping<E>(3), TrackingAccessor<int>{3}};
-    swap(mds1, mds2);
-    static_assert(is_void_v<decltype(swap(mds1, mds2))>);
+        int a1[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+        Mds mds1{TrackingDataHandle<int>{1, a1}, TrackingLayout<>::mapping<E>(1), TrackingAccessor<int>{1}};
+        int a2[9] = {3, 0, 0, 0, 3, 0, 0, 0, 3};
+        Mds mds2{TrackingDataHandle<int>{3, a2}, TrackingLayout<>::mapping<E>(3), TrackingAccessor<int>{3}};
+        swap(mds1, mds2);
+        static_assert(is_void_v<decltype(swap(mds1, mds2))>);
 
-    assert(mds1.data_handle().get_id() == 3);
-    assert(mds1.data_handle().is_swapped());
-    assert(mds1.mapping().get_id() == 3);
-    assert(mds1.mapping().is_swapped());
-    assert(mds1.accessor().get_id() == 3);
-    assert(mds1.accessor().is_swapped());
-    assert((mds1[array{1, 1}] == 3));
-    assert((mds1[array{0, 1}] == 0));
+        assert(mds1.data_handle().get_id() == 3);
+        assert(mds1.data_handle().is_swapped());
+        assert(mds1.mapping().get_id() == 3);
+        assert(mds1.mapping().is_swapped());
+        assert(mds1.accessor().get_id() == 3);
+        assert(mds1.accessor().is_swapped());
+        assert((mds1[array{1, 1}] == 3));
+        assert((mds1[array{0, 1}] == 0));
 
-    assert(mds2.data_handle().get_id() == 1);
-    assert(mds2.data_handle().is_swapped());
-    assert(mds2.mapping().get_id() == 1);
-    assert(mds2.mapping().is_swapped());
-    assert(mds2.accessor().get_id() == 1);
-    assert(mds2.accessor().is_swapped());
-    assert((mds2[array{1, 1}] == 1));
-    assert((mds2[array{0, 1}] == 0));
+        assert(mds2.data_handle().get_id() == 1);
+        assert(mds2.data_handle().is_swapped());
+        assert(mds2.mapping().get_id() == 1);
+        assert(mds2.mapping().is_swapped());
+        assert(mds2.accessor().get_id() == 1);
+        assert(mds2.accessor().is_swapped());
+        assert((mds2[array{1, 1}] == 1));
+        assert((mds2[array{0, 1}] == 0));
+    }
+
+    { // Check swapping with standard layout and accessor
+        using Mds = mdspan<int, extents<int, 2, 2>>;
+        static_assert(is_nothrow_swappable_v<Mds>);
+        static_assert(!is_swappable_v<const Mds>);
+
+        int diag[] = {1, 0, 0, 1};
+        Mds mds1{diag};
+        int revdiag[] = {0, 1, 1, 0};
+        Mds mds2{revdiag};
+
+        swap(mds1, mds2);
+        assert(mds1.data_handle() == revdiag);
+        assert(mds2.data_handle() == diag);
+    }
 }
 
 constexpr void check_getters() {
@@ -1315,6 +1332,18 @@ constexpr void check_deduction_guides() {
         static_assert(same_as<decltype(mds), mdspan<bool, extents<int, 2, 2>, TrackingLayout<>, VectorBoolAccessor>>);
     }
 }
+
+// When
+// * 'Mds::accessor_type' is specialization of 'default_accesor', and
+// * 'Mds::layout_type' is layout_left or layout_right and 'Mds::extents_type::rank_dynamic() == 0',
+// then 'sizeof(Mds) == sizeof(void*)' (MSVC STL specific behavior).
+static_assert(sizeof(mdspan<int, extents<int, 3, 3, 3>, layout_left>) == sizeof(void*));
+static_assert(sizeof(mdspan<int, dextents<int, 3>, layout_left>) > sizeof(void*));
+static_assert(sizeof(mdspan<int, extents<int, 3, 3, 3>, layout_left, TrivialAccessor<int>>) > sizeof(void*));
+
+static_assert(sizeof(mdspan<long, extents<long, 2, 2, 2>, layout_right>) == sizeof(void*));
+static_assert(sizeof(mdspan<long, dextents<long, 2>, layout_right>) > sizeof(void*));
+static_assert(sizeof(mdspan<long, extents<long, 2, 2, 2>, layout_right, TrivialAccessor<long>>) > sizeof(void*));
 
 constexpr bool test() {
     check_modeled_concepts_and_member_types<extents<signed char, 2, 3, 5>, layout_stride, TrivialAccessor>();
