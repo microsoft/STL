@@ -456,7 +456,7 @@ struct _Maybe_fully_static_extents<_Extents> {
     template <class _OtherExtents>
     constexpr explicit _Maybe_fully_static_extents([[maybe_unused]] const _OtherExtents& _Exts_) {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        (void) _Extents(_Exts_); // NB: temporary created for preconditions check
+        (void) _Extents{_Exts_}; // NB: temporary created for preconditions check
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 };
