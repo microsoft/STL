@@ -1254,7 +1254,7 @@ namespace filesystem {
                         if (_Pos == _Vec.end()) { break; }
                     }
                     else if (!_Has_root_directory) {
-                        // due to 6, append dot-dot only when !_Has_root_directory.
+                        // due to 6, append dot-dot only if !_Has_root_directory.
                         *_New_end++ = _Dot_dot;
                         if (_Pos == _Vec.end()) { break; }
                         *_New_end++ = {}; // as _Pos != _Vec.end(), it points at a separator; add it.
