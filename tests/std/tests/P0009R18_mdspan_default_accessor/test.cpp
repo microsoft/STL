@@ -27,7 +27,7 @@ constexpr void test_one(array<ElementType, 3> elems) {
     static_assert(is_trivially_copyable_v<Accessor>);
     static_assert(semiregular<Accessor>);
 
-    // Check if default_accessor is emtpy
+    // Check if default_accessor is empty
     static_assert(std::is_empty_v<Accessor>);
 
     // Check nested types
