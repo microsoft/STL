@@ -1584,15 +1584,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <Type Name="std::mutex">
       <AlternativeType Name="std::recursive_mutex"/>
-      <DisplayString Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) == 0">unlocked</DisplayString>
-      <DisplayString Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) != 0">locked</DisplayString>
-      <DisplayString Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 76) == 0">unlocked</DisplayString>
-      <DisplayString Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 76) != 0">locked</DisplayString>
+      <DisplayString Condition="_Mtx_storage_mirror._Count == 0">unlocked</DisplayString>
+      <DisplayString Condition="_Mtx_storage_mirror._Count != 0">locked</DisplayString>
       <Expand>
-          <Item Name="[locking_thread_id]" Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) != 0">*(long *)((char *)(&amp;_Mtx_storage) + 40)</Item>
-          <Item Name="[locking_thread_id]" Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 76) != 0">*(long *)((char *)(&amp;_Mtx_storage) + 72)</Item>
-          <Item Name="[ownership_levels]" Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) != 0">*(int *)((char *)(&amp;_Mtx_storage) + 44)</Item>
-          <Item Name="[ownership_levels]" Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 76) != 0">*(int *)((char *)(&amp;_Mtx_storage) + 76)</Item>
+          <Item Name="[locking_thread_id]" Condition="_Mtx_storage_mirror._Count != 0">_Mtx_storage_mirror._Thread_id</Item>
+          <Item Name="[ownership_levels]" Condition="_Mtx_storage_mirror._Count != 0">_Mtx_storage_mirror._Count</Item>
       </Expand>
   </Type>
 
