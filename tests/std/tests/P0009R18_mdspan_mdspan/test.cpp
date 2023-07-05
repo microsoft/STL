@@ -907,6 +907,11 @@ constexpr void check_multidimensional_subscript_operator() {
         assert(r1);
         same_as<vector<bool>::reference> decltype(auto) r2 = as_const(mds)[0, 1];
         assert(!r2);
+
+#ifndef __clang__ // TRANSITION, Clang 17
+        static_assert(noexcept(mds[1, 1])); // strengthened
+        static_assert(noexcept(as_const(mds)[0, 1])); // strengthened
+#endif // __clang__
     }
 
     { // Check that indices are moved and then casted to 'index_type'

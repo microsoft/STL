@@ -1285,7 +1285,8 @@ public:
         requires (is_convertible_v<_OtherIndexTypes, index_type> && ...)
               && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
               && (sizeof...(_OtherIndexTypes) == rank())
-    _NODISCARD constexpr reference operator[](_OtherIndexTypes... _Indices) const {
+    _NODISCARD constexpr reference operator[](_OtherIndexTypes... _Indices) const
+        noexcept(noexcept(_Access_impl(static_cast<index_type>(_STD move(_Indices))...))) /* strengthened */ {
         return _Access_impl(static_cast<index_type>(_STD move(_Indices))...);
     }
 #endif // __cpp_multidimensional_subscript
@@ -1411,7 +1412,8 @@ private:
 #endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
 
     template <class... _OtherIndexTypes>
-    _NODISCARD constexpr reference _Access_impl(_OtherIndexTypes... _Indices) const {
+    _NODISCARD constexpr reference _Access_impl(_OtherIndexTypes... _Indices) const
+        noexcept(noexcept(_Acc.access(_Ptr, static_cast<size_t>(_Map(_Indices...))))) /* strengthened */ {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_OtherIndexTypes, index_type> && ...));
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Map.extents()._Contains_multidimensional_index(make_index_sequence<rank()>{}, _Indices...),
