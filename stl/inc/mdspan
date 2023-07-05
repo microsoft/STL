@@ -442,18 +442,20 @@ _EXPORT_STD struct layout_stride {
 
 template <class _Extents>
 struct _Maybe_fully_static_extents {
-    _Extents _Exts{};
+    _STL_INTERNAL_STATIC_ASSERT(_Is_extents<_Extents>);
 
     constexpr _Maybe_fully_static_extents() noexcept = default;
 
     template <class _OtherExtents>
     constexpr explicit _Maybe_fully_static_extents(const _OtherExtents& _Exts_) : _Exts(_Exts_) {}
+
+    _Extents _Exts{};
 };
 
 template <class _Extents>
     requires (_Extents::rank_dynamic() == 0)
 struct _Maybe_fully_static_extents<_Extents> {
-    static constexpr _Extents _Exts{};
+    _STL_INTERNAL_STATIC_ASSERT(_Is_extents<_Extents>);
 
     constexpr _Maybe_fully_static_extents() noexcept = default;
 
@@ -463,6 +465,8 @@ struct _Maybe_fully_static_extents<_Extents> {
         (void) _Extents{_Exts_}; // NB: temporary created for preconditions check
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
+
+    static constexpr _Extents _Exts{};
 };
 
 template <class _Extents>
@@ -1064,6 +1068,8 @@ concept _Elidable_layout_mapping =
 
 template <class _Extents, class _LayoutPolicy>
 struct _Mdspan_mapping_base {
+    _STL_INTERNAL_STATIC_ASSERT(_Is_extents<_Extents>);
+
     using _Mapping = _LayoutPolicy::template mapping<_Extents>;
 
     constexpr _Mdspan_mapping_base() noexcept = default;
@@ -1078,6 +1084,8 @@ struct _Mdspan_mapping_base {
 
 template <class _Extents, _Elidable_layout_mapping<_Extents> _LayoutPolicy>
 struct _Mdspan_mapping_base<_Extents, _LayoutPolicy> {
+    _STL_INTERNAL_STATIC_ASSERT(_Is_extents<_Extents>);
+
     using _Mapping = _LayoutPolicy::template mapping<_Extents>;
 
     constexpr _Mdspan_mapping_base() noexcept = default;
