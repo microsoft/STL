@@ -819,8 +819,8 @@ public:
                 const bool _Overflow =
                     _Mul_overflow(this->_Array[_Idx + 1], this->_Exts.extent(_Idx + 1), this->_Array[_Idx]);
                 // NB: N4950 requires value of 'layout_right::mapping<extents_type>().required_span_size()' to be
-                // representable as value of type 'index_type', but this is not enough. We need to require every single
-                // stride to be representable as value of type 'index_type', so we can get desired effects.
+                // representable as a value of type 'index_type', but this is not enough. We need to require every
+                // single stride to be representable as a value of type 'index_type', so we can get desired effects.
                 _STL_VERIFY(!_Overflow,
                     "Value of layout_right::mapping<extents_type>().required_span_size() must be "
                     "representable as a value of type index_type (N4950 [mdspan.layout.stride.cons]/1).");
