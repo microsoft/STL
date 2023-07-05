@@ -75,19 +75,19 @@ private:
     static constexpr array<rank_type, _Rank + 1> _Dynamic_indices = _Make_dynamic_indices();
 
     _NODISCARD static consteval auto _Make_dynamic_indices_inv() noexcept {
-        array<rank_type, _Rank> _Result{};
+        array<rank_type, _Rank_dynamic> _Result{};
+        rank_type _Counter = 0;
         for (rank_type _Idx = 0; _Idx < _Rank; ++_Idx) {
-            for (rank_type _Idx_inv = 0; _Idx_inv < _Rank; ++_Idx_inv) {
-                if (_Dynamic_indices[_Idx_inv + 1] == _Idx + 1) {
-                    _Result[_Idx] = _Idx_inv;
-                    break;
-                }
+            if (_Static_extents[_Idx] == dynamic_extent) {
+                __assume(_Counter < _Rank_dynamic); // TRANSITION, DevCom-923103
+                _Result[_Counter] = _Idx;
+                ++_Counter;
             }
         }
         return _Result;
     }
 
-    static constexpr array<rank_type, _Rank> _Dynamic_indices_inv = _Make_dynamic_indices_inv();
+    static constexpr array<rank_type, _Rank_dynamic> _Dynamic_indices_inv = _Make_dynamic_indices_inv();
 
     using _Base = _Maybe_empty_array<_IndexType, _Rank_dynamic>;
 
