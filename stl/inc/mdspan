@@ -1059,7 +1059,8 @@ struct default_accessor {
 
 template <class _LayoutPolicy, class _Extents>
 concept _Elidable_layout_mapping =
-    _Is_any_of_v<_LayoutPolicy, layout_left, layout_right> && (_Extents::rank_dynamic() == 0);
+    (_Is_any_of_v<_LayoutPolicy, layout_left, layout_right> && _Extents::rank_dynamic() == 0)
+    || (same_as<_LayoutPolicy, layout_stride> && _Extents::rank() == 0);
 
 template <class _Extents, class _LayoutPolicy>
 struct _Mdspan_mapping_base {
