@@ -1114,7 +1114,7 @@ struct _Mdspan_accessor_base<_AccessorPolicy> {
 
     template <class _OtherAccessorPolicy>
     constexpr explicit _Mdspan_accessor_base(const _OtherAccessorPolicy& _Acc_) {
-        // NB: Constructing _AccessorPolicy from _OtherAccessorPolicy may have side effects - we should create  a
+        // NB: Constructing _AccessorPolicy from _OtherAccessorPolicy may have side effects - we should create a
         // temporary.
         if constexpr (!_Elidable_accessor_policy<_OtherAccessorPolicy>) {
             (void) _AccessorPolicy{_Acc_};
