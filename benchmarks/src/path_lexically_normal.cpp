@@ -1,4 +1,7 @@
-#include "benchmark/benchmark.h"
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#include <benchmark/benchmark.h>
 #include <filesystem>
 
 using namespace std;
