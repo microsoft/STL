@@ -986,8 +986,8 @@ public:
     }
 
 private:
-    extents_type _Exts{};
-    array<index_type, extents_type::rank()> _Strides{};
+    /* [[no_unique_address]] */ extents_type _Exts{};
+    /* [[no_unique_address]] */ array<index_type, extents_type::rank()> _Strides{};
 
     template <class _OtherMapping>
     _NODISCARD static constexpr _OtherMapping::index_type _Offset(_OtherMapping& _Mapping) noexcept {
