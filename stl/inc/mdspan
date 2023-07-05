@@ -342,9 +342,10 @@ template <class _IndexType, size_t... _Args>
 inline constexpr bool _Is_extents<extents<_IndexType, _Args...>> = true;
 
 template <class _Extents>
-    requires _Is_extents<_Extents>
 class _Fwd_prod_of_extents {
 public:
+    _STL_INTERNAL_STATIC_ASSERT(_Is_extents<_Extents>);
+
     _NODISCARD static constexpr _Extents::index_type _Calculate(const _Extents& _Exts, const size_t _Idx) noexcept {
         _STL_INTERNAL_CHECK(_Idx <= _Extents::_Rank);
         if constexpr (_Extents::rank() == 0) {
@@ -359,34 +360,36 @@ public:
     }
 };
 
-template <class _IndexType, size_t... _Extents>
-    requires (sizeof...(_Extents) > 0) && ((_Extents != dynamic_extent) && ...)
-class _Fwd_prod_of_extents<extents<_IndexType, _Extents...>> {
+template <class _Extents>
+    requires (_Extents::rank() > 0) && (_Extents::rank_dynamic() == 0)
+class _Fwd_prod_of_extents<_Extents> {
 private:
-    using _Ty = extents<_IndexType, _Extents...>;
+    _STL_INTERNAL_STATIC_ASSERT(_Is_extents<_Extents>);
 
     _NODISCARD static consteval auto _Make_prods() noexcept {
-        array<typename _Ty::index_type, _Ty::rank() + 1> _Result;
+        array<typename _Extents::index_type, _Extents::rank() + 1> _Result;
         _Result.front() = 1;
-        for (size_t _Idx = 1; _Idx < _Ty::_Rank + 1; ++_Idx) {
-            _Result[_Idx] = static_cast<_Ty::index_type>(_Result[_Idx - 1] * _Ty::_Static_extents[_Idx - 1]);
+        for (size_t _Idx = 1; _Idx < _Extents::_Rank + 1; ++_Idx) {
+            _Result[_Idx] = static_cast<_Extents::index_type>(_Result[_Idx - 1] * _Extents::_Static_extents[_Idx - 1]);
         }
         return _Result;
     }
 
-    static constexpr array<typename _Ty::index_type, _Ty::rank() + 1> _Cache = _Make_prods();
+    static constexpr array<typename _Extents::index_type, _Extents::rank() + 1> _Cache = _Make_prods();
 
 public:
-    _NODISCARD static constexpr _Ty::index_type _Calculate(const _Ty&, const size_t _Idx) noexcept {
-        _STL_INTERNAL_CHECK(_Idx <= _Ty::_Rank);
+    _NODISCARD static constexpr _Extents::index_type _Calculate(const _Extents&, const size_t _Idx) noexcept {
+        _STL_INTERNAL_CHECK(_Idx <= _Extents::_Rank);
         return _Cache[_Idx];
     }
 };
 
 template <class _Extents>
-    requires _Is_extents<_Extents> && (_Extents::rank() > 0)
 class _Rev_prod_of_extents {
 public:
+    _STL_INTERNAL_STATIC_ASSERT(_Is_extents<_Extents>);
+    _STL_INTERNAL_STATIC_ASSERT(_Extents::rank() > 0);
+
     _NODISCARD static constexpr _Extents::index_type _Calculate(const _Extents& _Exts, const size_t _Idx) noexcept {
         _STL_INTERNAL_CHECK(_Idx < _Extents::_Rank);
         typename _Extents::index_type _Result = 1;
@@ -397,26 +400,27 @@ public:
     }
 };
 
-template <class _IndexType, size_t... _Extents>
-    requires ((_Extents != dynamic_extent) && ...)
-class _Rev_prod_of_extents<extents<_IndexType, _Extents...>> {
+template <class _Extents>
+    requires (_Extents::rank_dynamic() == 0)
+class _Rev_prod_of_extents<_Extents> {
 private:
-    using _Ty = extents<_IndexType, _Extents...>;
+    _STL_INTERNAL_STATIC_ASSERT(_Is_extents<_Extents>);
+    _STL_INTERNAL_STATIC_ASSERT(_Extents::rank() > 0);
 
     _NODISCARD static consteval auto _Make_prods() noexcept {
-        array<typename _Ty::index_type, _Ty::rank()> _Result;
+        array<typename _Extents::index_type, _Extents::rank()> _Result;
         _Result.back() = 1;
-        for (size_t _Idx = _Ty::_Rank; _Idx-- > 1;) {
-            _Result[_Idx - 1] = static_cast<_Ty::index_type>(_Result[_Idx] * _Ty::_Static_extents[_Idx]);
+        for (size_t _Idx = _Extents::_Rank; _Idx-- > 1;) {
+            _Result[_Idx - 1] = static_cast<_Extents::index_type>(_Result[_Idx] * _Extents::_Static_extents[_Idx]);
         }
         return _Result;
     }
 
-    static constexpr array<typename _Ty::index_type, _Ty::rank()> _Cache = _Make_prods();
+    static constexpr array<typename _Extents::index_type, _Extents::rank()> _Cache = _Make_prods();
 
 public:
-    _NODISCARD static constexpr _Ty::index_type _Calculate(const _Ty&, const size_t _Idx) noexcept {
-        _STL_INTERNAL_CHECK(_Idx < _Ty::_Rank);
+    _NODISCARD static constexpr _Extents::index_type _Calculate(const _Extents&, const size_t _Idx) noexcept {
+        _STL_INTERNAL_CHECK(_Idx < _Extents::_Rank);
         return _Cache[_Idx];
     }
 };
