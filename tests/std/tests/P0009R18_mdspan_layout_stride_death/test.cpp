@@ -15,7 +15,7 @@ using namespace std;
 
 void test_default_construction() {
     using Ext = extents<signed char, dynamic_extent, 4, 5, 7>;
-    // Value of layout_right::mapping<extents_type>().required_span_size() must be
+    // Value of layout_stride::mapping<extents_type>().required_span_size() must be
     // representable as a value of type index_type
     [[maybe_unused]] layout_stride::mapping<Ext> m{}; // NB: strides are [140, 35, 7, 1]
 }
