@@ -397,13 +397,14 @@ constexpr void check_observers() {
 
 constexpr void check_default_constructor() {
     { // Check constraint: 'rank_dynamic() > 0'
-        static_assert(is_default_constructible_v<mdspan<const int, dextents<int, 1>>>);
+        static_assert(is_nothrow_default_constructible_v<mdspan<const int, dextents<int, 1>>>); // strengthened
         static_assert(!is_default_constructible_v<mdspan<const int, extents<int, 3>>>);
         static_assert(!is_default_constructible_v<mdspan<const int, extents<int>>>);
     }
 
     { // Check constraints: 'is_default_constructible_v<data_handle_type>'
-        static_assert(is_default_constructible_v<mdspan<bool, dextents<int, 2>, layout_right, VectorBoolAccessor>>);
+        static_assert(is_nothrow_default_constructible_v<
+            mdspan<bool, dextents<int, 2>, layout_right, VectorBoolAccessor>>); // strengthened
         static_assert(
             !is_default_constructible_v<mdspan<bool, dextents<int, 2>, layout_right, TrackingAccessor<bool>>>);
     }
@@ -414,8 +415,8 @@ constexpr void check_default_constructor() {
     }
 
     { // Check constraint: 'is_default_constructible_v<accessor_type>'
-        static_assert(is_default_constructible_v<
-            mdspan<float, dextents<int, 2>, layout_right, AccessorWithCustomOffsetPolicy<float>>>);
+        static_assert(is_nothrow_default_constructible_v<
+            mdspan<float, dextents<int, 2>, layout_right, AccessorWithCustomOffsetPolicy<float>>>); // strengthened
         static_assert(
             !is_default_constructible_v<mdspan<float, dextents<int, 2>, layout_right, TrackingAccessor<float>>>);
     }

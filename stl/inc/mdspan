@@ -1190,7 +1190,9 @@ public:
         return this->_Map.extents().extent(_Idx);
     }
 
-    constexpr mdspan()
+    constexpr mdspan() noexcept(
+        is_nothrow_default_constructible_v<data_handle_type>&& is_nothrow_default_constructible_v<mapping_type>&&
+            is_nothrow_default_constructible_v<accessor_type>) // strengthened
         requires (rank_dynamic() > 0) && is_default_constructible_v<data_handle_type>
               && is_default_constructible_v<mapping_type> && is_default_constructible_v<accessor_type>
     {}
