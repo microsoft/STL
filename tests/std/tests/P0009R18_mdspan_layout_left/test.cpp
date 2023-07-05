@@ -261,14 +261,14 @@ constexpr void check_construction_from_other_right_mapping() {
 
 constexpr void check_construction_from_other_stride_mapping() {
     { // Check construction from layout_stride::mapping<E> with various values of E::rank()
-        static_assert(
-            is_constructible_v<layout_left::mapping<dextents<int, 0>>, layout_stride::mapping<dextents<int, 0>>>);
-        static_assert(
-            is_constructible_v<layout_left::mapping<dextents<int, 1>>, layout_stride::mapping<dextents<int, 1>>>);
-        static_assert(
-            is_constructible_v<layout_left::mapping<dextents<int, 2>>, layout_stride::mapping<dextents<int, 2>>>);
-        static_assert(
-            is_constructible_v<layout_left::mapping<dextents<int, 3>>, layout_stride::mapping<dextents<int, 3>>>);
+        static_assert(is_nothrow_constructible_v<layout_left::mapping<dextents<int, 0>>,
+            layout_stride::mapping<dextents<int, 0>>>); // strengthened
+        static_assert(is_nothrow_constructible_v<layout_left::mapping<dextents<int, 1>>,
+            layout_stride::mapping<dextents<int, 1>>>); // strengthened
+        static_assert(is_nothrow_constructible_v<layout_left::mapping<dextents<int, 2>>,
+            layout_stride::mapping<dextents<int, 2>>>); // strengthened
+        static_assert(is_nothrow_constructible_v<layout_left::mapping<dextents<int, 3>>,
+            layout_stride::mapping<dextents<int, 3>>>); // strengthened
     }
 
     { // Check construction from layout_stride::mapping<E> when E is invalid
