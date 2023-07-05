@@ -1245,7 +1245,9 @@ public:
         requires is_default_constructible_v<accessor_type>
         : _Mapping_base(_Map_), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
 
-    constexpr mdspan(data_handle_type _Ptr_, const mapping_type& _Map_, const accessor_type& _Acc_)
+    constexpr mdspan(data_handle_type _Ptr_, const mapping_type& _Map_, const accessor_type& _Acc_) noexcept(
+        is_nothrow_move_constructible_v<data_handle_type>&& is_nothrow_copy_constructible_v<mapping_type>&&
+            is_nothrow_copy_constructible_v<accessor_type>) // strengthened
         : _Mapping_base(_Map_), _Accessor_base(_Acc_), _Ptr(_STD move(_Ptr_)) {}
 
     template <class _OtherElementType, class _OtherExtents, class _OtherLayoutPolicy, class _OtherAccessor>

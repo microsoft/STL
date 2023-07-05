@@ -753,23 +753,35 @@ constexpr void check_data_handle_and_mapping_constructor() {
 }
 
 constexpr void check_data_handle_and_mapping_and_accessor_constructor() {
-    using Ext = extents<signed char, 4, 4>;
-    using Mds = mdspan<unsigned int, Ext, TrackingLayout<>, TrackingAccessor<unsigned int>>;
+    { // Check effects
+        using Ext = extents<signed char, 4, 4>;
+        using Mds = mdspan<unsigned int, Ext, TrackingLayout<>, TrackingAccessor<unsigned int>>;
 
-    unsigned int identity_matrix[] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-    Mds mds{TrackingDataHandle<unsigned int>{16, identity_matrix}, TrackingLayout<>::mapping<Ext>(17),
-        TrackingAccessor<unsigned int>{18}};
+        unsigned int identity_matrix[] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+        Mds mds{TrackingDataHandle<unsigned int>{16, identity_matrix}, TrackingLayout<>::mapping<Ext>(17),
+            TrackingAccessor<unsigned int>{18}};
 
-    // Check effects:
-    // - Direct-non-list-initializes ptr_ with std::move(p),
-    // - direct-non-list-initializes map_ with m, and
-    // - direct-non-list-initializes acc_ with a.
-    assert(mds.data_handle().is_move_constructed());
-    assert(mds.data_handle().get_id() == 16);
-    assert(mds.mapping().is_copy_constructed());
-    assert(mds.mapping().get_id() == 17);
-    assert(mds.accessor().is_copy_constructed());
-    assert(mds.accessor().get_id() == 18);
+        // Effects:
+        // - Direct-non-list-initializes ptr_ with std::move(p),
+        // - direct-non-list-initializes map_ with m, and
+        // - direct-non-list-initializes acc_ with a.
+        assert(mds.data_handle().is_move_constructed());
+        assert(mds.data_handle().get_id() == 16);
+        assert(mds.mapping().is_copy_constructed());
+        assert(mds.mapping().get_id() == 17);
+        assert(mds.accessor().is_copy_constructed());
+        assert(mds.accessor().get_id() == 18);
+    }
+
+    { // Check noexceptness (strengthened)
+        using Mds1 = mdspan<short, extents<int, 3, 3, 3>>;
+        static_assert(is_nothrow_constructible_v<Mds1, Mds1::data_handle_type, const Mds1::mapping_type&,
+            const Mds1::accessor_type&>);
+
+        using Mds2 = mdspan<short, extents<int, 3, 3, 3>, TrackingLayout<>>;
+        static_assert(!is_nothrow_constructible_v<Mds2, Mds2::data_handle_type, const Mds2::mapping_type&,
+                      const Mds2::accessor_type&>);
+    }
 }
 
 constexpr void check_construction_from_other_mdspan() {
