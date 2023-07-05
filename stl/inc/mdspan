@@ -1216,7 +1216,10 @@ public:
                   && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
                   && (_Size == rank() || _Size == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
-    constexpr explicit(_Size != rank_dynamic()) mdspan(data_handle_type _Ptr_, span<_OtherIndexType, _Size> _Exts)
+    constexpr explicit(_Size != rank_dynamic())
+        mdspan(data_handle_type _Ptr_, span<_OtherIndexType, _Size> _Exts) noexcept(
+            is_nothrow_move_constructible_v<data_handle_type>&& is_nothrow_constructible_v<mapping_type, extents_type>&&
+                is_nothrow_default_constructible_v<accessor_type>) // strengthened
         : _Mapping_base(extents_type{_Exts}), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
 
     template <class _OtherIndexType, size_t _Size>
@@ -1225,8 +1228,10 @@ public:
                   && (_Size == rank() || _Size == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
     constexpr explicit(_Size != rank_dynamic())
-        mdspan(data_handle_type _Ptr_, const array<_OtherIndexType, _Size>& _Exts)
-        : _Mapping_base(extents_type{_Exts}), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
+        mdspan(data_handle_type _Ptr_, const array<_OtherIndexType, _Size>& _Exts) noexcept(
+            is_nothrow_move_constructible_v<data_handle_type>&& is_nothrow_constructible_v<mapping_type, extents_type>&&
+                is_nothrow_default_constructible_v<accessor_type>) // strengthened
+        : _Mapping_base(extents_type{_Exts}), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}a_handle, array/span)` constructor)
 
     constexpr mdspan(data_handle_type _Ptr_, const extents_type& _Exts)
         requires is_constructible_v<mapping_type, const extents_type&> && is_default_constructible_v<accessor_type>
