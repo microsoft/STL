@@ -516,6 +516,12 @@ constexpr void check_correctness() {
     }
 }
 
+// When 'M::extents_type::rank_dynamic()' is equal to 0 then 'is_empty_v<M>' should be true (MSVC STL specific behavior)
+static_assert(!is_empty_v<layout_right::mapping<dextents<long, 2>>>);
+static_assert(!is_empty_v<layout_right::mapping<extents<long, 3, dynamic_extent>>>);
+static_assert(is_empty_v<layout_right::mapping<extents<long, 3, 3>>>);
+static_assert(is_empty_v<layout_right::mapping<extents<long>>>);
+
 constexpr bool test() {
     check_members_with_various_extents([]<class E>(const E& e) { check_members(e, make_index_sequence<E::rank()>{}); });
     if (!is_constant_evaluated()) { // too heavy for compile time
