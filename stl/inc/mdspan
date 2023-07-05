@@ -1205,7 +1205,9 @@ public:
                   && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
                   && (sizeof...(_OtherIndexTypes) == rank() || sizeof...(_OtherIndexTypes) == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
-    constexpr explicit mdspan(data_handle_type _Ptr_, _OtherIndexTypes... _Exts)
+    constexpr explicit mdspan(data_handle_type _Ptr_, _OtherIndexTypes... _Exts) noexcept(
+        is_nothrow_move_constructible_v<data_handle_type>&& is_nothrow_constructible_v<mapping_type, extents_type>&&
+            is_nothrow_default_constructible_v<accessor_type>) // strengthened
         : _Mapping_base(extents_type{static_cast<index_type>(_STD move(_Exts))...}), _Accessor_base(),
           _Ptr(_STD move(_Ptr_)) {}
 

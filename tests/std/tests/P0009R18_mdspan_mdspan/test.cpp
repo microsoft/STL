@@ -456,36 +456,40 @@ constexpr void check_defaulted_copy_and_move_constructors() {
 constexpr void check_data_handle_and_indices_pack_constructor() {
     { // Check constraint: '(is_convertible_v<OtherIndexTypes, index_type> && ...)'
         using Mds = mdspan<const int, dextents<long long, 3>>;
-        static_assert(is_constructible_v<Mds, int*, signed char, short, int>);
-        static_assert(is_constructible_v<Mds, int*, long, long long, unsigned char>);
-        static_assert(is_constructible_v<Mds, const int*, unsigned short, unsigned int, unsigned long>);
-        static_assert(is_constructible_v<Mds, const int*, unsigned long long, int, ConvertibleToInt<int>>);
+        static_assert(is_nothrow_constructible_v<Mds, int*, signed char, short, int>); // strengthened
+        static_assert(is_nothrow_constructible_v<Mds, int*, long, long long, unsigned char>); // strengthened
+        static_assert(
+            is_nothrow_constructible_v<Mds, const int*, unsigned short, unsigned int, unsigned long>); // strengthened
+        static_assert(is_nothrow_constructible_v<Mds, const int*, unsigned long long, int,
+            ConvertibleToInt<int>>); // strengthened
         static_assert(!is_constructible_v<Mds, const int*, unsigned long long, int, NonConvertibleToAnything>);
     }
 
     { // Check constraint: '(is_nothrow_constructible<index_type, OtherIndexTypes> && ...)'
         using Mds = mdspan<double, dextents<int, 2>>;
-        static_assert(is_constructible_v<Mds, double*, size_t, ConvertibleToInt<ptrdiff_t, IsNothrow::yes>>);
+        static_assert(is_nothrow_constructible_v<Mds, double*, size_t,
+            ConvertibleToInt<ptrdiff_t, IsNothrow::yes>>); // strengthened
         static_assert(!is_constructible_v<Mds, double*, size_t, ConvertibleToInt<ptrdiff_t, IsNothrow::no>>);
     }
 
     { // Check constraint: 'N == rank() || N == rank_dynamic()'
         using Mds = mdspan<int*, extents<short, 2, 3, dynamic_extent, dynamic_extent>>;
         static_assert(!is_constructible_v<Mds, int**, int>);
-        static_assert(is_constructible_v<Mds, int**, int, int>);
+        static_assert(is_nothrow_constructible_v<Mds, int**, int, int>); // strengthened
         static_assert(!is_constructible_v<Mds, int** const, int, int, int>);
-        static_assert(is_constructible_v<Mds, int** const, int, int, int, int>);
+        static_assert(is_nothrow_constructible_v<Mds, int** const, int, int, int, int>); // strengthened
     }
 
     { // Check constraint: 'is_constructible_v<mapping_type, extents_type>'
-        static_assert(is_constructible_v<mdspan<const int, dextents<int, 2>, layout_left>, int* const, int, int>);
+        static_assert(is_nothrow_constructible_v<mdspan<const int, dextents<int, 2>, layout_left>, int* const, int,
+            int>); // strengthened
         static_assert(!is_constructible_v<mdspan<int, dextents<int, 2>, layout_stride>, int*, int, int>);
         static_assert(!is_constructible_v<mdspan<int, extents<int, 4, 4>, TrackingLayout<>>, int*, int, int>);
     }
 
     { // Check constraint: 'is_default_constructible_v<accessor_type>'
-        static_assert(is_constructible_v<mdspan<bool, dextents<int, 2>, layout_right, VectorBoolAccessor>,
-            vector<bool>::iterator, int, int>);
+        static_assert(is_nothrow_constructible_v<mdspan<bool, dextents<int, 2>, layout_right, VectorBoolAccessor>,
+            vector<bool>::iterator, int, int>); // strengthened
         static_assert(
             !is_constructible_v<mdspan<int, dextents<int, 2>, layout_right, TrackingAccessor<int>>, int*, int, int>);
     }
