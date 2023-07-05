@@ -716,10 +716,10 @@ constexpr void check_data_handle_and_extents_constructor() {
 
 constexpr void check_data_handle_and_mapping_constructor() {
     { // Check constraint: 'is_default_constructible_v<accessor_type>'
-        static_assert(is_constructible_v<mdspan<bool, dextents<int, 4>, layout_left, VectorBoolAccessor>,
-            vector<bool>::iterator, layout_left::mapping<dextents<short, 4>>>);
-        static_assert(is_constructible_v<mdspan<int, extents<short, 2, 2>, layout_left>, int* const,
-            layout_left::mapping<extents<short, 2, 2>>>);
+        static_assert(is_nothrow_constructible_v<mdspan<bool, dextents<int, 4>, layout_left, VectorBoolAccessor>,
+            vector<bool>::iterator, layout_left::mapping<dextents<short, 4>>>); // strengthened
+        static_assert(is_nothrow_constructible_v<mdspan<int, extents<short, 2, 2>, layout_left>, int* const,
+            layout_left::mapping<extents<short, 2, 2>>>); // strengthened
         static_assert(!is_constructible_v<
                       mdspan<vector<int>, extents<long, 5, 5>, TrackingLayout<>, TrackingAccessor<vector<int>>>,
                       vector<int>*, TrackingLayout<>::mapping<extents<long, 5, 5>>>);
