@@ -1256,7 +1256,11 @@ public:
     constexpr explicit(
         !is_convertible_v<const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&, mapping_type>
         || !is_convertible_v<const _OtherAccessor&, accessor_type>)
-        mdspan(const mdspan<_OtherElementType, _OtherExtents, _OtherLayoutPolicy, _OtherAccessor>& _Other)
+        mdspan(const mdspan<_OtherElementType, _OtherExtents, _OtherLayoutPolicy, _OtherAccessor>& _Other) noexcept(
+            is_nothrow_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>&&
+                is_nothrow_constructible_v<mapping_type,
+                    const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&>&&
+                    is_nothrow_constructible_v<accessor_type, const _OtherAccessor&>) // strengthened
         : _Mapping_base(_Other.mapping()), _Accessor_base(_Other.accessor()), _Ptr(_Other.data_handle()) {
         static_assert(is_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>,
             "The data_handle_type must be constructible from const typename OtherAccessor::data_handle_type& (N4950 "

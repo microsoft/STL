@@ -787,8 +787,8 @@ constexpr void check_data_handle_and_mapping_and_accessor_constructor() {
 constexpr void check_construction_from_other_mdspan() {
     { // Check constraint: 'is_constructible_v<mapping_type, const OtherLayoutPolicy::template
       // mapping<OtherExtents>&>'
-        static_assert(is_constructible_v<mdspan<int, extents<int, 4, 4, 4>, layout_stride>,
-            mdspan<int, dextents<long, 3>, layout_right>>);
+        static_assert(is_nothrow_constructible_v<mdspan<int, extents<int, 4, 4, 4>, layout_stride>,
+            mdspan<int, dextents<long, 3>, layout_right>>); // strengthened
         static_assert(!is_constructible_v<mdspan<float, dextents<long long, 2>, layout_left>,
                       mdspan<float, extents<signed char, 3, 3>, layout_right>>);
         static_assert(!is_constructible_v<mdspan<double, dextents<unsigned int, 2>, layout_left>,
@@ -797,8 +797,9 @@ constexpr void check_construction_from_other_mdspan() {
 
     { // Check constraint: 'is_constructible_v<accessor_type, const OtherAccessor&>'
         using Ext = extents<long, 8, 8, 8>;
-        static_assert(is_constructible_v<mdspan<const double, Ext, layout_right, default_accessor<const double>>,
-            mdspan<double, Ext, layout_right, default_accessor<double>>>);
+        static_assert(
+            is_nothrow_constructible_v<mdspan<const double, Ext, layout_right, default_accessor<const double>>,
+                mdspan<double, Ext, layout_right, default_accessor<double>>>); // strengthened
         static_assert(!is_constructible_v<mdspan<const double, Ext, layout_right, TrivialAccessor<const double>>,
                       mdspan<double, Ext, layout_right, TrivialAccessor<double>>>);
     }
