@@ -1231,9 +1231,11 @@ public:
         mdspan(data_handle_type _Ptr_, const array<_OtherIndexType, _Size>& _Exts) noexcept(
             is_nothrow_move_constructible_v<data_handle_type>&& is_nothrow_constructible_v<mapping_type, extents_type>&&
                 is_nothrow_default_constructible_v<accessor_type>) // strengthened
-        : _Mapping_base(extents_type{_Exts}), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}a_handle, array/span)` constructor)
+        : _Mapping_base(extents_type{_Exts}), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
 
-    constexpr mdspan(data_handle_type _Ptr_, const extents_type& _Exts)
+    constexpr mdspan(data_handle_type _Ptr_, const extents_type& _Exts) noexcept(
+        is_nothrow_move_constructible_v<data_handle_type>&& is_nothrow_constructible_v<mapping_type,
+            const extents_type&>&& is_nothrow_default_constructible_v<accessor_type>) // strengthened
         requires is_constructible_v<mapping_type, const extents_type&> && is_default_constructible_v<accessor_type>
         : _Mapping_base(_Exts), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
 

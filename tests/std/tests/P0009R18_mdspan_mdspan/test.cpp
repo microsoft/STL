@@ -673,18 +673,20 @@ constexpr void check_data_handle_and_span_array_constructors() {
 
 constexpr void check_data_handle_and_extents_constructor() {
     { // Check constraint: 'is_constructible_v<mapping_type, const extents_type&>'
-        static_assert(is_constructible_v<mdspan<int, dextents<int, 3>>, int*, dextents<int, 3>>);
-        static_assert(is_constructible_v<mdspan<int, dextents<int, 3>>, int*, dextents<long, 3>>);
+        static_assert(
+            is_nothrow_constructible_v<mdspan<int, dextents<int, 3>>, int*, dextents<int, 3>>); // strengthened
+        static_assert(
+            is_nothrow_constructible_v<mdspan<int, dextents<int, 3>>, int*, dextents<long, 3>>); // strengthened
         static_assert(!is_constructible_v<mdspan<int, dextents<int, 3>, layout_stride>, int*, dextents<int, 3>>);
         static_assert(!is_constructible_v<mdspan<int, dextents<int, 3>>, int*, dextents<int, 2>>);
         static_assert(!is_constructible_v<mdspan<int, extents<int, 3, 3>>, int*, extents<long, 3, 2>>);
     }
 
     { // Check constraint: is_default_constructible_v<accessor_type>
-        static_assert(is_constructible_v<mdspan<bool, dextents<int, 2>, layout_right, VectorBoolAccessor>,
-            vector<bool>::iterator, dextents<short, 2>>);
-        static_assert(is_constructible_v<mdspan<bool, dextents<int, 2>, layout_right, VectorBoolAccessor>,
-            vector<bool>::iterator, extents<long, 3, 3>>);
+        static_assert(is_nothrow_constructible_v<mdspan<bool, dextents<int, 2>, layout_right, VectorBoolAccessor>,
+            vector<bool>::iterator, dextents<short, 2>>); // strengthened
+        static_assert(is_nothrow_constructible_v<mdspan<bool, dextents<int, 2>, layout_right, VectorBoolAccessor>,
+            vector<bool>::iterator, extents<long, 3, 3>>); // strengthened
         static_assert(!is_constructible_v<mdspan<int, dextents<int, 2>, layout_right, TrackingAccessor<int>>, int*,
                       dextents<signed char, 2>>);
         static_assert(!is_constructible_v<mdspan<int, dextents<int, 2>, layout_right, TrackingAccessor<int>>, int*,
