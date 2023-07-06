@@ -1242,7 +1242,7 @@ namespace filesystem {
             // [ Note: These dot-dot filenames attempt to refer to nonexistent parent directories. -end note ]"
             auto _New_end = _Vec.begin();
             for (auto _Pos = _Vec.begin(); _Pos != _Vec.end();) {
-                auto _Elem = *_Pos++; // _Pos points at end or a separator after ++.
+                auto _Elem = *_Pos++; // _Pos points at a filename here; it points at end or a separator after ++.
                 if (_Elem == _Dot) {
                     // ignore dot (and following separator).
                     if (_Pos == _Vec.end()) {
@@ -1250,21 +1250,21 @@ namespace filesystem {
                     }
                 } else if (_Elem == _Dot_dot) {
                     if (_New_end != _Vec.begin() && _New_end[-2] != _Dot_dot) {
-                        // note: _New_end == _Vec.begin() + 2n
+                        // _New_end == _Vec.begin() + 2n here.
                         // remove preceding non-dot-dot filename and separator.
                         _New_end -= 2;
                         if (_Pos == _Vec.end()) {
                             break;
                         }
                     } else if (!_Has_root_directory) {
-                        // due to 6, append dot-dot only if !_Has_root_directory.
+                        // due to 6, append dot-dot and separator only if !_Has_root_directory.
                         *_New_end++ = _Dot_dot;
                         if (_Pos == _Vec.end()) {
                             break;
                         }
-                        *_New_end++ = {}; // as _Pos != _Vec.end(), it points at a separator; add it.
+                        *_New_end++ = {};
                     } else {
-                        // ignore dot-dot (and following separator).
+                        // ignore dot-dot and separator.
                         if (_Pos == _Vec.end()) {
                             break;
                         }
@@ -1275,9 +1275,9 @@ namespace filesystem {
                     if (_Pos == _Vec.end()) {
                         break;
                     }
-                    *_New_end++ = {}; // add separator.
+                    *_New_end++ = {};
                 }
-                ++_Pos; // _Pos points at a separator here in all cases; skip it.
+                ++_Pos; // _Pos points at a separator here; it points at end or a filename after ++.
             }
             _Vec.erase(_New_end, _Vec.end());
 
