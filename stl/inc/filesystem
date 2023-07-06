@@ -1249,7 +1249,7 @@ namespace filesystem {
                         break;
                     }
                 } else if (_Elem == _Dot_dot) {
-                    if (_New_end != _Vec.begin() && *prev(_New_end, 2) != _Dot_dot) {
+                    if (_New_end != _Vec.begin() && _New_end[-2] != _Dot_dot) {
                         // note: _New_end == _Vec.begin() + 2n
                         // remove preceding non-dot-dot filename and separator.
                         _New_end -= 2;
@@ -1282,7 +1282,7 @@ namespace filesystem {
             _Vec.erase(_New_end, _Vec.end());
 
             // "7. If the last filename is dot-dot, remove any trailing directory-separator."
-            if (_Vec.size() >= 2 && _Vec.back().empty() && *(_STD prev(_Vec.end(), 2)) == _Dot_dot) {
+            if (_Vec.size() >= 2 && _Vec.back().empty() && _Vec.end()[-2] == _Dot_dot) {
                 _Vec.pop_back();
             }
 
