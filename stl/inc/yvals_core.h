@@ -528,7 +528,7 @@
 #ifndef __has_cpp_attribute // vvv no attributes vvv
 #define _LIKELY
 #define _UNLIKELY
-#elif __has_cpp_attribute(likely) >= 201803L && __has_cpp_attribute(unlikely) >= 201803L // ^^^ no attr/C++20 attr vvv
+#elif __has_cpp_attribute(likely) >= 201803L && __has_cpp_attribute(unlikely) >= 201803L // ^^^ no attr / C++20 attr vvv
 #define _LIKELY   [[likely]]
 #define _UNLIKELY [[unlikely]]
 #elif defined(__clang__) // ^^^ C++20 attributes / clang attributes and C++17 or C++14 vvv

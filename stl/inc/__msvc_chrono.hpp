@@ -667,14 +667,14 @@ namespace chrono {
         static constexpr bool is_steady = true;
 
 #if defined(_M_ARM) || defined(_M_ARM64) // vvv ARM or ARM64 arch vvv
-#define _LIKELY_ARM _LIKELY
-#define _LIKELY_X86
+#define _LIKELY_ARM_ARM64 _LIKELY
+#define _LIKELY_X86_X64
 #elif defined(_M_IX86) || defined(_M_X64) // ^^^ ARM or ARM64 arch / x86 or x64 arch vvv
-#define _LIKELY_ARM
-#define _LIKELY_X86 _LIKELY
+#define _LIKELY_ARM_ARM64
+#define _LIKELY_X86_X64 _LIKELY
 #else // ^^^ x86 or x64 arch / other arch vvv
-#define _LIKELY_ARM
-#define _LIKELY_X86
+#define _LIKELY_ARM_ARM64
+#define _LIKELY_X86_X64
 #endif // ^^^ other arch ^^^
         _NODISCARD static time_point now() noexcept { // get current time
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
@@ -682,19 +682,18 @@ namespace chrono {
             static_assert(period::num == 1, "This assumes period::num == 1.");
             // The compiler recognizes the constants for frequency and time period and uses shifts and
             // multiplies instead of divides to calculate the nanosecond value.
-            constexpr long long _TwentyFourMHz = 24'000'000;
             constexpr long long _TenMHz        = 10'000'000;
+            constexpr long long _TwentyFourMHz = 24'000'000;
             // clang-format off
-            if (_Freq == _TenMHz) _LIKELY_X86 {
-                // 10 MHz is a very common QPC frequency on modern x86 PCs. Optimizing for
+            if (_Freq == _TenMHz) _LIKELY_X86_X64 {
+                // 10 MHz is a very common QPC frequency on modern x86/x64 PCs. Optimizing for
                 // this specific frequency can double the performance of this function by
                 // avoiding the expensive frequency conversion path.
                 static_assert(period::den % _TenMHz == 0, "It should never fail.");
                 constexpr long long _Multiplier = period::den / _TenMHz;
                 return time_point(duration(_Ctr * _Multiplier));
-            } else if (_Freq == _TwentyFourMHz) _LIKELY_ARM {
-                // 24 MHz frequency is a common frequency on ARM64, including cases where it emulates x86
-                // (Windows devices, and Apple Silicon Macs using Parallels Desktop)
+            } else if (_Freq == _TwentyFourMHz) _LIKELY_ARM_ARM64 {
+                // 24 MHz is a common frequency on ARM/ARM64.
                 const long long _Whole = (_Ctr / _TwentyFourMHz) * period::den;
                 const long long _Part  = (_Ctr % _TwentyFourMHz) * period::den / _TwentyFourMHz;
                 return time_point(duration(_Whole + _Part));
@@ -710,9 +709,10 @@ namespace chrono {
             }
             // clang-format on
         }
+#undef _LIKELY_ARM_ARM64
+#undef _LIKELY_X86_X64
     };
-#undef _LIKELY_ARM
-#undef _LIKELY_X86
+
     _EXPORT_STD using high_resolution_clock = steady_clock;
 } // namespace chrono
 
