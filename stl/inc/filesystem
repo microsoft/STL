@@ -1282,7 +1282,7 @@ namespace filesystem {
             _Vec.erase(_New_end, _Vec.end());
 
             // "7. If the last filename is dot-dot, remove any trailing directory-separator."
-            if (_Vec.size() >= 2 && _Vec.back().empty() && *(_STD prev(_Vec.end(), 2)) == _Dot_dot) {
+            if (_Vec.size() >= 2 && _Vec.back().empty() && _Vec.end()[-2] == _Dot_dot) {
                 _Vec.pop_back();
             }
 
