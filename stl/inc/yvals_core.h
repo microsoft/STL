@@ -703,17 +703,15 @@
 #endif
 
 // Should we enable [[msvc::lifetimebound]] or [[clang::lifetimebound]] warnings?
-#ifndef _SILENCE_LIFETIMEBOUND_WARNING
-#if _HAS_MSVC_ATTRIBUTE(lifetimebound)
+#if !defined(__has_cpp_attribute) || defined(_SILENCE_LIFETIMEBOUND_WARNING)
+#define _MSVC_LIFETIMEBOUND
+#elif _HAS_MSVC_ATTRIBUTE(lifetimebound)
 #define _MSVC_LIFETIMEBOUND [[msvc::lifetimebound]]
 #elif __has_cpp_attribute(_Clang::__lifetimebound__)
 #define _MSVC_LIFETIMEBOUND [[_Clang::__lifetimebound__]]
 #else
 #define _MSVC_LIFETIMEBOUND
 #endif
-#else // ^^^ warning enabled / warning disabled vvv
-#define _MSVC_LIFETIMEBOUND
-#endif // ^^^ warning disabled ^^^
 
 #undef _HAS_MSVC_ATTRIBUTE
 #pragma pop_macro("lifetimebound")
