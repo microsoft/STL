@@ -1013,9 +1013,9 @@ STATIC_ASSERT(__cpp_lib_freestanding_ranges == 202306L);
 #endif
 
 #ifndef __cpp_lib_freestanding_ratio
-#error __cpp_lib_freestanding_operator_new is not defined
+#error __cpp_lib_freestanding_ratio is not defined
 #elif __cpp_lib_freestanding_ratio != 202306L
-#error __cpp_lib_freestanding_operator_new is not 202306L
+#error __cpp_lib_freestanding_ratio is not 202306L
 #else
 STATIC_ASSERT(__cpp_lib_freestanding_ratio == 202306L);
 #endif
