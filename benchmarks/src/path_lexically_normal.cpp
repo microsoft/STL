@@ -8,10 +8,13 @@
 namespace {
     void BM_lexically_normal(benchmark::State& state) {
         using namespace std::literals;
-        static constexpr std::wstring_view args[5]{LR"(X:DriveRelative)"sv, LR"(\\server\\\share)"sv,
+        static constexpr std::wstring_view args[5]{
+            LR"(X:DriveRelative)"sv,
+            LR"(\\server\\\share)"sv,
             LR"(STL/.github/workflows/../..)"sv,
             LR"(C:\Program Files\Azure Data Studio\resources\app\extensions\bat\snippets\batchfile.code-snippets)"sv,
-            LR"(/\server/\share/\a/\b/\c/\./\./\d/\../\../\../\../\../\../\../\other/x/y/z/.././..\meow.txt)"sv};
+            LR"(/\server/\share/\a/\b/\c/\./\./\d/\../\../\../\../\../\../\../\other/x/y/z/.././..\meow.txt)"sv,
+        };
 
         const auto index = state.range(0);
         const std::filesystem::path p(args[index]);
