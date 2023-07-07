@@ -1248,7 +1248,14 @@ namespace filesystem {
                     if (_Pos == _Vec.end()) {
                         break;
                     }
-                } else if (_Elem == _Dot_dot) {
+                } else if (_Elem != _Dot_dot) {
+                    // append normal filename and separator.
+                    *_New_end++ = _Elem; // _New_end points at end or a seperator after ++.
+                    if (_Pos == _Vec.end()) {
+                        break;
+                    }
+                    ++_New_end; // accept separator.
+                } else /*_Dot_dot*/ {
                     if (_New_end != _Vec.begin() && _New_end[-2] != _Dot_dot) {
                         // _New_end == _Vec.begin() + 2n here.
                         // remove preceding non-dot-dot filename and separator.
@@ -1262,20 +1269,13 @@ namespace filesystem {
                         if (_Pos == _Vec.end()) {
                             break;
                         }
-                        *_New_end++ = {};
+                        ++_New_end;
                     } else {
                         // ignore dot-dot and separator.
                         if (_Pos == _Vec.end()) {
                             break;
                         }
                     }
-                } else {
-                    // append normal filename and separator.
-                    *_New_end++ = _Elem;
-                    if (_Pos == _Vec.end()) {
-                        break;
-                    }
-                    *_New_end++ = {};
                 }
                 ++_Pos; // _Pos points at a separator here; it points at end or a filename after ++.
             }
