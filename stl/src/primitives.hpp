@@ -44,11 +44,11 @@ namespace Concurrency {
         };
 
         // TRANSITION, only used when constexpr mutex constructor is not enabled
-        inline void create_stl_critical_section(void* p) {
+        inline void create_stl_critical_section(_Stl_critical_section* p) {
             new (p) _Stl_critical_section;
         }
 
-        inline void create_stl_condition_variable(void* p) {
+        inline void create_stl_condition_variable(stl_condition_variable_win7* p) {
             new (p) stl_condition_variable_win7;
         }
 

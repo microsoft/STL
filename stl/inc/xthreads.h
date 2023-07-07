@@ -29,7 +29,7 @@ struct _Thrd_t { // thread identifier for Win32
 using _Smtx_t = void*;
 
 struct _Stl_critical_section {
-    void* _Unused       = nullptr;
+    void* _Unused       = nullptr; // TRANSITION, ABI: was the vptr
     _Smtx_t _M_srw_lock = nullptr;
 };
 
