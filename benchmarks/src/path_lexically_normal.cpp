@@ -24,6 +24,6 @@ namespace {
     }
 } // namespace
 
-BENCHMARK(BM_lexically_normal)->Arg(0)->Arg(1)->Arg(2)->Arg(3)->Arg(4);
+BENCHMARK(BM_lexically_normal)->DenseRange(0, 4, 1);
 
 BENCHMARK_MAIN();
