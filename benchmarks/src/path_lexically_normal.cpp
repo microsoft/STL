@@ -3,7 +3,7 @@
 
 #include <benchmark/benchmark.h>
 #include <filesystem>
-#include <xstring>
+#include <string_view>
 
 namespace {
     void BM_lexically_normal(benchmark::State& state) {
