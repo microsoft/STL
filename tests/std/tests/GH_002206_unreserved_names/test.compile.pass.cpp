@@ -39,4 +39,4 @@
 
 #if empty_bases != 6
 #error bad macro expansion
-#endif // noop_dtor != 6
+#endif // empty_bases != 6
