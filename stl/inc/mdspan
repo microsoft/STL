@@ -79,7 +79,7 @@ private:
         rank_type _Counter = 0;
         for (rank_type _Idx = 0; _Idx < _Rank; ++_Idx) {
             if (_Static_extents[_Idx] == dynamic_extent) {
-                __assume(_Counter < _Rank_dynamic); // TRANSITION, DevCom-923103
+                _Analysis_assume_(_Counter < _Rank_dynamic); // TRANSITION, DevCom-923103
                 _Result[_Counter] = _Idx;
                 ++_Counter;
             }
