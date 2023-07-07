@@ -33,9 +33,6 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
     static_assert(same_as<typename Mapping::rank_type, typename Ext::rank_type>);
     static_assert(same_as<typename Mapping::layout_type, layout_right>);
 
-#ifdef __clang__
-    if (!is_constant_evaluated()) // FIXME clang hits constexpr limit here
-#endif
     { // Check default and copy constructor
         const Mapping m;
         Mapping cpy = m;
@@ -63,9 +60,6 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
     using Ext2           = extents<OtherIndexType, Extents...>;
     using Mapping2       = layout_right::mapping<Ext2>;
 
-#ifdef __clang__
-    if (!is_constant_evaluated()) // FIXME clang hits constexpr limit here
-#endif
     { // Check construction from other layout_right::mapping
         Mapping m1{ext};
         Mapping2 m2{m1};

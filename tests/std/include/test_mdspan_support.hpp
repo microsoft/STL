@@ -229,9 +229,9 @@ constexpr void check_members_with_various_extents(Fn&& fn) {
     details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<2>{});
     details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<4>{});
     details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<8>{});
-#ifndef _PREFAST_
-    details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<16>{});
-#endif // _PREFAST_
+    if (!std::is_constant_evaluated()) {
+        details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<16>{});
+    }
 }
 
 namespace details {

@@ -84,9 +84,6 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         // Other tests are defined in 'check_construction_from_other_right_mapping' function
     }
 
-#ifdef __clang__
-    if (!is_constant_evaluated()) // FIXME clang hits constexpr limit here
-#endif
     { // Check construction from layout_stride::mapping
         array<IndexType, Ext::rank()> strides{};
         if constexpr (Ext::rank() > 0) {
@@ -423,10 +420,6 @@ constexpr void check_correctness() {
 #endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 
-
-#ifdef __clang__
-    if (!is_constant_evaluated()) // FIXME clang hits constexpr limit here
-#endif
     { // 3x2 matrix with column-major order
         const array values{0, 1, 2, 3, 4, 5};
         mdspan<const int, extents<int, 3, 2>, layout_left> matrix{values.data()};
@@ -448,9 +441,6 @@ constexpr void check_correctness() {
 #endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 
-#ifdef __clang__
-    if (!is_constant_evaluated()) // FIXME clang hits constexpr limit here
-#endif
     { // 3x2x4 tensor
         const array values{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
         mdspan<const int, dextents<size_t, 3>, layout_left> tensor{values.data(), 3, 2, 4};
@@ -472,9 +462,6 @@ constexpr void check_correctness() {
 #endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 
-#ifdef __clang__
-    if (!is_constant_evaluated()) // FIXME clang hits constexpr limit here
-#endif
     { // 2x3x2x3 tensor
         const array values{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
             26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
