@@ -1369,7 +1369,7 @@ constexpr void check_deduction_guides() {
 }
 
 // When
-// * 'Mds::accessor_type' is specialization of 'default_accesor', and
+// * 'Mds::accessor_type' is a specialization of 'default_accessor', and
 // * 'Mds::layout_type' is
 //   * 'layout_left' or 'layout_right' and 'Mds::extents_type::rank_dynamic() == 0', or
 //   * 'layout_stride' and 'Mds::extents_type::rank() == 0'
