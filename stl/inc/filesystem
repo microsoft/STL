@@ -1209,7 +1209,7 @@ namespace filesystem {
                                        // that will be normalized to a preferred-separator.
                                        // Non-empty wstring_view means filename.
             _Vec.reserve(13); // avoid frequent re-allocations
-            bool _Has_root_directory = false; // true: there is a slash right after root name.
+            bool _Has_root_directory = false; // true: there is a slash right after root-name.
             auto _Ptr                = _Root_name_end;
             if (_Ptr != _Last && _Is_slash(*_Ptr)) {
                 _Has_root_directory = true;
@@ -1250,12 +1250,12 @@ namespace filesystem {
                     }
                 } else if (_Elem != _Dot_dot) {
                     // append normal filename and separator.
-                    *_New_end++ = _Elem; // _New_end points at end or a seperator after ++.
+                    *_New_end++ = _Elem; // _New_end points at end or a separator after ++.
                     if (_Pos == _Vec.end()) {
                         break;
                     }
                     ++_New_end; // _New_end(<=_Pos) doesn't point at end; accept separator.
-                } else /*_Dot_dot*/ {
+                } else { // _Dot_dot
                     if (_New_end != _Vec.begin() && _New_end[-2] != _Dot_dot) {
                         // _New_end == _Vec.begin() + 2n here.
                         // remove preceding non-dot-dot filename and separator.
