@@ -1242,7 +1242,7 @@ namespace filesystem {
             // [ Note 5: These dot-dot filenames attempt to refer to nonexistent parent directories. -end note ]"
             auto _New_end = _Vec.begin();
             for (auto _Pos = _Vec.begin(); _Pos != _Vec.end();) {
-                auto _Elem = *_Pos++; // _Pos points at a filename here; it points at end or a separator after ++.
+                const auto _Elem = *_Pos++; // _Pos points at a filename here; it points at end or a separator after ++.
                 if (_Elem == _Dot) {
                     // ignore dot (and following separator).
                     if (_Pos == _Vec.end()) {
