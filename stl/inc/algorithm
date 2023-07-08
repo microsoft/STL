@@ -10056,8 +10056,8 @@ namespace ranges {
 
         template <class _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD constexpr minmax_result<const _Ty&> operator()(
-            const _Ty& _Left, const _Ty& _Right, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD constexpr minmax_result<const _Ty&> operator()(const _Ty& _Left _MSVC_LIFETIMEBOUND,
+            const _Ty& _Right _MSVC_LIFETIMEBOUND, _Pr _Pred = {}, _Pj _Proj = {}) const {
             if (_STD invoke(_Pred, _STD invoke(_Proj, _Right), _STD invoke(_Proj, _Left))) {
                 return {_Right, _Left};
             } else {
