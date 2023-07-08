@@ -2043,7 +2043,7 @@ public:
 #if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <class... _Unbound>
         requires _Can_call_binder<_Ret, _Fd, _Seq, _Bound_tuple, tuple<_Unbound&&...>>
-    _CONSTEXPR20 decltype(auto) operator()(_Unbound&&... _Unbargs) noexcept(noexcept(_CALL_BINDER)) {
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) noexcept(noexcept(_CALL_BINDER)) {
         return _CALL_BINDER;
     }
 
@@ -2052,7 +2052,7 @@ public:
 
     template <class... _Unbound>
         requires _Can_call_binder<_Ret, const _Fd, _Seq, const _Bound_tuple, tuple<_Unbound&&...>>
-    _CONSTEXPR20 decltype(auto) operator()(_Unbound&&... _Unbargs) const noexcept(noexcept(_CALL_BINDER)) {
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const noexcept(noexcept(_CALL_BINDER)) {
         return _CALL_BINDER;
     }
 
@@ -2163,7 +2163,7 @@ public:
     constexpr explicit _Front_binder(_FxInit&& _Func, _TypesInit&&... _Args)
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_FxInit>(_Func), _STD forward<_TypesInit>(_Args)...) {}
 
-#ifdef __cpp_lib_concepts // TRANSITON, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
     template <class... _Unbound>
         requires _Can_call_front_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound...>
     constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) & noexcept(noexcept(
@@ -2187,7 +2187,7 @@ public:
     void operator()(_Unbound&&...) const& = delete;
 
     template <class... _Unbound>
-        requires _Can_call_front_binder<_Seq, _Fx&&, tuple<_Types...>&&, _Unbound...>
+        requires _Can_call_front_binder<_Seq, _Fx, tuple<_Types...>, _Unbound...>
     constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) && noexcept(noexcept(_STD _Call_front_binder(
         _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
         return _STD _Call_front_binder(
@@ -2198,7 +2198,7 @@ public:
     void operator()(_Unbound&&...) && = delete;
 
     template <class... _Unbound>
-        requires _Can_call_front_binder<_Seq, const _Fx&&, const tuple<_Types...>&&, _Unbound...>
+        requires _Can_call_front_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound...>
     constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const&& noexcept(noexcept(_STD _Call_front_binder(
         _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
         return _STD _Call_front_binder(
@@ -2209,7 +2209,7 @@ public:
     void operator()(_Unbound&&...) const&& = delete;
 #else // ^^^ requires available / requires unavailable vvv
     template <class... _Unbound,
-        enable_if_t<_Can_call_front_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound&&...>, int> = 0>
+        enable_if_t<_Can_call_front_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound...>, int> = 0>
     constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) & noexcept(noexcept(
         _STD _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...))) {
         return _STD _Call_front_binder(
@@ -2217,11 +2217,11 @@ public:
     }
 
     template <class... _Unbound,
-        enable_if_t<!_Can_call_front_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound&&...>, int> = 0>
+        enable_if_t<!_Can_call_front_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound...>, int> = 0>
     void operator()(_Unbound&&...) & = delete;
 
     template <class... _Unbound,
-        enable_if_t<_Can_call_front_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound&&...>, int> = 0>
+        enable_if_t<_Can_call_front_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound...>, int> = 0>
     constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const& noexcept(noexcept(
         _STD _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...))) {
         return _STD _Call_front_binder(
@@ -2229,11 +2229,10 @@ public:
     }
 
     template <class... _Unbound,
-        enable_if_t<!_Can_call_front_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound&&...>, int> = 0>
+        enable_if_t<!_Can_call_front_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound...>, int> = 0>
     void operator()(_Unbound&&...) const& = delete;
 
-    template <class... _Unbound,
-        enable_if_t<_Can_call_front_binder<_Seq, _Fx, tuple<_Types...>, _Unbound&&...>, int> = 0>
+    template <class... _Unbound, enable_if_t<_Can_call_front_binder<_Seq, _Fx, tuple<_Types...>, _Unbound...>, int> = 0>
     constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) && noexcept(noexcept(_STD _Call_front_binder(
         _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
         return _STD _Call_front_binder(
@@ -2241,11 +2240,11 @@ public:
     }
 
     template <class... _Unbound,
-        enable_if_t<!_Can_call_front_binder<_Seq, _Fx, tuple<_Types...>, _Unbound&&...>, int> = 0>
+        enable_if_t<!_Can_call_front_binder<_Seq, _Fx, tuple<_Types...>, _Unbound...>, int> = 0>
     void operator()(_Unbound&&...) && = delete;
 
     template <class... _Unbound,
-        enable_if_t<_Can_call_front_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound&&...>, int> = 0>
+        enable_if_t<_Can_call_front_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound...>, int> = 0>
     constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const&& noexcept(noexcept(_STD _Call_front_binder(
         _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
         return _STD _Call_front_binder(
@@ -2253,7 +2252,7 @@ public:
     }
 
     template <class... _Unbound,
-        enable_if_t<!_Can_call_front_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound&&...>, int> = 0>
+        enable_if_t<!_Can_call_front_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound...>, int> = 0>
     void operator()(_Unbound&&...) const&& = delete;
 #endif // ^^^ requires unavailable ^^^
 };
@@ -2321,7 +2320,7 @@ public:
     constexpr explicit _Back_binder(_FxInit&& _Func, _TypesInit&&... _Args)
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_FxInit>(_Func), _STD forward<_TypesInit>(_Args)...) {}
 
-#ifdef __cpp_lib_concepts // TRANSITON, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
     template <class... _Unbound>
         requires _Can_call_back_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound...>
     constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) & noexcept(noexcept(
@@ -2345,7 +2344,7 @@ public:
     void operator()(_Unbound&&...) const& = delete;
 
     template <class... _Unbound>
-        requires _Can_call_back_binder<_Seq, _Fx&&, tuple<_Types...>&&, _Unbound...>
+        requires _Can_call_back_binder<_Seq, _Fx, tuple<_Types...>, _Unbound...>
     constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) && noexcept(noexcept(_STD _Call_back_binder(
         _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
         return _STD _Call_back_binder(
@@ -2356,7 +2355,7 @@ public:
     void operator()(_Unbound&&...) && = delete;
 
     template <class... _Unbound>
-        requires _Can_call_back_binder<_Seq, const _Fx&&, const tuple<_Types...>&&, _Unbound...>
+        requires _Can_call_back_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound...>
     constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const&& noexcept(noexcept(_STD _Call_back_binder(
         _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
         return _STD _Call_back_binder(
@@ -2375,11 +2374,11 @@ public:
     }
 
     template <class... _Unbound,
-        enable_if_t<!_Can_call_back_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound&&...>, int> = 0>
+        enable_if_t<!_Can_call_back_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound...>, int> = 0>
     void operator()(_Unbound&&...) & = delete;
 
     template <class... _Unbound,
-        enable_if_t<_Can_call_back_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound&&...>, int> = 0>
+        enable_if_t<_Can_call_back_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound...>, int> = 0>
     constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const& noexcept(noexcept(
         _STD _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...))) {
         return _STD _Call_back_binder(
@@ -2387,7 +2386,7 @@ public:
     }
 
     template <class... _Unbound,
-        enable_if_t<!_Can_call_back_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound&&...>, int> = 0>
+        enable_if_t<!_Can_call_back_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound...>, int> = 0>
     void operator()(_Unbound&&...) const& = delete;
 
     template <class... _Unbound, enable_if_t<_Can_call_back_binder<_Seq, _Fx, tuple<_Types...>, _Unbound...>, int> = 0>
@@ -2397,8 +2396,7 @@ public:
             _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
     }
 
-    template <class... _Unbound,
-        enable_if_t<!_Can_call_back_binder<_Seq, _Fx, tuple<_Types...>, _Unbound&&...>, int> = 0>
+    template <class... _Unbound, enable_if_t<!_Can_call_back_binder<_Seq, _Fx, tuple<_Types...>, _Unbound...>, int> = 0>
     void operator()(_Unbound&&...) && = delete;
 
     template <class... _Unbound,
@@ -2410,7 +2408,7 @@ public:
     }
 
     template <class... _Unbound,
-        enable_if_t<!_Can_call_back_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound&&...>, int> = 0>
+        enable_if_t<!_Can_call_back_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound...>, int> = 0>
     void operator()(_Unbound&&...) const&& = delete;
 #endif // ^^^ requires unavailable ^^^
 };

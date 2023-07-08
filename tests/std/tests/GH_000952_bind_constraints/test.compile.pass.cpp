@@ -9,7 +9,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-// some portions of this file is derived from libc++'s test files:
+// some portions of this file are derived from libc++'s test files:
 // * std/utilities/function.objects/func.bind_front/bind_front.pass.cpp
 
 #include <functional>
@@ -75,7 +75,7 @@ static_assert(
 static_assert(is_invocable_v<const WeirdIdentity&, int>
               == is_invocable_v<const decltype(bind(WeirdIdentity{}, placeholders::_1))&, int>);
 static_assert(is_invocable_v<const WeirdIdentity&, int>
-              == is_invocable_v<const decltype(bind(WeirdIdentity{}, placeholders::_1))&, int>);
+              == is_invocable_v<const decltype(bind(WeirdIdentity{}, placeholders::_1)), int>);
 
 static_assert(is_invocable_r_v<void, WeirdIdentity&, int>
               == is_invocable_v<decltype(bind<void>(WeirdIdentity{}, placeholders::_1))&, int>);
@@ -84,7 +84,7 @@ static_assert(is_invocable_r_v<void, WeirdIdentity&, int>
 static_assert(is_invocable_r_v<void, const WeirdIdentity&, int>
               == is_invocable_v<const decltype(bind<void>(WeirdIdentity{}, placeholders::_1))&, int>);
 static_assert(is_invocable_r_v<void, const WeirdIdentity&, int>
-              == is_invocable_v<const decltype(bind<void>(WeirdIdentity{}, placeholders::_1))&, int>);
+              == is_invocable_v<const decltype(bind<void>(WeirdIdentity{}, placeholders::_1)), int>);
 
 static_assert(is_invocable_r_v<int, WeirdIdentity&, int>
               == is_invocable_v<decltype(bind<int>(WeirdIdentity{}, placeholders::_1))&, int>);
@@ -93,7 +93,7 @@ static_assert(is_invocable_r_v<int, WeirdIdentity&, int>
 static_assert(is_invocable_r_v<int, const WeirdIdentity&, int>
               == is_invocable_v<const decltype(bind<int>(WeirdIdentity{}, placeholders::_1))&, int>);
 static_assert(is_invocable_r_v<int, const WeirdIdentity&, int>
-              == is_invocable_v<const decltype(bind<int>(WeirdIdentity{}, placeholders::_1))&, int>);
+              == is_invocable_v<const decltype(bind<int>(WeirdIdentity{}, placeholders::_1)), int>);
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
@@ -194,6 +194,7 @@ void test_bind_front_deletion() {
         static_assert(!is_invocable_v<X>);
     }
 }
+#endif // _HAS_CXX20
 
 #if _HAS_CXX23
 static_assert(is_invocable_v<WeirdDual&, int, long> == is_invocable_v<decltype(bind_back(WeirdDual{}, 0L))&, int>);
@@ -280,4 +281,3 @@ void test_bind_back_deletion() {
     }
 }
 #endif // _HAS_CXX23
-#endif // _HAS_CXX20
