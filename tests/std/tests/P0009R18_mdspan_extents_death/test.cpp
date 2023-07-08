@@ -55,7 +55,7 @@ void test_construction_from_pack_with_unrepresentable_as_index_type_values_2() {
 }
 
 void test_construction_from_pack_with_unrepresentable_as_index_type_values_3() {
-    static_assert(signed_integral<char>, "char is not signed integral");
+    static_assert(signed_integral<char>, "This test assumes that it isn't being compiled with /J");
     // Either sizeof...(exts) must be equal to 0 or each element of exts must be nonnegative and must be representable
     // as value of type index_type
     [[maybe_unused]] extents<signed char, 1, dynamic_extent> e{static_cast<char>(-1)};
