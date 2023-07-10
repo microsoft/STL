@@ -570,7 +570,7 @@ export const daily_table: DailyRow[] = [
 
         str += `avg_age: ${row.avg_age.toFixed(2)}, `;
         str += `sum_age: ${row.sum_age.toFixed(2)}, `;
-        str += '},\n';
+        str += '} as DailyRow,\n';
     }
 
     str += '];\n';
