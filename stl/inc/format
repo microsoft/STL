@@ -3979,7 +3979,7 @@ public:
         _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
-protected:
+private:
     _Fill_align_and_width_specs<_CharT>& _Specs;
     basic_format_parse_context<_CharT>& _Parse_ctx;
 
