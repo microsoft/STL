@@ -11,6 +11,7 @@
 #include <__msvc_chrono.hpp>
 #include <memory>
 #include <process.h>
+#include <sstream>
 #include <tuple>
 #include <xthreads.h>
 
@@ -281,7 +282,10 @@ _NODISCARD inline bool operator>=(thread::id _Left, thread::id _Right) noexcept 
 
 _EXPORT_STD template <class _Ch, class _Tr>
 basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _Id) {
-    return _Str << _Id._Id;
+    basic_ostringstream<_Ch, _Tr> _Out;
+    _Out.imbue(locale::classic());
+    _Out << _Id._Id;
+    return _Str << _Out.str();
 }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
