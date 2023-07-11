@@ -52,8 +52,8 @@ _EMIT_STL_WARNING(STL4038, "The contents of <format> are available only with C++
 #include <iterator>
 #include <limits>
 #include <locale>
-#include <mutex>
 #include <stdexcept>
+#include <xcall_once.h>
 #include <xfilesystem_abi.h>
 #include <xstring>
 #include <xutility>
