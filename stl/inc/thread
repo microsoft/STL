@@ -13,10 +13,15 @@
 #include <process.h>
 #include <tuple>
 #include <xthreads.h>
+
 #if _HAS_CXX20
 #include <compare>
 #include <stop_token>
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23
+#include <format>
+#endif // _HAS_CXX23
 
 #ifdef _M_CEE_PURE
 #error <thread> is not supported when compiling with /clr:pure.
@@ -208,6 +213,12 @@ class thread::id { // thread id
 public:
     id() noexcept = default; // id for no thread
 
+#if _HAS_CXX23
+    _NODISCARD _Thrd_id_t _Get_underlying_id() const noexcept {
+        return _Id;
+    }
+#endif //_HAS_CXX23
+
 private:
     explicit id(_Thrd_id_t _Other_id) noexcept : _Id(_Other_id) {}
 
@@ -272,6 +283,32 @@ _EXPORT_STD template <class _Ch, class _Tr>
 basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _Id) {
     return _Str << _Id._Id;
 }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+template <class _CharT>
+struct formatter<thread::id, _CharT> {
+public:
+    using _Pc = basic_format_parse_context<_CharT>;
+
+    constexpr _Pc::iterator parse(_Pc& _Parse_ctx) {
+        return _Impl.parse(_Parse_ctx);
+    }
+
+    template <class _FormatContext>
+    _FormatContext::iterator format(thread::id _Val, _FormatContext& _Format_ctx) const {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Thrd_id_t, unsigned int>);
+        char _Buffer[10]; // size(string with decimal value of numeric_limits<_Thrd_id_t>::max()) == 10
+        const auto [_End, _Ec] = _STD to_chars(_Buffer, end(_Buffer), _Val._Get_underlying_id());
+        _STL_INTERNAL_CHECK(_Ec == errc{});
+
+        return _Impl._Format(_Format_ctx, static_cast<int>(_End - _Buffer), _Fmt_align::_Right,
+            [&](_FormatContext::iterator _Out) { return _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out)); });
+    }
+
+private:
+    _Fill_align_and_width_formatter<_CharT> _Impl;
+};
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <>
 struct hash<thread::id> {
