@@ -4,8 +4,11 @@
 #pragma once
 
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <format>
+#include <iterator>
+#include <string>
 #include <string_view>
 #include <utility>
 
@@ -134,3 +137,90 @@ void test_parse_helper(const CharT* (*func)(const CharT*, const CharT*, callback
         assert(err_expected);
     }
 }
+
+template <class CharT>
+struct FormatFn {
+    template <class... Args>
+    [[nodiscard]] auto operator()(
+        const std::basic_format_string<CharT, std::type_identity_t<Args>...> str, Args&&... args) const {
+        return format(str, std::forward<Args>(args)...);
+    }
+};
+
+template <class CharT>
+struct VFormatFn {
+    template <class... Args>
+    [[nodiscard]] auto operator()(const std::basic_string_view<CharT> str, Args&&... args) const {
+        if constexpr (std::same_as<CharT, char>) {
+            return vformat(str, make_format_args(std::forward<Args>(args)...));
+        } else {
+            return vformat(str, make_wformat_args(std::forward<Args>(args)...));
+        }
+    }
+};
+
+template <class CharT>
+struct ExpectFormatError {
+private:
+    VFormatFn<CharT> base;
+
+public:
+    template <class... Args>
+    auto operator()(const std::basic_string_view<CharT> str, Args&&... args) const {
+        try {
+            (void) base(str, std::forward<Args>(args)...);
+            assert(false && "No exception.");
+        } catch (const std::format_error&) {
+            return;
+        } catch (...) {
+            assert(false && "Incorrect exception.");
+        }
+    }
+};
+
+template <class CharT>
+struct MoveOnlyFormat {
+private:
+    struct StringInserter {
+        using iterator_category = std::output_iterator_tag;
+        using difference_type   = ptrdiff_t;
+        using container_type    = std::basic_string<CharT>;
+
+        StringInserter()                            = default;
+        StringInserter(StringInserter&&)            = default;
+        StringInserter& operator=(StringInserter&&) = default;
+
+        StringInserter(const StringInserter&)            = delete;
+        StringInserter& operator=(const StringInserter&) = delete;
+
+        StringInserter& operator=(const CharT val) {
+            str.push_back(val);
+            return *this;
+        }
+
+        StringInserter& operator*() {
+            return *this;
+        }
+
+        StringInserter& operator++() {
+            return *this;
+        }
+
+        StringInserter operator++(int) {
+            return *this;
+        }
+
+        std::basic_string<CharT> str;
+    };
+
+public:
+    static_assert(std::output_iterator<StringInserter, CharT>);
+    static_assert(!std::copyable<StringInserter>);
+    static_assert(std::movable<StringInserter>);
+
+    template <class... Args>
+    [[nodiscard]] auto operator()(
+        const std::basic_format_string<CharT, std::type_identity_t<Args>...> str, Args&&... args) const {
+        return format_to(StringInserter{}, str, std::forward<Args>(args)...).str;
+    }
+};
