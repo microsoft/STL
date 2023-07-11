@@ -2360,8 +2360,8 @@ public:
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
 private:
-    static constexpr auto _BUF_SIZE   = _Scary_val::_BUF_SIZE;
-    static constexpr auto _ALLOC_MASK = _Scary_val::_ALLOC_MASK;
+    static constexpr size_type _BUF_SIZE   = _Scary_val::_BUF_SIZE;
+    static constexpr size_type _ALLOC_MASK = _Scary_val::_ALLOC_MASK;
 
     // When doing _String_val operations by memcpy, we are touching:
     //   _String_val::_Bx::_Buf (type is array of _Elem)
