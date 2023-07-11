@@ -3934,6 +3934,110 @@ _NODISCARD inline string _Unescape_braces(const _Add_newline _Add_nl, const stri
 
     return _Unescaped_str;
 }
+
+template <class _CharT>
+struct _Fill_align_and_width_specs { // used by thread::id and stacktrace_entry formatters
+    int _Width               = -1;
+    int _Dynamic_width_index = -1;
+    _Fmt_align _Alignment    = _Fmt_align::_None;
+    uint8_t _Fill_length     = 1;
+    // At most one codepoint (so one char32_t or four utf-8 char8_t).
+    _CharT _Fill[4 / sizeof(_CharT)] = {' '};
+};
+
+template <class _CharT>
+class _Fill_align_and_width_specs_setter {
+public:
+    constexpr explicit _Fill_align_and_width_specs_setter(
+        _Fill_align_and_width_specs<_CharT>& _Specs_, basic_format_parse_context<_CharT>& _Parse_ctx_)
+        : _Specs(_Specs_), _Parse_ctx(_Parse_ctx_) {}
+
+    constexpr void _On_align(const _Fmt_align _Aln) {
+        _Specs._Alignment = _Aln;
+    }
+
+    constexpr void _On_fill(const basic_string_view<_CharT> _Sv) {
+        if (_Sv.size() > _STD size(_Specs._Fill)) {
+            _Throw_format_error("Invalid fill (too long).");
+        }
+
+        const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
+        _STD fill(_Pos, _STD end(_Specs._Fill), _CharT{});
+        _Specs._Fill_length = static_cast<uint8_t>(_Sv.size());
+    }
+
+    constexpr void _On_width(const int _Width) {
+        _Specs._Width = _Width;
+    }
+
+    constexpr void _On_dynamic_width(const size_t _Arg_id) {
+        _Parse_ctx.check_arg_id(_Arg_id);
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
+    }
+
+    constexpr void _On_dynamic_width(const _Auto_id_tag) {
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
+    }
+
+protected:
+    _Fill_align_and_width_specs<_CharT>& _Specs;
+    basic_format_parse_context<_CharT>& _Parse_ctx;
+
+    _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
+        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+            _Throw_format_error("Dynamic width index is too large.");
+        }
+
+        return static_cast<int>(_Idx);
+    }
+};
+
+template <class _CharT, class _Callbacks_type>
+_NODISCARD constexpr const _CharT* _Parse_fill_align_and_width_specs(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    if (_Begin == _End || *_Begin == '}') {
+        return _Begin;
+    }
+
+    _Begin = _Parse_align(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    return _Parse_width(_Begin, _End, _Callbacks);
+}
+
+template <class _CharT>
+struct _Fill_align_and_width_formatter {
+public:
+    _Fill_align_and_width_formatter() = default;
+
+    _NODISCARD constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        _Fill_align_and_width_specs_setter<_CharT> _Callback{_Specs, _Parse_ctx};
+        const auto _It =
+            _Parse_fill_align_and_width_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
+        if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
+            _Throw_format_error("Missing '}' in format string.");
+        }
+
+        return _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
+    }
+
+    template <class _FormatContext, class _Func>
+    _NODISCARD constexpr auto _Format(
+        _FormatContext& _Format_ctx, const int _Width, _Fmt_align _Default_align, _Func&& _Fn) const {
+        _Fill_align_and_width_specs _Format_specs = _Specs;
+        if (_Specs._Dynamic_width_index >= 0) {
+            _Format_specs._Width =
+                _Get_dynamic_specs<_Width_checker>(_Format_ctx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
+        }
+
+        return _Write_aligned(_Format_ctx.out(), _Width, _Format_specs, _Default_align, std::forward<_Func>(_Fn));
+    }
+
+private:
+    _Fill_align_and_width_specs<_CharT> _Specs;
+};
 #endif // _HAS_CXX23
 
 #undef _FMT_P2286_END
