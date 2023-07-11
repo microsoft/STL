@@ -2539,10 +2539,6 @@ public:
         _Construct<_Construct_strategy::_From_ptr>(_Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
     }
 
-#if _HAS_CXX23
-    basic_string(nullptr_t) = delete;
-#endif // _HAS_CXX23
-
 #if _HAS_CXX17
     template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
 #endif // _HAS_CXX17
@@ -2550,6 +2546,10 @@ public:
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct<_Construct_strategy::_From_ptr>(_Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
     }
+
+#if _HAS_CXX23
+    basic_string(nullptr_t) = delete;
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch)
         : _Mypair(_Zero_then_variadic_args_t{}) { // construct from _Count * _Ch
