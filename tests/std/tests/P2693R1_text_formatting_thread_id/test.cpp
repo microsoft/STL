@@ -259,7 +259,7 @@ void check_format_versus_ostream() {
     { // fill-and-align only
         basic_ostringstream<CharT> ss;
         ss.fill('=');
-        ss.setf(ss.flags() | ios_base::left);
+        ss.setf(ss.flags() | ios_base::left, ios_base::adjustfield);
         ss << id;
         assert(fmt(STR("{:=<}"), id) == ss.view());
     }
@@ -277,7 +277,7 @@ void check_format_versus_ostream() {
         constexpr int w = 30;
         basic_ostringstream<CharT> ss;
         ss.fill('*');
-        ss.setf(ss.flags() | ios_base::left);
+        ss.setf(ss.flags() | ios_base::left, ios_base::adjustfield);
         ss.width(w);
         ss << id;
         assert(fmt(STR("{:*<30}"), id) == ss.view());
@@ -289,7 +289,8 @@ void check_format_versus_ostream() {
         basic_ostringstream<CharT> ss;
         ss.imbue(locale{"en-US"});
         ss.fill('x');
-        ss.setf(ss.flags() | ios_base::left | ios_base::hex | ios_base::uppercase | ios_base::showbase);
+        ss.setf(ss.flags() | ios_base::left | ios_base::hex | ios_base::uppercase | ios_base::showbase,
+            ios_base::adjustfield | ios_base::basefield);
         ss.width(w);
         ss.precision(99);
         ss << id;
