@@ -25,6 +25,11 @@ void check_stacktrace_entry_formatter() {
     assert(fmt("{:}", frame) == frame_str);
     assert(fmt("{0:}", frame) == frame_str);
 
+    // align only
+    assert(fmt("{:<}", frame) == frame_str);
+    assert(fmt("{:^}", frame) == frame_str);
+    assert(fmt("{:>}", frame) == frame_str);
+
     // fill-and-align only
     assert(fmt("{::<}", frame) == frame_str);
     assert(fmt("{:*^}", frame) == frame_str);

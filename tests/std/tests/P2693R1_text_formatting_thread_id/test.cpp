@@ -28,6 +28,11 @@ void check_formatting_of_default_constructed_thread_id() {
     assert(fmt(STR("{:}"), id) == STR("0"));
     assert(fmt(STR("{0:}"), id) == STR("0"));
 
+    // align only
+    assert(fmt(STR("{:<}"), id) == STR("0"));
+    assert(fmt(STR("{:^}"), id) == STR("0"));
+    assert(fmt(STR("{:>}"), id) == STR("0"));
+
     // fill-and-align only
     assert(fmt(STR("{::<}"), id) == STR("0"));
     assert(fmt(STR("{:*^}"), id) == STR("0"));
