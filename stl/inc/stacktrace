@@ -14,6 +14,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <stacktrace> are available only with
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 
 #include <cstdint>
+#include <format>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -348,6 +349,42 @@ _EXPORT_STD template <class _Alloc>
 ostream& operator<<(ostream& _Os, const basic_stacktrace<_Alloc>& _St) {
     return _Os << _STD to_string(_St);
 }
+
+#ifdef __cpp_lib_concepts
+template <>
+struct formatter<stacktrace_entry> {
+    constexpr format_parse_context::iterator parse(format_parse_context& _Parse_ctx) {
+        return _Impl.parse(_Parse_ctx);
+    }
+
+    template <class _FormatContext>
+    _FormatContext::iterator format(const stacktrace_entry& _Val, _FormatContext& _Format_ctx) const {
+        const auto _Str = _STD to_string(_Val);
+        return _Impl._Format(_Format_ctx, static_cast<int>(_Str.size()), _Fmt_align::_Left,
+            [&](_FormatContext::iterator _Out) { return _RANGES copy(_Str, _STD move(_Out)).out; });
+    }
+
+private:
+    _Fill_align_and_width_formatter<char> _Impl;
+};
+
+template <class _Alloc>
+struct formatter<basic_stacktrace<_Alloc>> {
+    constexpr format_parse_context::iterator parse(format_parse_context& _Parse_ctx) {
+        const auto _First = _Parse_ctx.begin();
+        if (_First != _Parse_ctx.end() && *_First != '}') {
+            _Throw_format_error("For formatter<basic_stacktrace<Allocator>>, format-spec must be empty.");
+        }
+
+        return _First;
+    }
+
+    template <class _FormatContext>
+    _FormatContext::iterator format(const basic_stacktrace<_Alloc>& _Val, _FormatContext& _FormatCtx) const {
+        return _RANGES copy(_STD to_string(_Val), _FormatCtx.out()).out;
+    }
+};
+#endif // __cpp_lib_concepts
 
 namespace pmr {
     _EXPORT_STD using stacktrace = basic_stacktrace<polymorphic_allocator<stacktrace_entry>>;
