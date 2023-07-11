@@ -2368,6 +2368,13 @@ private:
     static constexpr size_type _ALLOC_MASK            = _Scary_val::_ALLOC_MASK;
     static constexpr size_type _SMALL_STRING_CAPACITY = _Scary_val::_SMALL_STRING_CAPACITY;
 
+    _NODISCARD static _CONSTEXPR20 bool _Entails_large_string(size_type _Size_or_capacity) noexcept {
+        // Use cases:
+        // 1. determine whether large mode is used for a given capacity.
+        // 2. determine whether large mode should be used for a size/capacity request.
+        return _Size_or_capacity > _SMALL_STRING_CAPACITY;
+    }
+
     // When doing _String_val operations by memcpy, we are touching:
     //   _String_val::_Bx::_Buf (type is array of _Elem)
     //   _String_val::_Bx::_Ptr (type is pointer)
@@ -2426,8 +2433,8 @@ private:
         }
 #endif // _HAS_CXX20
        // Don't annotate small strings; only annotate on the heap.
-        if (_Capacity == _BUF_SIZE - 1 || !_Asan_string_should_annotate) {
-            return; // "_BUF_SIZE - 1" is unchanged here; will be refactored in later pushes.
+        if (!_Entails_large_string(_Capacity) || !_Asan_string_should_annotate) {
+            return;
         }
 
         // Note that `_Capacity`, `_Old_size`, and `_New_size` do not include the null terminator
@@ -4766,7 +4773,7 @@ private:
         _Mypair._Myval2._Mysize = _New_size;
         _Mypair._Myval2._Myres  = _New_capacity;
         _Fn(_Unfancy(_New_ptr), _New_size, _Args...);
-        if (_BUF_SIZE <= _Old_capacity) {
+        if (_Entails_large_string(_Old_capacity)) {
             _Al.deallocate(_Mypair._Myval2._Bx._Ptr, _Old_capacity + 1);
             _Mypair._Myval2._Bx._Ptr = _New_ptr;
         } else {
@@ -4801,7 +4808,7 @@ private:
         _My_data._Mysize      = _New_size;
         _My_data._Myres       = _New_capacity;
         _Elem* const _Raw_new = _Unfancy(_New_ptr);
-        if (_BUF_SIZE <= _Old_capacity) {
+        if (_Entails_large_string(_Old_capacity)) {
             const pointer _Old_ptr = _My_data._Bx._Ptr;
             _Fn(_Raw_new, _Unfancy(_Old_ptr), _Old_size, _Args...);
             _Al.deallocate(_Old_ptr, _Old_capacity + 1);
