@@ -2242,7 +2242,9 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 bool _Large_string_engaged() const noexcept {
-        return _BUF_SIZE <= _Myres;
+        // Determines whether large mode is used for the string's capacity.
+        // Doesn't imply anything about the largeness of the string's size.
+        return _Myres > _SMALL_STRING_CAPACITY;
     }
 
     _CONSTEXPR20 void _Activate_SSO_buffer() noexcept {
@@ -2722,7 +2724,7 @@ private:
 
                     _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
                     _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
-                    if (_My_data._Myres >= _BUF_SIZE) { // Need to deallocate old storage
+                    if (_My_data._Large_string_engaged()) { // Need to deallocate old storage
                         _Al.deallocate(_My_data._Bx._Ptr, _My_data._Myres + 1);
                         _My_data._Bx._Ptr = _New_ptr;
                     } else {
