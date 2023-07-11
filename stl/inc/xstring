@@ -2242,14 +2242,10 @@ public:
         return _Result;
     }
 
-    _NODISCARD static _CONSTEXPR20 bool _Large_string_engaged(size_type _Capacity) noexcept {
-        // determines whether large mode is used for this capacity
-        // has no implication on largeness of string's size
-        return _Capacity > _SMALL_STRING_CAPACITY;
-    }
-
     _NODISCARD _CONSTEXPR20 bool _Large_string_engaged() const noexcept {
-        return _Large_string_engaged(_Myres);
+        // Determines whether large mode is used for the string's capacity.
+        // Doesn't imply anything about the largeness of the string's size.
+        return _Myres > _SMALL_STRING_CAPACITY;
     }
 
     _CONSTEXPR20 void _Activate_SSO_buffer() noexcept {
@@ -2441,7 +2437,7 @@ private:
         }
 #endif // _HAS_CXX20
        // Don't annotate small strings; only annotate on the heap.
-        if (!_Scary_val::_Large_string_engaged(_Capacity) || !_Asan_string_should_annotate) {
+        if (!_Entails_large_string(_Capacity) || !_Asan_string_should_annotate) {
             return;
         }
 
@@ -4741,7 +4737,7 @@ private:
         _Mypair._Myval2._Mysize = _New_size;
         _Mypair._Myval2._Myres  = _New_capacity;
         _Fn(_Unfancy(_New_ptr), _New_size, _Args...);
-        if (_Scary_val::_Large_string_engaged(_Old_capacity)) {
+        if (_Entails_large_string(_Old_capacity)) {
             _Deallocate_for_capacity(_Al, _Mypair._Myval2._Bx._Ptr, _Old_capacity);
             _Mypair._Myval2._Bx._Ptr = _New_ptr;
         } else {
@@ -4773,7 +4769,7 @@ private:
         _My_data._Mysize      = _New_size;
         _My_data._Myres       = _New_capacity;
         _Elem* const _Raw_new = _Unfancy(_New_ptr);
-        if (_Scary_val::_Large_string_engaged(_Old_capacity)) {
+        if (_Entails_large_string(_Old_capacity)) {
             const pointer _Old_ptr = _My_data._Bx._Ptr;
             _Fn(_Raw_new, _Unfancy(_Old_ptr), _Old_size, _Args...);
             _Deallocate_for_capacity(_Al, _Old_ptr, _Old_capacity);
