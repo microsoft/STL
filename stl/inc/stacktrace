@@ -309,7 +309,8 @@ private:
         explicit _Internal_t() noexcept = default;
     };
 
-    basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Al) : _Frames(_Max_depth, _Al) {}
+    basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Al)
+        : _Frames(_Frames_t::_Create_uninitialized(_Max_depth, _Al)) {}
 
     _NODISCARD static unsigned long _Adjust_skip(size_t _Skip) noexcept {
         return _Skip < ULONG_MAX - 1 ? static_cast<unsigned long>(_Skip + 1) : ULONG_MAX;
