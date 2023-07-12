@@ -772,7 +772,7 @@ public:
     }
 
 public:
-    template<bool _Force_pass = false>
+    template <bool _Force_pass = false>
     _NODISCARD static _CONSTEXPR20 vector _Create_uninitialized(size_type _Size, const allocator_type& _Al) {
         // Create a vector of size _Size without value initialization.
         // Currently used by basic_stacktrace.
