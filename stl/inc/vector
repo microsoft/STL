@@ -772,10 +772,11 @@ public:
     }
 
 public:
+    template<bool _Force_pass = false>
     _NODISCARD static _CONSTEXPR20 vector _Create_uninitialized(size_type _Size, const allocator_type& _Al) {
         // Create a vector of size _Size without value initialization.
         // Currently used by basic_stacktrace.
-        static_assert(is_trivially_constructible_v<_Ty>, "_Ty must be trivially constructible");
+        static_assert(_Force_pass || is_trivially_constructible_v<_Ty>, "_Ty must be trivially constructible");
 
         vector _Vec(_Al);
         if (_Is_constant_evaluated()) {
