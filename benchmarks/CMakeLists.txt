@@ -107,4 +107,5 @@ endfunction()
 
 add_benchmark(locale_classic src/locale_classic.cpp)
 add_benchmark(random_integer_generation src/random_integer_generation.cpp)
+add_benchmark(stacktrace_current src/stacktrace_current.cpp)
 add_benchmark(std_copy src/std_copy.cpp)
