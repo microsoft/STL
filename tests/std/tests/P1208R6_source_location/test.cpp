@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef __EDG__ // TRANSITION, VSO-1285779
 #include "header.h"
 #include <cassert>
 #include <functional>
@@ -237,6 +236,3 @@ int main() {
     static_assert(test());
     return 0;
 }
-#else // ^^^ !defined(__EDG__) / defined(__EDG__) vvv
-int main() {}
-#endif // ^^^ defined(__EDG__) ^^^
