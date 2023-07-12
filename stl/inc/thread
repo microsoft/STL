@@ -11,7 +11,7 @@
 #include <__msvc_chrono.hpp>
 #include <memory>
 #include <process.h>
-#include <sstream>
+#include <string>
 #include <tuple>
 #include <xthreads.h>
 
@@ -282,10 +282,12 @@ _NODISCARD inline bool operator>=(thread::id _Left, thread::id _Right) noexcept 
 
 _EXPORT_STD template <class _Ch, class _Tr>
 basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _Id) {
-    basic_ostringstream<_Ch, _Tr> _Out;
-    _Out.imbue(locale::classic());
-    _Out << _Id._Id;
-    return _Str << _Out.str();
+    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Thrd_id_t) == 4);
+    _Ch _Buff[11]; // can hold 2^32 - 1, plus terminating null
+    _Ch* _RNext = _STD end(_Buff);
+    *--_RNext   = static_cast<_Ch>('\0');
+    _RNext      = _STD _UIntegral_to_buff(_RNext, _Id._Id);
+    return _Str << _RNext;
 }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
@@ -300,13 +302,13 @@ public:
 
     template <class _FormatContext>
     _FormatContext::iterator format(thread::id _Val, _FormatContext& _Format_ctx) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Thrd_id_t, unsigned int>);
-        char _Buffer[10]; // size(string with decimal value of numeric_limits<_Thrd_id_t>::max()) == 10
-        const auto [_End, _Ec] = _STD to_chars(_Buffer, end(_Buffer), _Val._Get_underlying_id());
+        _STL_INTERNAL_STATIC_ASSERT(sizeof(_Thrd_id_t) == 4);
+        char _Buff[10]; // can hold 2^32 - 1
+        const auto [_End, _Ec] = _STD to_chars(_Buff, end(_Buff), _Val._Get_underlying_id());
         _STL_INTERNAL_CHECK(_Ec == errc{});
 
-        return _Impl._Format(_Format_ctx, static_cast<int>(_End - _Buffer), _Fmt_align::_Right,
-            [&](_FormatContext::iterator _Out) { return _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out)); });
+        return _Impl._Format(_Format_ctx, static_cast<int>(_End - _Buff), _Fmt_align::_Right,
+            [&](_FormatContext::iterator _Out) { return _Widen_and_copy<_CharT>(_Buff, _End, _STD move(_Out)); });
     }
 
 private:
