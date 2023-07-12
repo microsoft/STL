@@ -227,6 +227,7 @@ tests\GH_003617_vectorized_meow_element
 tests\GH_003676_format_large_hh_mm_ss_values
 tests\GH_003735_char_traits_signatures
 tests\GH_003840_tellg_when_reading_lf_file_in_text_mode
+tests\GH_003867_output_nan
 tests\LWG2381_num_get_floating_point
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
