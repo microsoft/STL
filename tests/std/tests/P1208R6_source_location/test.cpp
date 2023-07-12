@@ -253,11 +253,13 @@ constexpr bool test() {
     return true;
 }
 
+#ifndef __EDG__ // TRANSITION, VSO-1849463
 // Also test GH-2822 Failed to specialize std::invoke on operator() with default argument
 // std::source_location::current()
 void test_gh_2822() { // COMPILE-ONLY
     invoke([](source_location = source_location::current()) {});
 }
+#endif // ^^^ no workaround ^^^
 
 int main() {
     test();
