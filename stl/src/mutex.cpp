@@ -13,7 +13,7 @@
 
 #include "primitives.hpp"
 
-[[noreturn]] extern "C" _CRTIMP2_PURE void _Thrd_abort(const char* msg) { // abort on precondition failure
+extern "C" [[noreturn]] _CRTIMP2_PURE void _Thrd_abort(const char* msg) { // abort on precondition failure
     fputs(msg, stderr);
     fputc('\n', stderr);
     abort();
