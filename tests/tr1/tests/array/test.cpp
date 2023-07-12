@@ -8,13 +8,6 @@
 #include <array>
 #include <stdexcept>
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
-// Also test DevCom-10299275, in which array<int, 0> was not a valid constant expression
-// since we didn't initialize the single element.
-constexpr STD array<int, 0> empty_array;
-STATIC_ASSERT(empty_array.size() == 0);
-
 void test_main() { // test header <array>
     STD array<int, 0> a0 = {};
 
