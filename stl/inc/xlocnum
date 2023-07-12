@@ -1461,8 +1461,8 @@ private:
         return _Fmt;
     }
 
-    _OutIt __CLRCALL_OR_CDECL _Fput(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, const char* _Buf,
-        size_t _Count, bool _IsNan) const { // put formatted floating-point to _Dest
+    _OutIt __CLRCALL_OR_CDECL _Fput(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, const char* _Buf, size_t _Count,
+        bool _IsNan) const { // put formatted floating-point to _Dest
         auto _Prefix = static_cast<size_t>(0 < _Count && (*_Buf == '+' || *_Buf == '-'));
         const char* _Exps;
         if ((_Iosbase.flags() & ios_base::floatfield) != ios_base::hexfloat) {
