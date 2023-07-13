@@ -1485,9 +1485,8 @@ private:
 template <class _Yty, class = void>
 struct _Can_scalar_delete : false_type {};
 template <class _Yty>
-struct _Can_scalar_delete<_Yty, void_t<decltype(delete _STD declval<_Yty*>())>> : true_type {};
-template <>
-struct _Can_scalar_delete<void> : false_type {};
+struct _Can_scalar_delete<_Yty, void_t<decltype(delete _STD declval<_Yty*>())>>
+    : std::integral_constant<bool, !bool(is_void<_Yty>::value)> {};
 
 template <class _Yty, class = void>
 struct _Can_array_delete : false_type {};
