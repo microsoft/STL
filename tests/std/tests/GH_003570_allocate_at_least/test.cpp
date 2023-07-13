@@ -117,8 +117,8 @@ struct icky_allocator : allocator<T> {
 };
 
 void test_inheriting_allocator() {
-    std::vector<int, icky_allocator<int>> vec{2, 1, 4, 7, 5, 6, 3, 8};
-    assert(std::accumulate(vec.begin(), vec.end(), 0, plus<>{}) == 36);
+    vector<int, icky_allocator<int>> vec{2, 1, 4, 7, 5, 6, 3, 8};
+    assert(accumulate(vec.begin(), vec.end(), 0, plus<>{}) == 36);
 }
 
 int main() {
