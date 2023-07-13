@@ -11,7 +11,7 @@ using namespace std;
 template <typename T>
 void test_gh_3867() {
     // GH-3867 Writing NaN to the output stream with a set locale results in a weird output
-    stringstream s;
+    ostringstream s;
     s.imbue(locale("en-US"));
     s << -numeric_limits<T>::quiet_NaN();
     assert(s.str() == "-nan(ind)");
