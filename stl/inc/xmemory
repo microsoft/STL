@@ -2182,8 +2182,9 @@ inline constexpr bool _Has_member_from_primary<_Ty, void_t<typename _Ty::_From_p
 
 // Avoid using allocate_at_least when the allocator publicly derives from std::allocator:
 // "old" allocators might override allocate and deallocate but fail to override allocate_at_least.
+// Also avoid using allocate_at_least from std::allocator itself because it currently doesn't do anything useful.
 template <class _Alloc>
-inline constexpr bool _Allocate_at_least_is_safe =
+inline constexpr bool _Should_allocate_at_least =
     !_Has_member_from_primary<_Alloc>
     && _Has_member_allocate_at_least<_Alloc, typename allocator_traits<_Alloc>::size_type>;
 #endif // _HAS_CXX23
@@ -2192,7 +2193,7 @@ template <class _Alloc>
 _NODISCARD_RAW_PTR_ALLOC _CONSTEXPR20 typename allocator_traits<_Alloc>::pointer _Allocate_at_least_helper(
     _Alloc& _Al, _CRT_GUARDOVERFLOW typename allocator_traits<_Alloc>::size_type& _Count) {
 #if _HAS_CXX23
-    if constexpr (_Allocate_at_least_is_safe<_Alloc>) {
+    if constexpr (_Should_allocate_at_least<_Alloc>) {
         auto [_Ptr, _Allocated] = _Al.allocate_at_least(_Count);
         _Count                  = _Allocated;
         return _Ptr;
