@@ -303,12 +303,11 @@ public:
     template <class _FormatContext>
     _FormatContext::iterator format(thread::id _Val, _FormatContext& _Format_ctx) const {
         _STL_INTERNAL_STATIC_ASSERT(sizeof(_Thrd_id_t) == 4);
-        char _Buff[10]; // can hold 2^32 - 1
-        const auto [_End, _Ec] = _STD to_chars(_Buff, end(_Buff), _Val._Get_underlying_id());
-        _STL_INTERNAL_CHECK(_Ec == errc{});
-
-        return _Impl._Format(_Format_ctx, static_cast<int>(_End - _Buff), _Fmt_align::_Right,
-            [&](_FormatContext::iterator _Out) { return _Widen_and_copy<_CharT>(_Buff, _End, _STD move(_Out)); });
+        _CharT _Buff[10]; // can hold 2^32 - 1
+        _CharT* const _Last        = _STD end(_Buff);
+        const _CharT* const _First = _STD _UIntegral_to_buff(_Last, _Val._Get_underlying_id());
+        return _Impl._Format(_Format_ctx, static_cast<int>(_Last - _First), _Fmt_align::_Right,
+            [&](_FormatContext::iterator _Out) { return _RANGES copy(_First, _Last, _STD move(_Out)).out; });
     }
 
 private:
