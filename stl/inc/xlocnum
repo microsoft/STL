@@ -1376,7 +1376,7 @@ protected:
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
             &_Buf[0], _Buf.size(), _Ffmt(_Fmt, 0, _Iosbase.flags()), static_cast<int>(_Precision), _Val));
 
-        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, _STD isnan(_Val));
+        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, (_STD isnan)(_Val));
     }
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(
@@ -1400,7 +1400,7 @@ protected:
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
             &_Buf[0], _Buf.size(), _Ffmt(_Fmt, 'L', _Iosbase.flags()), static_cast<int>(_Precision), _Val));
 
-        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, _STD isnan(_Val));
+        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, (_STD isnan)(_Val));
     }
 #pragma warning(pop)
 
