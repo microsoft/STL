@@ -2181,7 +2181,7 @@ template <class _Ty>
 inline constexpr bool _Has_member_from_primary<_Ty, void_t<typename _Ty::_From_primary>> = true;
 
 // Avoid using allocate_at_least when the allocator publicly derives from std::allocator:
-// "old" allocators might override allocate and deallocate but fail to override allocate_at_least.
+// "old" allocators might hide allocate and deallocate but fail to hide allocate_at_least.
 // Also avoid using allocate_at_least from std::allocator itself because it currently doesn't do anything useful.
 template <class _Alloc>
 inline constexpr bool _Should_allocate_at_least =

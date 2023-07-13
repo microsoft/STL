@@ -109,9 +109,9 @@ struct icky_allocator : allocator<T> {
     allocation_result<T*, size_t> allocate_at_least(size_t) {
         // The initial implementation of this feature had a problem with (icky) allocators that
         // publicly derive from std::allocator and implement allocate/deallocate. The STL would
-        // call allocate_at_least in the std::allocator base and the overridden deallocate in
-        // the derived class. We now detect public derivation from std::allocator and avoid
-        // using allocate_at_least in that case.
+        // call allocate_at_least in the std::allocator base (which would then call std::allocator::allocate),
+        // and would then call deallocate in the derived class (hiding the base implementation), a terrible mismatch.
+        // We now detect public derivation from std::allocator and avoid using allocate_at_least in that case.
         static_assert(always_false<T>);
     }
 };
