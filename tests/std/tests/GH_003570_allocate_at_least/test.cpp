@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <deque>
+#include <functional>
 #include <memory>
 #include <new>
 #include <numeric>
