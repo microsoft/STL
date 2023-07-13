@@ -42,7 +42,7 @@ namespace {
 _EXTERN_C
 
 // TRANSITION, ABI: _Thrd_exit() is preserved for binary compatibility
-_CRTIMP2_PURE void _Thrd_exit(int res) { // terminate execution of calling thread
+[[noreturn]] _CRTIMP2_PURE void _Thrd_exit(int res) { // terminate execution of calling thread
     _endthreadex(res);
 }
 
