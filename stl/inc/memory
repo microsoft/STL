@@ -1486,7 +1486,7 @@ template <class _Yty, class = void>
 struct _Can_scalar_delete : false_type {};
 template <class _Yty>
 struct _Can_scalar_delete<_Yty, void_t<decltype(delete _STD declval<_Yty*>())>> : true_type {};
-template<>
+template <>
 struct _Can_scalar_delete<void> : false_type {};
 
 template <class _Yty, class = void>
