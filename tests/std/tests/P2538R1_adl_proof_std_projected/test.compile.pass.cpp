@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#ifndef _M_CEE // TRANSITION, VSO-1659496
 #include <cassert>
 #include <functional>
 #include <iterator>
@@ -50,3 +51,4 @@ constexpr bool test() {
 }
 
 static_assert(test());
+#endif // _M_CEE
