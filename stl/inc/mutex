@@ -31,37 +31,20 @@ _STD_BEGIN
 _EXPORT_STD class condition_variable;
 _EXPORT_STD class condition_variable_any;
 
-struct _Mtx_internal_imp_mirror {
-#ifdef _CRT_WINDOWS
-#ifdef _WIN64
-    static constexpr size_t _Critical_section_size = 16;
-#else // _WIN64
-    static constexpr size_t _Critical_section_size = 8;
-#endif // _WIN64
-#else // _CRT_WINDOWS
-#ifdef _WIN64
-    static constexpr size_t _Critical_section_size = 64;
-#else // _WIN64
-    static constexpr size_t _Critical_section_size = 36;
-#endif // _WIN64
-#endif // _CRT_WINDOWS
-
-    static constexpr size_t _Critical_section_align = alignof(void*);
-
-    int _Type;
-    _Aligned_storage_t<_Critical_section_size, _Critical_section_align> _Cs_storage;
-    long _Thread_id;
-    int _Count;
-};
-
-static_assert(sizeof(_Mtx_internal_imp_mirror) == _Mtx_internal_imp_size, "inconsistent size for mutex");
-static_assert(alignof(_Mtx_internal_imp_mirror) == _Mtx_internal_imp_alignment, "inconsistent alignment for mutex");
-
 class _Mutex_base { // base class for all mutex types
 public:
+#ifdef _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
     _Mutex_base(int _Flags = 0) noexcept {
         _Mtx_init_in_situ(_Mymtx(), _Flags | _Mtx_try);
     }
+#else // ^^^ _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR / !_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR vvv
+    constexpr _Mutex_base(int _Flags = 0) noexcept {
+        _Mtx_storage._Critical_section = {};
+        _Mtx_storage._Thread_id        = -1;
+        _Mtx_storage._Type             = _Flags | _Mtx_try;
+        _Mtx_storage._Count            = 0;
+    }
+#endif // !_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
 
     ~_Mutex_base() noexcept {
         _Mtx_destroy_in_situ(_Mymtx());
@@ -97,9 +80,9 @@ public:
 
 protected:
     _NODISCARD_TRY_CHANGE_STATE bool _Verify_ownership_levels() noexcept {
-        if (_Mtx_storage_mirror._Count == INT_MAX) {
+        if (_Mtx_storage._Count == INT_MAX) {
             // only occurs for recursive mutexes (N4950 [thread.mutex.recursive]/3)
-            --_Mtx_storage_mirror._Count;
+            --_Mtx_storage._Count;
             return false;
         }
 
@@ -110,23 +93,16 @@ private:
     friend condition_variable;
     friend condition_variable_any;
 
-    union {
-        _Aligned_storage_t<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment> _Mtx_storage;
-        _Mtx_internal_imp_mirror _Mtx_storage_mirror;
-    };
+    _Mtx_internal_imp_t _Mtx_storage{};
 
-    _Mtx_t _Mymtx() noexcept { // get pointer to _Mtx_internal_imp_t inside _Mtx_storage
-        return reinterpret_cast<_Mtx_t>(&_Mtx_storage);
+    _Mtx_t _Mymtx() noexcept {
+        return &_Mtx_storage;
     }
 };
 
-static_assert(sizeof(_Mutex_base) == _Mtx_internal_imp_size, "inconsistent size for mutex");
-static_assert(alignof(_Mutex_base) == _Mtx_internal_imp_alignment, "inconsistent alignment for mutex");
-
 _EXPORT_STD class mutex : public _Mutex_base { // class for mutual exclusion
 public:
-    /* constexpr */ mutex() noexcept // TRANSITION, ABI
-        : _Mutex_base() {}
+    mutex() noexcept = default;
 
     mutex(const mutex&)            = delete;
     mutex& operator=(const mutex&) = delete;

@@ -51,7 +51,7 @@ void _Cnd_destroy(const _Cnd_t cond) { // clean up
 }
 
 int _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) { // wait until signaled
-    const auto cs = static_cast<Concurrency::details::stl_critical_section_win7*>(_Mtx_getconcrtcs(mtx));
+    const auto cs = &mtx->_Critical_section;
     _Mtx_clear_owner(mtx);
     cond->_get_cv()->wait(cs);
     _Mtx_reset_owner(mtx);
@@ -61,7 +61,7 @@ int _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) { // wait until signaled
 // wait until signaled or timeout
 int _Cnd_timedwait(const _Cnd_t cond, const _Mtx_t mtx, const _timespec64* const target) {
     int res       = _Thrd_success;
-    const auto cs = static_cast<Concurrency::details::stl_critical_section_win7*>(_Mtx_getconcrtcs(mtx));
+    const auto cs = &mtx->_Critical_section;
     if (target == nullptr) { // no target time specified, wait on mutex
         _Mtx_clear_owner(mtx);
         cond->_get_cv()->wait(cs);
