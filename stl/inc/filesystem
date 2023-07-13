@@ -4056,11 +4056,9 @@ namespace filesystem {
             _Result._Text.resize(_Temp_result._Size);
             if (_Temp_result._Size < _Requested_size) {
                 _Ec = _Make_ec(_Temp_result._Error);
-                break;
+                return _Result;
             }
         }
-
-        return _Result;
     }
 
     _EXPORT_STD _NODISCARD inline path current_path() {
