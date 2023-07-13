@@ -23,5 +23,6 @@ namespace {
 
 } // namespace
 
-BENCHMARK(BM_stacktrace_current)->Arg(0)->Arg(32)->Arg(128)->Arg(256)->Arg(512);
+// <NOTICE> this is subject to the final decision of _Try_frames. Currently: 100 < _Try_frames < 150
+BENCHMARK(BM_stacktrace_current)->Arg(0)->Arg(50)->Arg(100)->Arg(150)->Arg(300);
 BENCHMARK_MAIN();

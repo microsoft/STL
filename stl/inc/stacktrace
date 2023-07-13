@@ -138,46 +138,20 @@ public:
 
     _NODISCARD __declspec(noinline) static basic_stacktrace
         current(const allocator_type& _Al = allocator_type()) noexcept {
-        _TRY_BEGIN
-        basic_stacktrace _Result{_Internal_t{}, _Max_frames, _Al};
-        const unsigned short _Actual_size = __std_stacktrace_capture(
-            1, static_cast<unsigned long>(_Max_frames), _Result._To_voidptr_array(), &_Result._Hash);
-        _Result._Frames.resize(_Actual_size);
-        return _Result;
-        _CATCH_ALL
-        return basic_stacktrace{_Al};
-        _CATCH_END
+        return _Current(1, _Max_frames, _Al);
     }
 
     _NODISCARD __declspec(noinline) static basic_stacktrace
         current(const size_type _Skip, const allocator_type& _Al = allocator_type()) noexcept {
-        _TRY_BEGIN
-        basic_stacktrace _Result{_Internal_t{}, _Max_frames, _Al};
-        const unsigned short _Actual_size = __std_stacktrace_capture(
-            _Adjust_skip(_Skip), static_cast<unsigned long>(_Max_frames), _Result._To_voidptr_array(), &_Result._Hash);
-        _Result._Frames.resize(_Actual_size);
-        return _Result;
-        _CATCH_ALL
-        return basic_stacktrace{_Al};
-        _CATCH_END
+        return _Current(_Adjust_skip(_Skip), _Max_frames, _Al);
     }
 
     _NODISCARD __declspec(noinline) static basic_stacktrace
         current(const size_type _Skip, size_type _Max_depth, const allocator_type& _Al = allocator_type()) noexcept {
-        _TRY_BEGIN
-        if (_Max_depth > _Max_frames) {
-            _Max_depth = _Max_frames;
-        }
-
-        basic_stacktrace _Result{_Internal_t{}, _Max_depth, _Al};
-
-        const unsigned short _Actual_size = __std_stacktrace_capture(
-            _Adjust_skip(_Skip), static_cast<unsigned long>(_Max_depth), _Result._To_voidptr_array(), &_Result._Hash);
-        _Result._Frames.resize(_Actual_size);
-        return _Result;
-        _CATCH_ALL
-        return basic_stacktrace{_Al};
-        _CATCH_END
+        // <NOTICE> _Current can do _Max_frames clamp inside.
+        // <NOTICE> The two _Adjust_skip in current and _Current can be merged into a single one; The efficiency gain is
+        // <NOTICE> negligible however.
+        return _Current(_Adjust_skip(_Skip), _Max_depth, _Al);
     }
 
     basic_stacktrace() noexcept(is_nothrow_default_constructible_v<allocator_type>) = default;
@@ -278,8 +252,7 @@ public:
 #endif // ^^^ !__cpp_lib_concepts ^^^
     }
 
-    void swap(basic_stacktrace& _Other) noexcept(allocator_traits<_Alloc>::propagate_on_container_swap::value
-                                                 || allocator_traits<_Alloc>::is_always_equal::value) {
+    void swap(basic_stacktrace& _Other) noexcept /* strengthened */ {
         _Frames.swap(_Other._Frames);
         _STD swap(_Hash, _Other._Hash);
     }
@@ -300,17 +273,54 @@ public:
     }
 
 private:
-    static constexpr size_t _Max_frames = 0xFFFF;
+    // <NOTICE> Currently vector is enhanced as unconditionally noexcept move-assignable and swappable
 
     static constexpr bool _Noex_move = allocator_traits<_Alloc>::propagate_on_container_move_assignment::value
-                                    || allocator_traits<_Alloc>::is_always_equal::value;
+                                    || allocator_traits<_Alloc>::is_always_equal::value
+                                    || is_nothrow_move_assignable_v<_Frames_t>; // strengthened
 
-    struct _Internal_t {
-        explicit _Internal_t() noexcept = default;
-    };
+    // <NOTICE> ?_Try_frames may be subject to further decreasements?
 
-    basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Al)
-        : _Frames(_Frames_t::template _Create_uninitialized<true>(_Max_depth, _Al)) {}
+    static constexpr size_t _Try_frames = 128; // Sufficient in most cases.
+    static constexpr size_t _Max_frames = 0xFFFF;
+
+    // __declspec(noinline) to make the same behavior for debug and release.
+    // We force the current function to be always noinline and add its frame to skipped.
+    _NODISCARD __declspec(noinline) static basic_stacktrace
+        _Current(size_type _Skip, const size_type _Max_depth, const allocator_type& _Al) noexcept {
+        _Skip = _Adjust_skip(_Skip); // skip this frame
+        _TRY_BEGIN
+        basic_stacktrace _Result(_Al);
+
+        stacktrace_entry _Buffer[_Try_frames];
+        const unsigned short _Maybe_actual_size =
+            __std_stacktrace_capture(_Skip, static_cast<unsigned long>((_STD min)(_Max_depth, _Try_frames)),
+                reinterpret_cast<void**>(_Buffer), &_Result._Hash);
+        if (_Maybe_actual_size != _Try_frames) {
+            // Luckily, it's actual size
+            _Result._Frames.assign(_Buffer, _Buffer + _Maybe_actual_size);
+            return _Result;
+        }
+
+        // <NOTICE> The cost introduced the first try is compensable from uninitialized resize.
+        // <NOTICE> ?is `auto` type safe here?
+        // <NOTICE> No need to do _Tidy; ?add _STL_ASSERT for emptiness?
+
+        auto _Enough_capacity = (_STD min)(_Max_depth, _Max_frames);
+        // resize(_Enough_capacity), but without value initialization
+        // static_assert(is_implicit_lifetime_v<stacktrace_entry>); TRANSITION, not implemented
+        const auto _Newvec = _Result._Frames._Getal().allocate(_Enough_capacity);
+        _Result._Frames._Change_array(_Newvec, _Enough_capacity, _Enough_capacity);
+
+        const unsigned short _Actual_size = __std_stacktrace_capture(
+            _Skip, static_cast<unsigned long>(_Enough_capacity), _Result._To_voidptr_array(), &_Result._Hash);
+        _Result._Frames.resize(_Actual_size);
+        return _Result;
+
+        _CATCH_ALL
+        return basic_stacktrace{_Al};
+        _CATCH_END
+    }
 
     _NODISCARD static unsigned long _Adjust_skip(size_t _Skip) noexcept {
         return _Skip < ULONG_MAX - 1 ? static_cast<unsigned long>(_Skip + 1) : ULONG_MAX;
