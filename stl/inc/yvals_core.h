@@ -1665,19 +1665,15 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_interpolate                  201902L
 #define __cpp_lib_is_constant_evaluated        201811L
 
-#ifndef __EDG__ // TRANSITION, VSO-1268984
 #ifndef __clang__ // TRANSITION, LLVM-48860
 #define __cpp_lib_is_layout_compatible 201907L
 #endif // __clang__
-#endif // __EDG__
 
 #define __cpp_lib_is_nothrow_convertible 201806L
 
-#ifndef __EDG__ // TRANSITION, VSO-1268984
 #ifndef __clang__ // TRANSITION, LLVM-48860
 #define __cpp_lib_is_pointer_interconvertible 201907L
 #endif // __clang__
-#endif // __EDG__
 
 #define __cpp_lib_jthread                 201911L
 #define __cpp_lib_latch                   201907L
