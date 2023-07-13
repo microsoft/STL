@@ -86,7 +86,9 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
     return _State;
 }
 
-_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_get
+_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT time_base // base class for time_get
+    : locale::facet // TRANSITION, ABI, shouldn't be derived from locale::facet
+{
     enum dateorder { // constants for different orders of date components
         no_order,
         dmy,
@@ -95,7 +97,8 @@ _EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT time_base : locale::facet {
         ydm
     };
 
-    __CLR_OR_THIS_CALL time_base(size_t _Refs = 0) : locale::facet(_Refs) {}
+    __CLR_OR_THIS_CALL time_base(size_t _Refs = 0) noexcept // strengthened
+        : locale::facet(_Refs) {}
 
     __CLR_OR_THIS_CALL ~time_base() noexcept override {}
 };
