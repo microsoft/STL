@@ -864,22 +864,40 @@ _EXPORT_STD template <class _Fn, class... _Its>
     requires (indirectly_readable<_Its> && ...) && invocable<_Fn, iter_reference_t<_Its>...>
 using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Its>...>;
 
-_EXPORT_STD template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
-struct projected {
-    using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
-    indirect_result_t<_Proj&, _It> operator*() const {
-        _CSTD abort();
-    }
+template <class _It>
+struct _Projected_difference_type_impl {
+    struct _Base {};
+};
+
+template <weakly_incrementable _It>
+struct _Projected_difference_type_impl<_It> {
+    struct _Base {
+        using difference_type = iter_difference_t<_It>;
+    };
 };
 
 template <class _It, class _Proj>
-struct _Indirect_value_impl<projected<_It, _Proj>> {
-    using type = invoke_result_t<_Proj&, _Indirect_value_t<_It>>;
+struct _Projected_impl {
+    struct _Type : _Projected_difference_type_impl<_It>::_Base {
+        using _Iterator   = _It;
+        using _Projection = _Proj;
+
+        using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
+        indirect_result_t<_Proj&, _It> operator*() const {
+            _CSTD abort();
+        }
+    };
 };
 
-template <weakly_incrementable _It, class _Proj>
-struct incrementable_traits<projected<_It, _Proj>> {
-    using difference_type = iter_difference_t<_It>;
+_EXPORT_STD template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
+using projected = _Projected_impl<_It, _Proj>::_Type;
+
+template <class _Ty>
+concept _Projected_specialization = same_as<_Ty, projected<typename _Ty::_Iterator, typename _Ty::_Projection>>;
+
+template <_Projected_specialization _ProjTy>
+struct _Indirect_value_impl<_ProjTy> {
+    using type = invoke_result_t<typename _ProjTy::_Projection&, _Indirect_value_t<typename _ProjTy::_Iterator>>;
 };
 
 _EXPORT_STD template <class _In, class _Out>
