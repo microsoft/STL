@@ -618,7 +618,7 @@ namespace filesystem {
         friend inline __std_win_error _Absolute(path& _Result, const wstring& _Text);
         friend inline __std_win_error _Canonical(path& _Result, const wstring& _Text);
         friend inline path temp_directory_path(error_code& _Ec);
-        friend inline __std_win_error _Current_path(path& _Result) noexcept;
+        friend inline path current_path(error_code& _Ec);
         friend inline void current_path(const path& _To);
         friend inline void current_path(const path& _To, error_code& _Ec) noexcept;
         friend inline __std_win_error _Read_symlink(const path& _Symlink_path, path& _Result) noexcept;
@@ -1824,6 +1824,10 @@ namespace filesystem {
     [[noreturn]] inline void _Throw_fs_error(
         const char* _Op, __std_win_error _Error, const path& _Path1, const path& _Path2) {
         _THROW(filesystem_error(_Op, _Path1, _Path2, _Make_ec(_Error)));
+    }
+
+    [[noreturn]] inline void _Throw_fs_error(const char* _Op, const error_code& _Error) {
+        _THROW(filesystem_error(_Op, _Error));
     }
 
     [[noreturn]] inline void _Throw_fs_error(const char* _Op, const error_code& _Error, const path& _Path1) {
@@ -4050,30 +4054,26 @@ namespace filesystem {
         return _Result;
     }
 
-    _NODISCARD inline __std_win_error _Current_path(path& _Result) noexcept {
+    _EXPORT_STD _NODISCARD inline path current_path(error_code& _Ec) {
+        _Ec.clear();
+        path _Result;
         _Result._Text.resize(__std_fs_max_path);
         for (;;) {
             const auto _Requested_size = static_cast<unsigned long>(_Result._Text.size());
             const auto _Temp_result    = __std_fs_get_current_path(_Requested_size, _Result._Text.data());
             _Result._Text.resize(_Temp_result._Size);
             if (_Temp_result._Size < _Requested_size) {
-                return _Temp_result._Error;
+                _Ec = _Make_ec(_Temp_result._Error);
+                return _Result;
             }
         }
     }
 
-    _EXPORT_STD _NODISCARD inline path current_path(error_code& _Ec) {
-        _Ec.clear();
-        path _Result;
-        _Ec = _Make_ec(_Current_path(_Result));
-        return _Result;
-    }
-
     _EXPORT_STD _NODISCARD inline path current_path() {
-        path _Result;
-        const auto _Err = _Current_path(_Result);
-        if (_Err != __std_win_error::_Success) {
-            _Throw_fs_error("current_path()", _Err);
+        error_code _Ec;
+        path _Result(_STD filesystem::current_path(_Ec));
+        if (_Ec) {
+            _Throw_fs_error("current_path()", _Ec);
         }
         return _Result;
     }
