@@ -52,7 +52,7 @@ void test_exe_part2() {
     assert(!isspace(L'Z', locale()));
 }
 
-
+#ifndef _M_CEE_PURE
 locale make_unnamed_locale() {
     locale result{locale{"C"}, &use_facet<numpunct<char>>(locale{"C"})};
     assert(result.name() == "*");
@@ -167,13 +167,16 @@ void test_locale_name_with_another_locale_and_cats() {
         }
     }
 }
+#endif // _M_CEE_PURE
 
 int main() {
     test_exe_part1();
     test_dll();
     test_exe_part2();
 
+#ifndef _M_CEE_PURE
     // test coverage for LWG-2295
     test_locale_name_with_facet_pointer_all();
     test_locale_name_with_another_locale_and_cats();
+#endif // _M_CEE_PURE
 }
