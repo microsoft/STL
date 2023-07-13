@@ -200,7 +200,8 @@ tests\GH_002030_asan_annotate_vector
 tests\GH_002039_byte_is_not_trivially_swappable
 tests\GH_002045_put_time_changes_errno
 tests\GH_002058_debug_iterator_race
-tests\GH_002094_cpp_core_guidelines
+# Needs special machinery to work in the MSVC-internal test harness, not yet implemented:
+# tests\GH_002094_cpp_core_guidelines
 tests\GH_002120_streambuf_seekpos_and_seekoff
 tests\GH_002168_regex_overflow
 tests\GH_002206_unreserved_names
