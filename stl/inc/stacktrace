@@ -287,7 +287,7 @@ private:
     // __declspec(noinline) to make the same behavior for debug and release.
     // We force the current function to be always noinline and add its frame to skipped.
     _NODISCARD __declspec(noinline) static basic_stacktrace
-        _Current(size_type _Skip, const size_type _Max_depth, const allocator_type& _Al) noexcept {
+        _Current(unsigned long _Skip, const size_type _Max_depth, const allocator_type& _Al) noexcept {
         _Skip = _Adjust_skip(_Skip); // skip this frame
         _TRY_BEGIN
         basic_stacktrace _Result(_Al);
