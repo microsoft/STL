@@ -11,7 +11,7 @@ using namespace std;
 
 struct groups_of_1 : numpunct<char> {
     // The standard char specialization of std::numpunct::do_thousands_sep returns ','
-    string do_grouping() const {
+    string do_grouping() const override {
         return "\1";
     } // groups of 1 digit
 };
