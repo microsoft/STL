@@ -105,6 +105,7 @@ function(add_benchmark name)
     target_compile_definitions(benchmark-${name} PRIVATE BENCHMARK_STATIC_DEFINE)
 endfunction()
 
+add_benchmark(bitset_to_string src/bitset_to_string.cpp)
 add_benchmark(locale_classic src/locale_classic.cpp)
 add_benchmark(path_lexically_normal src/path_lexically_normal.cpp)
 add_benchmark(random_integer_generation src/random_integer_generation.cpp)
