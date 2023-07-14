@@ -774,24 +774,6 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL != 0
     }
 
-public:
-    template <bool _Force_pass = false>
-    _NODISCARD static _CONSTEXPR20 vector _Create_uninitialized(size_type _Size, const allocator_type& _Al) {
-        // Create a vector of size _Size without value initialization.
-        // Currently used by basic_stacktrace.
-        static_assert(_Force_pass || is_trivially_constructible_v<_Ty>, "_Ty must be trivially constructible");
-
-        vector _Vec(_Al);
-        if (_Is_constant_evaluated()) {
-            _Vec.resize(_Size);
-        } else {
-            const pointer _Newvec = _Vec._Getal().allocate(_Size);
-            _Vec._Change_array(_Newvec, _Size, _Size);
-        }
-
-        return _Vec;
-    }
-
 private:
     template <class... _Valty>
     _CONSTEXPR20 _Ty& _Emplace_one_at_back(_Valty&&... _Val) {
