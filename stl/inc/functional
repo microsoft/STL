@@ -1134,12 +1134,20 @@ public:
 
     template <class _Fx>
     _NODISCARD _Fx* target() noexcept {
-        return reinterpret_cast<_Fx*>(const_cast<void*>(this->_Target(typeid(_Fx))));
+        if constexpr (is_function_v<_Fx>) {
+            return nullptr;
+        } else {
+            return reinterpret_cast<_Fx*>(const_cast<void*>(this->_Target(typeid(_Fx))));
+        }
     }
 
     template <class _Fx>
     _NODISCARD const _Fx* target() const noexcept {
-        return reinterpret_cast<const _Fx*>(this->_Target(typeid(_Fx)));
+        if constexpr (is_function_v<_Fx>) {
+            return nullptr;
+        } else {
+            return reinterpret_cast<const _Fx*>(this->_Target(typeid(_Fx)));
+        }
     }
 #else // _HAS_STATIC_RTTI
     const type_info& target_type() const noexcept = delete; // requires static RTTI
