@@ -43,17 +43,14 @@ _STD_BEGIN
 #if defined(_M_X64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
     && !defined(__INTEL_COMPILER)
 #define _STL_128_INTRINSICS 1
-#ifdef __clang__
-#define _STL_128_ADD_SUB_INTRINSICS 0 // clang doesn't have _addcarry_u64 / _subborrow_u64
-#define _STL_128_DIV_INTRINSICS     0 // clang doesn't have _udiv128 / _div128
-#else // ^^^ Clang / other compilers vvv
-#define _STL_128_ADD_SUB_INTRINSICS 1
-#define _STL_128_DIV_INTRINSICS     1
-#endif // ^^^ other compilers ^^^
+#ifdef __clang__ // clang doesn't have _udiv128 / _div128
+#define _STL_128_DIV_INTRINSICS 0
+#else // ^^^ Clang / other vvv
+#define _STL_128_DIV_INTRINSICS 1
+#endif // ^^^ detect _udiv128 / _div128 ^^^
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
-#define _STL_128_INTRINSICS         0
-#define _STL_128_ADD_SUB_INTRINSICS 0
-#define _STL_128_DIV_INTRINSICS     0
+#define _STL_128_INTRINSICS     0
+#define _STL_128_DIV_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
 template <class _Ty>
@@ -132,11 +129,11 @@ struct
     static constexpr unsigned char _AddCarry64(
         unsigned char _Carry, uint64_t _Left, uint64_t _Right, uint64_t& _Result) noexcept {
         // _STL_INTERNAL_CHECK(_Carry < 2);
-#if _STL_128_ADD_SUB_INTRINSICS
+#if _STL_128_INTRINSICS
         if (!_Is_constant_evaluated()) {
             return _addcarry_u64(_Carry, _Left, _Right, &_Result);
         }
-#endif // _STL_128_ADD_SUB_INTRINSICS
+#endif // _STL_128_INTRINSICS
 
         const uint64_t _Sum = _Left + _Right + _Carry;
         _Result             = _Sum;
@@ -146,11 +143,11 @@ struct
     static constexpr unsigned char _SubBorrow64(
         unsigned char _Carry, uint64_t _Left, uint64_t _Right, uint64_t& _Result) noexcept {
         // _STL_INTERNAL_CHECK(_Carry < 2);
-#if _STL_128_ADD_SUB_INTRINSICS
+#if _STL_128_INTRINSICS
         if (!_Is_constant_evaluated()) {
             return _subborrow_u64(_Carry, _Left, _Right, &_Result);
         }
-#endif // _STL_128_ADD_SUB_INTRINSICS
+#endif // _STL_128_INTRINSICS
 
         const auto _Difference = _Left - _Right - _Carry;
         _Result                = _Difference;

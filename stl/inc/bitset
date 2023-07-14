@@ -22,12 +22,13 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 _EXPORT_STD template <size_t _Bits>
 class bitset { // store fixed-length sequence of Boolean elements
-public:
+private:
 #pragma warning(push)
 #pragma warning(disable : 4296) // expression is always true (/Wall)
     using _Ty = conditional_t<_Bits <= sizeof(unsigned long) * CHAR_BIT, unsigned long, unsigned long long>;
 #pragma warning(pop)
 
+public:
     class reference { // proxy for an element
         friend bitset;
 
@@ -68,7 +69,8 @@ public:
         size_t _Mypos; // position of element in bitset
     };
 
-    static _CONSTEXPR23 void _Validate(const size_t _Pos) noexcept { // verify that _Pos is within bounds
+private:
+    static constexpr void _Validate(const size_t _Pos) noexcept { // verify that _Pos is within bounds
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Pos;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
@@ -76,17 +78,17 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL == 0
     }
 
-    constexpr bool _Subscript(size_t _Pos) const {
+    constexpr bool _Subscript(size_t _Pos) const noexcept {
         return (_Array[_Pos / _Bitsperword] & (_Ty{1} << _Pos % _Bitsperword)) != 0;
     }
 
-    _NODISCARD constexpr bool operator[](size_t _Pos) const {
-#if _ITERATOR_DEBUG_LEVEL == 0
-        return _Subscript(_Pos);
+    static constexpr bool _Need_mask          = _Bits < CHAR_BIT * sizeof(unsigned long long);
+    static constexpr unsigned long long _Mask = (1ULL << (_Need_mask ? _Bits : 0)) - 1ULL;
 
-#else // _ITERATOR_DEBUG_LEVEL == 0
-        return _Bits <= _Pos ? (_Validate(_Pos), false) : _Subscript(_Pos);
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+public:
+    _NODISCARD constexpr bool operator[](size_t _Pos) const noexcept /* strengthened */ {
+        _Validate(_Pos);
+        return _Subscript(_Pos);
     }
 
     _NODISCARD _CONSTEXPR23 reference operator[](const size_t _Pos) noexcept /* strengthened */ {
@@ -96,12 +98,9 @@ public:
 
     constexpr bitset() noexcept : _Array() {} // construct with all false values
 
-    static constexpr bool _Need_mask = _Bits < CHAR_BIT * sizeof(unsigned long long);
-
-    static constexpr unsigned long long _Mask = (1ULL << (_Need_mask ? _Bits : 0)) - 1ULL;
-
     constexpr bitset(unsigned long long _Val) noexcept : _Array{static_cast<_Ty>(_Need_mask ? _Val & _Mask : _Val)} {}
 
+private:
     template <class _Traits, class _Elem>
     _CONSTEXPR23 void _Construct(const _Elem* const _Ptr, size_t _Count, const _Elem _Elem0, const _Elem _Elem1) {
         if (_Count > _Bits) {
@@ -147,6 +146,7 @@ public:
         }
     }
 
+public:
     template <class _Elem, class _Traits, class _Alloc>
     _CONSTEXPR23 explicit bitset(const basic_string<_Elem, _Traits, _Alloc>& _Str,
         typename basic_string<_Elem, _Traits, _Alloc>::size_type _Pos   = 0,
@@ -347,11 +347,11 @@ public:
     _NODISCARD _CONSTEXPR23 basic_string<_Elem, _Tr, _Alloc> to_string(
         const _Elem _Elem0 = static_cast<_Elem>('0'), const _Elem _Elem1 = static_cast<_Elem>('1')) const {
         // convert bitset to string
-        basic_string<_Elem, _Tr, _Alloc> _Str;
-        _Str.reserve(_Bits);
-
-        for (auto _Pos = _Bits; 0 < _Pos;) {
-            _Str.push_back(_Subscript(--_Pos) ? _Elem1 : _Elem0);
+        basic_string<_Elem, _Tr, _Alloc> _Str(_Bits, _Elem0);
+        for (size_t _Pos = 0; _Pos < _Bits; ++_Pos) {
+            if (_Subscript(_Bits - 1 - _Pos)) {
+                _Str[_Pos] = _Elem1;
+            }
         }
 
         return _Str;

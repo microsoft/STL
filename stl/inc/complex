@@ -1531,8 +1531,8 @@ _NODISCARD _Ty abs(const complex<_Ty>& _Left) {
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD complex<_Ty> acos(const complex<_Ty>& _Left) {
-    const _Ty _Arcbig = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(_Ctraits<_Ty>::_Flt_max());
-    constexpr _Ty _Pi = static_cast<_Ty>(3.1415926535897932384626433832795029L);
+    const _Ty _Arcbig     = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(_Ctraits<_Ty>::_Flt_max());
+    constexpr _Ty _Pi_val = static_cast<_Ty>(3.1415926535897932384626433832795029L);
 
     const _Ty _Re = real(_Left);
     const _Ty _Im = imag(_Left);
@@ -1545,18 +1545,18 @@ _NODISCARD complex<_Ty> acos(const complex<_Ty>& _Left) {
     } else if (_Ctraits<_Ty>::_Isinf(_Re)) { // (+/-Inf, not NaN)
         if (_Ctraits<_Ty>::_Isinf(_Im)) {
             if (_Re < 0) {
-                _Ux = static_cast<_Ty>(0.75) * _Pi; // (-Inf, +/-Inf)
+                _Ux = static_cast<_Ty>(0.75) * _Pi_val; // (-Inf, +/-Inf)
             } else {
-                _Ux = static_cast<_Ty>(0.25) * _Pi; // (+Inf, +/-Inf)
+                _Ux = static_cast<_Ty>(0.25) * _Pi_val; // (+Inf, +/-Inf)
             }
         } else if (_Re < 0) {
-            _Ux = _Pi; // (-Inf, finite)
+            _Ux = _Pi_val; // (-Inf, finite)
         } else {
             _Ux = 0; // (+Inf, finite)
         }
         _Vx = -_Ctraits<_Ty>::_Copysign(_Ctraits<_Ty>::_Infv(), _Im);
     } else if (_Ctraits<_Ty>::_Isinf(_Im)) { // (finite, finite)
-        _Ux = static_cast<_Ty>(0.50) * _Pi; // (finite, +/-Inf)
+        _Ux = static_cast<_Ty>(0.50) * _Pi_val; // (finite, +/-Inf)
         _Vx = -_Im;
     } else { // (finite, finite)
         const complex<_Ty> _Wx = sqrt(complex<_Ty>(1 + _Re, -_Im));
@@ -1598,8 +1598,8 @@ _NODISCARD complex<_Ty> acos(const complex<_Ty>& _Left) {
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
-    const _Ty _Arcbig = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(_Ctraits<_Ty>::_Flt_max());
-    constexpr _Ty _Pi = static_cast<_Ty>(3.1415926535897932384626433832795029L);
+    const _Ty _Arcbig     = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(_Ctraits<_Ty>::_Flt_max());
+    constexpr _Ty _Pi_val = static_cast<_Ty>(3.1415926535897932384626433832795029L);
 
     const _Ty _Re = real(_Left);
     _Ty _Im       = imag(_Left);
@@ -1614,12 +1614,12 @@ _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
 
         if (_Ctraits<_Ty>::_Isinf(_Im)) {
             if (_Re < 0) {
-                _Vx = static_cast<_Ty>(0.75) * _Pi; // (-Inf, +/-Inf)
+                _Vx = static_cast<_Ty>(0.75) * _Pi_val; // (-Inf, +/-Inf)
             } else {
-                _Vx = static_cast<_Ty>(0.25) * _Pi; // (+Inf, +/-Inf)
+                _Vx = static_cast<_Ty>(0.25) * _Pi_val; // (+Inf, +/-Inf)
             }
         } else if (_Re < 0) {
-            _Vx = _Pi; // (-Inf, finite)
+            _Vx = _Pi_val; // (-Inf, finite)
         } else {
             _Vx = 0; // (+Inf, finite)
         }
@@ -1627,7 +1627,7 @@ _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
         _Vx = _Ctraits<_Ty>::_Copysign(_Vx, _Im);
     } else if (_Ctraits<_Ty>::_Isinf(_Im)) { // (finite, +/-Inf)
         _Ux = _Ctraits<_Ty>::_Infv();
-        _Vx = _Ctraits<_Ty>::_Copysign(static_cast<_Ty>(0.50) * _Pi, _Im);
+        _Vx = _Ctraits<_Ty>::_Copysign(static_cast<_Ty>(0.50) * _Pi_val, _Im);
     } else { // (finite, finite)
         const complex<_Ty> _Wx = sqrt(complex<_Ty>(_Re - 1, -_Im));
         const complex<_Ty> _Zx = sqrt(complex<_Ty>(_Re + 1, _Im));
@@ -1668,8 +1668,8 @@ _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD complex<_Ty> asinh(const complex<_Ty>& _Left) {
-    const _Ty _Arcbig = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(_Ctraits<_Ty>::_Flt_max());
-    constexpr _Ty _Pi = static_cast<_Ty>(3.1415926535897932384626433832795029L);
+    const _Ty _Arcbig     = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(_Ctraits<_Ty>::_Flt_max());
+    constexpr _Ty _Pi_val = static_cast<_Ty>(3.1415926535897932384626433832795029L);
 
     const _Ty _Re = real(_Left);
     _Ty _Im       = imag(_Left);
@@ -1684,14 +1684,14 @@ _NODISCARD complex<_Ty> asinh(const complex<_Ty>& _Left) {
 
         if (_Ctraits<_Ty>::_Isinf(_Im)) { // (+/-Inf, +/-Inf)
             _Ux = _Re;
-            _Vx = _Ctraits<_Ty>::_Copysign(static_cast<_Ty>(0.25) * _Pi, _Im);
+            _Vx = _Ctraits<_Ty>::_Copysign(static_cast<_Ty>(0.25) * _Pi_val, _Im);
         } else { // (+/-Inf, finite)
             _Ux = _Re;
             _Vx = _Ctraits<_Ty>::_Copysign(_Ty{0}, _Im);
         }
     } else if (_Ctraits<_Ty>::_Isinf(_Im)) { // (finite, +/-Inf)
         _Ux = _Ctraits<_Ty>::_Copysign(_Ctraits<_Ty>::_Infv(), _Re);
-        _Vx = _Ctraits<_Ty>::_Copysign(static_cast<_Ty>(0.50) * _Pi, _Im);
+        _Vx = _Ctraits<_Ty>::_Copysign(static_cast<_Ty>(0.50) * _Pi_val, _Im);
     } else { // (finite, finite)
         const complex<_Ty> _Wx = sqrt(complex<_Ty>(1 - _Im, _Re));
         const complex<_Ty> _Zx = sqrt(complex<_Ty>(1 + _Im, -_Re));
@@ -2037,7 +2037,7 @@ _NODISCARD complex<_Ty> tanh(const complex<_Ty>& _Left) {
             _Real = _Ty{1};
         }
 
-        return complex<_Ty>(_Real, _Tv* _Ty{0});
+        return complex<_Ty>(_Real, _Tv * _Ty{0});
     }
 
     return complex<_Ty>((_Ctraits<_Ty>::sqrt(_Ty{1} + _Sv * _Sv)) * _Bv / _Dv, _Tv / _Dv);

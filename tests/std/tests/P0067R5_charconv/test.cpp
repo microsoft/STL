@@ -1170,9 +1170,6 @@ template pair<wchar_t*, errc> std::__to_chars(
     wchar_t* const, wchar_t* const, const __floating_decimal_64, chars_format, const double);
 template pair<wchar_t*, errc> std::__d2fixed_buffered_n(wchar_t*, wchar_t* const, const double, const uint32_t);
 
-#if defined(__clang__) && defined(_M_IX86) // TRANSITION, LLVM-62762, fixed in Clang 16.0.3
-int main() {}
-#else // ^^^ workaround / no workaround vvv
 int main(int argc, char** argv) {
     const auto start = chrono::steady_clock::now();
 
@@ -1201,4 +1198,3 @@ int main(int argc, char** argv) {
         puts("That was slow. Consider tuning PrefixesToTest and FractionBits to test fewer cases.");
     }
 }
-#endif // ^^^ no workaround ^^^

@@ -61,10 +61,10 @@ using _Enable_if_seed_seq_t =
                     && !is_same_v<remove_cv_t<_Seed_seq>, _Self> && !is_same_v<remove_cv_t<_Seed_seq>, _Engine>,
         int>;
 
-_INLINE_VAR constexpr long double _Pi    = 3.14159265358979323846264338327950288L;
-_INLINE_VAR constexpr long double _Exp1  = 2.71828182845904523536028747135266250L;
-_INLINE_VAR constexpr long double _Two32 = 4294967296.0L;
-_INLINE_VAR constexpr long double _Two31 = 2147483648.0L;
+_INLINE_VAR constexpr long double _Pi_val = 3.14159265358979323846264338327950288L;
+_INLINE_VAR constexpr long double _Exp1   = 2.71828182845904523536028747135266250L;
+_INLINE_VAR constexpr long double _Two32  = 4294967296.0L;
+_INLINE_VAR constexpr long double _Two31  = 2147483648.0L;
 
 extern "C++" _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _XLgamma(float);
 extern "C++" _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _XLgamma(double);
@@ -2466,7 +2466,7 @@ private:
             _Ty _Res;
             _Ty1 _Yx;
             for (;;) { // generate a tentative value
-                _Yx = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
+                _Yx = static_cast<_Ty1>(_CSTD tan(_Pi_val * _NRAND(_Eng, _Ty1)));
                 const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
                 if (0.0 <= _Mx && _Mx < _Ty1_max) {
                     _Res = static_cast<_Ty>(_Mx);
@@ -2661,7 +2661,7 @@ private:
             for (;;) { // generate and reject
                 _Ty1 _Yx;
                 for (;;) { // generate a tentative value
-                    _Yx = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
+                    _Yx = static_cast<_Ty1>(_CSTD tan(_Pi_val * _NRAND(_Eng, _Ty1)));
                     const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
                     if (0.0 <= _Mx && _Mx < _Ty1_Tx) {
                         _Res = static_cast<_Ty>(_Mx);
@@ -3317,7 +3317,7 @@ private:
 
         // no shortcuts
         for (;;) { // generate and reject
-            _Yx = static_cast<_Ty>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty)));
+            _Yx = static_cast<_Ty>(_CSTD tan(_Pi_val * _NRAND(_Eng, _Ty)));
             _Xx = _Par0._Sqrt * _Yx + _Par0._Alpha - 1;
             if (0 < _Xx
                 && _NRAND(_Eng, _Ty) <= (1 + _Yx * _Yx)
@@ -3949,7 +3949,7 @@ private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const { // generate pseudo-random value
         _Ty Px = _NRAND(_Eng, _Ty);
-        return static_cast<_Ty>(_Par0._Ax + _Par0._Bx * _CSTD tan(_Pi * (Px - static_cast<_Ty>(0.5))));
+        return static_cast<_Ty>(_Par0._Ax + _Par0._Bx * _CSTD tan(_Pi_val * (Px - static_cast<_Ty>(0.5))));
     }
 
     param_type _Par;

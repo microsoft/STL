@@ -653,38 +653,6 @@ public:
 
 extern "C++" [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xbad_function_call();
 
-struct _Unforced { // tag to distinguish bind() from bind<R>()
-    explicit _Unforced() = default;
-};
-
-// helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
-template <class _Rx>
-struct _Invoker_ret { // selected for all _Rx other than _Unforced
-    template <class _Fx, class... _Valtys,
-        enable_if_t<_Select_invoke_traits<_Fx, _Valtys...>::template _Is_invocable_r<_Rx>::value, int> = 0>
-    static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
-        _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted
-        if constexpr (is_void_v<_Rx>) {
-            _STL_INTERNAL_STATIC_ASSERT(
-                _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value
-                == _Select_invoke_traits<_Fx, _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value);
-            _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
-        } else {
-            return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
-        }
-    }
-};
-
-template <>
-struct _Invoker_ret<_Unforced> { // selected for _Rx being _Unforced
-    template <class _Fx, class... _Valtys>
-    static _CONSTEXPR20 auto _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(
-        _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value)
-        -> decltype(_STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
-        return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
-    }
-};
-
 _EXPORT_STD template <class _Fty>
 class function;
 
@@ -1134,12 +1102,20 @@ public:
 
     template <class _Fx>
     _NODISCARD _Fx* target() noexcept {
-        return reinterpret_cast<_Fx*>(const_cast<void*>(this->_Target(typeid(_Fx))));
+        if constexpr (is_function_v<_Fx>) {
+            return nullptr;
+        } else {
+            return reinterpret_cast<_Fx*>(const_cast<void*>(this->_Target(typeid(_Fx))));
+        }
     }
 
     template <class _Fx>
     _NODISCARD const _Fx* target() const noexcept {
-        return reinterpret_cast<const _Fx*>(this->_Target(typeid(_Fx)));
+        if constexpr (is_function_v<_Fx>) {
+            return nullptr;
+        } else {
+            return reinterpret_cast<const _Fx*>(this->_Target(typeid(_Fx)));
+        }
     }
 #else // _HAS_STATIC_RTTI
     const type_info& target_type() const noexcept = delete; // requires static RTTI
@@ -1984,6 +1960,38 @@ constexpr auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut) noexcept(
     return _Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut));
 }
 
+struct _Unforced { // tag to distinguish bind() from bind<R>()
+    explicit _Unforced() = default;
+};
+
+// helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
+template <class _Rx>
+struct _Invoker_ret { // selected for all _Rx other than _Unforced
+    template <class _Fx, class... _Valtys,
+        enable_if_t<_Select_invoke_traits<_Fx, _Valtys...>::template _Is_invocable_r<_Rx>::value, int> = 0>
+    static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
+        _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted
+        if constexpr (is_void_v<_Rx>) {
+            _STL_INTERNAL_STATIC_ASSERT(
+                _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value
+                == _Select_invoke_traits<_Fx, _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value);
+            _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+        } else {
+            return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+        }
+    }
+};
+
+template <>
+struct _Invoker_ret<_Unforced> { // selected for _Rx being _Unforced
+    template <class _Fx, class... _Valtys>
+    static _CONSTEXPR20 auto _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(
+        _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value)
+        -> decltype(_STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
+        return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+    }
+};
+
 template <class _Ret, size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class _Untuple>
 _CONSTEXPR20 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl,
     _Untuple&& _Ut) noexcept(noexcept(_Invoker_ret<_Ret>::_Call(_Obj,
@@ -1992,6 +2000,21 @@ _CONSTEXPR20 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_F
     // bind() and bind<R>() invocation
     return _Invoker_ret<_Ret>::_Call(_Obj, _STD _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...);
 }
+
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <class _Ret, class _CvFD, class _IntSeq, class _CvBoundTuple, class _UnboundTuple>
+concept _Can_call_binder = requires(_CvFD& _Fx, _CvBoundTuple& _Bound_tuple, _UnboundTuple&& _Unbound_tuple) {
+    _STD _Call_binder(_Invoker_ret<_Ret>{}, _IntSeq{}, _Fx, _Bound_tuple, _STD move(_Unbound_tuple));
+};
+#else // ^^^ concept available / concept unavailable vvv
+template <class _Ret, class _CvFD, class _IntSeq, class _CvBoundTuple, class _UnboundTuple, class = void>
+_INLINE_VAR constexpr bool _Can_call_binder = false;
+
+template <class _Ret, class _CvFD, class _IntSeq, class _CvBoundTuple, class _UnboundTuple>
+_INLINE_VAR constexpr bool _Can_call_binder<_Ret, _CvFD, _IntSeq, _CvBoundTuple, _UnboundTuple,
+    void_t<decltype(_STD _Call_binder(_Invoker_ret<_Ret>{}, _IntSeq{}, _STD declval<_CvFD&>(),
+        _STD declval<_CvBoundTuple&>(), _STD declval<_UnboundTuple>()))>> = true;
+#endif // ^^^ concept unavailable ^^^
 
 template <class _Ret>
 struct _Forced_result_type { // used by bind<R>()
@@ -2011,31 +2034,59 @@ struct _Binder_result_type { // provide result_type (sometimes)
 template <class _Ret, class _Fx, class... _Types>
 class _Binder : public _Binder_result_type<_Ret, _Fx>::type { // wrap bound callable object and arguments
 private:
-    using _Seq    = index_sequence_for<_Types...>;
-    using _First  = decay_t<_Fx>;
-    using _Second = tuple<decay_t<_Types>...>;
+    using _Seq         = index_sequence_for<_Types...>;
+    using _Fd          = decay_t<_Fx>;
+    using _Bound_tuple = tuple<decay_t<_Types>...>;
 
-    _Compressed_pair<_First, _Second> _Mypair;
+    _Compressed_pair<_Fd, _Bound_tuple> _Mypair;
 
 public:
     constexpr explicit _Binder(_Fx&& _Func, _Types&&... _Args)
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...) {}
 
-#define _CALL_BINDER                                                                  \
-    _Call_binder(_Invoker_ret<_Ret>{}, _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, \
+#define _CALL_BINDER                                                                       \
+    _STD _Call_binder(_Invoker_ret<_Ret>{}, _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, \
         _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))
 
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <class... _Unbound>
-    _CONSTEXPR20 auto operator()(_Unbound&&... _Unbargs) noexcept(noexcept(_CALL_BINDER)) -> decltype(_CALL_BINDER) {
+        requires _Can_call_binder<_Ret, _Fd, _Seq, _Bound_tuple, tuple<_Unbound&&...>>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) noexcept(noexcept(_CALL_BINDER)) {
         return _CALL_BINDER;
     }
 
     template <class... _Unbound>
-    _CONSTEXPR20 auto operator()(_Unbound&&... _Unbargs) const noexcept(noexcept(_CALL_BINDER))
-        -> decltype(_CALL_BINDER) {
+    void operator()(_Unbound&&...) = delete;
+
+    template <class... _Unbound>
+        requires _Can_call_binder<_Ret, const _Fd, _Seq, const _Bound_tuple, tuple<_Unbound&&...>>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const noexcept(noexcept(_CALL_BINDER)) {
         return _CALL_BINDER;
     }
 
+    template <class... _Unbound>
+    void operator()(_Unbound&&...) const = delete;
+#else // ^^^ requires available / requires unavailable vvv
+    template <class... _Unbound,
+        enable_if_t<_Can_call_binder<_Ret, _Fd, _Seq, _Bound_tuple, tuple<_Unbound&&...>>, int> = 0>
+    _CONSTEXPR20 decltype(auto) operator()(_Unbound&&... _Unbargs) noexcept(noexcept(_CALL_BINDER)) {
+        return _CALL_BINDER;
+    }
+
+    template <class... _Unbound,
+        enable_if_t<!_Can_call_binder<_Ret, _Fd, _Seq, _Bound_tuple, tuple<_Unbound&&...>>, int> = 0>
+    void operator()(_Unbound&&...) = delete;
+
+    template <class... _Unbound,
+        enable_if_t<_Can_call_binder<_Ret, const _Fd, _Seq, const _Bound_tuple, tuple<_Unbound&&...>>, int> = 0>
+    _CONSTEXPR20 decltype(auto) operator()(_Unbound&&... _Unbargs) const noexcept(noexcept(_CALL_BINDER)) {
+        return _CALL_BINDER;
+    }
+
+    template <class... _Unbound,
+        enable_if_t<!_Can_call_binder<_Ret, const _Fd, _Seq, const _Bound_tuple, tuple<_Unbound&&...>>, int> = 0>
+    void operator()(_Unbound&&...) const = delete;
+#endif // ^^^ requires unavailable ^^^
 #undef _CALL_BINDER
 };
 
@@ -2083,6 +2134,27 @@ constexpr auto _Call_front_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tup
         _STD forward<_Unbound>(_Unbargs)...);
 }
 
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+template <class _IntSeq, class _CvFD, class _CvBoundTuple, class... _Unbound>
+concept _Can_call_front_binder = requires(_CvFD&& _Fx, _CvBoundTuple&& _Bound_tuple, _Unbound&&... _Unbound_args) {
+    _STD _Call_front_binder(_IntSeq{}, _STD forward<_CvFD>(_Fx), _STD forward<_CvBoundTuple>(_Bound_tuple),
+        _STD forward<_Unbound>(_Unbound_args)...);
+};
+#else // ^^^ concept available / concept unavailable vvv
+template <class, class _IntSeq, class _CvFD, class _CvBoundTuple, class... _Unbound>
+inline constexpr bool _Can_call_front_binder_impl = false;
+
+template <class _IntSeq, class _CvFD, class _CvBoundTuple, class... _Unbound>
+inline constexpr bool
+    _Can_call_front_binder_impl<void_t<decltype(_STD _Call_front_binder(_IntSeq{}, _STD declval<_CvFD>(),
+                                    _STD declval<_CvBoundTuple>(), _STD declval<_Unbound>()...))>,
+        _IntSeq, _CvFD, _CvBoundTuple, _Unbound...> = true;
+
+template <class _IntSeq, class _CvFD, class _CvBoundTuple, class... _Unbound>
+inline constexpr bool _Can_call_front_binder =
+    _Can_call_front_binder_impl<void, _IntSeq, _CvFD, _CvBoundTuple, _Unbound...>;
+#endif // ^^^ concept unavailable ^^^
+
 template <class _Fx, class... _Types>
 class _Front_binder { // wrap bound callable object and arguments
 private:
@@ -2099,39 +2171,98 @@ public:
     constexpr explicit _Front_binder(_FxInit&& _Func, _TypesInit&&... _Args)
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_FxInit>(_Func), _STD forward<_TypesInit>(_Args)...) {}
 
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
     template <class... _Unbound>
-    constexpr auto operator()(_Unbound&&... _Unbargs) & noexcept(noexcept(
-        _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
-        -> decltype(_Call_front_binder(
-            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
-        return _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
+        requires _Can_call_front_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound...>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) & noexcept(noexcept(
+        _STD _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_front_binder(
+            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
     }
 
     template <class... _Unbound>
-    constexpr auto operator()(_Unbound&&... _Unbargs) const& noexcept(noexcept(
-        _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
-        -> decltype(_Call_front_binder(
-            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
-        return _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
+    void operator()(_Unbound&&...) & = delete;
+
+    template <class... _Unbound>
+        requires _Can_call_front_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound...>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const& noexcept(noexcept(
+        _STD _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_front_binder(
+            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
     }
 
     template <class... _Unbound>
-    constexpr auto operator()(_Unbound&&... _Unbargs) && noexcept(noexcept(_Call_front_binder(
-        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)))
-        -> decltype(_Call_front_binder(
-            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)) {
-        return _Call_front_binder(
+    void operator()(_Unbound&&...) const& = delete;
+
+    template <class... _Unbound>
+        requires _Can_call_front_binder<_Seq, _Fx, tuple<_Types...>, _Unbound...>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) && noexcept(noexcept(_STD _Call_front_binder(
+        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_front_binder(
             _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
     }
 
     template <class... _Unbound>
-    constexpr auto operator()(_Unbound&&... _Unbargs) const&& noexcept(noexcept(_Call_front_binder(
-        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)))
-        -> decltype(_Call_front_binder(
-            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)) {
-        return _Call_front_binder(
+    void operator()(_Unbound&&...) && = delete;
+
+    template <class... _Unbound>
+        requires _Can_call_front_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound...>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const&& noexcept(noexcept(_STD _Call_front_binder(
+        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_front_binder(
             _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
     }
+
+    template <class... _Unbound>
+    void operator()(_Unbound&&...) const&& = delete;
+#else // ^^^ requires available / requires unavailable vvv
+    template <class... _Unbound,
+        enable_if_t<_Can_call_front_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound...>, int> = 0>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) & noexcept(noexcept(
+        _STD _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_front_binder(
+            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
+    }
+
+    template <class... _Unbound,
+        enable_if_t<!_Can_call_front_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound...>, int> = 0>
+    void operator()(_Unbound&&...) & = delete;
+
+    template <class... _Unbound,
+        enable_if_t<_Can_call_front_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound...>, int> = 0>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const& noexcept(noexcept(
+        _STD _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_front_binder(
+            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
+    }
+
+    template <class... _Unbound,
+        enable_if_t<!_Can_call_front_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound...>, int> = 0>
+    void operator()(_Unbound&&...) const& = delete;
+
+    template <class... _Unbound, enable_if_t<_Can_call_front_binder<_Seq, _Fx, tuple<_Types...>, _Unbound...>, int> = 0>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) && noexcept(noexcept(_STD _Call_front_binder(
+        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_front_binder(
+            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
+    }
+
+    template <class... _Unbound,
+        enable_if_t<!_Can_call_front_binder<_Seq, _Fx, tuple<_Types...>, _Unbound...>, int> = 0>
+    void operator()(_Unbound&&...) && = delete;
+
+    template <class... _Unbound,
+        enable_if_t<_Can_call_front_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound...>, int> = 0>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const&& noexcept(noexcept(_STD _Call_front_binder(
+        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_front_binder(
+            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
+    }
+
+    template <class... _Unbound,
+        enable_if_t<!_Can_call_front_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound...>, int> = 0>
+    void operator()(_Unbound&&...) const&& = delete;
+#endif // ^^^ requires unavailable ^^^
 };
 
 _EXPORT_STD template <class _Fx, class... _Types>
@@ -2160,6 +2291,27 @@ constexpr auto _Call_back_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tupl
         _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...);
 }
 
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+template <class _IntSeq, class _CvFD, class _CvBoundTuple, class... _Unbound>
+concept _Can_call_back_binder = requires(_CvFD&& _Fx, _CvBoundTuple&& _Bound_tuple, _Unbound&&... _Unbound_args) {
+    _STD _Call_back_binder(_IntSeq{}, _STD forward<_CvFD>(_Fx), _STD forward<_CvBoundTuple>(_Bound_tuple),
+        _STD forward<_Unbound>(_Unbound_args)...);
+};
+#else // ^^^ concept available / concept unavailable vvv
+template <class, class _IntSeq, class _CvFD, class _CvBoundTuple, class... _Unbound>
+inline constexpr bool _Can_call_back_binder_impl = false;
+
+template <class _IntSeq, class _CvFD, class _CvBoundTuple, class... _Unbound>
+inline constexpr bool
+    _Can_call_back_binder_impl<void_t<decltype(_STD _Call_back_binder(_IntSeq{}, _STD declval<_CvFD>(),
+                                   _STD declval<_CvBoundTuple>(), _STD declval<_Unbound>()...))>,
+        _IntSeq, _CvFD, _CvBoundTuple, _Unbound...> = true;
+
+template <class _IntSeq, class _CvFD, class _CvBoundTuple, class... _Unbound>
+inline constexpr bool _Can_call_back_binder =
+    _Can_call_back_binder_impl<void, _IntSeq, _CvFD, _CvBoundTuple, _Unbound...>;
+#endif // ^^^ concept unavailable ^^^
+
 template <class _Fx, class... _Types>
 class _Back_binder { // wrap bound callable object and arguments
 private:
@@ -2176,39 +2328,97 @@ public:
     constexpr explicit _Back_binder(_FxInit&& _Func, _TypesInit&&... _Args)
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_FxInit>(_Func), _STD forward<_TypesInit>(_Args)...) {}
 
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
     template <class... _Unbound>
-    constexpr auto operator()(_Unbound&&... _Unbargs) & noexcept(
-        noexcept(_Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
-        -> decltype(_Call_back_binder(
-            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
-        return _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
+        requires _Can_call_back_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound...>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) & noexcept(noexcept(
+        _STD _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_back_binder(
+            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
     }
 
     template <class... _Unbound>
-    constexpr auto operator()(_Unbound&&... _Unbargs) const& noexcept(
-        noexcept(_Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
-        -> decltype(_Call_back_binder(
-            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
-        return _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
+    void operator()(_Unbound&&...) & = delete;
+
+    template <class... _Unbound>
+        requires _Can_call_back_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound...>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const& noexcept(noexcept(
+        _STD _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_back_binder(
+            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
     }
 
     template <class... _Unbound>
-    constexpr auto operator()(_Unbound&&... _Unbargs) && noexcept(noexcept(_Call_back_binder(
-        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)))
-        -> decltype(_Call_back_binder(
-            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)) {
-        return _Call_back_binder(
+    void operator()(_Unbound&&...) const& = delete;
+
+    template <class... _Unbound>
+        requires _Can_call_back_binder<_Seq, _Fx, tuple<_Types...>, _Unbound...>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) && noexcept(noexcept(_STD _Call_back_binder(
+        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_back_binder(
             _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
     }
 
     template <class... _Unbound>
-    constexpr auto operator()(_Unbound&&... _Unbargs) const&& noexcept(noexcept(_Call_back_binder(
-        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)))
-        -> decltype(_Call_back_binder(
-            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)) {
-        return _Call_back_binder(
+    void operator()(_Unbound&&...) && = delete;
+
+    template <class... _Unbound>
+        requires _Can_call_back_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound...>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const&& noexcept(noexcept(_STD _Call_back_binder(
+        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_back_binder(
             _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
     }
+
+    template <class... _Unbound>
+    void operator()(_Unbound&&...) const&& = delete;
+#else // ^^^ requires available / requires unavailable vvv
+    template <class... _Unbound,
+        enable_if_t<_Can_call_back_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound...>, int> = 0>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) & noexcept(noexcept(
+        _STD _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_back_binder(
+            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
+    }
+
+    template <class... _Unbound,
+        enable_if_t<!_Can_call_back_binder<_Seq, _Fx&, tuple<_Types...>&, _Unbound...>, int> = 0>
+    void operator()(_Unbound&&...) & = delete;
+
+    template <class... _Unbound,
+        enable_if_t<_Can_call_back_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound...>, int> = 0>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const& noexcept(noexcept(
+        _STD _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_back_binder(
+            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
+    }
+
+    template <class... _Unbound,
+        enable_if_t<!_Can_call_back_binder<_Seq, const _Fx&, const tuple<_Types...>&, _Unbound...>, int> = 0>
+    void operator()(_Unbound&&...) const& = delete;
+
+    template <class... _Unbound, enable_if_t<_Can_call_back_binder<_Seq, _Fx, tuple<_Types...>, _Unbound...>, int> = 0>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) && noexcept(noexcept(_STD _Call_back_binder(
+        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_back_binder(
+            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
+    }
+
+    template <class... _Unbound, enable_if_t<!_Can_call_back_binder<_Seq, _Fx, tuple<_Types...>, _Unbound...>, int> = 0>
+    void operator()(_Unbound&&...) && = delete;
+
+    template <class... _Unbound,
+        enable_if_t<_Can_call_back_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound...>, int> = 0>
+    constexpr decltype(auto) operator()(_Unbound&&... _Unbargs) const&& noexcept(noexcept(_STD _Call_back_binder(
+        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...))) {
+        return _STD _Call_back_binder(
+            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
+    }
+
+    template <class... _Unbound,
+        enable_if_t<!_Can_call_back_binder<_Seq, const _Fx, const tuple<_Types...>, _Unbound...>, int> = 0>
+    void operator()(_Unbound&&...) const&& = delete;
+#endif // ^^^ requires unavailable ^^^
 };
 
 _EXPORT_STD template <class _Fx, class... _Types>
