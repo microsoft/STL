@@ -281,8 +281,8 @@ private:
 
     // <NOTICE> ?_Try_frames may be subject to further decreasements?
 
-    static constexpr size_t _Try_frames = 128; // Sufficient in most cases.
-    static constexpr size_t _Max_frames = 0xFFFF;
+    static constexpr size_type _Try_frames = 128; // Sufficient in most cases.
+    static constexpr size_type _Max_frames = 0xFFFF;
 
     // __declspec(noinline) to make the same behavior for debug and release.
     // We force the current function to be always noinline and add its frame to skipped.
@@ -293,28 +293,26 @@ private:
         basic_stacktrace _Result(_Al);
 
         stacktrace_entry _Buffer[_Try_frames];
-        const unsigned short _Maybe_actual_size =
+        unsigned short _Caught =
             __std_stacktrace_capture(_Skip, static_cast<unsigned long>((_STD min)(_Max_depth, _Try_frames)),
                 reinterpret_cast<void**>(_Buffer), &_Result._Hash);
-        if (_Maybe_actual_size != _Try_frames) {
-            // Luckily, it's actual size
-            _Result._Frames.assign(_Buffer, _Buffer + _Maybe_actual_size);
+        if (_Caught != _Try_frames) { // actual size
+            _Result._Frames.assign(_Buffer, _Buffer + _Caught);
             return _Result;
         }
 
-        // <NOTICE> The cost introduced the first try is compensable from uninitialized resize.
-        // <NOTICE> ?is `auto` type safe here?
+        // <NOTICE> The cost introduced by the first try should be compensable from uninitialized resize.
         // <NOTICE> No need to do _Tidy; ?add _STL_ASSERT for emptiness?
 
-        auto _Enough_capacity = (_STD min)(_Max_depth, _Max_frames);
+        size_type _Enough_capacity = (_STD min)(_Max_depth, _Max_frames);
         // resize(_Enough_capacity), but without value initialization
         // static_assert(is_implicit_lifetime_v<stacktrace_entry>); TRANSITION, not implemented
         const auto _Newvec = _Result._Frames._Getal().allocate(_Enough_capacity);
         _Result._Frames._Change_array(_Newvec, _Enough_capacity, _Enough_capacity);
 
-        const unsigned short _Actual_size = __std_stacktrace_capture(
+        _Caught = __std_stacktrace_capture(
             _Skip, static_cast<unsigned long>(_Enough_capacity), _Result._To_voidptr_array(), &_Result._Hash);
-        _Result._Frames.resize(_Actual_size);
+        _Result._Frames.resize(_Caught);
         return _Result;
 
         _CATCH_ALL
