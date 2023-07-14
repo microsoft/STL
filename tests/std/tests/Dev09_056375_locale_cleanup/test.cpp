@@ -16,6 +16,33 @@ using namespace std;
 STATIC_ASSERT(noexcept(locale{} == locale{})); // strengthened
 STATIC_ASSERT(noexcept(locale{} != locale{})); // strengthened
 
+STATIC_ASSERT(is_nothrow_default_constructible_v<ctype_base>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<codecvt_base>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<time_base>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<money_base>); // strengthened
+STATIC_ASSERT(is_nothrow_default_constructible_v<messages_base>); // strengthened
+
+// Test that *_base classes are implicitly default constructible.
+
+template <class T>
+void parameter_taker(const T&); // not defined
+
+template <class T, class = void>
+constexpr bool is_implicitly_default_constructible = false;
+
+template <class T>
+constexpr bool is_implicitly_default_constructible<T, void_t<decltype(parameter_taker<T>({}))>> = true;
+
+STATIC_ASSERT(is_implicitly_default_constructible<ctype_base>);
+STATIC_ASSERT(is_implicitly_default_constructible<codecvt_base>);
+STATIC_ASSERT(is_implicitly_default_constructible<time_base>);
+STATIC_ASSERT(is_implicitly_default_constructible<money_base>);
+STATIC_ASSERT(is_implicitly_default_constructible<messages_base>);
+
+STATIC_ASSERT(!is_implicitly_default_constructible<locale::facet>);
+STATIC_ASSERT(!is_implicitly_default_constructible<ctype<char>>);
+STATIC_ASSERT(!is_implicitly_default_constructible<ctype<wchar_t>>);
+
 void test_dll() {
     puts("Calling dll");
 #ifdef _M_CEE
