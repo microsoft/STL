@@ -200,6 +200,8 @@ tests\GH_002030_asan_annotate_vector
 tests\GH_002039_byte_is_not_trivially_swappable
 tests\GH_002045_put_time_changes_errno
 tests\GH_002058_debug_iterator_race
+# Needs special machinery to work in the MSVC-internal test harness, not yet implemented:
+# tests\GH_002094_cpp_core_guidelines
 tests\GH_002120_streambuf_seekpos_and_seekoff
 tests\GH_002168_regex_overflow
 tests\GH_002206_unreserved_names
@@ -218,6 +220,7 @@ tests\GH_002769_handle_deque_block_pointers
 tests\GH_002789_Hash_vec_Tidy
 tests\GH_002989_nothrow_unwrappable
 tests\GH_002992_unwrappable_iter_sent_pairs
+tests\GH_003003_format_decimal_point
 tests\GH_003022_substr_allocator
 tests\GH_003105_piecewise_densities
 tests\GH_003119_error_category_ctor
@@ -226,6 +229,8 @@ tests\GH_003570_allocate_at_least
 tests\GH_003617_vectorized_meow_element
 tests\GH_003676_format_large_hh_mm_ss_values
 tests\GH_003735_char_traits_signatures
+tests\GH_003840_tellg_when_reading_lf_file_in_text_mode
+tests\GH_003867_output_nan
 tests\LWG2381_num_get_floating_point
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
@@ -591,6 +596,7 @@ tests\P2322R6_ranges_alg_fold
 tests\P2374R4_checked_arithmetic_operations
 tests\P2374R4_views_cartesian_product
 tests\P2374R4_views_cartesian_product_death
+tests\P2374R4_views_cartesian_product_recommended_practices
 tests\P2387R3_bind_back
 tests\P2387R3_pipe_support_for_user_defined_range_adaptors
 tests\P2401R0_conditional_noexcept_for_exchange
@@ -618,6 +624,7 @@ tests\P2474R2_views_repeat_death
 tests\P2494R2_move_only_range_adaptors
 tests\P2505R5_monadic_functions_for_std_expected
 tests\P2517R1_apply_conditional_noexcept
+tests\P2538R1_adl_proof_std_projected
 tests\P2609R3_relaxing_ranges_just_a_smidge
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions

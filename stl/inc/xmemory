@@ -2174,16 +2174,34 @@ _NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _R
     }
 }
 
+#if _HAS_CXX23
+template <class _Ty, class = void>
+inline constexpr bool _Has_member_from_primary = false;
+template <class _Ty>
+inline constexpr bool _Has_member_from_primary<_Ty, void_t<typename _Ty::_From_primary>> = true;
+
+// Avoid using allocate_at_least when the allocator publicly derives from std::allocator:
+// "old" allocators might hide allocate and deallocate but fail to hide allocate_at_least.
+// Also avoid using allocate_at_least from std::allocator itself because it currently doesn't do anything useful.
+template <class _Alloc>
+inline constexpr bool _Should_allocate_at_least =
+    !_Has_member_from_primary<_Alloc>
+    && _Has_member_allocate_at_least<_Alloc, typename allocator_traits<_Alloc>::size_type>;
+#endif // _HAS_CXX23
+
 template <class _Alloc>
 _NODISCARD_RAW_PTR_ALLOC _CONSTEXPR20 typename allocator_traits<_Alloc>::pointer _Allocate_at_least_helper(
     _Alloc& _Al, _CRT_GUARDOVERFLOW typename allocator_traits<_Alloc>::size_type& _Count) {
 #if _HAS_CXX23
-    auto [_Ptr, _Allocated] = allocator_traits<_Alloc>::allocate_at_least(_Al, _Count);
-    _Count                  = _Allocated;
-    return _Ptr;
-#else // _HAS_CXX23
-    return _Al.allocate(_Count);
+    if constexpr (_Should_allocate_at_least<_Alloc>) {
+        auto [_Ptr, _Allocated] = _Al.allocate_at_least(_Count);
+        _Count                  = _Allocated;
+        return _Ptr;
+    } else
 #endif // _HAS_CXX23
+    {
+        return _Al.allocate(_Count);
+    }
 }
 
 _EXPORT_STD template <class _FwdIt, class _Ty>

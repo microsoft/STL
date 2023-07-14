@@ -14,10 +14,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#if _HAS_CXX23
-#include <limits>
-#endif // _HAS_CXX23
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -868,22 +864,40 @@ _EXPORT_STD template <class _Fn, class... _Its>
     requires (indirectly_readable<_Its> && ...) && invocable<_Fn, iter_reference_t<_Its>...>
 using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Its>...>;
 
-_EXPORT_STD template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
-struct projected {
-    using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
-    indirect_result_t<_Proj&, _It> operator*() const {
-        _CSTD abort();
-    }
+template <class _It>
+struct _Projected_difference_type_impl {
+    struct _Base {};
+};
+
+template <weakly_incrementable _It>
+struct _Projected_difference_type_impl<_It> {
+    struct _Base {
+        using difference_type = iter_difference_t<_It>;
+    };
 };
 
 template <class _It, class _Proj>
-struct _Indirect_value_impl<projected<_It, _Proj>> {
-    using type = invoke_result_t<_Proj&, _Indirect_value_t<_It>>;
+struct _Projected_impl {
+    struct _Type : _Projected_difference_type_impl<_It>::_Base {
+        using _Iterator   = _It;
+        using _Projection = _Proj;
+
+        using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
+        indirect_result_t<_Proj&, _It> operator*() const {
+            _CSTD abort();
+        }
+    };
 };
 
-template <weakly_incrementable _It, class _Proj>
-struct incrementable_traits<projected<_It, _Proj>> {
-    using difference_type = iter_difference_t<_It>;
+_EXPORT_STD template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
+using projected = _Projected_impl<_It, _Proj>::_Type;
+
+template <class _Ty>
+concept _Projected_specialization = same_as<_Ty, projected<typename _Ty::_Iterator, typename _Ty::_Projection>>;
+
+template <_Projected_specialization _ProjTy>
+struct _Indirect_value_impl<_ProjTy> {
+    using type = invoke_result_t<typename _ProjTy::_Projection&, _Indirect_value_t<typename _ProjTy::_Iterator>>;
 };
 
 _EXPORT_STD template <class _In, class _Out>
@@ -7179,7 +7193,9 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 #endif // __clang__
     {
         if constexpr (!_Signed_integer_like<_Int>) {
-            const bool _Overflow = _Left != 0 && _Right > (numeric_limits<_Int>::max)() / _Left;
+            // use instead of numeric_limits::max; avoid <limits> dependency
+            constexpr auto _UInt_max = static_cast<_Int>(-1);
+            const bool _Overflow     = _Left != 0 && _Right > _UInt_max / _Left;
             if (!_Overflow) {
                 _Out = static_cast<_Int>(_Left * _Right);
             }
@@ -7207,10 +7223,12 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
                 return false;
             }
 
+            // use instead of numeric_limits::max; avoid <limits> dependency
+            constexpr auto _Int_max = static_cast<_UInt>(static_cast<_UInt>(-1) / 2);
             if (_Negative) {
-                return _ULeft > (static_cast<_UInt>((numeric_limits<_Int>::max)()) + _UInt{1}) / _URight;
+                return _ULeft > (_Int_max + _UInt{1}) / _URight;
             } else {
-                return _ULeft > static_cast<_UInt>((numeric_limits<_Int>::max)()) / _URight;
+                return _ULeft > _Int_max / _URight;
             }
             // ^^^ Based on llvm::MulOverflow ^^^
         }

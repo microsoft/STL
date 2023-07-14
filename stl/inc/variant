@@ -1110,11 +1110,7 @@ public:
                         [this, &_That, _My_ref](auto _That_ref) noexcept(
                             conjunction_v<is_nothrow_move_constructible<_Types>..., is_nothrow_swappable<_Types>...>) {
                             constexpr size_t _That_idx = decltype(_That_ref)::_Idx;
-#ifdef __EDG__ // TRANSITION, VSO-657455
-                            constexpr size_t _My_idx   = decltype(_My_ref)::_Idx + 0 * _That_idx;
-#else // ^^^ workaround / no workaround vvv
-                            constexpr size_t _My_idx = decltype(_My_ref)::_Idx;
-#endif // TRANSITION, VSO-657455
+                            constexpr size_t _My_idx   = decltype(_My_ref)::_Idx;
                             if constexpr (_My_idx == _That_idx) { // Same alternatives...
                                 if constexpr (_My_idx != variant_npos) { // ...and not valueless, swap directly
                                     using _STD swap;
@@ -1127,12 +1123,7 @@ public:
                                 _That._Emplace_valueless<_My_idx>(_STD move(_My_ref._Val));
                                 this->template _Reset<_My_idx>();
                             } else { // different non-valueless alternatives
-#ifdef __EDG__ // TRANSITION, VSO-657455
-                                using _Workaround = enable_if_t<_That_idx != variant_npos, decltype(_My_ref._Val)>;
-                                auto _Tmp         = _STD move(static_cast<_Workaround>(_My_ref._Val));
-#else // ^^^ workaround / no workaround vvv
                                 auto _Tmp = _STD move(_My_ref._Val);
-#endif // TRANSITION, VSO-657455
                                 this->template _Reset<_My_idx>();
                                 this->_Emplace_valueless<_That_idx>(_STD move(_That_ref._Val));
                                 _That.template _Reset<_That_idx>();

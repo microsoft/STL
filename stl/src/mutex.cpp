@@ -13,7 +13,7 @@
 
 #include "primitives.hpp"
 
-extern "C" _CRTIMP2_PURE void _Thrd_abort(const char* msg) { // abort on precondition failure
+extern "C" [[noreturn]] _CRTIMP2_PURE void _Thrd_abort(const char* msg) { // abort on precondition failure
     fputs(msg, stderr);
     fputc('\n', stderr);
     abort();
@@ -43,8 +43,8 @@ struct _Mtx_internal_imp_t { // ConcRT mutex
         Concurrency::details::stl_critical_section_max_alignment>::type cs;
     long thread_id;
     int count;
-    Concurrency::details::stl_critical_section_interface* _get_cs() { // get pointer to implementation
-        return reinterpret_cast<Concurrency::details::stl_critical_section_interface*>(&cs);
+    [[nodiscard]] Concurrency::details::stl_critical_section_win7* _get_cs() { // get pointer to implementation
+        return reinterpret_cast<Concurrency::details::stl_critical_section_win7*>(&cs);
     }
 };
 
@@ -65,7 +65,7 @@ void _Mtx_init_in_situ(_Mtx_t mtx, int type) { // initialize mutex in situ
 
 void _Mtx_destroy_in_situ(_Mtx_t mtx) { // destroy mutex in situ
     _THREAD_ASSERT(mtx->count == 0, "mutex destroyed while busy");
-    mtx->_get_cs()->destroy();
+    (void) mtx;
 }
 
 int _Mtx_init(_Mtx_t* mtx, int type) { // initialize mutex
@@ -126,7 +126,7 @@ static int mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock mutex
             while (now.tv_sec < target->tv_sec || now.tv_sec == target->tv_sec && now.tv_nsec < target->tv_nsec) {
                 // time has not expired
                 if (mtx->thread_id == static_cast<long>(GetCurrentThreadId())
-                    || mtx->_get_cs()->try_lock_for(_Xtime_diff_to_millis2(target, &now))) { // stop waiting
+                    || mtx->_get_cs()->try_lock()) { // stop waiting
                     res = WAIT_OBJECT_0;
                     break;
                 } else {
