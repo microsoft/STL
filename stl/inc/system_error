@@ -29,6 +29,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("noop_dtor")
+#undef msvc
+#undef noop_dtor
+
 _STD_BEGIN
 _EXPORT_STD enum class io_errc { // error codes for ios_base::failure
     stream = 1
@@ -727,6 +733,10 @@ _NODISCARD inline error_code _Make_ec(__std_win_error _Errno) noexcept { // make
 }
 _STD_END
 #endif // _HAS_CXX17
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("noop_dtor")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

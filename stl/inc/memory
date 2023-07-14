@@ -25,6 +25,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#undef msvc
+
 _STD_BEGIN
 #if _HAS_CXX17
 #define _REQUIRE_PARALLEL_LVALUE_ITERATOR(_Iter)                                                                     \
@@ -93,7 +97,7 @@ namespace ranges {
             constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
             constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
             if constexpr (_Iter_copy_cat<_It, _Out>::_Bitcopy_constructible
-                          && _Sized_or_unreachable_sentinel_for<_Se, _It> //
+                          && _Sized_or_unreachable_sentinel_for<_Se, _It>
                           && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
                 if constexpr (_Is_sized1 && _Is_sized2) {
                     return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
@@ -1218,11 +1222,7 @@ public:
     _Ref_count_resource(_Resource _Px, _Dx _Dt)
         : _Ref_count_base(), _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Px) {}
 
-#ifdef __EDG__ // TRANSITION, VSO-1292293
-    ~_Ref_count_resource() noexcept override {} // TRANSITION, should be non-virtual
-#else // ^^^ workaround / no workaround vvv
     ~_Ref_count_resource() noexcept override = default; // TRANSITION, should be non-virtual
-#endif // ^^^ no workaround ^^^
 
     void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
@@ -1256,11 +1256,7 @@ public:
         : _Ref_count_base(),
           _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _One_then_variadic_args_t{}, _Ax, _Px) {}
 
-#ifdef __EDG__ // TRANSITION, VSO-1292293
-    ~_Ref_count_resource_alloc() noexcept override {} // TRANSITION, should be non-virtual
-#else // ^^^ workaround / no workaround vvv
     ~_Ref_count_resource_alloc() noexcept override = default; // TRANSITION, should be non-virtual
-#endif // ^^^ no workaround ^^^
 
     void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
@@ -1883,12 +1879,7 @@ _NODISCARD bool operator==(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD strong_ordering operator<=>(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
-#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-10334808
-    using _Common_ptr_t = decltype(false ? _Left.get() : _Right.get());
-    return static_cast<_Common_ptr_t>(_Left.get()) <=> static_cast<_Common_ptr_t>(_Right.get());
-#else // ^^^ workaround / no workaround vvv
     return _Left.get() <=> _Right.get();
-#endif // ^^^ no workaround ^^^
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty1, class _Ty2>
@@ -3348,10 +3339,8 @@ public:
 
     template <class _Uty, class _Is_nullptr = is_same<_Uty, nullptr_t>>
     using _Enable_ctor_reset =
-        enable_if_t<is_same_v<_Uty, pointer> //
-                        || _Is_nullptr::value //
-                        || (is_same_v<pointer, element_type*> //
-                            && is_pointer_v<_Uty> //
+        enable_if_t<is_same_v<_Uty, pointer> || _Is_nullptr::value
+                        || (is_same_v<pointer, element_type*> && is_pointer_v<_Uty>
                             && is_convertible_v<remove_pointer_t<_Uty> (*)[], element_type (*)[]>),
             int>;
 
@@ -4009,6 +3998,10 @@ public:
         store(_STD move(_Value));
     }
 
+    void operator=(nullptr_t) noexcept {
+        store(nullptr);
+    }
+
     ~atomic() {
         const auto _Rep = this->_Repptr._Unsafe_load_relaxed();
         if (_Rep) {
@@ -4357,6 +4350,10 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
 #endif // _HAS_TR1_NAMESPACE
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("msvc")
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

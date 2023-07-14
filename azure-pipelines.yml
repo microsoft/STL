@@ -9,7 +9,7 @@ variables:
   benchmarkBuildOutputLocation: 'D:\benchmark'
 
 pool:
-  name: 'StlBuild-2023-05-16T1204-Pool'
+  name: 'StlBuild-2023-07-11T1513-Pool'
   demands: EnableSpotVM -equals true
 
 pr:
@@ -20,7 +20,7 @@ stages:
     displayName: 'Code Format'
     jobs:
       - job: Code_Format_Validation
-        timeoutInMinutes: 20
+        timeoutInMinutes: 5
         displayName: 'Validation'
         steps:
           - script: |

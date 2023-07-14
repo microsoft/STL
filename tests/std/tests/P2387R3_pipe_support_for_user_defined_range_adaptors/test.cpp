@@ -34,8 +34,8 @@ using TestRange = array<int, 1>;
 
 template <class T>
 constexpr bool is_range_adaptor_closure() {
-    return CanPipe<TestRange, T&> || CanPipe<TestRange, const T&> //
-        || CanPipe<TestRange, T&&> || CanPipe<TestRange, const T&&>;
+    return CanPipe<TestRange, T&> || CanPipe<TestRange, const T&> || CanPipe<TestRange, T&&>
+        || CanPipe<TestRange, const T&&>;
 }
 
 struct IdentityRangeAdaptorClosure : ranges::range_adaptor_closure<IdentityRangeAdaptorClosure> {

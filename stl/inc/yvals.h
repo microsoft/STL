@@ -318,12 +318,6 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #endif
 #endif // _CRTDATA2_IMPORT
 
-// integer properties
-#define _MAX_EXP_DIG    8 // for parsing numerics
-#define _MAX_INT_DIG    32
-#define _MAX_SIG_DIG_V1 36 // TRANSITION, ABI
-#define _MAX_SIG_DIG_V2 768
-
 #define _LOCK_LOCALE         0
 #define _LOCK_MALLOC         1
 #define _LOCK_STREAM         2

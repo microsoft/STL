@@ -36,6 +36,8 @@ _END_EXTERN_C_UNLESS_PURE
 
 _STD_BEGIN
 
+_INLINE_VAR constexpr size_t _Max_int_dig = 32; // integer properties
+
 inline double _Stodx_v3(const char* _Str, char** _Endptr, int* _Perr) noexcept { // convert string to double
     int& _Errno_ref = errno; // Nonzero cost, pay it once
     const int _Orig = _Errno_ref;
@@ -364,7 +366,7 @@ protected:
                 break;
             }
         } else { // get long value
-            char _Ac[_MAX_INT_DIG];
+            char _Ac[_Max_int_dig];
             const auto _Parse_result =
                 _Parse_int_with_locale(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
             if (_Parse_result._Base < 0) {
@@ -399,7 +401,7 @@ protected:
     virtual _InIt __CLR_OR_THIS_CALL do_get(_InIt _First, _InIt _Last, ios_base& _Iosbase, ios_base::iostate& _State,
         unsigned short& _Val) const { // get unsigned short from [_First, _Last) into _Val
         _Adl_verify_range(_First, _Last);
-        char _Ac[_MAX_INT_DIG];
+        char _Ac[_Max_int_dig];
         const auto _Parse_result =
             _Parse_int_with_locale(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
         if (_Parse_result._Base < 0) { // ditto "fails to convert the entire field"
@@ -451,7 +453,7 @@ protected:
     virtual _InIt __CLR_OR_THIS_CALL do_get(_InIt _First, _InIt _Last, ios_base& _Iosbase, ios_base::iostate& _State,
         long& _Val) const { // get long from [_First, _Last) into _Val
         _Adl_verify_range(_First, _Last);
-        char _Ac[_MAX_INT_DIG];
+        char _Ac[_Max_int_dig];
         const auto _Parse_result =
             _Parse_int_with_locale(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
         if (_Parse_result._Base < 0) { // ditto "fails to convert the entire field"
@@ -477,7 +479,7 @@ protected:
     virtual _InIt __CLR_OR_THIS_CALL do_get(_InIt _First, _InIt _Last, ios_base& _Iosbase, ios_base::iostate& _State,
         unsigned long& _Val) const { // get unsigned long from [_First, _Last) into _Val
         _Adl_verify_range(_First, _Last);
-        char _Ac[_MAX_INT_DIG];
+        char _Ac[_Max_int_dig];
         const auto _Parse_result =
             _Parse_int_with_locale(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
         if (_Parse_result._Base < 0) { // ditto "fails to convert the entire field"
@@ -503,7 +505,7 @@ protected:
     virtual _InIt __CLR_OR_THIS_CALL do_get(_InIt _First, _InIt _Last, ios_base& _Iosbase, ios_base::iostate& _State,
         long long& _Val) const { // get long long from [_First, _Last) into _Val
         _Adl_verify_range(_First, _Last);
-        char _Ac[_MAX_INT_DIG];
+        char _Ac[_Max_int_dig];
         const auto _Parse_result =
             _Parse_int_with_locale(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
         if (_Parse_result._Base < 0) { // ditto "fails to convert the entire field"
@@ -529,7 +531,7 @@ protected:
     virtual _InIt __CLR_OR_THIS_CALL do_get(_InIt _First, _InIt _Last, ios_base& _Iosbase, ios_base::iostate& _State,
         unsigned long long& _Val) const { // get unsigned long long from [_First, _Last) into _Val
         _Adl_verify_range(_First, _Last);
-        char _Ac[_MAX_INT_DIG];
+        char _Ac[_Max_int_dig];
         const auto _Parse_result =
             _Parse_int_with_locale(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
         if (_Parse_result._Base < 0) { // ditto "fails to convert the entire field"
@@ -552,6 +554,8 @@ protected:
         return _First;
     }
 
+#define _MAX_SIG_DIG_V2 768
+#define _MAX_EXP_DIG    8 // for parsing floating-point numbers
 // Size of char buffer used by num_get::do_get() for float/double/long double
 #define _FLOATING_BUFFER_SIZE (_MAX_EXP_DIG + _MAX_SIG_DIG_V2 + 16)
 
@@ -607,6 +611,7 @@ protected:
         return _First;
     }
 #undef _FLOATING_BUFFER_SIZE
+#undef _MAX_EXP_DIG
 
     virtual _InIt __CLR_OR_THIS_CALL do_get(_InIt _First, _InIt _Last, ios_base& _Iosbase, ios_base::iostate& _State,
         long double& _Val) const { // get long double from [_First, _Last) into _Val
@@ -620,7 +625,7 @@ protected:
     virtual _InIt __CLR_OR_THIS_CALL do_get(_InIt _First, _InIt _Last, ios_base& _Iosbase, ios_base::iostate& _State,
         void*& _Val) const { // get void pointer from [_First, _Last) into _Val
         _Adl_verify_range(_First, _Last);
-        char _Ac[_MAX_INT_DIG];
+        char _Ac[_Max_int_dig];
         const auto _Parse_result =
             _Parse_int_with_locale(_Ac, _First, _Last, ios_base::hex, _Iosbase.getloc()); // gather field
         if (_Parse_result._Base < 0) { // ditto "fails to convert the entire field"
@@ -730,7 +735,7 @@ private:
         string _Groups(1, static_cast<char>(_Seendigit)); // Groups are detected in the reversed order of _Groups.
         size_t _Groups_arr_idx = 0;
 
-        for (char* const _Pe = &_Ac[_MAX_INT_DIG - 1]; _First != _Last; ++_First) { // look for digits and separators
+        for (char* const _Pe = &_Ac[_Max_int_dig - 1]; _First != _Last; ++_First) { // look for digits and separators
             size_t _Idx = _STD _Find_elem(_Atoms, *_First);
             if (_Idx < _Dlen) { // got a digit, characterize it and add to group size
                 *_Ptr = _Src[_Idx];
@@ -1118,6 +1123,7 @@ private:
         return _Parse_result._Base < 0 ? ~_Parse_result._Base : _Parse_result._Base;
     }
 
+#define _MAX_SIG_DIG_V1 36 // TRANSITION, ABI
 // TRANSITION, ABI: Sentinel value used by num_get::do_get()
 // to enable correct "V2" behavior in _Getffld() and _Getffldx()
 #define _ENABLE_V2_BEHAVIOR 1000000000
@@ -1159,6 +1165,8 @@ private:
     }
 
 #undef _ENABLE_V2_BEHAVIOR
+#undef _MAX_SIG_DIG_V1
+#undef _MAX_SIG_DIG_V2
 };
 
 #ifdef __clang__
@@ -1313,7 +1321,7 @@ protected:
 #pragma warning(disable : 4774) // format string expected in argument N is not a string literal (/Wall)
     virtual _OutIt __CLR_OR_THIS_CALL do_put(
         _OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, long _Val) const { // put formatted long to _Dest
-        char _Buf[2 * _MAX_INT_DIG];
+        char _Buf[2 * _Max_int_dig];
         char _Fmt[6];
 
         return _Iput(_Dest, _Iosbase, _Fill, _Buf,
@@ -1322,7 +1330,7 @@ protected:
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill,
         unsigned long _Val) const { // put formatted unsigned long to _Dest
-        char _Buf[2 * _MAX_INT_DIG];
+        char _Buf[2 * _Max_int_dig];
         char _Fmt[6];
 
         return _Iput(_Dest, _Iosbase, _Fill, _Buf,
@@ -1331,7 +1339,7 @@ protected:
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(
         _OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, long long _Val) const { // put formatted long long to _Dest
-        char _Buf[2 * _MAX_INT_DIG];
+        char _Buf[2 * _Max_int_dig];
         char _Fmt[8];
 
         return _Iput(_Dest, _Iosbase, _Fill, _Buf,
@@ -1340,7 +1348,7 @@ protected:
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill,
         unsigned long long _Val) const { // put formatted unsigned long long to _Dest
-        char _Buf[2 * _MAX_INT_DIG];
+        char _Buf[2 * _Max_int_dig];
         char _Fmt[8];
 
         return _Iput(_Dest, _Iosbase, _Fill, _Buf,
@@ -1368,7 +1376,7 @@ protected:
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
             &_Buf[0], _Buf.size(), _Ffmt(_Fmt, 0, _Iosbase.flags()), static_cast<int>(_Precision), _Val));
 
-        return _Fput(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen);
+        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, (_STD isnan)(_Val));
     }
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(
@@ -1392,13 +1400,13 @@ protected:
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
             &_Buf[0], _Buf.size(), _Ffmt(_Fmt, 'L', _Iosbase.flags()), static_cast<int>(_Precision), _Val));
 
-        return _Fput(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen);
+        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, (_STD isnan)(_Val));
     }
 #pragma warning(pop)
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(
         _OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, const void* _Val) const { // put formatted void pointer to _Dest
-        char _Buf[2 * _MAX_INT_DIG];
+        char _Buf[2 * _Max_int_dig];
 
         return _Iput(
             _Dest, _Iosbase, _Fill, _Buf, static_cast<size_t>(_CSTD sprintf_s(_Buf, sizeof(_Buf), "%p", _Val)));
@@ -1454,7 +1462,13 @@ private:
     }
 
     _OutIt __CLRCALL_OR_CDECL _Fput(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, const char* _Buf,
-        size_t _Count) const { // put formatted floating-point to _Dest
+        size_t _Count) const { // TRANSITION, ABI: preserved for binary compatibility
+        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf, _Count, false);
+    }
+
+    template <int = 0> // TRANSITION, ABI
+    _OutIt _Fput_v2(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, const char* _Buf, size_t _Count,
+        bool _Is_nan_val) const { // put formatted floating-point to _Dest
         auto _Prefix = static_cast<size_t>(0 < _Count && (*_Buf == '+' || *_Buf == '-'));
         const char* _Exps;
         if ((_Iosbase.flags() & ios_base::floatfield) != ios_base::hexfloat) {
@@ -1483,13 +1497,15 @@ private:
             _Groupstring[_Poff] = _Punct_fac.decimal_point();
         }
 
-        size_t _Off     = _Poff == _Count ? _Eoff : _Poff;
-        const char* _Pg = &_Grouping[0];
-        while (*_Pg != CHAR_MAX && '\0' < *_Pg && static_cast<size_t>(*_Pg) < _Off - _Prefix) {
-            // add thousands separator
-            _Groupstring.insert(_Off -= *_Pg, 1, _Kseparator);
-            if ('\0' < _Pg[1]) {
-                ++_Pg; // not last group, advance
+        if (!_Is_nan_val) {
+            size_t _Off     = _Poff == _Count ? _Eoff : _Poff;
+            const char* _Pg = &_Grouping[0];
+            while (*_Pg != CHAR_MAX && '\0' < *_Pg && static_cast<size_t>(*_Pg) < _Off - _Prefix) {
+                // add thousands separator
+                _Groupstring.insert(_Off -= *_Pg, 1, _Kseparator);
+                if ('\0' < _Pg[1]) {
+                    ++_Pg; // not last group, advance
+                }
             }
         }
 

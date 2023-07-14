@@ -269,6 +269,8 @@ StatementMacros:
   - _STD_END
   - _STDEXT_BEGIN
   - _STDEXT_END
+  - _FMT_P2286_BEGIN
+  - _FMT_P2286_END
   - _EXTERN_C
   - _END_EXTERN_C
   - _EXTERN_C_UNLESS_PURE

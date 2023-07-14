@@ -915,6 +915,8 @@ namespace test {
     public:
         using I = iterator<Category, Element, Diff, Eq, Proxy, WrappedState::wrapped>;
         using S = conditional_t<to_bool(IsCommon), I, sentinel<Element, WrappedState::wrapped>>;
+        using RebindAsMoveOnly = range<Category, Element, IsSized, Diff, IsCommon, Eq, Proxy, IsView,
+            Copyability::move_only>;
 
         using detail::range_base<Element, Copy>::range_base;
 

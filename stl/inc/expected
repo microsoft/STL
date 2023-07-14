@@ -390,7 +390,7 @@ public:
         is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_constructible_v<_Err> //
             && is_nothrow_copy_assignable_v<_Ty>&& is_nothrow_copy_assignable_v<_Err>) // strengthened
         requires is_copy_assignable_v<_Ty> && is_copy_constructible_v<_Ty> //
-              && is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err> //
+              && is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err>
               && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
     {
         if (_Has_value && _Other._Has_value) {
@@ -409,9 +409,9 @@ public:
 
     constexpr expected& operator=(expected&& _Other) noexcept(
         is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_constructible_v<_Err> //
-            && is_nothrow_move_assignable_v<_Ty>&& is_nothrow_move_assignable_v<_Err>) //
+            && is_nothrow_move_assignable_v<_Ty>&& is_nothrow_move_assignable_v<_Err>)
         requires is_move_assignable_v<_Ty> && is_move_constructible_v<_Ty> //
-              && is_move_assignable_v<_Err> && is_move_constructible_v<_Err> //
+              && is_move_assignable_v<_Err> && is_move_constructible_v<_Err>
               && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
     {
         if (_Has_value && _Other._Has_value) {
@@ -514,9 +514,9 @@ public:
 
     // [expected.object.swap]
     constexpr void swap(expected& _Other) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_swappable_v<_Ty>&&
-            is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>) //
+            is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>)
         requires is_swappable_v<_Ty> && is_swappable_v<_Err> //
-              && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err> //
+              && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err>
               && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
     {
         using _STD swap;
@@ -567,9 +567,9 @@ public:
     }
 
     friend constexpr void swap(expected& _Lhs, expected& _Rhs) noexcept(is_nothrow_move_constructible_v<_Ty>&&
-            is_nothrow_swappable_v<_Ty>&& is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>) //
+            is_nothrow_swappable_v<_Ty>&& is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>)
         requires is_swappable_v<_Ty> && is_swappable_v<_Err> //
-              && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err> //
+              && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err>
               && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
     {
         _Lhs.swap(_Rhs);
@@ -636,6 +636,12 @@ public:
         _Throw_bad_expected_access_lv();
     }
     _NODISCARD constexpr const _Ty&& value() const&& {
+        // TRANSITION, DevCom-1638273 and LLVM-53224
+        static_assert(
+            is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. N4950 [expected.object.obs]/11");
+        static_assert(is_constructible_v<_Err, const _Err&&>,
+            "is_constructible_v<E, const E&&> must be true. N4950 [expected.object.obs]/11");
+
         if (_Has_value) {
             return _STD move(_Value);
         }
@@ -643,6 +649,12 @@ public:
         _Throw_bad_expected_access_rv();
     }
     _NODISCARD constexpr _Ty&& value() && {
+        // TRANSITION, DevCom-1638273 and LLVM-53224
+        static_assert(
+            is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true. N4950 [expected.object.obs]/11");
+        static_assert(
+            is_move_constructible_v<_Err>, "is_constructible_v<E, E&&> must be true. N4950 [expected.object.obs]/11");
+
         if (_Has_value) {
             return _STD move(_Value);
         }
@@ -1133,9 +1145,6 @@ private:
     [[noreturn]] void _Throw_bad_expected_access_lv() const {
         _THROW(bad_expected_access{_Unexpected});
     }
-    [[noreturn]] void _Throw_bad_expected_access_lv() {
-        _THROW(bad_expected_access{_Unexpected});
-    }
     [[noreturn]] void _Throw_bad_expected_access_rv() const {
         _THROW(bad_expected_access{_STD move(_Unexpected)});
     }
@@ -1221,14 +1230,14 @@ public:
 
     template <class _UErr>
         requires is_constructible_v<_Err, const _UErr&>
-    constexpr explicit(!is_convertible_v<const _UErr&, _Err>) expected(const unexpected<_UErr>& _Other) //
-        noexcept(is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
+    constexpr explicit(!is_convertible_v<const _UErr&, _Err>) expected(const unexpected<_UErr>& _Other) noexcept(
+        is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
         : _Unexpected(_Other._Unexpected), _Has_value(false) {}
 
     template <class _UErr>
         requires is_constructible_v<_Err, _UErr>
-    constexpr explicit(!is_convertible_v<_UErr, _Err>) expected(unexpected<_UErr>&& _Other) //
-        noexcept(is_nothrow_constructible_v<_Err, _UErr>) // strengthened
+    constexpr explicit(!is_convertible_v<_UErr, _Err>)
+        expected(unexpected<_UErr>&& _Other) noexcept(is_nothrow_constructible_v<_Err, _UErr>) // strengthened
         : _Unexpected(_STD move(_Other._Unexpected)), _Has_value(false) {}
 
     constexpr explicit expected(in_place_t) noexcept : _Has_value(true) {}
@@ -1414,6 +1423,10 @@ public:
         }
     }
     constexpr void value() && {
+        // TRANSITION, DevCom-1638273 and LLVM-53224
+        static_assert(is_copy_constructible_v<_Err>, "is_copy_constructible_v<E> must be true");
+        static_assert(is_move_constructible_v<_Err>, "is_move_constructible_v<E> must be true");
+
         if (!_Has_value) {
             _Throw_bad_expected_access_rv();
         }

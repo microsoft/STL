@@ -3883,10 +3883,8 @@ _FwdIt3 set_intersection(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
     const auto _ULast2 = _Get_unwrapped(_Last2);
     auto _UDest        = _Get_unwrapped_unverified(_Dest);
     using _Diff        = _Common_diff_t<_FwdIt1, _FwdIt2, _FwdIt3>;
-    if constexpr (remove_reference_t<_ExPo>::_Parallelize //
-                  && _Is_ranges_random_iter_v<_FwdIt1> //
-                  && _Is_ranges_random_iter_v<_FwdIt2> //
-                  && _Is_cpp17_random_iter_v<_FwdIt3>) {
+    if constexpr (remove_reference_t<_ExPo>::_Parallelize && _Is_ranges_random_iter_v<_FwdIt1>
+                  && _Is_ranges_random_iter_v<_FwdIt2> && _Is_cpp17_random_iter_v<_FwdIt3>) {
         // only parallelize if desired, and all of the iterators given are random access
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
@@ -3975,10 +3973,8 @@ _FwdIt3 set_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2
     const auto _ULast2 = _Get_unwrapped(_Last2);
     auto _UDest        = _Get_unwrapped_unverified(_Dest);
     using _Diff        = _Common_diff_t<_FwdIt1, _FwdIt2, _FwdIt3>;
-    if constexpr (remove_reference_t<_ExPo>::_Parallelize //
-                  && _Is_ranges_random_iter_v<_FwdIt1> //
-                  && _Is_ranges_random_iter_v<_FwdIt2> //
-                  && _Is_cpp17_random_iter_v<_FwdIt3>) {
+    if constexpr (remove_reference_t<_ExPo>::_Parallelize && _Is_ranges_random_iter_v<_FwdIt1>
+                  && _Is_ranges_random_iter_v<_FwdIt2> && _Is_cpp17_random_iter_v<_FwdIt3>) {
         // only parallelize if desired, and all of the iterators given are random access
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines

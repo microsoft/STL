@@ -570,11 +570,12 @@ public:
         return _Elems;
     }
 
-    [[noreturn]] void _Xran() const {
+    _Ty _Elems[_Size];
+
+private:
+    [[noreturn]] static void _Xran() {
         _Xout_of_range("invalid array<T, N> subscript");
     }
-
-    _Ty _Elems[_Size];
 };
 
 #if _HAS_CXX17
@@ -758,13 +759,14 @@ public:
         return nullptr;
     }
 
-    [[noreturn]] void _Xran() const {
-        _Xout_of_range("invalid array<T, 0> subscript");
-    }
-
     conditional_t<disjunction_v<is_default_constructible<_Ty>, _Is_implicitly_default_constructible<_Ty>>, _Ty,
         _Empty_array_element>
-        _Elems[1];
+        _Elems[1]{};
+
+private:
+    [[noreturn]] static void _Xran() {
+        _Xout_of_range("invalid array<T, 0> subscript");
+    }
 };
 
 _EXPORT_STD template <class _Ty, size_t _Size, enable_if_t<_Size == 0 || _Is_swappable<_Ty>::value, int> = 0>
