@@ -120,10 +120,10 @@ public:
             if (_Al != _Right_al) {
                 _Tidy();
 
-                const _Size_type _Right_buf_size  = _Right._Get_buffer_size();
+                _Size_type _Right_buf_size        = _Right._Get_buffer_size();
                 const _Size_type _Right_data_size = _Right._Get_data_size();
 
-                _Elem* const _New_ptr = _Unfancy(_Al.allocate(_Right_buf_size));
+                _Elem* const _New_ptr = _Unfancy(_Allocate_at_least_helper(_Al, _Right_buf_size));
                 _Traits::copy(_New_ptr, _Right.pbase(), _Right_data_size);
 
                 streambuf_type::setp(_New_ptr, _New_ptr + _Right_data_size, _New_ptr + _Right_buf_size);
@@ -217,11 +217,11 @@ protected:
             return _Traits::eof();
         }
 
-        const _Size_type _New_capacity  = _Calculate_growth(_Buf_size, _Buf_size + 1, _Max_allocation);
+        _Size_type _New_capacity        = _Calculate_growth(_Buf_size, _Buf_size + 1, _Max_allocation);
         _Elem* const _Old_ptr           = streambuf_type::pbase();
         const _Size_type _Old_data_size = _Get_data_size();
 
-        _Elem* const _New_ptr = _Unfancy(_Al.allocate(_New_capacity));
+        _Elem* const _New_ptr = _Unfancy(_Allocate_at_least_helper(_Al, _New_capacity));
         _Traits::copy(_New_ptr, _Old_ptr, _Old_data_size);
         if (0 < _Buf_size) {
             _Al.deallocate(_Refancy<_Pointer>(_Old_ptr), _Buf_size);
@@ -237,8 +237,9 @@ private:
     static constexpr _Size_type _Min_size = 32; // constant for minimum buffer size
 
     void _Init() {
-        _Elem* const _New_ptr = _Unfancy(_Getal().allocate(_Min_size));
-        streambuf_type::setp(_New_ptr, _New_ptr + _Min_size);
+        _Size_type _New_capacity = _Min_size;
+        _Elem* const _New_ptr    = _Unfancy(_Allocate_at_least_helper(_Getal(), _New_capacity));
+        streambuf_type::setp(_New_ptr, _New_ptr + _New_capacity);
     }
 
     void _Tidy() noexcept {

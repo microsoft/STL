@@ -907,25 +907,18 @@ public:
         _Swap_val_excluding_comp(_Right);
     }
 
-private:
-    void _Different_allocator_move_construct(_Tree&& _Right) {
-        // TRANSITION, VSO-761321 (inline into only caller when that is fixed)
-        auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
-        const auto _Scary = _Get_scary();
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
-        _Tree_head_scoped_ptr<_Alnode, _Scary_val> _Sentinel(_Getal(), *_Scary);
-        _Copy<_Strategy::_Move>(_Right);
-        _Sentinel._Release();
-        _Proxy._Release();
-    }
-
-public:
     _Tree(_Tree&& _Right, const allocator_type& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), // intentionally copy comparator, see LWG-2227
             _One_then_variadic_args_t{}, _Al) {
         if constexpr (!_Alnode_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
-                _Different_allocator_move_construct(_STD move(_Right));
+                auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
+                const auto _Scary = _Get_scary();
+                _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
+                _Tree_head_scoped_ptr<_Alnode, _Scary_val> _Sentinel(_Getal(), *_Scary);
+                _Copy<_Strategy::_Move>(_Right);
+                _Sentinel._Release();
+                _Proxy._Release();
                 return;
             }
         }
