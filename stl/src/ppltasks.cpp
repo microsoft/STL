@@ -35,7 +35,7 @@ extern "C" NTSYSAPI _Success_(return != 0) WORD NTAPI
 namespace Concurrency {
 
     namespace details {
-        _CRTIMP2 void __cdecl _ReportUnobservedException() {
+        [[noreturn]] _CRTIMP2 void __cdecl _ReportUnobservedException() {
 
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_CRT_APP)
             if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
