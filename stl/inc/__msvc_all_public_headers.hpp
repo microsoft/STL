@@ -92,6 +92,7 @@
 #include <exception>
 #include <expected>
 #include <filesystem>
+#include <flat_map>
 #include <format>
 #include <forward_list>
 #include <fstream>
