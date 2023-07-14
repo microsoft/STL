@@ -38,6 +38,7 @@ class STLTest(Test):
     def configureTest(self, litConfig):
         self.compileFlags = []
         self.cxx = None
+        self.env = {}
         self.fileDependencies = []
         self.flags = []
         self.isenseRspPath = None
@@ -234,7 +235,13 @@ class STLTest(Test):
     def _parseFlags(self, litConfig):
         foundStd = False
         foundCRT = False
+        afterAnalyzePlugin = False
         for flag in chain(self.flags, self.compileFlags, self.linkFlags):
+            if afterAnalyzePlugin:
+                if 'EspXEngine.dll'.casefold() in flag.casefold():
+                    self._addCustomFeature('espxengine')
+                afterAnalyzePlugin = False
+
             if flag[1:5] == 'std:':
                 foundStd = True
                 if flag[5:] == 'c++latest':
@@ -279,6 +286,8 @@ class STLTest(Test):
                 self._addCustomFeature('MT')
                 self._addCustomFeature('static_CRT')
                 foundCRT = True
+            elif flag[1:] == 'analyze:plugin':
+                afterAnalyzePlugin = True
 
         if not foundStd:
             self._addCustomFeature('c++14')
@@ -294,6 +303,11 @@ class STLTest(Test):
         if 'asan' in self.config.available_features and 'clang' in self.config.available_features:
             self.linkFlags.append("/INFERASANLIBS")
 
+        # code analysis settings
+        if 'espxengine' in self.config.available_features:
+            self.compileFlags.extend(["/analyze:rulesetdirectory", ';'.join(litConfig.ruleset_dirs[self.config.name])])
+            self.env['Esp.Extensions'] = 'CppCoreCheck.dll'
+            self.env['Esp.AnnotationBuildLevel'] = 'Ignore'
 
 class LibcxxTest(STLTest):
     def getTestName(self):

@@ -664,10 +664,12 @@
 #pragma push_macro("known_semantics")
 #pragma push_macro("noop_dtor")
 #pragma push_macro("intrinsic")
+#pragma push_macro("lifetimebound")
 #undef msvc
 #undef known_semantics
 #undef noop_dtor
 #undef intrinsic
+#undef lifetimebound
 
 #ifndef __has_cpp_attribute
 #define _HAS_MSVC_ATTRIBUTE(x) 0
@@ -701,7 +703,19 @@
 #define _MSVC_INTRINSIC
 #endif
 
+// Should we enable [[msvc::lifetimebound]] or [[clang::lifetimebound]] warnings?
+#if !defined(__has_cpp_attribute) || defined(_SILENCE_LIFETIMEBOUND_WARNING)
+#define _MSVC_LIFETIMEBOUND
+#elif _HAS_MSVC_ATTRIBUTE(lifetimebound)
+#define _MSVC_LIFETIMEBOUND [[msvc::lifetimebound]]
+#elif __has_cpp_attribute(_Clang::__lifetimebound__)
+#define _MSVC_LIFETIMEBOUND [[_Clang::__lifetimebound__]]
+#else
+#define _MSVC_LIFETIMEBOUND
+#endif
+
 #undef _HAS_MSVC_ATTRIBUTE
+#pragma pop_macro("lifetimebound")
 #pragma pop_macro("intrinsic")
 #pragma pop_macro("noop_dtor")
 #pragma pop_macro("known_semantics")
