@@ -302,7 +302,6 @@ private:
         }
 
         // <NOTICE> The cost introduced by the first try should be compensable from uninitialized resize.
-        // <NOTICE> No need to do _Tidy; ?add _STL_ASSERT for emptiness?
 
         size_type _Enough_capacity = (_STD min)(_Max_depth, _Max_frames);
         // resize(_Enough_capacity), but without value initialization
