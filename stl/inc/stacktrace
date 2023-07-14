@@ -279,29 +279,29 @@ private:
     static constexpr bool _Noex_swap = allocator_traits<_Alloc>::propagate_on_container_swap::value
                                     || allocator_traits<_Alloc>::is_always_equal::value;
 
-    // <NOTICE> ?_Try_frames may be subject to further decreasements?
-
-    static constexpr size_type _Try_frames = 128; // Sufficient in most cases.
     static constexpr size_type _Max_frames = 0xFFFF;
 
     // __declspec(noinline) to make the same behavior for debug and release.
     // We force the current function to be always noinline and add its frame to skipped.
+
     _NODISCARD __declspec(noinline) static basic_stacktrace
         _Current(unsigned long _Skip, const size_type _Max_depth, const allocator_type& _Al) noexcept {
         _Skip = _Adjust_skip(_Skip); // skip this frame
         _TRY_BEGIN
         basic_stacktrace _Result(_Al);
 
-        stacktrace_entry _Buffer[_Try_frames];
+        // <NOTICE> _Small_frames may be subject to further decreasements to avoid stack burden and
+        // <NOTICE> the cost introduced by the first try should be compensable from uninitialized resize.
+
+        constexpr size_type _Small_frames = 128; // Sufficient in most cases.
+        stacktrace_entry _Buffer[_Small_frames];
         unsigned short _Caught =
-            __std_stacktrace_capture(_Skip, static_cast<unsigned long>((_STD min)(_Max_depth, _Try_frames)),
+            __std_stacktrace_capture(_Skip, static_cast<unsigned long>((_STD min)(_Max_depth, _Small_frames)),
                 reinterpret_cast<void**>(_Buffer), &_Result._Hash);
-        if (_Caught != _Try_frames) { // actual size
+        if (_Caught != _Small_frames) { // actual size
             _Result._Frames.assign(_Buffer, _Buffer + _Caught);
             return _Result;
         }
-
-        // <NOTICE> The cost introduced by the first try should be compensable from uninitialized resize.
 
         size_type _Enough_capacity = (_STD min)(_Max_depth, _Max_frames);
         // resize(_Enough_capacity), but without value initialization
