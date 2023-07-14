@@ -31,6 +31,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("intrinsic")
+#undef msvc
+#undef intrinsic
+
 _STD_BEGIN
 namespace ranges {
     // MUCH machinery defined in <xutility>
@@ -10491,6 +10497,10 @@ namespace ranges {
 _EXPORT_STD namespace views = ranges::views;
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("intrinsic")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
