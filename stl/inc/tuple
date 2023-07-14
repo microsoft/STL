@@ -191,8 +191,8 @@ inline constexpr bool _Can_construct_values_from_tuple_like_v<tuple<_Types...>, 
 template <class _TupleLike, class _Tuple>
 concept _Can_construct_from_tuple_like =
     _Different_from<_TupleLike, _Tuple> && _Tuple_like<_TupleLike> && !_Is_subrange_v<remove_cvref_t<_TupleLike>>
-    && (tuple_size_v<_Tuple>
-        == tuple_size_v<remove_cvref_t<_TupleLike>>) &&_Can_construct_values_from_tuple_like_v<_Tuple, _TupleLike>
+    && (tuple_size_v<_Tuple> == tuple_size_v<remove_cvref_t<_TupleLike>>) //
+    &&_Can_construct_values_from_tuple_like_v<_Tuple, _TupleLike>
     && (tuple_size_v<_Tuple> != 1
         || (!is_convertible_v<_TupleLike, tuple_element_t<0, _Tuple>>
             && !is_constructible_v<tuple_element_t<0, _Tuple>, _TupleLike>) );
