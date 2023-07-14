@@ -19,11 +19,23 @@
 #include <xfilesystem_abi.h>
 #endif // _HAS_CXX17
 
+#if _HAS_CXX23
+#include <__msvc_print.hpp>
+#endif // _HAS_CXX23
+
+// <__msvc_bit_utils.hpp> is included by <bit> and <limits>
 // <__msvc_iter_core.hpp> is included by <tuple>
 // <xkeycheck.h> should not be included outside of <yvals_core.h>
-// <xstddef> is included by <type_traits>
 // <xtr1common> is included by <cstddef>
 // <yvals_core.h> is included by every public core header
+
+// Also test GH-3692 "Including <isa_availability.h> emits a non-reserved name"
+#include <isa_availability.h>
+
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
+STATIC_ASSERT(std::_Stl_isa_available_sse42 == __ISA_AVAILABLE_SSE42);
+STATIC_ASSERT(std::_Stl_isa_available_avx2 == __ISA_AVAILABLE_AVX2);
 
 #ifdef _YVALS
 #error Core headers should not include <yvals.h>.

@@ -857,7 +857,7 @@ void check_fs_error(const filesystem_error& e, const char* const msg, const stri
     if (ec.has_value()) {
         EXPECT(e.code() == ec.value());
     }
-};
+}
 
 void test_filesystem_error() {
     error_code ec1(22, system_category());
@@ -2246,6 +2246,26 @@ void test_copy_symlink() {
             EXPECT(good(ec));
         }
     }
+}
+
+void test_copy_directory_as_symlink() {
+    const path dirpath{L"./test-lwg2682-dir"sv};
+    error_code ec;
+    create_directory(dirpath, ec);
+    EXPECT(good(ec));
+    try {
+        copy(dirpath, L"./symlink"sv, copy_options::create_symlinks);
+        EXPECT(false);
+    } catch (filesystem_error& e) {
+        EXPECT(e.code().value() == static_cast<int>(errc::is_a_directory));
+    }
+    {
+        error_code copy_ec;
+        copy(dirpath, L"./symlink"sv, copy_options::create_symlinks, copy_ec);
+        EXPECT(copy_ec.value() == static_cast<int>(errc::is_a_directory));
+    }
+    remove_all(dirpath, ec);
+    EXPECT(good(ec));
 }
 
 void equivalent_failure_test_case(const path& left, const path& right) {
@@ -3996,6 +4016,8 @@ int wmain(int argc, wchar_t* argv[]) {
     test_copy_file();
 
     test_copy_symlink();
+
+    test_copy_directory_as_symlink(); // per LWG-2682
 
     test_conversions();
 

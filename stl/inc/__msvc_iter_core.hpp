@@ -18,6 +18,25 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+template <class _Ty, class _Alloc, class = void>
+struct _Has_allocator_type : false_type {}; // tests for suitable _Ty::allocator_type
+
+template <class _Ty, class _Alloc>
+struct _Has_allocator_type<_Ty, _Alloc, void_t<typename _Ty::allocator_type>>
+    : is_convertible<_Alloc, typename _Ty::allocator_type>::type {};
+
+_EXPORT_STD struct allocator_arg_t { // tag type for added allocator argument
+    explicit allocator_arg_t() = default;
+};
+
+_EXPORT_STD _INLINE_VAR constexpr allocator_arg_t allocator_arg{};
+
+_EXPORT_STD template <class _Ty, class _Alloc>
+struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {};
+
+_EXPORT_STD template <class _Ty, class _Alloc>
+_INLINE_VAR constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
+
 // from <iterator>
 _EXPORT_STD struct input_iterator_tag {};
 
@@ -34,8 +53,8 @@ _EXPORT_STD struct contiguous_iterator_tag : random_access_iterator_tag {};
 
 template <class _Ty>
 concept _Dereferenceable = requires(_Ty& __t) {
-                               { *__t } -> _Can_reference;
-                           };
+    { *__t } -> _Can_reference;
+};
 
 template <class _Ty>
 concept _Has_member_iterator_concept = requires { typename _Ty::iterator_concept; };
@@ -77,8 +96,8 @@ struct incrementable_traits<_Ty> {
 
 template <class _Ty>
 concept _Can_difference = requires(const _Ty& __a, const _Ty& __b) {
-                              { __a - __b } -> integral;
-                          };
+    { __a - __b } -> integral;
+};
 
 template <class _Ty>
     requires (!_Has_member_difference_type<_Ty> && _Can_difference<_Ty>)
@@ -146,8 +165,8 @@ template <class>
 struct _Iterator_traits_base {};
 
 template <class _It>
-concept _Has_iter_types = _Has_member_difference_type<_It> && _Has_member_value_type<_It> //
-                       && _Has_member_reference<_It> && _Has_member_iterator_category<_It>;
+concept _Has_iter_types = _Has_member_difference_type<_It> && _Has_member_value_type<_It> && _Has_member_reference<_It>
+                       && _Has_member_iterator_category<_It>;
 
 template <bool _Has_member_typedef>
 struct _Old_iter_traits_pointer {
@@ -291,10 +310,10 @@ struct _Iter_traits_category3<false> {
 
 template <class _It>
 concept _Cpp17_bidi_delta = requires(_It __i) {
-                                { --__i } -> same_as<_It&>;
-                                { __i-- } -> convertible_to<const _It&>;
-                                requires same_as<decltype(*__i--), iter_reference_t<_It>>;
-                            };
+    { --__i } -> same_as<_It&>;
+    { __i-- } -> convertible_to<const _It&>;
+    requires same_as<decltype(*__i--), iter_reference_t<_It>>;
+};
 
 template <bool _Is_forward>
 struct _Iter_traits_category2 {
@@ -363,9 +382,9 @@ struct iterator_traits<_Ty*> {
 
 template <class _Ty>
 inline constexpr bool _Integer_class = requires {
-                                           typename _Ty::_Signed_type;
-                                           typename _Ty::_Unsigned_type;
-                                       };
+    typename _Ty::_Signed_type;
+    typename _Ty::_Unsigned_type;
+};
 
 template <class _Ty>
 concept _Integer_like = _Is_nonbool_integral<remove_cv_t<_Ty>> || _Integer_class<_Ty>;

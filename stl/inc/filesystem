@@ -16,7 +16,6 @@ _EMIT_STL_WARNING(STL4038, "The contents of <filesystem> are available only with
 #include <chrono>
 #include <cwchar>
 #include <iomanip>
-#include <list>
 #include <locale>
 #include <memory>
 #include <system_error>
@@ -205,7 +204,7 @@ namespace filesystem {
     template <class _Conversion>
     _NODISCARD wstring _Convert_stringoid_to_wide(const wstring_view _Input, _Conversion) {
         static_assert(
-            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
+            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4950 [depr.fs.path.factory]/1");
         return wstring{_Input};
     }
 
@@ -222,14 +221,14 @@ namespace filesystem {
     template <class _Conversion>
     _NODISCARD wstring _Convert_stringoid_to_wide(const u16string_view _Input, _Conversion) {
         static_assert(
-            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
+            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4950 [depr.fs.path.factory]/1");
         return wstring{_Input.data(), _Input.data() + _Input.size()};
     }
 
     template <class _Conversion>
     _NODISCARD wstring _Convert_stringoid_to_wide(const u32string_view _Input, _Conversion) {
         static_assert(
-            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
+            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4950 [depr.fs.path.factory]/1");
         return _Convert_utf32_to_wide(_Input);
     }
 
@@ -327,7 +326,7 @@ namespace filesystem {
                 return _Output;
 
             case codecvt_base::partial:
-                // N4810 28.4.1.4.2 [locale.codecvt.virtuals]/5:
+                // N4950 [locale.codecvt.virtuals]/5:
                 // "A return value of partial, if (from_next == from_end), indicates that either the
                 // destination sequence has not absorbed all the available destination elements,
                 // or that additional source elements are needed before another destination element can be produced."
@@ -619,7 +618,7 @@ namespace filesystem {
         friend inline __std_win_error _Absolute(path& _Result, const wstring& _Text);
         friend inline __std_win_error _Canonical(path& _Result, const wstring& _Text);
         friend inline path temp_directory_path(error_code& _Ec);
-        friend inline __std_win_error _Current_path(path& _Result) noexcept;
+        friend inline path current_path(error_code& _Ec);
         friend inline void current_path(const path& _To);
         friend inline void current_path(const path& _To, error_code& _Ec) noexcept;
         friend inline __std_win_error _Read_symlink(const path& _Symlink_path, path& _Result) noexcept;
@@ -653,7 +652,7 @@ namespace filesystem {
         template <class _InIt>
         path(_InIt _First, _InIt _Last, format = auto_format) : _Text(_Convert_range_to_wide(_First, _Last)) {
             // format has no meaning for this implementation, as the generic grammar is acceptable as a native path
-            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
+            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4950 [fs.req]/3");
         }
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
@@ -662,15 +661,14 @@ namespace filesystem {
             // format has no meaning for this implementation, as the generic grammar is acceptable as a native path
             using _Stringoid = decltype(_Stringoid_from_Source(_Source));
             static_assert(is_same_v<typename _Stringoid::value_type, char>,
-                "invalid value_type, see N4810 29.11.7.4.1 [fs.path.construct]/6");
+                "invalid value_type, see N4950 [fs.path.construct]/5");
         }
 
         template <class _InIt>
         path(_InIt _First, _InIt _Last, const locale& _Loc, format = auto_format)
             : _Text(_Convert_stringoid_with_locale_to_wide(_Stringoid_from_range(_First, _Last), _Loc)) {
             // format has no meaning for this implementation, as the generic grammar is acceptable as a native path
-            static_assert(is_same_v<_Iter_value_t<_InIt>, char>,
-                "invalid value_type, see N4810 29.11.7.4.1 [fs.path.construct]/6");
+            static_assert(is_same_v<_Iter_value_t<_InIt>, char>, "invalid value_type, see N4950 [fs.path.construct]/5");
         }
 
         path& operator=(string_type&& _Source) noexcept /* strengthened */ {
@@ -699,7 +697,7 @@ namespace filesystem {
 
         template <class _InIt>
         path& assign(_InIt _First, _InIt _Last) { // set native() to [_First, _Last)
-            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
+            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4950 [fs.req]/3");
             _Text = _Convert_range_to_wide(_First, _Last);
             return *this;
         }
@@ -782,7 +780,7 @@ namespace filesystem {
 
         template <class _InIt>
         path& append(_InIt _First, _InIt _Last) {
-            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
+            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4950 [fs.req]/3");
             return operator/=(path{_First, _Last});
         }
 
@@ -831,7 +829,7 @@ namespace filesystem {
 
         template <class _InIt>
         path& concat(_InIt _First, _InIt _Last) { // concat [_First, _Last) to native()
-            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
+            static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4950 [fs.req]/3");
             return operator+=(path{_First, _Last}._Text);
         }
 
@@ -1189,7 +1187,7 @@ namespace filesystem {
             constexpr wstring_view _Dot     = L"."sv;
             constexpr wstring_view _Dot_dot = L".."sv;
 
-            // N4810 29.11.7.1 [fs.path.generic]/6:
+            // N4950 [fs.path.generic]/6:
             // "Normalization of a generic format pathname means:"
 
             // "1. If the path is empty, stop."
@@ -1205,80 +1203,91 @@ namespace filesystem {
             _STD replace(_Normalized.begin(), _Normalized.end(), L'/', L'\\');
 
             // "3. Replace each directory-separator with a preferred-separator.
-            // [ Note: The generic pathname grammar (29.11.7.1) defines directory-separator
+            // [ Note 4: The generic pathname grammar defines directory-separator
             // as one or more slashes and preferred-separators. -end note ]"
-            list<wstring_view> _Lst; // Empty wstring_view means directory-separator
-                                     // that will be normalized to a preferred-separator.
-                                     // Non-empty wstring_view means filename.
-            for (auto _Next = _Root_name_end; _Next != _Last;) {
-                if (_Is_slash(*_Next)) {
-                    if (_Lst.empty() || !_Lst.back().empty()) {
+            vector<wstring_view> _Vec; // Empty wstring_view means directory-separator
+                                       // that will be normalized to a preferred-separator.
+                                       // Non-empty wstring_view means filename.
+            _Vec.reserve(13); // avoid frequent re-allocations
+            bool _Has_root_directory = false; // true: there is a slash right after root-name.
+            auto _Ptr                = _Root_name_end;
+            if (_Ptr != _Last && _Is_slash(*_Ptr)) {
+                _Has_root_directory = true;
+                _Normalized += preferred_separator;
+                ++_Ptr;
+                while (_Ptr != _Last && _Is_slash(*_Ptr)) {
+                    ++_Ptr;
+                }
+            }
+            // _Vec will start with a filename (if not empty).
+            while (_Ptr != _Last) {
+                if (_Is_slash(*_Ptr)) {
+                    if (_Vec.empty() || !_Vec.back().empty()) {
                         // collapse one or more slashes and preferred-separators to one empty wstring_view
-                        _Lst.emplace_back();
+                        _Vec.emplace_back();
                     }
-
-                    ++_Next;
+                    ++_Ptr;
                 } else {
-                    const auto _Filename_end = _STD find_if(_Next + 1, _Last, _Is_slash);
-                    _Lst.emplace_back(_Next, static_cast<size_t>(_Filename_end - _Next));
-                    _Next = _Filename_end;
+                    const auto _Filename_end = _STD find_if(_Ptr + 1, _Last, _Is_slash);
+                    _Vec.emplace_back(_Ptr, static_cast<size_t>(_Filename_end - _Ptr));
+                    _Ptr = _Filename_end;
                 }
             }
 
             // "4. Remove each dot filename and any immediately following directory-separator."
-            for (auto _Next = _Lst.begin(); _Next != _Lst.end();) {
-                if (*_Next == _Dot) {
-                    _Next = _Lst.erase(_Next); // erase dot filename
-
-                    if (_Next != _Lst.end()) {
-                        _Next = _Lst.erase(_Next); // erase immediately following directory-separator
-                    }
-                } else {
-                    ++_Next;
-                }
-            }
-
             // "5. As long as any appear, remove a non-dot-dot filename immediately followed by a
             // directory-separator and a dot-dot filename, along with any immediately following directory-separator."
-            for (auto _Next = _Lst.begin(); _Next != _Lst.end();) {
-                auto _Prev = _Next;
-
-                ++_Next; // If we aren't going to erase, keep advancing.
-                         // If we're going to erase, _Next now points past the dot-dot filename.
-
-                if (*_Prev == _Dot_dot && _Prev != _Lst.begin() && --_Prev != _Lst.begin() && *--_Prev != _Dot_dot) {
-                    if (_Next != _Lst.end()) { // dot-dot filename has an immediately following directory-separator
-                        ++_Next;
-                    }
-
-                    _Lst.erase(_Prev, _Next); // _Next remains valid
-                }
-            }
-
             // "6. If there is a root-directory, remove all dot-dot filenames
             // and any directory-separators immediately following them.
-            // [ Note: These dot-dot filenames attempt to refer to nonexistent parent directories. -end note ]"
-            if (!_Lst.empty() && _Lst.front().empty()) { // we have a root-directory
-                for (auto _Next = _Lst.begin(); _Next != _Lst.end();) {
-                    if (*_Next == _Dot_dot) {
-                        _Next = _Lst.erase(_Next); // erase dot-dot filename
-
-                        if (_Next != _Lst.end()) {
-                            _Next = _Lst.erase(_Next); // erase immediately following directory-separator
+            // [ Note 5: These dot-dot filenames attempt to refer to nonexistent parent directories. -end note ]"
+            auto _New_end = _Vec.begin();
+            for (auto _Pos = _Vec.begin(); _Pos != _Vec.end();) {
+                const auto _Elem = *_Pos++; // _Pos points at a filename here; it points at end or a separator after ++.
+                if (_Elem == _Dot) {
+                    // ignore dot (and following separator).
+                    if (_Pos == _Vec.end()) {
+                        break;
+                    }
+                } else if (_Elem != _Dot_dot) {
+                    // append normal filename and separator.
+                    *_New_end++ = _Elem; // _New_end points at end or a separator after ++.
+                    if (_Pos == _Vec.end()) {
+                        break;
+                    }
+                    ++_New_end; // _New_end(<=_Pos) doesn't point at end; accept separator.
+                } else { // _Dot_dot
+                    if (_New_end != _Vec.begin() && _New_end[-2] != _Dot_dot) {
+                        // _New_end == _Vec.begin() + 2n here.
+                        // remove preceding non-dot-dot filename and separator.
+                        _New_end -= 2;
+                        if (_Pos == _Vec.end()) {
+                            break;
                         }
+                    } else if (!_Has_root_directory) {
+                        // due to 6, append dot-dot and separator only if !_Has_root_directory.
+                        *_New_end++ = _Dot_dot;
+                        if (_Pos == _Vec.end()) {
+                            break;
+                        }
+                        ++_New_end;
                     } else {
-                        ++_Next;
+                        // ignore dot-dot and separator.
+                        if (_Pos == _Vec.end()) {
+                            break;
+                        }
                     }
                 }
+                ++_Pos; // _Pos points at a separator here; it points at end or a filename after ++.
             }
+            _Vec.erase(_New_end, _Vec.end());
 
             // "7. If the last filename is dot-dot, remove any trailing directory-separator."
-            if (_Lst.size() >= 2 && _Lst.back().empty() && *(_STD prev(_Lst.end(), 2)) == _Dot_dot) {
-                _Lst.pop_back();
+            if (_Vec.size() >= 2 && _Vec.back().empty() && _Vec.end()[-2] == _Dot_dot) {
+                _Vec.pop_back();
             }
 
-            // Build up _Normalized by flattening _Lst.
-            for (const auto& _Elem : _Lst) {
+            // Build up _Normalized by flattening _Vec.
+            for (const auto& _Elem : _Vec) {
                 if (_Elem.empty()) {
                     _Normalized += preferred_separator;
                 } else {
@@ -1292,9 +1301,7 @@ namespace filesystem {
             }
 
             // "The result of normalization is a path in normal form, which is said to be normalized."
-            path _Result(_STD move(_Normalized));
-
-            return _Result;
+            return path(_STD move(_Normalized));
         }
 
         _NODISCARD inline path lexically_relative(const path& _Base) const;
@@ -1328,7 +1335,7 @@ namespace filesystem {
             // extract a path from a stream
             basic_string<_Elem, _Traits> _Tmp;
             _Istr >> _STD quoted(_Tmp);
-            _Path = _STD move(_Tmp); // obvious optimization not depicted in N4810 29.11.7.6 [fs.path.io]/3
+            _Path = _STD move(_Tmp); // obvious optimization not depicted in N4950 [fs.path.io]/3
             return _Istr;
         }
 
@@ -1380,7 +1387,7 @@ namespace filesystem {
     _EXPORT_STD template <class _InIt>
     _CXX20_DEPRECATE_U8PATH _NODISCARD path u8path(_InIt _First, _InIt _Last) {
         // construct a path from UTF-8 [_First, _Last)
-        static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
+        static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4950 [fs.req]/3");
         return path{_Convert_range_to_wide(_First, _Last, _Utf8_conversion{})};
     }
 
@@ -1388,7 +1395,7 @@ namespace filesystem {
     class _Path_iterator { // almost bidirectional iterator for path
     public:
         // Note that the path::iterator can be decremented and can be dereferenced multiple times,
-        // but doesn't actually meet the forward iterator requirements. See N4810 29.11.7.5 [fs.path.itr]/2:
+        // but doesn't actually meet the forward iterator requirements. See N4950 [fs.path.itr]/2:
         //  ... for dereferenceable iterators a and b of type path::iterator with a == b, there is no requirement
         //  that *a and *b are bound to the same object
         // This means that you can't give path::iterator to std::reverse_iterator, as operator* there ends
@@ -1678,7 +1685,7 @@ namespace filesystem {
             return _Result;
         }
 
-        { // Skip root-name and root-directory elements, N4810 29.11.7.5 [fs.path.itr]/4.1, 4.2
+        { // Skip root-name and root-directory elements, N4950 [fs.path.itr]/4.1, 4.2
             ptrdiff_t _B_dist = _STD distance(_Base_begin, _B_iter);
 
             const ptrdiff_t _Base_root_dist =
@@ -1695,8 +1702,8 @@ namespace filesystem {
         for (; _B_iter != _Base_end; ++_B_iter) {
             const path& _Elem = *_B_iter;
 
-            if (_Elem.empty()) { // skip empty element, N4810 29.11.7.5 [fs.path.itr]/4.4
-            } else if (_Elem == _Dot) { // skip filename elements that are dot, N4810 29.11.7.4.11 [fs.path.gen]/4.2
+            if (_Elem.empty()) { // skip empty element, N4950 [fs.path.itr]/4.4
+            } else if (_Elem == _Dot) { // skip filename elements that are dot, N4950 [fs.path.gen]/3.6
             } else if (_Elem == _Dot_dot) {
                 --_Num;
             } else {
@@ -1817,6 +1824,10 @@ namespace filesystem {
     [[noreturn]] inline void _Throw_fs_error(
         const char* _Op, __std_win_error _Error, const path& _Path1, const path& _Path2) {
         _THROW(filesystem_error(_Op, _Path1, _Path2, _Make_ec(_Error)));
+    }
+
+    [[noreturn]] inline void _Throw_fs_error(const char* _Op, const error_code& _Error) {
+        _THROW(filesystem_error(_Op, _Error));
     }
 
     [[noreturn]] inline void _Throw_fs_error(const char* _Op, const error_code& _Error, const path& _Path1) {
@@ -4043,30 +4054,26 @@ namespace filesystem {
         return _Result;
     }
 
-    _NODISCARD inline __std_win_error _Current_path(path& _Result) noexcept {
+    _EXPORT_STD _NODISCARD inline path current_path(error_code& _Ec) {
+        _Ec.clear();
+        path _Result;
         _Result._Text.resize(__std_fs_max_path);
         for (;;) {
             const auto _Requested_size = static_cast<unsigned long>(_Result._Text.size());
             const auto _Temp_result    = __std_fs_get_current_path(_Requested_size, _Result._Text.data());
             _Result._Text.resize(_Temp_result._Size);
             if (_Temp_result._Size < _Requested_size) {
-                return _Temp_result._Error;
+                _Ec = _Make_ec(_Temp_result._Error);
+                return _Result;
             }
         }
     }
 
-    _EXPORT_STD _NODISCARD inline path current_path(error_code& _Ec) {
-        _Ec.clear();
-        path _Result;
-        _Ec = _Make_ec(_Current_path(_Result));
-        return _Result;
-    }
-
     _EXPORT_STD _NODISCARD inline path current_path() {
-        path _Result;
-        const auto _Err = _Current_path(_Result);
-        if (_Err != __std_win_error::_Success) {
-            _Throw_fs_error("current_path()", _Err);
+        error_code _Ec;
+        path _Result(_STD filesystem::current_path(_Ec));
+        if (_Ec) {
+            _Throw_fs_error("current_path()", _Ec);
         }
         return _Result;
     }
@@ -4172,7 +4179,7 @@ namespace filesystem {
     _EXPORT_STD _NODISCARD inline path proximate(const path& _Path, error_code& _Ec) {
         // eventually calls GetFinalPathNameByHandleW
         const path _Base = _STD filesystem::current_path(_Ec);
-        // N4810 29.11.14.27 [fs.op.proximate]/1 incorrectly calls current_path()
+        // N4950 [fs.op.proximate]/1 incorrectly calls current_path()
         if (_Ec) {
             return {};
         }
@@ -4208,7 +4215,7 @@ namespace filesystem {
     _EXPORT_STD _NODISCARD inline path relative(const path& _Path, error_code& _Ec) {
         // eventually calls GetFinalPathNameByHandleW
         const path _Base = _STD filesystem::current_path(_Ec);
-        // N4810 29.11.14.29 [fs.op.relative]/1 incorrectly calls current_path()
+        // N4950 [fs.op.relative]/1 incorrectly calls current_path()
         if (_Ec) {
             return {};
         }
@@ -4219,7 +4226,7 @@ namespace filesystem {
     inline void _Copy_impl(
         const directory_entry& _From, const path& _To, const copy_options _Options, error_code& _Ec) {
         // implement copy, does not clear _Ec for callers
-        // Standard quotes herein are relative to N4810
+        // Standard quotes herein are relative to N4950
         // The following parts of LWG-3057 are implemented:
         // * guarding equivalent() from nonexistent to
         // * replacing unspecified recursion prevention tag with copy_options::directories_only

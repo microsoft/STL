@@ -200,33 +200,33 @@ namespace test {
 
     template <class T, class U>
     concept CanEq = requires(T const& t, U const& u) {
-                        { t == u } -> convertible_to<bool>;
-                    };
+        { t == u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanNEq = requires(T const& t, U const& u) {
-                         { t != u } -> convertible_to<bool>;
-                     };
+        { t != u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanLt = requires(T const& t, U const& u) {
-                        { t < u } -> convertible_to<bool>;
-                    };
+        { t < u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanLtE = requires(T const& t, U const& u) {
-                         { t <= u } -> convertible_to<bool>;
-                     };
+        { t <= u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanGt = requires(T const& t, U const& u) {
-                        { t > u } -> convertible_to<bool>;
-                    };
+        { t > u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanGtE = requires(T const& t, U const& u) {
-                         { t >= u } -> convertible_to<bool>;
-                     };
+        { t >= u } -> convertible_to<bool>;
+    };
 
     template <class Category, class Element>
     class proxy_reference {
@@ -915,6 +915,8 @@ namespace test {
     public:
         using I = iterator<Category, Element, Diff, Eq, Proxy, WrappedState::wrapped>;
         using S = conditional_t<to_bool(IsCommon), I, sentinel<Element, WrappedState::wrapped>>;
+        using RebindAsMoveOnly = range<Category, Element, IsSized, Diff, IsCommon, Eq, Proxy, IsView,
+            Copyability::move_only>;
 
         using detail::range_base<Element, Copy>::range_base;
 

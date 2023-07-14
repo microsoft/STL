@@ -19,7 +19,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-_EXPORT_STD struct money_base : locale::facet { // ultimate base class for moneypunct
+_EXPORT_STD struct money_base // ultimate base class for moneypunct
+    : locale::facet // TRANSITION, ABI, shouldn't be derived from locale::facet
+{
     enum { // constants for different format codes
         symbol = '$',
         sign   = '+',
@@ -33,7 +35,8 @@ _EXPORT_STD struct money_base : locale::facet { // ultimate base class for money
         char field[4];
     };
 
-    money_base(size_t _Refs = 0) : locale::facet(_Refs) {}
+    money_base(size_t _Refs = 0) noexcept // strengthened
+        : locale::facet(_Refs) {}
 };
 
 template <class _Elem>
@@ -364,7 +367,7 @@ protected:
             const char* _Eb = _Str.c_str();
             char* _Ep;
             int _Errno             = 0;
-            const long double _Ans = _Stodx_v2(_Eb, &_Ep, 0, &_Errno); // convert and "widen" double to long double
+            const long double _Ans = _Stodx_v3(_Eb, &_Ep, &_Errno); // convert and "widen" double to long double
 
             if (_Ep == _Eb || _Errno != 0) {
                 _State |= ios_base::failbit;

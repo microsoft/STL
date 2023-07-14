@@ -904,6 +904,138 @@ STATIC_ASSERT(__cpp_lib_forward_like == 202207L);
 #endif
 #endif
 
+#ifndef __cpp_lib_freestanding_char_traits
+#error __cpp_lib_freestanding_char_traits is not defined
+#elif __cpp_lib_freestanding_char_traits != 202306L
+#error __cpp_lib_freestanding_char_traits is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_char_traits == 202306L);
+#endif
+
+#if _HAS_CXX17
+#ifndef __cpp_lib_freestanding_charconv
+#error __cpp_lib_freestanding_charconv is not defined
+#elif __cpp_lib_freestanding_charconv != 202306L
+#error __cpp_lib_freestanding_charconv is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_charconv == 202306L);
+#endif
+#else
+#ifdef __cpp_lib_freestanding_charconv
+#error __cpp_lib_freestanding_charconv is defined
+#endif
+#endif
+
+#ifndef __cpp_lib_freestanding_cstdlib
+#error __cpp_lib_freestanding_cstdlib is not defined
+#elif __cpp_lib_freestanding_cstdlib != 202306L
+#error __cpp_lib_freestanding_cstdlib is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_cstdlib == 202306L);
+#endif
+
+#ifndef __cpp_lib_freestanding_cstring
+#error __cpp_lib_freestanding_cstring is not defined
+#elif __cpp_lib_freestanding_cstring != 202306L
+#error __cpp_lib_freestanding_cstring is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_cstring == 202306L);
+#endif
+
+#ifndef __cpp_lib_freestanding_cwchar
+#error __cpp_lib_freestanding_cwchar is not defined
+#elif __cpp_lib_freestanding_cwchar != 202306L
+#error __cpp_lib_freestanding_cwchar is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_cwchar == 202306L);
+#endif
+
+#ifndef __cpp_lib_freestanding_errc
+#error __cpp_lib_freestanding_errc is not defined
+#elif __cpp_lib_freestanding_errc != 202306L
+#error __cpp_lib_freestanding_errc is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_errc == 202306L);
+#endif
+
+#ifndef __cpp_lib_freestanding_feature_test_macros
+#error __cpp_lib_freestanding_feature_test_macros is not defined
+#elif __cpp_lib_freestanding_feature_test_macros != 202306L
+#error __cpp_lib_freestanding_feature_test_macros is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_feature_test_macros == 202306L);
+#endif
+
+#ifndef __cpp_lib_freestanding_functional
+#error __cpp_lib_freestanding_functional is not defined
+#elif __cpp_lib_freestanding_functional != 202306L
+#error __cpp_lib_freestanding_functional is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_functional == 202306L);
+#endif
+
+#ifndef __cpp_lib_freestanding_iterator
+#error __cpp_lib_freestanding_iterator is not defined
+#elif __cpp_lib_freestanding_iterator != 202306L
+#error __cpp_lib_freestanding_iterator is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_iterator == 202306L);
+#endif
+
+#ifndef __cpp_lib_freestanding_memory
+#error __cpp_lib_freestanding_memory is not defined
+#elif __cpp_lib_freestanding_memory != 202306L
+#error __cpp_lib_freestanding_memory is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_memory == 202306L);
+#endif
+
+#ifndef __cpp_lib_freestanding_operator_new
+#error __cpp_lib_freestanding_operator_new is not defined
+#elif __cpp_lib_freestanding_operator_new != 202306L
+#error __cpp_lib_freestanding_operator_new is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_operator_new == 202306L);
+#endif
+
+#ifdef __cpp_lib_concepts
+#ifndef __cpp_lib_freestanding_ranges
+#error __cpp_lib_freestanding_ranges is not defined
+#elif __cpp_lib_freestanding_ranges != 202306L
+#error __cpp_lib_freestanding_ranges is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_ranges == 202306L);
+#endif
+#else
+#ifdef __cpp_lib_freestanding_ranges
+#error __cpp_lib_freestanding_ranges is defined
+#endif
+#endif
+
+#ifndef __cpp_lib_freestanding_ratio
+#error __cpp_lib_freestanding_ratio is not defined
+#elif __cpp_lib_freestanding_ratio != 202306L
+#error __cpp_lib_freestanding_ratio is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_ratio == 202306L);
+#endif
+
+#ifndef __cpp_lib_freestanding_tuple
+#error __cpp_lib_freestanding_tuple is not defined
+#elif __cpp_lib_freestanding_tuple != 202306L
+#error __cpp_lib_freestanding_tuple is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_tuple == 202306L);
+#endif
+
+#ifndef __cpp_lib_freestanding_utility
+#error __cpp_lib_freestanding_utility is not defined
+#elif __cpp_lib_freestanding_utility != 202306L
+#error __cpp_lib_freestanding_utility is not 202306L
+#else
+STATIC_ASSERT(__cpp_lib_freestanding_utility == 202306L);
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_gcd_lcm
 #error __cpp_lib_gcd_lcm is not defined
@@ -1135,7 +1267,6 @@ STATIC_ASSERT(__cpp_lib_is_invocable == 201703L);
 #endif
 
 #if _HAS_CXX20
-#ifndef __EDG__ // TRANSITION, VSO-1268984
 #ifndef __clang__ // TRANSITION, LLVM-48860
 #ifndef __cpp_lib_is_layout_compatible
 #error __cpp_lib_is_layout_compatible is not defined
@@ -1147,7 +1278,6 @@ STATIC_ASSERT(__cpp_lib_is_layout_compatible == 201907L);
 #else
 #ifdef __cpp_lib_is_layout_compatible
 #error __cpp_lib_is_layout_compatible is defined
-#endif
 #endif
 #endif
 #endif
@@ -1175,7 +1305,6 @@ STATIC_ASSERT(__cpp_lib_is_null_pointer == 201309L);
 #endif
 
 #if _HAS_CXX20
-#ifndef __EDG__ // TRANSITION, VSO-1268984
 #ifndef __clang__ // TRANSITION, LLVM-48860
 #ifndef __cpp_lib_is_pointer_interconvertible
 #error __cpp_lib_is_pointer_interconvertible is not defined
@@ -1187,7 +1316,6 @@ STATIC_ASSERT(__cpp_lib_is_pointer_interconvertible == 201907L);
 #else
 #ifdef __cpp_lib_is_pointer_interconvertible
 #error __cpp_lib_is_pointer_interconvertible is defined
-#endif
 #endif
 #endif
 #endif

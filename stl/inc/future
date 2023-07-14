@@ -205,8 +205,8 @@ public:
     // TRANSITION, incorrectly default constructs _Result when _Ty is default constructible
     _Associated_state(_Mydel* _Dp = nullptr)
         : _Refs(1), // non-atomic initialization
-          _Exception(), _Retrieved(false), _Ready(false), _Ready_at_thread_exit(false), _Has_stored_result(false),
-          _Running(false), _Deleter(_Dp) {}
+          _Result(), _Exception(), _Retrieved(false), _Ready(false), _Ready_at_thread_exit(false),
+          _Has_stored_result(false), _Running(false), _Deleter(_Dp) {}
 
     virtual ~_Associated_state() noexcept {
         if (_Already_has_stored_result() && !_Ready) { // registered for release at thread exit
@@ -290,7 +290,7 @@ public:
         }
 
         // TRANSITION: `_Retrieved` should be assigned before `_Exception` is thrown so that a `future::get`
-        // that throws a stored exception invalidates the future (N4928 [futures.unique.future]/17)
+        // that throws a stored exception invalidates the future (N4950 [futures.unique.future]/17)
         _Retrieved = true;
         _Maybe_run_deferred_function(_Lock);
         while (!_Ready) {
@@ -361,17 +361,13 @@ public:
         }
 
         _STL_ASSERT(_Exc != nullptr, "promise<T>::set_exception/set_exception_at_thread_exit called with a null "
-                                     "std::exception_ptr, which is invalid per N4928 [futures.promise]/20");
+                                     "std::exception_ptr, which is invalid per N4950 [futures.promise]/20");
         _Exception = _Exc;
         _Do_notify(_Lock, _At_thread_exit);
     }
 
     bool _Is_ready() const noexcept {
         return _Ready != 0;
-    }
-
-    bool _Is_ready_at_thread_exit() const noexcept {
-        return _Ready_at_thread_exit;
     }
 
     bool _Already_has_stored_result() const noexcept { // Has a result or an exception
@@ -395,12 +391,6 @@ public:
     }
 
 protected:
-    void _Make_ready_at_thread_exit() { // set ready status at thread exit
-        if (_Ready_at_thread_exit) {
-            _Ready = true;
-        }
-    }
-
     void _Maybe_run_deferred_function(unique_lock<mutex>& _Lock) { // run a deferred function if not already done
         if (!_Running) { // run the function
             _Running = true;
@@ -415,7 +405,7 @@ public:
     condition_variable _Cond;
     bool _Retrieved;
     int _Ready;
-    bool _Ready_at_thread_exit;
+    bool _Ready_at_thread_exit; // TRANSITION, ABI
     bool _Has_stored_result;
     bool _Running;
 
@@ -859,10 +849,6 @@ public:
         return _Assoc_state && _Assoc_state->_Is_ready();
     }
 
-    bool _Is_ready_at_thread_exit() const noexcept {
-        return _Assoc_state && _Assoc_state->_Is_ready_at_thread_exit();
-    }
-
 private:
     _Associated_state<_Ty>* _Assoc_state = nullptr;
     bool _Get_only_once                  = false;
@@ -879,7 +865,7 @@ private:
 
 public:
     static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
-        "T in future<T> must meet the Cpp17Destructible requirements (N4928 [futures.unique.future]/4).");
+        "T in future<T> must meet the Cpp17Destructible requirements (N4950 [futures.unique.future]/4).");
 
     future() = default;
 
@@ -967,7 +953,7 @@ private:
 
 public:
     static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
-        "T in shared_future<T> must meet the Cpp17Destructible requirements (N4928 [futures.shared.future]/4).");
+        "T in shared_future<T> must meet the Cpp17Destructible requirements (N4950 [futures.shared.future]/4).");
 
     shared_future() = default;
 
@@ -1090,10 +1076,6 @@ public:
         return _State._Is_ready();
     }
 
-    bool _Is_ready_at_thread_exit() const noexcept {
-        return _State._Is_ready_at_thread_exit();
-    }
-
     _Promise(const _Promise&)            = delete;
     _Promise& operator=(const _Promise&) = delete;
 
@@ -1106,7 +1088,7 @@ _EXPORT_STD template <class _Ty>
 class promise { // class that defines an asynchronous provider that holds a value
 public:
     static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
-        "T in promise<T> must meet the Cpp17Destructible requirements (N4928 [futures.promise]/1).");
+        "T in promise<T> must meet the Cpp17Destructible requirements (N4950 [futures.promise]/1).");
 
     promise() : _MyPromise(new _Associated_state<_Ty>) {}
 
@@ -1121,7 +1103,7 @@ public:
     }
 
     ~promise() noexcept {
-        if (_MyPromise._Is_valid() && !_MyPromise._Is_ready() && !_MyPromise._Is_ready_at_thread_exit()) {
+        if (_MyPromise._Is_valid() && !_MyPromise._Is_ready()) {
             // exception if destroyed before function object returns
             future_error _Fut(_STD make_error_code(future_errc::broken_promise));
             _MyPromise._Get_state()._Set_exception(_STD make_exception_ptr(_Fut), false);
@@ -1183,7 +1165,7 @@ public:
     }
 
     ~promise() noexcept {
-        if (_MyPromise._Is_valid() && !_MyPromise._Is_ready() && !_MyPromise._Is_ready_at_thread_exit()) {
+        if (_MyPromise._Is_valid() && !_MyPromise._Is_ready()) {
             // exception if destroyed before function object returns
             future_error _Fut(_STD make_error_code(future_errc::broken_promise));
             _MyPromise._Get_state()._Set_exception(_STD make_exception_ptr(_Fut), false);
@@ -1237,7 +1219,7 @@ public:
     }
 
     ~promise() noexcept {
-        if (_MyPromise._Is_valid() && !_MyPromise._Is_ready() && !_MyPromise._Is_ready_at_thread_exit()) {
+        if (_MyPromise._Is_valid() && !_MyPromise._Is_ready()) {
             // exception if destroyed before function object returns
             future_error _Fut(_STD make_error_code(future_errc::broken_promise));
             _MyPromise._Get_state()._Set_exception(_STD make_exception_ptr(_Fut), false);

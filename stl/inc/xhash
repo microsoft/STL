@@ -108,12 +108,15 @@ struct _Uhash_choose_transparency {
 #if _HAS_CXX20
 template <class _Kty, class _Hasher, class _Keyeq>
 struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq,
-    void_t<typename _Hasher::is_transparent, typename _Keyeq::is_transparent>> {
+    enable_if_t<conjunction_v<_Is_transparent<_Hasher>, _Is_transparent<_Keyeq>>>> {
     // transparency selector for transparent hashed containers
     template <class _Keyty>
     using _Deduce_key = const _Keyty&;
 
-    using _Transparent = void;
+    template <class _Container, class _Kx>
+    static constexpr bool _Supports_transparency =
+        !disjunction_v<is_convertible<_Kx, typename _Container::const_iterator>,
+            is_convertible<_Kx, typename _Container::iterator>>;
 };
 #endif // _HAS_CXX20
 
@@ -164,10 +167,11 @@ public:
 
     void swap(_Uhash_compare& _Rhs) noexcept(
         conjunction_v<_Is_nothrow_swappable<_Hasher>, _Is_nothrow_swappable<_Keyeq>>) {
-        _Swap_adl(_Mypair._Get_first(), _Rhs._Mypair._Get_first());
+        using _STD swap;
+        swap(_Mypair._Get_first(), _Rhs._Mypair._Get_first()); // intentional ADL
         auto& _Lsecond = _Mypair._Myval2;
         auto& _Rsecond = _Rhs._Mypair._Myval2;
-        _Swap_adl(_Lsecond._Get_first(), _Rsecond._Get_first());
+        swap(_Lsecond._Get_first(), _Rsecond._Get_first()); // intentional ADL
         _STD swap(_Lsecond._Myval2, _Rsecond._Myval2);
     }
 
@@ -252,8 +256,7 @@ struct _Hash_vec {
     using difference_type   = typename _Aliter_traits::difference_type;
     using pointer           = typename _Aliter_traits::pointer;
     using _Aliter_scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Aliter>, _Simple_types<value_type>,
-        _Vec_iter_types<value_type, size_type, difference_type, pointer, typename _Aliter_traits::const_pointer,
-            value_type&, const value_type&>>>;
+        _Vec_iter_types<value_type, size_type, difference_type, pointer, typename _Aliter_traits::const_pointer>>>;
 
     _Hash_vec() : _Mypair(_Zero_then_variadic_args_t{}) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Aliter, _Mypair._Get_first()));
@@ -926,7 +929,7 @@ public:
     }
 
     void reserve(size_type _Maxcount) { // rebuild table with room for _Maxcount elements
-        rehash(static_cast<size_type>(static_cast<float>(_Maxcount) / max_load_factor() + 0.5F));
+        rehash(_Min_load_factor_buckets(_Maxcount));
     }
 
     conditional_t<_Multi, iterator, pair<iterator, bool>> insert(const value_type& _Val) {
@@ -1139,8 +1142,8 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _Kx, class _Mytraits = _Traits, class = typename _Mytraits::_Transparent,
-        enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
+    template <class _Kx, class _Mytraits = _Traits,
+        enable_if_t<_Mytraits::template _Supports_transparency<_Hash, _Kx>, int> = 0>
     size_type erase(_Kx&& _Keyval) noexcept(noexcept(_Erase(_Keyval))) /* strengthened */ {
         return _Erase(_Keyval);
     }
@@ -1379,8 +1382,8 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _Kx, class _Mytraits = _Traits, class = typename _Mytraits::_Transparent,
-        enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
+    template <class _Kx, class _Mytraits = _Traits,
+        enable_if_t<_Mytraits::template _Supports_transparency<_Hash, _Kx>, int> = 0>
     node_type extract(_Kx&& _Keyval) {
         const auto _Ptr = _Extract(_Keyval);
         if (!_Ptr) {
@@ -1999,7 +2002,7 @@ protected:
 };
 
 #if _HAS_CXX17
-// For constraining deduction guides (N4892 [unord.req]/18.3)
+// For constraining deduction guides (N4950 [unord.req.general]/243.3)
 template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
 #endif // _HAS_CXX17

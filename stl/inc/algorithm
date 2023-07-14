@@ -21,6 +21,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("lifetimebound")
+#undef msvc
+#undef lifetimebound
+
 #if _USE_STD_VECTOR_ALGORITHMS
 
 _EXTERN_C
@@ -3430,6 +3436,11 @@ _FwdIt2 swap_ranges(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Dest) noe
 }
 #endif // _HAS_CXX17
 
+_EXPORT_STD template <class _FwdIt1, class _FwdIt2>
+_CONSTEXPR20 void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and *_Right
+    swap(*_Left, *_Right); // intentional ADL
+}
+
 _EXPORT_STD template <class _InIt, class _OutIt, class _Fn>
 _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Fn _Func) {
     // transform [_First, _Last) with _Func
@@ -4583,8 +4594,7 @@ namespace ranges {
     concept _Is_input_with_value_type = input_iterator<_It> && same_as<iter_value_t<_It>, _Ty>;
 
     template <class _It, class _Out>
-    concept _Can_reread_or_store = forward_iterator<_It> //
-                                || _Is_input_with_value_type<_Out, iter_value_t<_It>> //
+    concept _Can_reread_or_store = forward_iterator<_It> || _Is_input_with_value_type<_Out, iter_value_t<_It>>
                                 || indirectly_copyable_storable<_It, _Out>;
 
     class _Unique_copy_fn : private _Not_quite_object {
@@ -5349,7 +5359,7 @@ void _Random_shuffle1(_RanIt _First, _RanIt _Last, _RngFn& _RngFunc) {
         _Diff _Off = _RngFunc(static_cast<_Diff>(_Target_index + 1));
         _STL_ASSERT(0 <= _Off && _Off <= _Target_index, "random value out of range");
         if (_Off != _Target_index) { // avoid self-move-assignment
-            _STD iter_swap(_UTarget, _UFirst + _Off);
+            swap(*_UTarget, *(_UFirst + _Off)); // intentional ADL
         }
     }
 }
@@ -5454,7 +5464,7 @@ _EXPORT_STD template <class _FwdIt>
 constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) left by _Pos_to_shift
     // positions; returns the end of the resulting range
-    _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/1)");
+    _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/1)");
 
     _Adl_verify_range(_First, _Last);
 
@@ -5495,7 +5505,7 @@ _EXPORT_STD template <class _FwdIt>
 constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) right by _Pos_to_shift
     // positions; returns the beginning of the resulting range
-    _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/5)");
+    _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/5)");
 
     _Adl_verify_range(_First, _Last);
 
@@ -5559,7 +5569,7 @@ constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fw
 
                     return _First;
                 }
-                _Swap_adl(*_Mid, *_Trail);
+                swap(*_Mid, *_Trail); // intentional ADL
             }
         }
     }
@@ -5581,7 +5591,7 @@ namespace ranges {
 
         template <permutable _It, sentinel_for<_It> _Se>
         constexpr subrange<_It> operator()(_It _First, const _Se _Last, iter_difference_t<_It> _Pos_to_shift) const {
-            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/1)");
+            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/1)");
 
             _Adl_verify_range(_First, _Last);
             auto _Result = _First;
@@ -5599,7 +5609,7 @@ namespace ranges {
         template <forward_range _Rng>
             requires permutable<iterator_t<_Rng>>
         constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, range_difference_t<_Rng> _Pos_to_shift) const {
-            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/1)");
+            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/1)");
 
             if (_Pos_to_shift == 0) {
                 auto _Last = _Rewrap_iterator(_Range, _Get_final_iterator_unwrapped(_Range));
@@ -5703,7 +5713,7 @@ namespace ranges {
             _It _First, _Se _Last, iter_difference_t<_It> _Pos_to_shift, const _SizeTy _Size) {
             _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
-            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/5)");
+            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/5)");
 
             if (_Pos_to_shift == 0) {
                 return {_First, _RANGES next(_First, _Last)};
@@ -5830,7 +5840,7 @@ _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
                 }
             } while (!_Pred(*_ULast));
 
-            _STD iter_swap(_UFirst, _ULast); // out of place, swap and loop
+            swap(*_UFirst, *_ULast); // out of place, swap and loop; intentional ADL
             ++_UFirst;
         }
     } else {
@@ -5849,7 +5859,7 @@ _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
 
         for (auto _UNext = _UFirst; ++_UNext != _ULast;) {
             if (_Pred(*_UNext)) {
-                _STD iter_swap(_UFirst, _UNext); // out of place, swap and loop
+                swap(*_UFirst, *_UNext); // out of place, swap and loop; intentional ADL
                 ++_UFirst;
             }
         }
@@ -6319,9 +6329,8 @@ _CONSTEXPR20 void _Push_heap_by_index(
     _RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Top, _Ty&& _Val, _Pr _Pred) {
     // percolate _Hole to _Top or where _Val belongs
     using _Diff = _Iter_diff_t<_RanIt>;
-    for (_Diff _Idx = (_Hole - 1) >> 1; // shift for codegen
-         _Top < _Hole && _DEBUG_LT_PRED(_Pred, *(_First + _Idx), _Val); //
-         _Idx = (_Hole - 1) >> 1) { // shift for codegen
+    for (_Diff _Idx                                                          = (_Hole - 1) >> 1; // shift for codegen
+         _Top < _Hole && _DEBUG_LT_PRED(_Pred, *(_First + _Idx), _Val); _Idx = (_Hole - 1) >> 1) { // shift for codegen
         // move _Hole up to parent
         *(_First + _Hole) = _STD move(*(_First + _Idx));
         _Hole             = _Idx;
@@ -7924,14 +7933,14 @@ template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Med3_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) {
     // sort median of three elements to middle
     if (_DEBUG_LT_PRED(_Pred, *_Mid, *_First)) {
-        _STD iter_swap(_Mid, _First);
+        swap(*_Mid, *_First); // intentional ADL
     }
 
     if (_DEBUG_LT_PRED(_Pred, *_Last, *_Mid)) { // swap middle and last, then test first again
-        _STD iter_swap(_Last, _Mid);
+        swap(*_Last, *_Mid); // intentional ADL
 
         if (_DEBUG_LT_PRED(_Pred, *_Mid, *_First)) {
-            _STD iter_swap(_Mid, _First);
+            swap(*_Mid, *_First); // intentional ADL
         }
     }
 }
@@ -7980,7 +7989,7 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
             } else if (_Pred(*_Gfirst, *_Pfirst)) {
                 break;
             } else if (_Plast != _Gfirst) {
-                _STD iter_swap(_Plast, _Gfirst);
+                swap(*_Plast, *_Gfirst); // intentional ADL
                 ++_Plast;
             } else {
                 ++_Plast;
@@ -7988,12 +7997,13 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
         }
 
         for (; _First < _Glast; --_Glast) {
-            if (_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Glast), *_Pfirst)) {
+            const auto _Glast_prev = _Prev_iter(_Glast);
+            if (_DEBUG_LT_PRED(_Pred, *_Glast_prev, *_Pfirst)) {
                 continue;
-            } else if (_Pred(*_Pfirst, *_Prev_iter(_Glast))) {
+            } else if (_Pred(*_Pfirst, *_Glast_prev)) {
                 break;
-            } else if (--_Pfirst != _Prev_iter(_Glast)) {
-                _STD iter_swap(_Pfirst, _Prev_iter(_Glast));
+            } else if (--_Pfirst != _Glast_prev) {
+                swap(*_Pfirst, *_Glast_prev); // intentional ADL
             }
         }
 
@@ -8003,21 +8013,21 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
 
         if (_Glast == _First) { // no room at bottom, rotate pivot upward
             if (_Plast != _Gfirst) {
-                _STD iter_swap(_Pfirst, _Plast);
+                swap(*_Pfirst, *_Plast); // intentional ADL
             }
 
             ++_Plast;
-            _STD iter_swap(_Pfirst, _Gfirst);
+            swap(*_Pfirst, *_Gfirst); // intentional ADL
             ++_Pfirst;
             ++_Gfirst;
         } else if (_Gfirst == _Last) { // no room at top, rotate pivot downward
             if (--_Glast != --_Pfirst) {
-                _STD iter_swap(_Glast, _Pfirst);
+                swap(*_Glast, *_Pfirst); // intentional ADL
             }
 
-            _STD iter_swap(_Pfirst, --_Plast);
+            swap(*_Pfirst, *--_Plast); // intentional ADL
         } else {
-            _STD iter_swap(_Gfirst, --_Glast);
+            swap(*_Gfirst, *--_Glast); // intentional ADL
             ++_Gfirst;
         }
     }
@@ -9999,8 +10009,9 @@ namespace ranges {
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _Ty, class _Pr>
-_NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
-    noexcept(_DEBUG_LT_PRED(_Pred, _Right, _Left))) /* strengthened */ {
+_NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left _MSVC_LIFETIMEBOUND,
+    const _Ty& _Right _MSVC_LIFETIMEBOUND,
+    _Pr _Pred) noexcept(noexcept(_DEBUG_LT_PRED(_Pred, _Right, _Left))) /* strengthened */ {
     // return pair(leftmost/smaller, rightmost/larger) of _Left and _Right
     if (_DEBUG_LT_PRED(_Pred, _Right, _Left)) {
         return {_Right, _Left};
@@ -10017,8 +10028,8 @@ _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist, _Pr _Pr
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left, const _Ty& _Right) noexcept(
-    noexcept(_Right < _Left)) /* strengthened */ {
+_NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left _MSVC_LIFETIMEBOUND,
+    const _Ty& _Right _MSVC_LIFETIMEBOUND) noexcept(noexcept(_Right < _Left)) /* strengthened */ {
     // return pair(leftmost/smaller, rightmost/larger) of _Left and _Right
     if (_Right < _Left) {
         _STL_ASSERT(!(_Left < _Right), "invalid comparator");
@@ -10045,8 +10056,8 @@ namespace ranges {
 
         template <class _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD constexpr minmax_result<const _Ty&> operator()(
-            const _Ty& _Left, const _Ty& _Right, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD constexpr minmax_result<const _Ty&> operator()(const _Ty& _Left _MSVC_LIFETIMEBOUND,
+            const _Ty& _Right _MSVC_LIFETIMEBOUND, _Pr _Pred = {}, _Pj _Proj = {}) const {
             if (_STD invoke(_Pred, _STD invoke(_Proj, _Right), _STD invoke(_Proj, _Left))) {
                 return {_Right, _Left};
             } else {
@@ -10061,7 +10072,7 @@ namespace ranges {
             const auto _First = _Range.begin();
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
-                "An initializer_list passed to std::ranges::minmax must not be empty. (N4928 [alg.min.max]/21)");
+                "An initializer_list passed to std::ranges::minmax must not be empty. (N4950 [alg.min.max]/21)");
             return _Minmax_fwd_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
@@ -10073,13 +10084,13 @@ namespace ranges {
             auto _UFirst = _RANGES _Ubegin(_Range);
             auto _ULast  = _RANGES _Uend(_Range);
             _STL_ASSERT(
-                _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4928 [alg.min.max]/21)");
+                _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4950 [alg.min.max]/21)");
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 return _Minmax_fwd_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             } else {
                 using _Vty = range_value_t<_Rng>;
-                // This initialization is correct, similar to the N4928 [dcl.init.aggr]/6 example
+                // This initialization is correct, similar to the N4950 [dcl.init.aggr]/6 example
                 minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst), _Found.min};
                 if (_UFirst == _ULast) {
                     return _Found;
@@ -10147,7 +10158,7 @@ namespace ranges {
 
             auto _Found_min = _First;
             if (++_First == _Last) {
-                // This initialization is correct, similar to the N4928 [dcl.init.aggr]/6 example
+                // This initialization is correct, similar to the N4950 [dcl.init.aggr]/6 example
                 minmax_result<_Vty> _Result = {static_cast<_Vty>(*_Found_min), _Result.min};
                 return _Result;
             }
@@ -10217,7 +10228,7 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
                 --_UMid;
             } while (!_DEBUG_LT_PRED(_Pred, *_UNext, *_UMid));
 
-            _STD iter_swap(_UNext, _UMid);
+            swap(*_UNext, *_UMid); // intentional ADL
             _STD reverse(_UNext1, _ULast);
             return true;
         }
@@ -10321,7 +10332,7 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
                 --_UMid;
             } while (!_DEBUG_LT_PRED(_Pred, *_UMid, *_UNext));
 
-            _STD iter_swap(_UNext, _UMid);
+            swap(*_UNext, *_UMid); // intentional ADL
             _STD reverse(_UNext1, _ULast);
             return true;
         }
@@ -10568,7 +10579,7 @@ namespace ranges {
             const _Ty& _Val, const _Ty& _Lo, const _Ty& _Hi, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _STL_ASSERT(!_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD invoke(_Proj, _Lo)),
                 "The lower bound cannot be greater than the upper bound in a call to std::ranges::clamp "
-                "(N4861 [alg.clamp]/2).");
+                "(N4950 [alg.clamp]/2).");
 
             auto&& _Temp = _STD invoke(_Proj, _Val);
             if (_STD invoke(_Pred, _STD forward<decltype(_Temp)>(_Temp), _STD invoke(_Proj, _Lo))) {
@@ -10625,9 +10636,9 @@ namespace ranges {
             using _Memcmp_classification_pred = _Lex_compare_memcmp_classify<_It1, _It2, _Pr>;
             constexpr bool _Is_sized1         = sized_sentinel_for<_Se1, _It1>;
             constexpr bool _Is_sized2         = sized_sentinel_for<_Se2, _It2>;
-            if constexpr (!is_void_v<_Memcmp_classification_pred> && _Sized_or_unreachable_sentinel_for<_Se1, _It1> //
-                          && _Sized_or_unreachable_sentinel_for<_Se2, _It2> //
-                          && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
+            if constexpr (!is_void_v<_Memcmp_classification_pred> && _Sized_or_unreachable_sentinel_for<_Se1, _It1>
+                          && _Sized_or_unreachable_sentinel_for<_Se2, _It2> && same_as<_Pj1, identity>
+                          && same_as<_Pj2, identity>) {
                 if (!_STD is_constant_evaluated()) {
                     size_t _Num1;
                     if constexpr (_Is_sized1) {
@@ -10669,6 +10680,11 @@ namespace ranges {
 #endif // _HAS_CXX17
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("lifetimebound")
+#pragma pop_macro("msvc")
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

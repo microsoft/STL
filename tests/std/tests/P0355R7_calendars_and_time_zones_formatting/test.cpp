@@ -5,10 +5,13 @@
 #include <chrono>
 #include <clocale>
 #include <concepts>
+#include <cstdint>
 #include <cstdio>
 #include <format>
 #include <iostream>
+#include <limits>
 #include <locale>
+#include <ratio>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -19,6 +22,8 @@
 
 using namespace std;
 using namespace chrono;
+
+constexpr auto intmax_max = numeric_limits<intmax_t>::max();
 
 template <typename CharT>
 [[nodiscard]] constexpr const CharT* choose_literal(const char* const str, const wchar_t* const wstr) noexcept {
@@ -247,13 +252,22 @@ void empty_braces_helper(
 
 template <typename CharT>
 void test_duration_formatter() {
+    using LongRatio = ratio<intmax_max - 1, intmax_max>;
+
     empty_braces_helper(seconds{5}, STR("5s"));
     empty_braces_helper(minutes{7}, STR("7min"));
     empty_braces_helper(hours{9}, STR("9h"));
     empty_braces_helper(days{2}, STR("2d"));
     empty_braces_helper(-seconds{5}, STR("-5s"));
+    empty_braces_helper(duration<int, ratio<2>>{40}, STR("40[2]s"));
     empty_braces_helper(duration<int, ratio<3, 1>>{40}, STR("40[3]s"));
     empty_braces_helper(duration<int, ratio<3, 7>>{40}, STR("40[3/7]s"));
+    empty_braces_helper(duration<int, ratio<1, 2>>{40}, STR("40[1/2]s"));
+    empty_braces_helper(duration<int, ratio<22, 7>>{40}, STR("40[22/7]s"));
+    empty_braces_helper(duration<int, ratio<53, 101>>{40}, STR("40[53/101]s"));
+    empty_braces_helper(duration<int, ratio<201, 2147483647>>{40}, STR("40[201/2147483647]s"));
+    // TRANSITION, LWG-3921: duration_cast used in formatting may raise UB
+    empty_braces_helper(duration<int, LongRatio>{1}, STR("1[9223372036854775806/9223372036854775807]s"));
 
     // formatting small types needs to work as iostreams << VSO-1521926
     empty_braces_helper(duration<long long, atto>{123}, STR("123as"));
@@ -262,12 +276,12 @@ void test_duration_formatter() {
     assert(format(STR("{:%T}"), 4083007ms) == STR("01:08:03.007"));
     assert(format(STR("{:%T}"), -4083007ms) == STR("-01:08:03.007"));
 
-    assert(format(STR("{:%T %j %q %Q}"), days{4} + 30min) == STR("00:30:00 4 min 5790"));
-    assert(format(STR("{:%T %j %q %Q}"), -days{4} - 30min) == STR("-00:30:00 4 min 5790"));
-    assert(format(STR("{:%T %j}"), days{4} + 23h + 30min) == STR("23:30:00 4"));
-    assert(format(STR("{:%T %j}"), -days{4} - 23h - 30min) == STR("-23:30:00 4"));
-    assert(format(STR("{:%T %j}"), duration<float, days::period>{1.55f}) == STR("13:11:59 1"));
-    assert(format(STR("{:%T %j}"), duration<float, days::period>{-1.55f}) == STR("-13:11:59 1"));
+    assert(format(STR("{:%T %j %q %Q}"), days{4} + 30min) == STR("96:30:00 4 min 5790"));
+    assert(format(STR("{:%T %j %q %Q}"), -days{4} - 30min) == STR("-96:30:00 4 min 5790"));
+    assert(format(STR("{:%T %j}"), days{4} + 23h + 30min) == STR("119:30:00 4"));
+    assert(format(STR("{:%T %j}"), -days{4} - 23h - 30min) == STR("-119:30:00 4"));
+    assert(format(STR("{:%T %j}"), duration<float, days::period>{1.55f}) == STR("37:11:59 1"));
+    assert(format(STR("{:%T %j}"), duration<float, days::period>{-1.55f}) == STR("-37:11:59 1"));
 }
 
 template <typename CharT>
@@ -761,8 +775,10 @@ void test_hh_mm_ss_formatter() {
     assert(format(STR("{:%H %I %M %S %r %R %T %p}"), hh_mm_ss{-13h - 14min - 15351ms})
            == STR("-13 01 14 15.351 01:14:15 PM 13:14 13:14:15.351 PM"));
 
-    throw_helper(STR("{}"), hh_mm_ss{24h});
-    throw_helper(STR("{}"), hh_mm_ss{-24h});
+    assert(format(STR("{}"), hh_mm_ss{24h}) == STR("24:00:00"));
+    assert(format(STR("{}"), hh_mm_ss{-24h}) == STR("-24:00:00"));
+    assert(format(STR("{:%H}"), hh_mm_ss{24h}) == STR("24"));
+    assert(format(STR("{:%H}"), hh_mm_ss{-24h}) == STR("-24"));
     assert(format(STR("{:%M %S}"), hh_mm_ss{27h + 12min + 30s}) == STR("12 30"));
 }
 

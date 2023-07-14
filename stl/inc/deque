@@ -519,7 +519,7 @@ public:
 };
 
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
-    class _Reference, class _Const_reference, class _Mapptr_type>
+    class _Mapptr_type>
 struct _Deque_iter_types {
     using value_type      = _Value_type;
     using size_type       = _Size_type;
@@ -587,7 +587,7 @@ private:
 
     using _Scary_val = _Deque_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Deque_simple_types<_Ty>,
         _Deque_iter_types<_Ty, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,
-            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Ty&, const _Ty&, _Mapptr>>>;
+            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Mapptr>>>;
 
     static constexpr int _Minimum_map_size = 8;
     static constexpr int _Block_size       = _Scary_val::_Block_size;
@@ -623,7 +623,9 @@ public:
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alproxy_ty _Alproxy(_Getal());
         _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
+        _Tidy_guard<deque> _Guard{this};
         resize(_Count);
+        _Guard._Target = nullptr;
         _Proxy._Release();
     }
 
@@ -1314,7 +1316,7 @@ private:
         }
     };
 
-    enum class _Is_bidi : bool { _No, _Yes };
+    enum class _Is_bidi : bool { _Nope, _Yes };
 
     template <_Is_bidi _Bidi, class _Iter, class _Sent>
     iterator _Insert_range(const size_type _Off, _Iter _First, _Sent _Last) {
@@ -1350,7 +1352,7 @@ private:
             const auto _Num     = static_cast<difference_type>(_Mysize() - _Oldsize);
             const auto _Myfirst = _Unchecked_begin();
             const auto _Mymid   = _Myfirst + _Num;
-            if constexpr (_Bidi == _Is_bidi::_No) {
+            if constexpr (_Bidi == _Is_bidi::_Nope) {
                 _STD reverse(_Myfirst, _Mymid); // flip new stuff in place
             }
             _STD rotate(_Myfirst, _Mymid, _Mymid + static_cast<difference_type>(_Off));
@@ -1390,7 +1392,7 @@ public:
             return _Insert_range<_Is_bidi::_Yes>(
                 _Off, _RANGES _Ubegin(_Range), _RANGES _Get_final_iterator_unwrapped(_Range));
         } else {
-            return _Insert_range<_Is_bidi::_No>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+            return _Insert_range<_Is_bidi::_Nope>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
@@ -1455,12 +1457,13 @@ public:
     }
 
     void swap(deque& _Right) noexcept /* strengthened */ {
+        using _STD swap;
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
             auto& _My_data    = _Get_data();
             auto& _Right_data = _Right._Get_data();
             _My_data._Swap_proxy_and_iterators(_Right_data);
-            _Swap_adl(_My_data._Map, _Right_data._Map);
+            swap(_My_data._Map, _Right_data._Map); // intentional ADL
             _STD swap(_My_data._Mapsize, _Right_data._Mapsize);
             _STD swap(_My_data._Myoff, _Right_data._Myoff);
             _STD swap(_My_data._Mysize, _Right_data._Mysize);
@@ -1533,11 +1536,11 @@ private:
         }
     }
 
-    [[noreturn]] void _Xlen() const {
+    [[noreturn]] static void _Xlen() {
         _Xlength_error("deque<T> too long");
     }
 
-    [[noreturn]] void _Xran() const {
+    [[noreturn]] static void _Xran() {
         _Xout_of_range("invalid deque<T> subscript");
     }
 
@@ -1554,11 +1557,12 @@ private:
 
             _Newsize *= 2;
         }
-        _Count = _Newsize - _Mapsize();
 
         size_type _Myboff = _Myoff() / _Block_size;
-        _Mapptr _Newmap   = _Almap.allocate(_Mapsize() + _Count);
+        _Mapptr _Newmap   = _Allocate_at_least_helper(_Almap, _Newsize);
         _Mapptr _Myptr    = _Newmap + _Myboff;
+
+        _Count = _Newsize - _Mapsize();
 
         _Myptr = _STD uninitialized_copy(_Map() + _Myboff, _Map() + _Mapsize(), _Myptr); // copy initial to end
         if (_Myboff <= _Count) { // increment greater than offset of initial block

@@ -121,11 +121,18 @@ std/language.support/support.limits/support.limits.general/ranges.version.compil
 # libc++ is missing various <format> DRs
 std/language.support/support.limits/support.limits.general/format.version.compile.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-2381
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_double.pass.cpp FAIL
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_float.pass.cpp FAIL
+
 # libc++ doesn't implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
 # libc++ doesn't implement LWG-3836
 std/utilities/expected/expected.expected/ctor/ctor.u.pass.cpp FAIL
+
+# libc++ doesn't implement LWG-3843
+std/utilities/expected/expected.expected/observers/value.pass.cpp FAIL
 
 # libc++ doesn't implement LWG-3857
 std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
@@ -147,6 +154,9 @@ std/utilities/memory/specialized.algorithms/uninitialized.fill/ranges_uninitiali
 std/utilities/memory/specialized.algorithms/uninitialized.fill.n/ranges_uninitialized_fill_n.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move_n.pass.cpp FAIL
+
+# libc++ doesn't implement LWG-3940
+std/utilities/expected/expected.void/observers/value.pass.cpp FAIL
 
 # libc++ doesn't implement P1957R2 "Converting from `T*` to `bool` should be considered narrowing"
 std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
@@ -409,9 +419,6 @@ std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
 
-# Clang doesn't implement P0960 "Initializing Aggregates With Parentheses"
-std/ranges/range.factories/range.iota.view/sentinel/ctor.value.pass.cpp:1 FAIL
-
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
 # Clang doesn't enable sized deallocation by default. Should we add -fsized-deallocation or do something else?
@@ -443,14 +450,6 @@ std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
 # GH-1006 <algorithm>: debug checks for predicates are observable
 std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.min.max/minmax_init_list_comp.pass.cpp FAIL
-
-# GH-1259 <locale>: wrong field extraction for hexfloats, or special cases like inf
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_double.pass.cpp FAIL
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_float.pass.cpp FAIL
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp FAIL
-
-# GH-1277 <xlocnum>: We don't match numpunct groups correctly in do_get
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp FAIL
 
 # GH-1275 <locale>: missing some locale names
 # We don't have the locale names libcxx wants specialized in platform_support.hpp
@@ -668,18 +667,25 @@ std/utilities/format/format.formatter/format.formatter.spec/formatter.unsigned_i
 std/utilities/format/format.formatter/format.formatter.spec/formatter.char.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.floating_point.pass.cpp FAIL
 
+# libc++ requires bind_front to be SFINAE-friendly, although the Standard uses "Mandates:" for constructibility.
+std/utilities/function.objects/func.bind_front/bind_front.pass.cpp FAIL
+
 # libc++ chose option A for [time.clock.file.members], and we chose option B.
 std/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
 
 # libc++'s filesystem::path::iterator models bidirectional_iterator, which is not guaranteed by the Standard
 std/input.output/filesystems/class.path/range_concept_conformance.compile.pass.cpp FAIL
 
+# libc++ assumes long double is at least 80-bit; also affected by LWG-2381
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp FAIL
+
 # MaybePOCCAAllocator doesn't meet the allocator requirements
 std/containers/sequences/vector/vector.cons/assign_copy.pass.cpp FAIL
 
 # LIT's ADDITIONAL_COMPILE_FLAGS is problematic
-std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp SKIPPED
+std/concepts/concepts.lang/concept.default.init/default_initializable.compile.pass.cpp:0 FAIL
 std/utilities/format/format.functions/escaped_output.ascii.pass.cpp SKIPPED
+std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp SKIPPED
 std/utilities/variant/variant.variant/implicit_ctad.pass.cpp SKIPPED
 
 # libc++ speculatively implements LWG-3645
@@ -710,6 +716,9 @@ std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
 # unused-variable warning
 std/thread/thread.mutex/thread.lock/thread.lock.scoped/mutex.pass.cpp FAIL
 std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/default.pass.cpp:1 FAIL
+
+# This test assumes that array<int, 0> is not const-default-constructible.
+std/concepts/concepts.lang/concept.default.init/default_initializable.compile.pass.cpp:1 FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -816,9 +825,6 @@ std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.
 # Likely STL bugs in <format>
 std/utilities/format/format.formatter/format.parse.ctx/next_arg_id.pass.cpp FAIL
 std/time/time.syn/formatter.month_day_last.pass.cpp FAIL
-
-# Likely STL bug in `bind_front`: we don't respect deletion of the target call operator
-std/utilities/function.objects/func.bind_front/bind_front.pass.cpp FAIL
 
 # Likely STL bug in `join_view::_Iterator`: constexpr weirdness
 std/ranges/range.adaptors/range.join.view/end.pass.cpp:1 FAIL
@@ -976,7 +982,6 @@ std/algorithms/algorithms.results/in_found_result.pass.cpp:0 FAIL
 std/algorithms/algorithms.results/min_max_result.pass.cpp:0 FAIL
 std/algorithms/ranges_robust_against_dangling.pass.cpp FAIL
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
-std/concepts/concepts.lang/concept.default.init/default_initializable.compile.pass.cpp:0 FAIL
 std/containers/sequences/deque/abi.compile.pass.cpp FAIL
 std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:0 FAIL
@@ -1001,8 +1006,6 @@ std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAI
 std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.move/iter_rvalue_reference_t.compile.pass.cpp FAIL
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.swap/iter_swap.pass.cpp FAIL
-std/iterators/predef.iterators/iterators.common/iterator_traits.compile.pass.cpp:1 FAIL
-std/iterators/predef.iterators/iterators.common/plus_plus.pass.cpp:1 FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gt.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_lte.pass.cpp FAIL
@@ -1062,11 +1065,7 @@ std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
 std/ranges/range.factories/range.single.view/cpo.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
 std/utilities/format/format.functions/escaped_output.ascii.pass.cpp FAIL
-std/utilities/format/format.functions/format.locale.pass.cpp FAIL
-std/utilities/format/format.functions/format.pass.cpp FAIL
 std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
-std/utilities/format/format.functions/vformat.locale.pass.cpp FAIL
-std/utilities/format/format.functions/vformat.pass.cpp FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.inv/invoke.pass.cpp:0 FAIL
 std/utilities/function.objects/refwrap/refwrap.const/type_conv_ctor.pass.cpp:0 FAIL

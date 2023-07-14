@@ -36,20 +36,20 @@ public:
     }
 
     constexpr explicit latch(const ptrdiff_t _Expected) noexcept /* strengthened */ : _Counter{_Expected} {
-        _STL_VERIFY(_Expected >= 0, "Precondition: expected >= 0 (N4861 [thread.latch.class]/4)");
+        _STL_VERIFY(_Expected >= 0, "Precondition: expected >= 0 (N4950 [thread.latch.class]/4)");
     }
 
     latch(const latch&)            = delete;
     latch& operator=(const latch&) = delete;
 
     void count_down(const ptrdiff_t _Update = 1) noexcept /* strengthened */ {
-        _STL_VERIFY(_Update >= 0, "Precondition: update >= 0 (N4861 [thread.latch.class]/7)");
+        _STL_VERIFY(_Update >= 0, "Precondition: update >= 0 (N4950 [thread.latch.class]/7)");
         // TRANSITION, GH-1133: should be memory_order_release
         const ptrdiff_t _Current = _Counter.fetch_sub(_Update) - _Update;
         if (_Current == 0) {
             _Counter.notify_all();
         } else {
-            _STL_VERIFY(_Current >= 0, "Precondition: update <= counter (N4861 [thread.latch.class]/7)");
+            _STL_VERIFY(_Current >= 0, "Precondition: update <= counter (N4950 [thread.latch.class]/7)");
         }
     }
 
@@ -66,20 +66,20 @@ public:
                 return;
             } else {
                 _STL_VERIFY(_Current > 0, "Invariant counter >= 0, possibly caused by preconditions violation "
-                                          "(N4861 [thread.latch.class]/7)");
+                                          "(N4950 [thread.latch.class]/7)");
             }
             _Counter.wait(_Current, memory_order_relaxed);
         }
     }
 
     void arrive_and_wait(const ptrdiff_t _Update = 1) noexcept /* strengthened */ {
-        _STL_VERIFY(_Update >= 0, "Precondition: update >= 0 (N4861 [thread.latch.class]/7)");
+        _STL_VERIFY(_Update >= 0, "Precondition: update >= 0 (N4950 [thread.latch.class]/7)");
         // TRANSITION, GH-1133: should be memory_order_acq_rel
         const ptrdiff_t _Current = _Counter.fetch_sub(_Update) - _Update;
         if (_Current == 0) {
             _Counter.notify_all();
         } else {
-            _STL_VERIFY(_Current > 0, "Precondition: update <= counter (N4861 [thread.latch.class]/7)");
+            _STL_VERIFY(_Current > 0, "Precondition: update <= counter (N4950 [thread.latch.class]/7)");
             _Counter.wait(_Current, memory_order_relaxed);
             wait();
         }

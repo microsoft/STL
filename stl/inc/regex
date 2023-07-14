@@ -1137,8 +1137,9 @@ public:
     }
 
     void swap(match_results& _Right) noexcept(_Is_nothrow_swappable<_BidIt>::value) /* strengthened */ {
+        using _STD swap;
         _STD swap(_Ready, _Right._Ready);
-        _Swap_adl(_Org, _Right._Org);
+        swap(_Org, _Right._Org); // intentional ADL
         _Matches.swap(_Right._Matches);
         _STD swap(_Prefix, _Right._Prefix);
         _STD swap(_Suffix, _Right._Suffix);
@@ -1366,7 +1367,7 @@ public:
         static_assert(sizeof(_Refs) == sizeof(_Atomic_counter_t), "invalid _Refs size");
     }
 
-    regex_constants::syntax_option_type _Fl;
+    regex_constants::syntax_option_type _Fl{};
     unsigned int _Loops;
     unsigned int _Marks;
     unsigned int _Refs;
@@ -1485,8 +1486,8 @@ struct _Loop_vals_t { // storage for loop administration
 
 class _Node_rep : public _Node_base { // node that marks the beginning of a repetition
 public:
-    _Node_rep(bool _Greedy, int _Mn, int _Mx, _Node_end_rep* _End, unsigned int _Number)
-        : _Node_base(_N_rep, _Greedy ? _Fl_greedy : _Fl_none), _Min(_Mn), _Max(_Mx), _End_rep(_End),
+    _Node_rep(bool _Greedy, int _Min_, int _Max_, _Node_end_rep* _End, unsigned int _Number)
+        : _Node_base(_N_rep, _Greedy ? _Fl_greedy : _Fl_none), _Min(_Min_), _Max(_Max_), _End_rep(_End),
           _Loop_number(_Number), _Simple_loop(-1) {}
 
     const int _Min;
@@ -3135,8 +3136,8 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_rep(int _Min, int _Max, bool _Gree
         _Insert_node(_Pos, _If_expr);
 
         if (!_Greedy) {
-            _Swap_adl(_If_expr->_Next->_Prev, _If_empty_str->_Next->_Prev);
-            _Swap_adl(_If_expr->_Next, _If_empty_str->_Next);
+            swap(_If_expr->_Next->_Prev, _If_empty_str->_Next->_Prev); // intentional ADL
+            swap(_If_expr->_Next, _If_empty_str->_Next); // intentional ADL
         }
     } else {
         _Node_end_rep* _Node0 = new _Node_end_rep();

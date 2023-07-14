@@ -58,6 +58,9 @@ inline constexpr ptrdiff_t _Semaphore_max = (1ULL << (sizeof(ptrdiff_t) * CHAR_B
 _EXPORT_STD template <ptrdiff_t _Least_max_value = _Semaphore_max>
 class counting_semaphore {
 public:
+    static_assert(_Least_max_value >= 0,
+        "The least maximum value for a counting_semaphore must be nonnegative (N4950 [thread.sema.cnt]/2).");
+
     _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
         return _Least_max_value;
     }
@@ -65,7 +68,7 @@ public:
     constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */
         : _Counter(_Desired) {
         _STL_VERIFY(_Desired >= 0 && _Desired <= _Least_max_value,
-            "Precondition: desired >= 0, and desired <= max() (N4861 [thread.sema.cnt]/5)");
+            "Precondition: desired >= 0, and desired <= max() (N4950 [thread.sema.cnt]/5)");
     }
 
     counting_semaphore(const counting_semaphore&)            = delete;
@@ -76,7 +79,7 @@ public:
             return;
         }
         _STL_VERIFY(_Update > 0 && _Update <= _Least_max_value,
-            "Precondition: update >= 0, and update <= max() - counter (N4861 [thread.sema.cnt]/8)");
+            "Precondition: update >= 0, and update <= max() - counter (N4950 [thread.sema.cnt]/8)");
 
         // We need to notify (wake) at least _Update waiting threads.
         // Errors towards waking more cannot be always avoided, but they are performance issues.
@@ -90,9 +93,9 @@ public:
         // memory_order_seq_cst might be superfluous for some hardware mappings of the C++ memory model,
         // but from the point of view of the C++ memory model itself it is needed; weaker orders don't work.
 
-        const ptrdiff_t _Prev = _Counter.fetch_add(static_cast<ptrdiff_t>(_Update));
-        _STL_VERIFY(_Prev + _Update > 0 && _Prev + _Update <= _Least_max_value,
-            "Precondition: update <= max() - counter (N4861 [thread.sema.cnt]/8)");
+        const ptrdiff_t _Prev = _Counter.fetch_add(_Update);
+        _STL_VERIFY(_Prev >= 0 && _Update <= _Least_max_value - _Prev,
+            "Precondition: update <= max() - counter (N4950 [thread.sema.cnt]/8)");
 
         const ptrdiff_t _Waiting_upper_bound = _Waiting.load();
 
@@ -111,16 +114,6 @@ public:
         }
     }
 
-    void _Wait(const unsigned long _Remaining_timeout) noexcept {
-        // See the comment in release()
-        _Waiting.fetch_add(1);
-        ptrdiff_t _Current = _Counter.load();
-        if (_Current == 0) {
-            __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
-        }
-        _Waiting.fetch_sub(1, memory_order_relaxed);
-    }
-
     void acquire() noexcept /* strengthened */ {
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
@@ -130,7 +123,7 @@ public:
             }
             _STL_VERIFY(_Current > 0 && _Current <= _Least_max_value,
                 "Invariant: counter >= 0, and counter <= max() "
-                "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+                "possibly caused by preconditions violation (N4950 [thread.sema.cnt]/8)");
 
             // "happens after release" ordering is provided by this CAS, so loads and waits can be relaxed
             if (_Counter.compare_exchange_weak(_Current, _Current - 1)) {
@@ -146,7 +139,7 @@ public:
         }
         _STL_VERIFY(_Current > 0 && _Current <= _Least_max_value,
             "Invariant: counter >= 0, and counter <= max() "
-            "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+            "possibly caused by preconditions violation (N4950 [thread.sema.cnt]/8)");
 
         return _Counter.compare_exchange_weak(_Current, _Current - 1);
     }
@@ -166,7 +159,7 @@ public:
             }
             _STL_VERIFY(_Current > 0 && _Current <= _Least_max_value,
                 "Invariant: counter >= 0, and counter <= max() "
-                "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+                "possibly caused by preconditions violation (N4950 [thread.sema.cnt]/8)");
 
             // "happens after release" ordering is provided by this CAS, so loads and waits can be relaxed
             if (_Counter.compare_exchange_weak(_Current, _Current - 1)) {
@@ -190,7 +183,7 @@ public:
             }
             _STL_VERIFY(_Current > 0 && _Current <= _Least_max_value,
                 "Invariant: counter >= 0, and counter <= max() "
-                "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+                "possibly caused by preconditions violation (N4950 [thread.sema.cnt]/8)");
 
             // "happens after release" ordering is provided by this CAS, so loads and waits can be relaxed
             if (_Counter.compare_exchange_weak(_Current, _Current - 1)) {
@@ -200,6 +193,16 @@ public:
     }
 
 private:
+    void _Wait(const unsigned long _Remaining_timeout) noexcept {
+        // See the comment in release()
+        _Waiting.fetch_add(1);
+        ptrdiff_t _Current = _Counter.load();
+        if (_Current == 0) {
+            __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
+        }
+        _Waiting.fetch_sub(1, memory_order_relaxed);
+    }
+
     atomic<ptrdiff_t> _Counter;
     atomic<ptrdiff_t> _Waiting;
 };
@@ -214,7 +217,7 @@ public:
     constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */
         : _Counter(static_cast<unsigned char>(_Desired)) {
         _STL_VERIFY((_Desired & ~1) == 0, "Precondition: desired >= 0, and desired <= max() "
-                                          "(N4861 [thread.sema.cnt]/5)");
+                                          "(N4950 [thread.sema.cnt]/5)");
     }
 
     counting_semaphore(const counting_semaphore&)            = delete;
@@ -225,7 +228,7 @@ public:
             return;
         }
         _STL_VERIFY(_Update == 1, "Precondition: update >= 0, "
-                                  "and update <= max() - counter (N4861 [thread.sema.cnt]/8)");
+                                  "and update <= max() - counter (N4950 [thread.sema.cnt]/8)");
         // TRANSITION, GH-1133: should be memory_order_release
         _Counter.store(1);
         _Counter.notify_one();

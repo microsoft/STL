@@ -15,22 +15,20 @@ struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
     typename std::_Aligned_storage<Concurrency::details::stl_condition_variable_max_size,
         Concurrency::details::stl_condition_variable_max_alignment>::type cv;
 
-    [[nodiscard]] Concurrency::details::stl_condition_variable_interface* _get_cv() noexcept {
+    [[nodiscard]] Concurrency::details::stl_condition_variable_win7* _get_cv() noexcept {
         // get pointer to implementation
-        return reinterpret_cast<Concurrency::details::stl_condition_variable_interface*>(&cv);
+        return reinterpret_cast<Concurrency::details::stl_condition_variable_win7*>(&cv);
     }
 };
 
-static_assert(sizeof(_Cnd_internal_imp_t) <= _Cnd_internal_imp_size, "incorrect _Cnd_internal_imp_size");
-static_assert(alignof(_Cnd_internal_imp_t) <= _Cnd_internal_imp_alignment, "incorrect _Cnd_internal_imp_alignment");
+static_assert(sizeof(_Cnd_internal_imp_t) == _Cnd_internal_imp_size, "incorrect _Cnd_internal_imp_size");
+static_assert(alignof(_Cnd_internal_imp_t) == _Cnd_internal_imp_alignment, "incorrect _Cnd_internal_imp_alignment");
 
 void _Cnd_init_in_situ(const _Cnd_t cond) { // initialize condition variable in situ
     Concurrency::details::create_stl_condition_variable(cond->_get_cv());
 }
 
-void _Cnd_destroy_in_situ(const _Cnd_t cond) { // destroy condition variable in situ
-    cond->_get_cv()->destroy();
-}
+void _Cnd_destroy_in_situ(_Cnd_t) {} // destroy condition variable in situ
 
 int _Cnd_init(_Cnd_t* const pcond) { // initialize
     *pcond = nullptr;
@@ -53,7 +51,7 @@ void _Cnd_destroy(const _Cnd_t cond) { // clean up
 }
 
 int _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) { // wait until signaled
-    const auto cs = static_cast<Concurrency::details::stl_critical_section_interface*>(_Mtx_getconcrtcs(mtx));
+    const auto cs = static_cast<Concurrency::details::stl_critical_section_win7*>(_Mtx_getconcrtcs(mtx));
     _Mtx_clear_owner(mtx);
     cond->_get_cv()->wait(cs);
     _Mtx_reset_owner(mtx);
@@ -63,7 +61,7 @@ int _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) { // wait until signaled
 // wait until signaled or timeout
 int _Cnd_timedwait(const _Cnd_t cond, const _Mtx_t mtx, const _timespec64* const target) {
     int res       = _Thrd_success;
-    const auto cs = static_cast<Concurrency::details::stl_critical_section_interface*>(_Mtx_getconcrtcs(mtx));
+    const auto cs = static_cast<Concurrency::details::stl_critical_section_win7*>(_Mtx_getconcrtcs(mtx));
     if (target == nullptr) { // no target time specified, wait on mutex
         _Mtx_clear_owner(mtx);
         cond->_get_cv()->wait(cs);

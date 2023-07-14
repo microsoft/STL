@@ -14,7 +14,6 @@ struct S { // Must be declared at namespace scope due to static data member
 };
 
 constexpr bool test() {
-#ifndef __EDG__ // TRANSITION, VSO-1268984
 #ifndef __clang__ // TRANSITION, LLVM-48860
     // is_layout_compatible tests
     {
@@ -73,9 +72,11 @@ constexpr bool test() {
         ASSERT(is_layout_compatible_v<int[], int[]>);
         ASSERT(is_layout_compatible_v<int[3], int[3]>);
 
+#ifndef __EDG__ // TRANSITION, VSO-1849458
         ASSERT(is_layout_compatible_v<const int[], int[]>);
         ASSERT(is_layout_compatible_v<const int[3], int[3]>);
         ASSERT(is_layout_compatible_v<int[], volatile int[]>);
+#endif // ^^^ no workaround ^^^
 
         ASSERT(!is_layout_compatible_v<int, char>);
         ASSERT(!is_layout_compatible_v<int, void>);
@@ -246,7 +247,6 @@ constexpr bool test() {
         ASSERT(!is_pointer_interconvertible_with_class(static_cast<int A::*>(nullptr)));
     }
 #endif // __clang__
-#endif // __EDG__
     return true;
 }
 

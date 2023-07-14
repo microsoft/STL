@@ -1166,7 +1166,7 @@ _NODISCARD valarray<_Ty> abs(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = abs(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = abs(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1176,7 +1176,7 @@ _NODISCARD valarray<_Ty> acos(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = acos(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = acos(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1186,7 +1186,7 @@ _NODISCARD valarray<_Ty> asin(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = asin(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = asin(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1196,7 +1196,7 @@ _NODISCARD valarray<_Ty> atan(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = atan(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = atan(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1206,7 +1206,7 @@ _NODISCARD valarray<_Ty> atan2(const valarray<_Ty>& _Left, const valarray<_Ty>& 
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = atan2(_Left[_Idx], _Right[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = atan2(_Left[_Idx], _Right[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1216,7 +1216,7 @@ _NODISCARD valarray<_Ty> atan2(const valarray<_Ty>& _Left, const typename valarr
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = atan2(_Left[_Idx], _Right); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = atan2(_Left[_Idx], _Right); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1226,7 +1226,7 @@ _NODISCARD valarray<_Ty> atan2(const typename valarray<_Ty>::value_type& _Left, 
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = atan2(_Left, _Right[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = atan2(_Left, _Right[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1236,7 +1236,7 @@ _NODISCARD valarray<_Ty> cos(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = cos(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = cos(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1246,7 +1246,7 @@ _NODISCARD valarray<_Ty> cosh(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = cosh(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = cosh(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1256,7 +1256,7 @@ _NODISCARD valarray<_Ty> exp(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = exp(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = exp(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1266,7 +1266,7 @@ _NODISCARD valarray<_Ty> log(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = log(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = log(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1276,7 +1276,7 @@ _NODISCARD valarray<_Ty> log10(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = log10(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = log10(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1286,7 +1286,7 @@ _NODISCARD valarray<_Ty> pow(const valarray<_Ty>& _Left, const valarray<_Ty>& _R
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = pow(_Left[_Idx], _Right[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = pow(_Left[_Idx], _Right[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1296,7 +1296,7 @@ _NODISCARD valarray<_Ty> pow(const valarray<_Ty>& _Left, const typename valarray
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = pow(_Left[_Idx], _Right); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = pow(_Left[_Idx], _Right); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1306,7 +1306,7 @@ _NODISCARD valarray<_Ty> pow(const typename valarray<_Ty>::value_type& _Left, co
     const size_t _Size = _Right.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = pow(_Left, _Right[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = pow(_Left, _Right[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1316,7 +1316,7 @@ _NODISCARD valarray<_Ty> sin(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = sin(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = sin(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1326,7 +1326,7 @@ _NODISCARD valarray<_Ty> sinh(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = sinh(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = sinh(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1336,7 +1336,7 @@ _NODISCARD valarray<_Ty> sqrt(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = sqrt(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = sqrt(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1346,7 +1346,7 @@ _NODISCARD valarray<_Ty> tan(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = tan(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = tan(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1356,7 +1356,7 @@ _NODISCARD valarray<_Ty> tanh(const valarray<_Ty>& _Left) {
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-        _Ans[_Idx] = tanh(_Left[_Idx]); // intentional ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = tanh(_Left[_Idx]); // intentional ADL, N4950 [valarray.transcend]/1
     }
     return _Ans;
 }
@@ -1537,7 +1537,8 @@ public:
             _Ans += _Indexarr[_Idx] * _Stride[_Idx]; // compute offset
         }
 
-        while (0 < _Idx--) {
+        while (0 < _Idx) {
+            --_Idx;
             if (++_Indexarr[_Idx] < _Len[_Idx]) {
                 break; // increment done, quit
             } else {

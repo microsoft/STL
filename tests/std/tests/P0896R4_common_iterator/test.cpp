@@ -19,16 +19,16 @@ using P = pair<int, int>;
 
 template <class Iter>
 concept CanDifference = requires(Iter it) {
-                            { it - it };
-                        };
+    { it - it };
+};
 
 template <class Iter>
-concept HasProxy = (!is_reference_v<iter_reference_t<Iter>>);
+concept HasProxy = !is_reference_v<iter_reference_t<Iter>>;
 
 template <class Iter>
 concept CanArrow = requires(const Iter& i) {
-                       { i.operator->() };
-                   };
+    { i.operator->() };
+};
 
 struct instantiator {
     template <input_or_output_iterator Iter>

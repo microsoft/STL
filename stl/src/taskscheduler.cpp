@@ -105,8 +105,8 @@ namespace Concurrency {
             }
 
             struct _Task_scheduler_main_block {
-                _Task_scheduler_main_block() = default;
-                _Task_scheduler_main_block(const _Task_scheduler_main_block&) = delete;
+                _Task_scheduler_main_block()                                             = default;
+                _Task_scheduler_main_block(const _Task_scheduler_main_block&)            = delete;
                 _Task_scheduler_main_block& operator=(const _Task_scheduler_main_block&) = delete;
                 ~_Task_scheduler_main_block() noexcept { // block shutdown of the CRT until std::async shutdown has
                                                          // completed

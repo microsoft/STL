@@ -43,7 +43,7 @@ inline constexpr ptrdiff_t _Barrier_value_mask         = ~_Barrier_arrival_token
 inline constexpr ptrdiff_t _Barrier_value_shift        = 1;
 inline constexpr ptrdiff_t _Barrier_invalid_token      = 0;
 inline constexpr ptrdiff_t _Barrier_value_step         = 1 << _Barrier_value_shift;
-inline constexpr ptrdiff_t _Barrier_max                = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 2)) - 1;
+inline constexpr ptrdiff_t _Barrier_max                = PTRDIFF_MAX >> _Barrier_value_shift;
 
 template <class _Completion_function>
 class _Arrival_token {
@@ -74,15 +74,15 @@ public:
         is_function_v<remove_pointer_t<_Completion_function>> ||
 #endif // __cpp_noexcept_function_type
             is_nothrow_invocable_v<_Completion_function&>,
-        "N4861 [thread.barrier.class]/5: is_nothrow_invocable_v<CompletionFunction&> shall be true");
+        "N4950 [thread.barrier.class]/5: is_nothrow_invocable_v<CompletionFunction&> shall be true");
 
     using arrival_token = _Arrival_token<_Completion_function>;
 
     constexpr explicit barrier(
         const ptrdiff_t _Expected, _Completion_function _Fn = _Completion_function()) noexcept /* strengthened */
         : _Val(_One_then_variadic_args_t{}, _STD move(_Fn), _Expected << _Barrier_value_shift) {
-        _STL_VERIFY(_Val._Myval2._Current.load(memory_order_relaxed) >= 0,
-            "Precondition: expected >= 0 and expected <= max() (N4861 [thread.barrier.class]/9)");
+        _STL_VERIFY(_Expected >= 0 && _Expected <= (max) (),
+            "Precondition: expected >= 0 and expected <= max() (N4950 [thread.barrier.class]/9)");
     }
 
     barrier(const barrier&)            = delete;
@@ -93,13 +93,12 @@ public:
     }
 
     _NODISCARD_BARRIER_TOKEN arrival_token arrive(ptrdiff_t _Update = 1) noexcept /* strengthened */ {
-        // Shifting before precondition check, so that exceeding max() will trigger precondition check too
+        _STL_VERIFY(_Update > 0 && _Update <= (max) (), "Precondition: update > 0 (N4950 [thread.barrier.class]/12)");
         _Update <<= _Barrier_value_shift;
-        _STL_VERIFY(_Update > 0, "Precondition: update > 0 (N4861 [thread.barrier.class]/12)");
         // TRANSITION, GH-1133: should be memory_order_release
         ptrdiff_t _Current = _Val._Myval2._Current.fetch_sub(_Update) - _Update;
         _STL_VERIFY(_Current >= 0, "Precondition: update is less than or equal to the expected count "
-                                   "for the current barrier phase (N4861 [thread.barrier.class]/12)");
+                                   "for the current barrier phase (N4950 [thread.barrier.class]/12)");
         if ((_Current & _Barrier_value_mask) == 0) {
             // TRANSITION, GH-1133: should have this fence:
             // atomic_thread_fence(memory_order_acquire);
@@ -114,14 +113,14 @@ public:
     void wait(arrival_token&& _Arrival) const noexcept /* strengthened */ {
         _STL_VERIFY((_Arrival._Value & _Barrier_value_mask) == reinterpret_cast<intptr_t>(this),
             "Preconditions: arrival is associated with the phase synchronization point for the current phase "
-            "or the immediately preceding phase of the same barrier object (N4861 [thread.barrier.class]/19)");
+            "or the immediately preceding phase of the same barrier object (N4950 [thread.barrier.class]/19)");
         const ptrdiff_t _Arrival_value = _Arrival._Value & _Barrier_arrival_token_mask;
         _Arrival._Value                = _Barrier_invalid_token;
         for (;;) {
             // TRANSITION, GH-1133: should be memory_order_acquire
             const ptrdiff_t _Current = _Val._Myval2._Current.load();
             _STL_VERIFY(_Current >= 0, "Invariant counter >= 0, possibly caused by preconditions violation "
-                                       "(N4861 [thread.barrier.class]/12)");
+                                       "(N4950 [thread.barrier.class]/12)");
             if ((_Current & _Barrier_arrival_token_mask) != _Arrival_value) {
                 break;
             }
@@ -134,7 +133,7 @@ public:
         ptrdiff_t _Current       = _Val._Myval2._Current.fetch_sub(_Barrier_value_step) - _Barrier_value_step;
         const ptrdiff_t _Arrival = _Current & _Barrier_arrival_token_mask;
         _STL_VERIFY(_Current >= 0, "Precondition: update is less than or equal to the expected count "
-                                   "for the current barrier phase (N4861 [thread.barrier.class]/12)");
+                                   "for the current barrier phase (N4950 [thread.barrier.class]/12)");
         if ((_Current & _Barrier_value_mask) == 0) {
             _Completion(_Current);
             return;
@@ -145,7 +144,7 @@ public:
             // TRANSITION, GH-1133: should be memory_order_acquire
             _Current = _Val._Myval2._Current.load();
             _STL_VERIFY(_Current >= 0, "Invariant counter >= 0, possibly caused by preconditions violation "
-                                       "(N4861 [thread.barrier.class]/12)");
+                                       "(N4950 [thread.barrier.class]/12)");
             if ((_Current & _Barrier_arrival_token_mask) != _Arrival) {
                 break;
             }
@@ -156,7 +155,7 @@ public:
         const ptrdiff_t _Rem_count =
             _Val._Myval2._Total.fetch_sub(_Barrier_value_step, memory_order_relaxed) - _Barrier_value_step;
         _STL_VERIFY(_Rem_count >= 0, "Precondition: The expected count for the current barrier phase "
-                                     "is greater than zero (N4861 [thread.barrier.class]/24) "
+                                     "is greater than zero (N4950 [thread.barrier.class]/24) "
                                      "(checked initial expected count, which is not less than the current)");
         (void) arrive(1);
     }
@@ -166,7 +165,7 @@ private:
         const ptrdiff_t _Rem_count = _Val._Myval2._Total.load(memory_order_relaxed);
         _STL_VERIFY(_Rem_count >= 0, "Invariant: initial expected count less than zero, "
                                      "possibly caused by preconditions violation "
-                                     "(N4861 [thread.barrier.class]/24)");
+                                     "(N4950 [thread.barrier.class]/24)");
         _Val._Get_first()();
         const ptrdiff_t _New_phase_count = _Rem_count | ((_Current + 1) & _Barrier_arrival_token_mask);
         // TRANSITION, GH-1133: should be memory_order_release

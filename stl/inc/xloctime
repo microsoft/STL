@@ -25,7 +25,7 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
     const ctype<_Elem>& _Ctype_fac) { // get integer in range [_Lo, _Hi] from [_First, _Last)
     _STL_INTERNAL_CHECK(0 <= _Hi && _Hi <= 9999);
     const int _Hi_digits = (_Hi <= 9 ? 1 : _Hi <= 99 ? 2 : _Hi <= 999 ? 3 : 4);
-    char _Ac[_MAX_INT_DIG];
+    char _Ac[_Max_int_dig];
     char* _Ep;
     char* _Ptr = _Ac;
     char _Ch;
@@ -55,7 +55,7 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
         *_Ptr++ = '0'; // replace one or more with single zero
     }
 
-    for (char* const _Pe = &_Ac[_MAX_INT_DIG - 1];
+    for (char* const _Pe = &_Ac[_Max_int_dig - 1];
          _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9' && _Digits_read < _Hi_digits;
          ++_Digits_read, (void) ++_First) { // copy digits
         *_Ptr = _Ch;
@@ -86,7 +86,9 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
     return _State;
 }
 
-_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_get
+_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT time_base // base class for time_get
+    : locale::facet // TRANSITION, ABI, shouldn't be derived from locale::facet
+{
     enum dateorder { // constants for different orders of date components
         no_order,
         dmy,
@@ -95,7 +97,8 @@ _EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT time_base : locale::facet {
         ydm
     };
 
-    __CLR_OR_THIS_CALL time_base(size_t _Refs = 0) : locale::facet(_Refs) {}
+    __CLR_OR_THIS_CALL time_base(size_t _Refs = 0) noexcept // strengthened
+        : locale::facet(_Refs) {}
 
     __CLR_OR_THIS_CALL ~time_base() noexcept override {}
 };
@@ -157,11 +160,11 @@ public:
 
         for (; _Fmtfirst != _Fmtlast; ++_Fmtfirst) {
             if (_State != ios_base::goodbit) {
-                // N4878 [locale.time.get.members]/8.2
+                // N4950 [locale.time.get.members]/8.2
                 // _State is fail, eof, or bad. Do not proceed to the next fields. Return with current _State.
                 break;
             } else if (_First == _Last) {
-                // N4878 [locale.time.get.members]/8.3
+                // N4950 [locale.time.get.members]/8.3
                 _State = ios_base::eofbit | ios_base::failbit;
                 break;
             } else if (_Ctype_fac.narrow(*_Fmtfirst) != '%') { // match literal element
@@ -176,7 +179,7 @@ public:
                     ++_First;
                 }
             } else if (++_Fmtfirst == _Fmtlast) {
-                // N4878 [locale.time.get.members]/8.4: "If the number of elements in the range [fmt, fmtend) is not
+                // N4950 [locale.time.get.members]/8.4: "If the number of elements in the range [fmt, fmtend) is not
                 // sufficient to unambiguously determine whether the conversion specification is complete and valid,
                 // the function evaluates err = ios_base::failbit."
                 _State = ios_base::failbit;

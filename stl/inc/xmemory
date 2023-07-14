@@ -1043,7 +1043,7 @@ _NODISCARD bool operator!=(const allocator<_Ty>&, const allocator<_Other>&) noex
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX17
-// See N4892 [unord.map.overview]/4
+// See N4950 [unord.map.overview]/4
 template <class _Alloc>
 using _Guide_size_type_t =
     typename allocator_traits<conditional_t<_Is_allocator<_Alloc>::value, _Alloc, allocator<int>>>::size_type;
@@ -1072,7 +1072,7 @@ _CONSTEXPR20 void _Pocma(_Alloc& _Left, _Alloc& _Right) noexcept { // (maybe) pr
 template <class _Alloc>
 _CONSTEXPR20 void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_swap::value) {
-        _Swap_adl(_Left, _Right);
+        swap(_Left, _Right); // intentional ADL
     } else {
         _STL_ASSERT(_Left == _Right, "containers incompatible for swap");
     }
@@ -1420,7 +1420,7 @@ using _Container_base = _Container_base0;
 using _Iterator_base  = _Iterator_base0;
 #else // _ITERATOR_DEBUG_LEVEL == 0
 using _Container_base = _Container_base12;
-using _Iterator_base = _Iterator_base12;
+using _Iterator_base  = _Iterator_base12;
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 
 struct _Leave_proxy_unbound {
@@ -1646,8 +1646,7 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _In
 namespace ranges {
     template <class _It>
     concept _No_throw_input_iterator =
-        input_iterator<_It> //
-        && is_lvalue_reference_v<iter_reference_t<_It>> //
+        input_iterator<_It> && is_lvalue_reference_v<iter_reference_t<_It>>
         && same_as<remove_cvref_t<iter_reference_t<_It>>, remove_reference_t<iter_reference_t<_It>>> // per LWG-3888
         && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
 
@@ -1655,18 +1654,15 @@ namespace ranges {
     concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
 
     template <class _It>
-    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It> //
-                                      && forward_iterator<_It> //
-                                      && _No_throw_sentinel_for<_It, _It>;
+    concept _No_throw_forward_iterator =
+        _No_throw_input_iterator<_It> && forward_iterator<_It> && _No_throw_sentinel_for<_It, _It>;
 
     template <class _Rng>
-    concept _No_throw_input_range = range<_Rng> //
-                                 && _No_throw_input_iterator<iterator_t<_Rng>> //
+    concept _No_throw_input_range = range<_Rng> && _No_throw_input_iterator<iterator_t<_Rng>>
                                  && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
 
     template <class _Rng>
-    concept _No_throw_forward_range = _No_throw_input_range<_Rng> //
-                                   && _No_throw_forward_iterator<iterator_t<_Rng>>;
+    concept _No_throw_forward_range = _No_throw_input_range<_Rng> && _No_throw_forward_iterator<iterator_t<_Rng>>;
 
     template <class _InIt, class _OutIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_count(_InIt _IFirst, _OutIt _OFirst, const size_t _Count) noexcept {
@@ -1755,8 +1751,7 @@ namespace ranges {
         _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
         constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
         constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-        if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_constructible
-                      && _Sized_or_unreachable_sentinel_for<_Se, _It> //
+        if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_constructible && _Sized_or_unreachable_sentinel_for<_Se, _It>
                       && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
             if constexpr (_Is_sized1 && _Is_sized2) {
                 return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
@@ -1828,7 +1823,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     // In pre-concepts world, _Uninitialized_copy should only ever be called with an iterator
     // and sentinel of the same type, so `_Get_unwrapped` is fine to call.
     auto _UFirst = _Get_unwrapped(_STD move(_First));
-    auto _ULast = _Get_unwrapped(_STD move(_Last));
+    auto _ULast  = _Get_unwrapped(_STD move(_Last));
 #endif // ^^^ !__cpp_lib_concepts ^^^
 
     constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
@@ -2179,6 +2174,36 @@ _NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _R
     }
 }
 
+#if _HAS_CXX23
+template <class _Ty, class = void>
+inline constexpr bool _Has_member_from_primary = false;
+template <class _Ty>
+inline constexpr bool _Has_member_from_primary<_Ty, void_t<typename _Ty::_From_primary>> = true;
+
+// Avoid using allocate_at_least when the allocator publicly derives from std::allocator:
+// "old" allocators might hide allocate and deallocate but fail to hide allocate_at_least.
+// Also avoid using allocate_at_least from std::allocator itself because it currently doesn't do anything useful.
+template <class _Alloc>
+inline constexpr bool _Should_allocate_at_least =
+    !_Has_member_from_primary<_Alloc>
+    && _Has_member_allocate_at_least<_Alloc, typename allocator_traits<_Alloc>::size_type>;
+#endif // _HAS_CXX23
+
+template <class _Alloc>
+_NODISCARD_RAW_PTR_ALLOC _CONSTEXPR20 typename allocator_traits<_Alloc>::pointer _Allocate_at_least_helper(
+    _Alloc& _Al, _CRT_GUARDOVERFLOW typename allocator_traits<_Alloc>::size_type& _Count) {
+#if _HAS_CXX23
+    if constexpr (_Should_allocate_at_least<_Alloc>) {
+        auto [_Ptr, _Allocated] = _Al.allocate_at_least(_Count);
+        _Count                  = _Allocated;
+        return _Ptr;
+    } else
+#endif // _HAS_CXX23
+    {
+        return _Al.allocate(_Count);
+    }
+}
+
 _EXPORT_STD template <class _FwdIt, class _Ty>
 _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
     // remove each matching _Val
@@ -2499,7 +2524,7 @@ _EXPORT_STD inline constexpr from_range_t from_range;
 
 template <class _Rng, class _Elem>
 concept _Container_compatible_range =
-    (_RANGES input_range<_Rng>) && convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
+    (_RANGES input_range<_Rng>) &&convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
 
 template <_RANGES input_range _Rng>
 using _Range_key_type = remove_const_t<typename _RANGES range_value_t<_Rng>::first_type>;
@@ -2567,6 +2592,20 @@ _EXPORT_STD inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t&
     _Space -= _Off;
     return _Ptr;
 }
+
+template <class _Ty, class = void>
+_INLINE_VAR constexpr bool _Is_transparent_v = false;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_transparent_v<_Ty, void_t<typename _Ty::is_transparent>> = true;
+
+template <class _Ty>
+struct _Is_transparent : bool_constant<_Is_transparent_v<_Ty>> {};
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+template <class _Ty>
+concept _Transparent = _Is_transparent_v<_Ty>;
+#endif // __cpp_lib_concepts
 _STD_END
 
 #pragma pop_macro("new")

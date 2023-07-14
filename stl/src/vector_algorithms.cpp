@@ -5,9 +5,9 @@
 #error _M_CEE_PURE should not be defined when compiling vector_algorithms.cpp.
 #endif
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_ARM64EC)
-
+#if defined(_M_IX86) || defined(_M_X64) // NB: includes _M_ARM64EC
 #include <cstdint>
+#ifndef _M_ARM64EC
 #include <intrin.h>
 #include <isa_availability.h>
 
@@ -34,6 +34,20 @@ namespace {
 #endif // _M_IX86
     }
 
+    struct [[nodiscard]] _Zeroupper_on_exit { // TRANSITION, DevCom-10331414
+        _Zeroupper_on_exit() = default;
+
+        _Zeroupper_on_exit(const _Zeroupper_on_exit&)            = delete;
+        _Zeroupper_on_exit& operator=(const _Zeroupper_on_exit&) = delete;
+
+        ~_Zeroupper_on_exit() {
+            _mm256_zeroupper();
+        }
+    };
+} // namespace
+#endif // !defined(_M_ARM64EC)
+
+namespace {
     template <class _BidIt>
     void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
         for (; _First != _Last && _First != --_Last; ++_First) {
@@ -61,19 +75,6 @@ namespace {
     void _Advance_bytes(const void*& _Target, ptrdiff_t _Offset) noexcept {
         _Target = static_cast<const unsigned char*>(_Target) + _Offset;
     }
-
-    // TRANSITION, DevCom-10331414
-    struct [[nodiscard]] _Zeroupper_on_exit {
-        _Zeroupper_on_exit() = default;
-
-        _Zeroupper_on_exit(const _Zeroupper_on_exit&)            = delete;
-        _Zeroupper_on_exit& operator=(const _Zeroupper_on_exit&) = delete;
-
-        ~_Zeroupper_on_exit() {
-            _mm256_zeroupper();
-        }
-    };
-
 } // unnamed namespace
 
 extern "C" {
@@ -85,6 +86,7 @@ struct _Min_max_element_t {
 
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept {
+#ifndef _M_ARM64EC
     constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
     if (_Byte_length(_First1, _Last1) >= 32 && _Use_avx2()) {
         const void* _Stop_at = _First1;
@@ -135,8 +137,8 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_4);
         do {
-            const unsigned long _Left = *static_cast<unsigned long*>(_First1);
-            const unsigned long _Right = *static_cast<unsigned long*>(_First2);
+            const unsigned long _Left             = *static_cast<unsigned long*>(_First1);
+            const unsigned long _Right            = *static_cast<unsigned long*>(_First2);
             *static_cast<unsigned long*>(_First1) = _Right;
             *static_cast<unsigned long*>(_First2) = _Left;
             _Advance_bytes(_First1, 4);
@@ -146,6 +148,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
 #else
 #error Unsupported architecture
 #endif
+#endif // !_M_ARM64EC
 
     auto _First1c = static_cast<unsigned char*>(_First1);
     auto _Last1c  = static_cast<unsigned char*>(_Last1);
@@ -164,6 +167,7 @@ void* __cdecl __std_swap_ranges_trivially_swappable(void* _First1, void* _Last1,
 }
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _First, void* _Last) noexcept {
+#ifndef _M_ARM64EC
     if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
         const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
@@ -203,11 +207,13 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
     }
+#endif // !_M_ARM64EC
 
     _Reverse_tail(static_cast<unsigned char*>(_First), static_cast<unsigned char*>(_Last));
 }
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _First, void* _Last) noexcept {
+#ifndef _M_ARM64EC
     if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
         const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
@@ -245,11 +251,13 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
     }
+#endif // !_M_ARM64EC
 
     _Reverse_tail(static_cast<unsigned short*>(_First), static_cast<unsigned short*>(_Last));
 }
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _First, void* _Last) noexcept {
+#ifndef _M_ARM64EC
     if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0x1F});
@@ -282,11 +290,13 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
     }
+#endif // !_M_ARM64EC
 
     _Reverse_tail(static_cast<unsigned long*>(_First), static_cast<unsigned long*>(_Last));
 }
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept {
+#ifndef _M_ARM64EC
     if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0x1F});
@@ -318,12 +328,14 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
     }
+#endif // !_M_ARM64EC
 
     _Reverse_tail(static_cast<unsigned long long*>(_First), static_cast<unsigned long long*>(_Last));
 }
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     const void* _First, const void* _Last, void* _Dest) noexcept {
+#ifndef _M_ARM64EC
     if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
         const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
@@ -354,6 +366,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
     }
+#endif // !_M_ARM64EC
 
     _Reverse_copy_tail(static_cast<const unsigned char*>(_First), static_cast<const unsigned char*>(_Last),
         static_cast<unsigned char*>(_Dest));
@@ -361,6 +374,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
     const void* _First, const void* _Last, void* _Dest) noexcept {
+#ifndef _M_ARM64EC
     if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
         const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
@@ -391,6 +405,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
     }
+#endif // !_M_ARM64EC
 
     _Reverse_copy_tail(static_cast<const unsigned short*>(_First), static_cast<const unsigned short*>(_Last),
         static_cast<unsigned short*>(_Dest));
@@ -398,6 +413,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     const void* _First, const void* _Last, void* _Dest) noexcept {
+#ifndef _M_ARM64EC
     if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0x1F});
@@ -424,6 +440,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
     }
+#endif // !_M_ARM64EC
 
     _Reverse_copy_tail(static_cast<const unsigned long*>(_First), static_cast<const unsigned long*>(_Last),
         static_cast<unsigned long*>(_Dest));
@@ -431,6 +448,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept {
+#ifndef _M_ARM64EC
     if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0x1F});
@@ -456,6 +474,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
     }
+#endif // !_M_ARM64EC
 
     _Reverse_copy_tail(static_cast<const unsigned long long*>(_First), static_cast<const unsigned long long*>(_Last),
         static_cast<unsigned long long*>(_Dest));
@@ -464,7 +483,6 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 } // extern "C"
 
 namespace {
-
     template <class _Ty>
     const void* _Min_tail(const void* const _First, const void* const _Last, const void* _Res, _Ty _Cur) noexcept {
         for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
@@ -546,11 +564,12 @@ namespace {
         using _Signed_t   = int8_t;
         using _Unsigned_t = uint8_t;
 
-        static constexpr bool _Has_portion_max = true;
-        static constexpr size_t _Portion_max   = 256;
-
         static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7F);
         static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x80);
+
+#ifndef _M_ARM64EC
+        static constexpr bool _Has_portion_max = true;
+        static constexpr size_t _Portion_max   = 256;
 
         static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
             alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][16] = {
@@ -614,17 +633,19 @@ namespace {
         static __m128i _Max(const __m128i _First, const __m128i _Second, __m128i) noexcept {
             return _mm_max_epi8(_First, _Second);
         }
+#endif // !_M_ARM64EC
     };
 
     struct _Minmax_traits_2 {
         using _Signed_t   = int16_t;
         using _Unsigned_t = uint16_t;
 
-        static constexpr bool _Has_portion_max = true;
-        static constexpr size_t _Portion_max   = 65536;
-
         static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF);
         static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000);
+
+#ifndef _M_ARM64EC
+        static constexpr bool _Has_portion_max = true;
+        static constexpr size_t _Portion_max   = 65536;
 
         static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
             alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][8] = {
@@ -689,21 +710,23 @@ namespace {
         static __m128i _Max(const __m128i _First, const __m128i _Second, __m128i) noexcept {
             return _mm_max_epi16(_First, _Second);
         }
+#endif // !_M_ARM64EC
     };
 
     struct _Minmax_traits_4 {
         using _Signed_t   = int32_t;
         using _Unsigned_t = uint32_t;
 
+        static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF'FFFFUL);
+        static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000'0000UL);
+
+#ifndef _M_ARM64EC
 #ifdef _M_IX86
         static constexpr bool _Has_portion_max = false;
 #else // ^^^ 32-bit / 64-bit vvv
         static constexpr bool _Has_portion_max = true;
-        static constexpr size_t _Portion_max = 0x1'0000'0000ULL;
+        static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
-
-        static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF'FFFFUL);
-        static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000'0000UL);
 
         static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
             alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][4] = {
@@ -764,16 +787,18 @@ namespace {
         static __m128i _Max(const __m128i _First, const __m128i _Second, __m128i) noexcept {
             return _mm_max_epi32(_First, _Second);
         }
+#endif // !_M_ARM64EC
     };
 
     struct _Minmax_traits_8 {
         using _Signed_t   = int64_t;
         using _Unsigned_t = uint64_t;
 
-        static constexpr bool _Has_portion_max = false;
-
         static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF'FFFF'FFFF'FFFFULL);
         static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000'0000'0000'0000ULL);
+
+#ifndef _M_ARM64EC
+        static constexpr bool _Has_portion_max = false;
 
         static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) {
             alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][2] = {
@@ -842,6 +867,7 @@ namespace {
         static __m128i _Max(const __m128i _First, const __m128i _Second, const __m128i _Mask) noexcept {
             return _mm_blendv_epi8(_First, _Second, _Mask);
         }
+#endif // !_M_ARM64EC
     };
 
     // _Minmax_element has exactly the same signature as the extern "C" functions
@@ -851,9 +877,11 @@ namespace {
     template <_Min_max_mode _Mode, class _Traits>
     auto __stdcall _Minmax_element(const void* _First, const void* const _Last, const bool _Sign) noexcept {
         _Min_max_element_t _Res = {_First, _First};
-        auto _Base              = static_cast<const char*>(_First);
         auto _Cur_min_val       = _Traits::_Init_min_val;
         auto _Cur_max_val       = _Traits::_Init_max_val;
+
+#ifndef _M_ARM64EC
+        auto _Base = static_cast<const char*>(_First);
 
         if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
             size_t _Portion_byte_size = _Byte_length(_First, _Last) & ~size_t{0xF};
@@ -1024,6 +1052,7 @@ namespace {
                 }
             }
         }
+#endif // !_M_ARM64EC
 
         return _Minmax_tail<_Mode, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>(
             _First, _Last, _Res, _Sign, _Cur_min_val, _Cur_max_val);
@@ -1128,6 +1157,7 @@ namespace {
     struct _Find_traits_1 {
         static constexpr size_t _Shift = 0;
 
+#ifndef _M_ARM64EC
         static __m256i _Set_avx(const uint8_t _Val) noexcept {
             return _mm256_set1_epi8(_Val);
         }
@@ -1147,11 +1177,13 @@ namespace {
         static bool _Sse_available() noexcept {
             return _Use_sse2();
         }
+#endif // !_M_ARM64EC
     };
 
     struct _Find_traits_2 {
         static constexpr size_t _Shift = 1;
 
+#ifndef _M_ARM64EC
         static __m256i _Set_avx(const uint16_t _Val) noexcept {
             return _mm256_set1_epi16(_Val);
         }
@@ -1171,11 +1203,13 @@ namespace {
         static bool _Sse_available() noexcept {
             return _Use_sse2();
         }
+#endif // !_M_ARM64EC
     };
 
     struct _Find_traits_4 {
         static constexpr size_t _Shift = 2;
 
+#ifndef _M_ARM64EC
         static __m256i _Set_avx(const uint32_t _Val) noexcept {
             return _mm256_set1_epi32(_Val);
         }
@@ -1195,11 +1229,13 @@ namespace {
         static bool _Sse_available() noexcept {
             return _Use_sse2();
         }
+#endif // !_M_ARM64EC
     };
 
     struct _Find_traits_8 {
         static constexpr size_t _Shift = 3;
 
+#ifndef _M_ARM64EC
         static __m256i _Set_avx(const uint64_t _Val) noexcept {
             return _mm256_set1_epi64x(_Val);
         }
@@ -1219,6 +1255,7 @@ namespace {
         static bool _Sse_available() noexcept {
             return _Use_sse42(); // for pcmpeqq on _Cmp_sse
         }
+#endif // !_M_ARM64EC
     };
 
     // The below functions have exactly the same signature as the extern "C" functions, up to calling convention.
@@ -1227,6 +1264,7 @@ namespace {
 
     template <class _Traits, class _Ty>
     const void* __stdcall __std_find_trivial_unsized(const void* _First, const _Ty _Val) noexcept {
+#ifndef _M_ARM64EC
         if (_Use_avx2()) {
             _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
@@ -1302,12 +1340,14 @@ namespace {
                 _Advance_bytes(_First, 16);
             }
         }
+#endif // !_M_ARM64EC
 
         return _Find_trivial_unsized_fallback(_First, _Val);
     }
 
     template <class _Traits, class _Ty>
     const void* __stdcall __std_find_trivial(const void* _First, const void* _Last, _Ty _Val) noexcept {
+#ifndef _M_ARM64EC
         size_t _Size_bytes = _Byte_length(_First, _Last);
 
         const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
@@ -1351,6 +1391,7 @@ namespace {
                 _Advance_bytes(_First, 16);
             } while (_First != _Stop_at);
         }
+#endif // !_M_ARM64EC
 
         return _Find_trivial_tail(_First, _Last, _Val);
     }
@@ -1358,8 +1399,10 @@ namespace {
     template <class _Traits, class _Ty>
     __declspec(noalias) size_t
         __stdcall __std_count_trivial(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
+        size_t _Result = 0;
+
+#ifndef _M_ARM64EC
         size_t _Size_bytes = _Byte_length(_First, _Last);
-        size_t _Result     = 0;
 
         const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
         if (_Avx_size != 0 && _Use_avx2()) {
@@ -1389,6 +1432,7 @@ namespace {
                 _Advance_bytes(_First, 16);
             } while (_First != _Stop_at);
         }
+#endif // !_M_ARM64EC
 
         return _Count_trivial_tail(_First, _Last, _Result >> _Traits::_Shift, _Val);
     }
@@ -1453,5 +1497,4 @@ __declspec(noalias) size_t
 }
 
 } // extern "C"
-
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_ARM64EC)
+#endif // defined(_M_IX86) || defined(_M_X64)

@@ -133,7 +133,6 @@ extern "C" int __cdecl __crtCompareStringA(_In_z_ LPCWSTR LocaleName, _In_ DWORD
     }
 
     // allocate enough space for chars
-#pragma warning(suppress : 6386) // TRANSITION, VSO-1152705 false buffer overrun report in _malloca_crt_t
     const __crt_scoped_stack_ptr<wchar_t> wbuffer2(_malloca_crt_t(wchar_t, buff_size2));
     if (wbuffer2.get() == nullptr) {
         return 0;

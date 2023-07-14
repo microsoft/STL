@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <thread>
+#include <type_traits>
 #ifdef _DEBUG
 #include <crtdbg.h>
 #endif // _DEBUG
@@ -631,6 +633,13 @@ int main() {
     ensure_member_calls_compile<atomic<weak_ptr<int[][2]>>>();
     ensure_member_calls_compile<atomic<shared_ptr<int[2][2]>>>();
     ensure_member_calls_compile<atomic<weak_ptr<int[2][2]>>>();
+
+    // LWG-3893: LWG 3661 broke atomic<shared_ptr<T>> a; a = nullptr;
+    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<bool>>, nullptr_t>);
+    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<int>>, nullptr_t>);
+    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<int[]>>, nullptr_t>);
+    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<int[][2]>>, nullptr_t>);
+    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<int[2][2]>>, nullptr_t>);
 
 #ifdef _DEBUG
     sptr0 = {};

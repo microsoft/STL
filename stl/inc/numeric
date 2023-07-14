@@ -11,8 +11,12 @@
 #include <xutility>
 
 #if _HAS_CXX17
-#include <limits>
+#include <__msvc_bit_utils.hpp>
 #endif // _HAS_CXX17
+
+#if _HAS_CXX20
+#include <cfloat>
+#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -83,7 +87,7 @@ _NODISCARD _CONSTEXPR20 _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _V
     }
 
     for (; _UFirst != _ULast; ++_UFirst) {
-        _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4713
+        _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4950
     }
 
     return _Val;
@@ -133,9 +137,9 @@ _NODISCARD _CONSTEXPR20 _Ty inner_product(
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
     for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
 #if _HAS_CXX20
-        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
+        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4950
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        _Val = _Reduce_op(_Val, _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
+        _Val = _Reduce_op(_Val, _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4950
 #endif // _HAS_CXX20
     }
 
@@ -193,7 +197,7 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
     }
 
     for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
-        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
+        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4950
     }
     return _Val;
 }
@@ -213,7 +217,7 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     for (; _UFirst != _ULast; ++_UFirst) {
-        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst)); // Requirement missing from N4713
+        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst)); // Requirement missing from N4950
     }
 
     return _Val;
@@ -293,7 +297,7 @@ _CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
                 break;
             }
 
-            _Val = _STD move(_Tmp); // Requirement missing from N4713
+            _Val = _STD move(_Tmp); // Requirement missing from N4950
         }
     }
 
@@ -327,7 +331,7 @@ _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst) {
-        _Val    = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4713
+        _Val    = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4950
         *_UDest = _Val;
         ++_UDest;
     }
@@ -344,7 +348,7 @@ _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
     if (_UFirst != _ULast) {
-        _Iter_value_t<_InIt> _Val = *_UFirst; // Requirement missing from N4713
+        _Iter_value_t<_InIt> _Val = *_UFirst; // Requirement missing from N4950
         for (;;) {
             *_UDest = _Val;
             ++_UDest;
@@ -353,7 +357,7 @@ _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
                 break;
             }
 
-            _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4713
+            _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4950
         }
     }
 
@@ -401,7 +405,7 @@ _CONSTEXPR20 _OutIt transform_exclusive_scan(
                 break;
             }
 
-            _Val = _STD move(_Tmp); // Requirement missing from N4713
+            _Val = _STD move(_Tmp); // Requirement missing from N4950
         }
     }
 
@@ -423,7 +427,7 @@ _CONSTEXPR20 _OutIt transform_inclusive_scan(
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst) {
-        _Val    = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst)); // Requirement missing from N4713
+        _Val    = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst)); // Requirement missing from N4950
         *_UDest = _Val;
         ++_UDest;
     }
@@ -441,7 +445,7 @@ _CONSTEXPR20 _OutIt transform_inclusive_scan(
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
     if (_UFirst != _ULast) {
-        auto _Val = _Transform_op(*_UFirst); // Requirement missing from N4713, also type to use unclear
+        auto _Val = _Transform_op(*_UFirst); // Requirement missing from N4950, also type to use unclear
         for (;;) {
             *_UDest = _Val;
             ++_UDest;
@@ -450,7 +454,7 @@ _CONSTEXPR20 _OutIt transform_inclusive_scan(
                 break;
             }
 
-            _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst)); // Requirement missing from N4713
+            _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst)); // Requirement missing from N4950
         }
     }
 
@@ -648,6 +652,24 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> lcm(const _Mt _Mx, const _Nt _Nx) n
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
+template <class _Flt>
+inline constexpr _Flt _Floating_max{};
+template <>
+inline constexpr float _Floating_max<float> = FLT_MAX;
+template <>
+inline constexpr double _Floating_max<double> = DBL_MAX;
+template <>
+inline constexpr long double _Floating_max<long double> = LDBL_MAX;
+
+template <class _Flt>
+inline constexpr _Flt _Floating_min{};
+template <>
+inline constexpr float _Floating_min<float> = FLT_MIN;
+template <>
+inline constexpr double _Floating_min<double> = DBL_MIN;
+template <>
+inline constexpr long double _Floating_min<long double> = LDBL_MIN;
+
 _EXPORT_STD template <class _Ty, enable_if_t<is_arithmetic_v<_Ty> && !is_same_v<remove_cv_t<_Ty>, bool>, int> = 0>
 _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
     if constexpr (is_floating_point_v<_Ty>) {
@@ -666,7 +688,7 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
             }
         }
 
-        constexpr _Ty _High_limit = (numeric_limits<_Ty>::max)() / 2;
+        constexpr _Ty _High_limit = _Floating_max<remove_cv_t<_Ty>> / 2;
         const auto _Val1_a        = _Float_abs(_Val1);
         const auto _Val2_a        = _Float_abs(_Val2);
         if (_Val1_a <= _High_limit && _Val2_a <= _High_limit) {
@@ -690,7 +712,7 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
 
         // In the default rounding mode this less than one ULP difference will always be rounded away, so under
         // /fp:fast we could avoid these tests if we had some means of detecting it in the caller.
-        constexpr _Ty _Low_limit = (numeric_limits<_Ty>::min)() * 2;
+        constexpr _Ty _Low_limit = _Floating_min<remove_cv_t<_Ty>> * 2;
         if (_Val1_a < _Low_limit) {
             return _Val1 + _Val2 / 2;
         }

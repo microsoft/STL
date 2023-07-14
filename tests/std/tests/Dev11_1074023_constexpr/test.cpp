@@ -6,6 +6,7 @@
 #define _SILENCE_CXX17_IS_LITERAL_TYPE_DEPRECATION_WARNING
 #define _SILENCE_CXX17_NEGATORS_DEPRECATION_WARNING
 #define _SILENCE_CXX20_IS_POD_DEPRECATION_WARNING
+#define _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
 
 #include <algorithm>
 #include <array>
@@ -623,6 +624,11 @@ constexpr array<int, 0> arr0 = {{}};
 STATIC_ASSERT(arr0.size() == 0);
 STATIC_ASSERT(arr0.max_size() != 5);
 STATIC_ASSERT(arr0.empty() == true);
+
+// Also test DevCom-10299275, in which array<int, 0> was not a valid constant expression
+// since we didn't initialize the single element.
+constexpr array<int, 0> empty_array;
+STATIC_ASSERT(empty_array.size() == 0);
 
 constexpr istream_iterator<int> istream_it{};
 
