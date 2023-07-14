@@ -441,8 +441,10 @@ private:
     friend class _Vb_val;
     friend _Tidy_guard<vector>;
 
+#if _HAS_CXX23
     template <class>
     friend class basic_stacktrace;
+#endif // _HAS_CXX23
 
     using _Alty        = _Rebind_alloc_t<_Alloc, _Ty>;
     using _Alty_traits = allocator_traits<_Alty>;
