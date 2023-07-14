@@ -252,7 +252,7 @@ public:
 #endif // ^^^ !__cpp_lib_concepts ^^^
     }
 
-    void swap(basic_stacktrace& _Other) noexcept /* strengthened */ {
+    void swap(basic_stacktrace& _Other) noexcept(_Noex_swap) {
         _Frames.swap(_Other._Frames);
         _STD swap(_Hash, _Other._Hash);
     }
@@ -273,11 +273,11 @@ public:
     }
 
 private:
-    // <NOTICE> Currently vector is enhanced as unconditionally noexcept move-assignable and swappable
-
     static constexpr bool _Noex_move = allocator_traits<_Alloc>::propagate_on_container_move_assignment::value
-                                    || allocator_traits<_Alloc>::is_always_equal::value
-                                    || is_nothrow_move_assignable_v<_Frames_t>; // strengthened
+                                    || allocator_traits<_Alloc>::is_always_equal::value;
+
+    static constexpr bool _Noex_swap = allocator_traits<_Alloc>::propagate_on_container_swap::value
+                                    || allocator_traits<_Alloc>::is_always_equal::value;
 
     // <NOTICE> ?_Try_frames may be subject to further decreasements?
 
