@@ -282,38 +282,43 @@ private:
     // We force the current function to be always noinline and add its frame to skipped.
 
     _NODISCARD __declspec(noinline) static basic_stacktrace
-        _Current(const unsigned long _Adjusted_skip, const size_type _Max_depth, const allocator_type& _Al) noexcept {
-        // _Adjusted_skip is adjusted outside
+        _Current(const unsigned long _Skip, const size_type _Max_depth, const allocator_type& _Al) noexcept {
+        // _Skip is adjusted outside (in `current`)
         _TRY_BEGIN
         basic_stacktrace _Result(_Al);
 
-        // <NOTICE> _Small_frames may be subject to further decreasements to avoid stack burden and
+        // <NOTICE> _Small_frame_limit may be subject to further decreasements to avoid stack burden, and
         // <NOTICE> the cost introduced by the first try should be compensable from uninitialized resize.
 
-        constexpr size_type _Small_frames = 128; // Sufficient in most cases.
-        stacktrace_entry _Buffer[_Small_frames];
+        constexpr size_type _Small_frame_limit = 128; // Sufficient in most cases.
+        stacktrace_entry _Buffer[_Small_frame_limit];
         unsigned short _Caught =
-            __std_stacktrace_capture(_Adjusted_skip, static_cast<unsigned long>((_STD min)(_Max_depth, _Small_frames)),
+            __std_stacktrace_capture(_Skip, static_cast<unsigned long>((_STD min)(_Max_depth, _Small_frame_limit)),
                 reinterpret_cast<void**>(_Buffer), &_Result._Hash);
-        if (_Caught != _Small_frames) { // actual size
+        if (_Caught != _Small_frame_limit) { // actual size
             _Result._Frames.assign(_Buffer, _Buffer + _Caught);
             return _Result;
         }
 
-        size_type _Enough_capacity = (_STD min)(_Max_depth, _Max_frames);
-        // resize(_Enough_capacity), but without value initialization
-        // static_assert(is_implicit_lifetime_v<stacktrace_entry>); TRANSITION, not implemented
-        const auto _Newvec = _Result._Frames._Getal().allocate(_Enough_capacity);
-        _Result._Frames._Change_array(_Newvec, _Enough_capacity, _Enough_capacity);
-
+        size_type _Enough_size = (_STD min)(_Max_depth, _Max_frames);
+        _Result._Prepare_space(_Enough_size);
         _Caught = __std_stacktrace_capture(
-            _Adjusted_skip, static_cast<unsigned long>(_Enough_capacity), _Result._To_voidptr_array(), &_Result._Hash);
+            _Skip, static_cast<unsigned long>(_Enough_size), _Result._To_voidptr_array(), &_Result._Hash);
         _Result._Frames.resize(_Caught);
         return _Result;
 
         _CATCH_ALL
         return basic_stacktrace{_Al};
         _CATCH_END
+    }
+
+    void _Prepare_space(size_type _Size) {
+        // <NOTICE> resize _Vec without value initialization, discarding previously allocated buffer if there is.
+        // <NOTICE> currently I cannot think of a better name, and the comment rely on the final decision of _Current.
+
+        // static_assert(is_implicit_lifetime_v<stacktrace_entry>); TRANSITION, not implemented
+        const auto _Newvec = _Frames._Getal().allocate(_Size);
+        _Frames._Change_array(_Newvec, _Size, _Size);
     }
 
     _NODISCARD static unsigned long _Adjust_skip_by_two_frames(size_type _Skip) noexcept {

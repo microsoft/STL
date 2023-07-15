@@ -17,7 +17,7 @@ namespace {
 #pragma optimize("", on) // end inhibit tail call optimization
 
     void BM_stacktrace_current(benchmark::State& state) {
-        int extra_depth = state.range(0);
+        const int extra_depth = state.range(0);
         for (auto _ : state) {
             benchmark::DoNotOptimize(get_current(extra_depth));
         }
