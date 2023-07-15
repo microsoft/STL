@@ -4,7 +4,6 @@
 #include <crtdbg.h>
 #include <cstring> // for __strncnt
 #include <internal_shared.h>
-
 #include <Windows.h>
 
 #include "awint.hpp"
