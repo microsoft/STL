@@ -317,7 +317,6 @@ private:
     }
 
     _NODISCARD static unsigned long _Adjust_skip_by_two_frames(size_type _Skip) noexcept {
-        // <NOTICE> ?is the adjustment correct even in previous version? _Skip will be incremented in __std_stacktrace_capture?
         // one for current, another for _Current
         return _Skip < ULONG_MAX - 2 ? static_cast<unsigned long>(_Skip + 2) : ULONG_MAX;
     }
