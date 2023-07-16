@@ -7,7 +7,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float* px) { // categorize *px
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float* px) noexcept { // categorize *px
     const auto ps = reinterpret_cast<_Fval*>(px);
 
     if ((ps->_Sh[_F0] & _FMASK) == _FMAX << _FOFF) {

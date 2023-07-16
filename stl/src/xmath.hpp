@@ -55,7 +55,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-void __CLRCALL_PURE_OR_CDECL _Feraise(int);
+void __CLRCALL_PURE_OR_CDECL _Feraise(int) noexcept;
 
 union _Dconst { // pun float types as integer array
     unsigned short _Word[8]; // TRANSITION, ABI: Twice as large as necessary.
@@ -64,7 +64,7 @@ union _Dconst { // pun float types as integer array
     long double _Long_double;
 };
 
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double*);
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double*) noexcept;
 
 extern _CRTIMP2_PURE _Dconst _Denorm;
 extern _CRTIMP2_PURE _Dconst _Hugeval;
@@ -72,7 +72,7 @@ extern _CRTIMP2_PURE _Dconst _Inf;
 extern _CRTIMP2_PURE _Dconst _Nan;
 extern _CRTIMP2_PURE _Dconst _Snan;
 
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float*);
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float*) noexcept;
 
 extern _CRTIMP2_PURE _Dconst _FDenorm;
 extern _CRTIMP2_PURE _Dconst _FInf;
@@ -104,11 +104,11 @@ union _Dval { // pun floating type as integer array
 unsigned short* _Pmsw(double*);
 
 short _Dint(double*, short);
-short _Dnorm(_Dval*);
-short _Dscale(double*, long);
+short _Dnorm(_Dval*) noexcept;
+short _Dscale(double*, long) noexcept;
 short _Dunscale(short*, double*);
 
-double _Poly(double, const double*, int);
+double _Poly(double, const double*, int) noexcept;
 
 extern const _Dconst _Eps;
 extern const _Dconst _Rteps;
@@ -133,8 +133,8 @@ union _Fval { // pun floating type as integer array
 unsigned short* _FPmsw(float*);
 
 short _FDint(float*, short);
-short _FDnorm(_Fval*);
-short _FDscale(float*, long);
+short _FDnorm(_Fval*) noexcept;
+short _FDscale(float*, long) noexcept;
 short _FDunscale(short*, float*);
 
 float _FPoly(float, const float*, int);
@@ -163,9 +163,9 @@ unsigned short* _LPmsw(long double*);
 
 short _LDint(long double*, short);
 short _LDnorm(_Lval*);
-short _LDscale(long double*, long);
+short _LDscale(long double*, long) noexcept;
 short _LDunscale(short*, long double*);
-long double _LPoly(long double, const long double*, int);
+long double _LPoly(long double, const long double*, int) noexcept;
 
 extern const _Dconst _LEps;
 extern const _Dconst _LRteps;
