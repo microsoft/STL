@@ -313,11 +313,17 @@ private:
     }
 
     void _Prepare_space(size_type _Size) {
-        // <NOTICE> resize _Vec without value initialization, discarding previously allocated buffer if there is.
-        // <NOTICE> currently I cannot think of a better name, and the comment rely on the final decision of _Current.
+        // <NOTICE> need better name and a comment on its effect(clear old data; do resize without value initialization)
 
-        // static_assert(is_implicit_lifetime_v<stacktrace_entry>); TRANSITION, not implemented
+        // To make this trick well-defined, `stacktrace_entry` must be an implicit-lifetime type
+        // TRANSITION, should use `is_implicit_lifetime_v` when it is available
+        static_assert(
+            is_trivially_destructible_v<stacktrace_entry> && is_trivially_copy_constructible_v<stacktrace_entry>);
+
         const auto _Newvec = _Frames._Getal().allocate(_Size);
+        // Guarantee that elements are always implicitly created, even when `allocator_type` is user-provided
+        // TRANSITION, should use `start_lifetime_as_array` when it is available
+        ::operator new(sizeof(stacktrace_entry) * _Size, static_cast<void*>(_Unfancy(_Newvec)));
         _Frames._Change_array(_Newvec, _Size, _Size);
     }
 
