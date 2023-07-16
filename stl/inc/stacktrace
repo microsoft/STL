@@ -323,7 +323,7 @@ private:
         const auto _Newvec = _Frames._Getal().allocate(_Size);
         // Guarantee that elements are always implicitly created, even when `allocator_type` is user-provided
         // TRANSITION, should use `start_lifetime_as_array` when it is available
-        ::operator new(sizeof(stacktrace_entry) * _Size, static_cast<void*>(_Unfancy(_Newvec)));
+        (void) ::operator new(sizeof(stacktrace_entry) * _Size, static_cast<void*>(_Unfancy(_Newvec)));
         _Frames._Change_array(_Newvec, _Size, _Size);
     }
 
