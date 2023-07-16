@@ -295,7 +295,7 @@ private:
         unsigned short _Caught =
             __std_stacktrace_capture(_Skip, static_cast<unsigned long>((_STD min)(_Max_depth, _Small_frame_limit)),
                 reinterpret_cast<void**>(_Buffer), &_Result._Hash);
-        if (_Caught != _Small_frame_limit) { // actual size
+        if (_Max_depth <= _Small_frame_limit || _Caught != _Small_frame_limit) { // actual size
             _Result._Frames.assign(_Buffer, _Buffer + _Caught);
             return _Result;
         }
