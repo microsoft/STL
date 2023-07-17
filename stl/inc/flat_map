@@ -4,7 +4,6 @@
 #include <compare>
 #include <concepts>
 #include <cstdint>
-#include <ranges>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -32,15 +31,52 @@ class flat_map {
     using difference_type = ptrdiff_t;
     using key_container_type = KeyContainer;
     using mapped_container_type = MappedContainer;
-
-    private:
-    using _Underlying_container = _RANGES zip_view<_RANGES views::all_t<key_container_type>, _RANGES views::all_t<mapped_container_type>>;
-
-    public:
-    using iterator = _RANGES iterator_t<_Underlying_container>;
-    using const_iterator = _RANGES const_iterator_t<_Underlying_container>;
+    using iterator = typename key_container_type::iterator;
+    using const_iterator = typename key_container_type::const_iterator;
     using reverse_iterator = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+
+    class value_compare {
+        public:
+        value_compare(key_compare _Comp) : _Key_compare_for_val(_Comp) {}
+
+        bool operator () (const_reference _X, const_reference _Y) const {
+            return _Key_compare_for_val(_X.first, _Y.first);
+        }
+
+        private:
+        key_compare _Key_compare_for_val;
+    };
+
+    struct containers {
+        key_container_type keys;
+        mapped_container_type values;
+    };
+
+    // 24.6.8.3 construct / copy / destroy
+    explicit flat_map(const key_compare& _Comp) : _Key_compare(_Comp) {}
+    flat_map(): flat_map(key_compare()) {}
+
+    // observers
+    key_compare key_comp() const {
+        return _Key_compare;
+    }
+
+    value_compare value_comp() const {
+        return value_compare(_Key_compare);
+    }
+
+    const key_container_type& keys() const noexcept {
+        return _Data.keys;
+    }
+
+    const mapped_container_type& values() const noexcept {
+        return _Data.values;
+    }
+
+    private:
+    key_compare _Key_compare;
+    containers _Data;
 };
 
 _STD_END
