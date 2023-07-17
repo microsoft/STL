@@ -164,22 +164,21 @@ public:
         _Construct<_Traits>(_Str.data() + _Pos, _Count, _Elem0, _Elem1);
     }
 
-#ifdef _HAS_CXX26
     template <class _Elem>
-    // currently no _CONSTEXPR26, it will be added at the same time with _HAS_CXX26
-    /*_CONSTEXPR26 */ inline explicit bitset(const _Elem* _Ntcts,
-        typename basic_string_view<_Elem>::size_type _Count = basic_string_view<_Elem>::npos,
+    _CONSTEXPR23 explicit bitset(const _Elem* _Ntcts,
+        typename basic_string<_Elem>::size_type _Count = basic_string<_Elem>::npos,
         _Elem _Elem0 = static_cast<_Elem>('0'), _Elem _Elem1 = static_cast<_Elem>('1')) {
-        if (_Count == basic_string_view<_Elem>::npos) {
+        if (_Count == basic_string<_Elem>::npos) {
             _Count = char_traits<_Elem>::length(_Ntcts);
         }
 
         _Construct<char_traits<_Elem>>(_Ntcts, _Count, _Elem0, _Elem1);
     }
 
+#if _HAS_CXX26
     template <class _Elem, class _Traits>
     // currently no _CONSTEXPR26, it will be added at the same time with _HAS_CXX26
-    /* _CONSTEXPR26 */ inline explicit bitset(const basic_string_view<_Elem, _Traits>& _Str,
+    constexpr inline explicit bitset(const basic_string_view<_Elem, _Traits>& _Str,
         typename basic_string_view<_Elem, _Traits>::size_type _Pos   = 0,
         typename basic_string_view<_Elem, _Traits>::size_type _Count = basic_string_view<_Elem, _Traits>::npos,
         _Elem _Elem0 = static_cast<_Elem>('0'), _Elem _Elem1 = static_cast<_Elem>('1')) {
@@ -192,17 +191,6 @@ public:
         }
 
         _Construct<_Traits>(_Str.data() + _Pos, _Count, _Elem0, _Elem1);
-    }
-#else
-    template <class _Elem>
-    _CONSTEXPR23 explicit bitset(const _Elem* _Ntcts,
-        typename basic_string<_Elem>::size_type _Count = basic_string<_Elem>::npos,
-        _Elem _Elem0 = static_cast<_Elem>('0'), _Elem _Elem1 = static_cast<_Elem>('1')) {
-        if (_Count == basic_string<_Elem>::npos) {
-            _Count = char_traits<_Elem>::length(_Ntcts);
-        }
-
-        _Construct<char_traits<_Elem>>(_Ntcts, _Count, _Elem0, _Elem1);
     }
 #endif
 
