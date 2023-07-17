@@ -621,7 +621,7 @@ namespace filesystem {
         friend inline path current_path(error_code& _Ec);
         friend inline void current_path(const path& _To);
         friend inline void current_path(const path& _To, error_code& _Ec) noexcept;
-        friend inline __std_win_error _Read_symlink(const path& _Symlink_path, path& _Result) noexcept;
+        friend inline __std_win_error _Read_symlink(const path& _Symlink_path, path& _Result);
 
     public:
         using value_type  = wchar_t;
@@ -3206,7 +3206,7 @@ namespace filesystem {
         return __std_win_error::_Success;
     }
 
-    _NODISCARD inline __std_win_error _Read_symlink(const path& _Symlink_path, path& _Result) noexcept {
+    _NODISCARD inline __std_win_error _Read_symlink(const path& _Symlink_path, path& _Result) {
         __std_win_error _Err;
         unique_ptr<char[]> _Buffer_unique_ptr;
         {
@@ -3230,8 +3230,7 @@ namespace filesystem {
             return _Err;
         }
 
-        _Result._Text.resize(_Length);
-        _CSTD memcpy(_Result._Text.data(), _Offset, _Length * sizeof(wchar_t));
+        _Result._Text.assign(_Offset, _Length);
 
         return __std_win_error::_Success;
     }
