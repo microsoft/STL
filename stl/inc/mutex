@@ -49,7 +49,7 @@ struct _Mtx_internal_imp_mirror {
     static constexpr size_t _Critical_section_align = alignof(void*);
 
     int _Type;
-    _Aligned_storage_t<_Critical_section_size, _Critical_section_align> _Cs;
+    _Aligned_storage_t<_Critical_section_size, _Critical_section_align> _Cs_storage;
     long _Thread_id;
     int _Count;
 };
@@ -93,11 +93,7 @@ public:
         _Mtx_unlock(_Mymtx());
     }
 
-    using native_handle_type = void*;
-
-    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ {
-        return _Mtx_getconcrtcs(_Mymtx());
-    }
+    // native_handle_type and native_handle() have intentionally been removed. See GH-3820.
 
 protected:
     _NODISCARD_TRY_CHANGE_STATE bool _Verify_ownership_levels() noexcept {
@@ -636,8 +632,6 @@ _EXPORT_STD enum class cv_status { // names for wait returns
 
 _EXPORT_STD class condition_variable { // class for waiting for conditions
 public:
-    using native_handle_type = _Cnd_t;
-
     condition_variable() noexcept /* strengthened */ {
         _Cnd_init_in_situ(_Mycnd());
     }
@@ -725,9 +719,7 @@ public:
         return _Wait_until1(_Lck, _Abs_time, _Pred);
     }
 
-    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ {
-        return _Mycnd();
-    }
+    // native_handle_type and native_handle() have intentionally been removed. See GH-3820.
 
     void _Register(unique_lock<mutex>& _Lck, int* _Ready) noexcept { // register this object for release at thread exit
         _Cnd_register_at_thread_exit(_Mycnd(), _Lck.release()->_Mymtx(), _Ready);

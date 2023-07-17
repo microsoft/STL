@@ -865,32 +865,21 @@ public:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
-#ifndef __clang__ // TRANSITION, DevCom-10360833
-    template <class _OtherIndexType, enable_if_t<is_convertible_v<const _OtherIndexType&, index_type>
-                                                     && is_nothrow_constructible_v<index_type, const _OtherIndexType&>,
-                                         int> = 0>
-#else // ^^^ workaround / no workaround vvv
+    // TRANSITION, VSO-1852021: `_Extents::rank()` should be `extents_type::rank()`
+    // TRANSITION, VSO-1852030: `typename _Extents::index_type` should be `index_type`
     template <class _OtherIndexType>
-        requires is_convertible_v<const _OtherIndexType&, index_type>
-              && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
-#endif // ^^^ no workaround ^^^
-    constexpr mapping(const extents_type& _Exts_, span<_OtherIndexType, extents_type::rank()> _Strides_) noexcept
-        : mapping(_Exts_, _Strides_, make_index_sequence<extents_type::rank()>{}) {
-    }
+        requires is_convertible_v<const _OtherIndexType&, typename _Extents::index_type>
+              && is_nothrow_constructible_v<typename _Extents::index_type, const _OtherIndexType&>
+    constexpr mapping(const extents_type& _Exts_, span<_OtherIndexType, _Extents::rank()> _Strides_) noexcept
+        : mapping(_Exts_, _Strides_, make_index_sequence<extents_type::rank()>{}) {}
 
-#ifndef __clang__ // TRANSITION, DevCom-10360833
-    template <class _OtherIndexType, enable_if_t<is_convertible_v<const _OtherIndexType&, index_type>
-                                                     && is_nothrow_constructible_v<index_type, const _OtherIndexType&>,
-                                         int> = 0>
-#else // ^^^ workaround / no workaround vvv
+    // TRANSITION, VSO-1852021: `_Extents::rank()` should be `extents_type::rank()`
+    // TRANSITION, VSO-1852030: `typename _Extents::index_type` should be `index_type`
     template <class _OtherIndexType>
-        requires is_convertible_v<const _OtherIndexType&, index_type>
-              && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
-#endif // ^^^ no workaround ^^^
-    constexpr mapping(
-        const extents_type& _Exts_, const array<_OtherIndexType, extents_type::rank()>& _Strides_) noexcept
-        : mapping(_Exts_, span{_Strides_}, make_index_sequence<extents_type::rank()>{}) {
-    }
+        requires is_convertible_v<const _OtherIndexType&, typename _Extents::index_type>
+              && is_nothrow_constructible_v<typename _Extents::index_type, const _OtherIndexType&>
+    constexpr mapping(const extents_type& _Exts_, const array<_OtherIndexType, _Extents::rank()>& _Strides_) noexcept
+        : mapping(_Exts_, span{_Strides_}, make_index_sequence<extents_type::rank()>{}) {}
 
     template <class _StridedLayoutMapping>
         requires _Layout_mapping_alike<_StridedLayoutMapping>

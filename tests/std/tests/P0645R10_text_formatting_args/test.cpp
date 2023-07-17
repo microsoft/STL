@@ -252,6 +252,18 @@ void test_lwg3810() {
     static_assert(same_as<decltype(basic_format_args{args_store}), basic_format_args<Context>>);
 }
 
+struct lvalue_only_visitor {
+    template <class T>
+    void operator()(T&&) const = delete;
+    template <class T>
+    void operator()(T&) const noexcept {}
+};
+
+template <class Context>
+void test_lvalue_only_visitation() {
+    visit_format_arg(lvalue_only_visitor{}, basic_format_arg<Context>{});
+}
+
 int main() {
     test_basic_format_arg<format_context>();
     test_basic_format_arg<wformat_context>();
@@ -259,6 +271,10 @@ int main() {
     test_format_arg_store<wformat_context>();
     test_visit_monostate<format_context>();
     test_visit_monostate<wformat_context>();
+
     test_lwg3810<format_context>();
     test_lwg3810<wformat_context>();
+
+    test_lvalue_only_visitation<format_context>();
+    test_lvalue_only_visitation<wformat_context>();
 }

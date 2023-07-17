@@ -58,10 +58,7 @@ STATIC_ASSERT(noexcept(declval<thread&>().native_handle()));
 #if _HAS_CXX20
 STATIC_ASSERT(noexcept(declval<jthread&>().native_handle()));
 #endif // _HAS_CXX20
-STATIC_ASSERT(noexcept(declval<mutex&>().native_handle()));
-STATIC_ASSERT(noexcept(declval<recursive_mutex&>().native_handle()));
 STATIC_ASSERT(noexcept(declval<shared_mutex&>().native_handle()));
-STATIC_ASSERT(noexcept(declval<condition_variable&>().native_handle()));
 
 // Also test mandatory and strengthened exception specification for try_lock().
 STATIC_ASSERT(noexcept(declval<mutex&>().try_lock())); // strengthened

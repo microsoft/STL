@@ -1486,8 +1486,8 @@ struct _Loop_vals_t { // storage for loop administration
 
 class _Node_rep : public _Node_base { // node that marks the beginning of a repetition
 public:
-    _Node_rep(bool _Greedy, int _Mn, int _Mx, _Node_end_rep* _End, unsigned int _Number)
-        : _Node_base(_N_rep, _Greedy ? _Fl_greedy : _Fl_none), _Min(_Mn), _Max(_Mx), _End_rep(_End),
+    _Node_rep(bool _Greedy, int _Min_, int _Max_, _Node_end_rep* _End, unsigned int _Number)
+        : _Node_base(_N_rep, _Greedy ? _Fl_greedy : _Fl_none), _Min(_Min_), _Max(_Max_), _End_rep(_End),
           _Loop_number(_Number), _Simple_loop(-1) {}
 
     const int _Min;

@@ -94,7 +94,6 @@ extern "C" int __cdecl __crtLCMapStringA(_In_opt_z_ LPCWSTR LocaleName, _In_ DWO
         int outbuff_size = retval;
 
         // allocate enough space for wide chars (includes null terminator if any)
-#pragma warning(suppress : 6386) // TRANSITION, VSO-1152705 false buffer overrun report in _malloca_crt_t
         const __crt_scoped_stack_ptr<wchar_t> outwbuffer(_malloca_crt_t(wchar_t, outbuff_size));
         if (!outwbuffer) {
             return retval;
