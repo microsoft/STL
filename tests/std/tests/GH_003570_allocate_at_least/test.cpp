@@ -4,8 +4,10 @@
 #include <cassert>
 #include <cstdlib>
 #include <deque>
+#include <functional>
 #include <memory>
 #include <new>
+#include <numeric>
 #include <sstream>
 #include <string>
 #include <syncstream>
@@ -95,10 +97,36 @@ void test_syncstream() {
     test_stream_overflow(ss);
 }
 
+template <class>
+constexpr bool always_false = false;
+
+template <class T>
+struct icky_allocator : allocator<T> {
+    template <class U>
+    struct rebind {
+        using other = icky_allocator<U>;
+    };
+
+    allocation_result<T*, size_t> allocate_at_least(size_t) {
+        // The initial implementation of this feature had a problem with (icky) allocators that
+        // publicly derive from std::allocator and implement allocate/deallocate. The STL would
+        // call allocate_at_least in the std::allocator base (which would then call std::allocator::allocate),
+        // and would then call deallocate in the derived class (hiding the base implementation), a terrible mismatch.
+        // We now detect public derivation from std::allocator and avoid using allocate_at_least in that case.
+        static_assert(always_false<T>);
+    }
+};
+
+void test_inheriting_allocator() {
+    vector<int, icky_allocator<int>> vec{2, 1, 4, 7, 5, 6, 3, 8};
+    assert(accumulate(vec.begin(), vec.end(), 0, plus<>{}) == 36);
+}
+
 int main() {
     test_deque();
     test_container<basic_string<char, char_traits<char>, signalling_allocator<char>>>();
     test_container<vector<int, signalling_allocator<int>>>();
     test_sstream();
     test_syncstream();
+    test_inheriting_allocator();
 }

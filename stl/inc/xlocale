@@ -144,7 +144,7 @@ public:
         _Atomic_counter_t _Myrefs; // the reference count
 
     protected:
-        explicit __CLR_OR_THIS_CALL facet(size_t _Initrefs = 0)
+        explicit __CLR_OR_THIS_CALL facet(size_t _Initrefs = 0) noexcept // strengthened
             : _Myrefs(static_cast<_Atomic_counter_t>(_Initrefs)) // non-atomic initialization
         {}
 
@@ -280,6 +280,7 @@ public:
     locale(const locale& _Loc, const locale& _Other, category _Cat) : _Ptr(_Locimp::_New_Locimp(*_Loc._Ptr)) {
         // construct a locale by copying named facets
         if (_Cat != none) { // worth adding, do it
+            _STL_ASSERT((_Cat & all) == _Cat, "the bitmask value specifying category must be valid");
             _Facet_guard _Guard{_Ptr};
             _BEGIN_LOCINFO(_Lobj)
             _Locimp::_Makeloc(_Lobj, _Cat, _Ptr, &_Other);
@@ -294,6 +295,7 @@ public:
 
 private:
     void _Construct(const string& _Str, category _Cat) {
+        _STL_ASSERT((_Cat & all) == _Cat, "the bitmask value specifying category must be valid");
         // construct a locale with named facets
         bool _Bad = false;
         _Init();
@@ -618,7 +620,9 @@ inline unsigned short* __CRTDECL _Maklocstr(const char* _Ptr, unsigned short*, c
 }
 #endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 
-_EXPORT_STD extern "C++" class _CRTIMP2_PURE_IMPORT codecvt_base : public locale::facet { // base class for codecvt
+_EXPORT_STD extern "C++" class _CRTIMP2_PURE_IMPORT codecvt_base // base class for codecvt
+    : public locale::facet // TRANSITION, ABI, shouldn't be derived from locale::facet
+{
 public:
     enum { // constants for different parse states
         ok,
@@ -628,7 +632,8 @@ public:
     };
     using result = int;
 
-    __CLR_OR_THIS_CALL codecvt_base(size_t _Refs = 0) : locale::facet(_Refs) {}
+    __CLR_OR_THIS_CALL codecvt_base(size_t _Refs = 0) noexcept // strengthened
+        : locale::facet(_Refs) {}
 
     bool __CLR_OR_THIS_CALL always_noconv() const noexcept {
         // return true if conversions never change input (from codecvt)
@@ -2361,7 +2366,9 @@ protected:
 #define _UP _UPPER // 'A'-'Z'
 #define _XD _HEX // '0'-'9', 'A'-'F', 'a'-'f'
 
-_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
+_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT ctype_base // base for ctype
+    : locale::facet // TRANSITION, ABI, shouldn't be derived from locale::facet
+{
     enum { // constants for character classifications
         alnum  = _DI | _LO | _UP | _XA,
         alpha  = _LO | _UP | _XA,
@@ -2378,7 +2385,8 @@ _EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet 
     };
     using mask = short; // to match <ctype.h>
 
-    __CLR_OR_THIS_CALL ctype_base(size_t _Refs = 0) : locale::facet(_Refs) {}
+    __CLR_OR_THIS_CALL ctype_base(size_t _Refs = 0) noexcept // strengthened
+        : locale::facet(_Refs) {}
 
     __CLR_OR_THIS_CALL ~ctype_base() noexcept override {}
 };

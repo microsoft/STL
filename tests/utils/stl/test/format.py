@@ -145,7 +145,7 @@ class STLTestFormat:
             env: Dict[str, str] = field(default_factory=dict)
 
         execDir, _ = test.getTempPaths()
-        shared = SharedState(None, execDir, copy.deepcopy(litConfig.test_env))
+        shared = SharedState(None, execDir, _mergeEnvironments(litConfig.test_env, test.env))
         shared.env['TMP'] = execDir
         shared.env['TEMP'] = execDir
         shared.env['TMPDIR'] = execDir

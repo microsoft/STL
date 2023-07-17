@@ -133,7 +133,9 @@ struct StatefulDerived2 : EmptyBase, StatefulBase {};
 #ifdef __cpp_lib_is_pointer_interconvertible
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<EmptyBase, EmptyDerived>);
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<StatefulBase, StatefulDerived>);
+#ifndef __EDG__ // TRANSITION, VSO-1849453
 STATIC_ASSERT(!is_pointer_interconvertible_base_of_v<EmptyBase, StatefulDerived>);
+#endif // ^^^ no workaround ^^^
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<StatefulBase, StatefulDerived2>);
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<EmptyBase, StatefulDerived2>);
 #endif // __cpp_lib_is_pointer_interconvertible

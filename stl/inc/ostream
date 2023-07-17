@@ -1126,7 +1126,7 @@ void _Vprint_nonunicode_impl(
     _Ostr.setstate(_State);
 }
 
-template <class _Filebuf_type = filebuf>
+_EXPORT_STD /* TRANSITION, VSO-1538698 */ template <class _Filebuf_type = filebuf>
 ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str) {
     // *LOCKED*
     //

@@ -38,6 +38,9 @@ namespace ranges {
     template <class _Ty>
     inline constexpr bool _Is_initializer_list = _Is_specialization_v<remove_cvref_t<_Ty>, initializer_list>;
 
+    template <auto> // _Require_constant<E> is a valid template-id iff E is a constant expression of structural type
+    struct _Require_constant;
+
 #if _HAS_CXX23
     _EXPORT_STD template <range _Rng>
     using const_iterator_t = const_iterator<iterator_t<_Rng>>;
@@ -47,6 +50,34 @@ namespace ranges {
 
     _EXPORT_STD template <range _Rng>
     using range_const_reference_t = iter_const_reference_t<iterator_t<_Rng>>;
+
+    template <range _Ty>
+    inline constexpr auto _Compile_time_max_size =
+        (numeric_limits<_Make_unsigned_like_t<range_difference_t<_Ty>>>::max)();
+
+    template <sized_range _Ty>
+    inline constexpr auto _Compile_time_max_size<_Ty> = (numeric_limits<range_size_t<_Ty>>::max)();
+
+    template <sized_range _Ty>
+        requires requires { typename _Require_constant<_Ty::size()>; }
+    inline constexpr auto _Compile_time_max_size<_Ty> = _Ty::size();
+
+    template <class _Ty, size_t _Size>
+    inline constexpr auto _Compile_time_max_size<_Ty[_Size]> = _Size;
+
+    template <class _Ty, size_t _Size>
+    inline constexpr auto _Compile_time_max_size<array<_Ty, _Size>> = _Size;
+
+    template <class _Ty, size_t _Size>
+    inline constexpr auto _Compile_time_max_size<const array<_Ty, _Size>> = _Size;
+
+    template <class _Ty, size_t _Extent>
+        requires (_Extent != dynamic_extent)
+    inline constexpr auto _Compile_time_max_size<span<_Ty, _Extent>> = _Extent;
+
+    template <class _Ty, size_t _Extent>
+        requires (_Extent != dynamic_extent)
+    inline constexpr auto _Compile_time_max_size<const span<_Ty, _Extent>> = _Extent;
 #endif // _HAS_CXX23
 
     // clang-format off
@@ -1828,6 +1859,14 @@ namespace ranges {
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<ref_view<_Rng>> = true;
 
+#if _HAS_CXX23
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<ref_view<_Rng>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<const ref_view<_Rng>> = _Compile_time_max_size<_Rng>;
+#endif // _HAS_CXX23
+
     _EXPORT_STD template <range _Rng>
         requires (movable<_Rng> && !_Is_initializer_list<_Rng>)
     class owning_view : public view_interface<owning_view<_Rng>> {
@@ -1914,6 +1953,14 @@ namespace ranges {
 
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<owning_view<_Rng>> = enable_borrowed_range<_Rng>;
+
+#if _HAS_CXX23
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<owning_view<_Rng>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<const owning_view<_Rng>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
 
     namespace views {
         template <class _Rng>
@@ -2049,6 +2096,14 @@ namespace ranges {
 
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<as_rvalue_view<_Rng>> = enable_borrowed_range<_Rng>;
+
+#if _HAS_CXX23
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<as_rvalue_view<_Rng>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<const as_rvalue_view<_Rng>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
 
     namespace views {
         template <class _Rng>
@@ -2326,6 +2381,11 @@ namespace ranges {
 
     template <class _Rng, class _Pr>
     filter_view(_Rng&&, _Pr) -> filter_view<views::all_t<_Rng>, _Pr>;
+
+#if _HAS_CXX23
+    template <class _Rng, class _Pr>
+    inline constexpr auto _Compile_time_max_size<filter_view<_Rng, _Pr>> = _Compile_time_max_size<_Rng>;
+#endif // _HAS_CXX23
 
     namespace views {
         struct _Filter_fn {
@@ -2757,6 +2817,14 @@ namespace ranges {
     template <class _Rng, class _Fn>
     transform_view(_Rng&&, _Fn) -> transform_view<views::all_t<_Rng>, _Fn>;
 
+#if _HAS_CXX23
+    template <class _Rng, class _Fn>
+    inline constexpr auto _Compile_time_max_size<transform_view<_Rng, _Fn>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng, class _Fn>
+    inline constexpr auto _Compile_time_max_size<const transform_view<_Rng, _Fn>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
+
     namespace views {
         struct _Transform_fn {
             // clang-format off
@@ -2969,6 +3037,14 @@ namespace ranges {
 
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<take_view<_Rng>> = enable_borrowed_range<_Rng>;
+
+#if _HAS_CXX23
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<take_view<_Rng>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<const take_view<_Rng>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
 
     namespace views {
         template <class _Rng>
@@ -3211,6 +3287,14 @@ namespace ranges {
     template <class _Rng, class _Pr>
     take_while_view(_Rng&&, _Pr) -> take_while_view<views::all_t<_Rng>, _Pr>;
 
+#if _HAS_CXX23
+    template <class _Rng, class _Pr>
+    inline constexpr auto _Compile_time_max_size<take_while_view<_Rng, _Pr>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng, class _Pr>
+    inline constexpr auto _Compile_time_max_size<const take_while_view<_Rng, _Pr>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
+
     namespace views {
         struct _Take_while_fn {
             template <viewable_range _Rng, class _Pr>
@@ -3359,6 +3443,14 @@ namespace ranges {
 
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<drop_view<_Rng>> = enable_borrowed_range<_Rng>;
+
+#if _HAS_CXX23
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<drop_view<_Rng>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<const drop_view<_Rng>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
 
     namespace views {
         class _Drop_fn {
@@ -3524,6 +3616,11 @@ namespace ranges {
 
     template <class _Rng, class _Pr>
     inline constexpr bool enable_borrowed_range<drop_while_view<_Rng, _Pr>> = enable_borrowed_range<_Rng>;
+
+#if _HAS_CXX23
+    template <class _Rng, class _Pr>
+    inline constexpr auto _Compile_time_max_size<drop_while_view<_Rng, _Pr>> = _Compile_time_max_size<_Rng>;
+#endif // _HAS_CXX23
 
     namespace views {
         struct _Drop_while_fn {
@@ -3939,6 +4036,30 @@ namespace ranges {
 
     template <class _Rng>
     explicit join_view(_Rng&&) -> join_view<views::all_t<_Rng>>;
+
+#if _HAS_CXX23
+    template <class _Rng>
+    _NODISCARD consteval auto _Join_view_compile_time_max_size() {
+        using _Inner = remove_reference_t<range_reference_t<_Rng>>;
+        using _Size_type =
+            common_type_t<decltype(_Compile_time_max_size<_Rng>), decltype(_Compile_time_max_size<_Inner>)>;
+        _Size_type _Result{};
+        const bool _Overflow = _Mul_overflow(static_cast<_Size_type>(_Compile_time_max_size<_Rng>),
+            static_cast<_Size_type>(_Compile_time_max_size<_Inner>), _Result);
+        if (_Overflow) {
+            return (numeric_limits<_Size_type>::max)();
+        } else {
+            return _Result;
+        }
+    }
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<join_view<_Rng>> = _Join_view_compile_time_max_size<_Rng>();
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<const join_view<_Rng>> =
+        _Join_view_compile_time_max_size<const _Rng>();
+#endif // _HAS_CXX23
 
     namespace views {
         class _Join_fn : public _Pipe::_Base<_Join_fn> {
@@ -4447,6 +4568,37 @@ namespace ranges {
     join_with_view(_Rng&&, range_value_t<range_reference_t<_Rng>>)
         -> join_with_view<views::all_t<_Rng>, single_view<range_value_t<range_reference_t<_Rng>>>>;
 
+#if _HAS_CXX23
+    template <class _Rng, class _Pat>
+    _NODISCARD consteval auto _Join_with_view_compile_time_max_size() {
+        using _Inner     = remove_reference_t<range_reference_t<_Rng>>;
+        using _Size_type = common_type_t<decltype(_Compile_time_max_size<_Rng>),
+            decltype(_Compile_time_max_size<_Inner>), decltype(_Compile_time_max_size<_Pat>)>;
+        _Size_type _Joined_max_size{};
+        _Size_type _Pattern_max_size{};
+        _Size_type _Result{};
+        const bool _Overflow =
+            _Mul_overflow(static_cast<_Size_type>(_Compile_time_max_size<_Rng>),
+                static_cast<_Size_type>(_Compile_time_max_size<_Inner>), _Joined_max_size)
+            || _Mul_overflow((_STD max)(static_cast<_Size_type>(_Compile_time_max_size<_Rng>), _Size_type{1}) - 1,
+                static_cast<_Size_type>(_Compile_time_max_size<_Pat>), _Pattern_max_size)
+            || _Add_overflow(_Joined_max_size, _Pattern_max_size, _Result);
+        if (_Overflow) {
+            return (numeric_limits<_Size_type>::max)();
+        } else {
+            return _Result;
+        }
+    }
+
+    template <class _Rng, class _Pat>
+    inline constexpr auto _Compile_time_max_size<join_with_view<_Rng, _Pat>> =
+        _Join_with_view_compile_time_max_size<_Rng, _Pat>();
+
+    template <class _Rng, class _Pat>
+    inline constexpr auto _Compile_time_max_size<const join_with_view<_Rng, _Pat>> =
+        _Join_with_view_compile_time_max_size<const _Rng, const _Pat>();
+#endif // _HAS_CXX23
+
     namespace views {
         struct _Join_with_fn {
             // clang-format off
@@ -4470,9 +4622,6 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Join_with_fn join_with;
     } // namespace views
 #endif // _HAS_CXX23
-
-    template <auto> // _Require_constant<E> is a valid template-id iff E is a constant expression of structural type
-    struct _Require_constant;
 
     // clang-format off
     template <class _Ty>
@@ -4596,7 +4745,7 @@ namespace ranges {
 
             constexpr _Outer_iter(_Outer_iter<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_BaseTy>>
-                : _Mybase{_STD move(_It._Current)}, _Parent{_It._Parent} {}
+                : _Mybase{_STD move(_It._Current)}, _Parent{_It._Parent}, _Trailing_empty{_It._Trailing_empty} {}
 
             _NODISCARD constexpr auto operator*() const noexcept(noexcept(value_type{*this})) /* strengthened */ {
                 return value_type{*this};
@@ -4868,6 +5017,15 @@ namespace ranges {
     lazy_split_view(_Rng&&, range_value_t<_Rng>)
         -> lazy_split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
 
+#if _HAS_CXX23
+    template <class _Rng, class _Pat>
+    inline constexpr auto _Compile_time_max_size<lazy_split_view<_Rng, _Pat>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng, class _Pat>
+    inline constexpr auto _Compile_time_max_size<const lazy_split_view<_Rng, _Pat>> =
+        _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
+
     namespace views {
         struct _Lazy_split_fn {
             // clang-format off
@@ -5064,6 +5222,11 @@ namespace ranges {
     template <forward_range _Rng>
     split_view(_Rng&&, range_value_t<_Rng>) -> split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
 
+#if _HAS_CXX23
+    template <class _Rng, class _Pat>
+    inline constexpr auto _Compile_time_max_size<split_view<_Rng, _Pat>> = _Compile_time_max_size<_Rng>;
+#endif // _HAS_CXX23
+
     namespace views {
         struct _Split_fn {
             // clang-format off
@@ -5214,6 +5377,14 @@ namespace ranges {
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<common_view<_Rng>> = enable_borrowed_range<_Rng>;
 
+#if _HAS_CXX23
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<common_view<_Rng>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<const common_view<_Rng>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
+
     namespace views {
         class _Common_fn : public _Pipe::_Base<_Common_fn> {
         private:
@@ -5332,6 +5503,14 @@ namespace ranges {
 
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<reverse_view<_Rng>> = enable_borrowed_range<_Rng>;
+
+#if _HAS_CXX23
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<reverse_view<_Rng>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<const reverse_view<_Rng>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
 
     namespace views {
         template <class _Rng>
@@ -5469,6 +5648,14 @@ namespace ranges {
 
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<as_const_view<_Rng>> = enable_borrowed_range<_Rng>;
+
+#if _HAS_CXX23
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<as_const_view<_Rng>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<const as_const_view<_Rng>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
 
     namespace views {
         template <class _Rng>
@@ -5940,6 +6127,15 @@ namespace ranges {
     template <class _Rng, size_t _Index>
     inline constexpr bool enable_borrowed_range<elements_view<_Rng, _Index>> = enable_borrowed_range<_Rng>;
 
+#if _HAS_CXX23
+    template <class _Rng, size_t _Index>
+    inline constexpr auto _Compile_time_max_size<elements_view<_Rng, _Index>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng, size_t _Index>
+    inline constexpr auto _Compile_time_max_size<const elements_view<_Rng, _Index>> =
+        _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
+
     _EXPORT_STD template <class _Rng>
     using keys_view = elements_view<_Rng, 0>;
     _EXPORT_STD template <class _Rng>
@@ -6124,7 +6320,7 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr difference_type operator-(
-                const _Iterator& _Left, const _Iterator& _Right) noexcept /* strengthened */ {
+                const _Iterator& _Left, const _Iterator& _Right) noexcept {
                 return _Left._Pos - _Right._Pos;
             }
 
@@ -6281,6 +6477,14 @@ namespace ranges {
 
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<enumerate_view<_Rng>> = enable_borrowed_range<_Rng>;
+
+#if _HAS_CXX23
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<enumerate_view<_Rng>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<const enumerate_view<_Rng>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
 
     namespace views {
         class _Enumerate_fn : public _Pipe::_Base<_Enumerate_fn> {
@@ -6876,6 +7080,15 @@ namespace ranges {
     template <class _Vw>
     inline constexpr bool enable_borrowed_range<chunk_view<_Vw>> = enable_borrowed_range<_Vw> && forward_range<_Vw>;
 
+#if _HAS_CXX23
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<chunk_view<_Rng>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng>
+        requires forward_range<_Rng>
+    inline constexpr auto _Compile_time_max_size<const chunk_view<_Rng>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
+
     namespace views {
         struct _Chunk_fn {
             // clang-format off
@@ -7268,6 +7481,14 @@ namespace ranges {
     template <class _Vw>
     inline constexpr bool enable_borrowed_range<slide_view<_Vw>> = enable_borrowed_range<_Vw>;
 
+#if _HAS_CXX23
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<slide_view<_Rng>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<const slide_view<_Rng>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
+
     namespace views {
         struct _Slide_fn {
             // clang-format off
@@ -7466,6 +7687,11 @@ namespace ranges {
 
     template <class _Rng, class _Pr>
     chunk_by_view(_Rng&&, _Pr) -> chunk_by_view<views::all_t<_Rng>, _Pr>;
+
+#if _HAS_CXX23
+    template <class _Rng, class _Pr>
+    inline constexpr auto _Compile_time_max_size<chunk_by_view<_Rng, _Pr>> = _Compile_time_max_size<_Rng>;
+#endif // _HAS_CXX23
 
     namespace views {
         struct _Chunk_by_fn {
@@ -7855,6 +8081,14 @@ namespace ranges {
 
     template <class _Vw>
     inline constexpr bool enable_borrowed_range<stride_view<_Vw>> = enable_borrowed_range<_Vw>;
+
+#if _HAS_CXX23
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<stride_view<_Rng>> = _Compile_time_max_size<_Rng>;
+
+    template <class _Rng>
+    inline constexpr auto _Compile_time_max_size<const stride_view<_Rng>> = _Compile_time_max_size<const _Rng>;
+#endif // _HAS_CXX23
 
     namespace views {
         struct _Stride_fn {
@@ -8349,6 +8583,21 @@ namespace ranges {
     template <class... _ViewTypes>
     inline constexpr bool enable_borrowed_range<zip_view<_ViewTypes...>> = (enable_borrowed_range<_ViewTypes> && ...);
 
+#if _HAS_CXX23
+    template <class... _Rngs>
+    _NODISCARD consteval auto _Zip_view_compile_time_max_size() {
+        using _Size_type = common_type_t<decltype(_Compile_time_max_size<_Rngs>)...>;
+        return (_STD min)({static_cast<_Size_type>(_Compile_time_max_size<_Rngs>)...});
+    }
+
+    template <class... _Rngs>
+    inline constexpr auto _Compile_time_max_size<zip_view<_Rngs...>> = _Zip_view_compile_time_max_size<_Rngs...>();
+
+    template <class... _Rngs>
+    inline constexpr auto _Compile_time_max_size<const zip_view<_Rngs...>> =
+        _Zip_view_compile_time_max_size<const _Rngs...>();
+#endif // _HAS_CXX23
+
     namespace views {
         struct _Zip_fn {
         private:
@@ -8686,6 +8935,16 @@ namespace ranges {
 
     template <class _Func, class... _Ranges>
     zip_transform_view(_Func, _Ranges&&...) -> zip_transform_view<_Func, views::all_t<_Ranges>...>;
+
+#if _HAS_CXX23
+    template <class _Fn, class... _Rngs>
+    inline constexpr auto _Compile_time_max_size<zip_transform_view<_Fn, _Rngs...>> =
+        _Compile_time_max_size<zip_view<_Rngs...>>;
+
+    template <class _Fn, class... _Rngs>
+    inline constexpr auto _Compile_time_max_size<const zip_transform_view<_Fn, _Rngs...>> =
+        _Compile_time_max_size<const zip_view<_Rngs...>>;
+#endif // _HAS_CXX23
 
     namespace views {
         struct _Zip_transform_fn {
@@ -9143,6 +9402,24 @@ namespace ranges {
     template <class _Rng, size_t _Nx>
     inline constexpr bool enable_borrowed_range<adjacent_view<_Rng, _Nx>> = enable_borrowed_range<_Rng>;
 
+#if _HAS_CXX23
+    template <class _Rng, size_t _Nx>
+    _NODISCARD consteval auto _Adjacent_view_compile_time_max_size() {
+        using _Size_type = common_type_t<decltype(_Compile_time_max_size<_Rng>), size_t>;
+        auto _Size       = static_cast<_Size_type>(_Compile_time_max_size<_Rng>);
+        _Size -= (_STD min)(_Size, static_cast<_Size_type>(_Nx - 1));
+        return static_cast<_Size_type>(_Size);
+    }
+
+    template <class _Rng, size_t _Nx>
+    inline constexpr auto _Compile_time_max_size<adjacent_view<_Rng, _Nx>> =
+        _Adjacent_view_compile_time_max_size<_Rng, _Nx>();
+
+    template <class _Rng, size_t _Nx>
+    inline constexpr auto _Compile_time_max_size<const adjacent_view<_Rng, _Nx>> =
+        _Adjacent_view_compile_time_max_size<const _Rng, _Nx>();
+#endif // _HAS_CXX23
+
     namespace views {
         template <size_t _Nx>
         class _Adjacent_fn : public _Pipe::_Base<_Adjacent_fn<_Nx>> {
@@ -9478,6 +9755,16 @@ namespace ranges {
         }
     };
 
+#if _HAS_CXX23
+    template <class _Rng, class _Fn, size_t _Nx>
+    inline constexpr auto _Compile_time_max_size<adjacent_transform_view<_Rng, _Fn, _Nx>> =
+        _Compile_time_max_size<adjacent_view<_Rng, _Nx>>;
+
+    template <class _Rng, class _Fn, size_t _Nx>
+    inline constexpr auto _Compile_time_max_size<const adjacent_transform_view<_Rng, _Fn, _Nx>> =
+        _Compile_time_max_size<const adjacent_view<_Rng, _Nx>>;
+#endif // _HAS_CXX23
+
     namespace views {
         template <size_t _Nx>
         class _Adjacent_transform_fn {
@@ -9551,69 +9838,28 @@ namespace ranges {
         }
     }
 
-    template <sized_range _Ty>
-    inline constexpr auto _Compile_time_max_size = (numeric_limits<range_size_t<_Ty>>::max)();
-
-    template <class _Ty>
-    concept _Constant_sized_range =
-        sized_range<_Ty> && requires { typename _Require_constant<remove_reference_t<_Ty>::size()>; };
-
-    template <_Constant_sized_range _Ty>
-    inline constexpr auto _Compile_time_max_size<_Ty> = remove_reference_t<_Ty>::size();
-
-    template <class _Ty, size_t _Size>
-    inline constexpr auto _Compile_time_max_size<array<_Ty, _Size>> = _Size;
-
-    template <class _Ty, size_t _Size>
-    inline constexpr auto _Compile_time_max_size<const array<_Ty, _Size>> = _Size;
-
-    template <class _Ty, size_t _Extent>
-        requires (_Extent != dynamic_extent)
-    inline constexpr auto _Compile_time_max_size<span<_Ty, _Extent>> = _Extent;
-
-    template <class _Ty, size_t _Extent>
-        requires (_Extent != dynamic_extent)
-    inline constexpr auto _Compile_time_max_size<const span<_Ty, _Extent>> = _Extent;
-
-    template <class _Ty>
-    inline constexpr auto _Compile_time_max_size<ref_view<_Ty>> = _Compile_time_max_size<_Ty>;
-
-    template <class _Ty>
-        requires sized_range<const _Ty>
-    inline constexpr auto _Compile_time_max_size<const ref_view<_Ty>> = _Compile_time_max_size<const _Ty>;
-
-    template <class _Ty>
-    inline constexpr auto _Compile_time_max_size<owning_view<_Ty>> = _Compile_time_max_size<_Ty>;
-
-    template <class _Ty>
-        requires sized_range<const _Ty>
-    inline constexpr auto _Compile_time_max_size<const owning_view<_Ty>> = _Compile_time_max_size<const _Ty>;
-
-    template <range _Rng>
-    _NODISCARD consteval int _Cartesian_product_max_size_bit_width() noexcept {
-        if constexpr (sized_range<_Rng>) {
-            if constexpr (requires(range_size_t<_Rng> _Val) { _STD bit_width(_Val); }) {
-                return _STD bit_width(_Compile_time_max_size<_Rng>);
-            } else {
-                return numeric_limits<range_size_t<_Rng>>::digits;
-            }
+    template <class _Rng>
+    _NODISCARD consteval int _Cartesian_product_max_size_bit_width() {
+        using _Size_type = decltype(_Compile_time_max_size<_Rng>);
+        if constexpr (requires(_Size_type _Val) { _STD bit_width(_Val); }) {
+            return _STD bit_width(_Compile_time_max_size<_Rng>);
         } else {
-            return numeric_limits<_Make_unsigned_like_t<range_difference_t<_Rng>>>::digits;
+            return numeric_limits<_Size_type>::digits;
         }
     }
 
-    template <class _First, class... _Rest>
+    template <class... _Rngs>
+        requires (sizeof...(_Rngs) > 0)
     _NODISCARD consteval auto _Cartesian_product_optimal_size_type() noexcept {
-        constexpr int _Optimal_size_type_bit_width =
-            (_Cartesian_product_max_size_bit_width<_First>() + ... + _Cartesian_product_max_size_bit_width<_Rest>());
+        constexpr int _Optimal_size_type_bit_width = (_Cartesian_product_max_size_bit_width<_Rngs>() + ...);
         if constexpr (_Optimal_size_type_bit_width <= 8) {
-            return uint_least8_t{};
+            return uint8_t{};
         } else if constexpr (_Optimal_size_type_bit_width <= 16) {
-            return uint_least16_t{};
+            return uint16_t{};
         } else if constexpr (_Optimal_size_type_bit_width <= 32) {
-            return uint_least32_t{};
+            return uint32_t{};
         } else if constexpr (_Optimal_size_type_bit_width <= 64) {
-            return uint_least64_t{};
+            return uint64_t{};
         } else {
             return _Unsigned128{};
         }
@@ -10036,6 +10282,30 @@ namespace ranges {
 
     template <class... _Rngs>
     cartesian_product_view(_Rngs&&...) -> cartesian_product_view<views::all_t<_Rngs>...>;
+
+#if _HAS_CXX23
+    template <class... _Rngs>
+    _NODISCARD consteval auto _Cartesian_product_view_compile_time_max_size() {
+        using _Size_type = common_type_t<decltype(_Cartesian_product_optimal_size_type<_Rngs...>()),
+            decltype(_Compile_time_max_size<_Rngs>)...>;
+        _Size_type _Result{1};
+        const bool _Overflow =
+            (_Mul_overflow(static_cast<_Size_type>(_Compile_time_max_size<_Rngs>), _Result, _Result) || ...);
+        if (_Overflow) {
+            return (numeric_limits<_Size_type>::max)();
+        } else {
+            return _Result;
+        }
+    }
+
+    template <class... _Rngs>
+    inline constexpr auto _Compile_time_max_size<cartesian_product_view<_Rngs...>> =
+        _Cartesian_product_view_compile_time_max_size<_Rngs...>();
+
+    template <class... _Rngs>
+    inline constexpr auto _Compile_time_max_size<const cartesian_product_view<_Rngs...>> =
+        _Cartesian_product_view_compile_time_max_size<const _Rngs...>();
+#endif // _HAS_CXX23
 
     namespace views {
         class _Cartesian_product_fn {
