@@ -12,7 +12,7 @@ namespace {
             LR"(X:DriveRelative)"sv,
             LR"(\\server\\\share)"sv,
             LR"(STL/.github/workflows/../..)"sv,
-            LR"(C:\Program Files\Azure Data Studio\resources\app\extensions\bat\snippets\batchfile.code-snippets)"sv,
+            LR"(C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\VC\Snippets)"sv,
             LR"(/\server/\share/\a/\b/\c/\./\./\d/\../\../\../\../\../\../\../\other/x/y/z/.././..\meow.txt)"sv,
         };
 
