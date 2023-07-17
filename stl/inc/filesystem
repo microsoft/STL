@@ -615,7 +615,7 @@ namespace filesystem {
     _EXPORT_STD class path {
         template <class _Base_iter>
         friend class _Path_iterator;
-        friend path absolute(const path& _Input, error_code& _Ec);
+        friend inline path absolute(const path& _Input, error_code& _Ec);
         friend inline __std_win_error _Canonical(path& _Result, const wstring& _Text);
         friend inline path temp_directory_path(error_code& _Ec);
         friend inline path current_path(error_code& _Ec);
