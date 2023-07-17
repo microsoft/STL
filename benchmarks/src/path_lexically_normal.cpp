@@ -9,9 +9,9 @@ namespace {
     void BM_lexically_normal(benchmark::State& state) {
         using namespace std::literals;
         static constexpr std::wstring_view args[5]{
-            LR"(X:DriveRelative)"sv,
-            LR"(\\server\\\share)"sv,
-            LR"(STL/.github/workflows/../..)"sv,
+            LR"(C:Snippets)"sv,
+            LR"(.\Snippets)"sv,
+            LR"(..\..\IDE\VC\Snippets)"sv,
             LR"(C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\VC\Snippets)"sv,
             LR"(/\server/\share/\a/\b/\c/\./\./\d/\../\../\../\../\../\../\../\other/x/y/z/.././..\meow.txt)"sv,
         };
