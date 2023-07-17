@@ -192,7 +192,7 @@ public:
 
         _Construct<_Traits>(_Str.data() + _Pos, _Count, _Elem0, _Elem1);
     }
-#endif
+#endif // _HAS_CXX26
 
     _CONSTEXPR23 bitset& operator&=(const bitset& _Right) noexcept {
         for (size_t _Wpos = 0; _Wpos <= _Words; ++_Wpos) {
