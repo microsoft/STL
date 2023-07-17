@@ -1,3 +1,46 @@
 #pragma once
 
-#error "Not implemented"
+#include <initializer_list>
+#include <compare>
+#include <concepts>
+#include <cstdint>
+#include <ranges>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+_STD_BEGIN
+
+template <class Key, class T, class Compare = less<Key>, class KeyContainer = vector<Key>, class MappedContainer = vector<T>> requires same_as<Key, typename KeyContainer::value_type> && same_as<T, typename MappedContainer::value_type>
+class flat_map;
+
+struct sorted_unique_t { explicit sorted_unique_t() = default; };
+inline constexpr sorted_unique_t sorted_unique {};
+
+// Implementation
+
+template <class Key, class T, class Compare, class KeyContainer, class MappedContainer> requires same_as<Key, typename KeyContainer::value_type> && same_as<T, typename MappedContainer::value_type>
+class flat_map {
+    public:
+    using key_type = Key;
+    using mapped_type = T;
+    using value_type = pair<key_type, mapped_type>;
+    using key_compare = Compare;
+    using reference = pair<const key_type&, mapped_type&>;
+    using const_reference = pair<const key_type&, const mapped_type&>;
+    using size_type = size_t;
+    using difference_type = ptrdiff_t;
+    using key_container_type = KeyContainer;
+    using mapped_container_type = MappedContainer;
+
+    private:
+    using _Underlying_container = _RANGES zip_view<_RANGES views::all_t<key_container_type>, _RANGES views::all_t<mapped_container_type>>;
+
+    public:
+    using iterator = _RANGES iterator_t<_Underlying_container>;
+    using const_iterator = _RANGES const_iterator_t<_Underlying_container>;
+    using reverse_iterator = _STD reverse_iterator<iterator>;
+    using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+};
+
+_STD_END
