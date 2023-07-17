@@ -1208,7 +1208,7 @@ namespace filesystem {
             vector<wstring_view> _Vec; // Empty wstring_view means directory-separator
                                        // that will be normalized to a preferred-separator.
                                        // Non-empty wstring_view means filename.
-            _Vec.reserve(13); // avoid frequent re-allocations
+            _Vec.reserve(19); // avoid frequent re-allocations
             bool _Has_root_directory = false; // true: there is a slash right after root-name.
             auto _Ptr                = _Root_name_end;
             if (_Ptr != _Last && _Is_slash(*_Ptr)) {
