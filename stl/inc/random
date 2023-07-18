@@ -1865,13 +1865,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = uniform_int;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(0, 9);
         }
 
-        explicit param_type(result_type _Min0, result_type _Max0 = 9) noexcept // strengthened
-        {
+        explicit param_type(result_type _Min0, result_type _Max0 = 9) noexcept /* strengthened */ {
             _Init(_Min0, _Max0);
         }
 
@@ -2058,13 +2056,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = bernoulli_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(0.5);
         }
 
-        explicit param_type(double _Px0) noexcept // strengthened
-        {
+        explicit param_type(double _Px0) noexcept /* strengthened */ {
             _Init(_Px0);
         }
 
@@ -2220,13 +2216,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = geometric_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty1(0.5));
         }
 
-        explicit param_type(_Ty1 _Px0) // strengthened
-        {
+        explicit param_type(_Ty1 _Px0) noexcept /* strengthened */ {
             _Init(_Px0);
         }
 
@@ -2378,13 +2372,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = poisson_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty1(1));
         }
 
-        explicit param_type(_Ty1 _Mean0) noexcept // strengthened
-        {
+        explicit param_type(_Ty1 _Mean0) noexcept /* strengthened */ {
             _Init(_Mean0);
         }
 
@@ -2535,13 +2527,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = binomial_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(1, _Ty1(0.5));
         }
 
-        explicit param_type(_Ty _Tx0, _Ty1 _Px0 = _Ty1(0.5)) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Tx0, _Ty1 _Px0 = _Ty1(0.5)) noexcept /* strengthened */ {
             _Init(_Tx0, _Px0);
         }
 
@@ -2738,13 +2728,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = uniform_real;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Min0, _Max0);
         }
 
@@ -2912,13 +2900,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = exponential_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{1});
         }
 
-        explicit param_type(_Ty _Lambda0) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Lambda0) noexcept /* strengthened */ {
             _Init(_Lambda0);
         }
 
@@ -3034,13 +3020,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = normal_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(0.0, 1.0);
         }
 
-        explicit param_type(_Ty _Mean0, _Ty _Sigma0 = 1.0) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Mean0, _Ty _Sigma0 = 1.0) noexcept /* strengthened */ {
             _Init(_Mean0, _Sigma0);
         }
 
@@ -3231,13 +3215,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = gamma_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{1}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Alpha0, _Ty _Beta0 = _Ty{1}) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Alpha0, _Ty _Beta0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Alpha0, _Beta0);
         }
 
@@ -3427,13 +3409,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = weibull_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{1}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Ax0, _Bx0);
         }
 
@@ -3564,13 +3544,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = extreme_value_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Ax0, _Bx0);
         }
 
@@ -3700,13 +3678,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = lognormal_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Mx0, _Ty _Sx0 = _Ty{1}) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Mx0, _Ty _Sx0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Mx0, _Sx0);
         }
 
@@ -3836,13 +3812,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = chi_squared_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{1});
         }
 
-        explicit param_type(_Ty _Nx0) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Nx0) noexcept /* strengthened */ {
             _Init(_Nx0);
         }
 
@@ -3958,13 +3932,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = cauchy_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Ax0, _Bx0);
         }
 
@@ -4153,13 +4125,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = fisher_f_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{1}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Mx0, _Ty _Nx0 = _Ty{1}) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Mx0, _Ty _Nx0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Mx0, _Nx0);
         }
 
@@ -4301,13 +4271,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = student_t_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{1});
         }
 
-        explicit param_type(_Ty _Nx0) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Nx0) noexcept /* strengthened */ {
             _Init(_Nx0);
         }
 
@@ -4438,13 +4406,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = negative_binomial_distribution;
 
-        param_type() noexcept // strengthened
-        {
+        param_type() noexcept /* strengthened */ {
             _Init(1, 0.5);
         }
 
-        explicit param_type(_Ty _Kx0, double _Px0 = 0.5) noexcept // strengthened
-        {
+        explicit param_type(_Ty _Kx0, double _Px0 = 0.5) noexcept /* strengthened */ {
             _Init(_Kx0, _Px0);
         }
 
