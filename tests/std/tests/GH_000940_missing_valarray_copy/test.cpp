@@ -7,6 +7,8 @@
 #include <iostream>
 #include <valarray>
 
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
 template <class T>
 bool eq(const std::valarray<T>& v, std::initializer_list<T> il) {
     return std::equal(begin(v), end(v), il.begin(), il.end());
