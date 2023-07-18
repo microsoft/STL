@@ -1,9 +1,12 @@
 #pragma once
 
+#include <algorithm>
 #include <initializer_list>
 #include <compare>
 #include <concepts>
 #include <cstdint>
+#include <memory>
+#include <ranges>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -36,6 +39,8 @@ class flat_map {
     using reverse_iterator = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
+    static_assert(_STD random_access_iterator<iterator>);
+
     class value_compare {
         public:
         value_compare(key_compare _Comp) : _Key_compare_for_val(_Comp) {}
@@ -54,8 +59,23 @@ class flat_map {
     };
 
     // 24.6.8.3 construct / copy / destroy
-    explicit flat_map(const key_compare& _Comp) : _Key_compare(_Comp) {}
+    explicit flat_map(const key_compare& _Comp) : _Key_compare(_Comp), _Data() {}
     flat_map(): flat_map(key_compare()) {}
+
+    flat_map(key_container_type _Key_cont, mapped_container_type _Mapped_cont): _Key_compare(key_compare()), _Data() {
+        _Data.keys = _STD move(_Key_cont);
+        _Data.values = _STD move(_Mapped_cont);
+
+        _Sort_and_dedup();
+    }
+
+    template <class Allocator>
+    flat_map(const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont, const Allocator& _Alloc) requires uses_allocator_v<key_container_type, Allocator> && uses_allocator_v<mapped_container_type, Allocator> : _Key_compare(key_compare()), _Data() {
+        _Data.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont);
+        _Data.values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont);
+
+        _Sort_and_dedup();
+    }
 
     // observers
     key_compare key_comp() const {
@@ -77,6 +97,48 @@ class flat_map {
     private:
     key_compare _Key_compare;
     containers _Data;
+
+    struct _Key_equal {
+        key_compare _Key_compare;
+        _Key_equal(key_compare _Comp) : _Key_compare(_Comp) {}
+        bool operator () (const_reference _X, const_reference _Y) const {
+            return !_Key_compare(_X.first, _Y.first) && !_Key_compare(_Y.first, _X.first);
+        }
+    };
+
+    void _Sort_and_dedup(){
+        auto _Zip_view = _RANGES views::zip(_Data.keys, _Data.values);
+        _STD sort(_Zip_view.begin(), _Zip_view.end(), value_compare(_Key_compare));
+
+        auto _Subrange = _RANGES unique(_Zip_view, _Key_equal(_Key_compare));
+        auto _Remaining_count = _STD distance(_Zip_view.begin(), _Subrange.begin());
+
+        _Data.keys.erase(_Data.keys.begin() + _Remaining_count, _Data.keys.end());
+        _Data.values.erase(_Data.values.begin() + _Remaining_count, _Data.values.end());
+    };
+
+    class _Flat_map_iterator{
+        public:
+        _Flat_map_iterator() = default;
+        // Copy-constructible
+        _Flat_map_iterator(const _Flat_map_iterator&) = default;
+        // Copy-assignable
+        _Flat_map_iterator& operator = (const _Flat_map_iterator&) = default;
+        // Swappable
+        static_assert(std::swappable<_Flat_map_iterator>);
+        // Destructible
+        ~_Flat_map_iterator() = default;
+
+        using iterator_category = _STD random_access_iterator_tag;
+        using difference_type = ptrdiff_t;
+        using value_type = flat_map::value_type;
+        using pointer = value_type*;
+        using reference = value_type&;
+
+        private:
+        typename key_container_type::iterator _Key_it;
+        typename mapped_container_type::iterator _Mapped_it;
+    };
 };
 
 _STD_END
