@@ -11,7 +11,7 @@ namespace {
         if (extra_depth > 0) {
             return get_current(extra_depth - 1);
         } else {
-            return std::stacktrace::current();
+            return std::stacktrace::current(1);
         }
     }
 #pragma optimize("", on) // end inhibit tail call optimization
