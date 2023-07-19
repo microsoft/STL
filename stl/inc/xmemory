@@ -472,7 +472,7 @@ struct _Is_default_allocator<allocator<_Ty>, void_t<typename allocator<_Ty>::_Fr
 
 #if _HAS_CXX23
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
-template <class _Alloc, class _SizeTy, class = void>
+template <class _Alloc, class _SizeTy>
 concept _Has_member_allocate_at_least = requires(_Alloc& _Al, const _SizeTy& _Count) { _Al.allocate_at_least(_Count); };
 #else // ^^^ no workaround / workaround vvv
 template <class _Alloc, class _SizeTy, class = void>

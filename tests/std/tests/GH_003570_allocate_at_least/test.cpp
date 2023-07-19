@@ -122,7 +122,7 @@ void test_inheriting_allocator() {
     assert(accumulate(vec.begin(), vec.end(), 0, plus<>{}) == 36);
 }
 
-// Also test VSO-1852860, in which we incorrectly tried to use allocate_at_least from an inaccessible std::allocator
+// Also test GH-3890, in which we incorrectly tried to use allocate_at_least from an inaccessible std::allocator
 // base due to an MSVC bug.
 template <class T>
 struct less_icky_allocator : private allocator<T> {
