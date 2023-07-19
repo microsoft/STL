@@ -651,7 +651,8 @@ protected:
             _Off -= static_cast<off_type>(sizeof(_Elem)); // back up over _Elem bytes
         }
 
-        if (!_Myfile || !_Endwrite() || _CSTD _fseeki64(_Myfile, _Off, _Way) != 0
+        if (!_Myfile || !_Endwrite()
+            || ((_Off != 0 || _Way != ios_base::cur) && _CSTD _fseeki64(_Myfile, _Off, _Way) != 0)
             || _CSTD fgetpos(_Myfile, &_Fileposition) != 0) {
             return pos_type{off_type{-1}}; // report failure
         }

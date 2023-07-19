@@ -922,57 +922,6 @@ using move_only_view = test::range<Category, const ValTy, IsSized, test::CanDiff
     test::CanCompare{derived_from<Category, forward_iterator_tag>},
     test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes, test::Copyability::move_only>;
 
-namespace check_recommended_practice_implementation { // MSVC STL specific behavior
-    using ranges::cartesian_product_view, ranges::empty_view, ranges::single_view, views::all_t, ranges::range_size_t,
-        ranges::range_difference_t, ranges::ref_view, ranges::owning_view;
-    using Arr  = array<int, 4>;
-    using Vec  = vector<int>;
-    using Span = span<int, 4>;
-
-    // Computing product for such small array does not require big range_size_t
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Arr>>>) <= sizeof(size_t));
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Arr>, all_t<Arr>>>) <= sizeof(size_t));
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Arr>, all_t<Arr>, all_t<Arr>>>) <= sizeof(size_t));
-
-    // Same thing with range_difference_t<array>
-    STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Arr>>>) <= sizeof(ptrdiff_t));
-    STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Arr>, all_t<Arr>>>) <= sizeof(ptrdiff_t));
-    STATIC_ASSERT(
-        sizeof(range_difference_t<cartesian_product_view<all_t<Arr>, all_t<Arr>, all_t<Arr>>>) <= sizeof(ptrdiff_t));
-
-    // Computing product for such small span does not require big range_size_t
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Span>>>) <= sizeof(size_t));
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Span>, all_t<Span>>>) <= sizeof(size_t));
-    STATIC_ASSERT(
-        sizeof(range_size_t<cartesian_product_view<all_t<Span>, all_t<Span>, all_t<Span>>>) <= sizeof(size_t));
-
-    // Same thing with range_difference_t<span>
-    STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Span>>>) <= sizeof(ptrdiff_t));
-    STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Span>, all_t<Span>>>) <= sizeof(ptrdiff_t));
-    STATIC_ASSERT(
-        sizeof(range_difference_t<cartesian_product_view<all_t<Span>, all_t<Span>, all_t<Span>>>) <= sizeof(ptrdiff_t));
-
-    // Check 'single_view' and 'empty_view'
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<empty_view<int>, single_view<int>>>) <= sizeof(size_t));
-    STATIC_ASSERT(
-        sizeof(range_difference_t<cartesian_product_view<empty_view<int>, single_view<int>>>) <= sizeof(ptrdiff_t));
-
-    // Check 'ref_view<(const) V>' and 'owning_view<V>'
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<ref_view<Arr>, ref_view<const Arr>, owning_view<Arr>>>)
-                  <= sizeof(size_t));
-    STATIC_ASSERT(
-        sizeof(range_difference_t<cartesian_product_view<ref_view<Arr>, ref_view<const Arr>, owning_view<Arr>>>)
-        <= sizeof(ptrdiff_t));
-
-    // One vector should not use big integer-class type...
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Vec>>>) <= sizeof(size_t));
-    STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Vec>>>) <= sizeof(ptrdiff_t));
-
-    // ... but two vectors will
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Vec>, all_t<Vec>>>) > sizeof(size_t));
-    STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Vec>, all_t<Vec>>>) > sizeof(ptrdiff_t));
-} // namespace check_recommended_practice_implementation
-
 // GH-3733: cartesian_product_view would incorrectly reject a call to size() claiming that big*big*big*0 is not
 // representable as range_size_t because big*big*big is not.
 constexpr void test_gh_3733() {

@@ -1376,7 +1376,7 @@ protected:
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
             &_Buf[0], _Buf.size(), _Ffmt(_Fmt, 0, _Iosbase.flags()), static_cast<int>(_Precision), _Val));
 
-        return _Fput(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen);
+        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, (_STD isnan)(_Val));
     }
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(
@@ -1400,7 +1400,7 @@ protected:
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
             &_Buf[0], _Buf.size(), _Ffmt(_Fmt, 'L', _Iosbase.flags()), static_cast<int>(_Precision), _Val));
 
-        return _Fput(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen);
+        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, (_STD isnan)(_Val));
     }
 #pragma warning(pop)
 
@@ -1462,7 +1462,13 @@ private:
     }
 
     _OutIt __CLRCALL_OR_CDECL _Fput(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, const char* _Buf,
-        size_t _Count) const { // put formatted floating-point to _Dest
+        size_t _Count) const { // TRANSITION, ABI: preserved for binary compatibility
+        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf, _Count, false);
+    }
+
+    template <int = 0> // TRANSITION, ABI
+    _OutIt _Fput_v2(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, const char* _Buf, size_t _Count,
+        bool _Is_nan_val) const { // put formatted floating-point to _Dest
         auto _Prefix = static_cast<size_t>(0 < _Count && (*_Buf == '+' || *_Buf == '-'));
         const char* _Exps;
         if ((_Iosbase.flags() & ios_base::floatfield) != ios_base::hexfloat) {
@@ -1491,13 +1497,15 @@ private:
             _Groupstring[_Poff] = _Punct_fac.decimal_point();
         }
 
-        size_t _Off     = _Poff == _Count ? _Eoff : _Poff;
-        const char* _Pg = &_Grouping[0];
-        while (*_Pg != CHAR_MAX && '\0' < *_Pg && static_cast<size_t>(*_Pg) < _Off - _Prefix) {
-            // add thousands separator
-            _Groupstring.insert(_Off -= *_Pg, 1, _Kseparator);
-            if ('\0' < _Pg[1]) {
-                ++_Pg; // not last group, advance
+        if (!_Is_nan_val) {
+            size_t _Off     = _Poff == _Count ? _Eoff : _Poff;
+            const char* _Pg = &_Grouping[0];
+            while (*_Pg != CHAR_MAX && '\0' < *_Pg && static_cast<size_t>(*_Pg) < _Off - _Prefix) {
+                // add thousands separator
+                _Groupstring.insert(_Off -= *_Pg, 1, _Kseparator);
+                if ('\0' < _Pg[1]) {
+                    ++_Pg; // not last group, advance
+                }
             }
         }
 

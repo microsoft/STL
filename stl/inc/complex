@@ -2037,7 +2037,7 @@ _NODISCARD complex<_Ty> tanh(const complex<_Ty>& _Left) {
             _Real = _Ty{1};
         }
 
-        return complex<_Ty>(_Real, _Tv* _Ty{0});
+        return complex<_Ty>(_Real, _Tv * _Ty{0});
     }
 
     return complex<_Ty>((_Ctraits<_Ty>::sqrt(_Ty{1} + _Sv * _Sv)) * _Bv / _Dv, _Tv / _Dv);
