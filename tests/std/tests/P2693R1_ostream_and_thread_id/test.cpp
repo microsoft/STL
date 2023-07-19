@@ -5,7 +5,10 @@
 #include <array>
 #include <cassert>
 #include <functional>
+#include <ios>
+#include <locale>
 #include <sstream>
+#include <string>
 #include <thread>
 
 using namespace std;
@@ -34,7 +37,7 @@ template <class CharT>
 void check_fmtflags_and_locale(thread::id id) {
     // changing fmtflags other than fill or align should not affect text representation of thread::id
     auto make_text_rep = [id](ios_base::fmtflags flags = {}, ios_base::fmtflags mask = {}) {
-        std::basic_stringstream<CharT> ss;
+        basic_ostringstream<CharT> ss;
         ss.setf(flags, mask);
         ss << id;
         return ss.str();
@@ -42,7 +45,7 @@ void check_fmtflags_and_locale(thread::id id) {
 
     // changing locale should not affect text representation of thread::id
     auto make_localized_text_rep = [id](const char* name) {
-        std::basic_stringstream<CharT> ss;
+        basic_ostringstream<CharT> ss;
         try {
             ss.imbue(locale{name});
         } catch (...) {
@@ -53,7 +56,7 @@ void check_fmtflags_and_locale(thread::id id) {
 
     // changing precision should not affect text representation of thread::id
     auto make_text_rep_with_precision = [id](int prec) {
-        std::basic_stringstream<CharT> ss;
+        basic_ostringstream<CharT> ss;
         ss.precision(prec);
         ss << id;
         return ss.str();
@@ -61,19 +64,19 @@ void check_fmtflags_and_locale(thread::id id) {
 
     const array<basic_string<CharT>, 14> reps = {
         make_text_rep(),
-        make_text_rep(ios_base::hex, ios_base::basefield),
-        make_text_rep(ios_base::oct, ios_base::basefield),
-        make_text_rep(ios_base::oct | ios_base::showbase, ios_base::basefield),
-        make_text_rep(ios_base::showpos, ios_base::basefield),
-        make_text_rep(ios_base::hex | ios_base::uppercase, ios_base::basefield),
         make_text_rep(ios_base::fixed, ios_base::basefield),
+        make_text_rep(ios_base::hex | ios_base::uppercase, ios_base::basefield),
+        make_text_rep(ios_base::hex, ios_base::basefield),
+        make_text_rep(ios_base::oct | ios_base::showbase, ios_base::basefield),
+        make_text_rep(ios_base::oct, ios_base::basefield),
+        make_text_rep(ios_base::showpos, ios_base::basefield),
         make_localized_text_rep(""),
-        make_localized_text_rep("en-US"),
         make_localized_text_rep("de-DE"),
+        make_localized_text_rep("en-US"),
         make_localized_text_rep("pl-PL"),
-        make_text_rep_with_precision(32),
-        make_text_rep_with_precision(6),
         make_text_rep_with_precision(1),
+        make_text_rep_with_precision(6),
+        make_text_rep_with_precision(32),
     };
 
     // all text representations should be the same
@@ -85,7 +88,7 @@ void check_fill_and_align() {
     thread::id id;
 
     { // Align left
-        basic_stringstream<CharT> ss;
+        basic_ostringstream<CharT> ss;
         ss.setf(ios_base::left, ios_base::adjustfield);
         ss.fill('*');
         ss.width(5);
@@ -94,7 +97,7 @@ void check_fill_and_align() {
     }
 
     { // Align right
-        basic_stringstream<CharT> ss;
+        basic_ostringstream<CharT> ss;
         ss.setf(ios_base::right, ios_base::adjustfield);
         ss.fill(':');
         ss.width(10);
@@ -103,7 +106,7 @@ void check_fill_and_align() {
     }
 
     { // Align internal
-        basic_stringstream<CharT> ss;
+        basic_ostringstream<CharT> ss;
         ss.setf(ios_base::internal, ios_base::adjustfield);
         ss.fill('_');
         ss.width(3);

@@ -10,6 +10,7 @@
 #include <iterator>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 // copied from the string_view tests
@@ -143,7 +144,7 @@ struct FormatFn {
     template <class... Args>
     [[nodiscard]] auto operator()(
         const std::basic_format_string<CharT, std::type_identity_t<Args>...> str, Args&&... args) const {
-        return format(str, std::forward<Args>(args)...);
+        return std::format(str, std::forward<Args>(args)...);
     }
 };
 
@@ -152,9 +153,9 @@ struct VFormatFn {
     template <class... Args>
     [[nodiscard]] auto operator()(const std::basic_string_view<CharT> str, Args&&... args) const {
         if constexpr (std::same_as<CharT, char>) {
-            return vformat(str, make_format_args(std::forward<Args>(args)...));
+            return std::vformat(str, std::make_format_args(std::forward<Args>(args)...));
         } else {
-            return vformat(str, make_wformat_args(std::forward<Args>(args)...));
+            return std::vformat(str, std::make_wformat_args(std::forward<Args>(args)...));
         }
     }
 };
@@ -166,7 +167,7 @@ private:
 
 public:
     template <class... Args>
-    auto operator()(const std::basic_string_view<CharT> str, Args&&... args) const {
+    void operator()(const std::basic_string_view<CharT> str, Args&&... args) const {
         try {
             (void) base(str, std::forward<Args>(args)...);
             assert(false && "No exception.");
@@ -183,7 +184,7 @@ struct MoveOnlyFormat {
 private:
     struct StringInserter {
         using iterator_category = std::output_iterator_tag;
-        using difference_type   = ptrdiff_t;
+        using difference_type   = std::ptrdiff_t;
         using container_type    = std::basic_string<CharT>;
 
         StringInserter()                            = default;
@@ -221,6 +222,6 @@ public:
     template <class... Args>
     [[nodiscard]] auto operator()(
         const std::basic_format_string<CharT, std::type_identity_t<Args>...> str, Args&&... args) const {
-        return format_to(StringInserter{}, str, std::forward<Args>(args)...).str;
+        return std::format_to(StringInserter{}, str, std::forward<Args>(args)...).str;
     }
 };

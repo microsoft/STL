@@ -6,6 +6,8 @@
 #include <cassert>
 #include <concepts>
 #include <execution>
+#include <ios>
+#include <locale>
 #include <ranges>
 #include <sstream>
 #include <string>
@@ -44,12 +46,12 @@ void check_formatting_of_default_constructed_thread_id() {
     // width only (replacement field)
     assert(fmt(STR("{:{}}"), id, 7) == STR("      0"));
 
-    // fill-and align with width
+    // fill-and-align with width
     assert(fmt(STR("{:=<5}"), id) == STR("0===="));
     assert(fmt(STR("{::^6}"), id) == STR("::0:::"));
     assert(fmt(STR("{:*>7}"), id) == STR("******0"));
 
-    // fill-and align with width (replacement field)
+    // fill-and-align with width (replacement field)
     assert(fmt(STR("{:/<{}}"), id, 7) == STR("0//////"));
     assert(fmt(STR("{::^{}}"), id, 6) == STR("::0:::"));
     assert(fmt(STR("{0:_>{1}}"), id, 5) == STR("____0"));
@@ -98,7 +100,7 @@ void check_formatting_of_this_thread_id() {
         assert(ranges::equal(ranges::subrange{it, s.end()}, id_str));
     }
 
-    { // fill-and align with width
+    { // fill-and-align with width
         constexpr int width  = 21;
         const int fill_width = static_cast<int>(width - id_str.size());
 
@@ -130,7 +132,7 @@ void check_formatting_of_this_thread_id() {
         }
     }
 
-    { // fill-and align with width (replacement field)
+    { // fill-and-align with width (replacement field)
         constexpr int width  = 27;
         const int fill_width = static_cast<int>(width - id_str.size());
 
@@ -191,7 +193,7 @@ void check_format_versus_ostream() {
         assert(fmt(STR("{:{}}"), id, w) == ss.view());
     }
 
-    { // fill-and align with width
+    { // fill-and-align with width
         constexpr int w = 30;
         basic_ostringstream<CharT> ss;
         ss.fill('*');
@@ -202,7 +204,7 @@ void check_format_versus_ostream() {
         assert(fmt(STR("{:*<{}}"), id, w) == ss.view());
     }
 
-    { // check what happens if we change stream's locale, precision and fmtflags other than fill and alignment
+    { // check what happens if we change stream's locale, precision, and fmtflags other than fill and alignment
         constexpr int w = 25;
         basic_ostringstream<CharT> ss;
         ss.imbue(locale{"en-US"});
@@ -234,7 +236,7 @@ void check_invalid_specs() {
         fmt(STR("{:{<}"), id);
     }
 
-    { // sign, #, 0, precision, L or type options are not allowed in format-specs
+    { // sign, #, 0, precision, L, or type options are not allowed in format-specs
         fmt(STR("{:+}"), id);
         fmt(STR("{:#}"), id);
         fmt(STR("{:0}"), id);

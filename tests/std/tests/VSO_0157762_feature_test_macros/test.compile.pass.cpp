@@ -846,20 +846,6 @@ STATIC_ASSERT(__cpp_lib_expected == 202211L);
 #endif
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-#ifndef __cpp_lib_formatters
-#error __cpp_lib_formatters is not defined
-#elif __cpp_lib_formatters != 202302L
-#error __cpp_lib_formatters is not 202302L
-#else
-STATIC_ASSERT(__cpp_lib_formatters == 202302L);
-#endif
-#else
-#ifdef __cpp_lib_formatters
-#error __cpp_lib_formatters is defined
-#endif
-#endif
-
 #ifndef __cpp_lib_experimental_erase_if
 #error __cpp_lib_experimental_erase_if is not defined
 #elif __cpp_lib_experimental_erase_if != 201411L
@@ -901,6 +887,20 @@ STATIC_ASSERT(__cpp_lib_format == 202207L);
 #else
 #ifdef __cpp_lib_format
 #error __cpp_lib_format is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_formatters
+#error __cpp_lib_formatters is not defined
+#elif __cpp_lib_formatters != 202302L
+#error __cpp_lib_formatters is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_formatters == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_formatters
+#error __cpp_lib_formatters is defined
 #endif
 #endif
 

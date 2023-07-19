@@ -380,8 +380,8 @@ struct formatter<basic_stacktrace<_Alloc>> {
     }
 
     template <class _FormatContext>
-    _FormatContext::iterator format(const basic_stacktrace<_Alloc>& _Val, _FormatContext& _FormatCtx) const {
-        return _RANGES copy(_STD to_string(_Val), _FormatCtx.out()).out;
+    _FormatContext::iterator format(const basic_stacktrace<_Alloc>& _Val, _FormatContext& _Format_ctx) const {
+        return _RANGES copy(_STD to_string(_Val), _Format_ctx.out()).out;
     }
 };
 #endif // __cpp_lib_concepts

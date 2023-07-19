@@ -46,7 +46,7 @@ void check_stacktrace_entry_formatter() {
     }
 
     { // width only (replacement field)
-        constexpr int width  = 420;
+        constexpr int width  = 470;
         const int fill_width = static_cast<int>(width - frame_str.size());
 
         const auto s  = fmt("{:{}}", frame, width);
@@ -55,7 +55,7 @@ void check_stacktrace_entry_formatter() {
         assert(ranges::equal(ranges::subrange{s.begin(), it.base()}, frame_str));
     }
 
-    { // fill-and align with width
+    { // fill-and-align with width
         constexpr int width  = 400;
         const int fill_width = static_cast<int>(width - frame_str.size());
 
@@ -87,7 +87,7 @@ void check_stacktrace_entry_formatter() {
         }
     }
 
-    { // fill-and align with width (replacement field)
+    { // fill-and-align with width (replacement field)
         constexpr int width  = 390;
         const int fill_width = static_cast<int>(width - frame_str.size());
 
@@ -136,7 +136,7 @@ void check_stacktrace_entry_formatter_with_invalid_fields() {
         fmt("{:{<}", frame);
     }
 
-    { // sign, #, 0, precision, L or type options are not allowed in format-specs
+    { // sign, #, 0, precision, L, or type options are not allowed in format-specs
         fmt("{:+}", frame);
         fmt("{:#}", frame);
         fmt("{:0}", frame);

@@ -3985,7 +3985,7 @@ private:
     basic_format_parse_context<_CharT>& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
-        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+        if (!_STD in_range<int>(_Idx)) {
             _Throw_format_error("Dynamic width index is too large.");
         }
 
@@ -4011,8 +4011,6 @@ _NODISCARD constexpr const _CharT* _Parse_fill_align_and_width_specs(
 template <class _CharT>
 struct _Fill_align_and_width_formatter {
 public:
-    _Fill_align_and_width_formatter() = default;
-
     _NODISCARD constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         _Fill_align_and_width_specs_setter<_CharT> _Callback{_Specs, _Parse_ctx};
         const auto _It =
@@ -4033,7 +4031,7 @@ public:
                 _Get_dynamic_specs<_Width_checker>(_Format_ctx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
         }
 
-        return _Write_aligned(_Format_ctx.out(), _Width, _Format_specs, _Default_align, std::forward<_Func>(_Fn));
+        return _Write_aligned(_Format_ctx.out(), _Width, _Format_specs, _Default_align, _STD forward<_Func>(_Fn));
     }
 
 private:
