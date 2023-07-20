@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <xmemory>
 
 _STD_BEGIN
 
@@ -19,10 +20,44 @@ class flat_map;
 struct sorted_unique_t { explicit sorted_unique_t() = default; };
 inline constexpr sorted_unique_t sorted_unique {};
 
+template <class _Alloc, class _Key_container, class _Mapped_container>
+concept _Valid_Allocator_for_flat_map = _STD uses_allocator_v<_Key_container, _Alloc> && _STD uses_allocator_v<_Mapped_container, _Alloc>;
+
 // Implementation
 
+_EXPORT_STD
 template <class Key, class T, class Compare, class KeyContainer, class MappedContainer> requires same_as<Key, typename KeyContainer::value_type> && same_as<T, typename MappedContainer::value_type>
 class flat_map {
+    private:
+    template <_STD random_access_iterator _Key_iterator_t, _STD random_access_iterator _Mapped_iterator_t>
+    class _Flat_map_iterator_Impl{
+        public:
+        class type{
+            public:
+            type() = default;
+            // Copy-constructible
+            type(const type&) = default;
+            // Copy-assignable
+            type& operator = (const type&) = default;
+            // Move-assignable
+            type& operator = (type&&) = default;
+            // Swappable
+            // Destructible
+            ~type() = default;
+
+            using iterator_category = _STD random_access_iterator_tag;
+            using difference_type = ptrdiff_t;
+            using value_type = flat_map::value_type;
+            using pointer = value_type*;
+            using reference = value_type&;
+
+            private:
+            _Key_iterator_t _Key_it;
+            _Mapped_iterator_t _Mapped_it;
+        };
+
+        static_assert(_STD swappable<type>);
+    };
     public:
     using key_type = Key;
     using mapped_type = T;
@@ -34,8 +69,8 @@ class flat_map {
     using difference_type = ptrdiff_t;
     using key_container_type = KeyContainer;
     using mapped_container_type = MappedContainer;
-    using iterator = typename key_container_type::iterator;
-    using const_iterator = typename key_container_type::const_iterator;
+    using iterator = _Flat_map_iterator_Impl<typename key_container_type::const_iterator, typename mapped_container_type::iterator>::type;
+    using const_iterator = _Flat_map_iterator_Impl<typename key_container_type::const_iterator, typename mapped_container_type::const_iterator>::type;
     using reverse_iterator = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
@@ -62,20 +97,80 @@ class flat_map {
     explicit flat_map(const key_compare& _Comp) : _Key_compare(_Comp), _Data() {}
     flat_map(): flat_map(key_compare()) {}
 
-    flat_map(key_container_type _Key_cont, mapped_container_type _Mapped_cont): _Key_compare(key_compare()), _Data() {
-        _Data.keys = _STD move(_Key_cont);
-        _Data.values = _STD move(_Mapped_cont);
+    template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    explicit flat_map(const Allocator& _Alloc) : flat_map(key_compare(), _Alloc) {}
 
+    template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    explicit flat_map(const key_compare& _Comp, const Allocator& _Alloc): _Key_compare(_Comp), _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc), .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc)} {}
+
+    flat_map(key_container_type _Key_cont, mapped_container_type _Mapped_cont): flat_map(sorted_unique_t(), _Key_cont, _Mapped_cont) {
         _Sort_and_dedup();
     }
 
-    template <class Allocator>
-    flat_map(const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont, const Allocator& _Alloc) requires uses_allocator_v<key_container_type, Allocator> && uses_allocator_v<mapped_container_type, Allocator> : _Key_compare(key_compare()), _Data() {
-        _Data.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont);
-        _Data.values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont);
-
+    template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont, const Allocator& _Alloc): flat_map(sorted_unique_t(), _Key_cont, _Mapped_cont, _Alloc) {
         _Sort_and_dedup();
     }
+
+    flat_map(sorted_unique_t _Sorted_unique, key_container_type _Key_cont, mapped_container_type _Mapped_cont): _Key_compare(key_compare()), _Data {.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)} {}
+
+    template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(sorted_unique_t _Sorted_unique, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont, const Allocator& _Alloc): _Key_compare(key_compare()), _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont), .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)} {}
+
+    template <_STD input_iterator _InputIterator>
+    flat_map(_InputIterator _First, _InputIterator _Last, const key_compare& _Comp = key_compare()) : flat_map(_Comp) {
+        insert(_First, _Last);
+    }
+
+    template <_STD input_iterator _InputIterator, _Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(_InputIterator _First, _InputIterator _Last, const key_compare& _Comp, const Allocator& _Alloc): flat_map(_Comp, _Alloc) {
+        insert(_First, _Last);
+    }
+
+    template <_Container_compatible_range<value_type> R>
+    flat_map(_STD from_range_t _From_range, R&& _Range) : flat_map(_From_range, _STD forward<R>(_Range), key_compare()) {}
+
+    template <_Container_compatible_range<value_type> R, _Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(_STD from_range_t _From_range, R&& _Range, const Allocator& _Alloc): flat_map(_From_range, _STD forward<R>(_Range), key_compare(), _Alloc) {}
+
+    template <_Container_compatible_range<value_type> R>
+    flat_map(_STD from_range_t _From_range, R&& _Range, const key_compare& _Comp) : flat_map(_Comp) {
+        insert_range(_STD forward<R>(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> R, _Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(_STD from_range_t _From_range, R&& _Range, const key_compare& _Comp, const Allocator& _Alloc): flat_map(_Comp, _Alloc) {
+        insert_range(_STD forward<R>(_Range));
+    }
+
+    template <_STD input_iterator _InputIterator>
+    flat_map(sorted_unique_t _S, _InputIterator _First, _InputIterator _Last, const key_compare& _Comp = key_compare()): flat_map(_Comp) {
+        insert(_S, _First, _Last);
+    }
+
+    template <_STD input_iterator _InputIterator, _Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(sorted_unique_t _S, _InputIterator _First, _InputIterator _Last, const key_compare& _Comp, const Allocator& _Alloc): flat_map(_Comp, _Alloc) {
+        insert(_S, _First, _Last);
+    }
+
+    template <_STD input_iterator _InputIterator, _Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(sorted_unique_t _S, _InputIterator _First, _InputIterator _Last, const Allocator& _Alloc): flat_map(_S, _First, _Last, key_compare(), _Alloc) {}
+
+    flat_map(initializer_list<value_type> _I, const key_compare& _Comp = key_compare()): flat_map(_I.begin(), _I.end(), _Comp) {}
+
+    template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(initializer_list<value_type> _I, const key_compare& _Comp, const Allocator& _Alloc): flat_map(_I.begin(), _I.end(), _Comp, _Alloc) {}
+
+    template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(initializer_list<value_type> _I, const Allocator& _Alloc): flat_map(_I, key_compare(), _Alloc) {}
+
+    flat_map(sorted_unique_t _S, initializer_list<value_type> _I, const key_compare& _Comp = key_compare()): flat_map(_S, _I.begin(), _I.end(), _Comp) {}
+
+    template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(sorted_unique_t _S, initializer_list<value_type> _I, const key_compare& _Comp, const Allocator& _Alloc): flat_map(_S, _I.begin(), _I.end(), _Comp, _Alloc) {}
+
+    template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(sorted_unique_t _S, initializer_list<value_type> _I, const Allocator& _Alloc): flat_map(_S, _I, key_compare(), _Alloc) {}
 
     // observers
     key_compare key_comp() const {
@@ -115,29 +210,6 @@ class flat_map {
 
         _Data.keys.erase(_Data.keys.begin() + _Remaining_count, _Data.keys.end());
         _Data.values.erase(_Data.values.begin() + _Remaining_count, _Data.values.end());
-    };
-
-    class _Flat_map_iterator{
-        public:
-        _Flat_map_iterator() = default;
-        // Copy-constructible
-        _Flat_map_iterator(const _Flat_map_iterator&) = default;
-        // Copy-assignable
-        _Flat_map_iterator& operator = (const _Flat_map_iterator&) = default;
-        // Swappable
-        static_assert(std::swappable<_Flat_map_iterator>);
-        // Destructible
-        ~_Flat_map_iterator() = default;
-
-        using iterator_category = _STD random_access_iterator_tag;
-        using difference_type = ptrdiff_t;
-        using value_type = flat_map::value_type;
-        using pointer = value_type*;
-        using reference = value_type&;
-
-        private:
-        typename key_container_type::iterator _Key_it;
-        typename mapped_container_type::iterator _Mapped_it;
     };
 };
 
