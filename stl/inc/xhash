@@ -1237,7 +1237,7 @@ public:
 
 #if _HAS_CXX20
     template <class _Keyty = void>
-    _NODISCARD bool contains(typename _Traits::template _Deduce_key<_Keyty> _Keyval) const {
+    _NODISCARD bool contains(_Traits::template _Deduce_key<_Keyty> _Keyval) const {
         return static_cast<bool>(_Find_last(_Keyval, _Traitsobj(_Keyval))._Duplicate);
     }
 #endif // _HAS_CXX20

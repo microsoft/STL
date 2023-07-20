@@ -692,7 +692,7 @@ struct _Indirect_value_impl {
 };
 
 template <indirectly_readable _It>
-using _Indirect_value_t = typename _Indirect_value_impl<_It>::type;
+using _Indirect_value_t = _Indirect_value_impl<_It>::type;
 
 _EXPORT_STD template <indirectly_readable _Ty>
 using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, _Indirect_value_t<_Ty>>;
@@ -708,7 +708,7 @@ concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
 template <bool _Is_integer_class>
 struct _Make_unsigned_like_impl {
     template <class _Ty>
-    using _Apply = typename _Ty::_Unsigned_type;
+    using _Apply = _Ty::_Unsigned_type;
 };
 template <>
 struct _Make_unsigned_like_impl<false> {
@@ -717,7 +717,7 @@ struct _Make_unsigned_like_impl<false> {
 };
 
 template <class _Ty>
-using _Make_unsigned_like_t = typename _Make_unsigned_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
+using _Make_unsigned_like_t = _Make_unsigned_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
 
 template <_Integer_like _Ty>
 _NODISCARD constexpr auto _To_unsigned_like(const _Ty _Value) noexcept {
@@ -727,7 +727,7 @@ _NODISCARD constexpr auto _To_unsigned_like(const _Ty _Value) noexcept {
 template <bool _Is_integer_class>
 struct _Make_signed_like_impl {
     template <class _Ty>
-    using _Apply = typename _Ty::_Signed_type;
+    using _Apply = _Ty::_Signed_type;
 };
 template <>
 struct _Make_signed_like_impl<false> {
@@ -736,7 +736,7 @@ struct _Make_signed_like_impl<false> {
 };
 
 template <class _Ty>
-using _Make_signed_like_t = typename _Make_signed_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
+using _Make_signed_like_t = _Make_signed_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
 
 _EXPORT_STD template <class _Ty>
 concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {
@@ -746,7 +746,7 @@ concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_T
 template <bool _Iterator_category_present>
 struct _Iter_concept_impl2 {
     template <class _It, class _Traits>
-    using _Apply = typename _Traits::iterator_category;
+    using _Apply = _Traits::iterator_category;
 };
 template <>
 struct _Iter_concept_impl2<false> {
@@ -758,17 +758,16 @@ struct _Iter_concept_impl2<false> {
 template <bool _Iterator_concept_present>
 struct _Iter_concept_impl1 {
     template <class _It, class _Traits>
-    using _Apply = typename _Traits::iterator_concept;
+    using _Apply = _Traits::iterator_concept;
 };
 template <>
 struct _Iter_concept_impl1<false> {
     template <class _It, class _Traits>
-    using _Apply = typename _Iter_concept_impl2<_Has_member_iterator_category<_Traits>>::template _Apply<_It, _Traits>;
+    using _Apply = _Iter_concept_impl2<_Has_member_iterator_category<_Traits>>::template _Apply<_It, _Traits>;
 };
 
 template <class _It, class _Traits = conditional_t<_Is_from_primary<iterator_traits<_It>>, _It, iterator_traits<_It>>>
-using _Iter_concept =
-    typename _Iter_concept_impl1<_Has_member_iterator_concept<_Traits>>::template _Apply<_It, _Traits>;
+using _Iter_concept = _Iter_concept_impl1<_Has_member_iterator_concept<_Traits>>::template _Apply<_It, _Traits>;
 
 // clang-format off
 _EXPORT_STD template <class _It>
@@ -1989,7 +1988,7 @@ struct _Const_sentinel<_Sent> {
 };
 
 _EXPORT_STD template <semiregular _Sent>
-using const_sentinel = typename _Const_sentinel<_Sent>::type;
+using const_sentinel = _Const_sentinel<_Sent>::type;
 
 template <class _Ty>
 concept _Not_a_const_iterator = !_Is_specialization_v<_Ty, basic_const_iterator>;
@@ -1999,7 +1998,7 @@ struct _Basic_const_iterator_category {};
 
 template <forward_iterator _Iter>
 struct _Basic_const_iterator_category<_Iter> {
-    using iterator_category = typename iterator_traits<_Iter>::iterator_category;
+    using iterator_category = iterator_traits<_Iter>::iterator_category;
 };
 
 _EXPORT_STD template <input_iterator _Iter>

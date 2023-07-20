@@ -1396,7 +1396,7 @@ struct _Copy_cv_impl<const volatile _From> {
 };
 template <class _From, class _To>
 using _Copy_cv = // N4950 [meta.trans.other]/2.3
-    typename _Copy_cv_impl<_From>::template _Apply<_To>;
+    _Copy_cv_impl<_From>::template _Apply<_To>;
 
 template <class _Ty1>
 struct _Add_qualifiers { // _Add_qualifiers<A>::template _Apply is XREF(A) from N4950 [meta.trans.other]/2.2
@@ -1435,7 +1435,7 @@ struct _Cond_res_workaround<_Ty1, _Ty2, void_t<_Cond_res_if_right<_Ty1, _Ty2>>> 
 };
 
 template <class _Ty1, class _Ty2>
-using _Cond_res = typename _Cond_res_workaround<_Ty1, _Ty2>::type;
+using _Cond_res = _Cond_res_workaround<_Ty1, _Ty2>::type;
 #else // ^^^ workaround / no workaround vvv
 template <class _Ty1, class _Ty2>
 using _Cond_res = // N4950 [meta.trans.other]/2.4
@@ -1446,7 +1446,7 @@ _EXPORT_STD template <class...>
 struct common_reference;
 
 _EXPORT_STD template <class... _Types>
-using common_reference_t = typename common_reference<_Types...>::type;
+using common_reference_t = common_reference<_Types...>::type;
 
 // N4950 [meta.trans.other]/5.1: "If sizeof...(T) is zero ..."
 template <>
@@ -1473,7 +1473,7 @@ struct _Common_reference2C<_Ty1, _Ty2, void_t<_Cond_res<_Ty1, _Ty2>>> {
 
 // N4950 [meta.trans.other]/5.3.2: "if basic_common_reference<[...]>::type is well-formed..."
 template <class _Ty1, class _Ty2>
-using _Basic_specialization = typename basic_common_reference<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>,
+using _Basic_specialization = basic_common_reference<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>,
     _Add_qualifiers<_Ty1>::template _Apply, _Add_qualifiers<_Ty2>::template _Apply>::type;
 
 template <class _Ty1, class _Ty2, class = void>
@@ -1523,7 +1523,7 @@ struct _Common_reference2AX<_Ty1&&, _Ty2&&,
 };
 
 template <class _Ty1, class _Ty2>
-using _Common_ref_2AX_t = typename _Common_reference2AX<_Ty1, _Ty2>::type;
+using _Common_ref_2AX_t = _Common_reference2AX<_Ty1, _Ty2>::type;
 
 template <class _Ty1, class _Ty2>
 struct _Common_reference2A<_Ty1, _Ty2,
@@ -1552,7 +1552,7 @@ struct type_identity {
     using type = _Ty;
 };
 _EXPORT_STD template <class _Ty>
-using type_identity_t = typename type_identity<_Ty>::type;
+using type_identity_t = type_identity<_Ty>::type;
 #endif // _HAS_CXX20
 
 template <class _Type, template <class...> class _Template>
@@ -2111,7 +2111,7 @@ struct unwrap_reference<reference_wrapper<_Ty>> {
     using type = _Ty&;
 };
 _EXPORT_STD template <class _Ty>
-using unwrap_reference_t = typename unwrap_reference<_Ty>::type;
+using unwrap_reference_t = unwrap_reference<_Ty>::type;
 
 _EXPORT_STD template <class _Ty>
 using unwrap_ref_decay_t = unwrap_reference_t<decay_t<_Ty>>;

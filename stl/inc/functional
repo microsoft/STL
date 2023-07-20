@@ -1360,7 +1360,7 @@ public:
         // empty function from a DLL that is unloaded later, and then safely moving/destroying that empty function.
 
         // Calls target
-        typename _Invoke_t<_Noexcept>::_Call _Invoke;
+        _Invoke_t<_Noexcept>::_Call _Invoke;
         // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable").
         // nullptr if we can trivially move two pointers.
         void(__stdcall* _Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
@@ -1787,7 +1787,7 @@ public:
             }
         }
 
-        using _VtInvQuals = typename _Call::template _VtInvQuals<_Vt>;
+        using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
         this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
     }
 
@@ -1796,7 +1796,7 @@ public:
         using _Vt = decay_t<_Fn>;
         static_assert(is_same_v<_Vt, _Fn>, "_Vt should be the same type as _Fn. (N4950 [func.wrap.move.ctor]/12)");
 
-        using _VtInvQuals = typename _Call::template _VtInvQuals<_Vt>;
+        using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
         this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_CTypes>(_Args)...);
     }
 
@@ -1806,7 +1806,7 @@ public:
         using _Vt = decay_t<_Fn>;
         static_assert(is_same_v<_Vt, _Fn>, "_Vt should be the same type as _Fn. (N4950 [func.wrap.move.ctor]/18)");
 
-        using _VtInvQuals = typename _Call::template _VtInvQuals<_Vt>;
+        using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
         this->template _Construct_with_fn<_Vt, _VtInvQuals>(_Li, _STD forward<_CTypes>(_Args)...);
     }
 
