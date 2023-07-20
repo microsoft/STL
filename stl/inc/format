@@ -3419,7 +3419,7 @@ struct _Default_arg_formatter {
         return _Fmt_write<_CharT>(_STD move(_Out), _Val);
     }
 
-    _OutputIt operator()(typename basic_format_arg<_Context>::handle _Handle) && {
+    _OutputIt operator()(basic_format_arg<_Context>::handle _Handle) && {
         basic_format_parse_context<_CharT> _Parse_ctx({});
         basic_format_context<_OutputIt, _CharT> _Format_ctx(_STD move(_Out), _Args, _Loc);
         _Handle.format(_Parse_ctx, _Format_ctx);
@@ -3435,7 +3435,7 @@ struct _Arg_formatter {
     _Context* _Ctx                      = nullptr;
     _Basic_format_specs<_CharT>* _Specs = nullptr;
 
-    _OutputIt operator()(typename basic_format_arg<_Context>::handle) {
+    _OutputIt operator()(basic_format_arg<_Context>::handle) {
         _STL_VERIFY(false, "The custom handler should be structurally unreachable for _Arg_formatter");
         _STL_INTERNAL_CHECK(_Ctx);
         return _Ctx->out();
