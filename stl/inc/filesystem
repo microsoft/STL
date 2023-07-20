@@ -345,6 +345,15 @@ namespace filesystem {
         }
     }
 
+    struct _Is_slash_oper { // predicate testing if input is a preferred-separator or fallback-separator
+        _NODISCARD constexpr bool operator()(
+            const wchar_t _Ch) const { // test if _Ch is a preferred-separator or fallback-separator
+            return _Ch == L'\\' || _Ch == L'/';
+        }
+    };
+
+    inline constexpr _Is_slash_oper _Is_slash{};
+
     template <class _Ty>
     _NODISCARD _Ty _Unaligned_load(const void* _Ptr) { // load a _Ty from _Ptr
         static_assert(is_trivial_v<_Ty>, "Unaligned loads require trivial types");
