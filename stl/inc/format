@@ -574,7 +574,7 @@ _EXPORT_STD template <class _CharT>
 class basic_format_parse_context {
 public:
     using char_type      = _CharT;
-    using const_iterator = typename basic_string_view<_CharT>::const_iterator;
+    using const_iterator = basic_string_view<_CharT>::const_iterator;
     using iterator       = const_iterator;
 
     constexpr explicit basic_format_parse_context(
@@ -667,7 +667,7 @@ inline constexpr bool _Is_basic_string_like_for<basic_string_view<_CharT, _Trait
 
 template <class _Context>
 struct _Format_arg_traits {
-    using _Char_type = typename _Context::char_type;
+    using _Char_type = _Context::char_type;
 
     // Function template _Type_eraser mirrors the type dispatching mechanism in the construction of basic_format_arg
     // (N4950 [format.arg]). They determine the mapping from "raw" to "erased" argument type for _Format_arg_store.
@@ -692,7 +692,7 @@ _FMT_P2286_END
 _EXPORT_STD template <class _Context>
 class basic_format_arg {
 public:
-    using _CharType = typename _Context::char_type;
+    using _CharType = _Context::char_type;
 
     class handle {
     private:
@@ -734,7 +734,7 @@ public:
     // basic_format_arg (N4950 [format.arg]).
     template <_Formattable_with<_Context> _Ty>
     static basic_format_arg _Make_from(_Ty& _Val) noexcept {
-        using _Erased_type = typename _Format_arg_traits<_Context>::template _Storage_type<_Ty>;
+        using _Erased_type = _Format_arg_traits<_Context>::template _Storage_type<_Ty>;
 #if !_HAS_CXX23
         if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
             return basic_format_arg(_Erased_type{_Val.data(), _Val.size()});
@@ -1639,7 +1639,7 @@ _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
 template <class _ParseContext, class _Context>
 class _Specs_handler : public _Specs_setter<typename _Context::char_type> {
 public:
-    using _CharT = typename _Context::char_type;
+    using _CharT = _Context::char_type;
 
     constexpr _Specs_handler(_Basic_format_specs<_CharT>& _Specs_, _ParseContext& _Parse_ctx_, _Context& _Ctx_)
         : _Specs_setter<_CharT>(_Specs_), _Parse_ctx(_Parse_ctx_), _Ctx(_Ctx_) {}
@@ -1671,7 +1671,7 @@ private:
 template <class _ParseContext>
 class _Dynamic_specs_handler : public _Specs_setter<typename _ParseContext::char_type> {
 public:
-    using _CharT = typename _ParseContext::char_type;
+    using _CharT = _ParseContext::char_type;
 
     constexpr _Dynamic_specs_handler(_Dynamic_format_specs<_CharT>& _Specs_, _ParseContext& _Parse_ctx_)
         : _Specs_setter<_CharT>(_Specs_), _Dynamic_specs(_Specs_), _Parse_ctx(_Parse_ctx_) {}
@@ -1942,7 +1942,7 @@ struct _Format_arg_index {
 template <class _Context, class... _Args>
 class _Format_arg_store {
 private:
-    using _CharType = typename _Context::char_type;
+    using _CharType = _Context::char_type;
     using _Traits   = _Format_arg_traits<_Context>;
 
     friend basic_format_args<_Context>;
@@ -1977,7 +1977,7 @@ private:
 
     template <class _Ty>
     void _Store(const size_t _Arg_index, _Ty&& _Val) noexcept {
-        using _Erased_type = typename _Traits::template _Storage_type<_Ty>;
+        using _Erased_type = _Traits::template _Storage_type<_Ty>;
 
         _Basic_format_arg_type _Arg_type;
         if constexpr (is_same_v<_Erased_type, bool>) {
@@ -2047,7 +2047,7 @@ public:
             return basic_format_arg<_Context>{};
         }
 
-        using _CharType = typename _Context::char_type;
+        using _CharType = _Context::char_type;
         // The explanatory comment in _Format_arg_store explains how the following works.
         const auto _Packed_index = _Index_array[_Index];
         const auto _Arg_storage =
@@ -2089,7 +2089,7 @@ public:
     }
 
     _NODISCARD size_t _Estimate_required_capacity() const noexcept {
-        using _CharType = typename _Context::char_type;
+        using _CharType = _Context::char_type;
         size_t _Result  = 0;
 
         for (size_t _Idx = 0; _Idx < _Num_args; ++_Idx) {
@@ -2320,7 +2320,7 @@ private:
         const auto _End = _Data + this->_Limit(_Size);
 
         // extracts back_insert_iterator's underlying container type, or void if not.
-        using _Container = typename _Back_insert_iterator_container_type<_OutputIt>::type;
+        using _Container = _Back_insert_iterator_container_type<_OutputIt>::type;
         if constexpr (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>) {
             auto& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
             _Cont.insert(_Cont.end(), _Data, _End);
@@ -3455,10 +3455,10 @@ struct _Arg_formatter {
 // the erased basic_format_args structure at compile time.
 template <class _Ty, class _ParseContext>
 consteval typename _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
-    using _CharT                = typename _ParseContext::char_type;
+    using _CharT                = _ParseContext::char_type;
     using _Context              = basic_format_context<back_insert_iterator<_Fmt_buffer<_CharT>>, _CharT>;
     using _ArgTraits            = _Format_arg_traits<_Context>;
-    using _FormattedTypeMapping = typename _ArgTraits::template _Storage_type<_Ty>;
+    using _FormattedTypeMapping = _ArgTraits::template _Storage_type<_Ty>;
     // If the type is going to use a custom formatter we should just use that,
     // instead of trying to instantiate a custom formatter for its erased handle
     // type
@@ -3472,7 +3472,7 @@ consteval typename _ParseContext::iterator _Compile_time_parse_format_specs(_Par
 template <class _CharT, class... _Args>
 struct _Format_checker {
     using _ParseContext = basic_format_parse_context<_CharT>;
-    using _ParseFunc    = typename _ParseContext::iterator (*)(_ParseContext&);
+    using _ParseFunc    = _ParseContext::iterator (*)(_ParseContext&);
 
     static constexpr size_t _Num_args = sizeof...(_Args);
     _ParseContext _Parse_context;
