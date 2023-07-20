@@ -2530,7 +2530,7 @@ template <_RANGES input_range _Rng>
 using _Range_key_type = remove_const_t<typename _RANGES range_value_t<_Rng>::first_type>;
 
 template <_RANGES input_range _Rng>
-using _Range_mapped_type = _RANGES range_value_t<_Rng>::second_type;
+using _Range_mapped_type = typename _RANGES range_value_t<_Rng>::second_type; // TRANSITION, VSO-1854035, omit typename
 
 template <_RANGES input_range _Rng>
 using _Range_to_alloc_type =
