@@ -40,7 +40,7 @@ struct _Coroutine_traits {};
 
 template <class _Ret>
 struct _Coroutine_traits<_Ret, void_t<typename _Ret::promise_type>> {
-    using promise_type = typename _Ret::promise_type;
+    using promise_type = _Ret::promise_type;
 };
 
 _EXPORT_STD template <class _Ret, class...>
