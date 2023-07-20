@@ -648,7 +648,7 @@ private:
 _EXPORT_STD using format_parse_context  = basic_format_parse_context<char>;
 _EXPORT_STD using wformat_parse_context = basic_format_parse_context<wchar_t>;
 
-template <class _Ty, class _Context, class _Formatter = typename _Context::template formatter_type<remove_const_t<_Ty>>>
+template <class _Ty, class _Context, class _Formatter = _Context::template formatter_type<remove_const_t<_Ty>>>
 concept _Formattable_with = semiregular<_Formatter>
                          && requires(_Formatter& __f, const _Formatter& __cf, _Ty&& __t, _Context __fc,
                              basic_format_parse_context<typename _Context::char_type> __pc) {
