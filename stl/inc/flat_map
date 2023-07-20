@@ -48,8 +48,28 @@ class flat_map {
             using iterator_category = _STD random_access_iterator_tag;
             using difference_type = ptrdiff_t;
             using value_type = flat_map::value_type;
-            using pointer = value_type*;
-            using reference = value_type&;
+            using pointer = void;   // Not a pointer
+            using reference = value_type;
+
+            reference operator * () const {
+                return std::make_pair(*_Key_it, *_Mapped_it);
+            }
+
+            type& operator ++ () {
+                ++_Key_it;
+                ++_Mapped_it;
+                return *this;
+            }
+
+            type operator ++ (int) {
+                type _Tmp = *this;
+                ++*this;
+                return _Tmp;
+            }
+
+            auto operator <=> (const type& _Right) const {
+                return _Key_it <=> _Right._Key_it;
+            }
 
             private:
             _Key_iterator_t _Key_it;
