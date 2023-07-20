@@ -749,7 +749,11 @@ private:
         }
     }
 
-    const type_info& _Target_type() const noexcept override {
+#if !_HAS_STATIC_RTTI
+    [[noreturn]]
+#endif // !_HAS_STATIC_RTTI
+    const type_info&
+        _Target_type() const noexcept override {
 #if _HAS_STATIC_RTTI
         return typeid(_Callable);
 #else // _HAS_STATIC_RTTI
@@ -810,7 +814,11 @@ private:
         }
     }
 
-    const type_info& _Target_type() const noexcept override {
+#if !_HAS_STATIC_RTTI
+    [[noreturn]]
+#endif // !_HAS_STATIC_RTTI
+    const type_info&
+        _Target_type() const noexcept override {
 #if _HAS_STATIC_RTTI
         return typeid(_Callable);
 #else // _HAS_STATIC_RTTI
