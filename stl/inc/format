@@ -3454,7 +3454,7 @@ struct _Arg_formatter {
 // care about avoiding code bloat for code that never runs at runtime, and we can't form
 // the erased basic_format_args structure at compile time.
 template <class _Ty, class _ParseContext>
-consteval typename _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
+consteval _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
     using _CharT                = _ParseContext::char_type;
     using _Context              = basic_format_context<back_insert_iterator<_Fmt_buffer<_CharT>>, _CharT>;
     using _ArgTraits            = _Format_arg_traits<_Context>;
@@ -3557,7 +3557,7 @@ template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
 struct _Formatter_base {
     using _Pc = basic_format_parse_context<_CharT>;
 
-    constexpr typename _Pc::iterator parse(_Pc& _ParseCtx) {
+    constexpr _Pc::iterator parse(_Pc& _ParseCtx) {
         _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>{_Specs, _ParseCtx}, _ArgType);
         const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
         if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
@@ -3567,7 +3567,7 @@ struct _Formatter_base {
     }
 
     template <class _FormatContext>
-    typename _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
+    _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
         _Dynamic_format_specs<_CharT> _Format_specs = _Specs;
         if (_Specs._Dynamic_width_index >= 0) {
             _Format_specs._Width =
