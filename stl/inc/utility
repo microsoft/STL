@@ -766,7 +766,7 @@ _CONSTEXPR20 _Ty exchange(_Ty& _Val, _Other&& _New_val) noexcept(
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr add_const_t<_Ty>& as_const(_Ty& _Val) noexcept { // view _Val through const lenses
+_NODISCARD _MSVC_INTRINSIC constexpr add_const_t<_Ty>& as_const(_Ty& _Val) noexcept { // view _Val through const lenses
     return _Val;
 }
 
@@ -917,7 +917,7 @@ inline constexpr bool _Can_reference<_Ty, void_t<_Ty&>> = true;
 
 #if _HAS_CXX23
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
+_NODISCARD _MSVC_INTRINSIC constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
     return static_cast<underlying_type_t<_Ty>>(_Value);
 }
 
