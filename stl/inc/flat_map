@@ -95,7 +95,7 @@ public:
             return _Key_it == _Right._Key_it;
         }
 
-        bool operator<=>(const type& _Right) const {
+        auto operator<=>(const type& _Right) const {
             return _Key_it <=> _Right._Key_it;
         }
 
