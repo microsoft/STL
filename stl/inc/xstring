@@ -5,7 +5,6 @@
 
 // (<string_view> without emitting non-C++17 warnings)
 
-#pragma once
 #ifndef _XSTRING_
 #define _XSTRING_
 #include <yvals_core.h>

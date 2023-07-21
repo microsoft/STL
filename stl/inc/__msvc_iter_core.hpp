@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef __MSVC_ITER_CORE_HPP
 #define __MSVC_ITER_CORE_HPP
 #include <yvals_core.h>

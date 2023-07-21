@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _CONDITION_VARIABLE_
 #define _CONDITION_VARIABLE_
 #include <yvals_core.h>

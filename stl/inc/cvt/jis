@@ -3,8 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
-
 #ifndef _CVT_JIS_
 #define _CVT_JIS_
 #include <yvals_core.h>

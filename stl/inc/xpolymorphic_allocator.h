@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XPOLYMORPHIC_ALLOCATOR_H
 #define _XPOLYMORPHIC_ALLOCATOR_H
 #include <yvals_core.h>
