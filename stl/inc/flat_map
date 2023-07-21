@@ -23,61 +23,139 @@ inline constexpr sorted_unique_t sorted_unique {};
 template <class _Alloc, class _Key_container, class _Mapped_container>
 concept _Valid_Allocator_for_flat_map = _STD uses_allocator_v<_Key_container, _Alloc> && _STD uses_allocator_v<_Mapped_container, _Alloc>;
 
+template <class _Key, class _T, class _Key_compare>
+struct _Flat_value_compare {
+    struct type{
+        public:
+        bool operator () (_STD pair<const _Key&, const _T&> _X, _STD pair<const _Key&, const _T&> _Y) const {
+            return _Key_compare_for_val(_X.first, _Y.first);
+        }
+
+        type(_Key_compare _Comp) : _Key_compare_for_val(_Comp) {}
+
+        private:
+        _Key_compare _Key_compare_for_val;
+    };
+};
+
+template <class _Key_container, class _Mapped_container>
+struct _Flat_Container {
+    struct type {
+        _Key_container keys;
+        _Mapped_container values;
+    };
+};
+
 // Implementation
+
+template <_STD random_access_iterator _Key_iterator_t, _STD random_access_iterator _Mapped_iterator_t>
+class _Flat_map_iterator_Impl{
+    public:
+    class type{
+        public:
+        type() = default;
+        // Copy-constructible
+        type(const type&) = default;
+        // Copy-assignable
+        type& operator = (const type&) = default;
+        // Move-assignable
+        type& operator = (type&&) = default;
+        // Swappable
+        // Destructible
+        ~type() = default;
+
+        using iterator_category = _STD random_access_iterator_tag;
+        using difference_type = ptrdiff_t;
+        using value_type = _STD pair<_STD iter_value_t<_Key_iterator_t>, _STD iter_value_t<_Mapped_iterator_t>>;
+        using pointer = void;   // Not a pointer
+        using reference = value_type;
+
+        reference operator * () const {
+            return _STD make_pair(*_Key_it, *_Mapped_it);
+        }
+
+        type& operator ++ () {
+            ++_Key_it;
+            ++_Mapped_it;
+            return *this;
+        }
+
+        type operator ++ (int) {
+            type _Tmp = *this;
+            ++*this;
+            return _Tmp;
+        }
+
+        bool operator == (const type& _Right) const {
+            return _Key_it == _Right._Key_it;
+        }
+
+        bool operator <=> (const type& _Right) const {
+            return _Key_it <=> _Right._Key_it;
+        }
+
+        type& operator -- () {
+            --_Key_it;
+            --_Mapped_it;
+            return *this;
+        }
+
+        type operator -- (int) {
+            type _Tmp = *this;
+            --*this;
+            return _Tmp;
+        }
+
+        type& operator += (difference_type _Off) {
+            _Key_it += _Off;
+            _Mapped_it += _Off;
+            return *this;
+        }
+
+        type& operator -= (difference_type _Off) {
+            _Key_it -= _Off;
+            _Mapped_it -= _Off;
+            return *this;
+        }
+
+        type operator + (difference_type _Off) const {
+            type _Tmp = *this;
+            return _Tmp += _Off;
+        }
+
+        type operator - (difference_type _Off) const {
+            type _Tmp = *this;
+            return _Tmp -= _Off;
+        }
+
+        reference operator [] (difference_type _Off) const {
+            return *(*this + _Off);
+        }
+
+        friend difference_type operator - (const type& _Left, const type& _Right);
+        friend type operator + (difference_type _Off, const type& _Right);
+
+        private:
+        _Key_iterator_t _Key_it;
+        _Mapped_iterator_t _Mapped_it;
+    };
+
+    static_assert(_STD swappable<type>);
+};
+
+template <_STD random_access_iterator _Key_iterator_t, _STD random_access_iterator _Mapped_iterator_t>
+_EXPORT_STD typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type::difference_type operator - (const typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type& _Left, const typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type& _Right) {
+    return _Left._Key_it - _Right._Key_it;
+}
+
+template <_STD random_access_iterator _Key_iterator_t, _STD random_access_iterator _Mapped_iterator_t>
+_EXPORT_STD typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type operator + (typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type::difference_type _Off, const typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type& _Right) {
+    return _Right + _Off;
+}
 
 _EXPORT_STD
 template <class Key, class T, class Compare, class KeyContainer, class MappedContainer> requires same_as<Key, typename KeyContainer::value_type> && same_as<T, typename MappedContainer::value_type>
 class flat_map {
-    private:
-    template <_STD random_access_iterator _Key_iterator_t, _STD random_access_iterator _Mapped_iterator_t>
-    class _Flat_map_iterator_Impl{
-        public:
-        class type{
-            public:
-            type() = default;
-            // Copy-constructible
-            type(const type&) = default;
-            // Copy-assignable
-            type& operator = (const type&) = default;
-            // Move-assignable
-            type& operator = (type&&) = default;
-            // Swappable
-            // Destructible
-            ~type() = default;
-
-            using iterator_category = _STD random_access_iterator_tag;
-            using difference_type = ptrdiff_t;
-            using value_type = flat_map::value_type;
-            using pointer = void;   // Not a pointer
-            using reference = value_type;
-
-            reference operator * () const {
-                return std::make_pair(*_Key_it, *_Mapped_it);
-            }
-
-            type& operator ++ () {
-                ++_Key_it;
-                ++_Mapped_it;
-                return *this;
-            }
-
-            type operator ++ (int) {
-                type _Tmp = *this;
-                ++*this;
-                return _Tmp;
-            }
-
-            auto operator <=> (const type& _Right) const {
-                return _Key_it <=> _Right._Key_it;
-            }
-
-            private:
-            _Key_iterator_t _Key_it;
-            _Mapped_iterator_t _Mapped_it;
-        };
-
-        static_assert(_STD swappable<type>);
-    };
     public:
     using key_type = Key;
     using mapped_type = T;
@@ -96,22 +174,8 @@ class flat_map {
 
     static_assert(_STD random_access_iterator<iterator>);
 
-    class value_compare {
-        public:
-        value_compare(key_compare _Comp) : _Key_compare_for_val(_Comp) {}
-
-        bool operator () (const_reference _X, const_reference _Y) const {
-            return _Key_compare_for_val(_X.first, _Y.first);
-        }
-
-        private:
-        key_compare _Key_compare_for_val;
-    };
-
-    struct containers {
-        key_container_type keys;
-        mapped_container_type values;
-    };
+    using value_compare = typename _Flat_value_compare<key_type, mapped_type, key_compare>::type;
+    using containers = typename _Flat_Container<key_container_type, mapped_container_type>::type;
 
     // 24.6.8.3 construct / copy / destroy
     explicit flat_map(const key_compare& _Comp) : _Key_compare(_Comp), _Data() {}
