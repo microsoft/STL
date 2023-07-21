@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _FLAT_MAP_
+#define _FLAT_MAP_
 
 #include <algorithm>
 #include <compare>
@@ -333,3 +334,5 @@ private:
 };
 
 _STD_END
+
+#endif // _FLAT_MAP_
