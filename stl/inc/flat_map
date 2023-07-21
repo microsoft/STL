@@ -43,6 +43,9 @@ template <class _Alloc, class _Key_container, class _Mapped_container>
 concept _Valid_Allocator_for_flat_map =
     _STD uses_allocator_v<_Key_container, _Alloc> && _STD uses_allocator_v<_Mapped_container, _Alloc>;
 
+template <class _Compare>
+concept _Compare_is_transparent = requires { typename _Compare::is_transparent; }
+
 template <class _Key, class _T, class _Key_compare>
 struct _Flat_value_compare {
     struct type {
@@ -318,6 +321,19 @@ public:
     size_type max_size() const noexcept {
         return _STD min(_Data.keys.max_size(), _Data.values.max_size());
     }
+
+    // 24.6.8.5 elemental access
+    mapped_type& operator[](const key_type& _Key); // TODO: implement
+    mapped_type& operator[](key_type&& _Key); // TODO: implement
+    template <class _C>
+    mapped_type& operator[](_C&& _Key)
+        requires _Compare_is_transparent<key_compare>; // TODO: implement
+
+    template <class _Self_t>
+    auto&& at(this _Self_t&& _Self, const key_type& _Key); // TODO: implement
+    template <class _Self_t, class _C>
+    auto&& at(this _Self_t&& _Self, const _C& _Key)
+        requires _Compare_is_transparent<key_compare>; // TODO: implement
 
     // observers
     key_compare key_comp() const {
