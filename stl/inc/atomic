@@ -2716,23 +2716,27 @@ _Ty atomic_fetch_xor_explicit(
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty>
-void atomic_wait(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept {
+void atomic_wait(const volatile atomic<_Ty>* const _Mem,
+    const typename atomic<_Ty>::value_type _Expected) noexcept { // TRANSITION, VSO-1854115, omit typename
     _Mem->wait(_Expected);
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_wait(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept {
+void atomic_wait(const atomic<_Ty>* const _Mem,
+    const typename atomic<_Ty>::value_type _Expected) noexcept { // TRANSITION, VSO-1854115, omit typename
     _Mem->wait(_Expected);
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_wait_explicit(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected,
+void atomic_wait_explicit(const volatile atomic<_Ty>* const _Mem,
+    const typename atomic<_Ty>::value_type _Expected, // TRANSITION, VSO-1854115, omit typename
     const memory_order _Order) noexcept {
     _Mem->wait(_Expected, _Order);
 }
 
 _EXPORT_STD template <class _Ty>
-void atomic_wait_explicit(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected,
+void atomic_wait_explicit(const atomic<_Ty>* const _Mem,
+    const typename atomic<_Ty>::value_type _Expected, // TRANSITION, VSO-1854115, omit typename
     const memory_order _Order) noexcept {
     _Mem->wait(_Expected, _Order);
 }

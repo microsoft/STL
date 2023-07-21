@@ -226,7 +226,7 @@ public:
 template <class _Myvec>
 struct pointer_traits<_Vector_const_iterator<_Myvec>> {
     using pointer         = _Vector_const_iterator<_Myvec>;
-    using element_type    = const typename pointer::value_type;
+    using element_type    = const typename pointer::value_type; // TRANSITION, VSO-1854115, omit typename
     using difference_type = pointer::difference_type;
 
     _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {

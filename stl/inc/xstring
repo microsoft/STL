@@ -1152,7 +1152,7 @@ private:
 template <class _Traits>
 struct pointer_traits<_String_view_iterator<_Traits>> {
     using pointer         = _String_view_iterator<_Traits>;
-    using element_type    = const typename pointer::value_type;
+    using element_type    = const typename pointer::value_type; // TRANSITION, VSO-1854115, omit typename
     using difference_type = pointer::difference_type;
 
     _NODISCARD static constexpr element_type* to_address(const pointer& _Iter) noexcept {
@@ -2046,7 +2046,7 @@ public:
 template <class _Mystr>
 struct pointer_traits<_String_const_iterator<_Mystr>> {
     using pointer         = _String_const_iterator<_Mystr>;
-    using element_type    = const typename pointer::value_type;
+    using element_type    = const typename pointer::value_type; // TRANSITION, VSO-1854115, omit typename
     using difference_type = pointer::difference_type;
 
     _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
