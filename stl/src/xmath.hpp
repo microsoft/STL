@@ -137,8 +137,6 @@ short _FDnorm(_Fval*) noexcept;
 short _FDscale(float*, long) noexcept;
 short _FDunscale(short*, float*) noexcept;
 
-float _FPoly(float, const float*, int);
-
 extern const _Dconst _FEps;
 extern const _Dconst _FRteps;
 extern const float _FXbig;
@@ -162,7 +160,6 @@ union _Lval { // pun floating type as integer array
 unsigned short* _LPmsw(long double*) noexcept;
 
 short _LDint(long double*, short) noexcept;
-short _LDnorm(_Lval*);
 short _LDscale(long double*, long) noexcept;
 short _LDunscale(short*, long double*) noexcept;
 long double _LPoly(long double, const long double*, int) noexcept;
