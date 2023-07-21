@@ -1964,7 +1964,7 @@ _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) noexcept(_Is_unqual_fp<_T
 }
 
 template <class _Ty>
-complex<_Ty> _Pow(const _Ty& _Left, const _Ty& _Right) noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
+complex<_Ty> _Pow(const _Ty& _Left, const _Ty& _Right) noexcept(_Is_unqual_fp<_Ty>) {
     if (0 <= _Left) {
         return complex<_Ty>(_Ctraits<_Ty>::pow(_Left, _Right), _Ctraits<_Ty>::_Copysign(_Ty{0}, _Right));
     } else {
