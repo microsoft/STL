@@ -125,7 +125,7 @@ public:
             _Throw_Cpp_error(_RESOURCE_DEADLOCK_WOULD_OCCUR);
         }
 
-        if (_Thrd_join(_Thr, nullptr) != _Thrd_success) {
+        if (_Thrd_join(_Thr, nullptr) != _Thrd_result::_Thrd_success) {
             _Throw_Cpp_error(_NO_SUCH_PROCESS);
         }
 
@@ -137,7 +137,7 @@ public:
             _Throw_Cpp_error(_INVALID_ARGUMENT);
         }
 
-        if (_Thrd_detach(_Thr) != _Thrd_success) {
+        if (_Thrd_detach(_Thr) != _Thrd_result::_Thrd_success) {
             _Throw_Cpp_error(_INVALID_ARGUMENT);
         }
 

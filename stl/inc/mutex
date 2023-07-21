@@ -54,7 +54,7 @@ public:
     _Mutex_base& operator=(const _Mutex_base&) = delete;
 
     void lock() {
-        if (_Mtx_lock(_Mymtx()) != _Thrd_success) {
+        if (_Mtx_lock(_Mymtx()) != _Thrd_result::_Thrd_success) {
             // undefined behavior, only occurs for plain mutexes (N4950 [thread.mutex.requirements.mutex.general]/6)
             _STD _Throw_Cpp_error(_RESOURCE_DEADLOCK_WOULD_OCCUR);
         }
@@ -69,7 +69,7 @@ public:
 
     _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept /* strengthened */ {
         // false may be from undefined behavior for plain mutexes (N4950 [thread.mutex.requirements.mutex.general]/6)
-        return _Mtx_trylock(_Mymtx()) == _Thrd_success;
+        return _Mtx_trylock(_Mymtx()) == _Thrd_result::_Thrd_success;
     }
 
     void unlock() noexcept /* strengthened */ {
@@ -719,9 +719,9 @@ private:
         }
 
         // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
-        const int _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), _Abs_time);
+        const _Thrd_result _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), _Abs_time);
 
-        if (_Res == _Thrd_success) {
+        if (_Res == _Thrd_result::_Thrd_success) {
             return cv_status::no_timeout;
         } else {
             return cv_status::timeout;

@@ -47,29 +47,29 @@ _EXTERN_C
 }
 
 // TRANSITION, ABI: _Thrd_start() is preserved for binary compatibility
-_CRTIMP2_PURE int _Thrd_start(_Thrd_t* thr, _Thrd_callback_t func, void* b) { // start a thread
+_CRTIMP2_PURE _Thrd_result _Thrd_start(_Thrd_t* thr, _Thrd_callback_t func, void* b) { // start a thread
     thr->_Hnd = reinterpret_cast<HANDLE>(_beginthreadex(nullptr, 0, func, b, 0, &thr->_Id));
-    return thr->_Hnd == nullptr ? _Thrd_error : _Thrd_success;
+    return thr->_Hnd == nullptr ? _Thrd_result::_Thrd_error : _Thrd_result::_Thrd_success;
 }
 
-int _Thrd_join(_Thrd_t thr, int* code) { // returns when thread terminates
+_Thrd_result _Thrd_join(_Thrd_t thr, int* code) { // returns when thread terminates
     if (WaitForSingleObjectEx(thr._Hnd, INFINITE, FALSE) == WAIT_FAILED) {
-        return _Thrd_error;
+        return _Thrd_result::_Thrd_error;
     }
 
     if (code) { // TRANSITION, ABI: code is preserved for binary compatibility
         unsigned long res;
         if (!GetExitCodeThread(thr._Hnd, &res)) {
-            return _Thrd_error;
+            return _Thrd_result::_Thrd_error;
         }
         *code = static_cast<int>(res);
     }
 
-    return CloseHandle(thr._Hnd) ? _Thrd_success : _Thrd_error;
+    return CloseHandle(thr._Hnd) ? _Thrd_result::_Thrd_success : _Thrd_result::_Thrd_error;
 }
 
-int _Thrd_detach(_Thrd_t thr) { // tell OS to release thread's resources when it terminates
-    return CloseHandle(thr._Hnd) ? _Thrd_success : _Thrd_error;
+_Thrd_result _Thrd_detach(_Thrd_t thr) { // tell OS to release thread's resources when it terminates
+    return CloseHandle(thr._Hnd) ? _Thrd_result::_Thrd_success : _Thrd_result::_Thrd_error;
 }
 
 void _Thrd_sleep(const _timespec64* xt) { // suspend thread until time xt
@@ -109,8 +109,8 @@ unsigned int _Thrd_hardware_concurrency() { // return number of processors
 }
 
 // TRANSITION, ABI: _Thrd_create() is preserved for binary compatibility
-_CRTIMP2_PURE int _Thrd_create(_Thrd_t* thr, _Thrd_start_t func, void* d) { // create thread
-    int res;
+_CRTIMP2_PURE _Thrd_result _Thrd_create(_Thrd_t* thr, _Thrd_start_t func, void* d) { // create thread
+    _Thrd_result res;
     _Thrd_binder b;
     int started = 0;
     _Cnd_t cond;
@@ -123,7 +123,7 @@ _CRTIMP2_PURE int _Thrd_create(_Thrd_t* thr, _Thrd_start_t func, void* d) { // c
     b.mtx     = &mtx;
     b.started = &started;
     _Mtx_lock(mtx);
-    if ((res = _Thrd_start(thr, _Thrd_runner, &b)) == _Thrd_success) { // wait for handshake
+    if ((res = _Thrd_start(thr, _Thrd_runner, &b)) == _Thrd_result::_Thrd_success) { // wait for handshake
         while (!started) {
             _Cnd_wait(cond, mtx);
         }
