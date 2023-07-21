@@ -200,8 +200,8 @@ void test_strengthened_exception_specification() {
     STATIC_ASSERT(is_nothrow_constructible_v<complex<F>, F, const F&>);
     STATIC_ASSERT(is_nothrow_constructible_v<complex<F>, F, F>);
 
-    STATIC_ASSERT(is_nothrow_assignable_v<complex<F>, const F&>);
-    STATIC_ASSERT(is_nothrow_assignable_v<complex<F>, F>);
+    STATIC_ASSERT(is_nothrow_assignable_v<complex<F>&, const F&>);
+    STATIC_ASSERT(is_nothrow_assignable_v<complex<F>&, F>);
 
     complex<F> c{};
     F f{};
@@ -284,8 +284,8 @@ void test_strengthened_exception_specification_2() {
     STATIC_ASSERT(is_nothrow_constructible_v<complex<F1>, const complex<F2>&>);
     STATIC_ASSERT(is_nothrow_constructible_v<complex<F1>, complex<F2>>);
 
-    STATIC_ASSERT(is_nothrow_assignable_v<complex<F1>, const complex<F2>&>);
-    STATIC_ASSERT(is_nothrow_assignable_v<complex<F1>, complex<F2>>);
+    STATIC_ASSERT(is_nothrow_assignable_v<complex<F1>&, const complex<F2>&>);
+    STATIC_ASSERT(is_nothrow_assignable_v<complex<F1>&, complex<F2>>);
 
     complex<F1> c1{};
     complex<F2> c2{};
