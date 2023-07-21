@@ -137,7 +137,10 @@ public:
             return *(*this + _Off);
         }
 
-        friend difference_type operator-(const type& _Left, const type& _Right);
+        difference_type operator-(const type& _Right) const {
+            return _Key_it - _Right._Key_it;
+        }
+
         friend type operator+(difference_type _Off, const type& _Right);
 
     private:
@@ -147,13 +150,6 @@ public:
 
     static_assert(_STD swappable<type>);
 };
-
-template <_STD random_access_iterator _Key_iterator_t, _STD random_access_iterator _Mapped_iterator_t>
-_EXPORT_STD typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type::difference_type operator-(
-    const typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type& _Left,
-    const typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type& _Right) {
-    return _Left._Key_it - _Right._Key_it;
-}
 
 template <_STD random_access_iterator _Key_iterator_t, _STD random_access_iterator _Mapped_iterator_t>
 _EXPORT_STD typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type operator+(
