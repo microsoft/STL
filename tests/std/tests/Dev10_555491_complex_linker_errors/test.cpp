@@ -240,11 +240,11 @@ void test_strengthened_exception_specification() {
 
     STATIC_ASSERT(noexcept(c == c));
     STATIC_ASSERT(noexcept(c == f));
-    STATIC_ASSERT(noexcept(f == f));
+    STATIC_ASSERT(noexcept(f == c));
 
     STATIC_ASSERT(noexcept(c != c));
     STATIC_ASSERT(noexcept(c != f));
-    STATIC_ASSERT(noexcept(f != f));
+    STATIC_ASSERT(noexcept(f != c));
 
     STATIC_ASSERT(noexcept(real(c)));
     STATIC_ASSERT(noexcept(imag(c)));
