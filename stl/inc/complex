@@ -1450,7 +1450,7 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const _Ty& _Left, const complex<_
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const complex<_Ty>& _Left, const complex<_Ty>& _Right) noexcept(
-    is_floating_point_v<_Ty>) /* strengthened */ {
+    _Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Left);
     _Tmp *= _Right;
     return _Tmp;
