@@ -20,7 +20,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double* px) noexcept { // cat
     }
 }
 
-unsigned short* _Pmsw(double* px) { // get pointer to msw
+unsigned short* _Pmsw(double* px) noexcept { // get pointer to msw
     return &reinterpret_cast<_Dval*>(px)->_Sh[_D0];
 }
 

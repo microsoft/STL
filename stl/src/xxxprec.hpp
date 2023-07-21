@@ -39,7 +39,7 @@ static void printit(const char* s, FTYPE* p, int n) { // print xp array
 }
 #endif // 0
 
-FTYPE FNAME(Xp_getw)(const FTYPE* p, int n) { // get total value
+FTYPE FNAME(Xp_getw)(const FTYPE* p, int n) noexcept { // get total value
     if (n == 0) {
         return FLIT(0.0);
     } else if (n == 1 || p[0] == FLIT(0.0) || p[1] == FLIT(0.0)) {
@@ -62,7 +62,7 @@ FTYPE FNAME(Xp_getw)(const FTYPE* p, int n) { // get total value
     }
 }
 
-FTYPE* FNAME(Xp_setw)(FTYPE* p, int n, FTYPE x) { // load a full-precision value
+FTYPE* FNAME(Xp_setw)(FTYPE* p, int n, FTYPE x) noexcept { // load a full-precision value
     FTYPE x0 = x;
     short errx;
     short xexp;
@@ -111,7 +111,7 @@ FTYPE* FNAME(Xp_setw)(FTYPE* p, int n, FTYPE x) { // load a full-precision value
     return p;
 }
 
-FTYPE* FNAME(Xp_addh)(FTYPE* p, int n, FTYPE x0) { // add a half-precision value
+FTYPE* FNAME(Xp_addh)(FTYPE* p, int n, FTYPE x0) noexcept { // add a half-precision value
     FTYPE xscaled = x0;
     short errx;
     short xexp;
@@ -219,7 +219,7 @@ FTYPE* FNAME(Xp_addh)(FTYPE* p, int n, FTYPE x0) { // add a half-precision value
     return p;
 }
 
-FTYPE* FNAME(Xp_mulh)(FTYPE* p, int n, FTYPE x0) { // multiply by a half-precision value
+FTYPE* FNAME(Xp_mulh)(FTYPE* p, int n, FTYPE x0) noexcept { // multiply by a half-precision value
     short errx;
     int j;
     int k;
@@ -280,7 +280,7 @@ FTYPE* FNAME(Xp_mulh)(FTYPE* p, int n, FTYPE x0) { // multiply by a half-precisi
     return p;
 }
 
-FTYPE* FNAME(Xp_setn)(FTYPE* p, int n, long x) { // load a long integer
+FTYPE* FNAME(Xp_setn)(FTYPE* p, int n, long x) noexcept { // load a long integer
 
 #if FBITS == 53
     FNAME(Xp_setw)(p, n, static_cast<FTYPE>(x));
@@ -295,12 +295,12 @@ FTYPE* FNAME(Xp_setn)(FTYPE* p, int n, long x) { // load a long integer
     return p;
 }
 
-FTYPE* FNAME(Xp_movx)(FTYPE* p, int n, const FTYPE* q) { // copy an extended precision value
+FTYPE* FNAME(Xp_movx)(FTYPE* p, int n, const FTYPE* q) noexcept { // copy an extended precision value
     memcpy(p, q, n * sizeof(FTYPE));
     return p;
 }
 
-FTYPE* FNAME(Xp_addx)(FTYPE* p, int n, const FTYPE* q, int m) { // add an extended precision value
+FTYPE* FNAME(Xp_addx)(FTYPE* p, int n, const FTYPE* q, int m) noexcept { // add an extended precision value
     int k;
 
     for (k = 0; k < m && q[k] != FLIT(0.0); ++k) {
@@ -310,7 +310,7 @@ FTYPE* FNAME(Xp_addx)(FTYPE* p, int n, const FTYPE* q, int m) { // add an extend
     return p;
 }
 
-FTYPE* FNAME(Xp_ldexpx)(FTYPE* p, int n, int m) { // scale an extended precision value
+FTYPE* FNAME(Xp_ldexpx)(FTYPE* p, int n, int m) noexcept { // scale an extended precision value
     int k;
     for (k = 0; k < n; ++k) {
         p[k] = static_cast<FTYPE>(FFUN(ldexp)(p[k], m));
@@ -322,7 +322,7 @@ FTYPE* FNAME(Xp_ldexpx)(FTYPE* p, int n, int m) { // scale an extended precision
     return p;
 }
 
-FTYPE* FNAME(Xp_mulx)(FTYPE* p, int n, const FTYPE* q, int m, FTYPE* ptemp2) {
+FTYPE* FNAME(Xp_mulx)(FTYPE* p, int n, const FTYPE* q, int m, FTYPE* ptemp2) noexcept {
     // multiply by an extended precision value (needs 2 * n temp)
     if (n != 0 && m != 0) {
         if (q[0] == FLIT(0.0) || q[1] == FLIT(0.0)) {

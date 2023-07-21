@@ -19,7 +19,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float* px) noexcept { // cat
     }
 }
 
-unsigned short* _FPmsw(float* px) { // get pointer to msw
+unsigned short* _FPmsw(float* px) noexcept { // get pointer to msw
     return &reinterpret_cast<_Fval*>(px)->_Sh[_F0];
 }
 
