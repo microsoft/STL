@@ -1913,6 +1913,13 @@ void test_DevCom_10109507() {
     assert(s == "xyefbcd");
 }
 
+void test_gh_3883() {
+    // GH-3883 <string>: basic_string::replace fails under ASan when pos + count > size, and count2 < count
+    string t = "0123456789ABCDEF"; // large string
+    t.replace(0, 30, 7, 'A');
+    assert(t == "AAAAAAA");
+}
+
 int main() {
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
@@ -1924,4 +1931,5 @@ int main() {
 
     test_DevCom_10116361();
     test_DevCom_10109507();
+    test_gh_3883();
 }
