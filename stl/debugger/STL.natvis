@@ -1584,11 +1584,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <Type Name="std::mutex">
       <AlternativeType Name="std::recursive_mutex"/>
-      <DisplayString Condition="_Mtx_storage_mirror._Count == 0">unlocked</DisplayString>
-      <DisplayString Condition="_Mtx_storage_mirror._Count != 0">locked</DisplayString>
+      <DisplayString Condition="_Mtx_storage._Count == 0">unlocked</DisplayString>
+      <DisplayString Condition="_Mtx_storage._Count != 0">locked</DisplayString>
       <Expand>
-          <Item Name="[locking_thread_id]" Condition="_Mtx_storage_mirror._Count != 0">_Mtx_storage_mirror._Thread_id</Item>
-          <Item Name="[ownership_levels]" Condition="_Mtx_storage_mirror._Count != 0">_Mtx_storage_mirror._Count</Item>
+          <Item Name="[locking_thread_id]" Condition="_Mtx_storage._Count != 0">_Mtx_storage._Thread_id</Item>
+          <Item Name="[ownership_levels]" Condition="_Mtx_storage._Count != 0">_Mtx_storage._Count</Item>
       </Expand>
   </Type>
 
