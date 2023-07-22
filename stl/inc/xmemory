@@ -471,12 +471,17 @@ struct _Is_default_allocator<allocator<_Ty>, void_t<typename allocator<_Ty>::_Fr
     : is_same<typename allocator<_Ty>::_From_primary, allocator<_Ty>>::type {};
 
 #if _HAS_CXX23
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+template <class _Alloc, class _SizeTy>
+concept _Has_member_allocate_at_least = requires(_Alloc& _Al, const _SizeTy& _Count) { _Al.allocate_at_least(_Count); };
+#else // ^^^ no workaround / workaround vvv
 template <class _Alloc, class _SizeTy, class = void>
 inline constexpr bool _Has_member_allocate_at_least = false;
 
 template <class _Alloc, class _SizeTy>
 inline constexpr bool _Has_member_allocate_at_least<_Alloc, _SizeTy,
     void_t<decltype(_STD declval<_Alloc&>().allocate_at_least(_STD declval<const _SizeTy&>()))>> = true;
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
 template <class _Void, class... _Types>
