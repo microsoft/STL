@@ -18,10 +18,10 @@ public:
         _Init_locks_dtor(this);
     }
 
-#else // _M_CEE_PURE
+#else // ^^^ defined(_M_CEE_PURE) ^^^ / vvv !defined(_M_CEE_PURE) vvv
     __thiscall _Init_locks() noexcept;
     __thiscall ~_Init_locks() noexcept;
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
 private:
     static void __cdecl _Init_locks_ctor(_Init_locks*) noexcept;

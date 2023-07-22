@@ -19,11 +19,11 @@ void __clrcall _Mtxdst(_Rmtx*) noexcept;
 void __clrcall _Mtxlock(_Rmtx*) noexcept;
 void __clrcall _Mtxunlock(_Rmtx*) noexcept;
 
-#else // _M_CEE_PURE
+#else // ^^^ defined(_M_CEE_PURE) ^^^ / vvv !defined(_M_CEE_PURE) vvv
 _MRTIMP2 void __cdecl _Mtxinit(_Rmtx*) noexcept;
 _MRTIMP2 void __cdecl _Mtxdst(_Rmtx*) noexcept;
 _MRTIMP2 void __cdecl _Mtxlock(_Rmtx*) noexcept;
 _MRTIMP2 void __cdecl _Mtxunlock(_Rmtx*) noexcept;
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^ 
 
 _END_EXTERN_C_UNLESS_PURE

@@ -55,10 +55,10 @@ static HANDLE _FilesysOpenFile(const wchar_t* _Fname, DWORD _Desired_access, DWO
 
     return CreateFile2(_Fname, _Desired_access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, OPEN_EXISTING,
         &_Create_file_parameters);
-#else // _CRT_APP
+#else // ^^^ defined(_CRT_APP) ^^^ / vvv !defined(_CRT_APP) vvv
     return CreateFileW(_Fname, _Desired_access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
         OPEN_EXISTING, _Flags, nullptr);
-#endif // _CRT_APP
+#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(
@@ -82,13 +82,13 @@ _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(
 static unsigned int _Filesys_code_page() { // determine appropriate code page
 #if defined(_ONECORE)
     return CP_ACP;
-#else // defined(_ONECORE)
+#else // ^^^ defined(_ONECORE) ^^^ / vvv !defined(_ONECORE) vvv
     if (AreFileApisANSI()) {
         return CP_ACP;
     } else {
         return CP_OEMCP;
     }
-#endif // defined(_ONECORE)
+#endif // ^^^ !defined(_ONECORE) ^^^ 
 }
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _To_wide(const char* _Bsrc, wchar_t* _Wdest) {
@@ -143,9 +143,9 @@ _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&_Dest)[_MAX_FILESYS_
     _Strcpy(_Dest, L"");
 #ifdef _CRT_APP
     return false; // no support
-#else // _CRT_APP
+#else // ^^^ defined(_CRT_APP) ^^^ / vvv !defined(_CRT_APP) vvv
     return _wgetcwd(_Dest, _MAX_FILESYS_NAME) != nullptr;
-#endif // _CRT_APP
+#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t* _Dirname) {
@@ -153,9 +153,9 @@ _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t* _Dirname) {
 #ifdef _CRT_APP
     (void) _Dirname;
     return false; // no support
-#else // _CRT_APP
+#else // ^^^ defined(_CRT_APP) ^^^ / vvv !defined(_CRT_APP) vvv
     return _wchdir(_Dirname) == 0;
-#endif // _CRT_APP
+#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME], const wchar_t*) {
@@ -235,14 +235,14 @@ _FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _Hard_links(const wchar_t* _Fname) {
     const auto _Ok = GetFileInformationByHandleEx(_Handle, FileStandardInfo, &_Info, sizeof(_Info));
     CloseHandle(_Handle);
     return _Ok ? _Info.NumberOfLinks : static_cast<uintmax_t>(-1);
-#else // _CRT_APP
+#else // ^^^ defined(_CRT_APP) ^^^ / vvv !defined(_CRT_APP) vvv
     BY_HANDLE_FILE_INFORMATION _Info = {0};
 
     // get file info
     const auto _Ok = GetFileInformationByHandle(_Handle, &_Info);
     CloseHandle(_Handle);
     return _Ok ? _Info.nNumberOfLinks : static_cast<uintmax_t>(-1);
-#endif // _CRT_APP
+#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 _FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fname) { // get file size
@@ -345,7 +345,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
     } else { // test existing files for equivalence
         return memcmp(&_Info1, &_Info2, sizeof(_FILE_ID_INFO)) == 0 ? 1 : 0;
     }
-#else // _CRT_APP
+#else // ^^^ defined(_CRT_APP) ^^^ / vvv !defined(_CRT_APP) vvv
     BY_HANDLE_FILE_INFORMATION _Info1 = {0};
     BY_HANDLE_FILE_INFORMATION _Info2 = {0};
     bool _Ok1                         = false;
@@ -373,7 +373,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
                  ? 1
                  : 0;
     }
-#endif // _CRT_APP
+#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t* _Fname2) {
@@ -382,9 +382,9 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t*
     (void) _Fname1;
     (void) _Fname2;
     return errno = EDOM; // hardlinks not supported
-#else // _CRT_APP
+#else // ^^^ defined(_CRT_APP) ^^^ / vvv !defined(_CRT_APP) vvv
     return CreateHardLinkW(_Fname2, _Fname1, nullptr) ? 0 : GetLastError();
-#endif // _CRT_APP
+#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t* _Fname1, const wchar_t* _Fname2) {
@@ -393,9 +393,9 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t* _Fname1, const wchar
     (void) _Fname1;
     (void) _Fname2;
     return errno = EDOM; // symlinks not supported
-#else // _CRT_APP
+#else // ^^^ defined(_CRT_APP) ^^^ / vvv !defined(_CRT_APP) vvv
     return CreateSymbolicLinkW(_Fname2, _Fname1, 0) ? 0 : GetLastError();
-#endif // _CRT_APP
+#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Rename(const wchar_t* _Fname1, const wchar_t* _Fname2) {
@@ -438,9 +438,9 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t* _Fname1, const wch
 
     // take lower bits to undo HRESULT_FROM_WIN32
     return _Copy_result & 0x0000FFFFU;
-#else // defined(_ONECORE)
+#else // ^^^ defined(_ONECORE) ^^^ / vvv !defined(_ONECORE) vvv
     return CopyFileW(_Fname1, _Fname2, 0) ? 0 : GetLastError();
-#endif // defined(_ONECORE)
+#endif // ^^^ !defined(_ONECORE) ^^^
 }
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t* _Fname, perms _Newmode) {

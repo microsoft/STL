@@ -29,9 +29,9 @@ extern "C" [[noreturn]] _CRTIMP2_PURE void _Thrd_abort(const char* msg) { // abo
 #define _THREAD_QUOTX(x)          #x
 #define _THREAD_QUOT(x)           _THREAD_QUOTX(x)
 #define _THREAD_ASSERT(expr, msg) ((expr) ? (void) 0 : _Thrd_abort(__FILE__ "(" _THREAD_QUOT(__LINE__) "): " msg))
-#else // _THREAD_CHECKX
+#else // ^^^ _THREAD_CHECKX ^^^ / vvv !_THREAD_CHECKX vvv
 #define _THREAD_ASSERT(expr, msg) ((void) 0)
-#endif // _THREAD_CHECKX
+#endif // ^^^ !_THREAD_CHECKX ^^^
 
 // TRANSITION, ABI: preserved for binary compatibility
 enum class __stl_sync_api_modes_enum { normal, win7, vista, concrt };
