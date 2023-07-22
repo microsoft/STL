@@ -238,19 +238,24 @@ function load_charts() {
         time: { unit: TimeUnit };
     };
 
-    const timeframe_all: Timeframe = {
-        min: '2017-06-09',
-        time: { unit: 'year' },
-    };
-    const timeframe_github: Timeframe = {
-        min: '2019-09-20', // first Friday after 2019-09-16
-        time: { unit: 'year' },
-    };
-    const timeframe_2021: Timeframe = {
-        min: '2021-01-01',
-        time: { unit: 'quarter' },
-    };
-    const timeframes = [timeframe_all, timeframe_github, timeframe_2021];
+    const timeframes: Timeframe[] = [
+        {
+            min: '2017-06-09',
+            time: { unit: 'year' },
+        },
+        {
+            min: '2019-09-20', // first Friday after 2019-09-16
+            time: { unit: 'year' },
+        },
+        {
+            min: '2021-01-01',
+            time: { unit: 'year' },
+        },
+        {
+            min: '2022-01-01',
+            time: { unit: 'quarter' },
+        },
+    ];
     const timeframe_github_idx = 1;
     let timeframe_idx = timeframe_github_idx;
 
@@ -392,7 +397,7 @@ function load_charts() {
     const age_options = {
         ...make_common_options(),
         scales: {
-            x: make_xAxis(timeframe_github),
+            x: make_xAxis(timeframes[timeframe_github_idx]),
             leftAxis: make_yAxis('left', 'Average (days)', 0, 500, 100),
             rightAxis: make_yAxis('right', 'Combined (PR-months)', 0, 500, 100),
         },
@@ -401,7 +406,7 @@ function load_charts() {
     const merge_options = {
         ...make_common_options(),
         scales: {
-            x: make_xAxis(timeframe_github),
+            x: make_xAxis(timeframes[timeframe_github_idx]),
             mergeAxis: make_yAxis('right', 'PRs / month', 0, 90, 10),
         },
     };
