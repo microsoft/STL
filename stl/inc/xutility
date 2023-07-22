@@ -6680,7 +6680,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD _FwdIt max_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find largest element
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     return _STD max_element(_First, _Last, _Pass_fn(_Pred));
 }
 
@@ -6688,7 +6688,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_
 _NODISCARD _FwdIt max_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
     // find largest element
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     return _STD max_element(_First, _Last);
 }
 
@@ -6876,7 +6876,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD _FwdIt min_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find smallest element
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     return _STD min_element(_First, _Last, _Pass_fn(_Pred));
 }
 
@@ -6884,7 +6884,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_
 _NODISCARD _FwdIt min_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
     // find smallest element
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     return _STD min_element(_First, _Last);
 }
 
