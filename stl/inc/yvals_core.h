@@ -27,7 +27,7 @@
 #define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
 #pragma message(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): STL1003: Unexpected compiler, expected C++ compiler.")
 #error Error in C++ Standard Library usage
-#endif // __cplusplus
+#endif // defined(__cplusplus)
 
 // Implemented unconditionally:
 // N3911 void_t
@@ -896,7 +896,7 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.36 or ne
 
 #ifndef _HAS_STATIC_RTTI
 #define _HAS_STATIC_RTTI 1
-#endif // _HAS_STATIC_RTTI
+#endif // !defined(_HAS_STATIC_RTTI)
 
 #if defined(_CPPRTTI) && !_HAS_STATIC_RTTI
 #error /GR implies _HAS_STATIC_RTTI.
@@ -1685,7 +1685,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_algorithm_iterator_requirements 202207L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
@@ -1703,7 +1703,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_common_reference         202302L
 #define __cpp_lib_common_reference_wrapper 202302L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_constexpr_algorithms    201806L
 #define __cpp_lib_constexpr_complex       201711L
@@ -1723,7 +1723,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_format              202207L
 #define __cpp_lib_freestanding_ranges 202306L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
@@ -1748,7 +1748,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_move_iterator_concept 202207L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_polymorphic_allocator   201902L
 #define __cpp_lib_remove_cvref            201711L
@@ -1762,7 +1762,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_three_way_comparison 201907L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_to_address    201711L
 #define __cpp_lib_to_array      201907L
@@ -1784,7 +1784,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_containers_ranges 202202L
 #define __cpp_lib_expected          202211L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_forward_like   202207L
 #define __cpp_lib_invoke_r       202106L
@@ -1817,7 +1817,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_stride            202207L
 #define __cpp_lib_ranges_to_container      202202L
 #define __cpp_lib_ranges_zip               202110L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_spanstream                  202106L
 #define __cpp_lib_stacktrace                  202011L
@@ -1828,7 +1828,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_tuple_like 202207L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_unreachable 202202L
 #endif // _HAS_CXX23

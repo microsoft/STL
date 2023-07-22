@@ -680,7 +680,7 @@ template class _CRTIMP2_PURE_IMPORT basic_ostream<wchar_t, char_traits<wchar_t>>
 
 #ifdef __FORCE_INSTANCE
 template class _CRTIMP2_PURE_IMPORT basic_ostream<unsigned short, char_traits<unsigned short>>;
-#endif // __FORCE_INSTANCE
+#endif // defined(__FORCE_INSTANCE)
 #endif // defined(_DLL_CPPLIB)
 
 _EXPORT_STD template <class _Elem, class _Traits>
@@ -960,7 +960,7 @@ _EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, char8_t) = delete;
 _EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, char8_t) = delete;
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
 #if !_HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 #ifdef _NATIVE_WCHAR_T_DEFINED
@@ -1286,7 +1286,7 @@ void println(ostream&, format_string<_Types...>, _Types&&...) = delete; // requi
 _EXPORT_STD void vprint_unicode(ostream&, string_view, format_args)    = delete; // requires /GR option
 _EXPORT_STD void vprint_nonunicode(ostream&, string_view, format_args) = delete; // requires /GR option
 #endif // ^^^ !defined(_CPPRTTI) ^^^
-#endif // __cpp_lib_print
+#endif // defined(__cpp_lib_print)
 
 _STD_END
 

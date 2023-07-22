@@ -844,7 +844,7 @@ inline namespace _Cpos {
     _EXPORT_STD inline constexpr _Compare_partial_order_fallback::_Cpo compare_partial_order_fallback;
 }
 
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 _STD_END
 
 #pragma pop_macro("new")

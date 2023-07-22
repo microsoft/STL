@@ -63,7 +63,7 @@ public:
 private:
     __PURE_APPDOMAIN_GLOBAL static int _Init_cnt;
 };
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 _STD_END

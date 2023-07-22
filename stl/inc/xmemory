@@ -82,7 +82,7 @@ struct _Default_allocate_traits {
     __declspec(allocator) static
 #ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
         _CONSTEXPR20
-#endif // __clang__
+#endif // defined(__clang__)
         void* _Allocate(const size_t _Bytes) {
         return ::operator new(_Bytes);
     }
@@ -91,7 +91,7 @@ struct _Default_allocate_traits {
     __declspec(allocator) static
 #ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
         _CONSTEXPR20
-#endif // __clang__
+#endif // defined(__clang__)
         void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
 #ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
 #if _HAS_CXX20
@@ -99,12 +99,12 @@ struct _Default_allocate_traits {
             return ::operator new(_Bytes);
         } else
 #endif // _HAS_CXX20
-#endif // __clang__
+#endif // defined(__clang__)
         {
             return ::operator new(_Bytes, align_val_t{_Align});
         }
     }
-#endif // __cpp_aligned_new
+#endif // defined(__cpp_aligned_new)
 };
 
 constexpr bool _Is_pow_2(const size_t _Value) noexcept {
@@ -129,9 +129,9 @@ _INLINE_VAR constexpr size_t _Non_user_size           = sizeof(void*) + _Big_all
 
 #ifdef _WIN64
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
-#else // ^^^ _WIN64 / !_WIN64 vvv
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
-#endif // _WIN64
+#endif // defined(_WIN64)
 
 template <class _Traits>
 __declspec(allocator) void* _Allocate_manually_vector_aligned(const size_t _Bytes) {
@@ -148,7 +148,7 @@ __declspec(allocator) void* _Allocate_manually_vector_aligned(const size_t _Byte
 
 #ifdef _DEBUG
     static_cast<uintptr_t*>(_Ptr)[-2] = _Big_allocation_sentinel;
-#endif // _DEBUG
+#endif // defined(_DEBUG)
     return _Ptr;
 }
 
@@ -222,9 +222,9 @@ _CONSTEXPR20 void _Deallocate(void* _Ptr, const size_t _Bytes) noexcept {
 }
 
 #define _HAS_ALIGNED_NEW 1
-#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
+#else // ^^^ defined(__cpp_aligned_new) / !defined(__cpp_aligned_new) vvv
 #define _HAS_ALIGNED_NEW 0
-#endif // __cpp_aligned_new
+#endif // defined(__cpp_aligned_new)
 
 template <size_t _Align, class _Traits = _Default_allocate_traits,
     enable_if_t<(!_HAS_ALIGNED_NEW || _Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
@@ -481,7 +481,7 @@ inline constexpr bool _Has_member_allocate_at_least = false;
 template <class _Alloc, class _SizeTy>
 inline constexpr bool _Has_member_allocate_at_least<_Alloc, _SizeTy,
     void_t<decltype(_STD declval<_Alloc&>().allocate_at_least(_STD declval<const _SizeTy&>()))>> = true;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
 template <class _Void, class... _Types>
@@ -1572,7 +1572,7 @@ pair<_Ty*, ptrdiff_t> _Get_temporary_buffer(ptrdiff_t _Count) noexcept {
             if constexpr (alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 _Pbuf = ::operator new(_Size, align_val_t{alignof(_Ty)}, nothrow);
             } else
-#endif // __cpp_aligned_new
+#endif // defined(__cpp_aligned_new)
             {
                 _Pbuf = ::operator new(_Size, nothrow);
             }
@@ -1592,7 +1592,7 @@ void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
     if constexpr (alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         ::operator delete(_Pbuf, align_val_t{alignof(_Ty)});
     } else
-#endif // __cpp_aligned_new
+#endif // defined(__cpp_aligned_new)
     {
         ::operator delete(_Pbuf);
     }
@@ -1779,7 +1779,7 @@ namespace ranges {
         }
     }
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 template <class _Alloc>
 class _NODISCARD _Uninitialized_backout_al {
@@ -1824,12 +1824,12 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 #ifdef __cpp_lib_concepts
     auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
     auto _ULast  = _RANGES _Unwrap_sent<_InIt>(_STD move(_Last));
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     // In pre-concepts world, _Uninitialized_copy should only ever be called with an iterator
     // and sentinel of the same type, so `_Get_unwrapped` is fine to call.
     auto _UFirst = _Get_unwrapped(_STD move(_First));
     auto _ULast  = _Get_unwrapped(_STD move(_Last));
-#endif // ^^^ !__cpp_lib_concepts ^^^
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
                                && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
@@ -2610,7 +2610,7 @@ struct _Is_transparent : bool_constant<_Is_transparent_v<_Ty>> {};
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
 template <class _Ty>
 concept _Transparent = _Is_transparent_v<_Ty>;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 _STD_END
 
 #pragma pop_macro("new")

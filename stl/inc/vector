@@ -30,7 +30,7 @@ class _Vector_const_iterator : public _Iterator_base {
 public:
 #ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Myvec::value_type;
     using difference_type   = typename _Myvec::difference_type;
@@ -256,7 +256,7 @@ public:
 
 #ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Myvec::value_type;
     using difference_type   = typename _Myvec::difference_type;
@@ -640,7 +640,7 @@ public:
             const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
         } else {
             auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
             _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
@@ -1246,7 +1246,7 @@ public:
             const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Insert_counted_range(_Where, _UFirst, _Count);
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
         } else {
             _Insert_uncounted_range(_Where, _UFirst, _ULast);
         }
@@ -1455,7 +1455,7 @@ public:
             const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Assign_counted_range(_UFirst, _Count);
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
         } else {
             _Assign_uncounted_range(_UFirst, _ULast);
         }
@@ -3356,7 +3356,7 @@ public:
             const auto _Count  = _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
             _STD _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
         } else {
             const auto _Old_size = this->_Mysize;
             for (; _UFirst != _ULast; ++_UFirst) {

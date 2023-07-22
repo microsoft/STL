@@ -69,7 +69,7 @@ public:
             _Myios::setstate(ios_base::failbit);
         }
     }
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
     explicit basic_ifstream(FILE* _File) : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension
 
@@ -156,7 +156,7 @@ public:
         open(_Filename, static_cast<ios_base::openmode>(_Mode));
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
     __CLR_OR_THIS_CALL ~basic_ifstream() noexcept override {}
 
@@ -252,7 +252,7 @@ public:
             _Myios::setstate(ios_base::failbit);
         }
     }
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
     explicit basic_ofstream(FILE* _File) : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension
 
@@ -339,7 +339,7 @@ public:
         open(_Filename, static_cast<ios_base::openmode>(_Mode));
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
     __CLR_OR_THIS_CALL ~basic_ofstream() noexcept override {}
 
@@ -440,7 +440,7 @@ public:
             _Myios::setstate(ios_base::failbit);
         }
     }
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
     explicit basic_fstream(FILE* _File) : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension
 
@@ -528,7 +528,7 @@ public:
         open(_Filename, static_cast<ios_base::openmode>(_Mode));
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
     __CLR_OR_THIS_CALL ~basic_fstream() noexcept override {}
 

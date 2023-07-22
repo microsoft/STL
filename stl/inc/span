@@ -32,7 +32,7 @@ template <class _Ty>
 struct _Span_iterator {
 #ifdef __cpp_lib_concepts
     using iterator_concept  = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<_Ty>;
     using difference_type   = ptrdiff_t;
@@ -688,7 +688,7 @@ _NODISCARD auto as_writable_bytes(span<_Ty, _Extent> _Sp) noexcept {
     using _ReturnType = span<byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent>;
     return _ReturnType{reinterpret_cast<byte*>(_Sp.data()), _Sp.size_bytes()};
 }
-#endif // __cpp_lib_byte
+#endif // defined(__cpp_lib_byte)
 
 _STD_END
 

@@ -158,13 +158,13 @@ namespace _Float_multi_prec {
         _mm_store_sd(&_Result, _Mresult);
         return _Result;
     }
-#endif // _FMP_USING_X86_X64_INTRINSICS
+#endif // defined(_FMP_USING_X86_X64_INTRINSICS)
 
 #ifdef _FMP_USING_STD_FMA
     _NODISCARD inline double _Sqr_error_std_fma(const double _Xval, const double _Prod0) noexcept {
         return _STD fma(_Xval, _Xval, -_Prod0);
     }
-#endif // _FMP_USING_STD_FMA
+#endif // defined(_FMP_USING_STD_FMA)
 
     // square(1x precision) -> 2x precision
     // the result is exact when no internal overflow or underflow occurs

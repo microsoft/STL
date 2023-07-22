@@ -11,7 +11,7 @@
 
 #ifdef _M_CEE_PURE
 #error <shared_mutex> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #include <condition_variable>
 #include <mutex>

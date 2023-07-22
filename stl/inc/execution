@@ -277,7 +277,7 @@ struct _Parallelism_allocate_traits {
 
         return _Result;
     }
-#endif // __cpp_aligned_new
+#endif // defined(__cpp_aligned_new)
 };
 
 template <class _Ty = void>

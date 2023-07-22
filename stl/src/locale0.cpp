@@ -43,7 +43,7 @@ struct _Fac_node { // node for lazy facet recording
     void operator delete(void* _Ptr) noexcept { // replace operator delete
         _free_dbg(_Ptr, _CRT_BLOCK);
     }
-#endif // _DEBUG
+#endif // defined(_DEBUG)
 
     _Fac_node* _Next;
     _Facet_base* _Facptr;

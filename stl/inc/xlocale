@@ -671,10 +671,10 @@ template <class _Ty>
 _INLINE_VAR constexpr bool _Is_one_byte_char_like_v = _Is_any_of_v<remove_cv_t<_Ty>, signed char, unsigned char,
 #ifdef __cpp_lib_byte
     byte,
-#endif // __cpp_lib_byte
+#endif // defined(__cpp_lib_byte)
 #ifdef __cpp_char8_t
     char8_t,
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
     char>;
 
 template <class _Elem, class _Byte>
@@ -806,14 +806,14 @@ protected:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Elem, class _Byte, class _Statype>
 __PURE_APPDOMAIN_GLOBAL locale::id codecvt<_Elem, _Byte, _Statype>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 _EXPORT_STD /* TRANSITION, VSO-1538698 */ template <class _CvtTy, class _Byte, class _Statype>
 _NODISCARD int _Codecvt_do_length(
@@ -2342,7 +2342,7 @@ public:
                       || _Is_any_of_v<codecvt_byname,
 #ifdef __cpp_char8_t
                           codecvt_byname<char16_t, char8_t, mbstate_t>, codecvt_byname<char32_t, char8_t, mbstate_t>,
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
                           codecvt_byname<char, char, mbstate_t>, codecvt_byname<wchar_t, char, mbstate_t>>,
         _FACET_SPECIALIZATION_MESSAGE);
 
@@ -2625,14 +2625,14 @@ private:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Elem>
 locale::id ctype<_Elem>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 extern "C++" template <>
 class _CRTIMP2_PURE_IMPORT ctype<char> : public ctype_base { // facet for classifying char elements, converting cases

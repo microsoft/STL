@@ -2469,7 +2469,7 @@ public:
     _NODISCARD bool operator==(default_sentinel_t) const {
         return !_MyRe;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2662,7 +2662,7 @@ public:
     _NODISCARD bool operator==(default_sentinel_t) const {
         return !_Res;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0

@@ -28,13 +28,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #error The <experimental/filesystem> header providing std::experimental::filesystem is deprecated by Microsoft \
 and will be REMOVED. It is superseded by the C++17 <filesystem> header providing std::filesystem. \
 You can define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING to suppress this error.
-#endif // _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+#endif // defined(_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING)
 
 #pragma warning(disable : 4365) // conversion from 'type_1' to 'type_2', signed/unsigned mismatch (/Wall)
 
 #ifndef _FS_DLL
 #define _FS_DLL extern "C" _CRTIMP2_PURE
-#endif // _FS_DLL
+#endif // defined(_FS_DLL)
 
 #define _MAX_FILESYS_NAME 260 // longest Windows or Posix filename + 1
 

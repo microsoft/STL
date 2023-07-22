@@ -555,7 +555,7 @@ _CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_MEMFUNPTR_ELLIPSIS)
 _NON_MEMBER_CALL(_IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES, , , )
 #ifdef __cpp_noexcept_function_type
 _NON_MEMBER_CALL(_IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES, , , noexcept)
-#endif // __cpp_noexcept_function_type
+#endif // defined(__cpp_noexcept_function_type)
 
 #undef _IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES
 #endif // _HAS_CXX23 && !defined(__clang__)
@@ -1599,7 +1599,7 @@ const _Ty* addressof(const _Ty&&) = delete;
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-volatile"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Ty>
 _NODISCARD _Ty _Fake_copy_init(_Ty) noexcept;
@@ -1610,7 +1610,7 @@ _NODISCARD _Ty _Fake_copy_init(_Ty) noexcept;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 #pragma warning(pop)
 
@@ -1953,7 +1953,7 @@ _EXPORT_STD template <class _ClassTy1, class _ClassTy2, class _MemberTy1, class 
 _NODISCARD constexpr bool is_corresponding_member(_MemberTy1 _ClassTy1::*_Pm1, _MemberTy2 _ClassTy2::*_Pm2) noexcept {
     return __is_corresponding_member(_ClassTy1, _ClassTy2, _Pm1, _Pm2);
 }
-#endif // __clang__
+#endif // defined(__clang__)
 #endif // _HAS_CXX20
 
 template <class _Ty>
@@ -2229,7 +2229,7 @@ _INLINE_VAR constexpr bool _Is_trivially_swappable_v = conjunction_v<is_triviall
 #ifdef __cpp_lib_byte
 template <>
 inline constexpr bool _Is_trivially_swappable_v<byte> = true;
-#endif // __cpp_lib_byte
+#endif // defined(__cpp_lib_byte)
 
 template <class _Ty>
 struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
@@ -2264,7 +2264,7 @@ template <class _Ty, class _RefWrap, template <class> class _TyQual, template <c
 struct basic_common_reference<_Ty, _RefWrap, _TyQual, _RefWrapQual> {
     using type = common_reference_t<typename _RefWrap::type&, _TyQual<_Ty>>;
 };
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define _BITMASK_OPS(_MAYBE_EXPORT, _BITMASK)                                                         \
     _MAYBE_EXPORT _NODISCARD constexpr _BITMASK operator&(_BITMASK _Left, _BITMASK _Right) noexcept { \

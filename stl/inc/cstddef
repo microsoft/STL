@@ -95,7 +95,7 @@ _EXPORT_STD template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> 
 _NODISCARD _MSVC_INTRINSIC constexpr _IntType to_integer(const byte _Arg) noexcept {
     return static_cast<_IntType>(_Arg);
 }
-#endif // __cpp_lib_byte
+#endif // defined(__cpp_lib_byte)
 
 _STD_END
 

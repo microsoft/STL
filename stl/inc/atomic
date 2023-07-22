@@ -70,7 +70,7 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define ATOMIC_CHAR_LOCK_FREE 2
 #ifdef __cpp_lib_char8_t
 #define ATOMIC_CHAR8_T_LOCK_FREE 2
-#endif // __cpp_lib_char8_t
+#endif // defined(__cpp_lib_char8_t)
 #define ATOMIC_CHAR16_T_LOCK_FREE 2
 #define ATOMIC_CHAR32_T_LOCK_FREE 2
 #define ATOMIC_WCHAR_T_LOCK_FREE  2
@@ -1375,7 +1375,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
 
     typename _Atomic_storage_types<_Ty&>::_TStorage _Storage;
 };
-#endif // _WIN64
+#endif // defined(_WIN64)
 
 template <class _Ty, size_t = sizeof(_Ty)>
 struct _Atomic_integral; // not defined
@@ -2774,7 +2774,7 @@ _EXPORT_STD using atomic_ullong = atomic<unsigned long long>;
 
 #ifdef __cpp_lib_char8_t
 _EXPORT_STD using atomic_char8_t = atomic<char8_t>;
-#endif // __cpp_lib_char8_t
+#endif // defined(__cpp_lib_char8_t)
 _EXPORT_STD using atomic_char16_t = atomic<char16_t>;
 _EXPORT_STD using atomic_char32_t = atomic<char32_t>;
 _EXPORT_STD using atomic_wchar_t  = atomic<wchar_t>;

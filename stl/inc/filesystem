@@ -154,7 +154,7 @@ namespace filesystem {
         else if constexpr (is_same_v<_EcharT, char8_t>) {
             return _Convert_wide_to_narrow<_Traits>(__std_code_page::_Utf8, _Input, _Al);
         }
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
         else if constexpr (is_same_v<_EcharT, char32_t>) {
             return _Convert_wide_to_utf32<_Traits>(_Input, _Al);
         } else { // wchar_t, char16_t
@@ -216,7 +216,7 @@ namespace filesystem {
         const string_view _Input_as_char{reinterpret_cast<const char*>(_Input.data()), _Input.size()};
         return _Convert_narrow_to_wide(__std_code_page::_Utf8, _Input_as_char);
     }
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
     template <class _Conversion>
     _NODISCARD wstring _Convert_stringoid_to_wide(const u16string_view _Input, _Conversion) {
@@ -2693,7 +2693,7 @@ namespace filesystem {
         _NODISCARD bool operator==(default_sentinel_t) const noexcept {
             return !_Impl;
         }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
@@ -2949,7 +2949,7 @@ namespace filesystem {
         _NODISCARD bool operator==(default_sentinel_t) const noexcept {
             return !_Impl;
         }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
@@ -4415,7 +4415,7 @@ namespace ranges {
     template <>
     inline constexpr bool enable_view<filesystem::recursive_directory_iterator> = true;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _STD_END
 

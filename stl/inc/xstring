@@ -346,7 +346,7 @@ struct char_traits<wchar_t> : _WChar_traits<wchar_t> {};
 #ifdef _CRTBLD
 template <>
 struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 #if defined(__cpp_char8_t) && !defined(__EDG__) && !defined(__clang__)
 #define _HAS_U8_INTRINSICS 1
@@ -395,7 +395,7 @@ public:
             return _Primary_char_traits::length(_First);
 #endif // _HAS_U8_INTRINSICS
         } else
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
         {
             return __builtin_strlen(_First);
         }
@@ -416,7 +416,7 @@ public:
             return _Primary_char_traits::find(_First, _Count, _Ch);
 #endif // _HAS_U8_INTRINSICS
         } else
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
         {
             return __builtin_char_memchr(_First, _Ch, _Count);
         }
@@ -484,7 +484,7 @@ struct char_traits<char> : _Narrow_char_traits<char, int> {}; // properties of a
 #ifdef __cpp_char8_t
 template <>
 struct char_traits<char8_t> : _Narrow_char_traits<char8_t, unsigned int> {};
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
 template <class _Elem, class _Traits, class _SizeT>
 basic_ostream<_Elem, _Traits>& _Insert_string(
@@ -891,7 +891,7 @@ template <class _Ty>
 _INLINE_VAR constexpr bool _Is_EcharT = _Is_any_of_v<_Ty, char, wchar_t,
 #ifdef __cpp_char8_t
     char8_t,
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
     char16_t, char32_t>;
 
 #if _HAS_CXX17
@@ -903,7 +903,7 @@ class _String_view_iterator {
 public:
 #ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Traits::char_type;
     using difference_type   = ptrdiff_t;
@@ -1234,7 +1234,7 @@ public:
         : _Mydata(_RANGES data(_Rng)), _Mysize(static_cast<size_t>(_RANGES size(_Rng))) {}
     // clang-format on
 #endif // _HAS_CXX23
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     _NODISCARD constexpr const_iterator begin() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
@@ -1643,7 +1643,7 @@ namespace ranges {
     template <class _Elem, class _Traits>
     inline constexpr bool enable_borrowed_range<basic_string_view<_Elem, _Traits>> = true;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator==(
@@ -1790,7 +1790,7 @@ _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
 _EXPORT_STD using string_view = basic_string_view<char>;
 #ifdef __cpp_lib_char8_t
 _EXPORT_STD using u8string_view = basic_string_view<char8_t>;
-#endif // __cpp_lib_char8_t
+#endif // defined(__cpp_lib_char8_t)
 _EXPORT_STD using u16string_view = basic_string_view<char16_t>;
 _EXPORT_STD using u32string_view = basic_string_view<char32_t>;
 _EXPORT_STD using wstring_view   = basic_string_view<wchar_t>;
@@ -1823,7 +1823,7 @@ inline namespace literals {
             const char8_t* _Str, size_t _Len) noexcept {
             return basic_string_view<char8_t>(_Str, _Len);
         }
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
         _EXPORT_STD _NODISCARD constexpr u16string_view operator""sv(const char16_t* _Str, size_t _Len) noexcept {
             return u16string_view(_Str, _Len);
@@ -1841,7 +1841,7 @@ class _String_const_iterator : public _Iterator_base {
 public:
 #ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Mystr::value_type;
     using difference_type   = typename _Mystr::difference_type;
@@ -2080,7 +2080,7 @@ public:
 
 #ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Mystr::value_type;
     using difference_type   = typename _Mystr::difference_type;
@@ -5138,7 +5138,7 @@ _EXPORT_STD using string  = basic_string<char, char_traits<char>, allocator<char
 _EXPORT_STD using wstring = basic_string<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
 #ifdef __cpp_lib_char8_t
 _EXPORT_STD using u8string = basic_string<char8_t, char_traits<char8_t>, allocator<char8_t>>;
-#endif // __cpp_lib_char8_t
+#endif // defined(__cpp_lib_char8_t)
 _EXPORT_STD using u16string = basic_string<char16_t, char_traits<char16_t>, allocator<char16_t>>;
 _EXPORT_STD using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32_t>>;
 
@@ -5219,7 +5219,7 @@ inline namespace literals {
         _EXPORT_STD _NODISCARD _CONSTEXPR20 basic_string<char8_t> operator""s(const char8_t* _Str, size_t _Len) {
             return basic_string<char8_t>{_Str, _Len};
         }
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
         _EXPORT_STD _NODISCARD _CONSTEXPR20 u16string operator""s(const char16_t* _Str, size_t _Len) {
             return u16string{_Str, _Len};
@@ -5253,7 +5253,7 @@ namespace pmr {
     _EXPORT_STD using string = basic_string<char>;
 #ifdef __cpp_lib_char8_t
     _EXPORT_STD using u8string = basic_string<char8_t>;
-#endif // __cpp_lib_char8_t
+#endif // defined(__cpp_lib_char8_t)
     _EXPORT_STD using u16string = basic_string<char16_t>;
     _EXPORT_STD using u32string = basic_string<char32_t>;
     _EXPORT_STD using wstring   = basic_string<wchar_t>;

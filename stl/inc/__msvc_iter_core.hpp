@@ -510,7 +510,7 @@ struct iterator_traits : _Iterator_traits_base<_Iter> {}; // get traits from ite
 
 template <class _Ty>
 struct iterator_traits<_Ty*> : _Iterator_traits_pointer_base<_Ty> {}; // get traits from pointer, if possible
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 _STD_END
 
 #pragma pop_macro("new")
