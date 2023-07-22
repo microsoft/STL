@@ -38,9 +38,9 @@ namespace pmr {
     _EXPORT_STD inline memory_resource* set_default_resource(memory_resource* const _Resource) noexcept {
 #ifdef __cpp_aligned_new
         return _Aligned_set_default_resource(_Resource);
-#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
+#else // ^^^ defined(__cpp_aligned_new) / !defined(__cpp_aligned_new) vvv
         return _Unaligned_set_default_resource(_Resource);
-#endif // __cpp_aligned_new
+#endif // ^^^ !defined(__cpp_aligned_new) ^^^
     }
 
     _EXPORT_STD extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept;
@@ -96,12 +96,12 @@ namespace pmr {
         return _Aligned_new_delete_resource();
     }
 
-#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
+#else // ^^^ defined(__cpp_aligned_new) / !defined(__cpp_aligned_new) vvv
 
     _EXPORT_STD _NODISCARD inline memory_resource* new_delete_resource() noexcept {
         return _Unaligned_new_delete_resource();
     }
-#endif // __cpp_aligned_new
+#endif // ^^^ !defined(__cpp_aligned_new) ^^^
 
     template <class _Tag = void>
     struct _Double_link { // base class for intrusive doubly-linked structures

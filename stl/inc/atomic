@@ -96,9 +96,9 @@ enum {
 #ifndef _INVALID_MEMORY_ORDER
 #ifdef _DEBUG
 #define _INVALID_MEMORY_ORDER _STL_REPORT_ERROR("Invalid memory order")
-#else // ^^^ _DEBUG / !_DEBUG vvv
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _INVALID_MEMORY_ORDER
-#endif // _DEBUG
+#endif // ^^^ !defined(_DEBUG) ^^^
 #endif // _INVALID_MEMORY_ORDER
 
 extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {

@@ -258,7 +258,7 @@ concept _Span_compatible_range =
  && (_RANGES borrowed_range<_Rng> || is_const_v<_Ty>)
  && is_convertible_v<remove_reference_t<_RANGES range_reference_t<_Rng>>(*)[], _Ty(*)[]>;
 // clang-format on
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 
 template <class>
 struct _Is_span : false_type {};
@@ -291,7 +291,7 @@ inline constexpr bool _Is_span_compatible_range = conjunction_v< //
     _Has_container_interface<_Rng>, //
     _Is_span_convertible_range<_Rng, _Ty>>;
 
-#endif // !__cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 // [views.span]
 _EXPORT_STD template <class _Ty, size_t _Extent = dynamic_extent>
@@ -389,7 +389,7 @@ public:
         }
     // clang-format on
 
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 
     template <size_t _Ext = _Extent, enable_if_t<_Ext == 0 || _Ext == dynamic_extent, int> = 0>
     constexpr span() noexcept {}
@@ -468,7 +468,7 @@ public:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
-#endif // !__cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     // [span.sub] Subviews
     template <size_t _Count>

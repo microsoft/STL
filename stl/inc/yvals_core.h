@@ -829,17 +829,17 @@
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
 // clang-format on
-#else // ^^^ __clang__ ^^^ / vvv !__clang__ vvv
+#else // ^^^ defined(__clang__) ^^^ / vvv !defined(__clang__) vvv
 #define _STL_DISABLE_CLANG_WARNINGS
-#endif // ^^^ !__clang__ ^^^
+#endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_DISABLE_CLANG_WARNINGS
 
 #ifndef _STL_RESTORE_CLANG_WARNINGS
 #ifdef __clang__
 #define _STL_RESTORE_CLANG_WARNINGS _Pragma("clang diagnostic pop")
-#else // ^^^ __clang__ ^^^ / vvv !__clang__ vvv
+#else // ^^^ defined(__clang__) ^^^ / vvv !defined(__clang__) vvv
 #define _STL_RESTORE_CLANG_WARNINGS
-#endif // ^^^ !__clang__ ^^^
+#endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_RESTORE_CLANG_WARNINGS
 
 // clang-format off

@@ -175,9 +175,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::abort()
 #elif defined(_DEBUG) // avoid emitting unused long strings for function names; see GH-1956
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, __LINE__, 0)
-#else // _DEBUG
+#else // ^^^ defined(_DEBUG) ^^^ / vvv !defined(_DEBUG) vvv
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CRT_SECURE_INVALID_PARAMETER(expr)
-#endif // _DEBUG
+#endif // ^^^ !defined(_DEBUG) ^^^
 #endif // _STL_CRT_SECURE_INVALID_PARAMETER
 
 #define _STL_REPORT_ERROR(mesg)                  \

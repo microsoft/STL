@@ -1285,9 +1285,9 @@ void __stdcall _Function_deallocate_large_overaligned(_Move_only_function_data& 
     _STL_INTERNAL_STATIC_ASSERT(_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 #ifdef __cpp_aligned_new
     ::operator delete(_Self._Large_fn_ptr<void>(), align_val_t{_Align});
-#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
+#else // ^^^ defined(__cpp_aligned_new) / !defined(__cpp_aligned_new) vvv
     ::operator delete(_Self._Large_fn_ptr<void>());
-#endif // __cpp_aligned_new
+#endif // ^^^ !defined(__cpp_aligned_new) ^^^
 }
 
 template <class _Vt>
