@@ -940,9 +940,9 @@ namespace filesystem {
         _NODISCARD auto u8string() const { // convert the native path from this instance into a UTF-8 string
 #ifdef __cpp_lib_char8_t
             using _U8Ty = char8_t;
-#else // ^^^ deined(__cpp_lib_char8_t) / !deined(__cpp_lib_char8_t) vvv
+#else // ^^^ defined(__cpp_lib_char8_t) / !defined(__cpp_lib_char8_t) vvv
             using _U8Ty = char;
-#endif // ^^^ !deined(__cpp_lib_char8_t) ^^^
+#endif // ^^^ !defined(__cpp_lib_char8_t) ^^^
             return _Convert_wide_to_narrow<char_traits<_U8Ty>>(__std_code_page::_Utf8, _Text, allocator<_U8Ty>{});
         }
 
