@@ -179,7 +179,7 @@ _MRTIMP2_PURE locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Init(bool _Do_in
         ::new (&classic_locale) locale{ptr};
 #if defined(_M_CEE_PURE)
         locale::_Locimp::_Clocptr = ptr;
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
         const auto mem      = reinterpret_cast<volatile intptr_t*>(&locale::_Locimp::_Clocptr);
         const auto as_bytes = reinterpret_cast<intptr_t>(ptr);
         _Compiler_or_memory_barrier();

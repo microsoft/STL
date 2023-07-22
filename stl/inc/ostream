@@ -1067,14 +1067,14 @@ basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>& _Ostr) 
     }
     return _Ostr;
 }
-#else // ^^^ _CPPRTTI ^^^ / vvv !_CPPRTTI vvv
+#else // ^^^ defined(_CPPRTTI) ^^^ / vvv !defined(_CPPRTTI) vvv
 _EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& emit_on_flush(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
 _EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& noemit_on_flush(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
 _EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
-#endif // ^^^ !_CPPRTTI ^^^
+#endif // ^^^ !defined(_CPPRTTI) ^^^
 #endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Elem, class _Traits>
@@ -1285,7 +1285,7 @@ void println(ostream&, format_string<_Types...>, _Types&&...) = delete; // requi
 
 _EXPORT_STD void vprint_unicode(ostream&, string_view, format_args)    = delete; // requires /GR option
 _EXPORT_STD void vprint_nonunicode(ostream&, string_view, format_args) = delete; // requires /GR option
-#endif // !_CPPRTTI
+#endif // ^^^ !defined(_CPPRTTI) ^^^
 #endif // __cpp_lib_print
 
 _STD_END

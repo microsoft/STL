@@ -360,11 +360,11 @@ public:
         _Lockit_dtor(this);
     }
 
-#else // ^^^ _M_CEE_PURE ^^^ / vvv !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) ^^^ / vvv !defined(_M_CEE_PURE) vvv
     __thiscall _Lockit() noexcept;
     explicit __thiscall _Lockit(int) noexcept; // set the lock
     __thiscall ~_Lockit() noexcept; // clear the lock
-#endif // ^^^ _M_CEE_PURE ^^^
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     static void __cdecl _Lockit_ctor(int) noexcept;
     static void __cdecl _Lockit_dtor(int) noexcept;

@@ -392,10 +392,10 @@ void rethrow_if_nested(const _Ty& _Arg) {
         }
     }
 }
-#else // ^^^ _CPPRTTI ^^^ / vvv !_CPPRTTI vvv
+#else // ^^^ defined(_CPPRTTI) ^^^ / vvv !defined(_CPPRTTI) vvv
 _EXPORT_STD template <class _Ty>
 void rethrow_if_nested(const _Ty&) = delete; // requires /GR option
-#endif // ^^^ !_CPPRTTI ^^^
+#endif // ^^^ !defined(_CPPRTTI) ^^^
 
 _EXPORT_STD class bad_variant_access
     : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I

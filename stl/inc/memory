@@ -1133,10 +1133,10 @@ private:
     virtual void _Delete_this() noexcept {
         _STD terminate();
     }
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
     virtual void _Destroy() noexcept     = 0; // destroy managed resource
     virtual void _Delete_this() noexcept = 0; // destroy self
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
     _Atomic_counter_t _Uses  = 1;
     _Atomic_counter_t _Weaks = 1;
@@ -2052,12 +2052,12 @@ _NODISCARD shared_ptr<_Ty1> dynamic_pointer_cast(shared_ptr<_Ty2>&& _Other) noex
 
     return {};
 }
-#else // ^^^ _CPPRTTI ^^^ / vvv !_CPPRTTI vvv
+#else // ^^^ defined(_CPPRTTI) ^^^ / vvv !defined(_CPPRTTI) vvv
 _EXPORT_STD template <class _Ty1, class _Ty2>
 shared_ptr<_Ty1> dynamic_pointer_cast(const shared_ptr<_Ty2>&) noexcept = delete; // requires /GR option
 _EXPORT_STD template <class _Ty1, class _Ty2>
 shared_ptr<_Ty1> dynamic_pointer_cast(shared_ptr<_Ty2>&&) noexcept = delete; // requires /GR option
-#endif // ^^^ _CPPRTTI ^^^
+#endif // ^^^ !defined(_CPPRTTI) ^^^
 
 #if _HAS_STATIC_RTTI
 _EXPORT_STD template <class _Dx, class _Ty>
