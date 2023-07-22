@@ -1865,11 +1865,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = uniform_int;
 
-        param_type() noexcept /* strengthened */ {
+        param_type() noexcept {
             _Init(0, 9);
         }
 
-        explicit param_type(result_type _Min0, result_type _Max0 = 9) noexcept /* strengthened */ {
+        explicit param_type(result_type _Min0, result_type _Max0 = 9) noexcept {
             _Init(_Min0, _Max0);
         }
 
@@ -1892,6 +1892,7 @@ public:
         _NODISCARD result_type b() const noexcept /* strengthened */ {
             return _Max;
         }
+
         void _Init(_Ty _Min0, _Ty _Max0) noexcept { // set internal state
             _STL_ASSERT(_Min0 <= _Max0, "invalid min and max arguments for uniform_int");
             _Min = _Min0;
@@ -2240,7 +2241,7 @@ public:
             return _Px;
         }
 
-        void _Init(_Ty1 _Px0) noexcept /* strengthened */ { // initialize
+        void _Init(_Ty1 _Px0) noexcept { // initialize
             _STL_ASSERT(0.0 < _Px0 && _Px0 < 1.0, "invalid probability argument for geometric_distribution");
             _Px      = _Px0;
             _Log_1_p = _CSTD log(1 - _Px);
@@ -2728,11 +2729,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = uniform_real;
 
-        param_type() noexcept /* strengthened */ {
+        param_type() noexcept {
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept /* strengthened */ {
+        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept {
             _Init(_Min0, _Max0);
         }
 
