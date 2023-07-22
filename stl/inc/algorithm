@@ -80,6 +80,10 @@ _STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* _First, _Ty* _Last) noexcept {
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
+#define _REQUIRE_CPP17_MUTABLE_RANDOM_ACCESS_ITERATOR(_Iter) \
+    static_assert(_Is_cpp17_random_iter_v<_Iter>,            \
+        "This algorithm requires that mutable iterators be Cpp17RandomAccessIterators or stronger.")
+
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 
 template <class _It>
@@ -581,8 +585,6 @@ _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_exec
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2) noexcept /* terminates */ {
     // return [_First1, _Last1)/[_First2, ...) mismatch
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to{});
 }
 #endif // _HAS_CXX17
@@ -636,8 +638,6 @@ _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_exec
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) noexcept /* terminates */ {
     // return [_First1, _Last1)/[_First2, _Last2) mismatch
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
@@ -3432,6 +3432,8 @@ _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_exec
 _FwdIt2 swap_ranges(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Dest) noexcept /* terminates */ {
     // swap [_First1, _Last1) with [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD swap_ranges(_First1, _Last1, _Dest);
 }
 #endif // _HAS_CXX17
@@ -4055,6 +4057,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Fn, _Enable_if_execution
 void generate(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* terminates */ {
     // replace [_First, _Last) with _Func()
     // not parallelized at present due to unclear parallelism requirements on _Func
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD generate(_First, _Last, _Pass_fn(_Func));
 }
 #endif // _HAS_CXX17
@@ -4418,6 +4421,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD_UNIQUE_ALG _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // remove each satisfying _Pred with previous
     // not parallelized at present, parallelism expected to be feasible in a future release
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD unique(_First, _Last, _Pass_fn(_Pred));
 }
 
@@ -4425,6 +4429,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_
 _NODISCARD_UNIQUE_ALG _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
     // remove each matching previous
     // not parallelized at present, parallelism expected to be feasible in a future release
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD unique(_First, _Last);
 }
 #endif // _HAS_CXX17
@@ -4805,7 +4810,7 @@ _EXPORT_STD template <class _ExPo, class _BidIt, class _FwdIt, _Enable_if_execut
 _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept /* terminates */ {
     // copy reversing elements in [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_BidIt);
+    static_assert(_Is_ranges_bidi_iter_v<_BidIt>, "This algorithm requires bidirectional iterators or stronger.");
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD reverse_copy(_First, _Last, _Dest);
 }
@@ -5498,6 +5503,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_
 _FwdIt shift_left(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) noexcept /* terminates */ {
     // shift [_First, _Last) left by _Pos_to_shift positions
     // not parallelized as benchmarks show it isn't worth it
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD shift_left(_First, _Last, _Pos_to_shift);
 }
 
@@ -5579,6 +5585,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_
 _FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) noexcept /* terminates */ {
     // shift [_First, _Last) right by _Pos_to_shift positions
     // not parallelized as benchmarks show it isn't worth it
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD shift_right(_First, _Last, _Pos_to_shift);
 }
 #endif // _HAS_CXX20
@@ -6121,6 +6128,7 @@ _EXPORT_STD template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution
 _BidIt stable_partition(_ExPo&&, _BidIt _First, _BidIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // partition preserving order of equivalents
     // not parallelized at present, parallelism expected to be feasible in a future release
+    _REQUIRE_CPP17_MUTABLE_BIDIRECTIONAL_ITERATOR(_BidIt);
     return _STD stable_partition(_First, _Last, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX17
@@ -7572,6 +7580,7 @@ _EXPORT_STD template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution
 void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // merge [_First, _Mid) with [_Mid, _Last)
     // not parallelized at present, parallelism expected to be feasible in a future release
+    _REQUIRE_CPP17_MUTABLE_BIDIRECTIONAL_ITERATOR(_BidIt);
     _STD inplace_merge(_First, _Mid, _Last, _Pass_fn(_Pred));
 }
 
@@ -7579,6 +7588,7 @@ _EXPORT_STD template <class _ExPo, class _BidIt, _Enable_if_execution_policy_t<_
 void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /* terminates */ {
     // merge [_First, _Mid) with [_Mid, _Last)
     // not parallelized at present, parallelism expected to be feasible in a future release
+    _REQUIRE_CPP17_MUTABLE_BIDIRECTIONAL_ITERATOR(_BidIt);
     _STD inplace_merge(_First, _Mid, _Last);
 }
 #endif // _HAS_CXX17
@@ -8784,6 +8794,7 @@ _EXPORT_STD template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution
 void partial_sort(_ExPo&&, _RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // order [_First, _Last) up to _Mid
     // parallelism suspected to be infeasible
+    _REQUIRE_CPP17_MUTABLE_RANDOM_ACCESS_ITERATOR(_RanIt);
     return _STD partial_sort(_First, _Mid, _Last, _Pass_fn(_Pred));
 }
 
@@ -8791,6 +8802,7 @@ _EXPORT_STD template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_
 void partial_sort(_ExPo&&, _RanIt _First, _RanIt _Mid, _RanIt _Last) noexcept /* terminates */ {
     // order [_First, _Last) up to _Mid
     // parallelism suspected to be infeasible
+    _REQUIRE_CPP17_MUTABLE_RANDOM_ACCESS_ITERATOR(_RanIt);
     return _STD partial_sort(_First, _Mid, _Last);
 }
 
@@ -9054,6 +9066,7 @@ _EXPORT_STD template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution
 void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // order Nth element
     // not parallelized at present, parallelism expected to be feasible in a future release
+    _REQUIRE_CPP17_MUTABLE_RANDOM_ACCESS_ITERATOR(_RanIt);
     _STD nth_element(_First, _Nth, _Last, _Pass_fn(_Pred));
 }
 
@@ -9061,6 +9074,7 @@ _EXPORT_STD template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_
 void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last) noexcept /* terminates */ {
     // order Nth element
     // not parallelized at present, parallelism expected to be feasible in a future release
+    _REQUIRE_CPP17_MUTABLE_RANDOM_ACCESS_ITERATOR(_RanIt);
     _STD nth_element(_First, _Nth, _Last);
 }
 
@@ -9894,6 +9908,7 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
 /* terminates */ {
     // find smallest and largest elements
     // not parallelized at present, parallelism expected to be feasible in a future release
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD minmax_element(_First, _Last, _Pass_fn(_Pred));
 }
 
@@ -9901,6 +9916,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_
 _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
     // find smallest and largest elements
     // not parallelized at present, parallelism expected to be feasible in a future release
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD minmax_element(_First, _Last);
 }
 
