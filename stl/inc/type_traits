@@ -378,9 +378,9 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 
 #ifdef _M_CEE
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)
-#else // ^^^_M_CEE ^^^ / vvv !_M_CEE vvv
+#else // ^^^ defined(_M_CEE) ^^^ / vvv !defined(_M_CEE) vvv
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // ^^^ !_M_CEE ^^^
+#endif // ^^^ !defined(_M_CEE) ^^^
 
 #if defined(_M_IX86) && !defined(_M_CEE)
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__fastcall, OPT1, OPT2, OPT3)

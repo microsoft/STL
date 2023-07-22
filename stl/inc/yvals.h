@@ -436,7 +436,7 @@ private:
 
 #define _END_LOCINFO() _END_LOCK()
 
-#else // ^^^ _M_CEE ^^^ / vvv !_M_CEE vvv
+#else // ^^^ defined(_M_CEE) ^^^ / vvv !defined(_M_CEE) vvv
 #define _BEGIN_LOCK(_Kind) \
     {                      \
         _STD _Lockit _Lock(_Kind);
@@ -448,7 +448,7 @@ private:
         _Locinfo _VarName;
 
 #define _END_LOCINFO() }
-#endif // ^^^ !_M_CEE ^^^
+#endif // ^^^ !defined(_M_CEE) ^^^
 
 #ifdef _CRTBLD
 
@@ -457,9 +457,9 @@ private:
     [System::Runtime::ConstrainedExecution::ReliabilityContract(                 \
         System::Runtime::ConstrainedExecution::Consistency::WillNotCorruptState, \
         System::Runtime::ConstrainedExecution::Cer::Success)]
-#else // ^^^ _M_CEE ^^^ / vvv !_M_CEE vvv
+#else // ^^^ defined(_M_CEE) ^^^ / vvv !defined(_M_CEE) vvv
 #define _RELIABILITY_CONTRACT
-#endif // ^^^ !_M_CEE ^^^
+#endif // ^^^ !defined(_M_CEE) ^^^
 
 #endif // _CRTBLD
 

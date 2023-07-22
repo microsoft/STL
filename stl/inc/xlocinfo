@@ -372,9 +372,9 @@ public:
 private:
 #ifdef _M_CEE_PURE
     _EmptyLockit _Empty_lock; // to maintain same size
-#else // ^^^ _M_CEE_PURE ^^^ / vvv !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) ^^^ / vvv !defined(_M_CEE_PURE) vvv
     _Lockit _Lock; // thread lock, because global locale is altered
-#endif // ^^^ _M_CEE_PURE ^^^
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     _Yarn<char> _Days; // weekday names
     _Yarn<char> _Months; // month names

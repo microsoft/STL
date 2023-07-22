@@ -33,11 +33,11 @@ _EXTERN_C
 using __std_TP_WORK              = void;
 using __std_TP_CALLBACK_INSTANCE = void;
 using __std_TP_CALLBACK_ENVIRON  = void;
-#else // ^^^ _M_CEE / !_M_CEE vvv
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 struct __std_TP_WORK; // not defined
 struct __std_TP_CALLBACK_INSTANCE; // not defined
 struct __std_TP_CALLBACK_ENVIRON; // not defined
-#endif // _M_CEE
+#endif // ^^^ !defined(_M_CEE) ^^^
 
 using __std_PTP_WORK              = __std_TP_WORK*;
 using __std_PTP_CALLBACK_INSTANCE = __std_TP_CALLBACK_INSTANCE*;
