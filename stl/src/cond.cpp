@@ -35,12 +35,12 @@ _Thrd_result _Cnd_init(_Cnd_t* const pcond) { // initialize
 
     const auto cond = static_cast<_Cnd_t>(_calloc_crt(1, sizeof(_Cnd_internal_imp_t)));
     if (cond == nullptr) {
-        return _Thrd_result::_Thrd_nomem; // report alloc failed
+        return _Thrd_result::_Nomem; // report alloc failed
     }
 
     _Cnd_init_in_situ(cond);
     *pcond = cond;
-    return _Thrd_result::_Thrd_success;
+    return _Thrd_result::_Success;
 }
 
 void _Cnd_destroy(const _Cnd_t cond) { // clean up
@@ -55,12 +55,12 @@ _Thrd_result _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) { // wait until sign
     _Mtx_clear_owner(mtx);
     cond->_get_cv()->wait(cs);
     _Mtx_reset_owner(mtx);
-    return _Thrd_result::_Thrd_success; // TRANSITION, ABI: Always succeeds
+    return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
 // wait until signaled or timeout
 _Thrd_result _Cnd_timedwait(const _Cnd_t cond, const _Mtx_t mtx, const _timespec64* const target) {
-    _Thrd_result res = _Thrd_result::_Thrd_success;
+    _Thrd_result res = _Thrd_result::_Success;
     const auto cs    = &mtx->_Critical_section;
     if (target == nullptr) { // no target time specified, wait on mutex
         _Mtx_clear_owner(mtx);
@@ -73,7 +73,7 @@ _Thrd_result _Cnd_timedwait(const _Cnd_t cond, const _Mtx_t mtx, const _timespec
         if (!cond->_get_cv()->wait_for(cs, _Xtime_diff_to_millis2(target, &now))) { // report timeout
             _Timespec64_get_sys(&now);
             if (_Xtime_diff_to_millis2(target, &now) == 0) {
-                res = _Thrd_result::_Thrd_timedout;
+                res = _Thrd_result::_Timedout;
             }
         }
         _Mtx_reset_owner(mtx);
@@ -83,12 +83,12 @@ _Thrd_result _Cnd_timedwait(const _Cnd_t cond, const _Mtx_t mtx, const _timespec
 
 _Thrd_result _Cnd_signal(const _Cnd_t cond) { // release one waiting thread
     cond->_get_cv()->notify_one();
-    return _Thrd_result::_Thrd_success; // TRANSITION, ABI: Always succeeds
+    return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
 _Thrd_result _Cnd_broadcast(const _Cnd_t cond) { // release all waiting threads
     cond->_get_cv()->notify_all();
-    return _Thrd_result::_Thrd_success; // TRANSITION, ABI: Always succeeds
+    return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
 /*

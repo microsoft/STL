@@ -60,13 +60,13 @@ _Thrd_result _Mtx_init(_Mtx_t* mtx, int type) { // initialize mutex
     _Mtx_t mutex = static_cast<_Mtx_t>(_calloc_crt(1, sizeof(_Mtx_internal_imp_t)));
 
     if (mutex == nullptr) {
-        return _Thrd_result::_Thrd_nomem; // report alloc failed
+        return _Thrd_result::_Nomem; // report alloc failed
     }
 
     _Mtx_init_in_situ(mutex, type);
 
     *mtx = mutex;
-    return _Thrd_result::_Thrd_success;
+    return _Thrd_result::_Success;
 }
 
 void _Mtx_destroy(_Mtx_t mtx) { // destroy mutex
@@ -84,7 +84,7 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
         }
         ++mtx->_Count;
 
-        return _Thrd_result::_Thrd_success;
+        return _Thrd_result::_Success;
     } else { // handle timed or recursive mutex
         int res = WAIT_TIMEOUT;
         if (target == nullptr) { // no target --> plain wait (i.e. infinite timeout)
@@ -137,17 +137,17 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
         switch (res) {
         case WAIT_OBJECT_0:
         case WAIT_ABANDONED:
-            return _Thrd_result::_Thrd_success;
+            return _Thrd_result::_Success;
 
         case WAIT_TIMEOUT:
             if (target == nullptr || (target->tv_sec == 0 && target->tv_nsec == 0)) {
-                return _Thrd_result::_Thrd_busy;
+                return _Thrd_result::_Busy;
             } else {
-                return _Thrd_result::_Thrd_timedout;
+                return _Thrd_result::_Timedout;
             }
 
         default:
-            return _Thrd_result::_Thrd_error;
+            return _Thrd_result::_Error;
         }
     }
 }
@@ -163,7 +163,7 @@ _Thrd_result _Mtx_unlock(_Mtx_t mtx) { // unlock mutex
         _Analysis_assume_lock_held_(*srw_lock);
         ReleaseSRWLockExclusive(srw_lock);
     }
-    return _Thrd_result::_Thrd_success; // TRANSITION, ABI: Always succeeds
+    return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
 _Thrd_result _Mtx_lock(_Mtx_t mtx) { // lock mutex
@@ -183,7 +183,7 @@ _Thrd_result _Mtx_timedlock(_Mtx_t mtx, const _timespec64* xt) { // attempt to l
 
     _THREAD_ASSERT((mtx->_Type & _Mtx_timed) != 0, "timedlock not supported by mutex");
     res = mtx_do_lock(mtx, xt);
-    return res == _Thrd_result::_Thrd_busy ? _Thrd_result::_Thrd_timedout : res;
+    return res == _Thrd_result::_Busy ? _Thrd_result::_Timedout : res;
 }
 
 int _Mtx_current_owns(_Mtx_t mtx) { // test if current thread owns mutex

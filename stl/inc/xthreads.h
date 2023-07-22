@@ -87,7 +87,7 @@ struct _Cnd_internal_imp_t;
 using _Cnd_t = _Cnd_internal_imp_t*;
 #endif // ^^^ !defined(_M_CEE) ^^^
 
-enum class _Thrd_result : int { _Thrd_success, _Thrd_nomem, _Thrd_timedout, _Thrd_busy, _Thrd_error };
+enum class _Thrd_result : int { _Success, _Nomem, _Timedout, _Busy, _Error };
 
 // threads
 _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_detach(_Thrd_t);

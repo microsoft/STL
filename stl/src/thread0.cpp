@@ -38,14 +38,14 @@ static constexpr errc codes[] = {
 // TRANSITION, ABI: preserved for binary compatibility
 [[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_C_error(int code) { // throw error object for C error
     switch (static_cast<_Thrd_result>(code)) { // select the exception
-    case _Thrd_result::_Thrd_nomem:
-    case _Thrd_result::_Thrd_timedout:
+    case _Thrd_result::_Nomem:
+    case _Thrd_result::_Timedout:
         _Throw_Cpp_error(_RESOURCE_UNAVAILABLE_TRY_AGAIN);
 
-    case _Thrd_result::_Thrd_busy:
+    case _Thrd_result::_Busy:
         _Throw_Cpp_error(_DEVICE_OR_RESOURCE_BUSY);
 
-    case _Thrd_result::_Thrd_error:
+    case _Thrd_result::_Error:
         _Throw_Cpp_error(_INVALID_ARGUMENT);
 
     default:

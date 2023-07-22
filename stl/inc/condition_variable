@@ -242,7 +242,7 @@ private:
         const _Thrd_result _Res = _Cnd_timedwait(_Mycnd(), _Ptr->_Mymtx(), _Abs_time);
         _Guard.unlock();
 
-        if (_Res == _Thrd_result::_Thrd_success) {
+        if (_Res == _Thrd_result::_Success) {
             return cv_status::no_timeout;
         } else {
             return cv_status::timeout;
