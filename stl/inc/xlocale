@@ -445,9 +445,9 @@ const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference f
         } else if (_Facet::_Getcat(&_Psave, &_Loc) == static_cast<size_t>(-1)) {
 #if _HAS_EXCEPTIONS
             _Throw_bad_cast(); // lazy disallowed
-#else // _HAS_EXCEPTIONS
+#else
             _CSTD abort(); // lazy disallowed
-#endif // _HAS_EXCEPTIONS
+#endif
         } else { // queue up lazy facet for destruction
             auto _Pfmod = const_cast<locale::facet*>(_Psave);
             unique_ptr<_Facet_base> _Psave_guard(static_cast<_Facet_base*>(_Pfmod));

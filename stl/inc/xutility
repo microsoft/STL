@@ -1358,7 +1358,7 @@ using _Unwrap_enum_t = typename _Unwrap_enum<_Elem>::type;
 #define _DEBUG_ORDER_UNWRAPPED(first, last, pred)
 #define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred)
 
-#else // _ITERATOR_DEBUG_LEVEL < 2
+#else // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 2 vvv
 #define _DEBUG_LT_PRED(pred, x, y)                _Debug_lt_pred(pred, x, y)
 #define _DEBUG_ORDER_UNWRAPPED(first, last, pred) _Debug_order_unchecked(first, last, pred)
 #define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred) \
@@ -1403,7 +1403,7 @@ constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred
         _Debug_order_unchecked(_First, _Last, _Pred);
     }
 }
-#endif // _ITERATOR_DEBUG_LEVEL < 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^
 
 // from <iterator>
 _EXPORT_STD template <class _InIt, class _Diff>

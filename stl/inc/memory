@@ -1229,9 +1229,9 @@ public:
         if (_Typeid == typeid(_Dx)) {
             return const_cast<_Dx*>(_STD addressof(_Mypair._Get_first()));
         }
-#else // _HAS_STATIC_RTTI
+#else // ^^^ _HAS_STATIC_RTTI ^^^ / vvv !_HAS_STATIC_RTTI vvv
         (void) _Typeid;
-#endif // _HAS_STATIC_RTTI
+#endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
         return nullptr;
     }
@@ -1263,9 +1263,9 @@ public:
         if (_Typeid == typeid(_Dx)) {
             return const_cast<_Dx*>(_STD addressof(_Mypair._Get_first()));
         }
-#else // _HAS_STATIC_RTTI
+#else // ^^^ _HAS_STATIC_RTTI ^^^ / vvv !_HAS_STATIC_RTTI vvv
         (void) _Typeid;
-#endif // _HAS_STATIC_RTTI
+#endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
         return nullptr;
     }
@@ -2052,12 +2052,12 @@ _NODISCARD shared_ptr<_Ty1> dynamic_pointer_cast(shared_ptr<_Ty2>&& _Other) noex
 
     return {};
 }
-#else // _CPPRTTI
+#else // ^^^ _CPPRTTI ^^^ / vvv !_CPPRTTI vvv
 _EXPORT_STD template <class _Ty1, class _Ty2>
 shared_ptr<_Ty1> dynamic_pointer_cast(const shared_ptr<_Ty2>&) noexcept = delete; // requires /GR option
 _EXPORT_STD template <class _Ty1, class _Ty2>
 shared_ptr<_Ty1> dynamic_pointer_cast(shared_ptr<_Ty2>&&) noexcept = delete; // requires /GR option
-#endif // _CPPRTTI
+#endif // ^^^ _CPPRTTI ^^^
 
 #if _HAS_STATIC_RTTI
 _EXPORT_STD template <class _Dx, class _Ty>
@@ -2069,10 +2069,10 @@ _NODISCARD _Dx* get_deleter(const shared_ptr<_Ty>& _Sx) noexcept {
 
     return nullptr;
 }
-#else // _HAS_STATIC_RTTI
+#else // ^^^ _HAS_STATIC_RTTI ^^^ / vvv !_HAS_STATIC_RTTI vvv
 _EXPORT_STD template <class _Dx, class _Ty>
 _Dx* get_deleter(const shared_ptr<_Ty>&) noexcept = delete; // requires static RTTI
-#endif // _HAS_STATIC_RTTI
+#endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
 #if _HAS_CXX20
 struct _For_overwrite_tag {
@@ -2763,9 +2763,9 @@ _EXPORT_STD template <class _Ty, class... _Types>
 _NODISCARD_SMART_PTR_ALLOC
 #if _HAS_CXX20
     enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
-#else // _HAS_CXX20
+#else
     shared_ptr<_Ty>
-#endif // _HAS_CXX20
+#endif
     make_shared(_Types&&... _Args) { // make a shared_ptr to non-array object
     const auto _Rx = new _Ref_count_obj2<_Ty>(_STD forward<_Types>(_Args)...);
     shared_ptr<_Ty> _Ret;
@@ -2858,9 +2858,9 @@ _EXPORT_STD template <class _Ty, class _Alloc, class... _Types>
 _NODISCARD_SMART_PTR_ALLOC
 #if _HAS_CXX20
     enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
-#else // _HAS_CXX20
+#else
     shared_ptr<_Ty>
-#endif // _HAS_CXX20
+#endif
     allocate_shared(const _Alloc& _Al, _Types&&... _Args) { // make a shared_ptr to non-array object
     // Note: As of 2019-05-28, this implements the proposed resolution of LWG-3210 (which controls whether
     // allocator::construct sees T or const T when _Ty is const qualified)
@@ -3027,9 +3027,9 @@ public:
     weak_ptr(const weak_ptr<_Ty2>& _Other) noexcept {
 #ifdef _M_CEE_PURE
         constexpr bool _Avoid_expired_conversions = true; // slow, but always safe; avoids error LNK1179
-#else // _M_CEE_PURE
+#else
         constexpr bool _Avoid_expired_conversions = _Must_avoid_expired_conversions_from<_Ty2>;
-#endif // _M_CEE_PURE
+#endif
 
         if constexpr (_Avoid_expired_conversions) {
             this->_Weakly_convert_lvalue_avoiding_expired_conversions(_Other);
@@ -3046,9 +3046,9 @@ public:
     weak_ptr(weak_ptr<_Ty2>&& _Other) noexcept {
 #ifdef _M_CEE_PURE
         constexpr bool _Avoid_expired_conversions = true; // slow, but always safe; avoids error LNK1179
-#else // _M_CEE_PURE
+#else
         constexpr bool _Avoid_expired_conversions = _Must_avoid_expired_conversions_from<_Ty2>;
-#endif // _M_CEE_PURE
+#endif
 
         if constexpr (_Avoid_expired_conversions) {
             this->_Weakly_convert_rvalue_avoiding_expired_conversions(_STD move(_Other));

@@ -67,7 +67,7 @@ _NODISCARD inline unexpected_handler __CRTDECL get_unexpected() noexcept {
 
 _STD_END
 
-#else // _HAS_EXCEPTIONS
+#else // ^^^ _HAS_EXCEPTIONS ^^^ / vvv !_HAS_EXCEPTIONS vvv
 
 _STDEXT_BEGIN
 class exception;
@@ -392,10 +392,10 @@ void rethrow_if_nested(const _Ty& _Arg) {
         }
     }
 }
-#else // _CPPRTTI
+#else // ^^^ _CPPRTTI ^^^ / vvv !_CPPRTTI vvv
 _EXPORT_STD template <class _Ty>
 void rethrow_if_nested(const _Ty&) = delete; // requires /GR option
-#endif // _CPPRTTI
+#endif // ^^^ !_CPPRTTI ^^^
 
 _EXPORT_STD class bad_variant_access
     : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
@@ -411,7 +411,7 @@ protected:
     void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // !_HAS_EXCEPTIONS
+#endif // ^^^!_HAS_EXCEPTIONS ^^^
 };
 
 [[noreturn]] inline void _Throw_bad_variant_access() {

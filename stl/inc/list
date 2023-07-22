@@ -1681,9 +1681,9 @@ public:
 
 #if _HAS_CXX20
         return _Oldsize - _My_data._Mysize;
-#else // _HAS_CXX20
+#else
         (void) _Oldsize;
-#endif // _HAS_CXX20
+#endif
     }
 
     auto unique() { // erase each element matching previous
@@ -1708,9 +1708,9 @@ public:
 
 #if _HAS_CXX20
         return _Oldsize - _Mypair._Myval2._Mysize;
-#else // _HAS_CXX20
+#else
         (void) _Oldsize;
-#endif // _HAS_CXX20
+#endif
     }
 
     void merge(list& _Right) { // merge in elements from _Right, both ordered by operator<

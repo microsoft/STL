@@ -360,11 +360,11 @@ public:
         _Lockit_dtor(this);
     }
 
-#else // _M_CEE_PURE
+#else // ^^^ _M_CEE_PURE ^^^ / vvv !_M_CEE_PURE vvv
     __thiscall _Lockit() noexcept;
     explicit __thiscall _Lockit(int) noexcept; // set the lock
     __thiscall ~_Lockit() noexcept; // clear the lock
-#endif // _M_CEE_PURE
+#endif // ^^^ _M_CEE_PURE ^^^
 
     static void __cdecl _Lockit_ctor(int) noexcept;
     static void __cdecl _Lockit_dtor(int) noexcept;
@@ -393,9 +393,9 @@ private:
 #ifndef _PREPARE_CONSTRAINED_REGIONS
 #ifdef _M_CEE_PURE
 #define _PREPARE_CONSTRAINED_REGIONS 1
-#else // _M_CEE_PURE
+#else 
 #define _PREPARE_CONSTRAINED_REGIONS 0
-#endif // _M_CEE_PURE
+#endif
 #endif // _PREPARE_CONSTRAINED_REGIONS
 
 #if _PREPARE_CONSTRAINED_REGIONS
@@ -421,14 +421,14 @@ private:
     }                                              \
     }
 
-#else // _PREPARE_CONSTRAINED_REGIONS
+#else // ^^^ _PREPARE_CONSTRAINED_REGIONS ^^^ / vvv !_PREPARE_CONSTRAINED_REGIONS vvv
 #define _BEGIN_LOCK(_Kind) \
     {                      \
         _STD _Lockit _Lock(_Kind);
 
 #define _END_LOCK() }
 
-#endif // _PREPARE_CONSTRAINED_REGIONS
+#endif // ^^^ !_PREPARE_CONSTRAINED_REGIONS ^^^
 
 #define _BEGIN_LOCINFO(_VarName) \
     _BEGIN_LOCK(_LOCK_LOCALE)    \
@@ -436,7 +436,7 @@ private:
 
 #define _END_LOCINFO() _END_LOCK()
 
-#else // _M_CEE
+#else // ^^^ _M_CEE ^^^ / vvv !_M_CEE vvv
 #define _BEGIN_LOCK(_Kind) \
     {                      \
         _STD _Lockit _Lock(_Kind);
@@ -448,7 +448,7 @@ private:
         _Locinfo _VarName;
 
 #define _END_LOCINFO() }
-#endif // _M_CEE
+#endif // ^^^ !_M_CEE ^^^
 
 #ifdef _CRTBLD
 
@@ -457,9 +457,9 @@ private:
     [System::Runtime::ConstrainedExecution::ReliabilityContract(                 \
         System::Runtime::ConstrainedExecution::Consistency::WillNotCorruptState, \
         System::Runtime::ConstrainedExecution::Cer::Success)]
-#else // _M_CEE
+#else // ^^^ _M_CEE ^^^ / vvv !_M_CEE vvv
 #define _RELIABILITY_CONTRACT
-#endif // _M_CEE
+#endif // ^^^ !_M_CEE ^^^
 
 #endif // _CRTBLD
 
@@ -476,7 +476,7 @@ private:
 #define _RERAISE  throw
 #define _THROW(x) throw x
 
-#else // _HAS_EXCEPTIONS
+#else // ^^^ _HAS_EXCEPTIONS ^^^ / vvv !_HAS_EXCEPTIONS vvv
 #define _TRY_BEGIN \
     {              \
         if (1) {
@@ -492,13 +492,13 @@ private:
 
 #ifdef _DEBUG
 #define _RAISE(x) _invoke_watson(_CRT_WIDE(#x), __FUNCTIONW__, __FILEW__, __LINE__, 0)
-#else // _DEBUG
+#else
 #define _RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
-#endif // _DEBUG
+#endif
 
 #define _RERAISE
 #define _THROW(x) x._Raise()
-#endif // _HAS_EXCEPTIONS
+#endif // ^^^ !_HAS_EXCEPTIONS ^^^
 _STD_END
 
 #pragma pop_macro("new")

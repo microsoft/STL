@@ -749,23 +749,23 @@
 // termination on exception is not guaranteed. Specify /EHsc (/Wall)
 #if _HAS_EXCEPTIONS
 #define _STL_DISABLED_WARNING_C4577
-#else // _HAS_EXCEPTIONS
+#else
 #define _STL_DISABLED_WARNING_C4577 4577
-#endif // _HAS_EXCEPTIONS
+#endif
 
 // warning C4984: 'if constexpr' is a C++17 language extension
 #if !_HAS_CXX17
 #define _STL_DISABLED_WARNING_C4984 4984
-#else // !_HAS_CXX17
+#else
 #define _STL_DISABLED_WARNING_C4984
-#endif // !_HAS_CXX17
+#endif
 
 // warning C5053: support for 'explicit(<expr>)' in C++17 and earlier is a vendor extension
 #if !_HAS_CXX20
 #define _STL_DISABLED_WARNING_C5053 5053
-#else // !_HAS_CXX20
+#else
 #define _STL_DISABLED_WARNING_C5053
-#endif // !_HAS_CXX20
+#endif
 
 #ifndef _STL_EXTRA_DISABLED_WARNINGS
 #define _STL_EXTRA_DISABLED_WARNINGS
@@ -829,17 +829,17 @@
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
 // clang-format on
-#else // __clang__
+#else // ^^^ __clang__ ^^^ / vvv !__clang__ vvv
 #define _STL_DISABLE_CLANG_WARNINGS
-#endif // __clang__
+#endif // ^^^ !__clang__ ^^^
 #endif // _STL_DISABLE_CLANG_WARNINGS
 
 #ifndef _STL_RESTORE_CLANG_WARNINGS
 #ifdef __clang__
 #define _STL_RESTORE_CLANG_WARNINGS _Pragma("clang diagnostic pop")
-#else // __clang__
+#else // ^^^ __clang__ ^^^ / vvv !__clang__ vvv
 #define _STL_RESTORE_CLANG_WARNINGS
-#endif // __clang__
+#endif // ^^^ !__clang__ ^^^
 #endif // _STL_RESTORE_CLANG_WARNINGS
 
 // clang-format off
@@ -936,9 +936,9 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.36 or ne
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
 #define _INLINE_VAR inline
-#else // _HAS_CXX17
+#else
 #define _INLINE_VAR
-#endif // _HAS_CXX17
+#endif
 
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
 #ifndef _HAS_AUTO_PTR_ETC
@@ -983,13 +983,13 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #if _HAS_TR1_NAMESPACE
 #ifdef _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
 #define _DEPRECATE_TR1_NAMESPACE
-#else // _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
+#else // ^^^ _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING ^^^ / vvv !_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING vvv
 #define _DEPRECATE_TR1_NAMESPACE                                                                                  \
     [[deprecated(                                                                                                 \
         "warning STL4002: "                                                                                       \
         "The non-Standard std::tr1 namespace and TR1-only machinery are deprecated and will be REMOVED. You can " \
         "define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING to suppress this warning.")]]
-#endif // _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
+#endif // ^^^ !_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING ^^^
 #endif // _HAS_TR1_NAMESPACE
 
 // STL4003 was "The non-Standard std::identity struct is deprecated and will be REMOVED."
@@ -1844,9 +1844,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
 #elif _HAS_CXX17
 #define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
-#else // _HAS_CXX17
+#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
 #define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
-#endif // _HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^
 
 #if _HAS_CXX23
 #define __cpp_lib_constexpr_memory 202202L // P2273R3 constexpr unique_ptr
@@ -1880,9 +1880,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
-#else // _HAS_CXX20
+#else
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
-#endif // _HAS_CXX20
+#endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right

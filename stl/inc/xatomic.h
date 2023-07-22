@@ -90,7 +90,7 @@ _EXPORT_STD inline constexpr memory_order memory_order_acquire = memory_order::a
 _EXPORT_STD inline constexpr memory_order memory_order_release = memory_order::release;
 _EXPORT_STD inline constexpr memory_order memory_order_acq_rel = memory_order::acq_rel;
 _EXPORT_STD inline constexpr memory_order memory_order_seq_cst = memory_order::seq_cst;
-#else // _HAS_CXX20
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
 enum memory_order {
     memory_order_relaxed,
     memory_order_consume,
@@ -99,7 +99,7 @@ enum memory_order {
     memory_order_acq_rel,
     memory_order_seq_cst
 };
-#endif // _HAS_CXX20
+#endif // ^^^ _HAS_CXX20 ^^^
 
 using _Atomic_counter_t = unsigned long;
 

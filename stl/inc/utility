@@ -906,13 +906,13 @@ using _With_reference = _Ty&;
 
 template <class _Ty>
 concept _Can_reference = requires { typename _With_reference<_Ty>; };
-#else // __cpp_lib_concepts
+#else // ^^^__cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
 template <class _Ty, class = void>
 inline constexpr bool _Can_reference = false;
 
 template <class _Ty>
 inline constexpr bool _Can_reference<_Ty, void_t<_Ty&>> = true;
-#endif // __cpp_lib_concepts
+#endif // ^^^__cpp_lib_concepts ^^^
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23

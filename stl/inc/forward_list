@@ -1228,9 +1228,9 @@ public:
 
 #if _HAS_CXX20
         return _Removed;
-#else // _HAS_CXX20
+#else
         (void) _Removed;
-#endif // _HAS_CXX20
+#endif
     }
 
     auto unique() { // erase each element matching previous
@@ -1258,9 +1258,9 @@ public:
 
 #if _HAS_CXX20
         return _Removed;
-#else // _HAS_CXX20
+#else
         (void) _Removed;
-#endif // _HAS_CXX20
+#endif
     }
 
     void merge(forward_list& _Right) { // merge in elements from _Right, both ordered by operator<

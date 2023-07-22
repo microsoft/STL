@@ -35,7 +35,7 @@ __PURE_APPDOMAIN_GLOBAL extern wistream* _Ptr_wcin;
 __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcout;
 __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcerr;
 __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wclog;
-#else // _M_CEE_PURE
+#else // ^^^ _M_CEE_PURE ^^^ / vvv !_M_CEE_PURE vvv
 _EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT istream cin;
 _EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT ostream cout;
 _EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT ostream cerr;
@@ -65,7 +65,7 @@ private:
 };
 #endif // _CRTBLD
 
-#endif // _M_CEE_PURE
+#endif // ^^^ !_M_CEE_PURE ^^^
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

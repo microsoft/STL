@@ -389,9 +389,9 @@ public:
     void _Compat(const _Deque_const_iterator& _Right) const noexcept { // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
-#else // _ITERATOR_DEBUG_LEVEL == 0
+#else
         _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "deque iterators incompatible");
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif
     }
 
     void _Setcont(const _Mydeque* _Pdeque) noexcept { // set container pointer
@@ -1134,7 +1134,7 @@ public:
             }
         }
 
-#else // _ITERATOR_DEBUG_LEVEL == 2
+#else // ^^^_ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL < 2 vvv
         size_type _Block = _Getblock(_Myoff());
         _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
         if (--_Mysize() == 0) {
@@ -1142,7 +1142,7 @@ public:
         } else {
             ++_Myoff();
         }
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
     }
 
 private:
@@ -1203,14 +1203,14 @@ public:
             }
         }
 
-#else // _ITERATOR_DEBUG_LEVEL == 2
+#else // ^^^_ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL < 2 vvv
         size_type _Newoff = _Myoff() + _Mysize() - 1;
         size_type _Block  = _Getblock(_Newoff);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
         if (--_Mysize() == 0) {
             _Myoff() = 0;
         }
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
     }
 
 private:
@@ -1414,10 +1414,10 @@ public:
         auto _Count = static_cast<size_type>(_Last - _First);
         bool _Moved = _Off > 0 && _Off + _Count < _Mysize();
 
-#else // _ITERATOR_DEBUG_LEVEL == 2
+#else // ^^^_ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL < 2 vvv
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
 
         if (_Count == 0) {
             return _First;

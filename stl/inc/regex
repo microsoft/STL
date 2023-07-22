@@ -41,19 +41,17 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _REGEX_MAX_STACK_COUNT
 #ifdef _WIN64
 #define _REGEX_MAX_STACK_COUNT 600L // set to 0 to disable
-#else // _WIN64
+#else
 #define _REGEX_MAX_STACK_COUNT 1000L // set to 0 to disable
-#endif // _WIN64
+#endif
 #endif // _REGEX_MAX_STACK_COUNT
 
 #ifndef _ENHANCED_REGEX_VISUALIZER
-
 #ifdef _DEBUG
 #define _ENHANCED_REGEX_VISUALIZER 1
-
-#else // _DEBUG
+#else
 #define _ENHANCED_REGEX_VISUALIZER 0
-#endif // _DEBUG
+#endif
 #endif // _ENHANCED_REGEX_VISUALIZER
 
 _STD_BEGIN
@@ -1872,9 +1870,9 @@ public:
     basic_regex(const basic_regex& _Right)
 #if _ENHANCED_REGEX_VISUALIZER
         : _Rep(nullptr), _Traits(_Right._Traits), _Visualization(_Right._Visualization)
-#else // _ENHANCED_REGEX_VISUALIZER
+#else
         : _Rep(nullptr), _Traits(_Right._Traits)
-#endif // _ENHANCED_REGEX_VISUALIZER
+#endif
     { // construct copy of _Right
         _Reset(_Right._Rep);
     }

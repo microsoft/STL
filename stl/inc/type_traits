@@ -378,10 +378,9 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 
 #ifdef _M_CEE
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)
-
-#else // _M_CEE
+#else // ^^^_M_CEE ^^^ / vvv !_M_CEE vvv
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // _M_CEE
+#endif // ^^^ !_M_CEE ^^^
 
 #if defined(_M_IX86) && !defined(_M_CEE)
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__fastcall, OPT1, OPT2, OPT3)
@@ -393,11 +392,10 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 #ifdef _M_IX86
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)  FUNC(__stdcall, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__thiscall, OPT1, OPT2, OPT3)
-
-#else // _M_IX86
+#else // ^^^ !_M_IX86 ^^^ / vvv _M_CEE vvv
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // _M_IX86
+#endif // ^^^ !_M_IX86 ^^^
 
 #if ((defined(_M_IX86) && _M_IX86_FP >= 2) || defined(_M_X64)) && !defined(_M_CEE)
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__vectorcall, OPT1, OPT2, OPT3)
@@ -428,9 +426,9 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
     _NON_MEMBER_CALL_CV_REF(FUNC, )            \
     _NON_MEMBER_CALL_CV_REF(FUNC, noexcept)
-#else // __cpp_noexcept_function_type
+#else // ^^^ __cpp_noexcept_function_type ^^^ / vvv !__cpp_noexcept_function_type vvv
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _NON_MEMBER_CALL_CV_REF(FUNC, )
-#endif // __cpp_noexcept_function_type
+#endif // ^^^ !__cpp_noexcept_function_type ^^^
 
 #define _MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)      \
@@ -455,9 +453,9 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 #define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
     _MEMBER_CALL_CV_REF(FUNC, )            \
     _MEMBER_CALL_CV_REF(FUNC, noexcept)
-#else // __cpp_noexcept_function_type
+#else // ^^^ __cpp_noexcept_function_type ^^^ / vvv !__cpp_noexcept_function_type vvv
 #define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _MEMBER_CALL_CV_REF(FUNC, )
-#endif // __cpp_noexcept_function_type
+#endif // ^^^ !__cpp_noexcept_function_type ^^^
 
 #ifdef __cpp_noexcept_function_type
 #define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
@@ -485,7 +483,7 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
     CLASS(const&& noexcept)                  \
     CLASS(volatile&& noexcept)               \
     CLASS(const volatile&& noexcept)
-#else // __cpp_noexcept_function_type
+#else // ^^^ __cpp_noexcept_function_type ^^^ / vvv !__cpp_noexcept_function_type vvv
 #define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
     CLASS(_EMPTY_ARGUMENT)                   \
     CLASS(const)                             \
@@ -499,7 +497,7 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
     CLASS(const&&)                           \
     CLASS(volatile&&)                        \
     CLASS(const volatile&&)
-#endif // __cpp_noexcept_function_type
+#endif // ^^^ !__cpp_noexcept_function_type ^^^
 
 template <class... _Types>
 struct _Arg_types {}; // provide argument_type, etc. when sizeof...(_Types) is 1 or 2

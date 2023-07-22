@@ -2644,9 +2644,9 @@ public:
         // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
-#else // _ITERATOR_DEBUG_LEVEL == 0
+#else
         _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "vector<bool> iterators incompatible");
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif
     }
 
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -3407,9 +3407,9 @@ public:
         _STD copy(_Next_iter(_Where), end(), _Where);
         _Orphan_range(static_cast<size_type>(_Off), this->_Mysize);
 
-#else // _ITERATOR_DEBUG_LEVEL == 2
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL < 2 vvv
         _STD copy(_Next_iter(_Where), end(), _Where);
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
 
         _Trim(this->_Mysize - 1);
         return begin() + _Off;
@@ -3429,10 +3429,10 @@ public:
             _Orphan_range(_Newsize, this->_Mysize);
             _Trim(_Newsize);
 
-#else // _ITERATOR_DEBUG_LEVEL == 2
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL < 2 vvv
             iterator _Next = _STD copy(_Last, end(), _First);
             _Trim(static_cast<size_type>(_Next - begin()));
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
         }
         return begin() + _Off;
     }
