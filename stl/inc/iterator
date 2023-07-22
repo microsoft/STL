@@ -135,7 +135,7 @@ public:
 #else // ^^^ implementing Ranges / no Ranges vvv
     using difference_type = void;
     using _Wrapped_iter   = typename _Container::iterator;
-#endif // ^^^ no Ranges ^^^ 
+#endif // ^^^ no Ranges ^^^
 
     _CONSTEXPR20 insert_iterator(_Container& _Cont, _Wrapped_iter _Where)
         : container(_STD addressof(_Cont)), iter(_STD move(_Where)) {}
