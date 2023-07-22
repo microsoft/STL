@@ -88,7 +88,7 @@ static unsigned int _Filesys_code_page() { // determine appropriate code page
     } else {
         return CP_OEMCP;
     }
-#endif // ^^^ !defined(_ONECORE) ^^^ 
+#endif // ^^^ !defined(_ONECORE) ^^^
 }
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _To_wide(const char* _Bsrc, wchar_t* _Wdest) {
