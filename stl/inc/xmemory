@@ -123,9 +123,9 @@ _STL_INTERNAL_STATIC_ASSERT(_Is_pow_2(_Big_allocation_alignment));
 
 #ifdef _DEBUG
 _INLINE_VAR constexpr size_t _Non_user_size = 2 * sizeof(void*) + _Big_allocation_alignment - 1;
-#else // ^^^ _DEBUG ^^^ / vvv !_DEBUG vvv
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 _INLINE_VAR constexpr size_t _Non_user_size           = sizeof(void*) + _Big_allocation_alignment - 1;
-#endif // ^^^ !_DEBUG ^^^
+#endif // ^^^ !defined(_DEBUG) ^^^
 
 #ifdef _WIN64
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
@@ -167,9 +167,9 @@ inline void _Adjust_manually_vector_aligned(void*& _Ptr, size_t& _Bytes) {
     // in range [_Min_back_shift, _Non_user_size]
 #ifdef _DEBUG
     constexpr uintptr_t _Min_back_shift = 2 * sizeof(void*);
-#else // ^^^ _DEBUG / !_DEBUG vvv
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
     constexpr uintptr_t _Min_back_shift = sizeof(void*);
-#endif // _DEBUG
+#endif //  ^^^ !defined(_DEBUG)
     const uintptr_t _Back_shift = reinterpret_cast<uintptr_t>(_Ptr) - _Ptr_container;
     _STL_VERIFY(_Back_shift >= _Min_back_shift && _Back_shift <= _Non_user_size, "invalid argument");
     _Ptr = reinterpret_cast<void*>(_Ptr_container);

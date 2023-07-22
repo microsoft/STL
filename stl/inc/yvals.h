@@ -212,9 +212,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifdef _DEBUG
 #define _STL_ASSERT(cond, mesg) _STL_VERIFY(cond, mesg)
-#else // ^^^ _DEBUG / !_DEBUG vvv
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _STL_ASSERT(cond, mesg) _Analysis_assume_(cond)
-#endif // _DEBUG
+#endif // ^^^ !defined(_DEBUG) ^^^
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
 #define _STL_INTERNAL_CHECK(...) _STL_VERIFY(__VA_ARGS__, "STL internal check: " #__VA_ARGS__)
@@ -225,9 +225,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
 #ifdef _DEBUG
 #define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 1
-#else // ^^^ _DEBUG / !_DEBUG vvv
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 0
-#endif // _DEBUG
+#endif // ^^^ !defined(_DEBUG) ^^^
 #endif // _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
 
 #if _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
