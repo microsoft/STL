@@ -25,9 +25,8 @@ struct range_u {
     range_u(uint32_t v) : from(v), to(v) {}
 };
 
-// The current impl rely on all unicode not exceeding max_u.
-// TODO maybe too wasteful.
-const uint32_t max_u = 0x7fffff; // 838'8607
+// The largest possible unicode won't exceed max_u.
+const uint32_t max_u = 0x1f'ffff;
 using table_u        = std::vector<bool>; // true: wide
 table_u make_table() {
     return table_u(max_u + 1, false);
@@ -44,21 +43,26 @@ void fill_range(table_u& table, const ::range_u rng, bool iswide) {
 // For `_Width_estimate_intervals` in <format>.
 void print_intervals(const table_u& table) {
     using namespace std;
-    bool last = table[0];
-    cout << endl << "{ ";
+    cout << endl;
+    const int perline = 12;
+    int c             = 0;
+    bool last         = table[0];
     for (uint32_t u = 0; u <= max_u; u++) {
         if (table[u] != last) {
             cout << "0x" << hex << uppercase << u << "u, ";
+            if (++c == perline) {
+                c = 0;
+                cout << endl;
+            }
         }
         last = table[u];
     }
-    cout << "}";
+    cout << endl;
 }
 
-// C++20.
-table_u get_old_width_table() {
+table_u get_width_table_cpp20() {
     using namespace std;
-    const vector<range_u> std_wide_ranges_old{
+    const vector<range_u> std_wide_ranges_cpp20{
         {0x1100, 0x115F},
         {0x2329, 0x232A},
         {0x2E80, 0x303E},
@@ -75,16 +79,15 @@ table_u get_old_width_table() {
         {0x30000, 0x3FFFD},
     };
     table_u table = make_table();
-    for (const range_u rng : std_wide_ranges_old) {
+    for (const range_u rng : std_wide_ranges_cpp20) {
         fill_range(table, rng, true);
     }
     return table;
 }
 
-// Read data from:
-// https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
+// Read data from: https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
 // The content in `source` should be the same as this file, and should not contain a BOM.
-table_u consult_database(std::istream& source) {
+table_u read_from_database(std::istream& source) {
     using namespace std;
 
     table_u table = make_table();
@@ -97,7 +100,7 @@ table_u consult_database(std::istream& source) {
     }
 
     // Read explicitly assigned ranges.
-    auto is_wide = [](const string& str) {
+    auto is_wide = [](const string& str) -> bool {
         if (str == "W" || str == "F") {
             return true;
         } else {
@@ -138,14 +141,13 @@ table_u consult_database(std::istream& source) {
     return table;
 }
 
-// C++23.
-table_u get_new_width_table(std::istream& source) {
+table_u get_width_table_cpp23(std::istream& source) {
     using namespace std;
-    table_u table = consult_database(source);
+    table_u table = read_from_database(source);
 
-    // Override with ranges specified by the standard.
-    const vector<range_u> std_wide_ranges_new{{0x4DC0, 0x4DFF}, {0x1F300, 0x1F5FF}, {0x1F900, 0x1F9FF}};
-    for (const range_u rng : std_wide_ranges_new) {
+    // Override with ranges specified by the C++ standard.
+    const vector<range_u> std_wide_ranges_cpp23{{0x4DC0, 0x4DFF}, {0x1F300, 0x1F5FF}, {0x1F900, 0x1F9FF}};
+    for (const range_u rng : std_wide_ranges_cpp23) {
         fill_range(table, rng, true);
     }
 
@@ -154,7 +156,7 @@ table_u get_new_width_table(std::istream& source) {
 
 // Confirm that we get the same result as in the annex in
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2675r1.pdf
-void compare_with_old(const table_u& table /*gotten from get_new_width_table*/) {
+void compare_with_cpp20(const table_u& table /*gotten from get_width_table_cpp23*/) {
     using namespace std;
 
     auto print_clusters = [](const table_u& table) {
@@ -175,7 +177,7 @@ void compare_with_old(const table_u& table /*gotten from get_new_width_table*/) 
         }
     };
 
-    const table_u old_table = get_old_width_table();
+    const table_u old_table = get_width_table_cpp20();
     table_u diff_table      = make_table();
     cout << endl;
     cout << "Was 1, now 2:\n";
@@ -186,7 +188,7 @@ void compare_with_old(const table_u& table /*gotten from get_new_width_table*/) 
     }
     print_clusters(diff_table);
 
-    diff_table = make_table(); // set back to false.
+    diff_table = make_table(); // Reset all bits.
     cout << "\nWas 2, now 1:\n";
     for (uint32_t u = 0; u <= max_u; u++) {
         if (old_table[u] && !table[u]) {
@@ -197,14 +199,17 @@ void compare_with_old(const table_u& table /*gotten from get_new_width_table*/) 
 }
 
 int main() {
-    // print_intervals(get_old_width_table());
-    // { 0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u,
-    //   0xFE10u, 0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u,
-    //   0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu, }
+    // print_intervals(get_width_table_cpp20());
+    //  0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u,
+    //  0xFE10u, 0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u,
+    //  0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu,
+
     std::string source_path;
     std::getline(std::cin, source_path);
     std::ifstream source(source_path);
-    table_u new_table = get_new_width_table(source);
-    print_intervals(new_table);
-    // compare_with_old(new_table);
+    table_u table = get_width_table_cpp23(source);
+    print_intervals(table);
+    compare_with_cpp20(table);
+
+    return 0;
 }
