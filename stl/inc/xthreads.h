@@ -9,6 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <climits>
+#include <type_traits>
 #include <xtimec.h>
 
 #pragma pack(push, _CRT_PACKING)
@@ -25,40 +26,64 @@ struct _Thrd_t { // thread identifier for Win32
     _Thrd_id_t _Id;
 };
 
-// Size and alignment for _Mtx_internal_imp_t and _Cnd_internal_imp_t
+using _Smtx_t = void*;
+
+struct _Stl_critical_section {
+    void* _Unused       = nullptr; // TRANSITION, ABI: was the vptr
+    _Smtx_t _M_srw_lock = nullptr;
+};
+
+struct _Mtx_internal_imp_t {
 #ifdef _CRT_WINDOWS
 #ifdef _WIN64
-_INLINE_VAR constexpr size_t _Mtx_internal_imp_size      = 32;
-_INLINE_VAR constexpr size_t _Mtx_internal_imp_alignment = 8;
+    static constexpr size_t _Critical_section_size = 16;
+#else // _WIN64
+    static constexpr size_t _Critical_section_size = 8;
+#endif // _WIN64
+#else // _CRT_WINDOWS
+#ifdef _WIN64
+    static constexpr size_t _Critical_section_size = 64;
+#else // _WIN64
+    static constexpr size_t _Critical_section_size = 36;
+#endif // _WIN64
+#endif // _CRT_WINDOWS
+
+    static constexpr size_t _Critical_section_align = alignof(void*);
+
+    int _Type{};
+    union {
+        _Stl_critical_section _Critical_section{};
+        _STD _Aligned_storage_t<_Critical_section_size, _Critical_section_align> _Cs_storage;
+    };
+    long _Thread_id{};
+    int _Count{};
+};
+
+// Size and alignment for _Cnd_internal_imp_t
+#ifdef _CRT_WINDOWS
+#ifdef _WIN64
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 16;
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 8;
 #else // _WIN64
-_INLINE_VAR constexpr size_t _Mtx_internal_imp_size      = 20;
-_INLINE_VAR constexpr size_t _Mtx_internal_imp_alignment = 4;
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 8;
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 4;
 #endif // _WIN64
 #else // _CRT_WINDOWS
 #ifdef _WIN64
-_INLINE_VAR constexpr size_t _Mtx_internal_imp_size      = 80;
-_INLINE_VAR constexpr size_t _Mtx_internal_imp_alignment = 8;
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 72;
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 8;
 #else // _WIN64
-_INLINE_VAR constexpr size_t _Mtx_internal_imp_size      = 48;
-_INLINE_VAR constexpr size_t _Mtx_internal_imp_alignment = 4;
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 40;
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 4;
 #endif // _WIN64
 #endif // _CRT_WINDOWS
 
-#ifdef _M_CEE // avoid warning LNK4248: unresolved typeref token for '_Mtx_internal_imp_t'; image may not run
-using _Mtx_t = void*;
+using _Mtx_t = _Mtx_internal_imp_t*;
+
+#ifdef _M_CEE // avoid warning LNK4248: unresolved typeref token for '_Cnd_internal_imp_t'; image may not run
 using _Cnd_t = void*;
 #else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
-struct _Mtx_internal_imp_t;
 struct _Cnd_internal_imp_t;
-using _Mtx_t = _Mtx_internal_imp_t*;
 using _Cnd_t = _Cnd_internal_imp_t*;
 #endif // ^^^ !defined(_M_CEE) ^^^
 
@@ -96,7 +121,6 @@ _CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t);
 
 // shared mutex
 // these declarations must be in sync with those in sharedmutex.cpp
-using _Smtx_t = void*;
 void __cdecl _Smtx_lock_exclusive(_Smtx_t*);
 void __cdecl _Smtx_lock_shared(_Smtx_t*);
 int __cdecl _Smtx_try_lock_exclusive(_Smtx_t*);
