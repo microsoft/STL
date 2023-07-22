@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // The following code reads data from https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
-// and generates interval table for `_Width_estimate_intervals` in <format>.
+// and generates data for `_Width_estimate_intervals` in <format>.
 
 #include <charconv>
 #include <fstream>
@@ -25,6 +25,8 @@ struct range_u {
     range_u(uint32_t v) : from(v), to(v) {}
 };
 
+// The current impl rely on all unicode not exceeding max_u.
+// TODO maybe too wasteful.
 const uint32_t max_u = 0x7fffff; // 838'8607
 using table_u        = std::vector<bool>; // true: wide
 table_u make_table() {
@@ -81,6 +83,7 @@ table_u get_old_width_table() {
 
 // Read data from:
 // https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
+// The content in `source` should be the same as this file, and should not contain a BOM.
 table_u consult_database(std::istream& source) {
     using namespace std;
 
