@@ -1047,7 +1047,7 @@ using _Iter_value_t = iter_value_t<_Iter>;
 template <class _Iter>
 using _Iter_diff_t = iter_difference_t<_Iter>;
 
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Iter>
 using _Iter_ref_t = typename iterator_traits<_Iter>::reference;
 
@@ -1059,7 +1059,7 @@ using _Iter_diff_t = typename iterator_traits<_Iter>::difference_type;
 
 template <class _Ty>
 using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 template <class... _Iters>
 using _Common_diff_t = common_type_t<_Iter_diff_t<_Iters>...>;
@@ -1494,9 +1494,9 @@ public:
         conditional_t<random_access_iterator<_BidIt>, random_access_iterator_tag, bidirectional_iterator_tag>;
     using iterator_category = conditional_t<derived_from<_Iter_cat_t<_BidIt>, random_access_iterator_tag>,
         random_access_iterator_tag, _Iter_cat_t<_BidIt>>;
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     using iterator_category = _Iter_cat_t<_BidIt>;
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
     using value_type      = _Iter_value_t<_BidIt>;
     using difference_type = _Iter_diff_t<_BidIt>;
     using pointer         = typename iterator_traits<_BidIt>::pointer;
@@ -4023,10 +4023,10 @@ public:
     using iterator_concept = decltype(_Get_iter_concept());
 
     using reference = iter_rvalue_reference_t<_Iter>;
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     using reference =
         conditional_t<is_reference_v<_Iter_ref_t<_Iter>>, remove_reference_t<_Iter_ref_t<_Iter>>&&, _Iter_ref_t<_Iter>>;
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     _CONSTEXPR17 move_iterator() = default;
 
@@ -4061,23 +4061,23 @@ public:
     _NODISCARD constexpr iterator_type base() && noexcept(is_nothrow_move_constructible_v<_Iter>) /* strengthened */ {
         return _STD move(_Current);
     }
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     _NODISCARD _CONSTEXPR17 iterator_type base() const
         noexcept(is_nothrow_copy_constructible_v<_Iter>) /* strengthened */ {
         return _Current;
     }
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     _NODISCARD _CONSTEXPR17 reference operator*() const
 #ifdef __cpp_lib_concepts
         noexcept(noexcept(_RANGES iter_move(_Current))) /* strengthened */ {
         return _RANGES iter_move(_Current);
     }
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
         noexcept(noexcept(static_cast<reference>(*_Current))) /* strengthened */ {
         return static_cast<reference>(*_Current);
     }
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW _NODISCARD _CONSTEXPR17 pointer operator->() const
         noexcept(is_nothrow_copy_constructible_v<_Iter>) /* strengthened */ {
@@ -4154,10 +4154,10 @@ public:
 #ifdef __cpp_lib_concepts
         noexcept(noexcept(_RANGES iter_move(_Current + _Off))) /* strengthened */ {
         return _RANGES iter_move(_Current + _Off);
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
         noexcept(noexcept(_STD move(_Current[_Off]))) /* strengthened */ {
         return _STD move(_Current[_Off]);
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
     }
 
 #ifdef __cpp_lib_concepts

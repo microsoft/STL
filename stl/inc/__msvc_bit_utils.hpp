@@ -89,9 +89,9 @@ _NODISCARD int _Countl_zero_lzcnt(const _Ty _Val) noexcept {
         } else {
             return _Countl_zero_lzcnt(_High);
         }
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
         return static_cast<int>(__lzcnt64(_Val));
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
     }
 }
 
@@ -115,11 +115,11 @@ _NODISCARD int _Countl_zero_bsr(const _Ty _Val) noexcept {
         if (!_BitScanReverse(&_Result, _Low)) {
             return _Digits;
         }
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
         if (!_BitScanReverse64(&_Result, _Val)) {
             return _Digits;
         }
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
     }
     return static_cast<int>(_Digits - 1 - _Result);
 }
@@ -251,9 +251,9 @@ _NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
         } else {
             return static_cast<int>(_TZCNT_U32(_Low));
         }
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
         return static_cast<int>(_TZCNT_U64(_Val));
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
     }
 }
 
@@ -286,11 +286,11 @@ _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
         } else {
             return static_cast<int>(_Result + 32);
         }
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
         if (!_BitScanForward64(&_Result, _Val)) {
             return _Digits;
         }
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
     }
     return static_cast<int>(_Result);
 }
@@ -329,9 +329,9 @@ _NODISCARD int _Unchecked_x86_x64_popcount(const _Ty _Val) noexcept {
     } else {
 #ifdef _M_IX86
         return static_cast<int>(__popcnt(_Val >> 32) + __popcnt(static_cast<unsigned int>(_Val)));
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
         return static_cast<int>(__popcnt64(_Val));
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
     }
 }
 

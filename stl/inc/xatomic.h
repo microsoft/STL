@@ -99,7 +99,7 @@ enum memory_order {
     memory_order_acq_rel,
     memory_order_seq_cst
 };
-#endif // ^^^ _HAS_CXX20 ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 using _Atomic_counter_t = unsigned long;
 
