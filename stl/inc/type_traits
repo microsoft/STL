@@ -2314,10 +2314,10 @@ _NODISCARD constexpr bool _Bitmask_includes_all(_Bitmask _Left, _Bitmask _Elemen
 #if defined(_WIN64)
 _INLINE_VAR constexpr size_t _FNV_offset_basis = 14695981039346656037ULL;
 _INLINE_VAR constexpr size_t _FNV_prime        = 1099511628211ULL;
-#else // defined(_WIN64)
+#else // ^^^ defined(_WIN64) ^^^ / vvv !defined(_WIN64) vvv
 _INLINE_VAR constexpr size_t _FNV_offset_basis = 2166136261U;
 _INLINE_VAR constexpr size_t _FNV_prime        = 16777619U;
-#endif // defined(_WIN64)
+#endif // ^^^ !defined(_WIN64) ^^^
 
 _NODISCARD inline size_t _Fnv1a_append_bytes(size_t _Val, const unsigned char* const _First,
     const size_t _Count) noexcept { // accumulate range [_First, _First + _Count) into partial FNV-1a hash _Val
