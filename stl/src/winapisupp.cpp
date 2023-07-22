@@ -117,7 +117,7 @@ extern "C" int __crt_IsPackagedAppHelper() {
     return 0;
 }
 
-#endif // defined _ONECORE
+#endif // ^^^ !defined _ONECORE ^^^
 #endif // defined _CRT_APP
 
 // __crtIsPackagedApp() - Check if the current app is a Packaged app
