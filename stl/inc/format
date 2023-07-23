@@ -1010,8 +1010,8 @@ _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
 
         return 1;
     } else {
-        int _Upper_bound_index =
-            upper_bound(_Width_estimate_intervals, end(_Width_estimate_intervals), _Ch) - _Width_estimate_intervals;
+        int _Upper_bound_index = static_cast<int>(
+            upper_bound(_Width_estimate_intervals, end(_Width_estimate_intervals), _Ch) - _Width_estimate_intervals);
         return 1 + (_Upper_bound_index & 1);
     }
 }
