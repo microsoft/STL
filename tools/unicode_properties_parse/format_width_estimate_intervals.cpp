@@ -59,7 +59,7 @@ void fill_range(table_u& table, const ::range_u rng, bool is_wide) {
     }
 }
 
-table_u get_width_table_cpp20() {
+table_u get_table_cpp20() {
     using namespace std;
     const vector<range_u> std_wide_ranges_cpp20{
         {0x1100, 0x115F},
@@ -84,8 +84,8 @@ table_u get_width_table_cpp20() {
     return table;
 }
 
-// Read data from a file with the same content as in: https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
-// The file should not contain a BOM.
+// Read data from a file with the same content as in https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
+// To make this function work, the file should not contain a BOM.
 table_u read_from_source(std::ifstream& source) {
     using namespace std;
 
@@ -101,7 +101,7 @@ table_u read_from_source(std::ifstream& source) {
     // Read explicitly assigned ranges.
     // The lines that are not empty or pure comment are uniformly of the format "hex(..hex)?;(A|F|H|N|Na|W) #comment".
     auto test_wide = [](const string& str) -> bool {
-        if (str == "W" || str == "F") {
+        if (str == "F" || str == "W") {
             return true;
         } else {
             verify(str == "A" || str == "H" || str == "N" || str == "Na", impl_assertion_failed);
@@ -121,8 +121,7 @@ table_u read_from_source(std::ifstream& source) {
     while (getline(source, line)) {
         if (!line.empty() && !line.starts_with("#")) {
             smatch match;
-            verify(regex_match(line, match, reg),
-                R"(invalid line format (which must be: hex(..hex)?;(A|F|H|N|Na|W) #comment ))");
+            verify(regex_match(line, match, reg), "invalid line");
             verify(match[1].matched && match[3].matched, impl_assertion_failed);
             bool is_wide  = test_wide(match[3].str());
             uint32_t from = get_value(match[1].str());
@@ -141,7 +140,7 @@ table_u read_from_source(std::ifstream& source) {
     return table;
 }
 
-table_u get_width_table_cpp23(std::ifstream& source) {
+table_u get_table_cpp23(std::ifstream& source) {
     using namespace std;
     table_u table = read_from_source(source);
 
@@ -156,7 +155,7 @@ table_u get_width_table_cpp23(std::ifstream& source) {
 
 // Confirm that we get the same result as in the annex in
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2675r1.pdf
-void compare_with_cpp20(const table_u& table /*gotten from get_width_table_cpp23*/) {
+void compare_with_cpp20(const table_u& table /*gotten from get_table_cpp23*/) {
     using namespace std;
 
     auto print_clusters = [](const table_u& table) {
@@ -177,9 +176,9 @@ void compare_with_cpp20(const table_u& table /*gotten from get_width_table_cpp23
         }
     };
 
-    const table_u old_table = get_width_table_cpp20();
+    const table_u old_table = get_table_cpp20();
     table_u diff_table      = make_table();
-    cout << "\nWas 1, now 2:\n";
+    cout << "\nwas 1, now 2:\n";
     for (uint32_t u = 0; u <= max_u; u++) {
         if (!old_table[u] && table[u]) {
             diff_table[u] = true;
@@ -188,7 +187,7 @@ void compare_with_cpp20(const table_u& table /*gotten from get_width_table_cpp23
     print_clusters(diff_table);
 
     diff_table = make_table(); // Reset all bits.
-    cout << "\nWas 2, now 1:\n";
+    cout << "\nwas 2, now 1:\n";
     for (uint32_t u = 0; u <= max_u; u++) {
         if (old_table[u] && !table[u]) {
             diff_table[u] = true;
@@ -198,13 +197,13 @@ void compare_with_cpp20(const table_u& table /*gotten from get_width_table_cpp23
 }
 
 int main() {
-    // print_intervals(get_width_table_cpp20());
+    // print_intervals(get_table_cpp20());
     // 0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u,
     // 0xFE10u, 0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u,
     // 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu,
 
     std::ifstream source("EastAsianWidth.txt");
-    table_u table = get_width_table_cpp23(source);
+    table_u table = get_table_cpp23(source);
     print_intervals(table);
     compare_with_cpp20(table);
 }
