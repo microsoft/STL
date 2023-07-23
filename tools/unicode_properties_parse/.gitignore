@@ -7,5 +7,6 @@
 emoji-data.txt
 DerivedCoreProperties.txt
 DerivedGeneralCategory.txt
+EastAsianWidth.txt # format_width_estimate_intervals.cpp
 GraphemeBreakProperty.txt
 GraphemeBreakTest.txt

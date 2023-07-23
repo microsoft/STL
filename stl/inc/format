@@ -978,13 +978,8 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
 #endif // ^^^ EDG workaround ^^^
 }
 
-#if !_HAS_CXX23
-inline constexpr char32_t _Width_estimate_intervals[] = { // Per N4928 [format.string.std]/12
-    0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u, 0xFE10u,
-    0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u, 0x20000u,
-    0x2FFFEu, 0x30000u, 0x3FFFEu};
-#else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
-inline constexpr char32_t _Width_estimate_intervals[] = { // Generated from "format_width_intervals_generate.cpp"
+inline constexpr char32_t _Width_estimate_intervals[] = {
+    // Per N4928 [format.string.std]/12
     0x1100u, 0x1160u, 0x231Au, 0x231Cu, 0x2329u, 0x232Bu, 0x23E9u, 0x23EDu, 0x23F0u, 0x23F1u, 0x23F3u, 0x23F4u, 0x25FDu,
     0x25FFu, 0x2614u, 0x2616u, 0x2648u, 0x2654u, 0x267Fu, 0x2680u, 0x2693u, 0x2694u, 0x26A1u, 0x26A2u, 0x26AAu, 0x26ACu,
     0x26BDu, 0x26BFu, 0x26C4u, 0x26C6u, 0x26CEu, 0x26CFu, 0x26D4u, 0x26D5u, 0x26EAu, 0x26EBu, 0x26F2u, 0x26F4u, 0x26F5u,
@@ -1002,22 +997,10 @@ inline constexpr char32_t _Width_estimate_intervals[] = { // Generated from "for
     0x1F6D8u, 0x1F6DCu, 0x1F6E0u, 0x1F6EBu, 0x1F6EDu, 0x1F6F4u, 0x1F6FDu, 0x1F7E0u, 0x1F7ECu, 0x1F7F0u, 0x1F7F1u,
     0x1F900u, 0x1FA00u, 0x1FA70u, 0x1FA7Du, 0x1FA80u, 0x1FA89u, 0x1FA90u, 0x1FABEu, 0x1FABFu, 0x1FAC6u, 0x1FACEu,
     0x1FADCu, 0x1FAE0u, 0x1FAE9u, 0x1FAF0u, 0x1FAF9u, 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu};
-#endif // ^^^ _HAS_CXX23 ^^^
 
 _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
     // Computes the width estimation for Unicode characters from N4928 [format.string.std]/12
-#if !_HAS_CXX23
-    int _Result = 1;
-    for (const auto& _Bound : _Width_estimate_intervals) {
-        if (_Ch < _Bound) {
-            return _Result;
-        }
-        _Result ^= 0b11u; // Flip between 1 and 2 on each iteration
-    }
-
-    return 1;
-#else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
-    if (_Ch < 0x26ACu) {
+    if (_Ch < 0x25FDu) {
         int _Result = 1;
         for (const auto& _Bound : _Width_estimate_intervals) {
             if (_Ch < _Bound) {
@@ -1028,11 +1011,10 @@ _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
 
         return 1;
     } else {
-        int _Index =
+        int _Upper_bound_index =
             upper_bound(_Width_estimate_intervals, end(_Width_estimate_intervals), _Ch) - _Width_estimate_intervals;
-        return 1 + (_Index & 1);
+        return 1 + (_Upper_bound_index & 1);
     }
-#endif // ^^^ _HAS_CXX23 ^^^
 }
 
 template <class _CharT, bool _Statically_Utf8 = _Is_execution_charset_self_synchronizing()>

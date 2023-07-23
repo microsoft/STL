@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// The following code reads data from https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
-// and generates data for `_Width_estimate_intervals` in <format>.
+// The following code generates data for `_Width_estimate_intervals` in <format>.
 
 #include <charconv>
+#include <format>
 #include <fstream>
 #include <iostream>
 #include <regex>
 #include <vector>
 
-void _verify(bool must_true, int line, const char* msg) {
-    if (!must_true) {
+void _verify(bool test, int line, const char* msg) {
+    if (!test) {
         std::cerr << "error at line " << line << ":" << msg << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -32,25 +32,16 @@ table_u make_table() {
     return table_u(max_u + 1, false);
 }
 
-void fill_range(table_u& table, const ::range_u rng, bool iswide) {
-    const auto [from, to] = rng;
-    verify(from <= to && to <= max_u, impl_assertion_failed);
-    for (uint32_t u = from; u <= to; u++) {
-        table[u] = iswide;
-    }
-}
-
-// For `_Width_estimate_intervals` in <format>.
+// For `_Width_estimate_intervals`.
 void print_intervals(const table_u& table) {
     using namespace std;
     cout << endl;
-    const int perline = 12;
-    int c             = 0;
-    bool last         = table[0];
+    int c     = 0;
+    bool last = table[0];
     for (uint32_t u = 0; u <= max_u; u++) {
         if (table[u] != last) {
             cout << "0x" << hex << uppercase << u << "u, ";
-            if (++c == perline) {
+            if (++c == 12) {
                 c = 0;
                 cout << endl;
             }
@@ -58,6 +49,14 @@ void print_intervals(const table_u& table) {
         last = table[u];
     }
     cout << endl;
+}
+
+void fill_range(table_u& table, const ::range_u rng, bool is_wide) {
+    const auto [from, to] = rng;
+    verify(from <= to && to <= max_u, impl_assertion_failed);
+    for (uint32_t u = from; u <= to; u++) {
+        table[u] = is_wide;
+    }
 }
 
 table_u get_width_table_cpp20() {
@@ -85,9 +84,9 @@ table_u get_width_table_cpp20() {
     return table;
 }
 
-// Read data from: https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
-// The content in `source` should be the same as this file, and should not contain a BOM.
-table_u read_from_database(std::istream& source) {
+// Read data from a file with the same content as in: https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
+// The file should not contain a BOM.
+table_u read_from_source(std::ifstream& source) {
     using namespace std;
 
     table_u table = make_table();
@@ -100,7 +99,8 @@ table_u read_from_database(std::istream& source) {
     }
 
     // Read explicitly assigned ranges.
-    auto is_wide = [](const string& str) -> bool {
+    // The lines that are not empty or pure comment are uniformly of the format "hex(..hex)?;(A|F|H|N|Na|W) #comment".
+    auto test_wide = [](const string& str) -> bool {
         if (str == "W" || str == "F") {
             return true;
         } else {
@@ -122,18 +122,18 @@ table_u read_from_database(std::istream& source) {
         if (!line.empty() && !line.starts_with("#")) {
             smatch match;
             verify(regex_match(line, match, reg),
-                R"(invalid line format (which must be: hex(..hex);A/F/H/N/Na/W  #comment ))");
+                R"(invalid line format (which must be: hex(..hex)?;(A|F|H|N|Na|W) #comment ))");
             verify(match[1].matched && match[3].matched, impl_assertion_failed);
-            bool iswide   = is_wide(match[3].str());
+            bool is_wide  = test_wide(match[3].str());
             uint32_t from = get_value(match[1].str());
             if (match[2].matched) {
                 // range (hex..hex)
                 string match2 = match[2].str();
                 verify(match2.starts_with(".."), impl_assertion_failed);
-                fill_range(table, {from, get_value(match2.substr(2))}, iswide);
+                fill_range(table, {from, get_value(match2.substr(2))}, is_wide);
             } else {
                 // single character (hex)
-                fill_range(table, {from}, iswide);
+                fill_range(table, {from}, is_wide);
             }
         }
     }
@@ -141,9 +141,9 @@ table_u read_from_database(std::istream& source) {
     return table;
 }
 
-table_u get_width_table_cpp23(std::istream& source) {
+table_u get_width_table_cpp23(std::ifstream& source) {
     using namespace std;
-    table_u table = read_from_database(source);
+    table_u table = read_from_source(source);
 
     // Override with ranges specified by the C++ standard.
     const vector<range_u> std_wide_ranges_cpp23{{0x4DC0, 0x4DFF}, {0x1F300, 0x1F5FF}, {0x1F900, 0x1F9FF}};
@@ -168,9 +168,9 @@ void compare_with_cpp20(const table_u& table /*gotten from get_width_table_cpp23
                     ++to;
                 }
                 if (from == to) {
-                    cout << hex << from << endl;
+                    cout << hex << uppercase << from << endl;
                 } else {
-                    cout << hex << from << "-" << to << endl;
+                    cout << hex << uppercase << from << ".." << to << endl;
                 }
                 u = to;
             }
@@ -179,8 +179,7 @@ void compare_with_cpp20(const table_u& table /*gotten from get_width_table_cpp23
 
     const table_u old_table = get_width_table_cpp20();
     table_u diff_table      = make_table();
-    cout << endl;
-    cout << "Was 1, now 2:\n";
+    cout << "\nWas 1, now 2:\n";
     for (uint32_t u = 0; u <= max_u; u++) {
         if (!old_table[u] && table[u]) {
             diff_table[u] = true;
@@ -200,16 +199,12 @@ void compare_with_cpp20(const table_u& table /*gotten from get_width_table_cpp23
 
 int main() {
     // print_intervals(get_width_table_cpp20());
-    //  0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u,
-    //  0xFE10u, 0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u,
-    //  0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu,
+    // 0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u,
+    // 0xFE10u, 0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u,
+    // 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu,
 
-    std::string source_path;
-    std::getline(std::cin, source_path);
-    std::ifstream source(source_path);
+    std::ifstream source("EastAsianWidth.txt");
     table_u table = get_width_table_cpp23(source);
     print_intervals(table);
     compare_with_cpp20(table);
-
-    return 0;
 }
