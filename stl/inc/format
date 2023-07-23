@@ -978,7 +978,7 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
 #endif // ^^^ EDG workaround ^^^
 }
 
-inline constexpr char32_t _Width_estimate_intervals[] = { // Per N4928 [format.string.std]/12
+inline constexpr char32_t _Width_estimate_intervals[] = { // Per N4950 [format.string.std]/13
     0x1100u, 0x1160u, 0x231Au, 0x231Cu, 0x2329u, 0x232Bu, 0x23E9u, 0x23EDu, 0x23F0u, 0x23F1u, 0x23F3u, 0x23F4u, 0x25FDu,
     0x25FFu, 0x2614u, 0x2616u, 0x2648u, 0x2654u, 0x267Fu, 0x2680u, 0x2693u, 0x2694u, 0x26A1u, 0x26A2u, 0x26AAu, 0x26ACu,
     0x26BDu, 0x26BFu, 0x26C4u, 0x26C6u, 0x26CEu, 0x26CFu, 0x26D4u, 0x26D5u, 0x26EAu, 0x26EBu, 0x26F2u, 0x26F4u, 0x26F5u,
@@ -998,7 +998,7 @@ inline constexpr char32_t _Width_estimate_intervals[] = { // Per N4928 [format.s
     0x1FADCu, 0x1FAE0u, 0x1FAE9u, 0x1FAF0u, 0x1FAF9u, 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu};
 
 _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
-    // Computes the width estimation for Unicode characters from N4928 [format.string.std]/12
+    // Computes the width estimation for Unicode characters from N4950 [format.string.std]/13
     if (_Ch < 0x25FDu) {
         int _Result = 1;
         for (const auto& _Bound : _Width_estimate_intervals) {
