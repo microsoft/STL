@@ -29,7 +29,7 @@ using cpv_const_difference_t = range_difference_t<const cartesian_product_view<R
 
 #ifdef _WIN64
 constexpr bool is_64_bit = true;
-#else // ^^^ 64 bit ^^^ / vvv 32 bit vvv
+#else // ^^^ 64 bit / 32 bit vvv
 constexpr bool is_64_bit = false;
 #endif // ^^^ 32 bit ^^^
 

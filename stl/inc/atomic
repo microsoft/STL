@@ -187,7 +187,7 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     __stlr##_Width(                             \
         reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), static_cast<unsigned __int##_Width>(_Desired));
 
-#else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 ^^^ / vvv _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
+#else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
 
 #define __STORE_RELEASE(_Width, _Ptr, _Desired) \
     _Compiler_or_memory_barrier();              \
