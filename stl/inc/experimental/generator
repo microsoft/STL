@@ -60,7 +60,7 @@ namespace experimental {
             }
 #else // ^^^ defined(_CPPUNWIND) / !defined(_CPPUNWIND) vvv
             void unhandled_exception() noexcept {}
-#endif //  defined(_CPPUNWIND)
+#endif // ^^^ !defined(_CPPUNWIND) ^^^
 #endif // defined(_KERNEL_MODE)
 
 #ifdef _CPPUNWIND
