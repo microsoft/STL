@@ -135,7 +135,7 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
     } else {
         return _Countl_zero_bsr(_Val);
     }
-#endif // ^^^ !!defined(__AVX2__) ^^^
+#endif // ^^^ !defined(__AVX2__) ^^^
 }
 #endif // defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 
@@ -306,7 +306,7 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
     } else {
         return _Countr_zero_bsf(_Val);
     }
-#endif // ^^^ !!defined(__AVX2__) ^^^
+#endif // ^^^ !defined(__AVX2__) ^^^
 }
 
 #endif // _HAS_TZCNT_BSF_INTRINSICS
