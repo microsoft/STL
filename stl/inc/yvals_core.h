@@ -27,7 +27,7 @@
 #define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
 #pragma message(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): STL1003: Unexpected compiler, expected C++ compiler.")
 #error Error in C++ Standard Library usage
-#endif // defined(__cplusplus)
+#endif // !defined(__cplusplus)
 
 // Implemented unconditionally:
 // N3911 void_t

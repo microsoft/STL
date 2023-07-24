@@ -205,7 +205,7 @@ template <class... _TTypes, class _UTuple, size_t... _Indices>
     requires
 #ifndef __clang__ // TRANSITION, DevCom-10265237
     (sizeof...(_TTypes) == sizeof...(_Indices)) &&
-#endif // defined(__clang__)
+#endif // !defined(__clang__)
     (requires { typename _Synth_three_way_result<_TTypes, tuple_element_t<_Indices, _UTuple>>; } && ...)
 struct _Three_way_comparison_result_with_tuple_like<tuple<_TTypes...>, _UTuple, index_sequence<_Indices...>> {
     using type = common_comparison_category_t<_Synth_three_way_result<_TTypes, tuple_element_t<_Indices, _UTuple>>...>;

@@ -49,7 +49,7 @@ _EXPORT_STD _NODISCARD inline terminate_handler __CRTDECL get_terminate() noexce
     // get current terminate handler
     return _get_terminate();
 }
-#endif // defined(_M_CEE_PURE)
+#endif // !defined(_M_CEE_PURE)
 
 #if _HAS_UNEXPECTED
 using ::unexpected;
@@ -62,7 +62,7 @@ _NODISCARD inline unexpected_handler __CRTDECL get_unexpected() noexcept {
     // get current unexpected handler
     return _get_unexpected();
 }
-#endif // defined(_M_CEE_PURE)
+#endif // !defined(_M_CEE_PURE)
 #endif // _HAS_UNEXPECTED
 
 _STD_END

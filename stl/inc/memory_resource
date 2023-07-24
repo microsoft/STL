@@ -19,7 +19,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <memory_resource> are available only
 
 #ifndef _M_CEE_PURE
 #include <mutex>
-#endif // defined(_M_CEE_PURE)
+#endif // !defined(_M_CEE_PURE)
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -591,7 +591,7 @@ namespace pmr {
     private:
         mutable mutex _Mtx;
     };
-#endif // defined(_M_CEE_PURE)
+#endif // !defined(_M_CEE_PURE)
 
     _EXPORT_STD class monotonic_buffer_resource : public _Identity_equal_resource {
     public:

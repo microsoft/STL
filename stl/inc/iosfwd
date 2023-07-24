@@ -72,7 +72,7 @@ public:
     _DEPRECATE_FPOS_SEEKPOS fpos_t seekpos() const noexcept {
         return {};
     }
-#endif // defined(_REMOVE_FPOS_SEEKPOS)
+#endif // !defined(_REMOVE_FPOS_SEEKPOS)
 
     _NODISCARD streamoff operator-(const fpos& _Right) const noexcept /* strengthened */ {
         return static_cast<streamoff>(*this) - static_cast<streamoff>(_Right);

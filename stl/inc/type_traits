@@ -1953,7 +1953,7 @@ _EXPORT_STD template <class _ClassTy1, class _ClassTy2, class _MemberTy1, class 
 _NODISCARD constexpr bool is_corresponding_member(_MemberTy1 _ClassTy1::*_Pm1, _MemberTy2 _ClassTy2::*_Pm2) noexcept {
     return __is_corresponding_member(_ClassTy1, _ClassTy2, _Pm1, _Pm2);
 }
-#endif // defined(__clang__)
+#endif // !defined(__clang__)
 #endif // _HAS_CXX20
 
 template <class _Ty>

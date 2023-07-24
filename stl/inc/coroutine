@@ -19,7 +19,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <coroutine> are available only with 
 #else // ^^^ <coroutine> is not available / <coroutine> is available vvv
 #ifndef _ALLOW_COROUTINE_ABI_MISMATCH
 #pragma detect_mismatch("_COROUTINE_ABI", "2")
-#endif // defined(_ALLOW_COROUTINE_ABI_MISMATCH)
+#endif // !defined(_ALLOW_COROUTINE_ABI_MISMATCH)
 
 #if _HAS_CXX20
 #include <compare>

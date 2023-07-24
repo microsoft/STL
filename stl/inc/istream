@@ -708,7 +708,7 @@ inline basic_istream<unsigned short, char_traits<unsigned short>>& __CLR_OR_THIS
     char_traits<unsigned short>>::operator>>(unsigned short& _Ch) { // extract a character
     return _STD operator>>(*this, _Ch);
 }
-#endif // defined(_NATIVE_WCHAR_T_DEFINED)
+#endif // !defined(_NATIVE_WCHAR_T_DEFINED)
 
 #if defined(_DLL_CPPLIB)
 

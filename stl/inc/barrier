@@ -72,7 +72,7 @@ public:
     static_assert(
 #ifndef __cpp_noexcept_function_type
         is_function_v<remove_pointer_t<_Completion_function>> ||
-#endif // defined(__cpp_noexcept_function_type)
+#endif // !defined(__cpp_noexcept_function_type)
             is_nothrow_invocable_v<_Completion_function&>,
         "N4950 [thread.barrier.class]/5: is_nothrow_invocable_v<CompletionFunction&> shall be true");
 
