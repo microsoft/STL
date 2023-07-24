@@ -378,7 +378,7 @@ public:
         return _STD make_reverse_iterator(cbegin());
     }
 
-    // 24.6.8.4 capacity
+    // [flat.map.capacity] Capacity
     [[nodiscard]] bool empty() const noexcept {
         return _Data.keys.empty();
     }
