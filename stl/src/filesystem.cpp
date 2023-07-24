@@ -31,7 +31,7 @@ namespace {
 #define __vcrt_CreateSymbolicLinkW _Not_supported_CreateSymbolicLinkW
 #else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
 #define __vcrt_CreateSymbolicLinkW CreateSymbolicLinkW
-#endif // defined(_CRT_APP)
+#endif // ^^^ !defined(_CRT_APP) ^^^
 
 #ifdef _CRT_APP
     HANDLE __stdcall __vcp_CreateFile(const wchar_t* const _File_name, const unsigned long _Desired_access,
@@ -48,7 +48,7 @@ namespace {
     }
 #else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
 #define __vcp_CreateFile CreateFileW
-#endif // defined(_CRT_APP)
+#endif // ^^^ !defined(_CRT_APP) ^^^
 
     [[nodiscard]] __std_win_error __stdcall _Translate_CreateFile_last_error(const HANDLE _Handle) {
         if (_Handle != INVALID_HANDLE_VALUE) {

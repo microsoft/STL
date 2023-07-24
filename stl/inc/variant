@@ -167,7 +167,7 @@ struct _Meta_at_<_List<_Types...>, _Idx, enable_if_t<(_Idx < sizeof...(_Types))>
     using type =
         typename decltype(_Meta_repeat_n_c<_Idx, void*, _Meta_at_impl>::_Eval(_Type_as_pointer<_Types>()...))::type;
 };
-#endif // defined(__clang__)
+#endif // ^^^ !defined(__clang__) ^^^
 
 inline constexpr auto _Meta_npos = ~size_t{0};
 
@@ -363,7 +363,7 @@ struct variant_alternative<_Idx, variant<_Types...>> {
     using type = __type_pack_element<_Idx, _Types...>;
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
     using type = _Meta_at_c<variant<_Types...>, _Idx>;
-#endif // defined(__clang__)
+#endif // ^^^ !defined(__clang__) ^^^
 };
 
 _EXPORT_STD inline constexpr size_t variant_npos = _Meta_npos;

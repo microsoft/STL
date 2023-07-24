@@ -3995,7 +3995,7 @@ template <class _Iter>
 struct _Move_iterator_category {
     using iterator_category = _Iter_cat_t<_Iter>;
 };
-#endif // defined(__cpp_lib_concepts)
+#endif // ^^^ no Ranges ^^^
 
 _EXPORT_STD template <class _Iter>
 class move_iterator : public _Move_iterator_category<_Iter> {

@@ -172,9 +172,9 @@ namespace pmr {
     _EXPORT_STD _NODISCARD inline memory_resource* get_default_resource() noexcept {
 #ifdef __cpp_aligned_new
         return _STD pmr::_Aligned_get_default_resource();
-#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
+#else // ^^^ defined(__cpp_aligned_new) / !defined(__cpp_aligned_new) vvv
         return _STD pmr::_Unaligned_get_default_resource();
-#endif // defined(__cpp_aligned_new)
+#endif // ^^^ !defined(__cpp_aligned_new) ^^^
     }
 
 #if _HAS_CXX20

@@ -16,7 +16,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <compare> are available only with C+
 #include <concepts>
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 #include <xtr1common>
-#endif // !defined(__cpp_lib_concepts)
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

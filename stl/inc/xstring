@@ -393,7 +393,7 @@ public:
             return __builtin_u8strlen(_First);
 #else // ^^^ use u8 intrinsics / no u8 intrinsics vvv
             return _Primary_char_traits::length(_First);
-#endif // _HAS_U8_INTRINSICS
+#endif // ^^^ no u8 intrinsics ^^^
         } else
 #endif // defined(__cpp_char8_t)
         {
@@ -414,7 +414,7 @@ public:
             return __builtin_u8memchr(_First, _Ch, _Count);
 #else // ^^^ use u8 intrinsics / no u8 intrinsics vvv
             return _Primary_char_traits::find(_First, _Count, _Ch);
-#endif // _HAS_U8_INTRINSICS
+#endif // ^^^ no u8 intrinsics ^^^
         } else
 #endif // defined(__cpp_char8_t)
         {

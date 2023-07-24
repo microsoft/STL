@@ -441,7 +441,7 @@ public:
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
               && _Can_construct_values_from_tuple_like_v<tuple, _Other>
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
-#endif // defined(__clang__)
+#endif // ^^^ no workaround ^^^
     constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>) tuple(_Other&& _Right)
         : tuple(_Unpack_tuple_t{}, _STD forward<_Other>(_Right)) {
     }

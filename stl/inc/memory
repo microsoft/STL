@@ -957,9 +957,9 @@ public:
     using value_type        = void;
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-#else
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     using difference_type = void;
-#endif // defined(__cpp_lib_concepts)
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
     using pointer   = void;
     using reference = void;
 

@@ -2816,7 +2816,7 @@ inline size_t _Get_stable_sort_tree_height(const size_t _Count, const size_t _Hw
     constexpr size_t _Max_tree_height  = 62; // to avoid ptrdiff_t overflow
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     constexpr size_t _Max_tree_height = 30;
-#endif // defined(_WIN64)
+#endif // ^^^ !defined(_WIN64) ^^^
     const size_t _Clamped_ideal_chunks = (_STD min)(_Max_tree_height, _Log_ideal_chunks);
 
     // similarly, if _Clamped_ideal_chunks is odd, that would break our 2 to even power invariant,

@@ -31,9 +31,9 @@ public:
 
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-#else
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     using difference_type = void;
-#endif // defined(__cpp_lib_concepts)
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     _CONSTEXPR20 explicit back_insert_iterator(_Container& _Cont) noexcept /* strengthened */
         : container(_STD addressof(_Cont)) {}
@@ -82,9 +82,9 @@ public:
 
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-#else
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     using difference_type = void;
-#endif // defined(__cpp_lib_concepts)
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     _CONSTEXPR20 explicit front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
 
