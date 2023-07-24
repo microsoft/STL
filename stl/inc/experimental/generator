@@ -69,7 +69,7 @@ namespace experimental {
                     _STD rethrow_exception(_Exception);
                 }
             }
-#endif //  defined(_CPPUNWIND)
+#endif // defined(_CPPUNWIND)
 
             suspend_always yield_value(const _Ty& _Val) noexcept {
                 _Value = _STD addressof(_Val);
