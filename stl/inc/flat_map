@@ -87,14 +87,28 @@ public:
         // Destructible
         ~type() = default;
 
-        using iterator_category = _STD random_access_iterator_tag;
+        using iterator_category = _STD input_iterator_tag;
         using difference_type   = ptrdiff_t;
         using value_type        = _STD pair<_STD iter_value_t<_Key_iterator_t>, _STD iter_value_t<_Mapped_iterator_t>>;
-        using pointer           = void; // Not a pointer
-        using reference         = value_type;
+
+    private:
+        class _Arrow_Proxy: public _STD pair<_STD iter_value_t<_Key_iterator_t>, _STD iter_value_t<_Mapped_iterator_t>> {
+        public:
+            _Arrow_Proxy* operator->() noexcept {
+                return this;
+            }
+        };
+
+    public:
+        using pointer           = _Arrow_Proxy;
+        using reference         = _STD pair<_STD iter_const_reference_t<_Key_iterator_t>, _STD iter_reference_t<_Mapped_iterator_t>>;
 
         reference operator*() const {
-            return _STD make_pair(*_Key_it, *_Mapped_it);
+            return reference {*_Key_it, *_Mapped_it};
+        }
+
+        pointer operator->() const {
+            return pointer {*_Key_it, *_Mapped_it};
         }
 
         type& operator++() {
