@@ -477,7 +477,7 @@ template <class _It, class _Se, ranges::subrange_kind _Ki>
 struct tuple_element<1, const ranges::subrange<_It, _Se, _Ki>> {
     using type = _Se;
 };
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class, class = void>
 struct _Iterator_traits_base {}; // empty for non-iterators
 
@@ -510,7 +510,7 @@ struct iterator_traits : _Iterator_traits_base<_Iter> {}; // get traits from ite
 
 template <class _Ty>
 struct iterator_traits<_Ty*> : _Iterator_traits_pointer_base<_Ty> {}; // get traits from pointer, if possible
-#endif // defined(__cpp_lib_concepts)
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 _STD_END
 
 #pragma pop_macro("new")

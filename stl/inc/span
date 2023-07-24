@@ -665,7 +665,7 @@ span(_It, _End) -> span<remove_reference_t<iter_reference_t<_It>>>;
 template <_RANGES contiguous_range _Rng>
 span(_Rng&&) -> span<remove_reference_t<_RANGES range_reference_t<_Rng>>>;
 
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 
 template <class _Rng>
 span(_Rng&) -> span<typename _Rng::value_type>;
@@ -673,7 +673,7 @@ span(_Rng&) -> span<typename _Rng::value_type>;
 template <class _Rng>
 span(const _Rng&) -> span<const typename _Rng::value_type>;
 
-#endif // !__cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #ifdef __cpp_lib_byte
 // [span.objectrep] Views of object representation
