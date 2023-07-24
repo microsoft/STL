@@ -218,7 +218,7 @@ public:
     using value_compare = typename _Flat_value_compare<key_type, mapped_type, key_compare>::type;
     using containers    = typename _Flat_Container<key_container_type, mapped_container_type>::type;
 
-    // 24.6.8.3 construct / copy / destroy
+    // [flat.map.cons] Constructors
     explicit flat_map(const key_compare& _Comp) : _Key_compare(_Comp), _Data() {}
     flat_map() : flat_map(key_compare()) {}
 
