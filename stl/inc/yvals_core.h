@@ -1819,6 +1819,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_containers_ranges 202202L
 #define __cpp_lib_expected          202211L
+#define __cpp_lib_flat_map          202207L
 #define __cpp_lib_formatters        202302L
 #endif // defined(__cpp_lib_concepts)
 
@@ -1867,8 +1868,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_unreachable 202202L
-
-#define __cpp_lib_flat_map 202207L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
