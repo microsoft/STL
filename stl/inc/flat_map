@@ -330,78 +330,78 @@ public:
         return *this;
     }
 
-    iterator begin() noexcept {
+    _NODISCARD iterator begin() noexcept {
         return iterator {_Data.keys.cbegin(), _Data.values.begin()};
     }
 
-    const_iterator begin() const noexcept {
+    _NODISCARD const_iterator begin() const noexcept {
         return const_iterator {_Data.keys.cbegin(), _Data.values.cbegin()};
     }
 
-    iterator end() noexcept {
+    _NODISCARD iterator end() noexcept {
         return iterator {_Data.keys.cend(), _Data.values.end()};
     }
 
-    const_iterator end() const noexcept {
+    _NODISCARD const_iterator end() const noexcept {
         return const_iterator {_Data.keys.cend(), _Data.values.cend()};
     }
 
-    reverse_iterator rbegin() noexcept {
+    _NODISCARD reverse_iterator rbegin() noexcept {
         return _STD make_reverse_iterator(end());
     }
 
-    const_reverse_iterator rbegin() const noexcept {
+    _NODISCARD const_reverse_iterator rbegin() const noexcept {
         return _STD make_reverse_iterator(cend());
     }
 
-    reverse_iterator rend() noexcept {
+    _NODISCARD reverse_iterator rend() noexcept {
         return _STD make_reverse_iterator(begin());
     }
 
-    const_reverse_iterator rend() const noexcept {
+    _NODISCARD const_reverse_iterator rend() const noexcept {
         return _STD make_reverse_iterator(cbegin());
     }
 
-    const_iterator cbegin() const noexcept {
+    _NODISCARD const_iterator cbegin() const noexcept {
         return const_iterator {_Data.keys.cbegin(), _Data.values.cbegin()};
     }
 
-    const_iterator cend() const noexcept {
+    _NODISCARD const_iterator cend() const noexcept {
         return const_iterator {_Data.keys.cend(), _Data.values.cend()};
     }
 
-    const_reverse_iterator crbegin() const noexcept {
+    _NODISCARD const_reverse_iterator crbegin() const noexcept {
         return _STD make_reverse_iterator(cend());
     }
 
-    const_reverse_iterator crend() const noexcept {
+    _NODISCARD const_reverse_iterator crend() const noexcept {
         return _STD make_reverse_iterator(cbegin());
     }
 
     // [flat.map.capacity] Capacity
-    [[nodiscard]] bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
         return _Data.keys.empty();
     }
 
-    size_type size() const noexcept {
+    _NODISCARD size_type size() const noexcept {
         return _Data.keys.size();
     }
 
-    size_type max_size() const noexcept {
+    _NODISCARD size_type max_size() const noexcept {
         return _STD min(_Data.keys.max_size(), _Data.values.max_size());
     }
 
     // [flat.map.access] Access
-    mapped_type& operator[](const key_type& _Key); // TODO: implement
-    mapped_type& operator[](key_type&& _Key); // TODO: implement
+    _NODISCARD mapped_type& operator[](const key_type& _Key); // TODO: implement
+    _NODISCARD mapped_type& operator[](key_type&& _Key); // TODO: implement
     template <class _C>
-    mapped_type& operator[](_C&& _Key)
+    _NODISCARD mapped_type& operator[](_C&& _Key)
         requires _Compare_is_transparent<key_compare>; // TODO: implement
 
     template <class _Self_t>
-    auto&& at(this _Self_t&& _Self, const key_type& _Key); // TODO: implement
+    _NODISCARD auto&& at(this _Self_t&& _Self, const key_type& _Key); // TODO: implement
     template <class _Self_t, class _C>
-    auto&& at(this _Self_t&& _Self, const _C& _Key)
+    _NODISCARD auto&& at(this _Self_t&& _Self, const _C& _Key)
         requires _Compare_is_transparent<key_compare>; // TODO: implement
 
     void clear() noexcept {
