@@ -316,14 +316,14 @@ concept _Has_to_address = requires(const _Ty& _Val) {
     typename pointer_traits<_Ty>;
     pointer_traits<_Ty>::to_address(_Val);
 };
-#else // ^^^ Use concept / use variable template vvv
+#else // ^^^ no workaround / workaround vvv
 template <class _Ty, class = void>
 inline constexpr bool _Has_to_address = false; // determines whether pointer_traits<_Ty> has to_address
 
 template <class _Ty>
 inline constexpr bool
     _Has_to_address<_Ty, void_t<decltype(pointer_traits<_Ty>::to_address(_STD declval<const _Ty&>()))>> = true;
-#endif // defined(__cpp_lib_concepts)
+#endif // ^^^ workaround ^^^
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
