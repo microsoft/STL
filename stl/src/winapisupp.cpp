@@ -47,8 +47,8 @@ namespace {
 
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
-#if !defined _CRT_APP
-#if defined _ONECORE
+#if !defined(_CRT_APP)
+#if defined(_ONECORE)
 
 namespace {
     struct HMODULETraits {
@@ -397,7 +397,7 @@ extern "C" _Success_(return > 0 && return < BufferLength) DWORD
 
 // Helper to load all necessary Win32 API function pointers
 
-#if defined _ONECORE
+#if defined(_ONECORE)
 
 // All APIs are statically available, and we can't call GetModuleHandleW().
 
