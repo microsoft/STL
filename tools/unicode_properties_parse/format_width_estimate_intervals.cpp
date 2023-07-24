@@ -12,7 +12,7 @@
 
 void _verify(bool test, int line, const char* msg) {
     if (!test) {
-        std::cerr << "error at line " << line << ":" << msg << std::endl;
+        std::cerr << "Error at line " << line << ": " << msg << std::endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -25,8 +25,8 @@ struct range_u {
     range_u(uint32_t v) : from(v), to(v) {}
 };
 
-// The largest possible unicode won't exceed max_u.
-const uint32_t max_u = 0x1f'ffff;
+// A valid Unicode code point won't exceed `max_u`.
+const uint32_t max_u = 0x10'ffff;
 using table_u        = std::vector<bool>; // true: wide
 table_u make_table() {
     return table_u(max_u + 1, false);
@@ -84,7 +84,11 @@ table_u get_table_cpp20() {
     return table;
 }
 
-// Read data from a file with the same content as in https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
+// Read data from "EastAsianWidth.txt".
+// The latest version can be found at:
+// https://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt
+// The current implementation works for:
+// https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
 // To make this function work, the file should not contain a BOM.
 table_u read_from_source(std::ifstream& source) {
     using namespace std;
@@ -99,7 +103,7 @@ table_u read_from_source(std::ifstream& source) {
     }
 
     // Read explicitly assigned ranges.
-    // The lines that are not empty or pure comment are uniformly of the format "hex(..hex)?;(A|F|H|N|Na|W) #comment".
+    // The lines that are not empty or pure comment are uniformly of the format "HEX(..HEX)?;(A|F|H|N|Na|W) #comment".
     auto test_wide = [](const string& str) -> bool {
         if (str == "F" || str == "W") {
             return true;
@@ -117,7 +121,7 @@ table_u read_from_source(std::ifstream& source) {
 
     verify(!!source, "invalid ifstream");
     string line;
-    const regex reg(R"(([0-9a-zA-Z]+)(\.\.[0-9a-zA-Z]+)?;(A|F|H|N|Na|W)\s*#.*)");
+    const regex reg(R"(([0-9A-Z]+)(\.\.[0-9A-Z]+)?;(A|F|H|N|Na|W) *#.*)");
     while (getline(source, line)) {
         if (!line.empty() && !line.starts_with("#")) {
             smatch match;
@@ -126,12 +130,12 @@ table_u read_from_source(std::ifstream& source) {
             bool is_wide  = test_wide(match[3].str());
             uint32_t from = get_value(match[1].str());
             if (match[2].matched) {
-                // range (hex..hex)
+                // range (HEX..HEX)
                 string match2 = match[2].str();
                 verify(match2.starts_with(".."), impl_assertion_failed);
                 fill_range(table, {from, get_value(match2.substr(2))}, is_wide);
             } else {
-                // single character (hex)
+                // single character (HEX)
                 fill_range(table, {from}, is_wide);
             }
         }
@@ -153,7 +157,7 @@ table_u get_table_cpp23(std::ifstream& source) {
     return table;
 }
 
-// Confirm that we get the same result as in the annex in
+// Confirm that we get the same result (under UCD version 15.0.0) as in the annex in
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2675r1.pdf
 void compare_with_cpp20(const table_u& table /*gotten from get_table_cpp23*/) {
     using namespace std;
@@ -167,9 +171,9 @@ void compare_with_cpp20(const table_u& table /*gotten from get_table_cpp23*/) {
                     ++to;
                 }
                 if (from == to) {
-                    cout << hex << uppercase << from << endl;
+                    cout << hex << uppercase << "U+" << from << endl;
                 } else {
-                    cout << hex << uppercase << from << ".." << to << endl;
+                    cout << hex << uppercase << "U+" << from << "..U+" << to << endl;
                 }
                 u = to;
             }
@@ -178,7 +182,7 @@ void compare_with_cpp20(const table_u& table /*gotten from get_table_cpp23*/) {
 
     const table_u old_table = get_table_cpp20();
     table_u diff_table      = make_table();
-    cout << "\nwas 1, now 2:\n";
+    cout << "\nWas 1, now 2:\n";
     for (uint32_t u = 0; u <= max_u; u++) {
         if (!old_table[u] && table[u]) {
             diff_table[u] = true;
@@ -187,7 +191,7 @@ void compare_with_cpp20(const table_u& table /*gotten from get_table_cpp23*/) {
     print_clusters(diff_table);
 
     diff_table = make_table(); // Reset all bits.
-    cout << "\nwas 2, now 1:\n";
+    cout << "\nWas 2, now 1:\n";
     for (uint32_t u = 0; u <= max_u; u++) {
         if (old_table[u] && !table[u]) {
             diff_table[u] = true;
@@ -202,7 +206,10 @@ int main() {
     // 0xFE10u, 0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u,
     // 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu,
 
-    std::ifstream source("EastAsianWidth.txt");
+    std::cout << "Input path for EastAsianWidth.txt: ";
+    std::string path;
+    getline(std::cin, path);
+    std::ifstream source(path);
     table_u table = get_table_cpp23(source);
     print_intervals(table);
     compare_with_cpp20(table);
