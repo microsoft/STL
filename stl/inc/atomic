@@ -672,7 +672,7 @@ struct _Atomic_storage {
         }
 #else // ^^^ _CMPXCHG_MASK_OUT_PADDING_BITS / !_CMPXCHG_MASK_OUT_PADDING_BITS vvv
         _Result = _CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_TVal)) == 0;
-#endif // ^^^ _CMPXCHG_MASK_OUT_PADDING_BITS ^^^
+#endif // ^^^ !_CMPXCHG_MASK_OUT_PADDING_BITS ^^^
         if (_Result) {
             _CSTD memcpy(_Storage_ptr, _STD addressof(_Desired), sizeof(_TVal));
         } else {
