@@ -391,7 +391,7 @@ public:
         return _STD min(_Data.keys.max_size(), _Data.values.max_size());
     }
 
-    // 24.6.8.5 elemental access
+    // [flat.map.access] Access
     mapped_type& operator[](const key_type& _Key); // TODO: implement
     mapped_type& operator[](key_type&& _Key); // TODO: implement
     template <class _C>
