@@ -440,7 +440,7 @@ private:
 
     void _SortAndDedup() {
         auto _Zip_view = _RANGES views::zip(_Data.keys, _Data.values);
-        _RANGES sort(_Zip_view.begin(), _Zip_view.end(), value_compare(_Key_compare));
+        _RANGES sort(_Zip_view, value_compare(_Key_compare));
 
         auto _Subrange        = _RANGES unique(_Zip_view, _Key_equal(_Key_compare));
         auto _Remaining_count = _STD distance(_Zip_view.begin(), _Subrange.begin());
