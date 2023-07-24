@@ -41,17 +41,17 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _REGEX_MAX_STACK_COUNT
 #ifdef _WIN64
 #define _REGEX_MAX_STACK_COUNT 600L // set to 0 to disable
-#else
+#else // _WIN64
 #define _REGEX_MAX_STACK_COUNT 1000L // set to 0 to disable
-#endif
+#endif // _WIN64
 #endif // _REGEX_MAX_STACK_COUNT
 
 #ifndef _ENHANCED_REGEX_VISUALIZER
 #ifdef _DEBUG
 #define _ENHANCED_REGEX_VISUALIZER 1
-#else
+#else // _DEBUG
 #define _ENHANCED_REGEX_VISUALIZER 0
-#endif
+#endif // _DEBUG
 #endif // _ENHANCED_REGEX_VISUALIZER
 
 _STD_BEGIN
