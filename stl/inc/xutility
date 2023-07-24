@@ -5801,7 +5801,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
             } else {
                 return _First + (_Result - _First_ptr);
             }
-#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / not _USE_STD_VECTOR_ALGORITHMS vvv
+#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
             if constexpr (sizeof(_Iter_value_t<_InIt>) == 1) {
                 const auto _First_ptr = _To_address(_First);
                 const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_InIt>>*>(
@@ -5813,7 +5813,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
                 }
             }
             // TRANSITION, DevCom-1614562: not trying wmemchr
-#endif // ^^^ not _USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
         }
     }
 
@@ -5887,7 +5887,7 @@ namespace ranges {
                 } else {
                     return _RANGES next(_STD move(_First), _Result - _First_ptr);
                 }
-#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / not _USE_STD_VECTOR_ALGORITHMS vvv
+#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
                 if constexpr (sizeof(_Iter_value_t<_It>) == 1
 #if defined(_M_ARM64) || defined(_M_ARM64EC) // TRANSITION, VSO-1538014 : memchr inspects bytes after the match
                               && _Is_sized
@@ -5914,7 +5914,7 @@ namespace ranges {
                     }
                 }
                 // TRANSITION, DevCom-1614562: not trying wmemchr
-#endif // ^^^ not _USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
             }
         }
 
