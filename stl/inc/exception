@@ -67,7 +67,7 @@ _NODISCARD inline unexpected_handler __CRTDECL get_unexpected() noexcept {
 
 _STD_END
 
-#else // ^^^ _HAS_EXCEPTIONS ^^^ / vvv !_HAS_EXCEPTIONS vvv
+#else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
 
 _STDEXT_BEGIN
 class exception;
@@ -392,7 +392,7 @@ void rethrow_if_nested(const _Ty& _Arg) {
         }
     }
 }
-#else // ^^^ defined(_CPPRTTI) ^^^ / vvv !defined(_CPPRTTI) vvv
+#else // ^^^ defined(_CPPRTTI) / !defined(_CPPRTTI) vvv
 _EXPORT_STD template <class _Ty>
 void rethrow_if_nested(const _Ty&) = delete; // requires /GR option
 #endif // ^^^ !defined(_CPPRTTI) ^^^

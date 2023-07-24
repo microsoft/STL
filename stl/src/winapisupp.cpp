@@ -98,7 +98,7 @@ extern "C" int __crt_IsPackagedAppHelper() {
     return 0;
 }
 
-#else // ^^^ defined(_ONECORE) ^^^ / vvv !defined(_ONECORE) vvv
+#else // ^^^ defined(_ONECORE) / !defined(_ONECORE) vvv
 
 extern "C" int __crt_IsPackagedAppHelper() {
     LONG retValue       = APPMODEL_ERROR_NO_PACKAGE;
@@ -273,7 +273,7 @@ extern "C" _CRTIMP2 BOOLEAN __cdecl __crtCreateSymbolicLinkW(
     (void) dwFlags;
     SetLastError(ERROR_NOT_SUPPORTED);
     return 0;
-#else // ^^^ defined(_CRT_APP) ^^^ / vvv !defined(_CRT_APP) vvv
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     return CreateSymbolicLinkW(lpSymlinkFileName, lpTargetFileName, dwFlags);
 #endif // ^^^ !defined(_CRT_APP) ^^^
 }
@@ -351,7 +351,7 @@ extern "C" VOID __cdecl __crtCloseThreadpoolWork(_Inout_ PTP_WORK const pwk) {
     CloseThreadpoolWork(pwk);
 }
 
-#else // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_VISTA ^^^ / vvv _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA vvv
+#else // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_VISTA / _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA vvv
 // TRANSITION, ABI: preserved for binary compatibility
 extern "C" BOOL __cdecl __crtQueueUserWorkItem(_In_ LPTHREAD_START_ROUTINE, _In_opt_ PVOID, _In_ ULONG) {
     // This function doesn't have an implementation as it is only used on Windows XP
@@ -401,7 +401,7 @@ extern "C" _Success_(return > 0 && return < BufferLength) DWORD
 
 // All APIs are statically available, and we can't call GetModuleHandleW().
 
-#else // ^^^ defined(_ONECORE) ^^^ / vvv !defined(_ONECORE) vvv
+#else // ^^^ defined(_ONECORE) / !defined(_ONECORE) vvv
 
 static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");

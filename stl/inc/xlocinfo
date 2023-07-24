@@ -54,7 +54,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Getdateorder();
     CallingConvention = System::Runtime::InteropServices::CallingConvention::Cdecl)] extern "C" int
     _Mbrtowc(_Out_opt_ wchar_t*, const char*, size_t, mbstate_t*, const _Cvtvec*);
 
-#else // ^^^defined(_M_CEE_PURE) ^^^ / vvv !defined(_M_CEE_PURE) vvv
+#else // ^^^defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
     _When_(_Max_multibyte != 0, _Out_) wchar_t*, const char*, size_t _Max_multibyte, mbstate_t*, const _Cvtvec*);
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
@@ -372,7 +372,7 @@ public:
 private:
 #ifdef _M_CEE_PURE
     _EmptyLockit _Empty_lock; // to maintain same size
-#else // ^^^ defined(_M_CEE_PURE) ^^^ / vvv !defined(_M_CEE_PURE) vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
     _Lockit _Lock; // thread lock, because global locale is altered
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 

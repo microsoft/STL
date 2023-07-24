@@ -1067,7 +1067,7 @@ basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>& _Ostr) 
     }
     return _Ostr;
 }
-#else // ^^^ defined(_CPPRTTI) ^^^ / vvv !defined(_CPPRTTI) vvv
+#else // ^^^ defined(_CPPRTTI) / !defined(_CPPRTTI) vvv
 _EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& emit_on_flush(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
 _EXPORT_STD template <class _Elem, class _Traits>
@@ -1276,7 +1276,7 @@ _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
 void vprint_nonunicode(ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
     _STD _Vprint_nonunicode_impl(_Add_newline::_Nope, _Ostr, _Fmt_str, _Fmt_args);
 }
-#else // ^^^ defined(_CPPRTTI) ^^^ / vvv !defined(_CPPRTTI) vvv
+#else // ^^^ defined(_CPPRTTI) / !defined(_CPPRTTI) vvv
 _EXPORT_STD template <class... _Types>
 void print(ostream&, format_string<_Types...>, _Types&&...) = delete; // requires /GR option
 

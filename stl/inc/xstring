@@ -248,7 +248,7 @@ public:
         } else {
             return _Primary_char_traits::compare(_First1, _First2, _Count);
         }
-#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         return _CSTD wmemcmp(
             reinterpret_cast<const wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
 #endif // ^^^ !_HAS_CXX17 ^^^
@@ -262,7 +262,7 @@ public:
         } else {
             return _Primary_char_traits::length(_First);
         }
-#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         return _CSTD wcslen(reinterpret_cast<const wchar_t*>(_First));
 #endif // ^^^ !_HAS_CXX17 ^^^
     }
@@ -276,7 +276,7 @@ public:
         } else {
             return _Primary_char_traits::find(_First, _Count, _Ch);
         }
-#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         return reinterpret_cast<const _Elem*>(_CSTD wmemchr(reinterpret_cast<const wchar_t*>(_First), _Ch, _Count));
 #endif // ^^^ !_HAS_CXX17 ^^^
     }
@@ -379,7 +379,7 @@ public:
         // compare [_First1, _First1 + _Count) with [_First2, ...)
 #if _HAS_CXX17
         return __builtin_memcmp(_First1, _First2, _Count);
-#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         return _CSTD memcmp(_First1, _First2, _Count);
 #endif // ^^^ !_HAS_CXX17 ^^^
     }
@@ -399,7 +399,7 @@ public:
         {
             return __builtin_strlen(_First);
         }
-#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         return _CSTD strlen(reinterpret_cast<const char*>(_First));
 #endif // ^^^ !_HAS_CXX17 ^^^
     }
@@ -420,7 +420,7 @@ public:
         {
             return __builtin_char_memchr(_First, _Ch, _Count);
         }
-#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         return static_cast<const _Elem*>(_CSTD memchr(_First, _Ch, _Count));
 #endif // ^^^ !_HAS_CXX17 ^^^
     }
@@ -4207,7 +4207,7 @@ public:
             _Become_small();
         }
     }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     void reserve(_CRT_GUARDOVERFLOW const size_type _Newcap = 0) { // determine new minimum length of allocated storage
         if (_Mypair._Myval2._Mysize > _Newcap) { // requested capacity is not large enough for current size, ignore
             return; // nothing to do

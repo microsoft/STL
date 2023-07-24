@@ -175,7 +175,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::abort()
 #elif defined(_DEBUG) // avoid emitting unused long strings for function names; see GH-1956
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, __LINE__, 0)
-#else // ^^^ defined(_DEBUG) ^^^ / vvv !defined(_DEBUG) vvv
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CRT_SECURE_INVALID_PARAMETER(expr)
 #endif // ^^^ !defined(_DEBUG) ^^^
 #endif // _STL_CRT_SECURE_INVALID_PARAMETER
@@ -360,7 +360,7 @@ public:
         _Lockit_dtor(this);
     }
 
-#else // ^^^ defined(_M_CEE_PURE) ^^^ / vvv !defined(_M_CEE_PURE) vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
     __thiscall _Lockit() noexcept;
     explicit __thiscall _Lockit(int) noexcept; // set the lock
     __thiscall ~_Lockit() noexcept; // clear the lock
@@ -421,7 +421,7 @@ private:
     }                                              \
     }
 
-#else // ^^^ _PREPARE_CONSTRAINED_REGIONS ^^^ / vvv !_PREPARE_CONSTRAINED_REGIONS vvv
+#else // ^^^ _PREPARE_CONSTRAINED_REGIONS / !_PREPARE_CONSTRAINED_REGIONS vvv
 #define _BEGIN_LOCK(_Kind) \
     {                      \
         _STD _Lockit _Lock(_Kind);
@@ -436,7 +436,7 @@ private:
 
 #define _END_LOCINFO() _END_LOCK()
 
-#else // ^^^ defined(_M_CEE) ^^^ / vvv !defined(_M_CEE) vvv
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 #define _BEGIN_LOCK(_Kind) \
     {                      \
         _STD _Lockit _Lock(_Kind);
@@ -457,7 +457,7 @@ private:
     [System::Runtime::ConstrainedExecution::ReliabilityContract(                 \
         System::Runtime::ConstrainedExecution::Consistency::WillNotCorruptState, \
         System::Runtime::ConstrainedExecution::Cer::Success)]
-#else // ^^^ defined(_M_CEE) ^^^ / vvv !defined(_M_CEE) vvv
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 #define _RELIABILITY_CONTRACT
 #endif // ^^^ !defined(_M_CEE) ^^^
 
@@ -476,7 +476,7 @@ private:
 #define _RERAISE  throw
 #define _THROW(x) throw x
 
-#else // ^^^ _HAS_EXCEPTIONS ^^^ / vvv !_HAS_EXCEPTIONS vvv
+#else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
 #define _TRY_BEGIN \
     {              \
         if (1) {

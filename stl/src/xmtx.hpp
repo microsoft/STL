@@ -19,7 +19,7 @@ void __clrcall _Mtxdst(_Rmtx*) noexcept;
 void __clrcall _Mtxlock(_Rmtx*) noexcept;
 void __clrcall _Mtxunlock(_Rmtx*) noexcept;
 
-#else // ^^^ defined(_M_CEE_PURE) ^^^ / vvv !defined(_M_CEE_PURE) vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 _MRTIMP2 void __cdecl _Mtxinit(_Rmtx*) noexcept;
 _MRTIMP2 void __cdecl _Mtxdst(_Rmtx*) noexcept;
 _MRTIMP2 void __cdecl _Mtxlock(_Rmtx*) noexcept;

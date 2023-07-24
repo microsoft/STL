@@ -65,7 +65,7 @@ __PURE_APPDOMAIN_GLOBAL const _Fac_tidy_reg_t _Fac_tidy_reg;
 
 #if defined(_M_CEE)
 void __CLRCALL_OR_CDECL _Facet_Register_m(_Facet_base* _This)
-#else // ^^^ defined(_M_CEE) ^^^ / vvv !defined(_M_CEE) vvv
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 void __CLRCALL_OR_CDECL _Facet_Register(_Facet_base* _This)
 #endif // ^^^ !defined(_M_CEE) ^^^
 { // queue up lazy facet for destruction

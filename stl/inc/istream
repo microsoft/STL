@@ -840,7 +840,7 @@ basic_istream<char, _Traits>& operator>>(
     return _Istream_extract_into_buffer(_Istr, _Size, reinterpret_cast<char*>(_Str));
 }
 #pragma warning(pop)
-#else // ^^^_HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^_HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Elem, class _Traits>
 basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, _Elem* _Str) {
     return _Istream_extract_into_buffer(_Istr, SIZE_MAX, _Str);

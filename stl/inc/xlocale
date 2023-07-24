@@ -454,7 +454,7 @@ const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference f
 
 #if defined(_M_CEE)
             _Facet_Register_m(_Pfmod);
-#else // ^^^ defined(_M_CEE) ^^^ / vvv !defined(_M_CEE) vvv
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
             _Facet_Register(_Pfmod);
 #endif // ^^^ !defined(_M_CEE) ^^^
 

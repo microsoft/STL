@@ -829,7 +829,7 @@
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
 // clang-format on
-#else // ^^^ defined(__clang__) ^^^ / vvv !defined(__clang__) vvv
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_DISABLE_CLANG_WARNINGS
@@ -837,7 +837,7 @@
 #ifndef _STL_RESTORE_CLANG_WARNINGS
 #ifdef __clang__
 #define _STL_RESTORE_CLANG_WARNINGS _Pragma("clang diagnostic pop")
-#else // ^^^ defined(__clang__) ^^^ / vvv !defined(__clang__) vvv
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_RESTORE_CLANG_WARNINGS
 #endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_RESTORE_CLANG_WARNINGS
@@ -983,7 +983,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #if _HAS_TR1_NAMESPACE
 #ifdef _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
 #define _DEPRECATE_TR1_NAMESPACE
-#else // ^^^ _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING ^^^ / vvv !_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING vvv
+#else // ^^^ _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING / !_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING vvv
 #define _DEPRECATE_TR1_NAMESPACE                                                                                  \
     [[deprecated(                                                                                                 \
         "warning STL4002: "                                                                                       \
@@ -1844,7 +1844,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
 #elif _HAS_CXX17
 #define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
-#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
 #define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
 #endif // ^^^ !_HAS_CXX17 ^^^
 

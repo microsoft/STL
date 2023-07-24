@@ -378,7 +378,7 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 
 #ifdef _M_CEE
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)
-#else // ^^^ defined(_M_CEE) ^^^ / vvv !defined(_M_CEE) vvv
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3)
 #endif // ^^^ !defined(_M_CEE) ^^^
 
@@ -392,7 +392,7 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 #ifdef _M_IX86
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)  FUNC(__stdcall, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__thiscall, OPT1, OPT2, OPT3)
-#else // ^^^ defined(_M_IX86) ^^^ / vvv !defined(_M_IX86) vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3)
 #endif // ^^^ !defined(_M_IX86) ^^^
@@ -426,7 +426,7 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
     _NON_MEMBER_CALL_CV_REF(FUNC, )            \
     _NON_MEMBER_CALL_CV_REF(FUNC, noexcept)
-#else // ^^^ defined(__cpp_noexcept_function_type) ^^^ / vvv !defined(__cpp_noexcept_function_type) vvv
+#else // ^^^ defined(__cpp_noexcept_function_type) / !defined(__cpp_noexcept_function_type) vvv
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _NON_MEMBER_CALL_CV_REF(FUNC, )
 #endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
@@ -453,7 +453,7 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 #define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
     _MEMBER_CALL_CV_REF(FUNC, )            \
     _MEMBER_CALL_CV_REF(FUNC, noexcept)
-#else // ^^^ defined(__cpp_noexcept_function_type) ^^^ / vvv !defined(__cpp_noexcept_function_type) vvv
+#else // ^^^ defined(__cpp_noexcept_function_type) / !defined(__cpp_noexcept_function_type) vvv
 #define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _MEMBER_CALL_CV_REF(FUNC, )
 #endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
@@ -483,7 +483,7 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
     CLASS(const&& noexcept)                  \
     CLASS(volatile&& noexcept)               \
     CLASS(const volatile&& noexcept)
-#else // ^^^ defined(__cpp_noexcept_function_type) ^^^ / vvv !defined(__cpp_noexcept_function_type) vvv
+#else // ^^^ defined(__cpp_noexcept_function_type) / !defined(__cpp_noexcept_function_type) vvv
 #define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
     CLASS(_EMPTY_ARGUMENT)                   \
     CLASS(const)                             \
@@ -2314,7 +2314,7 @@ _NODISCARD constexpr bool _Bitmask_includes_all(_Bitmask _Left, _Bitmask _Elemen
 #if defined(_WIN64)
 _INLINE_VAR constexpr size_t _FNV_offset_basis = 14695981039346656037ULL;
 _INLINE_VAR constexpr size_t _FNV_prime        = 1099511628211ULL;
-#else // ^^^ defined(_WIN64) ^^^ / vvv !defined(_WIN64) vvv
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
 _INLINE_VAR constexpr size_t _FNV_offset_basis = 2166136261U;
 _INLINE_VAR constexpr size_t _FNV_prime        = 16777619U;
 #endif // ^^^ !defined(_WIN64) ^^^

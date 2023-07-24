@@ -756,7 +756,7 @@ private:
         _Target_type() const noexcept override {
 #if _HAS_STATIC_RTTI
         return typeid(_Callable);
-#else // ^^^ _HAS_STATIC_RTTI ^^^ / vvv !_HAS_STATIC_RTTI vvv
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
         _CSTD abort();
 #endif // ^^^ !_HAS_STATIC_RTTI ^^^
     }
@@ -821,7 +821,7 @@ private:
         _Target_type() const noexcept override {
 #if _HAS_STATIC_RTTI
         return typeid(_Callable);
-#else // ^^^ _HAS_STATIC_RTTI ^^^ / vvv !_HAS_STATIC_RTTI vvv
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
         _CSTD abort();
 #endif // ^^^ !_HAS_STATIC_RTTI ^^^
     }
@@ -1125,7 +1125,7 @@ public:
             return reinterpret_cast<const _Fx*>(this->_Target(typeid(_Fx)));
         }
     }
-#else // ^^^ _HAS_STATIC_RTTI ^^^ / vvv !_HAS_STATIC_RTTI vvv
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
     const type_info& target_type() const noexcept = delete; // requires static RTTI
 
     template <class _Fx>

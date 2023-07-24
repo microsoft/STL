@@ -1229,7 +1229,7 @@ public:
         if (_Typeid == typeid(_Dx)) {
             return const_cast<_Dx*>(_STD addressof(_Mypair._Get_first()));
         }
-#else // ^^^ _HAS_STATIC_RTTI ^^^ / vvv !_HAS_STATIC_RTTI vvv
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
         (void) _Typeid;
 #endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
@@ -1263,7 +1263,7 @@ public:
         if (_Typeid == typeid(_Dx)) {
             return const_cast<_Dx*>(_STD addressof(_Mypair._Get_first()));
         }
-#else // ^^^ _HAS_STATIC_RTTI ^^^ / vvv !_HAS_STATIC_RTTI vvv
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
         (void) _Typeid;
 #endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
@@ -2052,7 +2052,7 @@ _NODISCARD shared_ptr<_Ty1> dynamic_pointer_cast(shared_ptr<_Ty2>&& _Other) noex
 
     return {};
 }
-#else // ^^^ defined(_CPPRTTI) ^^^ / vvv !defined(_CPPRTTI) vvv
+#else // ^^^ defined(_CPPRTTI) / !defined(_CPPRTTI) vvv
 _EXPORT_STD template <class _Ty1, class _Ty2>
 shared_ptr<_Ty1> dynamic_pointer_cast(const shared_ptr<_Ty2>&) noexcept = delete; // requires /GR option
 _EXPORT_STD template <class _Ty1, class _Ty2>
@@ -2069,7 +2069,7 @@ _NODISCARD _Dx* get_deleter(const shared_ptr<_Ty>& _Sx) noexcept {
 
     return nullptr;
 }
-#else // ^^^ _HAS_STATIC_RTTI ^^^ / vvv !_HAS_STATIC_RTTI vvv
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
 _EXPORT_STD template <class _Dx, class _Ty>
 _Dx* get_deleter(const shared_ptr<_Ty>&) noexcept = delete; // requires static RTTI
 #endif // ^^^ !_HAS_STATIC_RTTI ^^^

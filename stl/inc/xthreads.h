@@ -37,13 +37,13 @@ struct _Mtx_internal_imp_t {
 #ifdef _CRT_WINDOWS
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 16;
-#else // ^^^ defined(_WIN64) ^^^ / vvv !defined(_WIN64) vvv
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 8;
 #endif // ^^^ !defined(_WIN64) ^^^
-#else // ^^^ defined(_CRT_WINDOWS) ^^^ / vvv !defined(_CRT_WINDOWS) vvv
+#else // ^^^ defined(_CRT_WINDOWS) / !defined(_CRT_WINDOWS) vvv
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 64;
-#else // ^^^ defined(_WIN64) ^^^ / vvv !defined(_WIN64) vvv
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 36;
 #endif // ^^^ !defined(_WIN64) ^^^
 #endif // ^^^ !defined(_CRT_WINDOWS) ^^^
@@ -64,15 +64,15 @@ struct _Mtx_internal_imp_t {
 #ifdef _WIN64
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 16;
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 8;
-#else // ^^^ defined(_WIN64) ^^^ / vvv !defined(_WIN64) vvv
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 8;
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 4;
 #endif // ^^^ !defined(_WIN64) ^^^
-#else // ^^^ defined(_CRT_WINDOWS) ^^^ / vvv !defined(_CRT_WINDOWS) vvv
+#else // ^^^ defined(_CRT_WINDOWS) / !defined(_CRT_WINDOWS) vvv
 #ifdef _WIN64
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 72;
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 8;
-#else // ^^^ defined(_WIN64) ^^^ / vvv !defined(_WIN64) vvv
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 40;
 _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 4;
 #endif // ^^^ !defined(_WIN64) ^^^

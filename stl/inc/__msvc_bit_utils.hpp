@@ -128,7 +128,7 @@ template <class _Ty>
 _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
 #ifdef __AVX2__
     return _Countl_zero_lzcnt(_Val);
-#else // ^^^ defined(__AVX2__) ^^^ / vvv !defined(__AVX2__) vvv
+#else // ^^^ defined(__AVX2__) / !defined(__AVX2__) vvv
     const bool _Definitely_have_lzcnt = __isa_available >= _Stl_isa_available_avx2;
     if (_Definitely_have_lzcnt) {
         return _Countl_zero_lzcnt(_Val);
@@ -299,7 +299,7 @@ template <class _Ty>
 _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 #ifdef __AVX2__
     return _Countr_zero_tzcnt(_Val);
-#else // ^^^ defined(__AVX2__) ^^^ / vvv !defined(__AVX2__) vvv
+#else // ^^^ defined(__AVX2__) / !defined(__AVX2__) vvv
     const bool _Definitely_have_tzcnt = __isa_available >= _Stl_isa_available_avx2;
     if (_Definitely_have_tzcnt) {
         return _Countr_zero_tzcnt(_Val);

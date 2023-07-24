@@ -19,7 +19,7 @@ __PURE_APPDOMAIN_GLOBAL static filebuf ferr(_cpp_stderr);
 #if defined(_M_CEE_PURE)
 __PURE_APPDOMAIN_GLOBAL extern ostream cerr(&ferr);
 
-#else // ^^^ defined(_M_CEE_PURE) ^^^ / vvv !defined(_M_CEE_PURE) vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream cerr(&ferr);
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 

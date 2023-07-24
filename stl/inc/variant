@@ -916,7 +916,7 @@ struct _Variant_init_single_overload {
 #if _HAS_CXX20
     template <class _InitializerType>
     auto operator()(_TargetType, _InitializerType&&) -> _Variant_type_resolver<_Idx, _TargetType, _InitializerType>;
-#else // ^^^_HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#else // ^^^_HAS_CXX20 / !_HAS_CXX20 vvv
     template <class _InitializerType>
     auto operator()(_TargetType, _InitializerType&&) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
 #endif // ^^^ !_HAS_CXX20 ^^^
