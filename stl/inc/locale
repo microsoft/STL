@@ -133,7 +133,7 @@ template __PURE_APPDOMAIN_GLOBAL locale::id collate<wchar_t>::id;
 
 #ifdef __FORCE_INSTANCE
 template __PURE_APPDOMAIN_GLOBAL locale::id collate<unsigned short>::id;
-#endif // defined(___FORCE_INSTANCE)
+#endif // defined(__FORCE_INSTANCE)
 #endif // defined(_DLL_CPPLIB)
 
 #ifdef __clang__
