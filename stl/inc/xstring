@@ -4158,11 +4158,16 @@ public:
         }
     }
 
-#if _HAS_CXX23
 #pragma warning(push)
 #pragma warning(disable : 4018) // '<=': signed/unsigned mismatch (we compare to 0 before _New_size below, so it's safe)
     template <class _Operation>
-    constexpr void resize_and_overwrite(_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
+    constexpr void 
+#if _HAS_CXX23
+        resize_and_overwrite
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+        _Resize_and_overwrite
+#endif // ^^^ !_HAS_CXX23 ^^^
+        (_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
         if (_Mypair._Myval2._Myres < _New_size) {
             _Reallocate_grow_by(_New_size - _Mypair._Myval2._Mysize,
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) {
@@ -4180,7 +4185,13 @@ public:
         _Eos(static_cast<size_type>(_Result_size));
     }
 #pragma warning(pop)
-#endif // _HAS_CXX23
+
+#if _HAS_CXX23
+    template <class _Operation>
+    constexpr void _Resize_and_overwrite(_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
+        return resize_and_overwrite(_New_size, _Op);
+    }
+#endif // !_HAS_CXX23
 
     _NODISCARD _CONSTEXPR20 size_type capacity() const noexcept {
         return _Mypair._Myval2._Myres;
