@@ -4161,7 +4161,7 @@ public:
 #pragma warning(push)
 #pragma warning(disable : 4018) // '<=': signed/unsigned mismatch (we compare to 0 before _New_size below, so it's safe)
     template <class _Operation>
-    constexpr void 
+    constexpr void
 #if _HAS_CXX23
         resize_and_overwrite
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
@@ -4191,7 +4191,7 @@ public:
     constexpr void _Resize_and_overwrite(_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
         return resize_and_overwrite(_New_size, _Op);
     }
-#endif // !_HAS_CXX23
+#endif // _HAS_CXX23
 
     _NODISCARD _CONSTEXPR20 size_type capacity() const noexcept {
         return _Mypair._Myval2._Myres;
