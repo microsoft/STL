@@ -94,8 +94,9 @@ public:
         using value_type        = _STD pair<_STD iter_value_t<_Key_iterator_t>, _STD iter_value_t<_Mapped_iterator_t>>;
 
     private:
-        class _Arrow_Proxy: public _STD pair<_STD iter_value_t<_Key_iterator_t>, _STD iter_value_t<_Mapped_iterator_t>> {
+        class _Arrow_Proxy: public _STD pair<_STD iter_const_reference_t<_Key_iterator_t>, _STD iter_reference_t<_Mapped_iterator_t>> {
         public:
+            using _STD pair<_STD iter_const_reference_t<_Key_iterator_t>, _STD iter_reference_t<_Mapped_iterator_t>>::pair;
             _Arrow_Proxy* operator->() noexcept {
                 return this;
             }
@@ -214,11 +215,16 @@ public:
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-    static_assert(_STD input_iterator<iterator>);
+    static_assert(_STD random_access_iterator<iterator>);
 
     using value_compare = typename _Flat_value_compare<key_type, mapped_type, key_compare>::value_compare;
     using containers    = typename _Flat_Container<key_container_type, mapped_container_type>::container;
 
+private:
+    template <class T> requires same_as<remove_cvref_t<T>, flat_map>
+    using _Maybe_const_iterator_t = _STD conditional_t<_STD is_const_v<_STD remove_reference_t<T>>, const_iterator, iterator>;
+
+public:
     // [flat.map.cons] Constructors
     explicit flat_map(const key_compare& _Comp) : _Key_compare(_Comp), _Data() {}
     flat_map() : flat_map(key_compare()) {}
@@ -331,36 +337,24 @@ public:
         return *this;
     }
 
-    _NODISCARD iterator begin() noexcept {
-        return iterator {_Data.keys.cbegin(), _Data.values.begin()};
+    template <class _Self_t>
+    _NODISCARD auto begin(this _Self_t&& _Self) noexcept {
+        return _Maybe_const_iterator_t<_Self_t&&> { _Self._Data.keys.cbegin(), _Self._Data.values.begin() };
     }
 
-    _NODISCARD const_iterator begin() const noexcept {
-        return const_iterator {_Data.keys.cbegin(), _Data.values.cbegin()};
+    template <class _Self_t>
+    _NODISCARD auto end(this _Self_t&& _Self) noexcept {
+        return _Maybe_const_iterator_t<_Self_t&&> { _Self._Data.keys.cend(), _Self._Data.values.end() };
     }
 
-    _NODISCARD iterator end() noexcept {
-        return iterator {_Data.keys.cend(), _Data.values.end()};
+    template <class _Self_t>
+    _NODISCARD auto rbegin(this _Self_t&& _Self) noexcept {
+        return _STD make_reverse_iterator(_Self.end());
     }
 
-    _NODISCARD const_iterator end() const noexcept {
-        return const_iterator {_Data.keys.cend(), _Data.values.cend()};
-    }
-
-    _NODISCARD reverse_iterator rbegin() noexcept {
-        return _STD make_reverse_iterator(end());
-    }
-
-    _NODISCARD const_reverse_iterator rbegin() const noexcept {
-        return _STD make_reverse_iterator(cend());
-    }
-
-    _NODISCARD reverse_iterator rend() noexcept {
-        return _STD make_reverse_iterator(begin());
-    }
-
-    _NODISCARD const_reverse_iterator rend() const noexcept {
-        return _STD make_reverse_iterator(cbegin());
+    template <class _Self_t>
+    _NODISCARD auto rend(this _Self_t&& _Self) noexcept {
+        return _STD make_reverse_iterator(_Self.begin());
     }
 
     _NODISCARD const_iterator cbegin() const noexcept {
