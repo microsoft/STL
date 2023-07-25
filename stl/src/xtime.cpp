@@ -47,34 +47,35 @@ constexpr long _Nsec100_per_sec = _Nsec_per_sec / 100;
 
 _EXTERN_C
 
-_CRTIMP2_PURE long long __cdecl _Xtime_get_ticks() { // get system time in 100-nanosecond intervals since the epoch
+_CRTIMP2_PURE long long __cdecl _Xtime_get_ticks() noexcept {
+    // get system time in 100-nanosecond intervals since the epoch
     FILETIME ft;
     __crtGetSystemTimePreciseAsFileTime(&ft);
     return ((static_cast<long long>(ft.dwHighDateTime)) << 32) + static_cast<long long>(ft.dwLowDateTime) - _Epoch;
 }
 
 // Used by several src files, but not dllexported.
-void _Timespec64_get_sys(_timespec64* xt) { // get system time with nanosecond resolution
+void _Timespec64_get_sys(_timespec64* xt) noexcept { // get system time with nanosecond resolution
     unsigned long long now = _Xtime_get_ticks();
     xt->tv_sec             = static_cast<__time64_t>(now / _Nsec100_per_sec);
     xt->tv_nsec            = static_cast<long>(now % _Nsec100_per_sec) * 100;
 }
 
 // convert time to milliseconds
-_CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis2(const _timespec64* xt1, const _timespec64* xt2) {
+_CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis2(const _timespec64* xt1, const _timespec64* xt2) noexcept {
     _timespec64 diff = _timespec64_diff(xt1, xt2);
     return static_cast<long>(diff.tv_sec * _Msec_per_sec + (diff.tv_nsec + _Nsec_per_msec - 1) / _Nsec_per_msec);
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
-_CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis(const _timespec64* xt) { // convert time to milliseconds
+_CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis(const _timespec64* xt) noexcept { // convert time to milliseconds
     _timespec64 now;
     _Timespec64_get_sys(&now);
     return _Xtime_diff_to_millis2(xt, &now);
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
-_CRTIMP2_PURE int __cdecl xtime_get(_timespec64* xt, int type) { // get current time
+_CRTIMP2_PURE int __cdecl xtime_get(_timespec64* xt, int type) noexcept { // get current time
     if (type != TIME_UTC || xt == nullptr) {
         type = 0;
     } else {
@@ -84,13 +85,13 @@ _CRTIMP2_PURE int __cdecl xtime_get(_timespec64* xt, int type) { // get current 
     return type;
 }
 
-_CRTIMP2_PURE long long __cdecl _Query_perf_counter() { // get current value of performance counter
+_CRTIMP2_PURE long long __cdecl _Query_perf_counter() noexcept { // get current value of performance counter
     LARGE_INTEGER li;
     QueryPerformanceCounter(&li); // always succeeds
     return li.QuadPart;
 }
 
-_CRTIMP2_PURE long long __cdecl _Query_perf_frequency() { // get frequency of performance counter
+_CRTIMP2_PURE long long __cdecl _Query_perf_frequency() noexcept { // get frequency of performance counter
     static std::atomic<long long> freq_cached{0};
     long long freq = freq_cached.load(std::memory_order_relaxed);
     if (freq == 0) {

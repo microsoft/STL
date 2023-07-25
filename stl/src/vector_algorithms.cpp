@@ -800,7 +800,7 @@ namespace {
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = false;
 
-        static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) {
+        static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
             alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][2] = {
                 0x8000'0000'0000'0000ULL, 0x8000'0000'0000'0000ULL, {}};
             return _mm_sub_epi64(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
@@ -1126,7 +1126,7 @@ _Min_max_element_t __stdcall __std_minmax_element_8(
 
 namespace {
     template <class _Ty>
-    const void* _Find_trivial_unsized_fallback(const void* _First, _Ty _Val) {
+    const void* _Find_trivial_unsized_fallback(const void* _First, _Ty _Val) noexcept {
         auto _Ptr = static_cast<const _Ty*>(_First);
         while (*_Ptr != _Val) {
             ++_Ptr;
@@ -1135,7 +1135,7 @@ namespace {
     }
 
     template <class _Ty>
-    const void* _Find_trivial_tail(const void* _First, const void* _Last, _Ty _Val) {
+    const void* _Find_trivial_tail(const void* _First, const void* _Last, _Ty _Val) noexcept {
         auto _Ptr = static_cast<const _Ty*>(_First);
         while (_Ptr != _Last && *_Ptr != _Val) {
             ++_Ptr;
@@ -1144,7 +1144,8 @@ namespace {
     }
 
     template <class _Ty>
-    __declspec(noalias) size_t _Count_trivial_tail(const void* _First, const void* _Last, size_t _Current, _Ty _Val) {
+    __declspec(noalias) size_t
+        _Count_trivial_tail(const void* _First, const void* _Last, size_t _Current, _Ty _Val) noexcept {
         auto _Ptr = static_cast<const _Ty*>(_First);
         for (; _Ptr != _Last; ++_Ptr) {
             if (*_Ptr == _Val) {

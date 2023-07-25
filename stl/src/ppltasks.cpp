@@ -29,7 +29,7 @@ static GUID const Local_IID_ICallbackWithNoReentrancyToApplicationSTA = {
 #if defined(_CRT_APP) && defined(_DEBUG)
 extern "C" NTSYSAPI _Success_(return != 0) WORD NTAPI
     RtlCaptureStackBackTrace(_In_ DWORD FramesToSkip, _In_ DWORD FramesToCapture,
-        _Out_writes_to_(FramesToCapture, return) PVOID* BackTrace, _Out_opt_ PDWORD BackTraceHash);
+        _Out_writes_to_(FramesToCapture, return) PVOID* BackTrace, _Out_opt_ PDWORD BackTraceHash) noexcept;
 #endif
 
 namespace Concurrency {
@@ -350,7 +350,7 @@ namespace Concurrency {
 } // namespace Concurrency
 
 #ifdef _CRT_APP
-extern "C" void __cdecl __crtCleanupCausalityStaticFactories() {
+extern "C" void __cdecl __crtCleanupCausalityStaticFactories() noexcept {
     Concurrency::details::asyncCausalityTracer.release();
 }
 #endif

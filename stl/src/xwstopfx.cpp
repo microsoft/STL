@@ -9,7 +9,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-int _WStopfx(const wchar_t** ps, wchar_t** endptr) { // parse prefix of floating-point field
+int _WStopfx(const wchar_t** ps, wchar_t** endptr) noexcept { // parse prefix of floating-point field
     const wchar_t* s = *ps;
     int code         = 0;
     while (iswspace(*s)) {

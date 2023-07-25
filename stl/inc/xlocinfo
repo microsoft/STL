@@ -43,44 +43,48 @@ _EXTERN_C_UNLESS_PURE
 #define _M_MESSAGES _CATMASK(_X_MESSAGES)
 #define _M_ALL      (_CATMASK(_NCAT) - 1)
 
-_CRTIMP2_PURE _Collvec __CLRCALL_PURE_OR_CDECL _Getcoll();
-_CRTIMP2_PURE _Ctypevec __CLRCALL_PURE_OR_CDECL _Getctype();
-_CRTIMP2_PURE _Cvtvec __CLRCALL_PURE_OR_CDECL _Getcvt();
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Getdateorder();
+_CRTIMP2_PURE _Collvec __CLRCALL_PURE_OR_CDECL _Getcoll() noexcept;
+_CRTIMP2_PURE _Ctypevec __CLRCALL_PURE_OR_CDECL _Getctype() noexcept;
+_CRTIMP2_PURE _Cvtvec __CLRCALL_PURE_OR_CDECL _Getcvt() noexcept;
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Getdateorder() noexcept;
 
 #ifdef _M_CEE_PURE
 [System::Runtime::InteropServices::DllImport(_CRT_MSVCP_CURRENT, EntryPoint = "_Mbrtowc",
     CallingConvention = System::Runtime::InteropServices::CallingConvention::Cdecl)] extern "C" int
-    _Mbrtowc(_Out_opt_ wchar_t*, const char*, size_t, mbstate_t*, const _Cvtvec*);
+    _Mbrtowc(_Out_opt_ wchar_t*, const char*, size_t, mbstate_t*, const _Cvtvec*) noexcept;
 
 #else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
-_MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
-    _When_(_Max_multibyte != 0, _Out_) wchar_t*, const char*, size_t _Max_multibyte, mbstate_t*, const _Cvtvec*);
+_MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(_When_(_Max_multibyte != 0, _Out_) wchar_t*, const char*,
+    size_t _Max_multibyte, mbstate_t*, const _Cvtvec*) noexcept;
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(const char*, const char*, const char*, const char*, const _Collvec*);
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(
+    const char*, const char*, const char*, const char*, const _Collvec*) noexcept;
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(_Out_writes_(_End1 - _String1)
                                                           _Post_readable_size_(return) char* _String1,
-    _In_z_ char* _End1, const char*, const char*, const _Collvec*);
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int, const _Ctypevec*);
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int, const _Ctypevec*);
+    _In_z_ char* _End1, const char*, const char*, const _Collvec*) noexcept;
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int, const _Ctypevec*) noexcept;
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int, const _Ctypevec*) noexcept;
 _CRTIMP2_PURE _Success_(return != -1) int __CLRCALL_PURE_OR_CDECL
-    _Wcrtomb(_Out_ char*, wchar_t, mbstate_t*, const _Cvtvec*);
+    _Wcrtomb(_Out_ char*, wchar_t, mbstate_t*, const _Cvtvec*) noexcept;
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(
-    const wchar_t*, const wchar_t*, const wchar_t*, const wchar_t*, const _Collvec*);
+    const wchar_t*, const wchar_t*, const wchar_t*, const wchar_t*, const _Collvec*) noexcept;
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(_End1 - _String1) _Post_readable_size_(return)
                                                           wchar_t* _String1,
-    _In_z_ wchar_t* _End1, const wchar_t*, const wchar_t*, const _Collvec*);
+    _In_z_ wchar_t* _End1, const wchar_t*, const wchar_t*, const _Collvec*) noexcept;
 
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Getwctype(wchar_t, const _Ctypevec*);
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Getwctype(wchar_t, const _Ctypevec*) noexcept;
 _CRTIMP2_PURE const wchar_t* __CLRCALL_PURE_OR_CDECL _Getwctypes(
-    const wchar_t*, const wchar_t*, short*, const _Ctypevec*);
-_CRTIMP2_PURE wchar_t __CLRCALL_PURE_OR_CDECL _Towlower(wchar_t, const _Ctypevec*);
-_CRTIMP2_PURE wchar_t __CLRCALL_PURE_OR_CDECL _Towupper(wchar_t, const _Ctypevec*);
+    const wchar_t*, const wchar_t*, short*, const _Ctypevec*) noexcept;
+_CRTIMP2_PURE wchar_t __CLRCALL_PURE_OR_CDECL _Towlower(wchar_t, const _Ctypevec*) noexcept;
+_CRTIMP2_PURE wchar_t __CLRCALL_PURE_OR_CDECL _Towupper(wchar_t, const _Ctypevec*) noexcept;
 
 _END_EXTERN_C_UNLESS_PURE
 
 _EXTERN_C
+// These _should_ be explicitly `noexcept` but cannot be made so here because
+// the primary declaration in the C runtime headers is not.
+
 _Success_(return != 0) _Ret_z_ _ACRTIMP char* __cdecl _Getdays();
 
 _Success_(return != 0) _Ret_z_ _ACRTIMP char* __cdecl _Getmonths();

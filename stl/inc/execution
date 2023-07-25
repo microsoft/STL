@@ -45,7 +45,7 @@ using __std_PTP_CALLBACK_ENVIRON  = __std_TP_CALLBACK_ENVIRON*;
 _NODISCARD unsigned int __stdcall __std_parallel_algorithms_hw_threads() noexcept;
 
 using __std_PTP_WORK_CALLBACK = void(__stdcall*)(
-    _Inout_ __std_PTP_CALLBACK_INSTANCE, _Inout_opt_ void*, _Inout_ __std_PTP_WORK);
+    _Inout_ __std_PTP_CALLBACK_INSTANCE, _Inout_opt_ void*, _Inout_ __std_PTP_WORK) _NOEXCEPT_FNPTR;
 
 _NODISCARD __std_PTP_WORK __stdcall __std_create_threadpool_work(
     _In_ __std_PTP_WORK_CALLBACK, _Inout_opt_ void*, _In_opt_ __std_PTP_CALLBACK_ENVIRON) noexcept;

@@ -7,7 +7,7 @@
 
 using new_hand = int(__cdecl*)(size_t);
 
-extern "C" new_hand __cdecl _set_new_handler(new_hand);
+extern "C" new_hand __cdecl _set_new_handler(new_hand) noexcept;
 
 _STD_BEGIN
 static new_handler _New_handler;
