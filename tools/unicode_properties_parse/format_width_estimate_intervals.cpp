@@ -25,43 +25,70 @@ struct range_u {
     range_u(uint32_t v) : from(v), to(v) {}
 };
 
-// A valid Unicode code point won't exceed `max_u`.
-const uint32_t max_u = 0x10'ffff;
-using table_u        = std::vector<bool>; // true: wide
-table_u make_table() {
-    return table_u(max_u + 1, false);
-}
+enum class width_u : bool { is_1 = false, is_2 = true };
 
-// For `_Width_estimate_intervals`.
-void print_intervals(const table_u& table) {
-    using namespace std;
-    cout << endl;
-    int c     = 0;
-    bool last = table[0];
-    for (uint32_t u = 0; u <= max_u; u++) {
-        if (table[u] != last) {
-            cout << "0x" << hex << uppercase << u << "u, ";
-            if (++c == 12) {
-                c = 0;
-                cout << endl;
+class table_u {
+    // A valid Unicode code point won't exceed `max_u`.
+    static constexpr uint32_t max_u = 0x10'ffff;
+    std::vector<width_u> table;
+
+public:
+    table_u() : table(max_u + 1, width_u::is_1) {}
+    void fill_range(const range_u rng, const width_u width) {
+        const auto [from, to] = rng;
+        verify(from <= to && to <= max_u, impl_assertion_failed);
+        for (uint32_t u = from; u <= to; u++) {
+            table[u] = width;
+        }
+    }
+
+    void print_intervals() const {
+        // Print table for `_Width_estimate_intervals`.
+        using namespace std;
+        int c        = 0;
+        width_u last = table[0];
+        for (uint32_t u = 0; u <= max_u; u++) {
+            if (table[u] != last) {
+                cout << "0x" << hex << uppercase << u << "u, ";
+                if (++c == 12) {
+                    c = 0;
+                    cout << endl;
+                }
+            }
+            last = table[u];
+        }
+        cout << endl;
+    }
+
+    void print_clusters_1_vs_2(const table_u& other) const {
+        using namespace std;
+        vector<bool> cluster_table(max_u + 1, false);
+        for (uint32_t u = 0; u <= max_u; u++) {
+            if (table[u] == width_u::is_1 && other.table[u] == width_u::is_2) {
+                cluster_table[u] = true;
             }
         }
-        last = table[u];
-    }
-    cout << endl;
-}
 
-void fill_range(table_u& table, const ::range_u rng, bool is_wide) {
-    const auto [from, to] = rng;
-    verify(from <= to && to <= max_u, impl_assertion_failed);
-    for (uint32_t u = from; u <= to; u++) {
-        table[u] = is_wide;
+        for (uint32_t u = 0; u <= max_u; u++) {
+            if (cluster_table[u]) {
+                uint32_t from = u;
+                uint32_t to   = from;
+                while (to + 1 <= max_u && cluster_table[to + 1]) {
+                    ++to;
+                }
+                if (from == to) {
+                    cout << hex << uppercase << "U+" << from << endl;
+                } else {
+                    cout << hex << uppercase << "U+" << from << "..U+" << to << endl;
+                }
+                u = to;
+            }
+        }
     }
-}
+};
 
 table_u get_table_cpp20() {
-    using namespace std;
-    const vector<range_u> std_wide_ranges_cpp20{
+    const range_u std_wide_ranges_cpp20[]{
         {0x1100, 0x115F},
         {0x2329, 0x232A},
         {0x2E80, 0x303E},
@@ -77,9 +104,10 @@ table_u get_table_cpp20() {
         {0x20000, 0x2FFFD},
         {0x30000, 0x3FFFD},
     };
-    table_u table = make_table();
+
+    table_u table;
     for (const range_u rng : std_wide_ranges_cpp20) {
-        fill_range(table, rng, true);
+        table.fill_range(rng, width_u::is_2);
     }
     return table;
 }
@@ -90,26 +118,25 @@ table_u get_table_cpp20() {
 // The current implementation works for:
 // https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
 // To make this function work, the file should not contain a BOM.
-table_u read_from_source(std::ifstream& source) {
+table_u read_from(std::ifstream& source) {
     using namespace std;
-
-    table_u table = make_table();
+    table_u table;
 
     // "The unassigned code points in the following blocks default to "W":"
-    const vector<range_u> default_wide_ranges{
+    const range_u default_wide_ranges[]{
         {0x4E00, 0x9FFF}, {0x3400, 0x4DBF}, {0xF900, 0xFAFF}, {0x20000, 0x2FFFD}, {0x30000, 0x3FFFD}};
     for (const range_u rng : default_wide_ranges) {
-        fill_range(table, rng, true);
+        table.fill_range(rng, width_u::is_2);
     }
 
     // Read explicitly assigned ranges.
     // The lines that are not empty or pure comment are uniformly of the format "HEX(..HEX)?;(A|F|H|N|Na|W) #comment".
-    auto test_wide = [](const string& str) -> bool {
+    auto get_width = [](const string& str) -> width_u {
         if (str == "F" || str == "W") {
-            return true;
+            return width_u::is_2;
         } else {
             verify(str == "A" || str == "H" || str == "N" || str == "Na", impl_assertion_failed);
-            return false;
+            return width_u::is_1;
         }
     };
     auto get_value = [](const string& str) -> uint32_t {
@@ -119,7 +146,7 @@ table_u read_from_source(std::ifstream& source) {
         return value;
     };
 
-    verify(!!source, "invalid ifstream");
+    verify(!!source, "invalid path");
     string line;
     const regex reg(R"(([0-9A-Z]+)(\.\.[0-9A-Z]+)?;(A|F|H|N|Na|W) *#.*)");
     while (getline(source, line)) {
@@ -127,16 +154,16 @@ table_u read_from_source(std::ifstream& source) {
             smatch match;
             verify(regex_match(line, match, reg), "invalid line");
             verify(match[1].matched && match[3].matched, impl_assertion_failed);
-            bool is_wide  = test_wide(match[3].str());
-            uint32_t from = get_value(match[1].str());
+            const width_u width = get_width(match[3].str());
+            const uint32_t from = get_value(match[1].str());
             if (match[2].matched) {
                 // range (HEX..HEX)
                 string match2 = match[2].str();
                 verify(match2.starts_with(".."), impl_assertion_failed);
-                fill_range(table, {from, get_value(match2.substr(2))}, is_wide);
+                table.fill_range({from, get_value(match2.substr(2))}, width);
             } else {
                 // single character (HEX)
-                fill_range(table, {from}, is_wide);
+                table.fill_range({from}, width);
             }
         }
     }
@@ -145,72 +172,33 @@ table_u read_from_source(std::ifstream& source) {
 }
 
 table_u get_table_cpp23(std::ifstream& source) {
-    using namespace std;
-    table_u table = read_from_source(source);
+    table_u table = read_from(source);
 
     // Override with ranges specified by the C++ standard.
-    const vector<range_u> std_wide_ranges_cpp23{{0x4DC0, 0x4DFF}, {0x1F300, 0x1F5FF}, {0x1F900, 0x1F9FF}};
+    const range_u std_wide_ranges_cpp23[]{{0x4DC0, 0x4DFF}, {0x1F300, 0x1F5FF}, {0x1F900, 0x1F9FF}};
     for (const range_u rng : std_wide_ranges_cpp23) {
-        fill_range(table, rng, true);
+        table.fill_range(rng, width_u::is_2);
     }
 
     return table;
 }
 
-// Confirm that we get the same result (under UCD version 15.0.0) as in the annex in
-// https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2675r1.pdf
-void compare_with_cpp20(const table_u& table /*gotten from get_table_cpp23*/) {
+int main() {
     using namespace std;
 
-    auto print_clusters = [](const table_u& table) {
-        for (uint32_t u = 0; u <= max_u; u++) {
-            if (table[u]) {
-                uint32_t from = u;
-                uint32_t to   = from;
-                while (to + 1 <= max_u && table[to + 1]) {
-                    ++to;
-                }
-                if (from == to) {
-                    cout << hex << uppercase << "U+" << from << endl;
-                } else {
-                    cout << hex << uppercase << "U+" << from << "..U+" << to << endl;
-                }
-                u = to;
-            }
-        }
-    };
-
+    cout << "Old table:\n";
     const table_u old_table = get_table_cpp20();
-    table_u diff_table      = make_table();
+    old_table.print_intervals();
+
+    cout << "\nNew table:\nInput path for EastAsianWidth.txt: ";
+    string path;
+    getline(cin, path);
+    ifstream source(path);
+    table_u new_table = get_table_cpp23(source);
+    new_table.print_intervals();
+
     cout << "\nWas 1, now 2:\n";
-    for (uint32_t u = 0; u <= max_u; u++) {
-        if (!old_table[u] && table[u]) {
-            diff_table[u] = true;
-        }
-    }
-    print_clusters(diff_table);
-
-    diff_table = make_table(); // Reset all bits.
+    old_table.print_clusters_1_vs_2(new_table);
     cout << "\nWas 2, now 1:\n";
-    for (uint32_t u = 0; u <= max_u; u++) {
-        if (old_table[u] && !table[u]) {
-            diff_table[u] = true;
-        }
-    }
-    print_clusters(diff_table);
-}
-
-int main() {
-    // print_intervals(get_table_cpp20());
-    // 0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u,
-    // 0xFE10u, 0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u,
-    // 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu,
-
-    std::cout << "Input path for EastAsianWidth.txt: ";
-    std::string path;
-    getline(std::cin, path);
-    std::ifstream source(path);
-    table_u table = get_table_cpp23(source);
-    print_intervals(table);
-    compare_with_cpp20(table);
+    new_table.print_clusters_1_vs_2(old_table);
 }
