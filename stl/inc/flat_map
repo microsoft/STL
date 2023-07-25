@@ -225,7 +225,7 @@ private:
     using _Maybe_const_iterator_t = _STD conditional_t<_STD is_const_v<_STD remove_reference_t<T>>, const_iterator, iterator>;
 
 public:
-    // [flat.map.cons] Constructors
+    // [flatmap.cons] Constructors
     explicit flat_map(const key_compare& _Comp) : _Key_compare(_Comp), _Data() {}
     flat_map() : flat_map(key_compare()) {}
 
@@ -373,7 +373,7 @@ public:
         return _STD make_reverse_iterator(cbegin());
     }
 
-    // [flat.map.capacity] Capacity
+    // [flatmap.capacity] Capacity
     _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
         return _Data.keys.empty();
     }
@@ -386,7 +386,7 @@ public:
         return _STD min(_Data.keys.max_size(), _Data.values.max_size());
     }
 
-    // [flat.map.access] Access
+    // [flatmap.access] Access
     _NODISCARD mapped_type& operator[](const key_type& _Key); // TODO: implement
     _NODISCARD mapped_type& operator[](key_type&& _Key); // TODO: implement
     template <class _C>
