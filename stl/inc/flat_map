@@ -76,6 +76,8 @@ class _Flat_map_iterator_Impl {
 public:
     class type {
     public:
+        template <class Key, class T, class Compare, class KeyContainer, class MappedContainer> requires same_as<Key, typename KeyContainer::value_type> && same_as<T, typename MappedContainer::value_type>
+        friend class flat_map;
         type() = default;
         type(_Key_iterator_t _Key_it, _Mapped_iterator_t _Mapped_it) : _Key_it(_Key_it), _Mapped_it(_Mapped_it) {}
         // Copy-constructible
@@ -208,9 +210,9 @@ public:
     using difference_type        = ptrdiff_t;
     using key_container_type     = KeyContainer;
     using mapped_container_type  = MappedContainer;
-    using iterator               = _STD _Flat_map_iterator_Impl<typename key_container_type::const_iterator,
+    using iterator               = typename _STD _Flat_map_iterator_Impl<typename key_container_type::const_iterator,
         typename mapped_container_type::iterator>::type;
-    using const_iterator         = _STD _Flat_map_iterator_Impl<typename key_container_type::const_iterator,
+    using const_iterator         = typename _STD _Flat_map_iterator_Impl<typename key_container_type::const_iterator,
         typename mapped_container_type::const_iterator>::type;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
@@ -337,6 +339,7 @@ public:
         return *this;
     }
 
+    // [container.reqmts] iterators
     template <class _Self_t>
     _NODISCARD auto begin(this _Self_t&& _Self) noexcept {
         return _Maybe_const_iterator_t<_Self_t&&> { _Self._Data.keys.cbegin(), _Self._Data.values.begin() };
@@ -373,6 +376,12 @@ public:
         return _STD make_reverse_iterator(cbegin());
     }
 
+    // [container.reqmts] clear
+    void clear() noexcept {
+        _Data.keys.clear();
+        _Data.values.clear();
+    }
+
     // [flatmap.capacity] Capacity
     _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
         return _Data.keys.empty();
@@ -399,9 +408,24 @@ public:
     _NODISCARD auto&& at(this _Self_t&& _Self, const _C& _Key)
         requires _Compare_is_transparent<key_compare>; // TODO: implement
 
-    void clear() noexcept {
-        _Data.keys.clear();
-        _Data.values.clear();
+    // [flatmap.modifiers] Modifiers
+    template <class... _Args_t>
+    _STD pair<iterator, bool> emplace(_Args_t&&... _Args) requires _STD is_constructible_v<value_type, _Args_t...> {
+        value_type _Val(_STD forward<_Args_t>(_Args)...);
+        iterator _It = lower_bound(_Data.keys.begin(), _Data.keys.end(), _Val.first, _Key_compare);
+
+        if(_It != end() && *(_It._Key_it) == _Val.first) {
+            // Already exists
+            return _STD make_pair(_It, false);
+        }
+        else{
+            // Need to insert
+            auto _Index = _STD distance(begin(), _It);
+            _Data.keys.insert(_It._Key_it, _STD move(_Val.first));
+            _Data.values.insert(_It._Mapped_it, _STD move(_Val.second));
+            // Note: Consider _It invalidated by the insert operation
+            return _STD make_pair(begin() + _Index, true);
+        }
     }
 
     // observers
@@ -419,6 +443,15 @@ public:
 
     const mapped_container_type& values() const noexcept {
         return _Data.values;
+    }
+
+    // map operations
+    template<class _Self_t>
+    auto lower_bound(this _Self_t&& _Self, const key_type& _X) {
+        auto _Key_it = _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _X, _Self._Key_compare);
+        auto _Dist = _STD distance(_Self._Data.keys.begin(), _Key_it);
+        auto _Val_it = _Self._Data.values.begin() + _Dist;
+        return _Maybe_const_iterator_t<_Self_t&&> { _STD move(_Key_it), _STD move(_Val_it) };
     }
 
 private:
