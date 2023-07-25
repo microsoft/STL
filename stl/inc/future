@@ -1411,9 +1411,9 @@ public:
         // Initializes _Fake_no_copy_callable_adapter with a decayed callable object and arguments
     }
 
-    _Fake_no_copy_callable_adapter(const _Fake_no_copy_callable_adapter& _Other)
+    [[noreturn]] _Fake_no_copy_callable_adapter(const _Fake_no_copy_callable_adapter& _Other)
         : _Storage(_STD move(_Other._Storage)) {
-        _STD terminate(); // Very Bad Things
+        _CSTD abort(); // shouldn't be called, see GH-3888
     }
 
     _Fake_no_copy_callable_adapter(_Fake_no_copy_callable_adapter&& _Other)          = default;

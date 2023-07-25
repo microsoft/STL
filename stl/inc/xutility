@@ -885,8 +885,8 @@ struct _Projected_impl {
         using _Projection = _Proj;
 
         using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
-        indirect_result_t<_Proj&, _It> operator*() const {
-            _CSTD abort();
+        [[noreturn]] indirect_result_t<_Proj&, _It> operator*() const {
+            _CSTD abort(); // shouldn't be called, see GH-3888
         }
     };
 };
