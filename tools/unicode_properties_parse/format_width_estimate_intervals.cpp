@@ -10,14 +10,14 @@
 #include <regex>
 #include <vector>
 
-void _verify(bool test, int line, const char* msg) {
+void verify_impl(bool test, int line, const char* msg) {
     if (!test) {
         std::cerr << "Error at line " << line << ": " << msg << std::endl;
         exit(EXIT_FAILURE);
     }
 }
-#define verify(expr, msg) _verify((expr), __LINE__, (msg))
-static const char* impl_assertion_failed = "impl assertion failed";
+#define verify(expr, msg) verify_impl((expr), __LINE__, (msg))
+constexpr const char* impl_assertion_failed = "impl assertion failed";
 
 struct range_u {
     uint32_t from, to;
