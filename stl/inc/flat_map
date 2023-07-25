@@ -208,17 +208,17 @@ public:
     using difference_type        = ptrdiff_t;
     using key_container_type     = KeyContainer;
     using mapped_container_type  = MappedContainer;
-    using iterator               = _Flat_map_iterator_Impl<typename key_container_type::const_iterator,
+    using iterator               = _STD _Flat_map_iterator_Impl<typename key_container_type::const_iterator,
         typename mapped_container_type::iterator>::type;
-    using const_iterator         = _Flat_map_iterator_Impl<typename key_container_type::const_iterator,
+    using const_iterator         = _STD _Flat_map_iterator_Impl<typename key_container_type::const_iterator,
         typename mapped_container_type::const_iterator>::type;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
     static_assert(_STD random_access_iterator<iterator>);
 
-    using value_compare = typename _Flat_value_compare<key_type, mapped_type, key_compare>::value_compare;
-    using containers    = typename _Flat_Container<key_container_type, mapped_container_type>::container;
+    using value_compare = typename _STD _Flat_value_compare<key_type, mapped_type, key_compare>::value_compare;
+    using containers    = typename _STD _Flat_Container<key_container_type, mapped_container_type>::container;
 
 private:
     template <class T> requires same_as<remove_cvref_t<T>, flat_map>
