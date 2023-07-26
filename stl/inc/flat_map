@@ -69,6 +69,18 @@ struct _Flat_Container {
     };
 };
 
+template <class _Ty>
+struct _NODISCARD _Clear_flat_map_scope_guard {
+    _Ty* _Clearable;
+    _Clear_flat_map_scope_guard(_Ty* _Clearable) : _Clearable(_Clearable) {}
+
+    ~_Clear_flat_map_scope_guard() {
+        if (_Clearable) {
+            _Clearable->clear();
+        }
+    }
+};
+
 // Implementation
 
 template <_STD random_access_iterator _Key_iterator_t, _STD random_access_iterator _Mapped_iterator_t>
@@ -420,12 +432,19 @@ public:
         }
         else{
             // Need to insert
+            _Clear_flat_map_scope_guard _Guard { this };
             auto _Index = _STD distance(begin(), _It);
             _Data.keys.insert(_It._Key_it, _STD move(_Val.first));
             _Data.values.insert(_It._Mapped_it, _STD move(_Val.second));
             // Note: Consider _It invalidated by the insert operation
+            _Guard._Clearable = nullptr;
             return _STD make_pair(begin() + _Index, true);
         }
+    }
+
+    template <class _V>
+    _STD pair<iterator, bool> insert(_V&& _X) requires same_as<_STD remove_cvref_t<V&&>, value_type> {
+        return emplace(_STD forward<_V>(_X));
     }
 
     // observers
@@ -467,6 +486,7 @@ private:
     };
 
     void _SortAndDedup() {
+        _Clear_flat_map_scope_guard _Guard { this };
         auto _Zip_view = _RANGES views::zip(_Data.keys, _Data.values);
         _RANGES sort(_Zip_view, value_compare(_Key_compare));
 
@@ -475,6 +495,7 @@ private:
 
         _Data.keys.erase(_Data.keys.begin() + _Remaining_count, _Data.keys.end());
         _Data.values.erase(_Data.values.begin() + _Remaining_count, _Data.values.end());
+        _Guard._Clearable = nullptr;
     }
 };
 
