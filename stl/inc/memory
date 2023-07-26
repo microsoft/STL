@@ -1126,11 +1126,11 @@ private:
 #ifdef _M_CEE_PURE
     // permanent workaround to avoid mentioning _purecall in msvcurt.lib, ptrustu.lib, or other support libs
     virtual void _Destroy() noexcept {
-        _STD terminate();
+        _STD abort();
     }
 
     virtual void _Delete_this() noexcept {
-        _STD terminate();
+        _STD abort();
     }
 #else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
     virtual void _Destroy() noexcept     = 0; // destroy managed resource
