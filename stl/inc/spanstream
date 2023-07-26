@@ -39,9 +39,9 @@ private:
 
 public:
     using char_type   = _Elem;
-    using int_type    = typename _Traits::int_type;
-    using pos_type    = typename _Traits::pos_type;
-    using off_type    = typename _Traits::off_type;
+    using int_type    = _Traits::int_type;
+    using pos_type    = _Traits::pos_type;
+    using off_type    = _Traits::off_type;
     using traits_type = _Traits;
 
     // N4950 [spanbuf.cons], constructors
@@ -201,9 +201,9 @@ private:
 
 public:
     using char_type   = _Elem;
-    using int_type    = typename _Traits::int_type;
-    using pos_type    = typename _Traits::pos_type;
-    using off_type    = typename _Traits::off_type;
+    using int_type    = _Traits::int_type;
+    using pos_type    = _Traits::pos_type;
+    using off_type    = _Traits::off_type;
     using traits_type = _Traits;
 
     // N4950 [ispanstream.cons], constructors
@@ -284,9 +284,9 @@ private:
 
 public:
     using char_type   = _Elem;
-    using int_type    = typename _Traits::int_type;
-    using pos_type    = typename _Traits::pos_type;
-    using off_type    = typename _Traits::off_type;
+    using int_type    = _Traits::int_type;
+    using pos_type    = _Traits::pos_type;
+    using off_type    = _Traits::off_type;
     using traits_type = _Traits;
 
     // N4950 [ospanstream.cons], constructors
@@ -344,9 +344,9 @@ private:
 
 public:
     using char_type   = _Elem;
-    using int_type    = typename _Traits::int_type;
-    using pos_type    = typename _Traits::pos_type;
-    using off_type    = typename _Traits::off_type;
+    using int_type    = _Traits::int_type;
+    using pos_type    = _Traits::pos_type;
+    using off_type    = _Traits::off_type;
     using traits_type = _Traits;
 
     // N4950 [spanstream.cons], constructors

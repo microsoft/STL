@@ -226,8 +226,8 @@ public:
 template <class _Myvec>
 struct pointer_traits<_Vector_const_iterator<_Myvec>> {
     using pointer         = _Vector_const_iterator<_Myvec>;
-    using element_type    = const typename pointer::value_type;
-    using difference_type = typename pointer::difference_type;
+    using element_type    = const typename pointer::value_type; // TRANSITION, VSO-1854115, omit typename
+    using difference_type = pointer::difference_type;
 
     _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -348,8 +348,8 @@ public:
 template <class _Myvec>
 struct pointer_traits<_Vector_iterator<_Myvec>> {
     using pointer         = _Vector_iterator<_Myvec>;
-    using element_type    = typename pointer::value_type;
-    using difference_type = typename pointer::difference_type;
+    using element_type    = pointer::value_type;
+    using difference_type = pointer::difference_type;
 
     _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2366,12 +2366,12 @@ _CONSTEXPR20 void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) 
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
-constexpr typename vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+constexpr vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
     return _Erase_remove(_Cont, _Val);
 }
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
-constexpr typename vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+constexpr vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
