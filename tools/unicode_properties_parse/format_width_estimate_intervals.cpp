@@ -110,7 +110,7 @@ table_u get_table_cpp20() {
     };
 
     table_u table;
-    for (const range_u rng : std_wide_ranges_cpp20) {
+    for (const range_u& rng : std_wide_ranges_cpp20) {
         table.fill_range(rng, width_u::is_2);
     }
     return table;
@@ -128,7 +128,7 @@ table_u read_from(ifstream& source) {
     // "The unassigned code points in the following blocks default to "W":"
     const range_u default_wide_ranges[]{
         {0x4E00, 0x9FFF}, {0x3400, 0x4DBF}, {0xF900, 0xFAFF}, {0x20000, 0x2FFFD}, {0x30000, 0x3FFFD}};
-    for (const range_u rng : default_wide_ranges) {
+    for (const range_u& rng : default_wide_ranges) {
         table.fill_range(rng, width_u::is_2);
     }
 
@@ -181,7 +181,7 @@ table_u get_table_cpp23(ifstream& source) {
 
     // Override with ranges specified by the C++ standard.
     const range_u std_wide_ranges_cpp23[]{{0x4DC0, 0x4DFF}, {0x1F300, 0x1F5FF}, {0x1F900, 0x1F9FF}};
-    for (const range_u rng : std_wide_ranges_cpp23) {
+    for (const range_u& rng : std_wide_ranges_cpp23) {
         table.fill_range(rng, width_u::is_2);
     }
 
