@@ -7,7 +7,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-short _LDscale(long double* px, long lexp) { // scale *px by 2^lexp with checking -- 64-bit
+short _LDscale(long double* px, long lexp) noexcept { // scale *px by 2^lexp with checking -- 64-bit
     return _Dscale(reinterpret_cast<double*>(px), lexp);
 }
 
