@@ -41,7 +41,8 @@ public:
     table_u() : table(max_u + 1, width_u::is_1) {}
     void fill_range(const range_u rng, const width_u width) {
         const auto [from, to] = rng;
-        VERIFY(from <= to && to <= max_u, impl_assertion_failed);
+        VERIFY(from <= to, impl_assertion_failed);
+        VERIFY(to <= max_u, impl_assertion_failed);
         for (uint32_t u = from; u <= to; ++u) {
             table[u] = width;
         }
@@ -144,7 +145,8 @@ table_u read_from(ifstream& source) {
     auto get_value = [](const string& str) {
         uint32_t value{};
         auto [end, ec] = from_chars(str.data(), str.data() + str.size(), value, 16);
-        VERIFY(end == str.data() + str.size() && ec == errc{}, impl_assertion_failed);
+        VERIFY(end == str.data() + str.size(), impl_assertion_failed);
+        VERIFY(ec == errc{}, impl_assertion_failed);
         return value;
     };
 
@@ -155,7 +157,8 @@ table_u read_from(ifstream& source) {
         if (!line.empty() && !line.starts_with("#")) {
             smatch match;
             VERIFY(regex_match(line, match, reg), "invalid line");
-            VERIFY(match[1].matched && match[3].matched, impl_assertion_failed);
+            VERIFY(match[1].matched, impl_assertion_failed);
+            VERIFY(match[3].matched, impl_assertion_failed);
             const width_u width = get_width(match[3].str());
             const uint32_t from = get_value(match[1].str());
             if (match[2].matched) {
