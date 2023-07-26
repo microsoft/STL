@@ -32,7 +32,6 @@
 // DEALINGS IN THE SOFTWARE.
 
 
-#pragma once
 #ifndef _XCHARCONV_RYU_H
 #define _XCHARCONV_RYU_H
 #include <yvals_core.h>

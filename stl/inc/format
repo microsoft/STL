@@ -34,7 +34,6 @@
 // source code, you may redistribute such embedded portions in such object form
 // without including the above copyright and permission notices.
 
-#pragma once
 #ifndef _FORMAT_
 #define _FORMAT_
 #include <yvals_core.h>

@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _EXPERIMENTAL_FORWARD_LIST_
 #define _EXPERIMENTAL_FORWARD_LIST_
 #include <yvals_core.h>

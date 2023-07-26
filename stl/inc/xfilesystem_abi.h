@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XFILESYSTEM_ABI_H
 #define _XFILESYSTEM_ABI_H
 #include <yvals_core.h>
