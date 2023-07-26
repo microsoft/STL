@@ -40,6 +40,7 @@ private:
 
 public:
     table_u() : table(max_u + 1, width_u::is_1) {}
+
     void fill_range(const range_u rng, const width_u width) {
         const auto [from, to] = rng;
         VERIFY(from <= to, impl_assertion_failed);
