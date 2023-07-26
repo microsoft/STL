@@ -84,6 +84,9 @@ _STD_BEGIN
     static_assert(_Is_cpp17_random_iter_v<_Iter>,            \
         "This algorithm requires that mutable iterators be Cpp17RandomAccessIterators or stronger.")
 
+#define _REQUIRE_BIDIRECTIONAL_ITERATOR(_Iter) \
+    static_assert(_Is_ranges_bidi_iter_v<_Iter>, "This algorithm requires bidirectional iterators or stronger.")
+
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 
 template <class _It>
@@ -4810,7 +4813,7 @@ _EXPORT_STD template <class _ExPo, class _BidIt, class _FwdIt, _Enable_if_execut
 _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept /* terminates */ {
     // copy reversing elements in [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
-    static_assert(_Is_ranges_bidi_iter_v<_BidIt>, "This algorithm requires bidirectional iterators or stronger.");
+    _REQUIRE_BIDIRECTIONAL_ITERATOR(_BidIt);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD reverse_copy(_First, _Last, _Dest);
 }
@@ -10694,6 +10697,8 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
+
+#undef _REQUIRE_BIDIRECTIONAL_ITERATOR
 
 _STD_END
 
