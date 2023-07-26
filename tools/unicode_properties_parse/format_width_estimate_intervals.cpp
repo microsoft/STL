@@ -9,10 +9,11 @@
 #include <iostream>
 #include <regex>
 #include <vector>
+using namespace std;
 
 void verify_impl(bool test, int line, const char* msg) {
     if (!test) {
-        std::cerr << "Error at line " << line << ": " << msg << std::endl;
+        cerr << "Error at line " << line << ": " << msg << endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -31,7 +32,7 @@ enum class width_u : bool { is_1 = false, is_2 = true };
 class table_u {
     // A valid Unicode code point won't exceed `max_u`.
     static constexpr uint32_t max_u = 0x10'ffff;
-    std::vector<width_u> table;
+    vector<width_u> table;
 
 public:
     table_u() : table(max_u + 1, width_u::is_1) {}
@@ -45,7 +46,6 @@ public:
 
     void print_intervals() const {
         // Print table for `_Width_estimate_intervals_v2`.
-        using namespace std;
         int c        = 0;
         width_u last = table[0];
         for (uint32_t u = 0; u <= max_u; u++) {
@@ -62,7 +62,6 @@ public:
     }
 
     void print_clusters_1_vs_2(const table_u& other) const {
-        using namespace std;
         vector<bool> cluster_table(max_u + 1, false);
         for (uint32_t u = 0; u <= max_u; u++) {
             if (table[u] == width_u::is_1 && other.table[u] == width_u::is_2) {
@@ -119,8 +118,7 @@ table_u get_table_cpp20() {
 // The current implementation works for:
 // https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
 // To make this function work, the file should not contain a BOM.
-table_u read_from(std::ifstream& source) {
-    using namespace std;
+table_u read_from(ifstream& source) {
     table_u table;
 
     // "The unassigned code points in the following blocks default to "W":"
@@ -172,7 +170,7 @@ table_u read_from(std::ifstream& source) {
     return table;
 }
 
-table_u get_table_cpp23(std::ifstream& source) {
+table_u get_table_cpp23(ifstream& source) {
     table_u table = read_from(source);
 
     // Override with ranges specified by the C++ standard.
@@ -185,8 +183,6 @@ table_u get_table_cpp23(std::ifstream& source) {
 }
 
 int main() {
-    using namespace std;
-
     cout << "Old table:\n";
     const table_u old_table = get_table_cpp20();
     old_table.print_intervals();
