@@ -95,7 +95,7 @@ namespace numbers {
     };
 
     template <class _Ty>
-    using _Reject_invalid_t = typename _Reject_invalid<_Ty>::type;
+    using _Reject_invalid_t = _Reject_invalid<_Ty>::type;
 
     _EXPORT_STD template <class _Ty>
     inline constexpr _Ty e_v = static_cast<_Reject_invalid_t<_Ty>>(2.718281828459045);

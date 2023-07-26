@@ -1499,7 +1499,7 @@ namespace ranges {
             using iterator_concept  = random_access_iterator_tag;
             using iterator_category = random_access_iterator_tag;
             using value_type        = _Ty;
-            using difference_type   = typename _Repeat_view_difference_type<_Index_type>::type;
+            using difference_type   = _Repeat_view_difference_type<_Index_type>::type;
 
             _Iterator() = default;
 
@@ -4814,7 +4814,7 @@ namespace ranges {
         template <forward_range _BaseTy>
         class _Inner_iter_base<_BaseTy> {
         private:
-            using _BaseCategory = typename iterator_traits<iterator_t<_BaseTy>>::iterator_category;
+            using _BaseCategory = iterator_traits<iterator_t<_BaseTy>>::iterator_category;
 
         public:
             using iterator_category =
@@ -4881,7 +4881,7 @@ namespace ranges {
             }
 
         public:
-            using iterator_concept = typename _Outer_iter<_Const>::iterator_concept;
+            using iterator_concept = _Outer_iter<_Const>::iterator_concept;
             using value_type       = range_value_t<_BaseTy>;
             using difference_type  = range_difference_t<_BaseTy>;
 
@@ -7729,7 +7729,7 @@ namespace ranges {
         template <forward_range _BaseTy>
         class _Category_base<_BaseTy> {
         private:
-            using _BaseCategory = typename iterator_traits<iterator_t<_BaseTy>>::iterator_category;
+            using _BaseCategory = iterator_traits<iterator_t<_BaseTy>>::iterator_category;
 
         public:
             using iterator_category = conditional_t<derived_from<_BaseCategory, random_access_iterator_tag>,
@@ -8684,7 +8684,7 @@ namespace ranges {
                 : _Parent(_STD addressof(_Parent_)), _Inner(_STD move(_Inner_)) {}
 
         public:
-            using iterator_concept = typename _Ziperator<_IsConst>::iterator_concept;
+            using iterator_concept = _Ziperator<_IsConst>::iterator_concept;
             using value_type       = remove_cvref_t<invoke_result_t<_Maybe_const<_IsConst, _Func>&,
                 range_reference_t<_Maybe_const<_IsConst, _ViewTypes>>...>>;
             using difference_type  = range_difference_t<_Base_t>;
@@ -9006,7 +9006,7 @@ namespace ranges {
     };
 
     template <class _Ty, size_t _Nx>
-    using _Repeated_tuple = typename _Repeated_tuple_impl<_Ty, make_index_sequence<_Nx>>::type;
+    using _Repeated_tuple = _Repeated_tuple_impl<_Ty, make_index_sequence<_Nx>>::type;
 
     template <class _Fn, class _Ty, class _Indices>
     inline constexpr bool _Regular_invocable_with_repeated_type_impl = false;
@@ -9033,7 +9033,7 @@ namespace ranges {
 
     template <class _Fn, class _Ty, size_t _Nx>
     using _Invoke_result_with_repeated_type =
-        typename _Invoke_result_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>::type;
+        _Invoke_result_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>::type;
 
     template <class _Vw, class _Fn, size_t _Nx>
     concept _Adjacent_transform_constraints =
@@ -9478,7 +9478,7 @@ namespace ranges {
                                   range_reference_t<_Base>, _Nx>>) {
                     return input_iterator_tag{};
                 } else {
-                    using _Cat = typename iterator_traits<iterator_t<_Base>>::iterator_category;
+                    using _Cat = iterator_traits<iterator_t<_Base>>::iterator_category;
 
                     if constexpr (derived_from<_Cat, random_access_iterator_tag>) {
                         return random_access_iterator_tag{};
@@ -9500,7 +9500,7 @@ namespace ranges {
 
         public:
             using iterator_category = decltype(_Get_iterator_category());
-            using iterator_concept  = typename _Inner_iterator<_Const>::iterator_concept;
+            using iterator_concept  = _Inner_iterator<_Const>::iterator_concept;
             using value_type        = remove_cvref_t<
                 _Invoke_result_with_repeated_type<_Maybe_const<_Const, _Fn>&, range_reference_t<_Base>, _Nx>>;
             using difference_type = range_difference_t<_Base>;

@@ -423,7 +423,7 @@ namespace _Strong_order {
             } else if constexpr (_Strat == _St::_Floating) {
                 using _Floating_type = decay_t<_Ty1>;
                 using _Traits        = _Floating_type_traits<_Floating_type>;
-                using _Uint_type     = typename _Traits::_Uint_type;
+                using _Uint_type     = _Traits::_Uint_type;
                 using _Sint_type     = make_signed_t<_Uint_type>;
 
                 const auto _Left_uint  = _Bit_cast<_Uint_type>(_Left);
@@ -530,7 +530,7 @@ namespace _Weak_order {
             } else if constexpr (_Strat == _St::_Floating) {
                 using _Floating_type = decay_t<_Ty1>;
                 using _Traits        = _Floating_type_traits<_Floating_type>;
-                using _Uint_type     = typename _Traits::_Uint_type;
+                using _Uint_type     = _Traits::_Uint_type;
                 using _Sint_type     = make_signed_t<_Uint_type>;
 
                 auto _Left_uint  = _Bit_cast<_Uint_type>(_Left);
