@@ -408,7 +408,7 @@ public:
     _NODISCARD auto&& at(this _Self_t&& _Self, const _C& _Key)
         requires _Compare_is_transparent<key_compare>; // TODO: implement
 
-    // [flatmap.modifiers] Modifiers
+    // [flat.map.modifiers] Modifiers
     template <class... _Args_t>
     _STD pair<iterator, bool> emplace(_Args_t&&... _Args) requires _STD is_constructible_v<value_type, _Args_t...> {
         value_type _Val(_STD forward<_Args_t>(_Args)...);
