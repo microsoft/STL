@@ -238,10 +238,10 @@ private:
         const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
         unique_lock<mutex> _Guard{*_Ptr};
         _Unlock_guard<_Lock> _Unlock_outer{_Lck};
-        const int _Res = _Cnd_timedwait(_Mycnd(), _Ptr->_Mymtx(), _Abs_time);
+        const _Thrd_result _Res = _Cnd_timedwait(_Mycnd(), _Ptr->_Mymtx(), _Abs_time);
         _Guard.unlock();
 
-        if (_Res == _Thrd_success) {
+        if (_Res == _Thrd_result::_Success) {
             return cv_status::no_timeout;
         } else {
             return cv_status::timeout;
