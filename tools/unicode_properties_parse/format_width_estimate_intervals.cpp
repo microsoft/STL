@@ -17,7 +17,7 @@ void verify_impl(bool test, int line, const char* msg) {
         exit(EXIT_FAILURE);
     }
 }
-#define verify(expr, msg) verify_impl((expr), __LINE__, (msg))
+#define VERIFY(expr, msg) verify_impl((expr), __LINE__, (msg))
 constexpr const char* impl_assertion_failed = "impl assertion failed";
 
 struct range_u {
@@ -38,7 +38,7 @@ public:
     table_u() : table(max_u + 1, width_u::is_1) {}
     void fill_range(const range_u rng, const width_u width) {
         const auto [from, to] = rng;
-        verify(from <= to && to <= max_u, impl_assertion_failed);
+        VERIFY(from <= to && to <= max_u, impl_assertion_failed);
         for (uint32_t u = from; u <= to; u++) {
             table[u] = width;
         }
@@ -134,31 +134,31 @@ table_u read_from(ifstream& source) {
         if (str == "F" || str == "W") {
             return width_u::is_2;
         } else {
-            verify(str == "A" || str == "H" || str == "N" || str == "Na", impl_assertion_failed);
+            VERIFY(str == "A" || str == "H" || str == "N" || str == "Na", impl_assertion_failed);
             return width_u::is_1;
         }
     };
     auto get_value = [](const string& str) -> uint32_t {
         uint32_t value{};
         auto [end, ec] = from_chars(str.data(), str.data() + str.size(), value, 16);
-        verify(end == str.data() + str.size() && ec == errc{}, impl_assertion_failed);
+        VERIFY(end == str.data() + str.size() && ec == errc{}, impl_assertion_failed);
         return value;
     };
 
-    verify(!!source, "invalid path");
+    VERIFY(!!source, "invalid path");
     string line;
     const regex reg(R"(([0-9A-Z]+)(\.\.[0-9A-Z]+)?;(A|F|H|N|Na|W) *#.*)");
     while (getline(source, line)) {
         if (!line.empty() && !line.starts_with("#")) {
             smatch match;
-            verify(regex_match(line, match, reg), "invalid line");
-            verify(match[1].matched && match[3].matched, impl_assertion_failed);
+            VERIFY(regex_match(line, match, reg), "invalid line");
+            VERIFY(match[1].matched && match[3].matched, impl_assertion_failed);
             const width_u width = get_width(match[3].str());
             const uint32_t from = get_value(match[1].str());
             if (match[2].matched) {
                 // range (HEX..HEX)
                 string match2 = match[2].str();
-                verify(match2.starts_with(".."), impl_assertion_failed);
+                VERIFY(match2.starts_with(".."), impl_assertion_failed);
                 table.fill_range({from, get_value(match2.substr(2))}, width);
             } else {
                 // single character (HEX)
