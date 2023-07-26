@@ -146,8 +146,8 @@ table_u read_from(ifstream& source) {
     };
     auto get_value = [](const string& str) {
         uint32_t value{};
-        auto [end, ec] = from_chars(str.data(), str.data() + str.size(), value, 16);
-        VERIFY(end == str.data() + str.size(), impl_assertion_failed);
+        auto [end_ptr, ec] = from_chars(str.data(), str.data() + str.size(), value, 16);
+        VERIFY(end_ptr == str.data() + str.size(), impl_assertion_failed);
         VERIFY(ec == errc{}, impl_assertion_failed);
         return value;
     };
