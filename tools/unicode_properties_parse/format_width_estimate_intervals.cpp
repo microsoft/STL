@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// The following code generates data for `_Width_estimate_intervals` in <format>.
+// The following code generates data for `_Width_estimate_intervals_v2` in <format>.
 
 #include <charconv>
 #include <format>
@@ -43,7 +43,7 @@ public:
     }
 
     void print_intervals() const {
-        // Print table for `_Width_estimate_intervals`.
+        // Print table for `_Width_estimate_intervals_v2`.
         using namespace std;
         int c        = 0;
         width_u last = table[0];
