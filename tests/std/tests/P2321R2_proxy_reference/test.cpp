@@ -274,6 +274,7 @@ constexpr bool test() {
 
     { // Test vector<bool>::reference
         static_assert(is_assignable_v<const vector<bool>::reference, bool>);
+        static_assert(is_assignable_v<const vector<bool>::reference&, bool>);
 
         vector<bool> vb{false};
         const vector<bool>::reference r = vb[0];
