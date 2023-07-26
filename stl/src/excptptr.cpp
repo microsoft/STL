@@ -81,7 +81,7 @@ namespace {
         alignas(_Ty) static unsigned char _Storage[sizeof(_Ty)];
         if (!_Execute_once(_Flag, _Immortalize_impl<_Ty>, &_Storage)) {
             // _Execute_once should never fail if the callback never fails
-            _STD terminate();
+            _STD abort();
         }
 
         return reinterpret_cast<_Ty&>(_Storage);
