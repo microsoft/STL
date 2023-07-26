@@ -42,7 +42,7 @@ public:
     void fill_range(const range_u rng, const width_u width) {
         const auto [from, to] = rng;
         VERIFY(from <= to && to <= max_u, impl_assertion_failed);
-        for (uint32_t u = from; u <= to; u++) {
+        for (uint32_t u = from; u <= to; ++u) {
             table[u] = width;
         }
     }
@@ -51,7 +51,7 @@ public:
         // Print table for `_Width_estimate_intervals_v2`.
         int c        = 0;
         width_u last = table[0];
-        for (uint32_t u = 0; u <= max_u; u++) {
+        for (uint32_t u = 0; u <= max_u; ++u) {
             if (table[u] != last) {
                 cout << "0x" << hex << uppercase << u << "u, ";
                 if (++c == 12) {
@@ -66,13 +66,13 @@ public:
 
     void print_clusters_1_vs_2(const table_u& other) const {
         vector<bool> cluster_table(max_u + 1, false);
-        for (uint32_t u = 0; u <= max_u; u++) {
+        for (uint32_t u = 0; u <= max_u; ++u) {
             if (table[u] == width_u::is_1 && other.table[u] == width_u::is_2) {
                 cluster_table[u] = true;
             }
         }
 
-        for (uint32_t u = 0; u <= max_u; u++) {
+        for (uint32_t u = 0; u <= max_u; ++u) {
             if (cluster_table[u]) {
                 uint32_t from = u;
                 uint32_t to   = from;
