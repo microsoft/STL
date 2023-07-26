@@ -133,7 +133,7 @@ table_u read_from(ifstream& source) {
 
     // Read explicitly assigned ranges.
     // The lines that are not empty or pure comment are uniformly of the format "HEX(..HEX)?;(A|F|H|N|Na|W) #comment".
-    auto get_width = [](const string& str) -> width_u {
+    auto get_width = [](const string& str) {
         if (str == "F" || str == "W") {
             return width_u::is_2;
         } else {
@@ -141,7 +141,7 @@ table_u read_from(ifstream& source) {
             return width_u::is_1;
         }
     };
-    auto get_value = [](const string& str) -> uint32_t {
+    auto get_value = [](const string& str) {
         uint32_t value{};
         auto [end, ec] = from_chars(str.data(), str.data() + str.size(), value, 16);
         VERIFY(end == str.data() + str.size() && ec == errc{}, impl_assertion_failed);
