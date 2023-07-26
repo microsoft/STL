@@ -20,7 +20,7 @@ namespace Concurrency {
 
             void wait(_Stl_critical_section* lock) {
                 if (!wait_for(lock, INFINITE)) {
-                    std::abort();
+                    _CSTD abort();
                 }
             }
 

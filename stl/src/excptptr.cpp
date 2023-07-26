@@ -81,7 +81,7 @@ namespace {
         alignas(_Ty) static unsigned char _Storage[sizeof(_Ty)];
         if (!_Execute_once(_Flag, _Immortalize_impl<_Ty>, &_Storage)) {
             // _Execute_once should never fail if the callback never fails
-            _STD abort();
+            _CSTD abort();
         }
 
         return reinterpret_cast<_Ty&>(_Storage);
@@ -255,7 +255,7 @@ namespace {
             const auto _PThrow = _CppEhRecord.params.pThrowInfo;
             if (!_PThrow) {
                 // No ThrowInfo exists. If this was a C++ exception, something must have corrupted it.
-                abort();
+                _CSTD abort();
             }
 
             if (!_CppEhRecord.params.pExceptionObject) {
@@ -489,7 +489,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
         const auto _PThrow = _CppRecord.params.pThrowInfo;
         if (!_CppRecord.params.pExceptionObject || !_PThrow || !_PThrow->pCatchableTypeArray) {
             // Missing or corrupt ThrowInfo. If this was a C++ exception, something must have corrupted it.
-            abort();
+            _CSTD abort();
         }
 
 #if _EH_RELATIVE_TYPEINFO
@@ -502,7 +502,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
 
         if (_CatchableTypeArray->nCatchableTypes <= 0) {
             // Ditto corrupted.
-            abort();
+            _CSTD abort();
         }
 
         // we finally got the type info we want

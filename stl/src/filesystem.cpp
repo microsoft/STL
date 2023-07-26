@@ -207,7 +207,7 @@ _EXTERN_C
 
 void __stdcall __std_fs_close_handle(const __std_fs_file_handle _Handle) noexcept { // calls CloseHandle
     if (_Handle != __std_fs_file_handle::_Invalid && !CloseHandle(reinterpret_cast<HANDLE>(_Handle))) {
-        abort();
+        _CSTD abort();
     }
 }
 
@@ -252,7 +252,7 @@ static_assert(alignof(WIN32_FIND_DATAW) == alignof(__std_fs_find_data));
 
 void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle _Handle) noexcept {
     if (_Handle != __std_fs_dir_handle::_Invalid && !FindClose(reinterpret_cast<HANDLE>(_Handle))) {
-        abort();
+        _CSTD abort();
     }
 }
 
