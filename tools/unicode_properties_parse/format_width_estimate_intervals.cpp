@@ -27,7 +27,7 @@ struct range_u {
     uint32_t from;
     uint32_t to;
     range_u(uint32_t f, uint32_t t) : from(f), to(t) {}
-    range_u(uint32_t v) : from(v), to(v) {}
+    explicit range_u(uint32_t v) : from(v), to(v) {}
 };
 
 enum class width_u : bool { is_1 = false, is_2 = true };
@@ -168,7 +168,7 @@ table_u read_from(ifstream& source) {
                 table.fill_range({from, get_value(match2.substr(2))}, width);
             } else {
                 // single character (HEX)
-                table.fill_range({from}, width);
+                table.fill_range(range_u{from}, width);
             }
         }
     }
