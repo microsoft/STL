@@ -378,14 +378,6 @@ struct _Fs_file {
     }
 };
 
-struct _Is_slash_oper { // predicate testing if input is a preferred-separator or fallback-separator
-    _NODISCARD constexpr bool operator()(
-        const wchar_t _Ch) const { // test if _Ch is a preferred-separator or fallback-separator
-        return _Ch == L'\\' || _Ch == L'/';
-    }
-};
-
-inline constexpr _Is_slash_oper _Is_slash{};
 _STD_END
 
 #pragma pop_macro("new")
