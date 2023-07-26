@@ -146,7 +146,7 @@ table_u read_from(ifstream& source) {
     };
     auto get_value = [](const string& str) {
         uint32_t value{};
-        auto [end_ptr, ec] = from_chars(str.data(), str.data() + str.size(), value, 16);
+        const auto [end_ptr, ec] = from_chars(str.data(), str.data() + str.size(), value, 16);
         VERIFY(end_ptr == str.data() + str.size(), impl_assertion_failed);
         VERIFY(ec == errc{}, impl_assertion_failed);
         return value;
@@ -165,7 +165,7 @@ table_u read_from(ifstream& source) {
             const uint32_t from = get_value(match[1].str());
             if (match[2].matched) {
                 // range (HEX..HEX)
-                string match2 = match[2].str();
+                const string match2 = match[2].str();
                 VERIFY(match2.starts_with(".."), impl_assertion_failed);
                 table.fill_range({from, get_value(match2.substr(2))}, width);
             } else {
