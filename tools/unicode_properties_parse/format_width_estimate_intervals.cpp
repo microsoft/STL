@@ -9,18 +9,18 @@
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <source_location>
 #include <string>
 #include <system_error>
 #include <vector>
 using namespace std;
 
-void verify_impl(bool test, int line, const char* msg) {
+void verify(bool test, const char* msg, source_location loc = source_location::current()) {
     if (!test) {
-        cerr << "Error at line " << line << ": " << msg << endl;
+        cerr << "Error at line " << loc.line() << ": " << msg << endl;
         exit(EXIT_FAILURE);
     }
 }
-#define VERIFY(expr, msg) verify_impl((expr), __LINE__, (msg))
 constexpr const char* impl_assertion_failed = "impl assertion failed";
 
 struct range_u {
@@ -43,8 +43,8 @@ public:
 
     void fill_range(const range_u rng, const width_u width) {
         const auto [from, to] = rng;
-        VERIFY(from <= to, impl_assertion_failed);
-        VERIFY(to <= max_u, impl_assertion_failed);
+        verify(from <= to, impl_assertion_failed);
+        verify(to <= max_u, impl_assertion_failed);
         for (uint32_t u = from; u <= to; ++u) {
             table[u] = width;
         }
@@ -77,8 +77,8 @@ public:
 
         for (uint32_t u = 0; u <= max_u; ++u) {
             if (cluster_table[u]) {
-                uint32_t from = u;
-                uint32_t to   = from;
+                const uint32_t from = u;
+                uint32_t to         = from;
                 while (to + 1 <= max_u && cluster_table[to + 1]) {
                     ++to;
                 }
@@ -140,33 +140,33 @@ table_u read_from(ifstream& source) {
         if (str == "F" || str == "W") {
             return width_u::is_2;
         } else {
-            VERIFY(str == "A" || str == "H" || str == "N" || str == "Na", impl_assertion_failed);
+            verify(str == "A" || str == "H" || str == "N" || str == "Na", impl_assertion_failed);
             return width_u::is_1;
         }
     };
     auto get_value = [](const string& str) {
         uint32_t value{};
         const auto [end_ptr, ec] = from_chars(str.data(), str.data() + str.size(), value, 16);
-        VERIFY(end_ptr == str.data() + str.size(), impl_assertion_failed);
-        VERIFY(ec == errc{}, impl_assertion_failed);
+        verify(end_ptr == str.data() + str.size(), impl_assertion_failed);
+        verify(ec == errc{}, impl_assertion_failed);
         return value;
     };
 
-    VERIFY(!!source, "invalid path");
+    verify(!!source, "invalid path");
     string line;
     const regex reg(R"(([0-9A-Z]+)(\.\.[0-9A-Z]+)?;(A|F|H|N|Na|W) *#.*)");
     while (getline(source, line)) {
         if (!line.empty() && !line.starts_with("#")) {
             smatch match;
-            VERIFY(regex_match(line, match, reg), "invalid line");
-            VERIFY(match[1].matched, impl_assertion_failed);
-            VERIFY(match[3].matched, impl_assertion_failed);
+            verify(regex_match(line, match, reg), "invalid line");
+            verify(match[1].matched, impl_assertion_failed);
+            verify(match[3].matched, impl_assertion_failed);
             const width_u width = get_width(match[3].str());
             const uint32_t from = get_value(match[1].str());
             if (match[2].matched) {
                 // range (HEX..HEX)
                 const string match2 = match[2].str();
-                VERIFY(match2.starts_with(".."), impl_assertion_failed);
+                verify(match2.starts_with(".."), impl_assertion_failed);
                 table.fill_range({from, get_value(match2.substr(2))}, width);
             } else {
                 // single character (HEX)
@@ -199,7 +199,7 @@ int main() {
     string path;
     getline(cin, path);
     ifstream source(path);
-    table_u new_table = get_table_cpp23(source);
+    const table_u new_table = get_table_cpp23(source);
     new_table.print_intervals();
 
     cout << "\nWas 1, now 2:\n";
