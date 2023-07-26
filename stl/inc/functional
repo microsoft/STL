@@ -748,17 +748,15 @@ private:
         }
     }
 
-#if !_HAS_STATIC_RTTI
-    [[noreturn]]
-#endif // !_HAS_STATIC_RTTI
-    const type_info&
-        _Target_type() const noexcept override {
 #if _HAS_STATIC_RTTI
+    const type_info& _Target_type() const noexcept override {
         return typeid(_Callable);
-#else // _HAS_STATIC_RTTI
-        _CSTD abort();
-#endif // _HAS_STATIC_RTTI
     }
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
+    [[noreturn]] const type_info& _Target_type() const noexcept override {
+        _CSTD abort(); // shouldn't be called, see GH-3888
+    }
+#endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
     const void* _Get() const noexcept override {
         return _STD addressof(_Mypair._Myval2);
@@ -813,17 +811,15 @@ private:
         }
     }
 
-#if !_HAS_STATIC_RTTI
-    [[noreturn]]
-#endif // !_HAS_STATIC_RTTI
-    const type_info&
-        _Target_type() const noexcept override {
 #if _HAS_STATIC_RTTI
+    const type_info& _Target_type() const noexcept override {
         return typeid(_Callable);
-#else // _HAS_STATIC_RTTI
-        _CSTD abort();
-#endif // _HAS_STATIC_RTTI
     }
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
+    [[noreturn]] const type_info& _Target_type() const noexcept override {
+        _CSTD abort(); // shouldn't be called, see GH-3888
+    }
+#endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
     const void* _Get() const noexcept override {
         return _STD addressof(_Callee);
