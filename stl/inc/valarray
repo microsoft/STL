@@ -61,20 +61,20 @@ public:
     friend _Tidy_deallocate_guard<valarray>;
 
     template <class _Ty2>
-    friend _Ty2* begin(valarray<_Ty2>& _Array);
+    friend _Ty2* begin(valarray<_Ty2>& _Array) noexcept /* strengthened */;
 
     template <class _Ty2>
-    friend const _Ty2* begin(const valarray<_Ty2>& _Array);
+    friend const _Ty2* begin(const valarray<_Ty2>& _Array) noexcept /* strengthened */;
 
     template <class _Ty2>
-    friend _Ty2* end(valarray<_Ty2>& _Array);
+    friend _Ty2* end(valarray<_Ty2>& _Array) noexcept /* strengthened */;
 
     template <class _Ty2>
-    friend const _Ty2* end(const valarray<_Ty2>& _Array);
+    friend const _Ty2* end(const valarray<_Ty2>& _Array) noexcept /* strengthened */;
 
     using value_type = _Ty;
 
-    valarray() { // construct empty valarray
+    valarray() noexcept /* strengthened */ { // construct empty valarray
         _Tidy_init();
     }
 
@@ -128,7 +128,7 @@ public:
         return *this;
     }
 
-    void _Assign_rv(valarray&& _Right) {
+    void _Assign_rv(valarray&& _Right) noexcept {
         if (this != _STD addressof(_Right)) { // clear this and steal from _Right
             _Tidy_deallocate();
             _Myptr  = _Right._Myptr;
@@ -410,7 +410,7 @@ public:
 
     _NODISCARD valarray operator[](slice _Slicearr) const; // defined below
 
-    _NODISCARD slice_array<_Ty> operator[](slice _Slicearr); // defined below
+    _NODISCARD slice_array<_Ty> operator[](slice _Slicearr) noexcept /* strengthened */; // defined below
 
     _NODISCARD valarray operator[](const gslice& _Gslicearr) const; // defined below
 
@@ -601,22 +601,22 @@ void swap(valarray<_Ty>& _Left, valarray<_Ty>& _Right) noexcept {
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _Ty* begin(valarray<_Ty>& _Array) {
+_NODISCARD _Ty* begin(valarray<_Ty>& _Array) noexcept /* strengthened */ {
     return _Array._Myptr;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD const _Ty* begin(const valarray<_Ty>& _Array) {
+_NODISCARD const _Ty* begin(const valarray<_Ty>& _Array) noexcept /* strengthened */ {
     return _Array._Myptr;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _Ty* end(valarray<_Ty>& _Array) {
+_NODISCARD _Ty* end(valarray<_Ty>& _Array) noexcept /* strengthened */ {
     return _Array._Myptr + _Array.size();
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD const _Ty* end(const valarray<_Ty>& _Array) {
+_NODISCARD const _Ty* end(const valarray<_Ty>& _Array) noexcept /* strengthened */ {
     return _Array._Myptr + _Array.size();
 }
 
@@ -1481,7 +1481,7 @@ public:
         }
     }
 
-    _Ty& _Data(size_t _Idx) const {
+    _Ty& _Data(size_t _Idx) const noexcept {
         return _Myptr[_Idx];
     }
 
@@ -1489,7 +1489,7 @@ public:
 
     slice_array(const slice_array&) = default;
 
-    const slice_array& operator=(const slice_array& _Right) const {
+    const slice_array& operator=(const slice_array& _Right) const noexcept /* strengthened */ {
         size_t _Dst_off = _Start;
         size_t _Src_off = _Right._Start;
         for (size_t _Idx = 0; _Idx < _Len; ++_Idx, _Dst_off += _Stride, _Src_off += _Right._Stride) {
@@ -1501,19 +1501,19 @@ public:
 private:
     friend valarray<_Ty>;
 
-    slice_array(const slice& _Slice, _Ty* _Pdata) : slice(_Slice), _Myptr(_Pdata) {}
+    slice_array(const slice& _Slice, _Ty* _Pdata) noexcept : slice(_Slice), _Myptr(_Pdata) {}
 
     _Ty* _Myptr; // pointer to valarray contents
 };
 
 _EXPORT_STD class gslice { // define a generalized (multidimensional) slice of a valarray
 public:
-    gslice() : _Start(0) {} // construct with all zeros
+    gslice() = default; // construct with all zeros
 
     gslice(size_t _Off, const _Sizarray& _Lenarr, const _Sizarray& _Incarr)
         : _Start(_Off), _Len(_Lenarr), _Stride(_Incarr) {}
 
-    _NODISCARD size_t start() const {
+    _NODISCARD size_t start() const noexcept /* strengthened */ {
         return _Start;
     }
 
@@ -1525,11 +1525,11 @@ public:
         return _Stride;
     }
 
-    size_t _Nslice() const {
+    size_t _Nslice() const noexcept {
         return _Len.size();
     }
 
-    size_t _Off(_Sizarray& _Indexarr) const {
+    size_t _Off(_Sizarray& _Indexarr) const noexcept {
         size_t _Idx;
         size_t _Ans        = _Start;
         const size_t _Size = _Indexarr.size();
@@ -1549,7 +1549,7 @@ public:
         return _Ans;
     }
 
-    _NODISCARD size_t _Totlen() const {
+    _NODISCARD size_t _Totlen() const noexcept {
         const size_t _Size = _Len.size();
         if (_Size == 0) {
             return 0;
@@ -1564,7 +1564,7 @@ public:
     }
 
 private:
-    size_t _Start; // the starting offset
+    size_t _Start = 0; // the starting offset
     _Sizarray _Len; // array of numbers of elements
     _Sizarray _Stride; // array of distances between elements
 };
@@ -1785,15 +1785,15 @@ public:
         }
     }
 
-    _NODISCARD _Ty& _Data(size_t _Idx) const {
+    _NODISCARD _Ty& _Data(size_t _Idx) const noexcept {
         return _Myptr[_Idx];
     }
 
-    _NODISCARD bool _Mask(size_t _Idx) const {
+    _NODISCARD bool _Mask(size_t _Idx) const noexcept {
         return _Mybool[_Idx];
     }
 
-    _NODISCARD size_t _Start_off() const {
+    _NODISCARD size_t _Start_off() const noexcept {
         size_t _Off        = 0;
         const size_t _Size = _Mybool.size();
         while (_Off < _Size && !_Mybool[_Off]) {
@@ -1802,7 +1802,7 @@ public:
         return _Off;
     }
 
-    _NODISCARD size_t _Next_off(size_t _Off) const {
+    _NODISCARD size_t _Next_off(size_t _Off) const noexcept {
         const size_t _Size = _Mybool.size();
         do {
             ++_Off;
@@ -1826,7 +1826,7 @@ public:
 
     mask_array(const mask_array&) = default;
 
-    const mask_array& operator=(const mask_array& _Right) const {
+    const mask_array& operator=(const mask_array& _Right) const noexcept /* strengthened */ {
         const size_t _Size = _Mybool.size();
         size_t _Dst_off    = _Start_off();
         size_t _Src_off    = _Right._Start_off();
@@ -1938,11 +1938,11 @@ public:
         return _Myptr[_Idx];
     }
 
-    _NODISCARD size_t _Indir(size_t _Idx) const {
+    _NODISCARD size_t _Indir(size_t _Idx) const noexcept {
         return _Myindarr[_Idx];
     }
 
-    _NODISCARD size_t _Totlen() const {
+    _NODISCARD size_t _Totlen() const noexcept {
         return _Myindarr.size();
     }
 
@@ -1950,7 +1950,7 @@ public:
 
     indirect_array(const indirect_array&) = default;
 
-    const indirect_array& operator=(const indirect_array& _Right) const {
+    const indirect_array& operator=(const indirect_array& _Right) const noexcept /* strengthened */ {
         const size_t _Size = _Totlen();
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Indir(_Idx)] = _Right._Myptr[_Right._Indir(_Idx)];
@@ -1980,7 +1980,7 @@ _NODISCARD valarray<_Ty> valarray<_Ty>::operator[](slice _Slice) const {
 }
 
 template <class _Ty>
-_NODISCARD slice_array<_Ty> valarray<_Ty>::operator[](slice _Slice) {
+_NODISCARD slice_array<_Ty> valarray<_Ty>::operator[](slice _Slice) noexcept /* strengthened */ {
     return slice_array<_Ty>(_Slice, _Myptr);
 }
 

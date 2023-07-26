@@ -1333,21 +1333,24 @@ _GENERIC_MATH_SPECIAL_UINT1(sph_neumann)
 #undef _GENERIC_MATH_SPECIAL_UINT1
 #undef _GENERIC_MATH_SPECIAL_UINT2
 
-_EXPORT_STD _NODISCARD inline double hypot(const double _Dx, const double _Dy, const double _Dz) {
+_EXPORT_STD _NODISCARD inline double hypot(const double _Dx, const double _Dy, const double _Dz) noexcept
+/* strengthened */ {
     return __std_smf_hypot3(_Dx, _Dy, _Dz);
 }
 
-_EXPORT_STD _NODISCARD inline float hypot(const float _Dx, const float _Dy, const float _Dz) {
+_EXPORT_STD _NODISCARD inline float hypot(const float _Dx, const float _Dy, const float _Dz) noexcept
+/* strengthened */ {
     return __std_smf_hypot3f(_Dx, _Dy, _Dz);
 }
 
-_EXPORT_STD _NODISCARD inline long double hypot(const long double _Dx, const long double _Dy, const long double _Dz) {
+_EXPORT_STD _NODISCARD inline long double hypot(
+    const long double _Dx, const long double _Dy, const long double _Dz) noexcept /* strengthened */ {
     return __std_smf_hypot3(static_cast<double>(_Dx), static_cast<double>(_Dy), static_cast<double>(_Dz));
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2, class _Ty3,
     enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>
-_NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) {
+_NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) noexcept /* strengthened */ {
     // N4950 [cmath.syn]/3 "Sufficient additional overloads"
     // Note that this template is selected by overload resolution only when at least one
     // argument is double/long double/integral but not all three are double or long double.
@@ -1358,7 +1361,7 @@ _NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) {
 
 #if _HAS_CXX20
 template <class _Ty>
-_NODISCARD constexpr _Ty _Linear_for_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) {
+_NODISCARD constexpr _Ty _Linear_for_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
     if (_STD is_constant_evaluated()) {
         auto _Smaller     = _ArgT;
         auto _Larger      = _ArgB - _ArgA;
