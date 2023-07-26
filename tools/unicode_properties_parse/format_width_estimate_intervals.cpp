@@ -20,7 +20,8 @@ void verify_impl(bool test, int line, const char* msg) {
 constexpr const char* impl_assertion_failed = "impl assertion failed";
 
 struct range_u {
-    uint32_t from, to;
+    uint32_t from;
+    uint32_t to;
     range_u(uint32_t f, uint32_t t) : from(f), to(t) {}
     range_u(uint32_t v) : from(v), to(v) {}
 };
