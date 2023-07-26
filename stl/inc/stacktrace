@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _STACKTRACE_
 #define _STACKTRACE_
 #include <yvals_core.h>
@@ -125,12 +124,12 @@ public:
     using value_type             = stacktrace_entry;
     using const_reference        = const value_type&;
     using reference              = value_type&;
-    using const_iterator         = typename _Frames_t::const_iterator;
+    using const_iterator         = _Frames_t::const_iterator;
     using iterator               = const_iterator;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
-    using difference_type        = typename _Frames_t::difference_type;
-    using size_type              = typename _Frames_t::size_type;
+    using difference_type        = _Frames_t::difference_type;
+    using size_type              = _Frames_t::size_type;
     using allocator_type         = _Alloc;
 
     // __declspec(noinline) to make the same behavior for debug and release.

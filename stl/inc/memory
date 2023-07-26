@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _MEMORY_
 #define _MEMORY_
 #include <yvals_core.h>
@@ -1916,7 +1915,7 @@ _NODISCARD bool operator==(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty>
 _NODISCARD strong_ordering operator<=>(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
-    return _Left.get() <=> static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr);
+    return _Left.get() <=> static_cast<shared_ptr<_Ty>::element_type*>(nullptr);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty>
@@ -4134,13 +4133,13 @@ struct _Pointer_of_helper {};
 
 template <_Has_member_pointer _Ty>
 struct _Pointer_of_helper<_Ty> {
-    using type = typename _Ty::pointer;
+    using type = _Ty::pointer;
 };
 
 template <_Has_member_element_type _Ty>
     requires (!_Has_member_pointer<_Ty>)
 struct _Pointer_of_helper<_Ty> {
-    using type = typename _Ty::element_type*;
+    using type = _Ty::element_type*;
 };
 
 // clang-format off
@@ -4148,12 +4147,12 @@ template <class _Ty>
     requires (!_Has_member_element_type<_Ty> && !_Has_member_pointer<_Ty>
         && _Has_member_element_type<pointer_traits<_Ty>>)
 struct _Pointer_of_helper<_Ty> {
-    using type = typename pointer_traits<_Ty>::element_type*;
+    using type = pointer_traits<_Ty>::element_type*;
 };
 // clang-format on
 
 template <class _Ty>
-using _Pointer_of = typename _Pointer_of_helper<_Ty>::type;
+using _Pointer_of = _Pointer_of_helper<_Ty>::type;
 
 template <class _Ty, class _Uty>
 struct _Pointer_of_or_helper {
@@ -4167,7 +4166,7 @@ struct _Pointer_of_or_helper<_Ty, _Uty> {
 };
 
 template <class _Ty, class _Uty>
-using _Pointer_of_or = typename _Pointer_of_or_helper<_Ty, _Uty>::type;
+using _Pointer_of_or = _Pointer_of_or_helper<_Ty, _Uty>::type;
 
 // TRANSITION, requires expression support
 template <class _SmartPtr, class _Sp, class _Pointer, class... _ArgsT>

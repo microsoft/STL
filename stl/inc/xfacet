@@ -7,7 +7,6 @@
 // MAJOR LIMITATIONS apply to what can be included here!
 // Before editing this file, read: /docs/import_library.md
 
-#pragma once
 #ifndef _XFACET_
 #define _XFACET_
 #include <yvals.h>

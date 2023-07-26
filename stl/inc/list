@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _LIST_
 #define _LIST_
 #include <yvals_core.h>
@@ -1916,12 +1915,12 @@ _NODISCARD bool operator>=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Allo
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
-typename list<_Ty, _Alloc>::size_type erase(list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+list<_Ty, _Alloc>::size_type erase(list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
     return _Cont.remove_if([&](_Ty& _Elem) { return _Elem == _Val; });
 }
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
-typename list<_Ty, _Alloc>::size_type erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+list<_Ty, _Alloc>::size_type erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
     return _Cont.remove_if(_Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20

@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _STRING_VIEW_
 #define _STRING_VIEW_
 #include <yvals.h>

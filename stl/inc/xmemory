@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XMEMORY_
 #define _XMEMORY_
 #include <yvals_core.h>
@@ -2480,8 +2479,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
                 static_assert(_Is_normally_bindable<_Pair_t, _Uty>,
                     "The argument must be bindable to a reference to the std::pair type.");
 
-                using _Pair_first_t   = typename _Pair_t::first_type;
-                using _Pair_second_t  = typename _Pair_t::second_type;
+                using _Pair_first_t   = _Pair_t::first_type;
+                using _Pair_second_t  = _Pair_t::second_type;
                 using _Pair_ref_t     = _Normally_bound_ref<_Pair_t, _Uty>;
                 _Pair_ref_t _Pair_ref = _STD forward<_Uty>(_Ux);
                 if constexpr (is_same_v<_Pair_ref_t, const _Pair_t&>) {
@@ -2535,7 +2534,7 @@ template <_RANGES input_range _Rng>
 using _Range_key_type = remove_const_t<typename _RANGES range_value_t<_Rng>::first_type>;
 
 template <_RANGES input_range _Rng>
-using _Range_mapped_type = typename _RANGES range_value_t<_Rng>::second_type;
+using _Range_mapped_type = typename _RANGES range_value_t<_Rng>::second_type; // TRANSITION, VSO-1854035, omit typename
 
 template <_RANGES input_range _Rng>
 using _Range_to_alloc_type =

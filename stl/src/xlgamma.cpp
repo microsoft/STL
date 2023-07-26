@@ -9,11 +9,11 @@
 
 //  #include <random>
 _STD_BEGIN
-_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _XLgamma(float);
-_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _XLgamma(double);
-_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double);
+_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _XLgamma(float) noexcept;
+_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _XLgamma(double) noexcept;
+_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double) noexcept;
 
-float __CLRCALL_PURE_OR_CDECL _XLgamma(float x) { // moderately accurate log gamma
+float __CLRCALL_PURE_OR_CDECL _XLgamma(float x) noexcept { // moderately accurate log gamma
     static const float coeff[6] = {76.18009172947146F, -86.50532032941677F, 24.01409824083091F, -1.23173972450155F,
         0.1208650973866179E-2F, -0.5395239384953E-5F};
 
@@ -29,7 +29,7 @@ float __CLRCALL_PURE_OR_CDECL _XLgamma(float x) { // moderately accurate log gam
     return -val0 + _STD log(2.5066282746310005F * val1 / x);
 }
 
-double __CLRCALL_PURE_OR_CDECL _XLgamma(double x) { // moderately accurate log gamma
+double __CLRCALL_PURE_OR_CDECL _XLgamma(double x) noexcept { // moderately accurate log gamma
     static const double coeff[6] = {76.18009172947146, -86.50532032941677, 24.01409824083091, -1.23173972450155,
         0.1208650973866179E-2, -0.5395239384953E-5};
 
@@ -45,7 +45,7 @@ double __CLRCALL_PURE_OR_CDECL _XLgamma(double x) { // moderately accurate log g
     return -val0 + _STD log(2.5066282746310005 * val1 / x);
 }
 
-long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double x) { // moderately accurate log gamma
+long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double x) noexcept { // moderately accurate log gamma
     static const long double coeff[6] = {76.18009172947146, -86.50532032941677, 24.01409824083091, -1.23173972450155,
         0.1208650973866179E-2, -0.5395239384953E-5};
 

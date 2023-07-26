@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _FILESYSTEM_
 #define _FILESYSTEM_
 #include <yvals_core.h>
@@ -344,6 +343,14 @@ namespace filesystem {
             }
         }
     }
+
+    struct _Is_slash_oper { // predicate testing if input is a preferred-separator or fallback-separator
+        _NODISCARD constexpr bool operator()(const wchar_t _Ch) const {
+            return _Ch == L'\\' || _Ch == L'/';
+        }
+    };
+
+    inline constexpr _Is_slash_oper _Is_slash{};
 
     template <class _Ty>
     _NODISCARD _Ty _Unaligned_load(const void* _Ptr) { // load a _Ty from _Ptr
