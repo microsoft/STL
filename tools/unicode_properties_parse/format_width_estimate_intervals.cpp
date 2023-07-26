@@ -26,8 +26,8 @@ constexpr const char* impl_assertion_failed = "impl assertion failed";
 struct range_u {
     uint32_t from;
     uint32_t to;
-    range_u(uint32_t f, uint32_t t) : from(f), to(t) {}
-    explicit range_u(uint32_t v) : from(v), to(v) {}
+    constexpr range_u(uint32_t f, uint32_t t) : from(f), to(t) {}
+    constexpr explicit range_u(uint32_t v) : from(v), to(v) {}
 };
 
 enum class width_u : bool { is_1 = false, is_2 = true };
@@ -92,7 +92,7 @@ public:
 };
 
 table_u get_table_cpp20() {
-    const range_u std_wide_ranges_cpp20[]{
+    static constexpr range_u std_wide_ranges_cpp20[]{
         {0x1100, 0x115F},
         {0x2329, 0x232A},
         {0x2E80, 0x303E},
@@ -126,7 +126,7 @@ table_u read_from(ifstream& source) {
     table_u table;
 
     // "The unassigned code points in the following blocks default to "W":"
-    const range_u default_wide_ranges[]{
+    static constexpr range_u default_wide_ranges[]{
         {0x4E00, 0x9FFF}, {0x3400, 0x4DBF}, {0xF900, 0xFAFF}, {0x20000, 0x2FFFD}, {0x30000, 0x3FFFD}};
     for (const range_u& rng : default_wide_ranges) {
         table.fill_range(rng, width_u::is_2);
@@ -180,7 +180,7 @@ table_u get_table_cpp23(ifstream& source) {
     table_u table = read_from(source);
 
     // Override with ranges specified by the C++ standard.
-    const range_u std_wide_ranges_cpp23[]{{0x4DC0, 0x4DFF}, {0x1F300, 0x1F5FF}, {0x1F900, 0x1F9FF}};
+    static constexpr range_u std_wide_ranges_cpp23[]{{0x4DC0, 0x4DFF}, {0x1F300, 0x1F5FF}, {0x1F900, 0x1F9FF}};
     for (const range_u& rng : std_wide_ranges_cpp23) {
         table.fill_range(rng, width_u::is_2);
     }
