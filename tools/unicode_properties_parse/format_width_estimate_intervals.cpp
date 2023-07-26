@@ -4,10 +4,13 @@
 // The following code generates data for `_Width_estimate_intervals_v2` in <format>.
 
 #include <charconv>
-#include <format>
+#include <cstdint>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <string>
+#include <system_error>
 #include <vector>
 using namespace std;
 
