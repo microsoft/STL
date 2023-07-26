@@ -33,6 +33,7 @@ struct range_u {
 enum class width_u : bool { is_1 = false, is_2 = true };
 
 class table_u {
+private:
     // A valid Unicode code point won't exceed `max_u`.
     static constexpr uint32_t max_u = 0x10'ffff;
     vector<width_u> table;
