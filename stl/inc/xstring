@@ -4189,7 +4189,7 @@ public:
 #if _HAS_CXX23
     template <class _Operation>
     constexpr void _Resize_and_overwrite(_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
-        return resize_and_overwrite(_New_size, _Op);
+        resize_and_overwrite(_New_size, _Op);
     }
 #endif // _HAS_CXX23
 
