@@ -1001,8 +1001,9 @@ inline constexpr char32_t _Width_estimate_intervals_v2[] = { //
 
 _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
     // Computes the width estimation for Unicode characters from N4950 [format.string.std]/13
-    constexpr char32_t _Limit = _Width_estimate_intervals_v2[12];
-    if (_Ch < _Limit) {
+    // The two branches are functionally equivalent; `12` is chosen for performance here.
+    constexpr char32_t _Linear_search_threshold = _Width_estimate_intervals_v2[12];
+    if (_Ch < _Linear_search_threshold) {
         int _Result = 1;
         for (const auto& _Bound : _Width_estimate_intervals_v2) {
             if (_Ch < _Bound) {
