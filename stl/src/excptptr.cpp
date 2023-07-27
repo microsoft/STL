@@ -108,7 +108,7 @@ namespace {
 
 #if _EH_RELATIVE_TYPEINFO
         void* _ThrowImageBase =
-            _PThrow ? ::RtlPcToFileHeader(const_cast<void*>(static_cast<const void*>(_PThrow)), &_ThrowImageBase)
+            _PThrow ? RtlPcToFileHeader(const_cast<void*>(static_cast<const void*>(_PThrow)), &_ThrowImageBase)
                     : nullptr;
         _Record.ExceptionInformation[3] = reinterpret_cast<ULONG_PTR>(_ThrowImageBase); // params.pThrowImageBase
 #endif // _EH_RELATIVE_TYPEINFO
@@ -156,7 +156,7 @@ namespace {
         // copy an object of type denoted by *_PType from _Src to _Dest; throws whatever the copy ctor of the type
         // denoted by *_PType throws
         if ((_PType->properties & CT_IsSimpleType) || _PType->copyFunction == 0) {
-            _CSTD memcpy(_Dest, _Src, _PType->sizeOrOffset);
+            memcpy(_Dest, _Src, _PType->sizeOrOffset);
 
             if (_PType->properties & CT_IsWinRTHandle) {
                 const auto _PUnknown = *static_cast<IUnknown* const*>(_Src);
@@ -291,7 +291,7 @@ namespace {
         }
 
         void _Delete_this() noexcept override {
-            _CSTD free(this);
+            free(this);
         }
 
     public:
@@ -342,7 +342,7 @@ namespace {
         const auto _ExceptionObjectSize = static_cast<size_t>(_PType->sizeOrOffset);
         const auto _AllocSize           = sizeof(_ExceptionPtr_normal) + _ExceptionObjectSize;
         _Analysis_assume_(_AllocSize >= sizeof(_ExceptionPtr_normal));
-        auto _RxRaw = _CSTD malloc(_AllocSize);
+        auto _RxRaw = malloc(_AllocSize);
         if (!_RxRaw) {
             _Dest = _ExceptionPtr_static<bad_alloc>::_Get();
             return;
@@ -366,7 +366,7 @@ namespace {
                 || _InnerRecord.ExceptionCode == MANAGED_EXCEPTION_CODE_V4) {
                 // we don't support managed exceptions and don't want to say there's no active exception, so give up and
                 // say bad_exception
-                _CSTD free(_RxRaw);
+                free(_RxRaw);
                 _Dest = _ExceptionPtr_static<bad_exception>::_Get();
                 return;
             }
@@ -391,8 +391,8 @@ namespace {
             const auto _InnerExceptionSize = static_cast<size_t>(_PInnerType->sizeOrOffset);
             const auto _InnerAllocSize     = sizeof(_ExceptionPtr_normal) + _InnerExceptionSize;
             if (_InnerAllocSize > _AllocSize) {
-                _CSTD free(_RxRaw);
-                _RxRaw = _CSTD malloc(_InnerAllocSize);
+                free(_RxRaw);
+                _RxRaw = malloc(_InnerAllocSize);
                 if (!_RxRaw) {
                     _Dest = _ExceptionPtr_static<bad_alloc>::_Get();
                     return;
@@ -408,7 +408,7 @@ namespace {
 #endif // _EH_RELATIVE_TYPEINFO
                 );
             } catch (...) { // copying the exception emitted while copying the original exception also threw, give up
-                _CSTD free(_RxRaw);
+                free(_RxRaw);
                 _Dest = _ExceptionPtr_static<bad_exception>::_Get();
                 return;
             }
@@ -469,7 +469,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
     } else {
         // _Assign_seh_exception_ptr_from_record handles failed malloc
         _Assign_seh_exception_ptr_from_record(
-            _Dest, reinterpret_cast<_EXCEPTION_RECORD&>(*_PRecord), _CSTD malloc(sizeof(_ExceptionPtr_normal)));
+            _Dest, reinterpret_cast<_EXCEPTION_RECORD&>(*_PRecord), malloc(sizeof(_ExceptionPtr_normal)));
     }
 }
 
@@ -517,7 +517,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
         // exception when copying the C++ exception object. In that case, we just let that become the thrown exception.
 
 #pragma warning(suppress : 6255) //  _alloca indicates failure by raising a stack overflow exception
-        void* _PExceptionBuffer = ::alloca(_PType->sizeOrOffset);
+        void* _PExceptionBuffer = alloca(_PType->sizeOrOffset);
         _CopyExceptionObject(_PExceptionBuffer, _CppRecord.params.pExceptionObject, _PType
 #if _EH_RELATIVE_TYPEINFO
             ,
@@ -531,7 +531,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
     }
 
     _Analysis_assume_(_RecordCopy.NumberParameters <= EXCEPTION_MAXIMUM_PARAMETERS);
-    ::RaiseException(_RecordCopy.ExceptionCode, _RecordCopy.ExceptionFlags, _RecordCopy.NumberParameters,
+    RaiseException(_RecordCopy.ExceptionCode, _RecordCopy.ExceptionFlags, _RecordCopy.NumberParameters,
         _RecordCopy.ExceptionInformation);
 }
 
