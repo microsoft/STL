@@ -89,7 +89,7 @@ public:
 
     ~thread() noexcept {
         if (joinable()) {
-            _STD terminate();
+            _STD terminate(); // per N4950 [thread.thread.destr]/1
         }
     }
 
@@ -97,7 +97,7 @@ public:
 
     thread& operator=(thread&& _Other) noexcept {
         if (joinable()) {
-            _STD terminate();
+            _STD terminate(); // per N4950 [thread.thread.assign]/1
         }
 
         _Thr = _STD exchange(_Other._Thr, {});
