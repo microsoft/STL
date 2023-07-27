@@ -69,7 +69,7 @@ void test_width_estimation() {
         {TYPED_LITERAL(CharT, "\x58"), 1},
         {TYPED_LITERAL(CharT, "x\x58"), 2},
 
-        // Test the boundaries of the intervals defined in n4885 [format.string.std]/11
+        // Test N4950 [format.string.std]/13
         {TYPED_LITERAL(CharT, "\u10ff\x58"), 2},
         {TYPED_LITERAL(CharT, "\u1100\x58"), 3},
         {TYPED_LITERAL(CharT, "\u115f\x58"), 3},
