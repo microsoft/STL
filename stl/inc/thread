@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _THREAD_
 #define _THREAD_
 #include <yvals_core.h>
@@ -131,7 +130,7 @@ public:
             _Throw_Cpp_error(_RESOURCE_DEADLOCK_WOULD_OCCUR);
         }
 
-        if (_Thrd_join(_Thr, nullptr) != _Thrd_success) {
+        if (_Thrd_join(_Thr, nullptr) != _Thrd_result::_Success) {
             _Throw_Cpp_error(_NO_SUCH_PROCESS);
         }
 
@@ -143,7 +142,7 @@ public:
             _Throw_Cpp_error(_INVALID_ARGUMENT);
         }
 
-        if (_Thrd_detach(_Thr) != _Thrd_success) {
+        if (_Thrd_detach(_Thr) != _Thrd_result::_Success) {
             _Throw_Cpp_error(_INVALID_ARGUMENT);
         }
 

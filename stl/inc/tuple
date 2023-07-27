@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _TUPLE_
 #define _TUPLE_
 #include <yvals_core.h>
@@ -213,7 +212,7 @@ struct _Three_way_comparison_result_with_tuple_like<tuple<_TTypes...>, _UTuple, 
 
 template <class _TTuple, _Tuple_like _UTuple>
 using _Three_way_comparison_result_with_tuple_like_t =
-    typename _Three_way_comparison_result_with_tuple_like<_TTuple, _UTuple>::type;
+    _Three_way_comparison_result_with_tuple_like<_TTuple, _UTuple>::type;
 
 template <class _Ty>
 concept _Tuple_like_non_tuple = !_Is_specialization_v<_Ty, tuple> && _Tuple_like<_Ty>;
@@ -1142,7 +1141,7 @@ template <_Tuple_like _TTuple, _Tuple_like _UTuple, template <class> class _TQua
                  typename _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type;
              }
 struct basic_common_reference<_TTuple, _UTuple, _TQual, _UQual> {
-    using type = typename _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type;
+    using type = _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type;
 };
 
 template <_Tuple_like _TTuple, _Tuple_like _UTuple, class _Indices = make_index_sequence<tuple_size_v<_TTuple>>>
@@ -1163,7 +1162,7 @@ template <_Tuple_like _TTuple, _Tuple_like _UTuple>
                  typename _Tuple_like_common_type<_TTuple, _UTuple>::type;
              }
 struct common_type<_TTuple, _UTuple> {
-    using type = typename _Tuple_like_common_type<_TTuple, _UTuple>::type;
+    using type = _Tuple_like_common_type<_TTuple, _UTuple>::type;
 };
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 

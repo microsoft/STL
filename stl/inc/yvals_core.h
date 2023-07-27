@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _YVALS_CORE_H_
 #define _YVALS_CORE_H_
 #ifndef _STL_COMPILER_PREPROCESSOR

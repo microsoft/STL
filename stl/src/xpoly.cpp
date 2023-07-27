@@ -7,7 +7,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-double _Poly(double x, const double* tab, int n) { // compute polynomial
+double _Poly(double x, const double* tab, int n) noexcept { // compute polynomial
     double y;
 
     for (y = *tab; 0 <= --n;) {

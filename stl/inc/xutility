@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XUTILITY_
 #define _XUTILITY_
 #include <yvals.h>
@@ -23,7 +22,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 // TRANSITION, non-_Ugly attribute tokens
 #pragma push_macro("msvc")
+#pragma push_macro("intrinsic")
 #undef msvc
+#undef intrinsic
 
 #if defined(_CRTBLD) && defined(CRTDLL2)
 // TRANSITION, ABI: The vector algorithms are compiled into the import lib, so we disable their usage when building
@@ -692,7 +693,7 @@ struct _Indirect_value_impl {
 };
 
 template <indirectly_readable _It>
-using _Indirect_value_t = typename _Indirect_value_impl<_It>::type;
+using _Indirect_value_t = _Indirect_value_impl<_It>::type;
 
 _EXPORT_STD template <indirectly_readable _Ty>
 using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, _Indirect_value_t<_Ty>>;
@@ -708,7 +709,7 @@ concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
 template <bool _Is_integer_class>
 struct _Make_unsigned_like_impl {
     template <class _Ty>
-    using _Apply = typename _Ty::_Unsigned_type;
+    using _Apply = _Ty::_Unsigned_type;
 };
 template <>
 struct _Make_unsigned_like_impl<false> {
@@ -717,7 +718,7 @@ struct _Make_unsigned_like_impl<false> {
 };
 
 template <class _Ty>
-using _Make_unsigned_like_t = typename _Make_unsigned_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
+using _Make_unsigned_like_t = _Make_unsigned_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
 
 template <_Integer_like _Ty>
 _NODISCARD constexpr auto _To_unsigned_like(const _Ty _Value) noexcept {
@@ -727,7 +728,7 @@ _NODISCARD constexpr auto _To_unsigned_like(const _Ty _Value) noexcept {
 template <bool _Is_integer_class>
 struct _Make_signed_like_impl {
     template <class _Ty>
-    using _Apply = typename _Ty::_Signed_type;
+    using _Apply = _Ty::_Signed_type;
 };
 template <>
 struct _Make_signed_like_impl<false> {
@@ -736,7 +737,7 @@ struct _Make_signed_like_impl<false> {
 };
 
 template <class _Ty>
-using _Make_signed_like_t = typename _Make_signed_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
+using _Make_signed_like_t = _Make_signed_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
 
 _EXPORT_STD template <class _Ty>
 concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {
@@ -746,7 +747,7 @@ concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_T
 template <bool _Iterator_category_present>
 struct _Iter_concept_impl2 {
     template <class _It, class _Traits>
-    using _Apply = typename _Traits::iterator_category;
+    using _Apply = _Traits::iterator_category;
 };
 template <>
 struct _Iter_concept_impl2<false> {
@@ -758,17 +759,16 @@ struct _Iter_concept_impl2<false> {
 template <bool _Iterator_concept_present>
 struct _Iter_concept_impl1 {
     template <class _It, class _Traits>
-    using _Apply = typename _Traits::iterator_concept;
+    using _Apply = _Traits::iterator_concept;
 };
 template <>
 struct _Iter_concept_impl1<false> {
     template <class _It, class _Traits>
-    using _Apply = typename _Iter_concept_impl2<_Has_member_iterator_category<_Traits>>::template _Apply<_It, _Traits>;
+    using _Apply = _Iter_concept_impl2<_Has_member_iterator_category<_Traits>>::template _Apply<_It, _Traits>;
 };
 
 template <class _It, class _Traits = conditional_t<_Is_from_primary<iterator_traits<_It>>, _It, iterator_traits<_It>>>
-using _Iter_concept =
-    typename _Iter_concept_impl1<_Has_member_iterator_concept<_Traits>>::template _Apply<_It, _Traits>;
+using _Iter_concept = _Iter_concept_impl1<_Has_member_iterator_concept<_Traits>>::template _Apply<_It, _Traits>;
 
 // clang-format off
 _EXPORT_STD template <class _It>
@@ -883,8 +883,8 @@ struct _Projected_impl {
         using _Projection = _Proj;
 
         using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
-        indirect_result_t<_Proj&, _It> operator*() const {
-            _CSTD abort();
+        [[noreturn]] indirect_result_t<_Proj&, _It> operator*() const {
+            _CSTD abort(); // shouldn't be called, see GH-3888
         }
     };
 };
@@ -1989,7 +1989,7 @@ struct _Const_sentinel<_Sent> {
 };
 
 _EXPORT_STD template <semiregular _Sent>
-using const_sentinel = typename _Const_sentinel<_Sent>::type;
+using const_sentinel = _Const_sentinel<_Sent>::type;
 
 template <class _Ty>
 concept _Not_a_const_iterator = !_Is_specialization_v<_Ty, basic_const_iterator>;
@@ -1999,7 +1999,7 @@ struct _Basic_const_iterator_category {};
 
 template <forward_iterator _Iter>
 struct _Basic_const_iterator_category<_Iter> {
-    using iterator_category = typename iterator_traits<_Iter>::iterator_category;
+    using iterator_category = iterator_traits<_Iter>::iterator_category;
 };
 
 _EXPORT_STD template <input_iterator _Iter>
@@ -2667,7 +2667,7 @@ namespace ranges {
     concept constant_range = input_range<_Rng> && _Constant_iterator<iterator_t<_Rng>>;
 
     template <input_range _Rng>
-    _NODISCARD constexpr auto& _Possibly_const_range(_Rng& _Range) noexcept {
+    _NODISCARD _MSVC_INTRINSIC constexpr auto& _Possibly_const_range(_Rng& _Range) noexcept {
         if constexpr (constant_range<const _Rng> && !constant_range<_Rng>) {
             return _STD as_const(_Range);
         } else {
@@ -2676,7 +2676,7 @@ namespace ranges {
     }
 
     template <class _Ty>
-    _NODISCARD constexpr auto _As_const_pointer(const _Ty* _Ptr) noexcept {
+    _NODISCARD _MSVC_INTRINSIC constexpr auto _As_const_pointer(const _Ty* _Ptr) noexcept {
         return _Ptr;
     }
 #endif // _HAS_CXX23
@@ -7111,7 +7111,7 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
 };
 
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr auto _Float_abs_bits(const _Ty& _Xx) {
+_NODISCARD constexpr auto _Float_abs_bits(const _Ty& _Xx) noexcept {
     using _Traits    = _Floating_type_traits<_Ty>;
     using _Uint_type = typename _Traits::_Uint_type;
     const auto _Bits = _Bit_cast<_Uint_type>(_Xx);
@@ -7119,7 +7119,7 @@ _NODISCARD constexpr auto _Float_abs_bits(const _Ty& _Xx) {
 }
 
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty _Float_abs(const _Ty _Xx) { // constexpr floating-point abs()
+_NODISCARD constexpr _Ty _Float_abs(const _Ty _Xx) noexcept { // constexpr floating-point abs()
     return _Bit_cast<_Ty>(_Float_abs_bits(_Xx));
 }
 
@@ -7132,7 +7132,7 @@ _NODISCARD constexpr _Ty _Float_copysign(const _Ty _Magnitude, const _Ty _Sign) 
 }
 
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr bool _Is_nan(const _Ty _Xx) { // constexpr isnan()
+_NODISCARD constexpr bool _Is_nan(const _Ty _Xx) noexcept { // constexpr isnan()
     using _Traits = _Floating_type_traits<_Ty>;
     return _Float_abs_bits(_Xx) > _Traits::_Shifted_exponent_mask;
 }
@@ -7142,20 +7142,20 @@ _NODISCARD constexpr bool _Is_nan(const _Ty _Xx) { // constexpr isnan()
 // When the value is a 32-bit or 64-bit signaling NaN, the conversion to/from 80-bit raises FE_INVALID
 // and turns it into a quiet NaN. This behavior is undesirable if we want to test for signaling NaNs.
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr bool _Is_signaling_nan(const _Ty& _Xx) { // returns true if input is a signaling NaN
+_NODISCARD constexpr bool _Is_signaling_nan(const _Ty& _Xx) noexcept { // returns true if input is a signaling NaN
     using _Traits        = _Floating_type_traits<_Ty>;
     const auto _Abs_bits = _Float_abs_bits(_Xx);
     return _Abs_bits > _Traits::_Shifted_exponent_mask && ((_Abs_bits & _Traits::_Special_nan_mantissa_mask) == 0);
 }
 
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr bool _Is_inf(const _Ty _Xx) { // constexpr isinf()
+_NODISCARD constexpr bool _Is_inf(const _Ty _Xx) noexcept { // constexpr isinf()
     using _Traits = _Floating_type_traits<_Ty>;
     return _Float_abs_bits(_Xx) == _Traits::_Shifted_exponent_mask;
 }
 
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
+_NODISCARD constexpr bool _Is_finite(const _Ty _Xx) noexcept { // constexpr isfinite()
     using _Traits = _Floating_type_traits<_Ty>;
     return _Float_abs_bits(_Xx) < _Traits::_Shifted_exponent_mask;
 }
@@ -7239,6 +7239,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("intrinsic")
 #pragma pop_macro("msvc")
 
 #pragma pop_macro("new")

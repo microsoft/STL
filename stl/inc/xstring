@@ -5,7 +5,6 @@
 
 // (<string_view> without emitting non-C++17 warnings)
 
-#pragma once
 #ifndef _XSTRING_
 #define _XSTRING_
 #include <yvals_core.h>
@@ -1152,8 +1151,8 @@ private:
 template <class _Traits>
 struct pointer_traits<_String_view_iterator<_Traits>> {
     using pointer         = _String_view_iterator<_Traits>;
-    using element_type    = const typename pointer::value_type;
-    using difference_type = typename pointer::difference_type;
+    using element_type    = const typename pointer::value_type; // TRANSITION, VSO-1854115, omit typename
+    using difference_type = pointer::difference_type;
 
     _NODISCARD static constexpr element_type* to_address(const pointer& _Iter) noexcept {
         return _Iter._Unwrapped();
@@ -1765,14 +1764,14 @@ struct _Get_comparison_category {
 
 template <class _Traits>
 struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_category>> {
-    using type = typename _Traits::comparison_category;
+    using type = _Traits::comparison_category;
 
     static_assert(_Is_any_of_v<type, partial_ordering, weak_ordering, strong_ordering>,
         "N4950 [string.view.comparison]/4: Mandates: R denotes a comparison category type.");
 };
 
 template <class _Traits>
-using _Get_comparison_category_t = typename _Get_comparison_category<_Traits>::type;
+using _Get_comparison_category_t = _Get_comparison_category<_Traits>::type;
 
 _EXPORT_STD template <class _Elem, class _Traits>
 _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
@@ -2046,8 +2045,8 @@ public:
 template <class _Mystr>
 struct pointer_traits<_String_const_iterator<_Mystr>> {
     using pointer         = _String_const_iterator<_Mystr>;
-    using element_type    = const typename pointer::value_type;
-    using difference_type = typename pointer::difference_type;
+    using element_type    = const typename pointer::value_type; // TRANSITION, VSO-1854115, omit typename
+    using difference_type = pointer::difference_type;
 
     _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
@@ -2164,8 +2163,8 @@ public:
 template <class _Mystr>
 struct pointer_traits<_String_iterator<_Mystr>> {
     using pointer         = _String_iterator<_Mystr>;
-    using element_type    = typename pointer::value_type;
-    using difference_type = typename pointer::difference_type;
+    using element_type    = pointer::value_type;
+    using difference_type = pointer::difference_type;
 
     _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
@@ -3807,12 +3806,13 @@ public:
             // either we are shrinking, or the growth fits
             // may temporarily overflow; OK because size_type must be unsigned
             const auto _New_size = _Old_size + _Count - _Nx;
-            _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
+            _ASAN_STRING_REMOVE(*this);
             _Mypair._Myval2._Mysize = _New_size;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
             _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, _Old_size - _Nx - _Off + 1);
             _Traits::assign(_Insert_at, _Count, _Ch);
+            _ASAN_STRING_CREATE(*this);
             return *this;
         }
 
@@ -5232,13 +5232,13 @@ inline namespace literals {
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc, class _Uty>
-constexpr typename basic_string<_Elem, _Traits, _Alloc>::size_type erase(
+constexpr basic_string<_Elem, _Traits, _Alloc>::size_type erase(
     basic_string<_Elem, _Traits, _Alloc>& _Cont, const _Uty& _Val) {
     return _Erase_remove(_Cont, _Val);
 }
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc, class _Pr>
-constexpr typename basic_string<_Elem, _Traits, _Alloc>::size_type erase_if(
+constexpr basic_string<_Elem, _Traits, _Alloc>::size_type erase_if(
     basic_string<_Elem, _Traits, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
 }
