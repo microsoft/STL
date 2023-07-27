@@ -4,6 +4,9 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
+#include <cstdlib>
+#include <exception>
+#include <iostream>
 #include <memory_resource>
 #include <ranges>
 #include <stacktrace>
@@ -210,12 +213,20 @@ void check_basic_stacktrace_formatter_with_invalid_specs() {
 }
 
 int main() {
-    check_stacktrace_entry_formatter<FormatFn>();
-    check_stacktrace_entry_formatter<VFormatFn>();
-    check_stacktrace_entry_formatter<MoveOnlyFormat>();
-    check_stacktrace_entry_formatter_with_invalid_fields();
-    check_basic_stacktrace_formatter<FormatFn>();
-    check_basic_stacktrace_formatter<VFormatFn>();
-    check_basic_stacktrace_formatter<MoveOnlyFormat>();
-    check_basic_stacktrace_formatter_with_invalid_specs();
+    try {
+        check_stacktrace_entry_formatter<FormatFn>();
+        check_stacktrace_entry_formatter<VFormatFn>();
+        check_stacktrace_entry_formatter<MoveOnlyFormat>();
+        check_stacktrace_entry_formatter_with_invalid_fields();
+        check_basic_stacktrace_formatter<FormatFn>();
+        check_basic_stacktrace_formatter<VFormatFn>();
+        check_basic_stacktrace_formatter<MoveOnlyFormat>();
+        check_basic_stacktrace_formatter_with_invalid_specs();
+    } catch (const exception& e) {
+        cerr << "Exception caught: " << e.what() << endl;
+        exit(EXIT_FAILURE);
+    } catch (...) {
+        cerr << "Unknown exception caught." << endl;
+        exit(EXIT_FAILURE);
+    }
 }
