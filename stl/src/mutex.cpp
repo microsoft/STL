@@ -16,7 +16,7 @@
 extern "C" [[noreturn]] _CRTIMP2_PURE void _Thrd_abort(const char* msg) { // abort on precondition failure
     fputs(msg, stderr);
     fputc('\n', stderr);
-    _CSTD abort();
+    abort();
 }
 
 #if defined(_THREAD_CHECK) || defined(_DEBUG)

@@ -153,7 +153,7 @@ namespace {
                 off = string_fill(fill, off + max_disp_num, str, [displacement, off](char* s, size_t) {
                     const int ret = std::snprintf(s + off, max_disp_num, "+0x%llX", displacement);
                     if (ret <= 0) {
-                        _CSTD abort(); // formatting error
+                        std::abort(); // formatting error
                     }
                     return off + ret;
                 });
@@ -219,7 +219,7 @@ namespace {
                 off = string_fill(fill, off + max_line_num, str, [line, off](char* s, size_t) {
                     const int ret = std::snprintf(s + off, max_line_num, "(%u): ", line);
                     if (ret <= 0) {
-                        _CSTD abort(); // formatting error
+                        std::abort(); // formatting error
                     }
                     return off + ret;
                 });
@@ -322,7 +322,7 @@ void __stdcall __std_stacktrace_to_string(const void* const* const _Addresses, c
         off = string_fill(_Fill, off + max_entry_num, _Str, [off, i](char* s, size_t) {
             const int ret = std::snprintf(s + off, max_entry_num, "%u> ", static_cast<unsigned int>(i));
             if (ret <= 0) {
-                _CSTD abort(); // formatting error
+                std::abort(); // formatting error
             }
             return off + ret;
         });
