@@ -25,17 +25,17 @@ namespace Concurrency {
             }
 
             bool wait_for(_Stl_critical_section* lock, unsigned int timeout) {
-                return SleepConditionVariableSRW(
+                return ::SleepConditionVariableSRW(
                            &m_condition_variable, reinterpret_cast<PSRWLOCK>(&lock->_M_srw_lock), timeout, 0)
                     != 0;
             }
 
             void notify_one() {
-                WakeConditionVariable(&m_condition_variable);
+                ::WakeConditionVariable(&m_condition_variable);
             }
 
             void notify_all() {
-                WakeAllConditionVariable(&m_condition_variable);
+                ::WakeAllConditionVariable(&m_condition_variable);
             }
 
         private:
