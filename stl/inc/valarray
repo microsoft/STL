@@ -1669,7 +1669,7 @@ public:
         }
     }
 
-    _NODISCARD _Ty& _Data(size_t _Idx) const {
+    _NODISCARD _Ty& _Data(size_t _Idx) const noexcept {
         return _Myptr[_Idx];
     }
 
@@ -1809,7 +1809,7 @@ public:
         return _Off;
     }
 
-    _NODISCARD size_t _Totlen() const {
+    _NODISCARD size_t _Totlen() const noexcept {
         size_t _Count      = 0;
         const size_t _Size = _Mybool.size();
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -1933,7 +1933,7 @@ public:
         }
     }
 
-    _NODISCARD _Ty& _Data(size_t _Idx) const {
+    _NODISCARD _Ty& _Data(size_t _Idx) const noexcept {
         return _Myptr[_Idx];
     }
 
