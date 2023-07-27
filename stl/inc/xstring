@@ -2243,7 +2243,7 @@ public:
         return _BUF_SIZE <= _Myres;
     }
 
-    constexpr void _Activate_SSO_buffer() noexcept {
+    _CONSTEXPR20 void _Activate_SSO_buffer() noexcept {
         // start the lifetime of the array elements
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
