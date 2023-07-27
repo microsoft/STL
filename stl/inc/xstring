@@ -3147,30 +3147,6 @@ public:
 
     static constexpr auto npos{static_cast<size_type>(-1)};
 
-private:
-    _CONSTEXPR20 void _Copy_assign_val_from_small(const basic_string& _Right) {
-        // TRANSITION, VSO-761321; inline into only caller when that's fixed
-        _Tidy_deallocate();
-#if !defined(_INSERT_STRING_ANNOTATION)
-        if constexpr (_Can_memcpy_val) {
-#if _HAS_CXX20
-            if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-            {
-                _Memcpy_val_from(_Right);
-                return;
-            }
-        }
-#endif // !defined(_INSERT_STRING_ANNOTATION)
-
-        auto& _My_data    = _Mypair._Myval2;
-        auto& _Right_data = _Right._Mypair._Myval2;
-
-        _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
-        _My_data._Mysize = _Right_data._Mysize;
-        _My_data._Myres  = _Right_data._Myres;
-    }
-
 public:
     _CONSTEXPR20 basic_string& operator=(const basic_string& _Right) {
         if (this == _STD addressof(_Right)) {
@@ -3185,19 +3161,23 @@ public:
                 auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Right_al);
                 _Container_proxy_ptr<_Alty> _New_proxy(_Right_alproxy, _Leave_proxy_unbound{}); // throws
 
-                if (_Right._Mypair._Myval2._Large_string_engaged()) {
-                    const auto _New_size     = _Right._Mypair._Myval2._Mysize;
-                    auto _New_capacity       = _Calculate_growth(_New_size, 0, _Right.max_size());
+                const size_type _Right_size   = _Right._Mypair._Myval2._Mysize;
+                const _Elem* const _Right_ptr = _Right._Mypair._Myval2._Myptr();
+                if (_Entails_large_string(_Right_size)) {
+                    size_type _New_capacity = _Calculate_growth(_Right_size, _SMALL_STRING_CAPACITY, _Right.max_size());
                     auto _Right_al_non_const = _Right_al;
-                    const auto _New_ptr      = _Allocate_for_capacity(_Right_al_non_const, _New_capacity); // throws
+                    const pointer _New_ptr   = _Allocate_for_capacity(_Right_al_non_const, _New_capacity); // throws
 
-                    _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_Right._Mypair._Myval2._Bx._Ptr), _New_size + 1);
+                    _Traits::copy(_Unfancy(_New_ptr), _Right_ptr, _Right_size + 1);
                     _Tidy_deallocate();
                     _Mypair._Myval2._Bx._Ptr = _New_ptr;
-                    _Mypair._Myval2._Mysize  = _New_size;
+                    _Mypair._Myval2._Mysize  = _Right_size;
                     _Mypair._Myval2._Myres   = _New_capacity;
                 } else {
-                    _Copy_assign_val_from_small(_Right);
+                    _Tidy_deallocate();
+                    _Traits::copy(_Mypair._Myval2._Bx._Buf, _Right_ptr, _Right_size + 1);
+                    _Mypair._Myval2._Mysize = _Right_size;
+                    _Mypair._Myval2._Myres  = _SMALL_STRING_CAPACITY;
                 }
 
                 _Pocca(_Al, _Right_al);
