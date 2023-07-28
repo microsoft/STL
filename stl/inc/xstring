@@ -3147,7 +3147,6 @@ public:
 
     static constexpr auto npos{static_cast<size_type>(-1)};
 
-public:
     _CONSTEXPR20 basic_string& operator=(const basic_string& _Right) {
         if (this == _STD addressof(_Right)) {
             return *this;
