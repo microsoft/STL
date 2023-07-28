@@ -37,14 +37,15 @@ namespace Concurrency {
     namespace details {
         [[noreturn]] _CRTIMP2 void __cdecl _ReportUnobservedException() {
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_CRT_APP)
+#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_CRT_APP) && _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
             if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
 #endif
             {
                 __fastfail(FAST_FAIL_INVALID_ARG);
+                _STL_UNREACHABLE; // TRANSITION, DevCom-10425806 - codegen should have assumed no return from __fastfail
             }
 
-            std::terminate();
+            std::abort();
         }
 
         namespace platform {
