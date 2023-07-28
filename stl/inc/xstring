@@ -2294,7 +2294,7 @@ public:
     _Bxty _Bx;
 
     // invariant: _Myres >= _Mysize, and _Myres >= _SMALL_STRING_CAPACITY (after string's construction)
-    // both _Mysize and _Myres doesn't take account of the extra null terminator
+    // neither _Mysize nor _Myres takes account of the extra null terminator
     size_type _Mysize = 0; // current length of string (size)
     size_type _Myres  = 0; // current storage reserved for string (capacity)
 };
