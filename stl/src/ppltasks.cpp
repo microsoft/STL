@@ -43,9 +43,9 @@ namespace Concurrency {
             }
 
             std::abort();
-#else // ^^^ __fastfail conditionally avaialble / fastfail always avaialble vvv
+#else // ^^^ __fastfail conditionally available  / fastfail always available  vvv
             __fastfail(FAST_FAIL_INVALID_ARG);
-#endif /// ^^^ fastfail always avaialble ^^^
+#endif /// ^^^ fastfail always available  ^^^
         }
 
         namespace platform {
