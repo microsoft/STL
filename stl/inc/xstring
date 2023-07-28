@@ -2625,7 +2625,7 @@ private:
     }
 
     static _CONSTEXPR20 void _Deallocate_for_capacity(
-        _Alty& _Al, const pointer& _Old_ptr, const size_type _Capacity) noexcept {
+        _Alty& _Al, const pointer _Old_ptr, const size_type _Capacity) noexcept {
         _STL_INTERNAL_CHECK(_Entails_large_string(_Capacity));
         _Al.deallocate(_Old_ptr, _Capacity + 1); // +1 for null terminator
     }
