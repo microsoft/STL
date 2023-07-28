@@ -39,13 +39,14 @@ namespace Concurrency {
 
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_CRT_APP) && _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
             if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
-#endif
             {
                 __fastfail(FAST_FAIL_INVALID_ARG);
-                _STL_UNREACHABLE; // TRANSITION, DevCom-10425806 - codegen should have assumed no return from __fastfail
             }
 
             std::abort();
+#else // ^^^ __fastfail conditionally avaialble / fastfail always avaialble vvv
+            __fastfail(FAST_FAIL_INVALID_ARG);
+#endif /// ^^^ fastfail always avaialble ^^^
         }
 
         namespace platform {
