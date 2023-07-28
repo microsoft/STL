@@ -2729,7 +2729,7 @@ private:
                         _Xlen_string(); // result too long
                     }
 
-                    const auto _Old_ptr     = _My_data._Myptr();
+                    _Elem* const _Old_ptr   = _My_data._Myptr();
                     size_type _New_capacity = _Calculate_growth(_My_data._Mysize);
                     ++_New_capacity;
                     const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
@@ -2888,8 +2888,8 @@ public:
             _Xlen_string();
         }
 
-        auto _New_capacity = _Calculate_growth(_New_size, _SMALL_STRING_CAPACITY, _Max);
-        auto&& _Alproxy    = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+        size_type _New_capacity = _Calculate_growth(_New_size, _SMALL_STRING_CAPACITY, _Max);
+        auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
         ++_New_capacity;
         const pointer _Fancyptr = _Allocate_at_least_helper(_Getal(), _New_capacity); // throws
