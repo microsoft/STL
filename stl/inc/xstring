@@ -2606,10 +2606,21 @@ public:
     }
 
 private:
+    enum class _Reallocation_policy { _At_least, _Exactly };
+
+    template <_Reallocation_policy _Policy = _Reallocation_policy::_At_least>
     _NODISCARD static _CONSTEXPR20 pointer _Allocate_for_capacity(_Alty& _Al, size_type& _Capacity) {
         _STL_INTERNAL_CHECK(_Entails_large_string(_Capacity));
         ++_Capacity; // Take null terminator into consideration
-        const pointer _Fancy_ptr = _Allocate_at_least_helper(_Al, _Capacity);
+
+        pointer _Fancy_ptr;
+        if constexpr (_Policy == _Reallocation_policy::_At_least) {
+            _Fancy_ptr = _Allocate_at_least_helper(_Al, _Capacity);
+        } else {
+            _STL_INTERNAL_STATIC_ASSERT(_Policy == _Reallocation_policy::_Exactly);
+            _Fancy_ptr = _Al.allocate(_Capacity);
+        }
+
 #if _HAS_CXX20
         // Start element lifetimes to avoid UB. This is a more general mechanism than _String_val::_Activate_SSO_buffer,
         // but likely more impactful to throughput.
@@ -3993,8 +4004,9 @@ public:
 
         size_type _Target_capacity = (_STD min)(_My_data._Mysize | _ALLOC_MASK, max_size());
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
-            auto& _Al              = _Getal();
-            const pointer _New_ptr = _Allocate_for_capacity(_Al, _Target_capacity); // throws
+            auto& _Al = _Getal();
+            const pointer _New_ptr =
+                _Allocate_for_capacity<_Reallocation_policy::_Exactly>(_Al, _Target_capacity); // throws
             _ASAN_STRING_REMOVE(*this);
 
             _My_data._Orphan_all();
