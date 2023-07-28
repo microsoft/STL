@@ -38,8 +38,7 @@ namespace Concurrency {
         [[noreturn]] _CRTIMP2 void __cdecl _ReportUnobservedException() {
 
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_CRT_APP) && _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
-            if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
-            {
+            if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE)) {
                 __fastfail(FAST_FAIL_INVALID_ARG);
             }
 
