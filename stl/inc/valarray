@@ -108,13 +108,13 @@ public:
     }
 
     valarray(valarray&& _Right) noexcept
-        : _Myptr(_STD exchange(_Right._Myptr, nullptr)), _Mysize(_STD exchange(_Right._Mysize, 0)) {}
+        : _Myptr(_STD exchange(_Right._Myptr, nullptr)), _Mysize(_STD exchange(_Right._Mysize, size_t{})) {}
 
     valarray& operator=(valarray&& _Right) noexcept {
         if (this != _STD addressof(_Right)) { // clear this and steal from _Right
             _Tidy_deallocate();
             _Myptr  = _STD exchange(_Right._Myptr, nullptr);
-            _Mysize = _STD exchange(_Right._Mysize, 0);
+            _Mysize = _STD exchange(_Right._Mysize, size_t{});
         }
         return *this;
     }
