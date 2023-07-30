@@ -124,7 +124,7 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
             }
         }
 
-        if (res == WAIT_OBJECT_0 || res == WAIT_ABANDONED) {
+        if (res == WAIT_OBJECT_0) {
             if (1 < ++mtx->_Count) { // check count
                 if ((mtx->_Type & _Mtx_recursive) != _Mtx_recursive) { // not recursive, fixup count
                     --mtx->_Count;
@@ -135,20 +135,14 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
             }
         }
 
-        switch (res) {
-        case WAIT_OBJECT_0:
-        case WAIT_ABANDONED:
+        if (res == WAIT_OBJECT_0) {
             return _Thrd_result::_Success;
-
-        case WAIT_TIMEOUT:
+        } else { // WAIT_TIMEOUT
             if (target == nullptr || (target->tv_sec == 0 && target->tv_nsec == 0)) {
                 return _Thrd_result::_Busy;
             } else {
                 return _Thrd_result::_Timedout;
             }
-
-        default:
-            return _Thrd_result::_Error;
         }
     }
 }
