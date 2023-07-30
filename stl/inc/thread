@@ -173,6 +173,23 @@ _NODISCARD auto _To_absolute_time(const chrono::duration<_Rep, _Period>& _Rel_ti
     return _Abs_time;
 }
 
+template <class _Clock, class _Duration>
+_NODISCARD chrono::nanoseconds _Reltime_ns_10_day_clamped(const chrono::time_point<_Clock, _Duration>& _Then) {
+    // returns _Then - _Now, clamped to [0, ten days]
+    const auto _Now = _Clock::now();
+    if (_Now >= _Then) {
+        return chrono::nanoseconds::zero();
+    } else {
+        constexpr chrono::nanoseconds _Ten_days{chrono::hours{24} * 10};
+        const auto _Rel = _Then - _Now;
+        if (_Rel >= _Ten_days) {
+            return _Ten_days;
+        } else {
+            return chrono::duration_cast<chrono::nanoseconds>(_Rel);
+        }
+    }
+}
+
 namespace this_thread {
     _EXPORT_STD _NODISCARD thread::id get_id() noexcept;
 
@@ -186,14 +203,11 @@ namespace this_thread {
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
         for (;;) {
-            const auto _Now = _Clock::now();
-            if (_Abs_time <= _Now) {
-                return;
+            const long long _Rel_ns = _Reltime_ns_10_day_clamped(_Abs_time).count();
+            if (_Rel_ns <= 0) {
+                break;
             }
-
-            _timespec64 _Tgt;
-            (void) _To_timespec64_sys_10_day_clamped(_Tgt, _Abs_time - _Now);
-            _Thrd_sleep(&_Tgt);
+            _Thrd_sleep_for(_Rel_ns);
         }
     }
 

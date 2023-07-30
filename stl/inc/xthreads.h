@@ -91,7 +91,6 @@ enum class _Thrd_result : int { _Success, _Nomem, _Timedout, _Busy, _Error };
 // threads
 _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_detach(_Thrd_t);
 _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_join(_Thrd_t, int*);
-_CRTIMP2_PURE void __cdecl _Thrd_sleep(const _timespec64*);
 _CRTIMP2_PURE void __cdecl _Thrd_yield();
 _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency();
 _CRTIMP2_PURE _Thrd_id_t __cdecl _Thrd_id();
@@ -126,6 +125,7 @@ int __cdecl _Smtx_try_lock_exclusive(_Smtx_t*);
 int __cdecl _Smtx_try_lock_shared(_Smtx_t*);
 void __cdecl _Smtx_unlock_exclusive(_Smtx_t*);
 void __cdecl _Smtx_unlock_shared(_Smtx_t*);
+void __cdecl _Thrd_sleep_for(long long /*ns*/); // TRANSITION: defined in sharedmutex.cpp for convenience
 
 // condition variables
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*);
