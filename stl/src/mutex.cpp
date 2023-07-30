@@ -77,6 +77,7 @@ void _Mtx_destroy(_Mtx_t mtx) { // destroy mutex
 }
 
 static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock mutex
+    // TRANSITION, ABI: the use of `const _timespec64*` is preserved for `_Mtx_timedlock`
     const long current_thread_id = static_cast<long>(GetCurrentThreadId());
     if ((mtx->_Type & ~_Mtx_recursive) == _Mtx_plain) { // set the lock
         if (mtx->_Thread_id != current_thread_id) { // not current thread, do lock
@@ -108,6 +109,7 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
             }
 
         } else { // check timeout
+            // TRANSITION, ABI: this branch is preserved for `_Mtx_timedlock`
             _timespec64 now;
             _Timespec64_get_sys(&now);
             while (now.tv_sec < target->tv_sec || now.tv_sec == target->tv_sec && now.tv_nsec < target->tv_nsec) {
@@ -173,6 +175,7 @@ _Thrd_result _Mtx_trylock(_Mtx_t mtx) { // attempt to lock try_mutex
     return mtx_do_lock(mtx, &xt);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _Thrd_result _Mtx_timedlock(_Mtx_t mtx, const _timespec64* xt) { // attempt to lock timed mutex
     _Thrd_result res;
 
@@ -185,6 +188,7 @@ int _Mtx_current_owns(_Mtx_t mtx) { // test if current thread owns mutex
     return mtx->_Count != 0 && mtx->_Thread_id == static_cast<long>(GetCurrentThreadId());
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 void* _Mtx_getconcrtcs(_Mtx_t mtx) { // get internal cs impl
     return &mtx->_Critical_section;
 }

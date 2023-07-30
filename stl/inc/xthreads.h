@@ -111,10 +111,8 @@ _CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t);
 _CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t);
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t);
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t);
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_timedlock(_Mtx_t, const _timespec64*);
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t); // TRANSITION, ABI: Always succeeds
 
-_CRTIMP2_PURE void* __cdecl _Mtx_getconcrtcs(_Mtx_t);
 _CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t);
 _CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t);
 
