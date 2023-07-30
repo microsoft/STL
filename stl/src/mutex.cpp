@@ -77,10 +77,11 @@ void _Mtx_destroy(_Mtx_t mtx) { // destroy mutex
 }
 
 static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock mutex
+    const long current_thread_id = static_cast<long>(GetCurrentThreadId());
     if ((mtx->_Type & ~_Mtx_recursive) == _Mtx_plain) { // set the lock
-        if (mtx->_Thread_id != static_cast<long>(GetCurrentThreadId())) { // not current thread, do lock
+        if (mtx->_Thread_id != current_thread_id) { // not current thread, do lock
             AcquireSRWLockExclusive(get_srw_lock(mtx));
-            mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
+            mtx->_Thread_id = current_thread_id;
         }
         ++mtx->_Count;
 
@@ -88,7 +89,7 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
     } else { // handle timed or recursive mutex
         int res = WAIT_TIMEOUT;
         if (target == nullptr) { // no target --> plain wait (i.e. infinite timeout)
-            if (mtx->_Thread_id != static_cast<long>(GetCurrentThreadId())) {
+            if (mtx->_Thread_id != current_thread_id) {
                 AcquireSRWLockExclusive(get_srw_lock(mtx));
             }
 
@@ -96,7 +97,7 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
 
         } else if (target->tv_sec < 0 || target->tv_sec == 0 && target->tv_nsec <= 0) {
             // target time <= 0 --> plain trylock or timed wait for time that has passed; try to lock with 0 timeout
-            if (mtx->_Thread_id != static_cast<long>(GetCurrentThreadId())) { // not this thread, lock it
+            if (mtx->_Thread_id != current_thread_id) { // not this thread, lock it
                 if (TryAcquireSRWLockExclusive(get_srw_lock(mtx)) != 0) {
                     res = WAIT_OBJECT_0;
                 } else {
@@ -111,7 +112,7 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
             _Timespec64_get_sys(&now);
             while (now.tv_sec < target->tv_sec || now.tv_sec == target->tv_sec && now.tv_nsec < target->tv_nsec) {
                 // time has not expired
-                if (mtx->_Thread_id == static_cast<long>(GetCurrentThreadId())
+                if (mtx->_Thread_id == current_thread_id
                     || TryAcquireSRWLockExclusive(get_srw_lock(mtx)) != 0) { // stop waiting
                     res = WAIT_OBJECT_0;
                     break;
@@ -130,7 +131,7 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
                     res = WAIT_TIMEOUT;
                 }
             } else {
-                mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
+                mtx->_Thread_id = current_thread_id;
             }
         }
 
