@@ -125,9 +125,17 @@ static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) < 16, "must
 _NODISCARD constexpr bool _Is_integral_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Char_type;
 }
+
 _NODISCARD constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Long_double_type;
 }
+
+#if _HAS_CXX23
+_NODISCARD consteval bool _Is_debug_enabled_fmt_type(_Basic_format_arg_type _Ty) {
+    return (_Ty == _Basic_format_arg_type::_Char_type) || (_Ty == _Basic_format_arg_type::_CString_type)
+        || (_Ty == _Basic_format_arg_type::_String_type);
+}
+#endif // _HAS_CXX23
 
 struct _Auto_id_tag {};
 
@@ -3554,7 +3562,17 @@ struct formatter {
 _FMT_P2286_BEGIN
 template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
 struct _Formatter_base {
+private:
     using _Pc = basic_format_parse_context<_CharT>;
+
+public:
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept
+        requires (_Is_debug_enabled_fmt_type(_ArgType))
+    {
+        _Specs._Type = '?';
+    }
+#endif // _HAS_CXX23
 
     constexpr _Pc::iterator parse(_Pc& _ParseCtx) {
         _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>{_Specs, _ParseCtx}, _ArgType);
