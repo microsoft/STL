@@ -196,6 +196,15 @@ void check_set_debug_format_function() {
     assert(format(STR("{:6$}"), val) == STR(R"("CharT\t[11]")"));
 }
 
+void set_debug_format(auto&) {}
+
+struct name_lookup_in_formatter_checker : formatter<int> {
+    auto parse(auto& ctx) { // COMPILE-ONLY
+        set_debug_format(*this);
+        return ctx.begin();
+    }
+};
+
 int main() {
     static_assert(check_debug_enabled_specializations<char>());
     static_assert(check_debug_enabled_specializations<wchar_t>());
