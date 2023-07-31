@@ -290,6 +290,9 @@ public:
     }
 
     valarray& operator*=(const valarray& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize == _Right._Mysize, "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         const size_t _Size = size();
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] *= _Right[_Idx];
