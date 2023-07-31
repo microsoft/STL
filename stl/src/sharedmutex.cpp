@@ -38,7 +38,7 @@ void __cdecl _Smtx_unlock_shared(_Smtx_t* smtx) { // unlock non-exclusive shared
 }
 
 void __cdecl _Thrd_sleep_for(const long long ns) { // attempt to suspend thread for at least `ns` nanoseconds
-    constexpr long _Nsec_per_msec = 1'000'000L;
-    Sleep(static_cast<DWORD>((ns + _Nsec_per_msec - 1) / _Nsec_per_msec));
+    constexpr long nsec_per_msec = 1'000'000L;
+    Sleep(static_cast<DWORD>((ns + nsec_per_msec - 1) / nsec_per_msec));
 }
 }
