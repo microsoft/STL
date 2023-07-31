@@ -205,7 +205,7 @@ namespace this_thread {
         for (;;) {
             const long long _Rel_ns = _Reltime_ns_10_day_clamped(_Abs_time).count();
             if (_Rel_ns <= 0) {
-                break;
+                return;
             }
             _Thrd_sleep_for(_Rel_ns);
         }
