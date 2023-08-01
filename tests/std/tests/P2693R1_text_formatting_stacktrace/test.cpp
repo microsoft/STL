@@ -40,7 +40,7 @@ void check_stacktrace_entry_formatter() {
 
     { // width only
         constexpr int width  = 560;
-        const int fill_width = static_cast<int>(width - frame_str.size());
+        const int fill_width = static_cast<int>(width - clamp(frame_str.size(), size_t{0}, size_t{width}));
 
         const auto s  = fmt("{:560}", frame);
         const auto it = ranges::mismatch(views::reverse(s), views::repeat(' ', fill_width)).in1;
@@ -50,7 +50,7 @@ void check_stacktrace_entry_formatter() {
 
     { // width only (replacement field)
         constexpr int width  = 470;
-        const int fill_width = static_cast<int>(width - frame_str.size());
+        const int fill_width = static_cast<int>(width - clamp(frame_str.size(), size_t{0}, size_t{width}));
 
         const auto s  = fmt("{:{}}", frame, width);
         const auto it = ranges::mismatch(views::reverse(s), views::repeat(' ', fill_width)).in1;
@@ -60,7 +60,7 @@ void check_stacktrace_entry_formatter() {
 
     { // fill-and-align with width
         constexpr int width  = 400;
-        const int fill_width = static_cast<int>(width - frame_str.size());
+        const int fill_width = static_cast<int>(width - clamp(frame_str.size(), size_t{0}, size_t{width}));
 
         {
             const auto s  = fmt("{:=<400}", frame);
@@ -92,7 +92,7 @@ void check_stacktrace_entry_formatter() {
 
     { // fill-and-align with width (replacement field)
         constexpr int width  = 390;
-        const int fill_width = static_cast<int>(width - frame_str.size());
+        const int fill_width = static_cast<int>(width - clamp(frame_str.size(), size_t{0}, size_t{width}));
 
         {
             const auto s  = fmt("{:/<{}}", frame, width);
