@@ -59,7 +59,7 @@ void validation_failure(
     any_errors = true;
     print(stderr, "##vso[task.logissue type=error;sourcepath={};linenumber=1;columnnumber=1]Validation failed: ",
         filepath.string());
-    println(stderr, fmt, std::forward<Args>(args)...);
+    println(stderr, fmt, forward<Args>(args)...);
 }
 
 enum class TabPolicy : bool { Forbidden, Allowed };
