@@ -141,13 +141,15 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
 
         if (res == WAIT_OBJECT_0) {
             return _Thrd_result::_Success;
-        } else { // WAIT_TIMEOUT
-            if (target == nullptr || (target->tv_sec == 0 && target->tv_nsec == 0)) {
-                return _Thrd_result::_Busy;
-            } else {
-                return _Thrd_result::_Timedout;
-            }
         }
+
+        // res is WAIT_TIMEOUT here
+
+        if (target == nullptr || (target->tv_sec == 0 && target->tv_nsec == 0)) {
+            return _Thrd_result::_Busy;
+        }
+
+        return _Thrd_result::_Timedout;
     }
 }
 
