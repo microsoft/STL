@@ -437,6 +437,35 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... rngs)
             assert(end == as_const(zipped_range).end());
         }
 
+        // Validate view_interface::cbegin()
+        STATIC_ASSERT(CanMemberCBegin<ZipType>);
+        {
+            const same_as<ranges::const_iterator_t<ZipType>> auto itr = zipped_range.cbegin();
+            assert(do_tuples_reference_same_objects(*itr, tuple_element_arr[0]));
+        }
+
+        STATIC_ASSERT(CanMemberCBegin<const ZipType> == (ranges::range<const AllView<RangeTypes>> && ...));
+        if constexpr (CanMemberCBegin<const ZipType>) {
+            assert(do_tuples_reference_same_objects(*(as_const(zipped_range).cbegin()), const_tuple_element_arr[0]));
+        }
+
+        // Validate view_interface::cend()
+        STATIC_ASSERT(CanMemberCEnd<ZipType>);
+        if constexpr (equality_comparable<ranges::const_iterator_t<ZipType>>) {
+            auto end = zipped_range.cbegin();
+            ranges::advance(end, TestContainerType::smallest_array_size);
+
+            assert(end == zipped_range.cend());
+        }
+
+        STATIC_ASSERT(CanMemberCEnd<const ZipType> == (ranges::range<const AllView<RangeTypes>> && ...));
+        if constexpr (CanMemberCEnd<const ZipType> && equality_comparable<ranges::const_iterator_t<const ZipType>>) {
+            auto end = as_const(zipped_range).cbegin();
+            ranges::advance(end, TestContainerType::smallest_array_size);
+
+            assert(end == as_const(zipped_range).cend());
+        }
+
         const auto validate_iterators_lambda = []<class LocalZipType, class ArrayType, class... LocalRangeTypes>(
                                                    LocalZipType& relevant_range,
                                                    const ArrayType& relevant_tuple_element_arr) {
