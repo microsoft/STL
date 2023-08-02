@@ -238,7 +238,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         if constexpr (copy_constructible<V>) {
             auto r2                                    = r;
-            const same_as<const_iterator_t<R>> auto i2 = as_const(r2).cbegin();
+            const same_as<const_iterator_t<R>> auto i2 = r2.cbegin();
             if (!is_empty) {
                 assert(*i2 == *i);
             }
@@ -255,7 +255,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         if constexpr (copy_constructible<V>) {
             const auto cr2                                    = r;
-            const same_as<const_iterator_t<const R>> auto ci2 = cr2.cbegin();
+            const same_as<const_iterator_t<const R>> auto ci2 = as_const(cr2).cbegin();
             if (!is_empty) {
                 assert(*ci2 == *ci);
             }
@@ -301,7 +301,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             if constexpr (copy_constructible<V>) {
                 const auto r2 = r;
                 if (!is_empty) {
-                    assert(*prev(r2.cend()) == *prev(cend(expected)));
+                    assert(*prev(as_const(r2).cend()) == *prev(cend(expected)));
                 }
             }
         }
