@@ -238,7 +238,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         if constexpr (copy_constructible<V>) {
             auto r2                                    = r;
-            const same_as<const_iterator_t<R>> auto i2 = r2.cbegin();
+            const same_as<const_iterator_t<R>> auto i2 = as_const(r2).cbegin();
             if (!is_empty) {
                 assert(*i2 == *i);
             }
