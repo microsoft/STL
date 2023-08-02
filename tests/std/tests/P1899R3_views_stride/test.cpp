@@ -255,7 +255,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         if constexpr (copy_constructible<V>) {
             const auto cr2                                    = r;
-            const same_as<const_iterator_t<const R>> auto ci2 = as_const(cr2).cbegin();
+            const same_as<const_iterator_t<const R>> auto ci2 = cr2.cbegin();
             if (!is_empty) {
                 assert(*ci2 == *ci);
             }
@@ -291,8 +291,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     if constexpr (CanMemberCEnd<const R>) {
         const same_as<const_sentinel_t<const R>> auto cs = as_const(r).cend();
         assert((as_const(r).cbegin() == cs) == is_empty);
-        STATIC_ASSERT(common_range<const R> == //
-                      (common_range<const V> && (sized_range<const V> || !bidirectional_range<const V>) ));
+        STATIC_ASSERT(common_range<const R>
+                      == (common_range<const V> && (sized_range<const V> || !bidirectional_range<const V>) ));
         if constexpr (common_range<const R> && bidirectional_range<const V>) {
             if (!is_empty) {
                 assert(*prev(cs) == *prev(cend(expected)));
@@ -301,7 +301,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             if constexpr (copy_constructible<V>) {
                 const auto r2 = r;
                 if (!is_empty) {
-                    assert(*prev(as_const(r2).cend()) == *prev(cend(expected)));
+                    assert(*prev(r2.cend()) == *prev(cend(expected)));
                 }
             }
         }
