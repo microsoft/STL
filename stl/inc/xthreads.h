@@ -104,8 +104,10 @@ enum { // mutex types
     _Mtx_recursive = 0x100
 };
 
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t*, int);
-_CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t);
+#ifdef _CRTBLD
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t*, int); // used only by _Thrd_create
+_CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t); // used only by _Thrd_create
+#endif // _CRTBLD
 _CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t, int);
 _CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t);
 _CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t);
@@ -113,8 +115,10 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t);
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t);
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t); // TRANSITION, ABI: Always succeeds
 
-_CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t);
-_CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t);
+#ifdef _CRTBLD
+_CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t); // used only by _Cnd_wait and _Cnd_timedwait
+_CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t); // used only by _Cnd_wait and _Cnd_timedwait
+#endif // _CRTBLD
 
 // shared mutex
 // these declarations must be in sync with those in sharedmutex.cpp
@@ -126,8 +130,10 @@ void __cdecl _Smtx_unlock_exclusive(_Smtx_t*);
 void __cdecl _Smtx_unlock_shared(_Smtx_t*);
 
 // condition variables
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*);
-_CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t);
+#ifdef _CRTBLD
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*); // used only by _Thrd_create
+_CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t); // used only by _Thrd_create
+#endif // _CRTBLD
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t);
 _CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t);
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(_Cnd_t, _Mtx_t); // TRANSITION, ABI: Always succeeds
