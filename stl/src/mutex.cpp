@@ -82,6 +82,8 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
     // TRANSITION, ABI: the use of `const _timespec64*` is preserved for `_Mtx_timedlock`
     const auto current_thread_id = static_cast<long>(GetCurrentThreadId());
     if ((mtx->_Type & ~_Mtx_recursive) == _Mtx_plain) { // set the lock
+        // TRANSITION, ABI: this branch is preserved for `_Thrd_create`
+
         if (mtx->_Thread_id != current_thread_id) { // not current thread, do lock
             AcquireSRWLockExclusive(get_srw_lock(mtx));
             mtx->_Thread_id = current_thread_id;
