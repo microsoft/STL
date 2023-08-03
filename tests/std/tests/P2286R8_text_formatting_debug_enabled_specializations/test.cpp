@@ -52,8 +52,7 @@ consteval bool check_debug_enabled_specializations() {
     static_assert(!DebugEnabledSpecialization<formatter<const void*, CharT>>);
 
     // NB: wchar_t might be defined as a typedef for unsigned short (with '/Zc:wchar_t-')
-    static_assert(!DebugEnabledSpecialization<formatter<unsigned short, CharT>>
-                  == (same_as<CharT, char> || !same_as<CharT, unsigned short>) );
+    static_assert(DebugEnabledSpecialization<formatter<unsigned short, CharT>> == same_as<CharT, unsigned short>);
 
     return true;
 }
@@ -78,8 +77,6 @@ struct Holder {
 template <class CharT>
 struct std::formatter<Holder<CharT>, CharT> {
 public:
-    constexpr formatter() : member_index{-1} {}
-
     constexpr auto parse(basic_format_parse_context<CharT>& ctx) {
         auto it = ctx.begin();
         if (it == ctx.end() || *it == STR('}')) {
@@ -156,7 +153,7 @@ public:
     }
 
 private:
-    int member_index;
+    int member_index{-1};
 
     formatter<char, CharT> fmt0;
     formatter<CharT, CharT> fmt1;

@@ -132,8 +132,8 @@ _NODISCARD constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
 
 #if _HAS_CXX23
 _NODISCARD consteval bool _Is_debug_enabled_fmt_type(_Basic_format_arg_type _Ty) {
-    return (_Ty == _Basic_format_arg_type::_Char_type) || (_Ty == _Basic_format_arg_type::_CString_type)
-        || (_Ty == _Basic_format_arg_type::_String_type);
+    return _Ty == _Basic_format_arg_type::_Char_type || _Ty == _Basic_format_arg_type::_CString_type
+        || _Ty == _Basic_format_arg_type::_String_type;
 }
 #endif // _HAS_CXX23
 
