@@ -103,6 +103,20 @@ inline auto last_known_good_find(FwdIt first, FwdIt last, T v) {
     return first;
 }
 
+template <class FwdIt, class T>
+inline auto last_known_good_find_last(FwdIt first, FwdIt last, T v) {
+    FwdIt last_save = last;
+    for (;;) {
+        if (last == first) {
+            return last_save;
+        }
+        --last;
+        if (*last == v) {
+            return last;
+        }
+    }
+}
+
 template <class T>
 void test_case_find(const vector<T>& input, T v) {
     auto expected = last_known_good_find(input.begin(), input.end(), v);
@@ -122,6 +136,29 @@ void test_find(mt19937_64& gen) {
         test_case_find(input, static_cast<T>(dis(gen)));
     }
 }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+template <class T>
+void test_case_find_last(const vector<T>& input, T v) {
+    auto expected = last_known_good_find_last(input.begin(), input.end(), v);
+    auto range    = ranges::find_last(input.begin(), input.end(), v);
+    auto actual   = range.begin();
+    assert(expected == actual);
+}
+
+template <class T>
+void test_find_last(mt19937_64& gen) {
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
+    binomial_distribution<TD> dis(10);
+    vector<T> input;
+    input.reserve(dataCount);
+    test_case_find_last(input, static_cast<T>(dis(gen)));
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(static_cast<T>(dis(gen)));
+        test_case_find_last(input, static_cast<T>(dis(gen)));
+    }
+}
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <class T>
 void test_min_max_element(mt19937_64& gen) {
@@ -304,6 +341,18 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_find<unsigned int>(gen);
     test_find<long long>(gen);
     test_find<unsigned long long>(gen);
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+    test_find_last<char>(gen);
+    test_find_last<signed char>(gen);
+    test_find_last<unsigned char>(gen);
+    test_find_last<short>(gen);
+    test_find_last<unsigned short>(gen);
+    test_find_last<int>(gen);
+    test_find_last<unsigned int>(gen);
+    test_find_last<long long>(gen);
+    test_find_last<unsigned long long>(gen);
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     test_min_max_element<char>(gen);
     test_min_max_element<signed char>(gen);
