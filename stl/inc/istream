@@ -36,9 +36,7 @@ public:
     }
 #endif // defined(__FORCE_INSTANCE)
 
-    explicit __CLR_OR_THIS_CALL basic_istream(_Mysb* _Strbuf, bool _Isstd = false)
-
-        : _Chcount(0) {
+    explicit __CLR_OR_THIS_CALL basic_istream(_Mysb* _Strbuf, bool _Isstd = false) : _Chcount(0) {
         _Myios::init(_Strbuf, _Isstd);
     }
 
