@@ -1020,12 +1020,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS 1
 #endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
 
-#ifdef __cpp_consteval
-#define _CONSTEVAL consteval
-#else // ^^^ supports consteval / no consteval vvv
-#define _CONSTEVAL constexpr
-#endif // ^^^ no consteval ^^^
-
 // Controls whether the STL will force /fp:fast to enable vectorization of algorithms defined
 // in the standard as special cases; such as reduce, transform_reduce, inclusive_scan, exclusive_scan
 #ifndef _STD_VECTORIZE_WITH_FLOAT_CONTROL

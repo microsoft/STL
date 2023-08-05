@@ -999,7 +999,7 @@ public:
 };
 
 #if _HAS_TR1_NAMESPACE
-_CONSTEVAL double _Cx_exp2(const int _Exp) noexcept {
+constexpr double _Cx_exp2(const int _Exp) noexcept {
     double _Ret = 1.0;
     for (int _Count = _Exp; _Count > 0; --_Count) {
         _Ret *= 2.0;
