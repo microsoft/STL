@@ -129,7 +129,9 @@ _NODISCARD constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Long_double_type;
 }
 
-struct _Auto_id_tag {};
+struct _Auto_id_tag {
+    explicit _Auto_id_tag() = default;
+};
 
 // clang-format off
 template <class _Ty, class _CharT>
