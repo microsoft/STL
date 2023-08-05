@@ -1680,7 +1680,7 @@ public:
         _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_width(const _Auto_id_tag) {
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
         _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
@@ -1689,7 +1689,7 @@ public:
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_precision(const _Auto_id_tag) {
+    constexpr void _On_dynamic_precision(_Auto_id_tag) {
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
@@ -3975,7 +3975,7 @@ public:
         _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_width(const _Auto_id_tag) {
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
         _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
