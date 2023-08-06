@@ -49,7 +49,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ no support for vector algorithms ^^^
 
 #ifndef _USE_STD_VECTOR_FLOATING_ALGORITHMS
-#if _USE_STD_VECTOR_ALGORITHMS && defined(_M_FP_FAST)
+#if _USE_STD_VECTOR_ALGORITHMS && !defined(_M_FP_EXCEPT)
 #define _USE_STD_VECTOR_FLOATING_ALGORITHMS 1
 #else // ^^^ use vector algorithms & fast math / not use vector algorithms or not use fast math vvv
 #define _USE_STD_VECTOR_FLOATING_ALGORITHMS 0
