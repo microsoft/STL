@@ -945,8 +945,8 @@ namespace {
 
         using _Signed_t = float;
 
-        static constexpr _Signed_t _Init_min_val = -__builtin_huge_valf();
-        static constexpr _Signed_t _Init_max_val = __builtin_huge_valf();
+        static constexpr _Signed_t _Init_min_val = __builtin_huge_valf();
+        static constexpr _Signed_t _Init_max_val = -__builtin_huge_valf();
 
 #ifndef _M_ARM64EC
 #ifdef _M_IX86
@@ -1041,8 +1041,8 @@ namespace {
 
         using _Signed_t = double;
 
-        static constexpr _Signed_t _Init_min_val = -__builtin_huge_val();
-        static constexpr _Signed_t _Init_max_val = __builtin_huge_val();
+        static constexpr _Signed_t _Init_min_val = __builtin_huge_val();
+        static constexpr _Signed_t _Init_max_val = -__builtin_huge_val();
 
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = false;
