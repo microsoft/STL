@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #ifdef _M_CEE_PURE
@@ -538,11 +539,11 @@ namespace {
         const void* _First, const void* _Last, _Min_max_element_t& _Res, _Ty _Cur_min, _Ty _Cur_max) noexcept {
 
         if constexpr (_Mode == _Mode_min) {
-            return _Min_tail(_First, _Last, _Res._Min, static_cast<_Ty>(_Cur_min));
+            return _Min_tail(_First, _Last, _Res._Min, _Cur_min);
         } else if constexpr (_Mode == _Mode_max) {
-            return _Max_tail(_First, _Last, _Res._Max, static_cast<_Ty>(_Cur_max));
+            return _Max_tail(_First, _Last, _Res._Max, _Cur_max);
         } else {
-            return _Both_tail(_First, _Last, _Res, static_cast<_Ty>(_Cur_min), static_cast<_Ty>(_Cur_max));
+            return _Both_tail(_First, _Last, _Res, _Cur_min, _Cur_max);
         }
     }
 
