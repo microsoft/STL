@@ -32,10 +32,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 namespace stdext {
-    using _STD basic_string;
-    using _STD less;
-    using _STD size_t;
-
     template <class _Kty>
     _NODISCARD size_t hash_value(const _Kty& _Keyval) noexcept {
         if constexpr (_STD is_pointer_v<_Kty> || _STD is_null_pointer_v<_Kty>) {
@@ -46,7 +42,7 @@ namespace stdext {
     }
 
     template <class _Elem, class _Traits, class _Alloc>
-    _NODISCARD size_t hash_value(const basic_string<_Elem, _Traits, _Alloc>& _Str) noexcept {
+    _NODISCARD size_t hash_value(const _STD basic_string<_Elem, _Traits, _Alloc>& _Str) noexcept {
         return _STD _Hash_array_representation(_Str.c_str(), _Str.size());
     }
 
@@ -58,7 +54,7 @@ namespace stdext {
         return _STD _Hash_array_representation(_Str, _CSTD wcslen(_Str));
     }
 
-    template <class _Kty, class _Pr = less<_Kty>>
+    template <class _Kty, class _Pr = _STD less<_Kty>>
     class hash_compare { // traits class for hash containers
     public:
         enum { // parameters for hash table

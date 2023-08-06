@@ -1466,8 +1466,6 @@ struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
 _STD_END
 
 _STDEXT_BEGIN
-using _STD size_t;
-
 template <class _Ptr>
 class _DEPRECATE_STDEXT_ARR_ITERS checked_array_iterator { // wrap a pointer with checking
 private:
