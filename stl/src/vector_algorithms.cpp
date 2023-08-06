@@ -1098,7 +1098,7 @@ namespace {
         static uint64_t _Get_any_u(const __m128i _Cur) noexcept {
 #ifdef _M_IX86
             return (static_cast<uint64_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
-                | static_cast<uint64_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur))));
+                | static_cast<uint64_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur)));
 #else // ^^^ x86 / x64 vvv
             return static_cast<uint64_t>(_mm_cvtsi128_si64(_Cur));
 #endif // ^^^ x64 ^^^
