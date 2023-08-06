@@ -181,7 +181,7 @@ struct _Big_uint128 {
     uint64_t _Upper;
     uint64_t _Lower;
 
-    constexpr bool operator<(const _Big_uint128 _Rhs) const noexcept {
+    _NODISCARD constexpr bool operator<(const _Big_uint128 _Rhs) const noexcept {
         if (_Upper != _Rhs._Upper) {
             return _Upper < _Rhs._Upper;
         }
