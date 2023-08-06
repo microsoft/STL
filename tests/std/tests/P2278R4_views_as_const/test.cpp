@@ -202,7 +202,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             STATIC_ASSERT(noexcept(as_const(rng) | views::as_const));
         }
 
-        { //... with rvalue argument
+        { // ... with rvalue argument
             STATIC_ASSERT(same_as<decltype(views::as_const(move(rng))), ReconstructedRefView>);
             STATIC_ASSERT(noexcept(views::as_const(move(rng))));
 
