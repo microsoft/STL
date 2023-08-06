@@ -48,6 +48,18 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _USE_STD_VECTOR_ALGORITHMS
 #endif // ^^^ no support for vector algorithms ^^^
 
+#ifndef _USE_STD_VECTOR_FLOATING_ALGORITHMS
+#if _USE_STD_VECTOR_ALGORITHMS && defined(_M_FP_FAST)
+#define _USE_STD_VECTOR_FLOATING_ALGORITHMS 1
+#else // ^^^ use vector algorithms & fast math / not use vector algorithms or not use fast math vvv
+#define _USE_STD_VECTOR_FLOATING_ALGORITHMS 0
+#endif // ^^^ not use vector algorithms or not use fast math ^^^
+#else // ^^^ !defined(_USE_STD_VECTOR_FLOATING_ALGORITHMS) / defined(_USE_STD_VECTOR_FLOATING_ALGORITHMS) vvv
+#if _USE_STD_VECTOR_FLOATING_ALGORITHMS && !_USE_STD_VECTOR_ALGORITHMS
+#error If _USE_STD_VECTOR_ALGORITHMS is set, _USE_STD_VECTOR_FLOATING_ALGORITHMS should also be set
+#endif  // _USE_STD_VECTOR_FLOATING_ALGORITHMS && !_USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ defined(_USE_STD_VECTOR_FLOATING_ALGORITHMS) ^^^
+
 #if _USE_STD_VECTOR_ALGORITHMS
 _EXTERN_C
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
@@ -6641,9 +6653,9 @@ _INLINE_VAR constexpr bool _Is_min_max_optimization_safe = // Activate the vecto
     _Iterator_is_contiguous<_Iter> // The iterator must be contiguous so we can get raw pointers.
     && !_Iterator_is_volatile<_Iter> // The iterator must not be volatile.
     && conjunction_v<disjunction<
-#if defined(_M_FP_FAST)
+#if _USE_STD_VECTOR_FLOATING_ALGORITHMS
                          is_floating_point<_Elem>, // Element is floating point or...
-#endif
+#endif // _USE_STD_VECTOR_FLOATING_ALGORITHMS
                          is_integral<_Elem>, is_pointer<_Elem>>, // ... integral or pointer type.
         disjunction< // And either of the following:
 #ifdef __cpp_lib_concepts
