@@ -138,6 +138,19 @@ void test_min_max_element(mt19937_64& gen) {
     }
 }
 
+template <class T>
+void test_min_max_element_f(mt19937_64& gen) {
+    normal_distribution<T> dis(100.0, 1.0);
+
+    vector<T> input;
+    input.reserve(dataCount);
+    test_case_min_max_element(input);
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(static_cast<T>(dis(gen)));
+        test_case_min_max_element(input);
+    }
+}
+
 void test_min_max_element_pointers(mt19937_64& gen) {
     const short arr[20]{};
 
@@ -314,6 +327,10 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_min_max_element<unsigned int>(gen);
     test_min_max_element<long long>(gen);
     test_min_max_element<unsigned long long>(gen);
+
+    test_min_max_element_f<float>(gen);
+    test_min_max_element_f<double>(gen);
+    test_min_max_element_f<long double>(gen);
 
     test_min_max_element_pointers(gen);
 

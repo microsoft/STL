@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation.
+
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #ifdef _M_CEE_PURE
@@ -533,6 +534,19 @@ namespace {
         _Mode_both = _Mode_min | _Mode_max,
     };
 
+    template <_Min_max_mode _Mode, class _Ty>
+    auto _Minmax_tail_f(
+        const void* _First, const void* _Last, _Min_max_element_t& _Res, _Ty _Cur_min, _Ty _Cur_max) noexcept {
+
+        if constexpr (_Mode == _Mode_min) {
+            return _Min_tail(_First, _Last, _Res._Min, static_cast<_Ty>(_Cur_min));
+        } else if constexpr (_Mode == _Mode_max) {
+            return _Max_tail(_First, _Last, _Res._Max, static_cast<_Ty>(_Cur_max));
+        } else {
+            return _Both_tail(_First, _Last, _Res, static_cast<_Ty>(_Cur_min), static_cast<_Ty>(_Cur_max));
+        }
+    }
+
     template <_Min_max_mode _Mode, class _STy, class _UTy>
     auto _Minmax_tail(const void* _First, const void* _Last, _Min_max_element_t& _Res, bool _Sign, _UTy _Cur_min,
         _UTy _Cur_max) noexcept {
@@ -561,6 +575,8 @@ namespace {
     }
 
     struct _Minmax_traits_1 {
+        static constexpr bool _Is_floating = false;
+
         using _Signed_t   = int8_t;
         using _Unsigned_t = uint8_t;
 
@@ -570,6 +586,10 @@ namespace {
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 256;
+
+        static __m128i _Load(const void* _Src) {
+            return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
+        }
 
         static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
             alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][16] = {
@@ -626,6 +646,10 @@ namespace {
             return _mm_cmpgt_epi8(_First, _Second);
         }
 
+        static __m128i _Cmp_eq_idx(const __m128i _First, const __m128i _Second) noexcept {
+            return _mm_cmpeq_epi8(_First, _Second);
+        }
+
         static __m128i _Min(const __m128i _First, const __m128i _Second, __m128i) noexcept {
             return _mm_min_epi8(_First, _Second);
         }
@@ -633,10 +657,16 @@ namespace {
         static __m128i _Max(const __m128i _First, const __m128i _Second, __m128i) noexcept {
             return _mm_max_epi8(_First, _Second);
         }
+
+        static __m128i _Mask_cast(__m128i _Mask) noexcept {
+            return _Mask;
+        }
 #endif // !_M_ARM64EC
     };
 
     struct _Minmax_traits_2 {
+        static constexpr bool _Is_floating = false;
+
         using _Signed_t   = int16_t;
         using _Unsigned_t = uint16_t;
 
@@ -646,6 +676,10 @@ namespace {
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 65536;
+
+        static __m128i _Load(const void* _Src) {
+            return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
+        }
 
         static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
             alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][8] = {
@@ -703,6 +737,10 @@ namespace {
             return _mm_cmpgt_epi16(_First, _Second);
         }
 
+        static __m128i _Cmp_eq_idx(const __m128i _First, const __m128i _Second) noexcept {
+            return _mm_cmpeq_epi16(_First, _Second);
+        }
+
         static __m128i _Min(const __m128i _First, const __m128i _Second, __m128i) noexcept {
             return _mm_min_epi16(_First, _Second);
         }
@@ -710,10 +748,16 @@ namespace {
         static __m128i _Max(const __m128i _First, const __m128i _Second, __m128i) noexcept {
             return _mm_max_epi16(_First, _Second);
         }
+
+        static __m128i _Mask_cast(__m128i _Mask) noexcept {
+            return _Mask;
+        }
 #endif // !_M_ARM64EC
     };
 
     struct _Minmax_traits_4 {
+        static constexpr bool _Is_floating = false;
+
         using _Signed_t   = int32_t;
         using _Unsigned_t = uint32_t;
 
@@ -727,6 +771,10 @@ namespace {
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
+
+        static __m128i _Load(const void* _Src) {
+            return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
+        }
 
         static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
             alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][4] = {
@@ -780,6 +828,10 @@ namespace {
             return _mm_cmpgt_epi32(_First, _Second);
         }
 
+        static __m128i _Cmp_eq_idx(const __m128i _First, const __m128i _Second) noexcept {
+            return _mm_cmpeq_epi32(_First, _Second);
+        }
+
         static __m128i _Min(const __m128i _First, const __m128i _Second, __m128i) noexcept {
             return _mm_min_epi32(_First, _Second);
         }
@@ -787,10 +839,16 @@ namespace {
         static __m128i _Max(const __m128i _First, const __m128i _Second, __m128i) noexcept {
             return _mm_max_epi32(_First, _Second);
         }
+
+        static __m128i _Mask_cast(__m128i _Mask) noexcept {
+            return _Mask;
+        }
 #endif // !_M_ARM64EC
     };
 
     struct _Minmax_traits_8 {
+        static constexpr bool _Is_floating = false;
+
         using _Signed_t   = int64_t;
         using _Unsigned_t = uint64_t;
 
@@ -799,6 +857,10 @@ namespace {
 
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = false;
+
+        static __m128i _Load(const void* _Src) {
+            return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
+        }
 
         static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) {
             alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][2] = {
@@ -860,12 +922,216 @@ namespace {
             return _mm_cmpgt_epi64(_First, _Second);
         }
 
+        static __m128i _Cmp_eq_idx(const __m128i _First, const __m128i _Second) noexcept {
+            return _mm_cmpeq_epi64(_First, _Second);
+        }
+
         static __m128i _Min(const __m128i _First, const __m128i _Second, const __m128i _Mask) noexcept {
             return _mm_blendv_epi8(_First, _Second, _Mask);
         }
 
         static __m128i _Max(const __m128i _First, const __m128i _Second, const __m128i _Mask) noexcept {
             return _mm_blendv_epi8(_First, _Second, _Mask);
+        }
+
+        static __m128i _Mask_cast(__m128i _Mask) noexcept {
+            return _Mask;
+        }
+#endif // !_M_ARM64EC
+    };
+
+    struct _Minmax_traits_f {
+        static constexpr bool _Is_floating = true;
+
+        using _Signed_t = float;
+
+        static constexpr _Signed_t _Init_min_val = -__builtin_huge_valf();
+        static constexpr _Signed_t _Init_max_val = __builtin_huge_valf();
+
+#ifndef _M_ARM64EC
+#ifdef _M_IX86
+        static constexpr bool _Has_portion_max = false;
+#else // ^^^ 32-bit / 64-bit vvv
+        static constexpr bool _Has_portion_max = true;
+        static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
+#endif // ^^^ 64-bit ^^^
+
+        static __m128 _Load(const void* _Src) {
+            return _mm_loadu_ps(reinterpret_cast<const float*>(_Src));
+        }
+
+        static __m128 _Sign_correction(const __m128 _Val, const bool) noexcept {
+            return _Val;
+        }
+
+        static __m128i _Inc(__m128i _Idx) noexcept {
+            return _mm_add_epi32(_Idx, _mm_set1_epi32(1));
+        }
+
+        template <class _Fn>
+        static __m128 _H_func(const __m128 _Cur, _Fn _Funct) noexcept {
+            __m128 _H_min_val = _Cur;
+            _H_min_val        = _Funct(_H_min_val, _mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val        = _Funct(_H_min_val, _mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            return _H_min_val;
+        }
+
+        template <class _Fn>
+        static __m128i _H_func_u(const __m128i _Cur, _Fn _Funct) noexcept {
+            __m128i _H_min_val = _Cur;
+            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            return _H_min_val;
+        }
+
+        static __m128 _H_min(const __m128 _Cur) noexcept {
+            return _H_func(_Cur, [](__m128 _First, __m128 _Second) { return _mm_min_ps(_First, _Second); });
+        }
+
+        static __m128 _H_max(const __m128 _Cur) noexcept {
+            return _H_func(_Cur, [](__m128 _First, __m128 _Second) { return _mm_max_ps(_First, _Second); });
+        }
+
+        static __m128i _H_min_u(const __m128i _Cur) noexcept {
+            return _H_func_u(_Cur, [](__m128i _First, __m128i _Second) { return _mm_min_epu32(_First, _Second); });
+        }
+
+        static __m128i _H_max_u(const __m128i _Cur) noexcept {
+            return _H_func_u(_Cur, [](__m128i _First, __m128i _Second) { return _mm_max_epu32(_First, _Second); });
+        }
+
+        static float _Get_any(const __m128 _Cur) noexcept {
+            return _mm_cvtss_f32(_Cur);
+        }
+
+        static uint32_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
+            uint32_t _Array[4];
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Idx);
+            return _Array[_H_pos >> 2];
+        }
+
+        static __m128 _Cmp_eq(const __m128 _First, const __m128 _Second) noexcept {
+            return _mm_cmpeq_ps(_First, _Second);
+        }
+
+        static __m128 _Cmp_gt(const __m128 _First, const __m128 _Second) noexcept {
+            return _mm_cmpgt_ps(_First, _Second);
+        }
+
+        static __m128i _Cmp_eq_idx(const __m128i _First, const __m128i _Second) noexcept {
+            return _mm_cmpeq_epi32(_First, _Second);
+        }
+
+        static __m128 _Min(const __m128 _First, const __m128 _Second, __m128) noexcept {
+            return _mm_min_ps(_First, _Second);
+        }
+
+        static __m128 _Max(const __m128 _First, const __m128 _Second, __m128) noexcept {
+            return _mm_max_ps(_First, _Second);
+        }
+
+        static __m128i _Mask_cast(__m128 _Mask) noexcept {
+            return _mm_castps_si128(_Mask);
+        }
+#endif // !_M_ARM64EC
+    };
+
+    struct _Minmax_traits_d {
+        static constexpr bool _Is_floating = true;
+
+        using _Signed_t = double;
+
+        static constexpr _Signed_t _Init_min_val = -__builtin_huge_val();
+        static constexpr _Signed_t _Init_max_val = __builtin_huge_val();
+
+#ifndef _M_ARM64EC
+        static constexpr bool _Has_portion_max = false;
+
+        static __m128d _Load(const void* _Src) {
+            return _mm_loadu_pd(reinterpret_cast<const double*>(_Src));
+        }
+
+        static __m128d _Sign_correction(const __m128d _Val, const bool) noexcept {
+            return _Val;
+        }
+
+        static __m128i _Inc(__m128i _Idx) noexcept {
+            return _mm_add_epi32(_Idx, _mm_set1_epi64x(1));
+        }
+
+        template <class _Fn>
+        static __m128d _H_func(const __m128d _Cur, _Fn _Funct) noexcept {
+            __m128d _H_min_val = _Cur;
+            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_pd(_H_min_val, _H_min_val, 1));
+            return _H_min_val;
+        }
+
+        template <class _Fn>
+        static __m128i _H_func_u(const __m128i _Cur, _Fn _Funct) noexcept {
+            uint64_t _H_min_a = _Get_any_u(_Cur);
+            uint64_t _H_min_b = _Get_any_u(_mm_bsrli_si128(_Cur, 8));
+            if (_Funct(_H_min_b, _H_min_a)) {
+                _H_min_a = _H_min_b;
+            }
+            return _mm_set1_epi64x(_H_min_a);
+        }
+
+        static __m128d _H_min(const __m128d _Cur) noexcept {
+            return _H_func(_Cur, [](__m128d _First, __m128d _Second) { return _mm_min_pd(_First, _Second); });
+        }
+
+        static __m128d _H_max(const __m128d _Cur) noexcept {
+            return _H_func(_Cur, [](__m128d _First, __m128d _Second) { return _mm_max_pd(_First, _Second); });
+        }
+
+        static __m128i _H_min_u(const __m128i _Cur) noexcept {
+            return _H_func_u(_Cur, [](uint64_t _Lhs, uint64_t _Rhs) { return _Lhs < _Rhs; });
+        }
+
+        static __m128i _H_max_u(const __m128i _Cur) noexcept {
+            return _H_func_u(_Cur, [](uint64_t _Lhs, uint64_t _Rhs) { return _Lhs > _Rhs; });
+        }
+        static double _Get_any(const __m128d _Cur) noexcept {
+            return _mm_cvtsd_f64(_Cur);
+        }
+
+        static uint64_t _Get_any_u(const __m128i _Cur) noexcept {
+#ifdef _M_IX86
+            return (static_cast<uint64_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
+                | static_cast<uint64_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur))));
+#else // ^^^ x86 / x64 vvv
+            return static_cast<uint64_t>(_mm_cvtsi128_si64(_Cur));
+#endif // ^^^ x64 ^^^
+        }
+
+        static uint64_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
+            uint64_t _Array[2];
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Idx);
+            return _Array[_H_pos >> 3];
+        }
+
+        static __m128d _Cmp_eq(const __m128d _First, const __m128d _Second) noexcept {
+            return _mm_cmpeq_pd(_First, _Second);
+        }
+
+        static __m128d _Cmp_gt(const __m128d _First, const __m128d _Second) noexcept {
+            return _mm_cmpgt_pd(_First, _Second);
+        }
+
+        static __m128i _Cmp_eq_idx(const __m128i _First, const __m128i _Second) noexcept {
+            return _mm_cmpeq_epi64(_First, _Second);
+        }
+
+        static __m128d _Min(const __m128d _First, const __m128d _Second, __m128d) noexcept {
+            return _mm_min_pd(_First, _Second);
+        }
+
+        static __m128d _Max(const __m128d _First, const __m128d _Second, __m128d) noexcept {
+            return _mm_max_pd(_First, _Second);
+        }
+
+        static __m128i _Mask_cast(__m128d _Mask) noexcept {
+            return _mm_castpd_si128(_Mask);
         }
 #endif // !_M_ARM64EC
     };
@@ -898,13 +1164,12 @@ namespace {
             _Advance_bytes(_Stop_at, _Portion_byte_size);
 
             // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
-            __m128i _Cur_vals =
-                _Traits::_Sign_correction(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
-            __m128i _Cur_vals_min = _Cur_vals; // vector of vertical minimum values
-            __m128i _Cur_idx_min  = _mm_setzero_si128(); // vector of vertical minimum indices
-            __m128i _Cur_vals_max = _Cur_vals; // vector of vertical maximum values
-            __m128i _Cur_idx_max  = _mm_setzero_si128(); // vector of vertical maximum indices
-            __m128i _Cur_idx      = _mm_setzero_si128(); // current vector of indices
+            auto _Cur_vals     = _Traits::_Sign_correction(_Traits::_Load(_First), _Sign);
+            auto _Cur_vals_min = _Cur_vals; // vector of vertical minimum values
+            auto _Cur_idx_min  = _mm_setzero_si128(); // vector of vertical minimum indices
+            auto _Cur_vals_max = _Cur_vals; // vector of vertical maximum values
+            auto _Cur_idx_max  = _mm_setzero_si128(); // vector of vertical maximum indices
+            auto _Cur_idx      = _mm_setzero_si128(); // current vector of indices
 
             for (;;) {
                 _Advance_bytes(_First, 16);
@@ -917,21 +1182,21 @@ namespace {
                     // Compute horizontal min and/or max. Determine horizontal and vertical position of it.
 
                     if constexpr ((_Mode & _Mode_min) != 0) {
-                        const __m128i _H_min =
-                            _Traits::_H_min(_Cur_vals_min); // Vector populated by the smallest element
+                        const auto _H_min = _Traits::_H_min(_Cur_vals_min); // Vector populated by the smallest element
                         const auto _H_min_val = _Traits::_Get_any(_H_min); // Get any element of it
 
                         if (_H_min_val < _Cur_min_val) { // Current horizontal min is less than the old
                             _Cur_min_val = _H_min_val; // update min
-                            const __m128i _Eq_mask =
+                            const auto _Eq_mask =
                                 _Traits::_Cmp_eq(_H_min, _Cur_vals_min); // Mask of all elems eq to min
-                            int _Mask = _mm_movemask_epi8(_Eq_mask);
+                            int _Mask = _mm_movemask_epi8(_Traits::_Mask_cast(_Eq_mask));
                             // Indices of minimum elements or the greatest index if none
-                            const __m128i _All_max     = _mm_set1_epi8(static_cast<char>(0xFF));
-                            const __m128i _Idx_min_val = _mm_blendv_epi8(_All_max, _Cur_idx_min, _Eq_mask);
-                            __m128i _Idx_min           = _Traits::_H_min_u(_Idx_min_val); // The smallest indices
+                            const auto _All_max = _mm_set1_epi8(static_cast<char>(0xFF));
+                            const auto _Idx_min_val =
+                                _mm_blendv_epi8(_All_max, _Cur_idx_min, _Traits::_Mask_cast(_Eq_mask));
+                            auto _Idx_min = _Traits::_H_min_u(_Idx_min_val); // The smallest indices
                             // Select the smallest vertical indices from the smallest element mask
-                            _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_min, _Idx_min_val));
+                            _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq_idx(_Idx_min, _Idx_min_val));
                             unsigned long _H_pos;
 
                             // Find the smallest horizontal index
@@ -944,8 +1209,7 @@ namespace {
                     }
 
                     if constexpr ((_Mode & _Mode_max) != 0) {
-                        const __m128i _H_max =
-                            _Traits::_H_max(_Cur_vals_max); // Vector populated by the largest element
+                        const auto _H_max = _Traits::_H_max(_Cur_vals_max); // Vector populated by the largest element
                         const auto _H_max_val = _Traits::_Get_any(_H_max); // Get any element of it
 
                         if (_Mode == _Mode_both && _Cur_max_val <= _H_max_val
@@ -953,19 +1217,19 @@ namespace {
                             // max_element: current horizontal max is greater than the old, update max
                             // minmax_element: current horizontal max is not less than the old, update max
                             _Cur_max_val = _H_max_val;
-                            const __m128i _Eq_mask =
+                            const auto _Eq_mask =
                                 _Traits::_Cmp_eq(_H_max, _Cur_vals_max); // Mask of all elems eq to max
-                            int _Mask = _mm_movemask_epi8(_Eq_mask);
+                            int _Mask = _mm_movemask_epi8(_Traits::_Mask_cast(_Eq_mask));
 
                             unsigned long _H_pos;
                             if constexpr (_Mode == _Mode_both) {
                                 // Looking for the last occurrence of maximum
                                 // Indices of maximum elements or zero if none
-                                const __m128i _Idx_max_val =
-                                    _mm_blendv_epi8(_mm_setzero_si128(), _Cur_idx_max, _Eq_mask);
-                                const __m128i _Idx_max = _Traits::_H_max_u(_Idx_max_val); // The greatest indices
+                                const auto _Idx_max_val =
+                                    _mm_blendv_epi8(_mm_setzero_si128(), _Cur_idx_max, _Traits::_Mask_cast(_Eq_mask));
+                                const auto _Idx_max = _Traits::_H_max_u(_Idx_max_val); // The greatest indices
                                 // Select the greatest vertical indices from the largest element mask
-                                _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_max, _Idx_max_val));
+                                _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq_idx(_Idx_max, _Idx_max_val));
 
                                 // Find the largest horizontal index
                                 _BitScanReverse(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
@@ -974,11 +1238,12 @@ namespace {
                             } else {
                                 // Looking for the first occurrence of maximum
                                 // Indices of maximum elements or the greatest index if none
-                                const __m128i _All_max     = _mm_set1_epi8(static_cast<char>(0xFF));
-                                const __m128i _Idx_max_val = _mm_blendv_epi8(_All_max, _Cur_idx_max, _Eq_mask);
-                                const __m128i _Idx_max     = _Traits::_H_min_u(_Idx_max_val); // The smallest indices
+                                const auto _All_max = _mm_set1_epi8(static_cast<char>(0xFF));
+                                const auto _Idx_max_val =
+                                    _mm_blendv_epi8(_All_max, _Cur_idx_max, _Traits::_Mask_cast(_Eq_mask));
+                                const auto _Idx_max = _Traits::_H_min_u(_Idx_max_val); // The smallest indices
                                 // Select the smallest vertical indices from the largest element mask
-                                _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_max, _Idx_max_val));
+                                _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq_idx(_Idx_max, _Idx_max_val));
 
                                 // Find the smallest horizontal index
                                 _BitScanForward(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
@@ -1007,8 +1272,7 @@ namespace {
                         // Indices will be relative to the new base
                         _Base = static_cast<const char*>(_First);
                         // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
-                        _Cur_vals =
-                            _Traits::_Sign_correction(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
+                        _Cur_vals = _Traits::_Sign_correction(_Traits::_Load(_First), _Sign);
 
                         if constexpr ((_Mode & _Mode_min) != 0) {
                             _Cur_vals_min = _Cur_vals;
@@ -1028,34 +1292,38 @@ namespace {
                 // This is the main part, finding vertical minimum/maximum
 
                 // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
-                _Cur_vals = _Traits::_Sign_correction(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
+                _Cur_vals = _Traits::_Sign_correction(_Traits::_Load(_First), _Sign);
 
                 if constexpr ((_Mode & _Mode_min) != 0) {
                     // Looking for the first occurrence of minimum, don't overwrite with newly found occurrences
-                    const __m128i _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
-                    _Cur_idx_min = _mm_blendv_epi8(_Cur_idx_min, _Cur_idx, _Is_less); // Remember their vertical indices
+                    const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
+                    _Cur_idx_min        = _mm_blendv_epi8(
+                        _Cur_idx_min, _Cur_idx, _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
                     _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
                 }
 
                 if constexpr (_Mode == _Mode_max) {
                     // Looking for the first occurrence of maximum, don't overwrite with newly found occurrences
-                    const __m128i _Is_greater = _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
-                    _Cur_idx_max =
-                        _mm_blendv_epi8(_Cur_idx_max, _Cur_idx, _Is_greater); // Remember their vertical indices
+                    const auto _Is_greater = _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
+                    _Cur_idx_max           = _mm_blendv_epi8(
+                        _Cur_idx_max, _Cur_idx, _Traits::_Mask_cast(_Is_greater)); // Remember their vertical indices
                     _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater); // Update the current maximum
                 } else if constexpr (_Mode == _Mode_both) {
                     // Looking for the last occurrence of maximum, do overwrite with newly found occurrences
-                    const __m128i _Is_less =
-                        _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
-                    _Cur_idx_max = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max, _Is_less); // Remember their vertical indices
+                    const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
+                    _Cur_idx_max        = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max,
+                               _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
                     _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less); // Update the current maximum
                 }
             }
         }
 #endif // !_M_ARM64EC
-
-        return _Minmax_tail<_Mode, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>(
-            _First, _Last, _Res, _Sign, _Cur_min_val, _Cur_max_val);
+        if constexpr (_Traits::_Is_floating) {
+            return _Minmax_tail_f<_Mode, typename _Traits::_Signed_t>(_First, _Last, _Res, _Cur_min_val, _Cur_max_val);
+        } else {
+            return _Minmax_tail<_Mode, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>(
+                _First, _Last, _Res, _Sign, _Cur_min_val, _Cur_max_val);
+        }
     }
 
 } // unnamed namespace
@@ -1082,6 +1350,16 @@ const void* __stdcall __std_min_element_8(
     return _Minmax_element<_Mode_min, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
+const void* __stdcall __std_min_element_f(
+    const void* const _First, const void* const _Last, const bool _Unused) noexcept {
+    return _Minmax_element<_Mode_min, _Minmax_traits_f>(_First, _Last, _Unused);
+}
+
+const void* __stdcall __std_min_element_d(
+    const void* const _First, const void* const _Last, const bool _Unused) noexcept {
+    return _Minmax_element<_Mode_min, _Minmax_traits_d>(_First, _Last, _Unused);
+}
+
 const void* __stdcall __std_max_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     return _Minmax_element<_Mode_max, _Minmax_traits_1>(_First, _Last, _Signed);
@@ -1100,6 +1378,16 @@ const void* __stdcall __std_max_element_4(
 const void* __stdcall __std_max_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     return _Minmax_element<_Mode_max, _Minmax_traits_8>(_First, _Last, _Signed);
+}
+
+const void* __stdcall __std_max_element_f(
+    const void* const _First, const void* const _Last, const bool _Unused) noexcept {
+    return _Minmax_element<_Mode_max, _Minmax_traits_f>(_First, _Last, _Unused);
+}
+
+const void* __stdcall __std_max_element_d(
+    const void* const _First, const void* const _Last, const bool _Unused) noexcept {
+    return _Minmax_element<_Mode_max, _Minmax_traits_d>(_First, _Last, _Unused);
 }
 
 _Min_max_element_t __stdcall __std_minmax_element_1(
@@ -1122,6 +1410,15 @@ _Min_max_element_t __stdcall __std_minmax_element_8(
     return _Minmax_element<_Mode_both, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
+_Min_max_element_t __stdcall __std_minmax_element_f(
+    const void* const _First, const void* const _Last, const bool _Unused) noexcept {
+    return _Minmax_element<_Mode_both, _Minmax_traits_f>(_First, _Last, _Unused);
+}
+
+_Min_max_element_t __stdcall __std_minmax_element_d(
+    const void* const _First, const void* const _Last, const bool _Unused) noexcept {
+    return _Minmax_element<_Mode_both, _Minmax_traits_d>(_First, _Last, _Unused);
+}
 } // extern "C"
 
 namespace {
