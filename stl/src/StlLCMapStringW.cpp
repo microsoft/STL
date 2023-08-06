@@ -12,7 +12,8 @@
 //
 // Entry:
 //        LPCWSTR  locale_name       - locale context for the comparison.
-//        DWORD    map_flags         - see docs.microsoft.com
+//        DWORD    map_flags         - see:
+//                     https://learn.microsoft.com/en-us/windows/win32/api/winnls/nf-winnls-lcmapstringex
 //        LPCWSTR  source            - pointer to string to be mapped
 //        int      source_count      - wide char (word) count of input string
 //                                     (including null terminator if any)

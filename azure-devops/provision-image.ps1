@@ -84,7 +84,7 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
 } else {
   Write-Host 'AdminUser password supplied; switching to AdminUser.'
 
-  # https://docs.microsoft.com/en-us/sysinternals/downloads/psexec
+  # https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
   $PsToolsZipUrl = 'https://download.sysinternals.com/files/PSTools.zip'
   Write-Host "Downloading: $PsToolsZipUrl"
   $ExtractedPsToolsPath = DownloadAndExtractZip -Url $PsToolsZipUrl

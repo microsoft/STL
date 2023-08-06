@@ -549,5 +549,5 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [lit]: https://llvm.org/docs/CommandGuide/lit.html
 [lit result codes]: https://llvm.org/docs/CommandGuide/lit.html#test-status-results
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
-[redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
-[natvis documentation]: https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects
+[redistributables]: https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist
+[natvis documentation]: https://learn.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects

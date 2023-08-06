@@ -14,7 +14,8 @@
 //
 // Entry:
 //   LPCWSTR  LocaleName  - locale context for the comparison.
-//   DWORD    dwCmpFlags  - see docs.microsoft.com
+//   DWORD    dwCmpFlags  - see:
+//                https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-comparestringex
 //   LPCWSTR  lpStringn   - wide string to be compared
 //   int      cchCountn   - wide char (word) count (NOT including null terminator)
 //                        (-1 if null terminated)

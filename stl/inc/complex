@@ -18,7 +18,7 @@
 #ifdef _M_CEE_PURE
 // no intrinsics for /clr:pure
 #elif defined(_M_ARM64) || defined(_M_ARM64EC)
-// https://docs.microsoft.com/en-us/cpp/build/arm64-windows-abi-conventions?view=msvc-170#base-requirements
+// https://learn.microsoft.com/en-us/cpp/build/arm64-windows-abi-conventions?view=msvc-170#base-requirements
 // Both floating-point and NEON support are presumed to be present in hardware.
 #define _FMP_USING_STD_FMA
 #elif defined(__clang__) // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^

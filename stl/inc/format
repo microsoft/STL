@@ -958,7 +958,7 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
     // We care about this because if a charset is self-synchronizing then we can search through it
     // for formatting control characters _without_ generally decoding the format string.
     switch (_MSVC_EXECUTION_CHARACTER_SET) {
-    // See: https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
+    // See: https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
     case 874: // Thai (Windows)
     case 1250: // ANSI Central European; Central European (Windows)
     case 1251: // ANSI Cyrillic; Cyrillic (Windows)

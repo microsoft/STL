@@ -18,7 +18,8 @@
 //
 // Entry:
 //        LPCWSTR LocaleName  - locale context for the comparison.
-//        DWORD   dwCmpFlags  - see docs.microsoft.com
+//        DWORD   dwCmpFlags  - see:
+//                    https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-comparestringex
 //        LPCSTR  lpStringn   - multibyte string to be compared
 //        int     cchCountn   - char (byte) count (NOT including null terminator)
 //                              (-1 if null terminated)
