@@ -1056,7 +1056,7 @@ namespace {
         }
 
         static __m128i _Inc(__m128i _Idx) noexcept {
-            return _mm_add_epi32(_Idx, _mm_set1_epi64x(1));
+            return _mm_add_epi64(_Idx, _mm_set1_epi64x(1));
         }
 
         template <class _Fn>
