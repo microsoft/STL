@@ -140,7 +140,7 @@ void test_min_max_element(mt19937_64& gen) {
 
 template <class T>
 void test_min_max_element_f(mt19937_64& gen) {
-    normal_distribution<T> dis(100.0, 1.0);
+    normal_distribution<T> dis(0.0, 100000.0);
 
     vector<T> input;
     input.reserve(dataCount);
