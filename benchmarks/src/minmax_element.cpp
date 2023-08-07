@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <benchmark/benchmark.h>
 #include <cstddef>
 #include <cstdint>
 #include <random>
-
-#include <algorithm>
 #include <ranges>
 
 enum class Op {
