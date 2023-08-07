@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft Corporation.
-// Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #ifdef _M_CEE_PURE
