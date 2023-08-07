@@ -142,11 +142,23 @@ template <class T>
 void test_min_max_element_f(mt19937_64& gen) {
     normal_distribution<T> dis(0.0, 100000.0);
 
+    constexpr auto input_of_input_size = dataCount / 2;
+    vector<T> input_of_input(input_of_input_size);
+    input_of_input[0] = -numeric_limits<T>::infinity();
+    input_of_input[1] = +numeric_limits<T>::infinity();
+    input_of_input[2] = -0.0;
+    input_of_input[3] = +0.0;
+    for (size_t i = 4; i < input_of_input_size; ++i) {
+        input_of_input[i] = dis(gen);
+    }
+
+    uniform_int_distribution<size_t> idx_dis(0, input_of_input_size - 1);
+
     vector<T> input;
     input.reserve(dataCount);
     test_case_min_max_element(input);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
-        input.push_back(static_cast<T>(dis(gen)));
+        input.push_back(static_cast<T>(input_of_input[idx_dis(gen)]));
         test_case_min_max_element(input);
     }
 }
