@@ -28,12 +28,14 @@ _EXPORT_STD struct once_flag { // opaque data structure for call_once()
     void* _Opaque;
 };
 
+#ifdef _CRTBLD
 // Returns BOOL, nonzero to indicate success, zero for failure
 using _Execute_once_fp_t = int(__stdcall*)(void*, void*, void**);
 
 // Returns BOOL, nonzero to indicate success, zero for failure
 extern "C++" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(
     once_flag& _Flag, _Execute_once_fp_t _Callback, void* _Pv) noexcept;
+#endif // _CRTBLD
 
 template <class _Ty>
 union _Immortalizer_impl { // constructs _Ty, never destroys
