@@ -168,7 +168,11 @@ _INLINE_VAR constexpr bool disjunction_v = disjunction<_Traits...>::value;
 
 template <class _Ty, class... _Types>
 _INLINE_VAR constexpr bool _Is_any_of_v = // true if and only if _Ty is in _Types
+#if _HAS_CXX17
+    (is_same_v<_Ty, _Types> || ...);
+#else
     disjunction_v<is_same<_Ty, _Types>...>;
+#endif /* _HAS_CXX17 */
 
 _NODISCARD constexpr bool _Is_constant_evaluated() noexcept { // Internal function for any standard mode
     return __builtin_is_constant_evaluated();
