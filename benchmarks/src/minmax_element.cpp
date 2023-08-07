@@ -18,8 +18,6 @@ enum class Op {
 using namespace std;
 
 template <class T, size_t Size, Op Operation>
-
-template <class T, size_t Size, Op Operation>
 void bm(benchmark::State& state) {
     T a[Size];
 
