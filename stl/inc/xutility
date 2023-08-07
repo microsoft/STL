@@ -1151,7 +1151,9 @@ _INLINE_VAR constexpr bool _Range_verifiable_v<_Iter, _Sentinel,
 template <class _Iter, class _Sentinel>
 constexpr void _Adl_verify_range(const _Iter& _First, const _Sentinel& _Last) {
     // check that [_First, _Last) forms an iterator range
-    if constexpr (_Range_verifiable_v<_Iter, _Sentinel>) {
+    if constexpr (is_pointer_v<_Iter> && is_pointer_v<_Sentinel>) {
+        _STL_VERIFY(_First <= _Last, "transposed pointer range");
+    } else if constexpr (_Range_verifiable_v<_Iter, _Sentinel>) {
         _Verify_range(_First, _Last);
     }
 }
