@@ -980,7 +980,7 @@ void test_pointer_specs() {
     throw_helper(STR("{:#}"), nullptr);
 
     // Leading zero
-    throw_helper(STR("{:0}"), nullptr);
+    assert(format(STR("{:05}"), nullptr) == STR("0x000"));
 
     // Width
     assert(format(STR("{:5}"), nullptr) == STR("  0x0"));
@@ -1339,10 +1339,10 @@ void libfmt_formatter_test_zero_flag() {
     assert(format(STR("{0:05}"), 42ull) == STR("00042"));
     assert(format(STR("{0:07}"), -42.0) == STR("-000042"));
     assert(format(STR("{0:07}"), -42.0l) == STR("-000042"));
+    assert(format(STR("{0:05}"), reinterpret_cast<void*>(0x42)) == STR("0x042"));
     throw_helper(STR("{0:0"), 'c');
     throw_helper(STR("{0:05}"), 'c');
     throw_helper(STR("{0:05}"), STR("abc"));
-    throw_helper(STR("{0:05}"), reinterpret_cast<void*>(0x42));
 }
 
 template <class charT>

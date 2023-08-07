@@ -1753,9 +1753,10 @@ template <class _Handler>
 class _Specs_checker : public _Handler {
 private:
     _Basic_format_arg_type _Arg_type;
-    // we'll see this if we get a modifier that requires an integer presentation type
-    // for types that can have either integer or non-integer presentation types (charT or bool)
-    bool _Need_arithmetic_presentation_type = false;
+    // We'll see this if we get a modifier that requires an integer presentation type
+    // for types that can have either integer or non-integer presentation types (charT or bool).
+    bool _Need_arithmetic_presentation_type            = false;
+    bool _Need_arithmetic_or_pointer_presentation_type = false;
 
 public:
     constexpr explicit _Specs_checker(const _Handler& _Handler_inst, const _Basic_format_arg_type _Arg_type_)
@@ -1764,6 +1765,12 @@ public:
     constexpr void _Require_numeric_argument() const {
         if (!_Is_arithmetic_fmt_type(_Arg_type)) {
             _Throw_format_error("Format specifier requires numeric argument.");
+        }
+    }
+
+    constexpr void _Require_numeric_or_pointer_argument() {
+        if (!_Is_arithmetic_fmt_type(_Arg_type) && _Arg_type != _Basic_format_arg_type::_Pointer_type) {
+            _Throw_format_error("Format specifier requires numeric or pointer argument.");
         }
     }
 
@@ -1793,8 +1800,8 @@ public:
     }
 
     constexpr void _On_zero() {
-        _Need_arithmetic_presentation_type = true;
-        _Require_numeric_argument();
+        _Need_arithmetic_or_pointer_presentation_type = true;
+        _Require_numeric_or_pointer_argument();
         _Handler::_On_zero();
     }
 
@@ -1860,6 +1867,7 @@ public:
             _Cat = _Presentation_type_category::_Floating;
             break;
         case 'p':
+        case 'P':
             _Cat = _Presentation_type_category::_Pointer;
             break;
         default:
@@ -1952,6 +1960,11 @@ public:
         if (_Need_arithmetic_presentation_type && _Cat != _Presentation_type_category::_Integer
             && _Cat != _Presentation_type_category::_Floating) {
             _Throw_format_error("Modifier requires an integer presentation type for bool");
+        }
+
+        if (_Need_arithmetic_or_pointer_presentation_type && _Cat != _Presentation_type_category::_Integer
+            && _Cat != _Presentation_type_category::_Floating && _Cat != _Presentation_type_category::_Pointer) {
+            _Throw_format_error("Zero modifier requires an arithmetic or pointer presentation type");
         }
         _Handler::_On_type(_Type);
     }
@@ -3189,25 +3202,37 @@ _NODISCARD _OutputIt _Fmt_write(
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
-    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 'p');
+    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 'p' || _Specs._Type == 'P');
     _STL_INTERNAL_CHECK(_Specs._Sgn == _Fmt_sign::_None);
     _STL_INTERNAL_CHECK(!_Specs._Alt);
     _STL_INTERNAL_CHECK(_Specs._Precision == -1);
-    _STL_INTERNAL_CHECK(!_Specs._Leading_zero);
     _STL_INTERNAL_CHECK(!_Specs._Localized);
 
-    // Since the bit width of 0 is 0x0, special-case it instead of complicating the math even more.
-    int _Width = 3;
-    if (_Value != nullptr) {
-        // Compute the bit width of the pointer (i.e. how many bits it takes to be represented).
-        // Add 3 to the bit width so we always round up on the division.
-        // Divide that by the amount of bits a hexit represents (log2(16) = log2(2^4) = 4).
-        // Add 2 for the 0x prefix.
-        _Width = 2 + (_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4;
+    char _Buffer[16]; // 16 hexits
+    const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), reinterpret_cast<uintptr_t>(_Value), 16);
+    _STL_INTERNAL_CHECK(_Ec == errc{});
+    const int _Width = 2 + static_cast<int>(_End - _Buffer);
+
+    _CharT _Prefix[2] = {_CharT{'0'}, _CharT{'x'}};
+    if (_Specs._Type == 'P') {
+        _Prefix[1] = _CharT{'X'};
+        _Buffer_to_uppercase(_Buffer, _End);
     }
 
-    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Right,
-        [=](_OutputIt _Out) { return _Fmt_write<_CharT>(_STD move(_Out), _Value); });
+    const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Fmt_align::_None;
+    auto _Writer                     = [&](_OutputIt _Out) {
+        _Out = _RANGES copy(_Prefix, _Prefix + 2, _STD move(_Out)).out;
+        if (_Write_leading_zeroes && _Width < _Specs._Width) {
+            _Out = _RANGES fill_n(_STD move(_Out), _Specs._Width - _Width, _CharT{'0'});
+        }
+        return _STD _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
+    };
+
+    if (_Write_leading_zeroes) {
+        return _Writer(_STD move(_Out));
+    }
+
+    return _STD _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Right, _Writer);
 }
 
 template <class _CharT, class _OutputIt>

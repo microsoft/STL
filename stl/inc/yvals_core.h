@@ -295,6 +295,7 @@
 // P2432R1 Fix istream_view
 // P2465R3 Standard Library Modules std And std.compat
 // P2508R1 basic_format_string, format_string, wformat_string
+// P2510R3 Formatting Pointers
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 // P2538R1 ADL-Proof projected
 // P2572R1 std::format Fill Character Allowances
@@ -1747,7 +1748,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_erase_if                202002L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_format              202207L
+#define __cpp_lib_format              202304L
 #define __cpp_lib_freestanding_ranges 202306L
 #endif // defined(__cpp_lib_concepts)
 

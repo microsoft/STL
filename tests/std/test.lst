@@ -640,6 +640,7 @@ tests\P2474R2_views_repeat
 tests\P2474R2_views_repeat_death
 tests\P2494R2_move_only_range_adaptors
 tests\P2505R5_monadic_functions_for_std_expected
+tests\P2510R3_text_formatting_pointers
 tests\P2517R1_apply_conditional_noexcept
 tests\P2538R1_adl_proof_std_projected
 tests\P2609R3_relaxing_ranges_just_a_smidge

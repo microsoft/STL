@@ -92,6 +92,10 @@ std/utilities/tuple/tuple.tuple/tuple.assign/const_pair.pass.cpp FAIL
 # libc++ has not implemented P2505R5: "Monadic Functions for std::expected"
 std/language.support/support.limits/support.limits.general/expected.version.compile.pass.cpp FAIL
 
+# libc++ has not implemented P2510R3: "Formatting Pointers"
+std/utilities/format/format.functions/vformat.locale.pass FAIL
+std/utilities/format/format.functions/vformat.pass FAIL
+
 # libc++ doesn't implement P2588R3 barrier's Phase Completion Guarantees
 std/language.support/support.limits/support.limits.general/barrier.version.compile.pass.cpp FAIL
 
