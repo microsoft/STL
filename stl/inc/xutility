@@ -6654,7 +6654,11 @@ _INLINE_VAR constexpr bool _Is_min_max_optimization_safe = // Activate the vecto
     && !_Iterator_is_volatile<_Iter> // The iterator must not be volatile.
     && conjunction_v<disjunction<
 #if _USE_STD_VECTOR_FLOATING_ALGORITHMS
+#if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
+                         is_same<_Elem, float>, is_same<_Elem, double>,
+#else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
                          is_floating_point<_Elem>, // Element is floating point or...
+#endif // ^^^ 64-bit long double ^^
 #endif // _USE_STD_VECTOR_FLOATING_ALGORITHMS
                          is_integral<_Elem>, is_pointer<_Elem>>, // ... integral or pointer type.
         disjunction< // And either of the following:
