@@ -492,12 +492,12 @@ public:
     }
 
     template <class _V>
-    _STD pair<iterator, bool> insert(_V&& _X) requires same_as<_STD remove_cvref_t<_V&&>, value_type> {
+    _STD pair<iterator, bool> insert(_V&& _X) requires (same_as<_STD remove_cvref_t<_V&&>, value_type> || constructible_from<value_type, _V&&>) {
         return emplace(_STD forward<_V>(_X));
     }
 
     template <class _V>
-    iterator insert(const_iterator _Position, _V&& _X) requires same_as<_STD remove_cvref_t<_V&&>, value_type> {
+    iterator insert(const_iterator _Position, _V&& _X) requires (same_as<_STD remove_cvref_t<_V&&>, value_type> || constructible_from<value_type, _V&&>) {
         return emplace_hint(_Position, _STD forward<_V>(_X));
     }
 
@@ -540,7 +540,7 @@ private:
         auto _Zip_view = _RANGES views::zip(_Data.keys, _Data.values);
         _RANGES sort(_Zip_view, value_compare(_Key_compare));
 
-        auto _Subrange        = _RANGES unique(_Zip_view, [](const_reference _X, const_reference _Y) { return _Key_equal(_X.first, _Y.first); });
+        auto _Subrange        = _RANGES unique(_Zip_view, [this](const_reference _X, const_reference _Y) { return this->_Key_equal(_X.first, _Y.first); });
         auto _Remaining_count = _STD distance(_Zip_view.begin(), _Subrange.begin());
 
         _Data.keys.erase(_Data.keys.begin() + _Remaining_count, _Data.keys.end());
