@@ -1499,8 +1499,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #if _HAS_CXX17 && !defined(_SILENCE_STDEXT_CVT_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
 #define _DEPRECATE_STDEXT_CVT                                                                                          \
-    [[deprecated("warning STL4044: The contents in the stdext::cvt namespace are non-Standard extensions and will be " \
-                 "removed in the future. MultiByteToWideChar() and WideCharToMultiByte() functions can be used "       \
+    [[deprecated("warning STL4044: The contents of the stdext::cvt namespace are non-Standard extensions and will be " \
+                 "removed in the future. The MultiByteToWideChar() and WideCharToMultiByte() functions can be used "   \
                  "instead. You can define _SILENCE_STDEXT_CVT_DEPRECATION_WARNING or "                                 \
                  "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
