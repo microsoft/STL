@@ -358,23 +358,35 @@ public:
     }
 
     // [container.reqmts] iterators
-    template <class _Self_t>
-    _NODISCARD auto begin(this _Self_t&& _Self) noexcept {
-        return _Maybe_const_iterator_t<_Self_t&&> { _Self._Data.keys.cbegin(), _Self._Data.values.begin() };
+    _NODISCARD iterator begin() noexcept {
+        return iterator { _Self._Data.keys.cbegin(), _Self._Data.values.begin() };
     }
 
-    template <class _Self_t>
-    _NODISCARD auto end(this _Self_t&& _Self) noexcept {
-        return _Maybe_const_iterator_t<_Self_t&&> { _Self._Data.keys.cend(), _Self._Data.values.end() };
+    _NODISCARD const_iterator begin() const noexcept {
+        return const_iterator { _Self._Data.keys.cbegin(), _Self._Data.values.begin() };
     }
 
-    template <class _Self_t>
-    _NODISCARD auto rbegin(this _Self_t&& _Self) noexcept {
-        return _STD make_reverse_iterator(_Self.end());
+    _NODISCARD iterator end() noexcept {
+        return iterator { _Self._Data.keys.cend(), _Self._Data.values.end() };
     }
 
-    template <class _Self_t>
-    _NODISCARD auto rend(this _Self_t&& _Self) noexcept {
+    _NODISCARD const_iterator end() const noexcept {
+        return const_iterator { _Self._Data.keys.cend(), _Self._Data.values.end() };
+    }
+
+    _NODISCARD iterator rbegin() noexcept {
+        return _STD make_reverse_iterator(end());
+    }
+
+    _NODISCARD const_iterator rbegin() const noexcept {
+        return _STD make_reverse_iterator(end());
+    }
+
+    _NODISCARD iterator rend() noexcept {
+        return _STD make_reverse_iterator(_Self.begin());
+    }
+
+    _NODISCARD const_iterator rend() const noexcept {
         return _STD make_reverse_iterator(_Self.begin());
     }
 
@@ -420,10 +432,13 @@ public:
     _NODISCARD mapped_type& operator[](_C&& _Key)
         requires _Compare_is_transparent<key_compare>; // TODO: implement
 
-    template <class _Self_t>
-    _NODISCARD auto&& at(this _Self_t&& _Self, const key_type& _Key); // TODO: implement
-    template <class _Self_t, class _C>
-    _NODISCARD auto&& at(this _Self_t&& _Self, const _C& _Key)
+    _NODISCARD mapped_type& at(const key_type& _Key); // TODO: implement
+    _NODISCARD const mapped_type& at(const key_type& _Key) const; // TODO: implement
+    template <class _C>
+    _NODISCARD mapped_type& at(const _C& _Key)
+        requires _Compare_is_transparent<key_compare>; // TODO: implement
+    template <class _C>
+    _NODISCARD const mapped_type& at(const _C& _Key) const
         requires _Compare_is_transparent<key_compare>; // TODO: implement
 
     // [flat.map.modifiers] Modifiers
@@ -519,12 +534,18 @@ public:
     }
 
     // map operations
-    template<class _Self_t>
-    auto lower_bound(this _Self_t&& _Self, const key_type& _X) {
+    iterator lower_bound(const key_type& _X) {
         auto _Key_it = _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _X, _Self._Key_compare);
         auto _Dist = _STD distance(_Self._Data.keys.begin(), _Key_it);
         auto _Val_it = _Self._Data.values.begin() + _Dist;
-        return _Maybe_const_iterator_t<_Self_t&&> { _STD move(_Key_it), _STD move(_Val_it) };
+        return iterator { _STD move(_Key_it), _STD move(_Val_it) };
+    }
+
+    const_iterator lower_bound(const key_type& _X) const {
+        auto _Key_it = _STD lower_bound(_Self._Data.keys.cbegin(), _Self._Data.keys.cend(), _X, _Self._Key_compare);
+        auto _Dist = _STD distance(_Self._Data.keys.cbegin(), _Key_it);
+        auto _Val_it = _Self._Data.values.cbegin() + _Dist;
+        return const_iterator { _STD move(_Key_it), _STD move(_Val_it) };
     }
 
 private:
