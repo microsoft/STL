@@ -447,7 +447,7 @@ public:
     }
 
     template <class... _Args_t>
-    iterator emplace(const_iterator _Position, _Args_t&&... _Args) requires _STD is_constructible_v<value_type, _Args_t...> {
+    iterator emplace_hint(const_iterator _Position, _Args_t&&... _Args) requires _STD is_constructible_v<value_type, _Args_t...> {
         value_type _Val(_STD forward<_Args_t>(_Args)...);
 
         const const_iterator _Begin = cbegin();
@@ -496,6 +496,11 @@ public:
         return emplace(_STD forward<_V>(_X));
     }
 
+    template <class _V>
+    iterator insert(const_iterator _Position, _V&& _X) requires same_as<_STD remove_cvref_t<_V&&>, value_type> {
+        return emplace_hint(_Position, _STD forward<_V>(_X));
+    }
+
     // observers
     key_compare key_comp() const {
         return _Key_compare;
@@ -526,14 +531,6 @@ private:
     key_compare _Key_compare;
     containers _Data;
 
-    struct _Key_equal_for_ref {
-        key_compare _Key_compare;
-        _Key_equal_for_ref(key_compare _Comp) : _Key_compare(_Comp) {}
-        bool operator()(const_reference _X, const_reference _Y) const {
-            return !_Key_compare(_X.first, _Y.first) && !_Key_compare(_Y.first, _X.first);
-        }
-    };
-
     bool _Key_equal(const Key& _X, const Key& _Y) const {
         return !_Key_compare(_X, _Y) && !_Key_compare(_Y, _X);
     }
@@ -543,7 +540,7 @@ private:
         auto _Zip_view = _RANGES views::zip(_Data.keys, _Data.values);
         _RANGES sort(_Zip_view, value_compare(_Key_compare));
 
-        auto _Subrange        = _RANGES unique(_Zip_view, _Key_equal_for_ref(_Key_compare));
+        auto _Subrange        = _RANGES unique(_Zip_view, [](const_reference _X, const_reference _Y) { return _Key_equal(_X.first, _Y.first); });
         auto _Remaining_count = _STD distance(_Zip_view.begin(), _Subrange.begin());
 
         _Data.keys.erase(_Data.keys.begin() + _Remaining_count, _Data.keys.end());
