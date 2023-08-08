@@ -83,9 +83,11 @@ struct _NODISCARD _Clear_flat_map_scope_guard {
 
 // Implementation
 
-template <_STD random_access_iterator _Key_iterator_t, _STD random_access_iterator _Mapped_iterator_t>
+template <class _KeyContainer, class _MappedContainer, bool _IsConst>
 class _Flat_map_iterator_Impl {
 public:
+    using _Key_iterator_t    = typename _KeyContainer::const_iterator;
+    using _Mapped_iterator_t = _STD conditional_t<_IsConst, typename _MappedContainer::const_iterator, typename _MappedContainer::iterator>;
     class type {
     public:
         template <class Key, class T, class Compare, class KeyContainer, class MappedContainer> requires same_as<Key, typename KeyContainer::value_type> && same_as<T, typename MappedContainer::value_type>
@@ -192,6 +194,11 @@ public:
 
         friend type operator+(difference_type _Off, const type& _Right);
 
+        template <bool _Val = _IsConst, _STD enable_if_t<!_Val, int> = 0>
+        operator typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, true>::type () const {
+            return typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, true>::type {_Key_it, _Mapped_it};
+        }
+
     private:
         _Key_iterator_t _Key_it;
         _Mapped_iterator_t _Mapped_it;
@@ -200,10 +207,10 @@ public:
     static_assert(_STD swappable<type>);
 };
 
-template <_STD random_access_iterator _Key_iterator_t, _STD random_access_iterator _Mapped_iterator_t>
-_EXPORT_STD typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type operator+(
-    typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type::difference_type _Off,
-    const typename _Flat_map_iterator_Impl<_Key_iterator_t, _Mapped_iterator_t>::type& _Right) {
+template <class _KeyContainer, class _MappedContainer, bool _IsConst>
+_EXPORT_STD typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, _IsConst>::type operator+(
+    typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, _IsConst>::type::difference_type _Off,
+    const typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, _IsConst>::type& _Right) {
     return _Right + _Off;
 }
 
@@ -222,14 +229,13 @@ public:
     using difference_type        = ptrdiff_t;
     using key_container_type     = KeyContainer;
     using mapped_container_type  = MappedContainer;
-    using iterator               = typename _STD _Flat_map_iterator_Impl<typename key_container_type::const_iterator,
-        typename mapped_container_type::iterator>::type;
-    using const_iterator         = typename _STD _Flat_map_iterator_Impl<typename key_container_type::const_iterator,
-        typename mapped_container_type::const_iterator>::type;
+    using iterator               = typename _STD _Flat_map_iterator_Impl<key_container_type, mapped_container_type, false>::type;
+    using const_iterator         = typename _STD _Flat_map_iterator_Impl<key_container_type, mapped_container_type, true>::type;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
     static_assert(_STD random_access_iterator<iterator>);
+    static_assert(_STD convertible_to<iterator, const_iterator>);
 
     using value_compare = typename _STD _Flat_value_compare<key_type, mapped_type, key_compare>::value_compare;
     using containers    = typename _STD _Flat_Container<key_container_type, mapped_container_type>::container;
@@ -424,26 +430,69 @@ public:
     template <class... _Args_t>
     _STD pair<iterator, bool> emplace(_Args_t&&... _Args) requires _STD is_constructible_v<value_type, _Args_t...> {
         value_type _Val(_STD forward<_Args_t>(_Args)...);
-        iterator _It = lower_bound(_Data.keys.begin(), _Data.keys.end(), _Val.first, _Key_compare);
+        auto _Key_It = lower_bound(_Data.keys.begin(), _Data.keys.end(), _Val.first, _Key_compare);
+        iterator _It = begin() + _STD distance(_Data.keys.begin(), _Key_It);
 
-        if(_It != end() && *(_It._Key_it) == _Val.first) {
+        if(_It != end() && _Key_equal(*(_It._Key_it), _Val.first)) {
             // Already exists
             return _STD make_pair(_It, false);
         }
         else{
             // Need to insert
-            _Clear_flat_map_scope_guard _Guard { this };
             auto _Index = _STD distance(begin(), _It);
-            _Data.keys.insert(_It._Key_it, _STD move(_Val.first));
-            _Data.values.insert(_It._Mapped_it, _STD move(_Val.second));
+            _Insert_exact(_It, _STD move(_Val));
             // Note: Consider _It invalidated by the insert operation
-            _Guard._Clearable = nullptr;
             return _STD make_pair(begin() + _Index, true);
         }
     }
 
+    template <class... _Args_t>
+    iterator emplace(const_iterator _Position, _Args_t&&... _Args) requires _STD is_constructible_v<value_type, _Args_t...> {
+        value_type _Val(_STD forward<_Args_t>(_Args)...);
+
+        const const_iterator _Begin = cbegin();
+        const const_iterator _End = cend();
+
+        // Adjust _Position
+        if(_Position == _End || !_Key_compare(*(_Position._Key_it), _Val.first)) {
+            // _Val should be inserted at or before _Position
+            if(_Position == _Begin || !_Key_compare(_Val.first, *((_Position - 1)._Key_it))){
+                // _Val should be inserted at or after _Position
+                // The hint _Position is accurate
+            }
+            else{
+                auto _Key_Position = _STD upper_bound(_Data.keys.cbegin(), _Position._Key_it, _Val.first, _Key_compare);
+                auto _Distance = _STD distance(_Data.keys.cbegin(), _Key_Position);
+                _Position = _Begin + _Distance;
+            }
+        }
+        else{
+            auto _Key_Position = _STD lower_bound(_Position._Key_it + 1, _Data.keys.cend(), _Val.first, _Key_compare);
+            auto _Distance = _STD distance(_Data.keys.cbegin(), _Key_Position);
+            _Position = _Begin + _Distance;
+        }
+
+        bool _Should_insert = false;
+        if(_Position == _End){
+            _Should_insert = true;
+        }
+        else if(_Key_equal(*(_Position._Key_it), _Val.first)){
+            _Should_insert = false;
+        }
+        else{
+            _Should_insert = true;
+        }
+
+        auto _Distance = _STD distance(_Begin, _Position);
+        if(_Should_insert){
+            _Insert_exact(_Position, _STD move(_Val));
+        }
+        // Consider _Position invalidated by the insert operation
+        return begin() + _Distance;
+    }
+
     template <class _V>
-    _STD pair<iterator, bool> insert(_V&& _X) requires same_as<_STD remove_cvref_t<V&&>, value_type> {
+    _STD pair<iterator, bool> insert(_V&& _X) requires same_as<_STD remove_cvref_t<_V&&>, value_type> {
         return emplace(_STD forward<_V>(_X));
     }
 
@@ -477,24 +526,35 @@ private:
     key_compare _Key_compare;
     containers _Data;
 
-    struct _Key_equal {
+    struct _Key_equal_for_ref {
         key_compare _Key_compare;
-        _Key_equal(key_compare _Comp) : _Key_compare(_Comp) {}
+        _Key_equal_for_ref(key_compare _Comp) : _Key_compare(_Comp) {}
         bool operator()(const_reference _X, const_reference _Y) const {
             return !_Key_compare(_X.first, _Y.first) && !_Key_compare(_Y.first, _X.first);
         }
     };
+
+    bool _Key_equal(const Key& _X, const Key& _Y) const {
+        return !_Key_compare(_X, _Y) && !_Key_compare(_Y, _X);
+    }
 
     void _SortAndDedup() {
         _Clear_flat_map_scope_guard _Guard { this };
         auto _Zip_view = _RANGES views::zip(_Data.keys, _Data.values);
         _RANGES sort(_Zip_view, value_compare(_Key_compare));
 
-        auto _Subrange        = _RANGES unique(_Zip_view, _Key_equal(_Key_compare));
+        auto _Subrange        = _RANGES unique(_Zip_view, _Key_equal_for_ref(_Key_compare));
         auto _Remaining_count = _STD distance(_Zip_view.begin(), _Subrange.begin());
 
         _Data.keys.erase(_Data.keys.begin() + _Remaining_count, _Data.keys.end());
         _Data.values.erase(_Data.values.begin() + _Remaining_count, _Data.values.end());
+        _Guard._Clearable = nullptr;
+    }
+
+    void _Insert_exact(const_iterator _Position, value_type&& _Val){
+        _Clear_flat_map_scope_guard _Guard { this };
+        _Data.keys.insert(_Position._Key_it, _STD move(_Val.first));
+        _Data.values.insert(_Position._Mapped_it, _STD move(_Val.second));
         _Guard._Clearable = nullptr;
     }
 };
