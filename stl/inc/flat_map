@@ -359,35 +359,35 @@ public:
 
     // [container.reqmts] iterators
     _NODISCARD iterator begin() noexcept {
-        return iterator { _Self._Data.keys.cbegin(), _Self._Data.values.begin() };
+        return iterator { _Data.keys.cbegin(), _Data.values.begin() };
     }
 
     _NODISCARD const_iterator begin() const noexcept {
-        return const_iterator { _Self._Data.keys.cbegin(), _Self._Data.values.begin() };
+        return const_iterator { _Data.keys.cbegin(), _Data.values.begin() };
     }
 
     _NODISCARD iterator end() noexcept {
-        return iterator { _Self._Data.keys.cend(), _Self._Data.values.end() };
+        return iterator { _Data.keys.cend(), _Data.values.end() };
     }
 
     _NODISCARD const_iterator end() const noexcept {
-        return const_iterator { _Self._Data.keys.cend(), _Self._Data.values.end() };
+        return const_iterator { _Data.keys.cend(), _Data.values.end() };
     }
 
-    _NODISCARD iterator rbegin() noexcept {
+    _NODISCARD reverse_iterator rbegin() noexcept {
         return _STD make_reverse_iterator(end());
     }
 
-    _NODISCARD const_iterator rbegin() const noexcept {
+    _NODISCARD const_reverse_iterator rbegin() const noexcept {
         return _STD make_reverse_iterator(end());
     }
 
-    _NODISCARD iterator rend() noexcept {
-        return _STD make_reverse_iterator(_Self.begin());
+    _NODISCARD reverse_iterator rend() noexcept {
+        return _STD make_reverse_iterator(begin());
     }
 
-    _NODISCARD const_iterator rend() const noexcept {
-        return _STD make_reverse_iterator(_Self.begin());
+    _NODISCARD const_reverse_iterator rend() const noexcept {
+        return _STD make_reverse_iterator(begin());
     }
 
     _NODISCARD const_iterator cbegin() const noexcept {
@@ -535,16 +535,16 @@ public:
 
     // map operations
     iterator lower_bound(const key_type& _X) {
-        auto _Key_it = _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _X, _Self._Key_compare);
-        auto _Dist = _STD distance(_Self._Data.keys.begin(), _Key_it);
-        auto _Val_it = _Self._Data.values.begin() + _Dist;
+        auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _X, _Key_compare);
+        auto _Dist = _STD distance(_Data.keys.begin(), _Key_it);
+        auto _Val_it = _Data.values.begin() + _Dist;
         return iterator { _STD move(_Key_it), _STD move(_Val_it) };
     }
 
     const_iterator lower_bound(const key_type& _X) const {
-        auto _Key_it = _STD lower_bound(_Self._Data.keys.cbegin(), _Self._Data.keys.cend(), _X, _Self._Key_compare);
-        auto _Dist = _STD distance(_Self._Data.keys.cbegin(), _Key_it);
-        auto _Val_it = _Self._Data.values.cbegin() + _Dist;
+        auto _Key_it = _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist = _STD distance(_Data.keys.cbegin(), _Key_it);
+        auto _Val_it = _Data.values.cbegin() + _Dist;
         return const_iterator { _STD move(_Key_it), _STD move(_Val_it) };
     }
 
