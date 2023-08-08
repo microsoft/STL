@@ -430,7 +430,7 @@ public:
     template <class... _Args_t>
     _STD pair<iterator, bool> emplace(_Args_t&&... _Args) requires _STD is_constructible_v<value_type, _Args_t...> {
         value_type _Val(_STD forward<_Args_t>(_Args)...);
-        auto _Key_It = lower_bound(_Data.keys.begin(), _Data.keys.end(), _Val.first, _Key_compare);
+        auto _Key_It = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Val.first, _Key_compare);
         iterator _It = begin() + _STD distance(_Data.keys.begin(), _Key_It);
 
         if(_It != end() && _Key_equal(*(_It._Key_it), _Val.first)) {
