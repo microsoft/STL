@@ -2926,22 +2926,22 @@ public:
     }
 
     _NODISCARD bool _Move_assign_from_buffer(
-        _Elem* const _Right, const size_type _Size, const size_type _Buf_res /* real allocation size */) {
+        _Elem* const _Right, const size_type _Size, const size_type _Actual_allocation_size) {
         // Move assign from a buffer, used exclusively by basic_stringbuf; returns _Large_mode_engaged()
         auto& _My_data = _Mypair._Myval2;
         _STL_INTERNAL_CHECK(!_My_data._Large_mode_engaged() && _My_data._Mysize == 0);
-        _STL_INTERNAL_CHECK(_Size < _Buf_res); // So there is room for null terminator
+        _STL_INTERNAL_CHECK(_Size < _Actual_allocation_size); // So there is room for null terminator
         _Traits::assign(_Right[_Size], _Elem());
 
-        const bool _Is_large = _Buf_res >= _Least_allocation_size;
+        const bool _Is_large = _Actual_allocation_size >= _Least_allocation_size;
         if (_Is_large) {
             _ASAN_STRING_REMOVE(*this);
             _Construct_in_place(_My_data._Bx._Ptr, _Refancy<pointer>(_Right));
             _My_data._Mysize = _Size;
-            _My_data._Myres  = _Buf_res - 1;
+            _My_data._Myres  = _Actual_allocation_size - 1;
             _ASAN_STRING_CREATE(*this);
         } else {
-            _Traits::copy(_My_data._Bx._Buf, _Right, _Buf_res);
+            _Traits::copy(_My_data._Bx._Buf, _Right, _Actual_allocation_size);
             _My_data._Mysize = _Size;
             _My_data._Myres  = _Small_string_capacity;
         }
@@ -2953,7 +2953,7 @@ public:
     struct _Released_buffer {
         pointer _Ptr;
         size_type _Size;
-        size_type _Res; // real allocation size
+        size_type _Actual_allocation_size;
     };
 
     _NODISCARD _Released_buffer _Release_to_buffer(_Alloc& _Al) {
@@ -2963,14 +2963,14 @@ public:
         _Result._Size  = _My_data._Mysize;
         _ASAN_STRING_REMOVE(*this);
         if (_My_data._Large_mode_engaged()) {
-            _Result._Ptr = _My_data._Bx._Ptr;
-            _Result._Res = _My_data._Myres + 1;
+            _Result._Ptr                    = _My_data._Bx._Ptr;
+            _Result._Actual_allocation_size = _My_data._Myres + 1;
         } else {
             // use _Least_allocation_size to avoid small mode, if the buffer is assigned back
             size_type _Allocated = _Least_allocation_size;
             _Result._Ptr         = _Allocate_at_least_helper(_Al, _Allocated);
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
-            _Result._Res = _Allocated;
+            _Result._Actual_allocation_size = _Allocated;
         }
         _My_data._Orphan_all();
         _Tidy_init();
