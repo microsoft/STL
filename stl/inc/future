@@ -498,7 +498,7 @@ public:
         _CATCH_END
     }
 
-    const function<_Ret(_ArgTypes...)>& _Get_fn() {
+    const auto& _Get_fn() const {
         return _Fn;
     }
 
@@ -542,7 +542,7 @@ public:
         _CATCH_END
     }
 
-    const function<_Ret&(_ArgTypes...)>& _Get_fn() {
+    const auto& _Get_fn() const {
         return _Fn;
     }
 
@@ -588,7 +588,7 @@ public:
         _CATCH_END
     }
 
-    const function<void(_ArgTypes...)>& _Get_fn() {
+    const auto& _Get_fn() const {
         return _Fn;
     }
 
@@ -1322,8 +1322,7 @@ public:
     void reset() { // reset to newly constructed state
         _MyStateManagerType& _State         = _MyPromise._Get_state_for_set();
         _MyStateType* _MyState              = static_cast<_MyStateType*>(_State._Ptr());
-        function<_Ret(_ArgTypes...)> _Fnarg = _MyState->_Get_fn();
-        _MyPromiseType _New_promise(new _MyStateType(_Fnarg));
+        _MyPromiseType _New_promise(new _MyStateType(_MyState->_Get_fn()));
         _MyPromise._Get_state()._Abandon();
         _MyPromise._Swap(_New_promise);
     }
