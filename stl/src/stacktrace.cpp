@@ -151,7 +151,7 @@ namespace {
                 constexpr size_t max_disp_num = sizeof("+0x1122334455667788") - 1; // maximum possible offset
 
                 off = string_fill(fill, off + max_disp_num, str, [displacement, off](char* s, size_t) {
-                    const int ret = std::snprintf(s + off, max_disp_num, "+0x%llX", displacement);
+                    const int ret = std::snprintf(s + off, max_disp_num + 1, "+0x%llX", displacement);
                     if (ret <= 0) {
                         std::abort(); // formatting error
                     }
@@ -217,7 +217,7 @@ namespace {
                 constexpr size_t max_line_num = sizeof("(4294967295): ") - 1; // maximum possible line number
 
                 off = string_fill(fill, off + max_line_num, str, [line, off](char* s, size_t) {
-                    const int ret = std::snprintf(s + off, max_line_num, "(%u): ", line);
+                    const int ret = std::snprintf(s + off, max_line_num + 1, "(%u): ", line);
                     if (ret <= 0) {
                         std::abort(); // formatting error
                     }
@@ -320,7 +320,7 @@ void __stdcall __std_stacktrace_to_string(const void* const* const _Addresses, c
         constexpr size_t max_entry_num = sizeof("65536> ") - 1; // maximum possible entry number
 
         off = string_fill(_Fill, off + max_entry_num, _Str, [off, i](char* s, size_t) {
-            const int ret = std::snprintf(s + off, max_entry_num, "%u> ", static_cast<unsigned int>(i));
+            const int ret = std::snprintf(s + off, max_entry_num + 1, "%u> ", static_cast<unsigned int>(i));
             if (ret <= 0) {
                 std::abort(); // formatting error
             }

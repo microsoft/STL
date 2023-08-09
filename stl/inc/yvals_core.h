@@ -374,6 +374,7 @@
 // P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
 // P2652R2 Disallowing User Specialization Of allocator_traits
+// P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
@@ -871,7 +872,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202307L
+#define _MSVC_STL_UPDATE  202308L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1783,6 +1784,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_containers_ranges 202202L
 #define __cpp_lib_expected          202211L
+#define __cpp_lib_formatters        202302L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_forward_like   202207L
