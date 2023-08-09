@@ -105,8 +105,6 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
             if (mtx->_Thread_id != current_thread_id) { // not this thread, lock it
                 if (TryAcquireSRWLockExclusive(get_srw_lock(mtx)) != 0) {
                     res = WAIT_OBJECT_0;
-                } else {
-                    res = WAIT_TIMEOUT;
                 }
             } else {
                 res = WAIT_OBJECT_0;
@@ -122,8 +120,6 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
                     || TryAcquireSRWLockExclusive(get_srw_lock(mtx)) != 0) { // stop waiting
                     res = WAIT_OBJECT_0;
                     break;
-                } else {
-                    res = WAIT_TIMEOUT;
                 }
 
                 _Timespec64_get_sys(&now);
