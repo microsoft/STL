@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 #include <xmemory>
+#include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -278,13 +279,14 @@ public:
           _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont),
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)} {}
 
-    template <_STD input_iterator _InputIterator>
+    template <class _InputIterator> requires _Is_iterator_v<_InputIterator>
     flat_map(_InputIterator _First, _InputIterator _Last, const key_compare& _Comp = key_compare()) : flat_map(_Comp) {
         insert(_First, _Last);
     }
 
-    template <_STD input_iterator _InputIterator,
+    template <class _InputIterator,
         _Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+        requires _Is_iterator_v<_InputIterator>
     flat_map(_InputIterator _First, _InputIterator _Last, const key_compare& _Comp, const Allocator& _Alloc)
         : flat_map(_Comp, _Alloc) {
         insert(_First, _Last);
@@ -311,22 +313,24 @@ public:
         insert_range(_STD forward<R>(_Range));
     }
 
-    template <_STD input_iterator _InputIterator>
+    template <class _InputIterator> requires _Is_iterator_v<_InputIterator>
     flat_map(sorted_unique_t _S, _InputIterator _First, _InputIterator _Last, const key_compare& _Comp = key_compare())
         : flat_map(_Comp) {
         insert(_S, _First, _Last);
     }
 
-    template <_STD input_iterator _InputIterator,
+    template <class _InputIterator,
         _Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+        requires _Is_iterator_v<_InputIterator>
     flat_map(sorted_unique_t _S, _InputIterator _First, _InputIterator _Last, const key_compare& _Comp,
         const Allocator& _Alloc)
         : flat_map(_Comp, _Alloc) {
         insert(_S, _First, _Last);
     }
 
-    template <_STD input_iterator _InputIterator,
+    template <class _InputIterator,
         _Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+        requires _Is_iterator_v<_InputIterator>
     flat_map(sorted_unique_t _S, _InputIterator _First, _InputIterator _Last, const Allocator& _Alloc)
         : flat_map(_S, _First, _Last, key_compare(), _Alloc) {}
 
