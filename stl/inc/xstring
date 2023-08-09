@@ -2369,7 +2369,6 @@ private:
     static constexpr size_type _Small_string_capacity = _Scary_val::_Small_string_capacity;
 
     // least real allocation size, including space reserved for terminating null
-    // used exclusively by _Move_assign_from_buffer and _Release_to_buffer
     static constexpr size_type _Least_allocation_size = _Small_string_capacity + 1 + 1;
 
     // When doing _String_val operations by memcpy, we are touching:
