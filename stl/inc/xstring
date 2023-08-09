@@ -2225,7 +2225,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 value_type* _Myptr() noexcept {
         value_type* _Result = _Bx._Buf;
-        if (_Large_string_engaged()) {
+        if (_Large_mode_engaged()) {
             _Result = _Unfancy(_Bx._Ptr);
         }
 
@@ -2234,16 +2234,14 @@ public:
 
     _NODISCARD _CONSTEXPR20 const value_type* _Myptr() const noexcept {
         const value_type* _Result = _Bx._Buf;
-        if (_Large_string_engaged()) {
+        if (_Large_mode_engaged()) {
             _Result = _Unfancy(_Bx._Ptr);
         }
 
         return _Result;
     }
 
-    _NODISCARD _CONSTEXPR20 bool _Large_string_engaged() const noexcept {
-        // Determines whether large mode is used for the string's capacity.
-        // Doesn't imply anything about the largeness of the string's size.
+    _NODISCARD _CONSTEXPR20 bool _Large_mode_engaged() const noexcept {
         return _Myres > _Small_string_capacity;
     }
 
@@ -2646,7 +2644,7 @@ private:
     template <_Construct_strategy _Strat, class _Char_or_ptr>
     _CONSTEXPR20 void _Construct(const _Char_or_ptr _Arg, _CRT_GUARDOVERFLOW const size_type _Count) {
         auto& _My_data = _Mypair._Myval2;
-        _STL_INTERNAL_CHECK(!_My_data._Large_string_engaged());
+        _STL_INTERNAL_CHECK(!_My_data._Large_mode_engaged());
 
         if constexpr (_Strat == _Construct_strategy::_From_char) {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Char_or_ptr, _Elem>);
@@ -2746,7 +2744,7 @@ private:
                     const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
 
                     _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
-                    if (_My_data._Large_string_engaged()) { // Need to deallocate old storage
+                    if (_My_data._Large_mode_engaged()) { // Need to deallocate old storage
                         _Deallocate_for_capacity(_Al, _My_data._Bx._Ptr, _My_data._Myres);
                         _My_data._Bx._Ptr = _New_ptr;
                     } else {
@@ -2875,8 +2873,8 @@ public:
             // therefore: (by the distributive property)
             // (!_Fits_in_left && _Fits_in_right)  // implying _Right has more capacity
             //     || (_Right_capacity > _Left_capacity && _Fits_in_right)  // tests that _Right has more capacity
-            // therefore: _Right must have more than the minimum capacity, so it must be _Large_string_engaged()
-            _STL_INTERNAL_CHECK(_Right_data._Large_string_engaged());
+            // therefore: _Right must have more than the minimum capacity, so it must be _Large_mode_engaged()
+            _STL_INTERNAL_CHECK(_Right_data._Large_mode_engaged());
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
             _Take_contents(_Right);
             const auto _Ptr = _Unfancy(_My_data._Bx._Ptr);
@@ -2936,9 +2934,9 @@ public:
 
     _NODISCARD bool _Move_assign_from_buffer(
         _Elem* const _Right, const size_type _Size, const size_type _Buf_res /* real allocation size */) {
-        // Move assign from a buffer, used exclusively by basic_stringbuf; returns _Large_string_engaged()
+        // Move assign from a buffer, used exclusively by basic_stringbuf; returns _Large_mode_engaged()
         auto& _My_data = _Mypair._Myval2;
-        _STL_INTERNAL_CHECK(!_My_data._Large_string_engaged() && _My_data._Mysize == 0);
+        _STL_INTERNAL_CHECK(!_My_data._Large_mode_engaged() && _My_data._Mysize == 0);
         _STL_INTERNAL_CHECK(_Size < _Buf_res); // So there is room for null terminator
         _Traits::assign(_Right[_Size], _Elem());
 
@@ -2971,7 +2969,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
         _Result._Size  = _My_data._Mysize;
         _ASAN_STRING_REMOVE(*this);
-        if (_My_data._Large_string_engaged()) {
+        if (_My_data._Large_mode_engaged()) {
             _Result._Ptr = _My_data._Bx._Ptr;
             _Result._Res = _My_data._Myres + 1;
         } else {
@@ -3046,7 +3044,7 @@ private:
 #endif // _HAS_CXX20
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                if (_Right_data._Large_string_engaged()) {
+                if (_Right_data._Large_mode_engaged()) {
                     // take ownership of _Right's iterators along with its buffer
                     _Swap_proxy_and_iterators(_Right);
                 } else {
@@ -3061,7 +3059,7 @@ private:
         }
 #endif // !defined(_INSERT_STRING_ANNOTATION)
 
-        if (_Right_data._Large_string_engaged()) { // steal buffer
+        if (_Right_data._Large_mode_engaged()) { // steal buffer
             _Construct_in_place(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
             _Right_data._Bx._Ptr = nullptr;
             _Swap_proxy_and_iterators(_Right);
@@ -3993,7 +3991,7 @@ public:
     _CONSTEXPR20 void shrink_to_fit() { // reduce capacity
         auto& _My_data = _Mypair._Myval2;
 
-        if (!_My_data._Large_string_engaged()) { // can't shrink from small mode
+        if (!_My_data._Large_mode_engaged()) { // can't shrink from small mode
             return;
         }
 
@@ -4197,7 +4195,7 @@ public:
     }
 
     _CXX20_DEPRECATE_STRING_RESERVE_WITHOUT_ARGUMENT void reserve() {
-        if (_Mypair._Myval2._Mysize == 0 && _Mypair._Myval2._Large_string_engaged()) {
+        if (_Mypair._Myval2._Mysize == 0 && _Mypair._Myval2._Large_mode_engaged()) {
             _Become_small();
         }
     }
@@ -4222,7 +4220,7 @@ public:
             return;
         }
 
-        if (!_Entails_large_string(_Newcap) && _Mypair._Myval2._Large_string_engaged()) {
+        if (!_Entails_large_string(_Newcap) && _Mypair._Myval2._Large_mode_engaged()) {
             // deallocate everything; switch back to "small" mode
             _Become_small();
             return;
@@ -4272,8 +4270,8 @@ public:
         auto& _My_data    = _Mypair._Myval2;
         auto& _Right_data = _Right._Mypair._Myval2;
 
-        const bool _My_large    = _My_data._Large_string_engaged();
-        const bool _Right_large = _Right_data._Large_string_engaged();
+        const bool _My_large    = _My_data._Large_mode_engaged();
+        const bool _Right_large = _Right_data._Large_mode_engaged();
 
 #if !defined(_INSERT_STRING_ANNOTATION)
         if constexpr (_Can_memcpy_val) {
@@ -4320,11 +4318,11 @@ public:
             auto& _My_data    = _Mypair._Myval2;
             auto& _Right_data = _Right._Mypair._Myval2;
 
-            if (!_My_data._Large_string_engaged()) {
+            if (!_My_data._Large_mode_engaged()) {
                 _My_data._Orphan_all();
             }
 
-            if (!_Right_data._Large_string_engaged()) {
+            if (!_Right_data._Large_mode_engaged()) {
                 _Right_data._Orphan_all();
             }
 
@@ -4802,7 +4800,7 @@ private:
     _CONSTEXPR20 void _Become_small() {
         // release any held storage and return to small string mode
         auto& _My_data = _Mypair._Myval2;
-        _STL_INTERNAL_CHECK(_My_data._Large_string_engaged());
+        _STL_INTERNAL_CHECK(_My_data._Large_mode_engaged());
         _STL_INTERNAL_CHECK(!_Entails_large_string(_My_data._Mysize));
 
         _My_data._Orphan_all();
@@ -4835,7 +4833,7 @@ private:
     _CONSTEXPR20 void _Tidy_deallocate() noexcept { // initialize buffer, deallocating any storage
         auto& _My_data = _Mypair._Myval2;
         _My_data._Orphan_all();
-        if (_My_data._Large_string_engaged()) {
+        if (_My_data._Large_mode_engaged()) {
             _ASAN_STRING_REMOVE(*this);
             const pointer _Ptr = _My_data._Bx._Ptr;
             auto& _Al          = _Getal();
