@@ -1258,12 +1258,13 @@ class packaged_task; // not defined
 template <class _Ret, class... _ArgTypes>
 class packaged_task<_Ret(_ArgTypes...)> {
     // class that defines an asynchronous provider that returns the result of a call to a function object
-public:
+private:
     using _Ptype              = typename _P_arg_type<_Ret>::type;
     using _MyPromiseType      = _Promise<_Ptype>;
     using _MyStateManagerType = _State_manager<_Ptype>;
     using _MyStateType        = _Packaged_state<_Ret(_ArgTypes...)>;
 
+public:
     packaged_task() = default;
 
     template <class _Fty2, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
@@ -1320,8 +1321,8 @@ public:
     }
 
     void reset() { // reset to newly constructed state
-        _MyStateManagerType& _State         = _MyPromise._Get_state_for_set();
-        _MyStateType* _MyState              = static_cast<_MyStateType*>(_State._Ptr());
+        _MyStateManagerType& _State = _MyPromise._Get_state_for_set();
+        _MyStateType* _MyState      = static_cast<_MyStateType*>(_State._Ptr());
         _MyPromiseType _New_promise(new _MyStateType(_MyState->_Get_fn()));
         _MyPromise._Get_state()._Abandon();
         _MyPromise._Swap(_New_promise);
