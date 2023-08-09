@@ -2220,7 +2220,7 @@ public:
                                            : sizeof(value_type) <= 4 ? 3
                                            : sizeof(value_type) <= 8 ? 1
                                                                      : 0;
-    // capacity in SSO mode
+    // capacity in small mode
     static constexpr size_type _Small_string_capacity = _BUF_SIZE - 1;
 
     _NODISCARD _CONSTEXPR20 value_type* _Myptr() noexcept {
@@ -2701,7 +2701,7 @@ private:
         // Pre: _First models input_iterator or meets the Cpp17InputIterator requirements
         // Pre: [_First, _Last) is a valid range
         // Pre: if is_same_v<_Size, size_type>, _Count is the length of [_First, _Last).
-        // Pre: *this is in SSO mode; the lifetime of the SSO elements has already begun
+        // Pre: *this is in small mode; the lifetime of the SSO elements has already begun
 
         auto& _My_data  = _Mypair._Myval2;
         auto& _Al       = _Getal();
@@ -2966,7 +2966,7 @@ public:
             _Result._Ptr = _My_data._Bx._Ptr;
             _Result._Res = _My_data._Myres + 1;
         } else {
-            // use _Least_allocation_size to avoid SSO, if the buffer is assigned back
+            // use _Least_allocation_size to avoid small mode, if the buffer is assigned back
             size_type _Allocated = _Least_allocation_size;
             _Result._Ptr         = _Allocate_at_least_helper(_Al, _Allocated);
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
