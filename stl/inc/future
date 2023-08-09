@@ -470,15 +470,6 @@ public:
     using _Mydel  = typename _Mybase::_Mydel;
 
     template <class _Fty2>
-    _Packaged_state(const _Fty2& _Fnarg) : _Fn(_Fnarg) {}
-
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
-    template <class _Fty2, class _Alloc>
-    _Packaged_state(const _Fty2& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
-        : _Mybase(_Dp), _Fn(allocator_arg, _Al, _Fnarg) {}
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
-
-    template <class _Fty2>
     _Packaged_state(_Fty2&& _Fnarg) : _Fn(_STD forward<_Fty2>(_Fnarg)) {}
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
@@ -523,15 +514,6 @@ public:
     using _Mydel  = typename _Mybase::_Mydel;
 
     template <class _Fty2>
-    _Packaged_state(const _Fty2& _Fnarg) : _Fn(_Fnarg) {}
-
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
-    template <class _Fty2, class _Alloc>
-    _Packaged_state(const _Fty2& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
-        : _Mybase(_Dp), _Fn(allocator_arg, _Al, _Fnarg) {}
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
-
-    template <class _Fty2>
     _Packaged_state(_Fty2&& _Fnarg) : _Fn(_STD forward<_Fty2>(_Fnarg)) {}
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
@@ -574,15 +556,6 @@ class _Packaged_state<void(_ArgTypes...)>
 public:
     using _Mybase = _Associated_state<int>;
     using _Mydel  = typename _Mybase::_Mydel;
-
-    template <class _Fty2>
-    _Packaged_state(const _Fty2& _Fnarg) : _Fn(_Fnarg) {}
-
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
-    template <class _Fty2, class _Alloc>
-    _Packaged_state(const _Fty2& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
-        : _Mybase(_Dp), _Fn(allocator_arg, _Al, _Fnarg) {}
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     template <class _Fty2>
     _Packaged_state(_Fty2&& _Fnarg) : _Fn(_STD forward<_Fty2>(_Fnarg)) {}
