@@ -2212,16 +2212,16 @@ public:
 
     _CONSTEXPR20 _String_val() noexcept : _Bx() {}
 
-    // length of internal buffer, [1, 16]:
+    // length of internal buffer, [1, 16] (NB: used by the debugger visualizer)
     static constexpr size_type _BUF_SIZE = 16 / sizeof(value_type) < 1 ? 1 : 16 / sizeof(value_type);
-    // roundup mask for allocated buffers, [0, 15]:
-    static constexpr size_type _ALLOC_MASK = sizeof(value_type) <= 1 ? 15
+    // roundup mask for allocated buffers, [0, 15]
+    static constexpr size_type _Alloc_mask = sizeof(value_type) <= 1 ? 15
                                            : sizeof(value_type) <= 2 ? 7
                                            : sizeof(value_type) <= 4 ? 3
                                            : sizeof(value_type) <= 8 ? 1
                                                                      : 0;
     // capacity in SSO mode
-    static constexpr size_type _SMALL_STRING_CAPACITY = _BUF_SIZE - 1;
+    static constexpr size_type _Small_string_capacity = _BUF_SIZE - 1;
 
     _NODISCARD _CONSTEXPR20 value_type* _Myptr() noexcept {
         value_type* _Result = _Bx._Buf;
@@ -2244,7 +2244,7 @@ public:
     _NODISCARD _CONSTEXPR20 bool _Large_string_engaged() const noexcept {
         // Determines whether large mode is used for the string's capacity.
         // Doesn't imply anything about the largeness of the string's size.
-        return _Myres > _SMALL_STRING_CAPACITY;
+        return _Myres > _Small_string_capacity;
     }
 
     _CONSTEXPR20 void _Activate_SSO_buffer() noexcept {
@@ -2293,7 +2293,7 @@ public:
     };
     _Bxty _Bx;
 
-    // invariant: _Myres >= _Mysize, and _Myres >= _SMALL_STRING_CAPACITY (after string's construction)
+    // invariant: _Myres >= _Mysize, and _Myres >= _Small_string_capacity (after string's construction)
     // neither _Mysize nor _Myres takes account of the extra null terminator
     size_type _Mysize = 0; // current length of string (size)
     size_type _Myres  = 0; // current storage reserved for string (capacity)
@@ -2367,19 +2367,19 @@ public:
 
 private:
     static constexpr size_type _BUF_SIZE              = _Scary_val::_BUF_SIZE;
-    static constexpr size_type _ALLOC_MASK            = _Scary_val::_ALLOC_MASK;
-    static constexpr size_type _SMALL_STRING_CAPACITY = _Scary_val::_SMALL_STRING_CAPACITY;
+    static constexpr size_type _Alloc_mask            = _Scary_val::_Alloc_mask;
+    static constexpr size_type _Small_string_capacity = _Scary_val::_Small_string_capacity;
 
     _NODISCARD static _CONSTEXPR20 bool _Entails_large_string(size_type _Size_or_capacity) noexcept {
         // Use cases:
         // 1. determine whether large mode is used for a given capacity.
         // 2. determine whether large mode should be used for a size/capacity request.
-        return _Size_or_capacity > _SMALL_STRING_CAPACITY;
+        return _Size_or_capacity > _Small_string_capacity;
     }
 
     // least real allocation size, including space reserved for terminating null
     // used exclusively by _Move_assign_from_buffer and _Release_to_buffer
-    static constexpr size_type _LEAST_ALLOCATION_SIZE = _SMALL_STRING_CAPACITY + 1 + 1;
+    static constexpr size_type _Least_allocation_size = _Small_string_capacity + 1 + 1;
 
     // When doing _String_val operations by memcpy, we are touching:
     //   _String_val::_Bx::_Buf (type is array of _Elem)
@@ -2664,7 +2664,7 @@ private:
 
         if (!_Entails_large_string(_Count)) {
             _My_data._Mysize = _Count;
-            _My_data._Myres  = _SMALL_STRING_CAPACITY;
+            _My_data._Myres  = _Small_string_capacity;
 
             if constexpr (_Strat == _Construct_strategy::_From_char) {
                 _Traits::assign(_My_data._Bx._Buf, _Count, _Arg);
@@ -2684,7 +2684,7 @@ private:
             return;
         }
 
-        _My_data._Myres         = _SMALL_STRING_CAPACITY;
+        _My_data._Myres         = _Small_string_capacity;
         size_type _New_capacity = _Calculate_growth(_Count);
         const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
@@ -2718,7 +2718,7 @@ private:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
         _My_data._Mysize = 0;
-        _My_data._Myres  = _SMALL_STRING_CAPACITY;
+        _My_data._Myres  = _Small_string_capacity;
 
         if constexpr (is_same_v<_Size, size_type>) {
             if (_Count > max_size()) {
@@ -2817,14 +2817,14 @@ public:
         _STL_INTERNAL_CHECK(_Right_size <= max_size());
         _STL_INTERNAL_CHECK(_Right_size <= max_size() - _Left_size);
         const auto _New_size    = static_cast<size_type>(_Left_size + _Right_size);
-        size_type _New_capacity = _SMALL_STRING_CAPACITY;
+        size_type _New_capacity = _Small_string_capacity;
         auto& _My_data          = _Mypair._Myval2;
         _Elem* _Ptr             = _My_data._Bx._Buf;
         auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
 
         if (_New_capacity < _New_size) {
-            _New_capacity           = _Calculate_growth(_New_size, _SMALL_STRING_CAPACITY, max_size());
+            _New_capacity           = _Calculate_growth(_New_size, _Small_string_capacity, max_size());
             const pointer _Fancyptr = _Allocate_for_capacity(_Getal(), _New_capacity); // throws
             _Ptr                    = _Unfancy(_Fancyptr);
             _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
@@ -2893,7 +2893,7 @@ public:
             _Xlen_string();
         }
 
-        size_type _New_capacity = _Calculate_growth(_New_size, _SMALL_STRING_CAPACITY, _Max);
+        size_type _New_capacity = _Calculate_growth(_New_size, _Small_string_capacity, _Max);
         auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
         const pointer _Fancyptr = _Allocate_for_capacity(_Getal(), _New_capacity); // throws
@@ -2942,7 +2942,7 @@ public:
         _STL_INTERNAL_CHECK(_Size < _Buf_res); // So there is room for null terminator
         _Traits::assign(_Right[_Size], _Elem());
 
-        const bool _Is_large = _Buf_res >= _LEAST_ALLOCATION_SIZE;
+        const bool _Is_large = _Buf_res >= _Least_allocation_size;
         if (_Is_large) {
             _ASAN_STRING_REMOVE(*this);
             _Construct_in_place(_My_data._Bx._Ptr, _Refancy<pointer>(_Right));
@@ -2952,7 +2952,7 @@ public:
         } else {
             _Traits::copy(_My_data._Bx._Buf, _Right, _Buf_res);
             _My_data._Mysize = _Size;
-            _My_data._Myres  = _SMALL_STRING_CAPACITY;
+            _My_data._Myres  = _Small_string_capacity;
         }
 
         return _Is_large;
@@ -2975,8 +2975,8 @@ public:
             _Result._Ptr = _My_data._Bx._Ptr;
             _Result._Res = _My_data._Myres + 1;
         } else {
-            // use _LEAST_ALLOCATION_SIZE to avoid SSO, if the buffer is assigned back
-            size_type _Allocated = _LEAST_ALLOCATION_SIZE;
+            // use _Least_allocation_size to avoid SSO, if the buffer is assigned back
+            size_type _Allocated = _Least_allocation_size;
             _Result._Ptr         = _Allocate_at_least_helper(_Al, _Allocated);
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
             _Result._Res = _Allocated;
@@ -3174,7 +3174,7 @@ public:
                 const size_type _Right_size   = _Right._Mypair._Myval2._Mysize;
                 const _Elem* const _Right_ptr = _Right._Mypair._Myval2._Myptr();
                 if (_Entails_large_string(_Right_size)) {
-                    size_type _New_capacity = _Calculate_growth(_Right_size, _SMALL_STRING_CAPACITY, _Right.max_size());
+                    size_type _New_capacity = _Calculate_growth(_Right_size, _Small_string_capacity, _Right.max_size());
                     auto _Right_al_non_const = _Right_al;
                     const pointer _New_ptr   = _Allocate_for_capacity(_Right_al_non_const, _New_capacity); // throws
 
@@ -3187,7 +3187,7 @@ public:
                     _Tidy_deallocate();
                     _Traits::copy(_Mypair._Myval2._Bx._Buf, _Right_ptr, _Right_size + 1);
                     _Mypair._Myval2._Mysize = _Right_size;
-                    _Mypair._Myval2._Myres  = _SMALL_STRING_CAPACITY;
+                    _Mypair._Myval2._Myres  = _Small_string_capacity;
                 }
 
                 _Pocca(_Al, _Right_al);
@@ -4002,7 +4002,7 @@ public:
             return;
         }
 
-        size_type _Target_capacity = (_STD min)(_My_data._Mysize | _ALLOC_MASK, max_size());
+        size_type _Target_capacity = (_STD min)(_My_data._Mysize | _Alloc_mask, max_size());
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
             auto& _Al = _Getal();
             const pointer _New_ptr =
@@ -4228,7 +4228,7 @@ public:
             return;
         }
 
-        // ignore requests to reserve to [_SMALL_STRING_CAPACITY + 1, _Myres)
+        // ignore requests to reserve to [_Small_string_capacity + 1, _Myres)
     }
 #endif // _HAS_CXX20
 
@@ -4719,7 +4719,7 @@ public:
 private:
     _NODISCARD static _CONSTEXPR20 size_type _Calculate_growth(
         const size_type _Requested, const size_type _Old, const size_type _Max) noexcept {
-        const size_type _Masked = _Requested | _ALLOC_MASK;
+        const size_type _Masked = _Requested | _Alloc_mask;
         if (_Masked > _Max) { // the mask overflows, settle for max_size()
             return _Max;
         }
@@ -4813,7 +4813,7 @@ private:
         _My_data._Activate_SSO_buffer();
         _Traits::copy(_My_data._Bx._Buf, _Unfancy(_Ptr), _My_data._Mysize + 1);
         _Deallocate_for_capacity(_Al, _Ptr, _My_data._Myres);
-        _My_data._Myres = _SMALL_STRING_CAPACITY;
+        _My_data._Myres = _Small_string_capacity;
     }
 
     _CONSTEXPR20 void _Eos(const size_type _New_size) noexcept { // set new length and null terminator
@@ -4825,7 +4825,7 @@ private:
         // initialize basic_string data members
         auto& _My_data   = _Mypair._Myval2;
         _My_data._Mysize = 0;
-        _My_data._Myres  = _SMALL_STRING_CAPACITY;
+        _My_data._Myres  = _Small_string_capacity;
         _My_data._Activate_SSO_buffer();
 
         // the _Traits::assign is last so the codegen doesn't think the char write can alias this
@@ -4845,7 +4845,7 @@ private:
         }
 
         _My_data._Mysize = 0;
-        _My_data._Myres  = _SMALL_STRING_CAPACITY;
+        _My_data._Myres  = _Small_string_capacity;
         // the _Traits::assign is last so the codegen doesn't think the char write can alias this
         _Traits::assign(_My_data._Bx._Buf[0], _Elem());
     }
