@@ -2187,9 +2187,9 @@ _NODISCARD _Flt _Float_upper_bound(_Ty _Val) noexcept {
 #ifdef _M_CEE_PURE
         constexpr auto _Ty_32or64_digits = numeric_limits<_Ty_32or64>::digits;
         const auto _Log_plus1 = _Ty_32or64_digits - _Countl_zero_internal(static_cast<_Ty_32or64>(_Val | _Ty{1}));
-#else // _M_CEE_PURE
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
         const auto _Log_plus1 = _Bit_scan_reverse(static_cast<_Ty_32or64>(_Val | _Ty{1}));
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
         const auto _Shifted_mask = _Mask >> (_Ty_digits - _Log_plus1);
         const auto _Ceil_ulp     = _Shifted_mask & -_Shifted_mask;
         _Val &= _Shifted_mask;

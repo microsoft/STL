@@ -46,10 +46,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _REGEX_MAX_STACK_COUNT
 
 #ifndef _ENHANCED_REGEX_VISUALIZER
-
 #ifdef _DEBUG
 #define _ENHANCED_REGEX_VISUALIZER 1
-
 #else // _DEBUG
 #define _ENHANCED_REGEX_VISUALIZER 0
 #endif // _DEBUG
@@ -1870,9 +1868,9 @@ public:
     basic_regex(const basic_regex& _Right)
 #if _ENHANCED_REGEX_VISUALIZER
         : _Rep(nullptr), _Traits(_Right._Traits), _Visualization(_Right._Visualization)
-#else // _ENHANCED_REGEX_VISUALIZER
+#else
         : _Rep(nullptr), _Traits(_Right._Traits)
-#endif // _ENHANCED_REGEX_VISUALIZER
+#endif
     { // construct copy of _Right
         _Reset(_Right._Rep);
     }
@@ -2469,7 +2467,7 @@ public:
     _NODISCARD bool operator==(default_sentinel_t) const {
         return !_MyRe;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2662,7 +2660,7 @@ public:
     _NODISCARD bool operator==(default_sentinel_t) const {
         return !_Res;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
