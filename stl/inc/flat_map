@@ -520,6 +520,29 @@ public:
         return emplace_hint(_Position, _STD forward<_V>(_X));
     }
 
+    template <class _K, class... _Args_t>
+    _STD pair<iterator, bool> try_emplace(_K&& _Key, _Args_t&&... _Args)
+        requires constructible_from<mapped_type, _Args_t&&...>
+        && (same_as<_STD remove_cvref_t<_K&&>, key_type>
+            || (constructible_from<key_type, _K&&>
+                && _Compare_is_transparent<key_compare>
+                && !convertible_to<_K&&, const_iterator>
+                && !convertible_to<_K&&, iterator>)
+            ) {
+        auto _Key_It = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key, _Key_compare);
+        if(_Key_equal(_Key, *_Key_It)){
+            // Already exists
+            auto _Distance = _STD distance(_Data.keys.begin(), _Key_It);
+            return _STD make_pair(begin() + _Distance, false);
+        }
+        else{
+            // Need to insert
+            auto _Distance = _STD distance(_Data.keys.begin(), _Key_It);
+            _Insert_exact(begin() + _Distance, std::make_pair(key_type(_STD forward<_K>(_Key)), mapped_type(_STD forward<_Args_t>(_Args)...)));
+            return _STD make_pair(begin() + _Distance, true);
+        }
+    }
+
     // observers
     key_compare key_comp() const {
         return _Key_compare;
