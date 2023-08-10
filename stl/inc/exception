@@ -343,7 +343,7 @@ public:
         if (_Exc) {
             _STD rethrow_exception(_Exc);
         } else {
-            _STD terminate();
+            _STD terminate(); // per N4950 [except.nested]/4
         }
     }
 

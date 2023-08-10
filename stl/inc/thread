@@ -10,12 +10,18 @@
 #include <__msvc_chrono.hpp>
 #include <memory>
 #include <process.h>
+#include <string>
 #include <tuple>
 #include <xthreads.h>
+
 #if _HAS_CXX20
 #include <compare>
 #include <stop_token>
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23
+#include <format>
+#endif // _HAS_CXX23
 
 #ifdef _M_CEE_PURE
 #error <thread> is not supported when compiling with /clr:pure.
@@ -89,7 +95,7 @@ public:
 
     ~thread() noexcept {
         if (joinable()) {
-            _STD terminate();
+            _STD terminate(); // per N4950 [thread.thread.destr]/1
         }
     }
 
@@ -97,7 +103,7 @@ public:
 
     thread& operator=(thread&& _Other) noexcept {
         if (joinable()) {
-            _STD terminate();
+            _STD terminate(); // per N4950 [thread.thread.assign]/1
         }
 
         _Thr = _STD exchange(_Other._Thr, {});
@@ -211,6 +217,12 @@ class thread::id { // thread id
 public:
     id() noexcept = default; // id for no thread
 
+#if _HAS_CXX23
+    _NODISCARD _Thrd_id_t _Get_underlying_id() const noexcept {
+        return _Id;
+    }
+#endif // _HAS_CXX23
+
 private:
     explicit id(_Thrd_id_t _Other_id) noexcept : _Id(_Other_id) {}
 
@@ -273,8 +285,39 @@ _NODISCARD inline bool operator>=(thread::id _Left, thread::id _Right) noexcept 
 
 _EXPORT_STD template <class _Ch, class _Tr>
 basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _Id) {
-    return _Str << _Id._Id;
+    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Thrd_id_t) == 4);
+    _Ch _Buff[11]; // can hold 2^32 - 1, plus terminating null
+    _Ch* _RNext = _STD end(_Buff);
+    *--_RNext   = static_cast<_Ch>('\0');
+    _RNext      = _STD _UIntegral_to_buff(_RNext, _Id._Id);
+    return _Str << _RNext;
 }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+template <class _CharT>
+struct formatter<thread::id, _CharT> {
+private:
+    using _Pc = basic_format_parse_context<_CharT>;
+
+public:
+    constexpr _Pc::iterator parse(_Pc& _Parse_ctx) {
+        return _Impl.parse(_Parse_ctx);
+    }
+
+    template <class _FormatContext>
+    _FormatContext::iterator format(thread::id _Val, _FormatContext& _Format_ctx) const {
+        _STL_INTERNAL_STATIC_ASSERT(sizeof(_Thrd_id_t) == 4);
+        _CharT _Buff[10]; // can hold 2^32 - 1
+        _CharT* const _Last        = _STD end(_Buff);
+        const _CharT* const _First = _STD _UIntegral_to_buff(_Last, _Val._Get_underlying_id());
+        return _Impl._Format(_Format_ctx, static_cast<int>(_Last - _First), _Fmt_align::_Right,
+            [&](_FormatContext::iterator _Out) { return _RANGES copy(_First, _Last, _STD move(_Out)).out; });
+    }
+
+private:
+    _Fill_align_and_width_formatter<_CharT> _Impl;
+};
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <>
 struct hash<thread::id> {
