@@ -105,8 +105,8 @@ enum { // mutex types
 };
 
 #ifdef _CRTBLD
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t*, int); // used only by _Thrd_create
-_CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t); // used only by _Thrd_create
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t*, int);
+_CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t);
 #endif // _CRTBLD
 _CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t, int);
 _CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t);
@@ -116,8 +116,8 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t);
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t); // TRANSITION, ABI: Always succeeds
 
 #ifdef _CRTBLD
-_CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t); // used only by _Cnd_wait and _Cnd_timedwait
-_CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t); // used only by _Cnd_wait and _Cnd_timedwait
+_CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t);
+_CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t);
 #endif // _CRTBLD
 
 // shared mutex
@@ -131,8 +131,8 @@ void __cdecl _Smtx_unlock_shared(_Smtx_t*);
 
 // condition variables
 #ifdef _CRTBLD
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*); // used only by _Thrd_create
-_CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t); // used only by _Thrd_create
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*);
+_CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t);
 #endif // _CRTBLD
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t);
 _CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t);
