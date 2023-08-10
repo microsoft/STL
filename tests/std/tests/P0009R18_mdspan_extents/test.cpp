@@ -36,7 +36,7 @@ constexpr void check_members(index_sequence<Indices...>) {
 
     // Check static observers
     static_assert(Ext::rank() == sizeof...(Extents));
-    static_assert(Ext::rank_dynamic() == ((Extents == dynamic_extent) + ... + 0));
+    static_assert(Ext::rank_dynamic() == (size_t{Extents == dynamic_extent} + ... + 0));
     static_assert(((Ext::static_extent(Indices) == Extents) && ...));
 
     // Check noexceptness of static observers
@@ -67,7 +67,7 @@ constexpr void check_members(index_sequence<Indices...>) {
         Ext2 ext2{ext.extent(Indices)...};
         assert(((ext.extent(Indices) == ext2.extent(Indices)) && ...));
         assert(ext == ext2);
-        static_assert(is_nothrow_constructible_v<Ext2, Ext>);
+        static_assert(is_nothrow_constructible_v<Ext2, decltype(ext.extent(Indices))...>);
         // Other tests are defined in 'check_construction_from_extents_pack' function
     }
 
