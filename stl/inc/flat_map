@@ -430,11 +430,12 @@ public:
     }
 
     // [flat.map.access] Access
-    _NODISCARD mapped_type& operator[](const key_type& _Key); // TODO: implement
-    _NODISCARD mapped_type& operator[](key_type&& _Key); // TODO: implement
-    template <class _C>
-    _NODISCARD mapped_type& operator[](_C&& _Key)
-        requires _Compare_is_transparent<key_compare>; // TODO: implement
+    template<class _K>
+    _NODISCARD mapped_type& operator[](_K&& _Key)
+        requires same_as<remove_cvref_t<_K>, key_type>
+            || (_Compare_is_transparent<key_compare> && convertible_to<_K&&, key_type>){
+        return try_emplace(_STD forward<_K>(_Key)).first->second;
+    }
 
     _NODISCARD mapped_type& at(const key_type& _Key); // TODO: implement
     _NODISCARD const mapped_type& at(const key_type& _Key) const; // TODO: implement
@@ -531,6 +532,17 @@ public:
             ) {
         value_type _Val = std::make_pair(key_type(_STD forward<_K>(_Key)), mapped_type(_STD forward<_Args_t>(_Args)...));
         return emplace(_STD move(_Val));
+    }
+
+    template <class _K, class... _Args_t>
+    _STD pair<iterator, bool> try_emplace(const_iterator _Position, _K&& _Key, _Args_t&&... _Args)
+        requires constructible_from<mapped_type, _Args_t&&...>
+        && (same_as<_STD remove_cvref_t<_K&&>, key_type>
+            || (constructible_from<key_type, _K&&>
+                && _Compare_is_transparent<key_compare>)
+            ) {
+        value_type _Val = std::make_pair(key_type(_STD forward<_K>(_Key)), mapped_type(_STD forward<_Args_t>(_Args)...));
+        return emplace_hint(_Position, _STD move(_Val));
     }
 
     // observers
