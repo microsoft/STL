@@ -13,7 +13,7 @@
 #define STDCPP_IMPLIB 1
 
 // When building for msvcmrt.lib, inject a dependency to the msvcp DLL.
-#if defined _M_CEE && !defined _M_CEE_PURE
+#if defined(_M_CEE) && !defined(_M_CEE_PURE)
 #ifdef _CRTBLD
 #define _CRTBLD_WAS_DEFINED
 #undef _CRTBLD

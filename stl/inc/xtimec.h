@@ -25,7 +25,7 @@ _CRTIMP2_PURE long long __cdecl _Xtime_get_ticks();
 #ifdef _CRTBLD
 // Used by several src files, but not dllexported.
 void _Timespec64_get_sys(_timespec64*);
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 _CRTIMP2_PURE long long __cdecl _Query_perf_counter();
 _CRTIMP2_PURE long long __cdecl _Query_perf_frequency();

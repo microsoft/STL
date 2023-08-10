@@ -23,7 +23,7 @@ _RELIABILITY_CONTRACT
 _MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Mtxlock(_Rmtx* _Mtx) noexcept { // lock mutex
 #ifdef _M_CEE
     System::Threading::Thread::BeginThreadAffinity();
-#endif // _M_CEE
+#endif
     EnterCriticalSection(_Mtx);
 }
 
@@ -32,7 +32,7 @@ _MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Mtxunlock(_Rmtx* _Mtx) noexcept { //
     LeaveCriticalSection(_Mtx);
 #ifdef _M_CEE
     System::Threading::Thread::EndThreadAffinity();
-#endif // _M_CEE
+#endif
 }
 
 _END_EXTERN_C_UNLESS_PURE

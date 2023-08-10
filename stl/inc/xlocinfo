@@ -53,10 +53,10 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Getdateorder();
     CallingConvention = System::Runtime::InteropServices::CallingConvention::Cdecl)] extern "C" int
     _Mbrtowc(_Out_opt_ wchar_t*, const char*, size_t, mbstate_t*, const _Cvtvec*);
 
-#else // _M_CEE_PURE
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
     _When_(_Max_multibyte != 0, _Out_) wchar_t*, const char*, size_t _Max_multibyte, mbstate_t*, const _Cvtvec*);
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(const char*, const char*, const char*, const char*, const _Collvec*);
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(_Out_writes_(_End1 - _String1)
@@ -162,9 +162,9 @@ public:
 
 #ifdef _DEBUG
                 _Myptr = static_cast<_Elem*>(_malloc_dbg(_Count, _CRT_BLOCK, __FILE__, __LINE__));
-#else // _DEBUG
+#else
                 _Myptr = static_cast<_Elem*>(_CSTD malloc(_Count));
-#endif // _DEBUG
+#endif
 
                 if (_Myptr) {
                     _CSTD memcpy(_Myptr, _Right, _Count);
@@ -200,9 +200,9 @@ private:
         if (_Myptr) {
 #ifdef _DEBUG
             _free_dbg(_Myptr, _CRT_BLOCK);
-#else // _DEBUG
+#else
             _CSTD free(_Myptr);
-#endif // _DEBUG
+#endif
         }
 
         _Myptr = nullptr;
@@ -371,9 +371,9 @@ public:
 private:
 #ifdef _M_CEE_PURE
     _EmptyLockit _Empty_lock; // to maintain same size
-#else // _M_CEE_PURE
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
     _Lockit _Lock; // thread lock, because global locale is altered
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     _Yarn<char> _Days; // weekday names
     _Yarn<char> _Months; // month names
