@@ -769,6 +769,7 @@ constexpr bool instantiation_test_for_category() {
 
     using test::Sized, test::Common, test::CanDifference;
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     InstantiatorType<Category, Sized::no, Common::no, CanDifference::no>::call();
     InstantiatorType<Category, Sized::no, Common::no, CanDifference::yes>::call();
     InstantiatorType<Category, Sized::no, Common::yes, CanDifference::no>::call();
@@ -776,6 +777,7 @@ constexpr bool instantiation_test_for_category() {
     InstantiatorType<Category, Sized::yes, Common::no, CanDifference::no>::call();
     InstantiatorType<Category, Sized::yes, Common::no, CanDifference::yes>::call();
     InstantiatorType<Category, Sized::yes, Common::yes, CanDifference::no>::call();
+#endif // TRANSITION, GH-1030
     InstantiatorType<Category, Sized::yes, Common::yes, CanDifference::yes>::call();
 
     return true;
