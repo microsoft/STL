@@ -28,7 +28,7 @@ constexpr void test_one(array<ElementType, 3> elems) {
     static_assert(semiregular<Accessor>);
 
     // Check if default_accessor is empty
-    static_assert(std::is_empty_v<Accessor>);
+    static_assert(is_empty_v<Accessor>);
 
     // Check nested types
     static_assert(same_as<typename Accessor::offset_policy, Accessor>);
