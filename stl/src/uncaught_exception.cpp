@@ -5,7 +5,8 @@
 #include <exception>
 _STD_BEGIN
 
-_CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL uncaught_exception() noexcept { // report if handling a throw
+_CXX17_DEPRECATE_UNCAUGHT_EXCEPTION _NODISCARD _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL
+    uncaught_exception() noexcept {
     return __uncaught_exception();
 }
 
