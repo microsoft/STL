@@ -529,18 +529,8 @@ public:
                 && !convertible_to<_K&&, const_iterator>
                 && !convertible_to<_K&&, iterator>)
             ) {
-        auto _Key_It = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key, _Key_compare);
-        if(_Key_equal(_Key, *_Key_It)){
-            // Already exists
-            auto _Distance = _STD distance(_Data.keys.begin(), _Key_It);
-            return _STD make_pair(begin() + _Distance, false);
-        }
-        else{
-            // Need to insert
-            auto _Distance = _STD distance(_Data.keys.begin(), _Key_It);
-            _Insert_exact(begin() + _Distance, std::make_pair(key_type(_STD forward<_K>(_Key)), mapped_type(_STD forward<_Args_t>(_Args)...)));
-            return _STD make_pair(begin() + _Distance, true);
-        }
+        value_type _Val = std::make_pair(key_type(_STD forward<_K>(_Key)), mapped_type(_STD forward<_Args_t>(_Args)...));
+        return emplace(_STD move(_Val));
     }
 
     // observers
