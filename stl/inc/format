@@ -4050,6 +4050,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FORMAT_

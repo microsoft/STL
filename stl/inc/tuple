@@ -9,7 +9,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 #ifdef __cpp_lib_concepts
 #include <compare>
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #include <__msvc_iter_core.hpp>
 #include <type_traits>
 
@@ -195,7 +195,7 @@ concept _Can_construct_from_tuple_like =
     && (tuple_size_v<_Tuple> != 1
         || (!is_convertible_v<_TupleLike, tuple_element_t<0, _Tuple>>
             && !is_constructible_v<tuple_element_t<0, _Tuple>, _TupleLike>) );
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _TTuple, class _UTuple, class _Indices = make_index_sequence<tuple_size_v<_UTuple>>>
 struct _Three_way_comparison_result_with_tuple_like {};
@@ -204,7 +204,7 @@ template <class... _TTypes, class _UTuple, size_t... _Indices>
     requires
 #ifndef __clang__ // TRANSITION, DevCom-10265237
     (sizeof...(_TTypes) == sizeof...(_Indices)) &&
-#endif // __clang__
+#endif // !defined(__clang__)
     (requires { typename _Synth_three_way_result<_TTypes, tuple_element_t<_Indices, _UTuple>>; } && ...)
 struct _Three_way_comparison_result_with_tuple_like<tuple<_TTypes...>, _UTuple, index_sequence<_Indices...>> {
     using type = common_comparison_category_t<_Synth_three_way_result<_TTypes, tuple_element_t<_Indices, _UTuple>>...>;
@@ -267,7 +267,7 @@ public:
     constexpr const tuple& operator=(_Other&&) const noexcept /* strengthened */ {
         return *this;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(tuple&) noexcept {}
@@ -440,11 +440,11 @@ public:
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
               && _Can_construct_values_from_tuple_like_v<tuple, _Other>
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
-#endif // __clang__
+#endif // ^^^ no workaround ^^^
     constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>) tuple(_Other&& _Right)
         : tuple(_Unpack_tuple_t{}, _STD forward<_Other>(_Right)) {
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     template <class _Alloc, class _This2 = _This,
@@ -548,12 +548,12 @@ public:
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
               && _Can_construct_values_from_tuple_like_v<tuple, _Other>
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
-#endif // __clang__
+#endif // ^^^ no workaround ^^^
     constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>)
         tuple(allocator_arg_t, const _Alloc& _Al, _Other&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD forward<_Other>(_Right)) {
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     tuple& operator=(const volatile tuple&) = delete;
@@ -730,7 +730,7 @@ public:
         _Assign_tuple_like(_STD forward<_Other>(_Right), make_index_sequence<1 + sizeof...(_Rest)>{});
         return *this;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(tuple& _Right) noexcept(

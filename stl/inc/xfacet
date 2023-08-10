@@ -33,10 +33,9 @@ public:
 
 #if defined(_M_CEE)
 void __CLRCALL_OR_CDECL _Facet_Register_m(_Facet_base*);
-
-#else // defined(_M_CEE)
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 extern "C++" void __CLRCALL_OR_CDECL _Facet_Register(_Facet_base*);
-#endif // defined(_M_CEE)
+#endif // ^^^ !defined(_M_CEE) ^^^
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

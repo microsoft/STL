@@ -66,7 +66,7 @@ extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*,
 
 #ifdef _CRTBLD
 extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const unsigned short*, ios_base::openmode, int);
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 template <class _Elem>
 bool _Fgetc(_Elem& _Ch, FILE* _File) { // get an element from a C stream
@@ -106,7 +106,7 @@ inline bool _Fgetc(unsigned short& _Wchar, FILE* _File) { // get an unsigned sho
         return true;
     }
 }
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 template <class _Elem>
 bool _Fputc(_Elem _Ch, FILE* _File) { // put an element to a C stream
@@ -128,7 +128,7 @@ template <>
 inline bool _Fputc(unsigned short _Wchar, FILE* _File) { // put an unsigned short element to a C stream
     return _CSTD fputwc(_Wchar, _File) != WEOF;
 }
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 template <class _Elem>
 bool _Ungetc(const _Elem&, FILE*) { // put back an arbitrary element to a C stream (always fail)
@@ -160,7 +160,7 @@ template <>
 inline bool _Ungetc(const unsigned short& _Wchar, FILE* _File) { // put back an unsigned short element to a C stream
     return _CSTD ungetwc(_Wchar, _File) != WEOF;
 }
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 _EXPORT_STD template <class _Elem, class _Traits>
 class basic_filebuf : public basic_streambuf<_Elem, _Traits> { // stream buffer associated with a C stream
@@ -378,7 +378,7 @@ public:
         return open(_Filename, static_cast<ios_base::openmode>(_Mode));
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
     basic_filebuf* close() {
         basic_filebuf* _Ans;
