@@ -5,7 +5,7 @@
 #include <exception>
 _STD_BEGIN
 
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL uncaught_exceptions() noexcept { // report number of throws being handled
+_NODISCARD _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL uncaught_exceptions() noexcept {
     return __uncaught_exceptions();
 }
 

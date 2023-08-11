@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _SHARED_MUTEX_
 #define _SHARED_MUTEX_
 #include <yvals_core.h>
@@ -11,7 +10,7 @@
 
 #ifdef _M_CEE_PURE
 #error <shared_mutex> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #include <condition_variable>
 #include <mutex>

@@ -3,8 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
-
 #ifndef _USE_ANSI_CPP
 #define _USE_ANSI_CPP
 

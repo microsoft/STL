@@ -7,7 +7,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-short _LDint(long double* px, short xexp) { // test and drop (scaled) fraction bits -- 64-bit
+short _LDint(long double* px, short xexp) noexcept { // test and drop (scaled) fraction bits -- 64-bit
     return _Dint(reinterpret_cast<double*>(px), xexp);
 }
 

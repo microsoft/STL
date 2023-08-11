@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _HASH_SET_
 #define _HASH_SET_
 #include <yvals_core.h>
@@ -86,7 +85,7 @@ namespace stdext {
         float _Max_buckets = 0.0F; // current maximum bucket size
     };
 
-    template <class _Kty, class _Tr = hash_compare<_Kty, less<_Kty>>, class _Alloc = allocator<_Kty>>
+    template <class _Kty, class _Tr = hash_compare<_Kty, _STD less<_Kty>>, class _Alloc = allocator<_Kty>>
     class hash_set : public _Hash<_Hset_traits<_Kty, _Tr, _Alloc, false>> { // hash table of key values, unique keys
     public:
         using _Mybase         = _Hash<_Hset_traits<_Kty, _Tr, _Alloc, false>>;
@@ -231,7 +230,7 @@ namespace stdext {
         return !(_Left == _Right);
     }
 
-    template <class _Kty, class _Tr = hash_compare<_Kty, less<_Kty>>, class _Alloc = allocator<_Kty>>
+    template <class _Kty, class _Tr = hash_compare<_Kty, _STD less<_Kty>>, class _Alloc = allocator<_Kty>>
     class hash_multiset
         : public _Hash<_Hset_traits<_Kty, _Tr, _Alloc, true>> { // hash table of key values, non-unique keys
     public:

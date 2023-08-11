@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _NUMERIC_
 #define _NUMERIC_
 #include <yvals_core.h>
@@ -112,7 +111,6 @@ _NODISCARD _Ty reduce(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Ty _Val, _Bin
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _Ty reduce(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, _Ty _Val) noexcept /* terminates */ {
     // return commutative and associative reduction of _Val and [_First, _Last)
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     return _STD reduce(_STD forward<_ExPo>(_Exec), _First, _Last, _STD move(_Val), plus{});
 }
 
@@ -121,7 +119,6 @@ _NODISCARD _Iter_value_t<_FwdIt> reduce(_ExPo&& _Exec, const _FwdIt _First, cons
 /* terminates */ {
     // return commutative and associative reduction of
     // iterator_traits<_FwdIt>::value_type{} and [_First, _Last)
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     return _STD reduce(_STD forward<_ExPo>(_Exec), _First, _Last, _Iter_value_t<_FwdIt>{}, plus{});
 }
 #endif // _HAS_CXX17
@@ -232,8 +229,6 @@ _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Ena
 _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Ty _Val) noexcept
 /* terminates */ {
     // return commutative and associative transform-reduction of sequences
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD transform_reduce(
         _STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _STD move(_Val), plus{}, multiplies{});
 }

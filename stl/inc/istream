@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _ISTREAM_
 #define _ISTREAM_
 #include <yvals_core.h>
@@ -37,9 +36,7 @@ public:
     }
 #endif // defined(__FORCE_INSTANCE)
 
-    explicit __CLR_OR_THIS_CALL basic_istream(_Mysb* _Strbuf, bool _Isstd = false)
-
-        : _Chcount(0) {
+    explicit __CLR_OR_THIS_CALL basic_istream(_Mysb* _Strbuf, bool _Isstd = false) : _Chcount(0) {
         _Myios::init(_Strbuf, _Isstd);
     }
 
@@ -171,7 +168,7 @@ public:
         _Pfn(*this);
         return *this;
     }
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
     basic_istream& __CLR_OR_THIS_CALL operator>>(basic_istream&(__cdecl* _Pfn)(basic_istream&) ) {
         // call basic_istream manipulator
@@ -708,7 +705,7 @@ inline basic_istream<unsigned short, char_traits<unsigned short>>& __CLR_OR_THIS
     char_traits<unsigned short>>::operator>>(unsigned short& _Ch) { // extract a character
     return _STD operator>>(*this, _Ch);
 }
-#endif // _NATIVE_WCHAR_T_DEFINED
+#endif // !defined(_NATIVE_WCHAR_T_DEFINED)
 
 #if defined(_DLL_CPPLIB)
 
@@ -719,7 +716,7 @@ template class _CRTIMP2_PURE_IMPORT basic_istream<wchar_t, char_traits<wchar_t>>
 
 #ifdef __FORCE_INSTANCE
 template class _CRTIMP2_PURE_IMPORT basic_istream<unsigned short, char_traits<unsigned short>>;
-#endif // __FORCE_INSTANCE
+#endif // defined(__FORCE_INSTANCE)
 #endif // defined(_DLL_CPPLIB)
 
 _EXPORT_STD extern "C++" template <class _Elem, class _Traits>
@@ -772,7 +769,7 @@ template class _CRTIMP2_PURE_IMPORT basic_iostream<wchar_t, char_traits<wchar_t>
 
 #ifdef __FORCE_INSTANCE
 template class _CRTIMP2_PURE_IMPORT basic_iostream<unsigned short, char_traits<unsigned short>>;
-#endif // __FORCE_INSTANCE
+#endif // defined(__FORCE_INSTANCE)
 #endif // defined(_DLL_CPPLIB)
 
 template <class _Elem, class _Traits>
@@ -840,7 +837,7 @@ basic_istream<char, _Traits>& operator>>(
     return _Istream_extract_into_buffer(_Istr, _Size, reinterpret_cast<char*>(_Str));
 }
 #pragma warning(pop)
-#else // _HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Elem, class _Traits>
 basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, _Elem* _Str) {
     return _Istream_extract_into_buffer(_Istr, SIZE_MAX, _Str);
@@ -855,7 +852,7 @@ template <class _Traits>
 basic_istream<char, _Traits>& operator>>(basic_istream<char, _Traits>& _Istr, unsigned char* _Str) {
     return _Istream_extract_into_buffer(_Istr, SIZE_MAX, reinterpret_cast<char*>(_Str));
 }
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Elem, class _Traits>
 basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, _Elem& _Ch) { // extract a character

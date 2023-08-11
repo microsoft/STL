@@ -634,12 +634,12 @@ int main() {
     ensure_member_calls_compile<atomic<shared_ptr<int[2][2]>>>();
     ensure_member_calls_compile<atomic<weak_ptr<int[2][2]>>>();
 
-    // LWG-3893: LWG 3661 broke atomic<shared_ptr<T>> a; a = nullptr;
-    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<bool>>, nullptr_t>);
-    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<int>>, nullptr_t>);
-    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<int[]>>, nullptr_t>);
-    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<int[][2]>>, nullptr_t>);
-    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<int[2][2]>>, nullptr_t>);
+    // LWG-3893: LWG-3661 broke atomic<shared_ptr<T>> a; a = nullptr;
+    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<bool>>&, nullptr_t>);
+    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<int>>&, nullptr_t>);
+    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<int[]>>&, nullptr_t>);
+    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<int[][2]>>&, nullptr_t>);
+    static_assert(is_nothrow_assignable_v<atomic<shared_ptr<int[2][2]>>&, nullptr_t>);
 
 #ifdef _DEBUG
     sptr0 = {};

@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _EXECUTION_
 #define _EXECUTION_
 #include <yvals.h>
@@ -33,11 +32,11 @@ _EXTERN_C
 using __std_TP_WORK              = void;
 using __std_TP_CALLBACK_INSTANCE = void;
 using __std_TP_CALLBACK_ENVIRON  = void;
-#else // ^^^ _M_CEE / !_M_CEE vvv
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 struct __std_TP_WORK; // not defined
 struct __std_TP_CALLBACK_INSTANCE; // not defined
 struct __std_TP_CALLBACK_ENVIRON; // not defined
-#endif // _M_CEE
+#endif // ^^^ !defined(_M_CEE) ^^^
 
 using __std_PTP_WORK              = __std_TP_WORK*;
 using __std_PTP_CALLBACK_INSTANCE = __std_TP_CALLBACK_INSTANCE*;
@@ -277,7 +276,7 @@ struct _Parallelism_allocate_traits {
 
         return _Result;
     }
-#endif // __cpp_aligned_new
+#endif // defined(__cpp_aligned_new)
 };
 
 template <class _Ty = void>
@@ -1653,6 +1652,7 @@ struct _Static_partitioned_adjacent_find3 {
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _FwdIt adjacent_find(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find first satisfying _Pred with successor
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -2247,6 +2247,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _Ty, class _
 _NODISCARD _FwdIt search_n(_ExPo&&, const _FwdIt _First, _FwdIt _Last, const _Diff _Count_raw, const _Ty& _Val,
     _Pr _Pred) noexcept /* terminates */ {
     // find first _Count * _Val satisfying _Pred
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     const _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
         _Last = _First;
@@ -2584,6 +2585,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD_REMOVE_ALG _FwdIt remove_if(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept
 /* terminates */ {
     // remove each satisfying _Pred
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -2722,6 +2724,7 @@ struct _Sort_operation { // context for background threads
 _EXPORT_STD template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void sort(_ExPo&&, const _RanIt _First, const _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // order [_First, _Last)
+    _REQUIRE_CPP17_MUTABLE_RANDOM_ACCESS_ITERATOR(_RanIt);
     _Adl_verify_range(_First, _Last);
     const auto _UFirst                = _Get_unwrapped(_First);
     const auto _ULast                 = _Get_unwrapped(_Last);
@@ -2814,9 +2817,9 @@ inline size_t _Get_stable_sort_tree_height(const size_t _Count, const size_t _Hw
     const size_t _Log_ideal_chunks     = _Floor_of_log_2(_Ideal_chunks);
 #ifdef _WIN64
     constexpr size_t _Max_tree_height  = 62; // to avoid ptrdiff_t overflow
-#else // ^^^ _WIN64 / !_WIN64 vvv
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     constexpr size_t _Max_tree_height = 30;
-#endif // _WIN64
+#endif // ^^^ !defined(_WIN64) ^^^
     const size_t _Clamped_ideal_chunks = (_STD min)(_Max_tree_height, _Log_ideal_chunks);
 
     // similarly, if _Clamped_ideal_chunks is odd, that would break our 2 to even power invariant,
@@ -2979,6 +2982,7 @@ struct _Static_partitioned_stable_sort3 {
 _EXPORT_STD template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // sort preserving order of equivalents
+    _REQUIRE_CPP17_MUTABLE_BIDIRECTIONAL_ITERATOR(_BidIt);
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
@@ -3541,6 +3545,7 @@ struct _Static_partitioned_partition2 {
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt partition(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // move elements satisfying _Pred to beginning of sequence
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);

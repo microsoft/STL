@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _QUEUE_
 #define _QUEUE_
 #include <yvals_core.h>
@@ -52,7 +51,7 @@ public:
 #ifdef __cpp_lib_concepts
     template <_Container_compatible_range<_Ty> _Rng>
     queue(from_range_t, _Rng&& _Range) : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range))) {}
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
@@ -86,7 +85,7 @@ public:
     template <_Container_compatible_range<_Ty> _Rng, class _Alloc>
     queue(from_range_t, _Rng&& _Range, const _Alloc& _Al)
         : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range), _Al)) {}
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     _NODISCARD_EMPTY_ADAPTOR_MEMBER bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
@@ -177,7 +176,7 @@ template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 queue(from_range_t, _Rng&&, _Alloc = _Alloc())
     -> queue<_RANGES range_value_t<_Rng>, deque<_RANGES range_value_t<_Rng>, _Alloc>>;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Ty, class _Container>
@@ -216,7 +215,7 @@ _NODISCARD compare_three_way_result_t<_Container> operator<=>(
     const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
     return _Left._Get_container() <=> _Right._Get_container();
 }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _Ty, class _Container, enable_if_t<_Is_swappable<_Container>::value, int> = 0>
 void swap(queue<_Ty, _Container>& _Left, queue<_Ty, _Container>& _Right) noexcept(noexcept(_Left.swap(_Right))) {

@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _FUNCTIONAL_
 #define _FUNCTIONAL_
 #include <yvals_core.h>
@@ -15,12 +14,12 @@
 #if _HAS_CXX17
 #ifdef _LEGACY_CODE_ASSUMES_FUNCTIONAL_INCLUDES_MEMORY
 #include <memory>
-#endif // _LEGACY_CODE_ASSUMES_FUNCTIONAL_INCLUDES_MEMORY
+#endif // defined(_LEGACY_CODE_ASSUMES_FUNCTIONAL_INCLUDES_MEMORY)
 #include <unordered_map>
 #endif // _HAS_CXX17
 #ifdef __cpp_lib_concepts
 #include <compare>
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -749,13 +748,15 @@ private:
         }
     }
 
-    const type_info& _Target_type() const noexcept override {
 #if _HAS_STATIC_RTTI
+    const type_info& _Target_type() const noexcept override {
         return typeid(_Callable);
-#else // _HAS_STATIC_RTTI
-        _CSTD abort();
-#endif // _HAS_STATIC_RTTI
     }
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
+    [[noreturn]] const type_info& _Target_type() const noexcept override {
+        _CSTD abort(); // shouldn't be called, see GH-3888
+    }
+#endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
     const void* _Get() const noexcept override {
         return _STD addressof(_Mypair._Myval2);
@@ -810,13 +811,15 @@ private:
         }
     }
 
-    const type_info& _Target_type() const noexcept override {
 #if _HAS_STATIC_RTTI
+    const type_info& _Target_type() const noexcept override {
         return typeid(_Callable);
-#else // _HAS_STATIC_RTTI
-        _CSTD abort();
-#endif // _HAS_STATIC_RTTI
     }
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
+    [[noreturn]] const type_info& _Target_type() const noexcept override {
+        _CSTD abort(); // shouldn't be called, see GH-3888
+    }
+#endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
     const void* _Get() const noexcept override {
         return _STD addressof(_Callee);
@@ -999,7 +1002,7 @@ _NON_MEMBER_CALL(_GET_FUNCTION_IMPL, X1, X2, X3)
     };
 _NON_MEMBER_CALL(_GET_FUNCTION_IMPL_NOEXCEPT, X1, X2, X3)
 #undef _GET_FUNCTION_IMPL_NOEXCEPT
-#endif // __cpp_noexcept_function_type
+#endif // defined(__cpp_noexcept_function_type)
 
 _EXPORT_STD template <class _Fty>
 class function : public _Get_function_impl<_Fty>::type { // wrapper for callable objects
@@ -1117,7 +1120,7 @@ public:
             return reinterpret_cast<const _Fx*>(this->_Target(typeid(_Fx)));
         }
     }
-#else // _HAS_STATIC_RTTI
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
     const type_info& target_type() const noexcept = delete; // requires static RTTI
 
     template <class _Fx>
@@ -1125,7 +1128,7 @@ public:
 
     template <class _Fx>
     const _Fx* target() const noexcept = delete; // requires static RTTI
-#endif // _HAS_STATIC_RTTI
+#endif // ^^^ !_HAS_STATIC_RTTI ^^^
 };
 
 #if _HAS_CXX17
@@ -1277,9 +1280,9 @@ void __stdcall _Function_deallocate_large_overaligned(_Move_only_function_data& 
     _STL_INTERNAL_STATIC_ASSERT(_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 #ifdef __cpp_aligned_new
     ::operator delete(_Self._Large_fn_ptr<void>(), align_val_t{_Align});
-#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
+#else // ^^^ defined(__cpp_aligned_new) / !defined(__cpp_aligned_new) vvv
     ::operator delete(_Self._Large_fn_ptr<void>());
-#endif // __cpp_aligned_new
+#endif // ^^^ !defined(__cpp_aligned_new) ^^^
 }
 
 template <class _Vt>
@@ -1290,7 +1293,7 @@ void __stdcall _Function_destroy_large(_Move_only_function_data& _Self) noexcept
     if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         ::operator delete(static_cast<void*>(_Pfn), align_val_t{alignof(_Vt)});
     } else
-#endif // __cpp_aligned_new
+#endif // defined(__cpp_aligned_new)
     {
         ::operator delete(static_cast<void*>(_Pfn));
     }
@@ -1314,7 +1317,7 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
                 if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                     ::operator delete(_Ptr, align_val_t{alignof(_Vt)});
                 } else
-#endif // __cpp_aligned_new
+#endif // defined(__cpp_aligned_new)
                 {
                     ::operator delete(_Ptr);
                 }
@@ -1327,7 +1330,7 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
     if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         _Ptr = ::operator new(sizeof(_Vt), align_val_t{alignof(_Vt)});
     } else
-#endif // __cpp_aligned_new
+#endif // defined(__cpp_aligned_new)
     {
         _Ptr = ::operator new(sizeof(_Vt));
     }
@@ -1360,7 +1363,7 @@ public:
         // empty function from a DLL that is unloaded later, and then safely moving/destroying that empty function.
 
         // Calls target
-        typename _Invoke_t<_Noexcept>::_Call _Invoke;
+        _Invoke_t<_Noexcept>::_Call _Invoke;
         // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable").
         // nullptr if we can trivially move two pointers.
         void(__stdcall* _Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
@@ -1737,7 +1740,7 @@ public:
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
-#endif // __cpp_noexcept_function_type
+#endif // defined(__cpp_noexcept_function_type)
 
 _EXPORT_STD template <class... _Signature>
 class move_only_function : private _Move_only_function_call<_Signature...> {
@@ -1787,7 +1790,7 @@ public:
             }
         }
 
-        using _VtInvQuals = typename _Call::template _VtInvQuals<_Vt>;
+        using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
         this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
     }
 
@@ -1796,7 +1799,7 @@ public:
         using _Vt = decay_t<_Fn>;
         static_assert(is_same_v<_Vt, _Fn>, "_Vt should be the same type as _Fn. (N4950 [func.wrap.move.ctor]/12)");
 
-        using _VtInvQuals = typename _Call::template _VtInvQuals<_Vt>;
+        using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
         this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_CTypes>(_Args)...);
     }
 
@@ -1806,7 +1809,7 @@ public:
         using _Vt = decay_t<_Fn>;
         static_assert(is_same_v<_Vt, _Fn>, "_Vt should be the same type as _Fn. (N4950 [func.wrap.move.ctor]/18)");
 
-        using _VtInvQuals = typename _Call::template _VtInvQuals<_Vt>;
+        using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
         this->template _Construct_with_fn<_Vt, _VtInvQuals>(_Li, _STD forward<_CTypes>(_Args)...);
     }
 
@@ -3116,7 +3119,7 @@ namespace ranges {
         using is_transparent = int;
     };
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {

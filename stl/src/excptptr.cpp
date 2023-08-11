@@ -81,7 +81,7 @@ namespace {
         alignas(_Ty) static unsigned char _Storage[sizeof(_Ty)];
         if (!_Execute_once(_Flag, _Immortalize_impl<_Ty>, &_Storage)) {
             // _Execute_once should never fail if the callback never fails
-            _STD terminate();
+            _CSTD abort();
         }
 
         return reinterpret_cast<_Ty&>(_Storage);
@@ -177,15 +177,15 @@ namespace {
         if (_PType->properties & CT_HasVirtualBase) {
 #ifdef _M_CEE_PURE
             reinterpret_cast<void(__clrcall*)(void*, void*, int)>(_CopyFunc)(_Dest, _Adjusted, 1);
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
             _CallMemberFunction2(_Dest, _CopyFunc, _Adjusted, 1);
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
         } else {
 #ifdef _M_CEE_PURE
             reinterpret_cast<void(__clrcall*)(void*, void*)>(_CopyFunc)(_Dest, _Adjusted);
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
             _CallMemberFunction1(_Dest, _CopyFunc, _Adjusted);
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
         }
     }
 } // unnamed namespace
@@ -255,7 +255,7 @@ namespace {
             const auto _PThrow = _CppEhRecord.params.pThrowInfo;
             if (!_PThrow) {
                 // No ThrowInfo exists. If this was a C++ exception, something must have corrupted it.
-                abort();
+                _CSTD abort();
             }
 
             if (!_CppEhRecord.params.pExceptionObject) {
@@ -489,7 +489,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
         const auto _PThrow = _CppRecord.params.pThrowInfo;
         if (!_CppRecord.params.pExceptionObject || !_PThrow || !_PThrow->pCatchableTypeArray) {
             // Missing or corrupt ThrowInfo. If this was a C++ exception, something must have corrupted it.
-            abort();
+            _CSTD abort();
         }
 
 #if _EH_RELATIVE_TYPEINFO
@@ -502,7 +502,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
 
         if (_CatchableTypeArray->nCatchableTypes <= 0) {
             // Ditto corrupted.
-            abort();
+            _CSTD abort();
         }
 
         // we finally got the type info we want

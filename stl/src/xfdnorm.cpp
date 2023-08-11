@@ -7,7 +7,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-short _FDnorm(_Fval* ps) { // normalize float fraction
+short _FDnorm(_Fval* ps) noexcept { // normalize float fraction
     short xchar         = 1;
     unsigned short sign = static_cast<unsigned short>(ps->_Sh[_F0] & _FSIGN);
 
