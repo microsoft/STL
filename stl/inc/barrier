@@ -10,7 +10,7 @@
 
 #ifdef _M_CEE_PURE
 #error <barrier> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #if !_HAS_CXX20
 _EMIT_STL_WARNING(STL4038, "The contents of <barrier> are available only with C++20 or later.");
@@ -71,7 +71,7 @@ public:
     static_assert(
 #ifndef __cpp_noexcept_function_type
         is_function_v<remove_pointer_t<_Completion_function>> ||
-#endif // __cpp_noexcept_function_type
+#endif // !defined(__cpp_noexcept_function_type)
             is_nothrow_invocable_v<_Completion_function&>,
         "N4950 [thread.barrier.class]/5: is_nothrow_invocable_v<CompletionFunction&> shall be true");
 

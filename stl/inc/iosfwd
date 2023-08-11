@@ -36,11 +36,11 @@ _STD_BEGIN
             .setstate(xtype::badbit, true); /* set badbit and rethrow */ \
     _CATCH_END
 
-#else // _HAS_EXCEPTIONS
+#else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
 #define _TRY_IO_BEGIN        { // begin try block
 #define _CATCH_IO_END        } // catch block for _Myios
 #define _CATCH_IO_(xtype, x) } // catch block for basic_ios x
-#endif // _HAS_EXCEPTIONS
+#endif // ^^^ !_HAS_EXCEPTIONS ^^^
 
 // from <streambuf>
 _EXPORT_STD using streamoff  = long long;
@@ -71,7 +71,7 @@ public:
     _DEPRECATE_FPOS_SEEKPOS fpos_t seekpos() const noexcept {
         return {};
     }
-#endif // _REMOVE_FPOS_SEEKPOS
+#endif // !defined(_REMOVE_FPOS_SEEKPOS)
 
     _NODISCARD streamoff operator-(const fpos& _Right) const noexcept /* strengthened */ {
         return static_cast<streamoff>(*this) - static_cast<streamoff>(_Right);
@@ -139,7 +139,7 @@ _EXPORT_STD using streampos  = fpos<_Mbstatet>;
 _EXPORT_STD using wstreampos = streampos;
 #ifdef __cpp_lib_char8_t
 _EXPORT_STD using u8streampos = streampos;
-#endif // __cpp_lib_char8_t
+#endif // defined(__cpp_lib_char8_t)
 _EXPORT_STD using u16streampos = streampos;
 _EXPORT_STD using u32streampos = streampos;
 
@@ -154,7 +154,7 @@ struct char_traits<char>;
 #ifdef __cpp_char8_t
 template <>
 struct char_traits<char8_t>;
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 template <>
 struct char_traits<char16_t>;
 template <>
@@ -164,7 +164,7 @@ struct char_traits<wchar_t>;
 #ifdef _CRTBLD
 template <>
 struct char_traits<unsigned short>;
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 _EXPORT_STD template <class _Ty>
 class allocator;
