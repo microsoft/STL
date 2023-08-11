@@ -59,16 +59,16 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // !defined(_INSERT_STRING_ANNOTATION)
 #ifndef _INSERT_VECTOR_ANNOTATION
 #pragma detect_mismatch("annotate_vector", "0")
-#endif // !defined_INSERT_VECTOR_ANNOTATION)
+#endif // !defined(INSERT_VECTOR_ANNOTATION)
 
 #ifdef _ACTIVATE_STRING_ANNOTATION
 #pragma comment(lib, "stl_asan")
 #pragma detect_mismatch("annotate_string", "1")
-#endif // defined_ACTIVATE_STRING_ANNOTATION)
+#endif // defined(ACTIVATE_STRING_ANNOTATION)
 #ifdef _ACTIVATE_VECTOR_ANNOTATION
 #pragma comment(lib, "stl_asan")
 #pragma detect_mismatch("annotate_vector", "1")
-#endif // defined_ACTIVATE_VECTOR_ANNOTATION)
+#endif // defined(ACTIVATE_VECTOR_ANNOTATION)
 
 #undef _ACTIVATE_STRING_ANNOTATION
 #undef _ACTIVATE_VECTOR_ANNOTATION

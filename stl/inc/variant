@@ -1679,7 +1679,7 @@ _NODISCARD constexpr bool operator<=(monostate, monostate) noexcept {
 _NODISCARD constexpr bool operator>=(monostate, monostate) noexcept {
     return true;
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class... _Types,
     enable_if_t<conjunction_v<is_move_constructible<_Types>..., is_swappable<_Types>...>, int> = 0>
@@ -1732,6 +1732,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX17
+#endif // ^^^ _HAS_CXX17 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _VARIANT_

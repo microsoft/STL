@@ -137,7 +137,7 @@ public:
         return c.emplace_back(_STD forward<_Valty>(_Val)...);
 #else // ^^^ C++17 or newer / C++14 vvv
         c.emplace_back(_STD forward<_Valty>(_Val)...);
-#endif // _HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     void pop() noexcept(noexcept(c.pop_front())) /* strengthened */ {

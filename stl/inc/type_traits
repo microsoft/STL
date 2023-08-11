@@ -803,7 +803,7 @@ struct _Is_assignable_no_precondition_check : bool_constant<__is_assignable_no_p
 #else // ^^^ Use intrinsic / intrinsic not supported vvv
 template <class _To, class _From>
 using _Is_assignable_no_precondition_check = is_assignable<_To, _From>;
-#endif // defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
+#endif // ^^^ !defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) || defined(__CUDACC__) ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_copy_assignable
@@ -830,7 +830,7 @@ using _Is_copy_assignable_no_precondition_check = is_copy_assignable<_Ty>;
 
 template <class _Ty>
 _INLINE_VAR constexpr bool _Is_copy_assignable_unchecked_v = is_copy_assignable_v<_Ty>;
-#endif // defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
+#endif // ^^^ !defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) || defined(__CUDACC__) ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_move_assignable : bool_constant<__is_assignable(add_lvalue_reference_t<_Ty>, _Ty)> {
@@ -854,7 +854,7 @@ using _Is_move_assignable_no_precondition_check = is_move_assignable<_Ty>;
 
 template <class _Ty>
 _INLINE_VAR constexpr bool _Is_move_assignable_unchecked_v = is_move_assignable_v<_Ty>;
-#endif // defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
+#endif // ^^^ !defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) || defined(__CUDACC__) ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_destructible : bool_constant<__is_destructible(_Ty)> {
@@ -1177,7 +1177,7 @@ struct _Aligned<_Len, _Align, double, false> {
         "(2) _DISABLE_EXTENDED_ALIGNED_STORAGE to get the old non-conforming behavior.");
 #endif // !_DISABLE_EXTENDED_ALIGNED_STORAGE
     using type = _Align_type<max_align_t, _Len>;
-#endif // _ENABLE_EXTENDED_ALIGNED_STORAGE
+#endif // ^^^ !defined(_ENABLE_EXTENDED_ALIGNED_STORAGE)
 };
 
 template <size_t _Len, size_t _Align>
@@ -1326,7 +1326,7 @@ struct _Decayed_cond_oper : _Const_lvalue_cond_oper<_Ty1, _Ty2> {};
 #else // ^^^ >= C++20 / <= C++17 vvv
 template <class _Ty1, class _Ty2, class = void>
 struct _Decayed_cond_oper {};
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Ty1, class _Ty2>
 struct _Decayed_cond_oper<_Ty1, _Ty2, void_t<_Conditional_type<_Ty1, _Ty2>>> {
@@ -2126,7 +2126,7 @@ struct _Is_nothrow_swappable;
 _EXPORT_STD template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assignable_v<_Ty>, int> = 0>
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
 template <class _Ty, int _Enabled = 0>
-#endif // _HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^
 _CONSTEXPR20 void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>);
 
 _EXPORT_STD template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> = 0>

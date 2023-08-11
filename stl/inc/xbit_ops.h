@@ -30,7 +30,7 @@ _NODISCARD inline unsigned long _Floor_of_log_2(size_t _Value) noexcept { // ret
     _Result = 63;
 #else // ^^^ 64-bit / 32-bit vvv
     _Result = 31;
-#endif // 64 vs. 32-bit
+#endif // ^^^ !defined(_WIN64) ^^^
 
     while ((size_t{1} << _Result) > _Value) {
         --_Result;
@@ -41,7 +41,7 @@ _NODISCARD inline unsigned long _Floor_of_log_2(size_t _Value) noexcept { // ret
     _BitScanReverse64(&_Result, _Value); // lgtm [cpp/conditionallyuninitializedvariable]
 #else // ^^^ 64-bit / 32-bit vvv
     _BitScanReverse(&_Result, _Value); // lgtm [cpp/conditionallyuninitializedvariable]
-#endif // 64 vs. 32-bit
+#endif // ^^^ !defined(_WIN64) ^^^
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     return _Result;
@@ -81,7 +81,7 @@ _NODISCARD inline uint32_t _Bit_scan_reverse(const uint64_t _Value) noexcept {
     if (_BitScanReverse(&_Index, _Ui32)) {
         return _Index + 1;
     }
-#endif // ^^^ 32-bit ^^^
+#endif // ^^^ !defined(_WIN64) ^^^
 
     return 0;
 }

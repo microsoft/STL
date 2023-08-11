@@ -117,7 +117,7 @@ public:
         if (_Off > 0) {
             _STL_VERIFY(_Off <= _Mycont->_Mylast - _Ptr, "cannot seek vector iterator after end");
         }
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
     }
 
     _CONSTEXPR20 _Vector_const_iterator& operator+=(const difference_type _Off) noexcept {
@@ -188,7 +188,7 @@ public:
     _NODISCARD bool operator>=(const _Vector_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _CONSTEXPR20 void _Compat(const _Vector_const_iterator& _Right) const noexcept {
         // test for compatible iterator pair
@@ -196,7 +196,7 @@ public:
         (void) _Right;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "vector iterators incompatible");
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
     }
 
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -594,7 +594,7 @@ private:
 #define _ASAN_VECTOR_CREATE_GUARD
 #define _ASAN_VECTOR_EXTEND_GUARD(n)
 #define _ASAN_VECTOR_RELEASE_GUARD
-#endif // !_INSERT_VECTOR_ANNOTATION
+#endif // ^^^ !_INSERT_VECTOR_ANNOTATION ^^^
 
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
         _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer>>>;
@@ -864,7 +864,7 @@ public:
         return _Result;
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         (void) _Result;
-#endif // _HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     _CONSTEXPR20 void push_back(const _Ty& _Val) { // insert element at end, provide strong guarantee
@@ -2183,7 +2183,7 @@ private:
     }
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
     _CONSTEXPR20 void _Orphan_range(pointer, pointer) const {}
-#endif // _ITERATOR_DEBUG_LEVEL != 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 2 ^^^
 
     _NODISCARD _CONSTEXPR20 _Alty& _Getal() noexcept {
         return _Mypair._Get_first();
@@ -2636,7 +2636,7 @@ public:
     _NODISCARD bool operator>=(const _Vb_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _CONSTEXPR20 void _Compat(const _Vb_const_iterator& _Right) const noexcept {
         // test for compatible iterator pair
@@ -2983,7 +2983,7 @@ public:
         this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
         this->_Swap_proxy_and_iterators(_Right);
 
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
         return *this;
     }
 
@@ -3050,7 +3050,7 @@ public:
 
         this->_Myvec  = _Right._Myvec;
         this->_Mysize = _Right._Mysize;
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
 
         return *this;
     }

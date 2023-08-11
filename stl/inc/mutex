@@ -43,7 +43,7 @@ public:
         _Mtx_storage._Type             = _Flags | _Mtx_try;
         _Mtx_storage._Count            = 0;
     }
-#endif // !_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
+#endif // ^^^ !_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR ^^^
 
     ~_Mutex_base() noexcept {
         _Mtx_destroy_in_situ(_Mymtx());
