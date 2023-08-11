@@ -47,8 +47,8 @@ namespace {
 
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
-#if !defined _CRT_APP
-#if defined _ONECORE
+#if !defined(_CRT_APP)
+#if defined(_ONECORE)
 
 namespace {
     struct HMODULETraits {
@@ -98,7 +98,7 @@ extern "C" int __crt_IsPackagedAppHelper() {
     return 0;
 }
 
-#else // defined _ONECORE
+#else // ^^^ defined(_ONECORE) / !defined(_ONECORE) vvv
 
 extern "C" int __crt_IsPackagedAppHelper() {
     LONG retValue       = APPMODEL_ERROR_NO_PACKAGE;
@@ -117,8 +117,8 @@ extern "C" int __crt_IsPackagedAppHelper() {
     return 0;
 }
 
-#endif // defined _ONECORE
-#endif // defined _CRT_APP
+#endif // ^^^ !defined(_ONECORE) ^^^
+#endif // ^^^ !defined(_CRT_APP) ^^^
 
 // __crtIsPackagedApp() - Check if the current app is a Packaged app
 //
@@ -249,9 +249,9 @@ extern "C" _CRTIMP2 BOOLEAN __cdecl __crtCreateSymbolicLinkW(
     (void) dwFlags;
     SetLastError(ERROR_NOT_SUPPORTED);
     return 0;
-#else // _CRT_APP
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     return CreateSymbolicLinkW(lpSymlinkFileName, lpTargetFileName, dwFlags);
-#endif // _CRT_APP
+#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
@@ -299,11 +299,11 @@ extern "C" _Success_(return > 0 && return < BufferLength) DWORD
 
 // Helper to load all necessary Win32 API function pointers
 
-#if defined _ONECORE
+#if defined(_ONECORE)
 
 // All APIs are statically available, and we can't call GetModuleHandleW().
 
-#else // defined _ONECORE
+#else // ^^^ defined(_ONECORE) / !defined(_ONECORE) vvv
 
 static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");
@@ -326,4 +326,4 @@ static int __cdecl initialize_pointers() {
 
 _CRTALLOC(".CRT$XIC") static _PIFV pinit = initialize_pointers;
 
-#endif // defined _ONECORE
+#endif // ^^^ !defined(_ONECORE) ^^^

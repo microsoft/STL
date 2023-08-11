@@ -33,7 +33,7 @@ headers do not support Clang, but the C++20 <coroutine> header does.
 #ifdef __cpp_impl_coroutine
 #error The <experimental/coroutine> and <experimental/resumable> headers are only supported with \
 /await and implement pre-C++20 coroutine support. Use <coroutine> for standard C++20 coroutines.
-#endif // __cpp_impl_coroutine
+#endif // defined(__cpp_impl_coroutine)
 
 // intrinsics used in implementation of coroutine_handle
 extern "C" size_t _coro_resume(void*);

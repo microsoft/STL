@@ -17,11 +17,11 @@ _CRT_BEGIN_C_HEADER
 #define __crtGetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime) \
     GetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime)
 
-#else // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
+#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
 
 _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime);
 
-#endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
+#endif // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 ^^^
 
 _CRTIMP2 int __cdecl __crtCompareStringA(_In_z_ LPCWSTR _LocaleName, _In_ DWORD _DwCmpFlags,
     _In_reads_(_CchCount1) LPCSTR _LpString1, _In_ int _CchCount1, _In_reads_(_CchCount2) LPCSTR _LpString2,

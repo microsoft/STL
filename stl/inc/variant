@@ -149,7 +149,7 @@ template <template <class...> class _List, class... _Types, size_t _Idx>
 struct _Meta_at_<_List<_Types...>, _Idx, void_t<__type_pack_element<_Idx, _Types...>>> {
     using type = __type_pack_element<_Idx, _Types...>;
 };
-#else // ^^^ __clang__ / !__clang__ vvv
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 template <class... _VoidPtrs>
 struct _Meta_at_impl {
     template <class _Ty, class... _Types>
@@ -166,7 +166,7 @@ struct _Meta_at_<_List<_Types...>, _Idx, enable_if_t<(_Idx < sizeof...(_Types))>
     using type =
         typename decltype(_Meta_repeat_n_c<_Idx, void*, _Meta_at_impl>::_Eval(_Type_as_pointer<_Types>()...))::type;
 };
-#endif // __clang__
+#endif // ^^^ !defined(__clang__) ^^^
 
 inline constexpr auto _Meta_npos = ~size_t{0};
 
@@ -360,9 +360,9 @@ struct variant_alternative<_Idx, variant<_Types...>> {
 
 #ifdef __clang__
     using type = __type_pack_element<_Idx, _Types...>;
-#else // ^^^ __clang__ / !__clang__ vvv
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
     using type = _Meta_at_c<variant<_Types...>, _Idx>;
-#endif // __clang__
+#endif // ^^^ !defined(__clang__) ^^^
 };
 
 _EXPORT_STD inline constexpr size_t variant_npos = _Meta_npos;
@@ -509,7 +509,7 @@ public:
         return _STD move(_Head)._Item;
     }
 };
-#endif // __cplusplus_winrt
+#endif // defined(__cplusplus_winrt)
 
 template <size_t _Idx, class _Storage>
 _NODISCARD constexpr decltype(auto) _Variant_raw_get(_Storage&& _Obj) noexcept {
@@ -899,7 +899,7 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
 #pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data (Yes, duplicated message.)
 #pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch
 #pragma warning(disable : 5215) // '%s' a function parameter with volatile qualified type is deprecated in C++20
-#endif // __clang__
+#endif // ^^^ not Clang ^^^
 
 #if _HAS_CXX20
 // build Ti x[] = {std::forward<T>(t)};
@@ -915,10 +915,10 @@ struct _Variant_init_single_overload {
 #if _HAS_CXX20
     template <class _InitializerType>
     auto operator()(_TargetType, _InitializerType&&) -> _Variant_type_resolver<_Idx, _TargetType, _InitializerType>;
-#else // _HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     template <class _InitializerType>
     auto operator()(_TargetType, _InitializerType&&) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 };
 
 template <class _Indices, class... _Types>
@@ -954,7 +954,7 @@ using _Variant_init_index = _Meta_front<typename _Variant_init_helper<void, _Ty,
 #pragma clang diagnostic pop
 #else // ^^^ Clang / not Clang vvv
 #pragma warning(pop)
-#endif // __clang__
+#endif // ^^^ not Clang ^^^
 
 template <class>
 inline constexpr bool _Is_in_place_index_specialization = false;
@@ -1396,7 +1396,7 @@ _NODISCARD constexpr common_comparison_category_t<compare_three_way_result_t<_Ty
              ? _Offset_order
              : _STD _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()});
 }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 template <class... _Variants>
 inline constexpr size_t _Variant_total_states =

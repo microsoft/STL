@@ -177,15 +177,15 @@ namespace {
         if (_PType->properties & CT_HasVirtualBase) {
 #ifdef _M_CEE_PURE
             reinterpret_cast<void(__clrcall*)(void*, void*, int)>(_CopyFunc)(_Dest, _Adjusted, 1);
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
             _CallMemberFunction2(_Dest, _CopyFunc, _Adjusted, 1);
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
         } else {
 #ifdef _M_CEE_PURE
             reinterpret_cast<void(__clrcall*)(void*, void*)>(_CopyFunc)(_Dest, _Adjusted);
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
             _CallMemberFunction1(_Dest, _CopyFunc, _Adjusted);
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
         }
     }
 } // unnamed namespace

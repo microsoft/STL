@@ -1940,9 +1940,9 @@ public:
         // a copy; otherwise, allow allocators that support only homogeneous compare.
 #ifdef _USE_HETEROGENEOUS_ALLOCATOR_COMPARE_IN_INTERNAL_CHECK
         _STL_INTERNAL_CHECK(_List._Getal() == _Vec._Mypair._Get_first());
-#else // _USE_HETEROGENEOUS_ALLOCATOR_COMPARE_IN_INTERNAL_CHECK
+#else
         _STL_INTERNAL_CHECK(static_cast<_Aliter>(_List._Getal()) == _Vec._Mypair._Get_first());
-#endif // _USE_HETEROGENEOUS_ALLOCATOR_COMPARE_IN_INTERNAL_CHECK
+#endif
 #ifdef _STL_INTERNAL_CHECK_EXHAUSTIVE
         size_type _Elements = 0;
         const auto _End     = _Unchecked_end();

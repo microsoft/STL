@@ -82,7 +82,7 @@ void test_flag_type() {
 }
 
 int main() {
-#ifndef _M_CEE // TRANSITION, VSO-1659408
+#ifndef _M_CEE // TRANSITION, VSO-1659695
     test_flag_type<std::atomic_flag>();
     test_flag_type<volatile std::atomic_flag>();
 #endif // _M_CEE
