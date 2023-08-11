@@ -258,15 +258,15 @@ These examples assume that your current directory is `C:\Dev\STL\out\x64`.
 * This command will run all of the test suites with verbose output.
   + `ctest -V`
 * This command will also run all of the test suites.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test ..\..\..\tests\std ..\..\..\tests\tr1`
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test ..\..\tests\std ..\..\tests\tr1`
 * This command will run all of the std test suite.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std`
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\tests\std`
 * If you want to run a subset of a test suite, you need to point it to the right place in the sources. The following
 will run the single test found under VSO_0000000_any_calling_conventions.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std\tests\VSO_0000000_any_calling_conventions`
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\tests\std\tests\VSO_0000000_any_calling_conventions`
 * You can invoke `stl-lit` with any arbitrary subdirectory of a test suite. In libcxx this allows you to have finer
 control over what category of tests you would like to run. The following will run all the libcxx map tests.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test\std\containers\associative\map`
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test\std\containers\associative\map`
 
 ## Interpreting The Results Of Tests
 
