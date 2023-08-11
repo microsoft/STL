@@ -13,17 +13,9 @@ _EXTERN_C_UNLESS_PURE
 
 using _Rmtx = CRITICAL_SECTION;
 
-#ifdef _M_CEE_PURE
-void __clrcall _Mtxinit(_Rmtx*) noexcept;
-void __clrcall _Mtxdst(_Rmtx*) noexcept;
-void __clrcall _Mtxlock(_Rmtx*) noexcept;
-void __clrcall _Mtxunlock(_Rmtx*) noexcept;
-
-#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
-_MRTIMP2 void __cdecl _Mtxinit(_Rmtx*) noexcept;
-_MRTIMP2 void __cdecl _Mtxdst(_Rmtx*) noexcept;
-_MRTIMP2 void __cdecl _Mtxlock(_Rmtx*) noexcept;
-_MRTIMP2 void __cdecl _Mtxunlock(_Rmtx*) noexcept;
-#endif // ^^^ !defined(_M_CEE_PURE) ^^^
+_MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Mtxinit(_Rmtx*) noexcept;
+_MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Mtxdst(_Rmtx*) noexcept;
+_MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Mtxlock(_Rmtx*) noexcept;
+_MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Mtxunlock(_Rmtx*) noexcept;
 
 _END_EXTERN_C_UNLESS_PURE
