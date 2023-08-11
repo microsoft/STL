@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _OPTIONAL_
 #define _OPTIONAL_
 #include <yvals.h>
@@ -613,7 +612,7 @@ public:
             return _STD forward<_Fn>(_Func)();
         }
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     using _Mybase::reset;
@@ -629,7 +628,7 @@ _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const optional
     requires requires {
         { *_Left == *_Right } -> _Implicitly_convertible_to<bool>;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 {
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
@@ -646,7 +645,7 @@ _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const optional
     requires requires {
         { *_Left != *_Right } -> _Implicitly_convertible_to<bool>;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 {
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
@@ -663,7 +662,7 @@ _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const optional<
     requires requires {
         { *_Left < *_Right } -> _Implicitly_convertible_to<bool>;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 {
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
@@ -680,7 +679,7 @@ _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const optional<
     requires requires {
         { *_Left > *_Right } -> _Implicitly_convertible_to<bool>;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 {
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
@@ -697,7 +696,7 @@ _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const optional
     requires requires(const _Ty1& _Elem1, const _Ty2& _Elem2) {
         { *_Left <= *_Right } -> _Implicitly_convertible_to<bool>;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 {
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
@@ -714,7 +713,7 @@ _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const optional
     requires requires {
         { *_Left >= *_Right } -> _Implicitly_convertible_to<bool>;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 {
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
@@ -736,7 +735,7 @@ _NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(const op
 
     return _Left_has_value <=> _Right_has_value;
 }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD constexpr bool operator==(const optional<_Ty>& _Left, nullopt_t) noexcept {
@@ -945,7 +944,7 @@ _NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2>
 
     return strong_ordering::less;
 }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_swappable_v<_Ty>, int> = 0>
 _CONSTEXPR20 void swap(optional<_Ty>& _Left, optional<_Ty>& _Right) noexcept(noexcept(_Left.swap(_Right))) {

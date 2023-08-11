@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XFILESYSTEM_ABI_H
 #define _XFILESYSTEM_ABI_H
 #include <yvals_core.h>
@@ -378,14 +377,6 @@ struct _Fs_file {
     }
 };
 
-struct _Is_slash_oper { // predicate testing if input is a preferred-separator or fallback-separator
-    _NODISCARD constexpr bool operator()(
-        const wchar_t _Ch) const { // test if _Ch is a preferred-separator or fallback-separator
-        return _Ch == L'\\' || _Ch == L'/';
-    }
-};
-
-inline constexpr _Is_slash_oper _Is_slash{};
 _STD_END
 
 #pragma pop_macro("new")

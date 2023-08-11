@@ -31,7 +31,7 @@ namespace {
         return __isa_enabled & (1 << __ISA_AVAILABLE_SSE2);
 #else
         return true;
-#endif // _M_IX86
+#endif
     }
 
     struct [[nodiscard]] _Zeroupper_on_exit { // TRANSITION, DevCom-10331414

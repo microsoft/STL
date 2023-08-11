@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _STOP_TOKEN_
 #define _STOP_TOKEN_
 #include <yvals.h>

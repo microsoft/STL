@@ -904,6 +904,20 @@ STATIC_ASSERT(__cpp_lib_format == 202207L);
 #endif
 #endif
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_formatters
+#error __cpp_lib_formatters is not defined
+#elif __cpp_lib_formatters != 202302L
+#error __cpp_lib_formatters is not 202302L
+#else
+STATIC_ASSERT(__cpp_lib_formatters == 202302L);
+#endif
+#else
+#ifdef __cpp_lib_formatters
+#error __cpp_lib_formatters is defined
+#endif
+#endif
+
 #if _HAS_CXX23
 #ifndef __cpp_lib_forward_like
 #error __cpp_lib_forward_like is not defined

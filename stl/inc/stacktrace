@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _STACKTRACE_
 #define _STACKTRACE_
 #include <yvals_core.h>
@@ -14,6 +13,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <stacktrace> are available only with
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 
 #include <cstdint>
+#include <format>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -125,12 +125,12 @@ public:
     using value_type             = stacktrace_entry;
     using const_reference        = const value_type&;
     using reference              = value_type&;
-    using const_iterator         = typename _Frames_t::const_iterator;
+    using const_iterator         = _Frames_t::const_iterator;
     using iterator               = const_iterator;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
-    using difference_type        = typename _Frames_t::difference_type;
-    using size_type              = typename _Frames_t::size_type;
+    using difference_type        = _Frames_t::difference_type;
+    using size_type              = _Frames_t::size_type;
     using allocator_type         = _Alloc;
 
     // __declspec(noinline) to make the same behavior for debug and release.
@@ -267,7 +267,7 @@ public:
 
 #ifdef __cpp_lib_concepts
         return _STD lexicographical_compare_three_way(_Lhs.begin(), _Lhs.end(), _Rhs.begin(), _Rhs.end());
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
         for (size_t _Ix = 0, _Mx = _Lhs._Frames.size(); _Ix != _Mx; ++_Ix) {
             if (_Lhs._Frames[_Ix] != _Rhs._Frames[_Ix]) {
                 return _Lhs._Frames[_Ix] <=> _Rhs._Frames[_Ix];
@@ -275,7 +275,7 @@ public:
         }
 
         return strong_ordering::equal;
-#endif // ^^^ !__cpp_lib_concepts ^^^
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
     }
 
     void swap(basic_stacktrace& _Other) noexcept(allocator_traits<_Alloc>::propagate_on_container_swap::value
@@ -348,6 +348,42 @@ _EXPORT_STD template <class _Alloc>
 ostream& operator<<(ostream& _Os, const basic_stacktrace<_Alloc>& _St) {
     return _Os << _STD to_string(_St);
 }
+
+#ifdef __cpp_lib_concepts
+template <>
+struct formatter<stacktrace_entry> {
+    constexpr format_parse_context::iterator parse(format_parse_context& _Parse_ctx) {
+        return _Impl.parse(_Parse_ctx);
+    }
+
+    template <class _FormatContext>
+    _FormatContext::iterator format(const stacktrace_entry& _Val, _FormatContext& _Format_ctx) const {
+        const auto _Str = _STD to_string(_Val);
+        return _Impl._Format(_Format_ctx, static_cast<int>(_Str.size()), _Fmt_align::_Left,
+            [&](_FormatContext::iterator _Out) { return _RANGES copy(_Str, _STD move(_Out)).out; });
+    }
+
+private:
+    _Fill_align_and_width_formatter<char> _Impl;
+};
+
+template <class _Alloc>
+struct formatter<basic_stacktrace<_Alloc>> {
+    constexpr format_parse_context::iterator parse(format_parse_context& _Parse_ctx) {
+        const auto _First = _Parse_ctx.begin();
+        if (_First != _Parse_ctx.end() && *_First != '}') {
+            _Throw_format_error("For formatter<basic_stacktrace<Allocator>>, format-spec must be empty.");
+        }
+
+        return _First;
+    }
+
+    template <class _FormatContext>
+    _FormatContext::iterator format(const basic_stacktrace<_Alloc>& _Val, _FormatContext& _Format_ctx) const {
+        return _RANGES copy(_STD to_string(_Val), _Format_ctx.out()).out;
+    }
+};
+#endif // __cpp_lib_concepts
 
 namespace pmr {
     _EXPORT_STD using stacktrace = basic_stacktrace<polymorphic_allocator<stacktrace_entry>>;

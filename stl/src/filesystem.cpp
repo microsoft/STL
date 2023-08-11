@@ -29,9 +29,9 @@ namespace {
         return 0;
     }
 #define __vcrt_CreateSymbolicLinkW _Not_supported_CreateSymbolicLinkW
-#else // ^^^ _CRT_APP / !_CRT_APP vvv
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
 #define __vcrt_CreateSymbolicLinkW CreateSymbolicLinkW
-#endif // _CRT_APP
+#endif // ^^^ !defined(_CRT_APP) ^^^
 
 #ifdef _CRT_APP
     HANDLE __stdcall __vcp_CreateFile(const wchar_t* const _File_name, const unsigned long _Desired_access,
@@ -46,9 +46,9 @@ namespace {
         _Create_file_parameters.hTemplateFile        = _Template_file;
         return CreateFile2(_File_name, _Desired_access, _Share, _Creation_disposition, &_Create_file_parameters);
     }
-#else // ^^^ _CRT_APP / !_CRT_APP vvv
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
 #define __vcp_CreateFile CreateFileW
-#endif // _CRT_APP
+#endif // ^^^ !defined(_CRT_APP) ^^^
 
     [[nodiscard]] __std_win_error __stdcall _Translate_CreateFile_last_error(const HANDLE _Handle) {
         if (_Handle != INVALID_HANDLE_VALUE) {
@@ -148,7 +148,7 @@ namespace {
         }
 
         _Last_error = __std_win_error{GetLastError()};
-#endif // _CRT_APP
+#endif // !defined(_CRT_APP)
 
         return _Last_error;
     }
@@ -207,7 +207,7 @@ _EXTERN_C
 
 void __stdcall __std_fs_close_handle(const __std_fs_file_handle _Handle) noexcept { // calls CloseHandle
     if (_Handle != __std_fs_file_handle::_Invalid && !CloseHandle(reinterpret_cast<HANDLE>(_Handle))) {
-        terminate();
+        _CSTD abort();
     }
 }
 
@@ -252,7 +252,7 @@ static_assert(alignof(WIN32_FIND_DATAW) == alignof(__std_fs_find_data));
 
 void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle _Handle) noexcept {
     if (_Handle != __std_fs_dir_handle::_Invalid && !FindClose(reinterpret_cast<HANDLE>(_Handle))) {
-        terminate();
+        _CSTD abort();
     }
 }
 

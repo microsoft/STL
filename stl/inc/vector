@@ -3,19 +3,17 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _VECTOR_
 #define _VECTOR_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <__msvc_bit_utils.hpp>
+#include <__msvc_sanitizer_annotate_container.hpp>
 #include <xmemory>
 
 #if _HAS_CXX17
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
-
-#include <__msvc_sanitizer_annotate_container.hpp>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -30,7 +28,7 @@ class _Vector_const_iterator : public _Iterator_base {
 public:
 #ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Myvec::value_type;
     using difference_type   = typename _Myvec::difference_type;
@@ -226,8 +224,8 @@ public:
 template <class _Myvec>
 struct pointer_traits<_Vector_const_iterator<_Myvec>> {
     using pointer         = _Vector_const_iterator<_Myvec>;
-    using element_type    = const typename pointer::value_type;
-    using difference_type = typename pointer::difference_type;
+    using element_type    = const typename pointer::value_type; // TRANSITION, VSO-1854115, omit typename
+    using difference_type = pointer::difference_type;
 
     _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -256,7 +254,7 @@ public:
 
 #ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Myvec::value_type;
     using difference_type   = typename _Myvec::difference_type;
@@ -348,8 +346,8 @@ public:
 template <class _Myvec>
 struct pointer_traits<_Vector_iterator<_Myvec>> {
     using pointer         = _Vector_iterator<_Myvec>;
-    using element_type    = typename pointer::value_type;
-    using difference_type = typename pointer::difference_type;
+    using element_type    = pointer::value_type;
+    using difference_type = pointer::difference_type;
 
     _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -640,7 +638,7 @@ public:
             const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
         } else {
             auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
             _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
@@ -1246,7 +1244,7 @@ public:
             const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Insert_counted_range(_Where, _UFirst, _Count);
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
         } else {
             _Insert_uncounted_range(_Where, _UFirst, _ULast);
         }
@@ -1455,7 +1453,7 @@ public:
             const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Assign_counted_range(_UFirst, _Count);
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
         } else {
             _Assign_uncounted_range(_UFirst, _ULast);
         }
@@ -2366,12 +2364,12 @@ _CONSTEXPR20 void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) 
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
-constexpr typename vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+constexpr vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
     return _Erase_remove(_Cont, _Val);
 }
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
-constexpr typename vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+constexpr vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
@@ -2644,9 +2642,9 @@ public:
         // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
-#else // _ITERATOR_DEBUG_LEVEL == 0
+#else
         _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "vector<bool> iterators incompatible");
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif
     }
 
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -3356,7 +3354,7 @@ public:
             const auto _Count  = _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
             _STD _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
         } else {
             const auto _Old_size = this->_Mysize;
             for (; _UFirst != _ULast; ++_UFirst) {
@@ -3407,9 +3405,9 @@ public:
         _STD copy(_Next_iter(_Where), end(), _Where);
         _Orphan_range(static_cast<size_type>(_Off), this->_Mysize);
 
-#else // _ITERATOR_DEBUG_LEVEL == 2
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         _STD copy(_Next_iter(_Where), end(), _Where);
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
 
         _Trim(this->_Mysize - 1);
         return begin() + _Off;
@@ -3429,10 +3427,10 @@ public:
             _Orphan_range(_Newsize, this->_Mysize);
             _Trim(_Newsize);
 
-#else // _ITERATOR_DEBUG_LEVEL == 2
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
             iterator _Next = _STD copy(_Last, end(), _First);
             _Trim(static_cast<size_type>(_Next - begin()));
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
         }
         return begin() + _Off;
     }
