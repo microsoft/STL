@@ -12,17 +12,13 @@
 #include "primitives.hpp"
 
 struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
-    typename std::_Aligned_storage<Concurrency::details::stl_condition_variable_max_size,
-        Concurrency::details::stl_condition_variable_max_alignment>::type cv;
+    typename std::_Aligned_storage<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment>::type cv;
 
     [[nodiscard]] Concurrency::details::stl_condition_variable_win7* _get_cv() noexcept {
         // get pointer to implementation
         return reinterpret_cast<Concurrency::details::stl_condition_variable_win7*>(&cv);
     }
 };
-
-static_assert(sizeof(_Cnd_internal_imp_t) == _Cnd_internal_imp_size, "incorrect _Cnd_internal_imp_size");
-static_assert(alignof(_Cnd_internal_imp_t) == _Cnd_internal_imp_alignment, "incorrect _Cnd_internal_imp_alignment");
 
 void _Cnd_init_in_situ(const _Cnd_t cond) { // initialize condition variable in situ
     Concurrency::details::create_stl_condition_variable(cond->_get_cv());

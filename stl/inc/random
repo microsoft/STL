@@ -656,7 +656,13 @@ struct _Circ_buf { // holds historical values for generators
     }
 
     size_t _Base(size_t _Ix = 0) const noexcept {
-        return (_Ix += _Idx) < _Nw ? (_Ix + _Nw) : (_Ix - _Nw);
+        _Ix += _Idx;
+
+        if (_Ix < _Nw) {
+            return _Ix + _Nw;
+        } else {
+            return _Ix - _Nw;
+        }
     }
 
     unsigned int _Idx;
@@ -999,7 +1005,7 @@ public:
 };
 
 #if _HAS_TR1_NAMESPACE
-_CONSTEVAL double _Cx_exp2(const int _Exp) noexcept {
+constexpr double _Cx_exp2(const int _Exp) noexcept {
     double _Ret = 1.0;
     for (int _Count = _Exp; _Count > 0; --_Count) {
         _Ret *= 2.0;

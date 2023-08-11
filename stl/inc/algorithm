@@ -4148,9 +4148,7 @@ _FwdIt2 remove_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _P
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD remove_copy_if(_First, _Last, _Dest, _Pass_fn(_Pred));
 }
-#endif // _HAS_CXX17
 
-#if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD_REMOVE_ALG _FwdIt remove(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
 

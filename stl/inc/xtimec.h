@@ -19,7 +19,10 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C
 
+#ifdef _CRTBLD
 _CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis2(const _timespec64*, const _timespec64*);
+#endif // _CRTBLD
+
 _CRTIMP2_PURE long long __cdecl _Xtime_get_ticks();
 
 #ifdef _CRTBLD
