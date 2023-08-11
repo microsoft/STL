@@ -36,16 +36,16 @@ struct _Mtx_internal_imp_t {
 #ifdef _CRT_WINDOWS
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 16;
-#else // _WIN64
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 8;
-#endif // _WIN64
-#else // _CRT_WINDOWS
+#endif // ^^^ !defined(_WIN64) ^^^
+#else // ^^^ defined(_CRT_WINDOWS) / !defined(_CRT_WINDOWS) vvv
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 64;
-#else // _WIN64
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 36;
-#endif // _WIN64
-#endif // _CRT_WINDOWS
+#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ !defined(_CRT_WINDOWS) ^^^
 
     static constexpr size_t _Critical_section_align = alignof(void*);
 
@@ -59,23 +59,15 @@ struct _Mtx_internal_imp_t {
 };
 
 // Size and alignment for _Cnd_internal_imp_t
-#ifdef _CRT_WINDOWS
-#ifdef _WIN64
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 16;
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 8;
-#else // _WIN64
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 8;
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 4;
-#endif // _WIN64
-#else // _CRT_WINDOWS
-#ifdef _WIN64
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 72;
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 8;
-#else // _WIN64
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 40;
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 4;
-#endif // _WIN64
-#endif // _CRT_WINDOWS
+#if defined(_CRT_WINDOWS) // for Windows-internal code
+_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 2 * sizeof(void*);
+#elif defined(_WIN64) // ordinary 64-bit code
+_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 72;
+#else // vvv ordinary 32-bit code vvv
+_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 40;
+#endif // ^^^ ordinary 32-bit code ^^^
+
+_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = alignof(void*);
 
 using _Mtx_t = _Mtx_internal_imp_t*;
 

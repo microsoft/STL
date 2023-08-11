@@ -69,7 +69,7 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define ATOMIC_CHAR_LOCK_FREE 2
 #ifdef __cpp_lib_char8_t
 #define ATOMIC_CHAR8_T_LOCK_FREE 2
-#endif // __cpp_lib_char8_t
+#endif // defined(__cpp_lib_char8_t)
 #define ATOMIC_CHAR16_T_LOCK_FREE 2
 #define ATOMIC_CHAR32_T_LOCK_FREE 2
 #define ATOMIC_WCHAR_T_LOCK_FREE  2
@@ -95,9 +95,9 @@ enum {
 #ifndef _INVALID_MEMORY_ORDER
 #ifdef _DEBUG
 #define _INVALID_MEMORY_ORDER _STL_REPORT_ERROR("Invalid memory order")
-#else // ^^^ _DEBUG / !_DEBUG vvv
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _INVALID_MEMORY_ORDER
-#endif // _DEBUG
+#endif // ^^^ !defined(_DEBUG) ^^^
 #endif // _INVALID_MEMORY_ORDER
 
 extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
@@ -186,7 +186,7 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     __stlr##_Width(                             \
         reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), static_cast<unsigned __int##_Width>(_Desired));
 
-#else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 ^^^ / vvv _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
+#else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
 
 #define __STORE_RELEASE(_Width, _Ptr, _Desired) \
     _Compiler_or_memory_barrier();              \
@@ -669,9 +669,9 @@ struct _Atomic_storage {
         } else {
             _Result = _CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_TVal)) == 0;
         }
-#else // _CMPXCHG_MASK_OUT_PADDING_BITS
+#else // ^^^ _CMPXCHG_MASK_OUT_PADDING_BITS / !_CMPXCHG_MASK_OUT_PADDING_BITS vvv
         _Result = _CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_TVal)) == 0;
-#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
+#endif // ^^^ !_CMPXCHG_MASK_OUT_PADDING_BITS ^^^
         if (_Result) {
             _CSTD memcpy(_Storage_ptr, _STD addressof(_Desired), sizeof(_TVal));
         } else {
@@ -1135,7 +1135,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
         return _Temp;
     }
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
     _TVal exchange(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange with given memory order
         long long _As_bytes;
@@ -1143,7 +1143,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             _Atomic_address_as<long long>(_Storage), _Atomic_reinterpret_as<long long>(_Value));
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
 
     bool compare_exchange_strong(_TVal& _Expected, const _TVal _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
@@ -1374,7 +1374,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
 
     typename _Atomic_storage_types<_Ty&>::_TStorage _Storage;
 };
-#endif // _WIN64
+#endif // defined(_WIN64)
 
 template <class _Ty, size_t = sizeof(_Ty)>
 struct _Atomic_integral; // not defined
@@ -1613,7 +1613,7 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
         return fetch_add(static_cast<_TVal>(-1)) - static_cast<_TVal>(1);
     }
 
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long long _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd64,
@@ -1663,7 +1663,7 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
     _TVal operator--() noexcept {
         return static_cast<_TVal>(_InterlockedDecrement64(_Atomic_address_as<long long>(this->_Storage)));
     }
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
 };
 
 #if 1 // TRANSITION, ABI
@@ -2777,7 +2777,7 @@ _EXPORT_STD using atomic_ullong = atomic<unsigned long long>;
 
 #ifdef __cpp_lib_char8_t
 _EXPORT_STD using atomic_char8_t = atomic<char8_t>;
-#endif // __cpp_lib_char8_t
+#endif // defined(__cpp_lib_char8_t)
 _EXPORT_STD using atomic_char16_t = atomic<char16_t>;
 _EXPORT_STD using atomic_char32_t = atomic<char32_t>;
 _EXPORT_STD using atomic_wchar_t  = atomic<wchar_t>;

@@ -377,10 +377,9 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 
 #ifdef _M_CEE
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)
-
-#else // _M_CEE
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // _M_CEE
+#endif // ^^^ !defined(_M_CEE) ^^^
 
 #if defined(_M_IX86) && !defined(_M_CEE)
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__fastcall, OPT1, OPT2, OPT3)
@@ -392,11 +391,10 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 #ifdef _M_IX86
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)  FUNC(__stdcall, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__thiscall, OPT1, OPT2, OPT3)
-
-#else // _M_IX86
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
 
 #if ((defined(_M_IX86) && _M_IX86_FP >= 2) || defined(_M_X64)) && !defined(_M_CEE)
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__vectorcall, OPT1, OPT2, OPT3)
@@ -427,9 +425,9 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
     _NON_MEMBER_CALL_CV_REF(FUNC, )            \
     _NON_MEMBER_CALL_CV_REF(FUNC, noexcept)
-#else // __cpp_noexcept_function_type
+#else // ^^^ defined(__cpp_noexcept_function_type) / !defined(__cpp_noexcept_function_type) vvv
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _NON_MEMBER_CALL_CV_REF(FUNC, )
-#endif // __cpp_noexcept_function_type
+#endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
 #define _MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)      \
@@ -454,9 +452,9 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 #define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
     _MEMBER_CALL_CV_REF(FUNC, )            \
     _MEMBER_CALL_CV_REF(FUNC, noexcept)
-#else // __cpp_noexcept_function_type
+#else // ^^^ defined(__cpp_noexcept_function_type) / !defined(__cpp_noexcept_function_type) vvv
 #define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _MEMBER_CALL_CV_REF(FUNC, )
-#endif // __cpp_noexcept_function_type
+#endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
 #ifdef __cpp_noexcept_function_type
 #define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
@@ -484,7 +482,7 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
     CLASS(const&& noexcept)                  \
     CLASS(volatile&& noexcept)               \
     CLASS(const volatile&& noexcept)
-#else // __cpp_noexcept_function_type
+#else // ^^^ defined(__cpp_noexcept_function_type) / !defined(__cpp_noexcept_function_type) vvv
 #define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
     CLASS(_EMPTY_ARGUMENT)                   \
     CLASS(const)                             \
@@ -498,7 +496,7 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
     CLASS(const&&)                           \
     CLASS(volatile&&)                        \
     CLASS(const volatile&&)
-#endif // __cpp_noexcept_function_type
+#endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
 template <class... _Types>
 struct _Arg_types {}; // provide argument_type, etc. when sizeof...(_Types) is 1 or 2
@@ -556,7 +554,7 @@ _CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_MEMFUNPTR_ELLIPSIS)
 _NON_MEMBER_CALL(_IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES, , , )
 #ifdef __cpp_noexcept_function_type
 _NON_MEMBER_CALL(_IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES, , , noexcept)
-#endif // __cpp_noexcept_function_type
+#endif // defined(__cpp_noexcept_function_type)
 
 #undef _IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES
 #endif // _HAS_CXX23 && !defined(__clang__)
@@ -1543,9 +1541,7 @@ struct _Fold_common_reference<void_t<common_reference_t<_Ty1, _Ty2>>, _Ty1, _Ty2
 
 template <class _Ty1, class _Ty2, class _Ty3, class... _Rest>
 struct common_reference<_Ty1, _Ty2, _Ty3, _Rest...> : _Fold_common_reference<void, _Ty1, _Ty2, _Ty3, _Rest...> {};
-#endif // _HAS_CXX20
 
-#if _HAS_CXX20
 _EXPORT_STD template <class _Ty>
 struct type_identity {
     using type = _Ty;
@@ -1600,7 +1596,7 @@ const _Ty* addressof(const _Ty&&) = delete;
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-volatile"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Ty>
 _NODISCARD _Ty _Fake_copy_init(_Ty) noexcept;
@@ -1611,7 +1607,7 @@ _NODISCARD _Ty _Fake_copy_init(_Ty) noexcept;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 #pragma warning(pop)
 
@@ -1954,7 +1950,7 @@ _EXPORT_STD template <class _ClassTy1, class _ClassTy2, class _MemberTy1, class 
 _NODISCARD constexpr bool is_corresponding_member(_MemberTy1 _ClassTy1::*_Pm1, _MemberTy2 _ClassTy2::*_Pm2) noexcept {
     return __is_corresponding_member(_ClassTy1, _ClassTy2, _Pm1, _Pm2);
 }
-#endif // __clang__
+#endif // !defined(__clang__)
 #endif // _HAS_CXX20
 
 template <class _Ty>
@@ -2230,7 +2226,7 @@ _INLINE_VAR constexpr bool _Is_trivially_swappable_v = conjunction_v<is_triviall
 #ifdef __cpp_lib_byte
 template <>
 inline constexpr bool _Is_trivially_swappable_v<byte> = true;
-#endif // __cpp_lib_byte
+#endif // defined(__cpp_lib_byte)
 
 template <class _Ty>
 struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
@@ -2265,7 +2261,7 @@ template <class _Ty, class _RefWrap, template <class> class _TyQual, template <c
 struct basic_common_reference<_Ty, _RefWrap, _TyQual, _RefWrapQual> {
     using type = common_reference_t<typename _RefWrap::type&, _TyQual<_Ty>>;
 };
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define _BITMASK_OPS(_MAYBE_EXPORT, _BITMASK)                                                         \
     _MAYBE_EXPORT _NODISCARD constexpr _BITMASK operator&(_BITMASK _Left, _BITMASK _Right) noexcept { \
@@ -2315,10 +2311,10 @@ _NODISCARD constexpr bool _Bitmask_includes_all(_Bitmask _Left, _Bitmask _Elemen
 #if defined(_WIN64)
 _INLINE_VAR constexpr size_t _FNV_offset_basis = 14695981039346656037ULL;
 _INLINE_VAR constexpr size_t _FNV_prime        = 1099511628211ULL;
-#else // defined(_WIN64)
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
 _INLINE_VAR constexpr size_t _FNV_offset_basis = 2166136261U;
 _INLINE_VAR constexpr size_t _FNV_prime        = 16777619U;
-#endif // defined(_WIN64)
+#endif // ^^^ !defined(_WIN64) ^^^
 
 _NODISCARD inline size_t _Fnv1a_append_bytes(size_t _Val, const unsigned char* const _First,
     const size_t _Count) noexcept { // accumulate range [_First, _First + _Count) into partial FNV-1a hash _Val

@@ -37,7 +37,7 @@ struct int128 {
 
 template <bool AddViaCas, typename ValueType>
 void test_ops() {
-#ifndef _M_CEE // TRANSITION, VSO-1659408
+#ifndef _M_CEE // TRANSITION, VSO-1659695
     constexpr std::size_t unique      = 80; // small to avoid overflow even for char
     constexpr std::size_t repetitions = 8000;
     constexpr std::size_t total       = unique * repetitions;

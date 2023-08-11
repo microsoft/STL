@@ -170,9 +170,9 @@ template <class Range1, class Range2>
 constexpr bool equalRanges(const Range1& range1, const Range2& range2) noexcept {
 #ifdef __cpp_lib_concepts
     return ranges::equal(range1, range2);
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     return equal(begin(range1), end(range1), begin(range2), end(range2));
-#endif // !__cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 }
 
 template <class CharType, class POCCA, class POCMA, class POCS, class EQUAL>

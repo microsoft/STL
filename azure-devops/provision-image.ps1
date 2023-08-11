@@ -84,14 +84,14 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
 } else {
   Write-Host 'AdminUser password supplied; switching to AdminUser.'
 
-  # https://docs.microsoft.com/en-us/sysinternals/downloads/psexec
+  # https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
   $PsToolsZipUrl = 'https://download.sysinternals.com/files/PSTools.zip'
   Write-Host "Downloading: $PsToolsZipUrl"
   $ExtractedPsToolsPath = DownloadAndExtractZip -Url $PsToolsZipUrl
   $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
 
   # https://github.com/PowerShell/PowerShell/releases/latest
-  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.3.5/PowerShell-7.3.5-win-x64.zip'
+  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.3.6/PowerShell-7.3.6-win-x64.zip'
   Write-Host "Downloading: $PowerShellZipUrl"
   $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
   $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'

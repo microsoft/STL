@@ -29,7 +29,7 @@ concept _Same_impl = // Must be a distinct concept to provide symmetric subsumpt
     __is_same(_Ty1, _Ty2);
 #else // ^^^ use intrinsic / no intrinsic vvv
     is_same_v<_Ty1, _Ty2>;
-#endif // __clang__
+#endif // ^^^ no intrinsic ^^^
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 concept same_as = _Same_impl<_Ty1, _Ty2> && _Same_impl<_Ty2, _Ty1>;
@@ -296,6 +296,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _CONCEPTS_

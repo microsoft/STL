@@ -14,7 +14,7 @@
 //
 // Entry:
 //        LPCWSTR  LocaleName  - locale context for the comparison.
-//        DWORD    dwMapFlags  - see docs.microsoft.com
+//        DWORD    dwMapFlags  - see https://aka.ms/stl/lcmapstringex
 //        LPCSTR   lpSrcStr    - pointer to string to be mapped
 //        int      cchSrc      - wide char (word) count of input string
 //                               (including null terminator if any)

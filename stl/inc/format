@@ -129,7 +129,9 @@ _NODISCARD constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Long_double_type;
 }
 
-struct _Auto_id_tag {};
+struct _Auto_id_tag {
+    explicit _Auto_id_tag() = default;
+};
 
 // clang-format off
 template <class _Ty, class _CharT>
@@ -956,7 +958,7 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
     // We care about this because if a charset is self-synchronizing then we can search through it
     // for formatting control characters _without_ generally decoding the format string.
     switch (_MSVC_EXECUTION_CHARACTER_SET) {
-    // See: https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
+    // See: https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
     case 874: // Thai (Windows)
     case 1250: // ANSI Central European; Central European (Windows)
     case 1251: // ANSI Cyrillic; Cyrillic (Windows)
@@ -1680,7 +1682,7 @@ public:
         _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_width(const _Auto_id_tag) {
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
         _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
@@ -1689,7 +1691,7 @@ public:
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_precision(const _Auto_id_tag) {
+    constexpr void _On_dynamic_precision(_Auto_id_tag) {
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
@@ -3975,7 +3977,7 @@ public:
         _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_width(const _Auto_id_tag) {
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
         _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
@@ -4048,6 +4050,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FORMAT_
