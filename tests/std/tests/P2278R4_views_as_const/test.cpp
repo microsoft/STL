@@ -35,9 +35,10 @@ constexpr bool CanReconstructRefView<ranges::ref_view<T>> = ranges::constant_ran
 
 template <ranges::input_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
-    using ranges::ref_view, ranges::as_const_view, ranges::begin, ranges::end, ranges::iterator_t, ranges::sentinel_t,
-        ranges::prev, ranges::forward_range, ranges::bidirectional_range, ranges::random_access_range,
-        ranges::contiguous_range, ranges::common_range, ranges::sized_range, ranges::constant_range;
+    using ranges::ref_view, ranges::as_const_view, ranges::begin, ranges::end, ranges::cbegin, ranges::cend,
+        ranges::iterator_t, ranges::sentinel_t, ranges::const_iterator_t, ranges::const_sentinel_t, ranges::prev,
+        ranges::forward_range, ranges::bidirectional_range, ranges::random_access_range, ranges::contiguous_range,
+        ranges::common_range, ranges::sized_range, ranges::constant_range;
 
     using V = views::all_t<Rng>;
     using R = as_const_view<V>;
@@ -409,6 +410,80 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                 const auto r2 = r;
                 if (!is_empty) {
                     assert(*prev(r2.end()) == *prev(end(expected)));
+                }
+            }
+        }
+    }
+
+    // Validate view_interface::cbegin
+    STATIC_ASSERT(CanMemberCBegin<R>);
+    {
+        const same_as<const_iterator_t<R>> auto i = r.cbegin();
+        if (!is_empty) {
+            assert(*i == *cbegin(expected));
+        }
+
+        if constexpr (copy_constructible<V>) {
+            auto r2                                    = r;
+            const same_as<const_iterator_t<R>> auto i2 = r2.cbegin();
+            if (!is_empty) {
+                assert(*i2 == *i);
+            }
+        }
+    }
+
+    // Validate view_interface::cbegin (const)
+    STATIC_ASSERT(CanMemberCBegin<const R> == ranges::range<const V>);
+    if constexpr (CanMemberCBegin<const R>) {
+        const same_as<const_iterator_t<const R>> auto ci = as_const(r).cbegin();
+        if (!is_empty) {
+            assert(*ci == *cbegin(expected));
+        }
+
+        if constexpr (copy_constructible<V>) {
+            const auto cr2                                    = r;
+            const same_as<const_iterator_t<const R>> auto ci2 = cr2.cbegin();
+            if (!is_empty) {
+                assert(*ci2 == *ci);
+            }
+        }
+    }
+
+    // Validate view_interface::cend
+    STATIC_ASSERT(CanMemberCEnd<R>);
+    {
+        const same_as<const_sentinel_t<R>> auto s = r.cend();
+        assert((r.cbegin() == s) == is_empty);
+        STATIC_ASSERT(common_range<R> == common_range<V>);
+        if constexpr (common_range<R> && bidirectional_range<V>) {
+            if (!is_empty) {
+                assert(*prev(s) == *prev(cend(expected)));
+            }
+
+            if constexpr (copy_constructible<V>) {
+                auto r2 = r;
+                if (!is_empty) {
+                    assert(*prev(r2.cend()) == *prev(cend(expected)));
+                }
+            }
+        }
+    }
+
+    // Validate view_interface::cend (const)
+    STATIC_ASSERT(CanMemberCEnd<const R> == ranges::range<const V>);
+    if constexpr (CanMemberCEnd<const R>) {
+        const same_as<const_sentinel_t<const R>> auto cs = as_const(r).cend();
+        assert((as_const(r).cbegin() == cs) == is_empty);
+        STATIC_ASSERT(common_range<const R> == common_range<const V>);
+        if constexpr (common_range<const R> && bidirectional_range<const V>) {
+            if (!is_empty) {
+                assert(*prev(cs) == *prev(cend(expected)));
+            }
+
+            if constexpr (copy_constructible<V>) {
+                const auto r2 = r;
+                if (!is_empty) {
+                    assert(*prev(r2.cend()) == *prev(cend(expected)));
                 }
             }
         }
