@@ -300,6 +300,7 @@
 // P2602R2 Poison Pills Are Too Toxic
 // P2609R3 Relaxing Ranges Just A Smidge
 // P2655R3 common_reference_t Of reference_wrapper Should Be A Reference Type
+// P2675R1 Improving std::format's Width Estimation
 // P2711R1 Making Multi-Param Constructors Of Views explicit
 // P2736R2 Referencing The Unicode Standard
 // P2770R0 Stashing Stashing Iterators For Proper Flattening
