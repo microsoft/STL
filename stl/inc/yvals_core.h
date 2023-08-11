@@ -1597,7 +1597,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_robust_nonmodifying_seq_ops      201304L
 #ifndef _M_CEE_PURE
 #define __cpp_lib_shared_timed_mutex 201402L
-#endif // defined(_M_CEE_PURE)
+#endif // !defined(_M_CEE_PURE)
 #define __cpp_lib_string_udls                  201304L
 #define __cpp_lib_transformation_trait_aliases 201304L
 #define __cpp_lib_tuple_element_t              201402L
@@ -1649,7 +1649,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_not_fn                            201603L
 #ifndef _M_CEE_PURE
 #define __cpp_lib_parallel_algorithm 201603L
-#endif // defined(_M_CEE_PURE)
+#endif // !defined(_M_CEE_PURE)
 #define __cpp_lib_raw_memory_algorithms 201606L
 #define __cpp_lib_sample                201603L
 #define __cpp_lib_scoped_lock           201703L
@@ -1856,7 +1856,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #elif _HAS_CXX17
 #define __cpp_lib_execution 201603L // P0024R2 Parallel Algorithms
 #endif // language mode
-#endif // defined(_M_CEE_PURE)
+#endif // !defined(_M_CEE_PURE)
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional
@@ -1956,7 +1956,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 // The earliest Windows supported by this implementation is Windows 7
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN7
 #endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
-#endif //!defined(_STL_WIN32_WINNT)
+#endif //! defined(_STL_WIN32_WINNT)
 
 #ifdef __cpp_noexcept_function_type
 #define _NOEXCEPT_FNPTR noexcept

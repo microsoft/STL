@@ -317,7 +317,8 @@ namespace Concurrency {
             return false;
         }
 
-#else // ^^^ defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT) / !defined(_CRT_APP) && !defined(UNDOCKED_WINDOWS_UCRT) vvv
+#else // ^^^ defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
+      //                                         / !defined(_CRT_APP) && !defined(UNDOCKED_WINDOWS_UCRT) vvv
         _CRTIMP2 void __thiscall _ContextCallback::_CallInContext(_CallbackFunction _Func, bool) const {
             _Func();
         }
