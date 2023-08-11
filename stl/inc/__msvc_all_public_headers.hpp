@@ -153,7 +153,7 @@
 #include <shared_mutex>
 #include <stop_token>
 #include <thread>
-#endif // defined(_M_CEE_PURE)
+#endif // !defined(_M_CEE_PURE)
 
 // Non-Core C Wrapper Headers
 #include <ccomplex>
@@ -232,7 +232,7 @@
 
 #ifndef _M_CEE_PURE
 #include <fpieee.h>
-#endif // defined(_M_CEE_PURE)
+#endif // !defined(_M_CEE_PURE)
 #endif // !defined(_MSVC_TESTING_NVCC)
 
 #if !(defined(__CUDACC__) && defined(__clang__))

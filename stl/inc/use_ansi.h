@@ -50,8 +50,8 @@
 #undef _IDL_DEFAULT
 #undef _LIB_STEM
 
-#endif // defined(_M_CEE_PURE)
+#endif // !defined(_M_CEE_PURE)
 
-#endif // _CRT_NOPRAGMA_LIBS
+#endif // !defined(_CRT_NOPRAGMA_LIBS)
 
 #endif // _USE_ANSI_CPP
