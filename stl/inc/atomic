@@ -42,7 +42,7 @@ extern "C" _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(
     _Inout_bytecount_(16) long long* _ComparandResult) noexcept;
 extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define _STD_COMPARE_EXCHANGE_128 __std_atomic_compare_exchange_128
-#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
+#endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 ^^^
 #endif // defined(_WIN64)
 
 // Controls whether atomic::is_always_lock_free triggers for sizeof(void *) or 2 * sizeof(void *)
@@ -50,7 +50,7 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define _ATOMIC_HAS_DCAS 1
 #else // ^^^ We always have DCAS / We only sometimes have DCAS vvv
 #define _ATOMIC_HAS_DCAS 0
-#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64) || defined(_M_ARM64EC)
+#endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 && defined(_M_X64) && !defined(_M_ARM64EC)
 
 // Controls whether ARM64 ldar/ldapr/stlr should be used
 #ifndef _STD_ATOMIC_USE_ARM64_LDAR_STLR
@@ -62,7 +62,7 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #endif // ^^^ __load_acquire/__stlr intrinsics are available ^^^
 #else // ^^^ ARM64/ARM64EC / Other architectures vvv
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
-#endif // defined(_M_ARM64) || defined(_M_ARM64EC)
+#endif // ^^^ Other architectures ^^^
 #endif // _STD_ATOMIC_USE_ARM64_LDAR_STLR
 
 #define ATOMIC_BOOL_LOCK_FREE 2
@@ -250,7 +250,7 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
 #endif // ^^^ x64 ^^^
 #else // ^^^ x86/x64 / Unsupported hardware vvv
 #error "Unsupported hardware"
-#endif
+#endif // ^^^ Unsupported hardware ^^^
 
 #pragma warning(push)
 #pragma warning(disable : 6001) // "Using uninitialized memory '_Guard'"
@@ -276,7 +276,7 @@ extern "C" inline void _Atomic_thread_fence(const unsigned int _Order) noexcept 
     _Memory_barrier();
 #else // ^^^ ARM32/ARM64/ARM64EC / unsupported hardware vvv
 #error Unsupported hardware
-#endif // unsupported hardware
+#endif // ^^^ unsupported hardware ^^^
 }
 #pragma warning(pop)
 
@@ -469,7 +469,7 @@ struct _Atomic_padded<_Ty&, false> {
     _Ty& _Value;
 };
 
-#endif // TRANSITION, ABI
+#endif // ^^^ break ABI ^^^
 
 template <class _Ty>
 struct _Atomic_storage_types {
@@ -487,7 +487,7 @@ struct _Atomic_storage_types<_Ty&> {
 template <class _Ty, size_t = sizeof(remove_reference_t<_Ty>)>
 #else // ^^^ don't break ABI / break ABI vvv
 template <class _Ty, size_t = _Atomic_storage_traits<_Ty>::_Storage_size>
-#endif // TRANSITION, ABI
+#endif // ^^^ break ABI ^^^
 struct _Atomic_storage;
 
 #if _HAS_CXX20
@@ -743,7 +743,7 @@ public:
 #else // ^^^ don't break ABI / break ABI vvv
     _Ty _Storage;
     mutable _Smtx_t _Mutex{};
-#endif // TRANSITION, ABI
+#endif // ^^^ break ABI ^^^
 };
 
 template <class _Ty>
@@ -1122,7 +1122,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #endif
 
         _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(static_cast<unsigned int>(_Order))
-#endif // _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
+#endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR != 1 ^^^
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
@@ -1677,7 +1677,7 @@ _INLINE_VAR constexpr bool _Is_always_lock_free = _TypeSize <= 2 * sizeof(void*)
 template <size_t _TypeSize>
 _INLINE_VAR constexpr bool _Is_always_lock_free = _TypeSize <= sizeof(void*);
 #endif // _ATOMIC_HAS_DCAS
-#endif // break ABI
+#endif // ^^^ break ABI ^^^
 
 template <class _Ty, bool _Is_lock_free = _Is_always_lock_free<sizeof(_Ty)>>
 _INLINE_VAR constexpr bool _Deprecate_non_lock_free_volatile = true;
@@ -2010,7 +2010,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
 #else // ^^^ 32 bits / 64 bits vvv
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd64,
             _Atomic_address_as<long long>(this->_Storage), _Shift_bytes);
-#endif // hardware
+#endif // ^^^ 64 bits ^^^
         return reinterpret_cast<_Ty>(_Result);
     }
 
@@ -2106,7 +2106,7 @@ struct _Atomic_pointer<_Ty&> : _Atomic_storage<_Ty&> {
 #else // ^^^ 32 bits / 64 bits vvv
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd64,
             _Atomic_address_as<long long>(this->_Storage), _Shift_bytes);
-#endif // hardware
+#endif // ^^^ 64 bits ^^^
         return reinterpret_cast<_Ty>(_Result);
     }
 
@@ -2159,7 +2159,7 @@ using _Choose_atomic_base_t =
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _TVal, class _Ty = _TVal>
 using _Choose_atomic_base_t = _Choose_atomic_base2_t<_TVal, _Ty>;
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Ty>
 struct atomic : _Choose_atomic_base_t<_Ty> { // atomic value
@@ -2200,7 +2200,7 @@ public:
         return sizeof(_Ty) <= sizeof(void*) || (sizeof(_Ty) <= 2 * sizeof(void*) && __std_atomic_has_cmpxchg16b());
 #endif // _ATOMIC_HAS_DCAS
     }
-#endif // TRANSITION, ABI
+#endif // ^^^ break ABI ^^^
 
     _NODISCARD bool is_lock_free() const noexcept {
         return static_cast<const volatile atomic*>(this)->is_lock_free();
@@ -2885,7 +2885,7 @@ _EXPORT_STD struct atomic_flag { // flag with test-and-set semantics
     atomic<long> _Storage;
 #else // ^^^ don't break ABI / break ABI vvv
     atomic<bool> _Storage;
-#endif // TRANSITION, ABI
+#endif // ^^^ break ABI ^^^
 };
 
 #if _HAS_CXX20
