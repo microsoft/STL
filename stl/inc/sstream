@@ -473,11 +473,11 @@ protected:
         }
 
         // finite buffer that can be read or written, set it up
-        auto [_Ptr, _Size, _Res] = _Str._Release_to_buffer(_Al);
-        _Elem* const _Pnew       = _Unfancy(_Ptr);
-        _Seekhigh                = _Pnew + _Size;
-        auto _Next               = (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew;
-        auto _End_buffer         = _Pnew + _Res;
+        auto [_Ptr, _Size, _Actual_allocation_size] = _Str._Release_to_buffer(_Al);
+        _Elem* const _Pnew                          = _Unfancy(_Ptr);
+        _Seekhigh                                   = _Pnew + _Size;
+        auto _Next                                  = (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew;
+        auto _End_buffer                            = _Pnew + _Actual_allocation_size;
 
         _Mysb::setp(_Pnew, _Next, _End_buffer);
         if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
