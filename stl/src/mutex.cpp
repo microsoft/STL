@@ -13,7 +13,9 @@
 
 #include "primitives.hpp"
 
-extern "C" [[noreturn]] _CRTIMP2_PURE void _Thrd_abort(const char* msg) { // abort on precondition failure
+_EXTERN_C
+
+[[noreturn]] _CRTIMP2_PURE void __cdecl _Thrd_abort(const char* msg) { // abort on precondition failure
     fputs(msg, stderr);
     fputc('\n', stderr);
     abort();
@@ -29,26 +31,26 @@ extern "C" [[noreturn]] _CRTIMP2_PURE void _Thrd_abort(const char* msg) { // abo
 
 // TRANSITION, ABI: preserved for binary compatibility
 enum class __stl_sync_api_modes_enum { normal, win7, vista, concrt };
-extern "C" _CRTIMP2 void __cdecl __set_stl_sync_api_mode(__stl_sync_api_modes_enum) {}
+_CRTIMP2 void __cdecl __set_stl_sync_api_mode(__stl_sync_api_modes_enum) {}
 
 [[nodiscard]] static PSRWLOCK get_srw_lock(_Mtx_t mtx) {
     return reinterpret_cast<PSRWLOCK>(&mtx->_Critical_section._M_srw_lock);
 }
 
 // TRANSITION, only used when constexpr mutex constructor is not enabled
-void _Mtx_init_in_situ(_Mtx_t mtx, int type) { // initialize mutex in situ
+_CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t mtx, int type) { // initialize mutex in situ
     Concurrency::details::create_stl_critical_section(&mtx->_Critical_section);
     mtx->_Thread_id = -1;
     mtx->_Type      = type;
     mtx->_Count     = 0;
 }
 
-void _Mtx_destroy_in_situ(_Mtx_t mtx) { // destroy mutex in situ
+_CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t mtx) { // destroy mutex in situ
     _THREAD_ASSERT(mtx->_Count == 0, "mutex destroyed while busy");
     (void) mtx;
 }
 
-_Thrd_result _Mtx_init(_Mtx_t* mtx, int type) { // initialize mutex
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t* mtx, int type) { // initialize mutex
     *mtx = nullptr;
 
     _Mtx_t mutex = static_cast<_Mtx_t>(_calloc_crt(1, sizeof(_Mtx_internal_imp_t)));
@@ -63,7 +65,7 @@ _Thrd_result _Mtx_init(_Mtx_t* mtx, int type) { // initialize mutex
     return _Thrd_result::_Success;
 }
 
-void _Mtx_destroy(_Mtx_t mtx) { // destroy mutex
+_CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t mtx) { // destroy mutex
     if (mtx) { // something to do, do it
         _Mtx_destroy_in_situ(mtx);
         _free_crt(mtx);
@@ -71,10 +73,14 @@ void _Mtx_destroy(_Mtx_t mtx) { // destroy mutex
 }
 
 static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock mutex
+    // TRANSITION, ABI: the use of `const _timespec64*` is preserved for `_Mtx_timedlock`
+    const auto current_thread_id = static_cast<long>(GetCurrentThreadId());
     if ((mtx->_Type & ~_Mtx_recursive) == _Mtx_plain) { // set the lock
-        if (mtx->_Thread_id != static_cast<long>(GetCurrentThreadId())) { // not current thread, do lock
+        // TRANSITION, ABI: this branch is preserved for `_Thrd_create`
+
+        if (mtx->_Thread_id != current_thread_id) { // not current thread, do lock
             AcquireSRWLockExclusive(get_srw_lock(mtx));
-            mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
+            mtx->_Thread_id = current_thread_id;
         }
         ++mtx->_Count;
 
@@ -82,7 +88,7 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
     } else { // handle timed or recursive mutex
         int res = WAIT_TIMEOUT;
         if (target == nullptr) { // no target --> plain wait (i.e. infinite timeout)
-            if (mtx->_Thread_id != static_cast<long>(GetCurrentThreadId())) {
+            if (mtx->_Thread_id != current_thread_id) {
                 AcquireSRWLockExclusive(get_srw_lock(mtx));
             }
 
@@ -90,63 +96,56 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
 
         } else if (target->tv_sec < 0 || target->tv_sec == 0 && target->tv_nsec <= 0) {
             // target time <= 0 --> plain trylock or timed wait for time that has passed; try to lock with 0 timeout
-            if (mtx->_Thread_id != static_cast<long>(GetCurrentThreadId())) { // not this thread, lock it
+            if (mtx->_Thread_id != current_thread_id) { // not this thread, lock it
                 if (TryAcquireSRWLockExclusive(get_srw_lock(mtx)) != 0) {
                     res = WAIT_OBJECT_0;
-                } else {
-                    res = WAIT_TIMEOUT;
                 }
             } else {
                 res = WAIT_OBJECT_0;
             }
 
         } else { // check timeout
+            // TRANSITION, ABI: this branch is preserved for `_Mtx_timedlock`
             _timespec64 now;
             _Timespec64_get_sys(&now);
             while (now.tv_sec < target->tv_sec || now.tv_sec == target->tv_sec && now.tv_nsec < target->tv_nsec) {
                 // time has not expired
-                if (mtx->_Thread_id == static_cast<long>(GetCurrentThreadId())
+                if (mtx->_Thread_id == current_thread_id
                     || TryAcquireSRWLockExclusive(get_srw_lock(mtx)) != 0) { // stop waiting
                     res = WAIT_OBJECT_0;
                     break;
-                } else {
-                    res = WAIT_TIMEOUT;
                 }
 
                 _Timespec64_get_sys(&now);
             }
         }
 
-        if (res == WAIT_OBJECT_0 || res == WAIT_ABANDONED) {
+        if (res == WAIT_OBJECT_0) {
             if (1 < ++mtx->_Count) { // check count
                 if ((mtx->_Type & _Mtx_recursive) != _Mtx_recursive) { // not recursive, fixup count
                     --mtx->_Count;
                     res = WAIT_TIMEOUT;
                 }
             } else {
-                mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
+                mtx->_Thread_id = current_thread_id;
             }
         }
 
-        switch (res) {
-        case WAIT_OBJECT_0:
-        case WAIT_ABANDONED:
+        if (res == WAIT_OBJECT_0) {
             return _Thrd_result::_Success;
-
-        case WAIT_TIMEOUT:
-            if (target == nullptr || (target->tv_sec == 0 && target->tv_nsec == 0)) {
-                return _Thrd_result::_Busy;
-            } else {
-                return _Thrd_result::_Timedout;
-            }
-
-        default:
-            return _Thrd_result::_Error;
         }
+
+        // res is WAIT_TIMEOUT here
+
+        if (target == nullptr || (target->tv_sec == 0 && target->tv_nsec == 0)) {
+            return _Thrd_result::_Busy;
+        }
+
+        return _Thrd_result::_Timedout;
     }
 }
 
-_Thrd_result _Mtx_unlock(_Mtx_t mtx) { // unlock mutex
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t mtx) { // unlock mutex
     _THREAD_ASSERT(
         1 <= mtx->_Count && mtx->_Thread_id == static_cast<long>(GetCurrentThreadId()), "unlock of unowned mutex");
 
@@ -160,11 +159,11 @@ _Thrd_result _Mtx_unlock(_Mtx_t mtx) { // unlock mutex
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
-_Thrd_result _Mtx_lock(_Mtx_t mtx) { // lock mutex
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t mtx) { // lock mutex
     return mtx_do_lock(mtx, nullptr);
 }
 
-_Thrd_result _Mtx_trylock(_Mtx_t mtx) { // attempt to lock try_mutex
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t mtx) { // attempt to lock try_mutex
     _timespec64 xt;
     _THREAD_ASSERT((mtx->_Type & (_Mtx_try | _Mtx_timed)) != 0, "trylock not supported by mutex");
     xt.tv_sec  = 0;
@@ -172,7 +171,8 @@ _Thrd_result _Mtx_trylock(_Mtx_t mtx) { // attempt to lock try_mutex
     return mtx_do_lock(mtx, &xt);
 }
 
-_Thrd_result _Mtx_timedlock(_Mtx_t mtx, const _timespec64* xt) { // attempt to lock timed mutex
+// TRANSITION, ABI: preserved for binary compatibility
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_timedlock(_Mtx_t mtx, const _timespec64* xt) { // attempt to lock timed mutex
     _Thrd_result res;
 
     _THREAD_ASSERT((mtx->_Type & _Mtx_timed) != 0, "timedlock not supported by mutex");
@@ -180,23 +180,26 @@ _Thrd_result _Mtx_timedlock(_Mtx_t mtx, const _timespec64* xt) { // attempt to l
     return res == _Thrd_result::_Busy ? _Thrd_result::_Timedout : res;
 }
 
-int _Mtx_current_owns(_Mtx_t mtx) { // test if current thread owns mutex
+_CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t mtx) { // test if current thread owns mutex
     return mtx->_Count != 0 && mtx->_Thread_id == static_cast<long>(GetCurrentThreadId());
 }
 
-void* _Mtx_getconcrtcs(_Mtx_t mtx) { // get internal cs impl
+// TRANSITION, ABI: preserved for binary compatibility
+_CRTIMP2_PURE void* __cdecl _Mtx_getconcrtcs(_Mtx_t mtx) { // get internal cs impl
     return &mtx->_Critical_section;
 }
 
-void _Mtx_clear_owner(_Mtx_t mtx) { // set owner to nobody
+_CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t mtx) { // set owner to nobody
     mtx->_Thread_id = -1;
     --mtx->_Count;
 }
 
-void _Mtx_reset_owner(_Mtx_t mtx) { // set owner to current thread
+_CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t mtx) { // set owner to current thread
     mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
     ++mtx->_Count;
 }
+
+_END_EXTERN_C
 
 /*
  * This file is derived from software bearing the following
