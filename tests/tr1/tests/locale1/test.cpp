@@ -207,23 +207,23 @@ void test_ctype() { // test ctype<char>
 
 struct Myxnpunct : public STD numpunct<char> { // specify numeric punctuation
 protected:
-    virtual char do_decimal_point() const { // return decimal point
+    char do_decimal_point() const override { // return decimal point
         return '_';
     }
 
-    virtual char do_thousands_sep() const { // return thousands separator
+    char do_thousands_sep() const override { // return thousands separator
         return ';';
     }
 
-    virtual STD string do_grouping() const { // return grouping rule
+    STD string do_grouping() const override { // return grouping rule
         return "\2";
     }
 
-    virtual STD string do_truename() const { // return name for true
+    STD string do_truename() const override { // return name for true
         return "yes";
     }
 
-    virtual STD string do_falsename() const { // return name for false
+    STD string do_falsename() const override { // return name for false
         return "no";
     }
 };
@@ -232,7 +232,7 @@ struct Myxctype2 : public STD ctype<char> { // get protected members
     Myxctype2() { // default construct
     }
 
-    virtual char do_widen(char ch) const { // widen a character
+    char do_widen(char ch) const override { // widen a character
         if (ch == '-') {
             return '@';
         } else if (ch == '0') {
@@ -244,8 +244,8 @@ struct Myxctype2 : public STD ctype<char> { // get protected members
         }
     }
 
-    virtual const char* do_widen(const char* first, const char* last,
-        char* dest) const { // widen a character sequence
+    const char* do_widen(const char* first, const char* last,
+        char* dest) const override { // widen a character sequence
         for (; first != last; ++first, ++dest) {
             *dest = do_widen(*first);
         }

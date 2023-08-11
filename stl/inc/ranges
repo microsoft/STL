@@ -10483,7 +10483,7 @@ namespace ranges {
     _NODISCARD constexpr auto to(_Types&&... _Args) {
         return _Range_closure<_To_template_fn<_Container>, decay_t<_Types>...>{_STD forward<_Types>(_Args)...};
     }
-#endif // __cpp_lib_ranges_to_container
+#endif // defined(__cpp_lib_ranges_to_container)
 #endif // _HAS_CXX23
 } // namespace ranges
 
@@ -10495,6 +10495,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // __cpp_lib_ranges
+#endif // defined(__cpp_lib_ranges)
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _RANGES_

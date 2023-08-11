@@ -741,7 +741,7 @@ struct BaseMeow {
 };
 
 struct DerivedMeow : BaseMeow {
-    virtual int operator()(int x, int y) override {
+    int operator()(int x, int y) override {
         return x * x * x + y * y * y;
     }
 };

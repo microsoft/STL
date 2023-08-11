@@ -36,16 +36,16 @@ struct _Mtx_internal_imp_t {
 #ifdef _CRT_WINDOWS
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 16;
-#else // _WIN64
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 8;
-#endif // _WIN64
-#else // _CRT_WINDOWS
+#endif // ^^^ !defined(_WIN64) ^^^
+#else // ^^^ defined(_CRT_WINDOWS) / !defined(_CRT_WINDOWS) vvv
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 64;
-#else // _WIN64
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 36;
-#endif // _WIN64
-#endif // _CRT_WINDOWS
+#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ !defined(_CRT_WINDOWS) ^^^
 
     static constexpr size_t _Critical_section_align = alignof(void*);
 
@@ -59,23 +59,15 @@ struct _Mtx_internal_imp_t {
 };
 
 // Size and alignment for _Cnd_internal_imp_t
-#ifdef _CRT_WINDOWS
-#ifdef _WIN64
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 16;
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 8;
-#else // _WIN64
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 8;
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 4;
-#endif // _WIN64
-#else // _CRT_WINDOWS
-#ifdef _WIN64
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 72;
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 8;
-#else // _WIN64
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 40;
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 4;
-#endif // _WIN64
-#endif // _CRT_WINDOWS
+#if defined(_CRT_WINDOWS) // for Windows-internal code
+_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 2 * sizeof(void*);
+#elif defined(_WIN64) // ordinary 64-bit code
+_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 72;
+#else // vvv ordinary 32-bit code vvv
+_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 40;
+#endif // ^^^ ordinary 32-bit code ^^^
+
+_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = alignof(void*);
 
 using _Mtx_t = _Mtx_internal_imp_t*;
 
@@ -103,19 +95,21 @@ enum { // mutex types
     _Mtx_recursive = 0x100
 };
 
+#ifdef _CRTBLD
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t*, int);
 _CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t);
+#endif // _CRTBLD
 _CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t, int);
 _CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t);
 _CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t);
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t);
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t);
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_timedlock(_Mtx_t, const _timespec64*);
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t); // TRANSITION, ABI: Always succeeds
 
-_CRTIMP2_PURE void* __cdecl _Mtx_getconcrtcs(_Mtx_t);
+#ifdef _CRTBLD
 _CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t);
 _CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t);
+#endif // _CRTBLD
 
 // shared mutex
 // these declarations must be in sync with those in sharedmutex.cpp
@@ -128,8 +122,10 @@ void __cdecl _Smtx_unlock_shared(_Smtx_t*);
 void __stdcall _Thrd_sleep_for(unsigned long /*ms*/); // TRANSITION: defined in sharedmutex.cpp for convenience
 
 // condition variables
+#ifdef _CRTBLD
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*);
 _CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t);
+#endif // _CRTBLD
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t);
 _CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t);
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(_Cnd_t, _Mtx_t); // TRANSITION, ABI: Always succeeds

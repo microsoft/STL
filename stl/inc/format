@@ -129,7 +129,9 @@ _NODISCARD constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Long_double_type;
 }
 
-struct _Auto_id_tag {};
+struct _Auto_id_tag {
+    explicit _Auto_id_tag() = default;
+};
 
 // clang-format off
 template <class _Ty, class _CharT>
@@ -956,7 +958,7 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
     // We care about this because if a charset is self-synchronizing then we can search through it
     // for formatting control characters _without_ generally decoding the format string.
     switch (_MSVC_EXECUTION_CHARACTER_SET) {
-    // See: https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
+    // See: https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
     case 874: // Thai (Windows)
     case 1250: // ANSI Central European; Central European (Windows)
     case 1251: // ANSI Cyrillic; Cyrillic (Windows)
@@ -977,22 +979,46 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
 #endif // ^^^ EDG workaround ^^^
 }
 
-inline constexpr char32_t _Width_estimate_intervals[] = { // Per N4928 [format.string.std]/12
-    0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u, 0xFE10u,
-    0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u, 0x20000u,
-    0x2FFFEu, 0x30000u, 0x3FFFEu};
+// Generated per N4950 [format.string.std]/13, by tools/unicode_properties_parse/format_width_estimate_intervals.cpp
+// in the https://github.com/microsoft/stl repository.
+inline constexpr char32_t _Width_estimate_intervals_v2[] = { //
+    0x1100u, 0x1160u, 0x231Au, 0x231Cu, 0x2329u, 0x232Bu, 0x23E9u, 0x23EDu, 0x23F0u, 0x23F1u, 0x23F3u, 0x23F4u, 0x25FDu,
+    0x25FFu, 0x2614u, 0x2616u, 0x2648u, 0x2654u, 0x267Fu, 0x2680u, 0x2693u, 0x2694u, 0x26A1u, 0x26A2u, 0x26AAu, 0x26ACu,
+    0x26BDu, 0x26BFu, 0x26C4u, 0x26C6u, 0x26CEu, 0x26CFu, 0x26D4u, 0x26D5u, 0x26EAu, 0x26EBu, 0x26F2u, 0x26F4u, 0x26F5u,
+    0x26F6u, 0x26FAu, 0x26FBu, 0x26FDu, 0x26FEu, 0x2705u, 0x2706u, 0x270Au, 0x270Cu, 0x2728u, 0x2729u, 0x274Cu, 0x274Du,
+    0x274Eu, 0x274Fu, 0x2753u, 0x2756u, 0x2757u, 0x2758u, 0x2795u, 0x2798u, 0x27B0u, 0x27B1u, 0x27BFu, 0x27C0u, 0x2B1Bu,
+    0x2B1Du, 0x2B50u, 0x2B51u, 0x2B55u, 0x2B56u, 0x2E80u, 0x2E9Au, 0x2E9Bu, 0x2EF4u, 0x2F00u, 0x2FD6u, 0x2FF0u, 0x2FFCu,
+    0x3000u, 0x303Fu, 0x3041u, 0x3097u, 0x3099u, 0x3100u, 0x3105u, 0x3130u, 0x3131u, 0x318Fu, 0x3190u, 0x31E4u, 0x31F0u,
+    0x321Fu, 0x3220u, 0x3248u, 0x3250u, 0xA48Du, 0xA490u, 0xA4C7u, 0xA960u, 0xA97Du, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u,
+    0xFE10u, 0xFE1Au, 0xFE30u, 0xFE53u, 0xFE54u, 0xFE67u, 0xFE68u, 0xFE6Cu, 0xFF01u, 0xFF61u, 0xFFE0u, 0xFFE7u,
+    0x16FE0u, 0x16FE5u, 0x16FF0u, 0x16FF2u, 0x17000u, 0x187F8u, 0x18800u, 0x18CD6u, 0x18D00u, 0x18D09u, 0x1AFF0u,
+    0x1AFF4u, 0x1AFF5u, 0x1AFFCu, 0x1AFFDu, 0x1AFFFu, 0x1B000u, 0x1B123u, 0x1B132u, 0x1B133u, 0x1B150u, 0x1B153u,
+    0x1B155u, 0x1B156u, 0x1B164u, 0x1B168u, 0x1B170u, 0x1B2FCu, 0x1F004u, 0x1F005u, 0x1F0CFu, 0x1F0D0u, 0x1F18Eu,
+    0x1F18Fu, 0x1F191u, 0x1F19Bu, 0x1F200u, 0x1F203u, 0x1F210u, 0x1F23Cu, 0x1F240u, 0x1F249u, 0x1F250u, 0x1F252u,
+    0x1F260u, 0x1F266u, 0x1F300u, 0x1F650u, 0x1F680u, 0x1F6C6u, 0x1F6CCu, 0x1F6CDu, 0x1F6D0u, 0x1F6D3u, 0x1F6D5u,
+    0x1F6D8u, 0x1F6DCu, 0x1F6E0u, 0x1F6EBu, 0x1F6EDu, 0x1F6F4u, 0x1F6FDu, 0x1F7E0u, 0x1F7ECu, 0x1F7F0u, 0x1F7F1u,
+    0x1F900u, 0x1FA00u, 0x1FA70u, 0x1FA7Du, 0x1FA80u, 0x1FA89u, 0x1FA90u, 0x1FABEu, 0x1FABFu, 0x1FAC6u, 0x1FACEu,
+    0x1FADCu, 0x1FAE0u, 0x1FAE9u, 0x1FAF0u, 0x1FAF9u, 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu};
 
 _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
-    // Computes the width estimation for Unicode characters from N4928 [format.string.std]/12
-    int _Result = 1;
-    for (const auto& _Bound : _Width_estimate_intervals) {
-        if (_Ch < _Bound) {
-            return _Result;
+    // Computes the width estimation for Unicode characters from N4950 [format.string.std]/13
+    // The two branches are functionally equivalent; `12` is chosen for performance here.
+    constexpr char32_t _Linear_search_threshold = _Width_estimate_intervals_v2[12];
+    if (_Ch < _Linear_search_threshold) {
+        int _Result = 1;
+        for (const auto& _Bound : _Width_estimate_intervals_v2) {
+            if (_Ch < _Bound) {
+                return _Result;
+            }
+            _Result ^= 0b11u; // Flip between 1 and 2 on each iteration
         }
-        _Result ^= 0b11u; // Flip between 1 and 2 on each iteration
+        return 1;
+    } else {
+        const ptrdiff_t _Upper_bound_index =
+            _STD upper_bound(_Width_estimate_intervals_v2, _STD end(_Width_estimate_intervals_v2), _Ch)
+            - _Width_estimate_intervals_v2;
+        return 1 + (_Upper_bound_index & 1);
     }
-
-    return 1;
 }
 
 template <class _CharT, bool _Statically_Utf8 = _Is_execution_charset_self_synchronizing()>
@@ -1680,7 +1706,7 @@ public:
         _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_width(const _Auto_id_tag) {
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
         _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
@@ -1689,7 +1715,7 @@ public:
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_precision(const _Auto_id_tag) {
+    constexpr void _On_dynamic_precision(_Auto_id_tag) {
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
@@ -3975,7 +4001,7 @@ public:
         _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_width(const _Auto_id_tag) {
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
         _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
@@ -4048,6 +4074,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FORMAT_

@@ -36,13 +36,13 @@ _NODISCARD inline unsigned long _Floor_of_log_2(size_t _Value) noexcept { // ret
         --_Result;
     }
 
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 #ifdef _WIN64
     _BitScanReverse64(&_Result, _Value); // lgtm [cpp/conditionallyuninitializedvariable]
 #else // ^^^ 64-bit / 32-bit vvv
     _BitScanReverse(&_Result, _Value); // lgtm [cpp/conditionallyuninitializedvariable]
 #endif // 64 vs. 32-bit
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     return _Result;
 }

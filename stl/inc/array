@@ -33,7 +33,7 @@ class _Array_const_iterator
 public:
 #ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = _Ty;
     using difference_type   = ptrdiff_t;
@@ -306,7 +306,7 @@ public:
 
 #ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = _Ty;
     using difference_type   = ptrdiff_t;
