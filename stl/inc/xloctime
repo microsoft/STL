@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XLOCTIME_
 #define _XLOCTIME_
 #include <yvals_core.h>
@@ -627,14 +626,14 @@ private:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Elem, class _InIt>
 __PURE_APPDOMAIN_GLOBAL locale::id time_get<_Elem, _InIt>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 _EXPORT_STD template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_get_byname : public time_get<_Elem, _InIt> { // time_get for named locale
@@ -766,14 +765,14 @@ private:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Elem, class _OutIt>
 __PURE_APPDOMAIN_GLOBAL locale::id time_put<_Elem, _OutIt>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 extern "C++" template <class _OutIt>
 class time_put<wchar_t, _OutIt> : public locale::facet { // facet for converting encoded times to wchar_t text
@@ -896,14 +895,14 @@ private:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _OutIt>
 __PURE_APPDOMAIN_GLOBAL locale::id time_put<wchar_t, _OutIt>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 #if defined(_CRTBLD)
 
@@ -1028,14 +1027,14 @@ private:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _OutIt>
 __PURE_APPDOMAIN_GLOBAL locale::id time_put<unsigned short, _OutIt>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 #endif // defined(_CRTBLD)
 
 _EXPORT_STD template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
@@ -1075,7 +1074,7 @@ template class _CRTIMP2_PURE_IMPORT
 template _CRTIMP2_PURE void __CLR_OR_THIS_CALL
     time_get<unsigned short, istreambuf_iterator<unsigned short, char_traits<unsigned short>>>::_Getvals(
         wchar_t, const _Locinfo&);
-#endif // __FORCE_INSTANCE
+#endif // defined(__FORCE_INSTANCE)
 #endif // defined(_DLL_CPPLIB)
 _STD_END
 

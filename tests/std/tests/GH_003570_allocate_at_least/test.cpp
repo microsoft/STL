@@ -122,6 +122,31 @@ void test_inheriting_allocator() {
     assert(accumulate(vec.begin(), vec.end(), 0, plus<>{}) == 36);
 }
 
+// Also test GH-3890, in which we incorrectly tried to use allocate_at_least from an inaccessible std::allocator
+// base due to an MSVC bug.
+template <class T>
+struct less_icky_allocator : private allocator<T> {
+    using value_type = T;
+
+    less_icky_allocator() = default;
+    template <class U>
+    less_icky_allocator(const less_icky_allocator<U>&) {}
+
+    T* allocate(size_t n) {
+        return allocator<T>::allocate(n);
+    }
+
+    void deallocate(T* ptr, size_t n) {
+        return allocator<T>::deallocate(ptr, n);
+    }
+
+    template <class U>
+    bool operator==(const less_icky_allocator<U>&) const {
+        return true;
+    }
+};
+static_assert(!std::_Should_allocate_at_least<less_icky_allocator<int>>);
+
 int main() {
     test_deque();
     test_container<basic_string<char, char_traits<char>, signalling_allocator<char>>>();

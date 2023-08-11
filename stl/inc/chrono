@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _CHRONO_
 #define _CHRONO_
 #include <yvals_core.h>
@@ -36,7 +35,7 @@
 #include <concepts>
 #include <format>
 #include <iomanip>
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -1918,7 +1917,7 @@ namespace chrono {
         const time_zone& _Left, const time_zone& _Right) noexcept {
         return _Left.name() <=> _Right.name();
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     // [time.zone.leap]
 
@@ -2009,7 +2008,7 @@ namespace chrono {
         const leap_second& _Left, const leap_second& _Right) noexcept {
         return _Left.date() <=> _Right.date();
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     // [time.zone.link]
 
@@ -2042,7 +2041,7 @@ namespace chrono {
         const time_zone_link& _Left, const time_zone_link& _Right) noexcept {
         return _Left.name() <=> _Right.name();
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     // [time.zone.db]
 
@@ -3463,9 +3462,9 @@ namespace chrono {
 
         template <class _Duration1, class _Duration2>
         _NODISCARD static constexpr bool _Can_represent() {
-            using _Rep1    = typename _Duration1::rep;
-            using _Period1 = typename _Duration1::period;
-            using _Period2 = typename _Duration2::period;
+            using _Rep1    = _Duration1::rep;
+            using _Period1 = _Duration1::period;
+            using _Period2 = _Duration2::period;
 
             // Returns whether _Duration1 can represent _Duration2{1}. Assumes 1 <= _Period2 <=
             // 86,400, i.e., we're interested in time periods between seconds and days.
@@ -3730,7 +3729,7 @@ namespace chrono {
         _NODISCARD _InIt _Parse_time_field(_InIt _First, ios_base& _Iosbase, ios_base::iostate& _State,
             const char _Flag, const char _Modifier, const unsigned int _Width,
             const unsigned int _Subsecond_precision) {
-            using _CharT = typename _InIt::value_type;
+            using _CharT = _InIt::value_type;
 
             const auto& _Ctype_fac = _STD use_facet<ctype<_CharT>>(_Iosbase.getloc());
             const auto& _Time_fac  = _STD use_facet<time_get<_CharT>>(_Iosbase.getloc());
@@ -5988,7 +5987,7 @@ namespace chrono {
         return _STD move(_Os).str();
     }
 } // namespace chrono
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 inline namespace literals {
     inline namespace chrono_literals {

@@ -5,7 +5,6 @@
 
 // Library support of coroutines TS, https://wg21.link/p0057
 
-#pragma once
 #ifndef _EXPERIMENTAL_COROUTINE_
 #define _EXPERIMENTAL_COROUTINE_
 #include <yvals_core.h>
@@ -34,7 +33,7 @@ headers do not support Clang, but the C++20 <coroutine> header does.
 #ifdef __cpp_impl_coroutine
 #error The <experimental/coroutine> and <experimental/resumable> headers are only supported with \
 /await and implement pre-C++20 coroutine support. Use <coroutine> for standard C++20 coroutines.
-#endif // __cpp_impl_coroutine
+#endif // defined(__cpp_impl_coroutine)
 
 // intrinsics used in implementation of coroutine_handle
 extern "C" size_t _coro_resume(void*);
@@ -60,10 +59,10 @@ namespace experimental {
         using promise_type = typename _Ret::promise_type;
     };
 
-    template <typename _Ret, typename... _Ts>
+    template <class _Ret, class... _Ts>
     struct coroutine_traits : _Coroutine_traits_sfinae<_Ret> {};
 
-    template <typename _PromiseT = void>
+    template <class _PromiseT = void>
     struct coroutine_handle;
 
     template <>
@@ -127,7 +126,7 @@ namespace experimental {
         _Resumable_frame_prefix* _Ptr = nullptr;
     };
 
-    template <typename _PromiseT>
+    template <class _PromiseT>
     struct coroutine_handle : coroutine_handle<> { // general form
         using coroutine_handle<>::coroutine_handle;
 
@@ -227,7 +226,7 @@ namespace experimental {
     // _Resumable_helper_traits class isolates front-end from public surface
     // naming changes
 
-    template <typename _Ret, typename... _Ts>
+    template <class _Ret, class... _Ts>
     struct _Resumable_helper_traits {
         using _Traits      = coroutine_traits<_Ret, _Ts...>;
         using _PromiseT    = typename _Traits::promise_type;

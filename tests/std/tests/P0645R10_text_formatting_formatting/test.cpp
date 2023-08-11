@@ -656,11 +656,11 @@ void test_bool_specs() {
     assert(format(locale{"en-US"}, STR("{:L}"), false) == STR("false"));
 
     struct my_bool : numpunct<charT> {
-        virtual basic_string<charT> do_truename() const {
+        basic_string<charT> do_truename() const override {
             return STR("yes");
         }
 
-        virtual basic_string<charT> do_falsename() const {
+        basic_string<charT> do_falsename() const override {
             return STR("no");
         }
     };

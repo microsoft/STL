@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _SYNCSTREAM_
 #define _SYNCSTREAM_
 #include <yvals.h>
@@ -69,15 +68,15 @@ protected:
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 class basic_syncbuf : public _Basic_syncbuf_impl<_Elem, _Traits> {
 public:
-    using int_type       = typename _Traits::int_type;
-    using pos_type       = typename _Traits::pos_type;
-    using off_type       = typename _Traits::off_type;
+    using int_type       = _Traits::int_type;
+    using pos_type       = _Traits::pos_type;
+    using off_type       = _Traits::off_type;
     using allocator_type = _Alloc;
     using streambuf_type = basic_streambuf<_Elem, _Traits>;
 
     using _Mybase    = _Basic_syncbuf_impl<_Elem, _Traits>;
-    using _Pointer   = typename allocator_traits<_Alloc>::pointer;
-    using _Size_type = typename allocator_traits<_Alloc>::size_type;
+    using _Pointer   = allocator_traits<_Alloc>::pointer;
+    using _Size_type = allocator_traits<_Alloc>::size_type;
 
     using _Mybase::set_emit_on_sync;
 
@@ -319,9 +318,9 @@ _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 class basic_osyncstream : public basic_ostream<_Elem, _Traits> {
 public:
     using char_type      = _Elem;
-    using int_type       = typename _Traits::int_type;
-    using pos_type       = typename _Traits::pos_type;
-    using off_type       = typename _Traits::off_type;
+    using int_type       = _Traits::int_type;
+    using pos_type       = _Traits::pos_type;
+    using off_type       = _Traits::off_type;
     using traits_type    = _Traits;
     using allocator_type = _Alloc;
     using streambuf_type = basic_streambuf<_Elem, _Traits>;

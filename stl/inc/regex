@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _REGEX_
 #define _REGEX_
 #include <yvals_core.h>
@@ -47,10 +46,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _REGEX_MAX_STACK_COUNT
 
 #ifndef _ENHANCED_REGEX_VISUALIZER
-
 #ifdef _DEBUG
 #define _ENHANCED_REGEX_VISUALIZER 1
-
 #else // _DEBUG
 #define _ENHANCED_REGEX_VISUALIZER 0
 #endif // _DEBUG
@@ -606,7 +603,7 @@ struct _Get_member_comparison_category {
 
 template <class _Ty>
 struct _Get_member_comparison_category<_Ty, void_t<typename _Ty::comparison_category>> {
-    using type = typename _Ty::comparison_category;
+    using type = _Ty::comparison_category;
 };
 #endif // _HAS_CXX20
 
@@ -624,7 +621,7 @@ public:
     using _Size_type = typename string_type::size_type;
 
 #if _HAS_CXX20
-    using _Comparison_category = typename _Get_member_comparison_category<_Traits>::type;
+    using _Comparison_category = _Get_member_comparison_category<_Traits>::type;
 #endif // _HAS_CXX20
 
     constexpr sub_match() : _Mybase(), matched(false) {}
@@ -737,7 +734,7 @@ _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const sub_match<_BidI
 #if _HAS_CXX20
 _EXPORT_STD template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
-    return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
+    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt>
@@ -774,7 +771,7 @@ _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 #if _HAS_CXX20
 _EXPORT_STD template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
-    return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
+    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt>
@@ -841,8 +838,7 @@ _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 #if _HAS_CXX20
 _EXPORT_STD template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
-    return static_cast<typename sub_match<_BidIt>::_Comparison_category>(
-        _Left._Compare(_STD addressof(_Right), 1) <=> 0);
+    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left._Compare(_STD addressof(_Right), 1) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt>
@@ -911,7 +907,7 @@ _NODISCARD bool operator==(
 _EXPORT_STD template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD auto operator<=>(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
-    return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
+    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt, class _Traits, class _Alloc>
@@ -1872,9 +1868,9 @@ public:
     basic_regex(const basic_regex& _Right)
 #if _ENHANCED_REGEX_VISUALIZER
         : _Rep(nullptr), _Traits(_Right._Traits), _Visualization(_Right._Visualization)
-#else // _ENHANCED_REGEX_VISUALIZER
+#else
         : _Rep(nullptr), _Traits(_Right._Traits)
-#endif // _ENHANCED_REGEX_VISUALIZER
+#endif
     { // construct copy of _Right
         _Reset(_Right._Rep);
     }
@@ -2471,7 +2467,7 @@ public:
     _NODISCARD bool operator==(default_sentinel_t) const {
         return !_MyRe;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2664,7 +2660,7 @@ public:
     _NODISCARD bool operator==(default_sentinel_t) const {
         return !_Res;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0

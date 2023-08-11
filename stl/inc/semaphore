@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _SEMAPHORE_
 #define _SEMAPHORE_
 #include <yvals.h>
@@ -11,7 +10,7 @@
 
 #ifdef _M_CEE_PURE
 #error <semaphore> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #if !_HAS_CXX20
 _EMIT_STL_WARNING(STL4038, "The contents of <semaphore> are available only with C++20 or later.");

@@ -129,7 +129,7 @@ int main() {
         };
 
         struct Derived final : Base {
-            virtual void test() override {}
+            void test() override {}
         };
 
         shared_ptr<Base> object;

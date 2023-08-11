@@ -158,7 +158,7 @@ namespace {
 
     struct malloc_resource final : std::pmr::memory_resource {
     private:
-        virtual void* do_allocate(std::size_t bytes, std::size_t align) override {
+        void* do_allocate(std::size_t bytes, std::size_t align) override {
             if (!bytes) {
                 return nullptr;
             }
@@ -175,7 +175,7 @@ namespace {
             throw std::bad_alloc{};
         }
 
-        virtual void do_deallocate(void* ptr, std::size_t, std::size_t align) noexcept override {
+        void do_deallocate(void* ptr, std::size_t, std::size_t align) noexcept override {
             if (align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 _aligned_free(ptr);
             } else {
@@ -183,7 +183,7 @@ namespace {
             }
         }
 
-        virtual bool do_is_equal(const memory_resource& that) const noexcept override {
+        bool do_is_equal(const memory_resource& that) const noexcept override {
             return typeid(malloc_resource) == typeid(that);
         }
     };
@@ -194,7 +194,7 @@ namespace {
         void* ptr_{};
 
     private:
-        virtual void* do_allocate(std::size_t bytes, std::size_t align) override {
+        void* do_allocate(std::size_t bytes, std::size_t align) override {
             if (bytes_ != 0) {
                 CHECK(bytes == bytes_);
             } else {
@@ -214,7 +214,7 @@ namespace {
             }
         }
 
-        virtual void do_deallocate(void* ptr, std::size_t bytes, std::size_t align) noexcept override {
+        void do_deallocate(void* ptr, std::size_t bytes, std::size_t align) noexcept override {
             if (ptr_) {
                 CHECK(ptr == ptr_);
                 if (bytes_ != 0) {
@@ -245,7 +245,7 @@ namespace {
             }
         }
 
-        virtual bool do_is_equal(const memory_resource& that) const noexcept override {
+        bool do_is_equal(const memory_resource& that) const noexcept override {
             CHECK(ptr_ == &that);
             return typeid(checked_resource) == typeid(that);
         }
@@ -273,14 +273,13 @@ namespace {
             }
         }
 
-        virtual void* do_allocate(std::size_t const bytes, std::size_t const align) override {
+        void* do_allocate(std::size_t const bytes, std::size_t const align) override {
             void* const result = upstream_->allocate(bytes, align);
             allocations_.push_back({result, bytes, align});
             return result;
         }
 
-        virtual void do_deallocate(
-            void* const ptr, std::size_t const bytes, std::size_t const align) noexcept override {
+        void do_deallocate(void* const ptr, std::size_t const bytes, std::size_t const align) noexcept override {
             allocation const alloc{ptr, bytes, align};
             auto const end = allocations_.end();
             auto pos       = std::find(allocations_.begin(), end, alloc);
@@ -289,7 +288,7 @@ namespace {
             upstream_->deallocate(ptr, bytes, align);
         }
 
-        virtual bool do_is_equal(const memory_resource& that) const noexcept override {
+        bool do_is_equal(const memory_resource& that) const noexcept override {
             return this == &that;
         }
     };
@@ -496,15 +495,15 @@ namespace {
 
                 struct max_align_checker final : std::pmr::memory_resource {
                 private:
-                    virtual void* do_allocate(std::size_t bytes, std::size_t align) override {
+                    void* do_allocate(std::size_t bytes, std::size_t align) override {
                         CHECK(align == alignof(std::max_align_t));
                         return std::malloc(bytes);
                     }
-                    virtual void do_deallocate(void* ptr, std::size_t, std::size_t align) override {
+                    void do_deallocate(void* ptr, std::size_t, std::size_t align) override {
                         CHECK(align == alignof(std::max_align_t));
                         std::free(ptr);
                     }
-                    virtual bool do_is_equal(const memory_resource& that) const noexcept override {
+                    bool do_is_equal(const memory_resource& that) const noexcept override {
                         return typeid(max_align_checker) == typeid(that);
                     }
                 };

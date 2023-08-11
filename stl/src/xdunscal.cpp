@@ -7,7 +7,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-short _Dunscale(short* pex, double* px) { // separate *px to 1/2 <= |frac| < 1 and 2^*pex
+short _Dunscale(short* pex, double* px) noexcept { // separate *px to 1/2 <= |frac| < 1 and 2^*pex
     const auto ps = reinterpret_cast<_Dval*>(px);
     short xchar   = (ps->_Sh[_D0] & _DMASK) >> _DOFF;
 
