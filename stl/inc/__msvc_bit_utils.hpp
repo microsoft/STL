@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef __MSVC_BIT_UTILS_HPP
 #define __MSVC_BIT_UTILS_HPP
 #include <yvals_core.h>
@@ -89,9 +88,9 @@ _NODISCARD int _Countl_zero_lzcnt(const _Ty _Val) noexcept {
         } else {
             return _Countl_zero_lzcnt(_High);
         }
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
         return static_cast<int>(__lzcnt64(_Val));
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
     }
 }
 
@@ -115,11 +114,11 @@ _NODISCARD int _Countl_zero_bsr(const _Ty _Val) noexcept {
         if (!_BitScanReverse(&_Result, _Low)) {
             return _Digits;
         }
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
         if (!_BitScanReverse64(&_Result, _Val)) {
             return _Digits;
         }
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
     }
     return static_cast<int>(_Digits - 1 - _Result);
 }
@@ -128,14 +127,14 @@ template <class _Ty>
 _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
 #ifdef __AVX2__
     return _Countl_zero_lzcnt(_Val);
-#else // __AVX2__
+#else // ^^^ defined(__AVX2__) / !defined(__AVX2__) vvv
     const bool _Definitely_have_lzcnt = __isa_available >= _Stl_isa_available_avx2;
     if (_Definitely_have_lzcnt) {
         return _Countl_zero_lzcnt(_Val);
     } else {
         return _Countl_zero_bsr(_Val);
     }
-#endif // __AVX2__
+#endif // ^^^ !defined(__AVX2__) ^^^
 }
 #endif // defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 
@@ -251,9 +250,9 @@ _NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
         } else {
             return static_cast<int>(_TZCNT_U32(_Low));
         }
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
         return static_cast<int>(_TZCNT_U64(_Val));
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
     }
 }
 
@@ -286,11 +285,11 @@ _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
         } else {
             return static_cast<int>(_Result + 32);
         }
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
         if (!_BitScanForward64(&_Result, _Val)) {
             return _Digits;
         }
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
     }
     return static_cast<int>(_Result);
 }
@@ -299,14 +298,14 @@ template <class _Ty>
 _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 #ifdef __AVX2__
     return _Countr_zero_tzcnt(_Val);
-#else // __AVX2__
+#else // ^^^ defined(__AVX2__) / !defined(__AVX2__) vvv
     const bool _Definitely_have_tzcnt = __isa_available >= _Stl_isa_available_avx2;
     if (_Definitely_have_tzcnt) {
         return _Countr_zero_tzcnt(_Val);
     } else {
         return _Countr_zero_bsf(_Val);
     }
-#endif // __AVX2__
+#endif // ^^^ !defined(__AVX2__) ^^^
 }
 
 #endif // _HAS_TZCNT_BSF_INTRINSICS
@@ -329,9 +328,9 @@ _NODISCARD int _Unchecked_x86_x64_popcount(const _Ty _Val) noexcept {
     } else {
 #ifdef _M_IX86
         return static_cast<int>(__popcnt(_Val >> 32) + __popcnt(static_cast<unsigned int>(_Val)));
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
         return static_cast<int>(__popcnt64(_Val));
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) ^^^
     }
 }
 

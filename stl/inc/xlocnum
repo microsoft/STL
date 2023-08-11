@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XLOCNUM_
 #define _XLOCNUM_
 #include <yvals_core.h>
@@ -235,14 +234,14 @@ protected:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Elem>
 __PURE_APPDOMAIN_GLOBAL locale::id numpunct<_Elem>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 #endif // !defined(_CRTBLD) || defined(CRTDLL2) || !defined(_DLL) || defined(_M_CEE_PURE)
 
 struct _Num_get_parse_result {
@@ -636,9 +635,9 @@ protected:
             char* _Ep;
 #ifdef _WIN64
             _Val = reinterpret_cast<void*>(_CSTD _Stoullx(_Ac, &_Ep, _Parse_result._Base, &_Errno));
-#else // ^^^ _WIN64 / !_WIN64 vvv
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
             _Val = reinterpret_cast<void*>(_CSTD _Stoulx(_Ac, &_Ep, _Parse_result._Base, &_Errno));
-#endif // _WIN64
+#endif // ^^^ !defined(_WIN64) ^^^
             if (_Ep == _Ac || _Errno != 0) { // N4950 [facet.num.get.virtuals]/3
                 _State = ios_base::failbit;
                 _Val   = nullptr;
@@ -1172,14 +1171,14 @@ private:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Elem, class _InIt>
 __PURE_APPDOMAIN_GLOBAL locale::id num_get<_Elem, _InIt>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Ty>
 int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fmtflags _Float_flags) {
@@ -1376,7 +1375,7 @@ protected:
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
             &_Buf[0], _Buf.size(), _Ffmt(_Fmt, 0, _Iosbase.flags()), static_cast<int>(_Precision), _Val));
 
-        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, (_STD isnan)(_Val));
+        return _Fput_v3(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, (_STD isfinite)(_Val));
     }
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(
@@ -1400,7 +1399,7 @@ protected:
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
             &_Buf[0], _Buf.size(), _Ffmt(_Fmt, 'L', _Iosbase.flags()), static_cast<int>(_Precision), _Val));
 
-        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, (_STD isnan)(_Val));
+        return _Fput_v3(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, (_STD isfinite)(_Val));
     }
 #pragma warning(pop)
 
@@ -1463,12 +1462,12 @@ private:
 
     _OutIt __CLRCALL_OR_CDECL _Fput(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, const char* _Buf,
         size_t _Count) const { // TRANSITION, ABI: preserved for binary compatibility
-        return _Fput_v2(_Dest, _Iosbase, _Fill, _Buf, _Count, false);
+        return _Fput_v3(_Dest, _Iosbase, _Fill, _Buf, _Count, true);
     }
 
     template <int = 0> // TRANSITION, ABI
-    _OutIt _Fput_v2(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, const char* _Buf, size_t _Count,
-        bool _Is_nan_val) const { // put formatted floating-point to _Dest
+    _OutIt _Fput_v3(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, const char* _Buf, size_t _Count,
+        bool _Is_finite_val) const { // put formatted floating-point to _Dest
         auto _Prefix = static_cast<size_t>(0 < _Count && (*_Buf == '+' || *_Buf == '-'));
         const char* _Exps;
         if ((_Iosbase.flags() & ios_base::floatfield) != ios_base::hexfloat) {
@@ -1497,7 +1496,7 @@ private:
             _Groupstring[_Poff] = _Punct_fac.decimal_point();
         }
 
-        if (!_Is_nan_val) {
+        if (_Is_finite_val) {
             size_t _Off     = _Poff == _Count ? _Eoff : _Poff;
             const char* _Pg = &_Grouping[0];
             while (*_Pg != CHAR_MAX && '\0' < *_Pg && static_cast<size_t>(*_Pg) < _Off - _Prefix) {
@@ -1641,7 +1640,7 @@ private:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Elem, class _OutIt>
 __PURE_APPDOMAIN_GLOBAL locale::id num_put<_Elem, _OutIt>::id;
@@ -1664,12 +1663,12 @@ template class _CRTIMP2_PURE_IMPORT
     num_get<unsigned short, istreambuf_iterator<unsigned short, char_traits<unsigned short>>>;
 template class _CRTIMP2_PURE_IMPORT
     num_put<unsigned short, ostreambuf_iterator<unsigned short, char_traits<unsigned short>>>;
-#endif // __FORCE_INSTANCE
+#endif // defined(__FORCE_INSTANCE)
 #endif // defined(_DLL_CPPLIB)
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

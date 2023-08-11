@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _FILESYSTEM_
 #define _FILESYSTEM_
 #include <yvals_core.h>
@@ -154,7 +153,7 @@ namespace filesystem {
         else if constexpr (is_same_v<_EcharT, char8_t>) {
             return _Convert_wide_to_narrow<_Traits>(__std_code_page::_Utf8, _Input, _Al);
         }
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
         else if constexpr (is_same_v<_EcharT, char32_t>) {
             return _Convert_wide_to_utf32<_Traits>(_Input, _Al);
         } else { // wchar_t, char16_t
@@ -216,7 +215,7 @@ namespace filesystem {
         const string_view _Input_as_char{reinterpret_cast<const char*>(_Input.data()), _Input.size()};
         return _Convert_narrow_to_wide(__std_code_page::_Utf8, _Input_as_char);
     }
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
     template <class _Conversion>
     _NODISCARD wstring _Convert_stringoid_to_wide(const u16string_view _Input, _Conversion) {
@@ -344,6 +343,14 @@ namespace filesystem {
             }
         }
     }
+
+    struct _Is_slash_oper { // predicate testing if input is a preferred-separator or fallback-separator
+        _NODISCARD constexpr bool operator()(const wchar_t _Ch) const {
+            return _Ch == L'\\' || _Ch == L'/';
+        }
+    };
+
+    inline constexpr _Is_slash_oper _Is_slash{};
 
     template <class _Ty>
     _NODISCARD _Ty _Unaligned_load(const void* _Ptr) { // load a _Ty from _Ptr
@@ -615,13 +622,13 @@ namespace filesystem {
     _EXPORT_STD class path {
         template <class _Base_iter>
         friend class _Path_iterator;
-        friend inline __std_win_error _Absolute(path& _Result, const wstring& _Text);
+        friend inline path absolute(const path& _Input, error_code& _Ec);
         friend inline __std_win_error _Canonical(path& _Result, const wstring& _Text);
         friend inline path temp_directory_path(error_code& _Ec);
         friend inline path current_path(error_code& _Ec);
         friend inline void current_path(const path& _To);
         friend inline void current_path(const path& _To, error_code& _Ec) noexcept;
-        friend inline __std_win_error _Read_symlink(const path& _Symlink_path, path& _Result) noexcept;
+        friend inline __std_win_error _Read_symlink(const path& _Symlink_path, path& _Result);
 
     public:
         using value_type  = wchar_t;
@@ -940,9 +947,9 @@ namespace filesystem {
         _NODISCARD auto u8string() const { // convert the native path from this instance into a UTF-8 string
 #ifdef __cpp_lib_char8_t
             using _U8Ty = char8_t;
-#else // ^^^ __cpp_lib_char8_t / !__cpp_lib_char8_t vvv
+#else // ^^^ defined(__cpp_lib_char8_t) / !defined(__cpp_lib_char8_t) vvv
             using _U8Ty = char;
-#endif // __cpp_lib_char8_t
+#endif // ^^^ !defined(__cpp_lib_char8_t) ^^^
             return _Convert_wide_to_narrow<char_traits<_U8Ty>>(__std_code_page::_Utf8, _Text, allocator<_U8Ty>{});
         }
 
@@ -1208,7 +1215,7 @@ namespace filesystem {
             vector<wstring_view> _Vec; // Empty wstring_view means directory-separator
                                        // that will be normalized to a preferred-separator.
                                        // Non-empty wstring_view means filename.
-            _Vec.reserve(13); // avoid frequent re-allocations
+            _Vec.reserve(19); // avoid frequent re-allocations
             bool _Has_root_directory = false; // true: there is a slash right after root-name.
             auto _Ptr                = _Root_name_end;
             if (_Ptr != _Last && _Is_slash(*_Ptr)) {
@@ -2693,7 +2700,7 @@ namespace filesystem {
         _NODISCARD bool operator==(default_sentinel_t) const noexcept {
             return !_Impl;
         }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
@@ -2949,7 +2956,7 @@ namespace filesystem {
         _NODISCARD bool operator==(default_sentinel_t) const noexcept {
             return !_Impl;
         }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
@@ -2969,45 +2976,35 @@ namespace filesystem {
         return {};
     }
 
-    _NODISCARD inline __std_win_error _Absolute(path& _Result, const wstring& _Text) { // pre: _Result.empty()
-        if (_Text.empty()) {
-            return __std_win_error::_Success;
-        }
-
-        _Result._Text.resize(__std_fs_max_path);
-        __std_win_error _Err;
-        for (;;) {
-            const auto _Requested_size = static_cast<unsigned long>(_Result._Text.size());
-            const auto _Full_path_result =
-                __std_fs_get_full_path_name(_Text.c_str(), _Requested_size, _Result._Text.data());
-            _Err = _Full_path_result._Error;
-            _Result._Text.resize(_Full_path_result._Size);
-            if (_Full_path_result._Size < _Requested_size) {
-                break;
-            }
-        }
-
-        return _Err;
-    }
-
-    _EXPORT_STD _NODISCARD inline path absolute(const path& _Input) {
-        // normalize path according to system semantics, without touching the disk
-        // calls GetFullPathNameW
-        path _Result;
-        const auto _Err = _Absolute(_Result, _Input.native());
-        if (_Err != __std_win_error::_Success) {
-            _Throw_fs_error("absolute", _Err, _Input);
-        }
-
-        return _Result;
-    }
-
     _EXPORT_STD _NODISCARD inline path absolute(const path& _Input, error_code& _Ec) {
         // normalize path according to system semantics, without touching the disk
         // calls GetFullPathNameW
         _Ec.clear(); // for exception safety
         path _Result;
-        _Ec = _Make_ec(_Absolute(_Result, _Input.native()));
+        if (!_Input._Text.empty()) {
+            _Result._Text.resize(__std_fs_max_path);
+            for (;;) {
+                const auto _Requested_size = static_cast<unsigned long>(_Result._Text.size());
+                const auto _Full_path_result =
+                    __std_fs_get_full_path_name(_Input._Text.c_str(), _Requested_size, _Result._Text.data());
+                _Result._Text.resize(_Full_path_result._Size);
+                if (_Full_path_result._Size < _Requested_size) {
+                    _Ec = _Make_ec(_Full_path_result._Error);
+                    break;
+                }
+            }
+        }
+        return _Result;
+    }
+
+    _EXPORT_STD _NODISCARD inline path absolute(const path& _Input) {
+        // normalize path according to system semantics, without touching the disk
+        // calls GetFullPathNameW
+        error_code _Ec;
+        path _Result(_STD filesystem::absolute(_Input, _Ec));
+        if (_Ec) {
+            _Throw_fs_error("absolute", _Ec, _Input);
+        }
         return _Result;
     }
 
@@ -3206,7 +3203,7 @@ namespace filesystem {
         return __std_win_error::_Success;
     }
 
-    _NODISCARD inline __std_win_error _Read_symlink(const path& _Symlink_path, path& _Result) noexcept {
+    _NODISCARD inline __std_win_error _Read_symlink(const path& _Symlink_path, path& _Result) {
         __std_win_error _Err;
         unique_ptr<char[]> _Buffer_unique_ptr;
         {
@@ -3230,8 +3227,7 @@ namespace filesystem {
             return _Err;
         }
 
-        _Result._Text.resize(_Length);
-        _CSTD memcpy(_Result._Text.data(), _Offset, _Length * sizeof(wchar_t));
+        _Result._Text.assign(_Offset, _Length);
 
         return __std_win_error::_Success;
     }
@@ -4055,7 +4051,7 @@ namespace filesystem {
     }
 
     _EXPORT_STD _NODISCARD inline path current_path(error_code& _Ec) {
-        _Ec.clear();
+        _Ec.clear(); // for exception safety
         path _Result;
         _Result._Text.resize(__std_fs_max_path);
         for (;;) {
@@ -4426,7 +4422,7 @@ namespace ranges {
     template <>
     inline constexpr bool enable_view<filesystem::recursive_directory_iterator> = true;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _STD_END
 

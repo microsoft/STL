@@ -54,7 +54,6 @@
 // use or other dealings in these Data Files or Software without prior
 // written authorization of the copyright holder.
 
-#pragma once
 #ifndef __MSVC_FORMAT_UCD_TABLES_HPP
 #define __MSVC_FORMAT_UCD_TABLES_HPP
 #include <yvals_core.h>

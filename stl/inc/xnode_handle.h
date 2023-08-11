@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XNODE_HANDLE_H
 #define _XNODE_HANDLE_H
 #include <yvals_core.h>

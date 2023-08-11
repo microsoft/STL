@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _EXPECTED_
 #define _EXPECTED_
 #include <yvals.h>
@@ -329,7 +328,7 @@ public:
     constexpr ~expected()
 #ifndef __clang__ // TRANSITION, LLVM-59854
         noexcept
-#endif // __clang__
+#endif // !defined(__clang__)
     {
         if (_Has_value) {
             if constexpr (!is_trivially_destructible_v<_Ty>) {
@@ -1258,7 +1257,7 @@ public:
     constexpr ~expected()
 #ifndef __clang__ // TRANSITION, LLVM-59854
         noexcept
-#endif // __clang__
+#endif // !defined(__clang__)
     {
         if (!_Has_value) {
             _Unexpected.~_Err();

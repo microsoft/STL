@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _SPANSTREAM_
 #define _SPANSTREAM_
 #include <yvals.h>
@@ -13,7 +12,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <spanstream> are available only with
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 #ifdef __cpp_lib_concepts
 #include <concepts>
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #include <istream>
 #include <ostream>
 #include <span>
@@ -39,9 +38,9 @@ private:
 
 public:
     using char_type   = _Elem;
-    using int_type    = typename _Traits::int_type;
-    using pos_type    = typename _Traits::pos_type;
-    using off_type    = typename _Traits::off_type;
+    using int_type    = _Traits::int_type;
+    using pos_type    = _Traits::pos_type;
+    using off_type    = _Traits::off_type;
     using traits_type = _Traits;
 
     // N4950 [spanbuf.cons], constructors
@@ -201,9 +200,9 @@ private:
 
 public:
     using char_type   = _Elem;
-    using int_type    = typename _Traits::int_type;
-    using pos_type    = typename _Traits::pos_type;
-    using off_type    = typename _Traits::off_type;
+    using int_type    = _Traits::int_type;
+    using pos_type    = _Traits::pos_type;
+    using off_type    = _Traits::off_type;
     using traits_type = _Traits;
 
     // N4950 [ispanstream.cons], constructors
@@ -225,7 +224,7 @@ public:
         : basic_ispanstream(
             _STD span<_Elem>{const_cast<_Elem*>(_RANGES data(_Range)), static_cast<size_t>(_RANGES size(_Range))}) {}
     // clang-format on
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     basic_ispanstream& operator=(const basic_ispanstream&) = delete;
 
@@ -264,7 +263,7 @@ public:
             _STD span<_Elem>{const_cast<_Elem*>(_RANGES data(_Range)), static_cast<size_t>(_RANGES size(_Range))});
     }
     // clang-format on
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 private:
     _Mysb _Buf;
@@ -284,9 +283,9 @@ private:
 
 public:
     using char_type   = _Elem;
-    using int_type    = typename _Traits::int_type;
-    using pos_type    = typename _Traits::pos_type;
-    using off_type    = typename _Traits::off_type;
+    using int_type    = _Traits::int_type;
+    using pos_type    = _Traits::pos_type;
+    using off_type    = _Traits::off_type;
     using traits_type = _Traits;
 
     // N4950 [ospanstream.cons], constructors
@@ -344,9 +343,9 @@ private:
 
 public:
     using char_type   = _Elem;
-    using int_type    = typename _Traits::int_type;
-    using pos_type    = typename _Traits::pos_type;
-    using off_type    = typename _Traits::off_type;
+    using int_type    = _Traits::int_type;
+    using pos_type    = _Traits::pos_type;
+    using off_type    = _Traits::off_type;
     using traits_type = _Traits;
 
     // N4950 [spanstream.cons], constructors

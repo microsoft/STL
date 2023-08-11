@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef __MSVC_CXX_STDATOMIC_HPP
 #define __MSVC_CXX_STDATOMIC_HPP
 
@@ -13,13 +12,13 @@
 // provide a specific error message for C compilers, before the general error message in yvals_core.h
 #ifndef __cplusplus
 #error <__msvc_cxx_stdatomic.hpp> is an internal header. It is incompatible with C and should not be directly included.
-#endif // __cplusplus
+#endif // !defined(__cplusplus)
 
 #include <yvals.h>
 
 #ifdef _M_CEE_PURE
 #error <stdatomic.h> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #if !_HAS_CXX23
 _EMIT_STL_WARNING(STL4038, "The contents of <stdatomic.h> are available only with C++23 or later.");
@@ -64,7 +63,7 @@ using _STD atomic_ullong;
 
 #ifdef __cpp_lib_char8_t
 using _STD atomic_char8_t;
-#endif // __cpp_lib_char8_t
+#endif // defined(__cpp_lib_char8_t)
 
 using _STD atomic_char16_t;
 using _STD atomic_char32_t;

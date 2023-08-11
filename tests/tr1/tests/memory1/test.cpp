@@ -49,8 +49,8 @@ struct X1 { // alternate base object
 };
 
 struct X : public X0, virtual public X1, public STD enable_shared_from_this<X> { // slightly complicated base type
-    virtual void f() {}
-    virtual STD shared_ptr<X> getX() { // return shared_ptr to this
+    void f() override {}
+    STD shared_ptr<X> getX() override { // return shared_ptr to this
         STD shared_ptr<X> sp = shared_from_this();
         CHECK_PTR(sp.get(), this);
         return sp;

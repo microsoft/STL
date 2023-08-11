@@ -177,6 +177,9 @@ std/ranges/range.access/size.pass.cpp FAIL
 # libc++ doesn't implement P2652R2 "Disallowing User Specialization Of allocator_traits"
 std/utilities/memory/allocator.traits/allocate_at_least.pass.cpp FAIL
 
+# libc++ doesn't implement P2675R1 "Improving std::format's Width Estimation"
+std/utilities/format/format.functions/unicode.pass.cpp FAIL
+
 # libc++ doesn't implement P2770R0 "Stashing stashing iterators for proper flattening"
 std/ranges/range.adaptors/range.join.view/end.pass.cpp FAIL
 std/ranges/range.adaptors/range.join.view/iterator/ctor.other.pass.cpp FAIL
@@ -714,6 +717,7 @@ std/time/time.syn/formatter.year_month_day_last.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
 
 # unused-variable warning
+std/numerics/rand/rand.device/ctor.pass.cpp FAIL
 std/thread/thread.mutex/thread.lock/thread.lock.scoped/mutex.pass.cpp FAIL
 std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/default.pass.cpp:1 FAIL
 
@@ -775,7 +779,6 @@ std/localization/locale.categories/category.monetary/locale.money.put/locale.mon
 std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_string_en_US.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.moneypunct/locale.moneypunct.members/decimal_point.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.moneypunct/locale.moneypunct.members/thousands_sep.pass.cpp FAIL
-std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname_wide.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_one.pass.cpp FAIL
