@@ -24,7 +24,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _ACTIVATE_VECTOR_ANNOTATION
 #define _INSERT_VECTOR_ANNOTATION
 
-#elif defined(__clang__) // ^^^ __SANITIZE_ADDRESS__ / __clang__ vvv
+#elif defined(__clang__) // ^^^ defined(__SANITIZE_ADDRESS__) / __clang__ vvv
 
 #if __has_feature(address_sanitizer)
 #define _ACTIVATE_STRING_ANNOTATION
@@ -34,41 +34,41 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma comment(linker, "/INFERASANLIBS")
 #endif // __has_feature(address_sanitizer)
 
-#else // ^^^ __clang__ / !__clang__ && !__SANITIZE_ADDRESS__ vvv
+#else // ^^^ defined(__clang__) / !defined(__clang__) && !defined(__SANITIZE_ADDRESS__) vvv
 
 #ifdef _ANNOTATE_STRING
 #define _INSERT_STRING_ANNOTATION
-#endif // _ANNOTATE_STRING
+#endif // defined(_ANNOTATE_STRING)
 #ifdef _ANNOTATE_VECTOR
 #define _INSERT_VECTOR_ANNOTATION
-#endif // _ANNOTATE_VECTOR
+#endif // defined(_ANNOTATE_VECTOR)
 
-#endif // __SANITIZE_ADDRESS__
+#endif // ^^^ !defined(__clang__) && !defined(__SANITIZE_ADDRESS__) ^^^
 
 #ifdef _DISABLE_STRING_ANNOTATION
 #undef _ACTIVATE_STRING_ANNOTATION
 #undef _INSERT_STRING_ANNOTATION
-#endif // _DISABLE_STRING_ANNOTATION
+#endif // defined(_DISABLE_STRING_ANNOTATION)
 #ifdef _DISABLE_VECTOR_ANNOTATION
 #undef _ACTIVATE_VECTOR_ANNOTATION
 #undef _INSERT_VECTOR_ANNOTATION
-#endif // _DISABLE_VECTOR_ANNOTATION
+#endif // defined(_DISABLE_VECTOR_ANNOTATION)
 
 #ifndef _INSERT_STRING_ANNOTATION
 #pragma detect_mismatch("annotate_string", "0")
-#endif // !_INSERT_STRING_ANNOTATION
+#endif // !defined(_INSERT_STRING_ANNOTATION)
 #ifndef _INSERT_VECTOR_ANNOTATION
 #pragma detect_mismatch("annotate_vector", "0")
-#endif // !_INSERT_VECTOR_ANNOTATION
+#endif // !defined_INSERT_VECTOR_ANNOTATION)
 
 #ifdef _ACTIVATE_STRING_ANNOTATION
 #pragma comment(lib, "stl_asan")
 #pragma detect_mismatch("annotate_string", "1")
-#endif // _ACTIVATE_STRING_ANNOTATION
+#endif // defined_ACTIVATE_STRING_ANNOTATION)
 #ifdef _ACTIVATE_VECTOR_ANNOTATION
 #pragma comment(lib, "stl_asan")
 #pragma detect_mismatch("annotate_vector", "1")
-#endif // _ACTIVATE_VECTOR_ANNOTATION
+#endif // defined_ACTIVATE_VECTOR_ANNOTATION)
 
 #undef _ACTIVATE_STRING_ANNOTATION
 #undef _ACTIVATE_VECTOR_ANNOTATION
@@ -123,7 +123,7 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 
 #endif // insert asan annotations
 
-#endif // !_M_CEE_PURE && asan not disabled
+#endif // !defined(_M_CEE_PURE) && asan not disabled
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

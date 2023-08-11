@@ -227,7 +227,7 @@ public:
     __CLR_OR_THIS_CALL _Locinfo(const char* _Pch = "C")
 #ifndef _M_CEE_PURE
         : _Lock(_LOCK_LOCALE)
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
     {
         if (_Pch) {
             _Locinfo_ctor(this, _Pch);
@@ -240,7 +240,7 @@ public:
     __CLR_OR_THIS_CALL _Locinfo(int _Cat, const char* _Pch)
 #ifndef _M_CEE_PURE
         : _Lock(_LOCK_LOCALE)
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
     {
         if (_Pch) {
             _Locinfo_ctor(this, _Cat, _Pch);

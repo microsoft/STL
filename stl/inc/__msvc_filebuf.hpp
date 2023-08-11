@@ -34,9 +34,9 @@ namespace filesystem {
 #ifndef _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
 #ifdef _M_CEE
 #define _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM 0
-#else // _M_CEE
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 #define _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM 1
-#endif // _M_CEE
+#endif // ^^^ !defined(_M_CEE) ^^^
 #endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
 
 #if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM

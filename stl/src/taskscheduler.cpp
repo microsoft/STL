@@ -56,7 +56,7 @@ namespace Concurrency {
             _STL_host_status _Get_STL_host_status() {
 #ifdef CRTDLL2
                 return _STL_host_status::_Dll;
-#else // ^^^ CRTDLL2 / !CRTDLL2 vvv
+#else // ^^^ defined(CRTDLL2) / !defined(CRTDLL2) vvv
                 HANDLE _HExe = _Call_get_module_handle_ex(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, nullptr);
                 if (_HExe == nullptr) {
                     return _STL_host_status::_Unknown;
@@ -65,7 +65,7 @@ namespace Concurrency {
                 } else {
                     return _STL_host_status::_Dll;
                 }
-#endif // CRTDLL2
+#endif // ^^^ !defined(CRTDLL2) ^^^
             }
 
 #ifdef CRTDLL2
@@ -74,7 +74,7 @@ namespace Concurrency {
             // code is sufficient.
             void _Increment_outstanding() {}
             void _Decrement_outstanding() {}
-#else // ^^^ CRTDLL2 / !CRTDLL2 vvv
+#else // ^^^ defined(CRTDLL2) / !defined(CRTDLL2) vvv
             size_t _Outstanding_tasks = 0;
             _STD mutex _Task_cv_mutex;
             _STD condition_variable _Task_cv;
@@ -115,7 +115,7 @@ namespace Concurrency {
                 }
             };
             _Task_scheduler_main_block _Task_scheduler_main_block_instance;
-#endif // CRTDLL2
+#endif // ^^^ !defined(CRTDLL2) ^^^
 
             void CALLBACK _Task_scheduler_callback(PTP_CALLBACK_INSTANCE _Pci, PVOID _Args, PTP_WORK) noexcept {
                 _Increment_outstanding();

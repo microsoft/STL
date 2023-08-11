@@ -160,7 +160,7 @@ struct
         constexpr auto _Int_max = static_cast<size_t>(INT_MAX);
         _STL_INTERNAL_STATIC_ASSERT(__m <= _Int_max);
         _STL_INTERNAL_STATIC_ASSERT(__n <= _Int_max);
-#endif // _ENABLE_STL_INTERNAL_CHECK
+#endif // defined(_ENABLE_STL_INTERNAL_CHECK)
 
         for (auto& _Elem : __w) {
             _Elem = 0;

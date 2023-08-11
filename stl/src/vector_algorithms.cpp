@@ -15,7 +15,7 @@ extern "C" long __isa_enabled;
 
 #ifndef _DEBUG
 #pragma optimize("t", on) // Override /Os with /Ot for this TU
-#endif // !_DEBUG
+#endif // !defined(_DEBUG)
 
 namespace {
     bool _Use_avx2() noexcept {

@@ -71,6 +71,6 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(const unsigned short* string1
     return _Wcscoll(reinterpret_cast<const wchar_t*>(string1), reinterpret_cast<const wchar_t*>(end1),
         reinterpret_cast<const wchar_t*>(string2), reinterpret_cast<const wchar_t*>(end2), ploc);
 }
-#endif // MRTDLL
+#endif // defined(MRTDLL)
 
 _END_EXTERN_C_UNLESS_PURE

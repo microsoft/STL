@@ -10,7 +10,7 @@
 
 #ifdef _M_CEE_PURE
 #error <mutex> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #include <__msvc_chrono.hpp>
 #include <cstdlib>

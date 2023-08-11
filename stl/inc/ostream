@@ -184,7 +184,7 @@ public:
         _Pfn(*this);
         return *this;
     }
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
     basic_ostream& __CLR_OR_THIS_CALL operator<<(basic_ostream&(__cdecl* _Pfn)(basic_ostream&) ) {
         // call basic_ostream manipulator

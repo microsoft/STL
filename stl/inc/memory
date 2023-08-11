@@ -3009,7 +3009,7 @@ public:
     static constexpr bool
         _Must_avoid_expired_conversions_from<_Ty2, decltype(static_cast<const _Ty2*>(static_cast<_Ty*>(nullptr)))> =
             false;
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
     constexpr weak_ptr() noexcept {}
 

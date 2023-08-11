@@ -121,7 +121,7 @@ namespace experimental {
                     _STD exchange(_Coro, nullptr).promise()._Rethrow_if_exception();
 #else // ^^^ defined(_CPPUNWIND) / !defined(_CPPUNWIND) vvv
                     _Coro = nullptr;
-#endif // _CPPUNWIND
+#endif // ^^^ !defined(_CPPUNWIND) ^^^
                 }
 
                 return *this;
@@ -156,7 +156,7 @@ namespace experimental {
                 if (_Coro.done()) {
 #ifdef _CPPUNWIND
                     _Coro.promise()._Rethrow_if_exception();
-#endif // _CPPUNWIND
+#endif // ^^^ !defined(_CPPUNWIND) ^^^
                     return {};
                 }
             }

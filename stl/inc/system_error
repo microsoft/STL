@@ -15,7 +15,7 @@
 #include <xerrc.h>
 #ifndef _M_CEE_PURE
 #include <atomic>
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #if _HAS_CXX20
 #include <compare>

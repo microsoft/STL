@@ -10,7 +10,7 @@
 
 #ifdef _M_CEE_PURE
 #error <atomic> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +43,7 @@ extern "C" _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(
 extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define _STD_COMPARE_EXCHANGE_128 __std_atomic_compare_exchange_128
 #endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
-#endif // _WIN64
+#endif // defined(_WIN64)
 
 // Controls whether atomic::is_always_lock_free triggers for sizeof(void *) or 2 * sizeof(void *)
 #if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64) || defined(_M_ARM64EC)
@@ -219,9 +219,9 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     __stlr##_Width(                                                                                               \
         reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), static_cast<unsigned __int##_Width>(_Desired)); \
     _Memory_barrier();
-#else
+#else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
 #define _ATOMIC_STORE_SEQ_CST_ARM64 _ATOMIC_STORE_SEQ_CST_ARM
-#endif
+#endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 ^^^
 
 #define _ATOMIC_STORE_SEQ_CST_X86_X64(_Width, _Ptr, _Desired) (void) _InterlockedExchange##_Width((_Ptr), (_Desired));
 #define _ATOMIC_STORE_32_SEQ_CST_X86_X64(_Ptr, _Desired) \
@@ -706,7 +706,7 @@ struct _Atomic_storage {
                             return;
                         }
                     } else
-#endif // #if _CMPXCHG_MASK_OUT_PADDING_BITS
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
                     {
                         return;
                     }
@@ -787,10 +787,10 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         char _As_bytes;
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
         _ATOMIC_LOAD_ARM64(_As_bytes, 8, _Mem, static_cast<unsigned int>(_Order))
-#else
+#else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
         _As_bytes = __iso_volatile_load8(_Mem);
         _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(static_cast<unsigned int>(_Order))
-#endif
+#endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 ^^^
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
@@ -895,10 +895,10 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         short _As_bytes;
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
         _ATOMIC_LOAD_ARM64(_As_bytes, 16, _Mem, static_cast<unsigned int>(_Order))
-#else
+#else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
         _As_bytes = __iso_volatile_load16(_Mem);
         _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(static_cast<unsigned int>(_Order))
-#endif
+#endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 ^^^
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
@@ -1002,10 +1002,10 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         int _As_bytes;
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
         _ATOMIC_LOAD_ARM64(_As_bytes, 32, _Mem, static_cast<unsigned int>(_Order))
-#else
+#else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
         _As_bytes = __iso_volatile_load32(_Mem);
         _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(static_cast<unsigned int>(_Order))
-#endif
+#endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 ^^^
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
