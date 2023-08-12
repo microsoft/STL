@@ -33,9 +33,9 @@ void test_construction_from_extents_and_array_2() {
 
 
 void test_construction_from_extents_and_span_1() {
-    array<int, 1> s{-1};
+    array<int, 1> a{-1};
     // Value of s[i] must be greater than 0 for all i in the range [0, rank_)
-    [[maybe_unused]] layout_stride::mapping<dextents<int, 1>> m{extents<int, 1>{}, span{s}};
+    [[maybe_unused]] layout_stride::mapping<dextents<int, 1>> m{extents<int, 1>{}, span{a}};
 }
 
 void test_construction_from_extents_and_span_2() {
