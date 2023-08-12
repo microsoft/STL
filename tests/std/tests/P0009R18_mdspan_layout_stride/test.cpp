@@ -35,8 +35,8 @@ struct NotLayoutMappingAlikeAtAll {
 
 static_assert(!_Layout_mapping_alike<NotLayoutMappingAlikeAtAll::mapping<extents<int, 4, 4>>>);
 
-enum class AlwaysUnique { no, yes };
-enum class AlwaysStrided { no, yes };
+enum class AlwaysUnique : bool { no, yes };
+enum class AlwaysStrided : bool { no, yes };
 
 template <AlwaysUnique Unique, AlwaysStrided Strided>
 struct LyingLayout {
@@ -63,7 +63,7 @@ struct LyingLayout {
         }
 
         static constexpr bool is_always_exhaustive() {
-            return layout_right::mapping<Extents>::is_always_exhaustive();
+            return layout_left::mapping<Extents>::is_always_exhaustive();
         }
 
         static constexpr bool is_always_strided() {
@@ -222,6 +222,8 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
     { // Check comparisons
         assert(m == m);
         assert(!(m != m));
+        static_assert(noexcept(m == m));
+        static_assert(noexcept(m != m));
         // Other tests are defined in 'check_comparisons' function
     }
 }
@@ -378,8 +380,8 @@ constexpr void check_required_span_size() {
         using M1 = layout_stride::mapping<extents<int>>;
         static_assert(M1{}.required_span_size() == 1);
 
-        layout_stride::mapping<extents<int>> m2;
-        assert(m2.required_span_size() == 1);
+        M1 m1;
+        assert(m1.required_span_size() == 1);
     }
 
     { // Check N4950 [mdspan.layout.stride.expo]/1.2: size of the multidimensional index space e is 0

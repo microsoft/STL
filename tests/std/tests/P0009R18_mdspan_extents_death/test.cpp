@@ -64,23 +64,22 @@ void test_construction_from_pack_with_unrepresentable_as_index_type_values_3() {
 void test_construction_from_span_with_invalid_values() {
     int vals[] = {1, 2};
     span s{vals};
-    // Value of other.extent(r) must be equal to extent(r) for each r for which extent(r) is a static extent
+    // Value of exts[r] must be equal to extent(r) for each r for which extent(r) is a static extent
     [[maybe_unused]] extents<int, 1, 1> e{s};
 }
 
 void test_construction_from_span_with_unrepresentable_as_index_type_values() {
-    int vals[] = {1, 2};
-    span s{vals};
-    // Value of other.extent(r) must be equal to extent(r) for each r for which extent(r) is a static extent
-    [[maybe_unused]] extents<int, 1, 1> e{s};
-}
-
-void test_construction_from_array_with_invalid_values() {
     int vals[] = {256};
     span s{vals};
     // Either N must be zero or exts[r] must be nonnegative and must be representable as value of type index_type for
     // every rank index r
     [[maybe_unused]] extents<unsigned char, dynamic_extent> e{s};
+}
+
+void test_construction_from_array_with_invalid_values() {
+    array a = {1, 2};
+    // Value of exts[r] must be equal to extent(r) for each r for which extent(r) is a static extent
+    [[maybe_unused]] extents<int, 1, 1> e{a};
 }
 
 void test_construction_from_array_with_unrepresentable_as_index_type_values() {

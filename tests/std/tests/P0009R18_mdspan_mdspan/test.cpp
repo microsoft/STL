@@ -37,27 +37,27 @@ public:
         return *this;
     }
 
-    constexpr int get_id() const noexcept {
+    [[nodiscard]] constexpr int get_id() const noexcept {
         return id;
     }
 
-    constexpr bool is_copy_constructed() const noexcept {
+    [[nodiscard]] constexpr bool is_copy_constructed() const noexcept {
         return copy_constructed;
     }
 
-    constexpr bool is_move_constructed() const noexcept {
+    [[nodiscard]] constexpr bool is_move_constructed() const noexcept {
         return move_constructed;
     }
 
-    constexpr bool is_copy_assigned() const noexcept {
+    [[nodiscard]] constexpr bool is_copy_assigned() const noexcept {
         return copy_assigned;
     }
 
-    constexpr bool is_move_assigned() const noexcept {
+    [[nodiscard]] constexpr bool is_move_assigned() const noexcept {
         return move_assigned;
     }
 
-    constexpr bool is_swapped() const noexcept {
+    [[nodiscard]] constexpr bool is_swapped() const noexcept {
         return swapped;
     }
 
@@ -77,7 +77,7 @@ private:
     bool swapped          = false;
 };
 
-enum class RequireId { no, yes };
+enum class RequireId : bool { no, yes };
 
 template <class MpPolicy = layout_right, RequireId ReqId = RequireId::yes>
 struct TrackingLayout {
@@ -1062,12 +1062,12 @@ constexpr void check_size() {
         assert(mds3.size() == 0);
     }
 
-    { // Mdspan with 'rank() == 0'
+    { // mdspan with 'rank() == 0'
         mdspan mds{some_data, extents<signed char>{}};
         assert(mds.size() == 1);
     }
 
-    { // Mdspan whose index space size would not be representable as index_type if 0 wasn't there
+    { // mdspan whose index space size would not be representable as index_type if 0 wasn't there
         mdspan mds1{some_data, extents<signed char, 127, 2, 0>{}};
         assert(mds1.size() == 0);
         mdspan mds2{some_data, dextents<short, 3>{32767, 3, 0}};
@@ -1106,12 +1106,12 @@ constexpr void check_empty() {
         assert(mds3.empty());
     }
 
-    { // Mdspan with 'rank() == 0'
+    { // mdspan with 'rank() == 0'
         mdspan mds{some_data, extents<signed char>{}};
         assert(!mds.empty());
     }
 
-    { // Mdspan whose index space size would not be representable as index_type if 0 wasn't there
+    { // mdspan whose index space size would not be representable as index_type if 0 wasn't there
         mdspan mds1{some_data, extents<signed char, 127, 2, 0>{}};
         assert(mds1.empty());
         mdspan mds2{some_data, dextents<short, 3>{32767, 3, 0}};

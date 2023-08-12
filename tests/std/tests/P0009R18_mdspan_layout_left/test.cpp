@@ -8,6 +8,7 @@
 #include <mdspan>
 #include <span>
 #include <type_traits>
+#include <utility>
 
 #include <test_mdspan_support.hpp>
 
@@ -96,7 +97,7 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
             }
         }
 
-        layout_stride::mapping<Ext> m1{ext, span{strides}};
+        layout_stride::mapping<Ext> m1{ext, strides};
         Mapping m2{m1};
         assert(m1.extents() == m2.extents());
         // Other tests are defined in 'check_construction_from_other_stride_mapping' function
@@ -152,6 +153,8 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
     { // Check comparisons
         assert(m == m);
         assert(!(m != m));
+        static_assert(noexcept(m == m));
+        static_assert(noexcept(m != m));
         // Other tests are defined in 'check_comparisons' function
     }
 }
@@ -241,12 +244,10 @@ constexpr void check_construction_from_other_right_mapping() {
     }
 
     { // Check implicit conversions
-        static_assert(!NotImplicitlyConstructibleFrom<layout_left::mapping<extents<int, 3>>,
-                      layout_right::mapping<extents<int, 3>>>);
-        static_assert(NotImplicitlyConstructibleFrom<layout_left::mapping<extents<int, 3>>,
-            layout_right::mapping<extents<long long, 3>>>);
-        static_assert(NotImplicitlyConstructibleFrom<layout_left::mapping<extents<int, 3>>,
-            layout_right::mapping<extents<int, dynamic_extent>>>);
+        using Mapping = layout_left::mapping<extents<int, 3>>;
+        static_assert(!NotImplicitlyConstructibleFrom<Mapping, layout_right::mapping<extents<int, 3>>>);
+        static_assert(NotImplicitlyConstructibleFrom<Mapping, layout_right::mapping<extents<long long, 3>>>);
+        static_assert(NotImplicitlyConstructibleFrom<Mapping, layout_right::mapping<extents<int, dynamic_extent>>>);
     }
 
     { // Check effects
