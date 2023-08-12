@@ -1062,12 +1062,12 @@ constexpr void check_size() {
         assert(mds3.size() == 0);
     }
 
-    { // Mdspan with 'rank() == 0'
+    { // mdspan with 'rank() == 0'
         mdspan mds{some_data, extents<signed char>{}};
         assert(mds.size() == 1);
     }
 
-    { // Mdspan whose index space size would not be representable as index_type if 0 wasn't there
+    { // mdspan whose index space size would not be representable as index_type if 0 wasn't there
         mdspan mds1{some_data, extents<signed char, 127, 2, 0>{}};
         assert(mds1.size() == 0);
         mdspan mds2{some_data, dextents<short, 3>{32767, 3, 0}};
@@ -1106,12 +1106,12 @@ constexpr void check_empty() {
         assert(mds3.empty());
     }
 
-    { // Mdspan with 'rank() == 0'
+    { // mdspan with 'rank() == 0'
         mdspan mds{some_data, extents<signed char>{}};
         assert(!mds.empty());
     }
 
-    { // Mdspan whose index space size would not be representable as index_type if 0 wasn't there
+    { // mdspan whose index space size would not be representable as index_type if 0 wasn't there
         mdspan mds1{some_data, extents<signed char, 127, 2, 0>{}};
         assert(mds1.empty());
         mdspan mds2{some_data, dextents<short, 3>{32767, 3, 0}};
