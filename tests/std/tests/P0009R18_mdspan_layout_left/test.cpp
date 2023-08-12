@@ -97,7 +97,7 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
             }
         }
 
-        layout_stride::mapping<Ext> m1{ext, span{strides}};
+        layout_stride::mapping<Ext> m1{ext, strides};
         Mapping m2{m1};
         assert(m1.extents() == m2.extents());
         // Other tests are defined in 'check_construction_from_other_stride_mapping' function
