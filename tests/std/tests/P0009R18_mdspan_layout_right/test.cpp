@@ -211,6 +211,15 @@ constexpr void check_construction_from_other_right_mapping() {
         static_assert(NotImplicitlyConstructibleFrom<layout_right::mapping<extents<int, 3, 3>>,
             layout_right::mapping<extents<int, dynamic_extent, dynamic_extent>>>);
     }
+
+    { // Check effects
+        layout_right::mapping<extents<unsigned int, 6, 2, 6>> m1;
+        layout_right::mapping<dextents<unsigned short, 3>> m2{m1};
+        assert(m2.extents().extent(0) == 6);
+        assert(m2.extents().extent(1) == 2);
+        assert(m2.extents().extent(2) == 6);
+        assert(m1.extents() == m2.extents());
+    }
 }
 
 constexpr void check_construction_from_other_left_mapping() {
@@ -239,12 +248,9 @@ constexpr void check_construction_from_other_left_mapping() {
     }
 
     { // Check effects
-        layout_right::mapping<extents<unsigned int, 6, 2, 6>> m1;
-        layout_right::mapping<dextents<unsigned short, 3>> m2{m1};
-        assert(m2.extents().extent(0) == 6);
-        assert(m2.extents().extent(1) == 2);
-        assert(m2.extents().extent(2) == 6);
-        assert(m1.extents() == m2.extents());
+        layout_left::mapping<extents<int, 8>> m1;
+        layout_right::mapping<dextents<signed char, 1>> m2{m1};
+        assert(m2.extents().extent(0) == 8);
     }
 }
 
