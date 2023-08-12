@@ -63,7 +63,7 @@ struct LyingLayout {
         }
 
         static constexpr bool is_always_exhaustive() {
-            return layout_right::mapping<Extents>::is_always_exhaustive();
+            return layout_left::mapping<Extents>::is_always_exhaustive();
         }
 
         static constexpr bool is_always_strided() {
