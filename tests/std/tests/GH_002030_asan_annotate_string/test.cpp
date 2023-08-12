@@ -1920,6 +1920,13 @@ void test_gh_3883() {
     assert(t == "AAAAAAA");
 }
 
+void test_gh_3955() {
+    // GH-3955 <xstring>: ASAN report container-overflow in a legal case
+    std::string s(19, '0');
+    s = &s[3];
+    assert(s == string(16, '0'));
+}
+
 int main() {
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
@@ -1932,4 +1939,5 @@ int main() {
     test_DevCom_10116361();
     test_DevCom_10109507();
     test_gh_3883();
+    test_gh_3955();
 }
