@@ -222,6 +222,8 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
     { // Check comparisons
         assert(m == m);
         assert(!(m != m));
+        static_assert(noexcept(m == m));
+        static_assert(noexcept(m != m));
         // Other tests are defined in 'check_comparisons' function
     }
 }
