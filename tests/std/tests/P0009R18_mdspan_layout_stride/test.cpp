@@ -378,8 +378,8 @@ constexpr void check_required_span_size() {
         using M1 = layout_stride::mapping<extents<int>>;
         static_assert(M1{}.required_span_size() == 1);
 
-        layout_stride::mapping<extents<int>> m2;
-        assert(m2.required_span_size() == 1);
+        M1 m1;
+        assert(m1.required_span_size() == 1);
     }
 
     { // Check N4950 [mdspan.layout.stride.expo]/1.2: size of the multidimensional index space e is 0
