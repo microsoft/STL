@@ -35,8 +35,8 @@ struct NotLayoutMappingAlikeAtAll {
 
 static_assert(!_Layout_mapping_alike<NotLayoutMappingAlikeAtAll::mapping<extents<int, 4, 4>>>);
 
-enum class AlwaysUnique { no, yes };
-enum class AlwaysStrided { no, yes };
+enum class AlwaysUnique : bool { no, yes };
+enum class AlwaysStrided : bool { no, yes };
 
 template <AlwaysUnique Unique, AlwaysStrided Strided>
 struct LyingLayout {

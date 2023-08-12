@@ -77,7 +77,7 @@ private:
     bool swapped          = false;
 };
 
-enum class RequireId { no, yes };
+enum class RequireId : bool { no, yes };
 
 template <class MpPolicy = layout_right, RequireId ReqId = RequireId::yes>
 struct TrackingLayout {
