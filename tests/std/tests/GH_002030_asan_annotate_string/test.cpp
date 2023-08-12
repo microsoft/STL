@@ -1922,7 +1922,7 @@ void test_gh_3883() {
 
 void test_gh_3955() {
     // GH-3955 <xstring>: ASAN report container-overflow in a legal case
-    std::string s(19, '0');
+    string s(19, '0');
     s = &s[3];
     assert(s == string(16, '0'));
 }
