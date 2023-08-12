@@ -37,27 +37,27 @@ public:
         return *this;
     }
 
-    constexpr int get_id() const noexcept {
+    [[nodiscard]] constexpr int get_id() const noexcept {
         return id;
     }
 
-    constexpr bool is_copy_constructed() const noexcept {
+    [[nodiscard]] constexpr bool is_copy_constructed() const noexcept {
         return copy_constructed;
     }
 
-    constexpr bool is_move_constructed() const noexcept {
+    [[nodiscard]] constexpr bool is_move_constructed() const noexcept {
         return move_constructed;
     }
 
-    constexpr bool is_copy_assigned() const noexcept {
+    [[nodiscard]] constexpr bool is_copy_assigned() const noexcept {
         return copy_assigned;
     }
 
-    constexpr bool is_move_assigned() const noexcept {
+    [[nodiscard]] constexpr bool is_move_assigned() const noexcept {
         return move_assigned;
     }
 
-    constexpr bool is_swapped() const noexcept {
+    [[nodiscard]] constexpr bool is_swapped() const noexcept {
         return swapped;
     }
 
