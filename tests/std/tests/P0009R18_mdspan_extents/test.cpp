@@ -426,7 +426,6 @@ constexpr void check_construction_from_array_and_span() {
         static_assert(!is_constructible_v<Ext, span<int, 1>>);
         static_assert(!is_constructible_v<Ext, span<int, 3>>);
         static_assert(!is_constructible_v<Ext, span<int>>);
-        static_assert(!is_constructible_v<Ext, span<int>>);
     }
 
     { // Check implicit conversions
