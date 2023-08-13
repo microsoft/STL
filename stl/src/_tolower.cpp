@@ -17,6 +17,8 @@
 #undef _tolower
 #undef tolower
 
+#define _cpp_isleadbyte(c) (__pctype_func()[static_cast<unsigned char>(c)] & _LEADBYTE)
+
 _EXTERN_C_UNLESS_PURE
 
 // int _Tolower(c) - convert character to lower case
