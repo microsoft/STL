@@ -7,6 +7,7 @@
 
 #if defined(_M_IX86) || defined(_M_X64) // NB: includes _M_ARM64EC
 #include <cstdint>
+#include <cstring>
 #ifndef _M_ARM64EC
 #include <intrin.h>
 #include <isa_availability.h>
@@ -1494,6 +1495,122 @@ __declspec(noalias) size_t
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_8(const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
     return __std_count_trivial<_Find_traits_8>(_First, _Last, _Val);
+}
+
+} // extern "C"
+
+namespace {
+    __m128i
+#ifdef _M_X64
+        __vectorcall
+#endif
+        _Bitset_to_string_1_step(const uint16_t _Val, const __m128i _Elem0_v, const __m128i _Elem1_v) {
+        const uint16_t _Valsw = _byteswap_ushort(_Val);
+        const __m128i _Vec1   = _mm_cvtsi32_si128(_Valsw);
+        const __m128i _Vec2   = _mm_unpacklo_epi8(_Vec1, _Vec1);
+        const __m128i _Vec3   = _mm_unpacklo_epi8(_Vec2, _Vec2);
+        const __m128i _Vec4   = _mm_unpacklo_epi8(_Vec3, _Vec3);
+        const __m128i _Msk    = _mm_and_si128(_Vec4, _mm_set1_epi64x(0x0102040810204080));
+        const __m128i _Zeros  = _mm_cmpeq_epi8(_Msk, _mm_setzero_si128());
+        const __m128i _Elem0s = _mm_and_si128(_Zeros, _Elem0_v);
+        const __m128i _Elem1s = _mm_andnot_si128(_Zeros, _Elem1_v);
+        const __m128i _Elems  = _mm_or_si128(_Elem0s, _Elem1s);
+        return _Elems;
+    }
+
+    __m128i
+#ifdef _M_X64
+        __vectorcall
+#endif        
+        _Bitset_to_string_2_step(const uint8_t _Val, const __m128i _Elem0_v, const __m128i _Elem1_v) {
+        const __m128i _Vec    = _mm_set1_epi8(_Val);
+        const __m128i _Msk    = _mm_and_si128(_Vec, _mm_set_epi64x(0x0001000200040008, 0x0010002000400080));
+        const __m128i _Zeros  = _mm_cmpeq_epi16(_Msk, _mm_setzero_si128());
+        const __m128i _Elem0s = _mm_and_si128(_Zeros, _Elem0_v);
+        const __m128i _Elem1s = _mm_andnot_si128(_Zeros, _Elem1_v);
+        const __m128i _Elems  = _mm_or_si128(_Elem0s, _Elem1s);
+        return _Elems;
+    }
+} // unnamed namespace
+
+extern "C" {
+
+__declspec(noalias) void __stdcall __std_bitset_to_string_1(
+    char* _Dest, const void* _Src, size_t _Size_bits, char _Elem0, char _Elem1) noexcept {
+    if (_Use_sse2()) {
+        const __m128i _Elem0_v = _mm_set1_epi8(_Elem0);
+        const __m128i _Elem1_v = _mm_set1_epi8(_Elem1);
+        if (_Size_bits > 16) {
+            char* _Pos = _Dest + _Size_bits;
+            _Size_bits &= 0xF;
+            char* _Stop_at = _Dest + _Size_bits;
+            do {
+                uint16_t _Val;
+                memcpy(&_Val, _Src, 2);
+                const __m128i _Elems = _Bitset_to_string_1_step(_Val, _Elem0_v, _Elem1_v);
+                _Pos -= 16;
+                _mm_storeu_si128(reinterpret_cast<__m128i*>(_Pos), _Elems);
+                _Advance_bytes(_Src, 2);
+            } while (_Pos != _Stop_at);
+        }
+        if (_Size_bits > 0) {
+            __assume(_Size_bits < 16);
+            uint16_t _Val;
+            if (_Size_bits > 8) {
+                memcpy(&_Val, _Src, 2);
+            } else {
+                _Val = *reinterpret_cast<const uint8_t*>(_Src);
+            }
+            const __m128i _Elems = _Bitset_to_string_1_step(_Val, _Elem0_v, _Elem1_v);
+            char _Tmp[16];
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Tmp), _Elems);
+            const char* _Tmpd = _Tmp + (16 - _Size_bits);
+            for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
+                _Dest[_Ix] = _Tmpd[_Ix];
+            }
+        }
+    } else {
+        const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
+        for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
+            _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+        }
+    }
+}
+
+__declspec(noalias) void __stdcall __std_bitset_to_string_2(
+    wchar_t* _Dest, const void* _Src, size_t _Size_bits, wchar_t _Elem0, wchar_t _Elem1) noexcept {
+    if (_Use_sse2()) {
+        const __m128i _Elem0_v = _mm_set1_epi16(_Elem0);
+        const __m128i _Elem1_v = _mm_set1_epi16(_Elem1);
+        if (_Size_bits >= 8) {
+            wchar_t* _Pos = _Dest + _Size_bits;
+            _Size_bits &= 0x7;
+            wchar_t* _Stop_at = _Dest + _Size_bits;
+            do {
+                const uint8_t _Val   = *reinterpret_cast<const uint8_t*>(_Src);
+                const __m128i _Elems = _Bitset_to_string_2_step(_Val, _Elem0_v, _Elem1_v);
+                _Pos -= 8;
+                _mm_storeu_si128(reinterpret_cast<__m128i*>(_Pos), _Elems);
+                _Advance_bytes(_Src, 1);
+            } while (_Pos != _Stop_at);
+        }
+        if (_Size_bits > 0) {
+            __assume(_Size_bits < 8);
+            const uint8_t _Val   = *reinterpret_cast<const uint8_t*>(_Src);
+            const __m128i _Elems = _Bitset_to_string_2_step(_Val, _Elem0_v, _Elem1_v);
+            wchar_t _Tmp[8];
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Tmp), _Elems);
+            const wchar_t* _Tmpd = _Tmp + (8 - _Size_bits);
+            for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
+                _Dest[_Ix] = _Tmpd[_Ix];
+            }
+        }
+    } else {
+        const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
+        for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
+            _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+        }
+    }
 }
 
 } // extern "C"

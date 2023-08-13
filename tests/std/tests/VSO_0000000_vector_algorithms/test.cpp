@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <bitset>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -393,6 +394,34 @@ void test_one_container() {
     test_two_containers<Container, list<int>>();
 }
 
+void test_bitset() {
+    assert(bitset<0>(0x0ULL).to_string() == "");
+    assert(bitset<0>(0xFEDCBA9876543210ULL).to_string() == "");
+    assert(bitset<15>(0x6789ULL).to_string() == "110011110001001");
+    assert(bitset<15>(0xFEDCBA9876543210ULL).to_string() == "011001000010000");
+    assert(bitset<32>(0xABCD1234ULL).to_string() == "10101011110011010001001000110100");
+    assert(bitset<32>(0xFEDCBA9876543210ULL).to_string() == "01110110010101000011001000010000");
+    assert(bitset<45>(0x1701D1729FFFULL).to_string() == "101110000000111010001011100101001111111111111");
+    assert(bitset<45>(0xFEDCBA9876543210ULL).to_string() == "110101001100001110110010101000011001000010000");
+    assert(bitset<64>(0xFEDCBA9876543210ULL).to_string()
+           == "1111111011011100101110101001100001110110010101000011001000010000");
+    assert(bitset<75>(0xFEDCBA9876543210ULL).to_string()
+           == "000000000001111111011011100101110101001100001110110010101000011001000010000");
+
+    assert(bitset<0>(0x0ULL).to_string<wchar_t>() == L"");
+    assert(bitset<0>(0xFEDCBA9876543210ULL).to_string<wchar_t>() == L"");
+    assert(bitset<15>(0x6789ULL).to_string<wchar_t>() == L"110011110001001");
+    assert(bitset<15>(0xFEDCBA9876543210ULL).to_string<wchar_t>() == L"011001000010000");
+    assert(bitset<32>(0xABCD1234ULL).to_string<wchar_t>() == L"10101011110011010001001000110100");
+    assert(bitset<32>(0xFEDCBA9876543210ULL).to_string<wchar_t>() == L"01110110010101000011001000010000");
+    assert(bitset<45>(0x1701D1729FFFULL).to_string<wchar_t>() == L"101110000000111010001011100101001111111111111");
+    assert(bitset<45>(0xFEDCBA9876543210ULL).to_string<wchar_t>() == L"110101001100001110110010101000011001000010000");
+    assert(bitset<64>(0xFEDCBA9876543210ULL).to_string<wchar_t>()
+           == L"1111111011011100101110101001100001110110010101000011001000010000");
+    assert(bitset<75>(0xFEDCBA9876543210ULL).to_string<wchar_t>()
+           == L"000000000001111111011011100101110101001100001110110010101000011001000010000");
+}
+
 void test_various_containers() {
     test_one_container<vector<int>>(); // contiguous, vectorizable
     test_one_container<deque<int>>(); // random-access, not vectorizable
@@ -405,20 +434,24 @@ int main() {
 
     test_vector_algorithms(gen);
     test_various_containers();
+    test_bitset();
 #ifndef _M_CEE_PURE
 #if defined(_M_IX86) || defined(_M_X64)
     disable_instructions(__ISA_AVAILABLE_AVX2);
     test_vector_algorithms(gen);
     test_various_containers();
+    test_bitset();
 
     disable_instructions(__ISA_AVAILABLE_SSE42);
     test_vector_algorithms(gen);
     test_various_containers();
+    test_bitset();
 #endif // defined(_M_IX86) || defined(_M_X64)
 #if defined(_M_IX86)
     disable_instructions(__ISA_AVAILABLE_SSE2);
     test_vector_algorithms(gen);
     test_various_containers();
+    test_bitset();
 #endif // defined(_M_IX86)
 #endif // _M_CEE_PURE
 }
