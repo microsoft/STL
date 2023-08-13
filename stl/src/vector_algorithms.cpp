@@ -1505,11 +1505,10 @@ namespace {
         __vectorcall
 #endif
         _Bitset_to_string_1_step(const uint16_t _Val, const __m128i _Elem0_v, const __m128i _Elem1_v) {
-        const uint16_t _Valsw = _byteswap_ushort(_Val);
-        const __m128i _Vec1   = _mm_cvtsi32_si128(_Valsw);
+        const __m128i _Vec1   = _mm_cvtsi32_si128(_Val);
         const __m128i _Vec2   = _mm_unpacklo_epi8(_Vec1, _Vec1);
         const __m128i _Vec3   = _mm_unpacklo_epi8(_Vec2, _Vec2);
-        const __m128i _Vec4   = _mm_unpacklo_epi8(_Vec3, _Vec3);
+        const __m128i _Vec4   = _mm_shuffle_epi32(_Vec3, _MM_SHUFFLE(0, 0, 1, 1));
         const __m128i _Msk    = _mm_and_si128(_Vec4, _mm_set1_epi64x(0x0102040810204080));
         const __m128i _Zeros  = _mm_cmpeq_epi8(_Msk, _mm_setzero_si128());
         const __m128i _Elem0s = _mm_and_si128(_Zeros, _Elem0_v);
