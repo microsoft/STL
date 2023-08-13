@@ -1530,7 +1530,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     if (_Use_sse2()) {
         const __m128i _Xor_v = _mm_set1_epi8(_Elem0 ^ _Elem1);
         const __m128i _And_v = _mm_set1_epi8(_Elem1);
-        if (_Size_bits > 16) {
+        if (_Size_bits >= 16) {
             char* _Pos = _Dest + _Size_bits;
             _Size_bits &= 0xF;
             char* const _Stop_at = _Dest + _Size_bits;
