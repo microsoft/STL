@@ -1536,14 +1536,14 @@ namespace {
 extern "C" {
 
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
-    char* _Dest, const void* _Src, size_t _Size_bits, char _Elem0, char _Elem1) noexcept {
+    char* const _Dest, const void* _Src, size_t _Size_bits, const char _Elem0, const char _Elem1) noexcept {
     if (_Use_sse2()) {
         const __m128i _Elem0_v = _mm_set1_epi8(_Elem0);
         const __m128i _Elem1_v = _mm_set1_epi8(_Elem1);
         if (_Size_bits > 16) {
             char* _Pos = _Dest + _Size_bits;
             _Size_bits &= 0xF;
-            char* _Stop_at = _Dest + _Size_bits;
+            char* const _Stop_at = _Dest + _Size_bits;
             do {
                 uint16_t _Val;
                 memcpy(&_Val, _Src, 2);
@@ -1564,7 +1564,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
             const __m128i _Elems = _Bitset_to_string_1_step(_Val, _Elem0_v, _Elem1_v);
             char _Tmp[16];
             _mm_storeu_si128(reinterpret_cast<__m128i*>(_Tmp), _Elems);
-            const char* _Tmpd = _Tmp + (16 - _Size_bits);
+            const char* const _Tmpd = _Tmp + (16 - _Size_bits);
             for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
@@ -1578,14 +1578,14 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
 }
 
 __declspec(noalias) void __stdcall __std_bitset_to_string_2(
-    wchar_t* _Dest, const void* _Src, size_t _Size_bits, wchar_t _Elem0, wchar_t _Elem1) noexcept {
+    wchar_t* const _Dest, const void* _Src, size_t _Size_bits, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
     if (_Use_sse2()) {
         const __m128i _Elem0_v = _mm_set1_epi16(_Elem0);
         const __m128i _Elem1_v = _mm_set1_epi16(_Elem1);
         if (_Size_bits >= 8) {
             wchar_t* _Pos = _Dest + _Size_bits;
             _Size_bits &= 0x7;
-            wchar_t* _Stop_at = _Dest + _Size_bits;
+            wchar_t* const _Stop_at = _Dest + _Size_bits;
             do {
                 const uint8_t _Val   = *reinterpret_cast<const uint8_t*>(_Src);
                 const __m128i _Elems = _Bitset_to_string_2_step(_Val, _Elem0_v, _Elem1_v);
@@ -1600,7 +1600,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
             const __m128i _Elems = _Bitset_to_string_2_step(_Val, _Elem0_v, _Elem1_v);
             wchar_t _Tmp[8];
             _mm_storeu_si128(reinterpret_cast<__m128i*>(_Tmp), _Elems);
-            const wchar_t* _Tmpd = _Tmp + (8 - _Size_bits);
+            const wchar_t* const _Tmpd = _Tmp + (8 - _Size_bits);
             for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
