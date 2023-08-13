@@ -1523,7 +1523,7 @@ namespace {
         __vectorcall
 #endif
         _Bitset_to_string_2_step(const uint8_t _Val, const __m128i _Elem0_v, const __m128i _Elem1_v) {
-        const __m128i _Vec    = _mm_set1_epi8(_Val);
+        const __m128i _Vec    = _mm_set1_epi16(_Val);
         const __m128i _Msk    = _mm_and_si128(_Vec, _mm_set_epi64x(0x0001000200040008, 0x0010002000400080));
         const __m128i _Zeros  = _mm_cmpeq_epi16(_Msk, _mm_setzero_si128());
         const __m128i _Elem0s = _mm_and_si128(_Zeros, _Elem0_v);
