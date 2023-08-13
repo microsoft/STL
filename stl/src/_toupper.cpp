@@ -16,6 +16,8 @@
 #undef _toupper
 #undef toupper
 
+#define _cpp_isleadbyte(c) (__pctype_func()[static_cast<unsigned char>(c)] & _LEADBYTE)
+
 _EXTERN_C_UNLESS_PURE
 
 // int _Toupper(c) - convert character to uppercase

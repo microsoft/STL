@@ -275,11 +275,6 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #endif
 #endif // _CRTIMP2_PURE
 
-#ifdef _CRTBLD
-// These functions are for enabling STATIC_CPPLIB functionality
-#define _cpp_isleadbyte(c) (__pctype_func()[static_cast<unsigned char>(c)] & _LEADBYTE)
-#endif // defined(_CRTBLD)
-
 #ifndef _CRTIMP2_IMPORT
 #if defined(CRTDLL2) && defined(_CRTBLD)
 #define _CRTIMP2_IMPORT __declspec(dllexport)
