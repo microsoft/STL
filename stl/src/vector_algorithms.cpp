@@ -1500,11 +1500,8 @@ __declspec(noalias) size_t
 } // extern "C"
 
 namespace {
-    __m128i
-#ifdef _M_X64
-        __vectorcall
-#endif
-        _Bitset_to_string_1_step(const uint16_t _Val, const __m128i _Elem0_v, const __m128i _Elem1_v) {
+    __m128i __forceinline _Bitset_to_string_1_step(
+        const uint16_t _Val, const __m128i _Elem0_v, const __m128i _Elem1_v) {
         const __m128i _Vec1   = _mm_cvtsi32_si128(_Val);
         const __m128i _Vec2   = _mm_unpacklo_epi8(_Vec1, _Vec1);
         const __m128i _Vec3   = _mm_unpacklo_epi8(_Vec2, _Vec2);
@@ -1517,11 +1514,7 @@ namespace {
         return _Elems;
     }
 
-    __m128i
-#ifdef _M_X64
-        __vectorcall
-#endif
-        _Bitset_to_string_2_step(const uint8_t _Val, const __m128i _Elem0_v, const __m128i _Elem1_v) {
+    __m128i __forceinline _Bitset_to_string_2_step(const uint8_t _Val, const __m128i _Elem0_v, const __m128i _Elem1_v) {
         const __m128i _Vec    = _mm_set1_epi16(_Val);
         const __m128i _Msk    = _mm_and_si128(_Vec, _mm_set_epi64x(0x0001000200040008, 0x0010002000400080));
         const __m128i _Zeros  = _mm_cmpeq_epi16(_Msk, _mm_setzero_si128());
