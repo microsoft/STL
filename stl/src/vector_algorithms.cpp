@@ -1499,6 +1499,7 @@ __declspec(noalias) size_t
 
 } // extern "C"
 
+#ifndef _M_ARM64EC
 namespace {
     __m128i __forceinline _Bitset_to_string_1_step(const uint16_t _Val, const __m128i _Xor_v, const __m128i _And_v) {
         const __m128i _Vec1  = _mm_cvtsi32_si128(_Val);
@@ -1519,11 +1520,13 @@ namespace {
         return _Elems;
     }
 } // unnamed namespace
+#endif // !defined(_M_ARM64EC)
 
 extern "C" {
 
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* const _Dest, const void* _Src, size_t _Size_bits, const char _Elem0, const char _Elem1) noexcept {
+#ifndef _M_ARM64EC
     if (_Use_sse2()) {
         const __m128i _Xor_v = _mm_set1_epi8(_Elem0 ^ _Elem1);
         const __m128i _And_v = _mm_set1_epi8(_Elem1);
@@ -1556,16 +1559,18 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
-    } else {
-        const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
-        for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
-            _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
-        }
+        return;
+    }
+#endif // !defined(_M_ARM64EC)
+    const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
+    for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
+        _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
     }
 }
 
 __declspec(noalias) void __stdcall __std_bitset_to_string_2(
     wchar_t* const _Dest, const void* _Src, size_t _Size_bits, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
+#ifndef _M_ARM64EC
     if (_Use_sse2()) {
         const __m128i _Xor_v = _mm_set1_epi16(_Elem0 ^ _Elem1);
         const __m128i _And_v = _mm_set1_epi16(_Elem1);
@@ -1592,11 +1597,12 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
-    } else {
-        const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
-        for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
-            _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
-        }
+        return;
+    }
+#endif // !defined(_M_ARM64EC)
+    const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
+    for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
+        _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
     }
 }
 
