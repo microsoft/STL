@@ -1521,7 +1521,7 @@ namespace {
     __m128i
 #ifdef _M_X64
         __vectorcall
-#endif        
+#endif
         _Bitset_to_string_2_step(const uint8_t _Val, const __m128i _Elem0_v, const __m128i _Elem1_v) {
         const __m128i _Vec    = _mm_set1_epi8(_Val);
         const __m128i _Msk    = _mm_and_si128(_Vec, _mm_set_epi64x(0x0001000200040008, 0x0010002000400080));

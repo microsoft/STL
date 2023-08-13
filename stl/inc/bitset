@@ -374,7 +374,7 @@ public:
                 }
             }
 #endif // _USE_STD_VECTOR_ALGORITHMS
-            
+
             for (size_t _Pos = 0; _Pos < _Len; ++_Pos) {
                 _Buf[_Pos] = _Subscript(_Len - 1 - _Pos) ? _Elem1 : _Elem0;
             }
