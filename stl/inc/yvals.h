@@ -277,9 +277,6 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 
 #ifdef _CRTBLD
 // These functions are for enabling STATIC_CPPLIB functionality
-#define _cpp_stdin         (__acrt_iob_func(0))
-#define _cpp_stdout        (__acrt_iob_func(1))
-#define _cpp_stderr        (__acrt_iob_func(2))
 #define _cpp_isleadbyte(c) (__pctype_func()[static_cast<unsigned char>(c)] & _LEADBYTE)
 #endif // defined(_CRTBLD)
 
