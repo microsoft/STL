@@ -29,9 +29,9 @@ int main() {
     std::any a{foo{}}, b(bar{}), c{baz{}};
     a = a, b = b, c = c;
     a = std::move(a), b = std::move(b), c = std::move(c);
-    auto a_ = std::any_cast<foo>(a);
-    auto b_ = std::any_cast<bar>(b);
-    auto c_ = std::any_cast<baz>(c);
+    (void) std::any_cast<foo>(a);
+    (void) std::any_cast<bar>(b);
+    (void) std::any_cast<baz>(c);
 
     return 0;
 }

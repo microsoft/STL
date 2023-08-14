@@ -3165,6 +3165,10 @@ namespace msvc {
         struct foo {
             int val;
             foo() : val(42) {}
+            foo(const foo&)            = default;
+            foo& operator=(const foo&) = default;
+            foo(foo&&)                 = default;
+            foo& operator=(foo&&)      = default;
             ~foo() {
                 val = 0;
             }
