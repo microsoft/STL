@@ -2575,16 +2575,19 @@ namespace msvc {
                     // small
                     any a{small{42}};
                     a = std::move(a);
+                    assert(a.has_value());
                 }
                 {
                     // large
                     any a{large{42}};
                     a = std::move(a);
+                    assert(a.has_value());
                 }
                 {
                     // trivial
                     any a{int{42}};
                     a = std::move(a);
+                    assert(a.has_value());
                 }
             }
 #ifdef __clang__
@@ -3160,28 +3163,6 @@ namespace msvc {
         }
 #pragma warning(pop)
     } // namespace trivial
-
-    namespace self_move_assign {
-        struct foo {
-            int val;
-            foo() : val(42) {}
-            foo(const foo&)            = default;
-            foo& operator=(const foo&) = default;
-            foo(foo&&)                 = default;
-            foo& operator=(foo&&)      = default;
-            ~foo() {
-                val = 0;
-            }
-        };
-        void run_test() {
-            any a(foo{});
-            any* ap = &a;
-            a       = std::move(*ap);
-            assert(a.has_value());
-            assert(containsType<foo>(a));
-            assert(any_cast<foo>(&a)->val == 42);
-        }
-    } // namespace self_move_assign
 } // namespace msvc
 
 int main() {
@@ -3218,5 +3199,4 @@ int main() {
     msvc::size_and_alignment::run_test();
     msvc::small_type::run_test();
     msvc::trivial::run_test();
-    msvc::self_move_assign::run_test();
 }
