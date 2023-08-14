@@ -2570,6 +2570,7 @@ namespace msvc {
                     // empty
                     any a;
                     a = std::move(a);
+                    assertEmpty(a);
                 }
                 {
                     // small
