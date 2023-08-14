@@ -168,8 +168,10 @@ public:
     }
 
     any& operator=(any&& _That) noexcept {
-        reset();
-        _Move_from(_That);
+        if (this != &_That) {
+            reset();
+            _Move_from(_That);
+        }
         return *this;
     }
 
