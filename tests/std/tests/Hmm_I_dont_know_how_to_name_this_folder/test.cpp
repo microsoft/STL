@@ -23,7 +23,7 @@ int main() {
         nontrivial q{};
     };
     struct baz {
-        foo p[10]{};
+        foo p[20]{};
     };
 
     std::any a{foo{}}, b(bar{}), c{baz{}};
