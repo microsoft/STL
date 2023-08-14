@@ -27,8 +27,9 @@ int main() {
     };
 
     std::any a{foo{}}, b(bar{}), c{baz{}};
-    a = a, b = b, c = c;
-    a = std::move(a), b = std::move(b), c = std::move(c);
+    std::any *ap = &a, *bp = &b, *cp = &c;
+    a = *ap, b = *bp, c = *cp;
+    a = std::move(*ap), b = std::move(*bp), c = std::move(*cp);
     (void) std::any_cast<foo>(a);
     (void) std::any_cast<bar>(b);
     (void) std::any_cast<baz>(c);

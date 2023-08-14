@@ -3175,7 +3175,8 @@ namespace msvc {
         };
         void run_test() {
             any a(foo{});
-            a = std::move(a);
+            any* ap = &a;
+            a       = std::move(*ap);
             assert(a.has_value());
             assert(containsType<foo>(a));
             assert(any_cast<foo>(&a)->val == 42);
