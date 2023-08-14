@@ -2575,19 +2575,19 @@ namespace msvc {
                     // small
                     any a{small{42}};
                     a = std::move(a);
-                    assert(a.has_value());
+                    assertContains<small>(a, 42);
                 }
                 {
                     // large
                     any a{large{42}};
                     a = std::move(a);
-                    assert(a.has_value());
+                    assertContains<large>(a, 42);
                 }
                 {
                     // trivial
                     any a{int{42}};
                     a = std::move(a);
-                    assert(a.has_value());
+                    assertContains<int>(a, 42);
                 }
             }
 #ifdef __clang__
