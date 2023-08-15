@@ -289,7 +289,7 @@ private:
         }
     }
 
-    void _Reset_and_move_from(any _That) noexcept {
+    void _Reset_and_move_from(any _That) noexcept { // intentionally pass by value
         reset();
         _Move_from(_That);
     }

@@ -2571,11 +2571,21 @@ namespace msvc {
                     any a;
                     a = std::move(a);
                     assertEmpty(a);
+
+                    a              = std::make_any<any>();
+                    any* inner_any = any_cast<any>(&a);
+                    a              = std::move(*inner_any);
+                    assertEmpty(a);
                 }
                 {
                     // small
                     any a{small{42}};
                     a = std::move(a);
+                    assertContains<small>(a, 42);
+
+                    a              = std::make_any<any>(small{42});
+                    any* inner_any = any_cast<any>(&a);
+                    a              = std::move(*inner_any);
                     assertContains<small>(a, 42);
                 }
                 {
@@ -2583,11 +2593,21 @@ namespace msvc {
                     any a{large{42}};
                     a = std::move(a);
                     assertContains<large>(a, 42);
+
+                    a              = std::make_any<any>(large{42});
+                    any* inner_any = any_cast<any>(&a);
+                    a              = std::move(*inner_any);
+                    assertContains<large>(a, 42);
                 }
                 {
                     // trivial
                     any a{int{42}};
                     a = std::move(a);
+                    assertContains<int>(a, 42);
+
+                    a              = std::make_any<any>(int{42});
+                    any* inner_any = any_cast<any>(&a);
+                    a              = std::move(*inner_any);
                     assertContains<int>(a, 42);
                 }
             }
