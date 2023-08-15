@@ -1306,9 +1306,9 @@ public:
     _NODISCARD constexpr reference operator[](const array<_OtherIndexType, rank()>& _Indices) const {
         return [&]<size_t... _Seq>(index_sequence<_Seq...>) -> reference {
 #ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
-            return operator[](_Indices[_Seq]...);
+            return operator[](_STD as_const(_Indices[_Seq])...);
 #else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
-            return _Multidimensional_access(_Indices[_Seq]...);
+            return _Multidimensional_access(_STD as_const(_Indices[_Seq])...);
 #endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
         }(make_index_sequence<rank()>{});
     }
