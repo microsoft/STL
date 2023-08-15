@@ -4157,6 +4157,9 @@ public:
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) {
                     _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1);
                 });
+        } else {
+            _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
+            _Mypair._Myval2._Mysize = _New_size;
         }
 
         auto _Arg_ptr           = _Mypair._Myval2._Myptr();
