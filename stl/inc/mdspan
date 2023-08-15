@@ -1401,7 +1401,7 @@ private:
 
     template <class... _OtherIndexTypes>
     _NODISCARD constexpr reference _Access_impl(_OtherIndexTypes... _Indices) const
-        noexcept(noexcept(this->_Acc.access(_Ptr, static_cast<size_t>(this->_Map(_Indices...))))) /* strengthened */ {
+        noexcept(noexcept(this->_Acc.access(_Ptr, static_cast<size_t>(this->_Map(_Indices...))))) {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_OtherIndexTypes, index_type> && ...));
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Map.extents()._Contains_multidimensional_index(make_index_sequence<rank()>{}, _Indices...),
