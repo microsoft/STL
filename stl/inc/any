@@ -163,15 +163,12 @@ public:
 
     // Assignment [any.assign]
     any& operator=(const any& _That) {
-        *this = any{_That};
+        _Reset_and_move_from(_That);
         return *this;
     }
 
     any& operator=(any&& _That) noexcept {
-        if (this != &_That) {
-            reset();
-            _Move_from(_That);
-        }
+        _Reset_and_move_from(_STD move(_That));
         return *this;
     }
 
@@ -290,6 +287,11 @@ private:
             _CSTD memcpy(_Storage._TrivialData, _That._Storage._TrivialData, sizeof(_Storage._TrivialData));
             break;
         }
+    }
+
+    void _Reset_and_move_from(any _That) noexcept {
+        reset();
+        _Move_from(_That);
     }
 
     template <class _Decayed, class... _Types>
