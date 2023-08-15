@@ -3371,9 +3371,12 @@ public:
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
         // assign [_Ptr, _Ptr + _Count)
         if (_Count <= _Mypair._Myval2._Myres) {
-            _Elem* const _Old_ptr = _Mypair._Myval2._Myptr();
+            _ASAN_STRING_REMOVE(*this);
+            _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
+            _Mypair._Myval2._Mysize = _Count;
             _Traits::move(_Old_ptr, _Ptr, _Count);
-            _Eos(_Count);
+            _Traits::assign(_Old_ptr[_Count], _Elem());
+            _ASAN_STRING_CREATE(*this);
             return *this;
         }
 
