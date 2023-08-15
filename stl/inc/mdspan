@@ -1200,7 +1200,7 @@ public:
           _Ptr(_STD move(_Ptr_)) {}
 
     template <class _OtherIndexType, size_t _Size>
-        requires is_convertible_v<_OtherIndexType, index_type>
+        requires is_convertible_v<const _OtherIndexType&, index_type>
                   && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
                   && (_Size == rank() || _Size == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
