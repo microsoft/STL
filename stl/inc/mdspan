@@ -1276,6 +1276,13 @@ public:
         noexcept(noexcept(_Access_impl(static_cast<index_type>(_STD move(_Indices))...))) /* strengthened */ {
         return _Access_impl(static_cast<index_type>(_STD move(_Indices))...);
     }
+
+private:
+    template <class _OtherIndexType, size_t... _Seq>
+    _NODISCARD constexpr reference _Multidimensional_subscript(
+        span<_OtherIndexType, rank()> _Indices, index_sequence<_Seq...>) const {
+        return operator[](_STD as_const(_Indices[_Seq])...);
+    }
 #else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
 private:
     template <class... _OtherIndexTypes>
@@ -1284,33 +1291,26 @@ private:
         return _Access_impl(static_cast<index_type>(_STD move(_Indices))...);
     }
 
-public:
+    template <class _OtherIndexType, size_t... _Seq>
+    _NODISCARD constexpr reference _Multidimensional_subscript(
+        span<_OtherIndexType, rank()> _Indices, index_sequence<_Seq...>) const {
+        return _Multidimensional_access(_STD as_const(_Indices[_Seq])...);
+    }
 #endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
 
+public:
     template <class _OtherIndexType>
         requires is_convertible_v<const _OtherIndexType&, index_type>
               && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
     _NODISCARD constexpr reference operator[](span<_OtherIndexType, rank()> _Indices) const {
-        return [&]<size_t... _Seq>(index_sequence<_Seq...>) -> reference {
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
-            return operator[](_STD as_const(_Indices[_Seq])...);
-#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
-            return _Multidimensional_access(_STD as_const(_Indices[_Seq])...);
-#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
-        }(make_index_sequence<rank()>{});
+        return _Multidimensional_subscript(_Indices, make_index_sequence<rank()>{});
     }
 
     template <class _OtherIndexType>
         requires is_convertible_v<const _OtherIndexType&, index_type>
               && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
     _NODISCARD constexpr reference operator[](const array<_OtherIndexType, rank()>& _Indices) const {
-        return [&]<size_t... _Seq>(index_sequence<_Seq...>) -> reference {
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
-            return operator[](_STD as_const(_Indices[_Seq])...);
-#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
-            return _Multidimensional_access(_STD as_const(_Indices[_Seq])...);
-#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
-        }(make_index_sequence<rank()>{});
+        return _Multidimensional_subscript(span{_Indices}, make_index_sequence<rank()>{});
     }
 
     _NODISCARD constexpr size_type size() const noexcept {
