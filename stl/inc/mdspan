@@ -304,7 +304,7 @@ public:
         }
     }
 
-    template <class... _IndexTypes, size_t... _Seq>
+    template <size_t... _Seq, class... _IndexTypes>
     _NODISCARD constexpr bool _Contains_multidimensional_index(
         index_sequence<_Seq...>, _IndexTypes... _Indices) const noexcept {
         _STL_INTERNAL_STATIC_ASSERT((same_as<_IndexTypes, index_type> && ...));
