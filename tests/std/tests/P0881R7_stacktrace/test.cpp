@@ -156,6 +156,11 @@ string to_string_using_to_string(const stacktrace& st) {
     return to_string(st) + "\n";
 }
 
+#if !defined(HAS_DEBUG_INFO) && defined(__SANITIZE_ADDRESS__)
+// We always use /Zi with /fsanitize=address
+#define HAS_DEBUG_INFO 1
+#endif // ^^^ !defined(HAS_DEBUG_INFO) && defined(__SANITIZE_ADDRESS__) ^^^
+
 #if defined(HAS_DEBUG_INFO) || defined(HAS_EXPORT)
 #define HAS_NAMES
 #endif // ^^^ defined(HAS_DEBUG_INFO) || defined(HAS_EXPORT) ^^^
