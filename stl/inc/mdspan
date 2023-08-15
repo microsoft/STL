@@ -1359,19 +1359,19 @@ public:
         return this->_Acc;
     }
 
-    _NODISCARD static constexpr bool is_always_unique() noexcept(
-        noexcept(mapping_type::is_always_unique())) /* strengthened */ {
-        return mapping_type::is_always_unique();
+    _NODISCARD static constexpr bool is_always_unique() noexcept /* strengthened */ {
+        constexpr bool _Result = mapping_type::is_always_unique();
+        return _Result;
     }
 
-    _NODISCARD static constexpr bool is_always_exhaustive() noexcept(
-        noexcept(mapping_type::is_always_exhaustive())) /* strengthened */ {
-        return mapping_type::is_always_exhaustive();
+    _NODISCARD static constexpr bool is_always_exhaustive() noexcept /* strengthened */ {
+        constexpr bool _Result = mapping_type::is_always_exhaustive();
+        return _Result;
     }
 
-    _NODISCARD static constexpr bool is_always_strided() noexcept(
-        noexcept(mapping_type::is_always_strided())) /* strengthened */ {
-        return mapping_type::is_always_strided();
+    _NODISCARD static constexpr bool is_always_strided() noexcept /* strengthened */ {
+        constexpr bool _Result = mapping_type::is_always_strided();
+        return _Result;
     }
 
     _NODISCARD constexpr bool is_unique() const noexcept(noexcept(this->_Map.is_unique())) /* strengthened */ {
