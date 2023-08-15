@@ -1276,7 +1276,15 @@ public:
         noexcept(noexcept(_Access_impl(static_cast<index_type>(_STD move(_Indices))...))) /* strengthened */ {
         return _Access_impl(static_cast<index_type>(_STD move(_Indices))...);
     }
-#endif // __cpp_multidimensional_subscript
+#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
+private:
+    template <class... _OtherIndexTypes>
+    _NODISCARD constexpr reference _Multidimensional_access(_OtherIndexTypes... _Indices) const {
+        return _Access_impl(static_cast<index_type>(_STD move(_Indices))...);
+    }
+
+public:
+#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
 
     template <class _OtherIndexType>
         requires is_convertible_v<const _OtherIndexType&, index_type>
@@ -1391,13 +1399,6 @@ public:
     }
 
 private:
-#ifndef __cpp_multidimensional_subscript // TRANSITION, P2128R6
-    template <class... _OtherIndexTypes>
-    _NODISCARD constexpr reference _Multidimensional_access(_OtherIndexTypes... _Indices) const {
-        return _Access_impl(static_cast<index_type>(_STD move(_Indices))...);
-    }
-#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
-
     template <class... _OtherIndexTypes>
     _NODISCARD constexpr reference _Access_impl(_OtherIndexTypes... _Indices) const
         noexcept(noexcept(this->_Acc.access(_Ptr, static_cast<size_t>(this->_Map(_Indices...))))) {
