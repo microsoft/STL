@@ -1279,7 +1279,8 @@ public:
 #else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
 private:
     template <class... _OtherIndexTypes>
-    _NODISCARD constexpr reference _Multidimensional_access(_OtherIndexTypes... _Indices) const {
+    _NODISCARD constexpr reference _Multidimensional_access(_OtherIndexTypes... _Indices) const
+        noexcept(noexcept(_Access_impl(static_cast<index_type>(_STD move(_Indices))...))) {
         return _Access_impl(static_cast<index_type>(_STD move(_Indices))...);
     }
 
