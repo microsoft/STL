@@ -1045,12 +1045,12 @@ struct default_accessor {
         requires is_convertible_v<_OtherElementType (*)[], element_type (*)[]>
     constexpr default_accessor(default_accessor<_OtherElementType>) noexcept {}
 
-    _NODISCARD constexpr data_handle_type offset(data_handle_type _Ptr, size_t _Idx) const noexcept {
-        return _Ptr + _Idx;
-    }
-
     _NODISCARD constexpr reference access(data_handle_type _Ptr, size_t _Idx) const noexcept {
         return _Ptr[_Idx];
+    }
+
+    _NODISCARD constexpr data_handle_type offset(data_handle_type _Ptr, size_t _Idx) const noexcept {
+        return _Ptr + _Idx;
     }
 };
 
