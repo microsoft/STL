@@ -163,12 +163,12 @@ public:
 
     // Assignment [any.assign]
     any& operator=(const any& _That) {
-        _Reset_and_move_from(_That);
+        _Assign(_That);
         return *this;
     }
 
     any& operator=(any&& _That) noexcept {
-        _Reset_and_move_from(_STD move(_That));
+        _Assign(_STD move(_That));
         return *this;
     }
 
@@ -177,7 +177,7 @@ public:
                                     int> = 0>
     any& operator=(_ValueType&& _Value) {
         // replace contained value with an object of type decay_t<_ValueType> initialized from _Value
-        *this = any{_STD forward<_ValueType>(_Value)};
+        _Assign(any{_STD forward<_ValueType>(_Value)});
         return *this;
     }
 
@@ -289,7 +289,7 @@ private:
         }
     }
 
-    void _Reset_and_move_from(any _That) noexcept { // intentionally pass by value
+    void _Assign(any _That) noexcept { // intentionally pass by value
         reset();
         _Move_from(_That);
     }
