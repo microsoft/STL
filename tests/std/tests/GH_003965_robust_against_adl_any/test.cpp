@@ -2,12 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <any>
-#include <utility>
-
-#ifdef __clang__
-_Pragma("clang diagnostic ignored \"-Wself-assign-overloaded\"");
-_Pragma("clang diagnostic ignored \"-Wself-move\"");
-#endif
 
 struct incomplete;
 
@@ -32,11 +26,14 @@ int main() {
     };
 
     std::any a{foo{}}, b(bar{}), c{baz{}};
-    a = a, b = b, c = c;
-    a = std::move(a), b = std::move(b), c = std::move(c);
+
+    a = foo{}, b = bar{}, c = baz{};
+
+    a.emplace<foo>();
+    b.emplace<bar>();
+    c.emplace<baz>();
+
     (void) std::any_cast<foo>(a);
     (void) std::any_cast<bar>(b);
     (void) std::any_cast<baz>(c);
-
-    return 0;
 }
