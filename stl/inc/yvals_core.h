@@ -26,7 +26,7 @@
 #define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
 #pragma message(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): STL1003: Unexpected compiler, expected C++ compiler.")
 #error Error in C++ Standard Library usage
-#endif // __cplusplus
+#endif // !defined(__cplusplus)
 
 // Implemented unconditionally:
 // N3911 void_t
@@ -300,6 +300,7 @@
 // P2602R2 Poison Pills Are Too Toxic
 // P2609R3 Relaxing Ranges Just A Smidge
 // P2655R3 common_reference_t Of reference_wrapper Should Be A Reference Type
+// P2675R1 Improving std::format's Width Estimation
 // P2711R1 Making Multi-Param Constructors Of Views explicit
 // P2736R2 Referencing The Unicode Standard
 // P2770R0 Stashing Stashing Iterators For Proper Flattening
@@ -374,6 +375,7 @@
 // P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
 // P2652R2 Disallowing User Specialization Of allocator_traits
+// P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
@@ -748,23 +750,23 @@
 // termination on exception is not guaranteed. Specify /EHsc (/Wall)
 #if _HAS_EXCEPTIONS
 #define _STL_DISABLED_WARNING_C4577
-#else // _HAS_EXCEPTIONS
+#else
 #define _STL_DISABLED_WARNING_C4577 4577
-#endif // _HAS_EXCEPTIONS
+#endif
 
 // warning C4984: 'if constexpr' is a C++17 language extension
 #if !_HAS_CXX17
 #define _STL_DISABLED_WARNING_C4984 4984
-#else // !_HAS_CXX17
+#else
 #define _STL_DISABLED_WARNING_C4984
-#endif // !_HAS_CXX17
+#endif
 
 // warning C5053: support for 'explicit(<expr>)' in C++17 and earlier is a vendor extension
 #if !_HAS_CXX20
 #define _STL_DISABLED_WARNING_C5053 5053
-#else // !_HAS_CXX20
+#else
 #define _STL_DISABLED_WARNING_C5053
-#endif // !_HAS_CXX20
+#endif
 
 #ifndef _STL_EXTRA_DISABLED_WARNINGS
 #define _STL_EXTRA_DISABLED_WARNINGS
@@ -828,17 +830,17 @@
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
 // clang-format on
-#else // __clang__
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_DISABLE_CLANG_WARNINGS
-#endif // __clang__
+#endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_DISABLE_CLANG_WARNINGS
 
 #ifndef _STL_RESTORE_CLANG_WARNINGS
 #ifdef __clang__
 #define _STL_RESTORE_CLANG_WARNINGS _Pragma("clang diagnostic pop")
-#else // __clang__
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_RESTORE_CLANG_WARNINGS
-#endif // __clang__
+#endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_RESTORE_CLANG_WARNINGS
 
 // clang-format off
@@ -871,7 +873,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202307L
+#define _MSVC_STL_UPDATE  202308L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -895,7 +897,7 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.36 or ne
 
 #ifndef _HAS_STATIC_RTTI
 #define _HAS_STATIC_RTTI 1
-#endif // _HAS_STATIC_RTTI
+#endif // !defined(_HAS_STATIC_RTTI)
 
 #if defined(_CPPRTTI) && !_HAS_STATIC_RTTI
 #error /GR implies _HAS_STATIC_RTTI.
@@ -935,9 +937,9 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.36 or ne
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
 #define _INLINE_VAR inline
-#else // _HAS_CXX17
+#else
 #define _INLINE_VAR
-#endif // _HAS_CXX17
+#endif
 
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
 #ifndef _HAS_AUTO_PTR_ETC
@@ -982,13 +984,13 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #if _HAS_TR1_NAMESPACE
 #ifdef _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
 #define _DEPRECATE_TR1_NAMESPACE
-#else // _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
+#else // ^^^ warning disabled / warning enabled vvv
 #define _DEPRECATE_TR1_NAMESPACE                                                                                  \
     [[deprecated(                                                                                                 \
         "warning STL4002: "                                                                                       \
         "The non-Standard std::tr1 namespace and TR1-only machinery are deprecated and will be REMOVED. You can " \
         "define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING to suppress this warning.")]]
-#endif // _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
+#endif // ^^^ warning enabled ^^^
 #endif // _HAS_TR1_NAMESPACE
 
 // STL4003 was "The non-Standard std::identity struct is deprecated and will be REMOVED."
@@ -1018,12 +1020,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifndef _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
 #define _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS 1
 #endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
-
-#ifdef __cpp_consteval
-#define _CONSTEVAL consteval
-#else // ^^^ supports consteval / no consteval vvv
-#define _CONSTEVAL constexpr
-#endif // ^^^ no consteval ^^^
 
 // Controls whether the STL will force /fp:fast to enable vectorization of algorithms defined
 // in the standard as special cases; such as reduce, transform_reduce, inclusive_scan, exclusive_scan
@@ -1684,7 +1680,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_algorithm_iterator_requirements 202207L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
@@ -1702,7 +1698,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_common_reference         202302L
 #define __cpp_lib_common_reference_wrapper 202302L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_constexpr_algorithms    201806L
 #define __cpp_lib_constexpr_complex       201711L
@@ -1722,7 +1718,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_format              202207L
 #define __cpp_lib_freestanding_ranges 202306L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
@@ -1747,7 +1743,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_move_iterator_concept 202207L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_polymorphic_allocator   201902L
 #define __cpp_lib_remove_cvref            201711L
@@ -1761,7 +1757,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_three_way_comparison 201907L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_to_address    201711L
 #define __cpp_lib_to_array      201907L
@@ -1783,7 +1779,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_containers_ranges 202202L
 #define __cpp_lib_expected          202211L
-#endif // __cpp_lib_concepts
+#define __cpp_lib_formatters        202302L
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_forward_like   202207L
 #define __cpp_lib_invoke_r       202106L
@@ -1816,7 +1813,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_stride            202207L
 #define __cpp_lib_ranges_to_container      202202L
 #define __cpp_lib_ranges_zip               202110L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_spanstream                  202106L
 #define __cpp_lib_stacktrace                  202011L
@@ -1827,7 +1824,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_tuple_like 202207L
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_unreachable 202202L
 #endif // _HAS_CXX23
@@ -1843,9 +1840,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
 #elif _HAS_CXX17
 #define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
-#else // _HAS_CXX17
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
 #define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
-#endif // _HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^
 
 #if _HAS_CXX23
 #define __cpp_lib_constexpr_memory 202202L // P2273R3 constexpr unique_ptr
@@ -1879,9 +1876,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
-#else // _HAS_CXX20
+#else
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
-#endif // _HAS_CXX20
+#endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
@@ -1928,10 +1925,10 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #ifdef _M_CEE_PURE
 #define _EXTERN_C_UNLESS_PURE
 #define _END_EXTERN_C_UNLESS_PURE
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 #define _EXTERN_C_UNLESS_PURE     _EXTERN_C
 #define _END_EXTERN_C_UNLESS_PURE _END_EXTERN_C
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
 #if defined(MRTDLL) && !defined(_CRTBLD)
 #error In yvals_core.h, defined(MRTDLL) implies defined(_CRTBLD); !defined(_CRTBLD) implies !defined(MRTDLL)

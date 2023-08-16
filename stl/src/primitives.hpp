@@ -20,7 +20,7 @@ namespace Concurrency {
 
             void wait(_Stl_critical_section* lock) {
                 if (!wait_for(lock, INFINITE)) {
-                    std::terminate();
+                    _CSTD abort();
                 }
             }
 
@@ -51,15 +51,5 @@ namespace Concurrency {
         inline void create_stl_condition_variable(stl_condition_variable_win7* p) {
             new (p) stl_condition_variable_win7;
         }
-
-#if defined(_CRT_WINDOWS) // for Windows-internal code
-        const size_t stl_condition_variable_max_size = 2 * sizeof(void*);
-#elif defined(_WIN64) // ordinary 64-bit code
-        const size_t stl_condition_variable_max_size = 72;
-#else // vvv ordinary 32-bit code vvv
-        const size_t stl_condition_variable_max_size = 40;
-#endif // ^^^ ordinary 32-bit code ^^^
-
-        const size_t stl_condition_variable_max_alignment = alignof(void*);
     } // namespace details
 } // namespace Concurrency

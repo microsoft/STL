@@ -358,7 +358,7 @@ public:
     static constexpr int digits     = 8;
     static constexpr int digits10   = 2;
 };
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
 template <>
 class numeric_limits<char16_t> : public _Num_int_base {

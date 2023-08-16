@@ -18,13 +18,13 @@ private:
 };
 
 struct Lion : public Cat {
-    virtual int meow() const {
+    int meow() const override {
         return 6;
     }
 };
 
 struct Tiger : public Cat {
-    virtual int meow() const {
+    int meow() const override {
         return 7;
     }
 };
@@ -42,13 +42,13 @@ private:
 };
 
 struct Jupiter : public Planet {
-    virtual int orbit() const {
+    int orbit() const override {
         return 8;
     }
 };
 
 struct Saturn : public Planet {
-    virtual int orbit() const {
+    int orbit() const override {
         return 9;
     }
 };

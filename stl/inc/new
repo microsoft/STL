@@ -64,7 +64,7 @@ _EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, _STD align_val_t,
 _EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, _STD align_val_t) noexcept;
 _EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, size_t, _STD align_val_t) noexcept;
 _EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, _STD align_val_t, const _STD nothrow_t&) noexcept;
-#endif // __cpp_aligned_new
+#endif // defined(__cpp_aligned_new)
 
 _EXPORT_STD extern "C++" _NODISCARD void* __CRTDECL operator new(size_t, void*) noexcept;
 _EXPORT_STD extern "C++" _NODISCARD void* __CRTDECL operator new[](size_t, void*) noexcept;
@@ -72,7 +72,7 @@ _EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, void*) noexcept;
 _EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, void*) noexcept;
 
 #pragma warning(pop)
-#endif // _BUILD_STD_MODULE
+#endif // defined(_BUILD_STD_MODULE)
 
 _STD_BEGIN
 #if _HAS_EXCEPTIONS

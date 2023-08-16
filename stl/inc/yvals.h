@@ -94,7 +94,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #else
 #define _SECURE_SCL 0
 #endif
-#endif // _SECURE_SCL
+#endif // ^^^ !defined(_SECURE_SCL) ^^^
 
 #else // B. _ITERATOR_DEBUG_LEVEL is not yet defined.
 
@@ -124,7 +124,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #else
 #define _SECURE_SCL 0
 #endif
-#endif // _SECURE_SCL
+#endif // ^^^ !defined(_SECURE_SCL) ^^^
 
 // B3. Derive _ITERATOR_DEBUG_LEVEL.
 #if _HAS_ITERATOR_DEBUGGING
@@ -135,7 +135,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _ITERATOR_DEBUG_LEVEL 0
 #endif
 
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ !defined(_ITERATOR_DEBUG_LEVEL) ^^^
 
 #ifndef _ALLOW_MSC_VER_MISMATCH
 #pragma detect_mismatch("_MSC_VER", "1900")
@@ -171,12 +171,12 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifndef _STL_CRT_SECURE_INVALID_PARAMETER
 #ifdef _STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER
-#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::abort()
+#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CSTD abort()
 #elif defined(_DEBUG) // avoid emitting unused long strings for function names; see GH-1956
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, __LINE__, 0)
-#else // _DEBUG
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CRT_SECURE_INVALID_PARAMETER(expr)
-#endif // _DEBUG
+#endif // ^^^ !defined(_DEBUG) ^^^
 #endif // _STL_CRT_SECURE_INVALID_PARAMETER
 
 #define _STL_REPORT_ERROR(mesg)                  \
@@ -211,9 +211,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifdef _DEBUG
 #define _STL_ASSERT(cond, mesg) _STL_VERIFY(cond, mesg)
-#else // ^^^ _DEBUG / !_DEBUG vvv
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _STL_ASSERT(cond, mesg) _Analysis_assume_(cond)
-#endif // _DEBUG
+#endif // ^^^ !defined(_DEBUG) ^^^
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
 #define _STL_INTERNAL_CHECK(...) _STL_VERIFY(__VA_ARGS__, "STL internal check: " #__VA_ARGS__)
@@ -224,9 +224,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
 #ifdef _DEBUG
 #define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 1
-#else // ^^^ _DEBUG / !_DEBUG vvv
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 0
-#endif // _DEBUG
+#endif // ^^^ !defined(_DEBUG) ^^^
 #endif // _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
 
 #if _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
@@ -281,7 +281,7 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #define _cpp_stdout        (__acrt_iob_func(1))
 #define _cpp_stderr        (__acrt_iob_func(2))
 #define _cpp_isleadbyte(c) (__pctype_func()[static_cast<unsigned char>(c)] & _LEADBYTE)
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 #ifndef _CRTIMP2_IMPORT
 #if defined(CRTDLL2) && defined(_CRTBLD)
@@ -359,11 +359,11 @@ public:
         _Lockit_dtor(this);
     }
 
-#else // _M_CEE_PURE
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
     __thiscall _Lockit() noexcept;
     explicit __thiscall _Lockit(int) noexcept; // set the lock
     __thiscall ~_Lockit() noexcept; // clear the lock
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     static void __cdecl _Lockit_ctor(int) noexcept;
     static void __cdecl _Lockit_dtor(int) noexcept;
@@ -420,14 +420,14 @@ private:
     }                                              \
     }
 
-#else // _PREPARE_CONSTRAINED_REGIONS
+#else // ^^^ _PREPARE_CONSTRAINED_REGIONS / !_PREPARE_CONSTRAINED_REGIONS vvv
 #define _BEGIN_LOCK(_Kind) \
     {                      \
         _STD _Lockit _Lock(_Kind);
 
 #define _END_LOCK() }
 
-#endif // _PREPARE_CONSTRAINED_REGIONS
+#endif // ^^^ !_PREPARE_CONSTRAINED_REGIONS ^^^
 
 #define _BEGIN_LOCINFO(_VarName) \
     _BEGIN_LOCK(_LOCK_LOCALE)    \
@@ -435,7 +435,7 @@ private:
 
 #define _END_LOCINFO() _END_LOCK()
 
-#else // _M_CEE
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 #define _BEGIN_LOCK(_Kind) \
     {                      \
         _STD _Lockit _Lock(_Kind);
@@ -447,7 +447,7 @@ private:
         _Locinfo _VarName;
 
 #define _END_LOCINFO() }
-#endif // _M_CEE
+#endif // ^^^ !defined(_M_CEE) ^^^
 
 #ifdef _CRTBLD
 
@@ -456,11 +456,11 @@ private:
     [System::Runtime::ConstrainedExecution::ReliabilityContract(                 \
         System::Runtime::ConstrainedExecution::Consistency::WillNotCorruptState, \
         System::Runtime::ConstrainedExecution::Cer::Success)]
-#else // _M_CEE
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 #define _RELIABILITY_CONTRACT
-#endif // _M_CEE
+#endif // ^^^ !defined(_M_CEE) ^^^
 
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 #if _HAS_EXCEPTIONS
 #define _TRY_BEGIN try {
@@ -475,7 +475,7 @@ private:
 #define _RERAISE  throw
 #define _THROW(x) throw x
 
-#else // _HAS_EXCEPTIONS
+#else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
 #define _TRY_BEGIN \
     {              \
         if (1) {
@@ -491,13 +491,13 @@ private:
 
 #ifdef _DEBUG
 #define _RAISE(x) _invoke_watson(_CRT_WIDE(#x), __FUNCTIONW__, __FILEW__, __LINE__, 0)
-#else // _DEBUG
+#else
 #define _RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
-#endif // _DEBUG
+#endif
 
 #define _RERAISE
 #define _THROW(x) x._Raise()
-#endif // _HAS_EXCEPTIONS
+#endif // ^^^ !_HAS_EXCEPTIONS ^^^
 _STD_END
 
 #pragma pop_macro("new")

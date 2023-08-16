@@ -34,7 +34,7 @@ void test_Dev11_496153_locale_ctor_should_not_throw() noexcept {
 }
 
 struct comma_separator : numpunct<char> {
-    virtual char do_decimal_point() const override {
+    char do_decimal_point() const override {
         return ',';
     }
 };

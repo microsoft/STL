@@ -12,7 +12,7 @@
 
 #ifdef __cpp_lib_concepts
 #include <concepts>
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #if _HAS_CXX20
 #include <compare>
@@ -214,9 +214,9 @@ template <class _PairLike, class _Ty1, class _Ty2>
 concept _Can_construct_from_pair_like = _Pair_like<_PairLike> && !_Is_subrange_v<remove_cvref_t<_PairLike>>
                                      && is_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_PairLike>()))>
                                      && is_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_PairLike>()))>;
-#endif // __clang__
+#endif // defined(__clang__)
 #endif // _HAS_CXX23
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct pair { // store a pair of values
@@ -294,14 +294,14 @@ struct pair { // store a pair of values
         requires conjunction_v<bool_constant<!_Is_subrange_v<remove_cvref_t<_Other>>>,
                      is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
                      is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
-#endif // __clang__
+#endif // ^^^ no workaround ^^^
     constexpr explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
                        is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>)
         pair(_Other&& _Right) noexcept(is_nothrow_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>&&
                 is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
         : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     template <class _Tuple1, class _Tuple2, size_t... _Indices1, size_t... _Indices2>
@@ -438,7 +438,7 @@ struct pair { // store a pair of values
         second = _STD get<1>(_STD forward<_Other>(_Right));
         return *this;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(pair& _Right) noexcept(
@@ -802,7 +802,7 @@ inline constexpr bool _Is_standard_integer = is_integral_v<_Ty>
 #endif // _NATIVE_WCHAR_T_DEFINED
 #ifdef __cpp_char8_t
                                               char8_t,
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
                                               char16_t, char32_t>;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
@@ -905,13 +905,13 @@ using _With_reference = _Ty&;
 
 template <class _Ty>
 concept _Can_reference = requires { typename _With_reference<_Ty>; };
-#else // __cpp_lib_concepts
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty, class = void>
 inline constexpr bool _Can_reference = false;
 
 template <class _Ty>
 inline constexpr bool _Can_reference<_Ty, void_t<_Ty&>> = true;
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23
@@ -924,7 +924,7 @@ _EXPORT_STD [[noreturn]] __forceinline void unreachable() noexcept /* strengthen
     _STL_UNREACHABLE;
 #ifdef _DEBUG
     _CSTD abort(); // likely to be called in debug mode, but can't be relied upon - already entered the UB territory
-#endif // _DEBUG
+#endif // defined(_DEBUG)
 }
 
 _EXPORT_STD template <class _Ty, class _Uty>
