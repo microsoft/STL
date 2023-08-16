@@ -3184,6 +3184,27 @@ namespace msvc {
         }
 #pragma warning(pop)
     } // namespace trivial
+
+    namespace gh_140_robust_against_adl {
+        struct incomplete;
+
+        template <class T>
+        struct wrapper {
+            T t;
+        };
+
+        void run_test() {
+            using _trivial = wrapper<incomplete>*;
+            using _small   = std::pair<_trivial, small>;
+            using _large   = std::pair<_trivial, large>;
+
+            globalMemCounter.disable_allocations = true;
+            any a{_trivial{}};
+            any b{_small{}};
+            globalMemCounter.disable_allocations = false;
+            any c{_large{}};
+        }
+    } // namespace gh_140_robust_against_adl
 } // namespace msvc
 
 int main() {
@@ -3220,4 +3241,5 @@ int main() {
     msvc::size_and_alignment::run_test();
     msvc::small_type::run_test();
     msvc::trivial::run_test();
+    msvc::gh_140_robust_against_adl::run_test();
 }
