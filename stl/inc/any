@@ -163,12 +163,12 @@ public:
 
     // Assignment [any.assign]
     any& operator=(const any& _That) {
-        _Assign(_That);
+        _Assign(any{_That});
         return *this;
     }
 
     any& operator=(any&& _That) noexcept {
-        _Assign(_STD move(_That));
+        _Assign(any{_STD move(_That)});
         return *this;
     }
 
