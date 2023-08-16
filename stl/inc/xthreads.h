@@ -125,7 +125,7 @@ int __cdecl _Smtx_try_lock_exclusive(_Smtx_t*);
 int __cdecl _Smtx_try_lock_shared(_Smtx_t*);
 void __cdecl _Smtx_unlock_exclusive(_Smtx_t*);
 void __cdecl _Smtx_unlock_shared(_Smtx_t*);
-void __stdcall _Thrd_sleep_for(unsigned long /*ms*/); // TRANSITION: defined in sharedmutex.cpp for convenience
+void __stdcall _Thrd_sleep_for(unsigned long /*ms*/); // defined in sharedmutex.cpp for convenience
 
 // condition variables
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*);
