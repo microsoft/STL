@@ -1925,6 +1925,10 @@ void test_gh_3955() {
     string s(19, '0');
     s = &s[3];
     assert(s == string(16, '0'));
+
+    string t(19, '0');
+    s = &t[0];
+    assert(s == t);
 }
 
 int main() {
