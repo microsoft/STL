@@ -253,12 +253,6 @@ public:
         return __ExceptionPtrToBool(this);
     }
 
-    static exception_ptr _Current_exception() noexcept {
-        exception_ptr _Retval;
-        __ExceptionPtrCurrentException(&_Retval);
-        return _Retval;
-    }
-
     static exception_ptr _Copy_exception(_In_ void* _Except, _In_ const void* _Ptr) {
         exception_ptr _Retval;
         if (!_Ptr) {
@@ -312,7 +306,9 @@ private:
 };
 
 _EXPORT_STD _NODISCARD inline exception_ptr current_exception() noexcept {
-    return exception_ptr::_Current_exception();
+    exception_ptr _Retval;
+    __ExceptionPtrCurrentException(&_Retval);
+    return _Retval;
 }
 
 _EXPORT_STD [[noreturn]] inline void rethrow_exception(_In_ exception_ptr _Ptr) {
