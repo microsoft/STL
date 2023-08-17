@@ -389,6 +389,27 @@ _EXPORT_STD template <class _Ty>
 void rethrow_if_nested(const _Ty&) = delete; // requires /GR option
 #endif // ^^^ !defined(_CPPRTTI) ^^^
 
+_EXPORT_STD class bad_variant_access
+    : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
+public:
+    bad_variant_access() noexcept = default;
+
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
+        return "bad variant access";
+    }
+
+#if !_HAS_EXCEPTIONS
+protected:
+    void _Doraise() const override { // perform class-specific exception handling
+        _RAISE(*this);
+    }
+#endif // ^^^ !_HAS_EXCEPTIONS ^^^
+};
+
+[[noreturn]] inline void _Throw_bad_variant_access() {
+    _THROW(bad_variant_access{});
+}
+
 _STD_END
 
 #pragma pop_macro("new")

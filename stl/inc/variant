@@ -1175,27 +1175,6 @@ private:
     }
 };
 
-_EXPORT_STD class bad_variant_access
-    : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
-public:
-    bad_variant_access() noexcept = default;
-
-    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
-        return "bad variant access";
-    }
-
-#if !_HAS_EXCEPTIONS
-protected:
-    void _Doraise() const override { // perform class-specific exception handling
-        _RAISE(*this);
-    }
-#endif // ^^^ !_HAS_EXCEPTIONS ^^^
-};
-
-[[noreturn]] inline void _Throw_bad_variant_access() {
-    _THROW(bad_variant_access{});
-}
-
 _EXPORT_STD template <class _Ty, class... _Types>
 _NODISCARD constexpr bool holds_alternative(const variant<_Types...>& _Var) noexcept {
     // true iff _Var holds alternative _Ty
