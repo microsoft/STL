@@ -688,8 +688,6 @@ class basic_format_args;
 _FMT_P2286_BEGIN
 template <class _CharT>
 struct _Format_handler;
-
-struct _Monostate {};
 _FMT_P2286_END
 
 _EXPORT_STD template <class _Context>
@@ -820,7 +818,7 @@ private:
 
     _Basic_format_arg_type _Active_state = _Basic_format_arg_type::_None;
     union {
-        _Monostate _No_state{};
+        monostate _No_state = monostate{};
         int _Int_state;
         unsigned int _UInt_state;
         long long _Long_long_state;
@@ -2419,7 +2417,7 @@ _EXPORT_STD using wformat_context = basic_format_context<_Fmt_wit, wchar_t>;
 
 _FMT_P2286_BEGIN
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, _Monostate) {
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, monostate) {
     _STL_INTERNAL_CHECK(false);
     return _Out;
 }
@@ -2688,7 +2686,7 @@ _NODISCARD _OutputIt _Write_separated_integer(const char* _First, const char* co
 }
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, _Monostate, const _Basic_format_specs<_CharT>&, _Lazy_locale) {
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, monostate, const _Basic_format_specs<_CharT>&, _Lazy_locale) {
     _STL_INTERNAL_CHECK(false);
     return _Out;
 }
