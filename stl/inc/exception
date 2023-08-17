@@ -347,9 +347,10 @@ private:
     exception_ptr _Exc;
 };
 
-template <class _Ty, class _Uty>
-struct _With_nested : _Uty, nested_exception { // glue user exception to nested_exception
-    explicit _With_nested(_Ty&& _Arg)
+template <class _Uty>
+struct _With_nested_v2 : _Uty, nested_exception { // glue user exception to nested_exception
+    template <class _Ty>
+    explicit _With_nested_v2(_Ty&& _Arg)
         : _Uty(_STD forward<_Ty>(_Arg)), nested_exception() {} // store user exception and current_exception()
 };
 
@@ -360,7 +361,7 @@ _EXPORT_STD template <class _Ty>
 
     if constexpr (is_class_v<_Uty> && !is_base_of_v<nested_exception, _Uty> && !is_final_v<_Uty>) {
         // throw user exception glued to nested_exception
-        using _Glued = _With_nested<_Ty, _Uty>;
+        using _Glued = _With_nested_v2<_Uty>;
         _THROW(_Glued(_STD forward<_Ty>(_Arg)));
     } else {
         // throw user exception by itself
