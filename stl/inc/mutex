@@ -573,20 +573,7 @@ public:
     template <class _Rep, class _Period>
     cv_status wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time) {
         // wait for duration
-        if (_Rel_time <= chrono::duration<_Rep, _Period>::zero()) {
-            return cv_status::timeout;
-        }
-
-        // TRANSITION, ABI: The standard says that we should use a steady clock,
-        // but unfortunately our ABI relies on the system clock.
-        _timespec64 _Tgt;
-        const bool _Clamped     = _To_timespec64_sys_10_day_clamped(_Tgt, _Rel_time);
-        const cv_status _Result = _Wait_until_sys_time(_Lck, &_Tgt);
-        if (_Clamped) {
-            return cv_status::no_timeout;
-        }
-
-        return _Result;
+        return wait_until(_Lck, _To_absolute_time(_Rel_time));
     }
 
     template <class _Rep, class _Period, class _Predicate>
