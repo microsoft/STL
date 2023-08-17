@@ -7170,10 +7170,6 @@ _NODISCARD constexpr bool _Is_finite(const _Ty _Xx) noexcept { // constexpr isfi
     return _Float_abs_bits(_Xx) < _Traits::_Shifted_exponent_mask;
 }
 
-#if _HAS_CXX17
-_EXPORT_STD struct monostate {};
-#endif // _HAS_CXX17
-
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 template <_Integer_like _Int>
 _NODISCARD constexpr bool _Add_overflow(const _Int _Left, const _Int _Right, _Int& _Out) {

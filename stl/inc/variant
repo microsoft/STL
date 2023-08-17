@@ -1655,6 +1655,8 @@ constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
 }
 #endif // _HAS_CXX20
 
+_EXPORT_STD struct monostate {};
+
 _EXPORT_STD _NODISCARD constexpr bool operator==(monostate, monostate) noexcept {
     return true;
 }
