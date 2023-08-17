@@ -50,6 +50,7 @@ _CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t mtx) { // destroy mutex i
     (void) mtx;
 }
 
+// TRANSITION, ABI: used only by _Thrd_create(), which is preserved for binary compatibility
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t* mtx, int type) { // initialize mutex
     *mtx = nullptr;
 
@@ -65,6 +66,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t* mtx, int type) { // initial
     return _Thrd_result::_Success;
 }
 
+// TRANSITION, ABI: used only by _Thrd_create(), which is preserved for binary compatibility
 _CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t mtx) { // destroy mutex
     if (mtx) { // something to do, do it
         _Mtx_destroy_in_situ(mtx);

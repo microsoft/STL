@@ -28,6 +28,7 @@ _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(const _Cnd_t cond) { // initialize 
 
 _CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t) {} // destroy condition variable in situ
 
+// TRANSITION, ABI: used only by _Thrd_create(), which is preserved for binary compatibility
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t* const pcond) { // initialize
     *pcond = nullptr;
 
@@ -41,6 +42,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t* const pcond) { // initializ
     return _Thrd_result::_Success;
 }
 
+// TRANSITION, ABI: used only by _Thrd_create(), which is preserved for binary compatibility
 _CRTIMP2_PURE void __cdecl _Cnd_destroy(const _Cnd_t cond) { // clean up
     if (cond) { // something to do, do it
         _Cnd_destroy_in_situ(cond);

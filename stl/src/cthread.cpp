@@ -109,6 +109,12 @@ _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() { // return numb
     return info.dwNumberOfProcessors;
 }
 
+// TRANSITION, ABI: these functions are used only by _Thrd_create()
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t*, int);
+_CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t);
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*);
+_CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t);
+
 // TRANSITION, ABI: _Thrd_create() is preserved for binary compatibility
 _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_create(_Thrd_t* thr, _Thrd_start_t func, void* d) { // create thread
     _Thrd_result res;
