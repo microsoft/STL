@@ -327,10 +327,6 @@ _NODISCARD_SMART_PTR_ALLOC exception_ptr make_exception_ptr(_Ex _Except) noexcep
     return exception_ptr::_Copy_exception(_STD addressof(_Except), __GetExceptionInfo(_Except));
 }
 
-[[noreturn]] inline void _Throw_bad_array_new_length() {
-    _THROW(bad_array_new_length{});
-}
-
 _EXPORT_STD class nested_exception { // wrap an exception_ptr
 public:
     nested_exception() noexcept : _Exc(_STD current_exception()) {}
