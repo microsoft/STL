@@ -588,16 +588,21 @@ public:
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
+        if (!_Mtx_current_owns(_Lck.mutex()->_Mymtx())) {
+            _Throw_Cpp_error(_OPERATION_NOT_PERMITTED);
+        }
         for (;;) {
             const auto _Now = _Clock::now();
             if (_Abs_time <= _Now) {
                 return cv_status::timeout;
             }
 
+            // TRANSITION, ABI: incorrectly relying on system clock
             _timespec64 _Tgt;
             (void) _To_timespec64_sys_10_day_clamped(_Tgt, _Abs_time - _Now);
-            const cv_status _Result = _Wait_until_sys_time(_Lck, &_Tgt);
-            if (_Result == cv_status::no_timeout) {
+            // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
+            const _Thrd_result _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), &_Tgt);
+            if (_Res == _Thrd_result::_Success) {
                 return cv_status::no_timeout;
             }
         }
@@ -634,22 +639,6 @@ private:
 
     _Cnd_t _Mycnd() noexcept { // get pointer to _Cnd_internal_imp_t inside _Cnd_storage
         return reinterpret_cast<_Cnd_t>(&_Cnd_storage);
-    }
-
-    cv_status _Wait_until_sys_time(unique_lock<mutex>& _Lck, const _timespec64* _Abs_time) {
-        // wait for signal with timeout
-        if (!_Mtx_current_owns(_Lck.mutex()->_Mymtx())) {
-            _Throw_Cpp_error(_OPERATION_NOT_PERMITTED);
-        }
-
-        // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
-        const _Thrd_result _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), _Abs_time);
-
-        if (_Res == _Thrd_result::_Success) {
-            return cv_status::no_timeout;
-        } else {
-            return cv_status::timeout;
-        }
     }
 };
 
