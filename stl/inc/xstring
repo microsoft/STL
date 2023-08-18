@@ -3371,11 +3371,12 @@ public:
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
         // assign [_Ptr, _Ptr + _Count)
         if (_Count <= _Mypair._Myval2._Myres) {
-            _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _Count);
+            _ASAN_STRING_REMOVE(*this);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Mypair._Myval2._Mysize = _Count;
             _Traits::move(_Old_ptr, _Ptr, _Count);
             _Traits::assign(_Old_ptr[_Count], _Elem());
+            _ASAN_STRING_CREATE(*this);
             return *this;
         }
 
@@ -4141,8 +4142,6 @@ public:
         }
     }
 
-#pragma warning(push)
-#pragma warning(disable : 4018) // '<=': signed/unsigned mismatch (we compare to 0 before _New_size below, so it's safe)
     template <class _Operation>
     constexpr void
 #if _HAS_CXX23
@@ -4156,18 +4155,21 @@ public:
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) {
                     _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1);
                 });
+        } else {
+            _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
+            _Mypair._Myval2._Mysize = _New_size;
         }
 
-        auto _Arg_ptr           = _Mypair._Myval2._Myptr();
-        auto _Arg_size          = _New_size;
-        const auto _Result_size = _STD move(_Op)(_Arg_ptr, _Arg_size);
+        auto _Arg_ptr                   = _Mypair._Myval2._Myptr();
+        auto _Arg_size                  = _New_size;
+        const auto _Result_size         = _STD move(_Op)(_Arg_ptr, _Arg_size);
+        const auto _Result_as_size_type = static_cast<size_type>(_Result_size);
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
-        _STL_VERIFY(_Result_size <= _New_size, "the returned size can't be greater than the passed size");
+        _STL_VERIFY(_Result_as_size_type <= _New_size, "the returned size can't be greater than the passed size");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        _Eos(static_cast<size_type>(_Result_size));
+        _Eos(_Result_as_size_type);
     }
-#pragma warning(pop)
 
 #if _HAS_CXX23
     template <class _Operation>
