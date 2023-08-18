@@ -292,6 +292,7 @@
 // P2418R2 Add Support For std::generator-like Types To std::format
 // P2419R2 Clarify Handling Of Encodings In Localized Formatting Of chrono Types
 // P2432R1 Fix istream_view
+// P2465R3 Standard Library Modules std And std.compat
 // P2508R1 basic_format_string, format_string, wformat_string
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 // P2538R1 ADL-Proof projected
@@ -365,7 +366,6 @@
 // P2443R1 views::chunk_by
 // P2445R1 forward_like()
 // P2446R2 views::as_rvalue
-// P2465R3 Standard Library Modules std And std.compat
 // P2467R1 ios_base::noreplace: Exclusive Mode For fstreams
 // P2474R2 views::repeat
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
@@ -928,11 +928,14 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.36 or ne
 #endif // ^^^ inline (not constexpr) in C++20 and earlier ^^^
 
 // P2465R3 Standard Library Modules std And std.compat
-#if _HAS_CXX23 && defined(_BUILD_STD_MODULE)
+#ifdef _BUILD_STD_MODULE
+#if !_HAS_CXX20
+#error The Standard Library Modules are available only with C++20 or later.
+#endif // ^^^ !_HAS_CXX20 ^^^
 #define _EXPORT_STD export
-#else // _HAS_CXX23 && defined(_BUILD_STD_MODULE)
+#else // ^^^ defined(_BUILD_STD_MODULE) / !defined(_BUILD_STD_MODULE) vvv
 #define _EXPORT_STD
-#endif // _HAS_CXX23 && defined(_BUILD_STD_MODULE)
+#endif // ^^^ !defined(_BUILD_STD_MODULE) ^^^
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
@@ -1741,6 +1744,10 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
 
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules
+#define __cpp_lib_modules 202207L
+#endif // !defined(__clang__) && !defined(__EDG__)
+
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_move_iterator_concept 202207L
 #endif // defined(__cpp_lib_concepts)
@@ -1782,15 +1789,10 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_formatters        202302L
 #endif // defined(__cpp_lib_concepts)
 
-#define __cpp_lib_forward_like   202207L
-#define __cpp_lib_invoke_r       202106L
-#define __cpp_lib_ios_noreplace  202207L
-#define __cpp_lib_is_scoped_enum 202011L
-
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules
-#define __cpp_lib_modules 202207L
-#endif // !defined(__clang__) && !defined(__EDG__)
-
+#define __cpp_lib_forward_like       202207L
+#define __cpp_lib_invoke_r           202106L
+#define __cpp_lib_ios_noreplace      202207L
+#define __cpp_lib_is_scoped_enum     202011L
 #define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts
