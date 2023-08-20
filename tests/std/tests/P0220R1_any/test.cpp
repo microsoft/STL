@@ -2572,9 +2572,8 @@ namespace msvc {
                     a = std::move(a);
                     assertEmpty(a);
 
-                    a              = std::make_any<any>();
-                    any* inner_any = any_cast<any>(&a);
-                    a              = std::move(*inner_any);
+                    a = std::make_any<any>();
+                    a = any_cast<any&&>(std::move(a)); // extract inner any
                     assertEmpty(a);
                 }
                 {
@@ -2583,9 +2582,8 @@ namespace msvc {
                     a = std::move(a);
                     assertContains<small>(a, 42);
 
-                    a              = std::make_any<any>(small{42});
-                    any* inner_any = any_cast<any>(&a);
-                    a              = std::move(*inner_any);
+                    a = std::make_any<any>(small{42});
+                    a = any_cast<any&&>(std::move(a)); // extract inner any
                     assertContains<small>(a, 42);
                 }
                 {
@@ -2594,9 +2592,8 @@ namespace msvc {
                     a = std::move(a);
                     assertContains<large>(a, 42);
 
-                    a              = std::make_any<any>(large{42});
-                    any* inner_any = any_cast<any>(&a);
-                    a              = std::move(*inner_any);
+                    a = std::make_any<any>(large{42});
+                    a = any_cast<any&&>(std::move(a)); // extract inner any
                     assertContains<large>(a, 42);
                 }
                 {
@@ -2605,9 +2602,8 @@ namespace msvc {
                     a = std::move(a);
                     assertContains<int>(a, 42);
 
-                    a              = std::make_any<any>(int{42});
-                    any* inner_any = any_cast<any>(&a);
-                    a              = std::move(*inner_any);
+                    a = std::make_any<any>(int{42});
+                    a = any_cast<any&&>(std::move(a)); // extract inner any
                     assertContains<int>(a, 42);
                 }
             }
@@ -3193,16 +3189,27 @@ namespace msvc {
             T t;
         };
 
+        template <class Type>
+        void test_for() {
+            any a;
+            a = any{Type()};
+            a = any{std::in_place_type<Type>};
+            a = Type();
+            a = std::make_any<Type>();
+            a.emplace<Type>();
+            assert(any_cast<Type>(&a) != nullptr);
+        }
+
         void run_test() {
             using _trivial = wrapper<incomplete>*;
             using _small   = std::pair<_trivial, small>;
             using _large   = std::pair<_trivial, large>;
 
             globalMemCounter.disable_allocations = true;
-            any a{_trivial{}};
-            any b{_small{}};
+            test_for<_trivial>();
+            test_for<_small>();
             globalMemCounter.disable_allocations = false;
-            any c{_large{}};
+            test_for<_large>();
         }
     } // namespace gh_140_robust_against_adl
 } // namespace msvc
