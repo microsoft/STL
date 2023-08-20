@@ -532,6 +532,30 @@ void test_gh_3378() {
     }
 }
 
+// Also test GH-3376 <iostream>: Wrong reading of float values
+template <class Flt>
+void test_gh3980() {
+    Flt val = 0;
+
+    istringstream{"1e+02"} >> val;
+    assert((ostringstream{} << val).str() == "100");
+
+    istringstream{"1e+01"} >> val;
+    assert((ostringstream{} << val).str() == "10");
+
+    stringstream{"1e+0"} >> val;
+    assert((ostringstream{} << val).str() == "1");
+
+    stringstream{"1e-0"} >> val;
+    assert((ostringstream{} << val).str() == "1");
+
+    stringstream{"1e-01"} >> val;
+    assert((ostringstream{} << val).str() == (ostringstream{} << 1e-01).str());
+
+    stringstream{"1e-06"} >> val;
+    assert((ostringstream{} << val).str() == (ostringstream{} << 1e-06).str());
+}
+
 #if _HAS_CXX17
 void test_float_from_char_cases() {
     for (const auto& test_case : float_from_chars_test_cases) {
@@ -588,6 +612,10 @@ int main() {
 
     test_gh_3378<double>();
     test_gh_3378<long double>();
+
+    test_gh3980<float>();
+    test_gh3980<double>();
+    test_gh3980<long double>();
 
 #if _HAS_CXX17
     test_float_from_char_cases();

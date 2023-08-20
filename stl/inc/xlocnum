@@ -1019,10 +1019,6 @@ private:
                 _Seendigit = true;
             }
 
-            if (_Seendigit) {
-                *_Ptr++ = '0'; // put one back
-            }
-
             for (size_t _Idx; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_dec_digit_end;
                  _Seendigit = true, (void) ++_First) {
                 if (_Exponent_part < PTRDIFF_MAX / 10
