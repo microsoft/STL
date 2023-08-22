@@ -58,10 +58,10 @@ public:
     static_assert(random_access_iterator<iterator>, "The C++ Standard forbids containers without random "
                                                     "access iterators from being adapted. See [flatset.overview].");
 
-    _Base_flat_set() : _My_pair(_Zero_then_variadic_args_t{}, _Keylt()) {}
+    _Base_flat_set() : _My_pair(_Zero_then_variadic_args_t{}) {}
 
     explicit _Base_flat_set(container_type _Cont, const key_compare& _Comp = key_compare())
-        : _My_pair(_One_then_variadic_args_t{}, _STD move(_Cont), _Comp) {
+        : _My_pair(_One_then_variadic_args_t{}, _Comp, _STD move(_Cont)) {
         _Make_invariants_fulfilled();
     }
     template <_Allocator_for<container_type> _Alloc>
@@ -71,7 +71,7 @@ public:
         : _Base_flat_set(container_type(_Cont, _Al), _Comp) {}
 
     _Base_flat_set(_Tsorted, container_type _Cont, const key_compare& _Comp = key_compare())
-        : _My_pair(_One_then_variadic_args_t{}, _STD move(_Cont), _Comp) {
+        : _My_pair(_One_then_variadic_args_t{}, _Comp, _STD move(_Cont)) {
         _Assert_after_sorted_input();
     }
     template <_Allocator_for<container_type> _Alloc>
@@ -81,7 +81,7 @@ public:
     _Base_flat_set(_Tsorted _Tsort, const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(_Tsort, container_type(_Cont, _Al), _Comp) {}
 
-    explicit _Base_flat_set(const key_compare& _Comp) : _My_pair(_Zero_then_variadic_args_t{}, _Comp) {}
+    explicit _Base_flat_set(const key_compare& _Comp) : _My_pair(_One_then_variadic_args_t{}, _Comp) {}
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(const key_compare& _Comp, const _Alloc& _Al) : _Base_flat_set(_Comp, container_type(_Al)) {}
     template <_Allocator_for<container_type> _Alloc>
@@ -578,22 +578,22 @@ private:
     }
 
     _NODISCARD const _Container& _Get_cont() const noexcept {
-        return _My_pair._Get_first();
+        return _My_pair._Myval2;
     }
 
     _NODISCARD _Container& _Get_cont() noexcept {
-        return _My_pair._Get_first();
+        return _My_pair._Myval2;
     }
 
     _NODISCARD const key_compare& _Get_comp() const noexcept {
-        return _My_pair._Myval2;
+        return _My_pair._Get_first();
     }
 
     _NODISCARD key_compare& _Get_comp() noexcept {
-        return _My_pair._Myval2;
+        return _My_pair._Get_first();
     }
 
-    _Compressed_pair<container_type, key_compare> _My_pair;
+    _Compressed_pair<key_compare, container_type> _My_pair;
 };
 
 _EXPORT_STD struct sorted_unique_t {
