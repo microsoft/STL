@@ -2673,8 +2673,7 @@ private:
             return;
         }
 
-        _My_data._Myres         = _Small_string_capacity;
-        size_type _New_capacity = _Calculate_growth(_Count);
+        size_type _New_capacity = _Calculate_growth(_Count, _Small_string_capacity, max_size());
         const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
 
@@ -2731,7 +2730,7 @@ private:
                     }
 
                     _Elem* const _Old_ptr   = _My_data._Myptr();
-                    size_type _New_capacity = _Calculate_growth(_My_data._Mysize);
+                    size_type _New_capacity = _Calculate_growth(_My_data._Mysize + 1);
                     const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
 
                     _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
