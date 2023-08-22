@@ -4264,9 +4264,6 @@ public:
         auto& _My_data    = _Mypair._Myval2;
         auto& _Right_data = _Right._Mypair._Myval2;
 
-        const bool _My_large    = _My_data._Large_mode_engaged();
-        const bool _Right_large = _Right_data._Large_mode_engaged();
-
 #if !defined(_INSERT_STRING_ANNOTATION)
         if constexpr (_Can_memcpy_val) {
 #if _HAS_CXX20
@@ -4286,6 +4283,9 @@ public:
             }
         }
 #endif // !defined(_INSERT_STRING_ANNOTATION)
+
+        const bool _My_large    = _My_data._Large_mode_engaged();
+        const bool _Right_large = _Right_data._Large_mode_engaged();
 
         if (_My_large && _Right_large) { // swap buffers, iterators preserved
             swap(_My_data._Bx._Ptr, _Right_data._Bx._Ptr); // intentional ADL
