@@ -3086,11 +3086,7 @@ private:
 public:
     _CONSTEXPR20 basic_string(initializer_list<_Elem> _Ilist, const _Alloc& _Al = allocator_type())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Ilist.begin(), _Convert_size<size_type>(_Ilist.size()));
-        _Proxy._Release();
+        _Construct<_Construct_strategy::_From_ptr>(_Ilist.begin(), _Convert_size<size_type>(_Ilist.size()));
     }
 
     _CONSTEXPR20 basic_string& operator=(initializer_list<_Elem> _Ilist) {
