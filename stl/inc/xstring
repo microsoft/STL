@@ -3070,12 +3070,12 @@ private:
         const auto _Right_ptr   = _Right_data._Myptr();
         auto& _Al               = _Getal();
         if (_Allocators_equal(_Al, _Right._Getal()) && _Result_size > _Small_string_capacity) {
+            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al));
+
             if (_Roff != 0) {
                 _Traits::move(_Right_ptr, _Right_ptr + _Roff, _Result_size);
             }
             _Right._Eos(_Result_size);
-
-            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al));
             _Take_contents(_Right);
         } else {
             _Construct<_Construct_strategy::_From_ptr>(_Right_ptr + _Roff, _Result_size);
