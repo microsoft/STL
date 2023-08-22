@@ -3010,15 +3010,6 @@ public:
     }
 
 private:
-    void _Memcpy_val_from(const basic_string& _Right) noexcept {
-        _STL_INTERNAL_CHECK(_Can_memcpy_val);
-        const auto _My_data_mem =
-            reinterpret_cast<unsigned char*>(_STD addressof(_Mypair._Myval2)) + _Memcpy_val_offset;
-        const auto _Right_data_mem =
-            reinterpret_cast<const unsigned char*>(_STD addressof(_Right._Mypair._Myval2)) + _Memcpy_val_offset;
-        _CSTD memcpy(_My_data_mem, _Right_data_mem, _Memcpy_val_size);
-    }
-
     _CONSTEXPR20 void _Take_contents(basic_string& _Right) noexcept {
         // assign by stealing _Right's buffer
         // pre: this != &_Right
@@ -3043,7 +3034,11 @@ private:
                 }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-                _Memcpy_val_from(_Right);
+                const auto _My_data_mem =
+                    reinterpret_cast<unsigned char*>(_STD addressof(_Mypair._Myval2)) + _Memcpy_val_offset;
+                const auto _Right_data_mem =
+                    reinterpret_cast<const unsigned char*>(_STD addressof(_Right._Mypair._Myval2)) + _Memcpy_val_offset;
+                _CSTD memcpy(_My_data_mem, _Right_data_mem, _Memcpy_val_size);
                 _Right._Tidy_init();
                 return;
             }
