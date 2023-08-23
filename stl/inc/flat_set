@@ -201,7 +201,7 @@ public:
     // modifiers
     template <class... _Args>
     auto emplace(_Args&&... _Vals) {
-        insert<_Kty>(_Kty{_STD forward<_Args>(_Vals)...});
+        _Emplace(_Kty{_STD forward<_Args>(_Vals)...});
     }
     template <class... _Args>
     iterator emplace_hint(const_iterator _Hint, _Args&&... _Vals) {
@@ -209,15 +209,15 @@ public:
     }
 
     auto insert(const value_type& _Val) {
-        return _Insert<_Kty>(_Val);
+        return _Emplace(_Val);
     }
     auto insert(value_type&& _Val) {
-        return _Insert(_STD move(_Val));
+        return _Emplace(_STD move(_Val));
     }
     template <class _Other>
         requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Other>)
     auto insert(_Other&& _Val) {
-        return _Insert(_STD forward<_Other>(_Val));
+        return _Emplace(_STD forward<_Other>(_Val));
     }
 
     iterator insert(const_iterator _Hint, const value_type& _Val) {
@@ -425,7 +425,6 @@ private:
     }
 
     template <class _Ty>
-        requires (_Keylt_transparent && is_constructible_v<_Kty, _Ty>) || is_same_v<_Ty, _Kty>
     iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
         _Container& _Cont           = _Get_cont();
         _Keylt& _Compare            = _Get_comp();
@@ -467,8 +466,7 @@ private:
     }
 
     template <class _Ty>
-        requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Ty>) || is_same_v<_Ty, _Kty>
-    auto _Insert(_Ty&& _Val) {
+    auto _Emplace(_Ty&& _Val) {
         _Container& _Cont     = _Get_cont();
         const iterator _End   = end();
         const iterator _Where = lower_bound(_Val);
