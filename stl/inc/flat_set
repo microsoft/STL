@@ -432,11 +432,11 @@ private:
 
     template <class _Ty>
         requires (_Keylt_transparent && is_constructible_v<_Kty, _Ty>) || is_same_v<_Ty, _Kty>
-    void _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
-        _Container& _Cont     = _Get_cont();
-        _Keylt& _Compare      = _Get_comp();
-        const iterator _Begin = begin();
-        const iterator _End   = end();
+    iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
+        _Container& _Cont           = _Get_cont();
+        _Keylt& _Compare            = _Get_comp();
+        const const_iterator _Begin = cbegin();
+        const const_iterator _End   = cend();
 
         if (_Where == _End || !_Compare(*_Where, _Val)) {
             // _Val <= *_Where
@@ -460,7 +460,7 @@ private:
             if (_Where == _End || !_Keys_equal(_Val, *_Where)) {
                 return _Cont.insert(_Where, _STD forward<_Ty>(_Val));
             }
-            return _Where;
+            return _Cont.begin() + (_Where - _Begin);
         }
     }
 
