@@ -247,9 +247,12 @@ public:
         _Restore_invariants_after_insert<false>(_Old_size);
     }
 
-    // TODO, missing
-    void insert(initializer_list<_Kty> _Ilist);
-    void insert(_Tsorted, initializer_list<_Kty> _Ilist);
+    void insert(initializer_list<_Kty> _Ilist) {
+        _Insert_range<false>(_Ilist.begin(), _Ilist.end());
+    }
+    void insert(_Tsorted, initializer_list<_Kty> _Ilist) {
+        _Insert_range<true>(_Ilist.begin(), _Ilist.end());
+    }
 
     _NODISCARD container_type extract() && {
         container_type& _Cont = _Get_cont();
