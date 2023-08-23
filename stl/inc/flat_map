@@ -433,82 +433,31 @@ public:
     template<class _K>
     _NODISCARD mapped_type& operator[](_K&& _Key)
         requires same_as<remove_cvref_t<_K>, key_type>
-            || (_Compare_is_transparent<key_compare> && convertible_to<_K&&, key_type>){
+            || (_Compare_is_transparent<key_compare> && constructible_from<key_type, _K&&>){
         return try_emplace(_STD forward<_K>(_Key)).first->second;
     }
 
     _NODISCARD mapped_type& at(const key_type& _Key); // TODO: implement
     _NODISCARD const mapped_type& at(const key_type& _Key) const; // TODO: implement
-    template <class _C>
-    _NODISCARD mapped_type& at(const _C& _Key)
+    template <class _K>
+    _NODISCARD mapped_type& at(const _K& _Key)
         requires _Compare_is_transparent<key_compare>; // TODO: implement
-    template <class _C>
-    _NODISCARD const mapped_type& at(const _C& _Key) const
+    template <class _K>
+    _NODISCARD const mapped_type& at(const _K& _Key) const
         requires _Compare_is_transparent<key_compare>; // TODO: implement
 
     // [flat.map.modifiers] Modifiers
     template <class... _Args_t>
     _STD pair<iterator, bool> emplace(_Args_t&&... _Args) requires _STD is_constructible_v<value_type, _Args_t...> {
         value_type _Val(_STD forward<_Args_t>(_Args)...);
-        auto _Key_It = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Val.first, _Key_compare);
-        iterator _It = begin() + _STD distance(_Data.keys.begin(), _Key_It);
-
-        if(_It != end() && _Key_equal(*(_It._Key_it), _Val.first)) {
-            // Already exists
-            return _STD make_pair(_It, false);
-        }
-        else{
-            // Need to insert
-            auto _Index = _STD distance(begin(), _It);
-            _Insert_exact(_It, _STD move(_Val));
-            // Note: Consider _It invalidated by the insert operation
-            return _STD make_pair(begin() + _Index, true);
-        }
+        return try_emplace(_STD move(_Val.first), _STD move(_Val.second));
     }
 
     template <class... _Args_t>
     iterator emplace_hint(const_iterator _Position, _Args_t&&... _Args) requires _STD is_constructible_v<value_type, _Args_t...> {
         value_type _Val(_STD forward<_Args_t>(_Args)...);
 
-        const const_iterator _Begin = cbegin();
-        const const_iterator _End = cend();
-
-        // Adjust _Position
-        if(_Position == _End || !_Key_compare(*(_Position._Key_it), _Val.first)) {
-            // _Val should be inserted at or before _Position
-            if(_Position == _Begin || !_Key_compare(_Val.first, *((_Position - 1)._Key_it))){
-                // _Val should be inserted at or after _Position
-                // The hint _Position is accurate
-            }
-            else{
-                auto _Key_Position = _STD upper_bound(_Data.keys.cbegin(), _Position._Key_it, _Val.first, _Key_compare);
-                auto _Distance = _STD distance(_Data.keys.cbegin(), _Key_Position);
-                _Position = _Begin + _Distance;
-            }
-        }
-        else{
-            auto _Key_Position = _STD lower_bound(_Position._Key_it + 1, _Data.keys.cend(), _Val.first, _Key_compare);
-            auto _Distance = _STD distance(_Data.keys.cbegin(), _Key_Position);
-            _Position = _Begin + _Distance;
-        }
-
-        bool _Should_insert = false;
-        if(_Position == _End){
-            _Should_insert = true;
-        }
-        else if(_Key_equal(*(_Position._Key_it), _Val.first)){
-            _Should_insert = false;
-        }
-        else{
-            _Should_insert = true;
-        }
-
-        auto _Distance = _STD distance(_Begin, _Position);
-        if(_Should_insert){
-            _Insert_exact(_Position, _STD move(_Val));
-        }
-        // Consider _Position invalidated by the insert operation
-        return begin() + _Distance;
+        return _Emplace_hint(_Position, _STD move(_Val.first), _STD move(_Val.second));
     }
 
     template <class _V>
@@ -521,17 +470,26 @@ public:
         return emplace_hint(_Position, _STD forward<_V>(_X));
     }
 
-    template <class _K, class... _Args_t>
-    _STD pair<iterator, bool> try_emplace(_K&& _Key, _Args_t&&... _Args)
+    template <class _Key_constructible_t, class... _Args_t>
+    _STD pair<iterator, bool> try_emplace(_Key_constructible_t&& _Key_constructible, _Args_t&&... _Args)
         requires constructible_from<mapped_type, _Args_t&&...>
-        && (same_as<_STD remove_cvref_t<_K&&>, key_type>
-            || (constructible_from<key_type, _K&&>
+        && (same_as<_STD remove_cvref_t<_Key_constructible_t&&>, key_type>
+            || (constructible_from<key_type, _Key_constructible_t&&>
                 && _Compare_is_transparent<key_compare>
-                && !convertible_to<_K&&, const_iterator>
-                && !convertible_to<_K&&, iterator>)
-            ) {
-        value_type _Val = std::make_pair(key_type(_STD forward<_K>(_Key)), mapped_type(_STD forward<_Args_t>(_Args)...));
-        return emplace(_STD move(_Val));
+                && !convertible_to<_Key_constructible_t&&, const_iterator>
+                && !convertible_to<_Key_constructible_t&&, iterator>)){
+        auto _Key_It = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _STD forward<_Key_constructible_t>(_Key_constructible), _Key_compare);
+        if(_Key_equal(*_Key_It, _STD forward<_Key_constructible_t>(_Key_constructible))){
+            // Already exists
+            return _STD make_pair(begin() + _STD distance(_Data.keys.begin(), _Key_It), false);
+        }
+        else{
+            // Need to insert
+            value_type _Val = std::make_pair(key_type(_STD forward<_Key_constructible_t>(_Key_constructible)), mapped_type(_STD forward<_Args_t>(_Args)...));
+            auto _Index = _STD distance(_Data.keys.begin(), _Key_It);
+            _Insert_exact(begin() + _Index, _STD move(_Val));
+            return _STD make_pair(begin() + _Index, true);
+        }
     }
 
     template <class _K, class... _Args_t>
@@ -541,8 +499,7 @@ public:
             || (constructible_from<key_type, _K&&>
                 && _Compare_is_transparent<key_compare>)
             ) {
-        value_type _Val = std::make_pair(key_type(_STD forward<_K>(_Key)), mapped_type(_STD forward<_Args_t>(_Args)...));
-        return emplace_hint(_Position, _STD move(_Val));
+        return _Emplace_hint(_Position, _STD forward<_K>(_Key), _STD forward<_Args_t>(_Args)...);
     }
 
     // observers
@@ -581,8 +538,11 @@ private:
     key_compare _Key_compare;
     containers _Data;
 
-    bool _Key_equal(const Key& _X, const Key& _Y) const {
-        return !_Key_compare(_X, _Y) && !_Key_compare(_Y, _X);
+    template<class _K1, class _K2>
+        requires (same_as<remove_cvref_t<_K1&&>, key_type> && same_as<remove_cvref_t<_K2&&>, key_type>)
+        || (constructible_from<key_type, _K1&&> && constructible_from<key_type, _K2&&> && _Compare_is_transparent<key_compare>)
+    bool _Key_equal(_K1&& _X, _K2&& _Y) const {
+        return !_Key_compare(_STD forward<_K1>(_X), _STD forward<_K2>(_Y)) && !_Key_compare(_STD forward<_K2>(_Y), _STD forward<_K1>(_X));
     }
 
     void _SortAndDedup() {
@@ -603,6 +563,53 @@ private:
         _Data.keys.insert(_Position._Key_it, _STD move(_Val.first));
         _Data.values.insert(_Position._Mapped_it, _STD move(_Val.second));
         _Guard._Clearable = nullptr;
+    }
+
+    template <class _K, class... _Mapped_args_t>
+    iterator _Emplace_hint(const_iterator _Position, _K&& _Key, _Mapped_args_t&&... _Args)
+        requires _STD is_constructible_v<mapped_type, _Mapped_args_t...>
+            && (same_as<_STD remove_cvref_t<_K&&>, key_type>
+            || (constructible_from<key_type, _K&&>
+                && _Compare_is_transparent<key_compare>)) {
+        const const_iterator _Begin = cbegin();
+        const const_iterator _End = cend();
+
+        // Adjust _Position
+        if(_Position == _End || !_Key_compare(*(_Position._Key_it), _Key)) {
+            // _Val should be inserted at or before _Position
+            if(_Position == _Begin || !_Key_compare(_Key, *((_Position - 1)._Key_it))){
+                // _Val should be inserted at or after _Position
+                // The hint _Position is accurate
+            }
+            else{
+                auto _Key_Position = _STD upper_bound(_Data.keys.cbegin(), _Position._Key_it, _Key, _Key_compare);
+                auto _Distance = _STD distance(_Data.keys.cbegin(), _Key_Position);
+                _Position = _Begin + _Distance;
+            }
+        }
+        else{
+            auto _Key_Position = _STD lower_bound(_Position._Key_it + 1, _Data.keys.cend(), _Key, _Key_compare);
+            auto _Distance = _STD distance(_Data.keys.cbegin(), _Key_Position);
+            _Position = _Begin + _Distance;
+        }
+
+        bool _Should_insert = false;
+        if(_Position == _End){
+            _Should_insert = true;
+        }
+        else if(_Key_equal(*(_Position._Key_it), _Key)){
+            _Should_insert = false;
+        }
+        else{
+            _Should_insert = true;
+        }
+
+        auto _Distance = _STD distance(_Begin, _Position);
+        if(_Should_insert){
+            _Insert_exact(_Position, value_type(_STD forward<_K>(_Key), _STD forward<_Mapped_args_t>(_Args)...));
+        }
+        // Consider _Position invalidated by the insert operation
+        return begin() + _Distance;
     }
 };
 
