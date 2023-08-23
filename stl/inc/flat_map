@@ -480,6 +480,11 @@ public:
         _Insert_range<_InputIterator, false, true>(_First, _Last);
     }
 
+    template <_Container_compatible_range<value_type> R>
+    void insert_range(R&& _Range) {
+        insert(_RANGES begin(_Range), _RANGES end(_Range));
+    }
+
     template <class _Key_constructible_t, class... _Args_t>
     _STD pair<iterator, bool> try_emplace(_Key_constructible_t&& _Key_constructible, _Args_t&&... _Args)
         requires constructible_from<mapped_type, _Args_t&&...>
