@@ -111,30 +111,31 @@ public:
         using iterator_concept  = random_access_iterator_tag;
         using difference_type   = ptrdiff_t;
         using value_type        = _STD pair<_STD iter_value_t<_Key_iterator_t>, _STD iter_value_t<_Mapped_iterator_t>>;
+        using reference =
+            _STD pair<_STD iter_const_reference_t<_Key_iterator_t>, _STD iter_reference_t<_Mapped_iterator_t>>;
 
     private:
-        class _Arrow_Proxy
-            : public _STD
-                  pair<_STD iter_const_reference_t<_Key_iterator_t>, _STD iter_reference_t<_Mapped_iterator_t>> {
+        class _Arrow_proxy {
         public:
-            using _STD
-                pair<_STD iter_const_reference_t<_Key_iterator_t>, _STD iter_reference_t<_Mapped_iterator_t>>::pair;
-            _Arrow_Proxy* operator->() noexcept {
-                return this;
+            explicit _Arrow_proxy(const reference& _Rx) noexcept : _Ref{_Rx} {}
+
+            const reference* operator->() const noexcept {
+                return _STD addressof(_Ref);
             }
+
+        private:
+            reference _Ref;
         };
 
     public:
-        using pointer = _Arrow_Proxy;
-        using reference =
-            _STD pair<_STD iter_const_reference_t<_Key_iterator_t>, _STD iter_reference_t<_Mapped_iterator_t>>;
+        using pointer = _Arrow_proxy;
 
         reference operator*() const {
             return reference{*_Key_it, *_Mapped_it};
         }
 
         pointer operator->() const {
-            return pointer{*_Key_it, *_Mapped_it};
+            return pointer{*(*this)};
         }
 
         type& operator++() {
