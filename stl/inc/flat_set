@@ -410,7 +410,7 @@ public:
 
 private:
     void _Assert_after_sorted_input() const {
-        _STL_ASSERT(_STD is_sorted(begin(), end(), _Get_comp()), "Input was not sorted!");
+        _STL_ASSERT(_STD is_sorted(cbegin(), cend(), _Get_comp()), "Input was not sorted!");
         if constexpr (!_Multi) {
             _STL_ASSERT(_Is_unique(), "Input was not unique!");
         }
@@ -420,8 +420,8 @@ private:
         if (empty()) {
             return true;
         }
-        const_iterator _End = cend();
-        const_iterator _It  = begin();
+        const const_iterator _End = cend();
+        const_iterator _It  = cbegin();
         while (++_It != _End) {
             if (_Keys_equal(*(_It - 1), *_It)) {
                 return false;
@@ -513,7 +513,7 @@ private:
     template <class _Other>
         requires _Keylt_transparent || is_same_v<_Other, _Kty>
     _NODISCARD const_iterator _Find(const _Other& _Val) const {
-        const const_iterator _End   = end();
+        const const_iterator _End   = cend();
         const const_iterator _Where = lower_bound(_Val);
         if (_Where != _End && _Keys_equal(*_Where, _Val)) {
             return _Where;
@@ -541,12 +541,11 @@ private:
 
     void _Erase_dupes_if_needed() {
         if constexpr (!_Multi) {
-            iterator _End = end();
-            iterator _New_end =
+            const iterator _End = end();
+            const iterator _New_end =
                 _STD unique(begin(), _End, [&](const _Kty& _Lhs, const _Kty& _Rhs) { return _Keys_equal(_Lhs, _Rhs); });
             _Get_cont().erase(_New_end, _End);
-        }
-        if constexpr (!_Multi) {
+
             _STL_INTERNAL_CHECK(_Is_unique());
         }
     }
