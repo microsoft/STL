@@ -513,8 +513,8 @@ private:
     template <class _Other>
         requires _Keylt_transparent || is_same_v<_Other, _Kty>
     _NODISCARD const_iterator _Find(const _Other& _Val) const {
-        const iterator _End   = end();
-        const iterator _Where = lower_bound(_Val);
+        const const_iterator _End   = end();
+        const const_iterator _Where = lower_bound(_Val);
         if (_Where != _End && _Keys_equal(*_Where, _Val)) {
             return _Where;
         } else {
