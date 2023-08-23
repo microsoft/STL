@@ -410,6 +410,12 @@ public:
         return _STD make_reverse_iterator(cbegin());
     }
 
+    void swap(flat_map& _Other) noexcept {
+        _STD swap(_Key_compare, _Other._Key_compare);
+        _Data.keys.swap(_Other._Data.keys);
+        _Data.values.swap(_Other._Data.values);
+    }
+
     // [container.reqmts] clear
     void clear() noexcept {
         _Data.keys.clear();
@@ -523,6 +529,18 @@ public:
                 && _Compare_is_transparent<key_compare>)
             ) {
         return _Emplace_hint(_Position, _STD forward<_K>(_Key), _STD forward<_Args_t>(_Args)...);
+    }
+
+    containers extract() && {
+        _Clear_flat_map_scope_guard _Guard { this };
+        return _STD move(_Data);
+    }
+
+    void replace(key_container_type&& _Key_cont, mapped_container_type&& _Mapped_cont) {
+        _Clear_flat_map_scope_guard _Guard { this };
+        _Data.keys = _STD move(_Key_cont);
+        _Data.values = _STD move(_Mapped_cont);
+        _Guard._Clearable = nullptr;
     }
 
     // observers
