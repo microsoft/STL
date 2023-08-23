@@ -470,6 +470,16 @@ public:
         return emplace_hint(_Position, _STD forward<_V>(_X));
     }
 
+    template <class _InputIterator> requires _Is_iterator_v<_InputIterator>
+    void insert(_InputIterator _First, _InputIterator _Last) {
+        _Insert_range<_InputIterator, true, true>(_First, _Last);
+    }
+
+    template <class _InputIterator> requires _Is_iterator_v<_InputIterator>
+    void insert(sorted_unique_t, _InputIterator _First, _InputIterator _Last) {
+        _Insert_range<_InputIterator, false, true>(_First, _Last);
+    }
+
     template <class _Key_constructible_t, class... _Args_t>
     _STD pair<iterator, bool> try_emplace(_Key_constructible_t&& _Key_constructible, _Args_t&&... _Args)
         requires constructible_from<mapped_type, _Args_t&&...>
@@ -479,7 +489,7 @@ public:
                 && !convertible_to<_Key_constructible_t&&, const_iterator>
                 && !convertible_to<_Key_constructible_t&&, iterator>)){
         auto _Key_It = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _STD forward<_Key_constructible_t>(_Key_constructible), _Key_compare);
-        if(_Key_equal(*_Key_It, _STD forward<_Key_constructible_t>(_Key_constructible))){
+        if(_Key_It != _Data.keys.end() && _Key_equal(*_Key_It, _STD forward<_Key_constructible_t>(_Key_constructible))){
             // Already exists
             return _STD make_pair(begin() + _STD distance(_Data.keys.begin(), _Key_It), false);
         }
@@ -546,13 +556,22 @@ private:
     }
 
     void _SortAndDedup() {
+        _Sort();
+        _Dedup();
+    }
+
+    void _Sort(){
         _Clear_flat_map_scope_guard _Guard { this };
         auto _Zip_view = _RANGES views::zip(_Data.keys, _Data.values);
         _RANGES sort(_Zip_view, value_compare(_Key_compare));
+        _Guard._Clearable = nullptr;
+    }
 
-        auto _Subrange        = _RANGES unique(_Zip_view, [this](const_reference _X, const_reference _Y) { return this->_Key_equal(_X.first, _Y.first); });
+    void _Dedup() {
+        _Clear_flat_map_scope_guard _Guard { this };
+        auto _Zip_view = _RANGES views::zip(_Data.keys, _Data.values);
+        auto _Subrange = _RANGES unique(_Zip_view, [this](const_reference _X, const_reference _Y) { return this->_Key_equal(_X.first, _Y.first); });
         auto _Remaining_count = _STD distance(_Zip_view.begin(), _Subrange.begin());
-
         _Data.keys.erase(_Data.keys.begin() + _Remaining_count, _Data.keys.end());
         _Data.values.erase(_Data.values.begin() + _Remaining_count, _Data.values.end());
         _Guard._Clearable = nullptr;
@@ -610,6 +629,40 @@ private:
         }
         // Consider _Position invalidated by the insert operation
         return begin() + _Distance;
+    }
+
+    template<class _InputIterator, bool _NeedSorting, bool _NeedDeduping>
+        requires _Is_iterator_v<_InputIterator>
+    void _Insert_range(_InputIterator _First, _InputIterator _Last){
+        _Clear_flat_map_scope_guard _Guard { this };
+
+        // Insert the new elements at the end
+        size_t _OldSize = size();
+        size_t _NewSize = _STD distance(_First, _Last);
+
+        _Data.keys.reserve(_Data.keys.size() + _NewSize);
+        _Data.values.reserve(_Data.values.size() + _NewSize);
+
+        for(; _First != _Last; ++_First){
+            _Data.keys.emplace_back(_STD move(_First->first));
+            _Data.values.emplace_back(_STD move(_First->second));
+        }
+
+        // Sort the newly inserted elements
+        auto _Zip_view = _RANGES views::zip(_Data.keys, _Data.values);
+        if constexpr (_NeedSorting) {
+            auto _Zip_view_new_elements = _Zip_view | _RANGES views::drop(_OldSize);
+            _RANGES sort(_Zip_view_new_elements, value_compare(_Key_compare));
+        }
+
+        // Merge the newly inserted elements with the existing elements
+        _RANGES inplace_merge(_Zip_view, _Zip_view.begin() + _OldSize, value_compare(_Key_compare));
+
+        if constexpr (_NeedDeduping) {
+            _Dedup();
+        }
+
+        _Guard._Clearable = nullptr;
     }
 };
 
