@@ -330,12 +330,12 @@ public:
     }
 
     _NODISCARD bool contains(const _Kty& _Val) const {
-        return find(_Val) != end();
+        return _STD binary_search(cbegin(), cend(), _Val, _Get_comp());
     }
     template <class _Other>
         requires _Keylt_transparent
     _NODISCARD bool contains(const _Other& _Val) const {
-        return find(_Val) != end();
+        return _STD binary_search(cbegin(), cend(), _Val, _Get_comp());
     }
 
     _NODISCARD iterator lower_bound(const _Kty& _Val) {
