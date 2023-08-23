@@ -607,15 +607,21 @@ _EXPORT_STD inline constexpr sorted_equivalent_t sorted_equivalent{};
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
 class flat_set
     : public _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set<_Kty, _Keylt, _Container>, sorted_unique_t> {
+private:
+    using _Mybase = _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set, sorted_unique_t>;
 public:
-    using _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set, sorted_unique_t>::_Base_flat_set;
+    using _Mybase::_Base_flat_set;
+    using _Mybase::operator=;
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
 class flat_multiset : public _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset<_Kty, _Keylt, _Container>,
-                          sorted_equivalent_t> {
+    sorted_equivalent_t> {
+private:
+    using _Mybase = _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset, sorted_equivalent_t>;
 public:
-    using _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset, sorted_equivalent_t>::_Base_flat_set;
+    using _Mybase::_Base_flat_set;
+    using _Mybase::operator=;
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
