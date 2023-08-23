@@ -485,6 +485,14 @@ public:
         insert(_RANGES begin(_Range), _RANGES end(_Range));
     }
 
+    void insert(initializer_list<value_type> _I) {
+        insert(_I.begin(), _I.end());
+    }
+
+    void insert(sorted_unique_t _S, initializer_list<value_type> _I) {
+        insert(_S, _I.begin(), _I.end());
+    }
+
     template <class _Key_constructible_t, class... _Args_t>
     _STD pair<iterator, bool> try_emplace(_Key_constructible_t&& _Key_constructible, _Args_t&&... _Args)
         requires constructible_from<mapped_type, _Args_t&&...>
