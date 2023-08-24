@@ -255,11 +255,9 @@ public:
     }
 
     _NODISCARD container_type extract() && {
-        container_type& _Cont = _Get_cont();
         // always clears the container (N4950 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
         _Clear_scope_guard<_Base_flat_set> _Guard{this};
-        container_type _Temp = _STD move(_Cont);
-        return _Temp;
+        return _STD move(_Get_cont());
     }
     void replace(container_type&& _Cont) {
         _Get_cont() = _STD move(_Cont);
@@ -390,7 +388,7 @@ public:
     }
 
     _NODISCARD friend bool operator==(const _Deriv& _Lhs, const _Deriv& _Rhs) {
-        return _RANGES equal(_Lhs, _Rhs);
+        return _RANGES equal(_Lhs._Get_cont(), _Rhs._Get_cont());
     }
 
     _NODISCARD friend _Synth_three_way_result<_Kty> operator<=>(const _Deriv& _Lhs, const _Deriv& _Rhs) {
@@ -521,16 +519,6 @@ private:
         return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
     }
 
-    // O(N) if already sorted.
-    void _Sort_potentially_sorted(const iterator& _Begin, const iterator& _End) {
-        key_compare& _Compare          = _Get_comp();
-        const iterator _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Compare);
-
-        _STD sort(_Begin_unsorted, _End, _Compare);
-
-        _STD inplace_merge(begin(), _Begin_unsorted, _End, _Compare);
-    }
-
     void _Erase_dupes_if_needed() {
         if constexpr (!_Multi) {
             const iterator _End = end();
@@ -569,7 +557,13 @@ private:
             return;
         }
 
-        _Sort_potentially_sorted(_Begin, _End);
+        // O(N) if already sorted.
+        key_compare& _Compare          = _Get_comp();
+        const iterator _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Compare);
+
+        _STD sort(_Begin_unsorted, _End, _Compare);
+        _STD inplace_merge(begin(), _Begin_unsorted, _End, _Compare);
+
         _STL_INTERNAL_CHECK(_STD is_sorted(begin(), end(), _Get_comp()));
 
         _Erase_dupes_if_needed();
@@ -609,6 +603,7 @@ class flat_set
     : public _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set<_Kty, _Keylt, _Container>, sorted_unique_t> {
 private:
     using _Mybase = _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set, sorted_unique_t>;
+
 public:
     using _Mybase::_Base_flat_set;
     using _Mybase::operator=;
@@ -616,9 +611,10 @@ public:
 
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
 class flat_multiset : public _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset<_Kty, _Keylt, _Container>,
-    sorted_equivalent_t> {
+                          sorted_equivalent_t> {
 private:
     using _Mybase = _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset, sorted_equivalent_t>;
+
 public:
     using _Mybase::_Base_flat_set;
     using _Mybase::operator=;
