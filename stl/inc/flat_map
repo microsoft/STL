@@ -476,7 +476,8 @@ public:
     is_constructible_v<value_type, _Args_t...> {
         value_type _Val(_STD forward<_Args_t>(_Args)...);
 
-        return _Emplace_hint(_Position, _STD move(_Val.first), _STD move(_Val.second));
+        return _Emplace_hint<false, decltype(_Val.first)&&, decltype(_Val.second)&&>(
+            _Position, _STD move(_Val.first), _STD move(_Val.second));
     }
 
     template <class _V>
@@ -548,7 +549,34 @@ public:
               && (same_as<_STD remove_cvref_t<_K &&>, key_type>
                   || (constructible_from<key_type, _K&&> && _Compare_is_transparent<key_compare>) )
     {
-        return _Emplace_hint(_Position, _STD forward<_K>(_Key), _STD forward<_Args_t>(_Args)...);
+        return _Emplace_hint<false, _K&&, _Args_t&&...>(
+            _Position, _STD forward<_K>(_Key), _STD forward<_Args_t>(_Args)...);
+    }
+
+    template <class _M, class _K>
+    pair<iterator, bool> insert_or_assign(_K&& _Key, _M&& _Obj)
+        requires assignable_from<mapped_type&, _M&&> && constructible_from<mapped_type, _M&&>
+              && (same_as<remove_cvref_t<_K &&>, key_type>
+                  || (constructible_from<key_type, _K&&> && _Compare_is_transparent<key_compare>) )
+    {
+        auto _Res = try_emplace(_STD forward<_K>(_Key), _STD forward<_M>(_Obj));
+        if (_Res.second) {
+            // Insertion took place
+            return _Res;
+        } else {
+            // Already exists
+            *(_Res.first._Mapped_it) = _STD forward<_M>(_Obj);
+            return _Res;
+        }
+    }
+
+    template <class _M, class _K>
+    iterator insert_or_assign(const_iterator _Position, _K&& _Key, _M&& _Obj)
+        requires assignable_from<mapped_type&, _M&&> && constructible_from<mapped_type, _M&&>
+              && (same_as<remove_cvref_t<_K &&>, key_type>
+                  || (constructible_from<key_type, _K&&> && _Compare_is_transparent<key_compare>) )
+    {
+        return _Emplace_hint<true, _K&&, _M&&>(_Position, _STD forward<_K>(_Key), _STD forward<_M>(_Obj));
     }
 
     containers extract() && {
@@ -638,7 +666,7 @@ private:
         _Guard._Clearable = nullptr;
     }
 
-    template <class _K, class... _Mapped_args_t>
+    template <bool _Override_if_exists, class _K, class... _Mapped_args_t>
     iterator _Emplace_hint(const_iterator _Position, _K&& _Key, _Mapped_args_t&&... _Args)
         requires _STD
     is_constructible_v<mapped_type, _Mapped_args_t...>
@@ -676,6 +704,9 @@ private:
         auto _Distance = _STD distance(_Begin, _Position);
         if (_Should_insert) {
             _Insert_exact(_Position, value_type(_STD forward<_K>(_Key), _STD forward<_Mapped_args_t>(_Args)...));
+        } else if constexpr (_Override_if_exists) {
+            auto _It          = begin() + _Distance;
+            *(_It._Mapped_it) = mapped_type(_STD forward<_Mapped_args_t>(_Args)...);
         }
         // Consider _Position invalidated by the insert operation
         return begin() + _Distance;
