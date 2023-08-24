@@ -233,7 +233,7 @@ public:
     }
 
     template <input_iterator _Iter>
-    void insert(const _Iter& _First, const _Iter& _Last) {
+    void insert(_Iter _First, _Iter _Last) {
         _Insert_range<false>(_First, _Last);
     }
     template <input_iterator _Iter>
@@ -456,7 +456,7 @@ private:
     }
 
     template <bool _Presorted, class _Iter>
-    void _Insert_range(_Iter _First, _Iter _Last) {
+    void _Insert_range(const _Iter _First, const _Iter _Last) {
         const size_type _Old_size = size();
         _Container& _Cont         = _Get_cont();
         _Cont.insert(_Cont.end(), _First, _Last);
@@ -531,7 +531,7 @@ private:
     }
 
     template <bool _Presorted>
-    void _Restore_invariants_after_insert(const size_type& _Old_size) {
+    void _Restore_invariants_after_insert(const size_type _Old_size) {
         key_compare& _Compare   = _Get_comp();
         const iterator _Old_end = begin() + static_cast<difference_type>(_Old_size);
         const iterator _New_end = end();
@@ -544,7 +544,7 @@ private:
 
         _STD inplace_merge(begin(), _Old_end, _New_end, _Compare);
 
-        _STL_INTERNAL_CHECK(_STD is_sorted(begin(), end(), _Get_comp()));
+        _STL_INTERNAL_CHECK(_STD is_sorted(begin(), end(), _Compare));
 
         _Erase_dupes_if_needed();
     }
@@ -564,7 +564,7 @@ private:
         _STD sort(_Begin_unsorted, _End, _Compare);
         _STD inplace_merge(begin(), _Begin_unsorted, _End, _Compare);
 
-        _STL_INTERNAL_CHECK(_STD is_sorted(begin(), end(), _Get_comp()));
+        _STL_INTERNAL_CHECK(_STD is_sorted(begin(), end(), _Compare));
 
         _Erase_dupes_if_needed();
     }
