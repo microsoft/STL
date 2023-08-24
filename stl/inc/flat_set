@@ -612,7 +612,7 @@ private:
     using _Mybase = _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set, sorted_unique_t>;
 
 public:
-    using _Mybase::_Base_flat_set;
+    using _Mybase::_Mybase;
     using _Mybase::operator=;
 };
 
@@ -623,7 +623,7 @@ private:
     using _Mybase = _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset, sorted_equivalent_t>;
 
 public:
-    using _Mybase::_Base_flat_set;
+    using _Mybase::_Mybase;
     using _Mybase::operator=;
 };
 
