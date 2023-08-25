@@ -208,7 +208,7 @@ public:
     // modifiers
     template <class... _Args>
     auto emplace(_Args&&... _Vals) {
-        _Emplace(_Kty{_STD forward<_Args>(_Vals)...});
+        return _Emplace(_Kty{_STD forward<_Args>(_Vals)...});
     }
     template <class... _Args>
     iterator emplace_hint(const_iterator _Hint, _Args&&... _Vals) {
@@ -430,9 +430,24 @@ private:
     }
 
     template <class _Ty>
+    auto _Emplace(_Ty&& _Val) {
+        _Container& _Cont     = _Get_cont();
+        const iterator _End   = end();
+        const iterator _Where = lower_bound(_Val);
+        if constexpr (_Multi) {
+            return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
+        } else {
+            if (_Where != _End && _Keys_equal(*_Where, _Val)) {
+                return pair{_Where, false};
+            }
+            return pair{_Cont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
+        }
+    }
+
+    template <class _Ty>
     iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
         _Container& _Cont           = _Get_cont();
-        _Keylt& _Compare            = _Get_comp();
+        const key_compare& _Compare = _Get_comp();
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
@@ -453,12 +468,12 @@ private:
         }
 
         if constexpr (_Multi) {
-            return _Cont.insert(_Where, _STD forward<_Ty>(_Val));
+            return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
         } else {
-            if (_Where == _End || !_Keys_equal(_Val, *_Where)) {
-                return _Cont.insert(_Where, _STD forward<_Ty>(_Val));
+            if (_Where != _End && _Keys_equal(_Val, *_Where)) {
+                return _Cont.begin() + (_Where - _Begin);
             }
-            return _Cont.begin() + (_Where - _Begin);
+            return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
         }
     }
 
@@ -468,21 +483,6 @@ private:
         _Container& _Cont         = _Get_cont();
         _Cont.insert(_Cont.end(), _First, _Last);
         _Restore_invariants_after_insert<_Presorted>(_Old_size);
-    }
-
-    template <class _Ty>
-    auto _Emplace(_Ty&& _Val) {
-        _Container& _Cont     = _Get_cont();
-        const iterator _End   = end();
-        const iterator _Where = lower_bound(_Val);
-        if constexpr (_Multi) {
-            return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
-        } else {
-            if (_Where != _End && _Keys_equal(*_Where, _Val)) {
-                return pair{_Where, false};
-            }
-            return pair{_Cont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
-        }
     }
 
     template <class _Ty>
@@ -539,9 +539,9 @@ private:
 
     template <bool _Presorted>
     void _Restore_invariants_after_insert(const size_type _Old_size) {
-        key_compare& _Compare   = _Get_comp();
-        const iterator _Old_end = begin() + static_cast<difference_type>(_Old_size);
-        const iterator _New_end = end();
+        const key_compare& _Compare = _Get_comp();
+        const iterator _Old_end     = begin() + static_cast<difference_type>(_Old_size);
+        const iterator _New_end     = end();
 
         if constexpr (!_Presorted) {
             _STD sort(_Old_end, _New_end, _Compare);
@@ -565,7 +565,7 @@ private:
         }
 
         // O(N) if already sorted.
-        key_compare& _Compare          = _Get_comp();
+        const key_compare& _Compare    = _Get_comp();
         const iterator _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Compare);
 
         _STD sort(_Begin_unsorted, _End, _Compare);

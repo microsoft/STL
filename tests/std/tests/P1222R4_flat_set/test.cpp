@@ -156,7 +156,7 @@ void test_insert() {
         assert_all_requirements_and_equals(a, {0, 1, 2, 5, 8, 9});
         a.insert_range(_dat);
         assert_all_requirements_and_equals(a, {0, 1, 2, 5, 8, 9});
-        a.insert({3, 6});
+        a.insert({6, 3});
         assert_all_requirements_and_equals(a, {0, 1, 2, 3, 5, 6, 8, 9});
         a.insert(sorted_unique, {4, 5, 7});
         assert_all_requirements_and_equals(a, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
@@ -182,7 +182,7 @@ void test_insert() {
         assert_all_requirements_and_equals(b, {0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 5, 5, 8, 9});
         b.insert_range(_dat);
         assert_all_requirements_and_equals(b, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 5, 5, 8, 9});
-        b.insert({3, 6});
+        b.insert({6, 3});
         assert_all_requirements_and_equals(b, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 5, 5, 6, 8, 9});
         b.insert(sorted_equivalent, {4, 5, 7});
         assert_all_requirements_and_equals(b, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 4, 5, 5, 5, 6, 7, 8, 9});
