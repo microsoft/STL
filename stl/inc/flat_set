@@ -111,11 +111,14 @@ public:
     _Base_flat_set(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Base_flat_set(container_type(_First, _Last, _Al)) {}
 
     template <_Container_compatible_range<_Kty> _Rng>
-    _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range)), _Comp) {}
+    _Base_flat_set(from_range_t, _Rng&& _Range)
+        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range))) {}
     template <_Container_compatible_range<_Kty> _Rng, _Allocator_for<container_type> _Alloc>
     _Base_flat_set(from_range_t, _Rng&& _Range, const _Alloc& _Al)
         : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range), _Al)) {}
+    template <_Container_compatible_range<_Kty> _Rng>
+    _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp)
+        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range)), _Comp) {}
     template <_Container_compatible_range<_Kty> _Rng, _Allocator_for<container_type> _Alloc>
     _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range), _Al), _Comp) {}
@@ -131,7 +134,7 @@ public:
         : _Base_flat_set(_Tsort, container_type(_First, _Last, _Al)) {}
 
     _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(_Ilist.begin(), _Ilist.end(), _Comp) {}
+        : _Base_flat_set(container_type(_Ilist.begin(), _Ilist.end()), _Comp) {}
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(container_type(_Ilist.begin(), _Ilist.end(), _Al), _Comp) {}
@@ -140,7 +143,7 @@ public:
         : _Base_flat_set(container_type(_Ilist.begin(), _Ilist.end(), _Al)) {}
 
     _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(_Tsort, _Ilist.begin(), _Ilist.end(), _Comp) {}
+        : _Base_flat_set(_Tsort, container_type(_Ilist.begin(), _Ilist.end()), _Comp) {}
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(_Tsort, container_type(_Ilist.begin(), _Ilist.end(), _Al), _Comp) {}
@@ -149,7 +152,7 @@ public:
         : _Base_flat_set(_Tsort, container_type(_Ilist.begin(), _Ilist.end(), _Al)) {}
 
     _Deriv& operator=(initializer_list<_Kty> _Ilist) {
-        _Get_cont() = container_type(_Ilist.begin(), _Ilist.end());
+        _Get_cont().assign(_Ilist.begin(), _Ilist.end());
         _Make_invariants_fulfilled();
         return static_cast<_Deriv&>(*this);
     }
@@ -621,7 +624,7 @@ private:
         _STD sort(_Begin_unsorted, _End, _Compare);
         _STD inplace_merge(begin(), _Begin_unsorted, _End, _Compare);
 
-        _STL_INTERNAL_CHECK(_STD is_sorted(begin(), end(), _Compare));
+        _STL_INTERNAL_CHECK(_STD is_sorted(_Begin, _End, _Compare));
 
         _Erase_dupes_if_needed();
     }
