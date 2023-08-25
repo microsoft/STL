@@ -441,13 +441,13 @@ private:
 
     template <class _Ty>
     auto _Emplace(_Ty&& _Val) {
-        _Container& _Cont     = _Get_cont();
-        const iterator _End   = end();
-        const iterator _Where = lower_bound(_Val);
+        _Container& _Cont = _Get_cont();
         if constexpr (_Multi) {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
-            return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
+            return _Cont.emplace(upper_bound(_Val), _STD forward<_Ty>(_Val));
         } else {
+            const iterator _End   = end();
+            const iterator _Where = lower_bound(_Val);
             if (_Where != _End && _Keys_equal(*_Where, _Val)) {
                 return pair{_Where, false};
             }
