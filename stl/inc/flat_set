@@ -208,11 +208,21 @@ public:
     // modifiers
     template <class... _Args>
     auto emplace(_Args&&... _Vals) {
-        return _Emplace(_Kty{_STD forward<_Args>(_Vals)...});
+        constexpr bool _Is_key_type = _In_place_key_extract_set<_Kty, remove_cvref_t<_Args>...>::_Extractable;
+        if constexpr (_Is_key_type) {
+            return _Emplace(_STD forward<_Args>(_Vals)...);
+        } else {
+            return _Emplace(_Kty{_STD forward<_Args>(_Vals)...});
+        }
     }
     template <class... _Args>
     iterator emplace_hint(const_iterator _Hint, _Args&&... _Vals) {
-        return _Emplace_hint(_Hint, _Kty{_STD forward<_Args>(_Vals)...});
+        constexpr bool _Is_key_type = _In_place_key_extract_set<_Kty, remove_cvref_t<_Args>...>::_Extractable;
+        if constexpr (_Is_key_type) {
+            return _Emplace_hint(_Hint, _STD forward<_Args>(_Vals)...);
+        } else {
+            return _Emplace_hint(_Hint, _Kty{_STD forward<_Args>(_Vals)...});
+        }
     }
 
     auto insert(const value_type& _Val) {
@@ -435,12 +445,22 @@ private:
         const iterator _End   = end();
         const iterator _Where = lower_bound(_Val);
         if constexpr (_Multi) {
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
             return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
         } else {
             if (_Where != _End && _Keys_equal(*_Where, _Val)) {
                 return pair{_Where, false};
             }
-            return pair{_Cont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
+            if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
+                return pair{_Cont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
+            } else {
+                // flat_set::insert(auto&&)
+                _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
+                _Kty _Keyval{_STD forward<_Ty>(_Val)};
+                _STL_ASSERT(lower_bound(_Keyval) == _Where && !_Keys_equal(_Keyval, *_Where),
+                    "find(val) was not equal to find(key_type{forward(val)})");
+                return pair{_Cont.emplace(_Where, _STD move(_Keyval)), true};
+            }
         }
     }
 
@@ -468,12 +488,22 @@ private:
         }
 
         if constexpr (_Multi) {
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
             return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
         } else {
             if (_Where != _End && _Keys_equal(_Val, *_Where)) {
                 return _Cont.begin() + (_Where - _Begin);
             }
-            return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
+            if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
+                return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
+            } else {
+                // flat_set::insert(hint,auto&&)
+                _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
+                _Kty _Keyval{_STD forward<_Ty>(_Val)};
+                _STL_ASSERT(lower_bound(_Keyval) == _Where && !_Keys_equal(_Keyval, *_Where),
+                    "find(val) was not equal to find(key_type{forward(val)})");
+                return _Cont.emplace(_Where, _STD move(_Keyval));
+            }
         }
     }
 
