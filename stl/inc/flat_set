@@ -471,20 +471,40 @@ private:
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
-        if (_Where == _End || !_Compare(*_Where, _Val)) {
-            // _Val <= *_Where
-            // Left of _Where
-            if (_Where == _Begin || !_Compare(_Val, *(_Where - 1))) {
-                // _Val >= (*_Where - 1)
-                // Insert before _Where
+        if constexpr (_Multi) {
+            // Find upper_bound for flat_multiset
+            if (_Where == _End || _Compare(_Val, *_Where)) {
+                // _Val < *_Where
+                if (_Where == _Begin || !_Compare(_Val, *(_Where - 1))) {
+                    // _Val >= *(_Where-1)
+                    // upper_bound is _Where
+                } else {
+                    // _Val < *(_Where-1)
+                    // upper_bound is in [_Begin,_Where-1]
+                    _Where = _STD upper_bound(_Begin, _Where - 1, _Val);
+                }
             } else {
-                // _Val < (*_Where - 1)
-                _Where = _STD upper_bound(_Begin, _Where, _Val, _Compare);
+                // _Val >= *_Where
+                // upper_bound is in [_Where+1,_End]
+                _Where = _STD upper_bound(_Where + 1, _End, _Val);
             }
         } else {
-            // _Val > *_Where
-            // Right of _Where
-            _Where = _STD lower_bound(_Where + 1, _End, _Val, _Compare);
+            // Find lower_bound for flat_set
+            if (_Where == _End || !_Compare(*_Where, _Val)) {
+                // _Val <= *_Where
+                if (_Where == _Begin || _Compare(*(_Where - 1), _Val)) {
+                    // _Val > *(_Where-1)
+                    // lower_bound is _Where
+                } else {
+                    // _Val <= *(_Where-1)
+                    // lower_bound is in [_Begin,_Where-1]
+                    _Where = _STD lower_bound(_Begin, _Where - 1, _Val);
+                }
+            } else {
+                // _Val > *_Where
+                // lower_bound is in [_Where+1,_End]
+                _Where = _STD lower_bound(_Where + 1, _End, _Val);
+            }
         }
 
         if constexpr (_Multi) {
