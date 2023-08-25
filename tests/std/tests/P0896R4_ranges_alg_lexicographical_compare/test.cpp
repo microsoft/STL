@@ -216,26 +216,14 @@ constexpr void concrete_tests() {
         assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr1), unreachable_sentinel));
         assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr1), end(arr1)));
 
-#ifndef __SANITIZE_ADDRESS__
-        // This test case results in a call to memcmp(arr1, arr2, ~size_t{0}). ASan wisely considers calls
-        // with size -1 to indicate bugs. While this particular occurrence is a false positive, it's hard
-        // to argue that this heuristic doesn't find more true positives than false positives, so I think
-        // we want to leave ASan unchanged.
         assert(lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), unreachable_sentinel));
-#endif // __SANITIZE_ADDRESS__
         assert(lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
         assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
         arr2[2] = 2;
         assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
         assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
         arr2[2] = 1;
-#ifndef __SANITIZE_ADDRESS__
-        // This test case results in a call to memcmp(arr1, arr2, ~size_t{0}). ASan wisely considers calls
-        // with size -1 to indicate bugs. While this particular occurrence is a false positive, it's hard
-        // to argue that this heuristic doesn't find more true positives than false positives, so I think
-        // we want to leave ASan unchanged.
         assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), unreachable_sentinel));
-#endif // __SANITIZE_ADDRESS__
         assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
         assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
     }
