@@ -633,6 +633,12 @@ public:
         }
     }
 
+    template <class _K>
+    bool contains(const _K& _X) const
+        requires same_as<_K, key_type> || _Compare_is_transparent<key_compare>
+    {
+        return find(_X) != cend();
+    }
 
     template <class _K>
     iterator lower_bound(const _K& _X)
