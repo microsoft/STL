@@ -610,12 +610,38 @@ public:
 
     // map operations
     template <class _K>
+    iterator find(const _K& _X)
+        requires same_as<_K, key_type> || _Compare_is_transparent<key_compare>
+    {
+        iterator _Position = lower_bound(_X);
+        if (_Position != end() && _Key_equal(_Position->first, _X)) {
+            return _Position;
+        } else {
+            return end();
+        }
+    }
+
+    template <class _K>
+    const_iterator find(const _K& _X) const
+        requires same_as<_K, key_type> || _Compare_is_transparent<key_compare>
+    {
+        const_iterator _Position = lower_bound(_X);
+        if (_Position != cend() && _Key_equal(_Position->first, _X)) {
+            return _Position;
+        } else {
+            return cend();
+        }
+    }
+
+
+    template <class _K>
     iterator lower_bound(const _K& _X)
         requires same_as<_K, key_type> || _Compare_is_transparent<key_compare>
     {
-        auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _X, _Key_compare);
-        auto _Dist   = _STD distance(_Data.keys.begin(), _Key_it);
-        auto _Val_it = _Data.values.begin() + _Dist;
+        typename KeyContainer::const_iterator _Key_it =
+            _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist                                 = _STD distance(_Data.keys.cbegin(), _Key_it);
+        typename MappedContainer::iterator _Val_it = _Data.values.begin() + _Dist;
         return iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
@@ -623,10 +649,11 @@ public:
     const_iterator lower_bound(const _K& _X) const
         requires same_as<_K, key_type> || _Compare_is_transparent<key_compare>
     {
-        auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _X, _Key_compare);
-        auto _Dist   = _STD distance(_Data.keys.begin(), _Key_it);
-        auto _Val_it = _Data.values.begin() + _Dist;
-        return iterator{_STD move(_Key_it), _STD move(_Val_it)};
+        typename KeyContainer::const_iterator _Key_it =
+            _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist                                       = _STD distance(_Data.keys.cbegin(), _Key_it);
+        typename MappedContainer::const_iterator _Val_it = _Data.values.cbegin() + _Dist;
+        return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
 private:
