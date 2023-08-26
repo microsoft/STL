@@ -67,6 +67,13 @@ public:
 
     _Base_flat_set() : _My_pair(_Zero_then_variadic_args_t{}) {}
 
+    template <_Allocator_for<container_type> _Alloc>
+    _Base_flat_set(const _Deriv& _Set, const _Alloc& _Al)
+        : _My_pair(_One_then_variadic_args_t{}, _Set._Get_comp(), _Set._Get_cont(), _Al) {}
+    template <_Allocator_for<container_type> _Alloc>
+    _Base_flat_set(_Deriv&& _Set, const _Alloc& _Al)
+        : _My_pair(_One_then_variadic_args_t{}, _STD move(_Set._Get_comp()), _STD move(_Set._Get_cont()), _Al) {}
+
     explicit _Base_flat_set(container_type _Cont, const key_compare& _Comp = key_compare())
         : _My_pair(_One_then_variadic_args_t{}, _Comp, _STD move(_Cont)) {
         _Make_invariants_fulfilled();
@@ -90,9 +97,9 @@ public:
 
     explicit _Base_flat_set(const key_compare& _Comp) : _My_pair(_One_then_variadic_args_t{}, _Comp) {}
     template <_Allocator_for<container_type> _Alloc>
-    _Base_flat_set(const key_compare& _Comp, const _Alloc& _Al) : _Base_flat_set(_Comp, container_type(_Al)) {}
+    _Base_flat_set(const key_compare& _Comp, const _Alloc& _Al) : _My_pair(_One_then_variadic_args_t{}, _Comp, _Al) {}
     template <_Allocator_for<container_type> _Alloc>
-    explicit _Base_flat_set(const _Alloc& _Al) : _Base_flat_set(container_type(_Al)) {}
+    explicit _Base_flat_set(const _Alloc& _Al) : _My_pair(_Zero_then_variadic_args_t{}, _Al) {}
 
     template <input_iterator _Iter>
     _Base_flat_set(_Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
@@ -104,11 +111,14 @@ public:
     _Base_flat_set(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Base_flat_set(container_type(_First, _Last, _Al)) {}
 
     template <_Container_compatible_range<_Kty> _Rng>
-    _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range)), _Comp) {}
+    _Base_flat_set(from_range_t, _Rng&& _Range)
+        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range))) {}
     template <_Container_compatible_range<_Kty> _Rng, _Allocator_for<container_type> _Alloc>
     _Base_flat_set(from_range_t, _Rng&& _Range, const _Alloc& _Al)
         : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range), _Al)) {}
+    template <_Container_compatible_range<_Kty> _Rng>
+    _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp)
+        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range)), _Comp) {}
     template <_Container_compatible_range<_Kty> _Rng, _Allocator_for<container_type> _Alloc>
     _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range), _Al), _Comp) {}
@@ -124,7 +134,7 @@ public:
         : _Base_flat_set(_Tsort, container_type(_First, _Last, _Al)) {}
 
     _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(_Ilist.begin(), _Ilist.end(), _Comp) {}
+        : _Base_flat_set(container_type(_Ilist.begin(), _Ilist.end()), _Comp) {}
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(container_type(_Ilist.begin(), _Ilist.end(), _Al), _Comp) {}
@@ -133,7 +143,7 @@ public:
         : _Base_flat_set(container_type(_Ilist.begin(), _Ilist.end(), _Al)) {}
 
     _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(_Tsort, _Ilist.begin(), _Ilist.end(), _Comp) {}
+        : _Base_flat_set(_Tsort, container_type(_Ilist.begin(), _Ilist.end()), _Comp) {}
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(_Tsort, container_type(_Ilist.begin(), _Ilist.end(), _Al), _Comp) {}
@@ -142,11 +152,12 @@ public:
         : _Base_flat_set(_Tsort, container_type(_Ilist.begin(), _Ilist.end(), _Al)) {}
 
     _Deriv& operator=(initializer_list<_Kty> _Ilist) {
-        _Get_cont() = container_type(_Ilist.begin(), _Ilist.end());
+        _Get_cont().assign(_Ilist.begin(), _Ilist.end());
         _Make_invariants_fulfilled();
         return static_cast<_Deriv&>(*this);
     }
 
+    // iterators
     _NODISCARD iterator begin() noexcept {
         return _Get_cont().begin();
     }
@@ -184,6 +195,7 @@ public:
         return _Get_cont().crend();
     }
 
+    // capacity
     _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
         return _Get_cont().empty();
     }
@@ -194,6 +206,7 @@ public:
         return _Get_cont().max_size();
     }
 
+    // modifiers
     template <class... _Args>
     auto emplace(_Args&&... _Vals) {
         insert<_Kty>(_Kty{_STD forward<_Args>(_Vals)...});
@@ -289,6 +302,7 @@ public:
         _Get_cont().clear();
     }
 
+    // observers
     _NODISCARD key_compare key_comp() const {
         return _Get_comp();
     }
@@ -296,6 +310,7 @@ public:
         return _Get_comp();
     }
 
+    // set operations
     _NODISCARD iterator find(const _Kty& _Val) {
         return _Find(_Val);
     }
@@ -616,15 +631,23 @@ _EXPORT_STD inline constexpr sorted_equivalent_t sorted_equivalent{};
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
 class flat_set
     : public _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set<_Kty, _Keylt, _Container>, sorted_unique_t> {
+private:
+    using _Mybase = _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set, sorted_unique_t>;
+
 public:
-    using _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set, sorted_unique_t>::_Base_flat_set;
+    using _Mybase::_Mybase;
+    using _Mybase::operator=;
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
 class flat_multiset : public _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset<_Kty, _Keylt, _Container>,
                           sorted_equivalent_t> {
+private:
+    using _Mybase = _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset, sorted_equivalent_t>;
+
 public:
-    using _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset, sorted_equivalent_t>::_Base_flat_set;
+    using _Mybase::_Mybase;
+    using _Mybase::operator=;
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>

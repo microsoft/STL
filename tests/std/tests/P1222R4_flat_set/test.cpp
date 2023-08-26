@@ -132,9 +132,13 @@ void test_constructors() {
     flat_set<int> a{};
     a = {1, 7, 7, 7, 2, 100, -1};
     assert_all_requirements_and_equals(a, {-1, 1, 2, 7, 100});
+    assert_all_requirements_and_equals(flat_set<int>(a, allocator<int>{}), {-1, 1, 2, 7, 100});
+    assert_all_requirements_and_equals(flat_set<int>(std::move(a), allocator<int>{}), {-1, 1, 2, 7, 100});
     flat_multiset<int> b{};
     b = {1, 7, 7, 7, 2, 100, -1};
     assert_all_requirements_and_equals(b, {-1, 1, 2, 7, 7, 7, 100});
+    assert_all_requirements_and_equals(flat_multiset<int>(b, allocator<int>{}), {-1, 1, 2, 7, 7, 7, 100});
+    assert_all_requirements_and_equals(flat_multiset<int>(std::move(b), allocator<int>{}), {-1, 1, 2, 7, 7, 7, 100});
 }
 
 template <class T>
