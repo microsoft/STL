@@ -25,7 +25,7 @@ class width_u:
 
 class table_u:
     # A valid Unicode code point won't exceed max_u.
-    max_u = 0x10FFFF
+    max_u: int = 0x10FFFF
 
     def __init__(self):
         self.table = [width_u.is_1] * (self.max_u + 1)
@@ -50,6 +50,7 @@ class table_u:
                 else:
                     c += 1
             last = self.table[u]
+
         print()
 
     def print_clusters_1_vs_2(self, other):
@@ -94,6 +95,7 @@ def get_table_cpp20() -> table_u:
     table = table_u()
     for rng in std_wide_ranges_cpp20:
         table.fill_range(rng, width_u.is_2)
+
     return table
 
 
