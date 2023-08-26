@@ -16,6 +16,13 @@ _EMIT_STL_WARNING(STL4038, "The contents of <flat_set> are available only with C
 #include <vector>
 #include <xutility>
 
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
 _STD_BEGIN
 
 template <class _Ty>
@@ -718,6 +725,11 @@ template <class _Kty, class _Keylt = less<_Kty>>
 flat_multiset(sorted_equivalent_t, initializer_list<_Kty>, _Keylt = _Keylt()) -> flat_multiset<_Kty, _Keylt>;
 
 _STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
 
 #endif // ^^^ supported language mode ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
