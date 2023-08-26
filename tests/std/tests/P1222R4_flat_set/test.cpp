@@ -191,6 +191,21 @@ void test_non_static_comparer() {
     assert_all_requirements_and_equals(a, {9, 7, 5, -1});
 }
 
+void test_ebco() {
+    using vec = vector<int>;
+    using deq = deque<int>;
+
+    static_assert(sizeof(vec) == sizeof(flat_set<int, std::less<int>, vec>));
+    static_assert(sizeof(deq) == sizeof(flat_set<int, std::less<int>, deq>));
+    static_assert(sizeof(vec) == sizeof(flat_multiset<int, std::less<int>, vec>));
+    static_assert(sizeof(deq) == sizeof(flat_multiset<int, std::less<int>, deq>));
+
+    static_assert(sizeof(vec) < sizeof(flat_set<int, proxy_comparer<int>, vec>));
+    static_assert(sizeof(deq) < sizeof(flat_set<int, proxy_comparer<int>, deq>));
+    static_assert(sizeof(vec) < sizeof(flat_multiset<int, proxy_comparer<int>, vec>));
+    static_assert(sizeof(deq) < sizeof(flat_multiset<int, proxy_comparer<int>, deq>));
+}
+
 template <class C>
 void test_extract() {
     constexpr int elements[]{1, 2, 3, 4};
@@ -221,6 +236,8 @@ int main() {
 
     test_constructors<vector<int>>();
     test_constructors<deque<int>>();
+
+    test_ebco();
 
     test_non_static_comparer();
 
