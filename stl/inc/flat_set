@@ -97,9 +97,9 @@ public:
 
     explicit _Base_flat_set(const key_compare& _Comp) : _My_pair(_One_then_variadic_args_t{}, _Comp) {}
     template <_Allocator_for<container_type> _Alloc>
-    _Base_flat_set(const key_compare& _Comp, const _Alloc& _Al) : _Base_flat_set(_Comp, container_type(_Al)) {}
+    _Base_flat_set(const key_compare& _Comp, const _Alloc& _Al) : _My_pair(_One_then_variadic_args_t{}, _Comp, _Al) {}
     template <_Allocator_for<container_type> _Alloc>
-    explicit _Base_flat_set(const _Alloc& _Al) : _Base_flat_set(container_type(_Al)) {}
+    explicit _Base_flat_set(const _Alloc& _Al) : _My_pair(_Zero_then_variadic_args_t{}, _Al) {}
 
     template <input_iterator _Iter>
     _Base_flat_set(_Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
@@ -424,7 +424,7 @@ private:
     void _Assert_after_sorted_input() const {
         _STL_ASSERT(_STD is_sorted(cbegin(), cend(), _Get_comp()), "Input was not sorted!");
         if constexpr (!_Multi) {
-            _STL_ASSERT(_Is_unique(), "Input was not unique!");
+            _STL_ASSERT(_Is_unique(), "Input was sorted but not unique!");
         }
     }
 
