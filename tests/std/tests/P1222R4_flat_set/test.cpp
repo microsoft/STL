@@ -98,19 +98,6 @@ void assert_all_requirements_and_equals(const T& s, const initializer_list<typen
     }
 }
 
-template <class T>
-void assert_basic() {
-    T s{3, 2, 2, 2, 1};
-    assert_all_requirements_and_equals(s, {1, 2, 3});
-
-    s.insert(43);
-    assert_all_requirements_and_equals(s, {1, 2, 3, 43});
-
-    int my_ints[] = {1, 2, 3, 4, 55};
-    s.insert_range(my_ints);
-    assert_all_requirements_and_equals(s, {1, 2, 3, 4, 43, 55});
-}
-
 template <class C>
 void test_constructors() {
     using lt = std::less<int>;
@@ -139,6 +126,90 @@ void test_constructors() {
     assert_all_requirements_and_equals(b, {-1, 1, 2, 7, 7, 7, 100});
     assert_all_requirements_and_equals(flat_multiset<int>(b, allocator<int>{}), {-1, 1, 2, 7, 7, 7, 100});
     assert_all_requirements_and_equals(flat_multiset<int>(std::move(b), allocator<int>{}), {-1, 1, 2, 7, 7, 7, 100});
+}
+
+template <class C>
+void test_insert_1() {
+    using lt = std::less<int>;
+
+    const int _dat[]{0, 1, 2};
+    const int* volatile _beg = _dat;
+    const int* volatile _end = std::end(_dat);
+    {
+        flat_set<int, lt, C> a{5, 5};
+        assert_all_requirements_and_equals(a, {5});
+        a.emplace();
+        assert_all_requirements_and_equals(a, {0, 5});
+        a.emplace(1);
+        assert_all_requirements_and_equals(a, {0, 1, 5});
+        a.insert(_dat[2]);
+        assert_all_requirements_and_equals(a, {0, 1, 2, 5});
+        a.insert(2);
+        assert_all_requirements_and_equals(a, {0, 1, 2, 5});
+        a.insert(_beg, _end);
+        assert_all_requirements_and_equals(a, {0, 1, 2, 5});
+        a.insert(sorted_unique, _beg, _end);
+        assert_all_requirements_and_equals(a, {0, 1, 2, 5});
+        a.insert_range(_dat);
+        assert_all_requirements_and_equals(a, {0, 1, 2, 5});
+        a.insert({6, 2, 3});
+        assert_all_requirements_and_equals(a, {0, 1, 2, 3, 5, 6});
+        a.insert(sorted_unique, {4, 5});
+        assert_all_requirements_and_equals(a, {0, 1, 2, 3, 4, 5, 6});
+    }
+    {
+        flat_multiset<int, lt, C> a{5, 5};
+        assert_all_requirements_and_equals(a, {5, 5});
+        a.emplace();
+        assert_all_requirements_and_equals(a, {0, 5, 5});
+        a.emplace(1);
+        assert_all_requirements_and_equals(a, {0, 1, 5, 5});
+        a.insert(_dat[2]);
+        assert_all_requirements_and_equals(a, {0, 1, 2, 5, 5});
+        a.insert(2);
+        assert_all_requirements_and_equals(a, {0, 1, 2, 2, 5, 5});
+        a.insert(_beg, _end);
+        assert_all_requirements_and_equals(a, {0, 0, 1, 1, 2, 2, 2, 5, 5});
+        a.insert(sorted_equivalent, _beg, _end);
+        assert_all_requirements_and_equals(a, {0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 5, 5});
+        a.insert_range(_dat);
+        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 5, 5});
+        a.insert({6, 2, 3});
+        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 5, 5, 6});
+        a.insert(sorted_equivalent, {4, 5});
+        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 4, 5, 5, 5, 6});
+    }
+}
+
+template <class C>
+void test_insert_2() {
+    using lt = std::less<int>;
+
+    const int _dat[]{0, 1, 2};
+    {
+        flat_set<int, lt, C> a{0, 5};
+        assert_all_requirements_and_equals(a, {0, 5});
+        a.emplace_hint(a.end());
+        assert_all_requirements_and_equals(a, {0, 5});
+        a.emplace_hint(a.end(), 0);
+        assert_all_requirements_and_equals(a, {0, 5});
+        a.insert(a.begin(), 6);
+        assert_all_requirements_and_equals(a, {0, 5, 6});
+        a.insert(a.begin(), _dat[1]);
+        assert_all_requirements_and_equals(a, {0, 1, 5, 6});
+    }
+    {
+        flat_multiset<int, lt, C> a{0, 5};
+        assert_all_requirements_and_equals(a, {0, 5});
+        a.emplace_hint(a.end());
+        assert_all_requirements_and_equals(a, {0, 0, 5});
+        a.emplace_hint(a.end(), 0);
+        assert_all_requirements_and_equals(a, {0, 0, 0, 5});
+        a.insert(a.begin(), 6);
+        assert_all_requirements_and_equals(a, {0, 0, 0, 5, 6});
+        a.insert(a.begin(), _dat[1]);
+        assert_all_requirements_and_equals(a, {0, 0, 0, 1, 5, 6});
+    }
 }
 
 template <class T>
@@ -243,6 +314,11 @@ int main() {
 
     test_ebco();
 
+    test_insert_1<vector<int>>();
+    test_insert_1<deque<int>>();
+    test_insert_2<vector<int>>();
+    test_insert_2<deque<int>>();
+
     test_non_static_comparer();
 
     test_extract<flat_set<int>>();
@@ -250,9 +326,4 @@ int main() {
 
     test_erase_if<flat_set<int>>();
     test_erase_if<flat_multiset<int>>();
-
-    assert_basic<flat_set<int>>();
-    assert_basic<flat_set<int, std::less<int>, deque<int>>>();
-
-    flat_multiset<int, std::less<int>, deque<int>> d;
 }

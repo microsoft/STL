@@ -211,31 +211,33 @@ public:
     // modifiers
     template <class... _Args>
     auto emplace(_Args&&... _Vals) {
-        insert<_Kty>(_Kty{_STD forward<_Args>(_Vals)...});
+        constexpr bool _Is_key_type = _In_place_key_extract_set<_Kty, remove_cvref_t<_Args>...>::_Extractable;
+        if constexpr (_Is_key_type) {
+            return _Emplace(_STD forward<_Args>(_Vals)...);
+        } else {
+            return _Emplace(_Kty{_STD forward<_Args>(_Vals)...});
+        }
     }
-
     template <class... _Args>
     iterator emplace_hint(const_iterator _Hint, _Args&&... _Vals) {
-        return _Emplace_hint(_Hint, _Kty{_STD forward<_Args>(_Vals)...});
+        constexpr bool _Is_key_type = _In_place_key_extract_set<_Kty, remove_cvref_t<_Args>...>::_Extractable;
+        if constexpr (_Is_key_type) {
+            return _Emplace_hint(_Hint, _STD forward<_Args>(_Vals)...);
+        } else {
+            return _Emplace_hint(_Hint, _Kty{_STD forward<_Args>(_Vals)...});
+        }
     }
 
     auto insert(const value_type& _Val) {
-        return _Insert<_Kty>(_Val);
+        return _Emplace(_Val);
     }
     auto insert(value_type&& _Val) {
-        return _Insert(_STD move(_Val));
+        return _Emplace(_STD move(_Val));
     }
-
     template <class _Other>
         requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Other>)
     auto insert(_Other&& _Val) {
-        return _Insert(_STD forward<_Other>(_Val));
-    }
-
-    template <class _Other>
-        requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Other>)
-    iterator insert(const_iterator _Hint, _Other&& _Val) {
-        return _Emplace_hint(_Hint, _STD forward<_Other>(_Val));
+        return _Emplace(_STD forward<_Other>(_Val));
     }
 
     iterator insert(const_iterator _Hint, const value_type& _Val) {
@@ -244,22 +246,32 @@ public:
     iterator insert(const_iterator _Hint, value_type&& _Val) {
         return _Emplace_hint(_Hint, _STD move(_Val));
     }
-
-    template <input_iterator _Iter>
-    void insert(const _Iter& _First, const _Iter& _Last) {
-        _Insert_range<false>(_First, _Last);
+    template <class _Other>
+        requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Other>)
+    iterator insert(const_iterator _Hint, _Other&& _Val) {
+        return _Emplace_hint(_Hint, _STD forward<_Other>(_Val));
     }
 
+    template <input_iterator _Iter>
+    void insert(_Iter _First, _Iter _Last) {
+        _Insert_range<false>(_First, _Last);
+    }
     template <input_iterator _Iter>
     void insert(_Tsorted, _Iter _First, _Iter _Last) {
         _Insert_range<true>(_First, _Last);
     }
-
     template <_Container_compatible_range<_Kty> _Rng>
     void insert_range(_Rng&& _Range) {
         const size_type _Old_size = size();
         _Get_cont().append_range(_STD forward<_Rng>(_Range));
         _Restore_invariants_after_insert<false>(_Old_size);
+    }
+
+    void insert(initializer_list<_Kty> _Ilist) {
+        _Insert_range<false>(_Ilist.begin(), _Ilist.end());
+    }
+    void insert(_Tsorted, initializer_list<_Kty> _Ilist) {
+        _Insert_range<true>(_Ilist.begin(), _Ilist.end());
     }
 
     _NODISCARD container_type extract() && {
@@ -435,36 +447,84 @@ private:
     }
 
     template <class _Ty>
-        requires (_Keylt_transparent && is_constructible_v<_Kty, _Ty>) || is_same_v<_Ty, _Kty>
-    void _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
-        _Container& _Cont     = _Get_cont();
-        _Keylt& _Compare      = _Get_comp();
-        const iterator _Begin = begin();
-        const iterator _End   = end();
-
-        if (_Where == _End || !_Compare(*_Where, _Val)) {
-            // _Val <= *_Where
-            // Left of _Where
-            if (_Where == _Begin || !_Compare(_Val, *(_Where - 1))) {
-                // _Val >= (*_Where - 1)
-                // Insert before _Where
+    auto _Emplace(_Ty&& _Val) {
+        _Container& _Cont = _Get_cont();
+        if constexpr (_Multi) {
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
+            return _Cont.emplace(upper_bound(_Val), _STD forward<_Ty>(_Val));
+        } else {
+            const iterator _End   = end();
+            const iterator _Where = lower_bound(_Val);
+            if (_Where != _End && _Keys_equal(*_Where, _Val)) {
+                return pair{_Where, false};
+            }
+            if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
+                return pair{_Cont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
             } else {
-                // _Val < (*_Where - 1)
-                _Where = _STD upper_bound(_Begin, _Where, _Val, _Compare);
+                // flat_set::insert(auto&&)
+                _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
+                _Kty _Keyval{_STD forward<_Ty>(_Val)};
+                _STL_ASSERT(lower_bound(_Keyval) == _Where && !_Keys_equal(_Keyval, *_Where),
+                    "find(val) was not equal to find(key_type{forward(val)})");
+                return pair{_Cont.emplace(_Where, _STD move(_Keyval)), true};
+            }
+        }
+    }
+
+    template <class _Ty>
+    iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
+        _Container& _Cont           = _Get_cont();
+        const key_compare& _Compare = _Get_comp();
+        const const_iterator _Begin = cbegin();
+        const const_iterator _End   = cend();
+
+        if constexpr (_Multi) {
+            // Find upper_bound for flat_multiset
+            if (_Where == _End || _Compare(_Val, *_Where)) {
+                // _Val < *_Where
+                if (_Where == _Begin || !_Compare(_Val, *(_Where - 1))) {
+                    // _Val >= *(_Where-1) ~ upper_bound is _Where
+                } else {
+                    // _Val < *(_Where-1) ~ upper_bound is in [_Begin,_Where-1]
+                    _Where = _STD upper_bound(_Begin, _Where - 1, _Val);
+                }
+            } else {
+                // _Val >= *_Where ~ upper_bound is in [_Where+1,_End]
+                _Where = _STD upper_bound(_Where + 1, _End, _Val);
             }
         } else {
-            // _Val > *_Where
-            // Right of _Where
-            _Where = _STD lower_bound(_Where + 1, _End, _Val, _Compare);
+            // Find lower_bound for flat_set
+            if (_Where == _End || !_Compare(*_Where, _Val)) {
+                // _Val <= *_Where
+                if (_Where == _Begin || _Compare(*(_Where - 1), _Val)) {
+                    // _Val > *(_Where-1) ~ lower_bound is _Where
+                } else {
+                    // _Val <= *(_Where-1) ~ lower_bound is in [_Begin,_Where-1]
+                    _Where = _STD lower_bound(_Begin, _Where - 1, _Val);
+                }
+            } else {
+                // _Val > *_Where ~ lower_bound is in [_Where+1,_End]
+                _Where = _STD lower_bound(_Where + 1, _End, _Val);
+            }
         }
 
         if constexpr (_Multi) {
-            return _Cont.insert(_Where, _STD forward<_Ty>(_Val));
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
+            return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
         } else {
-            if (_Where == _End || !_Keys_equal(_Val, *_Where)) {
-                return _Cont.insert(_Where, _STD forward<_Ty>(_Val));
+            if (_Where != _End && _Keys_equal(_Val, *_Where)) {
+                return _Cont.begin() + (_Where - _Begin);
             }
-            return _Where;
+            if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
+                return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
+            } else {
+                // flat_set::insert(hint,auto&&)
+                _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
+                _Kty _Keyval{_STD forward<_Ty>(_Val)};
+                _STL_ASSERT(lower_bound(_Keyval) == _Where && !_Keys_equal(_Keyval, *_Where),
+                    "find(val) was not equal to find(key_type{forward(val)})");
+                return _Cont.emplace(_Where, _STD move(_Keyval));
+            }
         }
     }
 
@@ -474,22 +534,6 @@ private:
         _Container& _Cont         = _Get_cont();
         _Cont.insert(_Cont.end(), _First, _Last);
         _Restore_invariants_after_insert<_Presorted>(_Old_size);
-    }
-
-    template <class _Ty>
-        requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Ty>) || is_same_v<_Ty, _Kty>
-    auto _Insert(_Ty&& _Val) {
-        _Container& _Cont     = _Get_cont();
-        const iterator _End   = end();
-        const iterator _Where = lower_bound(_Val);
-        if constexpr (_Multi) {
-            return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
-        } else {
-            if (_Where != _End && _Keys_equal(*_Where, _Val)) {
-                return pair{_Where, false};
-            }
-            return pair{_Cont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
-        }
     }
 
     template <class _Ty>
