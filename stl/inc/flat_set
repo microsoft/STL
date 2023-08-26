@@ -533,16 +533,6 @@ private:
         return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
     }
 
-    // O(N) if already sorted.
-    void _Sort_potentially_sorted(const iterator& _Begin, const iterator& _End) {
-        key_compare& _Compare          = _Get_comp();
-        const iterator _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Compare);
-
-        _STD sort(_Begin_unsorted, _End, _Compare);
-
-        _STD inplace_merge(begin(), _Begin_unsorted, _End, _Compare);
-    }
-
     void _Erase_dupes_if_needed() {
         if constexpr (!_Multi) {
             const iterator _End = end();
@@ -581,7 +571,13 @@ private:
             return;
         }
 
-        _Sort_potentially_sorted(_Begin, _End);
+        // O(N) if already sorted.
+        const key_compare& _Compare    = _Get_comp();
+        const iterator _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Compare);
+
+        _STD sort(_Begin_unsorted, _End, _Compare);
+        _STD inplace_merge(begin(), _Begin_unsorted, _End, _Compare);
+
         _STL_INTERNAL_CHECK(_STD is_sorted(_Begin, _End, _Compare));
 
         _Erase_dupes_if_needed();
