@@ -979,7 +979,7 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
 #endif // ^^^ EDG workaround ^^^
 }
 
-// Generated per N4950 [format.string.std]/13, by tools/unicode_properties_parse/format_width_estimate_intervals.cpp
+// Generated per N4950 [format.string.std]/13, by tools/unicode_properties_parse/format_width_estimate_intervals.py
 // in the https://github.com/microsoft/stl repository.
 inline constexpr char32_t _Width_estimate_intervals_v2[] = { //
     0x1100u, 0x1160u, 0x231Au, 0x231Cu, 0x2329u, 0x232Bu, 0x23E9u, 0x23EDu, 0x23F0u, 0x23F1u, 0x23F3u, 0x23F4u, 0x25FDu,
