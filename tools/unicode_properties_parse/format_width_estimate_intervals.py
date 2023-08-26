@@ -128,8 +128,6 @@ def read_from(source: TextIO) -> table_u:
             assert str == "A" or str == "H" or str == "N" or str == "Na"
             return width_u.is_1
 
-    if not source:
-        raise ValueError("invalid path")
     reg = re.compile(r"([0-9A-Z]+)(\.\.[0-9A-Z]+)?;(A|F|H|N|Na|W) *#.*")
     for line in source:
         line = line.strip()
