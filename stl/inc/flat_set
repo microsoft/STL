@@ -170,6 +170,7 @@ public:
     _NODISCARD const_iterator end() const noexcept {
         return _Get_cont().end();
     }
+
     _NODISCARD reverse_iterator rbegin() noexcept {
         return _Get_cont().rbegin();
     }
@@ -182,6 +183,7 @@ public:
     _NODISCARD const_reverse_iterator rend() const noexcept {
         return _Get_cont().rend();
     }
+
     _NODISCARD const_iterator cbegin() const noexcept {
         return _Get_cont().cbegin();
     }
@@ -261,13 +263,10 @@ public:
     }
 
     _NODISCARD container_type extract() && {
-        container_type& _Cont = _Get_cont();
         // always clears the container (N4950 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
         _Clear_scope_guard<_Base_flat_set> _Guard{this};
-        container_type _Temp = _STD move(_Cont);
-        return _Temp;
+        return _STD move(_Get_cont());
     }
-
     void replace(container_type&& _Cont) {
         _Get_cont() = _STD move(_Cont);
         _Assert_after_sorted_input();
@@ -282,13 +281,11 @@ public:
     size_type erase(const _Kty& _Val) {
         return _Erase(_Val);
     }
-
     template <class _Other>
         requires _Keylt_transparent
     size_type erase(_Other&& _Val) {
         return _Erase(_STD forward<_Other>(_Val));
     }
-
     iterator erase(const_iterator _First, const_iterator _Last) {
         return _Get_cont().erase(_First, _Last);
     }
@@ -297,7 +294,6 @@ public:
         _RANGES swap(_Get_comp(), _Other._Get_comp());
         _RANGES swap(_Get_cont(), _Other._Get_cont());
     }
-
     void clear() noexcept {
         _Get_cont().clear();
     }
@@ -314,7 +310,6 @@ public:
     _NODISCARD iterator find(const _Kty& _Val) {
         return _Find(_Val);
     }
-
     _NODISCARD const_iterator find(const _Kty& _Val) const {
         return _Find(_Val);
     }
@@ -324,7 +319,6 @@ public:
     _NODISCARD iterator find(const _Other& _Val) {
         return _Find(_Val);
     }
-
     template <class _Other>
         requires _Keylt_transparent
     _NODISCARD const_iterator find(const _Other& _Val) const {
@@ -335,7 +329,6 @@ public:
         const auto [_First, _Last] = equal_range(_Val);
         return _STD distance(_First, _Last);
     }
-
     template <class _Other>
         requires _Keylt_transparent
     _NODISCARD size_type count(const _Other& _Val) const {
@@ -344,13 +337,14 @@ public:
     }
 
     _NODISCARD bool contains(const _Kty& _Val) const {
-        return find(_Val) != end();
+        return _STD binary_search(cbegin(), cend(), _Val, _Get_comp());
     }
     template <class _Other>
         requires _Keylt_transparent
     _NODISCARD bool contains(const _Other& _Val) const {
-        return find(_Val) != end();
+        return _STD binary_search(cbegin(), cend(), _Val, _Get_comp());
     }
+
     _NODISCARD iterator lower_bound(const _Kty& _Val) {
         return _STD lower_bound(begin(), end(), _Val, _Get_comp());
     }
@@ -363,7 +357,6 @@ public:
     _NODISCARD iterator lower_bound(const _Other& _Val) {
         return _STD lower_bound(begin(), end(), _Val, _Get_comp());
     }
-
     template <class _Other>
         requires _Keylt_transparent
     _NODISCARD const_iterator lower_bound(const _Other& _Val) const {
@@ -373,7 +366,6 @@ public:
     _NODISCARD iterator upper_bound(const _Kty& _Val) {
         return _STD upper_bound(begin(), end(), _Val, _Get_comp());
     }
-
     _NODISCARD const_iterator upper_bound(const _Kty& _Val) const {
         return _STD upper_bound(cbegin(), cend(), _Val, _Get_comp());
     }
@@ -383,7 +375,6 @@ public:
     _NODISCARD iterator upper_bound(const _Other& _Val) {
         return _STD upper_bound(begin(), end(), _Val, _Get_comp());
     }
-
     template <class _Other>
         requires _Keylt_transparent
     _NODISCARD const_iterator upper_bound(const _Other& _Val) const {
@@ -393,7 +384,6 @@ public:
     _NODISCARD pair<iterator, iterator> equal_range(const _Kty& _Val) {
         return _STD equal_range(begin(), end(), _Val, _Get_comp());
     }
-
     _NODISCARD pair<const_iterator, const_iterator> equal_range(const _Kty& _Val) const {
         return _STD equal_range(cbegin(), cend(), _Val, _Get_comp());
     }
@@ -403,7 +393,6 @@ public:
     _NODISCARD pair<iterator, iterator> equal_range(const _Other& _Val) {
         return _STD equal_range(begin(), end(), _Val, _Get_comp());
     }
-
     template <class _Other>
         requires _Keylt_transparent
     _NODISCARD pair<const_iterator, const_iterator> equal_range(const _Other& _Val) const {
@@ -411,7 +400,7 @@ public:
     }
 
     _NODISCARD friend bool operator==(const _Deriv& _Lhs, const _Deriv& _Rhs) {
-        return _RANGES equal(_Lhs, _Rhs);
+        return _RANGES equal(_Lhs._Get_cont(), _Rhs._Get_cont());
     }
 
     _NODISCARD friend _Synth_three_way_result<_Kty> operator<=>(const _Deriv& _Lhs, const _Deriv& _Rhs) {
@@ -425,9 +414,9 @@ public:
 
 private:
     void _Assert_after_sorted_input() const {
-        _STL_ASSERT(_STD is_sorted(begin(), end(), _Get_comp()), "Input was not sorted!");
+        _STL_ASSERT(_STD is_sorted(cbegin(), cend(), _Get_comp()), "Input was not sorted!");
         if constexpr (!_Multi) {
-            _STL_ASSERT(_Is_unique(), "Input was not unique!");
+            _STL_ASSERT(_Is_unique(), "Input was sorted but not unique!");
         }
     }
 
@@ -435,8 +424,8 @@ private:
         if (empty()) {
             return true;
         }
-        const_iterator _End = cend();
-        const_iterator _It  = begin();
+        const const_iterator _End = cend();
+        const_iterator _It        = cbegin();
         while (++_It != _End) {
             if (_Keys_equal(*(_It - 1), *_It)) {
                 return false;
@@ -480,7 +469,7 @@ private:
     }
 
     template <bool _Presorted, class _Iter>
-    void _Insert_range(_Iter _First, _Iter _Last) {
+    void _Insert_range(const _Iter _First, const _Iter _Last) {
         const size_type _Old_size = size();
         _Container& _Cont         = _Get_cont();
         _Cont.insert(_Cont.end(), _First, _Last);
@@ -528,8 +517,8 @@ private:
     template <class _Other>
         requires _Keylt_transparent || is_same_v<_Other, _Kty>
     _NODISCARD const_iterator _Find(const _Other& _Val) const {
-        const iterator _End   = end();
-        const iterator _Where = lower_bound(_Val);
+        const const_iterator _End   = cend();
+        const const_iterator _Where = lower_bound(_Val);
         if (_Where != _End && _Keys_equal(*_Where, _Val)) {
             return _Where;
         } else {
@@ -556,21 +545,20 @@ private:
 
     void _Erase_dupes_if_needed() {
         if constexpr (!_Multi) {
-            iterator _End = end();
-            iterator _New_end =
+            const iterator _End = end();
+            const iterator _New_end =
                 _STD unique(begin(), _End, [&](const _Kty& _Lhs, const _Kty& _Rhs) { return _Keys_equal(_Lhs, _Rhs); });
             _Get_cont().erase(_New_end, _End);
-        }
-        if constexpr (!_Multi) {
+
             _STL_INTERNAL_CHECK(_Is_unique());
         }
     }
 
     template <bool _Presorted>
-    void _Restore_invariants_after_insert(const size_type& _Old_size) {
-        key_compare& _Compare   = _Get_comp();
-        const iterator _Old_end = begin() + static_cast<difference_type>(_Old_size);
-        const iterator _New_end = end();
+    void _Restore_invariants_after_insert(const size_type _Old_size) {
+        const key_compare& _Compare = _Get_comp();
+        const iterator _Old_end     = begin() + static_cast<difference_type>(_Old_size);
+        const iterator _New_end     = end();
 
         if constexpr (!_Presorted) {
             _STD sort(_Old_end, _New_end, _Compare);
@@ -580,7 +568,7 @@ private:
 
         _STD inplace_merge(begin(), _Old_end, _New_end, _Compare);
 
-        _STL_INTERNAL_CHECK(_STD is_sorted(begin(), end(), _Get_comp()));
+        _STL_INTERNAL_CHECK(_STD is_sorted(begin(), end(), _Compare));
 
         _Erase_dupes_if_needed();
     }
@@ -594,7 +582,7 @@ private:
         }
 
         _Sort_potentially_sorted(_Begin, _End);
-        _STL_INTERNAL_CHECK(_STD is_sorted(begin(), end(), _Get_comp()));
+        _STL_INTERNAL_CHECK(_STD is_sorted(_Begin, _End, _Compare));
 
         _Erase_dupes_if_needed();
     }
