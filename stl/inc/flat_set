@@ -446,6 +446,22 @@ private:
         return true;
     }
 
+    bool _Check_where(const const_iterator _Where, const _Kty& _Val) const {
+        // check that _Val can be inserted before _Where
+        const key_compare& _Compare = _Get_comp();
+        if constexpr (_Multi) {
+            // check that _Where is the upper_bound for _Val
+            // equivalent to checking *(_Where-1) <= _Val < *_Where
+            return (_Where == cend() || _Compare(_Val, *_Where))
+                && (_Where == cbegin() || !_Compare(_Val, *(_Where - 1)));
+        } else {
+            // check that _Where is the lower_bound for _Val, and *_Where is not equivalent to _Val
+            // equivalent to checking *(_Where-1) < _Val < *_Where
+            return (_Where == cend() || _Compare(_Val, *_Where))
+                && (_Where == cbegin() || _Compare(*(_Where - 1), _Val));
+        }
+    }
+
     template <class _Ty>
     auto _Emplace(_Ty&& _Val) {
         _Container& _Cont = _Get_cont();
@@ -461,11 +477,10 @@ private:
             if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
                 return pair{_Cont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
             } else {
-                // flat_set::insert(auto&&)
+                // for flat_set::insert(auto&&)
                 _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
                 _Kty _Keyval{_STD forward<_Ty>(_Val)};
-                _STL_ASSERT(lower_bound(_Keyval) == _Where && !_Keys_equal(_Keyval, *_Where),
-                    "find(val) was not equal to find(key_type{forward(val)})");
+                _STL_ASSERT(_Check_where(_Where, _Keyval), "The input type was not equivalent to key_type!");
                 return pair{_Cont.emplace(_Where, _STD move(_Keyval)), true};
             }
         }
@@ -479,7 +494,7 @@ private:
         const const_iterator _End   = cend();
 
         if constexpr (_Multi) {
-            // Find upper_bound for flat_multiset
+            // look for the upper_bound for flat_multiset
             if (_Where == _End || _Compare(_Val, *_Where)) {
                 // _Val < *_Where
                 if (_Where == _Begin || !_Compare(_Val, *(_Where - 1))) {
@@ -493,7 +508,7 @@ private:
                 _Where = _STD upper_bound(_Where + 1, _End, _Val);
             }
         } else {
-            // Find lower_bound for flat_set
+            // look for the lower_bound for flat_set
             if (_Where == _End || !_Compare(*_Where, _Val)) {
                 // _Val <= *_Where
                 if (_Where == _Begin || _Compare(*(_Where - 1), _Val)) {
@@ -510,19 +525,20 @@ private:
 
         if constexpr (_Multi) {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
+            _STL_INTERNAL_CHECK(_Check_where(_Where, _Val));
             return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
         } else {
             if (_Where != _End && _Keys_equal(_Val, *_Where)) {
                 return _Cont.begin() + (_Where - _Begin);
             }
             if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
+                _STL_INTERNAL_CHECK(_Check_where(_Where, _Val));
                 return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
             } else {
-                // flat_set::insert(hint,auto&&)
+                // for flat_set::insert(hint,auto&&)
                 _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
                 _Kty _Keyval{_STD forward<_Ty>(_Val)};
-                _STL_ASSERT(lower_bound(_Keyval) == _Where && !_Keys_equal(_Keyval, *_Where),
-                    "find(val) was not equal to find(key_type{forward(val)})");
+                _STL_ASSERT(_Check_where(_Where, _Keyval), "The input type was not equivalent to key_type!");
                 return _Cont.emplace(_Where, _STD move(_Keyval));
             }
         }
