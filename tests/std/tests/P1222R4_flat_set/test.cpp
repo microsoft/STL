@@ -66,9 +66,51 @@ void assert_reversible_container_requirements(const T& s) {
 }
 
 template <class T>
+void test_ebco() {
+    using container_type = T::container_type;
+    if constexpr (is_empty_v<typename T::key_compare>) {
+        static_assert(sizeof(container_type) == sizeof(T));
+    } else {
+        static_assert(sizeof(container_type) < sizeof(T));
+    }
+}
+
+template <class T>
+void test_noexcept() {
+    T st{};
+    T& ref        = st;
+    const T& cref = st;
+
+    static_assert(noexcept(ref.begin()));
+    static_assert(noexcept(cref.begin()));
+    static_assert(noexcept(ref.end()));
+    static_assert(noexcept(cref.end()));
+
+    static_assert(noexcept(ref.rbegin()));
+    static_assert(noexcept(cref.rbegin()));
+    static_assert(noexcept(ref.rend()));
+    static_assert(noexcept(cref.rend()));
+
+    static_assert(noexcept(cref.cbegin()));
+    static_assert(noexcept(cref.cend()));
+    static_assert(noexcept(cref.crbegin()));
+    static_assert(noexcept(cref.crend()));
+
+    static_assert(noexcept(cref.empty()));
+    static_assert(noexcept(cref.size()));
+    static_assert(noexcept(cref.max_size()));
+
+    static_assert(noexcept(ref.clear()));
+    static_assert(noexcept(ref.swap(ref)));
+    static_assert(noexcept(ranges::swap(ref, ref)));
+}
+
+template <class T>
 void assert_all_requirements_and_equals(const T& s, const initializer_list<typename T::value_type>& il) {
     assert_container_requirements(s);
     assert_reversible_container_requirements(s);
+    test_noexcept<T>();
+    test_ebco<T>();
 
     auto val_comp = s.value_comp();
     auto begin_it = s.cbegin();
@@ -266,20 +308,6 @@ void test_non_static_comparer() {
     assert_all_requirements_and_equals(a, {9, 7, 5, -1});
 }
 
-void test_ebco() {
-    using vec = vector<int>;
-    using deq = deque<int>;
-
-    static_assert(sizeof(vec) == sizeof(flat_set<int, std::less<int>, vec>));
-    static_assert(sizeof(deq) == sizeof(flat_set<int, std::less<int>, deq>));
-    static_assert(sizeof(vec) == sizeof(flat_multiset<int, std::less<int>, vec>));
-    static_assert(sizeof(deq) == sizeof(flat_multiset<int, std::less<int>, deq>));
-
-    static_assert(sizeof(vec) < sizeof(flat_set<int, proxy_comparer<int>, vec>));
-    static_assert(sizeof(deq) < sizeof(flat_set<int, proxy_comparer<int>, deq>));
-    static_assert(sizeof(vec) < sizeof(flat_multiset<int, proxy_comparer<int>, vec>));
-    static_assert(sizeof(deq) < sizeof(flat_multiset<int, proxy_comparer<int>, deq>));
-}
 
 template <class C>
 void test_extract() {
@@ -311,8 +339,6 @@ int main() {
 
     test_constructors<vector<int>>();
     test_constructors<deque<int>>();
-
-    test_ebco();
 
     test_insert_1<vector<int>>();
     test_insert_1<deque<int>>();
