@@ -555,12 +555,7 @@ private:
 
     void _Tidy_deallocate() noexcept {
         if (_Myptr) { // destroy elements
-            if constexpr (!is_trivially_destructible_v<_Ty>) {
-                const size_t _Size = _Mysize; // eliminating indirection helps vectorization
-                for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-                    _Destroy_in_place(_Myptr[_Idx]);
-                }
-            }
+            _Destroy_range(_Myptr, _Myptr + _Mysize);
 #ifdef __cpp_aligned_new
             constexpr bool _Extended_alignment = alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__;
             if constexpr (_Extended_alignment) {
