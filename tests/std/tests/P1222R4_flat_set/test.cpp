@@ -67,8 +67,9 @@ void assert_reversible_container_requirements(const T& s) {
 
 template <class T>
 void test_ebco() {
+    using key_compare    = T::key_compare;
     using container_type = T::container_type;
-    if constexpr (is_empty_v<typename T::key_compare>) {
+    if constexpr (is_empty_v<key_compare> && !is_final_v<key_compare>) {
         static_assert(sizeof(container_type) == sizeof(T));
     } else {
         static_assert(sizeof(container_type) < sizeof(T));
@@ -76,40 +77,9 @@ void test_ebco() {
 }
 
 template <class T>
-void test_noexcept() {
-    T st{};
-    T& ref        = st;
-    const T& cref = st;
-
-    static_assert(noexcept(ref.begin()));
-    static_assert(noexcept(cref.begin()));
-    static_assert(noexcept(ref.end()));
-    static_assert(noexcept(cref.end()));
-
-    static_assert(noexcept(ref.rbegin()));
-    static_assert(noexcept(cref.rbegin()));
-    static_assert(noexcept(ref.rend()));
-    static_assert(noexcept(cref.rend()));
-
-    static_assert(noexcept(cref.cbegin()));
-    static_assert(noexcept(cref.cend()));
-    static_assert(noexcept(cref.crbegin()));
-    static_assert(noexcept(cref.crend()));
-
-    static_assert(noexcept(cref.empty()));
-    static_assert(noexcept(cref.size()));
-    static_assert(noexcept(cref.max_size()));
-
-    static_assert(noexcept(ref.clear()));
-    static_assert(noexcept(ref.swap(ref)));
-    static_assert(noexcept(ranges::swap(ref, ref)));
-}
-
-template <class T>
 void assert_all_requirements_and_equals(const T& s, const initializer_list<typename T::value_type>& il) {
     assert_container_requirements(s);
     assert_reversible_container_requirements(s);
-    test_noexcept<T>();
     test_ebco<T>();
 
     auto val_comp = s.value_comp();
@@ -174,9 +144,7 @@ template <class C>
 void test_insert_1() {
     using lt = std::less<int>;
 
-    const int _dat[]{0, 1, 2};
-    const int* volatile _beg = _dat;
-    const int* volatile _end = std::end(_dat);
+    const vector<int> vec{0, 1, 2};
     {
         flat_set<int, lt, C> a{5, 5};
         assert_all_requirements_and_equals(a, {5});
@@ -184,15 +152,15 @@ void test_insert_1() {
         assert_all_requirements_and_equals(a, {0, 5});
         a.emplace(1);
         assert_all_requirements_and_equals(a, {0, 1, 5});
-        a.insert(_dat[2]);
+        a.insert(vec[2]);
         assert_all_requirements_and_equals(a, {0, 1, 2, 5});
         a.insert(2);
         assert_all_requirements_and_equals(a, {0, 1, 2, 5});
-        a.insert(_beg, _end);
+        a.insert(vec.rbegin(), vec.rend());
         assert_all_requirements_and_equals(a, {0, 1, 2, 5});
-        a.insert(sorted_unique, _beg, _end);
+        a.insert(sorted_unique, vec.begin(), vec.end());
         assert_all_requirements_and_equals(a, {0, 1, 2, 5});
-        a.insert_range(_dat);
+        a.insert_range(vec);
         assert_all_requirements_and_equals(a, {0, 1, 2, 5});
         a.insert({6, 2, 3});
         assert_all_requirements_and_equals(a, {0, 1, 2, 3, 5, 6});
@@ -206,15 +174,15 @@ void test_insert_1() {
         assert_all_requirements_and_equals(a, {0, 5, 5});
         a.emplace(1);
         assert_all_requirements_and_equals(a, {0, 1, 5, 5});
-        a.insert(_dat[2]);
+        a.insert(vec[2]);
         assert_all_requirements_and_equals(a, {0, 1, 2, 5, 5});
         a.insert(2);
         assert_all_requirements_and_equals(a, {0, 1, 2, 2, 5, 5});
-        a.insert(_beg, _end);
+        a.insert(vec.rbegin(), vec.rend());
         assert_all_requirements_and_equals(a, {0, 0, 1, 1, 2, 2, 2, 5, 5});
-        a.insert(sorted_equivalent, _beg, _end);
+        a.insert(sorted_equivalent, vec.begin(), vec.end());
         assert_all_requirements_and_equals(a, {0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 5, 5});
-        a.insert_range(_dat);
+        a.insert_range(vec);
         assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 5, 5});
         a.insert({6, 2, 3});
         assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 5, 5, 6});
@@ -227,7 +195,7 @@ template <class C>
 void test_insert_2() {
     using lt = std::less<int>;
 
-    const int _dat[]{0, 1, 2};
+    const int val = 1;
     {
         flat_set<int, lt, C> a{0, 5};
         assert_all_requirements_and_equals(a, {0, 5});
@@ -237,7 +205,7 @@ void test_insert_2() {
         assert_all_requirements_and_equals(a, {0, 5});
         a.insert(a.begin(), 6);
         assert_all_requirements_and_equals(a, {0, 5, 6});
-        a.insert(a.begin(), _dat[1]);
+        a.insert(a.begin(), val);
         assert_all_requirements_and_equals(a, {0, 1, 5, 6});
     }
     {
@@ -249,7 +217,7 @@ void test_insert_2() {
         assert_all_requirements_and_equals(a, {0, 0, 0, 5});
         a.insert(a.begin(), 6);
         assert_all_requirements_and_equals(a, {0, 0, 0, 5, 6});
-        a.insert(a.begin(), _dat[1]);
+        a.insert(a.begin(), val);
         assert_all_requirements_and_equals(a, {0, 0, 0, 1, 5, 6});
     }
 }

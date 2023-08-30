@@ -215,7 +215,7 @@ public:
         if constexpr (_Is_key_type) {
             return _Emplace(_STD forward<_Args>(_Vals)...);
         } else {
-            return _Emplace(_Kty{_STD forward<_Args>(_Vals)...});
+            return _Emplace(_Kty(_STD forward<_Args>(_Vals)...));
         }
     }
     template <class... _Args>
@@ -224,7 +224,7 @@ public:
         if constexpr (_Is_key_type) {
             return _Emplace_hint(_Hint, _STD forward<_Args>(_Vals)...);
         } else {
-            return _Emplace_hint(_Hint, _Kty{_STD forward<_Args>(_Vals)...});
+            return _Emplace_hint(_Hint, _Kty(_STD forward<_Args>(_Vals)...));
         }
     }
 
@@ -479,7 +479,7 @@ private:
             } else {
                 // for flat_set::insert(auto&&)
                 _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
-                _Kty _Keyval{_STD forward<_Ty>(_Val)};
+                _Kty _Keyval(_STD forward<_Ty>(_Val));
                 _STL_ASSERT(_Check_where(_Where, _Keyval), "The input type was not equivalent to key_type!");
                 return pair{_Cont.emplace(_Where, _STD move(_Keyval)), true};
             }
@@ -537,7 +537,7 @@ private:
             } else {
                 // for flat_set::insert(hint,auto&&)
                 _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
-                _Kty _Keyval{_STD forward<_Ty>(_Val)};
+                _Kty _Keyval(_STD forward<_Ty>(_Val));
                 _STL_ASSERT(_Check_where(_Where, _Keyval), "The input type was not equivalent to key_type!");
                 return _Cont.emplace(_Where, _STD move(_Keyval));
             }
