@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 import itertools
 import os
 import re
@@ -20,6 +20,7 @@ _expected_result_entry_cache = dict()
 @dataclass
 class _TmpEnvEntry:
     env: Dict[str, str] = field(default_factory=dict)
+    tags: Set[str] = field(default_factory=set)
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,10 @@ class EnvEntry:
     def __init__(self, tmp_env: _TmpEnvEntry):
         object.__setattr__(self, "_env_keys", tuple(tmp_env.env.keys()))
         object.__setattr__(self, "_env_vals", tuple(tmp_env.env.values()))
+        object.__setattr__(self, "_env_tags", tmp_env.tags)
+
+    def hasAnyTag(self, tags: Set[str]) -> bool:
+        return bool(self._env_tags & tags)
 
     def getEnvVal(self, key: str, default: Optional[str] = None) \
             -> Optional[str]:
@@ -39,6 +44,7 @@ class EnvEntry:
 
     _env_keys: Tuple[str]
     _env_vals: Tuple[str]
+    _env_tags: Set[str]
 
 
 @dataclass
@@ -47,8 +53,9 @@ class _ParseCtx:
     result: List[List[_TmpEnvEntry]] = field(default_factory=list)
 
 
-_COMMENT_REGEX = re.compile(r"\s*#.*", re.DOTALL)
+_COMMENT_REGEX = re.compile(r'\s*#.*', re.DOTALL)
 _INCLUDE_REGEX = re.compile(r'^RUNALL_INCLUDE (?P<filename>.+$)')
+_TAGS_REGEX = re.compile(r'^(?P<tags>\w+(,\w+)*)\t(?P<remainder>.*)$')
 _ENV_VAR_MULTI_ITEM_REGEX = re.compile(r'(?P<name>\w+)="(?P<value>.*?)"')
 _CROSSLIST_REGEX = re.compile(r'^RUNALL_CROSSLIST$')
 _EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>.*) (?P<result>.*?)$')
@@ -56,6 +63,9 @@ _EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>.*) (?P<result>.*?)$')
 
 def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
     result = _TmpEnvEntry()
+    if (m := _TAGS_REGEX.match(line)) is not None:
+        result.tags = set(m.group("tags").strip().split(","))
+        line = m.group("remainder")
     for env_match in _ENV_VAR_MULTI_ITEM_REGEX.finditer(line):
         name = env_match.group("name")
         value = env_match.group("value")
@@ -66,6 +76,7 @@ def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
 def _append_env_entries(*args) -> _TmpEnvEntry:
     result = _TmpEnvEntry()
     for entry in args:
+        result.tags = result.tags.union(entry.tags)
         for k, v in entry.env.items():
             if k not in result.env:
                 result.env[k] = v
@@ -81,7 +92,7 @@ def _do_crosslist(ctx: _ParseCtx):
 
 def _parse_env_lst(env_lst: Path, ctx: _ParseCtx):
     for line in parse_commented_file(env_lst):
-        if (m:=_INCLUDE_REGEX.match(line)) is not None:
+        if (m := _INCLUDE_REGEX.match(line)) is not None:
             p = env_lst.parent / Path(m.group("filename"))
             _parse_env_lst(p, ctx)
         elif _CROSSLIST_REGEX.match(line) is not None:
