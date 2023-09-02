@@ -1833,8 +1833,8 @@ private:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         auto& _Al     = _Getal();
         auto _Newhead = _Al.allocate(1);
-        _Construct_in_place(_Newhead->_Next, _Newhead);
-        _Construct_in_place(_Newhead->_Prev, _Newhead);
+        _STD _Construct_in_place(_Newhead->_Next, _Newhead);
+        _STD _Construct_in_place(_Newhead->_Prev, _Newhead);
         _Mypair._Myval2._Myhead = _Newhead;
         _Proxy._Release();
     }

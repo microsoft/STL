@@ -970,7 +970,7 @@ public:
     _CONSTEXPR20 void deallocate(_Ty* const _Ptr, const size_t _Count) {
         _STL_ASSERT(_Ptr != nullptr || _Count == 0, "null pointer cannot point to a block of non-zero size");
         // no overflow check on the following multiply; we assume _Allocate did that check
-        _Deallocate<_New_alignof<_Ty>>(_Ptr, sizeof(_Ty) * _Count);
+        _STD _Deallocate<_New_alignof<_Ty>>(_Ptr, sizeof(_Ty) * _Count);
     }
 
     _NODISCARD_RAW_PTR_ALLOC _CONSTEXPR20 __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
@@ -1088,7 +1088,7 @@ _CONSTEXPR20 void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t
     using _Ty = typename _Alloc::value_type;
     if constexpr (!conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
         for (; _First != _Last; ++_First) {
-            allocator_traits<_Alloc>::destroy(_Al, _Unfancy(_First));
+            allocator_traits<_Alloc>::destroy(_Al, _STD _Unfancy(_First));
         }
     }
 }
@@ -1098,7 +1098,7 @@ _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _L
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
     if constexpr (!is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
         for (; _First != _Last; ++_First) {
-            _Destroy_in_place(*_First);
+            _STD _Destroy_in_place(*_First);
         }
     }
 }
@@ -1611,13 +1611,13 @@ struct _NODISCARD _Uninitialized_backout {
     _Uninitialized_backout& operator=(const _Uninitialized_backout&) = delete;
 
     _CONSTEXPR20 ~_Uninitialized_backout() {
-        _Destroy_range(_First, _Last);
+        _STD _Destroy_range(_First, _Last);
     }
 
     template <class... _Types>
     _CONSTEXPR20 void _Emplace_back(_Types&&... _Vals) {
         // construct a new element at *_Last and increment
-        _Construct_in_place(*_Last, _STD forward<_Types>(_Vals)...);
+        _STD _Construct_in_place(*_Last, _STD forward<_Types>(_Vals)...);
         ++_Last;
     }
 
@@ -1635,7 +1635,7 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _In
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            return _Copy_memmove(_First, _Last, _Dest);
+            return _STD _Copy_memmove(_First, _Last, _Dest);
         }
     }
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
@@ -1694,10 +1694,10 @@ namespace ranges {
     in_out_result<_InIt, _OutIt> _Copy_memcpy_distance(
         _InIt _IFirst, _OutIt _OFirst, const _DistIt _DFirst, const _DistIt _DLast) noexcept {
         // equivalent to _Copy_memcpy_count(_IFirst, _OFirst, _DLast - _DFirst) but computes distance more efficiently
-        const auto _IFirstPtr   = _To_address(_IFirst);
-        const auto _OFirstPtr   = _To_address(_OFirst);
-        const auto _DFirstPtr   = _To_address(_DFirst);
-        const auto _DLastPtr    = _To_address(_DLast);
+        const auto _IFirstPtr   = _STD _To_address(_IFirst);
+        const auto _OFirstPtr   = _STD _To_address(_OFirst);
+        const auto _DFirstPtr   = _STD _To_address(_DFirst);
+        const auto _DLastPtr    = _STD _To_address(_DLast);
         const auto _IFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirstPtr));
         const auto _OFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_OFirstPtr));
         const auto _DFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_DFirstPtr));
@@ -1721,10 +1721,10 @@ namespace ranges {
     template <class _InIt, class _OutIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_common(
         _InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) noexcept {
-        const auto _IFirstPtr   = _To_address(_IFirst);
-        const auto _ILastPtr    = _To_address(_ILast);
-        const auto _OFirstPtr   = _To_address(_OFirst);
-        const auto _OLastPtr    = _To_address(_OLast);
+        const auto _IFirstPtr   = _STD _To_address(_IFirst);
+        const auto _ILastPtr    = _STD _To_address(_ILast);
+        const auto _OFirstPtr   = _STD _To_address(_OFirst);
+        const auto _OLastPtr    = _STD _To_address(_OLast);
         const auto _IFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirstPtr));
         const auto _ILast_ch    = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILastPtr));
         const auto _OFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_OFirstPtr));
@@ -1758,12 +1758,14 @@ namespace ranges {
         if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_constructible && _Sized_or_unreachable_sentinel_for<_Se, _It>
                       && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
             if constexpr (_Is_sized1 && _Is_sized2) {
-                return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
+                return _RANGES _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                     _RANGES next(_OFirst, _STD move(_OLast)));
             } else if constexpr (_Is_sized1) {
-                return _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+                return _RANGES _Copy_memcpy_distance(
+                    _IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
             } else if constexpr (_Is_sized2) {
-                return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                return _RANGES _Copy_memcpy_distance(
+                    _IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
             } else {
                 _STL_ASSERT(false, "Tried to uninitialized_move two ranges with unreachable sentinels");
             }
@@ -1793,12 +1795,12 @@ public:
     _Uninitialized_backout_al& operator=(const _Uninitialized_backout_al&) = delete;
 
     _CONSTEXPR20 ~_Uninitialized_backout_al() {
-        _Destroy_range(_First, _Last, _Al);
+        _STD _Destroy_range(_First, _Last, _Al);
     }
 
     template <class... _Types>
     _CONSTEXPR20 void _Emplace_back(_Types&&... _Vals) { // construct a new element at *_Last and increment
-        allocator_traits<_Alloc>::construct(_Al, _Unfancy(_Last), _STD forward<_Types>(_Vals)...);
+        allocator_traits<_Alloc>::construct(_Al, _STD _Unfancy(_Last), _STD forward<_Types>(_Vals)...);
         ++_Last;
     }
 
@@ -1898,7 +1900,7 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _In
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            return _Copy_memmove(_First, _Last, _Dest);
+            return _STD _Copy_memmove(_First, _Last, _Dest);
         }
     }
 
@@ -1913,11 +1915,11 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _In
 _EXPORT_STD template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // copy [_First, _Last) to raw [_Dest, ...)
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
-    auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
-    _Seek_wrapped(_Dest, _Uninitialized_copy_unchecked(_UFirst, _ULast, _UDest));
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
+    auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
+    _STD _Seek_wrapped(_Dest, _STD _Uninitialized_copy_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
 
@@ -1927,8 +1929,8 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     // move [_First, _Last) to raw _Dest, using _Al
     // note: only called internally from elsewhere in the STL
     using _Ptrval     = typename _Alloc::value_type*;
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (conjunction_v<bool_constant<_Iter_move_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>>) {
 #if _HAS_CXX20
@@ -1984,15 +1986,15 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
 _EXPORT_STD template <class _NoThrowFwdIt, class _Tval>
 void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, const _Tval& _Val) {
     // copy _Val throughout raw [_First, _Last)
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (_Fill_memset_is_safe<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>) {
-        _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
+        _STD _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
     } else {
         if constexpr (_Fill_zero_memset_is_safe<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>) {
-            if (_Is_all_bits_zero(_Val)) {
-                _Fill_zero_memset(_UFirst, static_cast<size_t>(_ULast - _UFirst));
+            if (_STD _Is_all_bits_zero(_Val)) {
+                _STD _Fill_zero_memset(_UFirst, static_cast<size_t>(_ULast - _UFirst));
                 return;
             }
         }
@@ -2014,8 +2016,8 @@ _INLINE_VAR constexpr bool _Use_memset_value_construct_v =
 
 template <class _Ptr>
 _Ptr _Zero_range(const _Ptr _First, const _Ptr _Last) { // fill [_First, _Last) with zeroes
-    char* const _First_ch = reinterpret_cast<char*>(_To_address(_First));
-    char* const _Last_ch  = reinterpret_cast<char*>(_To_address(_Last));
+    char* const _First_ch = reinterpret_cast<char*>(_STD _To_address(_First));
+    char* const _Last_ch  = reinterpret_cast<char*>(_STD _To_address(_Last));
     _CSTD memset(_First_ch, 0, static_cast<size_t>(_Last_ch - _First_ch));
     return _Last;
 }
@@ -2030,8 +2032,8 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_value_construct_n(
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            auto _PFirst = _Unfancy(_First);
-            _Zero_range(_PFirst, _PFirst + _Count);
+            auto _PFirst = _STD _Unfancy(_First);
+            _STD _Zero_range(_PFirst, _PFirst + _Count);
             return _First + _Count;
         }
     }
@@ -2049,7 +2051,7 @@ _NoThrowFwdIt _Uninitialized_value_construct_n_unchecked1(_NoThrowFwdIt _UFirst,
     // value-initialize all elements in [_UFirst, _UFirst + _Count)
     _STL_INTERNAL_CHECK(_Count >= 0);
     if constexpr (_Use_memset_value_construct_v<_NoThrowFwdIt>) {
-        return _Zero_range(_UFirst, _UFirst + _Count);
+        return _STD _Zero_range(_UFirst, _UFirst + _Count);
     } else {
         _Uninitialized_backout<_NoThrowFwdIt> _Backout{_UFirst};
         for (; 0 < _Count; --_Count) {
@@ -2211,9 +2213,9 @@ _NODISCARD_RAW_PTR_ALLOC _CONSTEXPR20 typename allocator_traits<_Alloc>::pointer
 _EXPORT_STD template <class _FwdIt, class _Ty>
 _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
     // remove each matching _Val
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     _UFirst           = _STD _Find_unchecked(_UFirst, _ULast, _Val);
     auto _UNext       = _UFirst;
     if (_UFirst != _ULast) {
@@ -2225,17 +2227,17 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
         }
     }
 
-    _Seek_wrapped(_First, _UNext);
+    _STD _Seek_wrapped(_First, _UNext);
     return _First;
 }
 
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // remove each satisfying _Pred
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
-    _UFirst           = _STD find_if(_UFirst, _ULast, _Pass_fn(_Pred));
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
+    _UFirst           = _STD find_if(_UFirst, _ULast, _STD _Pass_fn(_Pred));
     auto _UNext       = _UFirst;
     if (_UFirst != _ULast) {
         while (++_UFirst != _ULast) {
@@ -2246,7 +2248,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt 
         }
     }
 
-    _Seek_wrapped(_First, _UNext);
+    _STD _Seek_wrapped(_First, _UNext);
     return _First;
 }
 

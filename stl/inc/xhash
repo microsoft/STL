@@ -291,7 +291,7 @@ struct _Hash_vec {
             // nothrow hereafter
             const auto _Oldcapacity = capacity();
             if (_Oldcapacity != 0) {
-                _Destroy_range(_Mypair._Myval2._Myfirst, _Mypair._Myval2._Mylast);
+                _STD _Destroy_range(_Mypair._Myval2._Myfirst, _Mypair._Myval2._Mylast);
                 _Alvec.deallocate(_Mypair._Myval2._Myfirst, _Oldcapacity);
             }
 

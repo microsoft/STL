@@ -1792,11 +1792,11 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 _Ty* data() noexcept {
-        return _Unfancy_maybe_null(_Mypair._Myval2._Myfirst);
+        return _STD _Unfancy_maybe_null(_Mypair._Myval2._Myfirst);
     }
 
     _NODISCARD _CONSTEXPR20 const _Ty* data() const noexcept {
-        return _Unfancy_maybe_null(_Mypair._Myval2._Myfirst);
+        return _STD _Unfancy_maybe_null(_Mypair._Myval2._Myfirst);
     }
 
     _NODISCARD _CONSTEXPR20 iterator begin() noexcept {
@@ -1994,7 +1994,7 @@ private:
         _STL_INTERNAL_CHECK(!_Myfirst && !_Mylast && !_Myend); // check that *this is tidy
         _STL_INTERNAL_CHECK(0 < _Newcapacity && _Newcapacity <= max_size());
 
-        const pointer _Newvec = _Allocate_at_least_helper(_Getal(), _Newcapacity);
+        const pointer _Newvec = _STD _Allocate_at_least_helper(_Getal(), _Newcapacity);
         _Myfirst              = _Newvec;
         _Mylast               = _Newvec;
         _Myend                = _Newvec + _Newcapacity;
@@ -2050,7 +2050,7 @@ private:
         _My_data._Orphan_all();
 
         if (_Myfirst) { // destroy and deallocate old array
-            _Destroy_range(_Myfirst, _Mylast, _Al);
+            _STD _Destroy_range(_Myfirst, _Mylast, _Al);
             _ASAN_VECTOR_REMOVE;
             _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
@@ -2074,12 +2074,12 @@ private:
             _Buy_nonzero(_Count);
             _Tidy_guard<vector> _Guard{this};
             if constexpr (sizeof...(_Val) == 0) {
-                _My_data._Mylast = _Uninitialized_value_construct_n(_My_data._Myfirst, _Count, _Al);
+                _My_data._Mylast = _STD _Uninitialized_value_construct_n(_My_data._Myfirst, _Count, _Al);
             } else if constexpr (sizeof...(_Val) == 1) {
                 _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Valty..., const _Ty&>);
-                _My_data._Mylast = _Uninitialized_fill_n(_My_data._Myfirst, _Count, _Val..., _Al);
+                _My_data._Mylast = _STD _Uninitialized_fill_n(_My_data._Myfirst, _Count, _Val..., _Al);
             } else if constexpr (sizeof...(_Val) == 2) {
-                _My_data._Mylast = _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
+                _My_data._Mylast = _STD _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
             } else {
                 static_assert(_Always_false<_Ty>, "Should be unreachable");
             }

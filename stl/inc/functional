@@ -2536,21 +2536,21 @@ public:
     _CONSTEXPR20 default_searcher(_FwdItPat _First, _FwdItPat _Last, _Pred_eq _Eq = _Pred_eq())
         : _Data{_One_then_variadic_args_t{}, _STD move(_Eq), pair<_FwdItPat, _FwdItPat>{_First, _Last}} {
         const auto& _Pat = _Data._Myval2;
-        _Adl_verify_range(_Pat.first, _Pat.second);
+        _STD _Adl_verify_range(_Pat.first, _Pat.second);
     }
 
     template <class _FwdItHaystack>
     _NODISCARD _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> operator()(
         _FwdItHaystack _First, _FwdItHaystack _Last) const {
         // search [_First, _Last) for the searcher's pattern
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
         const auto& _Eq  = _Data._Get_first();
         const auto& _Pat = _Data._Myval2;
-        _Adl_verify_range(_Pat.first, _Pat.second); // check again to ensure container is not destroyed
-        const auto _Result = _Search_pair_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last),
-            _Get_unwrapped(_Pat.first), _Get_unwrapped(_Pat.second), _Eq);
-        _Seek_wrapped(_Last, _Result.second);
-        _Seek_wrapped(_First, _Result.first);
+        _STD _Adl_verify_range(_Pat.first, _Pat.second); // check again to ensure container is not destroyed
+        const auto _Result = _STD _Search_pair_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last),
+            _STD _Get_unwrapped(_Pat.first), _STD _Get_unwrapped(_Pat.second), _Eq);
+        _STD _Seek_wrapped(_Last, _Result.second);
+        _STD _Seek_wrapped(_First, _Result.first);
         return {_First, _Last};
     }
 
@@ -2730,15 +2730,15 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
     static_assert(is_same_v<typename _Delta1_t::_Value_t, _Iter_value_t<_RanItHaystack>>,
         "boyer_moore_searcher requires matching iterator value types");
     using _Diff = typename _Delta1_t::_Diff;
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst         = _Get_unwrapped(_First);
-    const auto _ULast    = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst         = _STD _Get_unwrapped(_First);
+    const auto _ULast    = _STD _Get_unwrapped(_Last);
     const auto _Pat_size = _Delta1._Pat_size;
     if (_Pat_size == 0) {
         return {_First, _First};
     }
 
-    const auto _UPat_first = _Get_unwrapped_n(_Delta1._Pat_first, _Pat_size);
+    const auto _UPat_first = _STD _Get_unwrapped_n(_Delta1._Pat_first, _Pat_size);
     const auto _Eq         = _Delta1._Get_eq();
     _Diff _Shift           = _Pat_size - 1;
     while (_Shift < _ULast - _UFirst) {
@@ -2748,8 +2748,8 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
             _Diff _Idx = _Pat_size - 1;
             do {
                 if (_Idx == 0) {
-                    _Seek_wrapped(_Last, _UFirst + _Pat_size);
-                    _Seek_wrapped(_First, _UFirst);
+                    _STD _Seek_wrapped(_Last, _UFirst + _Pat_size);
+                    _STD _Seek_wrapped(_First, _UFirst);
                     return {_First, _Last};
                 }
 
@@ -2760,8 +2760,8 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
         }
     }
 
-    _Seek_wrapped(_Last, _ULast);
-    _Seek_wrapped(_First, _ULast);
+    _STD _Seek_wrapped(_Last, _ULast);
+    _STD _Seek_wrapped(_First, _ULast);
     return {_First, _Last};
 }
 
@@ -2771,15 +2771,15 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_horspool_search(
     static_assert(is_same_v<typename _Delta1_t::_Value_t, _Iter_value_t<_RanItHaystack>>,
         "boyer_moore_horspool_searcher requires matching iterator value types");
     using _Diff = typename _Delta1_t::_Diff;
-    _Adl_verify_range(_First, _Last);
+    _STD _Adl_verify_range(_First, _Last);
     const auto _Pat_size = _Delta1._Pat_size;
     if (_Pat_size == 0) {
         return {_First, _First};
     }
 
-    auto _UFirst           = _Get_unwrapped(_First);
-    const auto _ULast      = _Get_unwrapped(_Last);
-    const auto _UPat_first = _Get_unwrapped_n(_Delta1._Pat_first, _Pat_size);
+    auto _UFirst           = _STD _Get_unwrapped(_First);
+    const auto _ULast      = _STD _Get_unwrapped(_Last);
+    const auto _UPat_first = _STD _Get_unwrapped_n(_Delta1._Pat_first, _Pat_size);
     const auto _Eq         = _Delta1._Get_eq();
     _Diff _Shift           = _Pat_size - 1;
     while (_Shift < _ULast - _UFirst) {
@@ -2787,9 +2787,9 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_horspool_search(
         _Shift = _Delta1._Lookup(*_UFirst);
         if (_Shift == 0) { // that is, *_UFirst == "_Pat.back()"
             const auto _Candidate = _UFirst - (_Pat_size - 1);
-            if (_STD equal(_UPat_first, _UPat_first + (_Pat_size - 1), _Candidate, _Pass_fn(_Eq))) {
-                _Seek_wrapped(_Last, _Candidate + _Pat_size);
-                _Seek_wrapped(_First, _Candidate);
+            if (_STD equal(_UPat_first, _UPat_first + (_Pat_size - 1), _Candidate, _STD _Pass_fn(_Eq))) {
+                _STD _Seek_wrapped(_Last, _Candidate + _Pat_size);
+                _STD _Seek_wrapped(_First, _Candidate);
                 return {_First, _Last};
             }
 
@@ -2797,8 +2797,8 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_horspool_search(
         }
     }
 
-    _Seek_wrapped(_Last, _ULast);
-    _Seek_wrapped(_First, _ULast);
+    _STD _Seek_wrapped(_Last, _ULast);
+    _STD _Seek_wrapped(_First, _ULast);
     return {_First, _Last};
 }
 
@@ -2815,9 +2815,9 @@ struct _Single_delta1_type_boyer_moore_traits {
     template <bool _Build_delta2>
     static void* _Build_boyer_moore(_RanItPat _First, _RanItPat _Last, _Hash_ty _Hash_fn, _Pred_eq _Eq) {
         // builds data tables for the Boyer-Moore string search algorithm
-        _Adl_verify_range(_First, _Last);
-        const auto _UFirst       = _Get_unwrapped(_First);
-        const auto _Pat_size_raw = _Get_unwrapped(_Last) - _UFirst;
+        _STD _Adl_verify_range(_First, _Last);
+        const auto _UFirst       = _STD _Get_unwrapped(_First);
+        const auto _Pat_size_raw = _STD _Get_unwrapped(_Last) - _UFirst;
         using _CT                = common_type_t<_Iter_diff_t<_RanItPat>, size_t>;
         if (static_cast<_CT>(_Pat_size_raw) > static_cast<_CT>(SIZE_MAX)) {
             _Xbad_alloc();
@@ -2836,7 +2836,7 @@ struct _Single_delta1_type_boyer_moore_traits {
         *_Decode_aligned_block<_Atomic_counter_t>(_Buf) = 1;
         void* const _Delta1                             = _Decode_aligned_block<_Delta1_t>(_Buf);
         if (_Build_delta2) {
-            _Build_boyer_moore_delta_2_table(
+            _STD _Build_boyer_moore_delta_2_table(
                 _Decode_aligned_block<_Diff>(_Buf, _Pat_size), _UFirst, _Pat_size_raw, _Eq);
         }
 
@@ -2851,7 +2851,7 @@ struct _Single_delta1_type_boyer_moore_traits {
         (void) _Decode_aligned_block<_Atomic_counter_t>(_Data);
         const auto _Delta1 = _Decode_aligned_block<_Delta1_t>(_Data);
         const auto _Delta2 = _Decode_aligned_block<_Diff>(_Data, static_cast<size_t>(_Delta1->_Pat_size));
-        return _Boyer_moore_search(*_Delta1, _Delta2, _First, _Last);
+        return _STD _Boyer_moore_search(*_Delta1, _Delta2, _First, _Last);
     }
 
     template <class _RanItHaystack>
@@ -2860,7 +2860,7 @@ struct _Single_delta1_type_boyer_moore_traits {
         // decodes data tables for the Boyer-Moore string search algorithm
         (void) _Decode_aligned_block<_Atomic_counter_t>(_Data);
         const auto _Delta1 = _Decode_aligned_block<_Delta1_t>(_Data);
-        return _Boyer_moore_horspool_search(*_Delta1, _First, _Last);
+        return _STD _Boyer_moore_horspool_search(*_Delta1, _First, _Last);
     }
 
     static void _Destroy(void* const _Base) noexcept {
