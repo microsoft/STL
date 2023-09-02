@@ -81,7 +81,7 @@ _NODISCARD _CONSTEXPR20 _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _V
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            return _STD _Reduce_plus_arithmetic_ranges(_UFirst, _ULast, _Val);
+            return _Reduce_plus_arithmetic_ranges(_UFirst, _ULast, _Val);
         }
     }
 
@@ -189,7 +189,7 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            return _STD _Transform_reduce_arithmetic_defaults(_UFirst1, _ULast1, _UFirst2, _STD move(_Val));
+            return _Transform_reduce_arithmetic_defaults(_UFirst1, _ULast1, _UFirst2, _STD move(_Val));
         }
     }
 
