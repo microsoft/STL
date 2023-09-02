@@ -444,9 +444,11 @@ void test_ranges_algorithms() {
     // sort(varr, less{}); // need to check ADL-found opeartor==
     // sort(varr, &less_function<validator>);
     // ^^^ WIP: ADL-dependent structured bindings ^^^
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, WIP
     sort(iarr, iarr, validating_less{});
     // sort(iarr, validating_less{}); // need to check ADL-found swap
     sort(iarr, iarr, {}, validating_identity{});
+#endif // defined(__clang__) || defined(__EDG__)
 
     stable_sort(varr, varr);
     stable_sort(varr);
@@ -673,8 +675,8 @@ void test_ranges_algorithms() {
     (void) iota(pva, pvalidator{});
 #endif // _HAS_CXX23
 
-    validating_nontrivial narr[1]{};
-    validating_nontrivial narr2[1]{};
+    validating_nontrivial narr[1]; // TRANSITION, DevCom-10456450, should be value-initialized
+    validating_nontrivial narr2[1]; // TRANSITION, DevCom-10456450, should be value-initialized
 
     (void) uninitialized_default_construct(varr, varr);
     (void) uninitialized_default_construct(varr);

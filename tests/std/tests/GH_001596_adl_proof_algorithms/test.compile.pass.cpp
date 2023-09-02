@@ -515,8 +515,8 @@ void test_algorithms() {
     (void) std::midpoint(+varr, +varr);
 #endif // _HAS_CXX20
 
-    validating_nontrivial narr[1]{};
-    validating_nontrivial narr2[1]{};
+    validating_nontrivial narr[1]; // TRANSITION, DevCom-10456450, should be value-initialized
+    validating_nontrivial narr2[1]; // TRANSITION, DevCom-10456450, should be value-initialized
 
 #if _HAS_CXX17
     std::uninitialized_default_construct(varr, varr);
@@ -824,8 +824,8 @@ void test_per_execution_policy() {
     (void) std::adjacent_difference(ExecutionPolicy, varr, varr, varr2, simple_left_selector{});
     (void) std::adjacent_difference(ExecutionPolicy, iarr, iarr, iarr2, validating_left_selector{});
 
-    validating_nontrivial narr[1]{};
-    validating_nontrivial narr2[1]{};
+    validating_nontrivial narr[1]; // TRANSITION, DevCom-10456450, should be value-initialized
+    validating_nontrivial narr2[1]; // TRANSITION, DevCom-10456450, should be value-initialized
 
     std::uninitialized_default_construct(ExecutionPolicy, varr, varr);
     std::uninitialized_default_construct(ExecutionPolicy, narr, narr);
