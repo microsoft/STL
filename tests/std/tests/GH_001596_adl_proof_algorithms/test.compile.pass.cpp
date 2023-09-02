@@ -454,10 +454,10 @@ void test_algorithms() {
     (void) std::lexicographical_compare(varr, varr, varr, varr);
     (void) std::lexicographical_compare(iarr, iarr, iarr, iarr, validating_less{});
 
-#if _HAS_CXX20
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     (void) std::lexicographical_compare_three_way(varr, varr, varr, varr);
     (void) std::lexicographical_compare_three_way(iarr, iarr, iarr, iarr, validating_compare_three_way{});
-#endif // _HAS_CXX20
+#endif // _HAS_CXX20 && defined(__cpp_lib_concepts)
 
     // (void) std::next_permutation(varr, varr); // requires Cpp17ValueSwappable
     (void) std::next_permutation(iarr, iarr, validating_less{});
