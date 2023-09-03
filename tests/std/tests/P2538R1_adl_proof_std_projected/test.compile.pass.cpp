@@ -444,11 +444,9 @@ void test_ranges_algorithms() {
     // sort(varr, less{}); // need to check ADL-found opeartor==
     // sort(varr, &less_function<validator>);
     // ^^^ WIP: ADL-dependent structured bindings ^^^
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, WIP
     sort(iarr, iarr, validating_less{});
     // sort(iarr, validating_less{}); // need to check ADL-found swap
     sort(iarr, iarr, {}, validating_identity{});
-#endif // defined(__clang__) || defined(__EDG__)
 
     stable_sort(varr, varr);
     stable_sort(varr);

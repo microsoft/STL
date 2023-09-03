@@ -8337,7 +8337,7 @@ namespace ranges {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10452846
                 auto [_Mid_first, _Mid_last] = _RANGES _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
 #else // ^^^ no workaround / workaround vvv
-                auto _Mid       = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
+                auto _Mid       = _RANGES _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
                 auto _Mid_first = _Mid.begin();
                 auto _Mid_last  = _Mid.end();
 #endif // TRANSITION, DevCom-10452846
