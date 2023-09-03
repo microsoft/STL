@@ -1511,7 +1511,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
     [[deprecated(                                                                                                      \
         "warning STL4045: The ipfx(), isfx(), opfx(), and osfx() functions are removed before C++98 (see WG21-N0794) " \
         "but kept as non-Standard extensions. They will be removed in the future, and the member classes sentry "      \
-        "should be used instread. You can define _SILENCE_IO_PFX_SFX_DEPRECATION_WARNING or "                          \
+        "should be used instead. You can define _SILENCE_IO_PFX_SFX_DEPRECATION_WARNING or "                          \
         "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
 #define _DEPRECATE_IO_PFX_SFX
