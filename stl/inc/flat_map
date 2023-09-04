@@ -594,6 +594,39 @@ public:
         return _Emplace_hint<true, _K&&, _M&&>(_Position, _STD forward<_K>(_Key), _STD forward<_M>(_Obj));
     }
 
+    iterator erase(iterator _Position) {
+        return erase(static_cast<const_iterator>(_Position));
+    }
+
+    iterator erase(const_iterator _Position) {
+        _Clear_flat_map_scope_guard _Guard{this};
+        auto _Key_it      = _Data.keys.erase(_Position._Key_it);
+        auto _Val_it      = _Data.values.erase(_Position._Val_it);
+        _Guard._Clearable = nullptr;
+        return iterator{_STD move(_Key_it), _STD move(_Val_it)};
+    }
+
+    iterator erase(const_iterator _First, const_iterator _Last) {
+        _Clear_flat_map_scope_guard _Guard{this};
+        auto _Key_it      = _Data.keys.erase(_First._Key_it, _Last._Key_it);
+        auto _Val_it      = _Data.values.erase(_First._Val_it, _Last._Val_it);
+        _Guard._Clearable = nullptr;
+        return iterator{_STD move(_Key_it), _STD move(_Val_it)};
+    }
+
+    template <class _K>
+    size_type erase(_K&& _Key)
+        requires same_as<_K&&, const key_type&>
+              || (_Compare_is_transparent<key_compare> && !convertible_to<_K &&, iterator>
+                  && !convertible_to<_K &&, const_iterator>)
+    {
+        const_iterator _Pos_begin = lower_bound(_STD forward<_K>(_Key));
+        const_iterator _Pos_end   = upper_bound(_STD forward<_K>(_Key));
+        size_type _Count          = _Pos_end - _Pos_begin;
+        erase(_Pos_begin, _Pos_end);
+        return _Count;
+    }
+
     containers extract() && {
         _Clear_flat_map_scope_guard _Guard{this};
         return _STD move(_Data);
