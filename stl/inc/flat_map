@@ -662,6 +662,28 @@ public:
         return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
+    template <class _K>
+    iterator upper_bound(const _K& _X)
+        requires same_as<_K, key_type> || _Compare_is_transparent<key_compare>
+    {
+        typename KeyContainer::const_iterator _Key_it =
+            _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist                                 = _STD distance(_Data.keys.cbegin(), _Key_it);
+        typename MappedContainer::iterator _Val_it = _Data.values.begin() + _Dist;
+        return iterator{_STD move(_Key_it), _STD move(_Val_it)};
+    }
+
+    template <class _K>
+    const_iterator upper_bound(const _K& _X) const
+        requires same_as<_K, key_type> || _Compare_is_transparent<key_compare>
+    {
+        typename KeyContainer::const_iterator _Key_it =
+            _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist                                       = _STD distance(_Data.keys.cbegin(), _Key_it);
+        typename MappedContainer::const_iterator _Val_it = _Data.values.cbegin() + _Dist;
+        return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
+    }
+
 private:
     key_compare _Key_compare;
     containers _Data;
