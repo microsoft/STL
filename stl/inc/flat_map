@@ -452,14 +452,29 @@ public:
         return try_emplace(_STD forward<_K>(_Key)).first->second;
     }
 
-    _NODISCARD mapped_type& at(const key_type& _Key); // TODO: implement
-    _NODISCARD const mapped_type& at(const key_type& _Key) const; // TODO: implement
     template <class _K>
     _NODISCARD mapped_type& at(const _K& _Key)
-        requires _Compare_is_transparent<key_compare>; // TODO: implement
+        requires same_as<_K, key_type> || _Compare_is_transparent<key_compare>
+    {
+        iterator _Position = find(_Key);
+        if (_Position == end()) {
+            throw _STD out_of_range("std::flat_map::at: the specified key does not exist.");
+        } else {
+            return _Position->second;
+        }
+    }
+
     template <class _K>
     _NODISCARD const mapped_type& at(const _K& _Key) const
-        requires _Compare_is_transparent<key_compare>; // TODO: implement
+        requires same_as<_K, key_type> || _Compare_is_transparent<key_compare>
+    {
+        const_iterator _Position = find(_Key);
+        if (_Position == cend()) {
+            throw _STD out_of_range("std::flat_map::at: the specified key does not exist.");
+        } else {
+            return _Position->second;
+        }
+    }
 
     // [flat.map.modifiers] Modifiers
     template <class... _Args_t>
@@ -631,6 +646,13 @@ public:
         } else {
             return cend();
         }
+    }
+
+    template <class _K>
+    size_type count(const _K& _X) const
+        requires same_as<_K, key_type> || _Compare_is_transparent<key_compare>
+    {
+        return upper_bound(_X) - lower_bound(_X);
     }
 
     template <class _K>
