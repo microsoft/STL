@@ -601,7 +601,7 @@ public:
     iterator erase(const_iterator _Position) {
         _Clear_flat_map_scope_guard _Guard{this};
         auto _Key_it      = _Data.keys.erase(_Position._Key_it);
-        auto _Val_it      = _Data.values.erase(_Position._Val_it);
+        auto _Val_it      = _Data.values.erase(_Position._Mapped_it);
         _Guard._Clearable = nullptr;
         return iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
@@ -609,14 +609,14 @@ public:
     iterator erase(const_iterator _First, const_iterator _Last) {
         _Clear_flat_map_scope_guard _Guard{this};
         auto _Key_it      = _Data.keys.erase(_First._Key_it, _Last._Key_it);
-        auto _Val_it      = _Data.values.erase(_First._Val_it, _Last._Val_it);
+        auto _Val_it      = _Data.values.erase(_First._Mapped_it, _Last._Mapped_it);
         _Guard._Clearable = nullptr;
         return iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
     template <class _K>
     size_type erase(_K&& _Key)
-        requires same_as<_K&&, const key_type&>
+        requires convertible_to<_K&&, const key_type&>
               || (_Compare_is_transparent<key_compare> && !convertible_to<_K &&, iterator>
                   && !convertible_to<_K &&, const_iterator>)
     {
