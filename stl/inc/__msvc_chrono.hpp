@@ -428,15 +428,15 @@ namespace chrono {
         constexpr bool _Num_is_one = _CF::num == 1;
         constexpr bool _Den_is_one = _CF::den == 1;
 
-        if (_Den_is_one) {
-            if (_Num_is_one) {
+        if constexpr (_Den_is_one) {
+            if constexpr (_Num_is_one) {
                 return static_cast<_To>(static_cast<_ToRep>(_Dur.count()));
             } else {
                 return static_cast<_To>(
                     static_cast<_ToRep>(static_cast<_CR>(_Dur.count()) * static_cast<_CR>(_CF::num)));
             }
         } else {
-            if (_Num_is_one) {
+            if constexpr (_Num_is_one) {
                 return static_cast<_To>(
                     static_cast<_ToRep>(static_cast<_CR>(_Dur.count()) / static_cast<_CR>(_CF::den)));
             } else {

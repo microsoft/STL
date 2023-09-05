@@ -381,10 +381,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
 
-# DevCom-1559808: (structured bindings for `subrange` in a constant expression)
-# Skipped as this sometimes emits "fatal error C1001: Internal compiler error." with a crash dialog.
-std/ranges/range.utility/range.subrange/structured_bindings.pass.cpp:0 SKIPPED
-
 # DevCom-1436243 constexpr new initialized array
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:0 FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.create/make_unique.array.pass.cpp:0 FAIL
