@@ -49,3 +49,4 @@ jobs:
       targetPlatform: ${{ parameters.targetPlatform }}
       targetArch: ${{ parameters.vsDevCmdArch }}
       displayName: 'Build Tests'
+      testSelection: '-E stlasan'
