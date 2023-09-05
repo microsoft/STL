@@ -97,7 +97,6 @@ stages:
           targetPlatform: arm
           vsDevCmdArch: arm
           benchmarkBuildOutputLocationVar: ''
-          testSelection: $(testSelection)
 
   - stage: Build_ARM64
     dependsOn: Build_And_Test_x64
@@ -107,4 +106,3 @@ stages:
         parameters:
           targetPlatform: arm64
           vsDevCmdArch: arm64
-          testSelection: $(testSelection)
