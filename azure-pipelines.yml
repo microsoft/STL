@@ -3,17 +3,12 @@
 
 # Build STL targeting x86, x64, arm, arm64
 
-parameters:
-  # Parameters to pass to ctest to select the test(s) to run
-- name: testSelection
-  type: string
-  # Exclude "stlasan" test by default
-  default: '-E stlasan'
-
 variables:
   tmpDir: 'D:\Temp'
   buildOutputLocation: 'D:\build'
   benchmarkBuildOutputLocation: 'D:\benchmark'
+  # Parameters to pass to ctest to select the test(s) to run (exclude "stlasan" test by default)
+  testSelection: '-E stlasan'
 
 pool:
   name: 'StlBuild-2023-08-08T1145-Pool'
@@ -81,7 +76,7 @@ stages:
         parameters:
           targetPlatform: x64
           vsDevCmdArch: amd64
-          testSelection: ${{ parameters.testSelection }}
+          testSelection: $(testSelection)
 
   - stage: Build_And_Test_x86
     dependsOn: Build_And_Test_x64
@@ -91,7 +86,7 @@ stages:
         parameters:
           targetPlatform: x86
           vsDevCmdArch: x86
-          testSelection: ${{ parameters.testSelection }}
+          testSelection: $(testSelection)
 
   - stage: Build_ARM
     dependsOn: Build_And_Test_x64
@@ -102,7 +97,7 @@ stages:
           targetPlatform: arm
           vsDevCmdArch: arm
           benchmarkBuildOutputLocationVar: ''
-          testSelection: ${{ parameters.testSelection }}
+          testSelection: $(testSelection)
 
   - stage: Build_ARM64
     dependsOn: Build_And_Test_x64
@@ -112,4 +107,4 @@ stages:
         parameters:
           targetPlatform: arm64
           vsDevCmdArch: arm64
-          testSelection: ${{ parameters.testSelection }}
+          testSelection: $(testSelection)
