@@ -80,9 +80,7 @@ void test_case_equal_parallel(const size_t testSize) {
 }
 
 int main() {
-#ifndef _M_CEE // TRANSITION, VSO-1659695
     parallel_test_case(test_case_equal_parallel<forward_list>);
     parallel_test_case(test_case_equal_parallel<list>);
     parallel_test_case(test_case_equal_parallel<vector>);
-#endif // _M_CEE
 }
