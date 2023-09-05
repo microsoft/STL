@@ -391,6 +391,7 @@ void test_map() {
     assert(m[30] == 33);
 }
 
+#if TEST_STANDARD >= 23
 void test_mdspan() {
     using namespace std;
     puts("Testing <mdspan>.");
@@ -401,6 +402,7 @@ void test_mdspan() {
     assert(arr[mp(2, 2)] == 30);
     // TRANSITION, test std::mdspan too (DevCom-10359857)
 }
+#endif // TEST_STANDARD >= 23
 
 void test_memory() {
     using namespace std;
@@ -1122,7 +1124,9 @@ void all_cpp_header_tests() {
     test_list();
     test_locale();
     test_map();
+#if TEST_STANDARD >= 23
     test_mdspan();
+#endif // TEST_STANDARD >= 23
     test_memory();
     test_memory_resource();
     test_mutex();

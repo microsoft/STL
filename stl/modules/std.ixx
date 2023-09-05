@@ -78,7 +78,9 @@ export module std;
 #include <list>
 #include <locale>
 #include <map>
+#if _HAS_CXX23
 #include <mdspan>
+#endif // _HAS_CXX23
 #include <memory>
 #include <memory_resource>
 #include <mutex>
