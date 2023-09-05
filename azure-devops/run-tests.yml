@@ -14,6 +14,10 @@ parameters:
 - name: displayName
   type: string
   default: 'Run Tests'
+  # Parameters to pass to ctest to select the test(s) to run
+- name: testSelection
+  type: string
+  default: '-E stlasan'
 steps:
 - task: CmdLine@2
   displayName: ${{ parameters.displayName }}
@@ -24,7 +28,7 @@ steps:
     script: |
       call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
       -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-      ctest -V
+      ctest -V ${{ parameters.testSelection }}
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - task: PublishTestResults@2
   displayName: 'Publish Tests'
