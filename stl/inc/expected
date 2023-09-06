@@ -184,6 +184,7 @@ struct _Check_expected_argument : true_type {
 
 _EXPORT_STD template <class _Ty, class _Err>
 class expected {
+private:
     static_assert(_Check_expected_argument<_Ty>::value);
     static_assert(_Check_unexpected_argument<_Err>::value);
 
@@ -1162,6 +1163,7 @@ private:
 template <class _Ty, class _Err>
     requires is_void_v<_Ty>
 class expected<_Ty, _Err> {
+private:
     static_assert(_Check_unexpected_argument<_Err>::value);
 
     template <class _UTy, class _UErr>
