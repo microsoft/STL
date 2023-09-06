@@ -1384,7 +1384,7 @@ public:
 
     [[noreturn]] _Fake_no_copy_callable_adapter(const _Fake_no_copy_callable_adapter& _Other)
         : _Storage(_STD move(_Other._Storage)) {
-        _CSTD abort(); // shouldn't be called, see GH-3888
+        _CSTD abort(); // shouldn't be called
     }
 
     _Fake_no_copy_callable_adapter(_Fake_no_copy_callable_adapter&& _Other)          = default;
