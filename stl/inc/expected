@@ -237,6 +237,7 @@ public:
         is_trivially_move_constructible_v<_Ty> && is_trivially_move_constructible_v<_Err> = default;
     // clang-format on
 
+private:
     template <class _Uty, class _UErr>
     static constexpr bool _Not_self = !is_same_v<_Ty, _Uty> || !is_same_v<_Err, _UErr>;
 
@@ -255,6 +256,7 @@ public:
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>&> //
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>>;
 
+public:
     template <class _Uty, class _UErr>
         requires _Not_self<_Uty, _UErr> && is_constructible_v<_Ty, const _Uty&>
               && is_constructible_v<_Err, const _UErr&> && _Allow_unwrapping<_Uty, _UErr>
@@ -1205,6 +1207,7 @@ public:
     expected(expected&&) requires is_trivially_move_constructible_v<_Err> = default;
     // clang-format on
 
+private:
     template <class _Uty, class _UErr>
     static constexpr bool _Not_self = !is_same_v<_Ty, _Uty> || !is_same_v<_Err, _UErr>;
 
@@ -1214,6 +1217,7 @@ public:
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>&>
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>>;
 
+public:
     template <class _Uty, class _UErr>
         requires _Not_self<_Uty, _UErr> && is_void_v<_Uty> && is_constructible_v<_Err, const _UErr&>
               && _Allow_unwrapping<_Uty, _UErr>
@@ -1389,26 +1393,7 @@ public:
         is_nothrow_move_constructible_v<_Err>&& is_nothrow_swappable_v<_Err>)
         requires is_swappable_v<_Err> && is_move_constructible_v<_Err>
     {
-        using _STD swap;
-        if (_Left._Has_value && _Right._Has_value) {
-            // nothing
-        } else if (_Left._Has_value) {
-            _STD construct_at(_STD addressof(_Left._Unexpected), _STD move(_Right._Unexpected));
-            if constexpr (!is_trivially_destructible_v<_Err>) {
-                _Right._Unexpected.~_Err();
-            }
-            _Left._Has_value  = false;
-            _Right._Has_value = true;
-        } else if (_Right._Has_value) {
-            _STD construct_at(_STD addressof(_Right._Unexpected), _STD move(_Left._Unexpected));
-            if constexpr (!is_trivially_destructible_v<_Err>) {
-                _Left._Unexpected.~_Err();
-            }
-            _Left._Has_value  = true;
-            _Right._Has_value = false;
-        } else {
-            swap(_Left._Unexpected, _Right._Unexpected); // intentional ADL
-        }
+        _Left.swap(_Right);
     }
 
     // [expected.void.obs]
