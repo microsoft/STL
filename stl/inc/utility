@@ -927,6 +927,41 @@ _EXPORT_STD [[noreturn]] __forceinline void unreachable() noexcept /* strengthen
 #endif // defined(_DEBUG)
 }
 
+#ifdef __clang__
+// Clang 17 implements forward_like directly but is confused by our deduced return type
+template <int>
+struct _Dispatch_forward_like;
+template <>
+struct _Dispatch_forward_like<0> {
+    template <class _Ty>
+    using _Apply = _Ty&&;
+};
+template <>
+struct _Dispatch_forward_like<1> {
+    template <class _Ty>
+    using _Apply = _Ty&;
+};
+template <>
+struct _Dispatch_forward_like<2> {
+    template <class _Ty>
+    using _Apply = const _Ty&&;
+};
+template <>
+struct _Dispatch_forward_like<3> {
+    template <class _Ty>
+    using _Apply = const _Ty&;
+};
+
+template <class _Ty, class _Uty>
+using _Forward_like_t =
+    typename _Dispatch_forward_like<2 * is_const_v<remove_reference_t<_Ty>>
+                                    + is_lvalue_reference_v<_Ty>>::template _Apply<remove_reference_t<_Uty>>;
+
+_EXPORT_STD template <class _Ty, class _Uty>
+_NODISCARD constexpr _Forward_like_t<_Ty, _Uty> forward_like(_Uty&& _Ux) noexcept {
+    return static_cast<_Forward_like_t<_Ty, _Uty>>(_Ux);
+}
+#else // ^^^ Clang / non-Clang vvv
 _EXPORT_STD template <class _Ty, class _Uty>
 _NODISCARD _MSVC_INTRINSIC constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
     static_assert(_Can_reference<_Ty>, "std::forward_like's first template argument must be a referenceable type.");
@@ -950,6 +985,7 @@ _NODISCARD _MSVC_INTRINSIC constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
 
 template <class _Ty, class _Uty>
 using _Forward_like_t = decltype(_STD forward_like<_Ty>(_STD declval<_Uty&>()));
+#endif // ^^^ non-Clang ^^^
 #endif // _HAS_CXX23
 
 #if _HAS_TR1_NAMESPACE
