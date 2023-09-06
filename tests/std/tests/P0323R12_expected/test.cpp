@@ -2136,10 +2136,9 @@ void test_lwg_3843() {
     }
 }
 
-void test_gh_4011() {
-    static_assert(copyable<expected<any, int>>);
-    static_assert(copyable<expected<void, any>>);
-}
+// Test GH-4011: these predicates triggered constraint recursion.
+static_assert(copyable<expected<any, int>>);
+static_assert(copyable<expected<void, any>>);
 
 int main() {
     test_unexpected::test_all();
@@ -2157,5 +2156,4 @@ int main() {
 
     test_reinit_regression();
     test_lwg_3843();
-    test_gh_4011();
 }
