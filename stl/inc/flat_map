@@ -42,7 +42,7 @@ inline constexpr sorted_unique_t sorted_unique{};
 
 template <class _Alloc, class _Key_container, class _Mapped_container>
 concept _Valid_Allocator_for_flat_map =
-    _STD uses_allocator_v<_Key_container, _Alloc> && _STD uses_allocator_v<_Mapped_container, _Alloc>;
+    uses_allocator_v<_Key_container, _Alloc> && uses_allocator_v<_Mapped_container, _Alloc>;
 
 template <class _Compare>
 concept _Compare_is_transparent = requires { typename _Compare::is_transparent; };
