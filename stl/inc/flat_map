@@ -509,13 +509,13 @@ public:
     template <class _InputIterator>
         requires _Is_iterator_v<_InputIterator>
     void insert(_InputIterator _First, _InputIterator _Last) {
-        _Insert_range<_InputIterator, true, true>(_First, _Last);
+        _Insert_range<true, true>(_First, _Last);
     }
 
     template <class _InputIterator>
         requires _Is_iterator_v<_InputIterator>
     void insert(sorted_unique_t, _InputIterator _First, _InputIterator _Last) {
-        _Insert_range<_InputIterator, false, true>(_First, _Last);
+        _Insert_range<false, true>(_First, _Last);
     }
 
     template <_Container_compatible_range<value_type> R>
@@ -824,7 +824,7 @@ private:
         return begin() + _Distance;
     }
 
-    template <class _InputIterator, bool _NeedSorting, bool _NeedDeduping>
+    template <bool _NeedSorting, bool _NeedDeduping, class _InputIterator>
         requires _Is_iterator_v<_InputIterator>
     void _Insert_range(_InputIterator _First, _InputIterator _Last) {
         _Clear_flat_map_scope_guard _Guard{this};
