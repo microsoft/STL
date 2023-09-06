@@ -238,6 +238,9 @@ public:
     // clang-format on
 
     template <class _Uty, class _UErr>
+    static constexpr bool _Not_self = !is_same_v<_Ty, _Uty> || !is_same_v<_Err, _UErr>;
+
+    template <class _Uty, class _UErr>
     static constexpr bool _Allow_unwrapping = disjunction_v<is_same<remove_cv_t<_Ty>, bool>,
                                                   negation<disjunction<is_constructible<_Ty, expected<_Uty, _UErr>&>, //
                                                       is_constructible<_Ty, expected<_Uty, _UErr>>, //
@@ -253,8 +256,8 @@ public:
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>>;
 
     template <class _Uty, class _UErr>
-        requires is_constructible_v<_Ty, const _Uty&> && is_constructible_v<_Err, const _UErr&>
-              && _Allow_unwrapping<_Uty, _UErr>
+        requires _Not_self<_Uty, _UErr> && is_constructible_v<_Ty, const _Uty&>
+              && is_constructible_v<_Err, const _UErr&> && _Allow_unwrapping<_Uty, _UErr>
     constexpr explicit(!is_convertible_v<const _Uty&, _Ty> || !is_convertible_v<const _UErr&, _Err>)
         expected(const expected<_Uty, _UErr>& _Other) noexcept(is_nothrow_constructible_v<_Ty, const _Uty&> //
                 && is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
@@ -267,7 +270,8 @@ public:
     }
 
     template <class _Uty, class _UErr>
-        requires is_constructible_v<_Ty, _Uty> && is_constructible_v<_Err, _UErr> && _Allow_unwrapping<_Uty, _UErr>
+        requires _Not_self<_Uty, _UErr> && is_constructible_v<_Ty, _Uty> && is_constructible_v<_Err, _UErr>
+              && _Allow_unwrapping<_Uty, _UErr>
     constexpr explicit(!is_convertible_v<_Uty, _Ty> || !is_convertible_v<_UErr, _Err>)
         expected(expected<_Uty, _UErr>&& _Other) noexcept(
             is_nothrow_constructible_v<_Ty, _Uty>&& is_nothrow_constructible_v<_Err, _UErr>) // strengthened
@@ -342,7 +346,7 @@ public:
     }
 
     // clang-format off
-    ~expected() requires is_trivially_destructible_v<_Ty> && is_trivially_destructible_v<_Err> = default;
+    ~expected() requires is_trivially_destructible_v<_Ty>&& is_trivially_destructible_v<_Err> = default;
     // clang-format on
 
     // [expected.object.assign]
@@ -1202,13 +1206,17 @@ public:
     // clang-format on
 
     template <class _Uty, class _UErr>
+    static constexpr bool _Not_self = !is_same_v<_Ty, _Uty> || !is_same_v<_Err, _UErr>;
+
+    template <class _Uty, class _UErr>
     static constexpr bool _Allow_unwrapping = !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>&>
                                            && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>>
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>&>
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>>;
 
     template <class _Uty, class _UErr>
-        requires is_void_v<_Uty> && is_constructible_v<_Err, const _UErr&> && _Allow_unwrapping<_Uty, _UErr>
+        requires _Not_self<_Uty, _UErr> && is_void_v<_Uty> && is_constructible_v<_Err, const _UErr&>
+              && _Allow_unwrapping<_Uty, _UErr>
     constexpr explicit(!is_convertible_v<const _UErr&, _Err>) expected(const expected<_Uty, _UErr>& _Other) noexcept(
         is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
         : _Has_value(_Other._Has_value) {
@@ -1218,7 +1226,8 @@ public:
     }
 
     template <class _Uty, class _UErr>
-        requires is_void_v<_Uty> && is_constructible_v<_Err, _UErr> && _Allow_unwrapping<_Uty, _UErr>
+        requires _Not_self<_Uty, _UErr> && is_void_v<_Uty> && is_constructible_v<_Err, _UErr>
+              && _Allow_unwrapping<_Uty, _UErr>
     constexpr explicit(!is_convertible_v<_UErr, _Err>)
         expected(expected<_Uty, _UErr>&& _Other) noexcept(is_nothrow_constructible_v<_Err, _UErr>) // strengthened
         : _Has_value(_Other._Has_value) {
