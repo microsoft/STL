@@ -832,8 +832,8 @@ private:
         _Clear_flat_map_scope_guard _Guard{this};
 
         // Insert the new elements at the end
-        size_t _OldSize = size();
-        size_t _NewSize = _STD distance(_First, _Last);
+        size_type _OldSize = size();
+        size_type _NewSize = _STD distance(_First, _Last);
 
         _Data.keys.reserve(_Data.keys.size() + _NewSize);
         _Data.values.reserve(_Data.values.size() + _NewSize);
