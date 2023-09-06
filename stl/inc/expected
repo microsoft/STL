@@ -346,7 +346,7 @@ public:
     }
 
     // clang-format off
-    ~expected() requires is_trivially_destructible_v<_Ty>&& is_trivially_destructible_v<_Err> = default;
+    ~expected() requires is_trivially_destructible_v<_Ty> && is_trivially_destructible_v<_Err> = default;
     // clang-format on
 
     // [expected.object.assign]

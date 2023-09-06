@@ -3,6 +3,7 @@
 
 #define _CONTAINER_DEBUG_LEVEL 1
 
+#include <any>
 #include <cassert>
 #include <concepts>
 #include <exception>
@@ -2135,6 +2136,11 @@ void test_lwg_3843() {
     }
 }
 
+void test_gh_4011() {
+    static_assert(copyable<expected<any, int>>);
+    static_assert(copyable<expected<void, any>>);
+}
+
 int main() {
     test_unexpected::test_all();
     static_assert(test_unexpected::test_all());
@@ -2151,4 +2157,5 @@ int main() {
 
     test_reinit_regression();
     test_lwg_3843();
+    test_gh_4011();
 }
