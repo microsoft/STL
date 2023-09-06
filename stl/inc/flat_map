@@ -226,18 +226,18 @@ template <class Key, class T, class Compare, class KeyContainer, class MappedCon
     requires same_as<Key, typename KeyContainer::value_type> && same_as<T, typename MappedContainer::value_type>
 class flat_map {
 public:
-    using key_type              = Key;
-    using mapped_type           = T;
-    using value_type            = pair<key_type, mapped_type>;
-    using key_compare           = Compare;
-    using reference             = pair<const key_type&, mapped_type&>;
-    using const_reference       = pair<const key_type&, const mapped_type&>;
-    using size_type             = size_t;
-    using difference_type       = ptrdiff_t;
-    using key_container_type    = KeyContainer;
-    using mapped_container_type = MappedContainer;
-    using iterator              = _Flat_map_iterator_Impl<key_container_type, mapped_container_type, false>::type;
-    using const_iterator        = _Flat_map_iterator_Impl<key_container_type, mapped_container_type, true>::type;
+    using key_type               = Key;
+    using mapped_type            = T;
+    using value_type             = pair<key_type, mapped_type>;
+    using key_compare            = Compare;
+    using reference              = pair<const key_type&, mapped_type&>;
+    using const_reference        = pair<const key_type&, const mapped_type&>;
+    using size_type              = size_t;
+    using difference_type        = ptrdiff_t;
+    using key_container_type     = KeyContainer;
+    using mapped_container_type  = MappedContainer;
+    using iterator               = _Flat_map_iterator_Impl<key_container_type, mapped_container_type, false>::type;
+    using const_iterator         = _Flat_map_iterator_Impl<key_container_type, mapped_container_type, true>::type;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
@@ -301,8 +301,7 @@ public:
     }
 
     template <_Container_compatible_range<value_type> R>
-    flat_map(from_range_t _From_range, R&& _Range)
-        : flat_map(_From_range, _STD forward<R>(_Range), key_compare()) {}
+    flat_map(from_range_t _From_range, R&& _Range) : flat_map(_From_range, _STD forward<R>(_Range), key_compare()) {}
 
     template <_Container_compatible_range<value_type> R,
         _Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
@@ -478,14 +477,16 @@ public:
     // [flat.map.modifiers] Modifiers
     template <class... _Args_t>
     pair<iterator, bool> emplace(_Args_t&&... _Args)
-        requires is_constructible_v<value_type, _Args_t...> {
+        requires is_constructible_v<value_type, _Args_t...>
+    {
         value_type _Val(_STD forward<_Args_t>(_Args)...);
         return try_emplace(_STD move(_Val.first), _STD move(_Val.second));
     }
 
     template <class... _Args_t>
     iterator emplace_hint(const_iterator _Position, _Args_t&&... _Args)
-        requires is_constructible_v<value_type, _Args_t...> {
+        requires is_constructible_v<value_type, _Args_t...>
+    {
         value_type _Val(_STD forward<_Args_t>(_Args)...);
 
         return _Emplace_hint<false, decltype(_Val.first)&&, decltype(_Val.second)&&>(
@@ -547,8 +548,8 @@ public:
             return {begin() + _STD distance(_Data.keys.begin(), _Key_It), false};
         } else {
             // Need to insert
-            value_type _Val = std::make_pair(key_type(_STD forward<_Key_constructible_t>(_Key_constructible)),
-                mapped_type(_STD forward<_Args_t>(_Args)...));
+            value_type _Val = {key_type(_STD forward<_Key_constructible_t>(_Key_constructible)),
+                mapped_type(_STD forward<_Args_t>(_Args)...)};
             auto _Index     = _STD distance(_Data.keys.begin(), _Key_It);
             _Insert_exact(begin() + _Index, _STD move(_Val));
             return {begin() + _Index, true};
@@ -556,7 +557,7 @@ public:
     }
 
     template <class _K, class... _Args_t>
-    pair<iterator, bool> try_emplace(const_iterator _Position, _K&& _Key, _Args_t&&... _Args)
+    iterator try_emplace(const_iterator _Position, _K&& _Key, _Args_t&&... _Args)
         requires constructible_from<mapped_type, _Args_t&&...>
               && (same_as<remove_cvref_t<_K &&>, key_type>
                   || (constructible_from<key_type, _K&&> && _Compare_is_transparent<key_compare>) )
@@ -782,8 +783,9 @@ private:
     template <bool _Override_if_exists, class _K, class... _Mapped_args_t>
     iterator _Emplace_hint(const_iterator _Position, _K&& _Key, _Mapped_args_t&&... _Args)
         requires is_constructible_v<mapped_type, _Mapped_args_t...>
-              && (same_as<remove_cvref_t<_K&&>, key_type>
-            || (constructible_from<key_type, _K&&> && _Compare_is_transparent<key_compare>) ) {
+              && (same_as<remove_cvref_t<_K &&>, key_type>
+                  || (constructible_from<key_type, _K&&> && _Compare_is_transparent<key_compare>) )
+    {
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
