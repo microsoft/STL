@@ -489,8 +489,7 @@ public:
     {
         value_type _Val(_STD forward<_Args_t>(_Args)...);
 
-        return _Emplace_hint<false, decltype(_Val.first)&&, decltype(_Val.second)&&>(
-            _Position, _STD move(_Val.first), _STD move(_Val.second));
+        return _Emplace_hint<false>(_Position, _STD move(_Val.first), _STD move(_Val.second));
     }
 
     template <class _V>
@@ -562,8 +561,7 @@ public:
               && (same_as<remove_cvref_t<_K &&>, key_type>
                   || (constructible_from<key_type, _K&&> && _Compare_is_transparent<key_compare>) )
     {
-        return _Emplace_hint<false, _K&&, _Args_t&&...>(
-            _Position, _STD forward<_K>(_Key), _STD forward<_Args_t>(_Args)...);
+        return _Emplace_hint<false>(_Position, _STD forward<_K>(_Key), _STD forward<_Args_t>(_Args)...);
     }
 
     template <class _M, class _K>
@@ -589,7 +587,7 @@ public:
               && (same_as<remove_cvref_t<_K &&>, key_type>
                   || (constructible_from<key_type, _K&&> && _Compare_is_transparent<key_compare>) )
     {
-        return _Emplace_hint<true, _K&&, _M&&>(_Position, _STD forward<_K>(_Key), _STD forward<_M>(_Obj));
+        return _Emplace_hint<true>(_Position, _STD forward<_K>(_Key), _STD forward<_M>(_Obj));
     }
 
     iterator erase(iterator _Position) {
