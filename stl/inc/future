@@ -933,7 +933,7 @@ public:
 
     shared_future& operator=(const shared_future&) = default;
 
-    shared_future(future<_Ty>&& _Other) noexcept : _Mybase(_STD forward<_Mybase>(_Other)) {}
+    shared_future(future<_Ty>&& _Other) noexcept : _Mybase(static_cast<_Mybase&&>(_Other)) {}
 
     shared_future(shared_future&& _Other) noexcept : _Mybase(_STD move(_Other)) {}
 
@@ -958,7 +958,7 @@ public:
 
     shared_future& operator=(const shared_future&) = default;
 
-    shared_future(future<_Ty&>&& _Other) noexcept : _Mybase(_STD forward<_Mybase>(_Other)) {}
+    shared_future(future<_Ty&>&& _Other) noexcept : _Mybase(static_cast<_Mybase&&>(_Other)) {}
 
     shared_future(shared_future&& _Other) noexcept : _Mybase(_STD move(_Other)) {}
 
@@ -985,7 +985,7 @@ public:
 
     shared_future(shared_future&& _Other) noexcept : _Mybase(_STD move(_Other)) {}
 
-    shared_future(future<void>&& _Other) noexcept : _Mybase(_STD forward<_Mybase>(_Other)) {}
+    shared_future(future<void>&& _Other) noexcept : _Mybase(static_cast<_Mybase&&>(_Other)) {}
 
     shared_future& operator=(shared_future&&) = default;
 
