@@ -927,62 +927,14 @@ _EXPORT_STD [[noreturn]] __forceinline void unreachable() noexcept /* strengthen
 #endif // defined(_DEBUG)
 }
 
-#ifdef __clang__ // TRANSITION, LLVM-64029
-// Clang 17 implements forward_like directly and is confused by our deduced return type
-template <bool _IsConst, bool _IsLvalue>
-struct _Dispatch_forward_like {
-    template <class _Ty>
-    using _Apply = const _Ty&;
-};
-template <>
-struct _Dispatch_forward_like<false, false> {
-    template <class _Ty>
-    using _Apply = _Ty&&;
-};
-template <>
-struct _Dispatch_forward_like<false, true> {
-    template <class _Ty>
-    using _Apply = _Ty&;
-};
-template <>
-struct _Dispatch_forward_like<true, false> {
-    template <class _Ty>
-    using _Apply = const _Ty&&;
-};
-
-template <class _Ty, class _Uty>
-using _Forward_like_t = typename _Dispatch_forward_like<is_const_v<remove_reference_t<_Ty>>,
-    is_lvalue_reference_v<_Ty>>::template _Apply<remove_reference_t<_Uty>>;
+template <class _Ty, class _Uty,
+    class _Tmp = _Maybe_const<is_const_v<remove_reference_t<_Ty>>, remove_reference_t<_Uty>>>
+using _Forward_like_t = conditional_t<is_rvalue_reference_v<_Ty&&>, _Tmp&&, _Tmp&>;
 
 _EXPORT_STD template <class _Ty, class _Uty>
 _NODISCARD constexpr _Forward_like_t<_Ty, _Uty> forward_like(_Uty&& _Ux) noexcept {
     return static_cast<_Forward_like_t<_Ty, _Uty>>(_Ux);
 }
-#else // ^^^ workaround / no workaround vvv
-_EXPORT_STD template <class _Ty, class _Uty>
-_NODISCARD _MSVC_INTRINSIC constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
-    static_assert(_Can_reference<_Ty>, "std::forward_like's first template argument must be a referenceable type.");
-
-    using _UnrefT = remove_reference_t<_Ty>;
-    using _UnrefU = remove_reference_t<_Uty>;
-    if constexpr (is_const_v<_UnrefT>) {
-        if constexpr (is_lvalue_reference_v<_Ty>) {
-            return static_cast<const _UnrefU&>(_Ux);
-        } else {
-            return static_cast<const _UnrefU&&>(_Ux);
-        }
-    } else {
-        if constexpr (is_lvalue_reference_v<_Ty>) {
-            return static_cast<_UnrefU&>(_Ux);
-        } else {
-            return static_cast<_UnrefU&&>(_Ux);
-        }
-    }
-}
-
-template <class _Ty, class _Uty>
-using _Forward_like_t = decltype(_STD forward_like<_Ty>(_STD declval<_Uty&>()));
-#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX23
 
 #if _HAS_TR1_NAMESPACE
