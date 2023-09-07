@@ -14,7 +14,7 @@ static std::_Init_locks initlocks;
 
 _STD_BEGIN
 
-__PURE_APPDOMAIN_GLOBAL static filebuf fin(_cpp_stdin);
+__PURE_APPDOMAIN_GLOBAL static filebuf fin(stdin);
 
 #if defined(_M_CEE_PURE)
 __PURE_APPDOMAIN_GLOBAL extern istream cin(&fin);

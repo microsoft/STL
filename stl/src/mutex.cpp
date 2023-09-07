@@ -189,16 +189,6 @@ _CRTIMP2_PURE void* __cdecl _Mtx_getconcrtcs(_Mtx_t mtx) { // get internal cs im
     return &mtx->_Critical_section;
 }
 
-_CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t mtx) { // set owner to nobody
-    mtx->_Thread_id = -1;
-    --mtx->_Count;
-}
-
-_CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t mtx) { // set owner to current thread
-    mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
-    ++mtx->_Count;
-}
-
 _END_EXTERN_C
 
 /*
