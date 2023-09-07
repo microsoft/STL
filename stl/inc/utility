@@ -929,7 +929,7 @@ _EXPORT_STD [[noreturn]] __forceinline void unreachable() noexcept /* strengthen
 
 #ifdef __clang__ // TRANSITION, LLVM-64029
 // Clang 17 implements forward_like directly and is confused by our deduced return type
-template <bool isConst, bool isLvalue>
+template <bool _IsConst, bool _IsLvalue>
 struct _Dispatch_forward_like {
     template <class _Ty>
     using _Apply = const _Ty&;
