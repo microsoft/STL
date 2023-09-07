@@ -177,6 +177,9 @@ std/ranges/range.access/size.pass.cpp FAIL
 # libc++ doesn't implement P2652R2 "Disallowing User Specialization Of allocator_traits"
 std/utilities/memory/allocator.traits/allocate_at_least.pass.cpp FAIL
 
+# libc++ doesn't implement P2675R1 "Improving std::format's Width Estimation"
+std/utilities/format/format.functions/unicode.pass.cpp FAIL
+
 # libc++ doesn't implement P2770R0 "Stashing stashing iterators for proper flattening"
 std/ranges/range.adaptors/range.join.view/end.pass.cpp FAIL
 std/ranges/range.adaptors/range.join.view/iterator/ctor.other.pass.cpp FAIL
@@ -377,10 +380,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
-
-# DevCom-1559808: (structured bindings for `subrange` in a constant expression)
-# Skipped as this sometimes emits "fatal error C1001: Internal compiler error." with a crash dialog.
-std/ranges/range.utility/range.subrange/structured_bindings.pass.cpp:0 SKIPPED
 
 # DevCom-1436243 constexpr new initialized array
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:0 FAIL

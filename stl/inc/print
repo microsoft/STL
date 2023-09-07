@@ -165,6 +165,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // __cpp_lib_print
+#endif // defined(__cpp_lib_print)
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _PRINT_

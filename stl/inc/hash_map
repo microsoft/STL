@@ -108,7 +108,7 @@ namespace stdext {
         float _Max_buckets = 0.0F; // current maximum bucket size
     };
 
-    template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, less<_Kty>>,
+    template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, _STD less<_Kty>>,
         class _Alloc = allocator<pair<const _Kty, _Ty>>>
     class hash_map : public _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false>> {
         // hash table of {key, mapped} values, unique keys
@@ -297,7 +297,7 @@ namespace stdext {
         return !(_Left == _Right);
     }
 
-    template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, less<_Kty>>,
+    template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, _STD less<_Kty>>,
         class _Alloc = allocator<pair<const _Kty, _Ty>>>
     class hash_multimap : public _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true>> {
         // hash table of {key, mapped} values, non-unique keys

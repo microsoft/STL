@@ -1,0 +1,98 @@
+{
+  "version": 5,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 26,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/${presetName}"
+    },
+    {
+      "name": "x86",
+      "inherits": "base",
+      "description": "x86 Ninja Config",
+      "architecture": {
+        "strategy": "external",
+        "value": "x86"
+      }
+    },
+    {
+      "name": "x64",
+      "inherits": "base",
+      "description": "x64 Ninja Config",
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      }
+    },
+    {
+      "name": "ARM",
+      "inherits": "base",
+      "description": "ARM Ninja Config",
+      "architecture": {
+        "strategy": "external",
+        "value": "ARM"
+      },
+      "cacheVariables": {
+        "TESTS_BUILD_ONLY": true
+      }
+    },
+    {
+      "name": "ARM64",
+      "inherits": "base",
+      "description": "ARM64 Ninja Config",
+      "architecture": {
+        "strategy": "external",
+        "value": "ARM64"
+      },
+      "cacheVariables": {
+        "TESTS_BUILD_ONLY": true
+      }
+    },
+    {
+      "name": "ARM64EC",
+      "inherits": "base",
+      "description": "ARM64EC Ninja Config",
+      "architecture": {
+        "strategy": "external",
+        "value": "ARM64EC"
+      },
+      "cacheVariables": {
+        "TESTS_BUILD_ONLY": true,
+        "VCLIBS_TARGET_ARCHITECTURE": "ARM64EC"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "x86",
+      "configurePreset": "x86",
+      "description": "Build x86 STL"
+    },
+    {
+      "name": "x64",
+      "configurePreset": "x64",
+      "description": "Build x64 STL"
+    },
+    {
+      "name": "ARM",
+      "configurePreset": "ARM",
+      "description": "Build ARM STL"
+    },
+    {
+      "name": "ARM64",
+      "configurePreset": "ARM64",
+      "description": "Build ARM64 STL"
+    },
+    {
+      "name": "ARM64EC",
+      "configurePreset": "ARM64EC",
+      "description": "Build ARM64EC STL"
+    }
+  ]
+}

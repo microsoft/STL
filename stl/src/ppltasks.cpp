@@ -36,15 +36,13 @@ namespace Concurrency {
 
     namespace details {
         [[noreturn]] _CRTIMP2 void __cdecl _ReportUnobservedException() {
-
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_CRT_APP)
-            if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
-#endif
-            {
-                __fastfail(FAST_FAIL_INVALID_ARG);
+#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_CRT_APP) && _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
+            if (!IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE)) {
+                std::abort();
             }
+#endif // ^^^ __fastfail conditionally available ^^^
 
-            std::terminate();
+            __fastfail(FAST_FAIL_INVALID_ARG);
         }
 
         namespace platform {

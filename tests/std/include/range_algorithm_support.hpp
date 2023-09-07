@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <utility>
 
-#ifdef _M_CEE // TRANSITION, VSO-1659408
+#ifdef _M_CEE // TRANSITION, VSO-1867037
 #include <memory>
 #endif // ^^^ workaround ^^^
 
@@ -72,7 +72,7 @@ template <class T, std::size_t N>
 struct holder {
     STATIC_ASSERT(N < ~std::size_t{0} / sizeof(T));
 
-#ifdef _M_CEE // TRANSITION, VSO-1659408
+#ifdef _M_CEE // TRANSITION, VSO-1867037
     unsigned char space[(N + 1) * sizeof(T)];
 
     auto as_span() {

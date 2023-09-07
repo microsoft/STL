@@ -47,8 +47,8 @@ namespace {
 
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
-#if !defined _CRT_APP
-#if defined _ONECORE
+#if !defined(_CRT_APP)
+#if defined(_ONECORE)
 
 namespace {
     struct HMODULETraits {
@@ -98,7 +98,7 @@ extern "C" int __crt_IsPackagedAppHelper() {
     return 0;
 }
 
-#else // defined _ONECORE
+#else // ^^^ defined(_ONECORE) / !defined(_ONECORE) vvv
 
 extern "C" int __crt_IsPackagedAppHelper() {
     LONG retValue       = APPMODEL_ERROR_NO_PACKAGE;
@@ -117,8 +117,8 @@ extern "C" int __crt_IsPackagedAppHelper() {
     return 0;
 }
 
-#endif // defined _ONECORE
-#endif // defined _CRT_APP
+#endif // ^^^ !defined(_ONECORE) ^^^
+#endif // ^^^ !defined(_CRT_APP) ^^^
 
 // __crtIsPackagedApp() - Check if the current app is a Packaged app
 //
@@ -151,30 +151,6 @@ extern "C" _CRTIMP2 BOOL __cdecl __crtIsPackagedApp() {
 }
 
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
-
-#if _STL_WIN32_WINNT < _WIN32_WINNT_WS03
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" DWORD __cdecl __crtFlsAlloc(_In_opt_ PFLS_CALLBACK_FUNCTION const lpCallback) {
-    return FlsAlloc(lpCallback);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" BOOL __cdecl __crtFlsFree(_In_ DWORD const dwFlsIndex) {
-    return FlsFree(dwFlsIndex);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" PVOID __cdecl __crtFlsGetValue(_In_ DWORD const dwFlsIndex) {
-    return FlsGetValue(dwFlsIndex);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" BOOL __cdecl __crtFlsSetValue(_In_ DWORD const dwFlsIndex, _In_opt_ PVOID const lpFlsData) {
-    return FlsSetValue(dwFlsIndex, lpFlsData);
-}
-
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WS03
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
@@ -273,9 +249,9 @@ extern "C" _CRTIMP2 BOOLEAN __cdecl __crtCreateSymbolicLinkW(
     (void) dwFlags;
     SetLastError(ERROR_NOT_SUPPORTED);
     return 0;
-#else // _CRT_APP
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     return CreateSymbolicLinkW(lpSymlinkFileName, lpTargetFileName, dwFlags);
-#endif // _CRT_APP
+#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
@@ -291,85 +267,11 @@ extern "C" _CRTIMP2 BOOL __cdecl __crtSetFileInformationByHandle(_In_ HANDLE con
     _In_reads_bytes_(dwBufferSize) LPVOID const lpFileInformation, _In_ DWORD const dwBufferSize) {
     return SetFileInformationByHandle(hFile, FileInformationClass, lpFileInformation, dwBufferSize);
 }
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" VOID __cdecl __crtInitializeConditionVariable(_Out_ PCONDITION_VARIABLE const pCond) {
-    InitializeConditionVariable(pCond);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" VOID __cdecl __crtWakeConditionVariable(_Inout_ PCONDITION_VARIABLE const pCond) {
-    WakeConditionVariable(pCond);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" VOID __cdecl __crtWakeAllConditionVariable(_Inout_ PCONDITION_VARIABLE const pCond) {
-    WakeAllConditionVariable(pCond);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" BOOL __cdecl __crtSleepConditionVariableCS(
-    _Inout_ PCONDITION_VARIABLE const pCond, _Inout_ PCRITICAL_SECTION const pLock, _In_ DWORD const dwMs) {
-    return SleepConditionVariableCS(pCond, pLock, dwMs);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" VOID __cdecl __crtInitializeSRWLock(_Out_ PSRWLOCK const pLock) {
-    InitializeSRWLock(pLock);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" VOID __cdecl __crtAcquireSRWLockExclusive(_Inout_ PSRWLOCK const pLock) {
-    AcquireSRWLockExclusive(pLock);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" VOID __cdecl __crtReleaseSRWLockExclusive(_Inout_ PSRWLOCK const pLock) {
-    _Analysis_assume_lock_held_(*pLock);
-    ReleaseSRWLockExclusive(pLock);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" BOOL __cdecl __crtSleepConditionVariableSRW(_Inout_ PCONDITION_VARIABLE const pCond,
-    _Inout_ PSRWLOCK const pLock, _In_ DWORD const dwMs, _In_ ULONG const flags) {
-    return SleepConditionVariableSRW(pCond, pLock, dwMs, flags);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" PTP_WORK __cdecl __crtCreateThreadpoolWork(
-    _In_ PTP_WORK_CALLBACK const pfnwk, _Inout_opt_ PVOID const pv, _In_opt_ PTP_CALLBACK_ENVIRON const pcbe) {
-    return CreateThreadpoolWork(pfnwk, pv, pcbe);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" VOID __cdecl __crtSubmitThreadpoolWork(_Inout_ PTP_WORK const pwk) {
-    SubmitThreadpoolWork(pwk);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" VOID __cdecl __crtCloseThreadpoolWork(_Inout_ PTP_WORK const pwk) {
-    CloseThreadpoolWork(pwk);
-}
-
-#else // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" BOOL __cdecl __crtQueueUserWorkItem(_In_ LPTHREAD_START_ROUTINE, _In_opt_ PVOID, _In_ ULONG) {
-    // This function doesn't have an implementation as it is only used on Windows XP
-    return 0;
-}
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-
-#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
-// TRANSITION, ABI: preserved for binary compatibility
-extern "C" BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(_Inout_ PSRWLOCK const pLock) {
-    return TryAcquireSRWLockExclusive(pLock);
-}
-
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
-extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime) {
+extern "C" _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime) {
     // use GetSystemTimePreciseAsFileTime if it is available (only on Windows 8+)...
     IFDYNAMICGETCACHEDFUNCTION(GetSystemTimePreciseAsFileTime) {
         pfGetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime);
@@ -397,11 +299,11 @@ extern "C" _Success_(return > 0 && return < BufferLength) DWORD
 
 // Helper to load all necessary Win32 API function pointers
 
-#if defined _ONECORE
+#if defined(_ONECORE)
 
 // All APIs are statically available, and we can't call GetModuleHandleW().
 
-#else // defined _ONECORE
+#else // ^^^ defined(_ONECORE) / !defined(_ONECORE) vvv
 
 static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");
@@ -424,4 +326,4 @@ static int __cdecl initialize_pointers() {
 
 _CRTALLOC(".CRT$XIC") static _PIFV pinit = initialize_pointers;
 
-#endif // defined _ONECORE
+#endif // ^^^ !defined(_ONECORE) ^^^

@@ -85,7 +85,7 @@ namespace {
         if (GetLastError() != ERROR_TIMEOUT) {
             _CSTD abort();
         }
-#endif // _DEBUG
+#endif // defined(_DEBUG)
     }
 
 #ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE

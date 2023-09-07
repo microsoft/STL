@@ -25,7 +25,7 @@ using limits = numeric_limits<Ty>;
 
 #ifdef _M_FP_STRICT
 // According to:
-// https://docs.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior
+// https://learn.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior
 // Under the default /fp:precise mode:
 //  The compiler generates code intended to run in the default floating-point environment and assumes that the
 //  floating-point environment is not accessed or modified at runtime.
