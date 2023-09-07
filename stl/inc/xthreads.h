@@ -107,11 +107,6 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t);
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t);
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t); // TRANSITION, ABI: Always succeeds
 
-#ifdef _CRTBLD
-_CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t);
-_CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t);
-#endif // _CRTBLD
-
 // shared mutex
 // these declarations must be in sync with those in sharedmutex.cpp
 void __cdecl _Smtx_lock_exclusive(_Smtx_t*);

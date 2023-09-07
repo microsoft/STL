@@ -60,6 +60,10 @@ template <class _Keycmp, class _Lhs, class _Rhs>
 _INLINE_VAR constexpr bool _Nothrow_compare = noexcept(
     static_cast<bool>(_STD declval<const _Keycmp&>()(_STD declval<const _Lhs&>(), _STD declval<const _Rhs&>())));
 
+[[noreturn]] inline void _Throw_bad_array_new_length() {
+    _THROW(bad_array_new_length{});
+}
+
 template <size_t _Ty_size>
 _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
     constexpr bool _Overflow_is_possible = _Ty_size > 1;

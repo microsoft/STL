@@ -20,7 +20,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 namespace stdext {
-    namespace cvt {
+    namespace _DEPRECATE_STDEXT_CVT cvt {
 
         template <class _Codecvt, class _Elem = wchar_t>
         class wstring_convert { // converts between _Elem (wide) and char (byte) strings
@@ -217,7 +217,7 @@ namespace stdext {
             bool _Has_werr;
             size_t _Nconv;
         };
-    } // namespace cvt
+    } // namespace _DEPRECATE_STDEXT_CVT cvt
 } // namespace stdext
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

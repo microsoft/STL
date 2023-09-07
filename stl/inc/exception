@@ -253,12 +253,6 @@ public:
         return __ExceptionPtrToBool(this);
     }
 
-    static exception_ptr _Current_exception() noexcept {
-        exception_ptr _Retval;
-        __ExceptionPtrCurrentException(&_Retval);
-        return _Retval;
-    }
-
     static exception_ptr _Copy_exception(_In_ void* _Except, _In_ const void* _Ptr) {
         exception_ptr _Retval;
         if (!_Ptr) {
@@ -312,7 +306,9 @@ private:
 };
 
 _EXPORT_STD _NODISCARD inline exception_ptr current_exception() noexcept {
-    return exception_ptr::_Current_exception();
+    exception_ptr _Retval;
+    __ExceptionPtrCurrentException(&_Retval);
+    return _Retval;
 }
 
 _EXPORT_STD [[noreturn]] inline void rethrow_exception(_In_ exception_ptr _Ptr) {
@@ -325,10 +321,6 @@ void* __GetExceptionInfo(_Ex);
 _EXPORT_STD template <class _Ex>
 _NODISCARD_SMART_PTR_ALLOC exception_ptr make_exception_ptr(_Ex _Except) noexcept {
     return exception_ptr::_Copy_exception(_STD addressof(_Except), __GetExceptionInfo(_Except));
-}
-
-[[noreturn]] inline void _Throw_bad_array_new_length() {
-    _THROW(bad_array_new_length{});
 }
 
 _EXPORT_STD class nested_exception { // wrap an exception_ptr
@@ -355,9 +347,10 @@ private:
     exception_ptr _Exc;
 };
 
-template <class _Ty, class _Uty>
-struct _With_nested : _Uty, nested_exception { // glue user exception to nested_exception
-    explicit _With_nested(_Ty&& _Arg)
+template <class _Uty>
+struct _With_nested_v2 : _Uty, nested_exception { // glue user exception to nested_exception
+    template <class _Ty>
+    explicit _With_nested_v2(_Ty&& _Arg)
         : _Uty(_STD forward<_Ty>(_Arg)), nested_exception() {} // store user exception and current_exception()
 };
 
@@ -368,7 +361,7 @@ _EXPORT_STD template <class _Ty>
 
     if constexpr (is_class_v<_Uty> && !is_base_of_v<nested_exception, _Uty> && !is_final_v<_Uty>) {
         // throw user exception glued to nested_exception
-        using _Glued = _With_nested<_Ty, _Uty>;
+        using _Glued = _With_nested_v2<_Uty>;
         _THROW(_Glued(_STD forward<_Ty>(_Arg)));
     } else {
         // throw user exception by itself

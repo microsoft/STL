@@ -275,14 +275,6 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #endif
 #endif // !defined(_CRTIMP2_PURE)
 
-#ifdef _CRTBLD
-// These functions are for enabling STATIC_CPPLIB functionality
-#define _cpp_stdin         (__acrt_iob_func(0))
-#define _cpp_stdout        (__acrt_iob_func(1))
-#define _cpp_stderr        (__acrt_iob_func(2))
-#define _cpp_isleadbyte(c) (__pctype_func()[static_cast<unsigned char>(c)] & _LEADBYTE)
-#endif // defined(_CRTBLD)
-
 #ifndef _CRTIMP2_IMPORT
 #if defined(CRTDLL2) && defined(_CRTBLD)
 #define _CRTIMP2_IMPORT __declspec(dllexport)
@@ -448,19 +440,6 @@ private:
 
 #define _END_LOCINFO() }
 #endif // ^^^ !defined(_M_CEE) ^^^
-
-#ifdef _CRTBLD
-
-#ifdef _M_CEE
-#define _RELIABILITY_CONTRACT                                                    \
-    [System::Runtime::ConstrainedExecution::ReliabilityContract(                 \
-        System::Runtime::ConstrainedExecution::Consistency::WillNotCorruptState, \
-        System::Runtime::ConstrainedExecution::Cer::Success)]
-#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
-#define _RELIABILITY_CONTRACT
-#endif // ^^^ !defined(_M_CEE) ^^^
-
-#endif // defined(_CRTBLD)
 
 #if _HAS_EXCEPTIONS
 #define _TRY_BEGIN try {

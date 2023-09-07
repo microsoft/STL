@@ -14,7 +14,7 @@ static std::_Init_locks initlocks;
 
 _STD_BEGIN
 
-__PURE_APPDOMAIN_GLOBAL static wfilebuf wferr(_cpp_stderr);
+__PURE_APPDOMAIN_GLOBAL static wfilebuf wferr(stderr);
 #if defined(_M_CEE_PURE)
 __PURE_APPDOMAIN_GLOBAL extern wostream wcerr(&wferr);
 #else

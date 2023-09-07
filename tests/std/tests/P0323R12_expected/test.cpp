@@ -3,6 +3,7 @@
 
 #define _CONTAINER_DEBUG_LEVEL 1
 
+#include <any>
 #include <cassert>
 #include <concepts>
 #include <exception>
@@ -2134,6 +2135,10 @@ void test_lwg_3843() {
         }
     }
 }
+
+// Test GH-4011: these predicates triggered constraint recursion.
+static_assert(copyable<expected<any, int>>);
+static_assert(copyable<expected<void, any>>);
 
 int main() {
     test_unexpected::test_all();
