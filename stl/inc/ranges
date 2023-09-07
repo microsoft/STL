@@ -8213,9 +8213,13 @@ namespace ranges {
         private:
             friend zip_view;
 
+#ifdef __clang__ // TRANSITION, LLVM-61763
+        public:
+#else // ^^^ workaround / no workaround vvv
             template <class _Func, class... _OtherViews>
                 requires _Zip_transform_constraints<_Func, _OtherViews...>
             friend class zip_transform_view;
+#endif // ^^^ no workaround ^^^
 
             using _My_tuple = tuple<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
 
@@ -9047,7 +9051,7 @@ namespace ranges {
         private:
             friend adjacent_view;
 
-#ifdef __clang__ // TRANSITION, Clang 17
+#ifdef __clang__ // TRANSITION, LLVM-61763
         public:
 #else // ^^^ workaround / no workaround vvv
             template <class _Vw2, class _Fn, size_t _Nx2>
