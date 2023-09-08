@@ -1152,6 +1152,16 @@ public:
         emplace_front(_STD move(_Val));
     }
 
+    void push_back(const _Ty& _Val) {
+        _Orphan_all();
+        _Emplace_back_internal(_Val);
+    }
+
+    void push_back(_Ty&& _Val) {
+        _Orphan_all();
+        _Emplace_back_internal(_STD move(_Val));
+    }
+
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     void prepend_range(_Rng&& _Range) {
@@ -1177,19 +1187,7 @@ public:
         }
         _Guard._Container = nullptr;
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
-    void push_back(const _Ty& _Val) {
-        _Orphan_all();
-        _Emplace_back_internal(_Val);
-    }
-
-    void push_back(_Ty&& _Val) {
-        _Orphan_all();
-        _Emplace_back_internal(_STD move(_Val));
-    }
-
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     void append_range(_Rng&& _Range) {
         _Orphan_all();
