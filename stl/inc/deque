@@ -713,6 +713,14 @@ public:
         _Take_contents(_Right);
     }
 
+    deque(initializer_list<_Ty> _Ilist, const _Alloc& _Al = allocator_type())
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        _Alproxy_ty _Alproxy(_Getal());
+        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
+        _Construct(_Ilist.begin(), _Ilist.end());
+        _Proxy._Release();
+    }
+
 private:
     template <class _Iter, class _Sent>
     void _Construct(_Iter _First, const _Sent _Last) { // initialize from input range [_First, _Last)
@@ -731,6 +739,23 @@ private:
         }
 
         _Guard._Target = nullptr;
+    }
+
+    void _Take_contents(deque& _Right) noexcept {
+        // move from _Right, stealing its contents
+        // pre: _Getal() == _Right._Getal()
+        auto& _My_data    = _Get_data();
+        auto& _Right_data = _Right._Get_data();
+        _My_data._Swap_proxy_and_iterators(_Right_data);
+        _My_data._Map     = _Right_data._Map;
+        _My_data._Mapsize = _Right_data._Mapsize;
+        _My_data._Myoff   = _Right_data._Myoff;
+        _My_data._Mysize  = _Right_data._Mysize;
+
+        _Right_data._Map     = nullptr;
+        _Right_data._Mapsize = 0;
+        _Right_data._Myoff   = 0;
+        _Right_data._Mysize  = 0;
     }
 
 public:
@@ -766,24 +791,6 @@ public:
         _Take_contents(_Right);
 
         return *this;
-    }
-
-private:
-    void _Take_contents(deque& _Right) noexcept {
-        // move from _Right, stealing its contents
-        // pre: _Getal() == _Right._Getal()
-        auto& _My_data    = _Get_data();
-        auto& _Right_data = _Right._Get_data();
-        _My_data._Swap_proxy_and_iterators(_Right_data);
-        _My_data._Map     = _Right_data._Map;
-        _My_data._Mapsize = _Right_data._Mapsize;
-        _My_data._Myoff   = _Right_data._Myoff;
-        _My_data._Mysize  = _Right_data._Mysize;
-
-        _Right_data._Map     = nullptr;
-        _Right_data._Mapsize = 0;
-        _Right_data._Myoff   = 0;
-        _Right_data._Mysize  = 0;
     }
 
 public:
@@ -879,14 +886,6 @@ public:
             _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
         }
         return begin() + static_cast<difference_type>(_Off);
-    }
-
-    deque(initializer_list<_Ty> _Ilist, const _Alloc& _Al = allocator_type())
-        : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
-        _Construct(_Ilist.begin(), _Ilist.end());
-        _Proxy._Release();
     }
 
     deque& operator=(initializer_list<_Ty> _Ilist) {
