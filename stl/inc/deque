@@ -1068,6 +1068,45 @@ public:
         return *_Prev_iter(_Unchecked_end());
     }
 
+private:
+    template <class... _Tys>
+    void _Emplace_back_internal(_Tys&&... _Vals) {
+        if ((_Myoff() + _Mysize()) % _Block_size == 0 && _Mapsize() <= (_Mysize() + _Block_size) / _Block_size) {
+            _Growmap(1);
+        }
+        _Myoff() &= _Mapsize() * _Block_size - 1;
+        size_type _Newoff = _Myoff() + _Mysize();
+        size_type _Block  = _Getblock(_Newoff);
+        if (_Map()[_Block] == nullptr) {
+            _Map()[_Block] = _Getal().allocate(_Block_size);
+        }
+
+        _Alty_traits::construct(
+            _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size), _STD forward<_Tys>(_Vals)...);
+
+        ++_Mysize();
+    }
+
+    template <class... _Tys>
+    void _Emplace_front_internal(_Tys&&... _Vals) {
+        if (_Myoff() % _Block_size == 0 && _Mapsize() <= (_Mysize() + _Block_size) / _Block_size) {
+            _Growmap(1);
+        }
+        _Myoff() &= _Mapsize() * _Block_size - 1;
+        size_type _Newoff      = _Myoff() != 0 ? _Myoff() : _Mapsize() * _Block_size;
+        const size_type _Block = _Getblock(--_Newoff);
+        if (_Map()[_Block] == nullptr) {
+            _Map()[_Block] = _Getal().allocate(_Block_size);
+        }
+
+        _Alty_traits::construct(
+            _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size), _STD forward<_Tys>(_Vals)...);
+
+        _Myoff() = _Newoff;
+        ++_Mysize();
+    }
+
+public:
     void push_front(_Ty&& _Val) {
         emplace_front(_STD move(_Val));
     }
@@ -1196,45 +1235,6 @@ public:
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
     }
 
-private:
-    template <class... _Tys>
-    void _Emplace_back_internal(_Tys&&... _Vals) {
-        if ((_Myoff() + _Mysize()) % _Block_size == 0 && _Mapsize() <= (_Mysize() + _Block_size) / _Block_size) {
-            _Growmap(1);
-        }
-        _Myoff() &= _Mapsize() * _Block_size - 1;
-        size_type _Newoff = _Myoff() + _Mysize();
-        size_type _Block  = _Getblock(_Newoff);
-        if (_Map()[_Block] == nullptr) {
-            _Map()[_Block] = _Getal().allocate(_Block_size);
-        }
-
-        _Alty_traits::construct(
-            _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size), _STD forward<_Tys>(_Vals)...);
-
-        ++_Mysize();
-    }
-
-    template <class... _Tys>
-    void _Emplace_front_internal(_Tys&&... _Vals) {
-        if (_Myoff() % _Block_size == 0 && _Mapsize() <= (_Mysize() + _Block_size) / _Block_size) {
-            _Growmap(1);
-        }
-        _Myoff() &= _Mapsize() * _Block_size - 1;
-        size_type _Newoff      = _Myoff() != 0 ? _Myoff() : _Mapsize() * _Block_size;
-        const size_type _Block = _Getblock(--_Newoff);
-        if (_Map()[_Block] == nullptr) {
-            _Map()[_Block] = _Getal().allocate(_Block_size);
-        }
-
-        _Alty_traits::construct(
-            _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size), _STD forward<_Tys>(_Vals)...);
-
-        _Myoff() = _Newoff;
-        ++_Mysize();
-    }
-
-public:
     void push_back(const _Ty& _Val) {
         _Orphan_all();
         _Emplace_back_internal(_Val);
