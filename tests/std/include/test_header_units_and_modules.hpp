@@ -236,12 +236,14 @@ void test_filesystem() {
     assert(info.capacity != static_cast<decltype(info.capacity)>(-1));
 }
 
+#if TEST_STANDARD >= 23
 void test_flat_set() {
     using namespace std;
     puts("Testing <flat_set>.");
 
     // FIXME! ADD TEST COVERAGE HERE!
 }
+#endif // TEST_STANDARD >= 23
 
 void test_format() {
     using namespace std;
@@ -1101,7 +1103,9 @@ void all_cpp_header_tests() {
     test_expected();
 #endif // TEST_STANDARD >= 23
     test_filesystem();
+#if TEST_STANDARD >= 23
     test_flat_set();
+#endif // TEST_STANDARD >= 23
     test_format();
     test_forward_list();
     test_fstream();

@@ -61,7 +61,9 @@ export module std;
 #include <expected>
 #endif // _HAS_CXX23
 #include <filesystem>
+#if _HAS_CXX23
 #include <flat_set>
+#endif // _HAS_CXX23
 #include <format>
 #include <forward_list>
 #include <fstream>
