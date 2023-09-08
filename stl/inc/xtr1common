@@ -172,7 +172,7 @@ _INLINE_VAR constexpr bool _Is_any_of_v = // true if and only if _Ty is in _Type
     (is_same_v<_Ty, _Types> || ...);
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
     disjunction_v<is_same<_Ty, _Types>...>;
-#endif // ^^^!_HAS_CXX17 ^^^
+#endif // ^^^ !_HAS_CXX17 ^^^
 
 _NODISCARD constexpr bool _Is_constant_evaluated() noexcept { // Internal function for any standard mode
     return __builtin_is_constant_evaluated();

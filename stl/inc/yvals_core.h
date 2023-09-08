@@ -1969,7 +1969,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 // The earliest Windows supported by this implementation is Windows 7
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN7
 #endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
-#endif //! defined(_STL_WIN32_WINNT)
+#endif // !defined(_STL_WIN32_WINNT)
 
 #ifdef __cpp_noexcept_function_type
 #define _NOEXCEPT_FNPTR noexcept

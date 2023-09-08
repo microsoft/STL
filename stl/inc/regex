@@ -50,7 +50,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _ENHANCED_REGEX_VISUALIZER 1
 #else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _ENHANCED_REGEX_VISUALIZER 0
-#endif //  ^^^ !defined(_DEBUG) ^^^
+#endif // ^^^ !defined(_DEBUG) ^^^
 #endif // !defined(_ENHANCED_REGEX_VISUALIZER)
 
 _STD_BEGIN

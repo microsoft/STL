@@ -414,7 +414,7 @@ public:
                 _Mycont->_Myoff <= this->_Myoff + _Off && this->_Myoff + _Off <= _Mycont->_Myoff + _Mycont->_Mysize,
                 "cannot seek deque iterator out of range");
         }
-#endif //  ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
     }
 
 #if _ITERATOR_DEBUG_LEVEL != 0
