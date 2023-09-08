@@ -1107,6 +1107,10 @@ private:
     }
 
 public:
+    void push_front(const _Ty& _Val) {
+        emplace_front(_Val);
+    }
+
     void push_front(_Ty&& _Val) {
         emplace_front(_STD move(_Val));
     }
@@ -1137,6 +1141,11 @@ public:
         _Guard._Container = nullptr;
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+    void push_back(const _Ty& _Val) {
+        _Orphan_all();
+        _Emplace_back_internal(_Val);
+    }
 
     void push_back(_Ty&& _Val) {
         _Orphan_all();
@@ -1205,10 +1214,6 @@ public:
         return insert(_Where, _Ilist.begin(), _Ilist.end());
     }
 
-    void push_front(const _Ty& _Val) {
-        emplace_front(_Val);
-    }
-
     void pop_front() noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL == 2
         if (empty()) {
@@ -1233,11 +1238,6 @@ public:
             ++_Myoff();
         }
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
-    }
-
-    void push_back(const _Ty& _Val) {
-        _Orphan_all();
-        _Emplace_back_internal(_Val);
     }
 
     void pop_back() noexcept /* strengthened */ {
