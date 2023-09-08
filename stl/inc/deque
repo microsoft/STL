@@ -759,6 +759,32 @@ private:
     }
 
 public:
+    ~deque() noexcept {
+        _Tidy();
+        _Alproxy_ty _Proxy_allocator(_Getal());
+        _Delete_plain_internal(_Proxy_allocator, _STD exchange(_Get_data()._Myproxy, nullptr));
+    }
+
+    deque& operator=(const deque& _Right) {
+        if (this == _STD addressof(_Right)) {
+            return *this;
+        }
+
+        auto& _Al       = _Getal();
+        auto& _Right_al = _Right._Getal();
+        if constexpr (_Choose_pocca_v<_Alty>) {
+            if (_Al != _Right_al) {
+                _Tidy();
+                _Get_data()._Reload_proxy(static_cast<_Alproxy_ty>(_Al), static_cast<_Alproxy_ty>(_Right_al));
+            }
+        }
+
+        _Pocca(_Al, _Right_al);
+        assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
+
+        return *this;
+    }
+
     deque& operator=(deque&& _Right) noexcept(_Alty_traits::is_always_equal::value) {
         if (this == _STD addressof(_Right)) {
             return *this;
@@ -899,32 +925,6 @@ public:
 
     iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
         return insert(_Where, _Ilist.begin(), _Ilist.end());
-    }
-
-    ~deque() noexcept {
-        _Tidy();
-        _Alproxy_ty _Proxy_allocator(_Getal());
-        _Delete_plain_internal(_Proxy_allocator, _STD exchange(_Get_data()._Myproxy, nullptr));
-    }
-
-    deque& operator=(const deque& _Right) {
-        if (this == _STD addressof(_Right)) {
-            return *this;
-        }
-
-        auto& _Al       = _Getal();
-        auto& _Right_al = _Right._Getal();
-        if constexpr (_Choose_pocca_v<_Alty>) {
-            if (_Al != _Right_al) {
-                _Tidy();
-                _Get_data()._Reload_proxy(static_cast<_Alproxy_ty>(_Al), static_cast<_Alproxy_ty>(_Right_al));
-            }
-        }
-
-        _Pocca(_Al, _Right_al);
-        assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
-
-        return *this;
     }
 
     _NODISCARD iterator begin() noexcept {
