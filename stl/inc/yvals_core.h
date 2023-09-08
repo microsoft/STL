@@ -1031,8 +1031,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _STD_VECTORIZE_WITH_FLOAT_CONTROL 0
 #else // ^^^ floating-point exceptions enabled / floating-point exceptions disabled (default) vvv
 #define _STD_VECTORIZE_WITH_FLOAT_CONTROL 1
-#endif // ^^^ !defined(_M_FP_EXCEPT) ^^^
-#endif // !!defined(_STD_VECTORIZE_WITH_FLOAT_CONTROL)
+#endif // ^^^ floating-point exceptions disabled (default) ^^^
+#endif // !defined(_STD_VECTORIZE_WITH_FLOAT_CONTROL)
 
 // P0174R2 Deprecating Vestigial Library Parts
 // P0521R0 Deprecating shared_ptr::unique()
