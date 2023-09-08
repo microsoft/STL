@@ -1162,7 +1162,7 @@ struct _Aligned<_Len, _Align, double, false> {
     struct type {
         alignas(_Align) char _Space[_Len];
     };
-#else // ^^^ _ENABLE_EXTENDED_ALIGNED_STORAGE / !_ENABLE_EXTENDED_ALIGNED_STORAGE vvv
+#else // ^^^ defined(_ENABLE_EXTENDED_ALIGNED_STORAGE) / !defined(_ENABLE_EXTENDED_ALIGNED_STORAGE) vvv
 #ifndef _DISABLE_EXTENDED_ALIGNED_STORAGE
     static_assert(_Always_false<_Aligned>,
         "You've instantiated std::aligned_storage<Len, Align> with an extended alignment (in other "
@@ -1173,9 +1173,9 @@ struct _Aligned<_Len, _Align, double, false> {
         "To suppress this error, please define either "
         "(1) _ENABLE_EXTENDED_ALIGNED_STORAGE to confirm that you want a type with an extended alignment, or "
         "(2) _DISABLE_EXTENDED_ALIGNED_STORAGE to get the old non-conforming behavior.");
-#endif // !_DISABLE_EXTENDED_ALIGNED_STORAGE
+#endif // ^^^ !defined(_DISABLE_EXTENDED_ALIGNED_STORAGE) ^^^
     using type = _Align_type<max_align_t, _Len>;
-#endif // ^^^ !defined(_ENABLE_EXTENDED_ALIGNED_STORAGE)
+#endif // ^^^ !defined(_ENABLE_EXTENDED_ALIGNED_STORAGE) ^^^
 };
 
 template <size_t _Len, size_t _Align>
