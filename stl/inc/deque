@@ -1107,6 +1107,43 @@ private:
     }
 
 public:
+    template <class... _Valty>
+    decltype(auto) emplace_front(_Valty&&... _Val) {
+        _Orphan_all();
+        _Emplace_front_internal(_STD forward<_Valty>(_Val)...);
+#if _HAS_CXX17
+        return front();
+#endif // _HAS_CXX17
+    }
+
+    template <class... _Valty>
+    decltype(auto) emplace_back(_Valty&&... _Val) {
+        _Orphan_all();
+        _Emplace_back_internal(_STD forward<_Valty>(_Val)...);
+
+#if _HAS_CXX17
+        return back();
+#endif // _HAS_CXX17
+    }
+
+    template <class... _Valty>
+    iterator emplace(const_iterator _Where, _Valty&&... _Val) {
+        const auto _Off = static_cast<size_type>(_Where - begin());
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Off <= _Mysize(), "deque emplace iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
+            emplace_front(_STD forward<_Valty>(_Val)...);
+            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
+        } else { // closer to back, push to back then rotate
+            emplace_back(_STD forward<_Valty>(_Val)...);
+            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
+        }
+        return begin() + static_cast<difference_type>(_Off);
+    }
+
     void push_front(const _Ty& _Val) {
         emplace_front(_Val);
     }
@@ -1171,43 +1208,6 @@ public:
 
     iterator insert(const_iterator _Where, _Ty&& _Val) {
         return emplace(_Where, _STD move(_Val));
-    }
-
-    template <class... _Valty>
-    decltype(auto) emplace_front(_Valty&&... _Val) {
-        _Orphan_all();
-        _Emplace_front_internal(_STD forward<_Valty>(_Val)...);
-#if _HAS_CXX17
-        return front();
-#endif // _HAS_CXX17
-    }
-
-    template <class... _Valty>
-    decltype(auto) emplace_back(_Valty&&... _Val) {
-        _Orphan_all();
-        _Emplace_back_internal(_STD forward<_Valty>(_Val)...);
-
-#if _HAS_CXX17
-        return back();
-#endif // _HAS_CXX17
-    }
-
-    template <class... _Valty>
-    iterator emplace(const_iterator _Where, _Valty&&... _Val) {
-        const auto _Off = static_cast<size_type>(_Where - begin());
-
-#if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Off <= _Mysize(), "deque emplace iterator outside range");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
-        if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
-            emplace_front(_STD forward<_Valty>(_Val)...);
-            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
-        } else { // closer to back, push to back then rotate
-            emplace_back(_STD forward<_Valty>(_Val)...);
-            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
-        }
-        return begin() + static_cast<difference_type>(_Off);
     }
 
     iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
