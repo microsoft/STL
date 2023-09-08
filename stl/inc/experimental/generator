@@ -156,7 +156,7 @@ namespace experimental {
                 if (_Coro.done()) {
 #ifdef _CPPUNWIND
                     _Coro.promise()._Rethrow_if_exception();
-#endif // ^^^ !defined(_CPPUNWIND) ^^^
+#endif // ^^^ defined(_CPPUNWIND) ^^^
                     return {};
                 }
             }
