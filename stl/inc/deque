@@ -643,21 +643,6 @@ public:
         _Proxy._Release();
     }
 
-    deque(const deque& _Right)
-        : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
-        _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
-        _Proxy._Release();
-    }
-
-    deque(const deque& _Right, const _Identity_t<_Alloc>& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
-        _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
-        _Proxy._Release();
-    }
-
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     deque(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Alproxy_ty _Alproxy(_Getal());
@@ -691,6 +676,21 @@ public:
         _Proxy._Release();
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+    deque(const deque& _Right)
+        : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
+        _Alproxy_ty _Alproxy(_Getal());
+        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
+        _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
+        _Proxy._Release();
+    }
+
+    deque(const deque& _Right, const _Identity_t<_Alloc>& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        _Alproxy_ty _Alproxy(_Getal());
+        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
+        _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
+        _Proxy._Release();
+    }
 
 private:
     template <class _Iter, class _Sent>
