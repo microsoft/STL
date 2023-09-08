@@ -474,6 +474,7 @@ private:
             if (_Where != _End && _Keys_equal(*_Where, _Val)) {
                 return pair{_Where, false};
             }
+
             if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
                 return pair{_Cont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
             } else {
@@ -531,6 +532,7 @@ private:
             if (_Where != _End && _Keys_equal(_Val, *_Where)) {
                 return _Cont.begin() + (_Where - _Begin);
             }
+
             if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
                 _STL_INTERNAL_CHECK(_Check_where(_Where, _Val));
                 return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
