@@ -7,6 +7,7 @@
 #include <flat_set>
 #include <functional>
 #include <iostream>
+#include <memory>
 #include <vector>
 
 using namespace std;
