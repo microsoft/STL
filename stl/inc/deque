@@ -1233,6 +1233,29 @@ public:
         return begin() + static_cast<difference_type>(_Off);
     }
 
+        template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
+    iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
+        // insert [_First, _Last) at _Where
+        _Adl_verify_range(_First, _Last);
+        const size_type _Off = static_cast<size_type>(_Where - begin());
+        return _Insert_range<static_cast<_Is_bidi>(_Is_cpp17_bidi_iter_v<_Iter>)>(
+            _Off, _Get_unwrapped(_First), _Get_unwrapped(_Last));
+    }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    iterator insert_range(const_iterator _Where, _Rng&& _Range) {
+        const size_type _Off = static_cast<size_type>(_Where - begin());
+
+        if constexpr (_RANGES bidirectional_range<_Rng>) {
+            return _Insert_range<_Is_bidi::_Yes>(
+                _Off, _RANGES _Ubegin(_Range), _RANGES _Get_final_iterator_unwrapped(_Range));
+        } else {
+            return _Insert_range<_Is_bidi::_Nope>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        }
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
         return insert(_Where, _Ilist.begin(), _Ilist.end());
     }
@@ -1369,29 +1392,6 @@ private:
     }
 
 public:
-    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
-        // insert [_First, _Last) at _Where
-        _Adl_verify_range(_First, _Last);
-        const size_type _Off = static_cast<size_type>(_Where - begin());
-        return _Insert_range<static_cast<_Is_bidi>(_Is_cpp17_bidi_iter_v<_Iter>)>(
-            _Off, _Get_unwrapped(_First), _Get_unwrapped(_Last));
-    }
-
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-    template <_Container_compatible_range<_Ty> _Rng>
-    iterator insert_range(const_iterator _Where, _Rng&& _Range) {
-        const size_type _Off = static_cast<size_type>(_Where - begin());
-
-        if constexpr (_RANGES bidirectional_range<_Rng>) {
-            return _Insert_range<_Is_bidi::_Yes>(
-                _Off, _RANGES _Ubegin(_Range), _RANGES _Get_final_iterator_unwrapped(_Range));
-        } else {
-            return _Insert_range<_Is_bidi::_Nope>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
-        }
-    }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
-
     iterator erase(const_iterator _Where) noexcept(is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
         return erase(_Where, _Next_iter(_Where));
     }
