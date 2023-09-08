@@ -43,7 +43,7 @@ namespace {
         /* MAGIC */ static _Immortalizer_impl<_Ty> _Static;
         return reinterpret_cast<_Ty&>(_Static._Storage);
     }
-#elif !defined(_M_CEE) // _M_CEE test is TRANSITION, VSO-1153256
+#elif !defined(_M_CEE)
     template <class _Ty>
     struct _Constexpr_excptptr_immortalize_impl {
         union {
@@ -67,7 +67,7 @@ namespace {
     [[nodiscard]] _Ty& _Immortalize() noexcept {
         return _Immortalize_impl<_Ty>._Storage;
     }
-#else // choose immortalize strategy
+#else // ^^^ !defined(_M_CEE) / defined(_M_CEE), TRANSITION, VSO-1153256 vvv
     template <class _Ty>
     int __stdcall _Immortalize_impl(void*, void* _Storage_ptr, void**) noexcept {
         // adapt True Placement New to _Execute_once
@@ -86,7 +86,7 @@ namespace {
 
         return reinterpret_cast<_Ty&>(_Storage);
     }
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) && defined(_M_CEE), TRANSITION, VSO-1153256 ^^^
 
     void _PopulateCppExceptionRecord(
         _EXCEPTION_RECORD& _Record, const void* const _PExcept, ThrowInfo* _PThrow) noexcept {

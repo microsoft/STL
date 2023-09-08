@@ -314,13 +314,11 @@ constexpr bool test_difference() {
 }
 
 constexpr bool test_gh_3025() {
-#ifndef _M_CEE // TRANSITION, VSO-1666180
     // GH-3025 <iterator>: ranges::prev maybe ill-formed in debug mode
     auto r  = views::iota(0ull, 5ull);
     auto it = r.end();
     auto pr = ranges::prev(it, 3);
     assert(*pr == 2ull);
-#endif // _M_CEE
 
     return true;
 }

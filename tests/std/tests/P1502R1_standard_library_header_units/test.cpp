@@ -27,7 +27,9 @@ import <coroutine>;
 import <deque>;
 import <exception>;
 import <execution>;
+#if TEST_STANDARD >= 23
 import <expected>;
+#endif // TEST_STANDARD >= 23
 import <filesystem>;
 import <flat_set>;
 import <format>;
@@ -55,7 +57,9 @@ import <numbers>;
 import <numeric>;
 import <optional>;
 import <ostream>;
+#if TEST_STANDARD >= 23
 import <print>;
+#endif // TEST_STANDARD >= 23
 import <queue>;
 import <random>;
 import <ranges>;
@@ -67,12 +71,18 @@ import <set>;
 import <shared_mutex>;
 import <source_location>;
 import <span>;
+#if TEST_STANDARD >= 23
 import <spanstream>;
+#endif // TEST_STANDARD >= 23
 import <sstream>;
 import <stack>;
+#if TEST_STANDARD >= 23
 import <stacktrace>;
+#endif // TEST_STANDARD >= 23
 import <stdexcept>;
+#if TEST_STANDARD >= 23
 import <stdfloat>;
+#endif // TEST_STANDARD >= 23
 import <stop_token>;
 import <streambuf>;
 import <string>;

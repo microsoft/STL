@@ -654,7 +654,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     [[_Clang::__require_constant_initialization__]] static _Ty _Static;
     return _Static;
 }
-#elif !defined(_M_CEE) // TRANSITION, VSO-1153256
+#elif !defined(_M_CEE)
 template <class _Ty>
 struct _Constexpr_immortalize_impl {
     union {
@@ -676,7 +676,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     static _Constexpr_immortalize_impl<_Ty> _Static;
     return _Static._Storage;
 }
-#else // ^^^ no workaround / workaround vvv
+#else // ^^^ !defined(_M_CEE) / defined(_M_CEE), TRANSITION, VSO-1153256  vvv
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     // return reference to a memcpy'd default-initialized _Ty
@@ -695,7 +695,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     _Storage[0].store(_Target_iter[0], memory_order_release);
     return reinterpret_cast<_Ty&>(_Storage);
 }
-#endif // choose immortalize strategy
+#endif // ^^^ defined(_M_CEE), TRANSITION, VSO-1153256 ^^^
 
 _EXPORT_STD _NODISCARD inline const error_category& generic_category() noexcept {
     return _Immortalize_memcpy_image<_Generic_error_category>();

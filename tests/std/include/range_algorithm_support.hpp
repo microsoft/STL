@@ -12,10 +12,6 @@
 #include <type_traits>
 #include <utility>
 
-#ifdef _M_CEE // TRANSITION, VSO-1867037
-#include <memory>
-#endif // ^^^ workaround ^^^
-
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 namespace ranges = std::ranges;
@@ -72,21 +68,11 @@ template <class T, std::size_t N>
 struct holder {
     STATIC_ASSERT(N < ~std::size_t{0} / sizeof(T));
 
-#ifdef _M_CEE // TRANSITION, VSO-1867037
-    unsigned char space[(N + 1) * sizeof(T)];
-
-    auto as_span() {
-        void* buffer_ptr       = space;
-        std::size_t buffer_len = sizeof(space);
-        return std::span<T, N>{static_cast<T*>(std::align(alignof(T), sizeof(T), buffer_ptr, buffer_len)), N};
-    }
-#else // ^^^ workaround / no workaround vvv
     alignas(T) unsigned char space[N * sizeof(T)];
 
     auto as_span() {
         return std::span<T, N>{reinterpret_cast<T*>(space + 0), N};
     }
-#endif // ^^^ no workaround ^^^
 };
 
 namespace test {

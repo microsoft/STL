@@ -10,6 +10,8 @@
 
 #include <Windows.h>
 
+#define _cpp_isleadbyte(c) (__pctype_func()[static_cast<unsigned char>(c)] & _LEADBYTE)
+
 _CRT_BEGIN_C_HEADER
 
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8

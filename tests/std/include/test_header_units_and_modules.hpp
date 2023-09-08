@@ -216,12 +216,14 @@ void test_execution() {
     assert(count(execution::par, begin(arr), end(arr), 0) == 4);
 }
 
+#if TEST_STANDARD >= 23
 void test_expected() {
     using namespace std;
     puts("Testing <expected>.");
     constexpr expected<double, int> test{unexpect, 42};
     assert(test.error() == 42);
 }
+#endif // TEST_STANDARD >= 23
 
 void test_filesystem() {
     using namespace std;
@@ -499,6 +501,7 @@ void test_ostream() {
     assert(os.rdbuf() == nullptr);
 }
 
+#if TEST_STANDARD >= 23
 void test_print() {
     using namespace std;
     puts("Testing <print>.");
@@ -508,6 +511,7 @@ void test_print() {
     println(cout, "The answer to life, the universe, and everything: {}", 42);
 #endif // _CPPRTTI
 }
+#endif // TEST_STANDARD >= 23
 
 void test_queue() {
     using namespace std;
@@ -695,6 +699,7 @@ void test_span() {
     static_assert(mid[0] == 22 && mid[1] == 33 && mid[2] == 44);
 }
 
+#if TEST_STANDARD >= 23
 void test_spanstream() {
     using namespace std;
     puts("Testing <spanstream>.");
@@ -727,6 +732,7 @@ void test_spanstream() {
     s << 10 << 20 << 30;
     assert(equal(begin(s.span()), end(s.span()), begin(expected_val), end(expected_val)));
 }
+#endif // TEST_STANDARD >= 23
 
 void test_sstream() {
     using namespace std;
@@ -753,6 +759,7 @@ void test_stack() {
     assert(s.empty());
 }
 
+#if TEST_STANDARD >= 23
 __declspec(dllexport) void test_stacktrace() { // export test_stacktrace to have it named even without debug info
     using namespace std;
     puts("Testing <stacktrace>.");
@@ -768,6 +775,7 @@ __declspec(dllexport) void test_stacktrace() { // export test_stacktrace to have
 
     assert(desc == "test_stacktrace");
 }
+#endif // TEST_STANDARD >= 23
 
 void test_stdexcept() {
     using namespace std;
@@ -785,11 +793,13 @@ void test_stdexcept() {
     assert(caught_puppies);
 }
 
+#if TEST_STANDARD >= 23
 void test_stdfloat() {
     using namespace std;
     puts("Testing <stdfloat>.");
     // `namespace std` is available, so we're done.
 }
+#endif // TEST_STANDARD >= 23
 
 void test_stop_token() {
     using namespace std;
@@ -1087,7 +1097,9 @@ void all_cpp_header_tests() {
     test_deque();
     test_exception();
     test_execution();
+#if TEST_STANDARD >= 23
     test_expected();
+#endif // TEST_STANDARD >= 23
     test_filesystem();
     test_flat_set();
     test_format();
@@ -1115,7 +1127,9 @@ void all_cpp_header_tests() {
     test_numeric();
     test_optional();
     test_ostream();
+#if TEST_STANDARD >= 23
     test_print();
+#endif // TEST_STANDARD >= 23
     test_queue();
     test_random();
     test_ranges();
@@ -1127,12 +1141,18 @@ void all_cpp_header_tests() {
     test_shared_mutex();
     test_source_location();
     test_span();
+#if TEST_STANDARD >= 23
     test_spanstream();
+#endif // TEST_STANDARD >= 23
     test_sstream();
     test_stack();
+#if TEST_STANDARD >= 23
     test_stacktrace();
+#endif // TEST_STANDARD >= 23
     test_stdexcept();
+#if TEST_STANDARD >= 23
     test_stdfloat();
+#endif // TEST_STANDARD >= 23
     test_stop_token();
     test_streambuf();
     test_string();
