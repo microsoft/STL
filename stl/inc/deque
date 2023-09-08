@@ -1102,22 +1102,6 @@ public:
         return insert(_Where, _Ilist.begin(), _Ilist.end());
     }
 
-    _NODISCARD const_reference at(size_type _Pos) const {
-        if (_Mysize() <= _Pos) {
-            _Xran();
-        }
-
-        return *(begin() + static_cast<difference_type>(_Pos));
-    }
-
-    _NODISCARD reference at(size_type _Pos) {
-        if (_Mysize() <= _Pos) {
-            _Xran();
-        }
-
-        return *(begin() + static_cast<difference_type>(_Pos));
-    }
-
     _NODISCARD const_reference operator[](size_type _Pos) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
@@ -1132,6 +1116,22 @@ public:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
         return *(_Unchecked_begin() + static_cast<difference_type>(_Pos));
+    }
+
+    _NODISCARD const_reference at(size_type _Pos) const {
+        if (_Mysize() <= _Pos) {
+            _Xran();
+        }
+
+        return *(begin() + static_cast<difference_type>(_Pos));
+    }
+
+    _NODISCARD reference at(size_type _Pos) {
+        if (_Mysize() <= _Pos) {
+            _Xran();
+        }
+
+        return *(begin() + static_cast<difference_type>(_Pos));
     }
 
     _NODISCARD reference front() noexcept /* strengthened */ {
