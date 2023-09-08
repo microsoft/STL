@@ -1004,6 +1004,70 @@ public:
         }
     }
 
+    _NODISCARD const_reference operator[](size_type _Pos) const noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return *(_Unchecked_begin() + static_cast<difference_type>(_Pos));
+    }
+
+    _NODISCARD reference operator[](size_type _Pos) noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return *(_Unchecked_begin() + static_cast<difference_type>(_Pos));
+    }
+
+    _NODISCARD const_reference at(size_type _Pos) const {
+        if (_Mysize() <= _Pos) {
+            _Xran();
+        }
+
+        return *(begin() + static_cast<difference_type>(_Pos));
+    }
+
+    _NODISCARD reference at(size_type _Pos) {
+        if (_Mysize() <= _Pos) {
+            _Xran();
+        }
+
+        return *(begin() + static_cast<difference_type>(_Pos));
+    }
+
+    _NODISCARD reference front() noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!empty(), "front() called on empty deque");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return *_Unchecked_begin();
+    }
+
+    _NODISCARD const_reference front() const noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!empty(), "front() called on empty deque");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return *_Unchecked_begin();
+    }
+
+    _NODISCARD reference back() noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!empty(), "back() called on empty deque");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return *_Prev_iter(_Unchecked_end());
+    }
+
+    _NODISCARD const_reference back() const noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!empty(), "back() called on empty deque");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return *_Prev_iter(_Unchecked_end());
+    }
+
     void push_front(_Ty&& _Val) {
         emplace_front(_STD move(_Val));
     }
@@ -1100,70 +1164,6 @@ public:
 
     iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
         return insert(_Where, _Ilist.begin(), _Ilist.end());
-    }
-
-    _NODISCARD const_reference operator[](size_type _Pos) const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-
-        return *(_Unchecked_begin() + static_cast<difference_type>(_Pos));
-    }
-
-    _NODISCARD reference operator[](size_type _Pos) noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-
-        return *(_Unchecked_begin() + static_cast<difference_type>(_Pos));
-    }
-
-    _NODISCARD const_reference at(size_type _Pos) const {
-        if (_Mysize() <= _Pos) {
-            _Xran();
-        }
-
-        return *(begin() + static_cast<difference_type>(_Pos));
-    }
-
-    _NODISCARD reference at(size_type _Pos) {
-        if (_Mysize() <= _Pos) {
-            _Xran();
-        }
-
-        return *(begin() + static_cast<difference_type>(_Pos));
-    }
-
-    _NODISCARD reference front() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!empty(), "front() called on empty deque");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-
-        return *_Unchecked_begin();
-    }
-
-    _NODISCARD const_reference front() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!empty(), "front() called on empty deque");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-
-        return *_Unchecked_begin();
-    }
-
-    _NODISCARD reference back() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!empty(), "back() called on empty deque");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-
-        return *_Prev_iter(_Unchecked_end());
-    }
-
-    _NODISCARD const_reference back() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!empty(), "back() called on empty deque");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-
-        return *_Prev_iter(_Unchecked_end());
     }
 
     void push_front(const _Ty& _Val) {
