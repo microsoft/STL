@@ -1564,7 +1564,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _FIRST_ARGUMENT_TYPE_NAME  _Unnameable_first_argument
 #define _SECOND_ARGUMENT_TYPE_NAME _Unnameable_second_argument
 #define _RESULT_TYPE_NAME          _Unnameable_result
-#endif // !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+#endif // ^^^ !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS ^^^
 
 // P1423R3 char8_t Backward Compatibility Remediation
 // Controls whether we allow the stream insertions this proposal forbids
@@ -1973,14 +1973,14 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 
 #ifdef __cpp_noexcept_function_type
 #define _NOEXCEPT_FNPTR noexcept
-#else
+#else // ^^^ defined(__cpp_noexcept_function_type) / !defined(__cpp_noexcept_function_type) vvv
 #define _NOEXCEPT_FNPTR
-#endif // defined(__cpp_noexcept_function_type)
+#endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
 #ifdef __clang__
 #define _STL_INTRIN_HEADER <intrin.h>
 #define _STL_UNREACHABLE   __builtin_unreachable()
-#else // ^^^ clang / other vvv
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_INTRIN_HEADER <intrin0.h>
 #define _STL_UNREACHABLE   __assume(false)
 #endif // ^^^ !defined(__clang__) ^^^

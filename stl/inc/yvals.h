@@ -217,9 +217,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
 #define _STL_INTERNAL_CHECK(...) _STL_VERIFY(__VA_ARGS__, "STL internal check: " #__VA_ARGS__)
-#else // ^^^ _ENABLE_STL_INTERNAL_CHECK / !_ENABLE_STL_INTERNAL_CHECK vvv
+#else // ^^^ defined(_ENABLE_STL_INTERNAL_CHECK) / !defined(_ENABLE_STL_INTERNAL_CHECK) vvv
 #define _STL_INTERNAL_CHECK(...) _Analysis_assume_(__VA_ARGS__)
-#endif // defined(_ENABLE_STL_INTERNAL_CHECK)
+#endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
 #ifndef _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
 #ifdef _DEBUG
