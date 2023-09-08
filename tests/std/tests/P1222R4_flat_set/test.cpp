@@ -67,6 +67,7 @@ void assert_reversible_container_requirements(const T& s) {
 
 template <class T>
 void test_ebco() {
+    // This tests an implementation-specific optimization.
     using key_compare    = T::key_compare;
     using container_type = T::container_type;
     if constexpr (is_empty_v<key_compare> && !is_final_v<key_compare>) {
