@@ -580,7 +580,7 @@
 #define _NODISCARD_FRIEND friend
 #else // ^^^ workaround / no workaround vvv
 #define _NODISCARD_FRIEND _NODISCARD friend
-#endif // ^^^ no TRANSITION, VSO-568006 ^^^
+#endif // ^^^ no workaround ^^^
 
 #define _NODISCARD_REMOVE_ALG                                                                                    \
     _NODISCARD_MSG("The 'remove' and 'remove_if' algorithms return the iterator past the last element "          \

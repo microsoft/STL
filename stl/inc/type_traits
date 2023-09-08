@@ -803,7 +803,7 @@ struct _Is_assignable_no_precondition_check : bool_constant<__is_assignable_no_p
 #else // ^^^ Use intrinsic / intrinsic not supported vvv
 template <class _To, class _From>
 using _Is_assignable_no_precondition_check = is_assignable<_To, _From>;
-#endif // ^^^ !defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) || defined(__CUDACC__) ^^^
+#endif // ^^^ intrinsic not supported ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_copy_assignable
@@ -830,7 +830,7 @@ using _Is_copy_assignable_no_precondition_check = is_copy_assignable<_Ty>;
 
 template <class _Ty>
 _INLINE_VAR constexpr bool _Is_copy_assignable_unchecked_v = is_copy_assignable_v<_Ty>;
-#endif // ^^^ !defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) || defined(__CUDACC__) ^^^
+#endif // ^^^ intrinsic not supported ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_move_assignable : bool_constant<__is_assignable(add_lvalue_reference_t<_Ty>, _Ty)> {
@@ -854,7 +854,7 @@ using _Is_move_assignable_no_precondition_check = is_move_assignable<_Ty>;
 
 template <class _Ty>
 _INLINE_VAR constexpr bool _Is_move_assignable_unchecked_v = is_move_assignable_v<_Ty>;
-#endif // ^^^ !defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) || defined(__CUDACC__) ^^^
+#endif // ^^^ intrinsic not supported ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_destructible : bool_constant<__is_destructible(_Ty)> {
