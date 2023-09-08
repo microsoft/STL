@@ -54,7 +54,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #else
 #define _CRT_MSVCP_CURRENT "msvcp140.dll"
 #endif
-#endif // ^^^ !defined(_CRT_WINDOWS) ^^^^
+#endif // ^^^ !defined(_CRT_WINDOWS) ^^^
 #endif // !defined(_CRT_MSVCP_CURRENT)
 
 #ifdef _ITERATOR_DEBUG_LEVEL // A. _ITERATOR_DEBUG_LEVEL is already defined.
