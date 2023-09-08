@@ -819,6 +819,37 @@ public:
         return *this;
     }
 
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
+    void assign(_Iter _First, _Iter _Last) {
+        _Adl_verify_range(_First, _Last);
+        _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+    }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    void assign_range(_Rng&& _Range) {
+        _Assign_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+    void assign(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) { // assign _Count * _Val
+        _Orphan_all();
+        auto _Myfirst       = _Unchecked_begin();
+        const auto _Oldsize = _Mysize();
+        auto _Assign_count  = (_STD min)(_Count, _Oldsize);
+        for (; _Assign_count > 0; --_Assign_count) {
+            *_Myfirst = _Val;
+            ++_Myfirst;
+        }
+
+        const auto _Shrink_by = _Oldsize - _Assign_count;
+        auto _Extend_by       = _Count - _Assign_count;
+        _Erase_last_n(_Shrink_by);
+        for (; _Extend_by > 0; --_Extend_by) {
+            _Emplace_back_internal(_Val);
+        }
+    }
+
 public:
     void push_front(_Ty&& _Val) {
         emplace_front(_STD move(_Val));
@@ -1234,37 +1265,6 @@ private:
     }
 
 public:
-    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    void assign(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
-    }
-
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-    template <_Container_compatible_range<_Ty> _Rng>
-    void assign_range(_Rng&& _Range) {
-        _Assign_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
-    }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
-
-    void assign(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) { // assign _Count * _Val
-        _Orphan_all();
-        auto _Myfirst       = _Unchecked_begin();
-        const auto _Oldsize = _Mysize();
-        auto _Assign_count  = (_STD min)(_Count, _Oldsize);
-        for (; _Assign_count > 0; --_Assign_count) {
-            *_Myfirst = _Val;
-            ++_Myfirst;
-        }
-
-        const auto _Shrink_by = _Oldsize - _Assign_count;
-        auto _Extend_by       = _Count - _Assign_count;
-        _Erase_last_n(_Shrink_by);
-        for (; _Extend_by > 0; --_Extend_by) {
-            _Emplace_back_internal(_Val);
-        }
-    }
-
     iterator insert(const_iterator _Where, const _Ty& _Val) {
         size_type _Off = static_cast<size_type>(_Where - begin());
 
