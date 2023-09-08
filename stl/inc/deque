@@ -629,67 +629,43 @@ public:
     }
 
     deque(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) : _Mypair(_Zero_then_variadic_args_t{}) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct_n(_Count, _Val);
-        _Proxy._Release();
     }
 
     deque(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct_n(_Count, _Val);
-        _Proxy._Release();
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     deque(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t{}) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_First, _Last);
-        _Proxy._Release();
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     deque(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_First, _Last);
-        _Proxy._Release();
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     deque(from_range_t, _Rng&& _Range) : _Mypair(_Zero_then_variadic_args_t{}) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
-        _Proxy._Release();
     }
 
     template <_Container_compatible_range<_Ty> _Rng>
     deque(from_range_t, _Rng&& _Range, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
-        _Proxy._Release();
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     deque(const deque& _Right)
         : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
-        _Proxy._Release();
     }
 
     deque(const deque& _Right, const _Identity_t<_Alloc>& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
-        _Proxy._Release();
     }
 
     deque(deque&& _Right) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
@@ -698,47 +674,49 @@ public:
     }
 
     deque(deque&& _Right, const _Identity_t<_Alloc>& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
         if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
-                _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
                 _Construct(_STD make_move_iterator(_Right._Unchecked_begin()),
                     _STD make_move_iterator(_Right._Unchecked_end()));
-                _Proxy._Release();
                 return;
             }
         }
 
-        _Get_data()._Alloc_proxy(_Alproxy);
+        _Get_data()._Alloc_proxy(static_cast<_Alproxy_ty>(_Getal()));
         _Take_contents(_Right);
     }
 
     deque(initializer_list<_Ty> _Ilist, const _Alloc& _Al = allocator_type())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_Ilist.begin(), _Ilist.end());
-        _Proxy._Release();
     }
 
 private:
     template <class _Iter, class _Sent>
     void _Construct(_Iter _First, const _Sent _Last) { // initialize from input range [_First, _Last)
+        _Alproxy_ty _Alproxy(_Getal());
+        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
+
         _Tidy_guard<deque> _Guard{this};
         for (; _First != _Last; ++_First) {
             _Emplace_back_internal(*_First);
         }
 
         _Guard._Target = nullptr;
+        _Proxy._Release();
     }
 
     void _Construct_n(size_type _Count, const _Ty& _Val) { // construct from _Count * _Val
+        _Alproxy_ty _Alproxy(_Getal());
+        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
+
         _Tidy_guard<deque> _Guard{this};
         for (; _Count > 0; --_Count) {
             _Emplace_back_internal(_Val);
         }
 
         _Guard._Target = nullptr;
+        _Proxy._Release();
     }
 
     void _Take_contents(deque& _Right) noexcept {
