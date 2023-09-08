@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _MUTEX_
 #define _MUTEX_
 #include <yvals_core.h>
@@ -31,39 +30,20 @@ _STD_BEGIN
 _EXPORT_STD class condition_variable;
 _EXPORT_STD class condition_variable_any;
 
-struct _Mtx_internal_imp_mirror {
-#ifdef _CRT_WINDOWS
-#ifdef _WIN64
-    static constexpr size_t _Critical_section_size = 8;
-#else // _WIN64
-    static constexpr size_t _Critical_section_size = 4;
-#endif // _WIN64
-#else // _CRT_WINDOWS
-#ifdef _WIN64
-    static constexpr size_t _Critical_section_size = 56;
-#else // _WIN64
-    static constexpr size_t _Critical_section_size = 32;
-#endif // _WIN64
-#endif // _CRT_WINDOWS
-
-    int _Type;
-    const void* _Vptr;
-    union {
-        void* _Srw_lock_placeholder;
-        unsigned char _Padding[_Critical_section_size];
-    };
-    long _Thread_id;
-    int _Count;
-};
-
-static_assert(sizeof(_Mtx_internal_imp_mirror) == _Mtx_internal_imp_size, "inconsistent size for mutex");
-static_assert(alignof(_Mtx_internal_imp_mirror) == _Mtx_internal_imp_alignment, "inconsistent alignment for mutex");
-
 class _Mutex_base { // base class for all mutex types
 public:
+#ifdef _ENABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
+    constexpr _Mutex_base(int _Flags = 0) noexcept {
+        _Mtx_storage._Critical_section = {};
+        _Mtx_storage._Thread_id        = -1;
+        _Mtx_storage._Type             = _Flags | _Mtx_try;
+        _Mtx_storage._Count            = 0;
+    }
+#else // ^^^ _ENABLE_CONSTEXPR_MUTEX_CONSTRUCTOR / !_ENABLE_CONSTEXPR_MUTEX_CONSTRUCTOR vvv
     _Mutex_base(int _Flags = 0) noexcept {
         _Mtx_init_in_situ(_Mymtx(), _Flags | _Mtx_try);
     }
+#endif // !_ENABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
 
     ~_Mutex_base() noexcept {
         _Mtx_destroy_in_situ(_Mymtx());
@@ -73,13 +53,13 @@ public:
     _Mutex_base& operator=(const _Mutex_base&) = delete;
 
     void lock() {
-        if (_Mtx_lock(_Mymtx()) != _Thrd_success) {
-            // undefined behavior, only occurs for plain mutexes (N4928 [thread.mutex.requirements.mutex.general]/6)
+        if (_Mtx_lock(_Mymtx()) != _Thrd_result::_Success) {
+            // undefined behavior, only occurs for plain mutexes (N4950 [thread.mutex.requirements.mutex.general]/6)
             _STD _Throw_Cpp_error(_RESOURCE_DEADLOCK_WOULD_OCCUR);
         }
 
         if (!_Verify_ownership_levels()) {
-            // only occurs for recursive mutexes (N4928 [thread.mutex.recursive]/3)
+            // only occurs for recursive mutexes (N4950 [thread.mutex.recursive]/3)
             // POSIX specifies EAGAIN in the corresponding situation:
             // https://pubs.opengroup.org/onlinepubs/9699919799/functions/pthread_mutex_lock.html
             _STD _Throw_Cpp_error(_RESOURCE_UNAVAILABLE_TRY_AGAIN);
@@ -87,25 +67,21 @@ public:
     }
 
     _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept /* strengthened */ {
-        // false may be from undefined behavior for plain mutexes (N4928 [thread.mutex.requirements.mutex.general]/6)
-        return _Mtx_trylock(_Mymtx()) == _Thrd_success;
+        // false may be from undefined behavior for plain mutexes (N4950 [thread.mutex.requirements.mutex.general]/6)
+        return _Mtx_trylock(_Mymtx()) == _Thrd_result::_Success;
     }
 
     void unlock() noexcept /* strengthened */ {
         _Mtx_unlock(_Mymtx());
     }
 
-    using native_handle_type = void*;
-
-    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ {
-        return _Mtx_getconcrtcs(_Mymtx());
-    }
+    // native_handle_type and native_handle() have intentionally been removed. See GH-3820.
 
 protected:
     _NODISCARD_TRY_CHANGE_STATE bool _Verify_ownership_levels() noexcept {
-        if (_Mtx_storage_mirror._Count == INT_MAX) {
-            // only occurs for recursive mutexes (N4928 [thread.mutex.recursive]/3)
-            --_Mtx_storage_mirror._Count;
+        if (_Mtx_storage._Count == INT_MAX) {
+            // only occurs for recursive mutexes (N4950 [thread.mutex.recursive]/3)
+            --_Mtx_storage._Count;
             return false;
         }
 
@@ -116,23 +92,16 @@ private:
     friend condition_variable;
     friend condition_variable_any;
 
-    union {
-        _Aligned_storage_t<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment> _Mtx_storage;
-        _Mtx_internal_imp_mirror _Mtx_storage_mirror;
-    };
+    _Mtx_internal_imp_t _Mtx_storage{};
 
-    _Mtx_t _Mymtx() noexcept { // get pointer to _Mtx_internal_imp_t inside _Mtx_storage
-        return reinterpret_cast<_Mtx_t>(&_Mtx_storage);
+    _Mtx_t _Mymtx() noexcept {
+        return &_Mtx_storage;
     }
 };
 
-static_assert(sizeof(_Mutex_base) == _Mtx_internal_imp_size, "inconsistent size for mutex");
-static_assert(alignof(_Mutex_base) == _Mtx_internal_imp_alignment, "inconsistent alignment for mutex");
-
 _EXPORT_STD class mutex : public _Mutex_base { // class for mutual exclusion
 public:
-    /* constexpr */ mutex() noexcept // TRANSITION, ABI
-        : _Mutex_base() {}
+    mutex() noexcept = default;
 
     mutex(const mutex&)            = delete;
     mutex& operator=(const mutex&) = delete;
@@ -563,74 +532,6 @@ public:
 };
 #endif // _HAS_CXX17
 
-#if defined(_M_CEE) || defined(_M_ARM64EC) || defined(_M_HYBRID) \
-    || defined(__clang__) // TRANSITION, Clang doesn't recognize /ALTERNATENAME, not yet reported
-#define _WINDOWS_API              __stdcall
-#define _RENAME_WINDOWS_API(_Api) _Api##_clr
-#else // ^^^ use forwarders / use /ALTERNATENAME vvv
-#define _WINDOWS_API              __declspec(dllimport) __stdcall
-#define _RENAME_WINDOWS_API(_Api) _Api
-#endif // ^^^ use /ALTERNATENAME ^^^
-
-// WINBASEAPI
-// BOOL
-// WINAPI
-// InitOnceBeginInitialize(
-//     _Inout_ LPINIT_ONCE lpInitOnce,
-//     _In_ DWORD dwFlags,
-//     _Out_ PBOOL fPending,
-//     _Outptr_opt_result_maybenull_ LPVOID* lpContext
-//     );
-extern "C" _NODISCARD int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_begin_initialize)(
-    void** _LpInitOnce, unsigned long _DwFlags, int* _FPending, void** _LpContext) noexcept;
-
-// WINBASEAPI
-// BOOL
-// WINAPI
-// InitOnceComplete(
-//     _Inout_ LPINIT_ONCE lpInitOnce,
-//     _In_ DWORD dwFlags,
-//     _In_opt_ LPVOID lpContext
-//     );
-extern "C" _NODISCARD int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_complete)(
-    void** _LpInitOnce, unsigned long _DwFlags, void* _LpContext) noexcept;
-
-extern "C" [[noreturn]] void __stdcall __std_init_once_link_alternate_names_and_abort() noexcept;
-
-// #define RTL_RUN_ONCE_INIT_FAILED    0x00000004UL
-// #define INIT_ONCE_INIT_FAILED       RTL_RUN_ONCE_INIT_FAILED
-_INLINE_VAR constexpr unsigned long _Init_once_init_failed = 0x4UL;
-
-struct _Init_once_completer {
-    once_flag& _Once;
-    unsigned long _DwFlags;
-    ~_Init_once_completer() {
-        if (!_RENAME_WINDOWS_API(__std_init_once_complete)(&_Once._Opaque, _DwFlags, nullptr)) {
-            __std_init_once_link_alternate_names_and_abort();
-        }
-    }
-};
-
-_EXPORT_STD template <class _Fn, class... _Args>
-void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) noexcept(
-    noexcept(_STD invoke(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...))) /* strengthened */ {
-    // call _Fx(_Ax...) once
-    // parentheses against common "#define call_once(flag,func) pthread_once(flag,func)"
-    int _Pending;
-    if (!_RENAME_WINDOWS_API(__std_init_once_begin_initialize)(&_Once._Opaque, 0, &_Pending, nullptr)) {
-        _CSTD abort();
-    }
-
-    if (_Pending != 0) {
-        _Init_once_completer _Op{_Once, _Init_once_init_failed};
-        _STD invoke(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
-        _Op._DwFlags = 0;
-    }
-}
-
-#undef _WINDOWS_API
-#undef _RENAME_WINDOWS_API
-
 _EXPORT_STD enum class cv_status { // names for wait returns
     no_timeout,
     timeout
@@ -638,8 +539,6 @@ _EXPORT_STD enum class cv_status { // names for wait returns
 
 _EXPORT_STD class condition_variable { // class for waiting for conditions
 public:
-    using native_handle_type = _Cnd_t;
-
     condition_variable() noexcept /* strengthened */ {
         _Cnd_init_in_situ(_Mycnd());
     }
@@ -727,9 +626,7 @@ public:
         return _Wait_until1(_Lck, _Abs_time, _Pred);
     }
 
-    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ {
-        return _Mycnd();
-    }
+    // native_handle_type and native_handle() have intentionally been removed. See GH-3820.
 
     void _Register(unique_lock<mutex>& _Lck, int* _Ready) noexcept { // register this object for release at thread exit
         _Cnd_register_at_thread_exit(_Mycnd(), _Lck.release()->_Mymtx(), _Ready);
@@ -753,25 +650,13 @@ private:
         }
 
         // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
-        const int _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), _Abs_time);
+        const _Thrd_result _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), _Abs_time);
 
-        if (_Res == _Thrd_success) {
+        if (_Res == _Thrd_result::_Success) {
             return cv_status::no_timeout;
         } else {
             return cv_status::timeout;
         }
-    }
-
-    template <class _Predicate>
-    bool _Wait_until1(unique_lock<mutex>& _Lck, const _timespec64* _Abs_time, _Predicate& _Pred) {
-        // wait for signal with timeout and check predicate
-        while (!_Pred()) {
-            if (_Wait_until_sys_time(_Lck, _Abs_time) == cv_status::timeout) {
-                return _Pred();
-            }
-        }
-
-        return true;
     }
 
     template <class _Clock, class _Duration, class _Predicate>
@@ -843,8 +728,12 @@ public:
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
-    template <class _Time>
-    bool _Try_lock_until(_Time _Abs_time) { // try to lock the mutex with timeout
+    template <class _Clock, class _Duration>
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        // try to lock the mutex with timeout
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         unique_lock<mutex> _Lock(_My_mutex);
         if (!_My_cond.wait_until(_Lock, _Abs_time, _UInt_is_zero{_My_locked})) {
             return false;
@@ -852,15 +741,6 @@ public:
 
         _My_locked = UINT_MAX;
         return true;
-    }
-
-    template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-        // try to lock the mutex with timeout
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
-        return _Try_lock_until(_Abs_time);
     }
 
 private:
@@ -944,8 +824,12 @@ public:
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
-    template <class _Time>
-    bool _Try_lock_until(_Time _Abs_time) { // try to lock the mutex with timeout
+    template <class _Clock, class _Duration>
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        // try to lock the mutex with timeout
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         const thread::id _Tid = this_thread::get_id();
 
         unique_lock<mutex> _Lock(_My_mutex);
@@ -965,15 +849,6 @@ public:
             _My_owner  = _Tid;
         }
         return true;
-    }
-
-    template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-        // try to lock the mutex with timeout
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
-        return _Try_lock_until(_Abs_time);
     }
 
 private:

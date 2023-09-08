@@ -11,59 +11,68 @@
 
 #include "primitives.hpp"
 
-struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
-    typename std::_Aligned_storage<Concurrency::details::stl_condition_variable_max_size,
-        Concurrency::details::stl_condition_variable_max_alignment>::type cv;
+_EXTERN_C
 
-    [[nodiscard]] Concurrency::details::stl_condition_variable_interface* _get_cv() noexcept {
+struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
+    typename std::_Aligned_storage<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment>::type cv;
+
+    [[nodiscard]] Concurrency::details::stl_condition_variable_win7* _get_cv() noexcept {
         // get pointer to implementation
-        return reinterpret_cast<Concurrency::details::stl_condition_variable_interface*>(&cv);
+        return reinterpret_cast<Concurrency::details::stl_condition_variable_win7*>(&cv);
     }
 };
 
-static_assert(sizeof(_Cnd_internal_imp_t) <= _Cnd_internal_imp_size, "incorrect _Cnd_internal_imp_size");
-static_assert(alignof(_Cnd_internal_imp_t) <= _Cnd_internal_imp_alignment, "incorrect _Cnd_internal_imp_alignment");
-
-void _Cnd_init_in_situ(const _Cnd_t cond) { // initialize condition variable in situ
+_CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(const _Cnd_t cond) { // initialize condition variable in situ
     Concurrency::details::create_stl_condition_variable(cond->_get_cv());
 }
 
-void _Cnd_destroy_in_situ(const _Cnd_t cond) { // destroy condition variable in situ
-    cond->_get_cv()->destroy();
-}
+_CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t) {} // destroy condition variable in situ
 
-int _Cnd_init(_Cnd_t* const pcond) { // initialize
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t* const pcond) { // initialize
     *pcond = nullptr;
 
     const auto cond = static_cast<_Cnd_t>(_calloc_crt(1, sizeof(_Cnd_internal_imp_t)));
     if (cond == nullptr) {
-        return _Thrd_nomem; // report alloc failed
+        return _Thrd_result::_Nomem; // report alloc failed
     }
 
     _Cnd_init_in_situ(cond);
     *pcond = cond;
-    return _Thrd_success;
+    return _Thrd_result::_Success;
 }
 
-void _Cnd_destroy(const _Cnd_t cond) { // clean up
+_CRTIMP2_PURE void __cdecl _Cnd_destroy(const _Cnd_t cond) { // clean up
     if (cond) { // something to do, do it
         _Cnd_destroy_in_situ(cond);
         _free_crt(cond);
     }
 }
 
-int _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) { // wait until signaled
-    const auto cs = static_cast<Concurrency::details::stl_critical_section_interface*>(_Mtx_getconcrtcs(mtx));
+// TRANSITION, ABI: should be static; dllexported for binary compatibility
+_CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t mtx) { // set owner to nobody
+    mtx->_Thread_id = -1;
+    --mtx->_Count;
+}
+
+// TRANSITION, ABI: should be static; dllexported for binary compatibility
+_CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t mtx) { // set owner to current thread
+    mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
+    ++mtx->_Count;
+}
+
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) { // wait until signaled
+    const auto cs = &mtx->_Critical_section;
     _Mtx_clear_owner(mtx);
     cond->_get_cv()->wait(cs);
     _Mtx_reset_owner(mtx);
-    return _Thrd_success; // TRANSITION, ABI: Always returns _Thrd_success
+    return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
 // wait until signaled or timeout
-int _Cnd_timedwait(const _Cnd_t cond, const _Mtx_t mtx, const _timespec64* const target) {
-    int res       = _Thrd_success;
-    const auto cs = static_cast<Concurrency::details::stl_critical_section_interface*>(_Mtx_getconcrtcs(mtx));
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_timedwait(
+    const _Cnd_t cond, const _Mtx_t mtx, const _timespec64* const target) {
+    _Thrd_result res = _Thrd_result::_Success;
+    const auto cs    = &mtx->_Critical_section;
     if (target == nullptr) { // no target time specified, wait on mutex
         _Mtx_clear_owner(mtx);
         cond->_get_cv()->wait(cs);
@@ -75,7 +84,7 @@ int _Cnd_timedwait(const _Cnd_t cond, const _Mtx_t mtx, const _timespec64* const
         if (!cond->_get_cv()->wait_for(cs, _Xtime_diff_to_millis2(target, &now))) { // report timeout
             _Timespec64_get_sys(&now);
             if (_Xtime_diff_to_millis2(target, &now) == 0) {
-                res = _Thrd_timedout;
+                res = _Thrd_result::_Timedout;
             }
         }
         _Mtx_reset_owner(mtx);
@@ -83,15 +92,17 @@ int _Cnd_timedwait(const _Cnd_t cond, const _Mtx_t mtx, const _timespec64* const
     return res;
 }
 
-int _Cnd_signal(const _Cnd_t cond) { // release one waiting thread
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(const _Cnd_t cond) { // release one waiting thread
     cond->_get_cv()->notify_one();
-    return _Thrd_success; // TRANSITION, ABI: Always returns _Thrd_success
+    return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
-int _Cnd_broadcast(const _Cnd_t cond) { // release all waiting threads
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(const _Cnd_t cond) { // release all waiting threads
     cond->_get_cv()->notify_all();
-    return _Thrd_success; // TRANSITION, ABI: Always returns _Thrd_success
+    return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
+
+_END_EXTERN_C
 
 /*
  * This file is derived from software bearing the following

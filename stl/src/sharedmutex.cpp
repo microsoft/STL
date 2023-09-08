@@ -29,6 +29,7 @@ int __cdecl _Smtx_try_lock_shared(_Smtx_t* smtx) { // try to lock shared mutex n
 }
 
 void __cdecl _Smtx_unlock_exclusive(_Smtx_t* smtx) { // unlock exclusive shared mutex
+    _Analysis_assume_lock_held_(*reinterpret_cast<PSRWLOCK>(smtx));
     ReleaseSRWLockExclusive(reinterpret_cast<PSRWLOCK>(smtx));
 }
 

@@ -175,7 +175,7 @@ struct outputType {
 struct transformUop {
     transformedType operator()(inputType&) {
         return 0;
-    };
+    }
 };
 
 struct typesBop {
@@ -218,7 +218,6 @@ void test_case_transform_inclusive_scan_init_writes_intermediate_type() {
 }
 
 int main() {
-#ifndef _M_CEE // TRANSITION, VSO-1659695
     mt19937 gen(1729);
 
     parallel_test_case(test_case_transform_inclusive_scan_parallel, gen);
@@ -228,5 +227,4 @@ int main() {
     parallel_test_case(test_case_transform_inclusive_scan_init_parallel_associative);
     parallel_test_case(test_case_transform_inclusive_scan_init_parallel_associative_in_place);
     test_case_transform_inclusive_scan_init_writes_intermediate_type();
-#endif // _M_CEE
 }

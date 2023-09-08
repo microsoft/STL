@@ -741,7 +741,7 @@ struct BaseMeow {
 };
 
 struct DerivedMeow : BaseMeow {
-    virtual int operator()(int x, int y) override {
+    int operator()(int x, int y) override {
         return x * x * x + y * y * y;
     }
 };
@@ -1615,6 +1615,11 @@ void test_function() {
         assert(f.target<short (*)(long)>() == nullptr);
         assert(c.target<short (*)(long)>() == nullptr);
 
+        assert(f.target<int(int)>() == nullptr);
+        assert(c.target<int(int)>() == nullptr);
+        assert(f.target<short(long)>() == nullptr);
+        assert(c.target<short(long)>() == nullptr);
+
         f = triple;
         assert(f(1000) == 3000);
         assert(f.target_type() == typeid(int (*)(int)));
@@ -1623,6 +1628,11 @@ void test_function() {
         assert(f.target<short (*)(long)>() == nullptr);
         assert(c.target<short (*)(long)>() == nullptr);
 
+        assert(f.target<int(int)>() == nullptr);
+        assert(c.target<int(int)>() == nullptr);
+        assert(f.target<short(long)>() == nullptr);
+        assert(c.target<short(long)>() == nullptr);
+
         f = short_long;
         assert(f(1000) == 29);
         assert(f.target_type() == typeid(short (*)(long)));
@@ -1630,6 +1640,11 @@ void test_function() {
         assert(c.target<int (*)(int)>() == nullptr);
         assert(*f.target<short (*)(long)>() == &short_long);
         assert(*c.target<short (*)(long)>() == &short_long);
+
+        assert(f.target<int(int)>() == nullptr);
+        assert(c.target<int(int)>() == nullptr);
+        assert(f.target<short(long)>() == nullptr);
+        assert(c.target<short(long)>() == nullptr);
     }
 
 

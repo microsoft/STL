@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _CVT_EBCDIC_
 #define _CVT_EBCDIC_
 #include <yvals_core.h>
@@ -19,7 +18,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 namespace stdext {
-    namespace cvt {
+    namespace _DEPRECATE_STDEXT_CVT cvt {
         using _Statype = _CSTD mbstate_t;
 
         template <class _Elem, unsigned char _Maxcode = 0xff>
@@ -176,7 +175,7 @@ namespace stdext {
             0xdc, 0xdd, 0xde, 0xdf, 0xea, 0xeb, 0xec, 0xed, //
             0xee, 0xef, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff, //
         };
-    } // namespace cvt
+    } // namespace _DEPRECATE_STDEXT_CVT cvt
 } // namespace stdext
 
 #pragma pop_macro("new")

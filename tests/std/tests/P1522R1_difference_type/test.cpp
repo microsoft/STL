@@ -41,12 +41,6 @@ namespace ordtest {
 #define CONSTEVAL constexpr
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-#if _HAS_CXX20 && !defined(__clang__) // TRANSITION, LLVM-51840
-#define CONSTEVAL_CLANG_WORKAROUND consteval
-#else // ^^^ _HAS_CXX20 && !defined(__clang__) / !_HAS_CXX20 || defined(__clang__) vvv
-#define CONSTEVAL_CLANG_WORKAROUND constexpr
-#endif // ^^^ !_HAS_CXX20 || defined(__clang__) ^^^
-
 using std::_Signed128;
 using std::_Unsigned128;
 
@@ -62,7 +56,7 @@ namespace i128_udl_detail {
         _Unsigned128 value;
     };
 
-    [[nodiscard]] CONSTEVAL_CLANG_WORKAROUND unsigned int char_to_digit(const char c) noexcept {
+    [[nodiscard]] CONSTEVAL unsigned int char_to_digit(const char c) noexcept {
         if (c >= '0' && c <= '9') {
             return static_cast<unsigned int>(c - '0');
         }
@@ -1299,11 +1293,7 @@ constexpr bool test_cross() {
         x = -26;
         TEST(u *= 2, x);
         y = 12;
-#ifdef _M_CEE // TRANSITION, VSO-1658184 (/clr silent bad codegen)
-        i = 12;
-#else // ^^^ workaround / no workaround vvv
         TEST(i *= -2, y);
-#endif // ^^^ no workaround ^^^
 
         x = _Unsigned128{0x55555555'5555554c, 0x55555555'55555555};
         TEST(u /= 3, x); // Yes, u is still unsigned =)

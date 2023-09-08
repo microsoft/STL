@@ -3,8 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
-
 #ifndef _CVT_BIG5_
 #define _CVT_BIG5_
 #include <yvals_core.h>
@@ -123,7 +121,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 namespace stdext {
-    namespace cvt {
+    namespace _DEPRECATE_STDEXT_CVT cvt {
         template <class _Dummy>
         struct _tab_big5 {
             enum { _Nlow = 0x80, _Nbytes = 2 };
@@ -4381,7 +4379,7 @@ namespace stdext {
 
         template <class _Elem, unsigned long _Maxcode = 0xffff>
         class codecvt_big5 : public _Cvt_two_byte<_Elem, _tab_big5<int>, _Maxcode> {};
-    } // namespace cvt
+    } // namespace _DEPRECATE_STDEXT_CVT cvt
 } // namespace stdext
 
 #pragma pop_macro("new")

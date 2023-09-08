@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _UNORDERED_MAP_
 #define _UNORDERED_MAP_
 #include <yvals_core.h>
@@ -531,7 +530,7 @@ void swap(unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Left,
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
-typename unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
+unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
     unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
@@ -902,7 +901,7 @@ void swap(unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Left,
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
-typename unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
+unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
     unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }

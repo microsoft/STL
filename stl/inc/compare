@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _COMPARE_
 #define _COMPARE_
 #include <yvals_core.h>
@@ -14,9 +13,9 @@ _EMIT_STL_WARNING(STL4038, "The contents of <compare> are available only with C+
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #ifdef __cpp_lib_concepts
 #include <concepts>
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 #include <xtr1common>
-#endif // !__cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -349,9 +348,9 @@ struct _Synth_three_way {
     template <class _Ty1, class _Ty2>
     _NODISCARD constexpr auto operator()(const _Ty1& _Left, const _Ty2& _Right) const
         requires requires {
-                     { _Left < _Right } -> _Boolean_testable;
-                     { _Right < _Left } -> _Boolean_testable;
-                 }
+            { _Left < _Right } -> _Boolean_testable;
+            { _Right < _Left } -> _Boolean_testable;
+        }
     {
         if constexpr (three_way_comparable_with<_Ty1, _Ty2>) {
             return _Left <=> _Right;
@@ -381,8 +380,8 @@ namespace _Strong_order {
 
     template <class _Ty1, class _Ty2>
     concept _Has_ADL = requires(_Ty1& _Left, _Ty2& _Right) {
-                           static_cast<strong_ordering>(strong_order(_Left, _Right)); // intentional ADL
-                       };
+        static_cast<strong_ordering>(strong_order(_Left, _Right)); // intentional ADL
+    };
 
     template <class _Ty1, class _Ty2>
     concept _Can_compare_three_way =
@@ -423,7 +422,7 @@ namespace _Strong_order {
             } else if constexpr (_Strat == _St::_Floating) {
                 using _Floating_type = decay_t<_Ty1>;
                 using _Traits        = _Floating_type_traits<_Floating_type>;
-                using _Uint_type     = typename _Traits::_Uint_type;
+                using _Uint_type     = _Traits::_Uint_type;
                 using _Sint_type     = make_signed_t<_Uint_type>;
 
                 const auto _Left_uint  = _Bit_cast<_Uint_type>(_Left);
@@ -477,8 +476,8 @@ namespace _Weak_order {
 
     template <class _Ty1, class _Ty2>
     concept _Has_ADL = requires(_Ty1& _Left, _Ty2& _Right) {
-                           static_cast<weak_ordering>(weak_order(_Left, _Right)); // intentional ADL
-                       };
+        static_cast<weak_ordering>(weak_order(_Left, _Right)); // intentional ADL
+    };
 
     template <class _Ty1, class _Ty2>
     concept _Can_compare_three_way =
@@ -530,7 +529,7 @@ namespace _Weak_order {
             } else if constexpr (_Strat == _St::_Floating) {
                 using _Floating_type = decay_t<_Ty1>;
                 using _Traits        = _Floating_type_traits<_Floating_type>;
-                using _Uint_type     = typename _Traits::_Uint_type;
+                using _Uint_type     = _Traits::_Uint_type;
                 using _Sint_type     = make_signed_t<_Uint_type>;
 
                 auto _Left_uint  = _Bit_cast<_Uint_type>(_Left);
@@ -603,8 +602,8 @@ namespace _Partial_order {
 
     template <class _Ty1, class _Ty2>
     concept _Has_ADL = requires(_Ty1& _Left, _Ty2& _Right) {
-                           static_cast<partial_ordering>(partial_order(_Left, _Right)); // intentional ADL
-                       };
+        static_cast<partial_ordering>(partial_order(_Left, _Right)); // intentional ADL
+    };
 
     template <class _Ty1, class _Ty2>
     concept _Can_compare_three_way =
@@ -681,9 +680,9 @@ inline namespace _Cpos {
 
 template <class _Ty1, class _Ty2>
 concept _Can_fallback_eq_lt = requires(_Ty1& _Left, _Ty2& _Right) {
-                                  { _Left == _Right } -> _Boolean_testable;
-                                  { _Left < _Right } -> _Boolean_testable;
-                              };
+    { _Left == _Right } -> _Boolean_testable;
+    { _Left < _Right } -> _Boolean_testable;
+};
 
 template <class _Ty1, class _Ty2>
 concept _Can_strong_order = requires(_Ty1& _Left, _Ty2& _Right) { _STD strong_order(_Left, _Right); };
@@ -791,10 +790,10 @@ concept _Can_partial_order = requires(_Ty1& _Left, _Ty2& _Right) { _STD partial_
 namespace _Compare_partial_order_fallback {
     template <class _Ty1, class _Ty2>
     concept _Can_fallback_eq_lt_twice = requires(_Ty1& _Left, _Ty2& _Right) {
-                                            { _Left == _Right } -> _Boolean_testable;
-                                            { _Left < _Right } -> _Boolean_testable;
-                                            { _Right < _Left } -> _Boolean_testable;
-                                        };
+        { _Left == _Right } -> _Boolean_testable;
+        { _Left < _Right } -> _Boolean_testable;
+        { _Right < _Left } -> _Boolean_testable;
+    };
 
     class _Cpo {
     private:
@@ -844,7 +843,7 @@ inline namespace _Cpos {
     _EXPORT_STD inline constexpr _Compare_partial_order_fallback::_Cpo compare_partial_order_fallback;
 }
 
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 _STD_END
 
 #pragma pop_macro("new")

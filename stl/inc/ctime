@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _CTIME_
 #define _CTIME_
 #include <yvals_core.h>
@@ -30,7 +29,7 @@ _EXPORT_STD using _CSTD strftime;
 _EXPORT_STD using _CSTD timespec;
 #endif // _HAS_CXX17
 
-#if _HAS_CXX23 && defined(_BUILD_STD_MODULE) // TRANSITION, OS-33790456
+#ifdef _BUILD_STD_MODULE // TRANSITION, OS-33790456
 _STL_DISABLE_DEPRECATED_WARNING
 
 _EXPORT_STD

@@ -27,23 +27,22 @@ static GUID const Local_IID_ICallbackWithNoReentrancyToApplicationSTA = {
 
 // Introduce stacktrace API for Debug CRT_APP
 #if defined(_CRT_APP) && defined(_DEBUG)
-extern "C" NTSYSAPI WORD NTAPI RtlCaptureStackBackTrace(_In_ DWORD FramesToSkip, _In_ DWORD FramesToCapture,
-    _Out_writes_to_(FramesToCapture, return) PVOID* BackTrace, _Out_opt_ PDWORD BackTraceHash);
+extern "C" NTSYSAPI _Success_(return != 0) WORD NTAPI
+    RtlCaptureStackBackTrace(_In_ DWORD FramesToSkip, _In_ DWORD FramesToCapture,
+        _Out_writes_to_(FramesToCapture, return) PVOID* BackTrace, _Out_opt_ PDWORD BackTraceHash);
 #endif
 
 namespace Concurrency {
 
     namespace details {
-        _CRTIMP2 void __cdecl _ReportUnobservedException() {
-
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_CRT_APP)
-            if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
-#endif
-            {
-                __fastfail(FAST_FAIL_INVALID_ARG);
+        [[noreturn]] _CRTIMP2 void __cdecl _ReportUnobservedException() {
+#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_CRT_APP) && _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
+            if (!IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE)) {
+                std::abort();
             }
+#endif // ^^^ __fastfail conditionally available ^^^
 
-            std::terminate();
+            __fastfail(FAST_FAIL_INVALID_ARG);
         }
 
         namespace platform {

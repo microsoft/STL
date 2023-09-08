@@ -123,8 +123,7 @@ struct mappish_instantiator {
             } else {
                 return unique_pairs;
             }
-        }
-        ();
+        }();
 
         using Container = C<int, std::string_view>;
         {

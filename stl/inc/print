@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _PRINT_
 #define _PRINT_
 #include <yvals_core.h>
@@ -166,6 +165,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // __cpp_lib_print
+#endif // defined(__cpp_lib_print)
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _PRINT_

@@ -25,7 +25,7 @@ jobs:
     litFlags: '$(fixedFlags);$(parallelismFlag);$(xmlOutputFlag);$(shardFlags)'
   strategy:
     parallel: ${{ parameters.numShards }}
-  timeoutInMinutes: 360
+  timeoutInMinutes: 25
   steps:
   - script: |
       if exist "$(tmpDir)" (rmdir /S /Q $(tmpDir))

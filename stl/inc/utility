@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _UTILITY_
 #define _UTILITY_
 #include <yvals_core.h>
@@ -13,7 +12,7 @@
 
 #ifdef __cpp_lib_concepts
 #include <concepts>
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #if _HAS_CXX20
 #include <compare>
@@ -30,7 +29,38 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("intrinsic")
+#pragma push_macro("known_semantics")
+#undef msvc
+#undef intrinsic
+#undef known_semantics
+
 _STD_BEGIN
+_EXPORT_STD template <class _Ty, _Ty... _Vals>
+struct integer_sequence { // sequence of integer parameters
+    static_assert(is_integral_v<_Ty>, "integer_sequence<T, I...> requires T to be an integral type.");
+
+    using value_type = _Ty;
+
+    _NODISCARD static constexpr size_t size() noexcept {
+        return sizeof...(_Vals);
+    }
+};
+
+_EXPORT_STD template <class _Ty, _Ty _Size>
+using make_integer_sequence = __make_integer_seq<integer_sequence, _Ty, _Size>;
+
+_EXPORT_STD template <size_t... _Vals>
+using index_sequence = integer_sequence<size_t, _Vals...>;
+
+_EXPORT_STD template <size_t _Size>
+using make_index_sequence = make_integer_sequence<size_t, _Size>;
+
+_EXPORT_STD template <class... _Types>
+using index_sequence_for = make_index_sequence<sizeof...(_Types)>;
+
 _EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty&(max) (const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_Pred(_Left, _Right))) /* strengthened */ {
@@ -77,11 +107,6 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>, _Pr); // implemented in <al
 _EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>); // implemented in <algorithm>
 
-_EXPORT_STD template <class _FwdIt1, class _FwdIt2>
-_CONSTEXPR20 void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and *_Right
-    swap(*_Left, *_Right);
-}
-
 _EXPORT_STD template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> /* = 0 */>
 _CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value) {
     if (&_Left != &_Right) {
@@ -89,7 +114,7 @@ _CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_n
         _Ty* _Last1  = _First1 + _Size;
         _Ty* _First2 = _Right;
         for (; _First1 != _Last1; ++_First1, ++_First2) {
-            _STD iter_swap(_First1, _First2);
+            swap(*_First1, *_First2); // intentional ADL
         }
     }
 }
@@ -106,37 +131,11 @@ _CONSTEXPR20 void swap(_Ty& _Left, _Ty& _Right) noexcept(
     _Right   = _STD move(_Tmp);
 }
 
-template <class _Ty>
-_CONSTEXPR20 void _Swap_adl(_Ty& _Left, _Ty& _Right) noexcept(_Is_nothrow_swappable<_Ty>::value) {
-    swap(_Left, _Right);
-}
-
 _EXPORT_STD struct piecewise_construct_t { // tag type for pair tuple arguments
     explicit piecewise_construct_t() = default;
 };
 
 _EXPORT_STD _INLINE_VAR constexpr piecewise_construct_t piecewise_construct{};
-
-template <class _Ty, class _Alloc, class = void>
-struct _Has_allocator_type : false_type {}; // tests for suitable _Ty::allocator_type
-
-template <class _Ty, class _Alloc>
-struct _Has_allocator_type<_Ty, _Alloc, void_t<typename _Ty::allocator_type>>
-    : is_convertible<_Alloc, typename _Ty::allocator_type>::type {}; // tests for suitable _Ty::allocator_type
-
-_EXPORT_STD struct allocator_arg_t { // tag type for added allocator argument
-    explicit allocator_arg_t() = default;
-};
-
-_EXPORT_STD _INLINE_VAR constexpr allocator_arg_t allocator_arg{};
-
-_EXPORT_STD template <class _Ty, class _Alloc>
-struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {
-    // determine whether _Ty has an allocator_type member type
-};
-
-_EXPORT_STD template <class _Ty, class _Alloc>
-_INLINE_VAR constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
 
 _EXPORT_STD template <class... _Types>
 class tuple;
@@ -188,7 +187,7 @@ _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept;
 
 #ifdef __cpp_lib_concepts
 template <class _Ty1, class _Ty2>
-concept _Different_from = (!same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>);
+concept _Different_from = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
 
 template <class>
 inline constexpr bool _Is_std_array_v = false;
@@ -212,12 +211,12 @@ concept _Pair_like = _Tuple_like<_Ty> && tuple_size_v<remove_cvref_t<_Ty>> == 2;
 
 #ifdef __clang__ // TRANSITION, LLVM-59827
 template <class _PairLike, class _Ty1, class _Ty2>
-concept _Can_construct_from_pair_like = _Pair_like<_PairLike> && (!_Is_subrange_v<remove_cvref_t<_PairLike>>)
+concept _Can_construct_from_pair_like = _Pair_like<_PairLike> && !_Is_subrange_v<remove_cvref_t<_PairLike>>
                                      && is_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_PairLike>()))>
                                      && is_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_PairLike>()))>;
-#endif // __clang__
+#endif // defined(__clang__)
 #endif // _HAS_CXX23
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct pair { // store a pair of values
@@ -295,14 +294,14 @@ struct pair { // store a pair of values
         requires conjunction_v<bool_constant<!_Is_subrange_v<remove_cvref_t<_Other>>>,
                      is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
                      is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
-#endif // __clang__
+#endif // ^^^ no workaround ^^^
     constexpr explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
                        is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>)
         pair(_Other&& _Right) noexcept(is_nothrow_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>&&
                 is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
         : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     template <class _Tuple1, class _Tuple2, size_t... _Indices1, size_t... _Indices2>
@@ -439,14 +438,15 @@ struct pair { // store a pair of values
         second = _STD get<1>(_STD forward<_Other>(_Right));
         return *this;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(pair& _Right) noexcept(
         _Is_nothrow_swappable<_Ty1>::value&& _Is_nothrow_swappable<_Ty2>::value) {
+        using _STD swap;
         if (this != _STD addressof(_Right)) {
-            _Swap_adl(first, _Right.first);
-            _Swap_adl(second, _Right.second);
+            swap(first, _Right.first); // intentional ADL
+            swap(second, _Right.second); // intentional ADL
         }
     }
 
@@ -454,9 +454,10 @@ struct pair { // store a pair of values
     template <int = 0> // see GH-3013
     constexpr void swap(const pair& _Right) const
         noexcept(is_nothrow_swappable_v<const _Ty1>&& is_nothrow_swappable_v<const _Ty2>) {
+        using _STD swap;
         if (this != _STD addressof(_Right)) {
-            _Swap_adl(first, _Right.first);
-            _Swap_adl(second, _Right.second);
+            swap(first, _Right.first); // intentional ADL
+            swap(second, _Right.second); // intentional ADL
         }
     }
 #endif // _HAS_CXX23
@@ -533,9 +534,8 @@ _NODISCARD constexpr bool operator>=(const pair<_Ty1, _Ty2>& _Left, const pair<_
 template <class _Ty1, class _Ty2, class _Uty1, class _Uty2, template <class> class _TQual,
     template <class> class _UQual>
     requires requires {
-                 typename pair<common_reference_t<_TQual<_Ty1>, _UQual<_Uty1>>,
-                     common_reference_t<_TQual<_Ty2>, _UQual<_Uty2>>>;
-             }
+        typename pair<common_reference_t<_TQual<_Ty1>, _UQual<_Uty1>>, common_reference_t<_TQual<_Ty2>, _UQual<_Uty2>>>;
+    }
 struct basic_common_reference<pair<_Ty1, _Ty2>, pair<_Uty1, _Uty2>, _TQual, _UQual> {
     using type = pair<common_reference_t<_TQual<_Ty1>, _UQual<_Uty1>>, common_reference_t<_TQual<_Ty2>, _UQual<_Uty2>>>;
 };
@@ -765,7 +765,7 @@ _CONSTEXPR20 _Ty exchange(_Ty& _Val, _Other&& _New_val) noexcept(
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr add_const_t<_Ty>& as_const(_Ty& _Val) noexcept { // view _Val through const lenses
+_NODISCARD _MSVC_INTRINSIC constexpr add_const_t<_Ty>& as_const(_Ty& _Val) noexcept { // view _Val through const lenses
     return _Val;
 }
 
@@ -802,7 +802,7 @@ inline constexpr bool _Is_standard_integer = is_integral_v<_Ty>
 #endif // _NATIVE_WCHAR_T_DEFINED
 #ifdef __cpp_char8_t
                                               char8_t,
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
                                               char16_t, char32_t>;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
@@ -856,7 +856,7 @@ _NODISCARD consteval _Ty _Min_limit() noexcept { // same as (numeric_limits<_Ty>
     static_assert(_Is_standard_integer<_Ty>); // doesn't attempt to handle all types
     if constexpr (is_signed_v<_Ty>) {
         constexpr auto _Unsigned_max = static_cast<make_unsigned_t<_Ty>>(-1);
-        return static_cast<_Ty>((_Unsigned_max >> 1) + 1); // well-defined, N4861 [conv.integral]/3
+        return static_cast<_Ty>((_Unsigned_max >> 1) + 1); // well-defined, N4950 [conv.integral]/3
     } else {
         return 0;
     }
@@ -905,18 +905,18 @@ using _With_reference = _Ty&;
 
 template <class _Ty>
 concept _Can_reference = requires { typename _With_reference<_Ty>; };
-#else // __cpp_lib_concepts
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty, class = void>
 inline constexpr bool _Can_reference = false;
 
 template <class _Ty>
 inline constexpr bool _Can_reference<_Ty, void_t<_Ty&>> = true;
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
+_NODISCARD _MSVC_INTRINSIC constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
     return static_cast<underlying_type_t<_Ty>>(_Value);
 }
 
@@ -924,7 +924,7 @@ _EXPORT_STD [[noreturn]] __forceinline void unreachable() noexcept /* strengthen
     _STL_UNREACHABLE;
 #ifdef _DEBUG
     _CSTD abort(); // likely to be called in debug mode, but can't be relied upon - already entered the UB territory
-#endif // _DEBUG
+#endif // defined(_DEBUG)
 }
 
 _EXPORT_STD template <class _Ty, class _Uty>
@@ -961,6 +961,11 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
 #endif // _HAS_TR1_NAMESPACE
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("known_semantics")
+#pragma pop_macro("intrinsic")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

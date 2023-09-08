@@ -74,13 +74,7 @@ void test_atomic_wait_func(UnderlyingType old_value, const UnderlyingType new_va
 template <class UnderlyingType>
 void test_atomic_wait_func_ptr(UnderlyingType old_value, const UnderlyingType new_value,
     const std::chrono::steady_clock::duration waiting_duration) {
-#ifdef _M_CEE // TRANSITION, VSO-1665654
-    (void) old_value;
-    (void) new_value;
-    (void) waiting_duration;
-#else // ^^^ workaround / no workaround vvv
     test_atomic_wait_func_impl<std::atomic, UnderlyingType>(old_value, new_value, waiting_duration);
-#endif // ^^^ no workaround ^^^
 }
 
 
@@ -114,14 +108,8 @@ void test_notify_all_notifies_all(UnderlyingType old_value, const UnderlyingType
 template <class UnderlyingType>
 void test_notify_all_notifies_all_ptr(UnderlyingType old_value, const UnderlyingType new_value,
     const std::chrono::steady_clock::duration waiting_duration) {
-#ifdef _M_CEE // TRANSITION, VSO-1665654
-    (void) old_value;
-    (void) new_value;
-    (void) waiting_duration;
-#else // ^^^ workaround / no workaround vvv
     // increased waiting_duration because timing assumption might not hold for atomic smart pointers
     test_notify_all_notifies_all_impl<std::atomic, UnderlyingType>(old_value, new_value, 3 * waiting_duration);
-#endif // ^^^ no workaround ^^^
 }
 
 
@@ -172,12 +160,8 @@ void test_pad_bits_impl(const std::chrono::steady_clock::duration waiting_durati
 
 template <class UnderlyingType>
 void test_pad_bits(const std::chrono::steady_clock::duration waiting_duration) {
-#ifdef _M_CEE // TRANSITION, VSO-1665654
-    (void) waiting_duration;
-#else // ^^^ workaround / no workaround vvv
     test_pad_bits_impl<std::atomic, UnderlyingType>(waiting_duration);
     test_pad_bits_impl<std::atomic_ref, UnderlyingType>(waiting_duration);
-#endif // ^^^ no workaround ^^^
 }
 
 struct two_shorts {
@@ -302,7 +286,9 @@ inline void test_atomic_wait() {
 #ifndef __clang__ // TRANSITION, LLVM-46685
     test_pad_bits<with_padding_bits<2>>(waiting_duration);
     test_pad_bits<with_padding_bits<4>>(waiting_duration);
+#if !(defined(_M_CEE) && defined(_M_IX86)) // TRANSITION, VSO-1881472
     test_pad_bits<with_padding_bits<8>>(waiting_duration);
+#endif // ^^^ no workaround ^^^
 #ifndef _M_ARM
     test_pad_bits<with_padding_bits<16>>(waiting_duration);
     test_pad_bits<with_padding_bits<32>>(waiting_duration);

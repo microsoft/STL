@@ -35,9 +35,10 @@ constexpr bool CanReconstructRefView<ranges::ref_view<T>> = ranges::constant_ran
 
 template <ranges::input_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
-    using ranges::ref_view, ranges::as_const_view, ranges::begin, ranges::end, ranges::iterator_t, ranges::sentinel_t,
-        ranges::prev, ranges::forward_range, ranges::bidirectional_range, ranges::random_access_range,
-        ranges::contiguous_range, ranges::common_range, ranges::sized_range, ranges::constant_range;
+    using ranges::ref_view, ranges::as_const_view, ranges::begin, ranges::end, ranges::cbegin, ranges::cend,
+        ranges::iterator_t, ranges::sentinel_t, ranges::const_iterator_t, ranges::const_sentinel_t, ranges::prev,
+        ranges::forward_range, ranges::bidirectional_range, ranges::random_access_range, ranges::contiguous_range,
+        ranges::common_range, ranges::sized_range, ranges::constant_range;
 
     using V = views::all_t<Rng>;
     using R = as_const_view<V>;
@@ -202,7 +203,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             STATIC_ASSERT(noexcept(as_const(rng) | views::as_const));
         }
 
-        { //... with rvalue argument
+        { // ... with rvalue argument
             STATIC_ASSERT(same_as<decltype(views::as_const(move(rng))), ReconstructedRefView>);
             STATIC_ASSERT(noexcept(views::as_const(move(rng))));
 
@@ -414,6 +415,80 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
+    // Validate view_interface::cbegin
+    STATIC_ASSERT(CanMemberCBegin<R>);
+    {
+        const same_as<const_iterator_t<R>> auto i = r.cbegin();
+        if (!is_empty) {
+            assert(*i == *cbegin(expected));
+        }
+
+        if constexpr (copy_constructible<V>) {
+            auto r2                                    = r;
+            const same_as<const_iterator_t<R>> auto i2 = r2.cbegin();
+            if (!is_empty) {
+                assert(*i2 == *i);
+            }
+        }
+    }
+
+    // Validate view_interface::cbegin (const)
+    STATIC_ASSERT(CanMemberCBegin<const R> == ranges::range<const V>);
+    if constexpr (CanMemberCBegin<const R>) {
+        const same_as<const_iterator_t<const R>> auto ci = as_const(r).cbegin();
+        if (!is_empty) {
+            assert(*ci == *cbegin(expected));
+        }
+
+        if constexpr (copy_constructible<V>) {
+            const auto cr2                                    = r;
+            const same_as<const_iterator_t<const R>> auto ci2 = cr2.cbegin();
+            if (!is_empty) {
+                assert(*ci2 == *ci);
+            }
+        }
+    }
+
+    // Validate view_interface::cend
+    STATIC_ASSERT(CanMemberCEnd<R>);
+    {
+        const same_as<const_sentinel_t<R>> auto s = r.cend();
+        assert((r.cbegin() == s) == is_empty);
+        STATIC_ASSERT(common_range<R> == common_range<V>);
+        if constexpr (common_range<R> && bidirectional_range<V>) {
+            if (!is_empty) {
+                assert(*prev(s) == *prev(cend(expected)));
+            }
+
+            if constexpr (copy_constructible<V>) {
+                auto r2 = r;
+                if (!is_empty) {
+                    assert(*prev(r2.cend()) == *prev(cend(expected)));
+                }
+            }
+        }
+    }
+
+    // Validate view_interface::cend (const)
+    STATIC_ASSERT(CanMemberCEnd<const R> == ranges::range<const V>);
+    if constexpr (CanMemberCEnd<const R>) {
+        const same_as<const_sentinel_t<const R>> auto cs = as_const(r).cend();
+        assert((as_const(r).cbegin() == cs) == is_empty);
+        STATIC_ASSERT(common_range<const R> == common_range<const V>);
+        if constexpr (common_range<const R> && bidirectional_range<const V>) {
+            if (!is_empty) {
+                assert(*prev(cs) == *prev(cend(expected)));
+            }
+
+            if constexpr (copy_constructible<V>) {
+                const auto r2 = r;
+                if (!is_empty) {
+                    assert(*prev(r2.cend()) == *prev(cend(expected)));
+                }
+            }
+        }
+    }
+
     // Validate view_interface::data
     STATIC_ASSERT(CanMemberData<R> == contiguous_range<R>);
     STATIC_ASSERT(CanData<R&> == contiguous_range<R>);
@@ -545,14 +620,14 @@ using move_only_view = test::range<Category, const int, test::Sized{is_random}, 
     test::CanView::yes, test::Copyability::move_only>;
 
 int main() {
-#ifndef __clang__ // TRANSITION, LLVM-44833
+#ifndef __clang__ // TRANSITION, LLVM-62096
     { // Validate views
         // ... copyable
         constexpr span<const int> s{some_ints};
         STATIC_ASSERT(test_one(s, some_ints));
         test_one(s, some_ints);
     }
-#endif // TRANSITION, LLVM-44833
+#endif // TRANSITION, LLVM-62096
 
     { // ... move-only
         test_one(move_only_view<input_iterator_tag, test::Common::no>{some_ints}, some_ints);
@@ -611,13 +686,13 @@ int main() {
         test_one(as_const(views::empty<const volatile int>), empty_arr);
     }
 
-#ifndef __clang__ // TRANSITION, LLVM-44833
+#ifndef __clang__ // TRANSITION, LLVM-62096
     { // empty range
         using Span = span<int>;
         STATIC_ASSERT(test_one(Span{}, Span{}));
         test_one(Span{}, Span{});
     }
-#endif // TRANSITION, LLVM-44833
+#endif // TRANSITION, LLVM-62096
 
     STATIC_ASSERT(instantiation_test());
     instantiation_test();

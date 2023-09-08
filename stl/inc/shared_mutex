@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _SHARED_MUTEX_
 #define _SHARED_MUTEX_
 #include <yvals_core.h>
@@ -11,7 +10,7 @@
 
 #ifdef _M_CEE_PURE
 #error <shared_mutex> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #include <condition_variable>
 #include <mutex>
@@ -166,8 +165,12 @@ public:
         return try_lock_shared_until(_To_absolute_time(_Rel_time));
     }
 
-    template <class _Time>
-    bool _Try_lock_shared_until(_Time _Abs_time) { // try to lock non-exclusive until absolute time
+    template <class _Clock, class _Duration>
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_shared_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        // try to lock non-exclusive until absolute time
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         const auto _Can_acquire = [this] { return !_Writing && _Readers < _Max_readers; };
 
         unique_lock<mutex> _Lock(_Mymtx);
@@ -178,15 +181,6 @@ public:
 
         ++_Readers;
         return true;
-    }
-
-    template <class _Clock, class _Duration>
-    _NODISCARD_TRY_CHANGE_STATE bool try_lock_shared_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-        // try to lock non-exclusive until absolute time
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
-        return _Try_lock_shared_until(_Abs_time);
     }
 
     void unlock_shared() { // unlock non-exclusive

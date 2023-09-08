@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XPOLYMORPHIC_ALLOCATOR_H
 #define _XPOLYMORPHIC_ALLOCATOR_H
 #include <yvals_core.h>
@@ -32,14 +31,14 @@ void _Uses_alloc_construct_non_pair(_Ty* const _Ptr, _Outer_alloc& _Outer, _Inne
                 _Outer, _Ptr, allocator_arg, _Inner, _STD forward<_Types>(_Args)...);
         } else {
             static_assert(is_constructible_v<_Ty, _Types..., _Inner_alloc&>,
-                "N4928 [allocator.uses.trait]/1 requires "
+                "N4950 [allocator.uses.trait]/1 requires "
                 "is_constructible_v<T, Args..., Alloc&> when uses_allocator_v<remove_cv_t<T>, Alloc> is true and "
                 "is_constructible_v<T, allocator_arg_t, Alloc&, Args...> is false");
             allocator_traits<_Outer_alloc>::construct(_Outer, _Ptr, _STD forward<_Types>(_Args)..., _Inner);
         }
     } else {
         static_assert(is_constructible_v<_Ty, _Types...>,
-            "N4928 [allocator.uses.trait]/1 requires "
+            "N4950 [allocator.uses.trait]/1 requires "
             "is_constructible_v<T, Args...> when uses_allocator_v<remove_cv_t<T>, Alloc> is false");
         allocator_traits<_Outer_alloc>::construct(_Outer, _Ptr, _STD forward<_Types>(_Args)...);
     }
@@ -172,9 +171,9 @@ namespace pmr {
     _EXPORT_STD _NODISCARD inline memory_resource* get_default_resource() noexcept {
 #ifdef __cpp_aligned_new
         return _STD pmr::_Aligned_get_default_resource();
-#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
+#else // ^^^ defined(__cpp_aligned_new) / !defined(__cpp_aligned_new) vvv
         return _STD pmr::_Unaligned_get_default_resource();
-#endif // __cpp_aligned_new
+#endif // ^^^ !defined(__cpp_aligned_new) ^^^
     }
 
 #if _HAS_CXX20
@@ -211,7 +210,7 @@ namespace pmr {
         /* implicit */ polymorphic_allocator(memory_resource* const _Resource_) noexcept // strengthened
             : _Resource{_Resource_} { // initialize with _Resource_
             _STL_ASSERT(_Resource,
-                "Cannot initialize polymorphic_allocator with null resource (N4928 [mem.poly.allocator.ctor]/2)");
+                "Cannot initialize polymorphic_allocator with null resource (N4950 [mem.poly.allocator.ctor]/2)");
         }
 
         polymorphic_allocator(const polymorphic_allocator&) = default;

@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XLOCMES_
 #define _XLOCMES_
 #include <yvals_core.h>
@@ -18,10 +17,14 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-_EXPORT_STD struct messages_base : locale::facet { // base class for messages
+_EXPORT_STD struct messages_base // base class for messages
+    : locale::facet // TRANSITION, ABI, shouldn't be derived from locale::facet
+{
     using catalog = int;
 
-    explicit messages_base(size_t _Refs = 0) : locale::facet(_Refs) {}
+    messages_base() noexcept // strengthened
+        : messages_base(0) {}
+    explicit messages_base(size_t _Refs) noexcept : locale::facet(_Refs) {}
 };
 
 _EXPORT_STD template <class _Elem>
@@ -92,14 +95,14 @@ protected:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Elem>
 __PURE_APPDOMAIN_GLOBAL locale::id messages<_Elem>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 _EXPORT_STD template <class _Elem>
 class messages_byname : public messages<_Elem> { // messages for named locale
@@ -125,7 +128,7 @@ template __PURE_APPDOMAIN_GLOBAL locale::id messages<wchar_t>::id;
 
 #ifdef __FORCE_INSTANCE
 template __PURE_APPDOMAIN_GLOBAL locale::id messages<unsigned short>::id;
-#endif // __FORCE_INSTANCE
+#endif // defined(__FORCE_INSTANCE)
 #endif // defined(_DLL_CPPLIB)
 _STD_END
 #pragma pop_macro("new")

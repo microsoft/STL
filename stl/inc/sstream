@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _SSTREAM_
 #define _SSTREAM_
 #include <yvals_core.h>
@@ -261,7 +260,7 @@ protected:
             return _Traits::eof();
         }
 
-        const auto _Newptr = _Unfancy(_Al.allocate(_Newsize));
+        const auto _Newptr = _Unfancy(_Allocate_at_least_helper(_Al, _Newsize));
         _Traits::copy(_Newptr, _Oldptr, _Oldsize);
 
         const auto _New_pnext = _Newptr + _Oldsize;
@@ -354,7 +353,7 @@ protected:
         case ios_base::cur:
             {
                 constexpr auto _Both = ios_base::in | ios_base::out;
-                if ((_Mode & _Both) != _Both) { // prohibited by N4928 [tab:stringbuf.seekoff.pos]
+                if ((_Mode & _Both) != _Both) { // prohibited by N4950 [tab:stringbuf.seekoff.pos]
                     if (_Mode & ios_base::in) {
                         if (_Gptr_old || !_Seeklow) {
                             _Newoff = _Gptr_old - _Seeklow;
@@ -430,7 +429,7 @@ protected:
         return pos_type{_Off};
     }
 
-    void _Init(const _Elem* _Ptr, _Mysize_type _Count, int _State) {
+    void _Init(const _Elem* _Ptr, const _Mysize_type _Count, int _State) {
         // initialize buffer to [_Ptr, _Ptr + _Count), set state
         _State &= ~_From_rvalue;
 
@@ -440,9 +439,10 @@ protected:
 
         if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
             // finite buffer that can be read or written, set it up
-            const auto _Pnew = _Unfancy(_Al.allocate(_Count));
+            _Mysize_type _Newsize = _Count;
+            const auto _Pnew      = _Unfancy(_Allocate_at_least_helper(_Al, _Newsize));
             _Traits::copy(_Pnew, _Ptr, _Count);
-            _Seekhigh = _Pnew + _Count;
+            _Seekhigh = _Pnew + _Newsize;
 
             if (!(_State & _Noread)) {
                 _Mysb::setg(_Pnew, _Pnew, _Seekhigh); // setup read buffer
@@ -473,11 +473,11 @@ protected:
         }
 
         // finite buffer that can be read or written, set it up
-        auto [_Ptr, _Size, _Res] = _Str._Release_to_buffer(_Al);
-        _Elem* const _Pnew       = _Unfancy(_Ptr);
-        _Seekhigh                = _Pnew + _Size;
-        auto _Next               = (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew;
-        auto _End_buffer         = _Pnew + _Res;
+        auto [_Ptr, _Size, _Actual_allocation_size] = _Str._Release_to_buffer(_Al);
+        _Elem* const _Pnew                          = _Unfancy(_Ptr);
+        _Seekhigh                                   = _Pnew + _Size;
+        auto _Next                                  = (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew;
+        auto _End_buffer                            = _Pnew + _Actual_allocation_size;
 
         _Mysb::setp(_Pnew, _Next, _End_buffer);
         if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant

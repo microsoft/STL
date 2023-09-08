@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _FORWARD_LIST_
 #define _FORWARD_LIST_
 #include <yvals_core.h>
@@ -227,7 +226,7 @@ public:
 };
 
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
-    class _Reference, class _Const_reference, class _Nodeptr_type>
+    class _Nodeptr_type>
 struct _Flist_iter_types {
     using value_type      = _Value_type;
     using size_type       = _Size_type;
@@ -524,7 +523,7 @@ private:
 
     using _Scary_val = _Flist_val<conditional_t<_Is_simple_alloc_v<_Alnode>, _Flist_simple_types<_Ty>,
         _Flist_iter_types<_Ty, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,
-            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Ty&, const _Ty&, _Nodeptr>>>;
+            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Nodeptr>>>;
 
 public:
     using value_type      = _Ty;
@@ -1097,10 +1096,11 @@ public:
     }
 
     void swap(forward_list& _Right) noexcept /* strengthened */ {
+        using _STD swap;
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
             _Swap_proxy_and_iterators(_Right);
-            _Swap_adl(_Mypair._Myval2._Myhead, _Right._Mypair._Myval2._Myhead);
+            swap(_Mypair._Myval2._Myhead, _Right._Mypair._Myval2._Myhead); // intentional ADL
         }
     }
 
@@ -1227,9 +1227,9 @@ public:
 
 #if _HAS_CXX20
         return _Removed;
-#else // _HAS_CXX20
+#else
         (void) _Removed;
-#endif // _HAS_CXX20
+#endif
     }
 
     auto unique() { // erase each element matching previous
@@ -1257,9 +1257,9 @@ public:
 
 #if _HAS_CXX20
         return _Removed;
-#else // _HAS_CXX20
+#else
         (void) _Removed;
-#endif // _HAS_CXX20
+#endif
     }
 
     void merge(forward_list& _Right) { // merge in elements from _Right, both ordered by operator<
@@ -1613,12 +1613,12 @@ _NODISCARD bool operator>=(const forward_list<_Ty, _Alloc>& _Left, const forward
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
-typename forward_list<_Ty, _Alloc>::size_type erase(forward_list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+forward_list<_Ty, _Alloc>::size_type erase(forward_list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
     return _Cont.remove_if([&](_Ty& _Elem) { return _Elem == _Val; });
 }
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
-typename forward_list<_Ty, _Alloc>::size_type erase_if(forward_list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+forward_list<_Ty, _Alloc>::size_type erase_if(forward_list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
     return _Cont.remove_if(_Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20

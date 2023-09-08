@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _ITERATOR_
 #define _ITERATOR_
 #include <yvals_core.h>
@@ -31,9 +30,9 @@ public:
 
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-#else
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     using difference_type = void;
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     _CONSTEXPR20 explicit back_insert_iterator(_Container& _Cont) noexcept /* strengthened */
         : container(_STD addressof(_Cont)) {}
@@ -82,9 +81,9 @@ public:
 
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-#else
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     using difference_type = void;
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     _CONSTEXPR20 explicit front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
 
@@ -135,7 +134,7 @@ public:
 #else // ^^^ implementing Ranges / no Ranges vvv
     using difference_type = void;
     using _Wrapped_iter   = typename _Container::iterator;
-#endif // __cpp_lib_concepts
+#endif // ^^^ no Ranges ^^^
 
     _CONSTEXPR20 insert_iterator(_Container& _Cont, _Wrapped_iter _Where)
         : container(_STD addressof(_Cont)), iter(_STD move(_Where)) {}
@@ -231,7 +230,7 @@ public:
 private:
     _Se _Last{};
 };
-#endif // __cpp_lib_concepts
+#endif // ^^^ Ranges ^^^
 
 _EXPORT_STD template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>, class _Diff = ptrdiff_t>
 class istream_iterator {
@@ -247,14 +246,14 @@ public:
 
     static_assert(conjunction_v<is_default_constructible<_Ty>, is_copy_constructible<_Ty>, is_copy_assignable<_Ty>>,
         "istream_iterator<T> requires T to be default constructible, copy constructible, and copy assignable. "
-        "(N4835 [istream.iterator]/2)");
+        "(N4950 [istream.iterator]/2)");
 
     constexpr istream_iterator() noexcept(is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {}
 
 #ifdef __cpp_lib_concepts
     constexpr istream_iterator(default_sentinel_t) noexcept(
         is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {}
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     istream_iterator(istream_type& _Istr) : _Myistr(_STD addressof(_Istr)) {
         _Getval();
@@ -289,7 +288,7 @@ public:
     _NODISCARD_FRIEND bool operator==(const istream_iterator& _Left, default_sentinel_t) noexcept /* strengthened */ {
         return !_Left._Myistr;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 private:
     void _Getval() { // get a _Ty value if possible
@@ -379,7 +378,7 @@ public:
     constexpr istreambuf_iterator() noexcept : _Strbuf(nullptr), _Got(true), _Val() {}
 #ifdef __cpp_lib_concepts
     constexpr istreambuf_iterator(default_sentinel_t) noexcept : _Strbuf(nullptr), _Got(true), _Val() {}
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     istreambuf_iterator(istream_type& _Istr) noexcept : _Strbuf(_Istr.rdbuf()), _Got(!_Strbuf), _Val() {}
 
@@ -456,7 +455,7 @@ public:
 
         return !_Left._Strbuf;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 private:
     void _Inc() { // skip to next input element
@@ -1100,9 +1099,9 @@ struct _Common_iterator_pointer_type<_Iter, _Se> {
 
 template <class _Iter>
 concept _Has_forward_category = requires {
-                                    typename _Iter_cat_t<_Iter>;
-                                    requires derived_from<_Iter_cat_t<_Iter>, forward_iterator_tag>;
-                                };
+    typename _Iter_cat_t<_Iter>;
+    requires derived_from<_Iter_cat_t<_Iter>, forward_iterator_tag>;
+};
 
 template <input_iterator _Iter, class _Se>
 struct iterator_traits<common_iterator<_Iter, _Se>> {
@@ -1378,7 +1377,7 @@ public:
         (void) _Right;
 #else // ^^^ workaround / no workaround vvv
 
-        // Per N4901 [counted.iterator]/3, two counted_iterators x and y refer to elements of the same sequence iff
+        // Per N4950 [counted.iterator]/3, two counted_iterators x and y refer to elements of the same sequence iff
         // for some integer n, next(x.base(), x.count() + n) and next(y.base(), y.count() + n)
         // "refer to the same (possibly past-the-end) element".
         // Iterator equality is a fair proxy for the vaguely-defined "refer to the same element".
@@ -1462,31 +1461,41 @@ template <input_iterator _Iter>
 struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
     using pointer = conditional_t<contiguous_iterator<_Iter>, add_pointer_t<iter_reference_t<_Iter>>, void>;
 };
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _STD_END
 
 _STDEXT_BEGIN
-using _STD iterator_traits;
-using _STD size_t;
-
 template <class _Ptr>
-class checked_array_iterator { // wrap a pointer with checking
-    static_assert(_STD is_pointer_v<_Ptr>, "checked_array_iterator requires pointers");
+class _DEPRECATE_STDEXT_ARR_ITERS checked_array_iterator { // wrap a pointer with checking
+private:
+    using _Pointee_type = _STD remove_pointer_t<_Ptr>;
+    static_assert(_STD is_pointer_v<_Ptr> && _STD is_object_v<_Pointee_type>,
+        "checked_array_iterator requires pointers to objects");
 
 public:
-    using iterator_category = typename iterator_traits<_Ptr>::iterator_category;
-    using value_type        = typename iterator_traits<_Ptr>::value_type;
-    using difference_type   = typename iterator_traits<_Ptr>::difference_type;
-    using pointer           = typename iterator_traits<_Ptr>::pointer;
-    using reference         = typename iterator_traits<_Ptr>::reference;
+    using iterator_category = _STD random_access_iterator_tag;
+    using value_type        = _STD remove_cv_t<_Pointee_type>;
+    using difference_type   = _STD ptrdiff_t;
+    using pointer           = _Ptr;
+    using reference         = _Pointee_type&;
+#ifdef __cpp_lib_concepts
+    using iterator_concept = _STD contiguous_iterator_tag;
+#endif // defined(__cpp_lib_concepts)
 
-    constexpr checked_array_iterator() noexcept : _Myarray(nullptr), _Mysize(0), _Myindex(0) {}
+    constexpr checked_array_iterator() = default;
 
     constexpr checked_array_iterator(const _Ptr _Array, const size_t _Size, const size_t _Index = 0) noexcept
         : _Myarray(_Array), _Mysize(_Size), _Myindex(_Index) {
         _STL_VERIFY(_Index <= _Size, "checked_array_iterator construction index out of range");
     }
+
+    _STL_DISABLE_DEPRECATED_WARNING
+    template <class _Ty = _Pointee_type, _STD enable_if_t<!_STD is_const_v<_Ty>, int> = 0>
+    constexpr operator checked_array_iterator<const _Ty*>() const noexcept {
+        return checked_array_iterator<const _Ty*>{_Myarray, _Mysize, _Myindex};
+    }
+    _STL_RESTORE_DEPRECATED_WARNING
 
     _NODISCARD constexpr _Ptr base() const noexcept {
         return _Myarray + _Myindex;
@@ -1658,31 +1667,46 @@ public:
     }
 
 private:
-    _Ptr _Myarray; // beginning of array
-    size_t _Mysize; // size of array
-    size_t _Myindex; // offset into array
+    _Ptr _Myarray   = nullptr; // beginning of array
+    size_t _Mysize  = 0; // size of array
+    size_t _Myindex = 0; // offset into array
 };
 
+_STL_DISABLE_DEPRECATED_WARNING
 template <class _Ptr>
-_NODISCARD constexpr checked_array_iterator<_Ptr> make_checked_array_iterator(
-    const _Ptr _Array, const size_t _Size, const size_t _Index = 0) {
+_DEPRECATE_STDEXT_ARR_ITERS _NODISCARD constexpr checked_array_iterator<_Ptr> make_checked_array_iterator(
+    const _Ptr _Array, const size_t _Size, const size_t _Index = 0) noexcept {
     return checked_array_iterator<_Ptr>(_Array, _Size, _Index);
 }
+_STL_RESTORE_DEPRECATED_WARNING
 
 template <class _Ptr>
-class unchecked_array_iterator { // wrap a pointer without checking, to silence warnings
-    static_assert(_STD is_pointer_v<_Ptr>, "unchecked_array_iterator requires pointers");
+class _DEPRECATE_STDEXT_ARR_ITERS unchecked_array_iterator { // wrap a pointer without checking, to silence warnings
+private:
+    using _Pointee_type = _STD remove_pointer_t<_Ptr>;
+    static_assert(_STD is_pointer_v<_Ptr> && _STD is_object_v<_Pointee_type>,
+        "unchecked_array_iterator requires pointers to objects");
 
 public:
-    using iterator_category = typename iterator_traits<_Ptr>::iterator_category;
-    using value_type        = typename iterator_traits<_Ptr>::value_type;
-    using difference_type   = typename iterator_traits<_Ptr>::difference_type;
-    using pointer           = typename iterator_traits<_Ptr>::pointer;
-    using reference         = typename iterator_traits<_Ptr>::reference;
+    using iterator_category = _STD random_access_iterator_tag;
+    using value_type        = _STD remove_cv_t<_Pointee_type>;
+    using difference_type   = _STD ptrdiff_t;
+    using pointer           = _Ptr;
+    using reference         = _Pointee_type&;
+#ifdef __cpp_lib_concepts
+    using iterator_concept = _STD contiguous_iterator_tag;
+#endif // defined(__cpp_lib_concepts)
 
-    constexpr unchecked_array_iterator() noexcept : _Myptr(nullptr) {}
+    constexpr unchecked_array_iterator() = default;
 
     constexpr explicit unchecked_array_iterator(const _Ptr _Src) noexcept : _Myptr(_Src) {}
+
+    _STL_DISABLE_DEPRECATED_WARNING
+    template <class _Ty = _Pointee_type, _STD enable_if_t<!_STD is_const_v<_Ty>, int> = 0>
+    constexpr operator unchecked_array_iterator<const _Ty*>() const noexcept {
+        return unchecked_array_iterator<const _Ty*>{_Myptr};
+    }
+    _STL_RESTORE_DEPRECATED_WARNING
 
     _NODISCARD constexpr _Ptr base() const noexcept {
         return _Myptr;
@@ -1802,14 +1826,34 @@ public:
     }
 
 private:
-    _Ptr _Myptr; // underlying pointer
+    _Ptr _Myptr = nullptr; // underlying pointer
 };
 
+_STL_DISABLE_DEPRECATED_WARNING
 template <class _Ptr>
-_NODISCARD unchecked_array_iterator<_Ptr> make_unchecked_array_iterator(const _Ptr _It) noexcept {
+_DEPRECATE_STDEXT_ARR_ITERS _NODISCARD unchecked_array_iterator<_Ptr> make_unchecked_array_iterator(
+    const _Ptr _It) noexcept {
     return unchecked_array_iterator<_Ptr>(_It);
 }
+_STL_RESTORE_DEPRECATED_WARNING
 _STDEXT_END
+
+#if _HAS_CXX20
+_STD_BEGIN
+_STL_DISABLE_DEPRECATED_WARNING
+template <class _Ty>
+struct pointer_traits<_STDEXT checked_array_iterator<_Ty*>> {
+    using pointer         = _STDEXT checked_array_iterator<_Ty*>;
+    using element_type    = _Ty;
+    using difference_type = ptrdiff_t;
+
+    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+        return _Iter._Unwrapped();
+    }
+};
+_STL_RESTORE_DEPRECATED_WARNING
+_STD_END
+#endif // _HAS_CXX20
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

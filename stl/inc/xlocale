@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XLOCALE_
 #define _XLOCALE_
 #include <yvals_core.h>
@@ -144,7 +143,7 @@ public:
         _Atomic_counter_t _Myrefs; // the reference count
 
     protected:
-        explicit __CLR_OR_THIS_CALL facet(size_t _Initrefs = 0)
+        explicit __CLR_OR_THIS_CALL facet(size_t _Initrefs = 0) noexcept // strengthened
             : _Myrefs(static_cast<_Atomic_counter_t>(_Initrefs)) // non-atomic initialization
         {}
 
@@ -257,7 +256,18 @@ public:
         }
     }
 
+#pragma warning(push)
+#pragma warning(disable : 26495) // Variable 'std::locale::_Ptr' is uninitialized.
+                                 // Always initialize a member variable (type.6).
+
+    // We must not explicitly initialize _Ptr here; we rely on it maintaining the value
+    // previously created in its storage. To be precise:
+    // In locale0.cpp, locale::_Init() uses True Placement New at classic_locale's address,
+    // and classic_locale is constructed from the _Noinit enumerator of type _Uninitialized.
+    // The sequencing is highly unusual; the True Placement New happens before the _Uninitialized construction,
+    // so while _Ptr here formally has indeterminate value, we expect it to actually keep the previous value.
     locale(_Uninitialized) {} // defer construction
+#pragma warning(pop)
 
     locale(const locale& _Right) noexcept : _Ptr(_Right._Ptr) {
         _Ptr->_Incref();
@@ -269,6 +279,7 @@ public:
     locale(const locale& _Loc, const locale& _Other, category _Cat) : _Ptr(_Locimp::_New_Locimp(*_Loc._Ptr)) {
         // construct a locale by copying named facets
         if (_Cat != none) { // worth adding, do it
+            _STL_ASSERT((_Cat & all) == _Cat, "the bitmask value specifying category must be valid");
             _Facet_guard _Guard{_Ptr};
             _BEGIN_LOCINFO(_Lobj)
             _Locimp::_Makeloc(_Lobj, _Cat, _Ptr, &_Other);
@@ -283,6 +294,7 @@ public:
 
 private:
     void _Construct(const string& _Str, category _Cat) {
+        _STL_ASSERT((_Cat & all) == _Cat, "the bitmask value specifying category must be valid");
         // construct a locale with named facets
         bool _Bad = false;
         _Init();
@@ -432,18 +444,18 @@ const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference f
         } else if (_Facet::_Getcat(&_Psave, &_Loc) == static_cast<size_t>(-1)) {
 #if _HAS_EXCEPTIONS
             _Throw_bad_cast(); // lazy disallowed
-#else // _HAS_EXCEPTIONS
+#else
             _CSTD abort(); // lazy disallowed
-#endif // _HAS_EXCEPTIONS
+#endif
         } else { // queue up lazy facet for destruction
             auto _Pfmod = const_cast<locale::facet*>(_Psave);
             unique_ptr<_Facet_base> _Psave_guard(static_cast<_Facet_base*>(_Pfmod));
 
 #if defined(_M_CEE)
             _Facet_Register_m(_Pfmod);
-#else // defined(_M_CEE)
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
             _Facet_Register(_Pfmod);
-#endif // defined(_M_CEE)
+#endif // ^^^ !defined(_M_CEE) ^^^
 
             _Pfmod->_Incref();
             _Facetptr<_Facet>::_Psave = _Psave;
@@ -607,7 +619,9 @@ inline unsigned short* __CRTDECL _Maklocstr(const char* _Ptr, unsigned short*, c
 }
 #endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 
-_EXPORT_STD extern "C++" class _CRTIMP2_PURE_IMPORT codecvt_base : public locale::facet { // base class for codecvt
+_EXPORT_STD extern "C++" class _CRTIMP2_PURE_IMPORT codecvt_base // base class for codecvt
+    : public locale::facet // TRANSITION, ABI, shouldn't be derived from locale::facet
+{
 public:
     enum { // constants for different parse states
         ok,
@@ -617,7 +631,8 @@ public:
     };
     using result = int;
 
-    __CLR_OR_THIS_CALL codecvt_base(size_t _Refs = 0) : locale::facet(_Refs) {}
+    __CLR_OR_THIS_CALL codecvt_base(size_t _Refs = 0) noexcept // strengthened
+        : locale::facet(_Refs) {}
 
     bool __CLR_OR_THIS_CALL always_noconv() const noexcept {
         // return true if conversions never change input (from codecvt)
@@ -655,10 +670,10 @@ template <class _Ty>
 _INLINE_VAR constexpr bool _Is_one_byte_char_like_v = _Is_any_of_v<remove_cv_t<_Ty>, signed char, unsigned char,
 #ifdef __cpp_lib_byte
     byte,
-#endif // __cpp_lib_byte
+#endif // defined(__cpp_lib_byte)
 #ifdef __cpp_char8_t
     char8_t,
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
     char>;
 
 template <class _Elem, class _Byte>
@@ -790,14 +805,14 @@ protected:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Elem, class _Byte, class _Statype>
 __PURE_APPDOMAIN_GLOBAL locale::id codecvt<_Elem, _Byte, _Statype>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 _EXPORT_STD /* TRANSITION, VSO-1538698 */ template <class _CvtTy, class _Byte, class _Statype>
 _NODISCARD int _Codecvt_do_length(
@@ -2326,7 +2341,7 @@ public:
                       || _Is_any_of_v<codecvt_byname,
 #ifdef __cpp_char8_t
                           codecvt_byname<char16_t, char8_t, mbstate_t>, codecvt_byname<char32_t, char8_t, mbstate_t>,
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
                           codecvt_byname<char, char, mbstate_t>, codecvt_byname<wchar_t, char, mbstate_t>>,
         _FACET_SPECIALIZATION_MESSAGE);
 
@@ -2350,7 +2365,9 @@ protected:
 #define _UP _UPPER // 'A'-'Z'
 #define _XD _HEX // '0'-'9', 'A'-'F', 'a'-'f'
 
-_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
+_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT ctype_base // base for ctype
+    : locale::facet // TRANSITION, ABI, shouldn't be derived from locale::facet
+{
     enum { // constants for character classifications
         alnum  = _DI | _LO | _UP | _XA,
         alpha  = _LO | _UP | _XA,
@@ -2367,7 +2384,8 @@ _EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet 
     };
     using mask = short; // to match <ctype.h>
 
-    __CLR_OR_THIS_CALL ctype_base(size_t _Refs = 0) : locale::facet(_Refs) {}
+    __CLR_OR_THIS_CALL ctype_base(size_t _Refs = 0) noexcept // strengthened
+        : locale::facet(_Refs) {}
 
     __CLR_OR_THIS_CALL ~ctype_base() noexcept override {}
 };
@@ -2606,14 +2624,14 @@ private:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Elem>
 locale::id ctype<_Elem>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 extern "C++" template <>
 class _CRTIMP2_PURE_IMPORT ctype<char> : public ctype_base { // facet for classifying char elements, converting cases

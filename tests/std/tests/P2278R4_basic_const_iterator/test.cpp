@@ -17,9 +17,9 @@ concept Pointer = is_pointer_v<T>;
 
 template <class It>
 concept HasPeek = requires(const It& iter) {
-                      { iter.peek() } -> Pointer;
-                      { iter.peek() } -> convertible_to<const iter_value_t<It>*>;
-                  };
+    { iter.peek() } -> Pointer;
+    { iter.peek() } -> convertible_to<const iter_value_t<It>*>;
+};
 
 static_assert(!HasPeek<int*>);
 static_assert(!HasPeek<reverse_iterator<int*>>);

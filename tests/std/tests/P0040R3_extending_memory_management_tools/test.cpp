@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
+
 #include <algorithm>
 #include <cassert>
 #include <iterator>
@@ -54,21 +56,11 @@ struct uninitialized_fixture {
 
 template <typename T, size_t Count>
 struct uninitialized_storage {
-#ifdef _M_CEE // TRANSITION, VSO-1659408
-    char storage[sizeof(T) * Count + sizeof(T)];
-
-    T* begin() {
-        void* storageVoid = storage;
-        size_t space      = sizeof(storage);
-        return static_cast<T*>(align(alignof(T), sizeof(T), storageVoid, space));
-    }
-#else // ^^^ _M_CEE / !_M_CEE vvv
     alignas(T) char storage[sizeof(T) * Count];
 
     T* begin() {
         return &reinterpret_cast<T&>(storage);
     }
-#endif // _M_CEE
 
     T* end() {
         return begin() + Count;

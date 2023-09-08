@@ -34,7 +34,6 @@
 // source code, you may redistribute such embedded portions in such object form
 // without including the above copyright and permission notices.
 
-#pragma once
 #ifndef _FORMAT_
 #define _FORMAT_
 #include <yvals_core.h>
@@ -44,6 +43,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <format> are available only with C++
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 
 #include <__msvc_format_ucd_tables.hpp>
+#include <__msvc_print.hpp>
 #include <bit>
 #include <charconv>
 #include <concepts>
@@ -51,8 +51,8 @@ _EMIT_STL_WARNING(STL4038, "The contents of <format> are available only with C++
 #include <iterator>
 #include <limits>
 #include <locale>
-#include <mutex>
 #include <stdexcept>
+#include <xcall_once.h>
 #include <xfilesystem_abi.h>
 #include <xstring>
 #include <xutility>
@@ -67,6 +67,27 @@ _STL_DISABLE_CLANG_WARNINGS
 extern "C" _NODISCARD __std_win_error __stdcall __std_get_cvt(__std_code_page _Codepage, _Cvtvec* _Pcvt) noexcept;
 
 _STD_BEGIN
+
+#if _HAS_CXX23
+#define _FMT_P2286_BEGIN inline namespace __p2286 {
+#define _FMT_P2286_END   }
+#else // ^^^ C++23 / C++20 vvv
+#define _FMT_P2286_BEGIN
+#define _FMT_P2286_END
+#endif // ^^^ C++20 ^^^
+
+template <class _CharT>
+_NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const wchar_t* const _WStr) noexcept {
+    if constexpr (is_same_v<_CharT, char>) {
+        return _Str;
+    } else {
+        return _WStr;
+    }
+}
+
+// _STATICALLY_WIDEN is used by <chrono> since C++20 and by <format> since C++23.
+// It's defined here, so that both headers can use this definition.
+#define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
 
 _EXPORT_STD template <class, class>
 class vector;
@@ -108,7 +129,9 @@ _NODISCARD constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Long_double_type;
 }
 
-struct _Auto_id_tag {};
+struct _Auto_id_tag {
+    explicit _Auto_id_tag() = default;
+};
 
 // clang-format off
 template <class _Ty, class _CharT>
@@ -159,7 +182,7 @@ concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
                                 && _Parse_precision_callbacks<_Ty, _CharT>
                                 && _Width_adapter_callbacks<_Ty, _CharT>
                                 && _Precision_adapter_callbacks<_Ty, _CharT>
-                                && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln, _Fmt_sign _Sgn) {
+                                && requires(_Ty _At, _Fmt_sign _Sgn) {
                                     { _At._On_sign(_Sgn) } -> same_as<void>;
                                     { _At._On_hash() } -> same_as<void>;
                                     { _At._On_zero() } -> same_as<void>;
@@ -169,13 +192,15 @@ concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
 // clang-format on
 
 template <class _CharT>
-struct _Decode_utf_result {
+struct _Decode_result {
     const _CharT* _Next_ptr;
     bool _Is_unicode_scalar_value; // Also _Is_usv below, see https://www.unicode.org/glossary/#unicode_scalar_value
+    // _Is_unicode_scalar_value is also used for non-Unicode encodings, to indicate that the input can be converted to
+    // Unicode.
 };
 
 // _Decode_utf decodes UTF-8 or UTF-16 encoded unsigned char or wchar_t strings respectively
-_NODISCARD constexpr _Decode_utf_result<wchar_t> _Decode_utf(
+_NODISCARD constexpr _Decode_result<wchar_t> _Decode_utf(
     const wchar_t* _First, const wchar_t* _Last, char32_t& _Val) noexcept {
     _STL_INTERNAL_CHECK(_First < _Last);
     _Val = static_cast<char32_t>(*_First);
@@ -207,8 +232,7 @@ _NODISCARD constexpr _Decode_utf_result<wchar_t> _Decode_utf(
     return {_First + 1, true};
 }
 
-_NODISCARD constexpr _Decode_utf_result<char> _Decode_utf(
-    const char* _First, const char* _Last, char32_t& _Val) noexcept {
+_NODISCARD constexpr _Decode_result<char> _Decode_utf(const char* _First, const char* _Last, char32_t& _Val) noexcept {
     _STL_INTERNAL_CHECK(_First < _Last);
     // Decode a UTF-8 encoded codepoint starting at _First and not exceeding _Last, returning
     // one past the end of the character decoded. Any invalid codepoints will result in
@@ -309,7 +333,7 @@ _NODISCARD constexpr _Decode_utf_result<char> _Decode_utf(
     return {_First + _Num_bytes, true};
 }
 
-_NODISCARD constexpr _Decode_utf_result<char32_t> _Decode_utf(
+_NODISCARD constexpr _Decode_result<char32_t> _Decode_utf(
     const char32_t* _First, const char32_t* _Last, char32_t& _Val) noexcept {
     _STL_INTERNAL_CHECK(_First < _Last);
     (void) _Last;
@@ -542,15 +566,6 @@ concept _CharT_or_bool = same_as<_Ty, _CharT> || same_as<_Ty, bool>;
 template <class _CharT>
 concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;
 
-template <class _Ty, class _Context>
-concept _Has_formatter =
-    requires(_Ty& _Val, _Context& _Ctx) {
-        _STD declval<typename _Context::template formatter_type<remove_cvref_t<_Ty>>>().format(_Val, _Ctx);
-    };
-
-template <class _Ty, class _Context>
-concept _Has_const_formatter = _Has_formatter<const remove_reference_t<_Ty>, _Context>;
-
 _EXPORT_STD template <class _Ty, class _CharT = char>
 struct formatter;
 
@@ -560,7 +575,7 @@ _EXPORT_STD template <class _CharT>
 class basic_format_parse_context {
 public:
     using char_type      = _CharT;
-    using const_iterator = typename basic_string_view<_CharT>::const_iterator;
+    using const_iterator = basic_string_view<_CharT>::const_iterator;
     using iterator       = const_iterator;
 
     constexpr explicit basic_format_parse_context(
@@ -634,10 +649,51 @@ private:
 _EXPORT_STD using format_parse_context  = basic_format_parse_context<char>;
 _EXPORT_STD using wformat_parse_context = basic_format_parse_context<wchar_t>;
 
+template <class _Ty, class _Context, class _Formatter = _Context::template formatter_type<remove_const_t<_Ty>>>
+concept _Formattable_with = semiregular<_Formatter>
+                         && requires(_Formatter& __f, const _Formatter& __cf, _Ty&& __t, _Context __fc,
+                             basic_format_parse_context<typename _Context::char_type> __pc) {
+                                { __f.parse(__pc) } -> same_as<typename decltype(__pc)::iterator>;
+                                { __cf.format(__t, __fc) } -> same_as<typename _Context::iterator>;
+                            };
+
+template <class _Ty, class _CharT>
+inline constexpr bool _Is_basic_string_like_for = false;
+
+template <class _CharT, class _Traits, class _Alloc>
+inline constexpr bool _Is_basic_string_like_for<basic_string<_CharT, _Traits, _Alloc>, _CharT> = true;
+
+template <class _CharT, class _Traits>
+inline constexpr bool _Is_basic_string_like_for<basic_string_view<_CharT, _Traits>, _CharT> = true;
+
+template <class _Context>
+struct _Format_arg_traits {
+    using _Char_type = _Context::char_type;
+
+    // Function template _Type_eraser mirrors the type dispatching mechanism in the construction of basic_format_arg
+    // (N4950 [format.arg]). They determine the mapping from "raw" to "erased" argument type for _Format_arg_store.
+    template <_Formattable_with<_Context> _Ty>
+    static auto _Type_eraser();
+
+    template <class _Ty>
+    using _Storage_type = decltype(_Type_eraser<remove_reference_t<_Ty>>());
+
+    template <class _Ty>
+    static constexpr size_t _Storage_size = sizeof(_Storage_type<_Ty>);
+};
+
+_EXPORT_STD template <class _Context>
+class basic_format_args;
+
+_FMT_P2286_BEGIN
+template <class _CharT>
+struct _Format_handler;
+_FMT_P2286_END
+
 _EXPORT_STD template <class _Context>
 class basic_format_arg {
 public:
-    using _CharType = typename _Context::char_type;
+    using _CharType = _Context::char_type;
 
     class handle {
     private:
@@ -647,18 +703,20 @@ public:
 
     public:
         template <class _Ty>
-        explicit handle(_Ty&& _Val) noexcept
+        explicit handle(_Ty& _Val) noexcept
             : _Ptr(_STD addressof(_Val)),
               _Format([](basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void* _Ptr) {
-                  using _Value_type = remove_cvref_t<_Ty>;
-                  typename _Context::template formatter_type<_Value_type> _Formatter;
-                  using _Qualified_type =
-                      conditional_t<_Has_const_formatter<_Value_type, _Context>, const _Value_type, _Value_type>;
+                  using _Td = remove_const_t<_Ty>;
+                  // doesn't drop const-qualifier per an unnumbered LWG issue
+                  using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
+                  typename _Context::template formatter_type<_Td> _Formatter;
                   _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
-                  _Format_ctx.advance_to(_Formatter.format(
-                      *const_cast<_Qualified_type*>(static_cast<const _Value_type*>(_Ptr)), _Format_ctx));
+                  _Format_ctx.advance_to(
+                      _Formatter.format(*const_cast<_Tq*>(static_cast<const _Td*>(_Ptr)), _Format_ctx));
               }) {
-            static_assert(_Has_const_formatter<_Ty, _Context> || !is_const_v<remove_reference_t<_Ty>>);
+            // ditto doesn't drop const-qualifier
+            using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
+            static_assert(_Formattable_with<_Tq, _Context>);
         }
 
         void format(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx) const {
@@ -669,13 +727,71 @@ public:
     // TRANSITION, LLVM-49072
     basic_format_arg() noexcept : _Active_state(_Basic_format_arg_type::_None), _No_state() {}
 
+    explicit operator bool() const noexcept {
+        return _Active_state != _Basic_format_arg_type::_None;
+    }
+
+    // Function template _Make_from mirrors the exposition-only single-argument constructor template of
+    // basic_format_arg (N4950 [format.arg]).
+    template <_Formattable_with<_Context> _Ty>
+    static basic_format_arg _Make_from(_Ty& _Val) noexcept {
+        using _Erased_type = _Format_arg_traits<_Context>::template _Storage_type<_Ty>;
+#if !_HAS_CXX23
+        if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
+            return basic_format_arg(_Erased_type{_Val.data(), _Val.size()});
+        } else
+#endif // !_HAS_CXX23
+        {
+            return basic_format_arg(static_cast<_Erased_type>(_Val));
+        }
+    }
+
+    template <class _Visitor>
+    decltype(auto) _Visit(_Visitor&& _Vis) {
+        switch (_Active_state) {
+        case _Basic_format_arg_type::_None:
+            return _STD forward<_Visitor>(_Vis)(_No_state);
+        case _Basic_format_arg_type::_Int_type:
+            return _STD forward<_Visitor>(_Vis)(_Int_state);
+        case _Basic_format_arg_type::_UInt_type:
+            return _STD forward<_Visitor>(_Vis)(_UInt_state);
+        case _Basic_format_arg_type::_Long_long_type:
+            return _STD forward<_Visitor>(_Vis)(_Long_long_state);
+        case _Basic_format_arg_type::_ULong_long_type:
+            return _STD forward<_Visitor>(_Vis)(_ULong_long_state);
+        case _Basic_format_arg_type::_Bool_type:
+            return _STD forward<_Visitor>(_Vis)(_Bool_state);
+        case _Basic_format_arg_type::_Char_type:
+            return _STD forward<_Visitor>(_Vis)(_Char_state);
+        case _Basic_format_arg_type::_Float_type:
+            return _STD forward<_Visitor>(_Vis)(_Float_state);
+        case _Basic_format_arg_type::_Double_type:
+            return _STD forward<_Visitor>(_Vis)(_Double_state);
+        case _Basic_format_arg_type::_Long_double_type:
+            return _STD forward<_Visitor>(_Vis)(_Long_double_state);
+        case _Basic_format_arg_type::_Pointer_type:
+            return _STD forward<_Visitor>(_Vis)(_Pointer_state);
+        case _Basic_format_arg_type::_CString_type:
+            return _STD forward<_Visitor>(_Vis)(_CString_state);
+        case _Basic_format_arg_type::_String_type:
+            return _STD forward<_Visitor>(_Vis)(_String_state);
+        case _Basic_format_arg_type::_Custom_type:
+            return _STD forward<_Visitor>(_Vis)(_Custom_state);
+        default:
+            _STL_VERIFY(false, "basic_format_arg is in impossible state");
+            int _Dummy{};
+            return _STD forward<_Visitor>(_Vis)(_Dummy);
+        }
+    }
+
+private:
+    friend basic_format_args<_Context>;
+    friend _Format_handler<_CharType>;
+    friend _Format_arg_traits<_Context>;
+
     explicit basic_format_arg(const int _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
     explicit basic_format_arg(const unsigned int _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
-    explicit basic_format_arg(const long _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
-    explicit basic_format_arg(const unsigned long _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
     explicit basic_format_arg(const long long _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Long_long_type), _Long_long_state(_Val) {}
@@ -700,10 +816,6 @@ public:
     explicit basic_format_arg(const handle _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Custom_type), _Custom_state(_Val) {}
 
-    explicit operator bool() const noexcept {
-        return _Active_state != _Basic_format_arg_type::_None;
-    }
-
     _Basic_format_arg_type _Active_state = _Basic_format_arg_type::_None;
     union {
         monostate _No_state = monostate{};
@@ -723,41 +835,46 @@ public:
     };
 };
 
+template <class _Context>
+template <_Formattable_with<_Context> _Ty>
+auto _Format_arg_traits<_Context>::_Type_eraser() {
+    using _Td = remove_const_t<_Ty>;
+    // See N4950 [format.arg]/6
+    if constexpr (is_same_v<_Td, bool>) {
+        return bool{};
+    } else if constexpr (is_same_v<_Td, _Char_type>) {
+        return _Char_type{};
+    } else if constexpr (is_same_v<_Td, char> && is_same_v<_Char_type, wchar_t>) {
+        return _Char_type{};
+    } else if constexpr (signed_integral<_Td> && sizeof(_Td) <= sizeof(int)) {
+        return int{};
+    } else if constexpr (unsigned_integral<_Td> && sizeof(_Td) <= sizeof(unsigned int)) {
+        return static_cast<unsigned int>(42);
+    } else if constexpr (signed_integral<_Td> && sizeof(_Td) <= sizeof(long long)) {
+        return static_cast<long long>(42);
+    } else if constexpr (unsigned_integral<_Td> && sizeof(_Td) <= sizeof(unsigned long long)) {
+        return static_cast<unsigned long long>(42);
+    } else if constexpr (is_same_v<_Td, float>) {
+        return float{};
+    } else if constexpr (is_same_v<_Td, double>) {
+        return double{};
+    } else if constexpr (is_same_v<_Td, long double>) {
+        return static_cast<long double>(42);
+    } else if constexpr (_Is_basic_string_like_for<_Td, _Char_type>) {
+        return basic_string_view<_Char_type>{};
+    } else if constexpr (_Is_any_of_v<decay_t<_Td>, _Char_type*, const _Char_type*>) {
+        return static_cast<const _Char_type*>(nullptr);
+    } else if constexpr (is_void_v<remove_pointer_t<_Td>> || is_same_v<_Td, nullptr_t>) {
+        return static_cast<const void*>(nullptr);
+    } else {
+        int _Dummy{};
+        return typename basic_format_arg<_Context>::handle{_Dummy};
+    }
+}
+
 _EXPORT_STD template <class _Visitor, class _Context>
 decltype(auto) visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
-    switch (_Arg._Active_state) {
-    case _Basic_format_arg_type::_None:
-        return _STD forward<_Visitor>(_Vis)(_Arg._No_state);
-    case _Basic_format_arg_type::_Int_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Int_state);
-    case _Basic_format_arg_type::_UInt_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._UInt_state);
-    case _Basic_format_arg_type::_Long_long_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Long_long_state);
-    case _Basic_format_arg_type::_ULong_long_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._ULong_long_state);
-    case _Basic_format_arg_type::_Bool_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Bool_state);
-    case _Basic_format_arg_type::_Char_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Char_state);
-    case _Basic_format_arg_type::_Float_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Float_state);
-    case _Basic_format_arg_type::_Double_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Double_state);
-    case _Basic_format_arg_type::_Long_double_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Long_double_state);
-    case _Basic_format_arg_type::_Pointer_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Pointer_state);
-    case _Basic_format_arg_type::_CString_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._CString_state);
-    case _Basic_format_arg_type::_String_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._String_state);
-    case _Basic_format_arg_type::_Custom_type:
-        return _STD forward<_Visitor>(_Vis)(_Arg._Custom_state);
-    default:
-        _STL_VERIFY(false, "basic_format_arg is in impossible state");
-        return _STD forward<_Visitor>(_Vis)(0);
-    }
+    return _Arg._Visit(_STD forward<_Visitor>(_Vis));
 }
 
 // we need to implement this ourselves because from_chars does not work with wide characters and isn't constexpr
@@ -841,7 +958,7 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
     // We care about this because if a charset is self-synchronizing then we can search through it
     // for formatting control characters _without_ generally decoding the format string.
     switch (_MSVC_EXECUTION_CHARACTER_SET) {
-    // See: https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
+    // See: https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
     case 874: // Thai (Windows)
     case 1250: // ANSI Central European; Central European (Windows)
     case 1251: // ANSI Cyrillic; Cyrillic (Windows)
@@ -862,22 +979,46 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
 #endif // ^^^ EDG workaround ^^^
 }
 
-inline constexpr char32_t _Width_estimate_intervals[] = { // Per N4928 [format.string.std]/12
-    0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u, 0xFE10u,
-    0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u, 0x20000u,
-    0x2FFFEu, 0x30000u, 0x3FFFEu};
+// Generated per N4950 [format.string.std]/13, by tools/unicode_properties_parse/format_width_estimate_intervals.cpp
+// in the https://github.com/microsoft/stl repository.
+inline constexpr char32_t _Width_estimate_intervals_v2[] = { //
+    0x1100u, 0x1160u, 0x231Au, 0x231Cu, 0x2329u, 0x232Bu, 0x23E9u, 0x23EDu, 0x23F0u, 0x23F1u, 0x23F3u, 0x23F4u, 0x25FDu,
+    0x25FFu, 0x2614u, 0x2616u, 0x2648u, 0x2654u, 0x267Fu, 0x2680u, 0x2693u, 0x2694u, 0x26A1u, 0x26A2u, 0x26AAu, 0x26ACu,
+    0x26BDu, 0x26BFu, 0x26C4u, 0x26C6u, 0x26CEu, 0x26CFu, 0x26D4u, 0x26D5u, 0x26EAu, 0x26EBu, 0x26F2u, 0x26F4u, 0x26F5u,
+    0x26F6u, 0x26FAu, 0x26FBu, 0x26FDu, 0x26FEu, 0x2705u, 0x2706u, 0x270Au, 0x270Cu, 0x2728u, 0x2729u, 0x274Cu, 0x274Du,
+    0x274Eu, 0x274Fu, 0x2753u, 0x2756u, 0x2757u, 0x2758u, 0x2795u, 0x2798u, 0x27B0u, 0x27B1u, 0x27BFu, 0x27C0u, 0x2B1Bu,
+    0x2B1Du, 0x2B50u, 0x2B51u, 0x2B55u, 0x2B56u, 0x2E80u, 0x2E9Au, 0x2E9Bu, 0x2EF4u, 0x2F00u, 0x2FD6u, 0x2FF0u, 0x2FFCu,
+    0x3000u, 0x303Fu, 0x3041u, 0x3097u, 0x3099u, 0x3100u, 0x3105u, 0x3130u, 0x3131u, 0x318Fu, 0x3190u, 0x31E4u, 0x31F0u,
+    0x321Fu, 0x3220u, 0x3248u, 0x3250u, 0xA48Du, 0xA490u, 0xA4C7u, 0xA960u, 0xA97Du, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u,
+    0xFE10u, 0xFE1Au, 0xFE30u, 0xFE53u, 0xFE54u, 0xFE67u, 0xFE68u, 0xFE6Cu, 0xFF01u, 0xFF61u, 0xFFE0u, 0xFFE7u,
+    0x16FE0u, 0x16FE5u, 0x16FF0u, 0x16FF2u, 0x17000u, 0x187F8u, 0x18800u, 0x18CD6u, 0x18D00u, 0x18D09u, 0x1AFF0u,
+    0x1AFF4u, 0x1AFF5u, 0x1AFFCu, 0x1AFFDu, 0x1AFFFu, 0x1B000u, 0x1B123u, 0x1B132u, 0x1B133u, 0x1B150u, 0x1B153u,
+    0x1B155u, 0x1B156u, 0x1B164u, 0x1B168u, 0x1B170u, 0x1B2FCu, 0x1F004u, 0x1F005u, 0x1F0CFu, 0x1F0D0u, 0x1F18Eu,
+    0x1F18Fu, 0x1F191u, 0x1F19Bu, 0x1F200u, 0x1F203u, 0x1F210u, 0x1F23Cu, 0x1F240u, 0x1F249u, 0x1F250u, 0x1F252u,
+    0x1F260u, 0x1F266u, 0x1F300u, 0x1F650u, 0x1F680u, 0x1F6C6u, 0x1F6CCu, 0x1F6CDu, 0x1F6D0u, 0x1F6D3u, 0x1F6D5u,
+    0x1F6D8u, 0x1F6DCu, 0x1F6E0u, 0x1F6EBu, 0x1F6EDu, 0x1F6F4u, 0x1F6FDu, 0x1F7E0u, 0x1F7ECu, 0x1F7F0u, 0x1F7F1u,
+    0x1F900u, 0x1FA00u, 0x1FA70u, 0x1FA7Du, 0x1FA80u, 0x1FA89u, 0x1FA90u, 0x1FABEu, 0x1FABFu, 0x1FAC6u, 0x1FACEu,
+    0x1FADCu, 0x1FAE0u, 0x1FAE9u, 0x1FAF0u, 0x1FAF9u, 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu};
 
 _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
-    // Computes the width estimation for Unicode characters from N4928 [format.string.std]/12
-    int _Result = 1;
-    for (const auto& _Bound : _Width_estimate_intervals) {
-        if (_Ch < _Bound) {
-            return _Result;
+    // Computes the width estimation for Unicode characters from N4950 [format.string.std]/13
+    // The two branches are functionally equivalent; `12` is chosen for performance here.
+    constexpr char32_t _Linear_search_threshold = _Width_estimate_intervals_v2[12];
+    if (_Ch < _Linear_search_threshold) {
+        int _Result = 1;
+        for (const auto& _Bound : _Width_estimate_intervals_v2) {
+            if (_Ch < _Bound) {
+                return _Result;
+            }
+            _Result ^= 0b11u; // Flip between 1 and 2 on each iteration
         }
-        _Result ^= 0b11u; // Flip between 1 and 2 on each iteration
+        return 1;
+    } else {
+        const ptrdiff_t _Upper_bound_index =
+            _STD upper_bound(_Width_estimate_intervals_v2, _STD end(_Width_estimate_intervals_v2), _Ch)
+            - _Width_estimate_intervals_v2;
+        return 1 + (_Upper_bound_index & 1);
     }
-
-    return 1;
 }
 
 template <class _CharT, bool _Statically_Utf8 = _Is_execution_charset_self_synchronizing()>
@@ -954,6 +1095,7 @@ public:
             return _First;
         }
     }
+
     _NODISCARD constexpr int _Units_in_next_character(
         const char* const _First, const char* const _Last) const noexcept {
         // Returns the number of code units that compose the first encoded character in
@@ -979,6 +1121,38 @@ public:
             }
         }
     }
+
+#if _HAS_CXX23
+    _NODISCARD _Decode_result<char> _Decode(const char* const _First, const char* const _Last, char32_t& _Val) const {
+        _STL_INTERNAL_CHECK(_First < _Last);
+
+        if constexpr (_Is_ordinary_literal_encoding_utf8()) {
+            return _Decode_utf(_First, _Last, _Val);
+        } else if constexpr (_Is_execution_charset_self_synchronizing()) {
+            wchar_t _Wide;
+            const auto _Res =
+                __std_fs_convert_narrow_to_wide(__std_code_page{_MSVC_EXECUTION_CHARACTER_SET}, _First, 1, &_Wide, 1);
+            _Val = _Wide;
+            return {_First + 1, _Res._Len != 0};
+        } else {
+            if (*_First == '\0') {
+                _Val = U'\0';
+                return {_First + 1, true};
+            }
+
+            wchar_t _Wide;
+            mbstate_t _St{};
+            const auto _Len   = static_cast<size_t>(_Last - _First);
+            const int _Result = _Mbrtowc(&_Wide, _First, _Len, &_St, &this->_Cvt);
+            if (_Result < 0) {
+                return {_First + 1, false};
+            } else {
+                _Val = _Wide;
+                return {_First + _Result, true};
+            }
+        }
+    }
+#endif // _HAS_CXX23
 };
 
 template <bool _Statically_Utf8>
@@ -988,6 +1162,7 @@ public:
         const wchar_t* const _First, const wchar_t* const _Last, const wchar_t _Val) const {
         return _STD _Find_unchecked(_First, _Last, _Val);
     }
+
     _NODISCARD constexpr int _Units_in_next_character(
         const wchar_t* _First, const wchar_t* const _Last) const noexcept {
         char32_t _Ch;
@@ -995,6 +1170,13 @@ public:
         _STL_INTERNAL_CHECK(_Next - _First <= 2);
         return _Is_usv ? static_cast<int>(_Next - _First) : -1;
     }
+
+#if _HAS_CXX23
+    _NODISCARD constexpr _Decode_result<wchar_t> _Decode(
+        const wchar_t* const _First, const wchar_t* const _Last, char32_t& _Val) const noexcept {
+        return _Decode_utf(_First, _Last, _Val);
+    }
+#endif // _HAS_CXX23
 };
 
 template <class _CharT>
@@ -1482,7 +1664,7 @@ _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
 template <class _ParseContext, class _Context>
 class _Specs_handler : public _Specs_setter<typename _Context::char_type> {
 public:
-    using _CharT = typename _Context::char_type;
+    using _CharT = _Context::char_type;
 
     constexpr _Specs_handler(_Basic_format_specs<_CharT>& _Specs_, _ParseContext& _Parse_ctx_, _Context& _Ctx_)
         : _Specs_setter<_CharT>(_Specs_), _Parse_ctx(_Parse_ctx_), _Ctx(_Ctx_) {}
@@ -1514,7 +1696,7 @@ private:
 template <class _ParseContext>
 class _Dynamic_specs_handler : public _Specs_setter<typename _ParseContext::char_type> {
 public:
-    using _CharT = typename _ParseContext::char_type;
+    using _CharT = _ParseContext::char_type;
 
     constexpr _Dynamic_specs_handler(_Dynamic_format_specs<_CharT>& _Specs_, _ParseContext& _Parse_ctx_)
         : _Specs_setter<_CharT>(_Specs_), _Dynamic_specs(_Specs_), _Parse_ctx(_Parse_ctx_) {}
@@ -1524,7 +1706,7 @@ public:
         _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_width(const _Auto_id_tag) {
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
         _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
@@ -1533,7 +1715,7 @@ public:
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_precision(const _Auto_id_tag) {
+    constexpr void _On_dynamic_precision(_Auto_id_tag) {
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
@@ -1620,11 +1802,26 @@ public:
             _Throw_format_error("Invalid type specification.");
         }
         const char _Narrow_type = static_cast<char>(_Type);
-        enum class _Presentation_type_category { _Default, _Integer, _Floating, _String, _Pointer, _Char };
+        enum class _Presentation_type_category {
+            _Default,
+            _Integer,
+            _Floating,
+            _String,
+            _Pointer,
+            _Char,
+#if _HAS_CXX23
+            _Escape,
+#endif // _HAS_CXX23
+        };
         auto _Cat = _Presentation_type_category::_Default;
         switch (_Narrow_type) {
         case '\0':
             break;
+#if _HAS_CXX23
+        case '?':
+            _Cat = _Presentation_type_category::_Escape;
+            break;
+#endif // _HAS_CXX23
         case 's':
             _Cat = _Presentation_type_category::_String;
             break;
@@ -1674,7 +1871,11 @@ public:
                 _Cat = _Presentation_type_category::_Char;
             }
 
-            if (_Cat != _Presentation_type_category::_Char && _Cat != _Presentation_type_category::_Integer) {
+            if (_Cat != _Presentation_type_category::_Char && _Cat != _Presentation_type_category::_Integer
+#if _HAS_CXX23
+                && _Cat != _Presentation_type_category::_Escape
+#endif // _HAS_CXX23
+            ) {
                 if constexpr (is_same_v<_CharT, char>) {
                     _Throw_format_error("Invalid presentation type for char");
                 } else {
@@ -1711,7 +1912,11 @@ public:
                 _Cat = _Presentation_type_category::_String;
             }
 
-            if (_Cat != _Presentation_type_category::_String) {
+            if (_Cat != _Presentation_type_category::_String
+#if _HAS_CXX23
+                && _Cat != _Presentation_type_category::_Escape
+#endif // _HAS_CXX23
+            ) {
                 _Throw_format_error("Invalid presentation type for string");
             }
             break;
@@ -1739,65 +1944,6 @@ public:
     }
 };
 
-template <class _Context>
-struct _Format_arg_traits {
-    using _Char_type = typename _Context::char_type;
-
-    // These overloads mirror the exposition-only single-argument constructor
-    // set of basic_format_arg (N4928 [format.arg]). They determine the mapping
-    // from "raw" to "erased" argument type for _Format_arg_store.
-    template <_Has_formatter<_Context> _Ty>
-    static auto _Phony_basic_format_arg_constructor(_Ty&&) {
-        // per the proposed resolution of LWG-3631
-        using _Td = remove_cvref_t<_Ty>;
-        // See N4928 [format.arg]/5
-        if constexpr (is_same_v<_Td, bool>) {
-            return bool{};
-        } else if constexpr (is_same_v<_Td, _Char_type>) {
-            return _Char_type{};
-        } else if constexpr (is_same_v<_Td, char> && is_same_v<_Char_type, wchar_t>) {
-            return _Char_type{};
-        } else if constexpr (signed_integral<_Td> && sizeof(_Td) <= sizeof(int)) {
-            return int{};
-        } else if constexpr (unsigned_integral<_Td> && sizeof(_Td) <= sizeof(unsigned int)) {
-            return static_cast<unsigned int>(42);
-        } else if constexpr (signed_integral<_Td> && sizeof(_Td) <= sizeof(long long)) {
-            return static_cast<long long>(42);
-        } else if constexpr (unsigned_integral<_Td> && sizeof(_Td) <= sizeof(unsigned long long)) {
-            return static_cast<unsigned long long>(42);
-        } else {
-            return typename basic_format_arg<_Context>::handle{42};
-        }
-    }
-
-    static auto _Phony_basic_format_arg_constructor(float) -> float; // not defined
-    static auto _Phony_basic_format_arg_constructor(double) -> double; // not defined
-    static auto _Phony_basic_format_arg_constructor(long double) -> long double; // not defined
-
-    static auto _Phony_basic_format_arg_constructor(_Char_type*) -> const _Char_type*; // not defined
-    static auto _Phony_basic_format_arg_constructor(const _Char_type*) -> const _Char_type*; // not defined
-
-    template <class _Traits>
-    static auto _Phony_basic_format_arg_constructor(basic_string_view<_Char_type, _Traits>)
-        -> basic_string_view<_Char_type>; // not defined
-
-    template <class _Traits, class _Alloc>
-    static auto _Phony_basic_format_arg_constructor(basic_string<_Char_type, _Traits, _Alloc>)
-        -> basic_string_view<_Char_type>; // not defined
-
-    static auto _Phony_basic_format_arg_constructor(nullptr_t) -> const void*; // not defined
-
-    template <class _Ty>
-        requires is_void_v<_Ty>
-    static auto _Phony_basic_format_arg_constructor(_Ty*) -> const void*; // not defined
-
-    template <class _Ty>
-    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<_Ty&>()));
-
-    template <class _Ty>
-    static constexpr size_t _Storage_size = sizeof(_Storage_type<_Ty>);
-};
-
 struct _Format_arg_index {
     // TRANSITION, Should be templated on number of arguments for even less storage
 
@@ -1814,17 +1960,14 @@ struct _Format_arg_index {
         _Type_ = static_cast<size_t>(_Val);
     }
 
-    size_t _Index : (sizeof(size_t) * 8 - 4);
-    size_t _Type_ : 4;
+    size_t _Index : (sizeof(size_t) * 8 - 4){};
+    size_t _Type_ : 4 {};
 };
-
-_EXPORT_STD template <class _Context>
-class basic_format_args;
 
 template <class _Context, class... _Args>
 class _Format_arg_store {
 private:
-    using _CharType = typename _Context::char_type;
+    using _CharType = _Context::char_type;
     using _Traits   = _Format_arg_traits<_Context>;
 
     friend basic_format_args<_Context>;
@@ -1859,7 +2002,7 @@ private:
 
     template <class _Ty>
     void _Store(const size_t _Arg_index, _Ty&& _Val) noexcept {
-        using _Erased_type = typename _Traits::template _Storage_type<_Ty>;
+        using _Erased_type = _Traits::template _Storage_type<_Ty>;
 
         _Basic_format_arg_type _Arg_type;
         if constexpr (is_same_v<_Erased_type, bool>) {
@@ -1892,7 +2035,7 @@ private:
         }
 
 #if !_HAS_CXX23
-        // Workaround towards N4928 [format.arg]/9 and /10 in C++20
+        // Workaround towards N4950 [format.arg]/6.8 in C++20
         if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
             _Store_impl<_Erased_type>(_Arg_index, _Arg_type, _Erased_type{_Val.data(), _Val.size()});
         } else
@@ -1929,7 +2072,7 @@ public:
             return basic_format_arg<_Context>{};
         }
 
-        using _CharType = typename _Context::char_type;
+        using _CharType = _Context::char_type;
         // The explanatory comment in _Format_arg_store explains how the following works.
         const auto _Packed_index = _Index_array[_Index];
         const auto _Arg_storage =
@@ -1971,19 +2114,22 @@ public:
     }
 
     _NODISCARD size_t _Estimate_required_capacity() const noexcept {
-        using _CharT        = typename _Context::char_type;
-        size_t _Result      = 0;
-        const auto _Visitor = [&_Result]<class _ArgTy>(const _ArgTy _Arg) noexcept {
-            if constexpr (is_same_v<_ArgTy, basic_string_view<_CharT>>) {
-                _Result += _Arg.size();
-            } else if constexpr (is_same_v<_ArgTy, const _CharT*>) {
+        using _CharType = _Context::char_type;
+        size_t _Result  = 0;
+
+        for (size_t _Idx = 0; _Idx < _Num_args; ++_Idx) {
+            const auto _Packed_index = _Index_array[_Idx];
+            const auto _Arg_type     = _Packed_index._Type();
+            if (_Arg_type == _Basic_format_arg_type::_String_type) {
+                const auto _Arg_storage =
+                    reinterpret_cast<const unsigned char*>(_Index_array + _Num_args) + _Packed_index._Index;
+                const auto _View = _Get_value_from_memory<basic_string_view<_CharType>>(_Arg_storage);
+                _Result += _View.size();
+            } else if (_Arg_type == _Basic_format_arg_type::_CString_type) {
                 _Result += 32; // estimate for length of null-terminated strings
             } else {
                 _Result += 8; // estimate for length of all other arguments
             }
-        };
-        for (size_t _Idx = 0; _Idx < _Num_args; ++_Idx) {
-            _STD visit_format_arg(_Visitor, get(_Idx));
         }
         return _Result;
     }
@@ -2199,7 +2345,7 @@ private:
         const auto _End = _Data + this->_Limit(_Size);
 
         // extracts back_insert_iterator's underlying container type, or void if not.
-        using _Container = typename _Back_insert_iterator_container_type<_OutputIt>::type;
+        using _Container = _Back_insert_iterator_container_type<_OutputIt>::type;
         if constexpr (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>) {
             auto& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
             _Cont.insert(_Cont.end(), _Data, _End);
@@ -2269,6 +2415,7 @@ using _Fmt_wit = back_insert_iterator<_Fmt_buffer<wchar_t>>;
 _EXPORT_STD using format_context  = basic_format_context<_Fmt_it, char>;
 _EXPORT_STD using wformat_context = basic_format_context<_Fmt_wit, wchar_t>;
 
+_FMT_P2286_BEGIN
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, monostate) {
     _STL_INTERNAL_CHECK(false);
@@ -2335,7 +2482,7 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _Arithmetic _Value) {
 
     if (_End == _Buffer) {
         const to_chars_result _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value);
-        _STL_ASSERT(_Result.ec == errc{}, "to_chars failed");
+        _STL_INTERNAL_CHECK(_Result.ec == errc{});
         _End = _Result.ptr;
     }
 
@@ -2362,7 +2509,7 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const void* const _Value) {
     // TRANSITION, Reusable buffer
     char _Buffer[_Format_min_buffer_length];
     const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), reinterpret_cast<uintptr_t>(_Value), 16);
-    _STL_ASSERT(_Ec == errc{}, "to_chars failed");
+    _STL_INTERNAL_CHECK(_Ec == errc{});
     *_Out++ = '0';
     *_Out++ = 'x';
     return _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
@@ -2470,9 +2617,11 @@ _NODISCARD _OutputIt _Write_sign(_OutputIt _Out, const _Fmt_sign _Sgn, const boo
     return _Out;
 }
 
-inline void _Buffer_to_uppercase(char* _First, const char* _Last) {
+inline void _Buffer_to_uppercase(char* _First, const char* _Last) noexcept {
     for (; _First != _Last; ++_First) {
-        *_First = static_cast<char>(_CSTD toupper(*_First));
+        if (*_First >= 'a' && *_First <= 'z') {
+            *_First -= 'a' - 'A';
+        }
     }
 }
 
@@ -2546,10 +2695,16 @@ template <class _CharT, class _OutputIt, integral _Integral>
 _NODISCARD _OutputIt _Write_integral(
     _OutputIt _Out, _Integral _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
 
+#if _HAS_CXX23
+template <class _CharT, class _OutputIt>
+_NODISCARD _OutputIt _Write_escaped(
+    _OutputIt _Out, basic_string_view<_CharT> _Value, _Basic_format_specs<_CharT> _Specs, char _Delim);
+#endif // _HAS_CXX23
+
 template <class _CharT, class _OutputIt, integral _Integral>
     requires (!_CharT_or_bool<_Integral, _CharT>)
-_NODISCARD _OutputIt
-    _Fmt_write(_OutputIt _Out, _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale);
+_NODISCARD _OutputIt _Fmt_write(
+    _OutputIt _Out, _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale);
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, bool _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
@@ -2597,19 +2752,14 @@ _NODISCARD _OutputIt _Write_integral(
         _Specs._Sgn = _Fmt_sign::_Minus;
     }
 
-    int _Base      = 10;
-    bool _To_upper = false;
+    int _Base = 10;
 
     switch (_Specs._Type) {
     case 'B':
-        _To_upper = true;
-        [[fallthrough]];
     case 'b':
         _Base = 2;
         break;
     case 'X':
-        _To_upper = true;
-        [[fallthrough]];
     case 'x':
         _Base = 16;
         break;
@@ -2621,7 +2771,7 @@ _NODISCARD _OutputIt _Write_integral(
     // long long -1 representation in binary is 64 bits + sign
     char _Buffer[65];
     const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Base);
-    _STL_ASSERT(_Ec == errc{}, "to_chars failed");
+    _STL_INTERNAL_CHECK(_Ec == errc{});
 
     auto _Buffer_start = _Buffer;
     auto _Width        = static_cast<int>(_End - _Buffer_start);
@@ -2635,7 +2785,7 @@ _NODISCARD _OutputIt _Write_integral(
         _Buffer_start += 1;
     }
 
-    if (_To_upper) {
+    if (_Specs._Type == 'X') {
         _Buffer_to_uppercase(_Buffer_start, _End);
     }
 
@@ -2713,11 +2863,21 @@ _NODISCARD _OutputIt _Fmt_write(
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale) {
-    if (_Specs._Type != '\0' && _Specs._Type != 'c') {
+    if (_Specs._Type != '\0' && _Specs._Type != 'c'
+#if _HAS_CXX23
+        && _Specs._Type != '?'
+#endif // _HAS_CXX23
+    ) {
         return _Write_integral(_STD move(_Out), _Value, _Specs, _Locale);
     }
 
     _STL_INTERNAL_CHECK(_Specs._Precision == -1);
+
+#if _HAS_CXX23
+    if (_Specs._Type == '?') {
+        return _Write_escaped(_STD move(_Out), basic_string_view<_CharT>{&_Value, 1}, _Specs, '\'');
+    }
+#endif // _HAS_CXX23
 
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{&_Value, 1}, _Specs, _Locale);
 }
@@ -2732,7 +2892,7 @@ _NODISCARD _OutputIt _Fmt_write(
 
     auto _To_upper  = false;
     auto _Format    = chars_format::general;
-    auto _Exponent  = '\0';
+    auto _Exponent  = 'e';
     auto _Precision = _Specs._Precision;
 
     switch (_Specs._Type) {
@@ -2750,8 +2910,7 @@ _NODISCARD _OutputIt _Fmt_write(
         if (_Precision == -1) {
             _Precision = 6;
         }
-        _Format   = chars_format::scientific;
-        _Exponent = 'e';
+        _Format = chars_format::scientific;
         break;
     case 'F':
         _To_upper = true;
@@ -2769,8 +2928,7 @@ _NODISCARD _OutputIt _Fmt_write(
         if (_Precision == -1) {
             _Precision = 6;
         }
-        _Format   = chars_format::general;
-        _Exponent = 'e';
+        _Format = chars_format::general;
         break;
     }
 
@@ -2817,7 +2975,7 @@ _NODISCARD _OutputIt _Fmt_write(
             _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format, _Precision);
         }
 
-        _STL_ASSERT(_Result.ec == errc{}, "to_chars failed");
+        _STL_INTERNAL_CHECK(_Result.ec == errc{});
     }
 
     auto _Buffer_start = _Buffer;
@@ -2832,9 +2990,10 @@ _NODISCARD _OutputIt _Fmt_write(
         }
     }
 
+    _STL_INTERNAL_CHECK(_Exponent == 'e' || _Exponent == 'p');
     if (_To_upper) {
         _Buffer_to_uppercase(_Buffer_start, _Result.ptr);
-        _Exponent = static_cast<char>(_CSTD toupper(_Exponent));
+        _Exponent -= 'a' - 'A';
     }
 
     const auto _Is_finite = (_STD isfinite)(_Value);
@@ -2883,7 +3042,7 @@ _NODISCARD _OutputIt _Fmt_write(
             _Zeroes_to_append = _Extra_precision;
             break;
         case chars_format::general:
-            if (_Specs._Alt) {
+            if (_Specs._Alt && (_Specs._Type == 'g' || _Specs._Type == 'G')) {
                 auto _Digits = static_cast<int>(_Exponent_start - _Buffer_start);
 
                 if (!_Append_decimal) {
@@ -3124,13 +3283,137 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     return _Pfx_iter._Position();
 }
 
+#if _HAS_CXX23
+_NODISCARD constexpr bool _Is_printable(char32_t _Val) {
+    return __printable_property_data._Get_property_for_codepoint(_Val) == __printable_property_values::_Yes_value;
+}
+
+_NODISCARD constexpr bool _Is_grapheme_extend(char32_t _Val) {
+    // TRANSITION, should reuse _Grapheme_Break_property_data to save space.
+    // (Grapheme_Extend=Yes is Grapheme_Cluster_Break=Extend minus Emoji_Modifier=Yes.)
+    return _Grapheme_Extend_property_data._Get_property_for_codepoint(_Val)
+        == _Grapheme_Extend_property_values::_Grapheme_Extend_value;
+}
+
+template <class _CharT, class _OutputIt>
+_NODISCARD _OutputIt _Write_escaped(_OutputIt _Out, basic_string_view<_CharT> _Value, char _Delim) {
+    auto _First        = _Value.data();
+    const auto _Last   = _First + _Value.size();
+    const auto& _Codec = _Get_fmt_codec<_CharT>();
+
+    _STL_INTERNAL_CHECK(_Delim == '"' || _Delim == '\'');
+    *_Out++ = static_cast<_CharT>(_Delim);
+
+    bool _Escape_grapheme_extend = true;
+
+    char _Buffer[8];
+
+    while (_First != _Last) {
+        const auto _Ch = *_First;
+
+        if (_Ch == static_cast<_CharT>('\t')) {
+            _Out                    = _Fmt_write(_STD move(_Out), _STATICALLY_WIDEN(_CharT, R"(\t)"));
+            _Escape_grapheme_extend = true;
+            ++_First;
+        } else if (_Ch == static_cast<_CharT>('\n')) {
+            _Out                    = _Fmt_write(_STD move(_Out), _STATICALLY_WIDEN(_CharT, R"(\n)"));
+            _Escape_grapheme_extend = true;
+            ++_First;
+        } else if (_Ch == static_cast<_CharT>('\r')) {
+            _Out                    = _Fmt_write(_STD move(_Out), _STATICALLY_WIDEN(_CharT, R"(\r)"));
+            _Escape_grapheme_extend = true;
+            ++_First;
+        } else if (_Ch == static_cast<_CharT>(_Delim)) {
+            *_Out++                 = static_cast<_CharT>('\\');
+            *_Out++                 = static_cast<_CharT>(_Delim);
+            _Escape_grapheme_extend = true;
+            ++_First;
+        } else if (_Ch == static_cast<_CharT>('\\')) {
+            _Out                    = _Fmt_write(_STD move(_Out), _STATICALLY_WIDEN(_CharT, R"(\\)"));
+            _Escape_grapheme_extend = true;
+            ++_First;
+        } else {
+            char32_t _Decoded_ch;
+            const auto [_Next, _Is_usv] = _Codec._Decode(_First, _Last, _Decoded_ch);
+
+            if (_Is_usv) {
+                const bool _Needs_escape =
+                    !_Is_printable(_Decoded_ch) || (_Escape_grapheme_extend && _Is_grapheme_extend(_Decoded_ch));
+
+                if (_Needs_escape) {
+                    _Out = _Fmt_write(_STD move(_Out), _STATICALLY_WIDEN(_CharT, R"(\u{)"));
+
+                    const auto [_End, _Ec] =
+                        _STD to_chars(_Buffer, _STD end(_Buffer), static_cast<uint32_t>(_Decoded_ch), 16);
+                    _STL_INTERNAL_CHECK(_Ec == errc{});
+
+                    _Out = _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
+
+                    *_Out++                 = static_cast<_CharT>('}');
+                    _Escape_grapheme_extend = true;
+                } else {
+                    _Out                    = _STD _Copy_unchecked(_First, _Next, _STD move(_Out));
+                    _Escape_grapheme_extend = false;
+                }
+
+                _First = _Next;
+            } else {
+                for (; _First != _Next; ++_First) {
+                    _Out = _Fmt_write(_STD move(_Out), _STATICALLY_WIDEN(_CharT, R"(\x{)"));
+
+                    const auto [_End, _Ec] =
+                        _STD to_chars(_Buffer, _STD end(_Buffer), static_cast<make_unsigned_t<_CharT>>(*_First), 16);
+                    _STL_INTERNAL_CHECK(_Ec == errc{});
+
+                    _Out = _Widen_and_copy<_CharT>(_Buffer, _End, _STD move(_Out));
+
+                    *_Out++ = static_cast<_CharT>('}');
+                }
+                _Escape_grapheme_extend = true;
+            }
+        }
+    }
+
+    *_Out++ = static_cast<_CharT>(_Delim);
+
+    return _STD move(_Out);
+}
+
+template <class _CharT, class _OutputIt>
+_NODISCARD _OutputIt _Write_escaped(
+    _OutputIt _Out, basic_string_view<_CharT> _Value, _Basic_format_specs<_CharT> _Specs, char _Delim) {
+    if (_Specs._Precision < 0 && _Specs._Width <= 0) {
+        return _Write_escaped(_STD move(_Out), _Value, _Delim);
+    }
+
+    basic_string<_CharT> _Temp;
+    {
+        _Fmt_iterator_buffer<back_insert_iterator<basic_string<_CharT>>, _CharT> _Buf(back_insert_iterator{_Temp});
+        (void) _Write_escaped(back_insert_iterator<_Fmt_buffer<_CharT>>{_Buf}, _Value, _Delim);
+    }
+
+    int _Width          = _Specs._Precision;
+    const _CharT* _Last = _Measure_string_prefix<_CharT>(_Temp, _Width);
+
+    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left, [&_Temp, _Last](_OutputIt _Out) {
+        return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Temp.data(), _Last});
+    });
+}
+#endif // _HAS_CXX23
+
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
-    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 'c' || _Specs._Type == 's');
+    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 'c' || _Specs._Type == 's' || _Specs._Type == '?');
     _STL_INTERNAL_CHECK(_Specs._Sgn == _Fmt_sign::_None);
     _STL_INTERNAL_CHECK(!_Specs._Alt);
     _STL_INTERNAL_CHECK(!_Specs._Leading_zero);
+
+#if _HAS_CXX23
+    if (_Specs._Type == '?') {
+        return _Write_escaped(_STD move(_Out), _Value, _Specs, '"');
+    }
+#endif // _HAS_CXX23
 
     if (_Specs._Precision < 0 && _Specs._Width <= 0) {
         return _Fmt_write(_STD move(_Out), _Value);
@@ -3161,7 +3444,7 @@ struct _Default_arg_formatter {
         return _Fmt_write<_CharT>(_STD move(_Out), _Val);
     }
 
-    _OutputIt operator()(typename basic_format_arg<_Context>::handle _Handle) && {
+    _OutputIt operator()(basic_format_arg<_Context>::handle _Handle) && {
         basic_format_parse_context<_CharT> _Parse_ctx({});
         basic_format_context<_OutputIt, _CharT> _Format_ctx(_STD move(_Out), _Args, _Loc);
         _Handle.format(_Parse_ctx, _Format_ctx);
@@ -3177,7 +3460,7 @@ struct _Arg_formatter {
     _Context* _Ctx                      = nullptr;
     _Basic_format_specs<_CharT>* _Specs = nullptr;
 
-    _OutputIt operator()(typename basic_format_arg<_Context>::handle) {
+    _OutputIt operator()(basic_format_arg<_Context>::handle) {
         _STL_VERIFY(false, "The custom handler should be structurally unreachable for _Arg_formatter");
         _STL_INTERNAL_CHECK(_Ctx);
         return _Ctx->out();
@@ -3196,11 +3479,11 @@ struct _Arg_formatter {
 // care about avoiding code bloat for code that never runs at runtime, and we can't form
 // the erased basic_format_args structure at compile time.
 template <class _Ty, class _ParseContext>
-consteval typename _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
-    using _CharT                = typename _ParseContext::char_type;
+consteval _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
+    using _CharT                = _ParseContext::char_type;
     using _Context              = basic_format_context<back_insert_iterator<_Fmt_buffer<_CharT>>, _CharT>;
     using _ArgTraits            = _Format_arg_traits<_Context>;
-    using _FormattedTypeMapping = typename _ArgTraits::template _Storage_type<_Ty>;
+    using _FormattedTypeMapping = _ArgTraits::template _Storage_type<_Ty>;
     // If the type is going to use a custom formatter we should just use that,
     // instead of trying to instantiate a custom formatter for its erased handle
     // type
@@ -3214,7 +3497,7 @@ consteval typename _ParseContext::iterator _Compile_time_parse_format_specs(_Par
 template <class _CharT, class... _Args>
 struct _Format_checker {
     using _ParseContext = basic_format_parse_context<_CharT>;
-    using _ParseFunc    = typename _ParseContext::iterator (*)(_ParseContext&);
+    using _ParseFunc    = _ParseContext::iterator (*)(_ParseContext&);
 
     static constexpr size_t _Num_args = sizeof...(_Args);
     _ParseContext _Parse_context;
@@ -3283,9 +3566,10 @@ struct _Format_handler {
         return _First;
     }
 };
+_FMT_P2286_END
 
 // Generic formatter definition, the deleted default constructor
-// makes it "disabled" as per N4928 [format.formatter.spec]/5
+// makes it "disabled" as per N4950 [format.formatter.spec]/5
 _EXPORT_STD template <class _Ty, class _CharT>
 struct formatter {
     formatter()                           = delete;
@@ -3293,11 +3577,12 @@ struct formatter {
     formatter operator=(const formatter&) = delete;
 };
 
+_FMT_P2286_BEGIN
 template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
 struct _Formatter_base {
     using _Pc = basic_format_parse_context<_CharT>;
 
-    constexpr typename _Pc::iterator parse(_Pc& _ParseCtx) {
+    constexpr _Pc::iterator parse(_Pc& _ParseCtx) {
         _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>{_Specs, _ParseCtx}, _ArgType);
         const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
         if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
@@ -3307,7 +3592,7 @@ struct _Formatter_base {
     }
 
     template <class _FormatContext>
-    typename _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
+    _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
         _Dynamic_format_specs<_CharT> _Format_specs = _Specs;
         if (_Specs._Dynamic_width_index >= 0) {
             _Format_specs._Width =
@@ -3322,12 +3607,13 @@ struct _Formatter_base {
         return _STD visit_format_arg(
             _Arg_formatter<typename _FormatContext::iterator, _CharT>{
                 ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)},
-            basic_format_arg<_FormatContext>{_Val});
+            basic_format_arg<_FormatContext>::_Make_from(_Val));
     }
 
 private:
     _Dynamic_format_specs<_CharT> _Specs;
 };
+_FMT_P2286_END
 
 #define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType) \
     template <_Format_supported_charT _CharT>   \
@@ -3408,20 +3694,21 @@ _EXPORT_STD using wformat_args = basic_format_args<wformat_context>;
 
 _EXPORT_STD template <class _Context = format_context, class... _Args>
 _NODISCARD auto make_format_args(_Args&&... _Vals) {
-    static_assert((_Has_formatter<_Args, _Context> && ...),
+    static_assert((_Formattable_with<remove_cvref_t<_Args>, _Context> && ...),
         "Cannot format an argument. To make type T formattable, provide a formatter<T> specialization. "
-        "See N4928 [format.arg.store]/2 and [formatter.requirements].");
+        "See N4950 [format.arg.store]/2 and [formatter.requirements].");
     return _Format_arg_store<_Context, _Args...>{_Vals...};
 }
 
 _EXPORT_STD template <class... _Args>
 _NODISCARD auto make_wformat_args(_Args&&... _Vals) {
-    static_assert((_Has_formatter<_Args, wformat_context> && ...),
+    static_assert((_Formattable_with<remove_cvref_t<_Args>, wformat_context> && ...),
         "Cannot format an argument. To make type T formattable, provide a formatter<T> specialization. "
-        "See N4928 [format.arg.store]/2 and [formatter.requirements].");
+        "See N4950 [format.arg.store]/2 and [formatter.requirements].");
     return _Format_arg_store<wformat_context, _Args...>{_Vals...};
 }
 
+_FMT_P2286_BEGIN
 _EXPORT_STD template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _Args) {
     // Make `_Parse_format_string` type-dependent to defer instantiation:
@@ -3557,6 +3844,7 @@ _EXPORT_STD template <class... _Types>
 _NODISCARD wstring format(const locale& _Loc, const wformat_string<_Types...> _Fmt, _Types&&... _Args) {
     return _STD vformat(_Loc, _Fmt.get(), _STD make_wformat_args(_Args...));
 }
+_FMT_P2286_END
 
 _EXPORT_STD template <class _OutputIt>
 struct format_to_n_result {
@@ -3564,6 +3852,7 @@ struct format_to_n_result {
     iter_difference_t<_OutputIt> size;
 };
 
+_FMT_P2286_BEGIN
 _EXPORT_STD template <output_iterator<const char&> _OutputIt, class... _Types>
 format_to_n_result<_OutputIt> format_to_n(
     _OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const format_string<_Types...> _Fmt, _Types&&... _Args) {
@@ -3623,6 +3912,7 @@ _NODISCARD size_t formatted_size(const locale& _Loc, const wformat_string<_Types
     _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt.get(), _STD make_wformat_args(_Args...));
     return _Buf._Count();
 }
+_FMT_P2286_END
 
 #if _HAS_CXX23
 enum class _Add_newline : bool { _Nope, _Yes };
@@ -3670,7 +3960,112 @@ _NODISCARD inline string _Unescape_braces(const _Add_newline _Add_nl, const stri
 
     return _Unescaped_str;
 }
+
+template <class _CharT>
+struct _Fill_align_and_width_specs { // used by thread::id and stacktrace_entry formatters
+    int _Width               = -1;
+    int _Dynamic_width_index = -1;
+    _Fmt_align _Alignment    = _Fmt_align::_None;
+    uint8_t _Fill_length     = 1;
+    // At most one codepoint (so one char32_t or four utf-8 char8_t).
+    _CharT _Fill[4 / sizeof(_CharT)] = {' '};
+};
+
+template <class _CharT>
+class _Fill_align_and_width_specs_setter {
+public:
+    constexpr explicit _Fill_align_and_width_specs_setter(
+        _Fill_align_and_width_specs<_CharT>& _Specs_, basic_format_parse_context<_CharT>& _Parse_ctx_)
+        : _Specs(_Specs_), _Parse_ctx(_Parse_ctx_) {}
+
+    constexpr void _On_align(const _Fmt_align _Aln) {
+        _Specs._Alignment = _Aln;
+    }
+
+    constexpr void _On_fill(const basic_string_view<_CharT> _Sv) {
+        if (_Sv.size() > _STD size(_Specs._Fill)) {
+            _Throw_format_error("Invalid fill (too long).");
+        }
+
+        const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
+        _STD fill(_Pos, _STD end(_Specs._Fill), _CharT{});
+        _Specs._Fill_length = static_cast<uint8_t>(_Sv.size());
+    }
+
+    constexpr void _On_width(const int _Width) {
+        _Specs._Width = _Width;
+    }
+
+    constexpr void _On_dynamic_width(const size_t _Arg_id) {
+        _Parse_ctx.check_arg_id(_Arg_id);
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
+    }
+
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
+    }
+
+private:
+    _Fill_align_and_width_specs<_CharT>& _Specs;
+    basic_format_parse_context<_CharT>& _Parse_ctx;
+
+    _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
+        if (!_STD in_range<int>(_Idx)) {
+            _Throw_format_error("Dynamic width index is too large.");
+        }
+
+        return static_cast<int>(_Idx);
+    }
+};
+
+template <class _CharT, class _Callbacks_type>
+_NODISCARD constexpr const _CharT* _Parse_fill_align_and_width_specs(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    if (_Begin == _End || *_Begin == '}') {
+        return _Begin;
+    }
+
+    _Begin = _Parse_align(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    return _Parse_width(_Begin, _End, _Callbacks);
+}
+
+template <class _CharT>
+struct _Fill_align_and_width_formatter {
+public:
+    _NODISCARD constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        _Fill_align_and_width_specs_setter<_CharT> _Callback{_Specs, _Parse_ctx};
+        const auto _It =
+            _Parse_fill_align_and_width_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
+        if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
+            _Throw_format_error("Missing '}' in format string.");
+        }
+
+        return _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
+    }
+
+    template <class _FormatContext, class _Func>
+    _NODISCARD constexpr auto _Format(
+        _FormatContext& _Format_ctx, const int _Width, _Fmt_align _Default_align, _Func&& _Fn) const {
+        _Fill_align_and_width_specs _Format_specs = _Specs;
+        if (_Specs._Dynamic_width_index >= 0) {
+            _Format_specs._Width =
+                _Get_dynamic_specs<_Width_checker>(_Format_ctx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
+        }
+
+        return _Write_aligned(_Format_ctx.out(), _Width, _Format_specs, _Default_align, _STD forward<_Func>(_Fn));
+    }
+
+private:
+    _Fill_align_and_width_specs<_CharT> _Specs;
+};
 #endif // _HAS_CXX23
+
+#undef _FMT_P2286_END
+#undef _FMT_P2286_BEGIN
 
 _STD_END
 
@@ -3679,6 +4074,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FORMAT_

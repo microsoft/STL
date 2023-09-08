@@ -18,7 +18,7 @@
 //
 // Entry:
 //        LPCWSTR LocaleName  - locale context for the comparison.
-//        DWORD   dwCmpFlags  - see docs.microsoft.com
+//        DWORD   dwCmpFlags  - see https://aka.ms/stl/comparestringex
 //        LPCSTR  lpStringn   - multibyte string to be compared
 //        int     cchCountn   - char (byte) count (NOT including null terminator)
 //                              (-1 if null terminated)
@@ -29,7 +29,7 @@
 //                 2 - if lpString1 == lpString2
 //                 3 - if lpString1 >  lpString2
 //        Failure: 0
-extern "C" int __cdecl __crtCompareStringA(_In_z_ LPCWSTR LocaleName, _In_ DWORD dwCmpFlags,
+extern "C" _CRTIMP2 int __cdecl __crtCompareStringA(_In_z_ LPCWSTR LocaleName, _In_ DWORD dwCmpFlags,
     _In_reads_(cchCount1) LPCSTR lpString1, _In_ int cchCount1, _In_reads_(cchCount2) LPCSTR lpString2,
     _In_ int cchCount2, _In_ int code_page) {
     // CompareString will compare past null terminator. Must find null terminator if in string before cchCountn chars.
@@ -133,7 +133,6 @@ extern "C" int __cdecl __crtCompareStringA(_In_z_ LPCWSTR LocaleName, _In_ DWORD
     }
 
     // allocate enough space for chars
-#pragma warning(suppress : 6386) // TRANSITION, VSO-1152705 false buffer overrun report in _malloca_crt_t
     const __crt_scoped_stack_ptr<wchar_t> wbuffer2(_malloca_crt_t(wchar_t, buff_size2));
     if (wbuffer2.get() == nullptr) {
         return 0;

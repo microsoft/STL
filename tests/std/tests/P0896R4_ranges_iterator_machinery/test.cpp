@@ -1256,7 +1256,7 @@ namespace iterator_cust_swap_test {
 
     // N4928 [iterator.cust.swap]/4.4: "Otherwise, ranges::iter_swap(E1, E2) is ill-formed."
     template <class T, class U>
-    concept bullet4 = (!can_iter_swap<T, U>);
+    concept bullet4 = !can_iter_swap<T, U>;
 
     STATIC_ASSERT(bullet4<void, void>);
     STATIC_ASSERT(bullet4<int, int>);

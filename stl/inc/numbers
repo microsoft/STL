@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _NUMBERS_
 #define _NUMBERS_
 #include <yvals_core.h>
@@ -30,7 +29,7 @@ namespace numbers {
     template <class _Ty>
     struct _Invalid {
         static_assert(_Always_false<_Ty>, "A program that instantiates a primary template of a mathematical constant "
-                                          "variable template is ill-formed. (N4944 [math.constants]/3)");
+                                          "variable template is ill-formed. (N4950 [math.constants]/3)");
     };
 
     _EXPORT_STD template <class _Ty>
@@ -90,12 +89,12 @@ namespace numbers {
     template <class _Ty>
     struct _Reject_invalid {
         static_assert(is_floating_point_v<_Ty>, "A program that instantiates a primary template of a mathematical "
-                                                "constant variable template is ill-formed. (N4944 [math.constants]/3)");
+                                                "constant variable template is ill-formed. (N4950 [math.constants]/3)");
         using type = _Ty;
     };
 
     template <class _Ty>
-    using _Reject_invalid_t = typename _Reject_invalid<_Ty>::type;
+    using _Reject_invalid_t = _Reject_invalid<_Ty>::type;
 
     _EXPORT_STD template <class _Ty>
     inline constexpr _Ty e_v = static_cast<_Reject_invalid_t<_Ty>>(2.718281828459045);

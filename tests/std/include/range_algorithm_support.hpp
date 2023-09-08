@@ -12,10 +12,6 @@
 #include <type_traits>
 #include <utility>
 
-#ifdef _M_CEE // TRANSITION, VSO-1659408
-#include <memory>
-#endif // ^^^ workaround ^^^
-
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 namespace ranges = std::ranges;
@@ -72,21 +68,11 @@ template <class T, std::size_t N>
 struct holder {
     STATIC_ASSERT(N < ~std::size_t{0} / sizeof(T));
 
-#ifdef _M_CEE // TRANSITION, VSO-1659408
-    unsigned char space[(N + 1) * sizeof(T)];
-
-    auto as_span() {
-        void* buffer_ptr       = space;
-        std::size_t buffer_len = sizeof(space);
-        return std::span<T, N>{static_cast<T*>(std::align(alignof(T), sizeof(T), buffer_ptr, buffer_len)), N};
-    }
-#else // ^^^ workaround / no workaround vvv
     alignas(T) unsigned char space[N * sizeof(T)];
 
     auto as_span() {
         return std::span<T, N>{reinterpret_cast<T*>(space + 0), N};
     }
-#endif // ^^^ no workaround ^^^
 };
 
 namespace test {
@@ -200,33 +186,33 @@ namespace test {
 
     template <class T, class U>
     concept CanEq = requires(T const& t, U const& u) {
-                        { t == u } -> convertible_to<bool>;
-                    };
+        { t == u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanNEq = requires(T const& t, U const& u) {
-                         { t != u } -> convertible_to<bool>;
-                     };
+        { t != u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanLt = requires(T const& t, U const& u) {
-                        { t < u } -> convertible_to<bool>;
-                    };
+        { t < u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanLtE = requires(T const& t, U const& u) {
-                         { t <= u } -> convertible_to<bool>;
-                     };
+        { t <= u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanGt = requires(T const& t, U const& u) {
-                        { t > u } -> convertible_to<bool>;
-                    };
+        { t > u } -> convertible_to<bool>;
+    };
 
     template <class T, class U>
     concept CanGtE = requires(T const& t, U const& u) {
-                         { t >= u } -> convertible_to<bool>;
-                     };
+        { t >= u } -> convertible_to<bool>;
+    };
 
     template <class Category, class Element>
     class proxy_reference {
@@ -915,6 +901,8 @@ namespace test {
     public:
         using I = iterator<Category, Element, Diff, Eq, Proxy, WrappedState::wrapped>;
         using S = conditional_t<to_bool(IsCommon), I, sentinel<Element, WrappedState::wrapped>>;
+        using RebindAsMoveOnly = range<Category, Element, IsSized, Diff, IsCommon, Eq, Proxy, IsView,
+            Copyability::move_only>;
 
         using detail::range_base<Element, Copy>::range_base;
 

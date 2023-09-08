@@ -3,14 +3,13 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _TUPLE_
 #define _TUPLE_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifdef __cpp_lib_concepts
 #include <compare>
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #include <__msvc_iter_core.hpp>
 #include <type_traits>
 
@@ -189,14 +188,14 @@ inline constexpr bool _Can_construct_values_from_tuple_like_v<tuple<_Types...>, 
 
 #ifdef __clang__ // TRANSITION, LLVM-59827
 template <class _TupleLike, class _Tuple>
-concept _Can_construct_from_tuple_like = _Tuple_like<_TupleLike> && _Different_from<_TupleLike, _Tuple>
-                                      && (!_Is_subrange_v<remove_cvref_t<_TupleLike>>)
-                                      && (tuple_size_v<_Tuple> == tuple_size_v<remove_cvref_t<_TupleLike>>)
-                                      && _Can_construct_values_from_tuple_like_v<_Tuple, _TupleLike>
-                                      && (tuple_size_v<_Tuple> != 1
-                                          || (!is_convertible_v<_TupleLike, tuple_element_t<0, _Tuple>>
-                                              && !is_constructible_v<tuple_element_t<0, _Tuple>, _TupleLike>) );
-#endif // __clang__
+concept _Can_construct_from_tuple_like =
+    _Different_from<_TupleLike, _Tuple> && _Tuple_like<_TupleLike> && !_Is_subrange_v<remove_cvref_t<_TupleLike>>
+    && (tuple_size_v<_Tuple> == tuple_size_v<remove_cvref_t<_TupleLike>>) //
+    &&_Can_construct_values_from_tuple_like_v<_Tuple, _TupleLike>
+    && (tuple_size_v<_Tuple> != 1
+        || (!is_convertible_v<_TupleLike, tuple_element_t<0, _Tuple>>
+            && !is_constructible_v<tuple_element_t<0, _Tuple>, _TupleLike>) );
+#endif // defined(__clang__)
 
 template <class _TTuple, class _UTuple, class _Indices = make_index_sequence<tuple_size_v<_UTuple>>>
 struct _Three_way_comparison_result_with_tuple_like {};
@@ -205,7 +204,7 @@ template <class... _TTypes, class _UTuple, size_t... _Indices>
     requires
 #ifndef __clang__ // TRANSITION, DevCom-10265237
     (sizeof...(_TTypes) == sizeof...(_Indices)) &&
-#endif // __clang__
+#endif // !defined(__clang__)
     (requires { typename _Synth_three_way_result<_TTypes, tuple_element_t<_Indices, _UTuple>>; } && ...)
 struct _Three_way_comparison_result_with_tuple_like<tuple<_TTypes...>, _UTuple, index_sequence<_Indices...>> {
     using type = common_comparison_category_t<_Synth_three_way_result<_TTypes, tuple_element_t<_Indices, _UTuple>>...>;
@@ -213,7 +212,10 @@ struct _Three_way_comparison_result_with_tuple_like<tuple<_TTypes...>, _UTuple, 
 
 template <class _TTuple, _Tuple_like _UTuple>
 using _Three_way_comparison_result_with_tuple_like_t =
-    typename _Three_way_comparison_result_with_tuple_like<_TTuple, _UTuple>::type;
+    _Three_way_comparison_result_with_tuple_like<_TTuple, _UTuple>::type;
+
+template <class _Ty>
+concept _Tuple_like_non_tuple = !_Is_specialization_v<_Ty, tuple> && _Tuple_like<_Ty>;
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <>
@@ -224,8 +226,8 @@ public:
     constexpr tuple(const tuple&) noexcept /* strengthened */ {} // TRANSITION, ABI: should be defaulted
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
-    template <_Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr tuple(_Other&&) noexcept /* strengthened */ {}
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
@@ -236,8 +238,8 @@ public:
     _CONSTEXPR20 tuple(allocator_arg_t, const _Alloc&, const tuple&) noexcept /* strengthened */ {}
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
-    template <class _Alloc, _Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
+    template <class _Alloc, _Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr tuple(allocator_arg_t, const _Alloc&, _Other&&) noexcept /* strengthened */ {}
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
@@ -254,18 +256,18 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    template <_Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr tuple& operator=(_Other&&) noexcept /* strengthened */ {
         return *this;
     }
 
-    template <_Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr const tuple& operator=(_Other&&) const noexcept /* strengthened */ {
         return *this;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(tuple&) noexcept {}
@@ -288,13 +290,13 @@ public:
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
-    template <_Tuple_like _Other>
+    template <_Tuple_like_non_tuple _Other>
     _NODISCARD_FRIEND constexpr bool operator==(const tuple&, const _Other&) noexcept /* strengthened */ {
-        static_assert(tuple_size_v<_Other> == 0, "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
+        static_assert(tuple_size_v<_Other> == 0, "Cannot compare tuples of different sizes (N4950 [tuple.rel]/2).");
         return true;
     }
 
-    template <_Tuple_like _Other>
+    template <_Tuple_like_non_tuple _Other>
         requires (tuple_size_v<remove_cvref_t<_Other>> == 0)
     _NODISCARD_FRIEND constexpr strong_ordering operator<=>(const tuple&, const _Other&) noexcept /* strengthened */ {
         return strong_ordering::equal;
@@ -433,16 +435,16 @@ public:
 #ifdef __clang__ // TRANSITION, LLVM-59827
     template <class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
-    template <_Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
               && _Can_construct_values_from_tuple_like_v<tuple, _Other>
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
-#endif // __clang__
+#endif // ^^^ no workaround ^^^
     constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>) tuple(_Other&& _Right)
         : tuple(_Unpack_tuple_t{}, _STD forward<_Other>(_Right)) {
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     template <class _Alloc, class _This2 = _This,
@@ -541,17 +543,17 @@ public:
 #ifdef __clang__ // TRANSITION, LLVM-59827
     template <class _Alloc, class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
-    template <class _Alloc, _Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+    template <class _Alloc, _Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
               && _Can_construct_values_from_tuple_like_v<tuple, _Other>
               && (sizeof...(_Rest) != 0 || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
-#endif // __clang__
+#endif // ^^^ no workaround ^^^
     constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>)
         tuple(allocator_arg_t, const _Alloc& _Al, _Other&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD forward<_Other>(_Right)) {
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     tuple& operator=(const volatile tuple&) = delete;
@@ -711,8 +713,8 @@ public:
         ((void) (_STD get<_Indices>(*this) = _STD get<_Indices>(_STD forward<_Other>(_Right))), ...);
     }
 
-    template <_Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
               && _Can_assign_values_from_tuple_like_v<false, _Other>
     constexpr tuple& operator=(_Other&& _Right) {
@@ -720,20 +722,21 @@ public:
         return *this;
     }
 
-    template <_Tuple_like _Other>
-        requires _Different_from<_Other, tuple> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like<_Other> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
               && _Can_assign_values_from_tuple_like_v<true, _Other>
     constexpr const tuple& operator=(_Other&& _Right) const {
         _Assign_tuple_like(_STD forward<_Other>(_Right), make_index_sequence<1 + sizeof...(_Rest)>{});
         return *this;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(tuple& _Right) noexcept(
         conjunction_v<_Is_nothrow_swappable<_This>, _Is_nothrow_swappable<_Rest>...>) {
-        _Swap_adl(_Myfirst._Val, _Right._Myfirst._Val);
+        using _STD swap;
+        swap(_Myfirst._Val, _Right._Myfirst._Val); // intentional ADL
         _Mybase::swap(_Right._Get_rest());
     }
 
@@ -741,7 +744,8 @@ public:
     template <int = 0> // see GH-3013
     constexpr void swap(const tuple& _Right) const
         noexcept(conjunction_v<is_nothrow_swappable<const _This>, is_nothrow_swappable<const _Rest>...>) {
-        _Swap_adl(_Myfirst._Val, _Right._Myfirst._Val);
+        using _STD swap;
+        swap(_Myfirst._Val, _Right._Myfirst._Val); // intentional ADL
         _Mybase::swap(_Right._Get_rest());
     }
 #endif // _HAS_CXX23
@@ -771,31 +775,27 @@ public:
     }
 
 #if _HAS_CXX23
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1753916
     template <class _Other, class _Indices = make_index_sequence<1 + sizeof...(_Rest)>>
     static constexpr bool _Can_equal_compare_with_tuple_like_v = false;
 
     template <class _Other, size_t... _Indices>
     static constexpr bool _Can_equal_compare_with_tuple_like_v<_Other, index_sequence<_Indices...>> =
         (requires(const tuple& _Left, const _Other& _Right) {
-             { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) } -> _Boolean_testable;
-         } && ...);
-#endif // ^^^ no workaround ^^^
+            { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) } -> _Boolean_testable;
+        } && ...);
 
     template <class _Other, size_t... _Indices>
     _NODISCARD constexpr bool _Equals_to_tuple_like(const _Other& _Right, index_sequence<_Indices...>) const {
         return ((_STD get<_Indices>(*this) == _STD get<_Indices>(_Right)) && ...);
     }
 
-    template <_Tuple_like _Other>
+    template <_Tuple_like_non_tuple _Other>
     _NODISCARD_FRIEND constexpr bool operator==(const tuple& _Left, const _Other& _Right) {
         static_assert(1 + sizeof...(_Rest) == tuple_size_v<_Other>,
-            "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1753916
+            "Cannot compare tuples of different sizes (N4950 [tuple.rel]/2).");
         static_assert(_Can_equal_compare_with_tuple_like_v<_Other>,
-            "For all i, where 0 <= i < sizeof...(TTypes), get<i>(t) == get<i>(u) must be a valid expression (N4928 "
+            "For all i, where 0 <= i < sizeof...(TTypes), get<i>(t) == get<i>(u) must be a valid expression (N4950 "
             "[tuple.rel]/2).");
-#endif // ^^^ no workaround ^^^
         return _Left._Equals_to_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
     }
 
@@ -807,7 +807,7 @@ public:
         return _Result;
     }
 
-    template <_Tuple_like _Other>
+    template <_Tuple_like_non_tuple _Other>
     _NODISCARD_FRIEND constexpr auto operator<=>(const tuple& _Left, const _Other& _Right)
         -> _Three_way_comparison_result_with_tuple_like_t<tuple, _Other> {
         return _Left._Three_way_compare_with_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
@@ -871,7 +871,7 @@ tuple(allocator_arg_t, _Alloc, tuple<_Types...>) -> tuple<_Types...>;
 _EXPORT_STD template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator==(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     static_assert(
-        sizeof...(_Types1) == sizeof...(_Types2), "Cannot compare tuples of different sizes (N4928 [tuple.rel]/2).");
+        sizeof...(_Types1) == sizeof...(_Types2), "Cannot compare tuples of different sizes (N4950 [tuple.rel]/2).");
     return _Left._Equals(_Right);
 }
 
@@ -1098,7 +1098,7 @@ constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>) 
     is_nothrow_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>) {
     // construct _Ty from the elements of _Tpl
     static_assert(is_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>,
-        "the target type must be constructible from the fields of the argument tuple (N4892 [tuple.apply]/2).");
+        "the target type must be constructible from the fields of the argument tuple (N4950 [tuple.apply]/4).");
     return _Ty(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 
@@ -1126,9 +1126,9 @@ struct _Tuple_like_common_reference;
 template <class _TTuple, class _UTuple, template <class> class _TQual, template <class> class _UQual,
     size_t... _Indices>
     requires requires {
-                 typename tuple<common_reference_t<_TQual<tuple_element_t<_Indices, _TTuple>>,
-                     _UQual<tuple_element_t<_Indices, _UTuple>>>...>;
-             }
+        typename tuple<common_reference_t<_TQual<tuple_element_t<_Indices, _TTuple>>,
+            _UQual<tuple_element_t<_Indices, _UTuple>>>...>;
+    }
 struct _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual, index_sequence<_Indices...>> {
     using type = tuple<
         common_reference_t<_TQual<tuple_element_t<_Indices, _TTuple>>, _UQual<tuple_element_t<_Indices, _UTuple>>>...>;
@@ -1137,10 +1137,11 @@ struct _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual, index_sequ
 template <_Tuple_like _TTuple, _Tuple_like _UTuple, template <class> class _TQual, template <class> class _UQual>
     requires (_Is_specialization_v<_TTuple, tuple> || _Is_specialization_v<_UTuple, tuple>)
           && is_same_v<_TTuple, decay_t<_TTuple>> && is_same_v<_UTuple, decay_t<_UTuple>>
-          && (tuple_size_v<_TTuple> == tuple_size_v<_UTuple>)
-          && requires { typename _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type; }
+          && (tuple_size_v<_TTuple> == tuple_size_v<_UTuple>) && requires {
+                 typename _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type;
+             }
 struct basic_common_reference<_TTuple, _UTuple, _TQual, _UQual> {
-    using type = typename _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type;
+    using type = _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type;
 };
 
 template <_Tuple_like _TTuple, _Tuple_like _UTuple, class _Indices = make_index_sequence<tuple_size_v<_TTuple>>>
@@ -1148,9 +1149,8 @@ struct _Tuple_like_common_type;
 
 template <class _TTuple, class _UTuple, size_t... _Indices>
     requires requires {
-                 typename tuple<
-                     common_type_t<tuple_element_t<_Indices, _TTuple>, tuple_element_t<_Indices, _UTuple>>...>;
-             }
+        typename tuple<common_type_t<tuple_element_t<_Indices, _TTuple>, tuple_element_t<_Indices, _UTuple>>...>;
+    }
 struct _Tuple_like_common_type<_TTuple, _UTuple, index_sequence<_Indices...>> {
     using type = tuple<common_type_t<tuple_element_t<_Indices, _TTuple>, tuple_element_t<_Indices, _UTuple>>...>;
 };
@@ -1158,10 +1158,11 @@ struct _Tuple_like_common_type<_TTuple, _UTuple, index_sequence<_Indices...>> {
 template <_Tuple_like _TTuple, _Tuple_like _UTuple>
     requires (_Is_specialization_v<_TTuple, tuple> || _Is_specialization_v<_UTuple, tuple>)
           && is_same_v<_TTuple, decay_t<_TTuple>> && is_same_v<_UTuple, decay_t<_UTuple>>
-          && (tuple_size_v<_TTuple> == tuple_size_v<_UTuple>)
-          && requires { typename _Tuple_like_common_type<_TTuple, _UTuple>::type; }
+          && (tuple_size_v<_TTuple> == tuple_size_v<_UTuple>) && requires {
+                 typename _Tuple_like_common_type<_TTuple, _UTuple>::type;
+             }
 struct common_type<_TTuple, _UTuple> {
-    using type = typename _Tuple_like_common_type<_TTuple, _UTuple>::type;
+    using type = _Tuple_like_common_type<_TTuple, _UTuple>::type;
 };
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 

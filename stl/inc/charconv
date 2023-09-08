@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _CHARCONV_
 #define _CHARCONV_
 #include <yvals.h>
@@ -253,7 +252,10 @@ _NODISCARD _CONSTEXPR23 from_chars_result _Integer_from_chars(
 
     constexpr _Unsigned _Uint_max    = static_cast<_Unsigned>(-1);
     constexpr _Unsigned _Int_max     = static_cast<_Unsigned>(_Uint_max >> 1);
+#pragma warning(push)
+#pragma warning(disable : 26450) // TRANSITION, VSO-1828677
     constexpr _Unsigned _Abs_int_min = static_cast<_Unsigned>(_Int_max + 1);
+#pragma warning(pop)
 
     _Unsigned _Risky_val;
     _Unsigned _Max_digit;
@@ -304,7 +306,7 @@ _NODISCARD _CONSTEXPR23 from_chars_result _Integer_from_chars(
         }
     }
 
-    _Raw_value = static_cast<_RawTy>(_Value); // implementation-defined for negative, N4713 7.8 [conv.integral]/3
+    _Raw_value = static_cast<_RawTy>(_Value); // congruent to _Value modulo 2^N for negative, N4950 [conv.integral]/3
 
     return {_Next, errc{}};
 }
@@ -369,30 +371,37 @@ _EXPORT_STD _CONSTEXPR23 from_chars_result from_chars(const char* const _First, 
 // array is not necessary: all operations on the _Big_integer_flt type are carefully written to only access elements at
 // indices [0, _Myused), and all operations correctly update _Myused as the utilized size increases.
 
-// _Big_integer_flt _Xval{}; is direct-list-initialization (N4750 11.6.4 [dcl.init.list]/1).
-// N4750 11.6.4 [dcl.init.list]/3.5:
+// _Big_integer_flt _Xval{}; is direct-list-initialization (N4950 [dcl.init.list]/1).
+// N4950 [dcl.init.list]/3.5:
 // "Otherwise, if the initializer list has no elements and T is a class type with a default constructor,
 // the object is value-initialized."
-// N4750 11.6 [dcl.init]/8, /8.1:
+// N4950 [dcl.init.general]/9, /9.1, /9.1.1:
 // "To value-initialize an object of type T means:
-// - if T is a (possibly cv-qualified) class type (Clause 12) with either no default constructor (15.1)
-// or a default constructor that is user-provided or deleted, then the object is default-initialized;"
-// N4750 11.6 [dcl.init]/7, /7.1:
+// - if T is a (possibly cv-qualified) class type ([class]), then
+//   - if T has either no default constructor ([class.default.ctor]) or a default constructor
+//   that is user-provided or deleted, then the object is default-initialized;"
+// N4950 [dcl.init.general]/7, /7.1:
 // "To default-initialize an object of type T means:
-// - If T is a (possibly cv-qualified) class type (Clause 12), constructors are considered. The applicable constructors
-// are enumerated (16.3.1.3), and the best one for the initializer () is chosen through overload resolution (16.3).
+// - If T is a (possibly cv-qualified) class type ([class]), constructors are considered. The applicable constructors
+// are enumerated ([over.match.ctor]), and the best one for the initializer () is chosen through overload resolution
+// ([over.match]).
 // The constructor thus selected is called, with an empty argument list, to initialize the object."
-// N4750 15.6.2 [class.base.init]/9, /9.3:
-// "In a non-delegating constructor, if a given potentially constructed subobject is not designated by a
-// mem-initializer-id (including the case where there is no mem-initializer-list because the constructor has no
-// ctor-initializer), then [...] - otherwise, the entity is default-initialized (11.6)."
-// N4750 11.6 [dcl.init]/7, /7.2, /7.3:
+// N4950 [class.base.init]/9, /9.3:
+// "In a non-delegating constructor other than an implicitly-defined copy/move constructor ([class.copy.ctor]),
+// if a given potentially constructed subobject is not designated by a mem-initializer-id (including the case
+// where there is no mem-initializer-list because the constructor has no ctor-initializer), then [...]
+// - otherwise, the entity is default-initialized ([dcl.init])."
+// N4950 [dcl.init.general]/7, /7.2, /7.3:
 // "To default-initialize an object of type T means: [...]
 // - If T is an array type, each element is default-initialized.
 // - Otherwise, no initialization is performed."
 // Therefore, _Mydata's elements are not initialized.
 struct _Big_integer_flt {
+#pragma warning(push)
+#pragma warning(disable : 26495) // Variable 'std::_Big_integer_flt::_Mydata' is uninitialized.
+                                 // Always initialize a member variable (type.6).
     _Big_integer_flt() noexcept : _Myused(0) {}
+#pragma warning(pop)
 
     _Big_integer_flt(const _Big_integer_flt& _Other) noexcept : _Myused(_Other._Myused) {
         _CSTD memcpy(_Mydata, _Other._Mydata, _Other._Myused * sizeof(uint32_t));
@@ -1017,7 +1026,10 @@ _NODISCARD inline uint64_t _Right_shift_with_rounding(
     constexpr uint32_t _Total_number_of_bits = 64;
     if (_Shift >= _Total_number_of_bits) {
         if (_Shift == _Total_number_of_bits) {
+#pragma warning(push)
+#pragma warning(disable : 26454) // TRANSITION, VSO-1826196
             constexpr uint64_t _Extra_bits_mask = (1ULL << (_Total_number_of_bits - 1)) - 1;
+#pragma warning(pop)
             constexpr uint64_t _Round_bit_mask  = (1ULL << (_Total_number_of_bits - 1));
 
             const bool _Round_bit = (_Value & _Round_bit_mask) != 0;
@@ -1651,7 +1663,7 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
     constexpr int _Maximum_temporary_decimal_exponent = 5200;
     constexpr int _Minimum_temporary_decimal_exponent = -5200;
 
-    if (_Fmt != chars_format::fixed // N4713 23.20.3 [charconv.from.chars]/7.3
+    if (_Fmt != chars_format::fixed // N4950 [charconv.from.chars]/6.3
                                     // "if fmt has chars_format::fixed set but not chars_format::scientific,
                                     // the optional exponent part shall not appear"
         && _Next != _Last && (static_cast<unsigned char>(*_Next) | 0x20) == _Exponent_prefix) { // found exponent prefix
@@ -1690,7 +1702,7 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
     const char* const _Exponent_end = _Next;
 
     if (_Fmt == chars_format::scientific
-        && _Frac_end == _Exponent_end) { // N4713 23.20.3 [charconv.from.chars]/7.2
+        && _Frac_end == _Exponent_end) { // N4950 [charconv.from.chars]/6.2
                                          // "if fmt has chars_format::scientific set but not chars_format::fixed,
                                          // the otherwise optional exponent part shall appear"
         return {_First, errc::invalid_argument};

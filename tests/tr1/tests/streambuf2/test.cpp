@@ -37,49 +37,49 @@ public:
     }
 
 protected:
-    virtual STD wstreambuf* setbuf(wchar_t*, STD streamsize) { // fake setbuf
+    STD wstreambuf* setbuf(wchar_t*, STD streamsize) override { // fake setbuf
         return nullptr;
     }
 
-    virtual CSTD wint_t overflow(CSTD wint_t = WEOF) { // fake overflow
+    CSTD wint_t overflow(CSTD wint_t = WEOF) override { // fake overflow
         return 1;
     }
 
-    virtual CSTD wint_t pbackfail(CSTD wint_t = WEOF) { // fake pbackfail
+    CSTD wint_t pbackfail(CSTD wint_t = WEOF) override { // fake pbackfail
         return 2;
     }
 
-    virtual STD streamsize showmanyc() { // fake showmanyc
+    STD streamsize showmanyc() override { // fake showmanyc
         return 3;
     }
 
-    virtual CSTD wint_t underflow() { // fake underflow
+    CSTD wint_t underflow() override { // fake underflow
         return 4;
     }
 
-    virtual CSTD wint_t uflow() { // fake uflow
+    CSTD wint_t uflow() override { // fake uflow
         return 5;
     }
 
-    virtual STD streamsize xsgetn(wchar_t*, STD streamsize) { // fake xsgetn
+    STD streamsize xsgetn(wchar_t*, STD streamsize) override { // fake xsgetn
         return 6;
     }
 
-    virtual STD streamsize xsputn(const wchar_t*, STD streamsize) { // fake xsputn
+    STD streamsize xsputn(const wchar_t*, STD streamsize) override { // fake xsputn
         return 7;
     }
 
-    virtual STD wstreampos seekoff(STD streamoff, STD ios::seekdir,
-        STD ios::openmode = STD ios::in | STD ios::out) { // fake seekoff
+    STD wstreampos seekoff(STD streamoff, STD ios::seekdir,
+        STD ios::openmode = STD ios::in | STD ios::out) override { // fake seekoff
         return 8;
     }
 
-    virtual STD wstreampos seekpos(STD streampos,
-        STD ios::openmode = STD ios::in | STD ios::out) { // fake seekpos
+    STD wstreampos seekpos(STD streampos,
+        STD ios::openmode = STD ios::in | STD ios::out) override { // fake seekpos
         return 9;
     }
 
-    virtual int sync() { // fake sync
+    int sync() override { // fake sync
         return 10;
     }
 };

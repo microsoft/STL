@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _CHRONO_
 #define _CHRONO_
 #include <yvals_core.h>
@@ -36,7 +35,7 @@
 #include <concepts>
 #include <format>
 #include <iomanip>
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -1575,7 +1574,7 @@ namespace chrono {
     class hh_mm_ss {
     public:
         static_assert(_Is_duration_v<_Duration>,
-            "N4885 [time.hms.overview]/2 mandates Duration to be a specialization of chrono::duration.");
+            "N4950 [time.hms.overview]/2 mandates Duration to be a specialization of chrono::duration.");
 
         static constexpr unsigned int fractional_width = [] {
             // Returns the number of fractional digits of _Num / _Den in the range [0, 18].
@@ -1601,12 +1600,12 @@ namespace chrono {
 
         constexpr hh_mm_ss() noexcept : hh_mm_ss{_Duration::zero()} {}
         constexpr explicit hh_mm_ss(_Duration _Dur)
-            : _Is_neg{_Dur < _Duration::zero()}, //
+            : _Is_neg{_Dur < _Duration::zero()},
               _Hours{_Duration_cast_underflow_to_zero<_CHRONO hours>(_CHRONO abs(_Dur))},
               _Mins{_Duration_cast_underflow_to_zero<_CHRONO minutes>(
                   _Remove_duration_part<_CHRONO hours>(_CHRONO abs(_Dur)))},
               _Secs{_Duration_cast_underflow_to_zero<_CHRONO seconds>(
-                  _Remove_duration_part<_CHRONO minutes>(_CHRONO abs(_Dur)))} {
+                  _Remove_duration_part<_CHRONO minutes>(_Remove_duration_part<_CHRONO hours>(_CHRONO abs(_Dur))))} {
             if constexpr (treat_as_floating_point_v<typename precision::rep>) {
                 // no need to deal with underflow here, because floating durations allow it
                 _Sub_secs = _CHRONO abs(_Dur) - hours() - minutes() - seconds();
@@ -1918,7 +1917,7 @@ namespace chrono {
         const time_zone& _Left, const time_zone& _Right) noexcept {
         return _Left.name() <=> _Right.name();
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     // [time.zone.leap]
 
@@ -2009,7 +2008,7 @@ namespace chrono {
         const leap_second& _Left, const leap_second& _Right) noexcept {
         return _Left.date() <=> _Right.date();
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     // [time.zone.link]
 
@@ -2042,7 +2041,7 @@ namespace chrono {
         const time_zone_link& _Left, const time_zone_link& _Right) noexcept {
         return _Left.name() <=> _Right.name();
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     // [time.zone.db]
 
@@ -2321,7 +2320,7 @@ namespace chrono {
 
         auto _My_tzdb = static_cast<tzdb_list*>(__std_calloc_crt(1, sizeof(tzdb_list)));
         if (_My_tzdb == nullptr) {
-            _Xruntime_error("bad allocation"); // not bad_alloc, see N4878 [time.zone.db.access]/4
+            _Xruntime_error("bad allocation"); // not bad_alloc, see N4950 [time.zone.db.access]/4
         }
 
         _TRY_BEGIN
@@ -2399,7 +2398,7 @@ namespace chrono {
     class zoned_time {
     private:
         static_assert(_Is_duration_v<_Duration>,
-            "N4885 [time.zone.zonedtime.overview]/2 mandates Duration to be a specialization of chrono::duration.");
+            "N4950 [time.zone.zonedtime.overview]/2 mandates Duration to be a specialization of chrono::duration.");
 
         using _Traits = zoned_traits<_TimeZonePtr>;
 
@@ -2538,7 +2537,7 @@ namespace chrono {
         sys_time<duration> _Tp{};
     };
 
-    zoned_time()->zoned_time<seconds>;
+    zoned_time() -> zoned_time<seconds>;
 
     template <class _Duration>
     zoned_time(sys_time<_Duration>) -> zoned_time<common_type_t<_Duration, seconds>>;
@@ -2644,7 +2643,7 @@ namespace chrono {
 #ifdef __cpp_lib_concepts
             const auto _Leap_cmp = _Utc_leap_second <=> _Time_floor;
 #else // ^^^ __cpp_lib_concepts / TRANSITION, GH-395 workaround vvv
-            const auto _Leap_cmp = _Utc_leap_second > _Time_floor ? strong_ordering::greater
+            const auto _Leap_cmp = _Utc_leap_second > _Time_floor  ? strong_ordering::greater
                                  : _Utc_leap_second == _Time_floor ? strong_ordering::equal
                                                                    : strong_ordering::less;
 #endif // ^^^ workaround
@@ -2907,7 +2906,8 @@ namespace chrono {
         _NODISCARD auto operator()(const time_point<_SourceClock, _Duration>& _Time) const
             noexcept(noexcept(_SourceClock::to_sys(_Time))) /* strengthened */ {
             static_assert(_Is_time_point_for_clock<decltype(_SourceClock::to_sys(_Time)), system_clock>,
-                "N4885 [time.clock.cast.sys]/2: Mandates: SourceClock::to_sys(t) returns a sys_time<Duration>");
+                "N4950 [time.clock.cast.sys]/2: Mandates: SourceClock::to_sys(t) "
+                "returns a sys_time<Duration2> for some type Duration2");
             return _SourceClock::to_sys(_Time);
         }
     };
@@ -2919,8 +2919,8 @@ namespace chrono {
         _NODISCARD auto operator()(const sys_time<_Duration>& _Time) const
             noexcept(noexcept(_DestClock::from_sys(_Time))) /* strengthened */ {
             static_assert(_Is_time_point_for_clock<decltype(_DestClock::from_sys(_Time)), _DestClock>,
-                "N4885 [time.clock.cast.sys]/5: Mandates: DestClock::from_sys(t) returns a "
-                "time_point<DestClock, Duration>");
+                "N4950 [time.clock.cast.sys]/5: Mandates: DestClock::from_sys(t) "
+                "returns a time_point<DestClock, Duration2> for some type Duration2");
             return _DestClock::from_sys(_Time);
         }
     };
@@ -2935,7 +2935,8 @@ namespace chrono {
         _NODISCARD auto operator()(const time_point<_SourceClock, _Duration>& _Time) const
             noexcept(noexcept(_SourceClock::to_utc(_Time))) /* strengthened */ {
             static_assert(_Is_time_point_for_clock<decltype(_SourceClock::to_utc(_Time)), utc_clock>,
-                "N4885 [time.clock.cast.utc]/2: Mandates: SourceClock::to_utc(t) returns a utc_time<Duration>");
+                "N4950 [time.clock.cast.utc]/2: Mandates: SourceClock::to_utc(t) "
+                "returns a utc_time<Duration2> for some type Duration2");
             return _SourceClock::to_utc(_Time);
         }
     };
@@ -2947,8 +2948,8 @@ namespace chrono {
         _NODISCARD auto operator()(const utc_time<_Duration>& _Time) const
             noexcept(noexcept(_DestClock::from_utc(_Time))) /* strengthened */ {
             static_assert(_Is_time_point_for_clock<decltype(_DestClock::from_utc(_Time)), _DestClock>,
-                "N4885 [time.clock.cast.utc]/5: Mandates: DestClock::from_utc(t) returns a "
-                "time_point<DestClock, Duration>");
+                "N4950 [time.clock.cast.utc]/5: Mandates: DestClock::from_utc(t) "
+                "returns a time_point<DestClock, Duration2> for some type Duration2");
             return _DestClock::from_utc(_Time);
         }
     };
@@ -2987,12 +2988,10 @@ namespace chrono {
         if constexpr (is_invocable_v<clock_time_conversion<_DestClock, _SourceClock>, _Tp>) {
             return _Clock_cast_strategy::_Direct;
         } else {
-            constexpr bool _Has_sys = _Has_two_step_conversion< //
-                clock_time_conversion<_DestClock, system_clock>, //
+            constexpr bool _Has_sys = _Has_two_step_conversion<clock_time_conversion<_DestClock, system_clock>,
                 clock_time_conversion<system_clock, _SourceClock>, _Tp>;
 
-            constexpr bool _Has_utc = _Has_two_step_conversion< //
-                clock_time_conversion<_DestClock, utc_clock>, //
+            constexpr bool _Has_utc = _Has_two_step_conversion<clock_time_conversion<_DestClock, utc_clock>,
                 clock_time_conversion<utc_clock, _SourceClock>, _Tp>;
 
             if constexpr (_Has_sys && _Has_utc) {
@@ -3052,11 +3051,11 @@ namespace chrono {
         } else if constexpr (_Strat == _Clock_cast_strategy::_Two_step_ambiguous) {
             static_assert(_Always_false<_Duration>,
                 "A two-step clock time conversion is required to be unique, "
-                "either through utc_clock or system_clock, but not both (N4878 [time.clock.cast.fn]/2).");
+                "either through utc_clock or system_clock, but not both (N4950 [time.clock.cast.fn]/2).");
         } else if constexpr (_Strat == _Clock_cast_strategy::_Three_step_ambiguous) {
             static_assert(_Always_false<_Duration>,
                 "A three-step clock time conversion is required to be unique, "
-                "either utc-to-system or system-to-utc, but not both (N4878 [time.clock.cast.fn]/2).");
+                "either utc-to-system or system-to-utc, but not both (N4950 [time.clock.cast.fn]/2).");
         } else {
             static_assert(_Always_false<_Duration>, "should be unreachable");
         }
@@ -3463,9 +3462,9 @@ namespace chrono {
 
         template <class _Duration1, class _Duration2>
         _NODISCARD static constexpr bool _Can_represent() {
-            using _Rep1    = typename _Duration1::rep;
-            using _Period1 = typename _Duration1::period;
-            using _Period2 = typename _Duration2::period;
+            using _Rep1    = _Duration1::rep;
+            using _Period1 = _Duration1::period;
+            using _Period2 = _Duration2::period;
 
             // Returns whether _Duration1 can represent _Duration2{1}. Assumes 1 <= _Period2 <=
             // 86,400, i.e., we're interested in time periods between seconds and days.
@@ -3730,7 +3729,7 @@ namespace chrono {
         _NODISCARD _InIt _Parse_time_field(_InIt _First, ios_base& _Iosbase, ios_base::iostate& _State,
             const char _Flag, const char _Modifier, const unsigned int _Width,
             const unsigned int _Subsecond_precision) {
-            using _CharT = typename _InIt::value_type;
+            using _CharT = _InIt::value_type;
 
             const auto& _Ctype_fac = _STD use_facet<ctype<_CharT>>(_Iosbase.getloc());
             const auto& _Time_fac  = _STD use_facet<time_get<_CharT>>(_Iosbase.getloc());
@@ -4143,7 +4142,7 @@ namespace chrono {
                 --_Width;
             }
 
-            char _Ac[_MAX_INT_DIG];
+            char _Ac[_Max_int_dig];
             char* _Ptr = _Ac;
             if (_First != _Last && _Width > 0) {
                 const char _Ch = _Ctype_fac.narrow(*_First);
@@ -4581,7 +4580,7 @@ namespace chrono {
         minutes* _Offset = nullptr) {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
-        // *_Offset is not subtracted from local_time, see N4885 [time.clock.local]/4.
+        // *_Offset is not subtracted from local_time, see N4950 [time.clock.local]/4.
         _Time._Utc_offset.reset();
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
@@ -4692,17 +4691,6 @@ namespace chrono {
 #ifdef __cpp_lib_concepts
   // [time.format]
 
-template <class _CharT>
-_NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const wchar_t* const _WStr) noexcept {
-    if constexpr (is_same_v<_CharT, char>) {
-        return _Str;
-    } else {
-        return _WStr;
-    }
-}
-
-#define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
-
 // clang-format off
 template <class _Ty, class _CharT>
 concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
@@ -4718,8 +4706,8 @@ concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
 
 template <class _Ty>
 concept _Has_ok = requires(_Ty _At) {
-                      { _At.ok() } -> same_as<bool>;
-                  };
+    { _At.ok() } -> same_as<bool>;
+};
 
 // A chrono spec is either a type (with an optional modifier), OR a literal character, never both.
 template <class _CharT>
@@ -4933,8 +4921,8 @@ namespace chrono {
         template <class _CharT, class _Traits>
         friend basic_ostream<_CharT, _Traits>& operator<<(
             basic_ostream<_CharT, _Traits>& _Os, const _Local_time_format_t& _Val) {
-            // Doesn't appear in the Standard, but allowed by N4885 [global.functions]/2.
-            // Implements N4885 [time.zone.zonedtime.nonmembers]/2 for zoned_time.
+            // Doesn't appear in the Standard, but allowed by N4950 [global.functions]/2.
+            // Implements N4950 [time.zone.zonedtime.nonmembers]/2 for zoned_time.
             return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%F %T %Z}"), _Val);
         }
     };
@@ -4949,11 +4937,6 @@ namespace chrono {
     template <class _CharT, class _Traits, class _Ty>
     void _Write_seconds(basic_ostream<_CharT, _Traits>&, const _Ty&) {
         _STL_INTERNAL_CHECK(false);
-    }
-
-    template <class _Duration>
-    _NODISCARD constexpr auto _Hh_mm_ss_part_underflow_to_zero(const _Duration& _Val) {
-        return hh_mm_ss<common_type_t<days, _Duration>>{_Remove_duration_part<days>(_Val)};
     }
 
     template <unsigned int _Fractional_width, class _CharT, class _Traits, class _Precision>
@@ -5002,7 +4985,7 @@ namespace chrono {
 
     template <class _CharT, class _Traits, class _Rep, class _Period>
     void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const duration<_Rep, _Period>& _Val) {
-        _Write_seconds(_Os, _Hh_mm_ss_part_underflow_to_zero(_Val));
+        _Write_seconds(_Os, hh_mm_ss{_Val});
     }
 
     template <class _Ty>
@@ -5017,7 +5000,7 @@ namespace chrono {
         int _Seconds        = 0;
 
         if constexpr (_Is_specialization_v<_Ty, duration>) {
-            return _Fill_tm(_Hh_mm_ss_part_underflow_to_zero(_Val));
+            return _Fill_tm(hh_mm_ss{_Val});
         } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
             return _Fill_tm(_Val._Time);
         } else if constexpr (is_same_v<_Ty, day>) {
@@ -5310,14 +5293,14 @@ namespace chrono {
             if constexpr (_Is_specialization_v<_Ty, duration>) {
                 if constexpr (!treat_as_floating_point_v<typename _Ty::rep>) {
                     if (_Specs._Precision != -1) {
-                        _THROW(format_error("Precision specification invalid for chrono::duration type with "
-                                            "integral representation type, see N4885 [time.format]/1."));
+                        _Throw_format_error("Precision specification invalid for chrono::duration type with "
+                                            "integral representation type, see N4950 [time.format]/1.");
                     }
                 }
             } else {
                 if (_Specs._Precision != -1) {
-                    _THROW(format_error("Precision specification invalid for non-chrono::duration type, "
-                                        "see N4885 [time.format]/1."));
+                    _Throw_format_error("Precision specification invalid for non-chrono::duration type, "
+                                        "see N4950 [time.format]/1.");
                 }
             }
 
@@ -5431,7 +5414,7 @@ namespace chrono {
 
             _Stream.imbue(_Specs._Localized ? _FormatCtx.locale() : locale::classic());
             if (_Specs._Chrono_specs_list.empty()) {
-                _Stream << _Val; // N4885 [time.format]/6
+                _Stream << _Val; // N4950 [time.format]/7
             } else {
                 if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                     if (_Val.is_negative()) {
@@ -5625,10 +5608,13 @@ namespace chrono {
                 _Os << _CharT{'/'};
                 _Custom_write(_Os, {._Type = 'y'}, _Time, _Val);
                 return true;
+            case 'H':
+                // Print hour even if >= 24.
+                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Time.tm_hour);
+                return true;
             case 'T':
-                // Alias for %H:%M:%S but we need to rewrite %S to display fractions of a second.
-                _Validate_specifiers({._Type = 'H'}, _Val);
-                _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%H:%M:"));
+                // Alias for %H:%M:%S but we allow hours > 23 and rewrite %S to display fractions of a second.
+                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}:{:02}:"), _Time.tm_hour, _Time.tm_min);
                 [[fallthrough]];
             case 'S':
                 if (_Has_modifier) {
@@ -5683,14 +5669,8 @@ namespace chrono {
         template <class _Ty>
         static void _Validate_specifiers(const _Chrono_spec<_CharT>& _Spec, const _Ty& _Val) {
             if constexpr (_Is_specialization_v<_Ty, duration> || is_same_v<_Ty, sys_info>
-                          || _Is_specialization_v<_Ty, time_point> || _Is_specialization_v<_Ty, _Local_time_format_t>) {
-                return;
-            }
-
-            if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
-                if (_Spec._Type == 'H' && _Val.hours() >= hours{24}) {
-                    _Throw_format_error("Cannot localize hh_mm_ss with an absolute value of 24 hours or more.");
-                }
+                          || _Is_specialization_v<_Ty, time_point> || _Is_specialization_v<_Ty, _Local_time_format_t>
+                          || _Is_specialization_v<_Ty, hh_mm_ss>) {
                 return;
             }
 
@@ -5767,8 +5747,7 @@ namespace chrono {
                         return true;
                     } else if constexpr (is_same_v<_Ty, month_day_last>) {
                         if (_Val.month() >= February) {
-                            _THROW(
-                                format_error("The day of year for a month_day_last other than January is ambiguous"));
+                            _Throw_format_error("The day of year for a month_day_last other than January is ambiguous");
                         }
                         return true;
                     } else if constexpr (_Is_ymd) {
@@ -5825,60 +5804,46 @@ struct formatter<_CHRONO duration<_Rep, _Period>, _CharT>
     : _Fill_tm_formatter<_CHRONO duration<_Rep, _Period>, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO day, _CharT> //
-    : _Fill_tm_formatter<_CHRONO day, _CharT> {};
+struct formatter<_CHRONO day, _CharT> : _Fill_tm_formatter<_CHRONO day, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO month, _CharT> //
-    : _Fill_tm_formatter<_CHRONO month, _CharT> {};
+struct formatter<_CHRONO month, _CharT> : _Fill_tm_formatter<_CHRONO month, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO year, _CharT> //
-    : _Fill_tm_formatter<_CHRONO year, _CharT> {};
+struct formatter<_CHRONO year, _CharT> : _Fill_tm_formatter<_CHRONO year, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO weekday, _CharT> //
-    : _Fill_tm_formatter<_CHRONO weekday, _CharT> {};
+struct formatter<_CHRONO weekday, _CharT> : _Fill_tm_formatter<_CHRONO weekday, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO weekday_indexed, _CharT> //
-    : _Fill_tm_formatter<_CHRONO weekday_indexed, _CharT> {};
+struct formatter<_CHRONO weekday_indexed, _CharT> : _Fill_tm_formatter<_CHRONO weekday_indexed, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO weekday_last, _CharT> //
-    : _Fill_tm_formatter<_CHRONO weekday_last, _CharT> {};
+struct formatter<_CHRONO weekday_last, _CharT> : _Fill_tm_formatter<_CHRONO weekday_last, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO month_day, _CharT> //
-    : _Fill_tm_formatter<_CHRONO month_day, _CharT> {};
+struct formatter<_CHRONO month_day, _CharT> : _Fill_tm_formatter<_CHRONO month_day, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO month_day_last, _CharT> //
-    : _Fill_tm_formatter<_CHRONO month_day_last, _CharT> {};
+struct formatter<_CHRONO month_day_last, _CharT> : _Fill_tm_formatter<_CHRONO month_day_last, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO month_weekday, _CharT> //
-    : _Fill_tm_formatter<_CHRONO month_weekday, _CharT> {};
+struct formatter<_CHRONO month_weekday, _CharT> : _Fill_tm_formatter<_CHRONO month_weekday, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO month_weekday_last, _CharT> //
-    : _Fill_tm_formatter<_CHRONO month_weekday_last, _CharT> {};
+struct formatter<_CHRONO month_weekday_last, _CharT> : _Fill_tm_formatter<_CHRONO month_weekday_last, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO year_month, _CharT> //
-    : _Fill_tm_formatter<_CHRONO year_month, _CharT> {};
+struct formatter<_CHRONO year_month, _CharT> : _Fill_tm_formatter<_CHRONO year_month, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO year_month_day, _CharT> //
-    : _Fill_tm_formatter<_CHRONO year_month_day, _CharT> {};
+struct formatter<_CHRONO year_month_day, _CharT> : _Fill_tm_formatter<_CHRONO year_month_day, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO year_month_day_last, _CharT> //
-    : _Fill_tm_formatter<_CHRONO year_month_day_last, _CharT> {};
+struct formatter<_CHRONO year_month_day_last, _CharT> : _Fill_tm_formatter<_CHRONO year_month_day_last, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO year_month_weekday, _CharT> //
-    : _Fill_tm_formatter<_CHRONO year_month_weekday, _CharT> {};
+struct formatter<_CHRONO year_month_weekday, _CharT> : _Fill_tm_formatter<_CHRONO year_month_weekday, _CharT> {};
 
 template <class _CharT>
 struct formatter<_CHRONO year_month_weekday_last, _CharT>
@@ -5889,12 +5854,10 @@ struct formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT>
     : _Fill_tm_formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO sys_info, _CharT> //
-    : _Fill_tm_formatter<_CHRONO sys_info, _CharT> {};
+struct formatter<_CHRONO sys_info, _CharT> : _Fill_tm_formatter<_CHRONO sys_info, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO local_info, _CharT> //
-    : _Fill_tm_formatter<_CHRONO local_info, _CharT> {};
+struct formatter<_CHRONO local_info, _CharT> : _Fill_tm_formatter<_CHRONO local_info, _CharT> {};
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
@@ -5983,8 +5946,7 @@ private:
 };
 
 template <class _Duration, class _CharT>
-struct formatter<_CHRONO local_time<_Duration>, _CharT> //
-    : _Fill_tm_formatter<_CHRONO local_time<_Duration>, _CharT> {};
+struct formatter<_CHRONO local_time<_Duration>, _CharT> : _Fill_tm_formatter<_CHRONO local_time<_Duration>, _CharT> {};
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT>
@@ -6024,7 +5986,7 @@ namespace chrono {
         return _STD move(_Os).str();
     }
 } // namespace chrono
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 inline namespace literals {
     inline namespace chrono_literals {
@@ -6037,8 +5999,6 @@ inline namespace literals {
     } // namespace chrono_literals
 } // namespace literals
 #endif // _HAS_CXX20
-
-#undef _STATICALLY_WIDEN
 
 _STD_END
 #pragma pop_macro("new")

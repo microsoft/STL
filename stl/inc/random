@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _RANDOM_
 #define _RANDOM_
 #include <yvals_core.h>
@@ -36,22 +35,23 @@ _STD_BEGIN
     static_assert(!_Is_character<_CheckedType>::value, \
         "note: char, signed char, unsigned char, char8_t, int8_t, and uint8_t are not allowed")
 
-#define _RNG_REQUIRE_REALTYPE(_RandType, _CheckedType)                                                     \
-    static_assert(_Is_any_of_v<_CheckedType, float, double, long double>,                                  \
-        "invalid template argument for " #_RandType ": N4659 29.6.1.1 [rand.req.genl]/1d requires one of " \
-        "float, double, or long double")
+#define _RNG_REQUIRE_REALTYPE(_RandType, _CheckedType)                    \
+    static_assert(_Is_any_of_v<_CheckedType, float, double, long double>, \
+        "invalid template argument for " #_RandType                       \
+        ": N4950 [rand.req.genl]/1.4 requires one of float, double, or long double")
 
 #define _RNG_REQUIRE_INTTYPE(_RandType, _CheckedType)                                                                  \
     static_assert(_Is_any_of_v<_CheckedType, short, int, long, long long, unsigned short, unsigned int, unsigned long, \
                       unsigned long long>,                                                                             \
-        "invalid template argument for " #_RandType ": N4659 29.6.1.1 [rand.req.genl]/1e requires one of "             \
-        "short, int, long, long long, unsigned short, unsigned int, unsigned long, or unsigned long long");            \
+        "invalid template argument for " #_RandType                                                                    \
+        ": N4950 [rand.req.genl]/1.5 requires one of short, int, long, long long, unsigned short, unsigned int, "      \
+        "unsigned long, or unsigned long long");                                                                       \
     _RNG_PROHIBIT_CHAR(_CheckedType)
 
-#define _RNG_REQUIRE_UINTTYPE(_RandType, _CheckedType)                                                         \
-    static_assert(_Is_any_of_v<_CheckedType, unsigned short, unsigned int, unsigned long, unsigned long long>, \
-        "invalid template argument for " #_RandType ": N4659 29.6.1.1 [rand.req.genl]/1f requires one of "     \
-        "unsigned short, unsigned int, unsigned long, or unsigned long long");                                 \
+#define _RNG_REQUIRE_UINTTYPE(_RandType, _CheckedType)                                                             \
+    static_assert(_Is_any_of_v<_CheckedType, unsigned short, unsigned int, unsigned long, unsigned long long>,     \
+        "invalid template argument for " #_RandType ": N4950 [rand.req.genl]/1.6 requires one of unsigned short, " \
+        "unsigned int, unsigned long, or unsigned long long");                                                     \
     _RNG_PROHIBIT_CHAR(_CheckedType)
 
 template <class _Seed_seq, class _Self, class _Engine = _Self>
@@ -60,14 +60,14 @@ using _Enable_if_seed_seq_t =
                     && !is_same_v<remove_cv_t<_Seed_seq>, _Self> && !is_same_v<remove_cv_t<_Seed_seq>, _Engine>,
         int>;
 
-_INLINE_VAR constexpr long double _Pi    = 3.14159265358979323846264338327950288L;
-_INLINE_VAR constexpr long double _Exp1  = 2.71828182845904523536028747135266250L;
-_INLINE_VAR constexpr long double _Two32 = 4294967296.0L;
-_INLINE_VAR constexpr long double _Two31 = 2147483648.0L;
+_INLINE_VAR constexpr long double _Pi_val = 3.14159265358979323846264338327950288L;
+_INLINE_VAR constexpr long double _Exp1   = 2.71828182845904523536028747135266250L;
+_INLINE_VAR constexpr long double _Two32  = 4294967296.0L;
+_INLINE_VAR constexpr long double _Two31  = 2147483648.0L;
 
-extern "C++" _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _XLgamma(float);
-extern "C++" _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _XLgamma(double);
-extern "C++" _CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double);
+extern "C++" _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _XLgamma(float) noexcept;
+extern "C++" _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _XLgamma(double) noexcept;
+extern "C++" _CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double) noexcept;
 
 _INLINE_VAR constexpr int _Nwords = 4;
 
@@ -235,7 +235,7 @@ private:
         }
     }
 
-    result_type _Xor27(result_type _Val) const { // shift and merge
+    result_type _Xor27(result_type _Val) const noexcept { // shift and merge
         return _Val ^ (_Val >> 27);
     }
 
@@ -295,7 +295,7 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
 template <class _Gen, class = void>
 struct _Has_static_min_max : false_type {};
 
-// This checks a requirement of N4901 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
+// This checks a requirement of N4950 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
 // to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
 template <class _Gen>
 struct _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> : true_type {};
@@ -352,9 +352,9 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     //   _Cx <= numeric_limits<T>::max()
     //   && (_Mx - 1) <= (numeric_limits<T>::max() - _Cx) / _Ax
     if constexpr (_Ax == 0) { // degenerate case; avoid divide by 0
-        return static_cast<_Uint>(_Cx); // relies on _Mx == 0 || _Cx <= _Mx, N4741 [rand.eng.lcong]/3
+        return static_cast<_Uint>(_Cx); // relies on _Mx == 0 || _Cx <= _Mx, N4950 [rand.eng.lcong]/3
     } else if constexpr (_Mx == 0) {
-        // N4762 [rand.eng.lcong]/2: "If the template parameter m is 0, the modulus m
+        // N4950 [rand.eng.lcong]/2: "If the template parameter m is 0, the modulus m
         // used throughout this subclause [rand.eng.lcong] is
         // numeric_limits<result_type>::max() plus 1." That is: Just do the multiply
         // and let normal unsigned modulo take care of it
@@ -395,7 +395,7 @@ _NODISCARD constexpr unsigned long long _Seed_seq_to_ull(_Seed_seq& _Seq) {
 }
 
 template <class _Uint, _Uint _Cx, _Uint _Mx>
-_NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { // N4741 [rand.eng.lcong]/5
+_NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { // N4950 [rand.eng.lcong]/5
     if constexpr (_Mx != 0) {
         _Sx %= _Mx;
     }
@@ -410,7 +410,7 @@ _NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { /
 }
 
 template <class _Uint, _Uint _Cx, _Uint _Mx, class _Seed_seq>
-_NODISCARD _Uint _Get_linear_congruential_seed_from_seq(_Seed_seq& _Seq) { // N4741 [rand.eng.lcong]/6
+_NODISCARD _Uint _Get_linear_congruential_seed_from_seq(_Seed_seq& _Seq) { // N4950 [rand.eng.lcong]/6
     _Uint _Sx;
     if constexpr (_Mx == 0) {
         if constexpr (sizeof(_Uint) <= sizeof(unsigned int)) {
@@ -609,11 +609,11 @@ private:
 
 template <class _Ty, size_t _Nw>
 struct _Circ_buf { // holds historical values for generators
-    _Ty _At(size_t _Ix) const {
+    _Ty _At(size_t _Ix) const noexcept {
         return _Ax[_Base(_Ix)];
     }
 
-    bool _Equals(const _Circ_buf& _Right) const {
+    bool _Equals(const _Circ_buf& _Right) const noexcept {
         const _Ty* _Last1 = _Ax + _Idx;
         const _Ty* _Last2 = _Right._Ax + _Right._Idx;
         const _Ty* _First;
@@ -655,8 +655,14 @@ struct _Circ_buf { // holds historical values for generators
         return true;
     }
 
-    size_t _Base(size_t _Ix = 0) const {
-        return (_Ix += _Idx) < _Nw ? (_Ix + _Nw) : (_Ix - _Nw);
+    size_t _Base(size_t _Ix = 0) const noexcept {
+        _Ix += _Idx;
+
+        if (_Ix < _Nw) {
+            return _Ix + _Nw;
+        } else {
+            return _Ix - _Nw;
+        }
     }
 
     unsigned int _Idx;
@@ -698,15 +704,15 @@ public:
         _Reset(_Gx, _Readcy);
     }
 
-    _NODISCARD result_type(min)() const {
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ {
         return 0;
     }
 
-    _NODISCARD result_type(max)() const {
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ {
         return _Swc_Traits::_Max;
     }
 
-    _NODISCARD result_type operator()() {
+    _NODISCARD result_type operator()() noexcept /* strengthened */ {
         const auto _Ix = 2 * _Rx <= this->_Idx ? 0 : this->_Idx;
         if (_Ix < _Sx) {
             _Setx(_Ix, this->_Ax[_Ix + 2 * _Rx - _Sx], this->_Ax[_Ix + _Rx]);
@@ -726,12 +732,12 @@ public:
         }
     }
 
-    _NODISCARD_FRIEND bool operator==(const _Swc_base& _Left, const _Swc_base& _Right) {
+    _NODISCARD_FRIEND bool operator==(const _Swc_base& _Left, const _Swc_base& _Right) noexcept /* strengthened */ {
         return static_cast<const _Swc_base::_Mybase&>(_Left)._Equals(_Right) && _Left._Carry == _Right._Carry;
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const _Swc_base& _Left, const _Swc_base& _Right) {
+    _NODISCARD_FRIEND bool operator!=(const _Swc_base& _Left, const _Swc_base& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -764,7 +770,7 @@ protected:
         this->_Idx = _Rx;
     }
 
-    void _Setx(size_t _Ix, _Ty _Xis, _Ty _Xir) { // update _Ax[_Ix] and _Carry
+    void _Setx(size_t _Ix, _Ty _Xis, _Ty _Xir) noexcept { // update _Ax[_Ix] and _Carry
         bool _Underflowed = false;
         _Ty _Newx         = _Xis;
         if (_Newx < _Xir) {
@@ -801,7 +807,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
     static constexpr _Mod_t _Mod = _Mx;
     static constexpr _Ty _Max    = _Mx - 1;
 
-    static int _Get_wc() { // compute number of 32-bit words per element
+    static int _Get_wc() noexcept { // compute number of 32-bit words per element
         int _Kx;
 
         if constexpr (_Mx == 0) {
@@ -839,7 +845,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
 
 #pragma warning(push)
 #pragma warning(disable : 4724) // potential mod by 0
-    static _Cy_t _Reduce(_Ty* _Ax) { // reduce values to allowed range
+    static _Cy_t _Reduce(_Ty* _Ax) noexcept { // reduce values to allowed range
         if constexpr (_Mx != 0) {
             for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
                 _Ax[_Ix] = _Ax[_Ix] % _Mx;
@@ -951,11 +957,11 @@ public:
         this->_Idx   = _Rx;
     }
 
-    _NODISCARD static constexpr _Ty(min)() {
+    _NODISCARD static constexpr _Ty(min)() noexcept /* strengthened */ {
         return 0;
     }
 
-    _NODISCARD static constexpr _Ty(max)() {
+    _NODISCARD static constexpr _Ty(max)() noexcept /* strengthened */ {
         return _Mx - 1;
     }
 
@@ -999,7 +1005,7 @@ public:
 };
 
 #if _HAS_TR1_NAMESPACE
-_CONSTEVAL double _Cx_exp2(const int _Exp) noexcept {
+constexpr double _Cx_exp2(const int _Exp) noexcept {
     double _Ret = 1.0;
     for (int _Count = _Exp; _Count > 0; --_Count) {
         _Ret *= 2.0;
@@ -1137,12 +1143,14 @@ public:
         this->_Idx = _Nx;
     }
 
-    _NODISCARD_FRIEND bool operator==(const mersenne_twister& _Left, const mersenne_twister& _Right) {
+    _NODISCARD_FRIEND bool operator==(const mersenne_twister& _Left, const mersenne_twister& _Right) noexcept
+    /* strengthened */ {
         return _Left._Equals(_Right);
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const mersenne_twister& _Left, const mersenne_twister& _Right) {
+    _NODISCARD_FRIEND bool operator!=(const mersenne_twister& _Left, const mersenne_twister& _Right) noexcept
+    /* strengthened */ {
         return !_Left._Equals(_Right);
     }
 #endif // !_HAS_CXX20
@@ -1167,11 +1175,11 @@ public:
         return _Ostr;
     }
 
-    _NODISCARD result_type(min)() const {
+    _NODISCARD result_type(min)() const noexcept {
         return 0;
     }
 
-    _NODISCARD result_type(max)() const {
+    _NODISCARD result_type(max)() const noexcept {
         return _WMSK;
     }
 
@@ -1329,11 +1337,11 @@ public:
         this->_Idx = _Nx;
     }
 
-    _NODISCARD static constexpr result_type(min)() {
+    _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
         return 0;
     }
 
-    _NODISCARD static constexpr result_type(max)() {
+    _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
         return _Mybase::_WMSK;
     }
 };
@@ -1448,11 +1456,11 @@ public:
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, discard_block_engine, _Engine> = 0>
     explicit discard_block_engine(_Seed_seq& _Seq) : _Mybase(_Seq) {}
 
-    _NODISCARD static constexpr typename _Engine::result_type(min)() {
+    _NODISCARD static constexpr typename _Engine::result_type(min)() noexcept /* strengthened */ {
         return (_Engine::min)();
     }
 
-    _NODISCARD static constexpr typename _Engine::result_type(max)() {
+    _NODISCARD static constexpr typename _Engine::result_type(max)() noexcept /* strengthened */ {
         return (_Engine::max)();
     }
 };
@@ -1507,11 +1515,11 @@ public:
         return _Eng;
     }
 
-    _NODISCARD static constexpr result_type(min)() {
+    _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
         return 0;
     }
 
-    _NODISCARD static constexpr result_type(max)() {
+    _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
         return ((result_type{1} << (_Wx - 1)) << 1) - 1;
     }
 
@@ -1659,11 +1667,11 @@ public:
         return _Eng;
     }
 
-    _NODISCARD static constexpr result_type(min)() {
+    _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
         return (_Engine::min)();
     }
 
-    _NODISCARD static constexpr result_type(max)() {
+    _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
         return (_Engine::max)();
     }
 
@@ -1742,7 +1750,7 @@ public:
     static constexpr unsigned int _Udiff_bits = sizeof(_Udiff) * CHAR_BIT;
     using _Uprod = conditional_t<_Udiff_bits <= 16, uint32_t, conditional_t<_Udiff_bits <= 32, uint64_t, _Unsigned128>>;
 
-    explicit _Rng_from_urng_v2(_Urng& _Func) : _Ref(_Func) {}
+    explicit _Rng_from_urng_v2(_Urng& _Func) noexcept : _Ref(_Func) {}
 
     _Diff operator()(_Diff _Index) { // adapt _Urng closed range to [0, _Index)
         // From Daniel Lemire, "Fast Random Integer Generation in an Interval", ACM Trans. Model. Comput. Simul. 29 (1),
@@ -1862,33 +1870,35 @@ public:
     struct param_type { // parameter package
         using distribution_type = uniform_int;
 
-        param_type() {
+        param_type() noexcept {
             _Init(0, 9);
         }
 
-        explicit param_type(result_type _Min0, result_type _Max0 = 9) {
+        explicit param_type(result_type _Min0, result_type _Max0 = 9) noexcept {
             _Init(_Min0, _Max0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Min == _Right._Min && _Left._Max == _Right._Max;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD result_type a() const {
+        _NODISCARD result_type a() const noexcept /* strengthened */ {
             return _Min;
         }
 
-        _NODISCARD result_type b() const {
+        _NODISCARD result_type b() const noexcept /* strengthened */ {
             return _Max;
         }
 
-        void _Init(_Ty _Min0, _Ty _Max0) { // set internal state
+        void _Init(_Ty _Min0, _Ty _Max0) noexcept { // set internal state
             _STL_ASSERT(_Min0 <= _Max0, "invalid min and max arguments for uniform_int");
             _Min = _Min0;
             _Max = _Max0;
@@ -1898,37 +1908,37 @@ public:
         result_type _Max;
     };
 
-    uniform_int() : _Par(0, 9) {}
+    uniform_int() noexcept : _Par(0, 9) {}
 
-    explicit uniform_int(_Ty _Min0, _Ty _Max0 = 9) : _Par(_Min0, _Max0) {}
+    explicit uniform_int(_Ty _Min0, _Ty _Max0 = 9) noexcept : _Par(_Min0, _Max0) {}
 
-    explicit uniform_int(const param_type& _Par0) : _Par(_Par0) {}
+    explicit uniform_int(const param_type& _Par0) noexcept : _Par(_Par0) {}
 
-    _NODISCARD result_type a() const {
+    _NODISCARD result_type a() const noexcept /* strengthened */ {
         return _Par.a();
     }
 
-    _NODISCARD result_type b() const {
+    _NODISCARD result_type b() const noexcept /* strengthened */ {
         return _Par.b();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const {
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ {
         return _Par._Min;
     }
 
-    _NODISCARD result_type(max)() const {
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ {
         return _Par._Max;
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -1984,7 +1994,7 @@ private:
         return static_cast<_Ty>(_Adjust(static_cast<_Uty>(_Uret + _Umin)));
     }
 
-    static _Uty _Adjust(_Uty _Uval) { // convert signed ranges to unsigned ranges and vice versa
+    static _Uty _Adjust(_Uty _Uval) noexcept { // convert signed ranges to unsigned ranges and vice versa
         if constexpr (is_signed_v<_Ty>) {
             constexpr _Uty _Adjuster = (static_cast<_Uty>(-1) >> 1) + 1; // 2^(N-1)
 
@@ -2013,26 +2023,33 @@ public:
     struct param_type : _Mypbase { // parameter package
         using distribution_type = uniform_int_distribution;
 
-        param_type() : _Mypbase(0, (numeric_limits<_Ty>::max)()) {}
+        param_type() noexcept // strengthened
+            : _Mypbase(0, (numeric_limits<_Ty>::max)()) {}
 
-        explicit param_type(result_type _Min0, result_type _Max0 = (numeric_limits<_Ty>::max)())
+        explicit param_type(
+            result_type _Min0, result_type _Max0 = (numeric_limits<_Ty>::max)()) noexcept // strengthened
             : _Mypbase(_Min0, _Max0) {}
 
-        param_type(const _Mypbase& _Right) : _Mypbase(_Right) {}
+        param_type(const _Mypbase& _Right) noexcept : _Mypbase(_Right) {}
     };
 
-    uniform_int_distribution() : _Mybase(0, (numeric_limits<_Ty>::max)()) {}
+    uniform_int_distribution() noexcept // strengthened
+        : _Mybase(0, (numeric_limits<_Ty>::max)()) {}
 
-    explicit uniform_int_distribution(_Ty _Min0, _Ty _Max0 = (numeric_limits<_Ty>::max)()) : _Mybase(_Min0, _Max0) {}
+    explicit uniform_int_distribution(_Ty _Min0, _Ty _Max0 = (numeric_limits<_Ty>::max)()) noexcept // strengthened
+        : _Mybase(_Min0, _Max0) {}
 
-    explicit uniform_int_distribution(const param_type& _Par0) : _Mybase(_Par0) {}
+    explicit uniform_int_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Mybase(_Par0) {}
 
-    _NODISCARD_FRIEND bool operator==(const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(
+        const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(
+        const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -2045,29 +2062,31 @@ public:
     struct param_type { // parameter package
         using distribution_type = bernoulli_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(0.5);
         }
 
-        explicit param_type(double _Px0) {
+        explicit param_type(double _Px0) noexcept /* strengthened */ {
             _Init(_Px0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Px == _Right._Px;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD double p() const {
+        _NODISCARD double p() const noexcept /* strengthened */ {
             return _Px;
         }
 
-        void _Init(double _Px0) { // set internal state
+        void _Init(double _Px0) noexcept { // set internal state
             _STL_ASSERT(0.0 <= _Px0 && _Px0 <= 1.0, "invalid probability argument for bernoulli_distribution");
 
             _Px = _Px0;
@@ -2076,33 +2095,36 @@ public:
         double _Px;
     };
 
-    bernoulli_distribution() : _Par(0.5) {}
+    bernoulli_distribution() noexcept // strengthened
+        : _Par(0.5) {}
 
-    explicit bernoulli_distribution(double _Px0) : _Par(_Px0) {}
+    explicit bernoulli_distribution(double _Px0) noexcept // strengthened
+        : _Par(_Px0) {}
 
-    explicit bernoulli_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit bernoulli_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD double p() const {
+    _NODISCARD double p() const noexcept /* strengthened */ {
         return _Par.p();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return false;
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return true;
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -2114,12 +2136,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const bernoulli_distribution& _Left, const bernoulli_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(
+        const bernoulli_distribution& _Left, const bernoulli_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const bernoulli_distribution& _Left, const bernoulli_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(
+        const bernoulli_distribution& _Left, const bernoulli_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -2153,7 +2177,7 @@ private:
 // First truncate to largest _Flt <= _Val, then add ceil(ulp).
 
 template <class _Flt, class _Ty>
-_NODISCARD _Flt _Float_upper_bound(_Ty _Val) {
+_NODISCARD _Flt _Float_upper_bound(_Ty _Val) noexcept {
     static_assert(is_unsigned_v<_Ty> && is_integral_v<_Ty> && is_floating_point_v<_Flt>,
         "invalid template argument for _Float_upper_bound");
     constexpr auto _Ty_digits  = numeric_limits<_Ty>::digits;
@@ -2168,10 +2192,10 @@ _NODISCARD _Flt _Float_upper_bound(_Ty _Val) {
         constexpr auto _Mask = static_cast<_Ty>(-1) << (_Ty_digits - _Flt_digits);
 #ifdef _M_CEE_PURE
         constexpr auto _Ty_32or64_digits = numeric_limits<_Ty_32or64>::digits;
-        const auto _Log_plus1 = _Ty_32or64_digits - _Countl_zero_fallback(static_cast<_Ty_32or64>(_Val | _Ty{1}));
-#else // _M_CEE_PURE
+        const auto _Log_plus1 = _Ty_32or64_digits - _Countl_zero_internal(static_cast<_Ty_32or64>(_Val | _Ty{1}));
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
         const auto _Log_plus1 = _Bit_scan_reverse(static_cast<_Ty_32or64>(_Val | _Ty{1}));
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
         const auto _Shifted_mask = _Mask >> (_Ty_digits - _Log_plus1);
         const auto _Ceil_ulp     = _Shifted_mask & -_Shifted_mask;
         _Val &= _Shifted_mask;
@@ -2198,29 +2222,31 @@ public:
     struct param_type { // parameter package
         using distribution_type = geometric_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty1(0.5));
         }
 
-        explicit param_type(_Ty1 _Px0) {
+        explicit param_type(_Ty1 _Px0) noexcept /* strengthened */ {
             _Init(_Px0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Px == _Right._Px;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty1 p() const {
+        _NODISCARD _Ty1 p() const noexcept /* strengthened */ {
             return _Px;
         }
 
-        void _Init(_Ty1 _Px0) { // initialize
+        void _Init(_Ty1 _Px0) noexcept { // initialize
             _STL_ASSERT(0.0 < _Px0 && _Px0 < 1.0, "invalid probability argument for geometric_distribution");
             _Px      = _Px0;
             _Log_1_p = _CSTD log(1 - _Px);
@@ -2230,33 +2256,36 @@ public:
         _Ty1 _Log_1_p;
     };
 
-    geometric_distribution() : _Par(_Ty1(0.5)) {}
+    geometric_distribution() noexcept // strengthened
+        : _Par(_Ty1(0.5)) {}
 
-    explicit geometric_distribution(_Ty1 _Px0) : _Par(_Px0) {}
+    explicit geometric_distribution(_Ty1 _Px0) noexcept // strengthened
+        : _Par(_Px0) {}
 
-    explicit geometric_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit geometric_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty1 p() const {
+    _NODISCARD _Ty1 p() const noexcept /* strengthened */ {
         return _Par.p();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return 0;
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -2268,12 +2297,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const geometric_distribution& _Left, const geometric_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(
+        const geometric_distribution& _Left, const geometric_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const geometric_distribution& _Left, const geometric_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(
+        const geometric_distribution& _Left, const geometric_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -2327,7 +2358,7 @@ public:
         }
     }
 
-    void _Init(const _Ty1& _Mean0) { // set internal state
+    void _Init(const _Ty1& _Mean0) noexcept { // set internal state
         _Gx0 = _CSTD exp(-_Mean0);
     }
 
@@ -2347,29 +2378,31 @@ public:
     struct param_type { // parameter package
         using distribution_type = poisson_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty1(1));
         }
 
-        explicit param_type(_Ty1 _Mean0) {
+        explicit param_type(_Ty1 _Mean0) noexcept /* strengthened */ {
             _Init(_Mean0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Mean == _Right._Mean;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty1 mean() const {
+        _NODISCARD _Ty1 mean() const noexcept /* strengthened */ {
             return _Mean;
         }
 
-        void _Init(_Ty1 _Mean0) { // set internal state
+        void _Init(_Ty1 _Mean0) noexcept { // set internal state
             _STL_ASSERT(0.0 < _Mean0, "invalid mean argument for poisson_distribution");
             _Mean = _Mean0;
             _Sqrt = _CSTD sqrt(2.0 * _Mean0);
@@ -2386,33 +2419,36 @@ public:
         _Small_poisson_distribution<_Ty> _Small;
     };
 
-    poisson_distribution() : _Par(_Ty1(1)) {}
+    poisson_distribution() noexcept // strengthened
+        : _Par(_Ty1(1)) {}
 
-    explicit poisson_distribution(_Ty1 _Mean0) : _Par(_Mean0) {}
+    explicit poisson_distribution(_Ty1 _Mean0) noexcept // strengthened
+        : _Par(_Mean0) {}
 
-    explicit poisson_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit poisson_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty1 mean() const {
+    _NODISCARD _Ty1 mean() const noexcept /* strengthened */ {
         return _Par.mean();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return 0;
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -2424,12 +2460,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const poisson_distribution& _Left, const poisson_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(const poisson_distribution& _Left, const poisson_distribution& _Right) noexcept
+    /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const poisson_distribution& _Left, const poisson_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(const poisson_distribution& _Left, const poisson_distribution& _Right) noexcept
+    /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -2465,7 +2503,7 @@ private:
             _Ty _Res;
             _Ty1 _Yx;
             for (;;) { // generate a tentative value
-                _Yx = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
+                _Yx = static_cast<_Ty1>(_CSTD tan(_Pi_val * _NRAND(_Eng, _Ty1)));
                 const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
                 if (0.0 <= _Mx && _Mx < _Ty1_max) {
                     _Res = static_cast<_Ty>(_Mx);
@@ -2495,33 +2533,35 @@ public:
     struct param_type { // parameter package
         using distribution_type = binomial_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(1, _Ty1(0.5));
         }
 
-        explicit param_type(_Ty _Tx0, _Ty1 _Px0 = _Ty1(0.5)) {
+        explicit param_type(_Ty _Tx0, _Ty1 _Px0 = _Ty1(0.5)) noexcept /* strengthened */ {
             _Init(_Tx0, _Px0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Tx == _Right._Tx && _Left._Px == _Right._Px;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty t() const {
+        _NODISCARD _Ty t() const noexcept /* strengthened */ {
             return _Tx;
         }
 
-        _NODISCARD _Ty1 p() const {
+        _NODISCARD _Ty1 p() const noexcept /* strengthened */ {
             return _Px;
         }
 
-        void _Init(_Ty _Tx0, _Ty1 _Px0) { // initialize
+        void _Init(_Ty _Tx0, _Ty1 _Px0) noexcept { // initialize
             _STL_ASSERT(0.0 <= _Tx0, "invalid max argument for binomial_distribution");
             _STL_ASSERT(0.0 <= _Px0 && _Px0 <= 1.0, "invalid probability argument for binomial_distribution");
             _Tx    = _Tx0;
@@ -2547,37 +2587,40 @@ public:
         _Small_poisson_distribution<_Ty> _Small; // TRANSITION, ABI: unused
     };
 
-    binomial_distribution() : _Par(1, _Ty1(0.5)) {}
+    binomial_distribution() noexcept // strengthened
+        : _Par(1, _Ty1(0.5)) {}
 
-    explicit binomial_distribution(_Ty _Tx0, _Ty1 _Px0 = _Ty1(0.5)) : _Par(_Tx0, _Px0) {}
+    explicit binomial_distribution(_Ty _Tx0, _Ty1 _Px0 = _Ty1(0.5)) noexcept // strengthened
+        : _Par(_Tx0, _Px0) {}
 
-    explicit binomial_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit binomial_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty t() const {
+    _NODISCARD _Ty t() const noexcept /* strengthened */ {
         return _Par.t();
     }
 
-    _NODISCARD _Ty1 p() const {
+    _NODISCARD _Ty1 p() const noexcept /* strengthened */ {
         return _Par.p();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return 0;
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return _Par.t();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -2589,12 +2632,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const binomial_distribution& _Left, const binomial_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(const binomial_distribution& _Left, const binomial_distribution& _Right) noexcept
+    /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const binomial_distribution& _Left, const binomial_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(const binomial_distribution& _Left, const binomial_distribution& _Right) noexcept
+    /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -2660,7 +2705,7 @@ private:
             for (;;) { // generate and reject
                 _Ty1 _Yx;
                 for (;;) { // generate a tentative value
-                    _Yx = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
+                    _Yx = static_cast<_Ty1>(_CSTD tan(_Pi_val * _NRAND(_Eng, _Ty1)));
                     const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
                     if (0.0 <= _Mx && _Mx < _Ty1_Tx) {
                         _Res = static_cast<_Ty>(_Mx);
@@ -2689,33 +2734,35 @@ public:
     struct param_type { // parameter package
         using distribution_type = uniform_real;
 
-        param_type() {
+        param_type() noexcept {
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) {
+        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept {
             _Init(_Min0, _Max0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Min == _Right._Min && _Left._Max == _Right._Max;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD result_type a() const {
+        _NODISCARD result_type a() const noexcept /* strengthened */ {
             return _Min;
         }
 
-        _NODISCARD result_type b() const {
+        _NODISCARD result_type b() const noexcept /* strengthened */ {
             return _Max;
         }
 
-        void _Init(_Ty _Min0, _Ty _Max0) { // set internal state
+        void _Init(_Ty _Min0, _Ty _Max0) noexcept { // set internal state
             _STL_ASSERT(_Min0 <= _Max0 && (0 <= _Min0 || _Max0 <= _Min0 + (numeric_limits<_Ty>::max)()),
                 "invalid min and max arguments for uniform_real");
             _Min = _Min0;
@@ -2726,37 +2773,37 @@ public:
         result_type _Max;
     };
 
-    uniform_real() : _Par(_Ty{0}, _Ty{1}) {}
+    uniform_real() noexcept : _Par(_Ty{0}, _Ty{1}) {}
 
-    explicit uniform_real(_Ty _Min0, _Ty _Max0 = _Ty{1}) : _Par(_Min0, _Max0) {}
+    explicit uniform_real(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept : _Par(_Min0, _Max0) {}
 
-    explicit uniform_real(const param_type& _Par0) : _Par(_Par0) {}
+    explicit uniform_real(const param_type& _Par0) noexcept : _Par(_Par0) {}
 
-    _NODISCARD result_type a() const {
+    _NODISCARD result_type a() const noexcept /* strengthened */ {
         return _Par.a();
     }
 
-    _NODISCARD result_type b() const {
+    _NODISCARD result_type b() const noexcept /* strengthened */ {
         return _Par.b();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const {
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ {
         return _Par._Min;
     }
 
-    _NODISCARD result_type(max)() const {
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ {
         return _Par._Max;
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -2818,25 +2865,32 @@ public:
     struct param_type : _Mypbase { // parameter package
         using distribution_type = uniform_real_distribution;
 
-        param_type() : _Mypbase(_Ty{0}, _Ty{1}) {}
+        param_type() noexcept // strengthened
+            : _Mypbase(_Ty{0}, _Ty{1}) {}
 
-        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) : _Mypbase(_Min0, _Max0) {}
+        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept // strengthened
+            : _Mypbase(_Min0, _Max0) {}
 
-        param_type(const _Mypbase& _Right) : _Mypbase(_Right) {}
+        param_type(const _Mypbase& _Right) noexcept : _Mypbase(_Right) {}
     };
 
-    uniform_real_distribution() : _Mybase(_Ty{0}, _Ty{1}) {}
+    uniform_real_distribution() noexcept // strengthened
+        : _Mybase(_Ty{0}, _Ty{1}) {}
 
-    explicit uniform_real_distribution(_Ty _Min0, _Ty _Max0 = _Ty{1}) : _Mybase(_Min0, _Max0) {}
+    explicit uniform_real_distribution(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept // strengthened
+        : _Mybase(_Min0, _Max0) {}
 
-    explicit uniform_real_distribution(const param_type& _Par0) : _Mybase(_Par0) {}
+    explicit uniform_real_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Mybase(_Par0) {}
 
-    _NODISCARD_FRIEND bool operator==(const uniform_real_distribution& _Left, const uniform_real_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(
+        const uniform_real_distribution& _Left, const uniform_real_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const uniform_real_distribution& _Left, const uniform_real_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(
+        const uniform_real_distribution& _Left, const uniform_real_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -2852,29 +2906,31 @@ public:
     struct param_type { // parameter package
         using distribution_type = exponential_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{1});
         }
 
-        explicit param_type(_Ty _Lambda0) {
+        explicit param_type(_Ty _Lambda0) noexcept /* strengthened */ {
             _Init(_Lambda0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Lambda == _Right._Lambda;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty lambda() const {
+        _NODISCARD _Ty lambda() const noexcept /* strengthened */ {
             return _Lambda;
         }
 
-        void _Init(_Ty _Lambda0) { // set internal state
+        void _Init(_Ty _Lambda0) noexcept { // set internal state
             _STL_ASSERT(0.0 < _Lambda0, "invalid lambda argument for exponential_distribution");
             _Lambda = _Lambda0;
         }
@@ -2882,33 +2938,36 @@ public:
         _Ty _Lambda;
     };
 
-    exponential_distribution() : _Par(_Ty{1}) {}
+    exponential_distribution() noexcept // strengthened
+        : _Par(_Ty{1}) {}
 
-    explicit exponential_distribution(_Ty _Lambda0) : _Par(_Lambda0) {}
+    explicit exponential_distribution(_Ty _Lambda0) noexcept // strengthened
+        : _Par(_Lambda0) {}
 
-    explicit exponential_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit exponential_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty lambda() const {
+    _NODISCARD _Ty lambda() const noexcept /* strengthened */ {
         return _Par.lambda();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return 0;
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return numeric_limits<result_type>::infinity();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -2920,12 +2979,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const exponential_distribution& _Left, const exponential_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(
+        const exponential_distribution& _Left, const exponential_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const exponential_distribution& _Left, const exponential_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(
+        const exponential_distribution& _Left, const exponential_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -2965,37 +3026,39 @@ public:
     struct param_type { // parameter package
         using distribution_type = normal_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(0.0, 1.0);
         }
 
-        explicit param_type(_Ty _Mean0, _Ty _Sigma0 = 1.0) {
+        explicit param_type(_Ty _Mean0, _Ty _Sigma0 = 1.0) noexcept /* strengthened */ {
             _Init(_Mean0, _Sigma0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Mean == _Right._Mean && _Left._Sigma == _Right._Sigma;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty mean() const {
+        _NODISCARD _Ty mean() const noexcept /* strengthened */ {
             return _Mean;
         }
 
-        _NODISCARD _Ty sigma() const {
+        _NODISCARD _Ty sigma() const noexcept /* strengthened */ {
             return _Sigma;
         }
 
-        _NODISCARD _Ty stddev() const {
+        _NODISCARD _Ty stddev() const noexcept /* strengthened */ {
             return _Sigma;
         }
 
-        void _Init(_Ty _Mean0, _Ty _Sigma0) { // set internal state
+        void _Init(_Ty _Mean0, _Ty _Sigma0) noexcept { // set internal state
             _STL_ASSERT(0.0 < _Sigma0, "invalid sigma argument for normal_distribution");
             _Mean  = _Mean0;
             _Sigma = _Sigma0;
@@ -3005,42 +3068,45 @@ public:
         _Ty _Sigma;
     };
 
-    normal_distribution() : _Par(0.0, 1.0), _Valid(false), _Xx2(0) {}
+    normal_distribution() noexcept // strengthened
+        : _Par(0.0, 1.0), _Valid(false), _Xx2(0) {}
 
-    explicit normal_distribution(_Ty _Mean0, _Ty _Sigma0 = 1.0) : _Par(_Mean0, _Sigma0), _Valid(false), _Xx2(0) {}
+    explicit normal_distribution(_Ty _Mean0, _Ty _Sigma0 = 1.0) noexcept // strengthened
+        : _Par(_Mean0, _Sigma0), _Valid(false), _Xx2(0) {}
 
-    explicit normal_distribution(const param_type& _Par0) : _Par(_Par0), _Valid(false), _Xx2(0) {}
+    explicit normal_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0), _Valid(false), _Xx2(0) {}
 
-    _NODISCARD _Ty mean() const {
+    _NODISCARD _Ty mean() const noexcept /* strengthened */ {
         return _Par.mean();
     }
 
-    _NODISCARD _Ty sigma() const {
+    _NODISCARD _Ty sigma() const noexcept /* strengthened */ {
         return _Par.sigma();
     }
 
-    _NODISCARD _Ty stddev() const {
+    _NODISCARD _Ty stddev() const noexcept /* strengthened */ {
         return _Par.sigma();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
         reset();
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return -numeric_limits<result_type>::infinity();
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return numeric_limits<result_type>::infinity();
     }
 
-    void reset() { // clear internal state
+    void reset() noexcept /* strengthened */ { // clear internal state
         _Valid = false;
     }
 
@@ -3055,12 +3121,14 @@ public:
         return _Eval(_Eng, _Par0, false);
     }
 
-    _NODISCARD_FRIEND bool operator==(const normal_distribution& _Left, const normal_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(const normal_distribution& _Left, const normal_distribution& _Right) noexcept
+    /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const normal_distribution& _Left, const normal_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(const normal_distribution& _Left, const normal_distribution& _Right) noexcept
+    /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -3153,33 +3221,35 @@ public:
     struct param_type { // parameter package
         using distribution_type = gamma_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{1}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Alpha0, _Ty _Beta0 = _Ty{1}) {
+        explicit param_type(_Ty _Alpha0, _Ty _Beta0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Alpha0, _Beta0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Alpha == _Right._Alpha && _Left._Beta == _Right._Beta;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty alpha() const {
+        _NODISCARD _Ty alpha() const noexcept /* strengthened */ {
             return _Alpha;
         }
 
-        _NODISCARD _Ty beta() const {
+        _NODISCARD _Ty beta() const noexcept /* strengthened */ {
             return _Beta;
         }
 
-        void _Init(_Ty _Alpha0, _Ty _Beta0) { // initialize
+        void _Init(_Ty _Alpha0, _Ty _Beta0) noexcept { // initialize
             _STL_ASSERT(0.0 < _Alpha0, "invalid alpha argument for gamma_distribution");
             _STL_ASSERT(0.0 < _Beta0, "invalid beta argument for gamma_distribution");
             _Alpha = _Alpha0;
@@ -3195,37 +3265,40 @@ public:
         exponential_distribution<_Ty> _Exp;
     };
 
-    gamma_distribution() : _Par(_Ty{1}, _Ty{1}) {}
+    gamma_distribution() noexcept // strengthened
+        : _Par(_Ty{1}, _Ty{1}) {}
 
-    explicit gamma_distribution(_Ty _Alpha0, _Ty _Beta0 = _Ty{1}) : _Par(_Alpha0, _Beta0) {}
+    explicit gamma_distribution(_Ty _Alpha0, _Ty _Beta0 = _Ty{1}) noexcept // strengthened
+        : _Par(_Alpha0, _Beta0) {}
 
-    explicit gamma_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit gamma_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty alpha() const {
+    _NODISCARD _Ty alpha() const noexcept /* strengthened */ {
         return _Par.alpha();
     }
 
-    _NODISCARD _Ty beta() const {
+    _NODISCARD _Ty beta() const noexcept /* strengthened */ {
         return _Par.beta();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return result_type{0.0};
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return numeric_limits<result_type>::infinity();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -3237,12 +3310,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const gamma_distribution& _Left, const gamma_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(const gamma_distribution& _Left, const gamma_distribution& _Right) noexcept
+    /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const gamma_distribution& _Left, const gamma_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(const gamma_distribution& _Left, const gamma_distribution& _Right) noexcept
+    /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -3316,7 +3391,7 @@ private:
 
         // no shortcuts
         for (;;) { // generate and reject
-            _Yx = static_cast<_Ty>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty)));
+            _Yx = static_cast<_Ty>(_CSTD tan(_Pi_val * _NRAND(_Eng, _Ty)));
             _Xx = _Par0._Sqrt * _Yx + _Par0._Alpha - 1;
             if (0 < _Xx
                 && _NRAND(_Eng, _Ty) <= (1 + _Yx * _Yx)
@@ -3340,33 +3415,35 @@ public:
     struct param_type { // parameter package
         using distribution_type = weibull_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{1}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) {
+        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Ax0, _Bx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Ax == _Right._Ax && _Left._Bx == _Right._Bx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty a() const {
+        _NODISCARD _Ty a() const noexcept /* strengthened */ {
             return _Ax;
         }
 
-        _NODISCARD _Ty b() const {
+        _NODISCARD _Ty b() const noexcept /* strengthened */ {
             return _Bx;
         }
 
-        void _Init(_Ty _Ax0, _Ty _Bx0) { // initialize
+        void _Init(_Ty _Ax0, _Ty _Bx0) noexcept { // initialize
             _STL_ASSERT(0.0 < _Ax0, "invalid a argument for weibull_distribution");
             _STL_ASSERT(0.0 < _Bx0, "invalid b argument for weibull_distribution");
             _Ax = _Ax0;
@@ -3377,37 +3454,40 @@ public:
         _Ty _Bx;
     };
 
-    weibull_distribution() : _Par(_Ty{1}, _Ty{1}) {}
+    weibull_distribution() noexcept // strengthened
+        : _Par(_Ty{1}, _Ty{1}) {}
 
-    explicit weibull_distribution(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) : _Par(_Ax0, _Bx0) {}
+    explicit weibull_distribution(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) noexcept // strengthened
+        : _Par(_Ax0, _Bx0) {}
 
-    explicit weibull_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit weibull_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty a() const {
+    _NODISCARD _Ty a() const noexcept /* strengthened */ {
         return _Par.a();
     }
 
-    _NODISCARD _Ty b() const {
+    _NODISCARD _Ty b() const noexcept /* strengthened */ {
         return _Par.b();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return 0;
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return numeric_limits<result_type>::infinity();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -3419,12 +3499,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const weibull_distribution& _Left, const weibull_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(const weibull_distribution& _Left, const weibull_distribution& _Right) noexcept
+    /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const weibull_distribution& _Left, const weibull_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(const weibull_distribution& _Left, const weibull_distribution& _Right) noexcept
+    /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -3468,33 +3550,35 @@ public:
     struct param_type { // parameter package
         using distribution_type = extreme_value_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) {
+        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Ax0, _Bx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Ax == _Right._Ax && _Left._Bx == _Right._Bx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty a() const {
+        _NODISCARD _Ty a() const noexcept /* strengthened */ {
             return _Ax;
         }
 
-        _NODISCARD _Ty b() const {
+        _NODISCARD _Ty b() const noexcept /* strengthened */ {
             return _Bx;
         }
 
-        void _Init(_Ty _Ax0, _Ty _Bx0) { // initialize
+        void _Init(_Ty _Ax0, _Ty _Bx0) noexcept { // initialize
             _STL_ASSERT(0.0 < _Bx0, "invalid b argument for extreme_value_distribution");
             _Ax = _Ax0;
             _Bx = _Bx0;
@@ -3504,37 +3588,40 @@ public:
         _Ty _Bx;
     };
 
-    extreme_value_distribution() : _Par(_Ty{0}, _Ty{1}) {}
+    extreme_value_distribution() noexcept // strengthened
+        : _Par(_Ty{0}, _Ty{1}) {}
 
-    explicit extreme_value_distribution(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) : _Par(_Ax0, _Bx0) {}
+    explicit extreme_value_distribution(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) noexcept // strengthened
+        : _Par(_Ax0, _Bx0) {}
 
-    explicit extreme_value_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit extreme_value_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty a() const {
+    _NODISCARD _Ty a() const noexcept /* strengthened */ {
         return _Par.a();
     }
 
-    _NODISCARD _Ty b() const {
+    _NODISCARD _Ty b() const noexcept /* strengthened */ {
         return _Par.b();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return -numeric_limits<result_type>::infinity();
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return numeric_limits<result_type>::infinity();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -3547,13 +3634,13 @@ public:
     }
 
     _NODISCARD_FRIEND bool operator==(
-        const extreme_value_distribution& _Left, const extreme_value_distribution& _Right) {
+        const extreme_value_distribution& _Left, const extreme_value_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
     _NODISCARD_FRIEND bool operator!=(
-        const extreme_value_distribution& _Left, const extreme_value_distribution& _Right) {
+        const extreme_value_distribution& _Left, const extreme_value_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -3597,33 +3684,35 @@ public:
     struct param_type { // parameter package
         using distribution_type = lognormal_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Mx0, _Ty _Sx0 = _Ty{1}) {
+        explicit param_type(_Ty _Mx0, _Ty _Sx0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Mx0, _Sx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Mx == _Right._Mx && _Left._Sx == _Right._Sx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty m() const {
+        _NODISCARD _Ty m() const noexcept /* strengthened */ {
             return _Mx;
         }
 
-        _NODISCARD _Ty s() const {
+        _NODISCARD _Ty s() const noexcept /* strengthened */ {
             return _Sx;
         }
 
-        void _Init(_Ty _Mx0, _Ty _Sx0) { // initialize
+        void _Init(_Ty _Mx0, _Ty _Sx0) noexcept { // initialize
             _STL_ASSERT(0.0 < _Sx0, "invalid s argument for lognormal_distribution");
             _Mx = _Mx0;
             _Sx = _Sx0;
@@ -3633,37 +3722,40 @@ public:
         _Ty _Sx;
     };
 
-    lognormal_distribution() : _Par(_Ty{0}, _Ty{1}) {}
+    lognormal_distribution() noexcept // strengthened
+        : _Par(_Ty{0}, _Ty{1}) {}
 
-    explicit lognormal_distribution(_Ty _Mx0, _Ty _Sx0 = _Ty{1}) : _Par(_Mx0, _Sx0) {}
+    explicit lognormal_distribution(_Ty _Mx0, _Ty _Sx0 = _Ty{1}) noexcept // strengthened
+        : _Par(_Mx0, _Sx0) {}
 
-    explicit lognormal_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit lognormal_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty m() const {
+    _NODISCARD _Ty m() const noexcept /* strengthened */ {
         return _Par.m();
     }
 
-    _NODISCARD _Ty s() const {
+    _NODISCARD _Ty s() const noexcept /* strengthened */ {
         return _Par.s();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return result_type{0.0};
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return numeric_limits<result_type>::infinity();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -3675,12 +3767,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const lognormal_distribution& _Left, const lognormal_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(
+        const lognormal_distribution& _Left, const lognormal_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const lognormal_distribution& _Left, const lognormal_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(
+        const lognormal_distribution& _Left, const lognormal_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -3724,29 +3818,31 @@ public:
     struct param_type { // parameter package
         using distribution_type = chi_squared_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{1});
         }
 
-        explicit param_type(_Ty _Nx0) {
+        explicit param_type(_Ty _Nx0) noexcept /* strengthened */ {
             _Init(_Nx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Nx == _Right._Nx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty n() const {
+        _NODISCARD _Ty n() const noexcept /* strengthened */ {
             return _Nx;
         }
 
-        void _Init(_Ty _Nx0) { // initialize
+        void _Init(_Ty _Nx0) noexcept { // initialize
             _STL_ASSERT(0 < _Nx0, "invalid n argument for chi_squared_distribution");
             _Nx = _Nx0;
         }
@@ -3754,33 +3850,36 @@ public:
         _Ty _Nx;
     };
 
-    chi_squared_distribution() : _Par(_Ty{1}) {}
+    chi_squared_distribution() noexcept // strengthened
+        : _Par(_Ty{1}) {}
 
-    explicit chi_squared_distribution(_Ty _Nx0) : _Par(_Nx0) {}
+    explicit chi_squared_distribution(_Ty _Nx0) noexcept // strengthened
+        : _Par(_Nx0) {}
 
-    explicit chi_squared_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit chi_squared_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty n() const {
+    _NODISCARD _Ty n() const noexcept /* strengthened */ {
         return _Par.n();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return result_type{0.0};
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return numeric_limits<result_type>::infinity();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -3792,12 +3891,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const chi_squared_distribution& _Left, const chi_squared_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(
+        const chi_squared_distribution& _Left, const chi_squared_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const chi_squared_distribution& _Left, const chi_squared_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(
+        const chi_squared_distribution& _Left, const chi_squared_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -3837,33 +3938,35 @@ public:
     struct param_type { // parameter package
         using distribution_type = cauchy_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) {
+        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Ax0, _Bx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Ax == _Right._Ax && _Left._Bx == _Right._Bx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty a() const {
+        _NODISCARD _Ty a() const noexcept /* strengthened */ {
             return _Ax;
         }
 
-        _NODISCARD _Ty b() const {
+        _NODISCARD _Ty b() const noexcept /* strengthened */ {
             return _Bx;
         }
 
-        void _Init(_Ty _Ax0, _Ty _Bx0) { // initialize
+        void _Init(_Ty _Ax0, _Ty _Bx0) noexcept { // initialize
             _STL_ASSERT(0.0 < _Bx0, "invalid b argument for cauchy_distribution");
             _Ax = _Ax0;
             _Bx = _Bx0;
@@ -3873,37 +3976,40 @@ public:
         _Ty _Bx;
     };
 
-    cauchy_distribution() : _Par(_Ty{0}, _Ty{1}) {}
+    cauchy_distribution() noexcept // strengthened
+        : _Par(_Ty{0}, _Ty{1}) {}
 
-    explicit cauchy_distribution(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) : _Par(_Ax0, _Bx0) {}
+    explicit cauchy_distribution(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) noexcept // strengthened
+        : _Par(_Ax0, _Bx0) {}
 
-    explicit cauchy_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit cauchy_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty a() const {
+    _NODISCARD _Ty a() const noexcept /* strengthened */ {
         return _Par.a();
     }
 
-    _NODISCARD _Ty b() const {
+    _NODISCARD _Ty b() const noexcept /* strengthened */ {
         return _Par.b();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return -numeric_limits<result_type>::infinity();
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return numeric_limits<result_type>::infinity();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -3915,12 +4021,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const cauchy_distribution& _Left, const cauchy_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(const cauchy_distribution& _Left, const cauchy_distribution& _Right) noexcept
+    /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const cauchy_distribution& _Left, const cauchy_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(const cauchy_distribution& _Left, const cauchy_distribution& _Right) noexcept
+    /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -3948,7 +4056,7 @@ private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const { // generate pseudo-random value
         _Ty Px = _NRAND(_Eng, _Ty);
-        return static_cast<_Ty>(_Par0._Ax + _Par0._Bx * _CSTD tan(_Pi * (Px - static_cast<_Ty>(0.5))));
+        return static_cast<_Ty>(_Par0._Ax + _Par0._Bx * _CSTD tan(_Pi_val * (Px - static_cast<_Ty>(0.5))));
     }
 
     param_type _Par;
@@ -3959,7 +4067,7 @@ class _Beta_distribution { // beta distribution
 public:
     using result_type = _Ty;
 
-    explicit _Beta_distribution(const _Ty& _Ax0 = _Ty{1}, const _Ty& _Bx0 = _Ty{1}) {
+    explicit _Beta_distribution(const _Ty& _Ax0 = _Ty{1}, const _Ty& _Bx0 = _Ty{1}) noexcept {
         _Init(_Ax0, _Bx0);
     }
 
@@ -4002,7 +4110,7 @@ public:
     }
 
 private:
-    void _Init(_Ty _Ax0, _Ty _Bx0) { // initialize
+    void _Init(_Ty _Ax0, _Ty _Bx0) noexcept { // initialize
         _STL_ASSERT(0.0 < _Ax0, "invalid a argument for _Beta_distribution");
         _STL_ASSERT(0.0 < _Bx0, "invalid b argument for _Beta_distribution");
         _Ax = _Ax0;
@@ -4023,33 +4131,35 @@ public:
     struct param_type { // parameter package
         using distribution_type = fisher_f_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{1}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Mx0, _Ty _Nx0 = _Ty{1}) {
+        explicit param_type(_Ty _Mx0, _Ty _Nx0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Mx0, _Nx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Mx == _Right._Mx && _Left._Nx == _Right._Nx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty m() const {
+        _NODISCARD _Ty m() const noexcept /* strengthened */ {
             return _Mx;
         }
 
-        _NODISCARD _Ty n() const {
+        _NODISCARD _Ty n() const noexcept /* strengthened */ {
             return _Nx;
         }
 
-        void _Init(_Ty _Mx0, _Ty _Nx0) { // initialize
+        void _Init(_Ty _Mx0, _Ty _Nx0) noexcept { // initialize
             _STL_ASSERT(0 < _Mx0, "invalid m argument for fisher_f_distribution");
             _STL_ASSERT(0 < _Nx0, "invalid n argument for fisher_f_distribution");
             _Mx = _Mx0;
@@ -4060,37 +4170,40 @@ public:
         _Ty _Nx;
     };
 
-    fisher_f_distribution() : _Par(_Ty{1}, _Ty{1}) {}
+    fisher_f_distribution() noexcept // strengthened
+        : _Par(_Ty{1}, _Ty{1}) {}
 
-    explicit fisher_f_distribution(_Ty _Mx0, _Ty _Nx0 = _Ty{1}) : _Par(_Mx0, _Nx0) {}
+    explicit fisher_f_distribution(_Ty _Mx0, _Ty _Nx0 = _Ty{1}) noexcept // strengthened
+        : _Par(_Mx0, _Nx0) {}
 
-    explicit fisher_f_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit fisher_f_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty m() const {
+    _NODISCARD _Ty m() const noexcept /* strengthened */ {
         return _Par.m();
     }
 
-    _NODISCARD _Ty n() const {
+    _NODISCARD _Ty n() const noexcept /* strengthened */ {
         return _Par.n();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return result_type(0);
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return numeric_limits<result_type>::infinity();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -4102,12 +4215,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const fisher_f_distribution& _Left, const fisher_f_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(const fisher_f_distribution& _Left, const fisher_f_distribution& _Right) noexcept
+    /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const fisher_f_distribution& _Left, const fisher_f_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(const fisher_f_distribution& _Left, const fisher_f_distribution& _Right) noexcept
+    /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -4162,29 +4277,31 @@ public:
     struct param_type { // parameter package
         using distribution_type = student_t_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{1});
         }
 
-        explicit param_type(_Ty _Nx0) {
+        explicit param_type(_Ty _Nx0) noexcept /* strengthened */ {
             _Init(_Nx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Nx == _Right._Nx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty n() const {
+        _NODISCARD _Ty n() const noexcept /* strengthened */ {
             return _Nx;
         }
 
-        void _Init(_Ty _Nx0) { // initialize
+        void _Init(_Ty _Nx0) noexcept { // initialize
             _STL_ASSERT(0 < _Nx0, "invalid n argument for student_t_distribution");
             _Nx = _Nx0;
         }
@@ -4192,33 +4309,36 @@ public:
         _Ty _Nx;
     };
 
-    student_t_distribution() : _Par(_Ty{1}) {}
+    student_t_distribution() noexcept // strengthened
+        : _Par(_Ty{1}) {}
 
-    explicit student_t_distribution(_Ty _Nx0) : _Par(_Nx0) {}
+    explicit student_t_distribution(_Ty _Nx0) noexcept // strengthened
+        : _Par(_Nx0) {}
 
-    explicit student_t_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit student_t_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty n() const {
+    _NODISCARD _Ty n() const noexcept /* strengthened */ {
         return _Par.n();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return -numeric_limits<result_type>::infinity();
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return numeric_limits<result_type>::infinity();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -4230,12 +4350,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const student_t_distribution& _Left, const student_t_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(
+        const student_t_distribution& _Left, const student_t_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const student_t_distribution& _Left, const student_t_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(
+        const student_t_distribution& _Left, const student_t_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -4290,33 +4412,35 @@ public:
     struct param_type { // parameter package
         using distribution_type = negative_binomial_distribution;
 
-        param_type() {
+        param_type() noexcept /* strengthened */ {
             _Init(1, 0.5);
         }
 
-        explicit param_type(_Ty _Kx0, double _Px0 = 0.5) {
+        explicit param_type(_Ty _Kx0, double _Px0 = 0.5) noexcept /* strengthened */ {
             _Init(_Kx0, _Px0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return _Left._Kx == _Right._Kx && _Left._Px == _Right._Px;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD _Ty k() const {
+        _NODISCARD _Ty k() const noexcept /* strengthened */ {
             return _Kx;
         }
 
-        _NODISCARD double p() const {
+        _NODISCARD double p() const noexcept /* strengthened */ {
             return _Px;
         }
 
-        void _Init(_Ty _Kx0, double _Px0) { // initialize
+        void _Init(_Ty _Kx0, double _Px0) noexcept { // initialize
             _STL_ASSERT(0.0 < _Kx0, "invalid max argument for negative_binomial_distribution");
             _STL_ASSERT(0.0 < _Px0 && _Px0 <= 1.0, "invalid probability argument for negative_binomial_distribution");
             _Kx = _Kx0;
@@ -4327,37 +4451,40 @@ public:
         double _Px;
     };
 
-    negative_binomial_distribution() : _Par(1, 0.5) {}
+    negative_binomial_distribution() noexcept // strengthened
+        : _Par(1, 0.5) {}
 
-    explicit negative_binomial_distribution(_Ty _Kx0, double _Px0 = 0.5) : _Par(_Kx0, _Px0) {}
+    explicit negative_binomial_distribution(_Ty _Kx0, double _Px0 = 0.5) noexcept // strengthened
+        : _Par(_Kx0, _Px0) {}
 
-    explicit negative_binomial_distribution(const param_type& _Par0) : _Par(_Par0) {}
+    explicit negative_binomial_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
-    _NODISCARD _Ty k() const {
+    _NODISCARD _Ty k() const noexcept /* strengthened */ {
         return _Par.k();
     }
 
-    _NODISCARD double p() const {
+    _NODISCARD double p() const noexcept /* strengthened */ {
         return _Par.p();
     }
 
-    _NODISCARD param_type param() const {
+    _NODISCARD param_type param() const noexcept /* strengthened */ {
         return _Par;
     }
 
-    void param(const param_type& _Par0) { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const { // get smallest possible result
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ { // get smallest possible result
         return 0;
     }
 
-    _NODISCARD result_type(max)() const { // get largest possible result
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ { // get largest possible result
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -4369,14 +4496,14 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(
-        const negative_binomial_distribution& _Left, const negative_binomial_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator==(const negative_binomial_distribution& _Left,
+        const negative_binomial_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
-        const negative_binomial_distribution& _Left, const negative_binomial_distribution& _Right) {
+    _NODISCARD_FRIEND bool operator!=(const negative_binomial_distribution& _Left,
+        const negative_binomial_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -4426,7 +4553,7 @@ public:
     struct param_type { // parameter package
         using distribution_type = discrete_distribution;
 
-        param_type(_Uninitialized) {} // do-nothing constructor for derived classes
+        param_type(_Uninitialized) noexcept {} // do-nothing constructor for derived classes
 
         param_type() {
             _Init();
@@ -4555,15 +4682,15 @@ public:
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const {
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ {
         return 0;
     }
 
-    _NODISCARD result_type(max)() const {
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ {
         return static_cast<result_type>(_Par._Pvec.size() - 1);
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -4739,7 +4866,7 @@ public:
         return _Par._Bvec.back();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -4955,15 +5082,15 @@ public:
         _Par = _Par0;
     }
 
-    _NODISCARD result_type(min)() const {
+    _NODISCARD result_type(min)() const noexcept /* strengthened */ {
         return _Par._Bvec.front();
     }
 
-    _NODISCARD result_type(max)() const {
+    _NODISCARD result_type(max)() const noexcept /* strengthened */ {
         return _Par._Bvec.back();
     }
 
-    void reset() {} // clear internal state
+    void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -5069,15 +5196,15 @@ _EXPORT_STD class random_device { // class to generate random numbers (from hard
 public:
     using result_type = unsigned int;
 
-    random_device() {}
+    random_device() = default;
 
-    explicit random_device(const string&) {}
+    explicit random_device(const string&) noexcept /* strengthened */ {}
 
-    _NODISCARD static constexpr result_type(min)() {
+    _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
         return 0;
     }
 
-    _NODISCARD static constexpr result_type(max)() {
+    _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
         return static_cast<result_type>(-1);
     }
 

@@ -69,6 +69,7 @@ void allocate_object_overflow_test() {
 
     polymorphic_allocator<> alloc{};
 
+#ifndef __SANITIZE_ADDRESS__ // TRANSITION, VSO-1854243
     try {
         int* vp = alloc.allocate_object<int>(threshold);
         alloc.deallocate_object(vp, threshold);
@@ -76,6 +77,7 @@ void allocate_object_overflow_test() {
     } catch (...) {
         assert(false);
     }
+#endif // TRANSITION, VSO-1854243
 
     try {
         [[maybe_unused]] int* vp = alloc.allocate_object<int>(threshold + 1);

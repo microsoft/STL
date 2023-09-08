@@ -12,6 +12,7 @@
 #include <iterator>
 #include <list>
 #include <map>
+#include <memory>
 #include <new>
 #include <set>
 #include <string>
@@ -306,15 +307,10 @@ _CONSTEXPR20 bool test_sequence() {
     test_sequence_copy_assign<Sequence, CopyAlloc<int>>(11, 22, 11); // POCCA, non-equal allocators
     test_sequence_copy_assign<Sequence, CopyEqualAlloc<int>>(11, 22, 11); // POCCA, always-equal allocators
 
-#if _HAS_CXX20 && defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1799670 (expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-    {
-        test_sequence_move_ctor<Sequence>();
+    test_sequence_move_ctor<Sequence>();
 
-        test_sequence_move_alloc_ctor<Sequence>(11, 11); // equal allocators
-        test_sequence_move_alloc_ctor<Sequence>(11, 22); // non-equal allocators
-    }
+    test_sequence_move_alloc_ctor<Sequence>(11, 11); // equal allocators
+    test_sequence_move_alloc_ctor<Sequence>(11, 22); // non-equal allocators
 
     test_sequence_move_assign<Sequence, StationaryAlloc<int>>(11, 11, 11); // non-POCMA, equal allocators
     test_sequence_move_assign<Sequence, StationaryAlloc<int>>(11, 22, 22); // non-POCMA, non-equal allocators
@@ -640,6 +636,31 @@ void test_string_copy_assign(const size_t id1, const size_t id2, const size_t id
     assert(dst.get_allocator().id() == id3);
 }
 
+void test_string_copy_assign_pocca_sso() {
+    // GH-3862 fixed a bug where the POCCA codepath in basic_string's copy assignment operator mishandled
+    // the scenario where the string on the right hand side has a large capacity but a small size - so while
+    // the RHS has dynamically allocated memory, the LHS should activate the Small String Optimization.
+
+    using Al  = CopyAlloc<char>;
+    using Str = basic_string<char, char_traits<char>, Al>;
+
+    Str left{Al{11}};
+    Str right{Al{22}};
+
+    left.assign(5, 'a');
+
+    right.assign(1729, 'x');
+    right.assign(7, 'y');
+
+    assert(left == "aaaaa");
+    assert(right == "yyyyyyy");
+
+    left = right;
+
+    assert(left == "yyyyyyy");
+    assert(right == "yyyyyyy");
+}
+
 void test_string_move_ctor() {
     basic_string<char32_t, char_traits<char32_t>, StationaryAlloc<char32_t>> src(
         {5, 10, 20, 30}, StationaryAlloc<char32_t>(11));
@@ -774,6 +795,8 @@ void test_string() {
     test_string_copy_assign<CopyAlloc<char32_t>>(11, 11, 11); // POCCA, equal allocators
     test_string_copy_assign<CopyAlloc<char32_t>>(11, 22, 11); // POCCA, non-equal allocators
     test_string_copy_assign<CopyEqualAlloc<char32_t>>(11, 22, 11); // POCCA, always-equal allocators
+
+    test_string_copy_assign_pocca_sso();
 
     test_string_move_ctor();
 

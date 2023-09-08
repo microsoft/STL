@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XIOSBASE_
 #define _XIOSBASE_
 #include <yvals_core.h>
@@ -468,11 +467,11 @@ private:
         _Calls = nullptr;
     }
 
-    iostate _Mystate; // stream state
-    iostate _Except; // exception mask
-    fmtflags _Fmtfl; // format flags
-    streamsize _Prec; // field precision
-    streamsize _Wide; // field width
+    iostate _Mystate{}; // stream state
+    iostate _Except{}; // exception mask
+    fmtflags _Fmtfl{}; // format flags
+    streamsize _Prec{}; // field precision
+    streamsize _Wide{}; // field width
     _Iosarray* _Arr{nullptr}; // pointer to first node of long/pointer array
     _Fnarray* _Calls{nullptr}; // pointer to first node of call list
     locale* _Ploc{nullptr}; // pointer to locale

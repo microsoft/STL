@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _SYSTEM_ERROR_
 #define _SYSTEM_ERROR_
 #include <yvals.h>
@@ -28,6 +27,12 @@
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("noop_dtor")
+#undef msvc
+#undef noop_dtor
 
 _STD_BEGIN
 _EXPORT_STD enum class io_errc { // error codes for ios_base::failure
@@ -649,7 +654,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     [[_Clang::__require_constant_initialization__]] static _Ty _Static;
     return _Static;
 }
-#elif !defined(_M_CEE) // TRANSITION, VSO-1153256
+#elif !defined(_M_CEE)
 template <class _Ty>
 struct _Constexpr_immortalize_impl {
     union {
@@ -671,7 +676,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     static _Constexpr_immortalize_impl<_Ty> _Static;
     return _Static._Storage;
 }
-#else // ^^^ no workaround / workaround vvv
+#else // ^^^ !defined(_M_CEE) / defined(_M_CEE), TRANSITION, VSO-1153256  vvv
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     // return reference to a memcpy'd default-initialized _Ty
@@ -690,7 +695,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     _Storage[0].store(_Target_iter[0], memory_order_release);
     return reinterpret_cast<_Ty&>(_Storage);
 }
-#endif // choose immortalize strategy
+#endif // ^^^ defined(_M_CEE), TRANSITION, VSO-1153256 ^^^
 
 _EXPORT_STD _NODISCARD inline const error_category& generic_category() noexcept {
     return _Immortalize_memcpy_image<_Generic_error_category>();
@@ -716,7 +721,7 @@ _STD_BEGIN
 //   1. We would like to keep the definition of __std_win_error in xfilesystem_abi.h
 //   2. and xfilesystem_abi.h cannot include <system_error>
 //   3. and specialization of is_error_code_enum and overload of make_error_code
-//      need to be kept together with the enum (see limerick in N4810 [temp.expl.spec]/7)
+//      need to be kept together with the enum (see limerick in N4950 [temp.expl.spec]/8)
 // we resort to using this _Make_ec helper.
 _NODISCARD inline error_code _Make_ec(__std_win_error _Errno) noexcept { // make an error_code
     return {static_cast<int>(_Errno), _STD system_category()};
@@ -727,6 +732,10 @@ _NODISCARD inline error_code _Make_ec(__std_win_error _Errno) noexcept { // make
 }
 _STD_END
 #endif // _HAS_CXX17
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("noop_dtor")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

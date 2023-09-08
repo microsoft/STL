@@ -468,6 +468,18 @@ void test_vso_1253916() {
     do_shared_locked_things(shared_lock<shared_mutex>{mtx});
 }
 
+#ifdef _ENABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
+struct test_constexpr_ctor {
+    constexpr test_constexpr_ctor() {}
+    mutex mtx;
+};
+
+test_constexpr_ctor obj;
+#if _HAS_CXX20 && !defined(_M_CEE)
+constinit test_constexpr_ctor obj2;
+#endif // _HAS_CXX20 && !defined(_M_CEE)
+#endif // _ENABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
+
 int main() {
     {
         mutex_test_fixture<mutex> fixture;
