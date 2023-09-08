@@ -1233,7 +1233,7 @@ public:
         return begin() + static_cast<difference_type>(_Off);
     }
 
-        template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert [_First, _Last) at _Where
         _Adl_verify_range(_First, _Last);
@@ -1258,56 +1258,6 @@ public:
 
     iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
         return insert(_Where, _Ilist.begin(), _Ilist.end());
-    }
-
-    void pop_front() noexcept /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL == 2
-        if (empty()) {
-            _STL_REPORT_ERROR("deque empty before pop");
-        } else { // something to erase, do it
-            _Orphan_off(_Myoff());
-            size_type _Block = _Getblock(_Myoff());
-            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
-            if (--_Mysize() == 0) {
-                _Myoff() = 0;
-            } else {
-                ++_Myoff();
-            }
-        }
-
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-        size_type _Block = _Getblock(_Myoff());
-        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
-        if (--_Mysize() == 0) {
-            _Myoff() = 0;
-        } else {
-            ++_Myoff();
-        }
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
-    }
-
-    void pop_back() noexcept /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL == 2
-        if (empty()) {
-            _STL_REPORT_ERROR("deque empty before pop");
-        } else { // something to erase, do it
-            size_type _Newoff = _Myoff() + _Mysize() - 1;
-            _Orphan_off(_Newoff);
-            size_type _Block = _Getblock(_Newoff);
-            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
-            if (--_Mysize() == 0) {
-                _Myoff() = 0;
-            }
-        }
-
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-        size_type _Newoff = _Myoff() + _Mysize() - 1;
-        size_type _Block  = _Getblock(_Newoff);
-        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
-        if (--_Mysize() == 0) {
-            _Myoff() = 0;
-        }
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
     }
 
 private:
@@ -1457,6 +1407,56 @@ private:
     }
 
 public:
+    void pop_front() noexcept /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL == 2
+        if (empty()) {
+            _STL_REPORT_ERROR("deque empty before pop");
+        } else { // something to erase, do it
+            _Orphan_off(_Myoff());
+            size_type _Block = _Getblock(_Myoff());
+            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
+            if (--_Mysize() == 0) {
+                _Myoff() = 0;
+            } else {
+                ++_Myoff();
+            }
+        }
+
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
+        size_type _Block = _Getblock(_Myoff());
+        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
+        if (--_Mysize() == 0) {
+            _Myoff() = 0;
+        } else {
+            ++_Myoff();
+        }
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
+    }
+
+    void pop_back() noexcept /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL == 2
+        if (empty()) {
+            _STL_REPORT_ERROR("deque empty before pop");
+        } else { // something to erase, do it
+            size_type _Newoff = _Myoff() + _Mysize() - 1;
+            _Orphan_off(_Newoff);
+            size_type _Block = _Getblock(_Newoff);
+            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
+            if (--_Mysize() == 0) {
+                _Myoff() = 0;
+            }
+        }
+
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
+        size_type _Newoff = _Myoff() + _Mysize() - 1;
+        size_type _Block  = _Getblock(_Newoff);
+        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
+        if (--_Mysize() == 0) {
+            _Myoff() = 0;
+        }
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
+    }
+
     iterator erase(const_iterator _Where) noexcept(is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
         return erase(_Where, _Next_iter(_Where));
     }
