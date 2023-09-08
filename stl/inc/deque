@@ -819,6 +819,11 @@ public:
         return *this;
     }
 
+    deque& operator=(initializer_list<_Ty> _Ilist) {
+        assign(_Ilist.begin(), _Ilist.end());
+        return *this;
+    }
+
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
         _Adl_verify_range(_First, _Last);
@@ -847,6 +852,36 @@ public:
         _Erase_last_n(_Shrink_by);
         for (; _Extend_by > 0; --_Extend_by) {
             _Emplace_back_internal(_Val);
+        }
+    }
+
+    void assign(initializer_list<_Ty> _Ilist) {
+        assign(_Ilist.begin(), _Ilist.end());
+    }
+
+    _NODISCARD allocator_type get_allocator() const noexcept {
+        return static_cast<allocator_type>(_Getal());
+    }
+
+private:
+    template <class _Iter, class _Sent>
+    void _Assign_range(_Iter _First, const _Sent _Last) {
+        _Orphan_all();
+        auto _Myfirst      = _Unchecked_begin();
+        const auto _Mylast = _Unchecked_end();
+        // Reuse existing elements
+        for (; _Myfirst != _Mylast; ++_Myfirst, (void) ++_First) {
+            if (_First == _Last) {
+                _Erase_last_n(static_cast<size_type>(_Mylast - _Myfirst));
+                return;
+            }
+
+            *_Myfirst = *_First;
+        }
+
+        // Allocate new elements for remaining tail of values
+        for (; _First != _Last; ++_First) {
+            _Emplace_back_internal(*_First);
         }
     }
 
@@ -943,15 +978,6 @@ public:
             _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
         }
         return begin() + static_cast<difference_type>(_Off);
-    }
-
-    deque& operator=(initializer_list<_Ty> _Ilist) {
-        assign(_Ilist.begin(), _Ilist.end());
-        return *this;
-    }
-
-    void assign(initializer_list<_Ty> _Ilist) {
-        assign(_Ilist.begin(), _Ilist.end());
     }
 
     iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
@@ -1074,10 +1100,6 @@ public:
 
     _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
         return _Mysize() == 0;
-    }
-
-    _NODISCARD allocator_type get_allocator() const noexcept {
-        return static_cast<allocator_type>(_Getal());
     }
 
     _NODISCARD const_reference at(size_type _Pos) const {
@@ -1240,28 +1262,6 @@ public:
             _Myoff() = 0;
         }
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
-    }
-
-private:
-    template <class _Iter, class _Sent>
-    void _Assign_range(_Iter _First, const _Sent _Last) {
-        _Orphan_all();
-        auto _Myfirst      = _Unchecked_begin();
-        const auto _Mylast = _Unchecked_end();
-        // Reuse existing elements
-        for (; _Myfirst != _Mylast; ++_Myfirst, (void) ++_First) {
-            if (_First == _Last) {
-                _Erase_last_n(static_cast<size_type>(_Mylast - _Myfirst));
-                return;
-            }
-
-            *_Myfirst = *_First;
-        }
-
-        // Allocate new elements for remaining tail of values
-        for (; _First != _Last; ++_First) {
-            _Emplace_back_internal(*_First);
-        }
     }
 
 public:
