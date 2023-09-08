@@ -692,27 +692,6 @@ public:
         _Proxy._Release();
     }
 
-private:
-    template <class _Iter, class _Sent>
-    void _Construct(_Iter _First, const _Sent _Last) { // initialize from input range [_First, _Last)
-        _Tidy_guard<deque> _Guard{this};
-        for (; _First != _Last; ++_First) {
-            _Emplace_back_internal(*_First);
-        }
-
-        _Guard._Target = nullptr;
-    }
-
-    void _Construct_n(size_type _Count, const _Ty& _Val) { // construct from _Count * _Val
-        _Tidy_guard<deque> _Guard{this};
-        for (; _Count > 0; --_Count) {
-            _Emplace_back_internal(_Val);
-        }
-
-        _Guard._Target = nullptr;
-    }
-
-public:
     deque(deque&& _Right) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Get_data()._Alloc_proxy(static_cast<_Alproxy_ty>(_Getal()));
         _Take_contents(_Right);
@@ -734,6 +713,27 @@ public:
         _Take_contents(_Right);
     }
 
+private:
+    template <class _Iter, class _Sent>
+    void _Construct(_Iter _First, const _Sent _Last) { // initialize from input range [_First, _Last)
+        _Tidy_guard<deque> _Guard{this};
+        for (; _First != _Last; ++_First) {
+            _Emplace_back_internal(*_First);
+        }
+
+        _Guard._Target = nullptr;
+    }
+
+    void _Construct_n(size_type _Count, const _Ty& _Val) { // construct from _Count * _Val
+        _Tidy_guard<deque> _Guard{this};
+        for (; _Count > 0; --_Count) {
+            _Emplace_back_internal(_Val);
+        }
+
+        _Guard._Target = nullptr;
+    }
+
+public:
     deque& operator=(deque&& _Right) noexcept(_Alty_traits::is_always_equal::value) {
         if (this == _STD addressof(_Right)) {
             return *this;
