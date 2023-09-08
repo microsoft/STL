@@ -1145,11 +1145,13 @@ public:
     }
 
     void push_front(const _Ty& _Val) {
-        emplace_front(_Val);
+        _Orphan_all();
+        _Emplace_front_internal(_Val);
     }
 
     void push_front(_Ty&& _Val) {
-        emplace_front(_STD move(_Val));
+        _Orphan_all();
+        _Emplace_front_internal(_STD move(_Val));
     }
 
     void push_back(const _Ty& _Val) {
@@ -1205,21 +1207,7 @@ public:
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     iterator insert(const_iterator _Where, const _Ty& _Val) {
-        size_type _Off = static_cast<size_type>(_Where - begin());
-
-#if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Off <= _Mysize(), "deque insert iterator outside range");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
-        if (_Off <= _Mysize() / 2) { // closer to front, push to front then copy
-            push_front(_Val);
-            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
-        } else { // closer to back, push to back then copy
-            push_back(_Val);
-            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
-        }
-
-        return begin() + static_cast<difference_type>(_Off);
+        return emplace(_Where, _Val);
     }
 
     iterator insert(const_iterator _Where, _Ty&& _Val) {
