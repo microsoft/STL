@@ -6,7 +6,7 @@
                 "type": "git",
                 "git": {
                     "repositoryUrl": "https://github.com/boostorg/math",
-                    "commitHash": "c56f334348d5476783fba996d604fc5c6ae980c3"
+                    "commitHash": "1a7be5d895d266a870af7a6ed258e5bcf9838277"
                 }
             }
         },

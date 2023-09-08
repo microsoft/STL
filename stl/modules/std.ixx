@@ -57,9 +57,13 @@ export module std;
 #include <deque>
 #include <exception>
 #include <execution>
+#if _HAS_CXX23
 #include <expected>
+#endif // _HAS_CXX23
 #include <filesystem>
+#if _HAS_CXX23
 #include <flat_set>
+#endif // _HAS_CXX23
 #include <format>
 #include <forward_list>
 #include <fstream>
@@ -85,7 +89,9 @@ export module std;
 #include <numeric>
 #include <optional>
 #include <ostream>
+#if _HAS_CXX23
 #include <print>
+#endif // _HAS_CXX23
 #include <queue>
 #include <random>
 #include <ranges>
@@ -97,12 +103,18 @@ export module std;
 #include <shared_mutex>
 #include <source_location>
 #include <span>
+#if _HAS_CXX23
 #include <spanstream>
+#endif // _HAS_CXX23
 #include <sstream>
 #include <stack>
+#if _HAS_CXX23
 #include <stacktrace>
+#endif // _HAS_CXX23
 #include <stdexcept>
+#if _HAS_CXX23
 #include <stdfloat>
+#endif // _HAS_CXX23
 #include <stop_token>
 #include <streambuf>
 #include <string>
