@@ -954,6 +954,56 @@ public:
         return rend();
     }
 
+    _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
+        return _Mysize() == 0;
+    }
+
+    _NODISCARD size_type size() const noexcept {
+        return _Mysize();
+    }
+
+    _NODISCARD size_type max_size() const noexcept {
+        return (_STD min)(
+            static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alty_traits::max_size(_Getal()));
+    }
+
+    void resize(_CRT_GUARDOVERFLOW size_type _Newsize) {
+        _Orphan_all();
+        while (_Mysize() < _Newsize) {
+            _Emplace_back_internal();
+        }
+
+        while (_Mysize() > _Newsize) {
+            pop_back();
+        }
+    }
+
+    void resize(_CRT_GUARDOVERFLOW size_type _Newsize, const _Ty& _Val) {
+        _Orphan_all();
+        while (_Mysize() < _Newsize) {
+            _Emplace_back_internal(_Val);
+        }
+
+        while (_Mysize() > _Newsize) {
+            pop_back();
+        }
+    }
+
+    void shrink_to_fit() {
+        size_type _Oldcapacity = _Block_size * _Mapsize();
+        size_type _Newcapacity = _Oldcapacity / 2;
+
+        if (_Newcapacity < _Block_size * _Minimum_map_size) {
+            _Newcapacity = _Block_size * _Minimum_map_size;
+        }
+
+        if ((empty() && _Mapsize() > 0)
+            || (!empty() && size() <= _Newcapacity && _Newcapacity < _Oldcapacity)) { // worth shrinking, do it
+            deque _Tmp(_STD make_move_iterator(begin()), _STD make_move_iterator(end()));
+            swap(_Tmp);
+        }
+    }
+
     void push_front(_Ty&& _Val) {
         emplace_front(_STD move(_Val));
     }
@@ -1050,56 +1100,6 @@ public:
 
     iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
         return insert(_Where, _Ilist.begin(), _Ilist.end());
-    }
-
-    void shrink_to_fit() {
-        size_type _Oldcapacity = _Block_size * _Mapsize();
-        size_type _Newcapacity = _Oldcapacity / 2;
-
-        if (_Newcapacity < _Block_size * _Minimum_map_size) {
-            _Newcapacity = _Block_size * _Minimum_map_size;
-        }
-
-        if ((empty() && _Mapsize() > 0)
-            || (!empty() && size() <= _Newcapacity && _Newcapacity < _Oldcapacity)) { // worth shrinking, do it
-            deque _Tmp(_STD make_move_iterator(begin()), _STD make_move_iterator(end()));
-            swap(_Tmp);
-        }
-    }
-
-    void resize(_CRT_GUARDOVERFLOW size_type _Newsize) {
-        _Orphan_all();
-        while (_Mysize() < _Newsize) {
-            _Emplace_back_internal();
-        }
-
-        while (_Mysize() > _Newsize) {
-            pop_back();
-        }
-    }
-
-    void resize(_CRT_GUARDOVERFLOW size_type _Newsize, const _Ty& _Val) {
-        _Orphan_all();
-        while (_Mysize() < _Newsize) {
-            _Emplace_back_internal(_Val);
-        }
-
-        while (_Mysize() > _Newsize) {
-            pop_back();
-        }
-    }
-
-    _NODISCARD size_type size() const noexcept {
-        return _Mysize();
-    }
-
-    _NODISCARD size_type max_size() const noexcept {
-        return (_STD min)(
-            static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alty_traits::max_size(_Getal()));
-    }
-
-    _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
-        return _Mysize() == 0;
     }
 
     _NODISCARD const_reference at(size_type _Pos) const {
