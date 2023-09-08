@@ -50,7 +50,7 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define _ATOMIC_HAS_DCAS 1
 #else // ^^^ We always have DCAS / We only sometimes have DCAS vvv
 #define _ATOMIC_HAS_DCAS 0
-#endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 && defined(_M_X64) && !defined(_M_ARM64EC)
+#endif // ^^^ We only sometimes have DCAS ^^^
 
 // Controls whether ARM64 ldar/ldapr/stlr should be used
 #ifndef _STD_ATOMIC_USE_ARM64_LDAR_STLR
