@@ -377,31 +377,29 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 
 #ifdef _M_CEE
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)
-#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
+#else // ^^^ __clrcall supported / __clrcall not supported vvv
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // ^^^ !defined(_M_CEE) ^^^
+#endif // ^^^ __clrcall not supported ^^^
 
 #if defined(_M_IX86) && !defined(_M_CEE)
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__fastcall, OPT1, OPT2, OPT3)
-
-#else // ^^^ defined(_M_IX86) && !defined(_M_CEE) / !defined(_M_IX86) || defined(_M_CEE) vvv
+#else // ^^^ __fastcall supported / __fastcall not supported vvv
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // ^^^ !defined(_M_IX86) || defined(_M_CEE) ^^^
+#endif // ^^^ __fastcall not supported ^^^
 
 #ifdef _M_IX86
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)  FUNC(__stdcall, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__thiscall, OPT1, OPT2, OPT3)
-#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
+#else // ^^^ __stdcall and __thiscall supported / __stdcall and __thiscall not supported vvv
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // ^^^ !defined(_M_IX86) ^^^
+#endif // ^^^ __stdcall and __thiscall not supported ^^^
 
 #if ((defined(_M_IX86) && _M_IX86_FP >= 2) || defined(_M_X64)) && !defined(_M_CEE)
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__vectorcall, OPT1, OPT2, OPT3)
-
-#else // ^^^ defined(_M_IX86) && _M_IX86_FP >= 2 etc. / !defined(_M_IX86) || _M_IX86_FP < 2 etc. vvv
+#else // ^^^ __vectorcall supported / __vectorcall not supported vvv
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // ^^^ !defined(_M_IX86) || _M_IX86_FP < 2 etc. ^^^
+#endif // ^^^ __vectorcall not supported ^^^
 
 #define _NON_MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)          \
