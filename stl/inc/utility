@@ -918,7 +918,7 @@ template <class _Ty, class _Uty,
 using _Forward_like_t = conditional_t<is_rvalue_reference_v<_Ty&&>, _Tmp&&, _Tmp&>;
 
 _EXPORT_STD template <class _Ty, class _Uty>
-_NODISCARD constexpr _Forward_like_t<_Ty, _Uty> forward_like(_Uty&& _Ux) noexcept {
+_NODISCARD _MSVC_INTRINSIC constexpr _Forward_like_t<_Ty, _Uty> forward_like(_Uty&& _Ux) noexcept {
     return static_cast<_Forward_like_t<_Ty, _Uty>>(_Ux);
 }
 #endif // _HAS_CXX23
