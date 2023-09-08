@@ -13,7 +13,7 @@
 #define NLONG 1 // 7 * NLONG == max hexadecimal digits
 #elif FBITS == 53
 #define NLONG 3
-#else // ^^^ FBITS == 53 / FBITS != 53 vvv
+#else // ^^^ FBITS == 53 / FBITS != 24 && FBITS != 53 vvv
 #error Unexpected value for FBITS
 #endif // ^^^ FBITS != 24 && FBITS != 53 ^^^
 

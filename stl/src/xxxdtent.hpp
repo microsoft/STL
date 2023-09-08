@@ -37,7 +37,7 @@ static const FTYPE tenth[] = {
     static_cast<FTYPE>(FLIT(2457.0) / FRAC_BITS_2 / FRAC_BITS_2),
 };
 
-#else // ^^^ FBITS == 53 / FBITS != 53 vvv
+#else // ^^^ FBITS == 24 / FBITS != 24 && FBITS != 53 vvv
 #error Unexpected value for FBITS
 #endif // ^^^ FBITS != 24 && FBITS != 53 ^^^
 

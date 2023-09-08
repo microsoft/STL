@@ -288,7 +288,7 @@ FTYPE* FNAME(Xp_setn)(FTYPE* p, int n, long x) noexcept { // load a long integer
     FNAME(Xp_setw)(p, n, static_cast<FTYPE>(x / 10000));
     FNAME(Xp_mulh)(p, n, static_cast<FTYPE>(10000));
     FNAME(Xp_addh)(p, n, static_cast<FTYPE>(x % 10000));
-#else // ^^^ FBITS == 53 / FBITS != 53 vvv
+#else // ^^^ FBITS == 24 / FBITS != 24 && FBITS != 53 vvv
 #error Unexpected value for FBITS
 #endif // ^^^ FBITS != 24 && FBITS != 53 ^^^
 
