@@ -886,6 +886,74 @@ private:
     }
 
 public:
+    _NODISCARD iterator begin() noexcept {
+        return iterator(_Myoff(), _STD addressof(_Get_data()));
+    }
+
+    _NODISCARD const_iterator begin() const noexcept {
+        return const_iterator(_Myoff(), _STD addressof(_Get_data()));
+    }
+
+    _NODISCARD iterator end() noexcept {
+        return iterator(_Myoff() + _Mysize(), _STD addressof(_Get_data()));
+    }
+
+    _NODISCARD const_iterator end() const noexcept {
+        return const_iterator(_Myoff() + _Mysize(), _STD addressof(_Get_data()));
+    }
+
+    _Unchecked_iterator _Unchecked_begin() noexcept {
+        return _Unchecked_iterator(_Myoff(), _STD addressof(_Get_data()));
+    }
+
+    _Unchecked_const_iterator _Unchecked_begin() const noexcept {
+        return _Unchecked_const_iterator(_Myoff(), _STD addressof(_Get_data()));
+    }
+
+    _Unchecked_iterator _Unchecked_end() noexcept {
+        return _Unchecked_iterator(_Myoff() + _Mysize(), _STD addressof(_Get_data()));
+    }
+
+    _Unchecked_const_iterator _Unchecked_end() const noexcept {
+        return _Unchecked_const_iterator(_Myoff() + _Mysize(), _STD addressof(_Get_data()));
+    }
+
+    iterator _Make_iter(const_iterator _Where) const noexcept {
+        return iterator(_Where._Myoff, _STD addressof(_Get_data()));
+    }
+
+    _NODISCARD reverse_iterator rbegin() noexcept {
+        return reverse_iterator(end());
+    }
+
+    _NODISCARD const_reverse_iterator rbegin() const noexcept {
+        return const_reverse_iterator(end());
+    }
+
+    _NODISCARD reverse_iterator rend() noexcept {
+        return reverse_iterator(begin());
+    }
+
+    _NODISCARD const_reverse_iterator rend() const noexcept {
+        return const_reverse_iterator(begin());
+    }
+
+    _NODISCARD const_iterator cbegin() const noexcept {
+        return begin();
+    }
+
+    _NODISCARD const_iterator cend() const noexcept {
+        return end();
+    }
+
+    _NODISCARD const_reverse_iterator crbegin() const noexcept {
+        return rbegin();
+    }
+
+    _NODISCARD const_reverse_iterator crend() const noexcept {
+        return rend();
+    }
+
     void push_front(_Ty&& _Val) {
         emplace_front(_STD move(_Val));
     }
@@ -982,74 +1050,6 @@ public:
 
     iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
         return insert(_Where, _Ilist.begin(), _Ilist.end());
-    }
-
-    _NODISCARD iterator begin() noexcept {
-        return iterator(_Myoff(), _STD addressof(_Get_data()));
-    }
-
-    _NODISCARD const_iterator begin() const noexcept {
-        return const_iterator(_Myoff(), _STD addressof(_Get_data()));
-    }
-
-    _NODISCARD iterator end() noexcept {
-        return iterator(_Myoff() + _Mysize(), _STD addressof(_Get_data()));
-    }
-
-    _NODISCARD const_iterator end() const noexcept {
-        return const_iterator(_Myoff() + _Mysize(), _STD addressof(_Get_data()));
-    }
-
-    _Unchecked_iterator _Unchecked_begin() noexcept {
-        return _Unchecked_iterator(_Myoff(), _STD addressof(_Get_data()));
-    }
-
-    _Unchecked_const_iterator _Unchecked_begin() const noexcept {
-        return _Unchecked_const_iterator(_Myoff(), _STD addressof(_Get_data()));
-    }
-
-    _Unchecked_iterator _Unchecked_end() noexcept {
-        return _Unchecked_iterator(_Myoff() + _Mysize(), _STD addressof(_Get_data()));
-    }
-
-    _Unchecked_const_iterator _Unchecked_end() const noexcept {
-        return _Unchecked_const_iterator(_Myoff() + _Mysize(), _STD addressof(_Get_data()));
-    }
-
-    iterator _Make_iter(const_iterator _Where) const noexcept {
-        return iterator(_Where._Myoff, _STD addressof(_Get_data()));
-    }
-
-    _NODISCARD reverse_iterator rbegin() noexcept {
-        return reverse_iterator(end());
-    }
-
-    _NODISCARD const_reverse_iterator rbegin() const noexcept {
-        return const_reverse_iterator(end());
-    }
-
-    _NODISCARD reverse_iterator rend() noexcept {
-        return reverse_iterator(begin());
-    }
-
-    _NODISCARD const_reverse_iterator rend() const noexcept {
-        return const_reverse_iterator(begin());
-    }
-
-    _NODISCARD const_iterator cbegin() const noexcept {
-        return begin();
-    }
-
-    _NODISCARD const_iterator cend() const noexcept {
-        return end();
-    }
-
-    _NODISCARD const_reverse_iterator crbegin() const noexcept {
-        return rbegin();
-    }
-
-    _NODISCARD const_reverse_iterator crend() const noexcept {
-        return rend();
     }
 
     void shrink_to_fit() {
