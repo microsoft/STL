@@ -1557,9 +1557,15 @@ private:
             _Newsize *= 2;
         }
 
+        size_type _Allocsize = _Newsize;
+
         size_type _Myboff = _Myoff() / _Block_size;
-        _Mapptr _Newmap   = _Allocate_at_least_helper(_Almap, _Newsize);
+        _Mapptr _Newmap   = _Allocate_at_least_helper(_Almap, _Allocsize);
         _Mapptr _Myptr    = _Newmap + _Myboff;
+        _STL_ASSERT(_Allocsize >= _Newsize, "_Allocsize >= _Newsize");
+        while (_Allocsize / 2 >= _Newsize) {
+            _Newsize *= 2;
+        }
 
         _Count = _Newsize - _Mapsize();
 
