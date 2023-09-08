@@ -97,7 +97,7 @@ void assert_all_requirements_and_equals(const T& s, const initializer_list<typen
         }
     }
 
-    if (s.size() != il.size() || !std::equal(s.begin(), s.end(), il.begin())) {
+    if (!std::equal(s.begin(), s.end(), il.begin(), il.end())) {
         cout << "Expected: {";
         for (auto&& e : il) {
             cout << e << ", ";
