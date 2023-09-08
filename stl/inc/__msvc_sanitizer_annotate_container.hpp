@@ -24,7 +24,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _ACTIVATE_VECTOR_ANNOTATION
 #define _INSERT_VECTOR_ANNOTATION
 
-#elif defined(__clang__) // ^^^ defined(__SANITIZE_ADDRESS__) / __clang__ vvv
+#elif defined(__clang__) // ^^^ defined(__SANITIZE_ADDRESS__) / defined(__clang__) vvv
 
 #if __has_feature(address_sanitizer)
 #define _ACTIVATE_STRING_ANNOTATION
