@@ -227,7 +227,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 0
 #endif // ^^^ !defined(_DEBUG) ^^^
-#endif // defined(_ENABLE_ATOMIC_REF_ALIGNMENT_CHECK)
+#endif // !defined(_ENABLE_ATOMIC_REF_ALIGNMENT_CHECK)
 
 #if _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
 #define _ATOMIC_REF_CHECK_ALIGNMENT(cond, mesg) _STL_VERIFY(cond, mesg)

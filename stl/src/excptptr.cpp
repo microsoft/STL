@@ -8,7 +8,7 @@
 
 #ifndef _VCRT_ALLOW_INTERNALS
 #define _VCRT_ALLOW_INTERNALS
-#endif // defined(_VCRT_ALLOW_INTERNALS)
+#endif // !defined(_VCRT_ALLOW_INTERNALS)
 
 #include <Unknwn.h>
 #include <cstdlib> // for abort
