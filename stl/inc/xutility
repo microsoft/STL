@@ -4576,7 +4576,7 @@ template <class _InIt, class _Sent, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _Sent _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
-    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt>) {
+    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt, true>) {
         return _Copy_vbool(_First, _Last, _Dest);
     } else {
         if constexpr (_Sent_copy_cat<_InIt, _Sent, _OutIt>::_Bitcopy_assignable) {
@@ -4778,7 +4778,7 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
     // copy [_First, _First + _Count) to [_Dest, ...)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
-        if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt>) {
+        if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt, true>) {
             return _Copy_vbool(_First, _First + _Count, _Dest);
         } else {
             auto _UFirst = _Get_unwrapped_n(_First, _Count);
@@ -4881,7 +4881,7 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
     // note: _Move_unchecked has callers other than the move family
-    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt>) {
+    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt, true>) {
         return _Copy_vbool(_First, _Last, _Dest);
     } else {
         if constexpr (_Iter_move_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
