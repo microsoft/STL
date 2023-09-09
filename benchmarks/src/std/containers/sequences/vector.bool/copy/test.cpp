@@ -17,8 +17,9 @@ static vector<bool> createRandomVector(const size_t size) {
 }
 
 static void copy_block_aligned(benchmark::State& state) {
-    const vector<bool> source = createRandomVector(state.range(0));
-    vector<bool> dest(state.range(0), false);
+    const auto size           = state.range(0);
+    const vector<bool> source = createRandomVector(size);
+    vector<bool> dest(size, false);
 
     for (auto _ : state) {
         copy(source.cbegin(), source.cend(), dest.begin());
@@ -26,8 +27,9 @@ static void copy_block_aligned(benchmark::State& state) {
 }
 
 static void copy_source_misaligned(benchmark::State& state) {
-    const vector<bool> source = createRandomVector(state.range(0));
-    vector<bool> dest(state.range(0), false);
+    const auto size           = state.range(0);
+    const vector<bool> source = createRandomVector(size);
+    vector<bool> dest(size, false);
 
     for (auto _ : state) {
         copy(source.cbegin() + 1, source.cend(), dest.begin());
@@ -35,8 +37,9 @@ static void copy_source_misaligned(benchmark::State& state) {
 }
 
 static void copy_dest_misaligned(benchmark::State& state) {
-    const vector<bool> source = createRandomVector(state.range(0));
-    vector<bool> dest(state.range(0), false);
+    const auto size           = state.range(0);
+    const vector<bool> source = createRandomVector(size);
+    vector<bool> dest(size, false);
 
     for (auto _ : state) {
         copy(source.cbegin(), source.cend() - 1, dest.begin() + 1);
@@ -45,8 +48,9 @@ static void copy_dest_misaligned(benchmark::State& state) {
 
 // Special benchmark for matching char alignment
 static void copy_matching_alignment(benchmark::State& state) {
-    const vector<bool> source = createRandomVector(state.range(0));
-    vector<bool> dest(state.range(0), false);
+    const auto size           = state.range(0);
+    const vector<bool> source = createRandomVector(size);
+    vector<bool> dest(size, false);
 
     for (auto _ : state) {
         copy(source.cbegin() + 5, source.cend(), dest.begin() + 5);
