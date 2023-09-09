@@ -300,31 +300,41 @@ void test_copy_no_offset(const size_t length) {
     }
     // clang-format on
 
-    vector<bool> dest(length, false);
-    const auto res_copy = copy(source.begin(), next(source.begin(), length), dest.begin());
-    assert(dest == result);
-    assert(res_copy == dest.end());
+    {
+        vector<bool> dest(length, false);
+        const auto res_copy = copy(source.begin(), next(source.begin(), length), dest.begin());
+        assert(dest == result);
+        assert(res_copy == dest.end());
+    }
 
-    vector<bool> dest_n(length, false);
-    const auto res_copy_n = copy_n(source.begin(), length, dest_n.begin());
-    assert(dest_n == result);
-    assert(res_copy_n == dest_n.end());
+    {
+        vector<bool> dest_n(length, false);
+        const auto res_copy_n = copy_n(source.begin(), length, dest_n.begin());
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
+    }
 
-    vector<bool> dest_backward(length, false);
-    const auto res_copy_backward = copy_backward(source.begin(), next(source.begin(), length), dest_backward.end());
-    assert(dest_backward == result);
-    assert(res_copy_backward == dest_backward.begin());
+    {
+        vector<bool> dest_backward(length, false);
+        const auto res_copy_backward = copy_backward(source.begin(), next(source.begin(), length), dest_backward.end());
+        assert(dest_backward == result);
+        assert(res_copy_backward == dest_backward.begin());
+    }
 
-    vector<bool> dest_move(length, false);
-    const auto res_move = move(source.begin(), next(source.begin(), length), dest_move.begin());
-    assert(dest_move == result);
-    assert(res_move == dest_move.end());
+    {
+        vector<bool> dest_move(length, false);
+        const auto res_move = move(source.begin(), next(source.begin(), length), dest_move.begin());
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
+    }
 
-    vector<bool> dest_move_backward(length, false);
-    const auto res_move_backward =
-        move_backward(source.begin(), next(source.begin(), length), dest_move_backward.end());
-    assert(dest_move_backward == result);
-    assert(res_move_backward == dest_move_backward.begin());
+    {
+        vector<bool> dest_move_backward(length, false);
+        const auto res_move_backward =
+            move_backward(source.begin(), next(source.begin(), length), dest_move_backward.end());
+        assert(dest_move_backward == result);
+        assert(res_move_backward == dest_move_backward.begin());
+    }
 }
 
 void test_copy_offset_source(const size_t length) {
@@ -372,32 +382,42 @@ void test_copy_offset_source(const size_t length) {
     }
     // clang-format on
 
-    vector<bool> dest(length, false);
-    const auto res_copy = copy(next(source.begin()), next(source.begin(), length + 1), dest.begin());
-    assert(dest == result);
-    assert(res_copy == dest.end());
+    {
+        vector<bool> dest(length, false);
+        const auto res_copy = copy(next(source.begin()), next(source.begin(), length + 1), dest.begin());
+        assert(dest == result);
+        assert(res_copy == dest.end());
+    }
 
-    vector<bool> dest_n(length, false);
-    const auto res_copy_n = copy_n(next(source.begin()), length, dest_n.begin());
-    assert(dest_n == result);
-    assert(res_copy_n == dest_n.end());
+    {
+        vector<bool> dest_n(length, false);
+        const auto res_copy_n = copy_n(next(source.begin()), length, dest_n.begin());
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
+    }
 
-    vector<bool> dest_backward(length, false);
-    const auto res_copy_backward =
-        copy_backward(next(source.begin()), next(source.begin(), length + 1), dest_backward.end());
-    assert(dest_backward == result);
-    assert(res_copy_backward == dest_backward.begin());
+    {
+        vector<bool> dest_backward(length, false);
+        const auto res_copy_backward =
+            copy_backward(next(source.begin()), next(source.begin(), length + 1), dest_backward.end());
+        assert(dest_backward == result);
+        assert(res_copy_backward == dest_backward.begin());
+    }
 
-    vector<bool> dest_move(length, false);
-    const auto res_move = move(next(source.begin()), next(source.begin(), length + 1), dest_move.begin());
-    assert(dest_move == result);
-    assert(res_move == dest_move.end());
+    {
+        vector<bool> dest_move(length, false);
+        const auto res_move = move(next(source.begin()), next(source.begin(), length + 1), dest_move.begin());
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
+    }
 
-    vector<bool> dest_move_backward(length, false);
-    const auto res_move_backward =
-        move_backward(next(source.begin()), next(source.begin(), length + 1), dest_move_backward.end());
-    assert(dest_move_backward == result);
-    assert(res_move_backward == dest_move_backward.begin());
+    {
+        vector<bool> dest_move_backward(length, false);
+        const auto res_move_backward =
+            move_backward(next(source.begin()), next(source.begin(), length + 1), dest_move_backward.end());
+        assert(dest_move_backward == result);
+        assert(res_move_backward == dest_move_backward.begin());
+    }
 }
 
 void test_copy_offset_dest(const size_t length) {
@@ -449,31 +469,41 @@ void test_copy_offset_dest(const size_t length) {
     }
     // clang-format on
 
-    vector<bool> dest(length + 1, false);
-    const auto res_copy = copy(source.begin(), next(source.begin(), length), next(dest.begin()));
-    assert(dest == result);
-    assert(res_copy == dest.end());
+    {
+        vector<bool> dest(length + 1, false);
+        const auto res_copy = copy(source.begin(), next(source.begin(), length), next(dest.begin()));
+        assert(dest == result);
+        assert(res_copy == dest.end());
+    }
 
-    vector<bool> dest_n(length + 1, false);
-    const auto res_copy_n = copy_n(source.begin(), length, next(dest_n.begin()));
-    assert(dest_n == result);
-    assert(res_copy_n == dest_n.end());
+    {
+        vector<bool> dest_n(length + 1, false);
+        const auto res_copy_n = copy_n(source.begin(), length, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
+    }
 
-    vector<bool> dest_backward(length + 1, false);
-    const auto res_copy_backward = copy_backward(source.begin(), next(source.begin(), length), dest_backward.end());
-    assert(dest_backward == result);
-    assert(res_copy_backward == next(dest_backward.begin()));
+    {
+        vector<bool> dest_backward(length + 1, false);
+        const auto res_copy_backward = copy_backward(source.begin(), next(source.begin(), length), dest_backward.end());
+        assert(dest_backward == result);
+        assert(res_copy_backward == next(dest_backward.begin()));
+    }
 
-    vector<bool> dest_move(length + 1, false);
-    const auto res_move = move(source.begin(), next(source.begin(), length), next(dest_move.begin()));
-    assert(dest_move == result);
-    assert(res_move == dest_move.end());
+    {
+        vector<bool> dest_move(length + 1, false);
+        const auto res_move = move(source.begin(), next(source.begin(), length), next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
+    }
 
-    vector<bool> dest_move_backward(length + 1, false);
-    const auto res_move_backward =
-        move_backward(source.begin(), next(source.begin(), length), dest_move_backward.end());
-    assert(dest_move_backward == result);
-    assert(res_move_backward == next(dest_move_backward.begin()));
+    {
+        vector<bool> dest_move_backward(length + 1, false);
+        const auto res_move_backward =
+            move_backward(source.begin(), next(source.begin(), length), dest_move_backward.end());
+        assert(dest_move_backward == result);
+        assert(res_move_backward == next(dest_move_backward.begin()));
+    }
 }
 
 void test_copy_offset_match(const size_t length) {
@@ -525,32 +555,42 @@ void test_copy_offset_match(const size_t length) {
     }
     // clang-format on
 
-    vector<bool> dest(length, false);
-    const auto res_copy = copy(next(source.begin()), next(source.begin(), length), next(dest.begin()));
-    assert(dest == result);
-    assert(res_copy == dest.end());
+    {
+        vector<bool> dest(length, false);
+        const auto res_copy = copy(next(source.begin()), next(source.begin(), length), next(dest.begin()));
+        assert(dest == result);
+        assert(res_copy == dest.end());
+    }
 
-    vector<bool> dest_n(length, false);
-    const auto res_copy_n = copy_n(next(source.begin()), length - 1, next(dest_n.begin()));
-    assert(dest_n == result);
-    assert(res_copy_n == dest_n.end());
+    {
+        vector<bool> dest_n(length, false);
+        const auto res_copy_n = copy_n(next(source.begin()), length - 1, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
+    }
 
-    vector<bool> dest_backward(length, false);
-    const auto res_copy_backward =
-        copy_backward(next(source.begin()), next(source.begin(), length), dest_backward.end());
-    assert(dest_backward == result);
-    assert(res_copy_backward == next(dest_backward.begin()));
+    {
+        vector<bool> dest_backward(length, false);
+        const auto res_copy_backward =
+            copy_backward(next(source.begin()), next(source.begin(), length), dest_backward.end());
+        assert(dest_backward == result);
+        assert(res_copy_backward == next(dest_backward.begin()));
+    }
 
-    vector<bool> dest_move(length, false);
-    const auto res_move = move(next(source.begin()), next(source.begin(), length), next(dest_move.begin()));
-    assert(dest_move == result);
-    assert(res_move == dest_move.end());
+    {
+        vector<bool> dest_move(length, false);
+        const auto res_move = move(next(source.begin()), next(source.begin(), length), next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
+    }
 
-    vector<bool> dest_move_backward(length, false);
-    const auto res_move_backward =
-        move_backward(next(source.begin()), next(source.begin(), length), dest_move_backward.end());
-    assert(dest_move_backward == result);
-    assert(res_move_backward == next(dest_move_backward.begin()));
+    {
+        vector<bool> dest_move_backward(length, false);
+        const auto res_move_backward =
+            move_backward(next(source.begin()), next(source.begin(), length), dest_move_backward.end());
+        assert(dest_move_backward == result);
+        assert(res_move_backward == next(dest_move_backward.begin()));
+    }
 }
 
 void test_copy_offset_mismatch_leftshift(const size_t length) {
@@ -601,32 +641,43 @@ void test_copy_offset_mismatch_leftshift(const size_t length) {
         assert(false);
     }
     // clang-format on
-    vector<bool> dest(length + 1, false);
-    const auto res_copy = copy(next(source.begin()), next(source.begin(), length), next(dest.begin(), 2));
-    assert(dest == result);
-    assert(res_copy == dest.end());
 
-    vector<bool> dest_n(length + 1, false);
-    const auto res_copy_n = copy_n(next(source.begin()), length - 1, next(dest_n.begin(), 2));
-    assert(dest_n == result);
-    assert(res_copy_n == dest_n.end());
+    {
+        vector<bool> dest(length + 1, false);
+        const auto res_copy = copy(next(source.begin()), next(source.begin(), length), next(dest.begin(), 2));
+        assert(dest == result);
+        assert(res_copy == dest.end());
+    }
 
-    vector<bool> dest_backward(length + 1, false);
-    const auto res_copy_backward =
-        copy_backward(next(source.begin()), next(source.begin(), length), dest_backward.end());
-    assert(dest_backward == result);
-    assert(res_copy_backward == next(dest_backward.begin(), 2));
+    {
+        vector<bool> dest_n(length + 1, false);
+        const auto res_copy_n = copy_n(next(source.begin()), length - 1, next(dest_n.begin(), 2));
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
+    }
 
-    vector<bool> dest_move(length + 1, false);
-    const auto res_move = move(next(source.begin()), next(source.begin(), length), next(dest_move.begin(), 2));
-    assert(dest_move == result);
-    assert(res_move == dest_move.end());
+    {
+        vector<bool> dest_backward(length + 1, false);
+        const auto res_copy_backward =
+            copy_backward(next(source.begin()), next(source.begin(), length), dest_backward.end());
+        assert(dest_backward == result);
+        assert(res_copy_backward == next(dest_backward.begin(), 2));
+    }
 
-    vector<bool> dest_move_backward(length + 1, false);
-    const auto res_move_backward =
-        move_backward(next(source.begin()), next(source.begin(), length), dest_move_backward.end());
-    assert(dest_move_backward == result);
-    assert(res_move_backward == next(dest_move_backward.begin(), 2));
+    {
+        vector<bool> dest_move(length + 1, false);
+        const auto res_move = move(next(source.begin()), next(source.begin(), length), next(dest_move.begin(), 2));
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
+    }
+
+    {
+        vector<bool> dest_move_backward(length + 1, false);
+        const auto res_move_backward =
+            move_backward(next(source.begin()), next(source.begin(), length), dest_move_backward.end());
+        assert(dest_move_backward == result);
+        assert(res_move_backward == next(dest_move_backward.begin(), 2));
+    }
 }
 
 void test_copy_offset_mismatch_rightshift(const size_t length) {
@@ -680,32 +731,42 @@ void test_copy_offset_mismatch_rightshift(const size_t length) {
     }
     // clang-format on
 
-    vector<bool> dest(length, false);
-    const auto res_copy = copy(next(source.begin(), 2), next(source.begin(), length + 1), next(dest.begin()));
-    assert(dest == result);
-    assert(res_copy == dest.end());
+    {
+        vector<bool> dest(length, false);
+        const auto res_copy = copy(next(source.begin(), 2), next(source.begin(), length + 1), next(dest.begin()));
+        assert(dest == result);
+        assert(res_copy == dest.end());
+    }
 
-    vector<bool> dest_n(length, false);
-    const auto res_copy_n = copy_n(next(source.begin(), 2), length - 1, next(dest_n.begin()));
-    assert(dest_n == result);
-    assert(res_copy_n == dest_n.end());
+    {
+        vector<bool> dest_n(length, false);
+        const auto res_copy_n = copy_n(next(source.begin(), 2), length - 1, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
+    }
 
-    vector<bool> dest_backward(length, false);
-    const auto res_copy_backward =
-        copy_backward(next(source.begin(), 2), next(source.begin(), length + 1), dest_backward.end());
-    assert(dest_backward == result);
-    assert(res_copy_backward == next(dest_backward.begin()));
+    {
+        vector<bool> dest_backward(length, false);
+        const auto res_copy_backward =
+            copy_backward(next(source.begin(), 2), next(source.begin(), length + 1), dest_backward.end());
+        assert(dest_backward == result);
+        assert(res_copy_backward == next(dest_backward.begin()));
+    }
 
-    vector<bool> dest_move(length, false);
-    const auto res_move = move(next(source.begin(), 2), next(source.begin(), length + 1), next(dest_move.begin()));
-    assert(dest_move == result);
-    assert(res_move == dest_move.end());
+    {
+        vector<bool> dest_move(length, false);
+        const auto res_move = move(next(source.begin(), 2), next(source.begin(), length + 1), next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
+    }
 
-    vector<bool> dest_move_backward(length, false);
-    const auto res_move_backward =
-        move_backward(next(source.begin(), 2), next(source.begin(), length + 1), dest_move_backward.end());
-    assert(dest_move_backward == result);
-    assert(res_move_backward == next(dest_move_backward.begin()));
+    {
+        vector<bool> dest_move_backward(length, false);
+        const auto res_move_backward =
+            move_backward(next(source.begin(), 2), next(source.begin(), length + 1), dest_move_backward.end());
+        assert(dest_move_backward == result);
+        assert(res_move_backward == next(dest_move_backward.begin()));
+    }
 }
 
 void test_copy_offset_aligned(const size_t length) {
@@ -757,185 +818,250 @@ void test_copy_offset_aligned(const size_t length) {
     }
     // clang-format on
 
-    vector<bool> dest(length, false);
-    const auto res_copy = copy(next(source.begin(), 9), next(source.begin(), length + 8), next(dest.begin()));
-    assert(dest == result);
-    assert(res_copy == dest.end());
+    {
+        vector<bool> dest(length, false);
+        const auto res_copy = copy(next(source.begin(), 9), next(source.begin(), length + 8), next(dest.begin()));
+        assert(dest == result);
+        assert(res_copy == dest.end());
+    }
 
-    vector<bool> dest_n(length, false);
-    const auto res_copy_n = copy_n(next(source.begin(), 9), length - 1, next(dest_n.begin()));
-    assert(dest_n == result);
-    assert(res_copy_n == dest_n.end());
+    {
+        vector<bool> dest_n(length, false);
+        const auto res_copy_n = copy_n(next(source.begin(), 9), length - 1, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
+    }
 
-    vector<bool> dest_backward(length, false);
-    const auto res_copy_backward =
-        copy_backward(next(source.begin(), 9), next(source.begin(), length + 8), dest_backward.end());
-    assert(dest_backward == result);
-    assert(res_copy_backward == next(dest_backward.begin()));
+    {
+        vector<bool> dest_backward(length, false);
+        const auto res_copy_backward =
+            copy_backward(next(source.begin(), 9), next(source.begin(), length + 8), dest_backward.end());
+        assert(dest_backward == result);
+        assert(res_copy_backward == next(dest_backward.begin()));
+    }
 
-    vector<bool> dest_move(length, false);
-    const auto res_move = move(next(source.begin(), 9), next(source.begin(), length + 8), next(dest_move.begin()));
-    assert(dest_move == result);
-    assert(res_move == dest_move.end());
+    {
+        vector<bool> dest_move(length, false);
+        const auto res_move = move(next(source.begin(), 9), next(source.begin(), length + 8), next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
+    }
 
-    vector<bool> dest_move_backward(length, false);
-    const auto res_move_backward =
-        move_backward(next(source.begin(), 9), next(source.begin(), length + 8), dest_move_backward.end());
-    assert(dest_move_backward == result);
-    assert(res_move_backward == next(dest_move_backward.begin()));
+    {
+        vector<bool> dest_move_backward(length, false);
+        const auto res_move_backward =
+            move_backward(next(source.begin(), 9), next(source.begin(), length + 8), dest_move_backward.end());
+        assert(dest_move_backward == result);
+        assert(res_move_backward == next(dest_move_backward.begin()));
+    }
 }
 
 void test_copy_sub_char() {
     { // sub char copy unaligned
         vector<bool> result = {false, false, true, false, true, false, false, false};
-        vector<bool> dest(8, false);
-        const auto res_copy = copy(source.begin(), next(source.begin(), 3), next(dest.begin(), 2));
-        assert(dest == result);
-        assert(res_copy == next(dest.begin(), 5));
 
-        vector<bool> dest_n(8, false);
-        const auto res_copy_n = copy_n(source.begin(), 3, next(dest_n.begin(), 2));
-        assert(dest_n == result);
-        assert(res_copy_n == next(dest_n.begin(), 5));
+        {
+            vector<bool> dest(8, false);
+            const auto res_copy = copy(source.begin(), next(source.begin(), 3), next(dest.begin(), 2));
+            assert(dest == result);
+            assert(res_copy == next(dest.begin(), 5));
+        }
 
-        vector<bool> dest_backward(8, false);
-        const auto res_copy_backward =
-            copy_backward(source.begin(), next(source.begin(), 3), next(dest_backward.begin(), 5));
-        assert(dest_backward == result);
-        assert(res_copy_backward == next(dest_backward.begin(), 2));
+        {
+            vector<bool> dest_n(8, false);
+            const auto res_copy_n = copy_n(source.begin(), 3, next(dest_n.begin(), 2));
+            assert(dest_n == result);
+            assert(res_copy_n == next(dest_n.begin(), 5));
+        }
 
-        vector<bool> dest_move(8, false);
-        const auto res_move = move(source.begin(), next(source.begin(), 3), next(dest_move.begin(), 2));
-        assert(dest_move == result);
-        assert(res_move == next(dest_move.begin(), 5));
+        {
+            vector<bool> dest_backward(8, false);
+            const auto res_copy_backward =
+                copy_backward(source.begin(), next(source.begin(), 3), next(dest_backward.begin(), 5));
+            assert(dest_backward == result);
+            assert(res_copy_backward == next(dest_backward.begin(), 2));
+        }
 
-        vector<bool> dest_move_backward(8, false);
-        const auto res_move_backward =
-            move_backward(source.begin(), next(source.begin(), 3), next(dest_move_backward.begin(), 5));
-        assert(dest_move_backward == result);
-        assert(res_move_backward == next(dest_move_backward.begin(), 2));
+        {
+            vector<bool> dest_move(8, false);
+            const auto res_move = move(source.begin(), next(source.begin(), 3), next(dest_move.begin(), 2));
+            assert(dest_move == result);
+            assert(res_move == next(dest_move.begin(), 5));
+        }
+
+        {
+            vector<bool> dest_move_backward(8, false);
+            const auto res_move_backward =
+                move_backward(source.begin(), next(source.begin(), 3), next(dest_move_backward.begin(), 5));
+            assert(dest_move_backward == result);
+            assert(res_move_backward == next(dest_move_backward.begin(), 2));
+        }
     }
 
     { // sub char copy until char alignment source
         vector<bool> result = {false, false, true, true, false, false, false, false};
-        vector<bool> dest(8, false);
-        const auto res_copy = copy(next(source.begin(), 5), next(source.begin(), 8), next(dest.begin(), 2));
-        assert(dest == result);
-        assert(res_copy == next(dest.begin(), 5));
 
-        vector<bool> dest_n(8, false);
-        const auto res_copy_n = copy_n(next(source.begin(), 5), 3, next(dest_n.begin(), 2));
-        assert(dest_n == result);
-        assert(res_copy_n == next(dest_n.begin(), 5));
+        {
+            vector<bool> dest(8, false);
+            const auto res_copy = copy(next(source.begin(), 5), next(source.begin(), 8), next(dest.begin(), 2));
+            assert(dest == result);
+            assert(res_copy == next(dest.begin(), 5));
+        }
 
-        vector<bool> dest_backward(8, false);
-        const auto res_copy_backward =
-            copy_backward(next(source.begin(), 5), next(source.begin(), 8), next(dest_backward.begin(), 5));
-        assert(dest_backward == result);
-        assert(res_copy_backward == next(dest_backward.begin(), 2));
+        {
+            vector<bool> dest_n(8, false);
+            const auto res_copy_n = copy_n(next(source.begin(), 5), 3, next(dest_n.begin(), 2));
+            assert(dest_n == result);
+            assert(res_copy_n == next(dest_n.begin(), 5));
+        }
 
-        vector<bool> dest_move(8, false);
-        const auto res_move = move(next(source.begin(), 5), next(source.begin(), 8), next(dest_move.begin(), 2));
-        assert(dest_move == result);
-        assert(res_move == next(dest_move.begin(), 5));
+        {
+            vector<bool> dest_backward(8, false);
+            const auto res_copy_backward =
+                copy_backward(next(source.begin(), 5), next(source.begin(), 8), next(dest_backward.begin(), 5));
+            assert(dest_backward == result);
+            assert(res_copy_backward == next(dest_backward.begin(), 2));
+        }
 
-        vector<bool> dest_move_backward(8, false);
-        const auto res_move_backward =
-            move_backward(next(source.begin(), 5), next(source.begin(), 8), next(dest_move_backward.begin(), 5));
-        assert(dest_move_backward == result);
-        assert(res_move_backward == next(dest_move_backward.begin(), 2));
+        {
+            vector<bool> dest_move(8, false);
+            const auto res_move = move(next(source.begin(), 5), next(source.begin(), 8), next(dest_move.begin(), 2));
+            assert(dest_move == result);
+            assert(res_move == next(dest_move.begin(), 5));
+        }
+
+        {
+            vector<bool> dest_move_backward(8, false);
+            const auto res_move_backward =
+                move_backward(next(source.begin(), 5), next(source.begin(), 8), next(dest_move_backward.begin(), 5));
+            assert(dest_move_backward == result);
+            assert(res_move_backward == next(dest_move_backward.begin(), 2));
+        }
     }
 
     { // sub char copy until char alignment dest
         vector<bool> result = {false, false, false, false, false, true, false, true, false, false, false, false, false,
             false, false, false};
-        vector<bool> dest(16, false);
-        const auto res_copy = copy(source.begin(), next(source.begin(), 3), next(dest.begin(), 5));
-        assert(dest == result);
-        assert(res_copy == next(dest.begin(), 8));
 
-        vector<bool> dest_n(16, false);
-        const auto res_copy_n = copy_n(source.begin(), 3, next(dest_n.begin(), 5));
-        assert(dest_n == result);
-        assert(res_copy_n == next(dest_n.begin(), 8));
+        {
+            vector<bool> dest(16, false);
+            const auto res_copy = copy(source.begin(), next(source.begin(), 3), next(dest.begin(), 5));
+            assert(dest == result);
+            assert(res_copy == next(dest.begin(), 8));
+        }
 
-        vector<bool> dest_backward(16, false);
-        const auto res_copy_backward =
-            copy_backward(source.begin(), next(source.begin(), 3), next(dest_backward.begin(), 8));
-        assert(dest_backward == result);
-        assert(res_copy_backward == next(dest_backward.begin(), 5));
+        {
+            vector<bool> dest_n(16, false);
+            const auto res_copy_n = copy_n(source.begin(), 3, next(dest_n.begin(), 5));
+            assert(dest_n == result);
+            assert(res_copy_n == next(dest_n.begin(), 8));
+        }
 
-        vector<bool> dest_move(16, false);
-        const auto res_move = move(source.begin(), next(source.begin(), 3), next(dest_move.begin(), 5));
-        assert(dest_move == result);
-        assert(res_move == next(dest_move.begin(), 8));
+        {
+            vector<bool> dest_backward(16, false);
+            const auto res_copy_backward =
+                copy_backward(source.begin(), next(source.begin(), 3), next(dest_backward.begin(), 8));
+            assert(dest_backward == result);
+            assert(res_copy_backward == next(dest_backward.begin(), 5));
+        }
 
-        vector<bool> dest_move_backward(16, false);
-        const auto res_move_backward =
-            move_backward(source.begin(), next(source.begin(), 3), next(dest_move_backward.begin(), 8));
-        assert(dest_move_backward == result);
-        assert(res_move_backward == next(dest_move_backward.begin(), 5));
+        {
+            vector<bool> dest_move(16, false);
+            const auto res_move = move(source.begin(), next(source.begin(), 3), next(dest_move.begin(), 5));
+            assert(dest_move == result);
+            assert(res_move == next(dest_move.begin(), 8));
+        }
+
+        {
+            vector<bool> dest_move_backward(16, false);
+            const auto res_move_backward =
+                move_backward(source.begin(), next(source.begin(), 3), next(dest_move_backward.begin(), 8));
+            assert(dest_move_backward == result);
+            assert(res_move_backward == next(dest_move_backward.begin(), 5));
+        }
     }
 
     { // sub char copy over char alignment source
         vector<bool> result = {false, false, false, true, false, false, false, false};
-        vector<bool> dest(8, false);
-        const auto res_copy = copy(next(source.begin(), 7), next(source.begin(), 10), next(dest.begin(), 2));
-        assert(dest == result);
-        assert(res_copy == next(dest.begin(), 5));
 
-        vector<bool> dest_n(8, false);
-        const auto res_copy_n = copy_n(next(source.begin(), 7), 3, next(dest_n.begin(), 2));
-        assert(dest_n == result);
-        assert(res_copy_n == next(dest_n.begin(), 5));
+        {
+            vector<bool> dest(8, false);
+            const auto res_copy = copy(next(source.begin(), 7), next(source.begin(), 10), next(dest.begin(), 2));
+            assert(dest == result);
+            assert(res_copy == next(dest.begin(), 5));
+        }
 
-        vector<bool> dest_backward(8, false);
-        const auto res_copy_backward =
-            copy_backward(next(source.begin(), 7), next(source.begin(), 10), next(dest_backward.begin(), 5));
-        assert(dest_backward == result);
-        assert(res_copy_backward == next(dest_backward.begin(), 2));
+        {
+            vector<bool> dest_n(8, false);
+            const auto res_copy_n = copy_n(next(source.begin(), 7), 3, next(dest_n.begin(), 2));
+            assert(dest_n == result);
+            assert(res_copy_n == next(dest_n.begin(), 5));
+        }
 
-        vector<bool> dest_move(8, false);
-        const auto res_move = move(next(source.begin(), 7), next(source.begin(), 10), next(dest_move.begin(), 2));
-        assert(dest_move == result);
-        assert(res_move == next(dest_move.begin(), 5));
+        {
+            vector<bool> dest_backward(8, false);
+            const auto res_copy_backward =
+                copy_backward(next(source.begin(), 7), next(source.begin(), 10), next(dest_backward.begin(), 5));
+            assert(dest_backward == result);
+            assert(res_copy_backward == next(dest_backward.begin(), 2));
+        }
 
-        vector<bool> dest_move_backward(8, false);
-        const auto res_move_backward =
-            move_backward(next(source.begin(), 7), next(source.begin(), 10), next(dest_move_backward.begin(), 5));
-        assert(dest_move_backward == result);
-        assert(res_move_backward == next(dest_move_backward.begin(), 2));
+        {
+            vector<bool> dest_move(8, false);
+            const auto res_move = move(next(source.begin(), 7), next(source.begin(), 10), next(dest_move.begin(), 2));
+            assert(dest_move == result);
+            assert(res_move == next(dest_move.begin(), 5));
+        }
+
+        {
+            vector<bool> dest_move_backward(8, false);
+            const auto res_move_backward =
+                move_backward(next(source.begin(), 7), next(source.begin(), 10), next(dest_move_backward.begin(), 5));
+            assert(dest_move_backward == result);
+            assert(res_move_backward == next(dest_move_backward.begin(), 2));
+        }
     }
 
     { // sub char copy over char alignment dest
         vector<bool> result = {false, false, false, false, false, false, false, true, false, true, false, false, false,
             false, false, false};
-        vector<bool> dest(16, false);
-        const auto res_copy = copy(source.begin(), next(source.begin(), 3), next(dest.begin(), 7));
-        assert(dest == result);
-        assert(res_copy == next(dest.begin(), 10));
 
-        vector<bool> dest_n(16, false);
-        const auto res_copy_n = copy_n(source.begin(), 3, next(dest_n.begin(), 7));
-        assert(dest_n == result);
-        assert(res_copy_n == next(dest_n.begin(), 10));
+        {
+            vector<bool> dest(16, false);
+            const auto res_copy = copy(source.begin(), next(source.begin(), 3), next(dest.begin(), 7));
+            assert(dest == result);
+            assert(res_copy == next(dest.begin(), 10));
+        }
 
-        vector<bool> dest_backward(16, false);
-        const auto res_copy_backward =
-            copy_backward(source.begin(), next(source.begin(), 3), next(dest_backward.begin(), 10));
-        assert(dest_backward == result);
-        assert(res_copy_backward == next(dest_backward.begin(), 7));
+        {
+            vector<bool> dest_n(16, false);
+            const auto res_copy_n = copy_n(source.begin(), 3, next(dest_n.begin(), 7));
+            assert(dest_n == result);
+            assert(res_copy_n == next(dest_n.begin(), 10));
+        }
 
-        vector<bool> dest_move(16, false);
-        const auto res_move = move(source.begin(), next(source.begin(), 3), next(dest_move.begin(), 7));
-        assert(dest_move == result);
-        assert(res_move == next(dest_move.begin(), 10));
+        {
+            vector<bool> dest_backward(16, false);
+            const auto res_copy_backward =
+                copy_backward(source.begin(), next(source.begin(), 3), next(dest_backward.begin(), 10));
+            assert(dest_backward == result);
+            assert(res_copy_backward == next(dest_backward.begin(), 7));
+        }
 
-        vector<bool> dest_move_backward(16, false);
-        const auto res_move_backward =
-            move_backward(source.begin(), next(source.begin(), 3), next(dest_move_backward.begin(), 10));
-        assert(dest_move_backward == result);
-        assert(res_move_backward == next(dest_move_backward.begin(), 7));
+        {
+            vector<bool> dest_move(16, false);
+            const auto res_move = move(source.begin(), next(source.begin(), 3), next(dest_move.begin(), 7));
+            assert(dest_move == result);
+            assert(res_move == next(dest_move.begin(), 10));
+        }
+
+        {
+            vector<bool> dest_move_backward(16, false);
+            const auto res_move_backward =
+                move_backward(source.begin(), next(source.begin(), 3), next(dest_move_backward.begin(), 10));
+            assert(dest_move_backward == result);
+            assert(res_move_backward == next(dest_move_backward.begin(), 7));
+        }
     }
 }
 
