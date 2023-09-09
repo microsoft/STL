@@ -4,7 +4,6 @@
 #include <benchmark/benchmark.h>
 //
 #include <algorithm>
-#include <functional>
 #include <random>
 #include <vector>
 
