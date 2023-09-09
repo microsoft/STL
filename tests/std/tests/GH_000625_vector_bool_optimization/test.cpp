@@ -858,7 +858,7 @@ void test_copy_offset_aligned(const size_t length) {
 
 void test_copy_sub_char() {
     { // sub char copy unaligned
-        vector<bool> result = {false, false, true, false, true, false, false, false};
+        const vector<bool> result = {false, false, true, false, true, false, false, false};
 
         {
             vector<bool> dest(8, false);
@@ -899,7 +899,7 @@ void test_copy_sub_char() {
     }
 
     { // sub char copy until char alignment source
-        vector<bool> result = {false, false, true, true, false, false, false, false};
+        const vector<bool> result = {false, false, true, true, false, false, false, false};
 
         {
             vector<bool> dest(8, false);
@@ -940,8 +940,8 @@ void test_copy_sub_char() {
     }
 
     { // sub char copy until char alignment dest
-        vector<bool> result = {false, false, false, false, false, true, false, true, false, false, false, false, false,
-            false, false, false};
+        const vector<bool> result = {false, false, false, false, false, true, false, true, false, false, false, false,
+            false, false, false, false};
 
         {
             vector<bool> dest(16, false);
@@ -982,7 +982,7 @@ void test_copy_sub_char() {
     }
 
     { // sub char copy over char alignment source
-        vector<bool> result = {false, false, false, true, false, false, false, false};
+        const vector<bool> result = {false, false, false, true, false, false, false, false};
 
         {
             vector<bool> dest(8, false);
@@ -1023,8 +1023,8 @@ void test_copy_sub_char() {
     }
 
     { // sub char copy over char alignment dest
-        vector<bool> result = {false, false, false, false, false, false, false, true, false, true, false, false, false,
-            false, false, false};
+        const vector<bool> result = {false, false, false, false, false, false, false, true, false, true, false, false,
+            false, false, false, false};
 
         {
             vector<bool> dest(16, false);
