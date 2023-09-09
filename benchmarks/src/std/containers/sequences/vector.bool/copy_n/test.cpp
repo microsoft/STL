@@ -28,7 +28,7 @@ static void copy_n_block_aligned(benchmark::State& state) {
     }
 }
 
-static void copy_n_source_missaligned(benchmark::State& state) {
+static void copy_n_source_misaligned(benchmark::State& state) {
     const auto size           = state.range(0);
     const vector<bool> source = createRandomVector(size);
     vector<bool> dest(size, false);
@@ -38,7 +38,7 @@ static void copy_n_source_missaligned(benchmark::State& state) {
     }
 }
 
-static void copy_n_dest_missaligned(benchmark::State& state) {
+static void copy_n_dest_misaligned(benchmark::State& state) {
     const auto size           = state.range(0);
     const vector<bool> source = createRandomVector(size);
     vector<bool> dest(size, false);
@@ -91,8 +91,8 @@ static void copy_n_dest_single_block(benchmark::State& state) {
 }
 
 BENCHMARK(copy_n_block_aligned)->RangeMultiplier(64)->Range(64, 64 << 10);
-BENCHMARK(copy_n_source_missaligned)->RangeMultiplier(64)->Range(64, 64 << 10);
-BENCHMARK(copy_n_dest_missaligned)->RangeMultiplier(64)->Range(64, 64 << 10);
+BENCHMARK(copy_n_source_misaligned)->RangeMultiplier(64)->Range(64, 64 << 10);
+BENCHMARK(copy_n_dest_misaligned)->RangeMultiplier(64)->Range(64, 64 << 10);
 BENCHMARK(copy_n_matching_alignment)->RangeMultiplier(64)->Range(64, 64 << 10);
 
 BENCHMARK(copy_n_both_single_blocks);
