@@ -246,40 +246,40 @@ public:
         : c(), comp(_Pred) {}
 
     priority_queue(const _Pr& _Pred, const _Container& _Cont) : c(_Cont), comp(_Pred) {
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
     priority_queue(const _Pr& _Pred, _Container&& _Cont) : c(_STD move(_Cont)), comp(_Pred) {
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
     template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     priority_queue(_InIt _First, _InIt _Last, const _Pr& _Pred, const _Container& _Cont) : c(_Cont), comp(_Pred) {
         c.insert(c.end(), _First, _Last);
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
     template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     priority_queue(_InIt _First, _InIt _Last) : c(_First, _Last), comp() {
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
     template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     priority_queue(_InIt _First, _InIt _Last, const _Pr& _Pred) : c(_First, _Last), comp(_Pred) {
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
     template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     priority_queue(_InIt _First, _InIt _Last, const _Pr& _Pred, _Container&& _Cont) : c(_STD move(_Cont)), comp(_Pred) {
         c.insert(c.end(), _First, _Last);
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     priority_queue(from_range_t, _Rng&& _Range, const _Pr& _Pred = _Pr())
         : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range))), comp(_Pred) {
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
@@ -295,12 +295,12 @@ public:
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
     priority_queue(const _Pr& _Pred, const _Container& _Cont, const _Alloc& _Al) : c(_Cont, _Al), comp(_Pred) {
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
     priority_queue(const _Pr& _Pred, _Container&& _Cont, const _Alloc& _Al) : c(_STD move(_Cont), _Al), comp(_Pred) {
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
@@ -315,14 +315,14 @@ public:
     template <class _InIt, class _Alloc,
         enable_if_t<_Is_iterator_v<_InIt> && uses_allocator_v<_Container, _Alloc>, int> = 0>
     priority_queue(_InIt _First, _InIt _Last, const _Alloc& _Al) : c(_First, _Last, _Al), comp() {
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
     template <class _InIt, class _Alloc,
         enable_if_t<_Is_iterator_v<_InIt> && uses_allocator_v<_Container, _Alloc>, int> = 0>
     priority_queue(_InIt _First, _InIt _Last, const _Pr& _Pred, const _Alloc& _Al)
         : c(_First, _Last, _Al), comp(_Pred) {
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
     template <class _InIt, class _Alloc,
@@ -330,7 +330,7 @@ public:
     priority_queue(_InIt _First, _InIt _Last, const _Pr& _Pred, const _Container& _Cont, const _Alloc& _Al)
         : c(_Cont, _Al), comp(_Pred) {
         c.insert(c.end(), _First, _Last);
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
     template <class _InIt, class _Alloc,
@@ -338,7 +338,7 @@ public:
     priority_queue(_InIt _First, _InIt _Last, const _Pr& _Pred, _Container&& _Cont, const _Alloc& _Al)
         : c(_STD move(_Cont), _Al), comp(_Pred) {
         c.insert(c.end(), _First, _Last);
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
@@ -346,14 +346,14 @@ public:
         enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
     priority_queue(from_range_t, _Rng&& _Range, const _Pr& _Pred, const _Alloc& _Al)
         : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range), _Al)), comp(_Pred) {
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 
     template <_Container_compatible_range<_Ty> _Rng, class _Alloc,
         enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
     priority_queue(from_range_t, _Rng&& _Range, const _Alloc& _Al)
         : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range), _Al)), comp() {
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
@@ -371,12 +371,12 @@ public:
 
     void push(const value_type& _Val) {
         c.push_back(_Val);
-        _STD push_heap(c.begin(), c.end(), comp);
+        _STD push_heap(c.begin(), c.end(), _STD _Pass_fn(comp));
     }
 
     void push(value_type&& _Val) {
         c.push_back(_STD move(_Val));
-        _STD push_heap(c.begin(), c.end(), comp);
+        _STD push_heap(c.begin(), c.end(), _STD _Pass_fn(comp));
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
@@ -388,18 +388,18 @@ public:
             _RANGES copy(_Range, back_insert_iterator{c});
         }
 
-        _STD make_heap(c.begin(), c.end(), comp);
+        _Make_heap();
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     template <class... _Valty>
     void emplace(_Valty&&... _Val) {
         c.emplace_back(_STD forward<_Valty>(_Val)...);
-        _STD push_heap(c.begin(), c.end(), comp);
+        _STD push_heap(c.begin(), c.end(), _STD _Pass_fn(comp));
     }
 
     void pop() {
-        _STD pop_heap(c.begin(), c.end(), comp);
+        _STD pop_heap(c.begin(), c.end(), _STD _Pass_fn(comp));
         c.pop_back();
     }
 
@@ -408,6 +408,11 @@ public:
         using _STD swap;
         swap(c, _Right.c); // intentional ADL
         swap(comp, _Right.comp); // intentional ADL
+    }
+
+private:
+    void _Make_heap() {
+        _STD make_heap(c.begin(), c.end(), _STD _Pass_fn(comp));
     }
 
 protected:
