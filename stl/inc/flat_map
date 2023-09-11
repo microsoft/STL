@@ -735,6 +735,21 @@ public:
         return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
+    template <class _K>
+    pair<iterator, iterator> equal_range(const _K& _X)
+        requires same_as<_K, key_type> || _Compare_is_transparent<key_compare>
+    {
+        return {lower_bound(_X), upper_bound(_X)};
+    }
+
+    template <class _K>
+    pair<const_iterator, const_iterator> equal_range(const _K& _X) const
+        requires same_as<_K, key_type> || _Compare_is_transparent<key_compare>
+    {
+        return {lower_bound(_X), upper_bound(_X)};
+    }
+
+
 private:
     key_compare _Key_compare;
     containers _Data;
