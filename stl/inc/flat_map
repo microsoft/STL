@@ -539,8 +539,7 @@ public:
                       && !convertible_to<_Key_constructible_t&&, const_iterator>
                       && !convertible_to<_Key_constructible_t&&, iterator>) )
     {
-        auto _Key_It = _STD lower_bound(
-            _Data.keys.begin(), _Data.keys.end(), _STD forward<_Key_constructible_t>(_Key_constructible), _Key_compare);
+        auto _Key_It = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key_constructible, _Key_compare);
         if (_Key_It != _Data.keys.end()
             && _Key_equal(*_Key_It, _STD forward<_Key_constructible_t>(_Key_constructible))) {
             // Already exists
