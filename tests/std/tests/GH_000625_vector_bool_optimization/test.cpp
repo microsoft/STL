@@ -3,9 +3,13 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
+#include <functional>
 #include <memory>
+#include <random>
 #include <vector>
 
 #pragma warning(disable : 4365) // conversion from 'unsigned __int64' to 'const __int64', signed/unsigned mismatch
@@ -1065,6 +1069,29 @@ void test_copy_sub_char() {
     }
 }
 
+void test_copy_regression() {
+    // This specific case was found by the randomized coverage below.
+    const vector<bool> src = {0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0,
+        1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0,
+        1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0};
+
+    vector<bool> dst = {0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0,
+        0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1,
+        0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1};
+
+    const int src_prefix = 24;
+    const int dst_prefix = 7;
+    const int copy_len   = 48;
+
+    copy(src.begin() + src_prefix, src.begin() + src_prefix + copy_len, dst.begin() + dst_prefix);
+
+    const vector<bool> correct = {0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0,
+        0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0,
+        0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1};
+
+    assert(dst == correct);
+}
+
 bool test_copy() {
     test_copy_no_offset(3);
     test_copy_no_offset(8);
@@ -1117,7 +1144,164 @@ bool test_copy() {
 
     test_copy_sub_char();
 
+    test_copy_regression();
+
     return true;
+}
+
+void initialize_randomness(mt19937_64& gen) {
+    constexpr size_t n = mt19937_64::state_size;
+    constexpr size_t w = mt19937_64::word_size;
+    static_assert(w % 32 == 0, "w should be evenly divisible by 32");
+    constexpr size_t k = w / 32;
+
+    vector<uint32_t> vec(n * k);
+
+    random_device rd;
+    generate(vec.begin(), vec.end(), ref(rd));
+
+    printf("This is a randomized test.\n");
+    printf("DO NOT IGNORE/RERUN ANY FAILURES.\n");
+    printf("You must report them to the STL maintainers.\n\n");
+
+    seed_seq seq(vec.cbegin(), vec.cend());
+    gen.seed(seq);
+}
+
+template <class T>
+void print_vec(const char* const name, const vector<T>& v) {
+    printf("%s: ", name);
+    for (const auto& e : v) {
+        printf("%d", static_cast<int>(e));
+    }
+    printf("\n");
+}
+
+void randomized_test_copy(mt19937_64& gen) {
+    uniform_int_distribution<int> affix_dist{0, 2 * blockSize - 1}; // from nothing to a partial then whole block
+    uniform_int_distribution<int> copy_len_dist{1, 3 * blockSize}; // from 1 bit to leading/middle/trailing blocks
+    auto bool_dist = [&gen] { return static_cast<bool>(gen() & 1); };
+
+    constexpr int repetitions = 10'000; // tune the number of tests to balance coverage vs. execution time
+
+    for (int k = 0; k < repetitions; ++k) {
+        const int src_prefix = affix_dist(gen);
+        const int dst_prefix = affix_dist(gen);
+        const int copy_len   = copy_len_dist(gen);
+        const int src_suffix = affix_dist(gen);
+        const int dst_suffix = affix_dist(gen);
+
+        // src vector: <src_prefix> <copy_len> <src_suffix>
+        // dst vector: <dst_prefix> <copy_len> <dst_suffix>
+
+        vector<bool> vb_src(src_prefix + copy_len + src_suffix);
+        vector<bool> vb_dst(dst_prefix + copy_len + dst_suffix);
+
+        generate(vb_src.begin(), vb_src.end(), bool_dist);
+        generate(vb_dst.begin(), vb_dst.end(), bool_dist);
+
+        const vector<uint8_t> v8_src(vb_src.cbegin(), vb_src.cend());
+        vector<uint8_t> v8_dst(vb_dst.cbegin(), vb_dst.cend());
+
+        const vector<uint8_t> orig_v8_dst = v8_dst;
+
+        copy(vb_src.cbegin() + src_prefix, vb_src.cbegin() + src_prefix + copy_len, vb_dst.begin() + dst_prefix);
+        copy(v8_src.cbegin() + src_prefix, v8_src.cbegin() + src_prefix + copy_len, v8_dst.begin() + dst_prefix);
+
+        if (!equal(vb_dst.cbegin(), vb_dst.cend(), v8_dst.cbegin(), v8_dst.cend(), equal_to<uint8_t>{})) {
+            printf("src_prefix: %d\n", src_prefix);
+            printf("dst_prefix: %d\n", dst_prefix);
+            printf("  copy_len: %d\n", copy_len);
+            printf("src_suffix: %d\n", src_suffix);
+            printf("dst_suffix: %d\n", dst_suffix);
+
+            print_vec("     Src", v8_src);
+            print_vec("Original", orig_v8_dst);
+            print_vec("     Got", vb_dst);
+            print_vec("Expected", v8_dst);
+
+            assert(false);
+        }
+    }
+
+    // Overlapping is permitted when the dst range starts before the src range.
+    for (int k = 0; k < repetitions; ++k) {
+        const int prefix   = affix_dist(gen);
+        const int copy_len = copy_len_dist(gen);
+        const int overhang = uniform_int_distribution<int>{1, copy_len + 30}(gen);
+        const int suffix   = affix_dist(gen);
+
+        // An overhang of 1 results in the maximum possible overlap.
+        // An overhang of copy_len results in non-overlapping but adjacent ranges.
+        // An overhang of copy_len + 30 is the maximum value where the dst and src ranges could share a block.
+
+        // Vector diagram:
+        // <prefix> <overhang> <src is copy_len> <suffix>
+        //          ^
+        //          <dst is copy_len>
+
+        vector<bool> vb(prefix + overhang + copy_len + suffix);
+
+        generate(vb.begin(), vb.end(), bool_dist);
+
+        vector<uint8_t> v8(vb.cbegin(), vb.cend());
+
+        const vector<uint8_t> orig_v8 = v8;
+
+        copy(vb.cbegin() + prefix + overhang, vb.cbegin() + prefix + overhang + copy_len, vb.begin() + prefix);
+        copy(v8.cbegin() + prefix + overhang, v8.cbegin() + prefix + overhang + copy_len, v8.begin() + prefix);
+
+        if (!equal(vb.cbegin(), vb.cend(), v8.cbegin(), v8.cend(), equal_to<uint8_t>{})) {
+            printf("  prefix: %d\n", prefix);
+            printf("copy_len: %d\n", copy_len);
+            printf("overhang: %d\n", overhang);
+            printf("  suffix: %d\n", suffix);
+
+            print_vec("Original", orig_v8);
+            print_vec("Got", vb);
+            print_vec("Expected", v8);
+
+            assert(false);
+        }
+    }
+
+    uniform_int_distribution<int> gap_dist{0, 30}; // 0 gap is adjacent; 30 is the max gap between 2 bits in a block
+
+    // One more interesting case: when the src range is before the dst range,
+    // and they're non-overlapping but close enough that they could share a block.
+    for (int k = 0; k < repetitions; ++k) {
+        const int prefix   = affix_dist(gen);
+        const int copy_len = copy_len_dist(gen);
+        const int gap      = gap_dist(gen);
+        const int suffix   = affix_dist(gen);
+
+        // Vector diagram:
+        // <prefix> <src is copy_len> <gap> <dst is copy_len> <suffix>
+
+        vector<bool> vb(prefix + copy_len + gap + copy_len + suffix);
+
+        generate(vb.begin(), vb.end(), bool_dist);
+
+        vector<uint8_t> v8(vb.cbegin(), vb.cend());
+
+        const vector<uint8_t> orig_v8 = v8;
+
+        copy(vb.cbegin() + prefix, vb.cbegin() + prefix + copy_len, vb.begin() + prefix + copy_len + gap);
+        copy(v8.cbegin() + prefix, v8.cbegin() + prefix + copy_len, v8.begin() + prefix + copy_len + gap);
+
+        if (!equal(vb.cbegin(), vb.cend(), v8.cbegin(), v8.cend(), equal_to<uint8_t>{})) {
+            printf("  prefix: %d\n", prefix);
+            printf("copy_len: %d\n", copy_len);
+            printf("     gap: %d\n", gap);
+            printf("  suffix: %d\n", suffix);
+
+            print_vec("Original", orig_v8);
+            print_vec("Got", vb);
+            print_vec("Expected", v8);
+
+            assert(false);
+        }
+    }
 }
 
 int main() {
@@ -1127,4 +1311,8 @@ int main() {
     test_copy();
 
     test_huge_vector_bool();
+
+    mt19937_64 gen;
+    initialize_randomness(gen);
+    randomized_test_copy(gen);
 }
