@@ -382,13 +382,25 @@ public:
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     void push_range(_Rng&& _Range) {
+        const size_type _Old_size = c.size();
+
         if constexpr (requires { c.append_range(_Range); }) {
             c.append_range(_Range);
         } else {
             _RANGES copy(_Range, back_insert_iterator{c});
         }
 
-        _Make_heap();
+        const size_type _New_size = c.size();
+        if (_New_size / 2 > _Old_size) {
+            _Make_heap();
+        } else {
+            const auto _Begin = _STD _Get_unwrapped(c.begin());
+            auto _Heap_end    = _Begin + _Old_size;
+            const auto _End   = _STD _Get_unwrapped(c.end());
+            while (_Heap_end != _End) {
+                _STD push_heap(_Begin, ++_Heap_end, _STD _Pass_fn(comp));
+            }
+        }
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
