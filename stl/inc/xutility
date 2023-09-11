@@ -541,7 +541,8 @@ struct less_equal<void> {
 template <class _Fx>
 struct _Ref_fn { // pass function object by value as a reference
     template <class... _Args>
-    constexpr decltype(auto) operator()(_Args&&... _Vals) { // forward function call operator
+    constexpr decltype(auto) operator()(_Args&&... _Vals) noexcept(
+        is_nothrow_invocable_v<_Fx&, _Args&&...>) { // forward function call operator
         if constexpr (is_member_pointer_v<_Fx>) {
             return _STD invoke(_Fn, _STD forward<_Args>(_Vals)...);
         } else {
