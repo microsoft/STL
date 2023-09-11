@@ -546,9 +546,10 @@ public:
             return {begin() + _STD distance(_Data.keys.begin(), _Key_It), false};
         } else {
             // Need to insert
-            value_type _Val = {key_type(_STD forward<_Key_constructible_t>(_Key_constructible)),
-                mapped_type(_STD forward<_Args_t>(_Args)...)};
-            auto _Index     = _STD distance(_Data.keys.begin(), _Key_It);
+            value_type _Val{piecewise_construct,
+                forward_as_tuple(_STD forward<_Key_constructible_t>(_Key_constructible)),
+                forward_as_tuple(_STD forward<_Args_t>(_Args)...)};
+            auto _Index = _STD distance(_Data.keys.begin(), _Key_It);
             _Insert_exact(begin() + _Index, _STD move(_Val));
             return {begin() + _Index, true};
         }
