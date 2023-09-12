@@ -1016,8 +1016,7 @@ constexpr void check_span_array_subscript_operator() {
         using Ext = dextents<unsigned int, 2>;
         struct FunkyIndex {
             FunkyIndex()                  = default;
-            FunkyIndex(FunkyIndex&)       = delete;
-            FunkyIndex(const FunkyIndex&) = default;
+            FunkyIndex(const FunkyIndex&) = delete;
 
             constexpr operator integral auto() const& noexcept {
                 return 0;
@@ -1027,7 +1026,7 @@ constexpr void check_span_array_subscript_operator() {
                 return 0;
             }
 
-            constexpr operator Ext::index_type() && noexcept {
+            constexpr operator Ext::index_type() const& noexcept {
                 return 1;
             }
         };
