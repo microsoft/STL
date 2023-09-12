@@ -38,7 +38,7 @@ static_assert(!std::is_convertible_v<ConvertibleToInt<int, IsNothrow::no, IsExpl
 
 template <std::integral Int>
 struct NonConstConvertibleToInt {
-    constexpr operator Int() noexcept; // not defined
+    operator Int() noexcept; // not defined
 };
 
 static_assert(std::is_convertible_v<NonConstConvertibleToInt<int>, int>);
@@ -50,7 +50,7 @@ struct NonConvertibleToAnything {};
 
 namespace detail {
     template <class T>
-    constexpr void check_implicit_conversion(T); // not defined
+    void check_implicit_conversion(T); // not defined
 }
 
 template <class T, class... Args>
