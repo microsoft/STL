@@ -809,35 +809,12 @@ private:
         "If Extents::rank_dynamic() == 0 is true, then the size of the multidimensional index space Extents() must be "
         "representable as a value of type typename Extents::index_type (N4950 [mdspan.layout.stride.overview]/4).");
 
-public:
-    constexpr mapping() noexcept : _Extents_base(extents_type{}) {
-        if constexpr (extents_type::rank() != 0) {
-            this->_Array.back() = 1;
-            for (rank_type _Idx = extents_type::_Rank - 1; _Idx-- > 0;) {
-#if _CONTAINER_DEBUG_LEVEL > 0
-                const bool _Overflow =
-                    _Mul_overflow(this->_Array[_Idx + 1], this->_Exts.extent(_Idx + 1), this->_Array[_Idx]);
-                // NB: N4950 requires value of 'layout_right::mapping<extents_type>().required_span_size()' to be
-                // representable as a value of type 'index_type', but this is not enough. We need to require every
-                // single stride to be representable as a value of type 'index_type', so we can get desired effects.
-                _STL_VERIFY(!_Overflow,
-                    "Value of layout_right::mapping<extents_type>().required_span_size() must be "
-                    "representable as a value of type index_type (N4950 [mdspan.layout.stride.cons]/1).");
-#else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
-                this->_Array[_Idx] = static_cast<index_type>(this->_Array[_Idx + 1] * this->_Exts.extent(_Idx + 1));
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-            }
-        }
-    }
-
-    constexpr mapping(const mapping&) noexcept = default;
-
     template <class _OtherIndexType, size_t... _Indices>
-        requires is_convertible_v<const _OtherIndexType&, index_type>
-                  && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
     constexpr mapping(const extents_type& _Exts_, span<_OtherIndexType, extents_type::rank()> _Strides_,
         index_sequence<_Indices...>) noexcept
         : _Extents_base(_Exts_), _Strides_base{static_cast<index_type>(_STD as_const(_Strides_[_Indices]))...} {
+        _STL_INTERNAL_STATIC_ASSERT(is_convertible_v<const _OtherIndexType&, index_type>
+                                    && is_nothrow_constructible_v<index_type, const _OtherIndexType&>);
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (extents_type::rank() != 0) {
             bool _Found_zero          = false;
@@ -863,6 +840,29 @@ public:
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
+
+public:
+    constexpr mapping() noexcept : _Extents_base(extents_type{}) {
+        if constexpr (extents_type::rank() != 0) {
+            this->_Array.back() = 1;
+            for (rank_type _Idx = extents_type::_Rank - 1; _Idx-- > 0;) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+                const bool _Overflow =
+                    _Mul_overflow(this->_Array[_Idx + 1], this->_Exts.extent(_Idx + 1), this->_Array[_Idx]);
+                // NB: N4950 requires value of 'layout_right::mapping<extents_type>().required_span_size()' to be
+                // representable as a value of type 'index_type', but this is not enough. We need to require every
+                // single stride to be representable as a value of type 'index_type', so we can get desired effects.
+                _STL_VERIFY(!_Overflow,
+                    "Value of layout_right::mapping<extents_type>().required_span_size() must be "
+                    "representable as a value of type index_type (N4950 [mdspan.layout.stride.cons]/1).");
+#else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
+                this->_Array[_Idx] = static_cast<index_type>(this->_Array[_Idx + 1] * this->_Exts.extent(_Idx + 1));
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+            }
+        }
+    }
+
+    constexpr mapping(const mapping&) noexcept = default;
 
     // TRANSITION, VSO-1852021: `_Extents::rank()` should be `extents_type::rank()`
     // TRANSITION, VSO-1852030: `typename _Extents::index_type` should be `index_type`
