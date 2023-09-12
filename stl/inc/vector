@@ -3827,7 +3827,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
         const auto _SourceShift = _First._Myoff - _Dest._Myoff;
         const auto _CarryShift  = _VBITS - _SourceShift;
         const auto _CarryMask   = static_cast<_Vbase>(-1) >> _SourceShift;
-        const auto _DestMask    = static_cast<_Vbase>(~_CarryMask);
+        const auto _DestMask    = ~_CarryMask;
 
         const auto _FirstSourceVal = (*_VbFirst & _FirstSourceMask) >> _SourceShift;
         *_VbDest                   = (*_VbDest & _FirstDestMask) | _FirstSourceVal;
@@ -3881,7 +3881,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
             // We have more bits remaining than the final block has left
             if (_Last._Myoff != _CarryShift) {
                 ++_VbDest;
-                const auto _LastCarryMask = static_cast<_Vbase>(~_LastDestMask);
+                const auto _LastCarryMask = ~_LastDestMask;
                 *_VbDest                  = (*_VbDest & _LastDestMask) | (_CarryVal & _LastCarryMask);
             }
         } else if (_Last._Myoff != 0) {
