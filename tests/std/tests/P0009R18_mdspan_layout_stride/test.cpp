@@ -58,8 +58,8 @@ struct LyingLayout {
         }
 
         static constexpr bool is_always_unique() {
-            return to_underlying(
-                Unique); // might be a lie, allowed by the standard (N4950 [mdspan.layout.reqmts]/23 Note 5)
+            // might be a lie, allowed by the standard (N4950 [mdspan.layout.reqmts]/23 Note 5)
+            return to_underlying(Unique);
         }
 
         static constexpr bool is_always_exhaustive() {
@@ -67,8 +67,8 @@ struct LyingLayout {
         }
 
         static constexpr bool is_always_strided() {
-            return to_underlying(
-                Strided); // might be a lie, allowed by the standard (N4950 [mdspan.layout.reqmts]/27 Note 7)
+            // might be a lie, allowed by the standard (N4950 [mdspan.layout.reqmts]/27 Note 7)
+            return to_underlying(Strided);
         }
     };
 };
