@@ -844,6 +844,10 @@ constexpr bool test() {
     check_members(extents<unsigned long, 4>{}, array{1});
     check_members(extents<unsigned long long, 3, 2, dynamic_extent>{3}, array{1, 3, 6});
 
+    // Check degenerate extents
+    check_members(extents<long>{}, array<int, 0>{});
+    check_members(extents<unsigned char>{}, array<int, 0>{});
+
     if (!is_constant_evaluated()) { // too heavy for compile time
         check_mapping_properties();
     }

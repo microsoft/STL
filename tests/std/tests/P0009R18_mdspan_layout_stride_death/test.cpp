@@ -58,6 +58,12 @@ void test_call_operator() {
     (void) m(4, 3, 3);
 }
 
+void test_stride_with_empty_extents() {
+    layout_stride::mapping<extents<int>> m;
+    // The argument to stride must be nonnegative and less than extents_type::rank()
+    (void) m.stride(0);
+}
+
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
     exec.add_death_tests({
@@ -68,6 +74,7 @@ int main(int argc, char* argv[]) {
         test_construction_from_extents_and_span_2,
         test_construction_from_strided_layout_mapping,
         test_call_operator,
+        test_stride_with_empty_extents,
     });
     return exec.run(argc, argv);
 }

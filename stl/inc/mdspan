@@ -897,13 +897,15 @@ public:
         _STL_VERIFY(
             _Offset(_Other) == 0, "Value of OFFSET(other) must be equal to 0 (N4950 [mdspan.layout.stride.cons]/7.4).");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
-            const auto _Stride = _Other.stride(_Idx);
+        if constexpr (extents_type::_Rank != 0) {
+            for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
+                const auto _Stride = _Other.stride(_Idx);
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(_Stride > 0, "Value of other.stride(r) must be greater than 0 for every rank index r of "
-                                     "extents() (N4950 [mdspan.layout.stride.cons]/7.2).");
+                _STL_VERIFY(_Stride > 0, "Value of other.stride(r) must be greater than 0 for every rank index r of "
+                                         "extents() (N4950 [mdspan.layout.stride.cons]/7.2).");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-            this->_Array[_Idx] = static_cast<index_type>(_Stride);
+                this->_Array[_Idx] = static_cast<index_type>(_Stride);
+            }
         }
     }
 
@@ -914,7 +916,11 @@ public:
     }
 
     _NODISCARD constexpr array<index_type, extents_type::rank()> strides() const noexcept {
-        return this->_Array;
+        if constexpr (extents_type::rank() == 0) {
+            return {};
+        } else {
+            return this->_Array;
+        }
     }
 
     _NODISCARD constexpr index_type required_span_size() const noexcept {
@@ -972,7 +978,11 @@ public:
     }
 
     _NODISCARD constexpr index_type stride(const rank_type _Idx) const noexcept {
-        return this->_Array[_Idx];
+        if constexpr (extents_type::rank() == 0) {
+            _STL_VERIFY(false, "The argument to stride must be nonnegative and less than extents_type::rank().");
+        } else {
+            return this->_Array[_Idx];
+        }
     }
 
     template <class _OtherMapping>
