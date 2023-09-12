@@ -49,7 +49,7 @@ public:
     static_assert(_Is_standard_integer<index_type>,
         "IndexType must be a signed or unsigned integer type (N4950 [mdspan.extents.overview]/1.1).");
     static_assert(((_Extents == dynamic_extent || _STD in_range<index_type>(_Extents)) && ...),
-        "Each element of Extents must be either equal to dynamic_extent, or must be representable as a value of type "
+        "Each element of Extents must either be equal to dynamic_extent, or be representable as a value of type "
         "IndexType (N4950 [mdspan.extents.overview]/1.2).");
 
     static constexpr rank_type _Rank                                = sizeof...(_Extents);
@@ -146,8 +146,8 @@ private:
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Is_standard_integer<_OtherIndexType> && _Size != 0) {
             _STL_VERIFY(((_Dynamic_exts[_Indices] >= 0 && _STD in_range<index_type>(_Dynamic_exts[_Indices])) && ...),
-                "Either N must be zero or exts[r] must be nonnegative and must be representable as value of type "
-                "index_type for every rank index r (N4950 [mdspan.extents.cons]/10.2)");
+                "exts[r] must be representable as a nonnegative value of type index_type for every rank index r "
+                "(N4950 [mdspan.extents.cons]/10.2)");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
@@ -165,8 +165,8 @@ private:
                     "Value of exts[r] must be equal to extent(r) for each r for which extent(r) is a static extent "
                     "(N4950 [mdspan.extents.cons]/10.1)");
                 _STL_VERIFY(_Mixed_exts[_Idx] >= 0 && _STD in_range<index_type>(_Mixed_exts[_Idx]),
-                    "Either N must be zero or exts[r] must be nonnegative and must be representable as value of type "
-                    "index_type for every rank index r (N4950 [mdspan.extents.cons]/10.2)");
+                    "exts[r] must be representable as a nonnegative value of type index_type for every rank index r "
+                    "(N4950 [mdspan.extents.cons]/10.2)");
             }
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -232,9 +232,8 @@ public:
                 return true; // NB: We cannot check preconditions
             }
         };
-        _STL_VERIFY((_Check_extent(_Exts) && ...),
-            "Either sizeof...(exts) must be equal to 0 or each element of exts must be nonnegative and must be "
-            "representable as value of type index_type (N4950 [mdspan.extents.cons]/7.2)");
+        _STL_VERIFY((_Check_extent(_Exts) && ...), "Each argument must be representable as a nonnegative value of type "
+                                                   "index_type (N4950 [mdspan.extents.cons]/7.2)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
