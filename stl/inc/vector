@@ -3854,7 +3854,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
             }
         } else if (_Last._Myoff != 0) {
             // There are not enough bits to fill the final block so we need to mask both ends
-            const auto _FinalMask = (_CarryMask | _LastDestMask);
+            const auto _FinalMask = _CarryMask | _LastDestMask;
             *_VbDest              = (*_VbDest & _FinalMask) | _CarryVal;
         }
     } else {
