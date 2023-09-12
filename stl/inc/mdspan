@@ -544,10 +544,10 @@ public:
                     "extents().fwd-prod-of-extents(r) (N4950 [mdspan.layout.left.cons]/10.1).");
                 _Prod = static_cast<index_type>(_Prod * this->_Exts.extent(_Idx));
             }
-            _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
-                "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
-                "[mdspan.layout.left.cons]/10.2).");
         }
+        _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
+            "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
+            "[mdspan.layout.left.cons]/10.2).");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
@@ -696,10 +696,10 @@ public:
                     "extents().rev-prod-of-extents(r) (N4950 [mdspan.layout.right.cons]/10.1).");
                 _Prod = static_cast<index_type>(_Prod * this->_Exts.extent(_Idx));
             }
-            _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
-                "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
-                "[mdspan.layout.right.cons]/10.2).");
         }
+        _STL_VERIFY(_STD in_range<index_type>(_Other.required_span_size()),
+            "Value of other.required_span_size() must be representable as a value of type index_type (N4950 "
+            "[mdspan.layout.right.cons]/10.2).");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
