@@ -91,11 +91,12 @@ private:
     using _Base = _Maybe_empty_array<_IndexType, _Rank_dynamic>;
 
     template <class _OtherIndexType, size_t... _OtherExtents, size_t... _Indices>
-        requires (sizeof...(_OtherExtents) == _Rank)
-              && ((_OtherExtents == dynamic_extent || _Extents == dynamic_extent || _OtherExtents == _Extents) && ...)
     constexpr explicit extents(
         const extents<_OtherIndexType, _OtherExtents...>& _Other, index_sequence<_Indices...>) noexcept
         : _Base{static_cast<index_type>(_Other.extent(_Dynamic_indices_inv[_Indices]))...} {
+        _STL_INTERNAL_STATIC_ASSERT(sizeof...(_OtherExtents) == _Rank);
+        _STL_INTERNAL_STATIC_ASSERT(
+            ((_OtherExtents == dynamic_extent || _Extents == dynamic_extent || _OtherExtents == _Extents) && ...));
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (rank() > 0) {
             for (rank_type _Idx = 0; _Idx < _Rank; ++_Idx) {
@@ -139,10 +140,10 @@ private:
     }
 
     template <class _OtherIndexType, size_t... _Indices>
-        requires is_convertible_v<const _OtherIndexType&, index_type>
-              && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
     constexpr explicit extents(span<_OtherIndexType, _Rank_dynamic> _Dynamic_exts, index_sequence<_Indices...>) noexcept
         : _Base{static_cast<index_type>(_STD as_const(_Dynamic_exts[_Indices]))...} {
+        _STL_INTERNAL_STATIC_ASSERT(is_convertible_v<const _OtherIndexType&, index_type>
+                                    && is_nothrow_constructible_v<index_type, const _OtherIndexType&>);
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Is_standard_integer<_OtherIndexType> && _Rank_dynamic != 0) {
             _STL_VERIFY(((_Dynamic_exts[_Indices] >= 0 && _STD in_range<index_type>(_Dynamic_exts[_Indices])) && ...),
@@ -153,10 +154,11 @@ private:
     }
 
     template <class _OtherIndexType, size_t _Size, size_t... _Indices>
-        requires is_convertible_v<const _OtherIndexType&, index_type>
-              && is_nothrow_constructible_v<index_type, const _OtherIndexType&> && (_Size != _Rank_dynamic)
     constexpr explicit extents(span<_OtherIndexType, _Size> _Mixed_exts, index_sequence<_Indices...>) noexcept
         : _Base{static_cast<index_type>(_STD as_const(_Mixed_exts[_Dynamic_indices_inv[_Indices]]))...} {
+        _STL_INTERNAL_STATIC_ASSERT(_Size != _Rank_dynamic);
+        _STL_INTERNAL_STATIC_ASSERT(is_convertible_v<const _OtherIndexType&, index_type>
+                                    && is_nothrow_constructible_v<index_type, const _OtherIndexType&>);
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Is_standard_integer<_OtherIndexType>) {
             for (rank_type _Idx = 0; _Idx < _Rank; ++_Idx) {
