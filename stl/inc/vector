@@ -3874,9 +3874,9 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
         }
 
         if (_Last._Myoff >= _CarryShift) {
-            const auto _SourceVal     = *_VbFirst << _SourceShift;
-            *_VbDest                  = _CarryVal | _SourceVal;
-            _CarryVal                 = *_VbFirst >> _CarryShift;
+            const auto _SourceVal = *_VbFirst << _SourceShift;
+            *_VbDest              = _CarryVal | _SourceVal;
+            _CarryVal             = *_VbFirst >> _CarryShift;
 
             // We have more bits remaining than the final block has left
             if (_Last._Myoff != _CarryShift) {
@@ -3886,8 +3886,8 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
             }
         } else if (_Last._Myoff != 0) {
             // There are not enough bits to fill the final block so we need to mask both ends
-            const auto _LastSourceVal  = (*_VbFirst & _LastSourceMask) << _SourceShift;
-            *_VbDest                   = (*_VbDest & _LastDestMask) | _CarryVal | _LastSourceVal;
+            const auto _LastSourceVal = (*_VbFirst & _LastSourceMask) << _SourceShift;
+            *_VbDest                  = (*_VbDest & _LastDestMask) | _CarryVal | _LastSourceVal;
         } else {
             // No new bits, just copy the carry
             *_VbDest = (*_VbDest & _LastDestMask) | _CarryVal;
