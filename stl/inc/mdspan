@@ -1082,7 +1082,7 @@ struct _Mdspan_mapping_base {
     template <class _OtherMapping>
     constexpr explicit _Mdspan_mapping_base(const _OtherMapping& _Map_) : _Map(_Map_) {}
 
-    _Mapping _Map{};
+    _Mapping _Map = _Mapping();
 };
 
 template <class _Extents, _Elidable_layout_mapping<_Extents> _LayoutPolicy>
@@ -1116,7 +1116,7 @@ struct _Mdspan_accessor_base {
     template <class _OtherAccessorPolicy>
     constexpr explicit _Mdspan_accessor_base(const _OtherAccessorPolicy& _Acc_) : _Acc(_Acc_) {}
 
-    _AccessorPolicy _Acc{};
+    _AccessorPolicy _Acc = _AccessorPolicy();
 };
 
 template <_Elidable_accessor_policy _AccessorPolicy>
