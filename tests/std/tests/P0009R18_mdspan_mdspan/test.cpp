@@ -122,7 +122,7 @@ struct TrackingLayout {
         }
 
         template <class... IndexTypes>
-        constexpr index_type operator()(IndexTypes... indices) const {
+        constexpr index_type operator()(IndexTypes... indices) const noexcept(noexcept(mp(indices...))) {
             return mp(indices...);
         }
 
@@ -192,7 +192,7 @@ struct VectorBoolAccessor {
     using reference        = vector<bool>::reference;
     using data_handle_type = vector<bool>::iterator;
 
-    constexpr reference access(data_handle_type handle, size_t off) const {
+    constexpr reference access(data_handle_type handle, size_t off) const noexcept {
         return handle[static_cast<ptrdiff_t>(off)];
     }
 
@@ -877,7 +877,7 @@ constexpr void check_multidimensional_subscript_operator() {
         static_assert(CanCallMultidimSubscriptOp<Mds, unsigned char, short, unsigned int, long, unsigned long long>);
         static_assert(CanCallMultidimSubscriptOp<Mds, ConvertibleToInt<int>, int, int, int, int>);
 #ifndef __clang__ // TRANSITION, Clang 17
-        static_assert(!CanCallSubscriptOperator<Mds, int, int, int, int, NonConvertibleToAnything>);
+        static_assert(!CanCallMultidimSubscriptOp<Mds, int, int, int, int, NonConvertibleToAnything>);
 #endif // __clang__
     }
 
@@ -885,7 +885,7 @@ constexpr void check_multidimensional_subscript_operator() {
         using Mds = mdspan<char, dextents<signed char, 2>>;
         static_assert(CanCallMultidimSubscriptOp<Mds, ConvertibleToInt<int, IsNothrow::yes>, int>);
 #ifndef __clang__ // TRANSITION, Clang 17
-        static_assert(!CanCallSubscriptOperator<Mds, ConvertibleToInt<int, IsNothrow::no>, int>);
+        static_assert(!CanCallMultidimSubscriptOp<Mds, ConvertibleToInt<int, IsNothrow::no>, int>);
 #endif // __clang__
     }
 
@@ -893,8 +893,8 @@ constexpr void check_multidimensional_subscript_operator() {
         using Mds = mdspan<float, dextents<unsigned short, 3>>;
         static_assert(CanCallMultidimSubscriptOp<Mds, int, int, int>);
 #ifndef __clang__ // TRANSITION, Clang 17
-        static_assert(!CanCallSubscriptOperator<Mds, int, int>);
-        static_assert(!CanCallSubscriptOperator<Mds, int, int, int, int>);
+        static_assert(!CanCallMultidimSubscriptOp<Mds, int, int>);
+        static_assert(!CanCallMultidimSubscriptOp<Mds, int, int, int, int>);
 #endif // __clang__
     }
 
