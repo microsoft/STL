@@ -39,6 +39,10 @@ struct _Maybe_empty_array<_IndexType, 0> {};
 template <size_t... _Extents>
 inline constexpr size_t _Calculate_rank_dynamic = (static_cast<size_t>(_Extents == dynamic_extent) + ... + 0);
 
+struct _Extents_from_tuple {
+    explicit _Extents_from_tuple() = default;
+};
+
 _EXPORT_STD template <class _IndexType, size_t... _Extents>
 class extents : private _Maybe_empty_array<_IndexType, _Calculate_rank_dynamic<_Extents...>> {
 public:
@@ -114,18 +118,14 @@ private:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
-    struct _Construct_from_tuple {
-        explicit _Construct_from_tuple() = default;
-    };
-
     template <class _ExtsTuple, size_t... _Indices>
         requires (tuple_size_v<_ExtsTuple> == _Rank_dynamic)
-    constexpr explicit extents(_Construct_from_tuple, _ExtsTuple _Tpl, index_sequence<_Indices...>) noexcept
+    constexpr explicit extents(_Extents_from_tuple, _ExtsTuple _Tpl, index_sequence<_Indices...>) noexcept
         : _Base{static_cast<index_type>(_STD move(_STD get<_Indices>(_Tpl)))...} {}
 
     template <class _ExtsTuple, size_t... _DynIndices>
         requires (tuple_size_v<_ExtsTuple> != _Rank_dynamic)
-    constexpr explicit extents(_Construct_from_tuple, _ExtsTuple _Tpl, index_sequence<_DynIndices...>) noexcept
+    constexpr explicit extents(_Extents_from_tuple, _ExtsTuple _Tpl, index_sequence<_DynIndices...>) noexcept
         : _Base{static_cast<index_type>(_STD move(_STD get<_Dynamic_indices_inv[_DynIndices]>(_Tpl)))...} {
 #if _CONTAINER_DEBUG_LEVEL > 0
         [&]<size_t... _MixedIndices>(index_sequence<_MixedIndices...>) {
@@ -222,7 +222,7 @@ public:
               && (is_nothrow_constructible_v<index_type, _OtherIndexTypes> && ...)
               && (sizeof...(_OtherIndexTypes) == rank_dynamic() || sizeof...(_OtherIndexTypes) == rank())
     constexpr explicit extents(_OtherIndexTypes... _Exts) noexcept
-        : extents(_Construct_from_tuple{}, _STD tie(_Exts...), make_index_sequence<rank_dynamic()>{}) {
+        : extents(_Extents_from_tuple{}, _STD tie(_Exts...), make_index_sequence<rank_dynamic()>{}) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         auto _Check_extent = []<class _Ty>(const _Ty& _Ext) {
             if constexpr (_Is_standard_integer<_Ty>) {
