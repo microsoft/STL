@@ -11,7 +11,7 @@
 using namespace std;
 
 namespace {
-    constexpr size_t vec_size = 8000;
+    constexpr size_t vec_size = 10000;
 
     template <class T>
     auto create_vec(size_t vsize, function<T(uint64_t)> transform) {
