@@ -1412,7 +1412,7 @@ private:
         return this->_Acc.access(_Ptr, static_cast<size_t>(this->_Map(_Indices...)));
     }
 
-    /* [[no_unique_address]] */ data_handle_type _Ptr{};
+    /* [[no_unique_address]] */ data_handle_type _Ptr = data_handle_type();
 };
 
 template <class _CArray>
