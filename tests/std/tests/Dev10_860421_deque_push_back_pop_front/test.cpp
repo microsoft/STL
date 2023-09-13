@@ -155,7 +155,7 @@ public:
 
     explicit ThrowingMovable(int n) noexcept : payload{n} {}
 
-    ThrowingMovable& operator=(ThrowingMovable&& other) {
+    ThrowingMovable& operator=(ThrowingMovable&&) {
         throw UniqueError{};
     }
     ThrowingMovable& operator=(const ThrowingMovable&) noexcept = default;
