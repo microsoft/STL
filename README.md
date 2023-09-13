@@ -532,7 +532,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4950]: https://wg21.link/n4958
+[N4958]: https://wg21.link/n4958
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
