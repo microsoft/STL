@@ -5,7 +5,7 @@
 
 #include <locale>
 
-#include "awint.hpp"
+#include <Windows.h>
 
 _EXTERN_C_UNLESS_PURE
 

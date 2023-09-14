@@ -5,9 +5,9 @@
 // Prevent clang-format from reordering <AppModel.h> before <Windows.h>
 #include <Windows.h>
 #include <AppModel.h> // for APPMODEL_ERROR_NO_PACKAGE
-#include "awint.hpp"
 #include <internal_shared.h>
 #include <cstdlib>
+#include <yvals.h>
 // clang-format on
 
 #pragma warning(push)
