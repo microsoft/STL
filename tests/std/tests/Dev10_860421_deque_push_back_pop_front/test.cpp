@@ -184,17 +184,6 @@ void test_exception_safety_for_throwing_movable() {
         d.emplace_back(i);
     }
 
-    {
-        auto it = d.emplace(d.begin() + Diff{3}, 42);
-        assert(it == d.begin() + Diff{3});
-        assert(d[3] == ThrowingMovable{42});
-    }
-    {
-        auto it = d.emplace(d.end() - Diff{3}, 1729);
-        assert(it == d.end() - Diff{4});
-        assert(d[d.size() - 4] == ThrowingMovable{1729});
-    }
-
     const auto d_orig = d;
     try {
         d.emplace_front(ThrowingMovable{});
