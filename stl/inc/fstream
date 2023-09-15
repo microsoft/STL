@@ -59,17 +59,6 @@ public:
         const _Ty& _Path, ios_base::openmode _Mode = ios_base::in, int _Prot = ios_base::_Default_open_prot)
         : basic_ifstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
 
-#ifdef _CRTBLD
-    explicit basic_ifstream(const unsigned short* _Filename, ios_base::openmode _Mode = ios_base::in,
-        int _Prot = ios_base::_Default_open_prot)
-        : _Mybase(_STD addressof(_Filebuffer)) {
-        // in standard as const std::filesystem::path::value_type *; _Prot is an extension
-        if (_Filebuffer.open(_Filename, _Mode | ios_base::in, _Prot) == 0) {
-            _Myios::setstate(ios_base::failbit);
-        }
-    }
-#endif // defined(_CRTBLD)
-
     explicit basic_ifstream(FILE* _File) : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension
 
     basic_ifstream(basic_ifstream&& _Right) : _Mybase(_STD addressof(_Filebuffer)) {
@@ -137,25 +126,6 @@ public:
         open(_Filename, static_cast<ios_base::openmode>(_Mode));
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
-
-#ifdef _CRTBLD
-    void open(const unsigned short* _Filename, ios_base::openmode _Mode = ios_base::in,
-        int _Prot = ios_base::_Default_open_prot) {
-        // in standard as const std::filesystem::path::value_type *; _Prot is an extension
-        if (_Filebuffer.open(_Filename, _Mode | ios_base::in, _Prot) == 0) {
-            _Myios::setstate(ios_base::failbit);
-        } else {
-            _Myios::clear();
-        }
-    }
-
-#if _HAS_OLD_IOSTREAMS_MEMBERS
-    void open(const unsigned short* _Filename, ios_base::open_mode _Mode) {
-        // in standard as const std::filesystem::path::value_type *
-        open(_Filename, static_cast<ios_base::openmode>(_Mode));
-    }
-#endif // _HAS_OLD_IOSTREAMS_MEMBERS
-#endif // defined(_CRTBLD)
 
     __CLR_OR_THIS_CALL ~basic_ifstream() noexcept override {}
 
@@ -242,17 +212,6 @@ public:
         const _Ty& _Path, ios_base::openmode _Mode = ios_base::out, int _Prot = ios_base::_Default_open_prot)
         : basic_ofstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
 
-#ifdef _CRTBLD
-    explicit basic_ofstream(const unsigned short* _Filename, ios_base::openmode _Mode = ios_base::out,
-        int _Prot = ios_base::_Default_open_prot)
-        : _Mybase(_STD addressof(_Filebuffer)) {
-        // in standard as const std::filesystem::path::value_type *; _Prot is an extension
-        if (_Filebuffer.open(_Filename, _Mode | ios_base::out, _Prot) == 0) {
-            _Myios::setstate(ios_base::failbit);
-        }
-    }
-#endif // defined(_CRTBLD)
-
     explicit basic_ofstream(FILE* _File) : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension
 
     basic_ofstream(basic_ofstream&& _Right) : _Mybase(_STD addressof(_Filebuffer)) {
@@ -320,25 +279,6 @@ public:
         open(_Filename, static_cast<ios_base::openmode>(_Mode));
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
-
-#ifdef _CRTBLD
-    void open(const unsigned short* _Filename, ios_base::openmode _Mode = ios_base::out,
-        int _Prot = ios_base::_Default_open_prot) {
-        // in standard as const std::filesystem::path::value_type *; _Prot is an extension
-        if (_Filebuffer.open(_Filename, _Mode | ios_base::out, _Prot) == 0) {
-            _Myios::setstate(ios_base::failbit);
-        } else {
-            _Myios::clear();
-        }
-    }
-
-#if _HAS_OLD_IOSTREAMS_MEMBERS
-    void open(const unsigned short* _Filename, ios_base::open_mode _Mode) {
-        // in standard as const std::filesystem::path::value_type *
-        open(_Filename, static_cast<ios_base::openmode>(_Mode));
-    }
-#endif // _HAS_OLD_IOSTREAMS_MEMBERS
-#endif // defined(_CRTBLD)
 
     __CLR_OR_THIS_CALL ~basic_ofstream() noexcept override {}
 
@@ -430,17 +370,6 @@ public:
         int _Prot = ios_base::_Default_open_prot)
         : basic_fstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
 
-#ifdef _CRTBLD
-    explicit basic_fstream(const unsigned short* _Filename, ios_base::openmode _Mode = ios_base::in | ios_base::out,
-        int _Prot = ios_base::_Default_open_prot)
-        : _Mybase(_STD addressof(_Filebuffer)) {
-        // in standard as const std::filesystem::path::value_type *; _Prot is an extension
-        if (_Filebuffer.open(_Filename, _Mode, _Prot) == 0) {
-            _Myios::setstate(ios_base::failbit);
-        }
-    }
-#endif // defined(_CRTBLD)
-
     explicit basic_fstream(FILE* _File) : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension
 
     basic_fstream(basic_fstream&& _Right) : _Mybase(_STD addressof(_Filebuffer)) {
@@ -509,25 +438,6 @@ public:
         open(_Filename, static_cast<ios_base::openmode>(_Mode));
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
-
-#ifdef _CRTBLD
-    void open(const unsigned short* _Filename, ios_base::openmode _Mode = ios_base::in | ios_base::out,
-        int _Prot = ios_base::_Default_open_prot) {
-        // in standard as const std::filesystem::path::value_type *; _Prot is an extension
-        if (_Filebuffer.open(_Filename, _Mode, _Prot) == 0) {
-            _Myios::setstate(ios_base::failbit);
-        } else {
-            _Myios::clear();
-        }
-    }
-
-#if _HAS_OLD_IOSTREAMS_MEMBERS
-    void open(const unsigned short* _Filename, ios_base::open_mode _Mode) {
-        // in standard as const std::filesystem::path::value_type *
-        open(_Filename, static_cast<ios_base::openmode>(_Mode));
-    }
-#endif // _HAS_OLD_IOSTREAMS_MEMBERS
-#endif // defined(_CRTBLD)
 
     __CLR_OR_THIS_CALL ~basic_fstream() noexcept override {}
 

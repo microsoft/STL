@@ -12,8 +12,6 @@
 
 #include <Windows.h>
 
-#include "awint.hpp"
-
 namespace {
     using _Thrd_start_t = int (*)(void*);
 

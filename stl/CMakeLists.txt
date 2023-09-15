@@ -178,6 +178,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/list
     ${CMAKE_CURRENT_LIST_DIR}/inc/locale
     ${CMAKE_CURRENT_LIST_DIR}/inc/map
+    ${CMAKE_CURRENT_LIST_DIR}/inc/mdspan
     ${CMAKE_CURRENT_LIST_DIR}/inc/memory
     ${CMAKE_CURRENT_LIST_DIR}/inc/memory_resource
     ${CMAKE_CURRENT_LIST_DIR}/inc/mutex
