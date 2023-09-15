@@ -274,10 +274,7 @@ public:
             return true;
         } else {
             index_type _Result{1};
-#pragma warning(push)
-#pragma warning(disable : 6287) // TRANSITION, DevCom-10398426
             const bool _Overflow = (_Mul_overflow(static_cast<index_type>(_Extents), _Result, _Result) || ...);
-#pragma warning(pop)
             return !_Overflow;
         }
     }
@@ -864,20 +861,17 @@ public:
 
     constexpr mapping(const mapping&) noexcept = default;
 
-    // TRANSITION, VSO-1852021: `_Extents::rank()` should be `extents_type::rank()`
-    // TRANSITION, VSO-1852030: `typename _Extents::index_type` should be `index_type`
     template <class _OtherIndexType>
-        requires is_convertible_v<const _OtherIndexType&, typename _Extents::index_type>
-              && is_nothrow_constructible_v<typename _Extents::index_type, const _OtherIndexType&>
-    constexpr mapping(const extents_type& _Exts_, span<_OtherIndexType, _Extents::rank()> _Strides_) noexcept
+        requires is_convertible_v<const _OtherIndexType&, index_type>
+              && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
+    constexpr mapping(const extents_type& _Exts_, span<_OtherIndexType, extents_type::rank()> _Strides_) noexcept
         : mapping(_Exts_, _Strides_, make_index_sequence<extents_type::rank()>{}) {}
 
-    // TRANSITION, VSO-1852021: `_Extents::rank()` should be `extents_type::rank()`
-    // TRANSITION, VSO-1852030: `typename _Extents::index_type` should be `index_type`
     template <class _OtherIndexType>
-        requires is_convertible_v<const _OtherIndexType&, typename _Extents::index_type>
-              && is_nothrow_constructible_v<typename _Extents::index_type, const _OtherIndexType&>
-    constexpr mapping(const extents_type& _Exts_, const array<_OtherIndexType, _Extents::rank()>& _Strides_) noexcept
+        requires is_convertible_v<const _OtherIndexType&, index_type>
+              && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
+    constexpr mapping(
+        const extents_type& _Exts_, const array<_OtherIndexType, extents_type::rank()>& _Strides_) noexcept
         : mapping(_Exts_, span{_Strides_}, make_index_sequence<extents_type::rank()>{}) {}
 
     template <class _StridedLayoutMapping>
