@@ -105,9 +105,6 @@ namespace ranges {
     template <class _It>
     concept _Has_arrow = input_iterator<_It> && (is_pointer_v<_It> || _Has_member_arrow<_It&>);
 
-    template <bool _IsConst, class _Ty>
-    using _Maybe_const = conditional_t<_IsConst, const _Ty, _Ty>;
-
     template <bool _IsWrapped, class _Ty>
     using _Maybe_wrapped = conditional_t<_IsWrapped, _Ty, _Unwrapped_t<_Ty>>;
 
@@ -5102,13 +5099,7 @@ namespace ranges {
                     return *this;
                 }
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
                 auto [_Begin, _End] = _RANGES search(subrange{_Current, _Last}, _Parent->_Pattern);
-#else // ^^^ no workaround / workaround vvv
-                auto _Match = _RANGES search(subrange{_Current, _Last}, _Parent->_Pattern);
-                auto _Begin = _Match.begin();
-                auto _End   = _Match.end();
-#endif // TRANSITION, DevCom-1559808
                 if (_Begin != _Last && _RANGES empty(_Parent->_Pattern)) {
                     ++_Begin;
                     ++_End;
@@ -5154,13 +5145,7 @@ namespace ranges {
 
         constexpr subrange<iterator_t<_Vw>> _Find_next(iterator_t<_Vw> _It) {
             const auto _Last    = _RANGES end(_Range);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
             auto [_Begin, _End] = _RANGES search(subrange{_It, _Last}, _Pattern);
-#else // ^^^ no workaround / workaround vvv
-            auto _Match = _RANGES search(subrange{_It, _Last}, _Pattern);
-            auto _Begin = _Match.begin();
-            auto _End   = _Match.end();
-#endif // TRANSITION, DevCom-1559808
             if (_Begin != _Last && _RANGES empty(_Pattern)) {
                 ++_Begin;
                 ++_End;
@@ -8225,9 +8210,13 @@ namespace ranges {
         private:
             friend zip_view;
 
+#ifdef __clang__ // TRANSITION, LLVM-61763
+        public:
+#else // ^^^ workaround / no workaround vvv
             template <class _Func, class... _OtherViews>
                 requires _Zip_transform_constraints<_Func, _OtherViews...>
             friend class zip_transform_view;
+#endif // ^^^ no workaround ^^^
 
             using _My_tuple = tuple<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
 
@@ -9059,7 +9048,7 @@ namespace ranges {
         private:
             friend adjacent_view;
 
-#ifdef __clang__ // TRANSITION, Clang 17
+#ifdef __clang__ // TRANSITION, LLVM-61763
         public:
 #else // ^^^ workaround / no workaround vvv
             template <class _Vw2, class _Fn, size_t _Nx2>

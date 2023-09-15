@@ -9,6 +9,7 @@
 #include <ranges>
 #include <span>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -18,9 +19,12 @@ using namespace std;
 template <class RangeType>
 using AllView = views::all_t<RangeType>;
 
+template <bool IsConst, class T>
+using maybe_const = conditional_t<IsConst, const T, T>;
+
 template <bool IsConst, class TransformType, ranges::input_range... RangeTypes>
-using TransformResultType = invoke_result_t<ranges::_Maybe_const<IsConst, TransformType>&,
-    ranges::range_reference_t<ranges::_Maybe_const<IsConst, RangeTypes>>...>;
+using TransformResultType = invoke_result_t<maybe_const<IsConst, TransformType>&,
+    ranges::range_reference_t<maybe_const<IsConst, RangeTypes>>...>;
 
 template <bool IsConst, class T>
 constexpr auto& maybe_as_const(T& value) {
@@ -50,8 +54,8 @@ constexpr bool validate_iterators_sentinels(
     constexpr bool is_const = same_as<LocalZipTransformType, add_const_t<LocalZipTransformType>>;
 
     using InnerView            = ranges::zip_view<AllView<RangeTypes>...>;
-    using BaseType             = ranges::_Maybe_const<is_const, InnerView>;
-    using ZipIteratorTupleType = tuple<ranges::iterator_t<ranges::_Maybe_const<is_const, AllView<RangeTypes>>>...>;
+    using BaseType             = maybe_const<is_const, InnerView>;
+    using ZipIteratorTupleType = tuple<ranges::iterator_t<maybe_const<is_const, AllView<RangeTypes>>>...>;
 
     // Validate iterator type aliases
     {
@@ -66,8 +70,8 @@ constexpr bool validate_iterators_sentinels(
                 STATIC_ASSERT(same_as<Cat, input_iterator_tag>);
             } else {
                 constexpr auto check_iterator_tags_closure = []<class TagType>() {
-                    return (derived_from<typename iterator_traits<ranges::iterator_t<
-                                             ranges::_Maybe_const<is_const, RangeTypes>>>::iterator_category,
+                    return (derived_from<typename iterator_traits<
+                                             ranges::iterator_t<maybe_const<is_const, RangeTypes>>>::iterator_category,
                                 TagType>
                             && ...);
                 };
@@ -125,10 +129,9 @@ constexpr bool validate_iterators_sentinels(
         //
         // Notably, parent_t is a pointer and inner_.current_ is a tuple, and operator->() on a pointer and
         // std::get(std::tuple<...>) are both noexcept. We thus simplify the noexcept check as follows:
-        STATIC_ASSERT(
-            noexcept(*itr)
-            == noexcept(invoke(*declval<const ranges::_Movable_box<TransformType>&>(),
-                *declval<const ranges::iterator_t<ranges::_Maybe_const<is_const, AllView<RangeTypes>>>&>()...)));
+        STATIC_ASSERT(noexcept(*itr)
+                      == noexcept(invoke(*declval<const ranges::_Movable_box<TransformType>&>(),
+                          *declval<const ranges::iterator_t<maybe_const<is_const, AllView<RangeTypes>>>&>()...)));
     }
 
     STATIC_ASSERT(noexcept(++itr) == noexcept(++declval<ranges::iterator_t<BaseType>&>()));
@@ -232,7 +235,7 @@ constexpr bool validate_iterators_sentinels(
         // Validate sentinel operator overloads
         {
             const auto validate_iterator_sentinel_equality_closure = [&]<bool IteratorConst>() {
-                using comparison_iterator_t = ranges::iterator_t<ranges::_Maybe_const<IteratorConst, InnerView>>;
+                using comparison_iterator_t = ranges::iterator_t<maybe_const<IteratorConst, InnerView>>;
                 using comparison_sentinel_t = ranges::sentinel_t<BaseType>;
 
                 if constexpr (sentinel_for<comparison_sentinel_t, comparison_iterator_t>) {
@@ -254,11 +257,11 @@ constexpr bool validate_iterators_sentinels(
 
         {
             const auto validate_iterator_sentinel_difference_closure = [&]<bool IteratorConst>() {
-                using comparison_iterator_t = ranges::iterator_t<ranges::_Maybe_const<IteratorConst, InnerView>>;
+                using comparison_iterator_t = ranges::iterator_t<maybe_const<IteratorConst, InnerView>>;
                 using comparison_sentinel_t = ranges::sentinel_t<BaseType>;
 
                 if constexpr (sized_sentinel_for<comparison_sentinel_t, comparison_iterator_t>) {
-                    using difference_type = ranges::range_difference_t<ranges::_Maybe_const<IteratorConst, InnerView>>;
+                    using difference_type = ranges::range_difference_t<maybe_const<IteratorConst, InnerView>>;
 
                     const auto comparison_itr = maybe_as_const<IteratorConst>(relevant_range).begin();
 
@@ -515,9 +518,9 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
             // Validate view_interface::front()
             {
                 const auto validate_front_closure = [&]<bool IsConst>() {
-                    STATIC_ASSERT(CanMemberFront<ranges::_Maybe_const<IsConst, ZipTransformType>>
-                                  == ranges::forward_range<ranges::_Maybe_const<IsConst, ZipTransformType>>);
-                    if constexpr (CanMemberFront<ranges::_Maybe_const<IsConst, ZipTransformType>>) {
+                    STATIC_ASSERT(CanMemberFront<maybe_const<IsConst, ZipTransformType>>
+                                  == ranges::forward_range<maybe_const<IsConst, ZipTransformType>>);
+                    if constexpr (CanMemberFront<maybe_const<IsConst, ZipTransformType>>) {
                         using transform_result_t = TransformResultType<IsConst, TransformType, RangeTypes...>;
                         same_as<transform_result_t> auto first_result =
                             maybe_as_const<IsConst>(zipped_transformed_range).front();
@@ -533,10 +536,10 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
             // Validate view_interface::back()
             {
                 const auto validate_back_closure = [&]<bool IsConst>() {
-                    STATIC_ASSERT(CanMemberBack<ranges::_Maybe_const<IsConst, ZipTransformType>>
-                                  == (ranges::bidirectional_range<ranges::_Maybe_const<IsConst, ZipTransformType>>
-                                      && ranges::common_range<ranges::_Maybe_const<IsConst, ZipTransformType>>) );
-                    if constexpr (CanMemberBack<ranges::_Maybe_const<IsConst, ZipTransformType>>) {
+                    STATIC_ASSERT(CanMemberBack<maybe_const<IsConst, ZipTransformType>>
+                                  == (ranges::bidirectional_range<maybe_const<IsConst, ZipTransformType>>
+                                      && ranges::common_range<maybe_const<IsConst, ZipTransformType>>) );
+                    if constexpr (CanMemberBack<maybe_const<IsConst, ZipTransformType>>) {
                         using transform_result_t = TransformResultType<IsConst, TransformType, RangeTypes...>;
                         same_as<transform_result_t> auto last_result =
                             maybe_as_const<IsConst>(zipped_transformed_range).back();
@@ -552,9 +555,9 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
             // Validate view_interface::operator[]
             {
                 const auto validate_random_access_closure = [&]<bool IsConst>() {
-                    STATIC_ASSERT(CanIndex<ranges::_Maybe_const<IsConst, ZipTransformType>>
-                                  == ranges::random_access_range<ranges::_Maybe_const<IsConst, ZipTransformType>>);
-                    if constexpr (CanIndex<ranges::_Maybe_const<IsConst, ZipTransformType>>) {
+                    STATIC_ASSERT(CanIndex<maybe_const<IsConst, ZipTransformType>>
+                                  == ranges::random_access_range<maybe_const<IsConst, ZipTransformType>>);
+                    if constexpr (CanIndex<maybe_const<IsConst, ZipTransformType>>) {
                         using transform_result_t = TransformResultType<IsConst, TransformType, RangeTypes...>;
                         same_as<transform_result_t> auto first_result =
                             maybe_as_const<IsConst>(zipped_transformed_range)[0];

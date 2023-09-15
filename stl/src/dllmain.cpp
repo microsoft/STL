@@ -5,8 +5,6 @@
 
 #include <Windows.h>
 
-#include "awint.hpp"
-
 #ifdef _CRT_APP
 // free static resource used by causality
 extern "C" void __cdecl __crtCleanupCausalityStaticFactories();

@@ -2513,6 +2513,9 @@ _NODISCARD constexpr _To _Bit_cast(const _From& _Val) noexcept {
     return __builtin_bit_cast(_To, _Val);
 }
 
+template <bool _IsConst, class _Ty>
+using _Maybe_const = conditional_t<_IsConst, const _Ty, _Ty>;
+
 #if _HAS_TR1_NAMESPACE
 _STL_DISABLE_DEPRECATED_WARNING
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {

@@ -14,7 +14,7 @@ static std::_Init_locks initlocks;
 
 _STD_BEGIN
 
-__PURE_APPDOMAIN_GLOBAL static filebuf fout(_cpp_stdout);
+__PURE_APPDOMAIN_GLOBAL static filebuf fout(stdout);
 
 #if defined(_M_CEE_PURE)
 __PURE_APPDOMAIN_GLOBAL extern ostream cout(&fout);
