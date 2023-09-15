@@ -137,7 +137,7 @@ public:
     };
 
     // TRANSITION, ABI: non-Standard opfx() is preserved for binary compatibility
-    bool __CLR_OR_THIS_CALL opfx() { // test stream state and flush tie stream as needed
+    _DEPRECATE_IO_PFX_SFX bool __CLR_OR_THIS_CALL opfx() { // test stream state and flush tie stream as needed
         if (!this->good()) {
             return false;
         }
@@ -152,7 +152,7 @@ public:
     }
 
     // TRANSITION, ABI: non-Standard osfx() is preserved for binary compatibility
-    void __CLR_OR_THIS_CALL osfx() noexcept { // perform any wrapup
+    _DEPRECATE_IO_PFX_SFX void __CLR_OR_THIS_CALL osfx() noexcept { // perform any wrapup
         _Osfx();
     }
 
