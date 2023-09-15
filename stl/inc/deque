@@ -1563,7 +1563,7 @@ private:
         _Mapptr _Newmap   = _Allocate_at_least_helper(_Almap, _Allocsize);
         _Mapptr _Myptr    = _Newmap + _Myboff;
         _STL_ASSERT(_Allocsize >= _Newsize, "_Allocsize >= _Newsize");
-        while (_Allocsize / 2 >= _Newsize) {
+        while (_Newsize <= _Allocsize / 2) {
             _Newsize *= 2;
         }
 
