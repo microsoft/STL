@@ -73,12 +73,12 @@ void test_container() {
 
 void test_deque() {
     deque<size_t, signalling_allocator<size_t>> d;
-    for (size_t i = 0; i < 100; i++) {
+    for (size_t i = 0; i < 100; ++i) {
         d.push_back(i);
     }
     assert(allocate_at_least_signal.consume());
     assert(d.size() == 100);
-    for (size_t i = 0; i < 100; i++) {
+    for (size_t i = 0; i < 100; ++i) {
         assert(d[i] == i);
     }
 }
