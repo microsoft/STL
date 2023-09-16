@@ -299,6 +299,33 @@ void test_extract() {
     assert(ranges::equal(cont, elements));
 }
 
+// TRANSITION, too simple
+void test_erase_1() {
+    flat_set<int> fs{1};
+    fs.erase(1);
+    assert_all_requirements_and_equals(fs, {});
+}
+
+template <class T>
+struct holder {
+    T t;
+    operator T() && {
+        return std::move(t);
+    }
+};
+
+void test_erase_2() {
+    using C = flat_set<int, std::less<>>;
+    C fs{1, 2, 3};
+    assert_all_requirements_and_equals(fs, {1, 2, 3});
+    // this should be allowed per P2077R3:
+    fs.erase(holder<C::iterator>{fs.begin()});
+    assert_all_requirements_and_equals(fs, {2, 3});
+    int i = 2;
+    fs.erase(std::ref(i));
+    assert_all_requirements_and_equals(fs, {3});
+}
+
 template <class C>
 void test_erase_if() {
     constexpr int erased_result[]{1, 3};
@@ -339,6 +366,9 @@ int main() {
 
     test_extract<flat_set<int>>();
     test_extract<flat_multiset<int>>();
+
+    test_erase_1();
+    test_erase_2();
 
     test_erase_if<flat_set<int>>();
     test_erase_if<flat_multiset<int>>();
