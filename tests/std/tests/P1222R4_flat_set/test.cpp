@@ -222,6 +222,17 @@ void test_insert_2() {
         a.insert(a.begin(), val);
         assert_all_requirements_and_equals(a, {0, 0, 0, 1, 5, 6});
     }
+
+    // TRANSITION, too simple
+    using gt = std::greater<int>;
+    {
+        flat_set<int, gt, C> a{0, 5};
+        assert_all_requirements_and_equals(a, {5, 0});
+        a.insert(a.begin(), 3);
+        assert_all_requirements_and_equals(a, {5, 3, 0});
+        a.insert(a.end(), 4);
+        assert_all_requirements_and_equals(a, {5, 4, 3, 0});
+    }
 }
 
 template <class T>
