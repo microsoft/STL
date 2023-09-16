@@ -294,9 +294,10 @@ public:
         return _Erase(_Val);
     }
     template <class _Other>
-        requires _Keylt_transparent
+        requires (
+            _Keylt_transparent && !is_convertible_v<_Other &&, iterator> && !is_convertible_v<_Other &&, iterator>)
     size_type erase(_Other&& _Val) {
-        return _Erase(_STD forward<_Other>(_Val));
+        return _Erase(_Val);
     }
     iterator erase(const_iterator _First, const_iterator _Last) {
         return _Get_cont().erase(_First, _Last);
@@ -556,7 +557,7 @@ private:
 
     template <class _Ty>
         requires _Keylt_transparent || is_same_v<_Ty, _Kty>
-    size_type _Erase(_Ty&& _Val) {
+    size_type _Erase(const _Ty& _Val) {
         const auto [_First, _Last] = equal_range(_Val);
 
         const auto _Removed = static_cast<size_type>(_Last - _First);
