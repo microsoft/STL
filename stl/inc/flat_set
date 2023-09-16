@@ -339,13 +339,13 @@ public:
 
     _NODISCARD size_type count(const _Kty& _Val) const {
         const auto [_First, _Last] = equal_range(_Val);
-        return _STD distance(_First, _Last);
+        return static_cast<size_type>(_Last - _First);
     }
     template <class _Other>
         requires _Keylt_transparent
     _NODISCARD size_type count(const _Other& _Val) const {
         const auto [_First, _Last] = equal_range(_Val);
-        return _STD distance(_First, _Last);
+        return static_cast<size_type>(_Last - _First);
     }
 
     _NODISCARD bool contains(const _Kty& _Val) const {
@@ -559,7 +559,7 @@ private:
     size_type _Erase(_Ty&& _Val) {
         const auto [_First, _Last] = equal_range(_Val);
 
-        const difference_type _Removed = _STD distance(_First, _Last);
+        const auto _Removed = static_cast<size_type>(_Last - _First);
         _Get_cont().erase(_First, _Last);
         return _Removed;
     }
