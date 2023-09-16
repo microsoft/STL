@@ -589,7 +589,8 @@ public:
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Lck.owns_lock(), "wait_until's caller must own the lock argument (N4958 [thread.condition.condvar]/17)");
+        _STL_VERIFY(
+            _Lck.owns_lock(), "wait_until's caller must own the lock argument (N4958 [thread.condition.condvar]/17)");
         _STL_VERIFY(_Mtx_current_owns(_Lck.mutex()->_Mymtx()),
             "wait_until's calling thread must hold the lock argument's mutex (N4958 [thread.condition.condvar]/17)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
