@@ -588,16 +588,19 @@ public:
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
-        if (!_Mtx_current_owns(_Lck.mutex()->_Mymtx())) {
-            _Throw_Cpp_error(_OPERATION_NOT_PERMITTED);
-        }
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Lck.owns_lock(), "wait_until's caller must own the lock argument (N4958 [thread.condition.condvar]/17)");
+        _STL_VERIFY(_Mtx_current_owns(_Lck.mutex()->_Mymtx()),
+            "wait_until's calling thread must hold the lock argument's mutex (N4958 [thread.condition.condvar]/17)");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         for (;;) {
             const auto _Now = _Clock::now();
             if (_Abs_time <= _Now) {
+                // we don't lock-and-relock _Lck for this case because it's not observable
                 return cv_status::timeout;
             }
 
-            // TRANSITION, ABI: incorrectly relying on system clock
+            // TRANSITION, ABI: should use a steady clock
             _timespec64 _Tgt;
             (void) _To_timespec64_sys_10_day_clamped(_Tgt, _Abs_time - _Now);
             // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
