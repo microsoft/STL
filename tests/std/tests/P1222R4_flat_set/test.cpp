@@ -297,6 +297,15 @@ void test_erase_if() {
     assert(ranges::equal(fs, erased_result));
 }
 
+// TRANSITION, too simple
+void test_count() {
+    flat_set<int> fs{2};
+    assert(fs.count(1) == 0);
+
+    flat_multiset<int> fs2{1, 2, 2, 3};
+    assert(fs2.count(2) == 2);
+}
+
 int main() {
     test_spaceship_operator<flat_set<int>>();
     test_spaceship_operator<flat_multiset<int>>();
@@ -322,4 +331,6 @@ int main() {
 
     test_erase_if<flat_set<int>>();
     test_erase_if<flat_multiset<int>>();
+
+    test_count();
 }
