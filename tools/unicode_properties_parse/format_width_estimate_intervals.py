@@ -31,15 +31,15 @@ class table_u:
         # Print table for _Width_estimate_intervals_v2.
         c = 0
         last = self.table[0]
-        for u in range(self.max_u + 1):
-            if self.table[u] != last:
+        for u, el in enumerate(self.table):
+            if el != last:
                 print(f"0x{u:X}u, ", end="")
                 if c == 11:
                     c = 0
                     print()
                 else:
                     c += 1
-            last = self.table[u]
+            last = el
 
         print()
 
