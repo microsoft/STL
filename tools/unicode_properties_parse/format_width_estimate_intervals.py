@@ -6,16 +6,7 @@
 import re
 from dataclasses import dataclass
 from typing import TextIO
-
-
-@dataclass
-class range_u:
-    from_: int
-    to_: int = None
-
-    def __post_init__(self):
-        if self.to_ is None:
-            self.to_ = self.from_
+from pathlib import Path
 
 
 class width_u:
@@ -30,12 +21,11 @@ class table_u:
     def __init__(self):
         self.table = [width_u.is_1] * (self.max_u + 1)
 
-    def fill_range(self, rng: range_u, width: bool):
-        from_, to_ = rng.from_, rng.to_
+    def fill_range(self, rng: tuple, width: bool):
+        from_, to_ = rng[0], rng[1]
         assert from_ <= to_, "impl assertion failed"
         assert to_ <= self.max_u, "impl assertion failed"
-        for u in range(from_, to_ + 1):
-            self.table[u] = width
+        self.table[from_ : to_ + 1] = [width] * (to_ - from_ + 1)
 
     def print_intervals(self):
         # Print table for _Width_estimate_intervals_v2.
@@ -76,20 +66,20 @@ class table_u:
 
 def get_table_cpp20() -> table_u:
     std_wide_ranges_cpp20 = [
-        range_u(0x1100, 0x115F),
-        range_u(0x2329, 0x232A),
-        range_u(0x2E80, 0x303E),
-        range_u(0x3040, 0xA4CF),
-        range_u(0xAC00, 0xD7A3),
-        range_u(0xF900, 0xFAFF),
-        range_u(0xFE10, 0xFE19),
-        range_u(0xFE30, 0xFE6F),
-        range_u(0xFF00, 0xFF60),
-        range_u(0xFFE0, 0xFFE6),
-        range_u(0x1F300, 0x1F64F),
-        range_u(0x1F900, 0x1F9FF),
-        range_u(0x20000, 0x2FFFD),
-        range_u(0x30000, 0x3FFFD),
+        (0x1100, 0x115F),
+        (0x2329, 0x232A),
+        (0x2E80, 0x303E),
+        (0x3040, 0xA4CF),
+        (0xAC00, 0xD7A3),
+        (0xF900, 0xFAFF),
+        (0xFE10, 0xFE19),
+        (0xFE30, 0xFE6F),
+        (0xFF00, 0xFF60),
+        (0xFFE0, 0xFFE6),
+        (0x1F300, 0x1F64F),
+        (0x1F900, 0x1F9FF),
+        (0x20000, 0x2FFFD),
+        (0x30000, 0x3FFFD),
     ]
 
     table = table_u()
@@ -110,11 +100,11 @@ def read_from(source: TextIO) -> table_u:
 
     # "The unassigned code points in the following blocks default to "W":"
     default_wide_ranges = [
-        range_u(0x4E00, 0x9FFF),
-        range_u(0x3400, 0x4DBF),
-        range_u(0xF900, 0xFAFF),
-        range_u(0x20000, 0x2FFFD),
-        range_u(0x30000, 0x3FFFD),
+        (0x4E00, 0x9FFF),
+        (0x3400, 0x4DBF),
+        (0xF900, 0xFAFF),
+        (0x20000, 0x2FFFD),
+        (0x30000, 0x3FFFD),
     ]
     for rng in default_wide_ranges:
         table.fill_range(rng, width_u.is_2)
@@ -139,10 +129,10 @@ def read_from(source: TextIO) -> table_u:
             if match.group(2):
                 # range (HEX..HEX)
                 to_val = int(match.group(2)[2:], base=16)
-                table.fill_range(range_u(from_val, to_val), width)
+                table.fill_range((from_val, to_val), width)
             else:
                 # single character (HEX)
-                table.fill_range(range_u(from_val), width)
+                table.fill_range((from_val, from_val), width)
 
     return table
 
@@ -152,9 +142,9 @@ def get_table_cpp23(source: TextIO) -> table_u:
 
     # Override with ranges specified by the C++ standard.
     std_wide_ranges_cpp23 = [
-        range_u(0x4DC0, 0x4DFF),
-        range_u(0x1F300, 0x1F5FF),
-        range_u(0x1F900, 0x1F9FF),
+        (0x4DC0, 0x4DFF),
+        (0x1F300, 0x1F5FF),
+        (0x1F900, 0x1F9FF),
     ]
 
     for rng in std_wide_ranges_cpp23:
@@ -168,10 +158,10 @@ def main():
     old_table = get_table_cpp20()
     old_table.print_intervals()
 
-    print("\nNew table:\nInput path for EastAsianWidth.txt: ", end="")
-    path = input()
-    with open(path) as source:
+    path = Path(__file__).absolute().with_name("EastAsianWidth.txt")
+    with open(path, mode="rt", encoding="utf-8") as source:
         new_table = get_table_cpp23(source)
+    print("New table:")
     new_table.print_intervals()
 
     print("\nWas 1, now 2:")
