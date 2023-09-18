@@ -316,9 +316,11 @@ struct holder {
 
 void test_erase_2() {
     using C = flat_set<int, std::less<>>;
-    C fs{1, 2, 3};
-    assert_all_requirements_and_equals(fs, {1, 2, 3});
+    C fs{0, 1, 2, 3};
+    assert_all_requirements_and_equals(fs, {0, 1, 2, 3});
     // this should be allowed per P2077R3:
+    fs.erase(holder<C::const_iterator>{fs.cbegin()});
+    assert_all_requirements_and_equals(fs, {1, 2, 3});
     fs.erase(holder<C::iterator>{fs.begin()});
     assert_all_requirements_and_equals(fs, {2, 3});
     int i = 2;
