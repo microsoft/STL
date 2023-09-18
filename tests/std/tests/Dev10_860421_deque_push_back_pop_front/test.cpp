@@ -152,14 +152,14 @@ public:
     ThrowingMovable(ThrowingMovable&&) {
         throw UniqueError{};
     }
-    ThrowingMovable(const ThrowingMovable&) noexcept = default;
+    ThrowingMovable(const ThrowingMovable&) = default;
 
     explicit ThrowingMovable(int n) noexcept : payload{n} {}
 
     ThrowingMovable& operator=(ThrowingMovable&&) {
         throw UniqueError{};
     }
-    ThrowingMovable& operator=(const ThrowingMovable&) noexcept = default;
+    ThrowingMovable& operator=(const ThrowingMovable&) = default;
 
 #if _HAS_CXX20
     friend bool operator==(const ThrowingMovable&, const ThrowingMovable&) = default;
