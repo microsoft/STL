@@ -898,20 +898,6 @@ _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
 
     return true;
 }
-
-#ifdef __cpp_lib_concepts
-template <class _Ty>
-using _With_reference = _Ty&;
-
-template <class _Ty>
-concept _Can_reference = requires { typename _With_reference<_Ty>; };
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
-template <class _Ty, class = void>
-inline constexpr bool _Can_reference = false;
-
-template <class _Ty>
-inline constexpr bool _Can_reference<_Ty, void_t<_Ty&>> = true;
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23
@@ -927,29 +913,14 @@ _EXPORT_STD [[noreturn]] __forceinline void unreachable() noexcept /* strengthen
 #endif // defined(_DEBUG)
 }
 
+template <class _Ty, class _Uty,
+    class _Tmp = _Maybe_const<is_const_v<remove_reference_t<_Ty>>, remove_reference_t<_Uty>>>
+using _Forward_like_t = conditional_t<is_rvalue_reference_v<_Ty&&>, _Tmp&&, _Tmp&>;
+
 _EXPORT_STD template <class _Ty, class _Uty>
-_NODISCARD _MSVC_INTRINSIC constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
-    static_assert(_Can_reference<_Ty>, "std::forward_like's first template argument must be a referenceable type.");
-
-    using _UnrefT = remove_reference_t<_Ty>;
-    using _UnrefU = remove_reference_t<_Uty>;
-    if constexpr (is_const_v<_UnrefT>) {
-        if constexpr (is_lvalue_reference_v<_Ty>) {
-            return static_cast<const _UnrefU&>(_Ux);
-        } else {
-            return static_cast<const _UnrefU&&>(_Ux);
-        }
-    } else {
-        if constexpr (is_lvalue_reference_v<_Ty>) {
-            return static_cast<_UnrefU&>(_Ux);
-        } else {
-            return static_cast<_UnrefU&&>(_Ux);
-        }
-    }
+_NODISCARD _MSVC_INTRINSIC constexpr _Forward_like_t<_Ty, _Uty> forward_like(_Uty&& _Ux) noexcept {
+    return static_cast<_Forward_like_t<_Ty, _Uty>>(_Ux);
 }
-
-template <class _Ty, class _Uty>
-using _Forward_like_t = decltype(_STD forward_like<_Ty>(_STD declval<_Uty&>()));
 #endif // _HAS_CXX23
 
 #if _HAS_TR1_NAMESPACE

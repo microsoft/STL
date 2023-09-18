@@ -13,6 +13,7 @@
 #define intrinsic       3
 #define lifetimebound   4
 #define noop_dtor       5
+#define empty_bases     6
 
 #include <__msvc_all_public_headers.hpp>
 
@@ -35,3 +36,7 @@
 #if noop_dtor != 5
 #error bad macro expansion
 #endif // noop_dtor != 5
+
+#if empty_bases != 6
+#error bad macro expansion
+#endif // empty_bases != 6

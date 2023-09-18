@@ -5,8 +5,6 @@
 
 #include "xmtx.hpp"
 
-#include "awint.hpp"
-
 _EXTERN_C_UNLESS_PURE
 
 // Win32 critical sections are recursive
