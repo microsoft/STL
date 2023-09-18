@@ -294,9 +294,10 @@ public:
         return _Erase(_Val);
     }
     template <class _Other>
-        requires _Keylt_transparent
+        requires (
+            _Keylt_transparent && !is_convertible_v<_Other, iterator> && !is_convertible_v<_Other, const_iterator>)
     size_type erase(_Other&& _Val) {
-        return _Erase(_STD forward<_Other>(_Val));
+        return _Erase(_Val);
     }
     iterator erase(const_iterator _First, const_iterator _Last) {
         return _Get_cont().erase(_First, _Last);
@@ -339,13 +340,13 @@ public:
 
     _NODISCARD size_type count(const _Kty& _Val) const {
         const auto [_First, _Last] = equal_range(_Val);
-        return _STD distance(_First, _Last);
+        return static_cast<size_type>(_Last - _First);
     }
     template <class _Other>
         requires _Keylt_transparent
     _NODISCARD size_type count(const _Other& _Val) const {
         const auto [_First, _Last] = equal_range(_Val);
-        return _STD distance(_First, _Last);
+        return static_cast<size_type>(_Last - _First);
     }
 
     _NODISCARD bool contains(const _Kty& _Val) const {
@@ -502,11 +503,11 @@ private:
                     // _Val >= *(_Where-1) ~ upper_bound is _Where
                 } else {
                     // _Val < *(_Where-1) ~ upper_bound is in [_Begin,_Where-1]
-                    _Where = _STD upper_bound(_Begin, _Where - 1, _Val);
+                    _Where = _STD upper_bound(_Begin, _Where - 1, _Val, _Compare);
                 }
             } else {
                 // _Val >= *_Where ~ upper_bound is in [_Where+1,_End]
-                _Where = _STD upper_bound(_Where + 1, _End, _Val);
+                _Where = _STD upper_bound(_Where + 1, _End, _Val, _Compare);
             }
         } else {
             // look for the lower_bound for flat_set
@@ -516,11 +517,11 @@ private:
                     // _Val > *(_Where-1) ~ lower_bound is _Where
                 } else {
                     // _Val <= *(_Where-1) ~ lower_bound is in [_Begin,_Where-1]
-                    _Where = _STD lower_bound(_Begin, _Where - 1, _Val);
+                    _Where = _STD lower_bound(_Begin, _Where - 1, _Val, _Compare);
                 }
             } else {
                 // _Val > *_Where ~ lower_bound is in [_Where+1,_End]
-                _Where = _STD lower_bound(_Where + 1, _End, _Val);
+                _Where = _STD lower_bound(_Where + 1, _End, _Val, _Compare);
             }
         }
 
@@ -556,10 +557,10 @@ private:
 
     template <class _Ty>
         requires _Keylt_transparent || is_same_v<_Ty, _Kty>
-    size_type _Erase(_Ty&& _Val) {
+    size_type _Erase(const _Ty& _Val) {
         const auto [_First, _Last] = equal_range(_Val);
 
-        const difference_type _Removed = _STD distance(_First, _Last);
+        const auto _Removed = static_cast<size_type>(_Last - _First);
         _Get_cont().erase(_First, _Last);
         return _Removed;
     }

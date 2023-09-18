@@ -222,6 +222,17 @@ void test_insert_2() {
         a.insert(a.begin(), val);
         assert_all_requirements_and_equals(a, {0, 0, 0, 1, 5, 6});
     }
+
+    // TRANSITION, too simple
+    using gt = std::greater<int>;
+    {
+        flat_set<int, gt, C> a{0, 5};
+        assert_all_requirements_and_equals(a, {5, 0});
+        a.insert(a.begin(), 3);
+        assert_all_requirements_and_equals(a, {5, 3, 0});
+        a.insert(a.end(), 4);
+        assert_all_requirements_and_equals(a, {5, 4, 3, 0});
+    }
 }
 
 template <class T>
@@ -288,6 +299,35 @@ void test_extract() {
     assert(ranges::equal(cont, elements));
 }
 
+// TRANSITION, too simple
+void test_erase_1() {
+    flat_set<int> fs{1};
+    fs.erase(1);
+    assert_all_requirements_and_equals(fs, {});
+}
+
+template <class T>
+struct holder {
+    T t;
+    operator T() && {
+        return std::move(t);
+    }
+};
+
+void test_erase_2() {
+    using C = flat_set<int, std::less<>>;
+    C fs{0, 1, 2, 3};
+    assert_all_requirements_and_equals(fs, {0, 1, 2, 3});
+    // this should be allowed per P2077R3:
+    fs.erase(holder<C::const_iterator>{fs.cbegin()});
+    assert_all_requirements_and_equals(fs, {1, 2, 3});
+    fs.erase(holder<C::iterator>{fs.begin()});
+    assert_all_requirements_and_equals(fs, {2, 3});
+    int i = 2;
+    fs.erase(ref(i));
+    assert_all_requirements_and_equals(fs, {3});
+}
+
 template <class C>
 void test_erase_if() {
     constexpr int erased_result[]{1, 3};
@@ -295,6 +335,15 @@ void test_erase_if() {
     erase_if(fs, [](int n) { return n % 2 == 0; });
     assert(fs.size() == 2);
     assert(ranges::equal(fs, erased_result));
+}
+
+// TRANSITION, too simple
+void test_count() {
+    flat_set<int> fs{2};
+    assert(fs.count(1) == 0);
+
+    flat_multiset<int> fs2{1, 2, 2, 3};
+    assert(fs2.count(2) == 2);
 }
 
 int main() {
@@ -320,6 +369,11 @@ int main() {
     test_extract<flat_set<int>>();
     test_extract<flat_multiset<int>>();
 
+    test_erase_1();
+    test_erase_2();
+
     test_erase_if<flat_set<int>>();
     test_erase_if<flat_multiset<int>>();
+
+    test_count();
 }
