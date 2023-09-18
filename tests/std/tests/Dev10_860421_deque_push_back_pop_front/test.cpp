@@ -76,7 +76,7 @@ public:
 
 #if _HAS_CXX20
     friend bool operator==(const NonswappableMovable&, const NonswappableMovable&) = default;
-#else // ^^^ C++20 or later / C++17 or earlier
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     friend bool operator==(const NonswappableMovable& lhs, const NonswappableMovable& rhs) noexcept {
         return lhs.payload == rhs.payload;
     }
@@ -84,7 +84,7 @@ public:
     friend bool operator!=(const NonswappableMovable& lhs, const NonswappableMovable& rhs) noexcept {
         return lhs.payload != rhs.payload;
     }
-#endif // ^^^ C++17 or earlier ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     friend void swap(NonswappableMovable, NonswappableMovable) = delete;
 
@@ -162,7 +162,7 @@ public:
 
 #if _HAS_CXX20
     friend bool operator==(const ThrowingMovable&, const ThrowingMovable&) = default;
-#else // ^^^ C++20 or later / C++17 or earlier
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     friend bool operator==(const ThrowingMovable& lhs, const ThrowingMovable& rhs) noexcept {
         return lhs.payload == rhs.payload;
     }
@@ -170,7 +170,7 @@ public:
     friend bool operator!=(const ThrowingMovable& lhs, const ThrowingMovable& rhs) noexcept {
         return lhs.payload != rhs.payload;
     }
-#endif // ^^^ C++17 or earlier ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 private:
     int payload = -1;
