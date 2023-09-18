@@ -295,7 +295,7 @@ public:
     }
     template <class _Other>
         requires (
-            _Keylt_transparent && !is_convertible_v<_Other &&, iterator> && !is_convertible_v<_Other &&, iterator>)
+            _Keylt_transparent && !is_convertible_v<_Other, iterator> && !is_convertible_v<_Other, const_iterator>)
     size_type erase(_Other&& _Val) {
         return _Erase(_Val);
     }
