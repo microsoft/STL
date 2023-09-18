@@ -3166,12 +3166,13 @@ public:
                     size_type _New_capacity = _Calculate_growth(_Right_size, _Small_string_capacity, _Right.max_size());
                     auto _Right_al_non_const = _Right_al;
                     const pointer _New_ptr   = _Allocate_for_capacity(_Right_al_non_const, _New_capacity); // throws
-
                     _Traits::copy(_Unfancy(_New_ptr), _Right_ptr, _Right_size + 1);
+
                     _Tidy_deallocate();
-                    _Mypair._Myval2._Bx._Ptr = _New_ptr;
-                    _Mypair._Myval2._Mysize  = _Right_size;
-                    _Mypair._Myval2._Myres   = _New_capacity;
+                    _Construct_in_place(_Mypair._Myval2._Bx._Ptr, _New_ptr);
+                    _Mypair._Myval2._Mysize = _Right_size;
+                    _Mypair._Myval2._Myres  = _New_capacity;
+                    _ASAN_STRING_CREATE(*this);
                 } else {
                     _Tidy_deallocate();
                     _Traits::copy(_Mypair._Myval2._Bx._Buf, _Right_ptr, _Right_size + 1);
