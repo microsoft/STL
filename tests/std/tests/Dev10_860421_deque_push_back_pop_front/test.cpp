@@ -3,7 +3,6 @@
 
 #include <cassert>
 #include <deque>
-#include <stdexcept>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -55,7 +54,9 @@ struct ThrowingConstruction {
     explicit ThrowingConstruction() = default;
 };
 
-class UniqueError : public std::exception {};
+struct UniqueError {
+    explicit UniqueError() = default;
+};
 
 class NonswappableMovable {
 public:
