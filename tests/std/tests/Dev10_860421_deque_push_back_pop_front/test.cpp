@@ -50,8 +50,8 @@ void test_391805() {
 // - support for single-element insertion of non-swappable type, and
 // - exception safety for single-element insertion.
 
-struct ThrowingConstruction {
-    explicit ThrowingConstruction() = default;
+struct ThrowingConstructionTag {
+    explicit ThrowingConstructionTag() = default;
 };
 
 struct UniqueError {
@@ -65,7 +65,7 @@ public:
     NonswappableMovable(const NonswappableMovable&) = default;
 
     explicit NonswappableMovable(int n) noexcept : payload{n} {}
-    explicit NonswappableMovable(ThrowingConstruction) {
+    explicit NonswappableMovable(ThrowingConstructionTag) {
         throw UniqueError{};
     }
 
@@ -118,28 +118,28 @@ void test_exception_safety_for_nonswappable_movable() {
 
     const auto d_orig = d;
     try {
-        d.emplace_front(ThrowingConstruction{});
+        d.emplace_front(ThrowingConstructionTag{});
         assert(false);
     } catch (const UniqueError&) {
     }
     assert(d == d_orig);
 
     try {
-        d.emplace_back(ThrowingConstruction{});
+        d.emplace_back(ThrowingConstructionTag{});
         assert(false);
     } catch (const UniqueError&) {
     }
     assert(d == d_orig);
 
     try {
-        d.emplace(d.begin() + Diff{2}, ThrowingConstruction{});
+        d.emplace(d.begin() + Diff{2}, ThrowingConstructionTag{});
         assert(false);
     } catch (const UniqueError&) {
     }
     assert(d == d_orig);
 
     try {
-        d.emplace(d.end() - Diff{2}, ThrowingConstruction{});
+        d.emplace(d.end() - Diff{2}, ThrowingConstructionTag{});
         assert(false);
     } catch (const UniqueError&) {
     }
