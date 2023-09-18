@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <cassert>
 #include <deque>
 #include <type_traits>
@@ -106,6 +107,11 @@ void test_exception_safety_for_nonswappable_movable() {
     }
 
     {
+        auto it = d.emplace(d.begin(), 33);
+        assert(it == d.begin());
+        assert(d.front() == NonswappableMovable{33});
+    }
+    {
         auto it = d.emplace(d.begin() + Diff{3}, 42);
         assert(it == d.begin() + Diff{3});
         assert(d[3] == NonswappableMovable{42});
@@ -114,6 +120,16 @@ void test_exception_safety_for_nonswappable_movable() {
         auto it = d.emplace(d.end() - Diff{3}, 1729);
         assert(it == d.end() - Diff{4});
         assert(d[d.size() - 4] == NonswappableMovable{1729});
+    }
+    {
+        auto it = d.emplace(d.end(), 2023);
+        assert(it == d.end() - Diff{1});
+        assert(d.back() == NonswappableMovable{2023});
+    }
+    {
+        static constexpr int correct[] = {33, 0, 1, 42, 2, 3, 4, 5, 6, 1729, 7, 8, 9, 2023};
+        auto comp = [](const NonswappableMovable& lhs, const int rhs) { return lhs == NonswappableMovable{rhs}; };
+        assert(equal(d.begin(), d.end(), begin(correct), end(correct), comp));
     }
 
     const auto d_orig = d;
@@ -132,6 +148,13 @@ void test_exception_safety_for_nonswappable_movable() {
     assert(d == d_orig);
 
     try {
+        d.emplace(d.begin(), ThrowingConstructionTag{});
+        assert(false);
+    } catch (const UniqueError&) {
+    }
+    assert(d == d_orig);
+
+    try {
         d.emplace(d.begin() + Diff{2}, ThrowingConstructionTag{});
         assert(false);
     } catch (const UniqueError&) {
@@ -140,6 +163,13 @@ void test_exception_safety_for_nonswappable_movable() {
 
     try {
         d.emplace(d.end() - Diff{2}, ThrowingConstructionTag{});
+        assert(false);
+    } catch (const UniqueError&) {
+    }
+    assert(d == d_orig);
+
+    try {
+        d.emplace(d.end(), ThrowingConstructionTag{});
         assert(false);
     } catch (const UniqueError&) {
     }
@@ -201,6 +231,13 @@ void test_exception_safety_for_throwing_movable() {
     assert(d == d_orig);
 
     try {
+        d.emplace(d.begin(), ThrowingMovable{});
+        assert(false);
+    } catch (const UniqueError&) {
+    }
+    assert(d == d_orig);
+
+    try {
         d.emplace(d.begin() + Diff{2}, ThrowingMovable{});
         assert(false);
     } catch (const UniqueError&) {
@@ -209,6 +246,13 @@ void test_exception_safety_for_throwing_movable() {
 
     try {
         d.emplace(d.end() - Diff{2}, ThrowingMovable{});
+        assert(false);
+    } catch (const UniqueError&) {
+    }
+    assert(d == d_orig);
+
+    try {
+        d.emplace(d.end(), ThrowingMovable{});
         assert(false);
     } catch (const UniqueError&) {
     }
