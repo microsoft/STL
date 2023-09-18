@@ -3052,8 +3052,9 @@ private:
 
         if (_Right_data._Large_mode_engaged()) { // steal buffer
             _Construct_in_place(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
-            _Right_data._Bx._Ptr = nullptr;
             _Swap_proxy_and_iterators(_Right);
+
+            _Destroy_in_place(_Right_data._Bx._Ptr);
         } else { // copy small string buffer
             _My_data._Activate_SSO_buffer();
             _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
