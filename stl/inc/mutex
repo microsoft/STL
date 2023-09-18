@@ -574,7 +574,7 @@ public:
     cv_status wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time) {
         // wait for duration
         if (_Rel_time <= chrono::duration<_Rep, _Period>::zero()) {
-            // we don't lock-and-relock _Lck for this case because it's not observable
+            // we don't unlock-and-relock _Lck for this case because it's not observable
             return cv_status::timeout;
         }
         return wait_until(_Lck, _To_absolute_time(_Rel_time));
@@ -601,7 +601,7 @@ public:
         for (;;) {
             const auto _Now = _Clock::now();
             if (_Abs_time <= _Now) {
-                // we don't lock-and-relock _Lck for this case because it's not observable
+                // we don't unlock-and-relock _Lck for this case because it's not observable
                 return cv_status::timeout;
             }
 
