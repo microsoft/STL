@@ -87,7 +87,7 @@ public:
     }
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-    friend void swap(NonswappableMovable, NonswappableMovable) = delete;
+    friend void swap(NonswappableMovable&, NonswappableMovable&) = delete;
 
 private:
     int payload = -1;
