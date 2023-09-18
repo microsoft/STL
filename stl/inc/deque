@@ -874,30 +874,30 @@ public:
         _Orphan_all();
         if (_Off == 0) { // at the beginning
             _Emplace_front_internal(_STD forward<_Valty>(_Val)...);
-        } else if (_Off <= _Mysize() / 2) { // closer to front
-            _Alloc_temporary2<_Alty> _Obj(_Getal(), _STD forward<_Valty>(_Val)...); // handle aliasing
-
-            _Emplace_front_internal(_STD move(*_Unchecked_begin()));
-
-            auto _Moving_dst       = _STD _Next_iter(_Unchecked_begin());
-            auto _Moving_src_begin = _STD _Next_iter(_Moving_dst);
-            auto _Moving_src_end   = _Moving_dst + static_cast<difference_type>(_Off);
-
-            auto _Moving_dst_end = _STD _Move_unchecked(_Moving_src_begin, _Moving_src_end, _Moving_dst);
-            *_Moving_dst_end     = _STD move(_Obj._Get_value());
-        } else if (_Off != _Mysize()) { // closer to back
-            _Alloc_temporary2<_Alty> _Obj(_Getal(), _STD forward<_Valty>(_Val)...); // handle aliasing
-
-            _Emplace_back_internal(_STD move(*_STD _Prev_iter(_Unchecked_end())));
-
-            auto _Moving_dst_end   = _STD _Prev_iter(_Unchecked_end());
-            auto _Moving_src_end   = _STD _Prev_iter(_Moving_dst_end);
-            auto _Moving_src_begin = _Unchecked_begin() + static_cast<difference_type>(_Off);
-
-            _STD _Move_backward_unchecked(_Moving_src_begin, _Moving_src_end, _Moving_dst_end);
-            *_Moving_src_begin = _STD move(_Obj._Get_value());
-        } else { // at the end
+        } else if (_Off == _Mysize()) { // at the end
             _Emplace_back_internal(_STD forward<_Valty>(_Val)...);
+        } else {
+            _Alloc_temporary2<_Alty> _Obj(_Getal(), _STD forward<_Valty>(_Val)...); // handle aliasing
+
+            if (_Off <= _Mysize() / 2) { // closer to front
+                _Emplace_front_internal(_STD move(*_Unchecked_begin()));
+
+                auto _Moving_dst       = _STD _Next_iter(_Unchecked_begin());
+                auto _Moving_src_begin = _STD _Next_iter(_Moving_dst);
+                auto _Moving_src_end   = _Moving_dst + static_cast<difference_type>(_Off);
+
+                auto _Moving_dst_end = _STD _Move_unchecked(_Moving_src_begin, _Moving_src_end, _Moving_dst);
+                *_Moving_dst_end     = _STD move(_Obj._Get_value());
+            } else { // closer to back
+                _Emplace_back_internal(_STD move(*_STD _Prev_iter(_Unchecked_end())));
+
+                auto _Moving_dst_end   = _STD _Prev_iter(_Unchecked_end());
+                auto _Moving_src_end   = _STD _Prev_iter(_Moving_dst_end);
+                auto _Moving_src_begin = _Unchecked_begin() + static_cast<difference_type>(_Off);
+
+                _STD _Move_backward_unchecked(_Moving_src_begin, _Moving_src_end, _Moving_dst_end);
+                *_Moving_src_begin = _STD move(_Obj._Get_value());
+            }
         }
 
         return begin() + static_cast<difference_type>(_Off);
