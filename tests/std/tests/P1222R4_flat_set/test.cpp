@@ -324,7 +324,7 @@ void test_erase_2() {
     fs.erase(holder<C::iterator>{fs.begin()});
     assert_all_requirements_and_equals(fs, {2, 3});
     int i = 2;
-    fs.erase(std::ref(i));
+    fs.erase(ref(i));
     assert_all_requirements_and_equals(fs, {3});
 }
 
