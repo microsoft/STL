@@ -339,8 +339,12 @@ public:
     }
 
     _NODISCARD size_type count(const _Kty& _Val) const {
-        const auto [_First, _Last] = equal_range(_Val);
-        return static_cast<size_type>(_Last - _First);
+        if constexpr (!_Multi) {
+            return contains(_Val);
+        } else {
+            const auto [_First, _Last] = equal_range(_Val);
+            return static_cast<size_type>(_Last - _First);
+        }
     }
     template <class _Other>
         requires _Keylt_transparent
@@ -558,11 +562,20 @@ private:
     size_type _Erase(const _Ty& _Val) {
         _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Ty, _Kty>);
 
-        const auto [_First, _Last] = equal_range(_Val);
+        if constexpr (!_Multi && is_same_v<_Ty, _Kty>) {
+            const iterator _Where = lower_bound(_Val);
+            if (_Where != end() && !_Compare(_Val, *_Where)) {
+                _Get_cont().erase(_Where);
+                return 1;
+            }
+            return 0;
+        } else {
+            const auto [_First, _Last] = equal_range(_Val);
 
-        const auto _Removed = static_cast<size_type>(_Last - _First);
-        _Get_cont().erase(_First, _Last);
-        return _Removed;
+            const auto _Removed = static_cast<size_type>(_Last - _First);
+            _Get_cont().erase(_First, _Last);
+            return _Removed;
+        }
     }
 
     template <class _Ty>
