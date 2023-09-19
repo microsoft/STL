@@ -566,9 +566,9 @@ private:
         return _Removed;
     }
 
-    template <class _Other>
-    _NODISCARD iterator _Find(const _Other& _Val) {
-        _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Other, _Kty>);
+    template <class _Ty>
+    _NODISCARD iterator _Find(const _Ty& _Val) {
+        _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Ty, _Kty>);
 
         const iterator _End   = end();
         const iterator _Where = lower_bound(_Val);
@@ -579,9 +579,9 @@ private:
         }
     }
 
-    template <class _Other>
-    _NODISCARD const_iterator _Find(const _Other& _Val) const {
-        _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Other, _Kty>);
+    template <class _Ty>
+    _NODISCARD const_iterator _Find(const _Ty& _Val) const {
+        _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Ty, _Kty>);
 
         const const_iterator _End   = cend();
         const const_iterator _Where = lower_bound(_Val);
@@ -614,7 +614,8 @@ private:
     template <bool _Presorted>
     void _Restore_invariants_after_insert(const size_type _Old_size) {
         const key_compare& _Compare = _Get_comp();
-        const iterator _Old_end     = begin() + static_cast<difference_type>(_Old_size);
+        const iterator _Begin       = begin();
+        const iterator _Old_end     = _Begin + static_cast<difference_type>(_Old_size);
         const iterator _New_end     = end();
 
         if constexpr (!_Presorted) {
@@ -623,9 +624,9 @@ private:
             _STL_ASSERT(_STD is_sorted(_Old_end, _New_end, _Compare), "Input was not sorted!");
         }
 
-        _STD inplace_merge(begin(), _Old_end, _New_end, _Compare);
+        _STD inplace_merge(_Begin, _Old_end, _New_end, _Compare);
 
-        _STL_INTERNAL_CHECK(_STD is_sorted(begin(), end(), _Compare));
+        _STL_INTERNAL_CHECK(_STD is_sorted(_Begin, _New_end, _Compare));
 
         _Erase_dupes_if_needed();
     }
