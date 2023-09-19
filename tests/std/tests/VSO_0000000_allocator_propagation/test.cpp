@@ -35,6 +35,7 @@ _CONSTEXPR20 void assert_is_permutation(const Container& cont, initializer_list<
 }
 
 class test_leak {
+private:
     char* res;
 
 public:
