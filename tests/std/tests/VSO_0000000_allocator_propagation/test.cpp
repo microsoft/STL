@@ -159,14 +159,14 @@ public:
 
 template <class T, bool IsVoid = is_void_v<T>>
 struct impl_pointer_to {
-    static constexpr nontrivial_pointer<T> pointer_to(T& r) noexcept {
-        return nontrivial_pointer<T>(addressof(r));
-    }
+    // no pointer_to for void
 };
 
 template <class T>
-struct impl_pointer_to<T, true> {
-    // no pointer_to for void
+struct impl_pointer_to<T, false> {
+    static constexpr nontrivial_pointer<T> pointer_to(T& r) noexcept {
+        return nontrivial_pointer<T>(addressof(r));
+    }
 };
 
 template <class T>
