@@ -35,15 +35,15 @@ _CONSTEXPR20 void assert_is_permutation(const Container& cont, initializer_list<
 }
 
 class test_leak {
-    char* ptr;
+    char* res;
 
 public:
     test_leak(const test_leak&)            = delete;
     test_leak& operator=(const test_leak&) = delete;
 
-    _CONSTEXPR20 test_leak() noexcept /* terminates */ : ptr(allocator<char>{}.allocate(1)) {}
+    _CONSTEXPR20 test_leak() noexcept /* terminates */ : res(allocator<char>{}.allocate(1)) {}
     _CONSTEXPR20 ~test_leak() {
-        allocator<char>{}.deallocate(ptr, 1);
+        allocator<char>{}.deallocate(res, 1);
     }
 };
 
@@ -128,19 +128,19 @@ public:
         return lhs.ptr == rhs.ptr;
     }
     _CONSTEXPR20 friend bool operator==(nontrivial_pointer ptr, nullptr_t) noexcept {
-        return !static_cast<bool>(ptr.ptr);
+        return !ptr;
     }
     _CONSTEXPR20 friend bool operator==(nullptr_t, nontrivial_pointer ptr) noexcept {
-        return !static_cast<bool>(ptr.ptr);
+        return !ptr;
     }
     _CONSTEXPR20 friend bool operator!=(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
         return lhs.ptr != rhs.ptr;
     }
     _CONSTEXPR20 friend bool operator!=(nontrivial_pointer ptr, nullptr_t) noexcept {
-        return static_cast<bool>(ptr.ptr);
+        return static_cast<bool>(ptr);
     }
     _CONSTEXPR20 friend bool operator!=(nullptr_t, nontrivial_pointer ptr) noexcept {
-        return static_cast<bool>(ptr.ptr);
+        return static_cast<bool>(ptr);
     }
     _CONSTEXPR20 friend bool operator<(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
         return lhs.ptr < rhs.ptr;
