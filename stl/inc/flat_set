@@ -172,29 +172,29 @@ public:
     }
 
     _NODISCARD reverse_iterator rbegin() noexcept {
-        return _Get_cont().rbegin();
+        return reverse_iterator(end());
     }
     _NODISCARD const_reverse_iterator rbegin() const noexcept {
-        return _Get_cont().rbegin();
+        return const_reverse_iterator(end());
     }
     _NODISCARD reverse_iterator rend() noexcept {
-        return _Get_cont().rend();
+        return reverse_iterator(begin());
     }
     _NODISCARD const_reverse_iterator rend() const noexcept {
-        return _Get_cont().rend();
+        return const_reverse_iterator(begin());
     }
 
     _NODISCARD const_iterator cbegin() const noexcept {
-        return _Get_cont().cbegin();
+        return begin();
     }
     _NODISCARD const_iterator cend() const noexcept {
-        return _Get_cont().cend();
+        return end();
     }
     _NODISCARD const_reverse_iterator crbegin() const noexcept {
-        return _Get_cont().crbegin();
+        return rbegin();
     }
     _NODISCARD const_reverse_iterator crend() const noexcept {
-        return _Get_cont().crend();
+        return rend();
     }
 
     // capacity
