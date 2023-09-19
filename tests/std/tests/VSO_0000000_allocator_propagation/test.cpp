@@ -110,49 +110,49 @@ public:
     }
 
     template <class I, enable_if_t<is_integral_v<I>, int> = 0>
-    _CONSTEXPR20 friend nontrivial_pointer operator+(nontrivial_pointer ptr, I diff) noexcept {
+    friend _CONSTEXPR20 nontrivial_pointer operator+(nontrivial_pointer ptr, I diff) noexcept {
         return ptr += diff;
     }
     template <class I, enable_if_t<is_integral_v<I>, int> = 0>
-    _CONSTEXPR20 friend nontrivial_pointer operator+(I diff, nontrivial_pointer ptr) noexcept {
+    friend _CONSTEXPR20 nontrivial_pointer operator+(I diff, nontrivial_pointer ptr) noexcept {
         return ptr += diff;
     }
-    _CONSTEXPR20 friend ptrdiff_t operator-(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+    friend _CONSTEXPR20 ptrdiff_t operator-(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
         return lhs.ptr - rhs.ptr;
     }
     template <class I, enable_if_t<is_integral_v<I>, int> = 0>
-    _CONSTEXPR20 friend nontrivial_pointer operator-(nontrivial_pointer ptr, I diff) noexcept {
+    friend _CONSTEXPR20 nontrivial_pointer operator-(nontrivial_pointer ptr, I diff) noexcept {
         return ptr -= diff;
     }
 
-    _CONSTEXPR20 friend bool operator==(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+    friend _CONSTEXPR20 bool operator==(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
         return lhs.ptr == rhs.ptr;
     }
-    _CONSTEXPR20 friend bool operator==(nontrivial_pointer ptr, nullptr_t) noexcept {
+    friend _CONSTEXPR20 bool operator==(nontrivial_pointer ptr, nullptr_t) noexcept {
         return !ptr;
     }
-    _CONSTEXPR20 friend bool operator==(nullptr_t, nontrivial_pointer ptr) noexcept {
+    friend _CONSTEXPR20 bool operator==(nullptr_t, nontrivial_pointer ptr) noexcept {
         return !ptr;
     }
-    _CONSTEXPR20 friend bool operator!=(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+    friend _CONSTEXPR20 bool operator!=(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
         return lhs.ptr != rhs.ptr;
     }
-    _CONSTEXPR20 friend bool operator!=(nontrivial_pointer ptr, nullptr_t) noexcept {
+    friend _CONSTEXPR20 bool operator!=(nontrivial_pointer ptr, nullptr_t) noexcept {
         return static_cast<bool>(ptr);
     }
-    _CONSTEXPR20 friend bool operator!=(nullptr_t, nontrivial_pointer ptr) noexcept {
+    friend _CONSTEXPR20 bool operator!=(nullptr_t, nontrivial_pointer ptr) noexcept {
         return static_cast<bool>(ptr);
     }
-    _CONSTEXPR20 friend bool operator<(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+    friend _CONSTEXPR20 bool operator<(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
         return lhs.ptr < rhs.ptr;
     }
-    _CONSTEXPR20 friend bool operator<=(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+    friend _CONSTEXPR20 bool operator<=(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
         return lhs.ptr <= rhs.ptr;
     }
-    _CONSTEXPR20 friend bool operator>(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+    friend _CONSTEXPR20 bool operator>(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
         return lhs.ptr > rhs.ptr;
     }
-    _CONSTEXPR20 friend bool operator>=(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+    friend _CONSTEXPR20 bool operator>=(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
         return lhs.ptr >= rhs.ptr;
     }
 };
