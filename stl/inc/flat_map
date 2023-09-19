@@ -489,7 +489,7 @@ public:
     {
         value_type _Val(_STD forward<_Args_t>(_Args)...);
 
-        return _Emplace_hint<false>(_Position, _STD move(_Val.first), _STD move(_Val.second));
+        return _Emplace_hint<false, false>(_Position, _STD move(_Val.first), _STD move(_Val.second));
     }
 
     template <class _V>
@@ -561,7 +561,7 @@ public:
               && (same_as<remove_cvref_t<_K &&>, key_type>
                   || (constructible_from<key_type, _K&&> && _Compare_is_transparent<key_compare>) )
     {
-        return _Emplace_hint<false>(_Position, _STD forward<_K>(_Key), _STD forward<_Args_t>(_Args)...);
+        return _Emplace_hint<false, false>(_Position, _STD forward<_K>(_Key), _STD forward<_Args_t>(_Args)...);
     }
 
     template <class _M, class _K>
@@ -587,7 +587,7 @@ public:
               && (same_as<remove_cvref_t<_K &&>, key_type>
                   || (constructible_from<key_type, _K&&> && _Compare_is_transparent<key_compare>) )
     {
-        return _Emplace_hint<true>(_Position, _STD forward<_K>(_Key), _STD forward<_M>(_Obj));
+        return _Emplace_hint<false, true>(_Position, _STD forward<_K>(_Key), _STD forward<_M>(_Obj));
     }
 
     iterator erase(iterator _Position) {
@@ -793,50 +793,56 @@ private:
         _Guard._Clearable = nullptr;
     }
 
-    template <bool _Overwrite_if_exists, class _K, class... _Mapped_args_t>
+    template <bool _Multi, bool _Overwrite_if_exists, class _K, class... _Mapped_args_t>
     iterator _Emplace_hint(const_iterator _Position, _K&& _Key, _Mapped_args_t&&... _Args)
         requires is_constructible_v<mapped_type, _Mapped_args_t...>
               && (same_as<remove_cvref_t<_K &&>, key_type>
                   || (constructible_from<key_type, _K&&> && _Compare_is_transparent<key_compare>) )
     {
+        static_assert(!(_Multi && _Overwrite_if_exists),
+            "Overwriting is not supported when the container allows multiple copies of a key.");
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
-        // Adjust _Position
-        if (_Position == _End || !_Key_compare(*(_Position._Key_it), _Key)) {
-            // _Val should be inserted at or before _Position
-            if (_Position == _Begin || !_Key_compare(_Key, *((_Position - 1)._Key_it))) {
-                // _Val should be inserted at or after _Position
-                // The hint _Position is accurate
-            } else {
-                auto _Key_Position = _STD upper_bound(_Data.keys.cbegin(), _Position._Key_it, _Key, _Key_compare);
-                auto _Distance     = _STD distance(_Data.keys.cbegin(), _Key_Position);
-                _Position          = _Begin + _Distance;
+        bool _Insert_before_position        = false;
+        bool _Insert_after_position_minus_1 = false;
+        if constexpr (_Multi) {
+            _Insert_before_position        = (_Position == _End) || !_Key_compare(*(_Position._Key_it), _Key);
+            _Insert_after_position_minus_1 = (_Position == _Begin) || !_Key_compare(_Key, *(_Position._Key_it - 1));
+        } else {
+            _Insert_before_position        = (_Position == _End) || _Key_compare(_Key, *(_Position._Key_it));
+            _Insert_after_position_minus_1 = (_Position == _Begin) || _Key_compare(*(_Position._Key_it - 1), _Key);
+        }
+        bool _Hint_is_accurate = _Insert_before_position && _Insert_after_position_minus_1;
+
+        if (_Hint_is_accurate) {
+            auto _Dist = _STD distance(_Begin._Key_it, _Position._Key_it);
+            _Insert_exact(_Position, value_type{piecewise_construct, forward_as_tuple(_STD forward<_K>(_Key)),
+                                         forward_as_tuple(_STD forward<_Mapped_args_t>(_Args)...)});
+            return begin() + _Dist;
+        } else {
+            if constexpr (_Overwrite_if_exists) {
+                if (_Key_equal(_Key, *(_Position._Key_it))) {
+                    auto _Dist        = _STD distance(_Begin._Key_it, _Position._Key_it);
+                    auto _It          = begin() + _Dist;
+                    *(_It._Mapped_it) = mapped_type{_STD forward<_Mapped_args_t>(_Args)...};
+                    return _It;
+                }
             }
-        } else {
-            auto _Key_Position = _STD lower_bound(_Position._Key_it + 1, _Data.keys.cend(), _Key, _Key_compare);
-            auto _Distance     = _STD distance(_Data.keys.cbegin(), _Key_Position);
-            _Position          = _Begin + _Distance;
-        }
 
-        bool _Should_insert = false;
-        if (_Position == _End) {
-            _Should_insert = true;
-        } else if (_Key_equal(*(_Position._Key_it), _Key)) {
-            _Should_insert = false;
-        } else {
-            _Should_insert = true;
+            _Position = lower_bound(_Key);
+            if (_Overwrite_if_exists && _Position != _End && _Key_equal(_Key, *(_Position._Key_it))) {
+                auto _Dist        = _STD distance(_Begin._Key_it, _Position._Key_it);
+                auto _It          = begin() + _Dist;
+                *(_It._Mapped_it) = mapped_type{_STD forward<_Mapped_args_t>(_Args)...};
+                return _It;
+            } else {
+                auto _Dist = _STD distance(_Begin._Key_it, _Position._Key_it);
+                _Insert_exact(_Position, value_type{piecewise_construct, forward_as_tuple(_STD forward<_K>(_Key)),
+                                             forward_as_tuple(_STD forward<_Mapped_args_t>(_Args)...)});
+                return begin() + _Dist;
+            }
         }
-
-        auto _Distance = _STD distance(_Begin, _Position);
-        if (_Should_insert) {
-            _Insert_exact(_Position, value_type(_STD forward<_K>(_Key), _STD forward<_Mapped_args_t>(_Args)...));
-        } else if constexpr (_Overwrite_if_exists) {
-            auto _It          = begin() + _Distance;
-            *(_It._Mapped_it) = mapped_type(_STD forward<_Mapped_args_t>(_Args)...);
-        }
-        // Consider _Position invalidated by the insert operation
-        return begin() + _Distance;
     }
 
     template <bool _NeedSorting, bool _NeedDeduping, class _InputIterator>
