@@ -170,7 +170,7 @@ struct impl_pointer_to<T, false> {
 };
 
 template <class T>
-struct std::pointer_traits<nontrivial_pointer<T>> : public impl_pointer_to<T> {
+struct std::pointer_traits<nontrivial_pointer<T>> : impl_pointer_to<T> {
     using pointer         = nontrivial_pointer<T>;
     using element_type    = T;
     using difference_type = ptrdiff_t;
