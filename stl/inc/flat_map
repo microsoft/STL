@@ -793,7 +793,7 @@ private:
         _Guard._Clearable = nullptr;
     }
 
-    template <bool _Override_if_exists, class _K, class... _Mapped_args_t>
+    template <bool _Overwrite_if_exists, class _K, class... _Mapped_args_t>
     iterator _Emplace_hint(const_iterator _Position, _K&& _Key, _Mapped_args_t&&... _Args)
         requires is_constructible_v<mapped_type, _Mapped_args_t...>
               && (same_as<remove_cvref_t<_K &&>, key_type>
@@ -831,7 +831,7 @@ private:
         auto _Distance = _STD distance(_Begin, _Position);
         if (_Should_insert) {
             _Insert_exact(_Position, value_type(_STD forward<_K>(_Key), _STD forward<_Mapped_args_t>(_Args)...));
-        } else if constexpr (_Override_if_exists) {
+        } else if constexpr (_Overwrite_if_exists) {
             auto _It          = begin() + _Distance;
             *(_It._Mapped_it) = mapped_type(_STD forward<_Mapped_args_t>(_Args)...);
         }
