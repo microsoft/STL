@@ -556,8 +556,9 @@ private:
     }
 
     template <class _Ty>
-        requires _Keylt_transparent || is_same_v<_Ty, _Kty>
     size_type _Erase(const _Ty& _Val) {
+        _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Ty, _Kty>);
+
         const auto [_First, _Last] = equal_range(_Val);
 
         const auto _Removed = static_cast<size_type>(_Last - _First);
@@ -566,8 +567,9 @@ private:
     }
 
     template <class _Other>
-        requires _Keylt_transparent || is_same_v<_Other, _Kty>
     _NODISCARD iterator _Find(const _Other& _Val) {
+        _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Other, _Kty>);
+
         const iterator _End   = end();
         const iterator _Where = lower_bound(_Val);
         if (_Where != _End && _Keys_equal(*_Where, _Val)) {
@@ -578,8 +580,9 @@ private:
     }
 
     template <class _Other>
-        requires _Keylt_transparent || is_same_v<_Other, _Kty>
     _NODISCARD const_iterator _Find(const _Other& _Val) const {
+        _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Other, _Kty>);
+
         const const_iterator _End   = cend();
         const const_iterator _Where = lower_bound(_Val);
         if (_Where != _End && _Keys_equal(*_Where, _Val)) {
@@ -590,8 +593,9 @@ private:
     }
 
     template <class _Lhty, class _Rhty>
-        requires _Keylt_transparent || (is_same_v<_Kty, _Lhty> && is_same_v<_Lhty, _Rhty>)
     _NODISCARD bool _Keys_equal(const _Lhty& _Lhs, const _Rhty& _Rhs) const {
+        _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || (is_same_v<_Kty, _Lhty> && is_same_v<_Lhty, _Rhty>) );
+
         const key_compare& _Compare = _Get_comp();
         return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
     }
