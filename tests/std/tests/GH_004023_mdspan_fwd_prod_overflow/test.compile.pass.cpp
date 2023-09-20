@@ -8,7 +8,7 @@
 
 using namespace std;
 
-struct layout_packed_upper { // LAPACK packed storage
+struct layout_packed_upper { // LAPACK packed storage, VERY INCOMPLETE
     template <class Extents>
     class mapping {
     public:
@@ -40,8 +40,8 @@ struct layout_packed_upper { // LAPACK packed storage
 };
 
 int main() {
-    constexpr int32_t dim        = 47'000; // sqrt(2^32) > dim > sqrt(2^31)
-    constexpr auto expected_size = []() {
+    constexpr int32_t dim        = 47'000; // sqrt(2^32) > dim > sqrt(2^31), dim assumed even below
+    constexpr auto expected_size = [] {
         int32_t unused;
         bool overflow = _Mul_overflow(dim, dim, unused);
         assert(overflow);
@@ -54,13 +54,12 @@ int main() {
         return result;
     }();
 
-    constexpr auto expected_req_size = []() {
+    constexpr auto expected_req_size = [] {
         int32_t result{};
         bool overflow = _Mul_overflow(dim / 2, dim + 1, result);
         assert(!overflow);
         return result;
     }();
-
 
     {
         using E = extents<int32_t, dim, dim>;
