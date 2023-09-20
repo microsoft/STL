@@ -13,9 +13,9 @@ struct layout_packed_upper { // LAPACK packed storage, VERY INCOMPLETE
     class mapping {
     public:
         using extents_type = Extents;
-        using index_type   = typename extents_type::index_type;
-        using size_type    = typename extents_type::size_type;
-        using rank_type    = typename extents_type::rank_type;
+        using index_type   = extents_type::index_type;
+        using size_type    = extents_type::size_type;
+        using rank_type    = extents_type::rank_type;
         using layout_type  = layout_packed_upper;
 
         constexpr mapping() noexcept = default;
@@ -49,14 +49,14 @@ int main() {
         using UType     = remove_cv_t<make_unsigned_t<decltype(dim)>>;
         const auto udim = static_cast<UType>(dim);
         UType result{};
-        overflow = _Mul_overflow<UType>(udim, udim, result);
+        overflow = _Mul_overflow(udim, udim, result);
         assert(!overflow);
         return result;
     }();
 
     constexpr auto expected_req_size = [] {
         int32_t result{};
-        bool overflow = _Mul_overflow(dim / 2, dim + 1, result);
+        const bool overflow = _Mul_overflow(dim / 2, dim + 1, result);
         assert(!overflow);
         return result;
     }();
