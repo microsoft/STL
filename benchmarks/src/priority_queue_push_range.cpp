@@ -50,7 +50,7 @@ namespace {
             span spn{Data};
 
             while (!spn.empty()) {
-                size_t take_size = min(spn.size(), frag_size);
+                const size_t take_size = min(spn.size(), frag_size);
                 que.push_range(spn.first(take_size));
                 spn = spn.subspan(take_size);
             }
