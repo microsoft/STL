@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
-#include <functional>
 #include <queue>
 #include <random>
 #include <span>
@@ -18,11 +17,11 @@ using namespace std;
 namespace {
     constexpr size_t vec_size = 10000;
 
-    template <class T>
-    auto create_vec(size_t vsize, function<T(uint64_t)> transform) {
+    template <class T, class Fn>
+    auto create_vec(size_t vsize, Fn transformation) {
         vector<T> vec(vsize);
         for (mt19937_64 rnd(1); auto& e : vec) {
-            e = transform(rnd());
+            e = transformation(rnd());
         }
         return vec;
     }
