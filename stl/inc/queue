@@ -391,7 +391,7 @@ public:
         }
 
         const size_type _New_size = c.size();
-        if (_New_size / 2 > _Old_size) {
+        if (_New_size / 2 > _Old_size) { // threshold chosen for performance
             _Make_heap();
         } else {
             const auto _Begin = _STD _Get_unwrapped(c.begin());
