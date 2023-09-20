@@ -7,8 +7,6 @@
 
 #include <Windows.h>
 
-#include "awint.hpp"
-
 namespace stdext {
     namespace threads {
 

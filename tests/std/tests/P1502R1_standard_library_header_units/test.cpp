@@ -48,6 +48,9 @@ import <limits>;
 import <list>;
 import <locale>;
 import <map>;
+#if TEST_STANDARD >= 23
+import <mdspan>;
+#endif // TEST_STANDARD >= 23
 import <memory>;
 import <memory_resource>;
 import <mutex>;

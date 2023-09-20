@@ -25,6 +25,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, VSO-1885306: warning C5039 shouldn't be emitted when an extern "C" function is marked noexcept(false)
+#pragma warning(disable : 5039) // '__std_stacktrace_meow': pointer or reference to potentially throwing function
+                                // passed to 'extern "C"' function under -EHc. Undefined behavior may occur if this
+                                // function throws an exception. (/Wall)
+
 // The separately compiled part of the <stacktrace> implementation calls a function pointer of _Stacktrace_string_fill
 // type to allocate a buffer for string output. The called function does the buffer allocation and calls a function
 // pointer of _Stacktrace_string_fill_callback type to fill the buffer. This is needed to type-erase <string> or
