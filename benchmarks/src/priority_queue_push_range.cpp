@@ -1,12 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <benchmark/benchmark.h>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
 #include <functional>
 #include <queue>
 #include <random>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 using namespace std;
 
