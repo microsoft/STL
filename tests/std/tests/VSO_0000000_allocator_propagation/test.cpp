@@ -462,9 +462,12 @@ _CONSTEXPR20 bool test_sequence() {
     test_sequence_copy_assign<Sequence, CopyAlloc<int>>(11, 22, 11); // POCCA, non-equal allocators
     test_sequence_copy_assign<Sequence, CopyEqualAlloc<int>>(11, 22, 11); // POCCA, always-equal allocators
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1888462
-    test_sequence_move_ctor<Sequence>();
-#endif // ^^^ no workaround ^^^
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1888462
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
+    {
+        test_sequence_move_ctor<Sequence>();
+    }
 
     test_sequence_move_alloc_ctor<Sequence>(11, 11); // equal allocators
     test_sequence_move_alloc_ctor<Sequence>(11, 22); // non-equal allocators
