@@ -199,7 +199,9 @@ public:
             return _Key_it - _Right._Key_it;
         }
 
-        friend type operator+(difference_type _Off, const type& _Right);
+        friend type operator+(difference_type _Off, const type& _Right) {
+            return _Right + _Off;
+        }
 
         template <bool _Val = _IsConst, enable_if_t<!_Val, int> = 0>
         operator typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, true>::type() const {
@@ -213,13 +215,6 @@ public:
 
     static_assert(swappable<type>);
 };
-
-template <class _KeyContainer, class _MappedContainer, bool _IsConst>
-_EXPORT_STD typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, _IsConst>::type operator+(
-    typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, _IsConst>::type::difference_type _Off,
-    const typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, _IsConst>::type& _Right) {
-    return _Right + _Off;
-}
 
 _EXPORT_STD
 template <class Key, class T, class Compare, class KeyContainer, class MappedContainer>
