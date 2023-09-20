@@ -51,7 +51,7 @@ namespace {
 
             while (!spn.empty()) {
                 size_t take_size = min(spn.size(), frag_size);
-                que.push_range(spn.subspan(0, take_size));
+                que.push_range(spn.first(take_size));
                 spn = spn.subspan(take_size);
             }
             benchmark::DoNotOptimize(que);
