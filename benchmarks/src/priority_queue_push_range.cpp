@@ -18,8 +18,8 @@ namespace {
     constexpr size_t vec_size = 10000;
 
     template <class T, class Fn>
-    auto create_vec(size_t vsize, Fn transformation) {
-        vector<T> vec(vsize);
+    auto create_vec(Fn transformation) {
+        vector<T> vec(vec_size);
         for (mt19937_64 rnd(1); auto& e : vec) {
             e = transformation(rnd());
         }
@@ -31,17 +31,15 @@ namespace {
         return static_cast<T>(val);
     }
 
-    const auto vec_u8     = create_vec<uint8_t>(vec_size, cast_to<uint8_t>);
-    const auto vec_u16    = create_vec<uint16_t>(vec_size, cast_to<uint16_t>);
-    const auto vec_u32    = create_vec<uint32_t>(vec_size, cast_to<uint32_t>);
-    const auto vec_u64    = create_vec<uint64_t>(vec_size, cast_to<uint64_t>);
-    const auto vec_float  = create_vec<float>(vec_size, cast_to<float>);
-    const auto vec_double = create_vec<double>(vec_size, cast_to<double>);
+    const auto vec_u8     = create_vec<uint8_t>(cast_to<uint8_t>);
+    const auto vec_u16    = create_vec<uint16_t>(cast_to<uint16_t>);
+    const auto vec_u32    = create_vec<uint32_t>(cast_to<uint32_t>);
+    const auto vec_u64    = create_vec<uint64_t>(cast_to<uint64_t>);
+    const auto vec_float  = create_vec<float>(cast_to<float>);
+    const auto vec_double = create_vec<double>(cast_to<double>);
 
-    const auto vec_str =
-        create_vec<string>(vec_size, [](uint64_t val) { return to_string(static_cast<uint32_t>(val)); });
-    const auto vec_wstr =
-        create_vec<wstring>(vec_size, [](uint64_t val) { return to_wstring(static_cast<uint32_t>(val)); });
+    const auto vec_str  = create_vec<string>([](uint64_t val) { return to_string(static_cast<uint32_t>(val)); });
+    const auto vec_wstr = create_vec<wstring>([](uint64_t val) { return to_wstring(static_cast<uint32_t>(val)); });
 
     template <class T, const auto& Data>
     void BM_push_range(benchmark::State& state) {
