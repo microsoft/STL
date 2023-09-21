@@ -9,38 +9,30 @@ from typing import TextIO
 from pathlib import Path
 
 
-LINE_REGEX = re.compile(r"([0-9A-Z]+)(\.\.[0-9A-Z]+)?;(A|F|H|N|Na|W) *#.*")
-
-
 class UnicodeWidth(Enum):
     IS_1: int = 1
     IS_2: int = 2
 
 
-class UnicodeTable:
-    # A valid Unicode code point won't exceed MAX_UNICODE_POINT.
-    MAX_UNICODE_POINT: int = 0x10FFFF
-    UNICODE_TABLE_SIZE: int = MAX_UNICODE_POINT + 1
+class UnicodeWidthTable:
+    # A valid Unicode code point won't exceed MAX_CODE_POINT.
+    MAX_CODE_POINT: int = 0x10FFFF
+    TABLE_SIZE: int = MAX_CODE_POINT + 1
 
     def __init__(self):
-        self.table = [UnicodeWidth.IS_1] * (self.UNICODE_TABLE_SIZE)
+        self.table = [UnicodeWidth.IS_1] * (self.TABLE_SIZE)
 
-    def fill_range(self, rng: tuple, width: bool):
+    # "rng" denotes a right-closed range.
+    def fill_range(self, rng: tuple, width: int):
         from_, to_ = rng
         assert from_ <= to_, "impl assertion failed"
-        assert to_ <= self.MAX_UNICODE_POINT, "impl assertion failed"
+        assert to_ <= self.MAX_CODE_POINT, "impl assertion failed"
         self.table[from_ : to_ + 1] = [width] * (to_ - from_ + 1)
 
-    def print_intervals(self):
-        """
-        Generates _Width_estimate_intervals_v2.
-        It begins from the second code point and continues up to the last one, including it as well.
-        Whenever a code point's width differs from the previous one,
-        the function print the code point to indicate the start of a new range.
-        """
+    def print_width_estimate_intervals(self):
         printed_elements_on_one_line = 0
         assert self.table[0] == UnicodeWidth.IS_1, "impl assertion failed"
-        for u in range(1, self.UNICODE_TABLE_SIZE):
+        for u in range(1, self.TABLE_SIZE):
             if self.table[u] != self.table[u - 1]:
                 print(f"0x{u:X}u, ", end="")
                 if printed_elements_on_one_line == 11:
@@ -51,14 +43,10 @@ class UnicodeTable:
 
         print()
 
-    def print_clusters_1_vs_2(self, other):
-        """
-        Print all ranges, in closed-end form
-        where the width is consistently 1 in the self.table range and 2 in the other.table range.
-        This output is consistent with the standard/data file and the annex in the paper
-        """
-        cluster_table = [False] * (self.UNICODE_TABLE_SIZE)
-        for u in range(self.UNICODE_TABLE_SIZE):
+    # Print all ranges (right-closed), where self's width is 1 and other's width is 2.
+    def print_ranges_1_vs_2(self, other):
+        cluster_table = [False] * (self.TABLE_SIZE)
+        for u in range(self.TABLE_SIZE):
             if (
                 self.table[u] == UnicodeWidth.IS_1
                 and other.table[u] == UnicodeWidth.IS_2
@@ -66,11 +54,11 @@ class UnicodeTable:
                 cluster_table[u] = True
 
         u = 0
-        while u < self.UNICODE_TABLE_SIZE:
+        while u < self.TABLE_SIZE:
             if cluster_table[u]:
                 from_ = u
                 to_ = from_
-                while to_ + 1 <= self.MAX_UNICODE_POINT and cluster_table[to_ + 1]:
+                while to_ + 1 <= self.MAX_CODE_POINT and cluster_table[to_ + 1]:
                     to_ += 1
                 if from_ == to_:
                     print(f"U+{from_:X}")
@@ -80,7 +68,7 @@ class UnicodeTable:
             u += 1
 
 
-def get_table_cpp20() -> UnicodeTable:
+def get_table_cpp20() -> UnicodeWidthTable:
     std_wide_ranges_cpp20 = [
         (0x1100, 0x115F),
         (0x2329, 0x232A),
@@ -98,14 +86,14 @@ def get_table_cpp20() -> UnicodeTable:
         (0x30000, 0x3FFFD),
     ]
 
-    table = UnicodeTable()
+    table = UnicodeWidthTable()
     for rng in std_wide_ranges_cpp20:
         table.fill_range(rng, UnicodeWidth.IS_2)
 
     return table
 
 
-def read_from(source: TextIO) -> UnicodeTable:
+def read_from(source: TextIO) -> UnicodeWidthTable:
     """
     Read data from "EastAsianWidth.txt".
     The latest version can be found at:
@@ -114,7 +102,7 @@ def read_from(source: TextIO) -> UnicodeTable:
     https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
     To make this function work, the file should not contain a BOM.
     """
-    table = UnicodeTable()
+    table = UnicodeWidthTable()
 
     # "The unassigned code points in the following blocks default to "W":"
     default_wide_ranges = [
@@ -129,6 +117,8 @@ def read_from(source: TextIO) -> UnicodeTable:
 
     # Read explicitly assigned ranges.
     # The lines that are not empty or pure comment are uniformly of the format "HEX(..HEX)?;(A|F|H|N|Na|W) #comment".
+    LINE_REGEX = re.compile(r"([0-9A-Z]+)(\.\.[0-9A-Z]+)?;(A|F|H|N|Na|W) *#.*")
+
     def get_width(str: str):
         if str == "F" or str == "W":
             return UnicodeWidth.IS_2
@@ -140,7 +130,7 @@ def read_from(source: TextIO) -> UnicodeTable:
         line = line.strip()
         if line and not line.startswith("#"):
             match = LINE_REGEX.fullmatch(line)
-            assert match, "invalid line"
+            assert match, line # invalid line
             from_val = int(match.group(1), base=16)
             width = get_width(match.group(3))
             if match.group(2):
@@ -154,7 +144,7 @@ def read_from(source: TextIO) -> UnicodeTable:
     return table
 
 
-def get_table_cpp23(source: TextIO) -> UnicodeTable:
+def get_table_cpp23(source: TextIO) -> UnicodeWidthTable:
     table = read_from(source)
 
     # Override with ranges specified by the C++ standard.
@@ -173,18 +163,18 @@ def get_table_cpp23(source: TextIO) -> UnicodeTable:
 def main():
     print("Old table:")
     old_table = get_table_cpp20()
-    old_table.print_intervals()
+    old_table.print_width_estimate_intervals()
 
     path = Path(__file__).absolute().with_name("EastAsianWidth.txt")
     with open(path, mode="rt", encoding="utf-8") as source:
         new_table = get_table_cpp23(source)
     print("New table:")
-    new_table.print_intervals()
+    new_table.print_width_estimate_intervals()
 
     print("\nWas 1, now 2:")
-    old_table.print_clusters_1_vs_2(new_table)
+    old_table.print_ranges_1_vs_2(new_table)
     print("\nWas 2, now 1:")
-    new_table.print_clusters_1_vs_2(old_table)
+    new_table.print_ranges_1_vs_2(old_table)
 
 
 if __name__ == "__main__":
