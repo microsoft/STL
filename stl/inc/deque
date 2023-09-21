@@ -1112,13 +1112,35 @@ public:
         _STL_VERIFY(_Off <= _Mysize(), "deque emplace iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-        if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
-            emplace_front(_STD forward<_Valty>(_Val)...);
-            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
-        } else { // closer to back, push to back then rotate
-            emplace_back(_STD forward<_Valty>(_Val)...);
-            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
+        _Orphan_all();
+        if (_Off == 0) { // at the beginning
+            _Emplace_front_internal(_STD forward<_Valty>(_Val)...);
+        } else if (_Off == _Mysize()) { // at the end
+            _Emplace_back_internal(_STD forward<_Valty>(_Val)...);
+        } else {
+            _Alloc_temporary2<_Alty> _Obj(_Getal(), _STD forward<_Valty>(_Val)...); // handle aliasing
+
+            if (_Off <= _Mysize() / 2) { // closer to front
+                _Emplace_front_internal(_STD move(*_Unchecked_begin()));
+
+                auto _Moving_dst       = _STD _Next_iter(_Unchecked_begin());
+                auto _Moving_src_begin = _STD _Next_iter(_Moving_dst);
+                auto _Moving_src_end   = _Moving_dst + static_cast<difference_type>(_Off);
+
+                auto _Moving_dst_end = _STD _Move_unchecked(_Moving_src_begin, _Moving_src_end, _Moving_dst);
+                *_Moving_dst_end     = _STD move(_Obj._Get_value());
+            } else { // closer to back
+                _Emplace_back_internal(_STD move(*_STD _Prev_iter(_Unchecked_end())));
+
+                auto _Moving_dst_end   = _STD _Prev_iter(_Unchecked_end());
+                auto _Moving_src_end   = _STD _Prev_iter(_Moving_dst_end);
+                auto _Moving_src_begin = _Unchecked_begin() + static_cast<difference_type>(_Off);
+
+                _STD _Move_backward_unchecked(_Moving_src_begin, _Moving_src_end, _Moving_dst_end);
+                *_Moving_src_begin = _STD move(_Obj._Get_value());
+            }
         }
+
         return begin() + static_cast<difference_type>(_Off);
     }
 
