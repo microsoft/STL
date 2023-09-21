@@ -433,7 +433,7 @@ public:
     }
 
     _CONSTEXPR20 void swap(array& _Other) noexcept(_Is_nothrow_swappable<_Ty>::value) {
-        _Swap_ranges_unchecked(_Elems, _Elems + _Size, _Other._Elems);
+        _STD _Swap_ranges_unchecked(_Elems, _Elems + _Size, _Other._Elems);
     }
 
     _NODISCARD _CONSTEXPR17 iterator begin() noexcept {
