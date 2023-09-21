@@ -3181,6 +3181,7 @@ namespace msvc {
 #pragma warning(pop)
     } // namespace trivial
 
+#ifndef _M_CEE // TRANSITION, VSO-1659496
     namespace gh_140_robust_against_adl {
         struct incomplete;
 
@@ -3212,6 +3213,7 @@ namespace msvc {
             test_for<_large>();
         }
     } // namespace gh_140_robust_against_adl
+#endif // _M_CEE
 } // namespace msvc
 
 int main() {
@@ -3248,5 +3250,7 @@ int main() {
     msvc::size_and_alignment::run_test();
     msvc::small_type::run_test();
     msvc::trivial::run_test();
+#ifndef _M_CEE // TRANSITION, VSO-1659496
     msvc::gh_140_robust_against_adl::run_test();
+#endif // _M_CEE
 }
