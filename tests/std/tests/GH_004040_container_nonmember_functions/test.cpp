@@ -27,52 +27,52 @@
 
 using namespace std;
 
-struct Foo {
+struct Meow {
 #if _HAS_CXX20
-    friend constexpr auto operator<=>(Foo, Foo) = default;
+    friend constexpr auto operator<=>(Meow, Meow) = default;
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-    friend constexpr bool operator==(Foo, Foo) noexcept {
+    friend constexpr bool operator==(Meow, Meow) noexcept {
         return true;
     }
 
-    friend constexpr bool operator!=(Foo, Foo) noexcept {
+    friend constexpr bool operator!=(Meow, Meow) noexcept {
         return false;
     }
 
-    friend constexpr bool operator<(Foo, Foo) noexcept {
+    friend constexpr bool operator<(Meow, Meow) noexcept {
         return false;
     }
 
-    friend constexpr bool operator>(Foo, Foo) noexcept {
+    friend constexpr bool operator>(Meow, Meow) noexcept {
         return false;
     }
 
-    friend constexpr bool operator<=(Foo, Foo) noexcept {
+    friend constexpr bool operator<=(Meow, Meow) noexcept {
         return true;
     }
 
-    friend constexpr bool operator>=(Foo, Foo) noexcept {
+    friend constexpr bool operator>=(Meow, Meow) noexcept {
         return true;
     }
 #endif // ^^^ !_HAS_CXX20 ^^^
 };
 
 template <size_t N>
-struct std::array<Foo, N> {
-    using value_type             = Foo;
-    using pointer                = Foo*;
-    using const_pointer          = const Foo*;
-    using reference              = Foo&;
-    using const_reference        = const Foo&;
+struct std::array<Meow, N> {
+    using value_type             = Meow;
+    using pointer                = Meow*;
+    using const_pointer          = const Meow*;
+    using reference              = Meow&;
+    using const_reference        = const Meow&;
     using size_type              = size_t;
     using difference_type        = ptrdiff_t;
-    using iterator               = Foo*;
-    using const_iterator         = const Foo*;
-    using reverse_iterator       = std::reverse_iterator<Foo*>;
-    using const_reverse_iterator = std::reverse_iterator<const Foo*>;
+    using iterator               = Meow*;
+    using const_iterator         = const Meow*;
+    using reverse_iterator       = std::reverse_iterator<Meow*>;
+    using const_reverse_iterator = std::reverse_iterator<const Meow*>;
 
-    CONSTEXPR20 void fill(const Foo&) {} // Foo is no-op assignable.
-    CONSTEXPR20 void swap(array&) noexcept {} // Foo is no-op swappable.
+    CONSTEXPR20 void fill(const Meow&) {} // Meow is no-op assignable.
+    CONSTEXPR20 void swap(array&) noexcept {} // Meow is no-op swappable.
 
     CONSTEXPR17 iterator begin() noexcept {
         return elems_;
@@ -130,10 +130,10 @@ struct std::array<Foo, N> {
         return elems_[n];
     }
     CONSTEXPR17 reference at(size_type n) {
-        return n < N ? elems_[n] : throw out_of_range{"bad array<Foo> access"};
+        return n < N ? elems_[n] : throw out_of_range{"bad array<Meow> access"};
     }
     constexpr const_reference at(size_type n) const {
-        return n < N ? elems_[n] : throw out_of_range{"bad array<Foo> access"};
+        return n < N ? elems_[n] : throw out_of_range{"bad array<Meow> access"};
     }
     CONSTEXPR17 reference front() {
         return elems_[0];
@@ -155,25 +155,25 @@ struct std::array<Foo, N> {
         return elems_;
     }
 
-    Foo elems_[N];
+    Meow elems_[N];
 };
 
 template <>
-struct std::array<Foo, 0> {
-    using value_type             = Foo;
-    using pointer                = Foo*;
-    using const_pointer          = const Foo*;
-    using reference              = Foo&;
-    using const_reference        = const Foo&;
+struct std::array<Meow, 0> {
+    using value_type             = Meow;
+    using pointer                = Meow*;
+    using const_pointer          = const Meow*;
+    using reference              = Meow&;
+    using const_reference        = const Meow&;
     using size_type              = size_t;
     using difference_type        = ptrdiff_t;
-    using iterator               = Foo*;
-    using const_iterator         = const Foo*;
-    using reverse_iterator       = std::reverse_iterator<Foo*>;
-    using const_reverse_iterator = std::reverse_iterator<const Foo*>;
+    using iterator               = Meow*;
+    using const_iterator         = const Meow*;
+    using reverse_iterator       = std::reverse_iterator<Meow*>;
+    using const_reverse_iterator = std::reverse_iterator<const Meow*>;
 
-    CONSTEXPR20 void fill(const Foo&) {} // Foo is no-op assignable.
-    CONSTEXPR20 void swap(array&) noexcept {} // Foo is no-op swappable.
+    CONSTEXPR20 void fill(const Meow&) {} // Meow is no-op assignable.
+    CONSTEXPR20 void swap(array&) noexcept {} // Meow is no-op swappable.
 
     CONSTEXPR17 iterator begin() noexcept {
         return nullptr;
@@ -232,10 +232,10 @@ struct std::array<Foo, 0> {
         abort(); // UB
     }
     reference at(size_type) {
-        throw out_of_range{"bad array<Foo, 0> access"};
+        throw out_of_range{"bad array<Meow, 0> access"};
     }
     const_reference at(size_type) const {
-        throw out_of_range{"bad array<Foo, 0> access"};
+        throw out_of_range{"bad array<Meow, 0> access"};
     }
     reference front() {
         abort(); // UB
@@ -261,24 +261,24 @@ struct std::array<Foo, 0> {
 };
 
 constexpr bool test_array_get() {
-    array<Foo, 1> a{};
+    array<Meow, 1> a{};
     const auto& cref = a;
 
-    STATIC_ASSERT(is_same_v<decltype(get<0>(a)), Foo&>);
-    STATIC_ASSERT(is_same_v<decltype(get<0>(cref)), const Foo&>);
-    STATIC_ASSERT(is_same_v<decltype(get<0>(move(a))), Foo&&>);
-    STATIC_ASSERT(is_same_v<decltype(get<0>(move(cref))), const Foo&&>);
+    STATIC_ASSERT(is_same_v<decltype(get<0>(a)), Meow&>);
+    STATIC_ASSERT(is_same_v<decltype(get<0>(cref)), const Meow&>);
+    STATIC_ASSERT(is_same_v<decltype(get<0>(move(a))), Meow&&>);
+    STATIC_ASSERT(is_same_v<decltype(get<0>(move(cref))), const Meow&&>);
 
-    assert(get<0>(a) == Foo{});
-    assert(get<0>(cref) == Foo{});
-    assert(get<0>(move(a)) == Foo{});
-    assert(get<0>(move(cref)) == Foo{});
+    assert(get<0>(a) == Meow{});
+    assert(get<0>(cref) == Meow{});
+    assert(get<0>(move(a)) == Meow{});
+    assert(get<0>(move(cref)) == Meow{});
 
     return true;
 }
 
 CONSTEXPR20 bool test_array_comparison() {
-    using A0 = array<Foo, 0>;
+    using A0 = array<Meow, 0>;
     assert(A0{} == A0{});
     assert(!(A0{} != A0{}));
     assert(!(A0{} < A0{}));
@@ -289,7 +289,7 @@ CONSTEXPR20 bool test_array_comparison() {
     assert(A0{} <=> A0{} == strong_ordering::equal);
 #endif // _HAS_CXX20 && defined(__cpp_lib_concepts)
 
-    using A1 = array<Foo, 1>;
+    using A1 = array<Meow, 1>;
     assert(A1{} == A1{});
     assert(!(A1{} != A1{}));
     assert(!(A1{} < A1{}));
