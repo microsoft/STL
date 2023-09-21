@@ -263,7 +263,7 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // <coroutine> is available
-#endif // ^^^ no /await ^^^
+#endif // ^^^ defined(__cpp_lib_coroutine) ^^^
+#endif // ^^^ !defined(_RESUMABLE_FUNCTIONS_SUPPORTED) ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _COROUTINE_

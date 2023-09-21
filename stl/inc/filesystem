@@ -1374,7 +1374,7 @@ namespace filesystem {
         _NODISCARD_FRIEND bool operator>=(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) >= 0;
         }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
         _NODISCARD_FRIEND path operator/(const path& _Left, const path& _Right) { // append a pair of paths together
             path _Tmp = _Left;
@@ -2454,7 +2454,7 @@ namespace filesystem {
         _NODISCARD bool operator>=(const directory_entry& _Rhs) const noexcept {
             return _Path >= _Rhs._Path;
         }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
         // [fs.dir.entry.io], inserter
         template <class _Elem, class _Traits>
@@ -4430,6 +4430,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX17
+#endif // ^^^ _HAS_CXX17 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FILESYSTEM_

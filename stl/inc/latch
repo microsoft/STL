@@ -10,7 +10,7 @@
 
 #ifdef _M_CEE_PURE
 #error <latch> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #if !_HAS_CXX20
 _EMIT_STL_WARNING(STL4038, "The contents of <latch> are available only with C++20 or later.");

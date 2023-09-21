@@ -99,7 +99,7 @@ namespace ranges {
         move_constructible<_Ty>
 #else // ^^^ C++23 / C++20 vvv
         copy_constructible<_Ty>
-#endif // C++20
+#endif // ^^^ C++20 ^^^
         && _Destructible_object<_Ty>;
 
     template <class _It>
@@ -5720,7 +5720,7 @@ namespace ranges {
             typename tuple_element_t<_Index, _Tuple>;
             { _STD get<_Index>(__t) } -> convertible_to<const tuple_element_t<_Index, _Tuple>&>;
         };
-#endif // C++20
+#endif // ^^^ C++20 ^^^
 
     template <class _Tuple, size_t _Index>
     concept _Returnable_element = is_reference_v<_Tuple> || move_constructible<tuple_element_t<_Index, _Tuple>>;
@@ -10480,6 +10480,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // defined(__cpp_lib_ranges)
+#endif // ^^^ defined(__cpp_lib_ranges) ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _RANGES_

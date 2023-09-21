@@ -203,7 +203,7 @@ _EXPORT_STD using _STDEXT bad_exception;
 
 _STD_END
 
-#endif // _HAS_EXCEPTIONS
+#endif // ^^^ !_HAS_EXCEPTIONS ^^^
 
 extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCreate(_Out_ void*) noexcept;
 extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrDestroy(_Inout_ void*) noexcept;

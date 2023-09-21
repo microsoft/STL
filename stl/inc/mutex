@@ -10,7 +10,7 @@
 
 #ifdef _M_CEE_PURE
 #error <mutex> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #include <__msvc_chrono.hpp>
 #include <cstdlib>
@@ -43,7 +43,7 @@ public:
     _Mutex_base(int _Flags = 0) noexcept {
         _Mtx_init_in_situ(_Mymtx(), _Flags | _Mtx_try);
     }
-#endif // !_ENABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
+#endif // ^^^ !_ENABLE_CONSTEXPR_MUTEX_CONSTRUCTOR ^^^
 
     ~_Mutex_base() noexcept {
         _Mtx_destroy_in_situ(_Mymtx());
