@@ -629,109 +629,138 @@ public:
     }
 
     deque(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) : _Mypair(_Zero_then_variadic_args_t{}) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct_n(_Count, _Val);
-        _Proxy._Release();
     }
 
     deque(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct_n(_Count, _Val);
-        _Proxy._Release();
-    }
-
-    deque(const deque& _Right)
-        : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
-        _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
-        _Proxy._Release();
-    }
-
-    deque(const deque& _Right, const _Identity_t<_Alloc>& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
-        _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
-        _Proxy._Release();
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     deque(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t{}) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_First, _Last);
-        _Proxy._Release();
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     deque(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_First, _Last);
-        _Proxy._Release();
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     deque(from_range_t, _Rng&& _Range) : _Mypair(_Zero_then_variadic_args_t{}) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
-        _Proxy._Release();
     }
 
     template <_Container_compatible_range<_Ty> _Rng>
     deque(from_range_t, _Rng&& _Range, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
-        _Proxy._Release();
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
-private:
-    template <class _Iter, class _Sent>
-    void _Construct(_Iter _First, const _Sent _Last) { // initialize from input range [_First, _Last)
-        _Tidy_guard<deque> _Guard{this};
-        for (; _First != _Last; ++_First) {
-            _Emplace_back_internal(*_First);
-        }
-
-        _Guard._Target = nullptr;
+    deque(const deque& _Right)
+        : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
+        _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
     }
 
-    void _Construct_n(size_type _Count, const _Ty& _Val) { // construct from _Count * _Val
-        _Tidy_guard<deque> _Guard{this};
-        for (; _Count > 0; --_Count) {
-            _Emplace_back_internal(_Val);
-        }
-
-        _Guard._Target = nullptr;
+    deque(const deque& _Right, const _Identity_t<_Alloc>& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
     }
 
-public:
     deque(deque&& _Right) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Get_data()._Alloc_proxy(static_cast<_Alproxy_ty>(_Getal()));
         _Take_contents(_Right);
     }
 
     deque(deque&& _Right, const _Identity_t<_Alloc>& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
         if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
-                _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
                 _Construct(_STD make_move_iterator(_Right._Unchecked_begin()),
                     _STD make_move_iterator(_Right._Unchecked_end()));
-                _Proxy._Release();
                 return;
             }
         }
 
-        _Get_data()._Alloc_proxy(_Alproxy);
+        _Get_data()._Alloc_proxy(static_cast<_Alproxy_ty>(_Getal()));
         _Take_contents(_Right);
+    }
+
+    deque(initializer_list<_Ty> _Ilist, const _Alloc& _Al = allocator_type())
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        _Construct(_Ilist.begin(), _Ilist.end());
+    }
+
+private:
+    template <class _Iter, class _Sent>
+    void _Construct(_Iter _First, const _Sent _Last) { // initialize from input range [_First, _Last)
+        _Alproxy_ty _Alproxy(_Getal());
+        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
+
+        _Tidy_guard<deque> _Guard{this};
+        for (; _First != _Last; ++_First) {
+            _Emplace_back_internal(*_First);
+        }
+
+        _Guard._Target = nullptr;
+        _Proxy._Release();
+    }
+
+    void _Construct_n(size_type _Count, const _Ty& _Val) { // construct from _Count * _Val
+        _Alproxy_ty _Alproxy(_Getal());
+        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
+
+        _Tidy_guard<deque> _Guard{this};
+        for (; _Count > 0; --_Count) {
+            _Emplace_back_internal(_Val);
+        }
+
+        _Guard._Target = nullptr;
+        _Proxy._Release();
+    }
+
+    void _Take_contents(deque& _Right) noexcept {
+        // move from _Right, stealing its contents
+        // pre: _Getal() == _Right._Getal()
+        auto& _My_data    = _Get_data();
+        auto& _Right_data = _Right._Get_data();
+        _My_data._Swap_proxy_and_iterators(_Right_data);
+        _My_data._Map     = _Right_data._Map;
+        _My_data._Mapsize = _Right_data._Mapsize;
+        _My_data._Myoff   = _Right_data._Myoff;
+        _My_data._Mysize  = _Right_data._Mysize;
+
+        _Right_data._Map     = nullptr;
+        _Right_data._Mapsize = 0;
+        _Right_data._Myoff   = 0;
+        _Right_data._Mysize  = 0;
+    }
+
+public:
+    ~deque() noexcept {
+        _Tidy();
+        _Alproxy_ty _Proxy_allocator(_Getal());
+        _Delete_plain_internal(_Proxy_allocator, _STD exchange(_Get_data()._Myproxy, nullptr));
+    }
+
+    deque& operator=(const deque& _Right) {
+        if (this == _STD addressof(_Right)) {
+            return *this;
+        }
+
+        auto& _Al       = _Getal();
+        auto& _Right_al = _Right._Getal();
+        if constexpr (_Choose_pocca_v<_Alty>) {
+            if (_Al != _Right_al) {
+                _Tidy();
+                _Get_data()._Reload_proxy(static_cast<_Alproxy_ty>(_Al), static_cast<_Alproxy_ty>(_Right_al));
+            }
+        }
+
+        _Pocca(_Al, _Right_al);
+        assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
+
+        return *this;
     }
 
     deque& operator=(deque&& _Right) noexcept(_Alty_traits::is_always_equal::value) {
@@ -768,166 +797,73 @@ public:
         return *this;
     }
 
-private:
-    void _Take_contents(deque& _Right) noexcept {
-        // move from _Right, stealing its contents
-        // pre: _Getal() == _Right._Getal()
-        auto& _My_data    = _Get_data();
-        auto& _Right_data = _Right._Get_data();
-        _My_data._Swap_proxy_and_iterators(_Right_data);
-        _My_data._Map     = _Right_data._Map;
-        _My_data._Mapsize = _Right_data._Mapsize;
-        _My_data._Myoff   = _Right_data._Myoff;
-        _My_data._Mysize  = _Right_data._Mysize;
-
-        _Right_data._Map     = nullptr;
-        _Right_data._Mapsize = 0;
-        _Right_data._Myoff   = 0;
-        _Right_data._Mysize  = 0;
-    }
-
-public:
-    void push_front(_Ty&& _Val) {
-        emplace_front(_STD move(_Val));
-    }
-
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-    template <_Container_compatible_range<_Ty> _Rng>
-    void prepend_range(_Rng&& _Range) {
-        _Orphan_all();
-
-        const auto _Oldsize = _Mysize();
-        _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
-        if constexpr (_RANGES bidirectional_range<_Rng>) {
-            const auto _UFirst = _RANGES _Ubegin(_Range);
-            auto _ULast        = _RANGES _Get_final_iterator_unwrapped(_Range);
-            while (_UFirst != _ULast) {
-                _Emplace_front_internal(*--_ULast); // prepend in order
-            }
-        } else {
-            auto _UFirst      = _RANGES _Ubegin(_Range);
-            const auto _ULast = _RANGES _Uend(_Range);
-            for (; _UFirst != _ULast; ++_UFirst) {
-                _Emplace_front_internal(*_UFirst); // prepend flipped
-            }
-
-            const auto _Num = static_cast<difference_type>(_Mysize() - _Oldsize);
-            _STD reverse(begin(), begin() + _Num);
-        }
-        _Guard._Container = nullptr;
-    }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
-
-    void push_back(_Ty&& _Val) {
-        _Orphan_all();
-        _Emplace_back_internal(_STD move(_Val));
-    }
-
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-    template <_Container_compatible_range<_Ty> _Rng>
-    void append_range(_Rng&& _Range) {
-        _Orphan_all();
-
-        const auto _Oldsize = _Mysize();
-        auto _UFirst        = _RANGES _Ubegin(_Range);
-        const auto _ULast   = _RANGES _Uend(_Range);
-
-        _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
-        for (; _UFirst != _ULast; ++_UFirst) {
-            _Emplace_back_internal(*_UFirst);
-        }
-        _Guard._Container = nullptr;
-    }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
-
-    iterator insert(const_iterator _Where, _Ty&& _Val) {
-        return emplace(_Where, _STD move(_Val));
-    }
-
-    template <class... _Valty>
-    decltype(auto) emplace_front(_Valty&&... _Val) {
-        _Orphan_all();
-        _Emplace_front_internal(_STD forward<_Valty>(_Val)...);
-#if _HAS_CXX17
-        return front();
-#endif // _HAS_CXX17
-    }
-
-    template <class... _Valty>
-    decltype(auto) emplace_back(_Valty&&... _Val) {
-        _Orphan_all();
-        _Emplace_back_internal(_STD forward<_Valty>(_Val)...);
-
-#if _HAS_CXX17
-        return back();
-#endif // _HAS_CXX17
-    }
-
-    template <class... _Valty>
-    iterator emplace(const_iterator _Where, _Valty&&... _Val) {
-        const auto _Off = static_cast<size_type>(_Where - begin());
-
-#if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Off <= _Mysize(), "deque emplace iterator outside range");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
-        if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
-            emplace_front(_STD forward<_Valty>(_Val)...);
-            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
-        } else { // closer to back, push to back then rotate
-            emplace_back(_STD forward<_Valty>(_Val)...);
-            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
-        }
-        return begin() + static_cast<difference_type>(_Off);
-    }
-
-    deque(initializer_list<_Ty> _Ilist, const _Alloc& _Al = allocator_type())
-        : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Alproxy_ty _Alproxy(_Getal());
-        _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
-        _Construct(_Ilist.begin(), _Ilist.end());
-        _Proxy._Release();
-    }
-
     deque& operator=(initializer_list<_Ty> _Ilist) {
         assign(_Ilist.begin(), _Ilist.end());
         return *this;
+    }
+
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
+    void assign(_Iter _First, _Iter _Last) {
+        _Adl_verify_range(_First, _Last);
+        _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+    }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    void assign_range(_Rng&& _Range) {
+        _Assign_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+    void assign(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) { // assign _Count * _Val
+        _Orphan_all();
+        auto _Myfirst       = _Unchecked_begin();
+        const auto _Oldsize = _Mysize();
+        auto _Assign_count  = (_STD min)(_Count, _Oldsize);
+        for (; _Assign_count > 0; --_Assign_count) {
+            *_Myfirst = _Val;
+            ++_Myfirst;
+        }
+
+        const auto _Shrink_by = _Oldsize - _Assign_count;
+        auto _Extend_by       = _Count - _Assign_count;
+        _Erase_last_n(_Shrink_by);
+        for (; _Extend_by > 0; --_Extend_by) {
+            _Emplace_back_internal(_Val);
+        }
     }
 
     void assign(initializer_list<_Ty> _Ilist) {
         assign(_Ilist.begin(), _Ilist.end());
     }
 
-    iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
-        return insert(_Where, _Ilist.begin(), _Ilist.end());
+    _NODISCARD allocator_type get_allocator() const noexcept {
+        return static_cast<allocator_type>(_Getal());
     }
 
-    ~deque() noexcept {
-        _Tidy();
-        _Alproxy_ty _Proxy_allocator(_Getal());
-        _Delete_plain_internal(_Proxy_allocator, _STD exchange(_Get_data()._Myproxy, nullptr));
-    }
-
-    deque& operator=(const deque& _Right) {
-        if (this == _STD addressof(_Right)) {
-            return *this;
-        }
-
-        auto& _Al       = _Getal();
-        auto& _Right_al = _Right._Getal();
-        if constexpr (_Choose_pocca_v<_Alty>) {
-            if (_Al != _Right_al) {
-                _Tidy();
-                _Get_data()._Reload_proxy(static_cast<_Alproxy_ty>(_Al), static_cast<_Alproxy_ty>(_Right_al));
+private:
+    template <class _Iter, class _Sent>
+    void _Assign_range(_Iter _First, const _Sent _Last) {
+        _Orphan_all();
+        auto _Myfirst      = _Unchecked_begin();
+        const auto _Mylast = _Unchecked_end();
+        // Reuse existing elements
+        for (; _Myfirst != _Mylast; ++_Myfirst, (void) ++_First) {
+            if (_First == _Last) {
+                _Erase_last_n(static_cast<size_type>(_Mylast - _Myfirst));
+                return;
             }
+
+            *_Myfirst = *_First;
         }
 
-        _Pocca(_Al, _Right_al);
-        assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
-
-        return *this;
+        // Allocate new elements for remaining tail of values
+        for (; _First != _Last; ++_First) {
+            _Emplace_back_internal(*_First);
+        }
     }
 
+public:
     _NODISCARD iterator begin() noexcept {
         return iterator(_Myoff(), _STD addressof(_Get_data()));
     }
@@ -996,19 +932,17 @@ public:
         return rend();
     }
 
-    void shrink_to_fit() {
-        size_type _Oldcapacity = _Block_size * _Mapsize();
-        size_type _Newcapacity = _Oldcapacity / 2;
+    _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
+        return _Mysize() == 0;
+    }
 
-        if (_Newcapacity < _Block_size * _Minimum_map_size) {
-            _Newcapacity = _Block_size * _Minimum_map_size;
-        }
+    _NODISCARD size_type size() const noexcept {
+        return _Mysize();
+    }
 
-        if ((empty() && _Mapsize() > 0)
-            || (!empty() && size() <= _Newcapacity && _Newcapacity < _Oldcapacity)) { // worth shrinking, do it
-            deque _Tmp(_STD make_move_iterator(begin()), _STD make_move_iterator(end()));
-            swap(_Tmp);
-        }
+    _NODISCARD size_type max_size() const noexcept {
+        return (_STD min)(
+            static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alty_traits::max_size(_Getal()));
     }
 
     void resize(_CRT_GUARDOVERFLOW size_type _Newsize) {
@@ -1033,37 +967,19 @@ public:
         }
     }
 
-    _NODISCARD size_type size() const noexcept {
-        return _Mysize();
-    }
+    void shrink_to_fit() {
+        size_type _Oldcapacity = _Block_size * _Mapsize();
+        size_type _Newcapacity = _Oldcapacity / 2;
 
-    _NODISCARD size_type max_size() const noexcept {
-        return (_STD min)(
-            static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alty_traits::max_size(_Getal()));
-    }
-
-    _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
-        return _Mysize() == 0;
-    }
-
-    _NODISCARD allocator_type get_allocator() const noexcept {
-        return static_cast<allocator_type>(_Getal());
-    }
-
-    _NODISCARD const_reference at(size_type _Pos) const {
-        if (_Mysize() <= _Pos) {
-            _Xran();
+        if (_Newcapacity < _Block_size * _Minimum_map_size) {
+            _Newcapacity = _Block_size * _Minimum_map_size;
         }
 
-        return *(begin() + static_cast<difference_type>(_Pos));
-    }
-
-    _NODISCARD reference at(size_type _Pos) {
-        if (_Mysize() <= _Pos) {
-            _Xran();
+        if ((empty() && _Mapsize() > 0)
+            || (!empty() && size() <= _Newcapacity && _Newcapacity < _Oldcapacity)) { // worth shrinking, do it
+            deque _Tmp(_STD make_move_iterator(begin()), _STD make_move_iterator(end()));
+            swap(_Tmp);
         }
-
-        return *(begin() + static_cast<difference_type>(_Pos));
     }
 
     _NODISCARD const_reference operator[](size_type _Pos) const noexcept /* strengthened */ {
@@ -1080,6 +996,22 @@ public:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
         return *(_Unchecked_begin() + static_cast<difference_type>(_Pos));
+    }
+
+    _NODISCARD const_reference at(size_type _Pos) const {
+        if (_Mysize() <= _Pos) {
+            _Xran();
+        }
+
+        return *(begin() + static_cast<difference_type>(_Pos));
+    }
+
+    _NODISCARD reference at(size_type _Pos) {
+        if (_Mysize() <= _Pos) {
+            _Xran();
+        }
+
+        return *(begin() + static_cast<difference_type>(_Pos));
     }
 
     _NODISCARD reference front() noexcept /* strengthened */ {
@@ -1112,36 +1044,6 @@ public:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
         return *_Prev_iter(_Unchecked_end());
-    }
-
-    void push_front(const _Ty& _Val) {
-        emplace_front(_Val);
-    }
-
-    void pop_front() noexcept /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL == 2
-        if (empty()) {
-            _STL_REPORT_ERROR("deque empty before pop");
-        } else { // something to erase, do it
-            _Orphan_off(_Myoff());
-            size_type _Block = _Getblock(_Myoff());
-            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
-            if (--_Mysize() == 0) {
-                _Myoff() = 0;
-            } else {
-                ++_Myoff();
-            }
-        }
-
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-        size_type _Block = _Getblock(_Myoff());
-        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
-        if (--_Mysize() == 0) {
-            _Myoff() = 0;
-        } else {
-            ++_Myoff();
-        }
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
     }
 
 private:
@@ -1183,105 +1085,111 @@ private:
     }
 
 public:
+    template <class... _Valty>
+    decltype(auto) emplace_front(_Valty&&... _Val) {
+        _Orphan_all();
+        _Emplace_front_internal(_STD forward<_Valty>(_Val)...);
+#if _HAS_CXX17
+        return front();
+#endif // _HAS_CXX17
+    }
+
+    template <class... _Valty>
+    decltype(auto) emplace_back(_Valty&&... _Val) {
+        _Orphan_all();
+        _Emplace_back_internal(_STD forward<_Valty>(_Val)...);
+
+#if _HAS_CXX17
+        return back();
+#endif // _HAS_CXX17
+    }
+
+    template <class... _Valty>
+    iterator emplace(const_iterator _Where, _Valty&&... _Val) {
+        const auto _Off = static_cast<size_type>(_Where - begin());
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Off <= _Mysize(), "deque emplace iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
+            emplace_front(_STD forward<_Valty>(_Val)...);
+            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
+        } else { // closer to back, push to back then rotate
+            emplace_back(_STD forward<_Valty>(_Val)...);
+            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
+        }
+        return begin() + static_cast<difference_type>(_Off);
+    }
+
+    void push_front(const _Ty& _Val) {
+        _Orphan_all();
+        _Emplace_front_internal(_Val);
+    }
+
+    void push_front(_Ty&& _Val) {
+        _Orphan_all();
+        _Emplace_front_internal(_STD move(_Val));
+    }
+
     void push_back(const _Ty& _Val) {
         _Orphan_all();
         _Emplace_back_internal(_Val);
     }
 
-    void pop_back() noexcept /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL == 2
-        if (empty()) {
-            _STL_REPORT_ERROR("deque empty before pop");
-        } else { // something to erase, do it
-            size_type _Newoff = _Myoff() + _Mysize() - 1;
-            _Orphan_off(_Newoff);
-            size_type _Block = _Getblock(_Newoff);
-            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
-            if (--_Mysize() == 0) {
-                _Myoff() = 0;
-            }
-        }
-
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-        size_type _Newoff = _Myoff() + _Mysize() - 1;
-        size_type _Block  = _Getblock(_Newoff);
-        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
-        if (--_Mysize() == 0) {
-            _Myoff() = 0;
-        }
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
-    }
-
-private:
-    template <class _Iter, class _Sent>
-    void _Assign_range(_Iter _First, const _Sent _Last) {
+    void push_back(_Ty&& _Val) {
         _Orphan_all();
-        auto _Myfirst      = _Unchecked_begin();
-        const auto _Mylast = _Unchecked_end();
-        // Reuse existing elements
-        for (; _Myfirst != _Mylast; ++_Myfirst, (void) ++_First) {
-            if (_First == _Last) {
-                _Erase_last_n(static_cast<size_type>(_Mylast - _Myfirst));
-                return;
-            }
-
-            *_Myfirst = *_First;
-        }
-
-        // Allocate new elements for remaining tail of values
-        for (; _First != _Last; ++_First) {
-            _Emplace_back_internal(*_First);
-        }
-    }
-
-public:
-    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    void assign(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _Emplace_back_internal(_STD move(_Val));
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
-    void assign_range(_Rng&& _Range) {
-        _Assign_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    void prepend_range(_Rng&& _Range) {
+        _Orphan_all();
+
+        const auto _Oldsize = _Mysize();
+        _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
+        if constexpr (_RANGES bidirectional_range<_Rng>) {
+            const auto _UFirst = _RANGES _Ubegin(_Range);
+            auto _ULast        = _RANGES _Get_final_iterator_unwrapped(_Range);
+            while (_UFirst != _ULast) {
+                _Emplace_front_internal(*--_ULast); // prepend in order
+            }
+        } else {
+            auto _UFirst      = _RANGES _Ubegin(_Range);
+            const auto _ULast = _RANGES _Uend(_Range);
+            for (; _UFirst != _ULast; ++_UFirst) {
+                _Emplace_front_internal(*_UFirst); // prepend flipped
+            }
+
+            const auto _Num = static_cast<difference_type>(_Mysize() - _Oldsize);
+            _STD reverse(begin(), begin() + _Num);
+        }
+        _Guard._Container = nullptr;
+    }
+
+    template <_Container_compatible_range<_Ty> _Rng>
+    void append_range(_Rng&& _Range) {
+        _Orphan_all();
+
+        const auto _Oldsize = _Mysize();
+        auto _UFirst        = _RANGES _Ubegin(_Range);
+        const auto _ULast   = _RANGES _Uend(_Range);
+
+        _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
+        for (; _UFirst != _ULast; ++_UFirst) {
+            _Emplace_back_internal(*_UFirst);
+        }
+        _Guard._Container = nullptr;
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
-    void assign(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) { // assign _Count * _Val
-        _Orphan_all();
-        auto _Myfirst       = _Unchecked_begin();
-        const auto _Oldsize = _Mysize();
-        auto _Assign_count  = (_STD min)(_Count, _Oldsize);
-        for (; _Assign_count > 0; --_Assign_count) {
-            *_Myfirst = _Val;
-            ++_Myfirst;
-        }
-
-        const auto _Shrink_by = _Oldsize - _Assign_count;
-        auto _Extend_by       = _Count - _Assign_count;
-        _Erase_last_n(_Shrink_by);
-        for (; _Extend_by > 0; --_Extend_by) {
-            _Emplace_back_internal(_Val);
-        }
+    iterator insert(const_iterator _Where, const _Ty& _Val) {
+        return emplace(_Where, _Val);
     }
 
-    iterator insert(const_iterator _Where, const _Ty& _Val) {
-        size_type _Off = static_cast<size_type>(_Where - begin());
-
-#if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Off <= _Mysize(), "deque insert iterator outside range");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
-        if (_Off <= _Mysize() / 2) { // closer to front, push to front then copy
-            push_front(_Val);
-            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
-        } else { // closer to back, push to back then copy
-            push_back(_Val);
-            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
-        }
-
-        return begin() + static_cast<difference_type>(_Off);
+    iterator insert(const_iterator _Where, _Ty&& _Val) {
+        return emplace(_Where, _STD move(_Val));
     }
 
     iterator insert(const_iterator _Where, _CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) {
@@ -1289,6 +1197,33 @@ public:
         size_type _Off = static_cast<size_type>(_Where - begin());
         _Insert_n(_Where, _Count, _Val);
         return begin() + static_cast<difference_type>(_Off);
+    }
+
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
+    iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
+        // insert [_First, _Last) at _Where
+        _Adl_verify_range(_First, _Last);
+        const size_type _Off = static_cast<size_type>(_Where - begin());
+        return _Insert_range<static_cast<_Is_bidi>(_Is_cpp17_bidi_iter_v<_Iter>)>(
+            _Off, _Get_unwrapped(_First), _Get_unwrapped(_Last));
+    }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Ty> _Rng>
+    iterator insert_range(const_iterator _Where, _Rng&& _Range) {
+        const size_type _Off = static_cast<size_type>(_Where - begin());
+
+        if constexpr (_RANGES bidirectional_range<_Rng>) {
+            return _Insert_range<_Is_bidi::_Yes>(
+                _Off, _RANGES _Ubegin(_Range), _RANGES _Get_final_iterator_unwrapped(_Range));
+        } else {
+            return _Insert_range<_Is_bidi::_Nope>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        }
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+    iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
+        return insert(_Where, _Ilist.begin(), _Ilist.end());
     }
 
 private:
@@ -1372,29 +1307,121 @@ private:
         return begin() + static_cast<difference_type>(_Off);
     }
 
-public:
-    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
-        // insert [_First, _Last) at _Where
-        _Adl_verify_range(_First, _Last);
-        const size_type _Off = static_cast<size_type>(_Where - begin());
-        return _Insert_range<static_cast<_Is_bidi>(_Is_cpp17_bidi_iter_v<_Iter>)>(
-            _Off, _Get_unwrapped(_First), _Get_unwrapped(_Last));
-    }
+    void _Insert_n(const_iterator _Where, size_type _Count, const _Ty& _Val) { // insert _Count * _Val at _Where
+        iterator _Mid;
+        size_type _Num;
+        size_type _Off     = static_cast<size_type>(_Where - begin());
+        size_type _Oldsize = _Mysize();
+        size_type _Rem     = _Oldsize - _Off;
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-    template <_Container_compatible_range<_Ty> _Rng>
-    iterator insert_range(const_iterator _Where, _Rng&& _Range) {
-        const size_type _Off = static_cast<size_type>(_Where - begin());
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Off <= _Oldsize, "deque insert iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
 
-        if constexpr (_RANGES bidirectional_range<_Rng>) {
-            return _Insert_range<_Is_bidi::_Yes>(
-                _Off, _RANGES _Ubegin(_Range), _RANGES _Get_final_iterator_unwrapped(_Range));
-        } else {
-            return _Insert_range<_Is_bidi::_Nope>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        if (_Off < _Rem) { // closer to front
+            _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
+            if (_Off < _Count) { // insert longer than prefix
+                for (_Num = _Count - _Off; _Num > 0; --_Num) {
+                    push_front(_Val); // push excess values
+                }
+                for (_Num = _Off; _Num > 0; --_Num) {
+                    push_front(begin()[static_cast<difference_type>(_Count - 1)]); // push prefix
+                }
+
+                _Mid = begin() + static_cast<difference_type>(_Count);
+                _STD fill_n(_Mid, _Off, _Val); // fill in rest of values
+            } else { // insert not longer than prefix
+                for (_Num = _Count; _Num > 0; --_Num) {
+                    push_front(begin()[static_cast<difference_type>(_Count - 1)]); // push part of prefix
+                }
+
+                _Mid = begin() + static_cast<difference_type>(_Count);
+                _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
+                _STD move(_Mid + static_cast<difference_type>(_Count), _Mid + static_cast<difference_type>(_Off),
+                    _Mid); // copy rest of prefix
+                _STD fill(begin() + static_cast<difference_type>(_Off), _Mid + static_cast<difference_type>(_Off),
+                    _Tmp._Get_value()); // fill in values
+            }
+            _Guard._Container = nullptr;
+        } else { // closer to back
+            _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
+            if (_Rem < _Count) { // insert longer than suffix
+                _Orphan_all();
+                for (_Num = _Count - _Rem; _Num > 0; --_Num) {
+                    _Emplace_back_internal(_Val); // push excess values
+                }
+                for (_Num = 0; _Num < _Rem; ++_Num) {
+                    _Emplace_back_internal(begin()[static_cast<difference_type>(_Off + _Num)]); // push suffix
+                }
+
+                _Mid = begin() + static_cast<difference_type>(_Off);
+                _STD fill_n(_Mid, _Rem, _Val); // fill in rest of values
+            } else { // insert not longer than prefix
+                for (_Num = 0; _Num < _Count; ++_Num) {
+                    _Emplace_back_internal(
+                        begin()[static_cast<difference_type>(_Off + _Rem - _Count + _Num)]); // push part of prefix
+                }
+
+                _Mid = begin() + static_cast<difference_type>(_Off);
+                _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
+                _STD move_backward(_Mid, _Mid + static_cast<difference_type>(_Rem - _Count),
+                    _Mid + static_cast<difference_type>(_Rem)); // copy rest of prefix
+                _STD fill_n(_Mid, _Count, _Tmp._Get_value()); // fill in values
+            }
+            _Guard._Container = nullptr;
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+public:
+    void pop_front() noexcept /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL == 2
+        if (empty()) {
+            _STL_REPORT_ERROR("deque empty before pop");
+        } else { // something to erase, do it
+            _Orphan_off(_Myoff());
+            size_type _Block = _Getblock(_Myoff());
+            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
+            if (--_Mysize() == 0) {
+                _Myoff() = 0;
+            } else {
+                ++_Myoff();
+            }
+        }
+
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
+        size_type _Block = _Getblock(_Myoff());
+        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
+        if (--_Mysize() == 0) {
+            _Myoff() = 0;
+        } else {
+            ++_Myoff();
+        }
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
+    }
+
+    void pop_back() noexcept /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL == 2
+        if (empty()) {
+            _STL_REPORT_ERROR("deque empty before pop");
+        } else { // something to erase, do it
+            size_type _Newoff = _Myoff() + _Mysize() - 1;
+            _Orphan_off(_Newoff);
+            size_type _Block = _Getblock(_Newoff);
+            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
+            if (--_Mysize() == 0) {
+                _Myoff() = 0;
+            }
+        }
+
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
+        size_type _Newoff = _Myoff() + _Mysize() - 1;
+        size_type _Block  = _Getblock(_Newoff);
+        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
+        if (--_Mysize() == 0) {
+            _Myoff() = 0;
+        }
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
+    }
 
     iterator erase(const_iterator _Where) noexcept(is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
         return erase(_Where, _Next_iter(_Where));
@@ -1470,71 +1497,6 @@ public:
     }
 
 private:
-    void _Insert_n(const_iterator _Where, size_type _Count, const _Ty& _Val) { // insert _Count * _Val at _Where
-        iterator _Mid;
-        size_type _Num;
-        size_type _Off     = static_cast<size_type>(_Where - begin());
-        size_type _Oldsize = _Mysize();
-        size_type _Rem     = _Oldsize - _Off;
-
-#if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Off <= _Oldsize, "deque insert iterator outside range");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
-        if (_Off < _Rem) { // closer to front
-            _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
-            if (_Off < _Count) { // insert longer than prefix
-                for (_Num = _Count - _Off; _Num > 0; --_Num) {
-                    push_front(_Val); // push excess values
-                }
-                for (_Num = _Off; _Num > 0; --_Num) {
-                    push_front(begin()[static_cast<difference_type>(_Count - 1)]); // push prefix
-                }
-
-                _Mid = begin() + static_cast<difference_type>(_Count);
-                _STD fill_n(_Mid, _Off, _Val); // fill in rest of values
-            } else { // insert not longer than prefix
-                for (_Num = _Count; _Num > 0; --_Num) {
-                    push_front(begin()[static_cast<difference_type>(_Count - 1)]); // push part of prefix
-                }
-
-                _Mid = begin() + static_cast<difference_type>(_Count);
-                _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
-                _STD move(_Mid + static_cast<difference_type>(_Count), _Mid + static_cast<difference_type>(_Off),
-                    _Mid); // copy rest of prefix
-                _STD fill(begin() + static_cast<difference_type>(_Off), _Mid + static_cast<difference_type>(_Off),
-                    _Tmp._Get_value()); // fill in values
-            }
-            _Guard._Container = nullptr;
-        } else { // closer to back
-            _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
-            if (_Rem < _Count) { // insert longer than suffix
-                _Orphan_all();
-                for (_Num = _Count - _Rem; _Num > 0; --_Num) {
-                    _Emplace_back_internal(_Val); // push excess values
-                }
-                for (_Num = 0; _Num < _Rem; ++_Num) {
-                    _Emplace_back_internal(begin()[static_cast<difference_type>(_Off + _Num)]); // push suffix
-                }
-
-                _Mid = begin() + static_cast<difference_type>(_Off);
-                _STD fill_n(_Mid, _Rem, _Val); // fill in rest of values
-            } else { // insert not longer than prefix
-                for (_Num = 0; _Num < _Count; ++_Num) {
-                    _Emplace_back_internal(
-                        begin()[static_cast<difference_type>(_Off + _Rem - _Count + _Num)]); // push part of prefix
-                }
-
-                _Mid = begin() + static_cast<difference_type>(_Off);
-                _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
-                _STD move_backward(_Mid, _Mid + static_cast<difference_type>(_Rem - _Count),
-                    _Mid + static_cast<difference_type>(_Rem)); // copy rest of prefix
-                _STD fill_n(_Mid, _Count, _Tmp._Get_value()); // fill in values
-            }
-            _Guard._Container = nullptr;
-        }
-    }
-
     [[noreturn]] static void _Xlen() {
         _Xlength_error("deque<T> too long");
     }
