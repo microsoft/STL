@@ -138,7 +138,7 @@ extern "C" int __crt_IsPackagedAppHelper() {
 extern "C" _CRTIMP2 BOOL __cdecl __crtIsPackagedApp() {
 #ifdef _CRT_APP
     return TRUE;
-#else
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     static int isPackaged = -1; // Initialize to undefined state
 
     // If we've already made this check, just return the prev result
@@ -147,7 +147,7 @@ extern "C" _CRTIMP2 BOOL __cdecl __crtIsPackagedApp() {
     }
 
     return (isPackaged > 0) ? TRUE : FALSE;
-#endif
+#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)

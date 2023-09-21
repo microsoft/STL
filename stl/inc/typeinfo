@@ -61,7 +61,7 @@ class __non_rtti_object : public bad_typeid { // report a non-RTTI object
 public:
     __non_rtti_object(const char* _Message) : bad_typeid(_Message) {}
 };
-#endif // !_HAS_EXCEPTIONS
+#endif // ^^^ !_HAS_EXCEPTIONS ^^^
 
 [[noreturn]] inline void _Throw_bad_cast() {
     _THROW(bad_cast{});
