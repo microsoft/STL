@@ -262,17 +262,17 @@ struct std::array<Meow, 0> {
 
 constexpr bool test_array_get() {
     array<Meow, 1> a{};
-    const auto& cref = a;
+    const auto& c = a;
 
     STATIC_ASSERT(is_same_v<decltype(get<0>(a)), Meow&>);
-    STATIC_ASSERT(is_same_v<decltype(get<0>(cref)), const Meow&>);
+    STATIC_ASSERT(is_same_v<decltype(get<0>(c)), const Meow&>);
     STATIC_ASSERT(is_same_v<decltype(get<0>(move(a))), Meow&&>);
-    STATIC_ASSERT(is_same_v<decltype(get<0>(move(cref))), const Meow&&>);
+    STATIC_ASSERT(is_same_v<decltype(get<0>(move(c))), const Meow&&>);
 
     assert(get<0>(a) == Meow{});
-    assert(get<0>(cref) == Meow{});
+    assert(get<0>(c) == Meow{});
     assert(get<0>(move(a)) == Meow{});
-    assert(get<0>(move(cref)) == Meow{});
+    assert(get<0>(move(c)) == Meow{});
 
     return true;
 }
