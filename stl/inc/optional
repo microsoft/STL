@@ -797,7 +797,7 @@ template <class _Ty>
 _NODISCARD constexpr bool operator>=(nullopt_t, const optional<_Ty>& _Right) noexcept {
     return !_Right.has_value();
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Ty>
 using _Enable_if_bool_convertible = enable_if_t<is_convertible_v<_Ty, bool>, int>;
@@ -987,6 +987,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX17
+#endif // ^^^ _HAS_CXX17 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _OPTIONAL_

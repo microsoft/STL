@@ -107,7 +107,7 @@ public:
     _NODISCARD _CONSTEXPR17 bool operator<(const _Array_const_iterator& _Right) const noexcept {
         return _Ptr < _Right._Ptr;
     }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     using _Prevent_inheriting_unwrap = _Array_const_iterator;
 
@@ -213,7 +213,7 @@ private:
         _Compat(_Right);
         return _Idx < _Right._Idx;
     }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _CONSTEXPR17 void _Compat(const _Array_const_iterator& _Right) const noexcept { // test for compatible iterator pair
         _STL_VERIFY(_Ptr == _Right._Ptr, "array iterators incompatible");
@@ -237,7 +237,7 @@ private:
 private:
     pointer _Ptr; // beginning of array
     size_t _Idx; // offset into array
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
 
 public:
     _NODISCARD _CONSTEXPR17 _Array_const_iterator operator+(const ptrdiff_t _Off) const noexcept {
