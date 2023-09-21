@@ -834,7 +834,7 @@ _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty (&_Array)[_Size
                                     "to_array does not accept multidimensional arrays.");
     static_assert(is_constructible_v<_Ty, _Ty&>, "N4950 [array.creation]/1: "
                                                  "to_array requires copy constructible elements.");
-    return _To_array_lvalue_impl(_Array, make_index_sequence<_Size>{});
+    return _STD _To_array_lvalue_impl(_Array, make_index_sequence<_Size>{});
 }
 
 _EXPORT_STD template <class _Ty, size_t _Size>
@@ -843,7 +843,7 @@ _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty (&&_Array)[_Siz
                                     "to_array does not accept multidimensional arrays.");
     static_assert(is_move_constructible_v<_Ty>, "N4950 [array.creation]/4: "
                                                 "to_array requires move constructible elements.");
-    return _To_array_rvalue_impl(_STD move(_Array), make_index_sequence<_Size>{});
+    return _STD _To_array_rvalue_impl(_STD move(_Array), make_index_sequence<_Size>{});
 }
 #endif // _HAS_CXX20
 
