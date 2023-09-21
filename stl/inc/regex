@@ -35,23 +35,23 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifndef _REGEX_MAX_COMPLEXITY_COUNT
 #define _REGEX_MAX_COMPLEXITY_COUNT 10000000L // set to 0 to disable
-#endif // _REGEX_MAX_COMPLEXITY_COUNT
+#endif // !defined(_REGEX_MAX_COMPLEXITY_COUNT)
 
 #ifndef _REGEX_MAX_STACK_COUNT
 #ifdef _WIN64
 #define _REGEX_MAX_STACK_COUNT 600L // set to 0 to disable
-#else // _WIN64
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
 #define _REGEX_MAX_STACK_COUNT 1000L // set to 0 to disable
-#endif // _WIN64
-#endif // _REGEX_MAX_STACK_COUNT
+#endif // ^^^ !defined(_WIN64) ^^^
+#endif // !defined(_REGEX_MAX_STACK_COUNT)
 
 #ifndef _ENHANCED_REGEX_VISUALIZER
 #ifdef _DEBUG
 #define _ENHANCED_REGEX_VISUALIZER 1
-#else // _DEBUG
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _ENHANCED_REGEX_VISUALIZER 0
-#endif // _DEBUG
-#endif // _ENHANCED_REGEX_VISUALIZER
+#endif // ^^^ !defined(_DEBUG) ^^^
+#endif // !defined(_ENHANCED_REGEX_VISUALIZER)
 
 _STD_BEGIN
 
@@ -761,7 +761,7 @@ template <class _BidIt>
 _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _BidIt>
 _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
@@ -828,7 +828,7 @@ template <class _BidIt>
 _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _BidIt>
 _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
@@ -895,7 +895,7 @@ template <class _BidIt>
 _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator==(
@@ -975,7 +975,7 @@ _NODISCARD bool operator>=(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Elem, class _Traits, class _BidIt>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const sub_match<_BidIt>& _Match) {

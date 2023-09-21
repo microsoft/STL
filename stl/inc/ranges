@@ -99,7 +99,7 @@ namespace ranges {
         move_constructible<_Ty>
 #else // ^^^ C++23 / C++20 vvv
         copy_constructible<_Ty>
-#endif // C++20
+#endif // ^^^ C++20 ^^^
         && _Destructible_object<_Ty>;
 
     template <class _It>
@@ -5720,7 +5720,7 @@ namespace ranges {
             typename tuple_element_t<_Index, _Tuple>;
             { _STD get<_Index>(__t) } -> convertible_to<const tuple_element_t<_Index, _Tuple>&>;
         };
-#endif // C++20
+#endif // ^^^ C++20 ^^^
 
     template <class _Tuple, size_t _Index>
     concept _Returnable_element = is_reference_v<_Tuple> || move_constructible<tuple_element_t<_Index, _Tuple>>;
@@ -9012,11 +9012,7 @@ namespace ranges {
 
     template <class _Fn, class _Ty, size_t... _Indices>
     struct _Invoke_result_with_repeated_type_impl<_Fn, _Ty, index_sequence<_Indices...>> {
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1761088
         using type = invoke_result_t<_Fn, _Repeat_type<_Ty, _Indices>...>;
-#else // ^^^ no workaround / workaround vvv
-        using type = decltype(_STD invoke(_STD declval<_Fn>(), _STD declval<_Repeat_type<_Ty, _Indices>>()...));
-#endif // ^^^ workaround ^^^
     };
 
     template <class _Fn, class _Ty, size_t _Nx>
@@ -10484,6 +10480,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // defined(__cpp_lib_ranges)
+#endif // ^^^ defined(__cpp_lib_ranges) ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _RANGES_

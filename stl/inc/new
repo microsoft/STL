@@ -102,7 +102,7 @@ _EXPORT_STD inline constexpr size_t hardware_constructive_interference_size = 64
 _EXPORT_STD inline constexpr size_t hardware_destructive_interference_size  = 64;
 #else // ^^^ supported hardware / unsupported hardware vvv
 #error Unsupported architecture
-#endif // hardware
+#endif // ^^^ unsupported hardware ^^^
 
 #endif // _HAS_CXX17
 
