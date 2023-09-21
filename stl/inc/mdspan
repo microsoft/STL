@@ -348,11 +348,13 @@ public:
         if constexpr (_Extents::rank() == 0) {
             return 1;
         } else {
-            typename _Extents::index_type _Result = 1;
+            // Use an unsigned type to prevent overflow when called from mdspan::size.
+            typename _Extents::size_type _Result = 1;
             for (size_t _Dim = 0; _Dim < _Idx; ++_Dim) {
-                _Result *= _Exts.extent(_Dim);
+                _Result *= static_cast<_Extents::size_type>(_Exts.extent(_Dim));
             }
-            return _Result;
+
+            return static_cast<_Extents::index_type>(_Result);
         }
     }
 };
