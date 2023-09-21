@@ -34,9 +34,9 @@ class UnicodeTable:
     def print_intervals(self):
         """
         Generates _Width_estimate_intervals_v2.
-        It begins from the second code point and continues up to the last one, encompassing it as well.
+        It begins from the second code point and continues up to the last one, including it as well.
         Whenever a code point's width differs from the previous one,
-        the function displays the code point's index to indicate the start of a new range.
+        the function print the code point to indicate the start of a new range.
         """
         printed_elements_on_one_line = 0
         assert self.table[0] == UnicodeWidth.IS_1, "impl assertion failed"
@@ -53,7 +53,7 @@ class UnicodeTable:
 
     def print_clusters_1_vs_2(self, other):
         """
-        Print closed-end ranges for all code points
+        Print all ranges, in closed-end form
         where the width is consistently 1 in the self.table range and 2 in the other.table range.
         This output is consistent with the standard/data file and the annex in the paper
         """
