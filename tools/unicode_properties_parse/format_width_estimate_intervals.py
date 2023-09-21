@@ -4,57 +4,73 @@
 # The following code generates data for _Width_estimate_intervals_v2 in <format>.
 
 import re
-from dataclasses import dataclass
+from enum import Enum
 from typing import TextIO
 from pathlib import Path
 
 
-class width_u:
-    is_1: bool = False
-    is_2: bool = True
+LINE_REGEX = re.compile(r"([0-9A-Z]+)(\.\.[0-9A-Z]+)?;(A|F|H|N|Na|W) *#.*")
 
 
-class table_u:
-    # A valid Unicode code point won't exceed max_u.
-    max_u: int = 0x10FFFF
+class UnicodeWidth(Enum):
+    IS_1: int = 1
+    IS_2: int = 2
+
+
+class UnicodeTable:
+    # A valid Unicode code point won't exceed MAX_UNICODE_POINT.
+    MAX_UNICODE_POINT: int = 0x10FFFF
+    UNICODE_TABLE_SIZE: int = MAX_UNICODE_POINT + 1
 
     def __init__(self):
-        self.table = [width_u.is_1] * (self.max_u + 1)
+        self.table = [UnicodeWidth.IS_1] * (self.UNICODE_TABLE_SIZE)
 
     def fill_range(self, rng: tuple, width: bool):
-        from_, to_ = rng[0], rng[1]
+        from_, to_ = rng
         assert from_ <= to_, "impl assertion failed"
-        assert to_ <= self.max_u, "impl assertion failed"
+        assert to_ <= self.MAX_UNICODE_POINT, "impl assertion failed"
         self.table[from_ : to_ + 1] = [width] * (to_ - from_ + 1)
 
     def print_intervals(self):
-        # Print table for _Width_estimate_intervals_v2.
-        c = 0
-        last = self.table[0]
-        for u, el in enumerate(self.table):
-            if el != last:
+        """
+        Generates _Width_estimate_intervals_v2.
+        That is, starting from the second code point ([1])
+        until and including the last code point([MAX_UNICODE_POINT]),
+        for code point [U], if width[U]!=width[U-1], we print I to indicate the new range.
+        """
+        printed_elements_on_one_line = 0
+        assert self.table[0] == UnicodeWidth.IS_1, "impl assertion failed"
+        for u in range(1, self.UNICODE_TABLE_SIZE):
+            if self.table[u] != self.table[u - 1]:
                 print(f"0x{u:X}u, ", end="")
-                if c == 11:
-                    c = 0
+                if printed_elements_on_one_line == 11:
+                    printed_elements_on_one_line = 0
                     print()
                 else:
-                    c += 1
-            last = el
+                    printed_elements_on_one_line += 1
 
         print()
 
     def print_clusters_1_vs_2(self, other):
-        cluster_table = [False] * (self.max_u + 1)
-        for u in range(self.max_u + 1):
-            if self.table[u] == width_u.is_1 and other.table[u] == width_u.is_2:
+        """
+        Print all ranges, in closed-end form
+        (to match with the standard/data file/and the annex in the paper),
+        that self.width[range] are all 1 and other.width[range] are all 2.
+        """
+        cluster_table = [False] * (self.UNICODE_TABLE_SIZE)
+        for u in range(self.UNICODE_TABLE_SIZE):
+            if (
+                self.table[u] == UnicodeWidth.IS_1
+                and other.table[u] == UnicodeWidth.IS_2
+            ):
                 cluster_table[u] = True
 
         u = 0
-        while u < self.max_u + 1:
+        while u < self.UNICODE_TABLE_SIZE:
             if cluster_table[u]:
                 from_ = u
                 to_ = from_
-                while to_ + 1 <= self.max_u and cluster_table[to_ + 1]:
+                while to_ + 1 <= self.MAX_UNICODE_POINT and cluster_table[to_ + 1]:
                     to_ += 1
                 if from_ == to_:
                     print(f"U+{from_:X}")
@@ -64,7 +80,7 @@ class table_u:
             u += 1
 
 
-def get_table_cpp20() -> table_u:
+def get_table_cpp20() -> UnicodeTable:
     std_wide_ranges_cpp20 = [
         (0x1100, 0x115F),
         (0x2329, 0x232A),
@@ -82,21 +98,23 @@ def get_table_cpp20() -> table_u:
         (0x30000, 0x3FFFD),
     ]
 
-    table = table_u()
+    table = UnicodeTable()
     for rng in std_wide_ranges_cpp20:
-        table.fill_range(rng, width_u.is_2)
+        table.fill_range(rng, UnicodeWidth.IS_2)
 
     return table
 
 
-# Read data from "EastAsianWidth.txt".
-# The latest version can be found at:
-# https://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt
-# The current implementation works for:
-# https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
-# To make this function work, the file should not contain a BOM.
-def read_from(source: TextIO) -> table_u:
-    table = table_u()
+def read_from(source: TextIO) -> UnicodeTable:
+    """
+    Read data from "EastAsianWidth.txt".
+    The latest version can be found at:
+    https://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt
+    The current implementation works for:
+    https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
+    To make this function work, the file should not contain a BOM.
+    """
+    table = UnicodeTable()
 
     # "The unassigned code points in the following blocks default to "W":"
     default_wide_ranges = [
@@ -107,22 +125,21 @@ def read_from(source: TextIO) -> table_u:
         (0x30000, 0x3FFFD),
     ]
     for rng in default_wide_ranges:
-        table.fill_range(rng, width_u.is_2)
+        table.fill_range(rng, UnicodeWidth.IS_2)
 
     # Read explicitly assigned ranges.
     # The lines that are not empty or pure comment are uniformly of the format "HEX(..HEX)?;(A|F|H|N|Na|W) #comment".
     def get_width(str: str):
         if str == "F" or str == "W":
-            return width_u.is_2
+            return UnicodeWidth.IS_2
         else:
             assert str == "A" or str == "H" or str == "N" or str == "Na"
-            return width_u.is_1
+            return UnicodeWidth.IS_1
 
-    reg = re.compile(r"([0-9A-Z]+)(\.\.[0-9A-Z]+)?;(A|F|H|N|Na|W) *#.*")
     for line in source:
         line = line.strip()
         if line and not line.startswith("#"):
-            match = reg.fullmatch(line)
+            match = LINE_REGEX.fullmatch(line)
             assert match, "invalid line"
             from_val = int(match.group(1), base=16)
             width = get_width(match.group(3))
@@ -132,12 +149,12 @@ def read_from(source: TextIO) -> table_u:
                 table.fill_range((from_val, to_val), width)
             else:
                 # single character (HEX)
-                table.fill_range((from_val, from_val), width)
+                table.table[from_val] = width
 
     return table
 
 
-def get_table_cpp23(source: TextIO) -> table_u:
+def get_table_cpp23(source: TextIO) -> UnicodeTable:
     table = read_from(source)
 
     # Override with ranges specified by the C++ standard.
@@ -148,7 +165,7 @@ def get_table_cpp23(source: TextIO) -> table_u:
     ]
 
     for rng in std_wide_ranges_cpp23:
-        table.fill_range(rng, width_u.is_2)
+        table.fill_range(rng, UnicodeWidth.IS_2)
 
     return table
 
