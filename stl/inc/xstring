@@ -2673,8 +2673,7 @@ private:
             return;
         }
 
-        _My_data._Myres         = _Small_string_capacity;
-        size_type _New_capacity = _Calculate_growth(_Count);
+        size_type _New_capacity = _Calculate_growth(_Count, _Small_string_capacity, max_size());
         const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
 
@@ -2731,7 +2730,7 @@ private:
                     }
 
                     _Elem* const _Old_ptr   = _My_data._Myptr();
-                    size_type _New_capacity = _Calculate_growth(_My_data._Mysize);
+                    size_type _New_capacity = _Calculate_growth(_My_data._Mysize + 1);
                     const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
 
                     _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
@@ -3010,15 +3009,6 @@ public:
     }
 
 private:
-    void _Memcpy_val_from(const basic_string& _Right) noexcept {
-        _STL_INTERNAL_CHECK(_Can_memcpy_val);
-        const auto _My_data_mem =
-            reinterpret_cast<unsigned char*>(_STD addressof(_Mypair._Myval2)) + _Memcpy_val_offset;
-        const auto _Right_data_mem =
-            reinterpret_cast<const unsigned char*>(_STD addressof(_Right._Mypair._Myval2)) + _Memcpy_val_offset;
-        _CSTD memcpy(_My_data_mem, _Right_data_mem, _Memcpy_val_size);
-    }
-
     _CONSTEXPR20 void _Take_contents(basic_string& _Right) noexcept {
         // assign by stealing _Right's buffer
         // pre: this != &_Right
@@ -3043,7 +3033,11 @@ private:
                 }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-                _Memcpy_val_from(_Right);
+                const auto _My_data_mem =
+                    reinterpret_cast<unsigned char*>(_STD addressof(_Mypair._Myval2)) + _Memcpy_val_offset;
+                const auto _Right_data_mem =
+                    reinterpret_cast<const unsigned char*>(_STD addressof(_Right._Mypair._Myval2)) + _Memcpy_val_offset;
+                _CSTD memcpy(_My_data_mem, _Right_data_mem, _Memcpy_val_size);
                 _Right._Tidy_init();
                 return;
             }
@@ -3075,12 +3069,12 @@ private:
         const auto _Right_ptr   = _Right_data._Myptr();
         auto& _Al               = _Getal();
         if (_Allocators_equal(_Al, _Right._Getal()) && _Result_size > _Small_string_capacity) {
+            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al));
+
             if (_Roff != 0) {
                 _Traits::move(_Right_ptr, _Right_ptr + _Roff, _Result_size);
             }
             _Right._Eos(_Result_size);
-
-            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al));
             _Take_contents(_Right);
         } else {
             _Construct<_Construct_strategy::_From_ptr>(_Right_ptr + _Roff, _Result_size);
@@ -3091,11 +3085,7 @@ private:
 public:
     _CONSTEXPR20 basic_string(initializer_list<_Elem> _Ilist, const _Alloc& _Al = allocator_type())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Ilist.begin(), _Convert_size<size_type>(_Ilist.size()));
-        _Proxy._Release();
+        _Construct<_Construct_strategy::_From_ptr>(_Ilist.begin(), _Convert_size<size_type>(_Ilist.size()));
     }
 
     _CONSTEXPR20 basic_string& operator=(initializer_list<_Elem> _Ilist) {
@@ -4274,9 +4264,6 @@ public:
         auto& _My_data    = _Mypair._Myval2;
         auto& _Right_data = _Right._Mypair._Myval2;
 
-        const bool _My_large    = _My_data._Large_mode_engaged();
-        const bool _Right_large = _Right_data._Large_mode_engaged();
-
 #if !defined(_INSERT_STRING_ANNOTATION)
         if constexpr (_Can_memcpy_val) {
 #if _HAS_CXX20
@@ -4296,6 +4283,9 @@ public:
             }
         }
 #endif // !defined(_INSERT_STRING_ANNOTATION)
+
+        const bool _My_large    = _My_data._Large_mode_engaged();
+        const bool _Right_large = _Right_data._Large_mode_engaged();
 
         if (_My_large && _Right_large) { // swap buffers, iterators preserved
             swap(_My_data._Bx._Ptr, _Right_data._Bx._Ptr); // intentional ADL
@@ -4801,7 +4791,7 @@ private:
         return *this;
     }
 
-    _CONSTEXPR20 void _Become_small() {
+    _CONSTEXPR20 void _Become_small() noexcept {
         // release any held storage and return to small string mode
         auto& _My_data = _Mypair._Myval2;
         _STL_INTERNAL_CHECK(_My_data._Large_mode_engaged());
@@ -5021,7 +5011,7 @@ _NODISCARD _CONSTEXPR20 bool operator==(
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 bool operator==(
-    const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+    const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept /* strengthened */ {
     return _Left._Equal(_Right);
 }
 
@@ -5034,12 +5024,13 @@ _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
-    const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+    const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept /* strengthened */ {
     return static_cast<_Get_comparison_category_t<_Traits>>(_Left.compare(_Right) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator==(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+_NODISCARD bool operator==(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     return _Right._Equal(_Left);
 }
 
@@ -5050,12 +5041,14 @@ _NODISCARD bool operator!=(
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator!=(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+_NODISCARD bool operator!=(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     return !(_Left == _Right);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator!=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+_NODISCARD bool operator!=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept
+/* strengthened */ {
     return !(_Left == _Right);
 }
 
@@ -5066,12 +5059,14 @@ _NODISCARD bool operator<(
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator<(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+_NODISCARD bool operator<(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     return _Right.compare(_Left) > 0;
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator<(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+_NODISCARD bool operator<(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept
+/* strengthened */ {
     return _Left.compare(_Right) < 0;
 }
 
@@ -5082,12 +5077,14 @@ _NODISCARD bool operator>(
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator>(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+_NODISCARD bool operator>(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     return _Right < _Left;
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator>(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+_NODISCARD bool operator>(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept
+/* strengthened */ {
     return _Right < _Left;
 }
 
@@ -5098,12 +5095,14 @@ _NODISCARD bool operator<=(
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator<=(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+_NODISCARD bool operator<=(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     return !(_Right < _Left);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator<=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+_NODISCARD bool operator<=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept
+/* strengthened */ {
     return !(_Right < _Left);
 }
 
@@ -5114,12 +5113,14 @@ _NODISCARD bool operator>=(
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator>=(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+_NODISCARD bool operator>=(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     return !(_Left < _Right);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+_NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept
+/* strengthened */ {
     return !(_Left < _Right);
 }
 #endif // ^^^ !_HAS_CXX20 ^^^
