@@ -31,7 +31,7 @@ _STD_BEGIN
 _EXPORT_STD class latch {
 public:
     _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
-        return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
+        return PTRDIFF_MAX;
     }
 
     constexpr explicit latch(const ptrdiff_t _Expected) noexcept /* strengthened */ : _Counter{_Expected} {
