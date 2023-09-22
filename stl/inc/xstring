@@ -2484,13 +2484,11 @@ private:
 public:
     _CONSTEXPR20
     basic_string() noexcept(is_nothrow_default_constructible_v<_Alty>) : _Mypair(_Zero_then_variadic_args_t{}) {
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-        _Tidy_init();
+        _Construct_empty();
     }
 
     _CONSTEXPR20 explicit basic_string(const _Alloc& _Al) noexcept : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-        _Tidy_init();
+        _Construct_empty();
     }
 
     _CONSTEXPR20 basic_string(const basic_string& _Right)
@@ -2578,8 +2576,7 @@ public:
         auto _UFirst = _Get_unwrapped(_First);
         auto _ULast  = _Get_unwrapped(_Last);
         if (_UFirst == _ULast) {
-            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-            _Tidy_init();
+            _Construct_empty();
         } else {
             if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
                 _Construct<_Construct_strategy::_From_ptr>(
@@ -2918,8 +2915,7 @@ public:
     basic_string(_String_constructor_rvalue_allocator_tag, _Alloc&& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Al)) {
         // Used exclusively by basic_stringbuf
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-        _Tidy_init();
+        _Construct_empty();
     }
 
     _NODISCARD bool _Move_assign_from_buffer(
@@ -4816,6 +4812,20 @@ private:
     }
 
     _CONSTEXPR20 void _Tidy_init() noexcept {
+        // initialize basic_string data members
+        auto& _My_data   = _Mypair._Myval2;
+        _My_data._Mysize = 0;
+        _My_data._Myres  = _Small_string_capacity;
+        _My_data._Activate_SSO_buffer();
+
+        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
+        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
+    }
+
+    _CONSTEXPR20 void _Construct_empty() noexcept {
+        // this function needs to be noexcept for conformance to the standard.
+        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
+
         // initialize basic_string data members
         auto& _My_data   = _Mypair._Myval2;
         _My_data._Mysize = 0;
