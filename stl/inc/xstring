@@ -2627,6 +2627,20 @@ private:
         _Al.deallocate(_Old_ptr, _Capacity + 1); // +1 for null terminator
     }
 
+    _CONSTEXPR20 void _Construct_empty() noexcept {
+        // this function needs to be noexcept for conformance to the standard.
+        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
+
+        // initialize basic_string data members
+        auto& _My_data   = _Mypair._Myval2;
+        _My_data._Mysize = 0;
+        _My_data._Myres  = _Small_string_capacity;
+        _My_data._Activate_SSO_buffer();
+
+        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
+        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
+    }
+
     enum class _Construct_strategy : uint8_t { _From_char, _From_ptr, _From_string };
 
     template <_Construct_strategy _Strat, class _Char_or_ptr>
@@ -4812,20 +4826,6 @@ private:
     }
 
     _CONSTEXPR20 void _Tidy_init() noexcept {
-        // initialize basic_string data members
-        auto& _My_data   = _Mypair._Myval2;
-        _My_data._Mysize = 0;
-        _My_data._Myres  = _Small_string_capacity;
-        _My_data._Activate_SSO_buffer();
-
-        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
-        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
-    }
-
-    _CONSTEXPR20 void _Construct_empty() noexcept {
-        // this function needs to be noexcept for conformance to the standard.
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-
         // initialize basic_string data members
         auto& _My_data   = _Mypair._Myval2;
         _My_data._Mysize = 0;
