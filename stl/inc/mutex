@@ -10,7 +10,7 @@
 
 #ifdef _M_CEE_PURE
 #error <mutex> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #include <__msvc_chrono.hpp>
 #include <cstdlib>
@@ -43,7 +43,7 @@ public:
     _Mutex_base(int _Flags = 0) noexcept {
         _Mtx_init_in_situ(_Mymtx(), _Flags | _Mtx_try);
     }
-#endif // !_ENABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
+#endif // ^^^ !_ENABLE_CONSTEXPR_MUTEX_CONSTRUCTOR ^^^
 
     ~_Mutex_base() noexcept {
         _Mtx_destroy_in_situ(_Mymtx());
@@ -574,25 +574,16 @@ public:
     cv_status wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time) {
         // wait for duration
         if (_Rel_time <= chrono::duration<_Rep, _Period>::zero()) {
+            // we don't unlock-and-relock _Lck for this case because it's not observable
             return cv_status::timeout;
         }
-
-        // TRANSITION, ABI: The standard says that we should use a steady clock,
-        // but unfortunately our ABI relies on the system clock.
-        _timespec64 _Tgt;
-        const bool _Clamped     = _To_timespec64_sys_10_day_clamped(_Tgt, _Rel_time);
-        const cv_status _Result = _Wait_until_sys_time(_Lck, &_Tgt);
-        if (_Clamped) {
-            return cv_status::no_timeout;
-        }
-
-        return _Result;
+        return wait_until(_Lck, _To_absolute_time(_Rel_time));
     }
 
     template <class _Rep, class _Period, class _Predicate>
     bool wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
-        return _Wait_until1(_Lck, _To_absolute_time(_Rel_time), _Pred);
+        return wait_until(_Lck, _To_absolute_time(_Rel_time), _Pass_fn(_Pred));
     }
 
     template <class _Clock, class _Duration>
@@ -601,16 +592,25 @@ public:
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(
+            _Lck.owns_lock(), "wait_until's caller must own the lock argument (N4958 [thread.condition.condvar]/17)");
+        _STL_VERIFY(_Mtx_current_owns(_Lck.mutex()->_Mymtx()),
+            "wait_until's calling thread must hold the lock argument's mutex (N4958 [thread.condition.condvar]/17)");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         for (;;) {
             const auto _Now = _Clock::now();
             if (_Abs_time <= _Now) {
+                // we don't unlock-and-relock _Lck for this case because it's not observable
                 return cv_status::timeout;
             }
 
+            // TRANSITION, ABI: should use a steady clock
             _timespec64 _Tgt;
             (void) _To_timespec64_sys_10_day_clamped(_Tgt, _Abs_time - _Now);
-            const cv_status _Result = _Wait_until_sys_time(_Lck, &_Tgt);
-            if (_Result == cv_status::no_timeout) {
+            // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
+            const _Thrd_result _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), &_Tgt);
+            if (_Res == _Thrd_result::_Success) {
                 return cv_status::no_timeout;
             }
         }
@@ -623,7 +623,13 @@ public:
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
-        return _Wait_until1(_Lck, _Abs_time, _Pred);
+        while (!_Pred()) {
+            if (wait_until(_Lck, _Abs_time) == cv_status::timeout) {
+                return _Pred();
+            }
+        }
+
+        return true;
     }
 
     // native_handle_type and native_handle() have intentionally been removed. See GH-3820.
@@ -641,41 +647,6 @@ private:
 
     _Cnd_t _Mycnd() noexcept { // get pointer to _Cnd_internal_imp_t inside _Cnd_storage
         return reinterpret_cast<_Cnd_t>(&_Cnd_storage);
-    }
-
-    cv_status _Wait_until_sys_time(unique_lock<mutex>& _Lck, const _timespec64* _Abs_time) {
-        // wait for signal with timeout
-        if (!_Mtx_current_owns(_Lck.mutex()->_Mymtx())) {
-            _Throw_Cpp_error(_OPERATION_NOT_PERMITTED);
-        }
-
-        // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
-        const _Thrd_result _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), _Abs_time);
-
-        if (_Res == _Thrd_result::_Success) {
-            return cv_status::no_timeout;
-        } else {
-            return cv_status::timeout;
-        }
-    }
-
-    template <class _Clock, class _Duration, class _Predicate>
-    bool _Wait_until1(
-        unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate& _Pred) {
-        while (!_Pred()) {
-            const auto _Now = _Clock::now();
-            if (_Abs_time <= _Now) {
-                return false;
-            }
-
-            _timespec64 _Tgt;
-            const bool _Clamped = _To_timespec64_sys_10_day_clamped(_Tgt, _Abs_time - _Now);
-            if (_Wait_until_sys_time(_Lck, &_Tgt) == cv_status::timeout && !_Clamped) {
-                return _Pred();
-            }
-        }
-
-        return true;
     }
 };
 

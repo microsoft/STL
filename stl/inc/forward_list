@@ -1468,7 +1468,7 @@ private:
         if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
         }
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         if (this != _STD addressof(_Right)) {
@@ -1497,7 +1497,7 @@ private:
         if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
         }
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
 
         if (_First == _Last) {
             return;

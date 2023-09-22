@@ -150,7 +150,7 @@ public:
     _NODISCARD _Mystr str() const&
 #else
     _NODISCARD _Mystr str() const
-#endif // _HAS_CXX20
+#endif
     {
         _Mystr _Result(_Al);
         const auto _View = _Get_buffer_view();
@@ -620,7 +620,7 @@ public:
     _NODISCARD _Mystr str() const&
 #else
     _NODISCARD _Mystr str() const
-#endif // _HAS_CXX20
+#endif
     {
         return _Stringbuffer.str();
     }
@@ -740,7 +740,7 @@ public:
     _NODISCARD _Mystr str() const&
 #else
     _NODISCARD _Mystr str() const
-#endif // _HAS_CXX20
+#endif
     {
         return _Stringbuffer.str();
     }
@@ -866,7 +866,7 @@ public:
     _NODISCARD _Mystr str() const&
 #else
     _NODISCARD _Mystr str() const
-#endif // _HAS_CXX20
+#endif
     {
         return _Stringbuffer.str();
     }

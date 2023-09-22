@@ -401,6 +401,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX23
+#endif // ^^^ _HAS_CXX23 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _SPANSTREAM_

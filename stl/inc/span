@@ -598,7 +598,7 @@ public:
         return {_Mydata, _Mydata, _Mydata + _Mysize};
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return {_Mydata};
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
     _NODISCARD constexpr iterator end() const noexcept {
@@ -607,7 +607,7 @@ public:
         return {_End, _Mydata, _End};
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return {_End};
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
@@ -695,6 +695,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX20
+#endif // ^^^ _HAS_CXX20 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _SPAN_
