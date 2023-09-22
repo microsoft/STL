@@ -3048,7 +3048,11 @@ private:
                 const auto _Right_data_mem =
                     reinterpret_cast<const unsigned char*>(_STD addressof(_Right._Mypair._Myval2)) + _Memcpy_val_offset;
                 _CSTD memcpy(_My_data_mem, _Right_data_mem, _Memcpy_val_size);
-                _Right._Tidy_init();
+
+                _Right_data._Mysize = 0;
+                _Right_data._Myres  = _Small_string_capacity;
+                _Right_data._Activate_SSO_buffer();
+                _Traits::assign(_Right_data._Bx._Buf[0], _Elem());
                 return;
             }
         }
@@ -3068,7 +3072,10 @@ private:
         _My_data._Myres  = _Right_data._Myres;
         _My_data._Mysize = _Right_data._Mysize;
 
-        _Right._Tidy_init();
+        _Right_data._Mysize = 0;
+        _Right_data._Myres  = _Small_string_capacity;
+        _Right_data._Activate_SSO_buffer();
+        _Traits::assign(_Right_data._Bx._Buf[0], _Elem());
     }
 
 #if _HAS_CXX23
