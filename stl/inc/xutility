@@ -585,6 +585,13 @@ struct _Unused_parameter { // generic unused parameter struct
     constexpr _Unused_parameter(_Ty&&) noexcept {}
 };
 
+template <class _Ty, class = void> // checks whether a container/view is a non-customized specialization
+_INLINE_VAR constexpr bool _Has_unchecked_begin_end = false;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool _Has_unchecked_begin_end<_Ty,
+    void_t<decltype(_STD declval<_Ty&>()._Unchecked_begin()), decltype(_STD declval<_Ty&>()._Unchecked_end())>> = true;
+
 template <class _Ty>
 using _Algorithm_int_t = conditional_t<is_integral_v<_Ty>, _Ty, ptrdiff_t>;
 

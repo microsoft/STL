@@ -775,7 +775,7 @@ _CONSTEXPR20 void swap(array<_Ty, _Size>& _Left, array<_Ty, _Size>& _Right) noex
 
 _EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator==(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
-    return _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
+    return _STD equal(_Left.data(), _Left.data() + _Size, _Right.data());
 }
 
 #if !_HAS_CXX20
@@ -789,14 +789,13 @@ _NODISCARD bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Siz
 _EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
-    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
-        _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
+    return _STD lexicographical_compare_three_way(
+        _Left.data(), _Left.data() + _Size, _Right.data(), _Right.data() + _Size, _Synth_three_way{});
 }
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
-    return _STD lexicographical_compare(
-        _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
+    return _STD lexicographical_compare(_Left.data(), _Left.data() + _Size, _Right.data(), _Right.data() + _Size);
 }
 
 template <class _Ty, size_t _Size>
@@ -850,25 +849,49 @@ _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty (&&_Array)[_Siz
 _EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty& get(array<_Ty, _Size>& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");
-    return _Arr._Elems[_Idx];
+    if constexpr (_Has_unchecked_begin_end<array<_Ty, _Size>>) {
+        return _Arr._Elems[_Idx];
+    } else {
+#if _HAS_CXX17
+        return _Arr[_Idx];
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
+        return const_cast<_Ty&>(_STD as_const(_Arr)[_Idx]);
+#endif // ^^^ !_HAS_CXX17 ^^^
+    }
 }
 
 _EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr const _Ty& get(const array<_Ty, _Size>& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");
-    return _Arr._Elems[_Idx];
+    if constexpr (_Has_unchecked_begin_end<array<_Ty, _Size>>) {
+        return _Arr._Elems[_Idx];
+    } else {
+        return _Arr[_Idx];
+    }
 }
 
 _EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");
-    return _STD move(_Arr._Elems[_Idx]);
+    if constexpr (_Has_unchecked_begin_end<array<_Ty, _Size>>) {
+        return _STD move(_Arr._Elems[_Idx]);
+    } else {
+#if _HAS_CXX17
+        return _STD move(_Arr[_Idx]);
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
+        return const_cast<_Ty&&>(_STD move(_STD as_const(_Arr)[_Idx]));
+#endif // ^^^ !_HAS_CXX17 ^^^
+    }
 }
 
 _EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");
-    return _STD move(_Arr._Elems[_Idx]);
+    if constexpr (_Has_unchecked_begin_end<array<_Ty, _Size>>) {
+        return _STD move(_Arr._Elems[_Idx]);
+    } else {
+        return _STD move(_Arr[_Idx]);
+    }
 }
 
 #if _HAS_TR1_NAMESPACE
