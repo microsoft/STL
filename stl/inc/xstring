@@ -2968,10 +2968,14 @@ public:
         _Released_buffer _Result;
         auto& _My_data = _Mypair._Myval2;
         _Result._Size  = _My_data._Mysize;
+        _My_data._Orphan_all();
         _ASAN_STRING_REMOVE(*this);
         if (_My_data._Large_mode_engaged()) {
             _Result._Ptr                    = _My_data._Bx._Ptr;
             _Result._Actual_allocation_size = _My_data._Myres + 1;
+
+            _Destroy_in_place(_My_data._Bx._Ptr);
+            _My_data._Activate_SSO_buffer();
         } else {
             // use _Least_allocation_size to avoid small mode, if the buffer is assigned back
             size_type _Allocated = _Least_allocation_size;
@@ -2979,8 +2983,9 @@ public:
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
             _Result._Actual_allocation_size = _Allocated;
         }
-        _My_data._Orphan_all();
-        _Tidy_init();
+        _My_data._Mysize = 0;
+        _My_data._Myres  = _Small_string_capacity;
+        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
         return _Result;
     }
 #endif // _HAS_CXX20
@@ -4831,17 +4836,6 @@ private:
     _CONSTEXPR20 void _Eos(const size_type _New_size) noexcept { // set new length and null terminator
         _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
         _Traits::assign(_Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize = _New_size], _Elem());
-    }
-
-    _CONSTEXPR20 void _Tidy_init() noexcept {
-        // initialize basic_string data members
-        auto& _My_data   = _Mypair._Myval2;
-        _My_data._Mysize = 0;
-        _My_data._Myres  = _Small_string_capacity;
-        _My_data._Activate_SSO_buffer();
-
-        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
-        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
     }
 
     _CONSTEXPR20 void _Tidy_deallocate() noexcept { // initialize buffer, deallocating any storage
