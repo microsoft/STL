@@ -3748,7 +3748,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
     const auto _LastDestMask    = static_cast<_Vbase>(-1) << _DestEnd._Myoff;
 
     const bool _IsSingleBlockSource = _VbFirst == _VbLast;
-    const bool _IsSingleBlockDest   = _VbDest == _DestEnd._Myptr;
+    const bool _IsSingleBlockDest   = _VbDest == _DestEnd._Myptr - (_DestEnd._Myoff ? 0 : 1);
     const bool _IsRightShift        = _Dest._Myoff < _First._Myoff;
     if (_IsSingleBlockSource) {
         // We already excluded _First == _Last, so here _Last._Myoff > 0 and the shift is safe
@@ -3757,7 +3757,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
         const auto _SourceVal   = _IsRightShift ? (*_VbFirst & _SourceMask) >> _SourceShift //
                                                 : (*_VbFirst & _SourceMask) << _SourceShift;
         if (_IsSingleBlockDest) {
-            const auto _DestMask = _FirstDestMask | _LastDestMask;
+            const auto _DestMask = _FirstDestMask | (_DestEnd._Myoff ? _LastDestMask : 0);
             *_VbDest             = (*_VbDest & _DestMask) | _SourceVal;
         } else {
             *_VbDest = (*_VbDest & _FirstDestMask) | _SourceVal;
@@ -3774,7 +3774,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
         const auto _SourceVal   = _IsRightShift ? (*_VbFirst & _FirstSourceMask) >> _SourceShift //
                                                 : (*_VbFirst & _FirstSourceMask) << _SourceShift;
 
-        const auto _DestMask = _FirstDestMask | _LastDestMask;
+        const auto _DestMask = _FirstDestMask | (_DestEnd._Myoff ? _LastDestMask : 0);
         if (_Last._Myoff != 0) {
             const auto _LastShift     = _DestEnd._Myoff - _Last._Myoff;
             const auto _LastSourceVal = (*_VbLast & _LastSourceMask) << _LastShift;
@@ -3842,20 +3842,23 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
             *_VbDest              = (*_VbDest & _DestMask) | _SourceVal;
         }
 
-        const auto _CarryVal = (*_VbFirst & _LastSourceMask) << _CarryShift;
-        if (_Last._Myoff >= _SourceShift) {
-            *_VbDest = (*_VbDest & _CarryMask) | _CarryVal;
+        if (_Last._Myoff != 0) {
+            if (_Last._Myoff >= _SourceShift) {
+                const auto _CarryVal = (*_VbFirst & _LastSourceMask) << _CarryShift;
+                *_VbDest             = (*_VbDest & _CarryMask) | _CarryVal;
 
-            // We have more bits remaining than the final block has left
-            if (_Last._Myoff != _SourceShift) {
-                ++_VbDest;
-                const auto _SourceVal = (*_VbFirst & _LastSourceMask) >> _SourceShift;
-                *_VbDest              = (*_VbDest & _LastDestMask) | _SourceVal;
+                // We have more bits remaining than the final block has left
+                if (_Last._Myoff != _SourceShift) {
+                    ++_VbDest;
+                    const auto _SourceVal = (*_VbFirst & _LastSourceMask) >> _SourceShift;
+                    *_VbDest              = (*_VbDest & _LastDestMask) | _SourceVal;
+                }
+            } else {
+                // There are not enough bits to fill the final block so we need to mask both ends
+                const auto _CarryVal  = (*_VbFirst & _LastSourceMask) << _CarryShift;
+                const auto _FinalMask = _CarryMask | _LastDestMask;
+                *_VbDest              = (*_VbDest & _FinalMask) | _CarryVal;
             }
-        } else if (_Last._Myoff != 0) {
-            // There are not enough bits to fill the final block so we need to mask both ends
-            const auto _FinalMask = _CarryMask | _LastDestMask;
-            *_VbDest              = (*_VbDest & _FinalMask) | _CarryVal;
         }
     } else {
         const auto _SourceShift = _Dest._Myoff - _First._Myoff;
