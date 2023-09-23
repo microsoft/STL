@@ -5,7 +5,7 @@
 
 #include <mutex>
 
-#include "awint.hpp"
+#include <Windows.h>
 
 namespace {
     struct _Xfg_trampoline_parameter {

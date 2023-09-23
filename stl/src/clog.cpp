@@ -16,7 +16,7 @@ static std::_Init_locks initlocks;
 
 _STD_BEGIN
 
-__PURE_APPDOMAIN_GLOBAL static filebuf flog(_cpp_stderr);
+__PURE_APPDOMAIN_GLOBAL static filebuf flog(stderr);
 
 #if defined(_M_CEE_PURE)
 __PURE_APPDOMAIN_GLOBAL extern ostream clog(&flog);

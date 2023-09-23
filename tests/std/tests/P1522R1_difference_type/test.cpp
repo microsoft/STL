@@ -1293,11 +1293,7 @@ constexpr bool test_cross() {
         x = -26;
         TEST(u *= 2, x);
         y = 12;
-#ifdef _M_CEE // TRANSITION, VSO-1658184 (/clr silent bad codegen)
-        i = 12;
-#else // ^^^ workaround / no workaround vvv
         TEST(i *= -2, y);
-#endif // ^^^ no workaround ^^^
 
         x = _Unsigned128{0x55555555'5555554c, 0x55555555'55555555};
         TEST(u /= 3, x); // Yes, u is still unsigned =)

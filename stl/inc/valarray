@@ -73,71 +73,53 @@ public:
 
     using value_type = _Ty;
 
-    valarray() noexcept /* strengthened */ { // construct empty valarray
-        _Tidy_init();
-    }
+    valarray() = default; // construct empty valarray
 
     explicit valarray(size_t _Count) { // construct with _Count * _Ty()
-        _Tidy_init();
         _Grow(_Count);
     }
 
     valarray(const _Ty& _Val, size_t _Count) { // construct with _Count * _Val
-        _Tidy_init();
         _Grow(_Count, &_Val);
     }
 
     valarray(const _Ty* _Ptr, size_t _Count) { // construct with [_Ptr, _Ptr + _Count)
-        _Tidy_init();
         _Grow(_Count, _Ptr, 1);
     }
 
     valarray(const valarray& _Right) {
-        _Tidy_init();
         _Grow(_Right.size(), _Right._Myptr, 1);
     }
 
     valarray(const slice_array<_Ty>& _Slicearr) {
-        _Tidy_init();
         *this = _Slicearr;
     }
 
     valarray(const gslice_array<_Ty>& _Gslicearr) {
-        _Tidy_init();
         *this = _Gslicearr;
     }
 
     valarray(const mask_array<_Ty>& _Maskarr) {
-        _Tidy_init();
         *this = _Maskarr;
     }
 
     valarray(const indirect_array<_Ty>& _Indarr) {
-        _Tidy_init();
         *this = _Indarr;
     }
 
-    valarray(valarray&& _Right) noexcept {
-        _Tidy_init();
-        _Assign_rv(_STD move(_Right));
-    }
+    valarray(valarray&& _Right) noexcept
+        : _Myptr(_STD exchange(_Right._Myptr, nullptr)), _Mysize(_STD exchange(_Right._Mysize, size_t{})) {}
 
     valarray& operator=(valarray&& _Right) noexcept {
-        _Assign_rv(_STD move(_Right));
+        if (this != _STD addressof(_Right)) { // clear this and steal from _Right
+            _Tidy_deallocate();
+            _Myptr  = _STD exchange(_Right._Myptr, nullptr);
+            _Mysize = _STD exchange(_Right._Mysize, size_t{});
+        }
         return *this;
     }
 
-    void _Assign_rv(valarray&& _Right) noexcept {
-        if (this != _STD addressof(_Right)) { // clear this and steal from _Right
-            _Tidy_deallocate();
-            _Myptr  = _Right._Myptr;
-            _Mysize = _Right._Mysize;
-            _Right._Tidy_init();
-        }
-    }
-
     valarray(initializer_list<_Ty> _Ilist) {
-        _Tidy_init();
         _Grow(_Ilist.size(), _Ilist.begin(), 1);
     }
 
@@ -308,6 +290,9 @@ public:
     }
 
     valarray& operator*=(const valarray& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize == _Right._Mysize, "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         const size_t _Size = _Mysize; // eliminating indirection helps vectorization
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] *= _Right[_Idx];
@@ -316,6 +301,9 @@ public:
     }
 
     valarray& operator/=(const valarray& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize == _Right._Mysize, "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         const size_t _Size = _Mysize; // eliminating indirection helps vectorization
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] /= _Right[_Idx];
@@ -324,6 +312,9 @@ public:
     }
 
     valarray& operator%=(const valarray& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize == _Right._Mysize, "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         const size_t _Size = _Mysize; // eliminating indirection helps vectorization
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] %= _Right[_Idx];
@@ -332,6 +323,9 @@ public:
     }
 
     valarray& operator+=(const valarray& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize == _Right._Mysize, "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         const size_t _Size = _Mysize; // eliminating indirection helps vectorization
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] += _Right[_Idx];
@@ -340,6 +334,9 @@ public:
     }
 
     valarray& operator-=(const valarray& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize == _Right._Mysize, "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         const size_t _Size = _Mysize; // eliminating indirection helps vectorization
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] -= _Right[_Idx];
@@ -348,6 +345,9 @@ public:
     }
 
     valarray& operator^=(const valarray& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize == _Right._Mysize, "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         const size_t _Size = _Mysize; // eliminating indirection helps vectorization
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] ^= _Right[_Idx];
@@ -356,6 +356,9 @@ public:
     }
 
     valarray& operator|=(const valarray& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize == _Right._Mysize, "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         const size_t _Size = _Mysize; // eliminating indirection helps vectorization
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] |= _Right[_Idx];
@@ -364,6 +367,9 @@ public:
     }
 
     valarray& operator&=(const valarray& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize == _Right._Mysize, "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         const size_t _Size = _Mysize; // eliminating indirection helps vectorization
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] &= _Right[_Idx];
@@ -372,6 +378,9 @@ public:
     }
 
     valarray& operator<<=(const valarray& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize == _Right._Mysize, "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         const size_t _Size = _Mysize; // eliminating indirection helps vectorization
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] <<= _Right[_Idx];
@@ -380,6 +389,9 @@ public:
     }
 
     valarray& operator>>=(const valarray& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize == _Right._Mysize, "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         const size_t _Size = _Mysize; // eliminating indirection helps vectorization
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] >>= _Right[_Idx];
@@ -548,11 +560,6 @@ private:
         }
     }
 
-    void _Tidy_init() noexcept {
-        _Mysize = 0;
-        _Myptr  = nullptr;
-    }
-
     void _Tidy_deallocate() noexcept {
         if (_Myptr) { // destroy elements
             _Destroy_range(_Myptr, _Myptr + _Mysize);
@@ -567,7 +574,8 @@ private:
             }
         }
 
-        _Tidy_init();
+        _Mysize = 0;
+        _Myptr  = nullptr;
     }
 
     void _Assign(size_t _Newsize, const _Ty* _Ptr) {
@@ -582,8 +590,8 @@ private:
         }
     }
 
-    _Ty* _Myptr; // current storage reserved for array
-    size_t _Mysize; // current length of sequence
+    _Ty* _Myptr    = nullptr; // current storage reserved for array
+    size_t _Mysize = 0; // current length of sequence
 };
 
 #if _HAS_CXX17
@@ -858,6 +866,9 @@ _NODISCARD _Boolarray operator||(const typename valarray<_Ty>::value_type& _Left
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator*(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -868,6 +879,9 @@ _NODISCARD valarray<_Ty> operator*(const valarray<_Ty>& _Left, const valarray<_T
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator/(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -878,6 +892,9 @@ _NODISCARD valarray<_Ty> operator/(const valarray<_Ty>& _Left, const valarray<_T
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator%(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -888,6 +905,9 @@ _NODISCARD valarray<_Ty> operator%(const valarray<_Ty>& _Left, const valarray<_T
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator+(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -898,6 +918,9 @@ _NODISCARD valarray<_Ty> operator+(const valarray<_Ty>& _Left, const valarray<_T
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator-(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -908,6 +931,9 @@ _NODISCARD valarray<_Ty> operator-(const valarray<_Ty>& _Left, const valarray<_T
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator^(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -918,6 +944,9 @@ _NODISCARD valarray<_Ty> operator^(const valarray<_Ty>& _Left, const valarray<_T
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator&(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -928,6 +957,9 @@ _NODISCARD valarray<_Ty> operator&(const valarray<_Ty>& _Left, const valarray<_T
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator|(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -938,6 +970,9 @@ _NODISCARD valarray<_Ty> operator|(const valarray<_Ty>& _Left, const valarray<_T
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator<<(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -948,6 +983,9 @@ _NODISCARD valarray<_Ty> operator<<(const valarray<_Ty>& _Left, const valarray<_
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD valarray<_Ty> operator>>(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<_Ty> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -958,6 +996,9 @@ _NODISCARD valarray<_Ty> operator>>(const valarray<_Ty>& _Left, const valarray<_
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator&&(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -968,6 +1009,9 @@ _NODISCARD _Boolarray operator&&(const valarray<_Ty>& _Left, const valarray<_Ty>
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator||(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -998,6 +1042,9 @@ _NODISCARD _Boolarray operator==(const typename valarray<_Ty>::value_type& _Left
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator==(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -1028,6 +1075,9 @@ _NODISCARD _Boolarray operator!=(const typename valarray<_Ty>::value_type& _Left
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator!=(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -1058,6 +1108,9 @@ _NODISCARD _Boolarray operator<(const typename valarray<_Ty>::value_type& _Left,
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator<(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -1088,6 +1141,9 @@ _NODISCARD _Boolarray operator>(const typename valarray<_Ty>::value_type& _Left,
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator>(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -1118,6 +1174,9 @@ _NODISCARD _Boolarray operator<=(const typename valarray<_Ty>::value_type& _Left
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator<=(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -1148,6 +1207,9 @@ _NODISCARD _Boolarray operator>=(const typename valarray<_Ty>::value_type& _Left
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD _Boolarray operator>=(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+    _STL_VERIFY(_Left.size() == _Right.size(), "valarrays of different lengths");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
     const size_t _Size = _Left.size();
     valarray<bool> _Ans(_Size);
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -1666,7 +1728,7 @@ public:
         }
     }
 
-    _NODISCARD _Ty& _Data(size_t _Idx) const {
+    _NODISCARD _Ty& _Data(size_t _Idx) const noexcept {
         return _Myptr[_Idx];
     }
 
@@ -1806,7 +1868,7 @@ public:
         return _Off;
     }
 
-    _NODISCARD size_t _Totlen() const {
+    _NODISCARD size_t _Totlen() const noexcept {
         size_t _Count      = 0;
         const size_t _Size = _Mybool.size();
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -1930,7 +1992,7 @@ public:
         }
     }
 
-    _NODISCARD _Ty& _Data(size_t _Idx) const {
+    _NODISCARD _Ty& _Data(size_t _Idx) const noexcept {
         return _Myptr[_Idx];
     }
 

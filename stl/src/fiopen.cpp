@@ -96,6 +96,7 @@ _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(
     return _Xfiopen(filename, mode, prot);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(
     const unsigned short* _Filename, ios_base::openmode _Mode, int _Prot) { // open file with wide name
     return _Fiopen(reinterpret_cast<const wchar_t*>(_Filename), _Mode, _Prot);

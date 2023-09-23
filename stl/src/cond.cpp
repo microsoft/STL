@@ -48,6 +48,18 @@ _CRTIMP2_PURE void __cdecl _Cnd_destroy(const _Cnd_t cond) { // clean up
     }
 }
 
+// TRANSITION, ABI: should be static; dllexported for binary compatibility
+_CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t mtx) { // set owner to nobody
+    mtx->_Thread_id = -1;
+    --mtx->_Count;
+}
+
+// TRANSITION, ABI: should be static; dllexported for binary compatibility
+_CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t mtx) { // set owner to current thread
+    mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
+    ++mtx->_Count;
+}
+
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) { // wait until signaled
     const auto cs = &mtx->_Critical_section;
     _Mtx_clear_owner(mtx);

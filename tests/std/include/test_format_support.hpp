@@ -26,6 +26,10 @@ struct choose_literal<char> {
     static constexpr char choose(char c, wchar_t) {
         return c;
     }
+
+    static constexpr std::string_view choose(std::string_view sv, std::wstring_view) {
+        return sv;
+    }
 };
 
 template <>
@@ -36,6 +40,10 @@ struct choose_literal<wchar_t> {
 
     static constexpr wchar_t choose(char, wchar_t c) {
         return c;
+    }
+
+    static constexpr std::wstring_view choose(std::string_view, std::wstring_view sv) {
+        return sv;
     }
 };
 

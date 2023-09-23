@@ -5293,14 +5293,14 @@ namespace chrono {
             if constexpr (_Is_specialization_v<_Ty, duration>) {
                 if constexpr (!treat_as_floating_point_v<typename _Ty::rep>) {
                     if (_Specs._Precision != -1) {
-                        _THROW(format_error("Precision specification invalid for chrono::duration type with "
-                                            "integral representation type, see N4950 [time.format]/1."));
+                        _Throw_format_error("Precision specification invalid for chrono::duration type with "
+                                            "integral representation type, see N4950 [time.format]/1.");
                     }
                 }
             } else {
                 if (_Specs._Precision != -1) {
-                    _THROW(format_error("Precision specification invalid for non-chrono::duration type, "
-                                        "see N4950 [time.format]/1."));
+                    _Throw_format_error("Precision specification invalid for non-chrono::duration type, "
+                                        "see N4950 [time.format]/1.");
                 }
             }
 
@@ -5747,8 +5747,7 @@ namespace chrono {
                         return true;
                     } else if constexpr (is_same_v<_Ty, month_day_last>) {
                         if (_Val.month() >= February) {
-                            _THROW(
-                                format_error("The day of year for a month_day_last other than January is ambiguous"));
+                            _Throw_format_error("The day of year for a month_day_last other than January is ambiguous");
                         }
                         return true;
                     } else if constexpr (_Is_ymd) {
