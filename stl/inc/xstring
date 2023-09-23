@@ -2287,6 +2287,19 @@ public:
         value_type _Buf[_BUF_SIZE];
         pointer _Ptr;
         char _Alias[_BUF_SIZE]; // TRANSITION, ABI: _Alias is preserved for binary compatibility (especially /clr)
+
+        _CONSTEXPR20 void _Switch_to_buf() noexcept {
+            _STD _Destroy_in_place(_Ptr);
+
+#if _HAS_CXX20
+            // start the lifetime of the array elements
+            if (_STD is_constant_evaluated()) {
+                for (size_type _Idx = 0; _Idx < _BUF_SIZE; ++_Idx) {
+                    _Buf[_Idx] = value_type();
+                }
+            }
+#endif // _HAS_CXX20
+        }
     };
     _Bxty _Bx;
 
@@ -2974,8 +2987,7 @@ public:
             _Result._Ptr                    = _My_data._Bx._Ptr;
             _Result._Actual_allocation_size = _My_data._Myres + 1;
 
-            _Destroy_in_place(_My_data._Bx._Ptr);
-            _My_data._Activate_SSO_buffer();
+            _My_data._Bx._Switch_to_buf();
         } else {
             // use _Least_allocation_size to avoid small mode, if the buffer is assigned back
             size_type _Allocated = _Least_allocation_size;
@@ -3067,8 +3079,7 @@ private:
             _Swap_proxy_and_iterators(_Right);
 
             _Construct_in_place(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
-            _Destroy_in_place(_Right_data._Bx._Ptr);
-            _Right_data._Activate_SSO_buffer();
+            _Right_data._Bx._Switch_to_buf();
         } else { // copy small string buffer
             _Right_data._Orphan_all();
 
@@ -4275,9 +4286,7 @@ public:
     static _CONSTEXPR20 void _Swap_bx_large_with_small(_Scary_val& _Starts_large, _Scary_val& _Starts_small) noexcept {
         // exchange a string in large mode with one in small mode
         const pointer _Ptr = _Starts_large._Bx._Ptr;
-        _Destroy_in_place(_Starts_large._Bx._Ptr);
-
-        _Starts_large._Activate_SSO_buffer();
+        _Starts_large._Bx._Switch_to_buf();
         _Traits::copy(_Starts_large._Bx._Buf, _Starts_small._Bx._Buf, _BUF_SIZE);
 
         _Construct_in_place(_Starts_small._Bx._Ptr, _Ptr);
@@ -4825,10 +4834,9 @@ private:
         _My_data._Orphan_all();
         _ASAN_STRING_REMOVE(*this);
         const pointer _Ptr = _My_data._Bx._Ptr;
-        auto& _Al          = _Getal();
-        _Destroy_in_place(_My_data._Bx._Ptr);
-        _My_data._Activate_SSO_buffer();
+        _My_data._Bx._Switch_to_buf();
         _Traits::copy(_My_data._Bx._Buf, _Unfancy(_Ptr), _My_data._Mysize + 1);
+        auto& _Al = _Getal();
         _Deallocate_for_capacity(_Al, _Ptr, _My_data._Myres);
         _My_data._Myres = _Small_string_capacity;
     }
@@ -4843,11 +4851,9 @@ private:
         _My_data._Orphan_all();
         if (_My_data._Large_mode_engaged()) {
             _ASAN_STRING_REMOVE(*this);
-            const pointer _Ptr = _My_data._Bx._Ptr;
-            auto& _Al          = _Getal();
-            _Destroy_in_place(_My_data._Bx._Ptr);
-            _My_data._Activate_SSO_buffer();
-            _Deallocate_for_capacity(_Al, _Ptr, _My_data._Myres);
+            auto& _Al = _Getal();
+            _Deallocate_for_capacity(_Al, _My_data._Bx._Ptr, _My_data._Myres);
+            _My_data._Bx._Switch_to_buf();
         }
 
         _My_data._Mysize = 0;
