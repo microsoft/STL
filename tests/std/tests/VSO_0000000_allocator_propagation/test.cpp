@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <crtdbg.h>
 #include <cstdlib>
 #include <cstring>
 #include <deque>
@@ -15,6 +16,7 @@
 #include <memory>
 #include <new>
 #include <set>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -944,6 +946,20 @@ _CONSTEXPR20 void test_string_swap(const size_t id1, const size_t id2) {
     assert(dst.get_allocator().id() == id1);
 }
 
+#if _HAS_CXX20
+void test_string_move_to_stringbuf() {
+    // GH-4047 fixed a bug where basic_string forgets to destroy the pointer before switching to small
+    // mode. This will turn problematic if the pointer is non-trivial.
+    assert(!_CrtDumpMemoryLeaks());
+    {
+        using Alloc = StationaryAlloc<char>;
+        basic_string<char, char_traits<char>, Alloc> str(50, '0', Alloc(10));
+        basic_stringbuf<char, char_traits<char>, Alloc> strbuf(move(str));
+    }
+    assert(!_CrtDumpMemoryLeaks());
+}
+#endif // _HAS_CXX20
+
 _CONSTEXPR20 bool test_string() {
     test_string_copy_ctor();
 
@@ -975,6 +991,11 @@ _CONSTEXPR20 bool test_string() {
     test_string_swap<SwapAlloc<char32_t>>(11, 22); // POCS, non-equal allocators
     test_string_swap<SwapEqualAlloc<char32_t>>(11, 22); // POCS, always-equal allocators
 
+#if _HAS_CXX20
+    if (!is_constant_evaluated()) {
+        test_string_move_to_stringbuf();
+    }
+#endif // _HAS_CXX20
     return true;
 }
 
