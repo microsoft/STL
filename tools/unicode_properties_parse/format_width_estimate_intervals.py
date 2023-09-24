@@ -176,9 +176,16 @@ def main():
 
     path = Path(__file__).absolute().with_name("EastAsianWidth.txt")
     with open(path, mode="rt", encoding="utf-8") as source:
+        filename = source.readline().replace("#", "//").rstrip()
+        timestamp = source.readline().replace("#", "//").rstrip()
         new_table = get_table_cpp23(source)
     print("New table:")
+    print()
+    print(filename)
+    print(timestamp)
+    print("inline constexpr char32_t _Width_estimate_intervals_v2[] = { //")
     new_table.print_width_estimate_intervals()
+    print("};")
 
     print("\nWas 1, now 2:")
     old_table.print_ranges_1_vs_2(new_table)
