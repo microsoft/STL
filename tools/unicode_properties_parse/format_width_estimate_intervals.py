@@ -41,8 +41,7 @@ class UnicodeWidthTable:
         assert self.table[0] == UnicodeWidth.IS_1
         for u in range(1, self.TABLE_SIZE):
             assert (
-                self.table[u] == UnicodeWidth.IS_1
-                or self.table[u] == UnicodeWidth.IS_2
+                self.table[u] == UnicodeWidth.IS_1 or self.table[u] == UnicodeWidth.IS_2
             )
             if self.table[u] != self.table[u - 1]:
                 values.append(u)
@@ -134,7 +133,7 @@ def read_from(source: TextIO) -> UnicodeWidthTable:
         line = line.strip()
         if line and not line.startswith("#"):
             match = LINE_REGEX.fullmatch(line)
-            assert match, line # invalid line
+            assert match, line  # invalid line
             from_val = int(match.group(1), base=16)
             width = get_width(match.group(3))
             if match.group(2):
