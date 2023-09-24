@@ -339,11 +339,11 @@ public:
     }
 
     _NODISCARD size_type count(const _Kty& _Val) const {
-        if constexpr (!_Multi) {
-            return contains(_Val);
-        } else {
+        if constexpr (_Multi) {
             const auto [_First, _Last] = equal_range(_Val);
             return static_cast<size_type>(_Last - _First);
+        } else {
+            return contains(_Val);
         }
     }
     template <class _Other>
@@ -730,7 +730,7 @@ _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.set.erasure]/5)
     _Clear_scope_guard<flat_set<_Kty, _Keylt, _Container>> _Guard{_STD addressof(_Val)};
-    const auto _Erased_count = _Erase_remove_if(_Val, _Pass_fn(_Predicate));
+    const auto _Erased_count = _STD _Erase_remove_if(_Val, _STD _Pass_fn(_Predicate));
     _Guard._Clearable        = nullptr;
     return _Erased_count;
 }
@@ -739,7 +739,7 @@ _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_multiset<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.multiset.erasure]/5)
     _Clear_scope_guard<flat_multiset<_Kty, _Keylt, _Container>> _Guard{_STD addressof(_Val)};
-    const auto _Erased_count = _Erase_remove_if(_Val, _Pass_fn(_Predicate));
+    const auto _Erased_count = _STD _Erase_remove_if(_Val, _STD _Pass_fn(_Predicate));
     _Guard._Clearable        = nullptr;
     return _Erased_count;
 }
