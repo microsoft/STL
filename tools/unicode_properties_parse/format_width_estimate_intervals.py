@@ -37,7 +37,6 @@ class UnicodeWidthTable:
         The starting value of the first range is always 0 and omitted.
         The width estimation should be 1 for the first range, then alternate between 2 and 1.
         """
-        printed_elements_on_one_line = 0
         assert self.table[0] == UnicodeWidth.IS_1
         for u in range(1, self.TABLE_SIZE):
             assert (
@@ -46,13 +45,6 @@ class UnicodeWidthTable:
             )
             if self.table[u] != self.table[u - 1]:
                 print(f"0x{u:X}u, ", end="")
-                if printed_elements_on_one_line == 11:
-                    printed_elements_on_one_line = 0
-                    print()
-                else:
-                    printed_elements_on_one_line += 1
-
-        print()
 
     # Print all ranges (right-closed), where self's width is 1 and other's width is 2.
     def print_ranges_1_vs_2(self, other):
@@ -179,7 +171,7 @@ def main():
         filename = source.readline().replace("#", "//").rstrip()
         timestamp = source.readline().replace("#", "//").rstrip()
         new_table = get_table_cpp23(source)
-    print("New table:")
+    print("\n\nNew table:")
     print()
     print(filename)
     print(timestamp)
