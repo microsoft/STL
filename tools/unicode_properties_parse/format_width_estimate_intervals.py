@@ -30,13 +30,14 @@ class UnicodeWidthTable:
         assert to_ <= self.MAX_CODE_POINT, "invalid range"
         self.table[from_ : to_ + 1] = [width] * (to_ - from_ + 1)
 
-    def print_width_estimate_intervals(self):
+    def width_estimate_intervals(self):
         """
         Divide [0..MAX_CODE_POINT] into ranges with different width estimations.
         Represent each range with their starting values.
         The starting value of the first range is always 0 and omitted.
         The width estimation should be 1 for the first range, then alternate between 2 and 1.
         """
+        values = []
         assert self.table[0] == UnicodeWidth.IS_1
         for u in range(1, self.TABLE_SIZE):
             assert (
@@ -44,7 +45,9 @@ class UnicodeWidthTable:
                 or self.table[u] == UnicodeWidth.IS_2
             )
             if self.table[u] != self.table[u - 1]:
-                print(f"0x{u:X}u, ", end="")
+                values.append(u)
+
+        return ", ".join([f"0x{u:X}u" for u in values])
 
     # Print all ranges (right-closed), where self's width is 1 and other's width is 2.
     def print_ranges_1_vs_2(self, other):
@@ -164,7 +167,7 @@ def get_table_cpp23(source: TextIO) -> UnicodeWidthTable:
 def main():
     print("Old table:")
     old_table = get_table_cpp20()
-    old_table.print_width_estimate_intervals()
+    print(old_table.width_estimate_intervals())
 
     path = Path(__file__).absolute().with_name("EastAsianWidth.txt")
     with open(path, mode="rt", encoding="utf-8") as source:
@@ -176,7 +179,7 @@ def main():
     print(filename)
     print(timestamp)
     print("inline constexpr char32_t _Width_estimate_intervals_v2[] = { //")
-    new_table.print_width_estimate_intervals()
+    print(new_table.width_estimate_intervals())
     print("};")
 
     print("\nWas 1, now 2:")
