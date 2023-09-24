@@ -164,6 +164,14 @@ def get_table_cpp23(source: TextIO) -> UnicodeWidthTable:
     return table
 
 
+WIDTH_ESTIMATE_INTERVALS_TEMPLATE = """
+{filename}
+{timestamp}
+inline constexpr char32_t _Width_estimate_intervals_v2[] = {{ //
+{values} }};
+"""
+
+
 def main():
     print("Old table:")
     old_table = get_table_cpp20()
@@ -174,15 +182,15 @@ def main():
         filename = source.readline().replace("#", "//").rstrip()
         timestamp = source.readline().replace("#", "//").rstrip()
         new_table = get_table_cpp23(source)
-    print("\n\nNew table:")
-    print()
-    print(filename)
-    print(timestamp)
-    print("inline constexpr char32_t _Width_estimate_intervals_v2[] = { //")
-    print(new_table.width_estimate_intervals())
-    print("};")
-
-    print("\nWas 1, now 2:")
+    print("\nNew table:")
+    print(
+        WIDTH_ESTIMATE_INTERVALS_TEMPLATE.lstrip().format(
+            filename=filename,
+            timestamp=timestamp,
+            values=new_table.width_estimate_intervals(),
+        )
+    )
+    print("Was 1, now 2:")
     old_table.print_ranges_1_vs_2(new_table)
     print("\nWas 2, now 1:")
     new_table.print_ranges_1_vs_2(old_table)
