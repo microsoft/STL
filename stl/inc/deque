@@ -42,9 +42,7 @@ public:
         : _Mycont(static_cast<const _Mydeque*>(_Pdeque)), _Myoff(_Off) {}
 
     _NODISCARD reference operator*() const noexcept {
-        _Size_type _Block = _Mycont->_Getblock(_Myoff);
-        _Size_type _Off   = _Myoff % _Block_size;
-        return _Mycont->_Map[_Block][_Off];
+        return _Mycont->_At(_Myoff);
     }
 
     _NODISCARD pointer operator->() const noexcept {
@@ -74,7 +72,7 @@ public:
     }
 
     _Deque_unchecked_const_iterator& operator+=(const difference_type _Off) noexcept {
-        _Myoff += _Off;
+        _Myoff = static_cast<_Size_type>(_Myoff + _Off);
         return *this;
     }
 
@@ -91,7 +89,7 @@ public:
     }
 
     _Deque_unchecked_const_iterator& operator-=(const difference_type _Off) noexcept {
-        _Myoff -= _Off;
+        _Myoff = static_cast<_Size_type>(_Myoff - _Off);
         return *this;
     }
 
@@ -263,9 +261,7 @@ public:
             "cannot deference out of range deque iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-        _Size_type _Block = _Mycont->_Getblock(_Myoff);
-        _Size_type _Off   = _Myoff % _Block_size;
-        return _Mycont->_Map[_Block][_Off];
+        return _Mycont->_At(_Myoff);
     }
 
     _NODISCARD pointer operator->() const noexcept {
@@ -317,7 +313,7 @@ public:
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-        _Myoff += _Off;
+        _Myoff = static_cast<_Size_type>(_Myoff + _Off);
         return *this;
     }
 
@@ -546,6 +542,8 @@ public:
     using _Mapptr         = typename _Val_types::_Mapptr;
 
 private:
+    using _Map_difference_type = typename iterator_traits<_Mapptr>::difference_type;
+
     static constexpr size_t _Bytes = sizeof(value_type);
 
 public:
@@ -557,9 +555,21 @@ public:
 
     _Deque_val() noexcept : _Map(), _Mapsize(0), _Myoff(0), _Mysize(0) {}
 
-    size_type _Getblock(size_type _Off) const noexcept {
+    _Map_difference_type _Getblock(size_type _Off) const noexcept {
         // NB: _Mapsize and _Block_size are guaranteed to be powers of 2
-        return (_Off / _Block_size) & (_Mapsize - 1);
+        return static_cast<_Map_difference_type>((_Off / _Block_size) & (_Mapsize - 1));
+    }
+
+    reference _At(size_type _Idx) noexcept {
+        const auto _Block = _Getblock(_Idx);
+        const auto _Off   = static_cast<difference_type>(_Idx % _Block_size);
+        return _Map[_Block][_Off];
+    }
+
+    const_reference _At(size_type _Idx) const noexcept {
+        const auto _Block = _Getblock(_Idx);
+        const auto _Off   = static_cast<difference_type>(_Idx % _Block_size);
+        return _Map[_Block][_Off];
     }
 
     _Mapptr _Map; // pointer to array of pointers to blocks
@@ -583,6 +593,8 @@ private:
     using _Alpty_traits = allocator_traits<_Alpty>;
     using _Mapptr       = typename _Alpty_traits::pointer;
     using _Alproxy_ty   = _Rebind_alloc_t<_Alty, _Container_proxy>;
+
+    using _Map_difference_type = typename iterator_traits<_Mapptr>::difference_type;
 
     using _Scary_val = _Deque_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Deque_simple_types<_Ty>,
         _Deque_iter_types<_Ty, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,
@@ -987,7 +999,7 @@ public:
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return *(_Unchecked_begin() + static_cast<difference_type>(_Pos));
+        return _Get_data()._At(_Pos);
     }
 
     _NODISCARD reference operator[](size_type _Pos) noexcept /* strengthened */ {
@@ -995,7 +1007,7 @@ public:
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return *(_Unchecked_begin() + static_cast<difference_type>(_Pos));
+        return _Get_data()._At(_Pos);
     }
 
     _NODISCARD const_reference at(size_type _Pos) const {
@@ -1003,7 +1015,7 @@ public:
             _Xran();
         }
 
-        return *(begin() + static_cast<difference_type>(_Pos));
+        return _Get_data()._At(_Pos);
     }
 
     _NODISCARD reference at(size_type _Pos) {
@@ -1011,7 +1023,7 @@ public:
             _Xran();
         }
 
-        return *(begin() + static_cast<difference_type>(_Pos));
+        return _Get_data()._At(_Pos);
     }
 
     _NODISCARD reference front() noexcept /* strengthened */ {
@@ -1053,14 +1065,13 @@ private:
             _Growmap(1);
         }
         _Myoff() &= _Mapsize() * _Block_size - 1;
-        size_type _Newoff = _Myoff() + _Mysize();
-        size_type _Block  = _Getblock(_Newoff);
+        const auto _Newoff = static_cast<size_type>(_Myoff() + _Mysize());
+        const auto _Block  = _Getblock(_Newoff);
         if (_Map()[_Block] == nullptr) {
             _Map()[_Block] = _Getal().allocate(_Block_size);
         }
 
-        _Alty_traits::construct(
-            _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size), _STD forward<_Tys>(_Vals)...);
+        _Alty_traits::construct(_Getal(), _Address_at(_Newoff), _STD forward<_Tys>(_Vals)...);
 
         ++_Mysize();
     }
@@ -1071,14 +1082,13 @@ private:
             _Growmap(1);
         }
         _Myoff() &= _Mapsize() * _Block_size - 1;
-        size_type _Newoff      = _Myoff() != 0 ? _Myoff() : _Mapsize() * _Block_size;
-        const size_type _Block = _Getblock(--_Newoff);
+        const auto _Newoff = static_cast<size_type>((_Myoff() != 0 ? _Myoff() : _Mapsize() * _Block_size) - 1);
+        const auto _Block  = _Getblock(_Newoff);
         if (_Map()[_Block] == nullptr) {
             _Map()[_Block] = _Getal().allocate(_Block_size);
         }
 
-        _Alty_traits::construct(
-            _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size), _STD forward<_Tys>(_Vals)...);
+        _Alty_traits::construct(_Getal(), _Address_at(_Newoff), _STD forward<_Tys>(_Vals)...);
 
         _Myoff() = _Newoff;
         ++_Mysize();
@@ -1401,8 +1411,7 @@ public:
             _STL_REPORT_ERROR("deque empty before pop");
         } else { // something to erase, do it
             _Orphan_off(_Myoff());
-            size_type _Block = _Getblock(_Myoff());
-            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
+            _Alty_traits::destroy(_Getal(), _Address_at(_Myoff()));
             if (--_Mysize() == 0) {
                 _Myoff() = 0;
             } else {
@@ -1411,8 +1420,7 @@ public:
         }
 
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-        size_type _Block = _Getblock(_Myoff());
-        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
+        _Alty_traits::destroy(_Getal(), _Address_at(_Myoff()));
         if (--_Mysize() == 0) {
             _Myoff() = 0;
         } else {
@@ -1428,8 +1436,7 @@ public:
         } else { // something to erase, do it
             size_type _Newoff = _Myoff() + _Mysize() - 1;
             _Orphan_off(_Newoff);
-            size_type _Block = _Getblock(_Newoff);
-            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
+            _Alty_traits::destroy(_Getal(), _Address_at(_Newoff));
             if (--_Mysize() == 0) {
                 _Myoff() = 0;
             }
@@ -1437,8 +1444,7 @@ public:
 
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         size_type _Newoff = _Myoff() + _Mysize() - 1;
-        size_type _Block  = _Getblock(_Newoff);
-        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
+        _Alty_traits::destroy(_Getal(), _Address_at(_Newoff));
         if (--_Mysize() == 0) {
             _Myoff() = 0;
         }
@@ -1543,9 +1549,10 @@ private:
 
         size_type _Allocsize = _Newsize;
 
-        size_type _Myboff = _Myoff() / _Block_size;
-        _Mapptr _Newmap   = _Allocate_at_least_helper(_Almap, _Allocsize);
-        _Mapptr _Myptr    = _Newmap + _Myboff;
+        const auto _Myboff  = static_cast<size_type>(_Myoff() / _Block_size);
+        const auto _Map_off = static_cast<_Map_difference_type>(_Myboff);
+        _Mapptr _Newmap     = _Allocate_at_least_helper(_Almap, _Allocsize);
+        _Mapptr _Myptr      = _Newmap + _Map_off;
         _STL_ASSERT(_Allocsize >= _Newsize, "_Allocsize >= _Newsize");
         while (_Newsize <= _Allocsize / 2) {
             _Newsize *= 2;
@@ -1553,19 +1560,21 @@ private:
 
         _Count = _Newsize - _Mapsize();
 
-        _Myptr = _STD uninitialized_copy(_Map() + _Myboff, _Map() + _Mapsize(), _Myptr); // copy initial to end
+        const auto _Map_count = static_cast<_Map_difference_type>(_Count);
+
+        _Myptr = _STD uninitialized_copy(_Map() + _Map_off, _Map() + _Map_distance(), _Myptr); // copy initial to end
         if (_Myboff <= _Count) { // increment greater than offset of initial block
-            _Myptr = _STD uninitialized_copy(_Map(), _Map() + _Myboff, _Myptr); // copy rest of old
+            _Myptr = _STD uninitialized_copy(_Map(), _Map() + _Map_off, _Myptr); // copy rest of old
             _Uninitialized_value_construct_n_unchecked1(_Myptr, _Count - _Myboff); // clear suffix of new
             _Uninitialized_value_construct_n_unchecked1(_Newmap, _Myboff); // clear prefix of new
         } else { // increment not greater than offset of initial block
-            _STD uninitialized_copy(_Map(), _Map() + _Count, _Myptr); // copy more old
-            _Myptr = _STD uninitialized_copy(_Map() + _Count, _Map() + _Myboff, _Newmap); // copy rest of old
+            _STD uninitialized_copy(_Map(), _Map() + _Map_count, _Myptr); // copy more old
+            _Myptr = _STD uninitialized_copy(_Map() + _Map_count, _Map() + _Map_off, _Newmap); // copy rest of old
             _Uninitialized_value_construct_n_unchecked1(_Myptr, _Count); // clear rest to initial block
         }
 
         if (_Map() != nullptr) {
-            _Destroy_range(_Map(), _Map() + _Mapsize());
+            _Destroy_range(_Map(), _Map() + _Map_distance());
             _Almap.deallocate(_Map(), _Mapsize()); // free storage for old
         }
 
@@ -1582,7 +1591,7 @@ private:
         }
 
         if (_Map() != nullptr) {
-            for (size_type _Block = _Mapsize(); _Block > 0;) { // free storage for a block and destroy pointer
+            for (auto _Block = _Map_distance(); _Block > 0;) { // free storage for a block and destroy pointer
                 if (_Map()[--_Block]) { // free block
                     _Getal().deallocate(_Map()[_Block], _Block_size);
                 }
@@ -1617,7 +1626,7 @@ private:
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-    size_type _Getblock(size_type _Off) const noexcept {
+    _Map_difference_type _Getblock(size_type _Off) const noexcept {
         return _Get_data()._Getblock(_Off);
     }
 
@@ -1671,6 +1680,16 @@ private:
 
     const size_type& _Mysize() const noexcept {
         return _Get_data()._Mysize;
+    }
+
+    _Map_difference_type _Map_distance() const noexcept {
+        return static_cast<_Map_difference_type>(_Get_data()._Mapsize);
+    }
+
+    _Ty* _Address_at(size_type _Idx) noexcept {
+        const auto _Block = _Getblock(_Idx);
+        const auto _Off   = static_cast<difference_type>(_Idx % _Block_size);
+        return _STD _Unfancy(_Get_data()._Map[_Block] + _Off);
     }
 
     _Compressed_pair<_Alty, _Scary_val> _Mypair;
