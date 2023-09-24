@@ -9,6 +9,7 @@ from typing import TextIO
 from pathlib import Path
 
 
+# Width estimation.
 class UnicodeWidth(Enum):
     IS_1: int = 1
     IS_2: int = 2
@@ -25,14 +26,24 @@ class UnicodeWidthTable:
     # "rng" denotes a right-closed range.
     def fill_range(self, rng: tuple, width: int):
         from_, to_ = rng
-        assert from_ <= to_, "impl assertion failed"
-        assert to_ <= self.MAX_CODE_POINT, "impl assertion failed"
+        assert from_ <= to_, "invalid range"
+        assert to_ <= self.MAX_CODE_POINT, "invalid range"
         self.table[from_ : to_ + 1] = [width] * (to_ - from_ + 1)
 
     def print_width_estimate_intervals(self):
+        """
+        Divide [0..MAX_CODE_POINT] into ranges with different width estimations.
+        Represent each range with their starting values.
+        The starting value of the first range is always 0 and omitted.
+        The width estimation should be 1 for the first range, then alternate between 2 and 1.
+        """
         printed_elements_on_one_line = 0
-        assert self.table[0] == UnicodeWidth.IS_1, "impl assertion failed"
+        assert self.table[0] == UnicodeWidth.IS_1
         for u in range(1, self.TABLE_SIZE):
+            assert (
+                self.table[u] == UnicodeWidth.IS_1
+                or self.table[u] == UnicodeWidth.IS_2
+            )
             if self.table[u] != self.table[u - 1]:
                 print(f"0x{u:X}u, ", end="")
                 if printed_elements_on_one_line == 11:
@@ -45,20 +56,18 @@ class UnicodeWidthTable:
 
     # Print all ranges (right-closed), where self's width is 1 and other's width is 2.
     def print_ranges_1_vs_2(self, other):
-        cluster_table = [False] * (self.TABLE_SIZE)
-        for u in range(self.TABLE_SIZE):
-            if (
+        def _1_vs_2(u: int):
+            return (
                 self.table[u] == UnicodeWidth.IS_1
                 and other.table[u] == UnicodeWidth.IS_2
-            ):
-                cluster_table[u] = True
+            )
 
         u = 0
         while u < self.TABLE_SIZE:
-            if cluster_table[u]:
+            if _1_vs_2(u):
                 from_ = u
                 to_ = from_
-                while to_ + 1 <= self.MAX_CODE_POINT and cluster_table[to_ + 1]:
+                while to_ + 1 < self.TABLE_SIZE and _1_vs_2(to_ + 1):
                     to_ += 1
                 if from_ == to_:
                     print(f"U+{from_:X}")
@@ -99,7 +108,7 @@ def read_from(source: TextIO) -> UnicodeWidthTable:
     The latest version can be found at:
     https://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt
     The current implementation works for:
-    https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
+    https://www.unicode.org/Public/15.1.0/ucd/EastAsianWidth.txt
     To make this function work, the file should not contain a BOM.
     """
     table = UnicodeWidthTable()
@@ -116,8 +125,8 @@ def read_from(source: TextIO) -> UnicodeWidthTable:
         table.fill_range(rng, UnicodeWidth.IS_2)
 
     # Read explicitly assigned ranges.
-    # The lines that are not empty or pure comment are uniformly of the format "HEX(..HEX)?;(A|F|H|N|Na|W) #comment".
-    LINE_REGEX = re.compile(r"([0-9A-Z]+)(\.\.[0-9A-Z]+)?;(A|F|H|N|Na|W) *#.*")
+    # The lines that are not empty or pure comment are uniformly of the format "HEX(..HEX)? ; (A|F|H|N|Na|W) #comment".
+    LINE_REGEX = re.compile(r"([0-9A-Z]+)(\.\.[0-9A-Z]+)? *; *(A|F|H|N|Na|W) *#.*")
 
     def get_width(str: str):
         if str == "F" or str == "W":
