@@ -263,7 +263,15 @@ public:
     template <_Container_compatible_range<_Kty> _Rng>
     void insert_range(_Rng&& _Range) {
         const size_type _Old_size = size();
-        _Get_cont().append_range(_STD forward<_Rng>(_Range));
+
+        _Container& _Cont = _Get_cont();
+        if constexpr (requires { _Cont.append_range(_STD forward<_Rng>(_Range)); }) {
+            _Cont.append_range(_STD forward<_Rng>(_Range));
+        } else {
+            for (const auto& _Val : _Range) {
+                _Cont.insert(_Cont.end(), _Val);
+            }
+        }
         _Restore_invariants_after_insert<false>(_Old_size);
     }
 
