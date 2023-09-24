@@ -108,7 +108,7 @@ def read_from(source: TextIO) -> UnicodeWidthTable:
     The latest version can be found at:
     https://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt
     The current implementation works for:
-    https://www.unicode.org/Public/15.0.0/ucd/EastAsianWidth.txt
+    https://www.unicode.org/Public/15.1.0/ucd/EastAsianWidth.txt
     To make this function work, the file should not contain a BOM.
     """
     table = UnicodeWidthTable()
@@ -125,8 +125,8 @@ def read_from(source: TextIO) -> UnicodeWidthTable:
         table.fill_range(rng, UnicodeWidth.IS_2)
 
     # Read explicitly assigned ranges.
-    # The lines that are not empty or pure comment are uniformly of the format "HEX(..HEX)?;(A|F|H|N|Na|W) #comment".
-    LINE_REGEX = re.compile(r"([0-9A-Z]+)(\.\.[0-9A-Z]+)?;(A|F|H|N|Na|W) *#.*")
+    # The lines that are not empty or pure comment are uniformly of the format "HEX(..HEX)? ; (A|F|H|N|Na|W) #comment".
+    LINE_REGEX = re.compile(r"([0-9A-Z]+)(\.\.[0-9A-Z]+)? *; *(A|F|H|N|Na|W) *#.*")
 
     def get_width(str: str):
         if str == "F" or str == "W":
