@@ -540,8 +540,11 @@ struct less_equal<void> {
 
 template <class _Fx>
 struct _Ref_fn { // pass function object by value as a reference
+    // _Ref_fn is an aggregate so it can be enregistered, unlike reference_wrapper
+
     template <class... _Args>
-    constexpr decltype(auto) operator()(_Args&&... _Vals) { // forward function call operator
+    constexpr decltype(auto) operator()(_Args&&... _Vals) noexcept(
+        _Select_invoke_traits<_Fx&, _Args...>::_Is_nothrow_invocable::value) { // forward function call operator
         if constexpr (is_member_pointer_v<_Fx>) {
             return _STD invoke(_Fn, _STD forward<_Args>(_Vals)...);
         } else {
@@ -581,6 +584,13 @@ struct _Unused_parameter { // generic unused parameter struct
     template <class _Ty>
     constexpr _Unused_parameter(_Ty&&) noexcept {}
 };
+
+template <class _Ty, class = void> // checks whether a container/view is a non-customized specialization
+_INLINE_VAR constexpr bool _Has_unchecked_begin_end = false;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool _Has_unchecked_begin_end<_Ty,
+    void_t<decltype(_STD declval<_Ty&>()._Unchecked_begin()), decltype(_STD declval<_Ty&>()._Unchecked_end())>> = true;
 
 template <class _Ty>
 using _Algorithm_int_t = conditional_t<is_integral_v<_Ty>, _Ty, ptrdiff_t>;
@@ -1296,7 +1306,7 @@ using _Guide_key_t =
     remove_const_t<tuple_element_t<0, typename iterator_traits<_Iter>::value_type>>;
 #else // ^^^ C++23 / C++20 vvv
     remove_const_t<typename iterator_traits<_Iter>::value_type::first_type>;
-#endif // C++20
+#endif // ^^^ C++20 ^^^
 
 template <class _Iter>
 using _Guide_val_t =
@@ -1304,7 +1314,7 @@ using _Guide_val_t =
     tuple_element_t<1, typename iterator_traits<_Iter>::value_type>;
 #else // ^^^ C++23 / C++20 vvv
     typename iterator_traits<_Iter>::value_type::second_type;
-#endif // C++20
+#endif // ^^^ C++20 ^^^
 
 template <class _Iter>
 using _Guide_pair_t =
@@ -1314,7 +1324,7 @@ using _Guide_pair_t =
 #else // ^^^ C++23 / C++20 vvv
     pair<add_const_t<typename iterator_traits<_Iter>::value_type::first_type>,
         typename iterator_traits<_Iter>::value_type::second_type>;
-#endif // C++20
+#endif // ^^^ C++20 ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_execution_policy : false_type {};
@@ -2708,7 +2718,7 @@ namespace ranges {
         {
             return _RANGES begin(static_cast<_CTy&&>(_Val));
         }
-#endif // C++20
+#endif // ^^^ C++20 ^^^
     };
 
     inline namespace _Cpos {
@@ -2738,7 +2748,7 @@ namespace ranges {
         {
             return _RANGES end(static_cast<_CTy&&>(_Val));
         }
-#endif // C++20
+#endif // ^^^ C++20 ^^^
     };
 
     inline namespace _Cpos {
@@ -2905,7 +2915,7 @@ namespace ranges {
         {
             return _RANGES rbegin(static_cast<_CTy&&>(_Val));
         }
-#endif // C++20
+#endif // ^^^ C++20 ^^^
     };
 
     inline namespace _Cpos {
@@ -2935,7 +2945,7 @@ namespace ranges {
         {
             return _RANGES rend(static_cast<_CTy&&>(_Val));
         }
-#endif // C++20
+#endif // ^^^ C++20 ^^^
     };
 
     inline namespace _Cpos {
@@ -3160,7 +3170,7 @@ namespace ranges {
         {
             return _RANGES data(static_cast<_CTy&&>(_Val));
         }
-#endif // C++20
+#endif // ^^^ C++20 ^^^
     };
 
     inline namespace _Cpos {
@@ -4576,30 +4586,34 @@ template <class _InIt, class _Sent, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _Sent _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
-    if constexpr (_Sent_copy_cat<_InIt, _Sent, _OutIt>::_Bitcopy_assignable) {
+    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt, true>) {
+        return _Copy_vbool(_First, _Last, _Dest);
+    } else {
+        if constexpr (_Sent_copy_cat<_InIt, _Sent, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
+            if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
-        {
-#ifdef __cpp_lib_concepts
-            if constexpr (is_same_v<_InIt, _Sent>)
-#endif // defined(__cpp_lib_concepts)
             {
-                return _Copy_memmove(_First, _Last, _Dest);
-            }
 #ifdef __cpp_lib_concepts
-            else {
-                return _Copy_memmove_n(_First, static_cast<size_t>(_Last - _First), _Dest);
-            }
+                if constexpr (is_same_v<_InIt, _Sent>)
 #endif // defined(__cpp_lib_concepts)
+                {
+                    return _Copy_memmove(_First, _Last, _Dest);
+                }
+#ifdef __cpp_lib_concepts
+                else {
+                    return _Copy_memmove_n(_First, static_cast<size_t>(_Last - _First), _Dest);
+                }
+#endif // defined(__cpp_lib_concepts)
+            }
         }
-    }
 
-    for (; _First != _Last; ++_Dest, (void) ++_First) {
-        *_Dest = *_First;
-    }
+        for (; _First != _Last; ++_Dest, (void) ++_First) {
+            *_Dest = *_First;
+        }
 
-    return _Dest;
+        return _Dest;
+    }
 }
 
 _EXPORT_STD template <class _InIt, class _OutIt>
@@ -4774,32 +4788,36 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
     // copy [_First, _First + _Count) to [_Dest, ...)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
-        auto _UFirst = _Get_unwrapped_n(_First, _Count);
-        auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-        if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_assignable) {
+        if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt, true>) {
+            return _Copy_vbool(_First, _First + _Count, _Dest);
+        } else {
+            auto _UFirst = _Get_unwrapped_n(_First, _Count);
+            auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
+            if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_assignable) {
 #if _HAS_CXX20
-            if (!_STD is_constant_evaluated())
+                if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
-            {
-                _UDest = _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
-                _Seek_wrapped(_Dest, _UDest);
-                return _Dest;
-            }
-        }
-
-        for (;;) {
-            *_UDest = *_UFirst;
-            ++_UDest;
-            --_Count;
-            if (_Count == 0) { // note that we avoid an extra ++_First here to allow istream_iterator to work,
-                               // see LWG-2471
-                break;
+                {
+                    _UDest = _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
+                    _Seek_wrapped(_Dest, _UDest);
+                    return _Dest;
+                }
             }
 
-            ++_UFirst;
-        }
+            for (;;) {
+                *_UDest = *_UFirst;
+                ++_UDest;
+                --_Count;
+                // note that we avoid an extra ++_First here to allow istream_iterator to work, see LWG-2471
+                if (_Count == 0) {
+                    break;
+                }
 
-        _Seek_wrapped(_Dest, _UDest);
+                ++_UFirst;
+            }
+
+            _Seek_wrapped(_Dest, _UDest);
+        }
     }
 
     return _Dest;
@@ -4873,20 +4891,24 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
     // note: _Move_unchecked has callers other than the move family
-    if constexpr (_Iter_move_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
+    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt, true>) {
+        return _Copy_vbool(_First, _Last, _Dest);
+    } else {
+        if constexpr (_Iter_move_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
+            if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
-        {
-            return _Copy_memmove(_First, _Last, _Dest);
+            {
+                return _Copy_memmove(_First, _Last, _Dest);
+            }
         }
-    }
 
-    for (; _First != _Last; ++_Dest, (void) ++_First) {
-        *_Dest = _STD move(*_First);
-    }
+        for (; _First != _Last; ++_Dest, (void) ++_First) {
+            *_Dest = _STD move(*_First);
+        }
 
-    return _Dest;
+        return _Dest;
+    }
 }
 
 _EXPORT_STD template <class _InIt, class _OutIt>

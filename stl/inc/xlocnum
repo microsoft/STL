@@ -614,7 +614,9 @@ protected:
 
     virtual _InIt __CLR_OR_THIS_CALL do_get(_InIt _First, _InIt _Last, ios_base& _Iosbase, ios_base::iostate& _State,
         long double& _Val) const { // get long double from [_First, _Last) into _Val
-        static_assert(sizeof(double) == sizeof(long double), "Bad assumption: sizeof(double) == sizeof(long double).");
+        // Assumes sizeof(double) == sizeof(long double).
+        // For 80-bit long double (which is not supported by MSVC in general), this will compile
+        // but will not attempt to handle the increased precision at runtime.
         double _Result;
         _First = num_get::do_get(_First, _Last, _Iosbase, _State, _Result); // avoid virtual call for perf
         _Val   = _Result;
@@ -1017,10 +1019,6 @@ private:
 
             for (; _First != _Last && *_First == _Zero_wc; ++_First) { // strip leading zeros
                 _Seendigit = true;
-            }
-
-            if (_Seendigit) {
-                *_Ptr++ = '0'; // put one back
             }
 
             for (size_t _Idx; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_dec_digit_end;

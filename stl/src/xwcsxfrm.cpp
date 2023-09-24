@@ -104,6 +104,6 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(unsigned short* string1, u
     return _Wcsxfrm(reinterpret_cast<wchar_t*>(string1), reinterpret_cast<wchar_t*>(end1),
         reinterpret_cast<const wchar_t*>(string2), reinterpret_cast<const wchar_t*>(end2), ploc);
 }
-#endif // MRTDLL
+#endif // defined(MRTDLL)
 
 _END_EXTERN_C_UNLESS_PURE

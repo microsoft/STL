@@ -2570,21 +2570,41 @@ namespace msvc {
                     // empty
                     any a;
                     a = std::move(a);
+                    assertEmpty(a);
+
+                    a = std::make_any<any>();
+                    a = any_cast<any&&>(std::move(a)); // extract inner any
+                    assertEmpty(a);
                 }
                 {
                     // small
                     any a{small{42}};
                     a = std::move(a);
+                    assertContains<small>(a, 42);
+
+                    a = std::make_any<any>(small{42});
+                    a = any_cast<any&&>(std::move(a)); // extract inner any
+                    assertContains<small>(a, 42);
                 }
                 {
                     // large
                     any a{large{42}};
                     a = std::move(a);
+                    assertContains<large>(a, 42);
+
+                    a = std::make_any<any>(large{42});
+                    a = any_cast<any&&>(std::move(a)); // extract inner any
+                    assertContains<large>(a, 42);
                 }
                 {
                     // trivial
                     any a{int{42}};
                     a = std::move(a);
+                    assertContains<int>(a, 42);
+
+                    a = std::make_any<any>(int{42});
+                    a = any_cast<any&&>(std::move(a)); // extract inner any
+                    assertContains<int>(a, 42);
                 }
             }
 #ifdef __clang__
@@ -3160,6 +3180,40 @@ namespace msvc {
         }
 #pragma warning(pop)
     } // namespace trivial
+
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    namespace gh_140_robust_against_adl {
+        struct incomplete;
+
+        template <class T>
+        struct wrapper {
+            T t;
+        };
+
+        template <class Type>
+        void test_for() {
+            any a;
+            a = any{Type()};
+            a = any{std::in_place_type<Type>};
+            a = Type();
+            a = std::make_any<Type>();
+            a.emplace<Type>();
+            assert(any_cast<Type>(&a) != nullptr);
+        }
+
+        void run_test() {
+            using _trivial = wrapper<incomplete>*;
+            using _small   = std::pair<_trivial, small>;
+            using _large   = std::pair<_trivial, large>;
+
+            globalMemCounter.disable_allocations = true;
+            test_for<_trivial>();
+            test_for<_small>();
+            globalMemCounter.disable_allocations = false;
+            test_for<_large>();
+        }
+    } // namespace gh_140_robust_against_adl
+#endif // _M_CEE
 } // namespace msvc
 
 int main() {
@@ -3196,4 +3250,7 @@ int main() {
     msvc::size_and_alignment::run_test();
     msvc::small_type::run_test();
     msvc::trivial::run_test();
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    msvc::gh_140_robust_against_adl::run_test();
+#endif // _M_CEE
 }

@@ -125,9 +125,17 @@ static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) < 16, "must
 _NODISCARD constexpr bool _Is_integral_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Char_type;
 }
+
 _NODISCARD constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Long_double_type;
 }
+
+#if _HAS_CXX23
+_NODISCARD consteval bool _Is_debug_enabled_fmt_type(_Basic_format_arg_type _Ty) {
+    return _Ty == _Basic_format_arg_type::_Char_type || _Ty == _Basic_format_arg_type::_CString_type
+        || _Ty == _Basic_format_arg_type::_String_type;
+}
+#endif // _HAS_CXX23
 
 struct _Auto_id_tag {
     explicit _Auto_id_tag() = default;
@@ -3580,7 +3588,17 @@ struct formatter {
 _FMT_P2286_BEGIN
 template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
 struct _Formatter_base {
+private:
     using _Pc = basic_format_parse_context<_CharT>;
+
+public:
+#if _HAS_CXX23
+    constexpr void _Set_debug_format() noexcept
+        requires (_Is_debug_enabled_fmt_type(_ArgType))
+    {
+        _Specs._Type = '?';
+    }
+#endif // _HAS_CXX23
 
     constexpr _Pc::iterator parse(_Pc& _ParseCtx) {
         _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>{_Specs, _ParseCtx}, _ArgType);
@@ -3634,35 +3652,80 @@ _FORMAT_SPECIALIZE_FOR(short, _Basic_format_arg_type::_Int_type);
 _FORMAT_SPECIALIZE_FOR(unsigned short, _Basic_format_arg_type::_UInt_type);
 _FORMAT_SPECIALIZE_FOR(long, _Basic_format_arg_type::_Int_type);
 _FORMAT_SPECIALIZE_FOR(unsigned long, _Basic_format_arg_type::_UInt_type);
-_FORMAT_SPECIALIZE_FOR(char, _Basic_format_arg_type::_Char_type);
 _FORMAT_SPECIALIZE_FOR(signed char, _Basic_format_arg_type::_Int_type);
 _FORMAT_SPECIALIZE_FOR(unsigned char, _Basic_format_arg_type::_UInt_type);
 
 #undef _FORMAT_SPECIALIZE_FOR
 
+// not using the macro because we'd like to add 'set_debug_format' member function in C++23 mode
+template <_Format_supported_charT _CharT>
+struct formatter<char, _CharT> : _Formatter_base<char, _CharT, _Basic_format_arg_type::_Char_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        this->_Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
+
 // not using the macro because we'd like to avoid the formatter<wchar_t, char> specialization
 template <>
-struct formatter<wchar_t, wchar_t> : _Formatter_base<wchar_t, wchar_t, _Basic_format_arg_type::_Char_type> {};
+struct formatter<wchar_t, wchar_t> : _Formatter_base<wchar_t, wchar_t, _Basic_format_arg_type::_Char_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        _Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
 
 // We could use the macro for these specializations, but it's confusing to refer to symbols that are defined
 // inside the macro in the macro's "call".
 template <_Format_supported_charT _CharT>
-struct formatter<_CharT*, _CharT> : _Formatter_base<_CharT*, _CharT, _Basic_format_arg_type::_CString_type> {};
+struct formatter<_CharT*, _CharT> : _Formatter_base<_CharT*, _CharT, _Basic_format_arg_type::_CString_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        this->_Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
 
 template <_Format_supported_charT _CharT>
 struct formatter<const _CharT*, _CharT>
-    : _Formatter_base<const _CharT*, _CharT, _Basic_format_arg_type::_CString_type> {};
+    : _Formatter_base<const _CharT*, _CharT, _Basic_format_arg_type::_CString_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        this->_Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
 
 template <_Format_supported_charT _CharT, size_t _Nx>
-struct formatter<_CharT[_Nx], _CharT> : _Formatter_base<_CharT[_Nx], _CharT, _Basic_format_arg_type::_CString_type> {};
+struct formatter<_CharT[_Nx], _CharT> : _Formatter_base<_CharT[_Nx], _CharT, _Basic_format_arg_type::_CString_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        this->_Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
 
 template <_Format_supported_charT _CharT, class _Traits, class _Allocator>
 struct formatter<basic_string<_CharT, _Traits, _Allocator>, _CharT>
-    : _Formatter_base<basic_string<_CharT, _Traits, _Allocator>, _CharT, _Basic_format_arg_type::_String_type> {};
+    : _Formatter_base<basic_string<_CharT, _Traits, _Allocator>, _CharT, _Basic_format_arg_type::_String_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        this->_Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
 
 template <_Format_supported_charT _CharT, class _Traits>
 struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
-    : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {};
+    : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        this->_Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
 
 _EXPORT_STD template <class _CharT, class... _Args>
 struct basic_format_string {
@@ -4074,6 +4137,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // defined(__cpp_lib_concepts)
+#endif // ^^^ defined(__cpp_lib_concepts) ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FORMAT_

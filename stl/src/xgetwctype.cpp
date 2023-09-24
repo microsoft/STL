@@ -8,7 +8,7 @@
 #include <__msvc_xlocinfo_types.hpp>
 #include <cwchar>
 
-#include "awint.hpp"
+#include <Windows.h>
 
 _EXTERN_C_UNLESS_PURE
 
