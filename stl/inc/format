@@ -989,6 +989,9 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
 
 // Generated per N4950 [format.string.std]/13, by tools/unicode_properties_parse/format_width_estimate_intervals.py
 // in the https://github.com/microsoft/stl repository.
+
+// EastAsianWidth-15.0.0.txt
+// Date: 2022-05-24, 17:40:20 GMT [KW, LI]
 inline constexpr char32_t _Width_estimate_intervals_v2[] = { //
     0x1100u, 0x1160u, 0x231Au, 0x231Cu, 0x2329u, 0x232Bu, 0x23E9u, 0x23EDu, 0x23F0u, 0x23F1u, 0x23F3u, 0x23F4u, 0x25FDu,
     0x25FFu, 0x2614u, 0x2616u, 0x2648u, 0x2654u, 0x267Fu, 0x2680u, 0x2693u, 0x2694u, 0x26A1u, 0x26A2u, 0x26AAu, 0x26ACu,
