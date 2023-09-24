@@ -150,7 +150,7 @@ def read_from(source: TextIO) -> UnicodeWidthTable:
 def get_table_cpp23(source: TextIO) -> UnicodeWidthTable:
     table = read_from(source)
 
-    # Override with ranges specified by the C++ standard.
+    # Override with ranges specified by N4958 [format.string.std]/13.
     std_wide_ranges_cpp23 = [
         (0x4DC0, 0x4DFF),
         (0x1F300, 0x1F5FF),
