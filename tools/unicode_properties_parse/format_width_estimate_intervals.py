@@ -45,20 +45,18 @@ class UnicodeWidthTable:
 
     # Print all ranges (right-closed), where self's width is 1 and other's width is 2.
     def print_ranges_1_vs_2(self, other):
-        cluster_table = [False] * (self.TABLE_SIZE)
-        for u in range(self.TABLE_SIZE):
-            if (
+        def _1_vs_2(u: int):
+            return (
                 self.table[u] == UnicodeWidth.IS_1
                 and other.table[u] == UnicodeWidth.IS_2
-            ):
-                cluster_table[u] = True
+            )
 
         u = 0
         while u < self.TABLE_SIZE:
-            if cluster_table[u]:
+            if _1_vs_2(u):
                 from_ = u
                 to_ = from_
-                while to_ + 1 <= self.MAX_CODE_POINT and cluster_table[to_ + 1]:
+                while to_ + 1 < self.TABLE_SIZE and _1_vs_2(to_ + 1):
                     to_ += 1
                 if from_ == to_:
                     print(f"U+{from_:X}")
