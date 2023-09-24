@@ -9,6 +9,7 @@ from typing import TextIO
 from pathlib import Path
 
 
+# Width estimation.
 class UnicodeWidth(Enum):
     IS_1: int = 1
     IS_2: int = 2
@@ -25,14 +26,24 @@ class UnicodeWidthTable:
     # "rng" denotes a right-closed range.
     def fill_range(self, rng: tuple, width: int):
         from_, to_ = rng
-        assert from_ <= to_, "impl assertion failed"
-        assert to_ <= self.MAX_CODE_POINT, "impl assertion failed"
+        assert from_ <= to_, "invalid range"
+        assert to_ <= self.MAX_CODE_POINT, "invalid range"
         self.table[from_ : to_ + 1] = [width] * (to_ - from_ + 1)
 
     def print_width_estimate_intervals(self):
+        """
+        Divide [0..MAX_CODE_POINT] into ranges with different width estimations.
+        Represent each range with their starting values.
+        The starting value of the first range is always 0 and omitted.
+        The width estimation should be 1 for the first range, then alternate between 2 and 1.
+        """
         printed_elements_on_one_line = 0
-        assert self.table[0] == UnicodeWidth.IS_1, "impl assertion failed"
+        assert self.table[0] == UnicodeWidth.IS_1
         for u in range(1, self.TABLE_SIZE):
+            assert (
+                self.table[u] == UnicodeWidth.IS_1
+                or self.table[u] == UnicodeWidth.IS_2
+            )
             if self.table[u] != self.table[u - 1]:
                 print(f"0x{u:X}u, ", end="")
                 if printed_elements_on_one_line == 11:
