@@ -86,7 +86,7 @@ public:
 
     _Base_flat_set(_Tsorted, container_type _Cont, const key_compare& _Comp = key_compare())
         : _My_pair(_One_then_variadic_args_t{}, _Comp, _STD move(_Cont)) {
-        _Assert_after_sorted_input();
+        _STL_ASSERT(_Check_sorted(cbegin(), cend()), _Msg_not_sorted);
     }
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, const container_type& _Cont, const _Alloc& _Al)
@@ -288,8 +288,8 @@ public:
         return _STD move(_Get_cont());
     }
     void replace(container_type&& _Cont) {
+        _STL_ASSERT(_Check_sorted(_Cont.cbegin(), _Cont.cend()), _Msg_not_sorted);
         _Get_cont() = _STD move(_Cont);
-        _Assert_after_sorted_input();
     }
 
     iterator erase(iterator _Where) {
@@ -438,26 +438,24 @@ public:
     }
 
 private:
-    void _Assert_after_sorted_input() const {
-        _STL_ASSERT(_STD is_sorted(cbegin(), cend(), _Get_comp_v()), "Input was not sorted!");
-        if constexpr (!_Multi) {
-            _STL_ASSERT(_Is_unique(), "Input was sorted but not unique!");
+    bool _Check_sorted(const_iterator _It, const const_iterator _End) const {
+        if (_Multi) {
+            return _STD is_sorted(_It, _End, _Get_comp_v());
+        } else {
+            // sorted-unique
+            if (_It == _End) {
+                return true;
+            }
+            while (++_It != _End) {
+                if (!_Compare(*(_It - 1), *_It)) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 
-    bool _Is_unique() const {
-        if (empty()) {
-            return true;
-        }
-        const const_iterator _End = cend();
-        const_iterator _It        = cbegin();
-        while (++_It != _End) {
-            if (_Keys_equal(*(_It - 1), *_It)) {
-                return false;
-            }
-        }
-        return true;
-    }
+    static constexpr const char* _Msg_not_sorted = _Multi ? "Input was not sorted!" : "Input was not sorted-unique!";
 
     bool _Check_where(const const_iterator _Where, const _Kty& _Val) const {
         // check that _Val can be inserted before _Where
@@ -612,14 +610,12 @@ private:
         }
     }
 
-    void _Erase_dupes_if_needed() {
+    void _Erase_dupes_if_not_multi() {
         if constexpr (!_Multi) {
             const iterator _End = end();
             const iterator _New_end =
                 _STD unique(begin(), _End, [&](const _Kty& _Lhs, const _Kty& _Rhs) { return _Keys_equal(_Lhs, _Rhs); });
             _Get_cont().erase(_New_end, _End);
-
-            _STL_INTERNAL_CHECK(_Is_unique());
         }
     }
 
@@ -633,14 +629,13 @@ private:
         if constexpr (!_Presorted) {
             _STD sort(_Old_end, _New_end, _Comp);
         } else {
-            _STL_ASSERT(_STD is_sorted(_Old_end, _New_end, _Comp), "Input was not sorted!");
+            _STL_ASSERT(_Check_sorted(_Old_end, _New_end), _Msg_not_sorted);
         }
 
         _STD inplace_merge(_Begin, _Old_end, _New_end, _Comp);
+        _Erase_dupes_if_not_multi();
 
-        _STL_INTERNAL_CHECK(_STD is_sorted(_Begin, _New_end, _Comp));
-
-        _Erase_dupes_if_needed();
+        _STL_INTERNAL_CHECK(_Check_sorted(cbegin(), cend()));
     }
 
     void _Make_invariants_fulfilled() {
@@ -657,10 +652,9 @@ private:
 
         _STD sort(_Begin_unsorted, _End, _Comp);
         _STD inplace_merge(_Begin, _Begin_unsorted, _End, _Comp);
+        _Erase_dupes_if_not_multi();
 
-        _STL_INTERNAL_CHECK(_STD is_sorted(_Begin, _End, _Comp));
-
-        _Erase_dupes_if_needed();
+        _STL_INTERNAL_CHECK(_Check_sorted(cbegin(), cend()));
     }
 
     template <class _Lty, class _Rty>
