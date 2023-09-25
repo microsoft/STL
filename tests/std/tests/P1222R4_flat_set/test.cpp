@@ -8,6 +8,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <vector>
 
 using namespace std;
@@ -235,6 +236,107 @@ void test_insert_2() {
     }
 }
 
+struct val_comparer {
+    const auto& extract_key(const auto& obj) const {
+        if constexpr (requires { void(obj.val); }) {
+            return obj.val;
+        } else {
+            return obj;
+        }
+    }
+
+    bool operator()(const auto& lhs, const auto& rhs) const {
+        return extract_key(lhs) < extract_key(rhs);
+    }
+
+    using is_transparent = int;
+};
+
+void test_comparer_application() {
+    struct int_holder {
+        int val;
+        bool operator<(const int_holder&) const  = delete;
+        bool operator==(const int_holder&) const = delete;
+    };
+
+    flat_set<int_holder, val_comparer> fs{{0}, {3}, {1}, {0}, {5}};
+    assert(fs.contains(0));
+    assert(!fs.contains(2));
+    fs.insert(fs.begin(), int_holder{4});
+    fs.insert(2);
+    assert(fs.contains(4));
+    assert(fs.contains(int_holder{2}));
+
+    assert(fs.lower_bound(3) == fs.lower_bound(int_holder{3}));
+    fs.erase(2);
+    assert(!fs.contains(int_holder{2}));
+}
+
+void test_insert_3() {
+    // test that flat_set::insert(K&&) doesn't modify input for failed insertion.
+    struct int_holder {
+        int val;
+        mutable bool converted = false;
+
+        explicit operator int() const {
+            converted = true;
+            return val;
+        }
+    };
+
+    flat_set<int, val_comparer> fs{0, 3, 5};
+
+    assert_all_requirements_and_equals(fs, {0, 3, 5});
+
+    int_holder holder{3};
+    assert(!holder.converted);
+
+    fs.insert(holder);
+    assert(!holder.converted);
+    assert_all_requirements_and_equals(fs, {0, 3, 5});
+
+    holder.val = 1;
+    fs.insert(holder);
+    assert(holder.converted);
+    assert_all_requirements_and_equals(fs, {0, 1, 3, 5});
+}
+
+void test_insert_4() {
+    // test that hinted insertion is robust against invalid hints.
+    mt19937 eng(42);
+
+    uniform_int_distribution<int> dist_seq(0, 20);
+
+    vector<int> seq(200);
+    for (int& val : seq) {
+        val = dist_seq(eng);
+    }
+
+    {
+        flat_multiset<int> with_hint, no_hint;
+        for (const int val : seq) {
+            uniform_int_distribution<int> dist_idx(0, int(with_hint.size()));
+            auto random_hint = with_hint.begin() + dist_idx(eng);
+            with_hint.insert(random_hint, val);
+            no_hint.insert(val);
+        }
+
+        assert(with_hint == no_hint);
+    }
+
+    {
+        flat_set<int> with_hint, no_hint;
+        for (const int val : seq) {
+            uniform_int_distribution<int> dist_idx(0, int(with_hint.size()));
+            auto random_hint = with_hint.begin() + dist_idx(eng);
+            with_hint.insert(random_hint, val);
+            no_hint.insert(val);
+        }
+
+        assert(with_hint == no_hint);
+    }
+}
+
 template <class T>
 void test_spaceship_operator() {
     static constexpr bool multi  = _Is_specialization_v<T, flat_multiset>;
@@ -342,8 +444,8 @@ void test_count() {
     flat_set<int> fs{2};
     assert(fs.count(1) == 0);
 
-    flat_multiset<int> fs2{1, 2, 2, 3};
-    assert(fs2.count(2) == 2);
+    flat_multiset<int> fs2{10, 20, 20, 30};
+    assert(fs2.count(20) == 2);
 }
 
 int main() {
@@ -363,7 +465,10 @@ int main() {
     test_insert_1<deque<int>>();
     test_insert_2<vector<int>>();
     test_insert_2<deque<int>>();
+    test_insert_3();
+    test_insert_4();
 
+    test_comparer_application();
     test_non_static_comparer();
 
     test_extract<flat_set<int>>();
