@@ -744,6 +744,24 @@ public:
         return {lower_bound(_X), upper_bound(_X)};
     }
 
+    friend bool operator==(const flat_map& _X, const flat_map& _Y) {
+        return _RANGES equal(_X._Data.keys, _Y._Data.keys) && _RANGES equal(_X._Data.values, _Y._Data.values);
+    }
+
+    friend _STD weak_ordering operator<=>(const flat_map& _X, const flat_map& _Y) {
+        if (_X.size() != _Y.size()) {
+            return _X.size() <=> _Y.size();
+        }
+
+        if (_RANGES lexicographical_compare(_X.cbegin(), _X.cend(), _Y.cbegin(), _Y.cend())) {
+            return _STD weak_ordering::less;
+        } else if (_RANGES lexicographical_compare(_Y.cbegin(), _Y.cend(), _X.cbegin(), _X.cend())) {
+            return _STD weak_ordering::greater;
+        } else {
+            return _STD weak_ordering::equivalent;
+        }
+    }
+
 
 private:
     key_compare _Key_compare;
@@ -873,7 +891,7 @@ private:
 
         _Guard._Clearable = nullptr;
     }
-};
+}
 
 _STD_END
 
