@@ -228,25 +228,25 @@ public:
         }
     }
 
-    auto insert(const value_type& _Val) {
+    auto insert(const _Kty& _Val) {
         return _Emplace(_Val);
     }
-    auto insert(value_type&& _Val) {
+    auto insert(_Kty&& _Val) {
         return _Emplace(_STD move(_Val));
     }
-    template <class _Other>
+    template <_Different_from<_Kty> _Other>
         requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Other>)
     auto insert(_Other&& _Val) {
         return _Emplace(_STD forward<_Other>(_Val));
     }
 
-    iterator insert(const_iterator _Hint, const value_type& _Val) {
+    iterator insert(const_iterator _Hint, const _Kty& _Val) {
         return _Emplace_hint(_Hint, _Val);
     }
-    iterator insert(const_iterator _Hint, value_type&& _Val) {
+    iterator insert(const_iterator _Hint, _Kty&& _Val) {
         return _Emplace_hint(_Hint, _STD move(_Val));
     }
-    template <class _Other>
+    template <_Different_from<_Kty> _Other>
         requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Other>)
     iterator insert(const_iterator _Hint, _Other&& _Val) {
         return _Emplace_hint(_Hint, _STD forward<_Other>(_Val));
@@ -301,7 +301,7 @@ public:
     size_type erase(const _Kty& _Val) {
         return _Erase(_Val);
     }
-    template <class _Other>
+    template <_Different_from<_Kty> _Other>
         requires (
             _Keylt_transparent && !is_convertible_v<_Other, iterator> && !is_convertible_v<_Other, const_iterator>)
     size_type erase(_Other&& _Val) {
