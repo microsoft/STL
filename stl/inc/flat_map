@@ -762,6 +762,10 @@ public:
         }
     }
 
+    friend void swap(flat_map& _X, flat_map& _Y) noexcept {
+        _X.swap(_Y);
+    }
+
 
 private:
     key_compare _Key_compare;
