@@ -142,6 +142,8 @@ public:
 
 #if _HAS_CXX20
     friend bool operator==(const counting_ptr& lhs, const counting_ptr& rhs) = default;
+
+    friend auto operator<=>(const counting_ptr& lhs, const counting_ptr& rhs) = default;
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     friend bool operator==(nullptr_t, const counting_ptr& p) noexcept {
         return p.p_ == nullptr;
