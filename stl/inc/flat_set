@@ -612,12 +612,15 @@ private:
 
     void _Erase_dupes_if_not_multi() {
         if constexpr (!_Multi) {
-            const iterator _End = end();
-            const iterator _New_end =
-                _STD unique(begin(), _End, [&](const _Kty& _Lhs, const _Kty& _Rhs) { return _Keys_equal(_Lhs, _Rhs); });
+            const auto _Equal_to = [this](const _Kty& _Lhs, const _Kty& _Rhs) {
+                return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
+            };
+            const iterator _End     = end();
+            const iterator _New_end = _STD unique(begin(), _End, _Equal_to);
             _Get_cont().erase(_New_end, _End);
         }
     }
+
 
     template <bool _Presorted>
     void _Restore_invariants_after_insert(const size_type _Old_size) {
@@ -663,14 +666,6 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || (is_same_v<_Kty, _Lty> && is_same_v<_Kty, _Rty>) );
 
         return _DEBUG_LT_PRED(_My_pair._Get_first(), _Lhs, _Rhs);
-    }
-
-    template <class _Lty, class _Rty>
-    _NODISCARD bool _Keys_equal(const _Lty& _Lhs, const _Rty& _Rhs) const
-        noexcept(noexcept(!_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs))) {
-        _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || (is_same_v<_Kty, _Lty> && is_same_v<_Kty, _Rty>) );
-
-        return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
     }
 
     _NODISCARD const _Container& _Get_cont() const noexcept {
