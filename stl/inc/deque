@@ -999,7 +999,7 @@ public:
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Get_data()._At(_Pos);
+        return _Get_data()._At(_Myoff() + _Pos);
     }
 
     _NODISCARD reference operator[](size_type _Pos) noexcept /* strengthened */ {
@@ -1007,7 +1007,7 @@ public:
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Get_data()._At(_Pos);
+        return _Get_data()._At(_Myoff() + _Pos);
     }
 
     _NODISCARD const_reference at(size_type _Pos) const {
