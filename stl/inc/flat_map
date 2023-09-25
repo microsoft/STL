@@ -97,15 +97,6 @@ public:
         friend class flat_map;
         type() = default;
         type(_Key_iterator_t _Key_it, _Mapped_iterator_t _Mapped_it) : _Key_it(_Key_it), _Mapped_it(_Mapped_it) {}
-        // Copy-constructible
-        type(const type&) = default;
-        // Copy-assignable
-        type& operator=(const type&) = default;
-        // Move-assignable
-        type& operator=(type&&) = default;
-        // Swappable
-        // Destructible
-        ~type() = default;
 
         using iterator_category = input_iterator_tag;
         using iterator_concept  = random_access_iterator_tag;
@@ -895,7 +886,15 @@ private:
 
         _Guard._Clearable = nullptr;
     }
-}
+};
+
+template <class _KeyContainer, class _MappedContainer>
+flat_map(_KeyContainer, _MappedContainer) -> flat_map<typename _KeyContainer::value_type,
+    typename _MappedContainer::value_type, less<typename _KeyContainer::value_type>, _KeyContainer, _MappedContainer>;
+
+template <class _KeyContainer, class _MappedContainer, class _Allocator>
+flat_map(_KeyContainer, _MappedContainer, _Allocator) -> flat_map<typename _KeyContainer::value_type,
+    typename _MappedContainer::value_type, less<typename _KeyContainer::value_type>, _KeyContainer, _MappedContainer>;
 
 _STD_END
 
