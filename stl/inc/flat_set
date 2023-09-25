@@ -428,7 +428,7 @@ public:
         return _RANGES equal(_Lhs._Get_cont(), _Rhs._Get_cont());
     }
 
-    _NODISCARD friend _Synth_three_way_result<_Kty> operator<=>(const _Deriv& _Lhs, const _Deriv& _Rhs) {
+    _NODISCARD friend auto operator<=>(const _Deriv& _Lhs, const _Deriv& _Rhs) {
         return _STD lexicographical_compare_three_way(
             _Lhs.cbegin(), _Lhs.cend(), _Rhs.cbegin(), _Rhs.cend(), _Synth_three_way{});
     }
