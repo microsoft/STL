@@ -1015,7 +1015,7 @@ public:
             _Xran();
         }
 
-        return _Get_data()._At(_Pos);
+        return _Get_data()._At(_Myoff() + _Pos);
     }
 
     _NODISCARD reference at(size_type _Pos) {
@@ -1023,7 +1023,7 @@ public:
             _Xran();
         }
 
-        return _Get_data()._At(_Pos);
+        return _Get_data()._At(_Myoff() + _Pos);
     }
 
     _NODISCARD reference front() noexcept /* strengthened */ {
