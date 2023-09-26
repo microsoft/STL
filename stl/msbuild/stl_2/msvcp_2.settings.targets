@@ -4,6 +4,9 @@
 Copyright (c) Microsoft Corporation.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
+    <PropertyGroup Label="Configuration">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+    </PropertyGroup>
 
     <PropertyGroup>
         <FinalBinary>p_2</FinalBinary>
@@ -11,8 +14,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
         <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
         <TargetNetFx Condition="'$(MsvcpFlavor)' == 'netfx'">true</TargetNetFx>
-
-        <TargetType>DYNLINK</TargetType>
     </PropertyGroup>
 
     <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\crt_build.settings.targets"/>
