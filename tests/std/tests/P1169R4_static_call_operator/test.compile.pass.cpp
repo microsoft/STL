@@ -43,8 +43,10 @@ void test_ctad() {
     static_assert(is_same_v<decltype(Temp{Derived{}}), Temp<bool(unsigned int)>>);
     static_assert(is_same_v<decltype(Temp{Nothrow{}}), Temp<char16_t(char32_t)>>);
 
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-62594, fixed in Clang 18
     auto lambda = [](int* p, int** q) static { return *p + **q; };
     static_assert(is_same_v<decltype(Temp{lambda}), Temp<int(int*, int**)>>);
+#endif // ^^^ no workaround ^^^
 }
 
 void all_tests() {
