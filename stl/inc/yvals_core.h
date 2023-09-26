@@ -128,6 +128,7 @@
 // P0858R0 Constexpr Iterator Requirements
 // P1065R2 constexpr INVOKE
 //     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
+// P1169R4 static operator()
 // P1518R2 Stop Overconstraining Allocators In Container Deduction Guides
 // P2162R2 Inheriting From variant
 // P2251R1 Require span And basic_string_view To Be Trivially Copyable
@@ -328,7 +329,6 @@
 // P1072R10 basic_string::resize_and_overwrite
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
-// P1169R4 static operator()
 // P1206R7 Conversions From Ranges To Containers
 // P1223R5 ranges::find_last, ranges::find_last_if, ranges::find_last_if_not
 // P1272R4 byteswap()
