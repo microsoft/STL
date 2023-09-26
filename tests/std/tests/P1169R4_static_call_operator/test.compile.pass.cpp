@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifdef __cpp_static_call_operator // TRANSITION, P1169R4
+#ifdef __cpp_static_call_operator
 
 #include <functional>
 #include <future>

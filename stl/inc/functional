@@ -1142,7 +1142,7 @@ _NON_MEMBER_CALL(_FUNCTION_POINTER_DEDUCTION_GUIDE, X1, X2, X3)
 template <class _Fx, class _Call_op, class = void>
 struct _Deduce_from_call_operator : _Is_memfunptr<_Call_op>::_Guide_type {}; // N4958 [func.wrap.func.con]/16.1
 
-#ifdef __cpp_static_call_operator // TRANSITION, P1169R4
+#ifdef __cpp_static_call_operator
 template <class>
 struct _Inspect_static_call_operator {};
 
