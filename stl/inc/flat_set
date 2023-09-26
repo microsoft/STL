@@ -621,7 +621,6 @@ private:
         }
     }
 
-
     template <bool _Presorted>
     void _Restore_invariants_after_insert(const size_type _Old_size) {
         auto _Comp              = _Get_comp_v();

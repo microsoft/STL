@@ -236,10 +236,10 @@ void test_insert_2() {
     }
 }
 
-struct val_comparer {
+struct key_comparer {
     const auto& extract_key(const auto& obj) const {
-        if constexpr (requires { void(obj.val); }) {
-            return obj.val;
+        if constexpr (requires { obj.key; }) {
+            return obj.key;
         } else {
             return obj;
         }
@@ -253,56 +253,71 @@ struct val_comparer {
 };
 
 void test_comparer_application() {
-    struct int_holder {
-        int val;
-        bool operator<(const int_holder&) const  = delete;
-        bool operator==(const int_holder&) const = delete;
+    // The set must rely on its comparer to do the comparisons.
+    struct incomparable {
+        int key;
+        bool operator<(const incomparable&) const  = delete;
+        bool operator==(const incomparable&) const = delete;
     };
 
-    flat_set<int_holder, val_comparer> fs{{0}, {3}, {1}, {0}, {5}};
+    flat_set<incomparable, key_comparer> fs{{0}, {3}, {1}, {0}, {5}};
     assert(fs.contains(0));
     assert(!fs.contains(2));
-    fs.insert(fs.begin(), int_holder{4});
+    fs.insert(fs.begin(), incomparable{4});
     fs.insert(2);
     assert(fs.contains(4));
-    assert(fs.contains(int_holder{2}));
+    assert(fs.contains(incomparable{2}));
 
-    assert(fs.lower_bound(3) == fs.lower_bound(int_holder{3}));
+    assert(fs.lower_bound(3) == fs.lower_bound(incomparable{3}));
     fs.erase(2);
-    assert(!fs.contains(int_holder{2}));
+    assert(!fs.contains(incomparable{2}));
 }
 
-void test_insert_3() {
-    // test that flat_set::insert(K&&) doesn't modify input for failed insertion.
-    struct int_holder {
-        int val;
+void test_insert_transparent() {
+    // For flat_set::insert([hint,]auto&&), the input should be unchanged if the set already
+    // contains an equivalent element.
+    struct detect_conversion {
+        int key;
         mutable bool converted = false;
 
         explicit operator int() const {
             converted = true;
-            return val;
+            return key;
         }
     };
 
-    flat_set<int, val_comparer> fs{0, 3, 5};
-
+    flat_set<int, key_comparer> fs{0, 3, 5};
     assert_all_requirements_and_equals(fs, {0, 3, 5});
+    detect_conversion detector{3};
 
-    int_holder holder{3};
-    assert(!holder.converted);
-
-    fs.insert(holder);
-    assert(!holder.converted);
+    assert(!detector.converted);
+    fs.insert(detector /*3*/);
     assert_all_requirements_and_equals(fs, {0, 3, 5});
+    assert(!detector.converted);
 
-    holder.val = 1;
-    fs.insert(holder);
-    assert(holder.converted);
+    detector.key = 1;
+
+    assert(!detector.converted);
+    fs.insert(detector /*1*/);
     assert_all_requirements_and_equals(fs, {0, 1, 3, 5});
+    assert(detector.converted);
+
+    detector.converted = false;
+
+    assert(!detector.converted);
+    fs.insert(fs.end(), detector /*1*/);
+    assert_all_requirements_and_equals(fs, {0, 1, 3, 5});
+    assert(!detector.converted);
+
+    detector.key = 2;
+
+    assert(!detector.converted);
+    fs.insert(fs.begin(), detector /*2*/);
+    assert_all_requirements_and_equals(fs, {0, 1, 2, 3, 5});
+    assert(detector.converted);
 }
 
-void test_insert_4() {
-    // test that hinted insertion is robust against invalid hints.
+void test_insert_using_invalid_hint() {
     mt19937 eng(42);
 
     uniform_int_distribution<int> dist_seq(0, 20);
@@ -465,8 +480,8 @@ int main() {
     test_insert_1<deque<int>>();
     test_insert_2<vector<int>>();
     test_insert_2<deque<int>>();
-    test_insert_3();
-    test_insert_4();
+    test_insert_transparent();
+    test_insert_using_invalid_hint();
 
     test_comparer_application();
     test_non_static_comparer();
