@@ -29,7 +29,7 @@ template <class _Ty, bool _Noexcept = false>
 struct _NODISCARD _Clear_guard {
     _Ty* _Target;
     ~_Clear_guard() {
-        if (_Target) [[unlikely]] {
+        if (_Target) {
             _Target->clear();
         }
     }
@@ -37,7 +37,7 @@ struct _NODISCARD _Clear_guard {
 
 template <class _Ty>
 struct [[maybe_unused]] _NODISCARD _Clear_guard<_Ty, true> {
-    _Ty* _Target; // no effect if the guarded operations don't throw.
+    _Ty* _Target; // do nothing as the guarded operations don't throw.
 };
 
 template <class _Alloc, class _Container>
