@@ -233,12 +233,6 @@ public:
     using value_compare = _Flat_value_compare<key_type, mapped_type, key_compare>::value_compare;
     using containers    = _Flat_Container<key_container_type, mapped_container_type>::container;
 
-private:
-    template <class T>
-        requires same_as<remove_cvref_t<T>, flat_map>
-    using _Maybe_const_iterator_t =
-        _STD conditional_t<_STD is_const_v<_STD remove_reference_t<T>>, const_iterator, iterator>;
-
 public:
     // [flat.map.cons] Constructors
     explicit flat_map(const key_compare& _Comp) : _Key_compare(_Comp), _Data() {}
