@@ -194,8 +194,9 @@ public:
             return _Right + _Off;
         }
 
-        template <bool _Val = _IsConst, enable_if_t<!_Val, int> = 0>
-        operator typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, true>::type() const {
+        template <bool _Val = _IsConst, typename = enable_if_t<!_Val, int>>
+        operator typename _Flat_map_iterator_Impl<enable_if_t<!_Val, _KeyContainer>,
+            enable_if_t<!_Val, _MappedContainer>, true>::type() const {
             return typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, true>::type{_Key_it, _Mapped_it};
         }
 
