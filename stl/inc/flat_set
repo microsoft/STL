@@ -25,14 +25,19 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-template <class _Ty>
-struct _NODISCARD _Clear_scope_guard {
-    _Ty* _Clearable;
-    ~_Clear_scope_guard() {
-        if (_Clearable) {
-            _Clearable->clear();
+template <class _Ty, bool _Noexcept = false>
+struct _NODISCARD _Clear_guard {
+    _Ty* _Target;
+    ~_Clear_guard() {
+        if (_Target) {
+            _Target->clear();
         }
     }
+};
+
+template <class _Ty>
+struct [[maybe_unused]] _NODISCARD _Clear_guard<_Ty, true> {
+    _Ty* _Target; // do nothing as the guarded operations don't throw.
 };
 
 template <class _Alloc, class _Container>
@@ -86,7 +91,7 @@ public:
 
     _Base_flat_set(_Tsorted, container_type _Cont, const key_compare& _Comp = key_compare())
         : _My_pair(_One_then_variadic_args_t{}, _Comp, _STD move(_Cont)) {
-        _Assert_after_sorted_input();
+        _STL_ASSERT(_Check_sorted(cbegin(), cend()), _Msg_not_sorted);
     }
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, const container_type& _Cont, const _Alloc& _Al)
@@ -152,8 +157,10 @@ public:
         : _Base_flat_set(_Tsort, container_type(_Ilist.begin(), _Ilist.end(), _Al)) {}
 
     _Deriv& operator=(initializer_list<_Kty> _Ilist) {
+        _Clear_guard<_Base_flat_set> _Guard{this};
         _Get_cont().assign(_Ilist.begin(), _Ilist.end());
         _Make_invariants_fulfilled();
+        _Guard._Target = nullptr;
         return static_cast<_Deriv&>(*this);
     }
 
@@ -228,25 +235,25 @@ public:
         }
     }
 
-    auto insert(const value_type& _Val) {
+    auto insert(const _Kty& _Val) {
         return _Emplace(_Val);
     }
-    auto insert(value_type&& _Val) {
+    auto insert(_Kty&& _Val) {
         return _Emplace(_STD move(_Val));
     }
-    template <class _Other>
+    template <_Different_from<_Kty> _Other>
         requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Other>)
     auto insert(_Other&& _Val) {
         return _Emplace(_STD forward<_Other>(_Val));
     }
 
-    iterator insert(const_iterator _Hint, const value_type& _Val) {
+    iterator insert(const_iterator _Hint, const _Kty& _Val) {
         return _Emplace_hint(_Hint, _Val);
     }
-    iterator insert(const_iterator _Hint, value_type&& _Val) {
+    iterator insert(const_iterator _Hint, _Kty&& _Val) {
         return _Emplace_hint(_Hint, _STD move(_Val));
     }
-    template <class _Other>
+    template <_Different_from<_Kty> _Other>
         requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Other>)
     iterator insert(const_iterator _Hint, _Other&& _Val) {
         return _Emplace_hint(_Hint, _STD forward<_Other>(_Val));
@@ -263,7 +270,15 @@ public:
     template <_Container_compatible_range<_Kty> _Rng>
     void insert_range(_Rng&& _Range) {
         const size_type _Old_size = size();
-        _Get_cont().append_range(_STD forward<_Rng>(_Range));
+
+        _Container& _Cont = _Get_cont();
+        if constexpr (requires { _Cont.append_range(_STD forward<_Rng>(_Range)); }) {
+            _Cont.append_range(_STD forward<_Rng>(_Range));
+        } else {
+            for (const auto& _Val : _Range) {
+                _Cont.insert(_Cont.end(), _Val);
+            }
+        }
         _Restore_invariants_after_insert<false>(_Old_size);
     }
 
@@ -274,14 +289,16 @@ public:
         _Insert_range<true>(_Ilist.begin(), _Ilist.end());
     }
 
-    _NODISCARD container_type extract() && {
+    _NODISCARD container_type extract() && noexcept(is_nothrow_move_constructible_v<_Container>) /* strengthened */ {
         // always clears the container (N4950 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
-        _Clear_scope_guard<_Base_flat_set> _Guard{this};
+        _Clear_guard<_Base_flat_set, is_nothrow_move_constructible_v<_Container>> _Guard{this};
         return _STD move(_Get_cont());
     }
     void replace(container_type&& _Cont) {
-        _Get_cont() = _STD move(_Cont);
-        _Assert_after_sorted_input();
+        _STL_ASSERT(_Check_sorted(_Cont.cbegin(), _Cont.cend()), _Msg_not_sorted);
+        _Clear_guard<_Base_flat_set, is_nothrow_move_assignable_v<_Container>> _Guard{this};
+        _Get_cont()    = _STD move(_Cont);
+        _Guard._Target = nullptr;
     }
 
     iterator erase(iterator _Where) {
@@ -293,7 +310,7 @@ public:
     size_type erase(const _Kty& _Val) {
         return _Erase(_Val);
     }
-    template <class _Other>
+    template <_Different_from<_Kty> _Other>
         requires (
             _Keylt_transparent && !is_convertible_v<_Other, iterator> && !is_convertible_v<_Other, const_iterator>)
     size_type erase(_Other&& _Val) {
@@ -339,11 +356,11 @@ public:
     }
 
     _NODISCARD size_type count(const _Kty& _Val) const {
-        if constexpr (!_Multi) {
-            return contains(_Val);
-        } else {
+        if constexpr (_Multi) {
             const auto [_First, _Last] = equal_range(_Val);
             return static_cast<size_type>(_Last - _First);
+        } else {
+            return contains(_Val);
         }
     }
     template <class _Other>
@@ -420,7 +437,7 @@ public:
         return _RANGES equal(_Lhs._Get_cont(), _Rhs._Get_cont());
     }
 
-    _NODISCARD friend _Synth_three_way_result<_Kty> operator<=>(const _Deriv& _Lhs, const _Deriv& _Rhs) {
+    _NODISCARD friend auto operator<=>(const _Deriv& _Lhs, const _Deriv& _Rhs) {
         return _STD lexicographical_compare_three_way(
             _Lhs.cbegin(), _Lhs.cend(), _Rhs.cbegin(), _Rhs.cend(), _Synth_three_way{});
     }
@@ -430,28 +447,26 @@ public:
     }
 
 private:
-    void _Assert_after_sorted_input() const {
-        _STL_ASSERT(_STD is_sorted(cbegin(), cend(), _Get_comp_v()), "Input was not sorted!");
-        if constexpr (!_Multi) {
-            _STL_ASSERT(_Is_unique(), "Input was sorted but not unique!");
-        }
-    }
-
-    bool _Is_unique() const {
-        if (empty()) {
+    _NODISCARD bool _Check_sorted(const_iterator _It, const const_iterator _End) const {
+        if constexpr (_Multi) {
+            return _STD is_sorted(_It, _End, _Get_comp_v());
+        } else {
+            // sorted-unique
+            if (_It == _End) {
+                return true;
+            }
+            while (++_It != _End) {
+                if (!_Compare(*(_It - 1), *_It)) {
+                    return false;
+                }
+            }
             return true;
         }
-        const const_iterator _End = cend();
-        const_iterator _It        = cbegin();
-        while (++_It != _End) {
-            if (_Keys_equal(*(_It - 1), *_It)) {
-                return false;
-            }
-        }
-        return true;
     }
 
-    bool _Check_where(const const_iterator _Where, const _Kty& _Val) const {
+    static constexpr const char* _Msg_not_sorted = _Multi ? "Input was not sorted!" : "Input was not sorted-unique!";
+
+    _NODISCARD bool _Check_where(const const_iterator _Where, const _Kty& _Val) const {
         // check that _Val can be inserted before _Where
         if constexpr (_Multi) {
             // check that _Where is the upper_bound for _Val
@@ -604,14 +619,14 @@ private:
         }
     }
 
-    void _Erase_dupes_if_needed() {
+    void _Erase_dupes_if_not_multi() {
         if constexpr (!_Multi) {
-            const iterator _End = end();
-            const iterator _New_end =
-                _STD unique(begin(), _End, [&](const _Kty& _Lhs, const _Kty& _Rhs) { return _Keys_equal(_Lhs, _Rhs); });
+            const auto _Equal_to = [this](const _Kty& _Lhs, const _Kty& _Rhs) {
+                return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
+            };
+            const iterator _End     = end();
+            const iterator _New_end = _STD unique(begin(), _End, _Equal_to);
             _Get_cont().erase(_New_end, _End);
-
-            _STL_INTERNAL_CHECK(_Is_unique());
         }
     }
 
@@ -625,14 +640,13 @@ private:
         if constexpr (!_Presorted) {
             _STD sort(_Old_end, _New_end, _Comp);
         } else {
-            _STL_ASSERT(_STD is_sorted(_Old_end, _New_end, _Comp), "Input was not sorted!");
+            _STL_ASSERT(_Check_sorted(_Old_end, _New_end), _Msg_not_sorted);
         }
 
         _STD inplace_merge(_Begin, _Old_end, _New_end, _Comp);
+        _Erase_dupes_if_not_multi();
 
-        _STL_INTERNAL_CHECK(_STD is_sorted(_Begin, _New_end, _Comp));
-
-        _Erase_dupes_if_needed();
+        _STL_INTERNAL_CHECK(_Check_sorted(cbegin(), cend()));
     }
 
     void _Make_invariants_fulfilled() {
@@ -649,10 +663,9 @@ private:
 
         _STD sort(_Begin_unsorted, _End, _Comp);
         _STD inplace_merge(_Begin, _Begin_unsorted, _End, _Comp);
+        _Erase_dupes_if_not_multi();
 
-        _STL_INTERNAL_CHECK(_STD is_sorted(_Begin, _End, _Comp));
-
-        _Erase_dupes_if_needed();
+        _STL_INTERNAL_CHECK(_Check_sorted(cbegin(), cend()));
     }
 
     template <class _Lty, class _Rty>
@@ -661,14 +674,6 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || (is_same_v<_Kty, _Lty> && is_same_v<_Kty, _Rty>) );
 
         return _DEBUG_LT_PRED(_My_pair._Get_first(), _Lhs, _Rhs);
-    }
-
-    template <class _Lty, class _Rty>
-    _NODISCARD bool _Keys_equal(const _Lty& _Lhs, const _Rty& _Rhs) const
-        noexcept(noexcept(!_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs))) {
-        _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || (is_same_v<_Kty, _Lty> && is_same_v<_Kty, _Rty>) );
-
-        return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
     }
 
     _NODISCARD const _Container& _Get_cont() const noexcept {
@@ -729,18 +734,18 @@ public:
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.set.erasure]/5)
-    _Clear_scope_guard<flat_set<_Kty, _Keylt, _Container>> _Guard{_STD addressof(_Val)};
-    const auto _Erased_count = _Erase_remove_if(_Val, _Pass_fn(_Predicate));
-    _Guard._Clearable        = nullptr;
+    _Clear_guard<flat_set<_Kty, _Keylt, _Container>> _Guard{_STD addressof(_Val)};
+    const auto _Erased_count = _STD _Erase_remove_if(_Val, _STD _Pass_fn(_Predicate));
+    _Guard._Target           = nullptr;
     return _Erased_count;
 }
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_multiset<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.multiset.erasure]/5)
-    _Clear_scope_guard<flat_multiset<_Kty, _Keylt, _Container>> _Guard{_STD addressof(_Val)};
-    const auto _Erased_count = _Erase_remove_if(_Val, _Pass_fn(_Predicate));
-    _Guard._Clearable        = nullptr;
+    _Clear_guard<flat_multiset<_Kty, _Keylt, _Container>> _Guard{_STD addressof(_Val)};
+    const auto _Erased_count = _STD _Erase_remove_if(_Val, _STD _Pass_fn(_Predicate));
+    _Guard._Target           = nullptr;
     return _Erased_count;
 }
 

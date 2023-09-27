@@ -8,6 +8,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <vector>
 
 using namespace std;
@@ -235,6 +236,124 @@ void test_insert_2() {
     }
 }
 
+struct key_comparer {
+    const auto& extract_key(const auto& obj) const {
+        if constexpr (requires { obj.key; }) {
+            return obj.key;
+        } else {
+            return obj;
+        }
+    }
+
+    bool operator()(const auto& lhs, const auto& rhs) const {
+        return extract_key(lhs) < extract_key(rhs);
+    }
+
+    using is_transparent = int;
+};
+
+void test_comparer_application() {
+    // The set must rely on its comparer to do the comparisons.
+    struct incomparable {
+        int key;
+        bool operator<(const incomparable&) const  = delete;
+        bool operator==(const incomparable&) const = delete;
+    };
+
+    flat_set<incomparable, key_comparer> fs{{0}, {3}, {1}, {0}, {5}};
+    assert(fs.contains(0));
+    assert(!fs.contains(2));
+    fs.insert(fs.begin(), incomparable{4});
+    fs.insert(2);
+    assert(fs.contains(4));
+    assert(fs.contains(incomparable{2}));
+
+    assert(fs.lower_bound(3) == fs.lower_bound(incomparable{3}));
+    fs.erase(2);
+    assert(!fs.contains(incomparable{2}));
+}
+
+void test_insert_transparent() {
+    // For flat_set::insert([hint,]auto&&), the input should be unchanged if the set already
+    // contains an equivalent element.
+    struct detect_conversion {
+        int key;
+        mutable bool converted = false;
+
+        explicit operator int() const {
+            converted = true;
+            return key;
+        }
+    };
+
+    flat_set<int, key_comparer> fs{0, 3, 5};
+    assert_all_requirements_and_equals(fs, {0, 3, 5});
+    detect_conversion detector{3};
+
+    assert(!detector.converted);
+    fs.insert(detector /*3*/);
+    assert_all_requirements_and_equals(fs, {0, 3, 5});
+    assert(!detector.converted);
+
+    detector.key = 1;
+
+    assert(!detector.converted);
+    fs.insert(detector /*1*/);
+    assert_all_requirements_and_equals(fs, {0, 1, 3, 5});
+    assert(detector.converted);
+
+    detector.converted = false;
+
+    assert(!detector.converted);
+    fs.insert(fs.end(), detector /*1*/);
+    assert_all_requirements_and_equals(fs, {0, 1, 3, 5});
+    assert(!detector.converted);
+
+    detector.key = 2;
+
+    assert(!detector.converted);
+    fs.insert(fs.begin(), detector /*2*/);
+    assert_all_requirements_and_equals(fs, {0, 1, 2, 3, 5});
+    assert(detector.converted);
+}
+
+void test_insert_using_invalid_hint() {
+    mt19937 eng(42);
+
+    uniform_int_distribution<int> dist_seq(0, 20);
+
+    vector<int> seq(200);
+    for (int& val : seq) {
+        val = dist_seq(eng);
+    }
+
+    {
+        flat_multiset<int> with_hint;
+        flat_multiset<int> no_hint;
+        for (const int val : seq) {
+            uniform_int_distribution<int> dist_idx(0, static_cast<int>(with_hint.size()));
+            auto random_hint = with_hint.begin() + dist_idx(eng);
+            with_hint.insert(random_hint, val);
+            no_hint.insert(val);
+        }
+
+        assert(with_hint == no_hint);
+    }
+
+    {
+        flat_set<int> with_hint;
+        flat_set<int> no_hint;
+        for (const int val : seq) {
+            uniform_int_distribution<int> dist_idx(0, static_cast<int>(with_hint.size()));
+            auto random_hint = with_hint.begin() + dist_idx(eng);
+            with_hint.insert(random_hint, val);
+            no_hint.insert(val);
+        }
+
+        assert(with_hint == no_hint);
+    }
+}
+
 template <class T>
 void test_spaceship_operator() {
     static constexpr bool multi  = _Is_specialization_v<T, flat_multiset>;
@@ -342,8 +461,8 @@ void test_count() {
     flat_set<int> fs{2};
     assert(fs.count(1) == 0);
 
-    flat_multiset<int> fs2{1, 2, 2, 3};
-    assert(fs2.count(2) == 2);
+    flat_multiset<int> fs2{10, 20, 20, 30};
+    assert(fs2.count(20) == 2);
 }
 
 int main() {
@@ -363,7 +482,10 @@ int main() {
     test_insert_1<deque<int>>();
     test_insert_2<vector<int>>();
     test_insert_2<deque<int>>();
+    test_insert_transparent();
+    test_insert_using_invalid_hint();
 
+    test_comparer_application();
     test_non_static_comparer();
 
     test_extract<flat_set<int>>();
