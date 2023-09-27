@@ -257,12 +257,12 @@ public:
         _SortAndDedup();
     }
 
-    flat_map(sorted_unique_t _Sorted_unique, key_container_type _Key_cont, mapped_container_type _Mapped_cont)
+    flat_map(sorted_unique_t, key_container_type _Key_cont, mapped_container_type _Mapped_cont)
         : _Key_compare(key_compare()), _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)} {}
 
     template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
-    flat_map(sorted_unique_t _Sorted_unique, const key_container_type& _Key_cont,
-        const mapped_container_type& _Mapped_cont, const Allocator& _Alloc)
+    flat_map(sorted_unique_t, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
+        const Allocator& _Alloc)
         : _Key_compare(key_compare()),
           _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont),
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)} {}
@@ -289,14 +289,13 @@ public:
         : flat_map(_From_range, _STD forward<R>(_Range), key_compare(), _Alloc) {}
 
     template <_Container_compatible_range<value_type> R>
-    flat_map(from_range_t _From_range, R&& _Range, const key_compare& _Comp) : flat_map(_Comp) {
+    flat_map(from_range_t, R&& _Range, const key_compare& _Comp) : flat_map(_Comp) {
         insert_range(_STD forward<R>(_Range));
     }
 
     template <_Container_compatible_range<value_type> R,
         _Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
-    flat_map(from_range_t _From_range, R&& _Range, const key_compare& _Comp, const Allocator& _Alloc)
-        : flat_map(_Comp, _Alloc) {
+    flat_map(from_range_t, R&& _Range, const key_compare& _Comp, const Allocator& _Alloc) : flat_map(_Comp, _Alloc) {
         insert_range(_STD forward<R>(_Range));
     }
 
