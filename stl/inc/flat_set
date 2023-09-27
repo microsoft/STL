@@ -447,8 +447,8 @@ public:
     }
 
 private:
-    bool _Check_sorted(const_iterator _It, const const_iterator _End) const {
-        if (_Multi) {
+    _NODISCARD bool _Check_sorted(const_iterator _It, const const_iterator _End) const {
+        if constexpr (_Multi) {
             return _STD is_sorted(_It, _End, _Get_comp_v());
         } else {
             // sorted-unique
@@ -466,7 +466,7 @@ private:
 
     static constexpr const char* _Msg_not_sorted = _Multi ? "Input was not sorted!" : "Input was not sorted-unique!";
 
-    bool _Check_where(const const_iterator _Where, const _Kty& _Val) const {
+    _NODISCARD bool _Check_where(const const_iterator _Where, const _Kty& _Val) const {
         // check that _Val can be inserted before _Where
         if constexpr (_Multi) {
             // check that _Where is the upper_bound for _Val
