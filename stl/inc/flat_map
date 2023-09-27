@@ -922,6 +922,27 @@ flat_map(sorted_unique_t, _InputIterator, _InputIterator, _Compare = _Compare())
     -> flat_map<typename iter_value_t<_InputIterator>::first_type, typename iter_value_t<_InputIterator>::second_type,
         _Compare>;
 
+template <_RANGES input_range _R, class _Compare = less<typename _RANGES range_value_t<_R>::first_type>,
+    class _Allocator>
+flat_map(from_range_t, _R&&, _Compare = _Compare(), _Allocator = _Allocator())
+    -> flat_map<typename _RANGES range_value_t<_R>::first_type, typename _RANGES range_value_t<_R>::second_type,
+        _Compare>;
+
+template <_RANGES input_range _R, class _Allocator>
+flat_map(from_range_t, _R&&, _Allocator)
+    -> flat_map<typename _RANGES range_value_t<_R>::first_type, typename _RANGES range_value_t<_R>::second_type>;
+
+template <class _Key, class _T, class _Compare = less<_Key>>
+flat_map(initializer_list<pair<_Key, _T>>, _Compare = _Compare()) -> flat_map<_Key, _T, _Compare>;
+
+template <class _Key, class _T, class _Compare = less<_Key>>
+flat_map(sorted_unique_t, initializer_list<pair<_Key, _T>>, _Compare = _Compare()) -> flat_map<_Key, _T, _Compare>;
+
+// Specialization of uses_allocator
+template <class _Key, class _T, class _Compare, class _KeyContainer, class _MappedContainer, class _Allocator>
+struct uses_allocator<flat_map<_Key, _T, _Compare, _KeyContainer, _MappedContainer>, _Allocator>
+    : bool_constant<uses_allocator_v<_KeyContainer, _Allocator> && uses_allocator_v<_MappedContainer, _Allocator>> {};
+
 _STD_END
 
 #pragma pop_macro("new")
