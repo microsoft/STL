@@ -15,7 +15,28 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if !defined(_M_CEE_PURE) && !(defined(_DISABLE_STRING_ANNOTATION) && defined(_DISABLE_VECTOR_ANNOTATION))
+#ifdef _DISABLE_ASAN_ANNOTATIONS
+
+#ifdef _ENABLE_ASAN_ANNOTATIONS_ON_UNSUPPORTED_PLATFORMS
+#error \
+    "Invalid set of defines - one cannot define both _ENABLE_ASAN_ANNOTATIONS_ON_UNSUPPORTED_PLATFORMS and _DISABLE_ASAN_ANNOTATIONS at the same time"
+#endif
+
+#else // ^^^ _DISABLE_ASAN_ANNOTATIONS / !_DISABLE_ASAN_ANNOTATIONS vvv
+
+#if defined(_DISABLE_STRING_ANNOTATION) && defined(_DISABLE_VECTOR_ANNOTATION)
+#define _DISABLE_ASAN_ANNOTATIONS
+#elif defined(_M_ARM64EC) || defined(_M_ARM64) || defined(_M_ARM)
+
+#ifndef _ENABLE_ASAN_ANNOTATIONS_ON_UNSUPPORTED_PLATFORMS
+#define _DISABLE_ASAN_ANNOTATIONS
+#endif
+
+#elif defined(_M_CEE_PURE)
+#define _DISABLE_ASAN_ANNOTATIONS
+#endif
+
+#endif // ^^^ !_DISABLE_ASAN_ANNOTATIONS
 
 #ifdef __SANITIZE_ADDRESS__
 
@@ -45,11 +66,11 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #endif // ^^^ !defined(__clang__) && !defined(__SANITIZE_ADDRESS__) ^^^
 
-#ifdef _DISABLE_STRING_ANNOTATION
+#if defined(_DISABLE_ASAN_ANNOTATION) || defined(_DISABLE_STRING_ANNOTATION)
 #undef _ACTIVATE_STRING_ANNOTATION
 #undef _INSERT_STRING_ANNOTATION
 #endif // defined(_DISABLE_STRING_ANNOTATION)
-#ifdef _DISABLE_VECTOR_ANNOTATION
+#if defined(_DISABLE_ASAN_ANNOTATION) || defined(_DISABLE_VECTOR_ANNOTATION)
 #undef _ACTIVATE_VECTOR_ANNOTATION
 #undef _INSERT_VECTOR_ANNOTATION
 #endif // defined(_DISABLE_VECTOR_ANNOTATION)
@@ -122,8 +143,6 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 #endif // ^^^ unknown architecture ^^^
 
 #endif // insert asan annotations
-
-#endif // !defined(_M_CEE_PURE) && asan not disabled
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
