@@ -17,7 +17,6 @@ parameters:
   # Parameters to pass to ctest to select the test(s) to run
 - name: testSelection
   type: string
-  default: '-E stlasan'
 steps:
 - task: CmdLine@2
   displayName: ${{ parameters.displayName }}

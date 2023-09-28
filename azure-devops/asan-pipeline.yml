@@ -6,9 +6,6 @@
 variables:
   tmpDir: 'D:\Temp'
   buildOutputLocation: 'D:\build'
-  # We do not want to build the benchmarks in this pipeline
-  benchmarkBuildOutputLocation: ''
-  benchmarkBuildOutputLocationVar: ''
   # Restrict to "stlasan" test
   testSelection: '-R stlasan'
 
@@ -16,35 +13,27 @@ pool:
   name: 'StlBuild-2023-09-14T1251-Pool'
   demands: EnableSpotVM -equals true
 
-pr:
-  drafts: false
+pr: none
 
 stages:
-  - stage: Code_Format
-    displayName: 'Code Format'
-    jobs:
-      - template: format-validation.yml
-
   - stage: Build_And_Test_x64
-    dependsOn: Code_Format
     displayName: 'Build and Test'
     jobs:
       - template: native-build-test.yml
         parameters:
           targetPlatform: x64
           vsDevCmdArch: amd64
-          benchmarkBuildOutputLocationVar: ${{ variables.benchmarkBuildOutputLocationVar }}
+          benchmarkBuildOutputLocationVar: ''
           testSelection: ${{ variables.testSelection }}
 
   - stage: Build_And_Test_x86
-    dependsOn: Build_And_Test_x64
     displayName: 'Build and Test'
     jobs:
       - template: native-build-test.yml
         parameters:
           targetPlatform: x86
           vsDevCmdArch: x86
-          benchmarkBuildOutputLocationVar: ${{ variables.benchmarkBuildOutputLocationVar }}
+          benchmarkBuildOutputLocationVar: ''
           testSelection: ${{ variables.testSelection }}
 
   # no coverage for ARM and ARM64

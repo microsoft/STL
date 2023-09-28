@@ -273,7 +273,7 @@ int main() {
             continue;
         }
 
-        const auto tab_policy = TabPolicy{
+        const TabPolicy tab_policy{
             ranges::binary_search(tabby_filenames, filename) || ranges::binary_search(tabby_extensions, extension)};
 
         scan_file(any_errors, filepath, tab_policy, buffer);
