@@ -17,10 +17,10 @@ constexpr void header_test() {
 #else // ^^^ EDG / C1XX vvv
     assert(x.column() == 37);
 #endif // ^^^ C1XX ^^^
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
-    assert(x.function_name() == "header_test"sv);
-#else // ^^^ workaround / no workaround vvv
+#if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
     assert(x.function_name() == "void __cdecl header_test(void)"sv);
-#endif // TRANSITION, DevCom-10199227 and LLVM-58951
+#else
+    assert(x.function_name() == "header_test"sv);
+#endif
     assert(string_view{x.file_name()}.ends_with("header.h"sv));
 }
