@@ -2640,8 +2640,7 @@ private:
         _Al.deallocate(_Old_ptr, _Capacity + 1); // +1 for null terminator
     }
 
-    _CONSTEXPR20 void _Construct_empty() noexcept {
-        // this function needs to be noexcept for conformance to the standard.
+    _CONSTEXPR20 void _Construct_empty() {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
 
         // initialize basic_string data members
