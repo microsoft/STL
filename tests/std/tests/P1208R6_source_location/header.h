@@ -19,8 +19,8 @@ constexpr void header_test() {
 #endif // ^^^ C1XX ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
     assert(x.function_name() == "void __cdecl header_test(void)"sv);
-#else
+#else // ^^^ detailed / basic vvv
     assert(x.function_name() == "header_test"sv);
-#endif
+#endif // ^^^ basic ^^^
     assert(string_view{x.file_name()}.ends_with("header.h"sv));
 }

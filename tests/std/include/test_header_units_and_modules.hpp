@@ -690,9 +690,9 @@ constexpr bool impl_test_source_location() {
 
 #if TEST_DETAILED_FUNCTION_NAME
     assert(sl.function_name() == "bool __cdecl impl_test_source_location(void)"sv);
-#else
+#else // ^^^ detailed / basic vvv
     assert(sl.function_name() == "impl_test_source_location"sv);
-#endif
+#endif // ^^^ basic ^^^
 
     assert(string_view{sl.file_name()}.ends_with("test_header_units_and_modules.hpp"sv));
     return true;

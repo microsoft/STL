@@ -5,9 +5,16 @@
 #include <cassert>
 #include <functional>
 #include <source_location>
+#include <string>
 #include <string_view>
 #include <type_traits>
 using namespace std;
+
+#ifdef _M_IX86
+#define THISCALL_OR_CDECL_STR "__thiscall"s
+#else
+#define THISCALL_OR_CDECL_STR "__cdecl"s
+#endif
 
 static_assert(is_nothrow_default_constructible_v<source_location>);
 static_assert(is_nothrow_move_constructible_v<source_location>);
@@ -63,9 +70,9 @@ constexpr void local_test() {
 #endif // ^^^ C1XX ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
     assert(x.function_name() == "void __cdecl local_test(void)"sv);
-#else
+#else // ^^^ detailed / basic vvv
     assert(x.function_name() == "local_test"sv);
-#endif
+#endif // ^^^ basic ^^^
     assert(string_view{x.file_name()}.ends_with(test_cpp));
 }
 
@@ -75,9 +82,9 @@ constexpr void argument_test(
     assert(x.column() == column);
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
     assert(x.function_name() == "bool __cdecl test(void)"sv);
-#else
+#else // ^^^ detailed / basic vvv
     assert(x.function_name() == "test"sv);
-#endif
+#endif // ^^^ basic ^^^
     assert(string_view{x.file_name()}.ends_with(test_cpp));
 }
 
@@ -98,9 +105,9 @@ constexpr void sloc_constructor_test() {
     {
         assert(x.loc.function_name() == "void __cdecl sloc_constructor_test(void)"sv);
     }
-#else
+#else // ^^^ detailed / basic vvv
     assert(x.loc.function_name() == "sloc_constructor_test"sv);
-#endif
+#endif // ^^^ basic ^^^
     assert(string_view{x.loc.file_name()}.ends_with(test_cpp));
 }
 
@@ -114,13 +121,11 @@ constexpr void different_constructor_test() {
 #else // ^^^ EDG / C1XX vvv
     assert(x.loc.column() == 5);
 #endif // ^^^ C1XX ^^^
-#if !_USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
+#if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
+    assert(x.loc.function_name() == THISCALL_OR_CDECL_STR + " s::s(int)");
+#else // ^^^ detailed / basic vvv
     assert(x.loc.function_name() == "s"sv);
-#elif defined(_M_IX86) // ^^^ basic / detailed x86 vvv
-    assert(x.loc.function_name() == "__thiscall s::s(int)"sv);
-#else // ^^^ detailed x86 / detailed non-x86 vvv
-    assert(x.loc.function_name() == "__cdecl s::s(int)"sv);
-#endif // ^^^ detailed non-x86 ^^^
+#endif // ^^^ basic ^^^
     assert(string_view{x.loc.file_name()}.ends_with(test_cpp));
 }
 
@@ -141,9 +146,9 @@ constexpr void sub_member_test() {
     {
         assert(s.x.loc.function_name() == "void __cdecl sub_member_test(void)"sv);
     }
-#else
+#else // ^^^ detailed / basic vvv
     assert(s.x.loc.function_name() == "sub_member_test"sv);
-#endif
+#endif // ^^^ basic ^^^
     assert(string_view{s.x.loc.file_name()}.ends_with(test_cpp));
 
     const s2 s_i{1};
@@ -155,13 +160,11 @@ constexpr void sub_member_test() {
 #else // ^^^ EDG / C1XX vvv
     assert(s_i.x.loc.column() == 5);
 #endif // ^^^ C1XX ^^^
-#if !_USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
+#if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
+    assert(s_i.x.loc.function_name() == THISCALL_OR_CDECL_STR + " s2::s2(int)");
+#else // ^^^ detailed / basic vvv
     assert(s_i.x.loc.function_name() == "s2"sv);
-#elif defined(_M_IX86) // ^^^ basic / detailed x86 vvv
-    assert(s_i.x.loc.function_name() == "__thiscall s2::s2(int)"sv);
-#else // ^^^ detailed x86 / detailed non-x86 vvv
-    assert(s_i.x.loc.function_name() == "__cdecl s2::s2(int)"sv);
-#endif // ^^^ detailed non-x86 ^^^
+#endif // ^^^ basic ^^^
     assert(string_view{s_i.x.loc.file_name()}.ends_with(test_cpp));
 }
 
@@ -182,27 +185,20 @@ constexpr void lambda_test() {
     assert(x1.column() == 52);
     assert(x2.column() == 50);
 #endif // ^^^ C1XX ^^^
-#if !_USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
+#if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
+    assert(x1.function_name() == "void __cdecl lambda_test(void)"sv);
+#else // ^^^ detailed / basic vvv
     assert(x1.function_name() == "lambda_test"sv);
-    assert(x2.function_name() == "operator()"sv);
-#elif defined(_M_IX86) // ^^^ basic / detailed x86 vvv
-    assert(x1.function_name() == "void __cdecl lambda_test(void)"sv);
-#ifdef __clang__
-    assert(x2.function_name() == "auto __thiscall lambda_test()::(anonymous class)::operator()(void) const"sv);
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
-    assert(
-        string_view{x2.function_name()}.starts_with("struct std::source_location __thiscall lambda_test::<lambda_"sv));
-    assert(string_view{x2.function_name()}.ends_with("::operator ()(void) const"sv));
-#endif // ^^^ !defined(__clang__) ^^^
-#else // ^^^ detailed x86 / detailed non-x86 vvv
-    assert(x1.function_name() == "void __cdecl lambda_test(void)"sv);
-#ifdef __clang__
-    assert(x2.function_name() == "auto __cdecl lambda_test()::(anonymous class)::operator()(void) const"sv);
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
-    assert(string_view{x2.function_name()}.starts_with("struct std::source_location __cdecl lambda_test::<lambda_"sv));
-    assert(string_view{x2.function_name()}.ends_with("::operator ()(void) const"sv));
-#endif // ^^^ !defined(__clang__) ^^^
-#endif // ^^^ detailed non-x86 ^^^
+#endif // ^^^ basic ^^^
+    const string_view fun2{x2.function_name()};
+#if !_USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
+    assert(fun2 == "operator()"sv);
+#elif defined(__clang__) // ^^^ basic / detailed Clang vvv
+    assert(fun2 == "auto " + THISCALL_OR_CDECL_STR + " lambda_test()::(anonymous class)::operator()(void) const");
+#else // ^^^ detailed Clang / detailed non-Clang vvv
+    assert(fun2.starts_with("struct std::source_location " + THISCALL_OR_CDECL_STR + " lambda_test::<lambda_"));
+    assert(fun2.ends_with("::operator ()(void) const"sv));
+#endif // ^^^ detailed non-Clang ^^^
     assert(string_view{x1.file_name()}.ends_with(test_cpp));
     assert(string_view{x2.file_name()}.ends_with(test_cpp));
 }

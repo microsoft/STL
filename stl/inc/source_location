@@ -36,9 +36,9 @@ _EXPORT_STD struct source_location {
         const uint_least32_t _Column_ = __builtin_COLUMN(), const char* const _File_ = __builtin_FILE(),
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
         const char* const _Function_ = __builtin_FUNCSIG()
-#else
+#else // ^^^ detailed / basic vvv
         const char* const _Function_ = __builtin_FUNCTION()
-#endif
+#endif // ^^^ basic ^^^
             ) noexcept {
         source_location _Result{};
         _Result._Line     = _Line_;
